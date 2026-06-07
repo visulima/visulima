@@ -49,11 +49,12 @@ vis toolchain detect       # prints "proto" / "mise" / "fnm" / ... / "none"
 
 ## Options
 
-| Option        | Subcommand(s)    | Description                                                                  |
-| ------------- | ---------------- | ---------------------------------------------------------------------------- |
-| `--json`      | `status`         | Emit a machine-readable JSON payload instead of the formatted status report. |
-| `--exit-code` | `status`         | Exit with code 1 when any tool mismatches. Useful in CI preflight jobs.      |
-| `--dry-run`   | `install`, `use` | Print the command that would run but don't execute it.                       |
+| Option         | Subcommand(s)    | Description                                                                                                          |
+| -------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `--json`       | `status`         | Emit a machine-readable JSON payload instead of the formatted status report.                                         |
+| `--exit-code`  | `status`         | Exit with code 1 when any tool mismatches. Useful in CI preflight jobs.                                              |
+| `--dry-run`    | `install`, `use` | Print the command that would run but don't execute it.                                                               |
+| `--no-engines` | `use`            | Skip mirroring the pinned version into `engines.<tool>`. By default `use` updates that field when it already exists. |
 
 ## How detection works
 

@@ -27,15 +27,19 @@ vis init --force
 
 # Also sync to native PM config files
 vis init --sync-native
+
+# Print the workspace-relative $schema refs to paste into project.json / vis.config.ts
+vis init --schema
 ```
 
 ## Options
 
-| Option             | Default | Description                             |
-| ------------------ | ------- | --------------------------------------- |
-| `--force`          | `false` | Overwrite existing config file          |
-| `--no-interactive` | `false` | Skip interactive prompts                |
-| `--sync-native`    | `false` | Sync settings to native PM config files |
+| Option             | Default | Description                                                                                |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------ |
+| `--force`          | `false` | Overwrite existing config file                                                             |
+| `--no-interactive` | `false` | Skip interactive prompts                                                                   |
+| `--sync-native`    | `false` | Sync settings to native PM config files                                                    |
+| `--schema`         | `false` | Print workspace-relative `$schema` paths for `project.json` and `vis.config.ts`, then exit |
 
 ## Interactive Wizard
 

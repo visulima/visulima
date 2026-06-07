@@ -67,22 +67,30 @@ vis deps --format json
 
 ## Options
 
-| Option                 | Default | Description                                                                                       |
-| ---------------------- | ------- | ------------------------------------------------------------------------------------------------- |
-| `--workspace-protocol` | `false` | Lint that internal deps use the `workspace:` protocol                                             |
-| `--redefine-root`      | `false` | Lint that no child re-declares a dep already pinned in the workspace root                         |
-| `--banned-deps`        | `false` | Lint deps against `policy.bannedDeps` in vis config                                               |
-| `--workspace-versions` | `false` | Lint that all packages declare external deps at the same version                                  |
-| `--custom-types`       | `false` | Lint `engines.{node,pnpm}`, `packageManager`, `volta.*`, `devEngines.*` for drift across packages |
-| `--dep`                |         | Restrict `--workspace-versions`/`--custom-types` to a single dep                                  |
-| `--ban`                |         | Ban a dep name or glob for this run (repeatable). Auto-enables `--banned-deps`                    |
-| `--pin`                |         | Pin a dep to an exact specifier for this run, e.g. `react@^18.2.0` (repeatable)                   |
-| `--resolve`            |         | Conflict resolution: `highest`, `lowest`, or `catalog` (default: `highest`)                       |
-| `--propose-min`        |         | Propose catalog entries for deps ≥N packages already agree on. Activates with `--resolve catalog` |
-| `--fix`                | `false` | Auto-fix violations in place (writes `package.json` files)                                        |
-| `--fix-specifier`      |         | Specifier used by `--fix` for workspace-protocol (default: `workspace:*`)                         |
-| `--format`             | `human` | Output format: `human`, `json`, or `minimal`                                                      |
-| `--quiet`              | `false` | Suppress all output except errors                                                                 |
+| Option                      | Default | Description                                                                                       |
+| --------------------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| `--workspace-protocol`      | `false` | Lint that internal deps use the `workspace:` protocol                                             |
+| `--redefine-root`           | `false` | Lint that no child re-declares a dep already pinned in the workspace root                         |
+| `--banned-deps`             | `false` | Lint deps against `policy.bannedDeps` in vis config                                               |
+| `--workspace-versions`      | `false` | Lint that all packages declare external deps at the same version                                  |
+| `--custom-types`            | `false` | Lint `engines.{node,pnpm}`, `packageManager`, `volta.*`, `devEngines.*` for drift across packages |
+| `--empty-deps`              | `false` | Flag empty dependency blocks (`dependencies: {}`, `devDependencies: {}`, …)                       |
+| `--root-private`            | `false` | Ensure the workspace root `package.json` sets `"private": true`                                   |
+| `--root-package-manager`    | `false` | Ensure the workspace root `package.json` declares a `packageManager` field                        |
+| `--root-deps`               | `false` | Flag runtime dependencies on the private workspace root (move them to devDependencies)            |
+| `--missing-package-json`    | `false` | Flag workspace directories that lack a `package.json`                                             |
+| `--dead-workspace-patterns` | `false` | Flag workspace patterns that match zero packages                                                  |
+| `--types-in-deps`           | `false` | Flag `@types/*` declared in `dependencies` on a private package (should be devDependencies)       |
+| `--similar-deps`            | `false` | Flag version drift across related dep families (react+react-dom, `@babel/*`, `@storybook/*`, …)   |
+| `--dep`                     |         | Restrict `--workspace-versions`/`--custom-types` to a single dep                                  |
+| `--ban`                     |         | Ban a dep name or glob for this run (repeatable). Auto-enables `--banned-deps`                    |
+| `--pin`                     |         | Pin a dep to an exact specifier for this run, e.g. `react@^18.2.0` (repeatable)                   |
+| `--resolve`                 |         | Conflict resolution: `highest`, `lowest`, or `catalog` (default: `highest`)                       |
+| `--propose-min`             |         | Propose catalog entries for deps ≥N packages already agree on. Activates with `--resolve catalog` |
+| `--fix`                     | `false` | Auto-fix violations in place (writes `package.json` files)                                        |
+| `--fix-specifier`           |         | Specifier used by `--fix` for workspace-protocol (default: `workspace:*`)                         |
+| `--format`                  | `human` | Output format: `human`, `json`, or `minimal`                                                      |
+| `--quiet`                   | `false` | Suppress all output except errors                                                                 |
 
 ## Lint kinds
 
