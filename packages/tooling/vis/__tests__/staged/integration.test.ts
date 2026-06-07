@@ -111,6 +111,39 @@ describe("runStaged — integration", () => {
         expect(touched).toStrictEqual([join(root, "note.txt")]);
     });
 
+    it("runs a perPackage command task from each owning package directory", async () => {
+        expect.assertions(3);
+
+        writeFileSync(join(root, "README.md"), "initial\n");
+        sh(["add", "README.md"], root);
+        sh(["commit", "-q", "-m", "chore: init"], root);
+
+        writeFileSync(join(root, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+
+        for (const name of ["a", "b"]) {
+            const directory = join(root, "packages", name);
+
+            mkdirSync(directory, { recursive: true });
+            writeFileSync(join(directory, "package.json"), JSON.stringify({ name: `@scope/${name}` }));
+            writeFileSync(join(directory, "index.ts"), `export const ${name} = 1;\n`);
+            sh(["add", join("packages", name, "index.ts")], root);
+        }
+
+        // `node -e "…process.cwd()…"` writes a marker file in whatever directory
+        // the command runs from, so we can assert each package ran from its own dir.
+        const result = await runStaged({
+            config: {
+                "packages/**/*.ts": { command: "node -e \"require('fs').writeFileSync('ran-from.txt', process.cwd())\"", perPackage: true },
+            },
+            cwd: root,
+            stash: false,
+        });
+
+        expect(result.success).toBe(true);
+        expect(readFileSync(join(root, "packages", "a", "ran-from.txt"), "utf8")).toBe(join(root, "packages", "a"));
+        expect(readFileSync(join(root, "packages", "b", "ran-from.txt"), "utf8")).toBe(join(root, "packages", "b"));
+    });
+
     it("fails the run when a task throws", async () => {
         expect.assertions(2);
 

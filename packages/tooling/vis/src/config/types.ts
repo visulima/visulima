@@ -1905,6 +1905,7 @@ export interface VisConfig {
      * - `string` or `string[]` commands
      * - Sync/async functions returning `string | string[]`
      * - `{ title, task }` objects for named side-effect tasks
+     * - `{ command, perPackage }` to run a command once per owning workspace package (cwd = that package dir), and `{ command, cwd }` to pin a command to a fixed directory
      * - Mixed arrays of strings and functions
      * - A top-level generate-task function
      */
