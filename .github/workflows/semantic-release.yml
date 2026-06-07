@@ -215,7 +215,13 @@ jobs:
             # warnings (one per NAPI subpackage) into the captured array, so a
             # warning line becomes a fake "project" and codecov fails with
             # `--fail-on-error` against a path that doesn't exist.
+            # TEMPORARILY DISABLED: the Codecov CLI download/verify step is flaky
+            # (curl/gpg verification intermittently exits non-zero), and because
+            # the `Semantic Release` step below gates on `success()`, a Codecov
+            # hiccup silently blocks the publish. `if: false` skips it so a skipped
+            # (not failed) step keeps `success()` true. Re-enable once stabilised.
             - name: "Download and verify Codecov CLI"
+              if: false
               shell: "bash"
               run: |
                   curl -Os https://cli.codecov.io/latest/linux/codecov
@@ -227,6 +233,7 @@ jobs:
                   sudo chmod +x codecov
 
             - name: "Upload code coverage to codecov"
+              if: false
               shell: "bash"
               env:
                   CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
