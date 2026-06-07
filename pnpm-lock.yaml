@@ -10600,7 +10600,7 @@ importers:
         specifier: 3.0.0-alpha.12
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.31
+        specifier: 1.0.0-alpha.32
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -18599,7 +18599,7 @@ packages:
       esbuild: '>=0.25.11'
       rollup: '>=4.59.0'
       storybook: ^10.4.0
-      vite: '>=7.3.2'
+      vite: '>=7.1.11'
       webpack: '*'
     peerDependenciesMeta:
       esbuild:
