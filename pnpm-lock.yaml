@@ -10600,7 +10600,7 @@ importers:
         specifier: 3.0.0-alpha.12
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.33
+        specifier: 1.0.0-alpha.34
         version: link:../vis
       zod:
         specifier: catalog:utils
