@@ -26,7 +26,7 @@ const hookInstall: Command = {
     description: "Install git hooks for the workspace (migrates husky / prek on prompt)",
     env: [...sharedHookEnv],
     examples: [
-        ["vis hook install", "Install git hooks in .vis-hooks/"],
+        ["vis hook install", "Install git hooks in .vis/hooks/"],
         ["vis hook install --hooks-dir=.githooks", "Install hooks in a custom directory"],
     ],
     group: "Git Hooks",

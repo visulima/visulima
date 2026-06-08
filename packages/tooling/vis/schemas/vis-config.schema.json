@@ -1840,7 +1840,7 @@
         },
         "staged": {
             "$ref": "#/$defs/StagedConfig",
-            "description": "Staged file patterns and commands (replaces lint-staged).\n\nAccepts all lint-staged config forms:\n- `string` or `string[]` commands\n- Sync/async functions returning `string | string[]`\n- `{ title, task }` objects for named side-effect tasks\n- Mixed arrays of strings and functions\n- A top-level generate-task function"
+            "description": "Staged file patterns and commands (replaces lint-staged).\n\nAccepts all lint-staged config forms:\n- `string` or `string[]` commands\n- Sync/async functions returning `string | string[]`\n- `{ title, task }` objects for named side-effect tasks\n- `{ command, perPackage }` to run a command once per owning workspace package (cwd = that package dir), and `{ command, cwd }` to pin a command to a fixed directory\n- Mixed arrays of strings and functions\n- A top-level generate-task function"
         },
         "strictEnv": {
             "type": "boolean",
@@ -2099,6 +2099,10 @@
                 "onFingerprint": {
                     "not": {},
                     "description": "Plugin extension point invoked during task fingerprinting. Fires once per task after the built-in inputs (filesets, runtime, env) have been gathered and before the hash is sealed. Contributions made through the supplied  {@link  FingerprintContributor }  are mixed deterministically into the final hash.\n\nThrowing aborts fingerprinting for that task — the task fails before any cache lookup runs, so a buggy plugin can't silently corrupt cache state.\n\nWired by `vis` to bridge into the `task:fingerprint` hook; standalone task-runner consumers can pass a callback directly."
+                },
+                "onDiagnostic": {
+                    "not": {},
+                    "description": "Non-fatal diagnostic sink, forwarded to the task hasher. Fires when a cacheable task's file-set inputs resolve to zero files (the signature of a dropped `namedInputs`, a wrong `{projectRoot}`, or a glob matching nothing — a task that will reuse one cache entry forever). `vis` wires this to its logger."
                 },
                 "parallel": {
                     "type": [
@@ -4937,10 +4941,7 @@
         "StagedTask": {
             "anyOf": [
                 {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
+                    "$ref": "#/$defs/CommandTask"
                 },
                 {
                     "type": "string"
@@ -4948,11 +4949,37 @@
                 {
                     "type": "array",
                     "items": {
-                        "type": "string"
+                        "anyOf": [
+                            {
+                                "$ref": "#/$defs/CommandTask"
+                            },
+                            {
+                                "type": "string"
+                            }
+                        ]
                     }
                 }
             ],
-            "description": "A task value as authored by the user. Command strings are split into argv and invoked with the matched file paths appended. Arrays run serially. Functions receive the matched paths and return further task values (possibly async). `{ title, task }` objects run `task` directly with no argv construction."
+            "description": "A task value as authored by the user. Command strings are split into argv and invoked with the matched file paths appended. `{ command, … }` objects do the same with per-task execution options (cwd / perPackage). Arrays run serially. Functions receive the matched paths and return further task values (possibly async). `{ title, task }` objects run `task` directly with no argv construction."
+        },
+        "CommandTask": {
+            "type": "object",
+            "properties": {
+                "command": {
+                    "type": "string"
+                },
+                "cwd": {
+                    "type": "string"
+                },
+                "perPackage": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "command"
+            ],
+            "additionalProperties": false,
+            "description": "Object form of a command task. Unlike a bare command string it carries execution options:\n\n- `perPackage` runs the command once per workspace package that owns the   matched files, with `cwd` set to that package's directory and file paths   made relative to it. Use it for tools that resolve their config or   plugins from the nearest `package.json` — e.g. eslint with a   cwd-sensitive shareable config. Files that sit under no workspace   package fall back to a single run from the workspace root.\n- `cwd` pins the command to a fixed directory (relative to the workspace   root, or absolute) and passes the matched files as absolute paths so   they resolve regardless of where the command runs. Ignored when   `perPackage` is set — that derives the cwd per package instead.\n\nA command task is distinguished from  {@link  CustomTask }  by carrying a `command` string and no `task` function."
         }
     }
 }

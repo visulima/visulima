@@ -1,5 +1,7 @@
 import { isFsCaseSensitive } from "@visulima/fs";
+import { join } from "@visulima/path";
 
+import { readWorkspacePatterns, resolveWorkspacePatterns } from "../config/workspace";
 import { resolveConfig, validateConfig } from "./config";
 import { ApplyEmptyCommitError, StagedError } from "./errors";
 import { GitWorkflow } from "./git";
@@ -23,6 +25,26 @@ const detectCaseInsensitive = (cwd: string): boolean => {
     } catch {
         // Probe failed (permission error, path gone); assume case-sensitive — the POSIX default.
         return false;
+    }
+};
+
+/**
+ * Absolute workspace package directories used to fan out `perPackage`
+ * command tasks. Best-effort: a missing or malformed workspace definition
+ * yields an empty list, in which case `perPackage` collapses to a single
+ * root-cwd run rather than failing the whole staged run.
+ */
+const resolveWorkspacePackages = (cwd: string): string[] => {
+    try {
+        const patterns = readWorkspacePatterns(cwd);
+
+        if (!patterns) {
+            return [];
+        }
+
+        return resolveWorkspacePatterns(cwd, patterns).map((directory) => join(cwd, directory));
+    } catch {
+        return [];
     }
 };
 
@@ -110,6 +132,7 @@ export const runStaged = async (options: RunOptions = {}): Promise<RunResult> =>
             cwd,
             files: candidateFiles,
             relative: options.relative,
+            workspacePackages: resolveWorkspacePackages(cwd),
         });
 
         renderer.start({ patterns });
@@ -191,4 +214,4 @@ export const runStaged = async (options: RunOptions = {}): Promise<RunResult> =>
 };
 
 export { ApplyEmptyCommitError, ConfigError, GetBackupStashError, GitError, RestoreOriginalStateError, StagedError, TaskError } from "./errors";
-export type { RunOptions, RunResult, StagedConfig } from "./types";
+export type { CommandTask, CustomTask, RunOptions, RunResult, StagedConfig } from "./types";

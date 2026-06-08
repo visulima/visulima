@@ -5,7 +5,7 @@ description: "Run linters on staged files using config from vis.config.ts"
 
 # vis staged
 
-Run a `lint-staged`-style pipeline against the files in the git index. Configuration lives in `vis.config.ts` (`staged.tasks`); this command applies it.
+Run a `lint-staged`-style pipeline against the files in the git index. Configuration lives in `vis.config.ts` under the `staged` key — a map of glob patterns to tasks; this command applies it.
 
 ## Usage
 
@@ -21,6 +21,63 @@ vis staged --verbose
 vis staged --no-stash
 vis staged --diff HEAD~1     # run against a different diff base
 ```
+
+## Task forms
+
+The `staged` config maps a glob pattern to a task. A task can be:
+
+```ts
+// vis.config.ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    staged: {
+        // a command string — the matched files are appended to the argv
+        "*.css": "stylelint --fix",
+
+        // an array runs serially
+        "*.ts": ["eslint --fix", "prettier --write"],
+
+        // a function receives the matched paths and returns command(s)
+        "*.md": (files) => `prettier --write ${files.join(" ")}`,
+
+        // a named side-effect task — no argv construction
+        "*.json": { title: "validate", task: (files) => validateAll(files) },
+
+        // run once per owning workspace package, cwd = that package dir
+        "packages/**/*.{ts,tsx}": { command: "eslint --fix", perPackage: true },
+
+        // pin a command to a fixed directory (files passed as absolute paths)
+        "schemas/*.json": { command: "pnpm run schema:check", cwd: "tools/schema" },
+    },
+});
+```
+
+### `perPackage` — run from each package directory
+
+`{ command, perPackage: true }` groups the pattern's matched files by the workspace
+package that owns them and runs the command **once per package**, with the working
+directory set to that package's directory and file paths made relative to it.
+
+Use it for tools that resolve their config or plugins from the nearest `package.json` —
+for example an ESLint shareable config that picks its plugin set from the current
+directory. Running such a tool from the workspace root would load the wrong plugins for
+package files; `perPackage` runs it from each package so the right config applies.
+
+Workspace packages are discovered from `pnpm-workspace.yaml` (falling back to
+`package.json#workspaces`). Files that sit under no workspace package collapse into a
+single run from the workspace root. When no workspace is defined, `perPackage` is a
+no-op and the command runs once from the root.
+
+### `cwd` — run from a fixed directory
+
+`{ command, cwd: "tools/schema" }` runs the command once from the given directory
+(resolved relative to the workspace root, or absolute). Matched files are passed as
+**absolute** paths so they resolve regardless of where the command runs. `cwd` is
+ignored when `perPackage` is set — that derives the directory per package instead.
+
+> Both `perPackage` and `cwd` also prepend the target directory's `node_modules/.bin`
+> to `PATH`, so bare binary names resolve from the package's own dependencies.
 
 ## Options
 

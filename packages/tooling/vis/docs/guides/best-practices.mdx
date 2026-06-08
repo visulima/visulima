@@ -295,8 +295,8 @@ echo '#!/bin/sh
 vis check --exit-code --format minimal || {
   echo "Dependency issues detected. Run vis check for details."
   exit 1
-}' > .vis-hooks/pre-commit
-chmod +x .vis-hooks/pre-commit
+}' > .vis/hooks/pre-commit
+chmod +x .vis/hooks/pre-commit
 ```
 
 ### Migrating from Husky

@@ -610,18 +610,18 @@ describe(migrateFromPrek, () => {
             );
 
             const logger = collectLogger();
-            const result = migrateFromPrek(root, ".vis-hooks", logger);
+            const result = migrateFromPrek(root, ".vis/hooks", logger);
 
             expect(result.isError).toBe(false);
             expect(result.message).toContain("Migration complete");
 
-            const preCommit = readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8");
-            const commitMsg = readFileSync(join(root, ".vis-hooks", "commit-msg"), "utf8");
+            const preCommit = readFileSync(join(root, ".vis/hooks", "pre-commit"), "utf8");
+            const commitMsg = readFileSync(join(root, ".vis/hooks", "commit-msg"), "utf8");
 
             expect(preCommit).toContain("exec vis hook run pre-commit \"$@\"");
             expect(commitMsg).toContain("exec vis hook run commit-msg \"$@\"");
 
-            const hookConfig = JSON.parse(readFileSync(join(root, ".vis-hooks", "config.json"), "utf8"));
+            const hookConfig = JSON.parse(readFileSync(join(root, ".vis/hooks", "config.json"), "utf8"));
 
             expect(hookConfig.stages["pre-commit"][0].entry).toBe("pnpm exec lint-staged");
             expect(hookConfig.stages["commit-msg"][0].entry).toBe("pnpm exec commitlint --edit");
@@ -655,10 +655,10 @@ describe(migrateFromPrek, () => {
             );
 
             const logger = collectLogger();
-            const result = migrateFromPrek(root, ".vis-hooks", logger);
+            const result = migrateFromPrek(root, ".vis/hooks", logger);
 
             expect(result.isError).toBe(false);
-            expect(existsSync(join(root, ".vis-hooks", "pre-commit"))).toBe(true);
+            expect(existsSync(join(root, ".vis/hooks", "pre-commit"))).toBe(true);
             expect(logger.warnings.some((w) => w.includes("black"))).toBe(true);
         } finally {
             cleanup();
@@ -682,12 +682,12 @@ describe(migrateFromPrek, () => {
 `,
             );
 
-            const result = migrateFromPrek(root, ".vis-hooks", noopLogger);
+            const result = migrateFromPrek(root, ".vis/hooks", noopLogger);
 
             expect(result.isError).toBe(false);
-            expect(readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8")).toContain("exec vis hook run pre-commit \"$@\"");
+            expect(readFileSync(join(root, ".vis/hooks", "pre-commit"), "utf8")).toContain("exec vis hook run pre-commit \"$@\"");
 
-            const hookConfig = JSON.parse(readFileSync(join(root, ".vis-hooks", "config.json"), "utf8"));
+            const hookConfig = JSON.parse(readFileSync(join(root, ".vis/hooks", "config.json"), "utf8"));
             const entries = hookConfig.stages["pre-commit"];
 
             expect(entries[0].builtin).toBe("trailing-whitespace");
@@ -717,7 +717,7 @@ describe(migrateFromPrek, () => {
 `,
             );
 
-            migrateFromPrek(root, ".vis-hooks", noopLogger);
+            migrateFromPrek(root, ".vis/hooks", noopLogger);
 
             const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 
@@ -753,7 +753,7 @@ describe(migrateFromPrek, () => {
 
             const logger = collectLogger();
 
-            migrateFromPrek(root, ".vis-hooks", logger);
+            migrateFromPrek(root, ".vis/hooks", logger);
 
             const pkg = JSON.parse(readFileSync(join(root, "package.json"), "utf8"));
 
@@ -871,7 +871,7 @@ describe(mergeAdditionalDependencies, () => {
         const { cleanup, root } = createTemporaryGitRepo();
 
         try {
-            const result = migrateFromPrek(root, ".vis-hooks", noopLogger);
+            const result = migrateFromPrek(root, ".vis/hooks", noopLogger);
 
             expect(result.isError).toBe(true);
             expect(result.message).toContain("No prek configuration found");
@@ -901,12 +901,12 @@ stages = ["pre-commit"]
 `,
             );
 
-            const result = migrateFromPrek(root, ".vis-hooks", noopLogger);
+            const result = migrateFromPrek(root, ".vis/hooks", noopLogger);
 
             expect(result.isError).toBe(false);
-            expect(readFileSync(join(root, ".vis-hooks", "pre-commit"), "utf8")).toContain("exec vis hook run pre-commit \"$@\"");
+            expect(readFileSync(join(root, ".vis/hooks", "pre-commit"), "utf8")).toContain("exec vis hook run pre-commit \"$@\"");
 
-            const hookConfig = JSON.parse(readFileSync(join(root, ".vis-hooks", "config.json"), "utf8"));
+            const hookConfig = JSON.parse(readFileSync(join(root, ".vis/hooks", "config.json"), "utf8"));
 
             expect(hookConfig.stages["pre-commit"][0].entry).toBe("pnpm exec lint-staged");
 
@@ -990,11 +990,11 @@ describe("migrateFromPrek --dry-run", () => {
             );
 
             const logger = collectLogger();
-            const result = migrateFromPrek(root, ".vis-hooks", logger, { dryRun: true });
+            const result = migrateFromPrek(root, ".vis/hooks", logger, { dryRun: true });
 
             expect(result.isError).toBe(false);
             expect(result.message).toContain("would migrate");
-            expect(existsSync(join(root, ".vis-hooks", "pre-commit"))).toBe(false);
+            expect(existsSync(join(root, ".vis/hooks", "pre-commit"))).toBe(false);
             expect(existsSync(join(root, ".pre-commit-config.yaml"))).toBe(true);
             expect(logger.messages.some((m) => m.includes("(would write)"))).toBe(true);
         } finally {

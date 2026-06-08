@@ -15,7 +15,7 @@ export interface VerificationIssue {
     tool: MigrationTool;
 }
 
-const HOOK_CANDIDATES = [".husky/pre-commit", ".vis-hooks/pre-commit", ".git/hooks/pre-commit"];
+const HOOK_CANDIDATES = [".husky/pre-commit", ".vis/hooks/pre-commit", ".git/hooks/pre-commit"];
 const SECRETLINT_CONFIG_FILES = [
     ".secretlintrc",
     ".secretlintrc.json",

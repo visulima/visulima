@@ -204,7 +204,7 @@ const rewriteScripts = (root: string, dryRun: boolean, logger: MigrateLogger, re
 };
 
 const rewriteHooks = (root: string, dryRun: boolean, logger: MigrateLogger, report: MigrationReport): void => {
-    const candidates = [".husky/pre-commit", ".vis-hooks/pre-commit", ".git/hooks/pre-commit"];
+    const candidates = [".husky/pre-commit", ".vis/hooks/pre-commit", ".git/hooks/pre-commit"];
 
     for (const rel of candidates) {
         const abs = join(root, rel);

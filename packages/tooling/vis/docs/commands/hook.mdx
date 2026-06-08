@@ -17,11 +17,13 @@ vis hook <action> [options]
 
 ### install
 
-Install git hooks by configuring `core.hooksPath` to point to your hooks directory:
+Install git hooks by configuring `core.hooksPath` to point to your hooks directory (`.vis/hooks` by default):
 
 ```bash
 vis hook install
 ```
+
+> **Migrating from `.vis-hooks`.** The hooks directory moved from `.vis-hooks` to `.vis/hooks`. `vis hook install` performs the move automatically: an existing `.vis-hooks` is renamed to `.vis/hooks` (your stage scripts and `config.json` come along) and `core.hooksPath` is re-pointed. Re-run `vis hook install` once after upgrading.
 
 ### uninstall
 
@@ -82,7 +84,7 @@ Local hooks with `language: system`, `language: script`, or `language: fail`, pl
 
 | prek feature                                                                                                                                            | migration behavior                                                                                                                                                                  |
 | ------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Local `system` / `script` / `fail` hooks                                                                                                                | routed through `.vis-hooks/.builtins/prek-runner.mjs`, which handles staged-file discovery, filters, and chunked argv dispatch                                                      |
+| Local `system` / `script` / `fail` hooks                                                                                                                | routed through `.vis/hooks/.builtins/prek-runner.mjs`, which handles staged-file discovery, filters, and chunked argv dispatch                                                      |
 | Remote hooks from `pre-commit/pre-commit-hooks` — `trailing-whitespace`, `end-of-file-fixer`, `check-merge-conflict`, `check-json`, `mixed-line-ending` | translated to bundled builtins (no prek binary required at runtime)                                                                                                                 |
 | Other remote `repo: https://...` entries                                                                                                                | skipped with a warning                                                                                                                                                              |
 | Local hooks with toolchain-managed languages (`python`, `node`, `golang`, `rust`, `ruby`, `docker`, `pygrep`, etc.)                                     | skipped with a warning                                                                                                                                                              |
@@ -100,20 +102,20 @@ Local hooks with `language: system`, `language: script`, or `language: fail`, pl
 
 #### The bundled runner
 
-When a migration emits a hook that needs staged-file discovery or a built-in, the migrator writes `.vis-hooks/.builtins/prek-runner.mjs` — a small Node helper that:
+When a migration emits a hook that needs staged-file discovery or a built-in, the migrator writes `.vis/hooks/.builtins/prek-runner.mjs` — a small Node helper that:
 
 - reads staged files from `git diff --cached --name-only --diff-filter=ACM -z` (null-separated, safe for names with spaces/newlines)
 - applies `--files`/`--exclude` regex and `--types`/`--types-or`/`--exclude-types` filters in JavaScript (pre-commit semantics)
 - chunks the file list to a conservative 32 KiB argv budget to stay under ARG_MAX on all platforms
 - either dispatches to a named `--builtin` or execs the hook's entry with filtered files as trailing argv
 
-All user-supplied values (regex patterns, filenames, hook args) travel via `process.argv`, never as interpolated shell strings. Commit `.vis-hooks/.builtins/` alongside the rest of the hooks directory so teammates get the same behavior.
+All user-supplied values (regex patterns, filenames, hook args) travel via `process.argv`, never as interpolated shell strings. Commit `.vis/hooks/.builtins/` alongside the rest of the hooks directory so teammates get the same behavior.
 
 ## Options
 
 | Option          | Default      | Applies to | Description                                                         |
 | --------------- | ------------ | ---------- | ------------------------------------------------------------------- |
-| `--hooks-dir`   | `.vis-hooks` | all        | Custom hooks directory                                              |
+| `--hooks-dir`   | `.vis/hooks` | all        | Custom hooks directory                                              |
 | `--dry-run`     | `false`      | `migrate`  | Preview what would be written without touching disk                 |
 | `--all-files`   | `false`      | `run`      | Run against every tracked file (sets `VIS_HOOK_ALL_FILES=1`)        |
 | `--from-ref`    | —            | `run`      | Run against files changed since this ref (sets `VIS_HOOK_FROM_REF`) |
@@ -157,9 +159,9 @@ After installing, create executable scripts in your hooks directory:
 vis hook install
 
 echo '#!/bin/sh
-pnpm run lint-staged' > .vis-hooks/pre-commit
+pnpm run lint-staged' > .vis/hooks/pre-commit
 
-chmod +x .vis-hooks/pre-commit
+chmod +x .vis/hooks/pre-commit
 ```
 
 Commit the hooks directory to version control so all team members use the same hooks.

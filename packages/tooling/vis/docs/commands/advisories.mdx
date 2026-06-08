@@ -9,11 +9,13 @@ description: "Manage the local OSV advisory cache that powers offline vulnerabil
 
 ## Sub-commands
 
-| Command                 | Description                                                                            |
-| ----------------------- | -------------------------------------------------------------------------------------- |
-| `vis advisories sync`   | Download and ingest one or more OSV ecosystem dumps.                                   |
-| `vis advisories status` | Print the DB summary: path, schema version, per-ecosystem row counts, last sync, ETag. |
-| `vis advisories prune`  | Delete the local DB.                                                                   |
+| Command                       | Description                                                                            |
+| ----------------------------- | -------------------------------------------------------------------------------------- |
+| `vis advisories sync`         | Download and ingest one or more OSV ecosystem dumps.                                   |
+| `vis advisories status`       | Print the DB summary: path, schema version, per-ecosystem row counts, last sync, ETag. |
+| `vis advisories prune`        | Delete the local DB.                                                                   |
+| `vis advisories bloom sync`   | Fetch and verify the `endevco/osv-bloom` MAL-\* prefilter into the local cache.        |
+| `vis advisories bloom status` | Print the local osv-bloom cache freshness (built-at, size, m/k params, set digest).    |
 
 ## `vis advisories sync`
 
@@ -84,6 +86,37 @@ Deletes the DB. The next `vis audit --offline` will fail until you re-sync.
 vis advisories prune          # confirm and delete
 vis advisories prune --force  # delete without confirmation
 ```
+
+## `vis advisories bloom`
+
+The `bloom` sub-commands manage the [`endevco/osv-bloom`](https://github.com/endevco/osv-bloom) MAL-\* bloom prefilter — a compact probabilistic filter that lets `vis audit` cheaply skip packages with no malicious-advisory match before hitting the full DB. Cached under `<cache>/vis/osv-bloom/`.
+
+### `vis advisories bloom sync`
+
+```bash
+vis advisories bloom sync                                      # fetch from the default upstream
+vis advisories bloom sync --force                             # re-download even when the set digest matches
+vis advisories bloom sync --source https://bloom.example.com  # use an internal mirror (must be in allowedHosts)
+```
+
+| Option              | Default                  | Description                                                                 |
+| ------------------- | ------------------------ | --------------------------------------------------------------------------- |
+| `--force`           | `false`                  | Re-download and re-verify even when the upstream set digest is unchanged    |
+| `--source <url>`    | osv-bloom upstream       | Override the bloom source URL. Must be HTTPS and resolve to an allowed host |
+| `--cache-dir <dir>` | `<cache>/vis/osv-bloom/` | Override the bloom cache directory                                          |
+| `--format <fmt>`    | `table`                  | `table` (default) or `json`                                                 |
+
+### `vis advisories bloom status`
+
+```bash
+vis advisories bloom status
+vis advisories bloom status --format json
+```
+
+| Option              | Default                  | Description                        |
+| ------------------- | ------------------------ | ---------------------------------- |
+| `--cache-dir <dir>` | `<cache>/vis/osv-bloom/` | Override the bloom cache directory |
+| `--format <fmt>`    | `table`                  | `table` (default) or `json`        |
 
 ## Configuration
 

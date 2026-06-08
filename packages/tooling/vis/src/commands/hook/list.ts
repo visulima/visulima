@@ -26,7 +26,7 @@ interface ListResult {
 const HOOK_HEADER_RE = /^# ([^:\s]\S*)(?::\s+(.+))?$/;
 
 /**
- * Parse a `.vis-hooks/{stage}` script into `# id: name` headers emitted by the
+ * Parse a `.vis/hooks/{stage}` script into `# id: name` headers emitted by the
  * migrator. Scripts authored by hand (no headers) surface as a single
  * "(custom)" block.
  */

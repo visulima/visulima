@@ -19,6 +19,17 @@ Manage shared sidecar services — Postgres, mock servers, devservers — that s
 | `vis service restart <id>` | Stop + start in one call                                          |
 | `vis service logs <id>`    | Print captured stdout/stderr; `-f`/`--follow` to tail             |
 
+## Options
+
+| Option            | Subcommand(s)                | Default | Description                                      |
+| ----------------- | ---------------------------- | ------- | ------------------------------------------------ |
+| `--timeout <ms>`  | `start`, `status`, `restart` | —       | Readiness probe timeout in milliseconds          |
+| `--no-readiness`  | `start`, `restart`           | `false` | Skip the readiness probe                         |
+| `--all`           | `stop`                       | `false` | Stop every service registered for this workspace |
+| `--grace-ms <ms>` | `stop`, `restart`            | —       | Override the SIGTERM→SIGKILL grace period (ms)   |
+| `--follow`, `-f`  | `logs`                       | `false` | Follow the log file (like `tail -f`)             |
+| `--format <fmt>`  | `list`                       | `table` | Output format: `table` or `json`                 |
+
 ## Eligibility — declaring a service
 
 A target becomes registry-eligible when it carries a `service` block in `vis.task.ts`. Bare `preset: "server"` keeps today's behaviour (in-run-only persistent task).

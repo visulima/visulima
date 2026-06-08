@@ -24,12 +24,16 @@ vis dlx typescript@5.5.4 tsc --version
 
 # Multiple packages with shell mode
 vis dlx -p cowsay -p lolcatjs -c 'echo hi | cowsay | lolcatjs'
+
+# Hardened: pre-install, then resolve offline (no registry fetch on dlx)
+vis install && vis dlx --offline typescript tsc --version
 ```
 
 ## Options
 
-| Option         | Alias | Default | Description                                 |
-| -------------- | ----- | ------- | ------------------------------------------- |
-| `--package`    | `-p`  |         | Additional packages to install (repeatable) |
-| `--shell-mode` | `-c`  | `false` | Execute within shell environment            |
-| `--silent`     | `-s`  | `false` | Suppress output except command results      |
+| Option         | Alias | Default | Description                                                                                                                        |
+| -------------- | ----- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `--package`    | `-p`  |         | Additional packages to install (repeatable)                                                                                        |
+| `--shell-mode` | `-c`  | `false` | Execute within shell environment                                                                                                   |
+| `--silent`     | `-s`  | `false` | Suppress output except command results                                                                                             |
+| `--offline`    |       | `false` | Resolve from local store only — fail rather than fetch from the registry. Pair with `vis install` for hardened npx-style workflows |
