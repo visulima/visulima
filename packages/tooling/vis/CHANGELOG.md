@@ -1,3 +1,21 @@
+## @visulima/vis [1.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.33...@visulima/vis@1.0.0-alpha.34) (2026-06-08)
+
+### Features
+
+* **vis:** clean --empty-packages and staged per-package/cwd tasks ([cdba002](https://github.com/visulima/visulima/commit/cdba002af4714e3e74c1f832919855d0dd7f3a72)), closes [package.json#workspaces](https://github.com/visulima/package.json/issues/workspaces)
+
+### Documentation
+
+* **vis:** correct and complete command reference ([b8c6c11](https://github.com/visulima/visulima/commit/b8c6c11e289c509a7d479e2371d8df63b710ce9b))
+
+### Miscellaneous Chores
+
+* **vis:** merge clean/staged/hooks/docs feature branch ([f61821d](https://github.com/visulima/visulima/commit/f61821d9fb0e7f36769025edaa1d73993bf91c54))
+
+### Code Refactoring
+
+* **vis:** move git hooks dir from .vis-hooks to .vis/hooks ([b3cc45b](https://github.com/visulima/visulima/commit/b3cc45b9dd82bea9ab60fcd387a6c95833555a39))
+
 ## @visulima/vis [1.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.32...@visulima/vis@1.0.0-alpha.33) (2026-06-07)
 
 ### Features
