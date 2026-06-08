@@ -60,7 +60,7 @@ describe(hookScript, () => {
     it("should compute correct depth for simple dir", () => {
         expect.assertions(1);
 
-        const script = hookScript(".vis-hooks");
+        const script = hookScript(".husky");
 
         expect(countDirnameCalls(script)).toBe(3);
     });
@@ -68,7 +68,7 @@ describe(hookScript, () => {
     it("should compute correct depth for nested dir", () => {
         expect.assertions(1);
 
-        const script = hookScript(".config/husky");
+        const script = hookScript(".vis/hooks");
 
         expect(countDirnameCalls(script)).toBe(4);
     });
@@ -96,7 +96,7 @@ describe(hookScript, () => {
     it("should start with shebang", () => {
         expect.assertions(1);
 
-        const script = hookScript(".vis-hooks");
+        const script = hookScript(".vis/hooks");
 
         expect(script.startsWith("#!/usr/bin/env sh")).toBe(true);
     });
@@ -104,7 +104,7 @@ describe(hookScript, () => {
     it("should include VIS_GIT_HOOKS environment variable checks", () => {
         expect.assertions(1);
 
-        const script = hookScript(".vis-hooks");
+        const script = hookScript(".vis/hooks");
 
         expect(script).toContain("VIS_GIT_HOOKS");
     });
@@ -117,19 +117,19 @@ describe(installHooks, () => {
         const { cleanup, root } = createTemporaryGitRepo();
 
         try {
-            const result = installHooks(".vis-hooks");
+            const result = installHooks(".vis/hooks");
 
             expect(result.isError).toBe(false);
             expect(result.message).toBe("");
 
             // Internal dispatchers exist
-            expect(existsSync(join(root, ".vis-hooks", "_", "pre-commit"))).toBe(true);
-            expect(existsSync(join(root, ".vis-hooks", "_", "commit-msg"))).toBe(true);
-            expect(existsSync(join(root, ".vis-hooks", "_", "h"))).toBe(true);
-            expect(existsSync(join(root, ".vis-hooks", "_", ".gitignore"))).toBe(true);
+            expect(existsSync(join(root, ".vis/hooks", "_", "pre-commit"))).toBe(true);
+            expect(existsSync(join(root, ".vis/hooks", "_", "commit-msg"))).toBe(true);
+            expect(existsSync(join(root, ".vis/hooks", "_", "h"))).toBe(true);
+            expect(existsSync(join(root, ".vis/hooks", "_", ".gitignore"))).toBe(true);
 
             // User hook scripts are NOT created
-            expect(existsSync(join(root, ".vis-hooks", "pre-commit"))).toBe(false);
+            expect(existsSync(join(root, ".vis/hooks", "pre-commit"))).toBe(false);
         } finally {
             cleanup();
         }
@@ -141,11 +141,38 @@ describe(installHooks, () => {
         const { cleanup } = createTemporaryGitRepo();
 
         try {
-            installHooks(".vis-hooks");
+            installHooks(".vis/hooks");
 
             const hooksPath = execSync("git config --local core.hooksPath", { encoding: "utf8" }).trim();
 
-            expect(hooksPath).toBe(".vis-hooks/_");
+            expect(hooksPath).toBe(".vis/hooks/_");
+        } finally {
+            cleanup();
+        }
+    });
+
+    it.skipIf(process.platform === "win32")("migrates a legacy .vis-hooks directory to .vis/hooks", () => {
+        expect.assertions(5);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+
+        try {
+            // Simulate a pre-1.0 install: legacy dir with a user script + a stale hooksPath.
+            mkdirSync(join(root, ".vis-hooks"), { recursive: true });
+            writeFileSync(join(root, ".vis-hooks", "pre-commit"), "#!/usr/bin/env sh\necho hi\n");
+            execSync("git config core.hooksPath .vis-hooks/_", { stdio: "ignore" });
+
+            const result = installHooks();
+
+            expect(result.isError).toBe(false);
+            expect(result.message).toContain("migrated");
+            // The user script moved across and the legacy dir is gone.
+            expect(existsSync(join(root, ".vis/hooks", "pre-commit"))).toBe(true);
+            expect(existsSync(join(root, ".vis-hooks"))).toBe(false);
+
+            const hooksPath = execSync("git config --local core.hooksPath", { encoding: "utf8" }).trim();
+
+            expect(hooksPath).toBe(".vis/hooks/_");
         } finally {
             cleanup();
         }
@@ -192,7 +219,7 @@ describe(installHooks, () => {
         try {
             execSync("git config core.hooksPath .other-hooks", { stdio: "ignore" });
 
-            const result = installHooks(".vis-hooks");
+            const result = installHooks(".vis/hooks");
 
             expect(result.isError).toBe(false);
             expect(result.message).toContain("already set");
@@ -225,16 +252,16 @@ describe(uninstallHooks, () => {
 
         try {
             // Install first
-            installHooks(".vis-hooks");
+            installHooks(".vis/hooks");
 
-            expect(existsSync(join(root, ".vis-hooks", "_"))).toBe(true);
+            expect(existsSync(join(root, ".vis/hooks", "_"))).toBe(true);
 
             // Uninstall
-            const result = uninstallHooks(".vis-hooks");
+            const result = uninstallHooks(".vis/hooks");
 
             expect(result.isError).toBe(false);
             expect(result.message).toBe("");
-            expect(existsSync(join(root, ".vis-hooks", "_"))).toBe(false);
+            expect(existsSync(join(root, ".vis/hooks", "_"))).toBe(false);
 
             // core.hooksPath should be unset
 
@@ -252,7 +279,7 @@ describe(uninstallHooks, () => {
         const { cleanup } = createTemporaryGitRepo();
 
         try {
-            const result = uninstallHooks(".vis-hooks");
+            const result = uninstallHooks(".vis/hooks");
 
             expect(result.isError).toBe(false);
             expect(result.message).toContain("No custom hooks path");

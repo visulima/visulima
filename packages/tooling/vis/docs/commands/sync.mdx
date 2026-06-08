@@ -141,12 +141,16 @@ Fields missing from root are skipped — sync never deletes from a package. Fiel
 
 ## Options
 
-| Option                  | Default                  | Description                                                                                |
-| ----------------------- | ------------------------ | ------------------------------------------------------------------------------------------ |
-| `--out`                 | `<workspace>/CODEOWNERS` | Output file path (codeowners only)                                                         |
-| `--check`               | `false`                  | Exit non-zero if drift is found (no writes)                                                |
-| `--write-guard`         | `false`                  | Also emit GitHub + GitLab Write Guard CI for `restricted: true` projects (codeowners only) |
-| `--fields`              |                          | Comma-separated field list to mirror (package-json-fields only). Repeatable.               |
-| `--ignore-package-name` |                          | Glob of package names to skip (package-json-fields only). Repeatable.                      |
-| `--format`              | `human`                  | Output format for package-json-fields: `human` or `json`.                                  |
-| `--quiet`               | `false`                  | Suppress per-package log lines; print only the summary (package-json-fields only).         |
+| Option                   | Default                  | Description                                                                                                                |
+| ------------------------ | ------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| `--out`                  | `<workspace>/CODEOWNERS` | Output file path (codeowners only)                                                                                         |
+| `--check`                | `false`                  | Exit non-zero if drift is found (no writes)                                                                                |
+| `--from`                 | `project-json`           | Input sources for codeowners (comma-separated/repeatable): `project-json`, `nested-codeowners`, `package-json-maintainers` |
+| `--nested-includes`      | `**/CODEOWNERS`          | Glob (repeatable) used to discover nested CODEOWNERS files (codeowners only)                                               |
+| `--regeneration-command` |                          | Header instruction shown to reviewers, replacing the default note (codeowners only)                                        |
+| `--preserve-block`       | `false`                  | Splice the generated block between markers in an existing file instead of overwriting (codeowners only)                    |
+| `--write-guard`          | `false`                  | Also emit GitHub + GitLab Write Guard CI for `restricted: true` projects (codeowners only)                                 |
+| `--fields`               |                          | Comma-separated field list to mirror (package-json-fields only). Repeatable.                                               |
+| `--ignore-package-name`  |                          | Glob of package names to skip (package-json-fields only). Repeatable.                                                      |
+| `--format`               | `human`                  | Output format for package-json-fields: `human` or `json`.                                                                  |
+| `--quiet`                | `false`                  | Suppress per-package log lines; print only the summary (package-json-fields only).                                         |

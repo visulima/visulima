@@ -35,6 +35,7 @@ vis list --targets --format=json         # per-target rows as JSON
 | `--pretty`        | `false` | Pretty-print with 2-space indent (only meaningful with `--format=json` in `--deps` mode)            |
 | `--query`         |         | Filter projects by query (see below)                                                                |
 | `--targets`       | `false` | Show per-target rows (type, cache, description)                                                     |
+| `--inferred`      | `false` | Filter target rows to only inferred targets (implies `--targets`)                                   |
 | `--deps`          | `false` | Render a dep-instance view (table by default; use `--format=ndjson`/`json` for jq-friendly streams) |
 | `--dep-type`      |         | With `--deps`: restrict to specific dep blocks. Repeatable.                                         |
 | `--internal-only` | `false` | With `--deps`: only show internal/workspace deps                                                    |

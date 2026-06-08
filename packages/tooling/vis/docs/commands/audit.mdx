@@ -62,14 +62,14 @@ vis audit --policies none                   # skip the policy engine entirely
 
 ### Filtering and scope
 
-| Option               | Default | Description                                                                                                             |
-| -------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| `--severity <level>` | `low`   | Minimum severity to report: `low`, `medium`, `high`, `critical`.                                                        |
-| `--prod-only`        | `false` | Skip devDependencies — scan production graph only.                                                                      |
-| `--usage`            | `false` | Reachability filter — only report packages that are statically imported.                                                |
-| `--no-usage`         | `false` | Disable the reachability filter even if enabled in config.                                                              |
-| `--ecosystem <list>` | `npm`   | Comma-separated OSV ecosystems. Only `npm` is wired today; the flag is stable so future ecosystems are purely additive. |
-| `--show-accepted`    | `false` | Include findings already on the workspace's accepted-risk list.                                                         |
+| Option               | Default | Description                                                                                                                                                                   |
+| -------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--severity <level>` | `low`   | Minimum severity to report: `low`, `medium`, `high`, `critical`.                                                                                                              |
+| `--prod-only`        | `false` | Skip devDependencies — scan production graph only.                                                                                                                            |
+| `--usage`            | `false` | Reachability filter — only report packages that are statically imported.                                                                                                      |
+| `--no-usage`         | `false` | Disable the reachability filter even if enabled in config.                                                                                                                    |
+| `--ecosystem <list>` | `npm`   | Comma-separated OSV ecosystems: `npm`, `pypi`, `crates.io` (or `cargo`), `maven`, `go`, `rubygems`. Non-npm ecosystems require `--offline` (the online OSV path is npm-only). |
+| `--show-accepted`    | `false` | Include findings already on the workspace's accepted-risk list.                                                                                                               |
 
 ### Output formats
 
@@ -124,6 +124,12 @@ Run [`vis advisories sync`](./advisories.mdx) to populate the cache.
 | `--backend <name>` | `auto`  | Vulnerability scanner backend. `auto` delegates to `aube audit` when aube is the active installer; `aube` forces delegation (errors if `aube` is not on `PATH`); `vis` always uses the built-in OSV scanner (plus any configured providers — Socket.dev, deps.dev). |
 
 Resolution: CLI `--backend` → `VIS_AUDIT_BACKEND` env → `security.audit.backend` in `vis.config.ts` → `auto`.
+
+### AI explanations
+
+| Option                | Default | Description                                                                                                                                                                                                                                         |
+| --------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--explain [id\|idx]` | —       | Add a plain-English AI explanation to findings. Bare flag explains all findings at/above `--severity`; pass a finding index (e.g. `2`) or a CVE/GHSA id to explain just one. Auto-detects an installed AI CLI; mutually exclusive with `--offline`. |
 
 Vis-only features (`--report`, `--fix-transitive`, `--usage`, `--policies`, `--format sarif|csaf|cyclonedx-vex|gitlab|junit`, `--ecosystem` beyond `npm`) print a warning and are dropped when delegating; pass `--backend vis` if you need them.
 

@@ -121,7 +121,7 @@ vis migrate gitleaks --dry-run
 - The baseline JSON is converted to vis's allowlist shape and written into `vis.config.ts` (`secrets.allowlist`).
 - `.gitleaksignore` fingerprints (`file:rule:line`) are translated to allowlist entries.
 - Scripts matching `\bgitleaks\b` are rewritten to `vis secrets` invocations (with the original line preserved as a manual step when the mapping is ambiguous).
-- Pre-commit hooks (`.husky/pre-commit`, `.vis-hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `gitleaks` are rewritten to call `vis secrets`.
+- Pre-commit hooks (`.husky/pre-commit`, `.vis/hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `gitleaks` are rewritten to call `vis secrets`.
 
 **Routed to manual steps:**
 
@@ -213,7 +213,7 @@ vis migrate syncpack --dry-run
 - `versionGroups` (non-banned) and `semverGroups` — `pinVersion`, `snapTo`, `policy: "sameRange"`, and the broader DSL surface are deferred to [issue #622](https://github.com/visulima/visulima/issues/622).
 - `dependencyTypes`, `specifierTypes`, `filter` — no direct vis equivalent today; reviewer is prompted to recreate them with `policy.*` filters.
 - `source` (workspace globs) — vis derives these from `pnpm-workspace.yaml` / `package.json#workspaces`; reviewer is asked to verify they match.
-- Pre-commit hooks (`.husky/pre-commit`, `.vis-hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `syncpack` are flagged but **not auto-rewritten** — `syncpack lint` ≈ `vis deps` and `syncpack format` ≈ `vis sort-package-json`, but `fix-mismatches` / `set-semver-ranges` have no 1:1 mapping. The reviewer makes the call.
+- Pre-commit hooks (`.husky/pre-commit`, `.vis/hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `syncpack` are flagged but **not auto-rewritten** — `syncpack lint` ≈ `vis deps` and `syncpack format` ≈ `vis sort-package-json`, but `fix-mismatches` / `set-semver-ranges` have no 1:1 mapping. The reviewer makes the call.
 - CI workflow files (`.github/workflows/*.yml`, `.gitlab-ci.yml`, `.circleci/config.yml`, `.woodpecker.yml`, `.drone.yml`) referencing `syncpack` are flagged with a manual step — YAML rewriting is too brittle to automate.
 
 **Superseded (no migration needed):**

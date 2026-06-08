@@ -1,4 +1,5 @@
 import { ConfigError } from "./errors";
+import { isCommandTask } from "./tasks/build";
 import type { CustomTask, RunOptions, StagedConfig, StagedTask } from "./types";
 
 /**
@@ -75,11 +76,31 @@ const validateTask = (pattern: string, value: unknown): void => {
         return;
     }
 
+    // Reject the ambiguous `{ command, task }` combo up front — otherwise the
+    // command-task guard (which excludes objects carrying a `task` fn) would
+    // silently treat it as a custom task and ignore `command`.
+    if (
+        typeof value === "object"
+        && value !== null
+        && typeof (value as { command?: unknown }).command === "string"
+        && typeof (value as { task?: unknown }).task === "function"
+    ) {
+        throw new ConfigError(`Task for "${pattern}" sets both \`command\` and \`task\` — use one or the other.`);
+    }
+
+    if (isCommandTask(value)) {
+        if (value.command.trim() === "") {
+            throw new ConfigError(`Command task for "${pattern}" has an empty \`command\`.`);
+        }
+
+        return;
+    }
+
     if (isCustomTask(value)) {
         return;
     }
 
-    throw new ConfigError(`Invalid task for "${pattern}" — expected string, string[], function, or { title, task } object.`);
+    throw new ConfigError(`Invalid task for "${pattern}" — expected string, string[], function, { command, … }, or { title, task } object.`);
 };
 
 const isCustomTask = (value: unknown): value is CustomTask =>

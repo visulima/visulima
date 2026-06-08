@@ -70,7 +70,18 @@ pub fn clean_workspace(root: String, remove_lockfile: bool) -> napi::Result<Clea
         return Err(Error::new(Status::InvalidArg, format!("Directory does not exist: {root}")));
     }
 
-    let node_modules_dirs = find_node_modules(&root_path);
+    let mut node_modules_dirs = find_node_modules(&root_path);
+
+    // Remove the workspace root's own `node_modules` last. Package
+    // node_modules symlink into the root store (pnpm's `.pnpm`), and the
+    // running `vis` process resolves its own binary + native addon from the
+    // root `node_modules` — clearing it before the package dirs risks pulling
+    // those out from under an in-flight clean. `sort_by_key` is stable, so the
+    // relative order of the package node_modules is preserved; only the root
+    // entry (key `true`) is pushed to the end.
+    let root_node_modules = root_path.join("node_modules");
+    node_modules_dirs.sort_by_key(|dir| *dir == root_node_modules);
+
     let mut result = CleanResult { removed: Vec::new(), errors: Vec::new(), lockfiles_removed: Vec::new() };
 
     for dir in &node_modules_dirs {

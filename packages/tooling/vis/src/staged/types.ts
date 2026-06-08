@@ -18,17 +18,42 @@ export interface CustomTask {
 }
 
 /**
- * A task value as authored by the user. Command strings are split into
- * argv and invoked with the matched file paths appended. Arrays run
- * serially. Functions receive the matched paths and return further
- * task values (possibly async). `{ title, task }` objects run `task`
- * directly with no argv construction.
+ * Object form of a command task. Unlike a bare command string it carries
+ * execution options:
+ *
+ * - `perPackage` runs the command once per workspace package that owns the
+ *   matched files, with `cwd` set to that package's directory and file paths
+ *   made relative to it. Use it for tools that resolve their config or
+ *   plugins from the nearest `package.json` — e.g. eslint with a
+ *   cwd-sensitive shareable config. Files that sit under no workspace
+ *   package fall back to a single run from the workspace root.
+ * - `cwd` pins the command to a fixed directory (relative to the workspace
+ *   root, or absolute) and passes the matched files as absolute paths so
+ *   they resolve regardless of where the command runs. Ignored when
+ *   `perPackage` is set — that derives the cwd per package instead.
+ *
+ * A command task is distinguished from {@link CustomTask} by carrying a
+ * `command` string and no `task` function.
  */
-export type StagedTask = CustomTask | StagedTaskFunction | ReadonlyArray<CustomTask | StagedTaskFunction | string> | string | ReadonlyArray<string>;
+export interface CommandTask {
+    readonly command: string;
+    readonly cwd?: string;
+    readonly perPackage?: boolean;
+}
+
+/**
+ * A task value as authored by the user. Command strings are split into
+ * argv and invoked with the matched file paths appended. `{ command, … }`
+ * objects do the same with per-task execution options (cwd / perPackage).
+ * Arrays run serially. Functions receive the matched paths and return
+ * further task values (possibly async). `{ title, task }` objects run
+ * `task` directly with no argv construction.
+ */
+export type StagedTask = CommandTask | CustomTask | StagedTaskFunction | string | ReadonlyArray<CommandTask | CustomTask | StagedTaskFunction | string>;
 
 export type StagedTaskFunction = (files: string[]) => Promise<StagedTaskResult> | StagedTaskResult;
 
-export type StagedTaskResult = CustomTask | ReadonlyArray<CustomTask | string> | string | ReadonlyArray<string>;
+export type StagedTaskResult = CommandTask | CustomTask | string | ReadonlyArray<CommandTask | CustomTask | string>;
 
 /**
  * Config object mapping glob patterns (basename or path-style) to tasks.
@@ -114,6 +139,8 @@ export interface RunOptions {
 export interface CommandDescriptor {
     /** Resolved command template; absent for custom tasks. */
     readonly command?: string;
+    /** Working directory override for this command; falls back to the run-level cwd when absent. Set by per-package fan-out and fixed-cwd command tasks. */
+    readonly cwd?: string;
     /** Matched files (absolute or relative, per `relative` option). */
     readonly files: ReadonlyArray<string>;
     /** A stable id for renderer lookups. */

@@ -5,7 +5,7 @@
  * `(files, args, logger) => number`, then add an entry below. The map
  * key is the public hook id (matches the upstream pre-commit id where
  * one exists) and is referenced from `HookEntry.builtin` in
- * `.vis-hooks/config.json` as well as from
+ * `.vis/hooks/config.json` as well as from
  * `prek.ts:REMOTE_HOOK_BUILTIN_MAP`.
  */
 
