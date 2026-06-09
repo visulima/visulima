@@ -79,6 +79,12 @@ const run: Command = {
             type: String,
         },
         {
+            description:
+                "Override how the requested target is hashed for this run: declared (hash listed inputs) or trace (hash the files the task actually reads). Overrides per-target hashMode config for the directly-run target.",
+            name: "hash-mode",
+            type: String,
+        },
+        {
             defaultValue: false,
             description: "Show what would run without executing",
             name: "dry-run",
@@ -230,6 +236,7 @@ export type RunOptions = CreateOptions<{
     "fail-fast": boolean | undefined;
     "fail-on-retry": boolean | undefined;
     flaky: boolean | undefined;
+    "hash-mode": string | undefined;
     "last-details": boolean | undefined;
     log: string | undefined;
     "output-style": string | undefined;
