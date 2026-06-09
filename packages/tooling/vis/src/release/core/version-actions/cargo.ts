@@ -78,6 +78,7 @@ import { dirname, join } from "node:path";
 import { VisReleaseError } from "../../errors";
 import type { VisReleaseConfig, WorkspacePackage } from "../../types";
 import type { PackageManagerAdapter, PublishResult } from "../package-managers/interface";
+import { resolveAuthMode } from "./auth";
 import { safeFetchVersionMetadata } from "./fetch";
 import type { PublishContext } from "./interface";
 import { VersionActions } from "./interface";
@@ -251,21 +252,8 @@ const fetchCratesIoVersion = async (crateName: string, httpProxy?: string): Prom
  *   - No OIDC env + no static token → returns `false`; the caller's
  *     AUTH_MISSING gate will trigger.
  */
-const shouldUseTrustedPublishing = (env: NodeJS.ProcessEnv, workspaceConfig?: VisReleaseConfig): boolean => {
-    const hasOidc = Boolean(env["ACTIONS_ID_TOKEN_REQUEST_URL"]);
-    const hasStatic = Boolean(env["CARGO_REGISTRY_TOKEN"]);
-    const preferStatic = workspaceConfig?.publish?.preferStaticToken === true;
-
-    if (!hasOidc) {
-        return false;
-    }
-
-    if (preferStatic && hasStatic) {
-        return false;
-    }
-
-    return true;
-};
+const shouldUseTrustedPublishing = (env: NodeJS.ProcessEnv, workspaceConfig?: VisReleaseConfig): boolean =>
+    resolveAuthMode({ env, staticTokenVar: "CARGO_REGISTRY_TOKEN", workspaceConfig }) === "oidc";
 
 /**
  * Enumerate the files that `cargo publish` will include in the .crate.

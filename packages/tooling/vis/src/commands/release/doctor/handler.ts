@@ -873,40 +873,11 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         //    package's own versionActions so cargo/python/maven/etc.
         //    contribute, NOT just npm.
         //
-        //    The factory is inlined to avoid a circular import (orchestrator
-        //    owns the canonical dispatch; importing it from the doctor
-        //    pulls a heavy graph in here too).
+        //    The factory lives in version-actions/registry.ts — the single
+        //    canonical dispatch shared with the orchestrator and resolver.
         try {
             const { resolveVersionActionsId } = await import("../../../release/core/workspace");
-            const { CargoVersionActions } = await import("../../../release/core/version-actions/cargo");
-            const { ContainerActions } = await import("../../../release/core/version-actions/container");
-            const { MavenVersionActions } = await import("../../../release/core/version-actions/maven");
-            const { NativeAddonVersionActions } = await import("../../../release/core/version-actions/native-addon");
-            const { NpmVersionActions } = await import("../../../release/core/version-actions/npm");
-            const { PrivateVersionActions } = await import("../../../release/core/version-actions/private");
-            const { PythonVersionActions } = await import("../../../release/core/version-actions/python");
-            const { ShellPublishActions } = await import("../../../release/core/version-actions/shell");
-
-            const factory = (id: string) => {
-                switch (id) {
-                    case "cargo": { return new CargoVersionActions();
-                    }
-                    case "container": { return new ContainerActions();
-                    }
-                    case "maven": { return new MavenVersionActions();
-                    }
-                    case "native-addon": { return new NativeAddonVersionActions();
-                    }
-                    case "private": { return new PrivateVersionActions();
-                    }
-                    case "python": { return new PythonVersionActions();
-                    }
-                    case "shell": { return new ShellPublishActions();
-                    }
-                    default: { return new NpmVersionActions();
-                    }
-                }
-            };
+            const { createVersionActions: factory } = await import("../../../release/core/version-actions/registry");
 
             for (const pkg of ctx.packages) {
                 const perPkg = ctx.perPackageConfig.get(pkg.name);
@@ -935,6 +906,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
                         pm: typeof ctx.pm;
                     }) => Promise<string | undefined>;
 
+                    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- needed for tsc: the base VersionActions signature rejects the extra `perPackageConfig` (excess-property check); the rule's bivariance view sees the cast as identity and false-positives.
                     published = await (actions.readPublishedVersion as ExtendedReadPublishedVersion).call(
                         actions,
                         { perPackageConfig: perPkg, pkg, pm: ctx.pm },

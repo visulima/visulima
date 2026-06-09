@@ -434,3 +434,94 @@ describe("orchestrator: cross-runner notify/walk dedupe via staged.json", () => 
         expect(walkWarnings).toEqual([]);
     });
 });
+
+/**
+ * H1 regression: when a package's publish throws, its dependents must NOT be
+ * published — otherwise a dependent ships with a `workspace:`-rewritten range
+ * pointing at a version that never reached the registry, leaving consumers
+ * with an uninstallable tree. The publish loop runs in topological order, so
+ * the failed dependency is recorded before its dependents are reached.
+ */
+const setupDependencyFixture = (): string => {
+    const cwd = mkdtempSync(join(tmpdir(), "vis-orch-dep-"));
+
+    writeFileSync(join(cwd, "package.json"), `${JSON.stringify({
+        name: "fixture-root",
+        packageManager: "pnpm@10.0.0",
+        private: true,
+        version: "0.0.0",
+        workspaces: ["packages/*"],
+    }, null, 4)}\n`);
+
+    writeFileSync(join(cwd, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
+
+    mkdirSync(join(cwd, "packages", "a"), { recursive: true });
+    writeFileSync(join(cwd, "packages", "a", "package.json"), `${JSON.stringify({
+        name: "@scope/a",
+        version: "1.0.0",
+    }, null, 4)}\n`);
+
+    // @scope/b depends on @scope/a — publishing b after a fails would orphan it.
+    mkdirSync(join(cwd, "packages", "b"), { recursive: true });
+    writeFileSync(join(cwd, "packages", "b", "package.json"), `${JSON.stringify({
+        dependencies: { "@scope/a": "workspace:^" },
+        name: "@scope/b",
+        version: "1.0.0",
+    }, null, 4)}\n`);
+
+    mkdirSync(join(cwd, ".vis", "release"), { recursive: true });
+    writeFileSync(join(cwd, ".vis", "release", "feat.md"), "---\n\"@scope/a\": patch\n\"@scope/b\": patch\n---\nbody\n");
+
+    writeFileSync(join(cwd, "vis.config.cjs"), `module.exports = ${JSON.stringify({
+        release: { acknowledgeUnstable: true, defaultManaged: true },
+    }, null, 4)};\n`);
+
+    return cwd;
+};
+
+describe("orchestrator: publish loop does not orphan dependents (H1)", () => {
+    let cwd: string;
+
+    beforeEach(() => {
+        cwd = setupDependencyFixture();
+    });
+
+    afterEach(async () => {
+        await rm(cwd, { force: true, recursive: true });
+    });
+
+    it("skips a dependent when its internal dependency fails to publish", async () => {
+        // @scope/a throws; @scope/b (which depends on it) must be skipped, not published.
+        const actions = new StubVersionActions((context: PublishContext): PublishResult => {
+            if (context.pkg.name === "@scope/a") {
+                throw new Error("npm publish failed (E500 internal registry error)");
+            }
+
+            return { output: "ok", published: true };
+        });
+
+        const ctx = await buildContext({ cwd });
+        const result = await publishContext(ctx, {
+            noPush: true,
+            noTag: true,
+            publishActionsOverride: actions,
+        });
+
+        // @scope/a is recorded as failed.
+        expect(result.failed.map((f) => f.name)).toContain("@scope/a");
+
+        // @scope/b is NOT published — neither package made it to the registry.
+        expect(result.published.map((p) => p.name)).not.toContain("@scope/b");
+        expect(result.published.map((p) => p.name)).not.toContain("@scope/a");
+
+        // @scope/b is skipped with a reason that names the failed dependency.
+        const bSkip = result.skipped.find((s) => s.name === "@scope/b");
+
+        expect(bSkip?.reason).toContain("dependency-failed");
+        expect(bSkip?.reason).toContain("@scope/a");
+
+        // The dependent's publish was never even attempted (short-circuited
+        // before the action call), so the stub only saw @scope/a.
+        expect(actions.calls.map((c) => c.pkg)).toEqual(["@scope/a"]);
+    });
+});

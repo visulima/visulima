@@ -8,8 +8,9 @@
  *
  * The script writes two files into `schemas/`:
  *
- *   - `vis-config.schema.json`  — generated from `VisConfig`     (src/config/types.ts)
- *   - `project.schema.json`     — generated from `ProjectJson`   (src/config/types.ts)
+ *   - `vis-config.schema.json`          — from `VisConfig`        (src/config/types.ts)
+ *   - `project.schema.json`             — from `ProjectJson`      (src/config/types.ts)
+ *   - `vis-release-config.schema.json`  — from `VisReleaseConfig` (src/release/types.ts)
  *
  * Drift between the committed schemas and the TS types is caught by
  * `__tests__/schemas/schemas.test.ts`, which calls `buildSchema()`
@@ -26,6 +27,7 @@ import { createGenerator } from "ts-json-schema-generator";
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PACKAGE_ROOT = resolve(__dirname, "..");
 const SOURCE_FILE = resolve(PACKAGE_ROOT, "src/config/types.ts");
+const RELEASE_SOURCE_FILE = resolve(PACKAGE_ROOT, "src/release/types.ts");
 const TSCONFIG = resolve(PACKAGE_ROOT, "tsconfig.json");
 const SCHEMAS_DIR = resolve(PACKAGE_ROOT, "schemas");
 
@@ -35,6 +37,8 @@ export interface SchemaSpec {
     description: string;
     file: string;
     id: string;
+    /** Absolute path to the source file declaring `type`. Defaults to `src/config/types.ts`. */
+    sourceFile?: string;
     title: string;
     type: string;
 }
@@ -55,6 +59,14 @@ export const SCHEMAS: SchemaSpec[] = [
         id: "https://visulima.com/schemas/project.schema.json",
         title: "vis project.json",
         type: "ProjectJson",
+    },
+    {
+        description: "Schema for the `release` block inside vis.config.ts (RFC §8.1).",
+        file: "vis-release-config.schema.json",
+        id: "https://visulima.com/schemas/vis-release-config.schema.json",
+        sourceFile: RELEASE_SOURCE_FILE,
+        title: "VisReleaseConfig",
+        type: "VisReleaseConfig",
     },
 ];
 
@@ -105,6 +117,47 @@ const rewriteRefs = (node: unknown): void => {
 };
 
 /**
+ * ts-json-schema-generator emits draft-07 tuple syntax — `items: [A, B]`
+ * (+ optional `additionalItems`). That's invalid under draft 2020-12 (which
+ * we declare via `$schema`), where `items` must be a single schema and tuple
+ * prefixes live under `prefixItems`. Ajv2020 rejects the array form outright.
+ * Rewrite every array-valued `items` to `prefixItems`, mapping any
+ * `additionalItems` onto the 2020-12 `items` slot. Mutates in place.
+ */
+const rewriteTuples = (node: unknown): void => {
+    if (Array.isArray(node)) {
+        for (const child of node) {
+            rewriteTuples(child);
+        }
+
+        return;
+    }
+
+    if (node === null || typeof node !== "object") {
+        return;
+    }
+
+    const record = node as Record<string, unknown>;
+
+    if (Array.isArray(record.items)) {
+        record.prefixItems = record.items;
+
+        if ("additionalItems" in record) {
+            // draft-07 `additionalItems` → draft-2020-12 `items` (the schema
+            // applied to elements past the tuple prefix).
+            record.items = record.additionalItems;
+            delete record.additionalItems;
+        } else {
+            delete record.items;
+        }
+    }
+
+    for (const value of Object.values(record)) {
+        rewriteTuples(value);
+    }
+};
+
+/**
  * Take the wrapped `{ $ref: "#/definitions/Root", definitions: { ... } }`
  * shape and inline the root type's body at the top level — matching the
  * style of the previously hand-maintained schemas.
@@ -133,10 +186,11 @@ const flattenRootType = (raw: Schema, rootType: string): Record<string, unknown>
  * with a trailing newline, matching the on-disk shape.
  */
 export const buildSchema = (spec: SchemaSpec): string => {
-    const generator = createGenerator({ ...baseConfig, type: spec.type });
+    const generator = createGenerator({ ...baseConfig, path: spec.sourceFile ?? SOURCE_FILE, type: spec.type });
     const raw = generator.createSchema(spec.type) as Schema;
 
     rewriteRefs(raw);
+    rewriteTuples(raw);
 
     const body = flattenRootType(raw, spec.type);
 

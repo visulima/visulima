@@ -1,708 +1,743 @@
 {
-    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
     "$id": "https://visulima.com/schemas/vis-release-config.schema.json",
     "title": "VisReleaseConfig",
     "description": "Schema for the `release` block inside vis.config.ts (RFC §8.1).",
     "type": "object",
-    "additionalProperties": false,
     "properties": {
-        "baseBranch": {
-            "type": "string",
-            "description": "Branch used for `--from` baseline in status/generate.",
-            "default": "main"
-        },
-        "changesDir": {
-            "type": "string",
-            "description": "Directory holding change files.",
-            "default": ".vis/release"
-        },
         "access": {
             "type": "string",
-            "enum": ["public", "restricted"],
-            "default": "public"
+            "enum": [
+                "public",
+                "restricted"
+            ],
+            "description": "Default npm `--access` flag. Default: `\"public\"`."
+        },
+        "acknowledgeUnstable": {
+            "type": "boolean",
+            "description": "Suppress the unstable warning printed on first invocation (RFC §21.2)."
+        },
+        "aggregateRelease": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean"
+                        },
+                        "title": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "enabled"
+                    ],
+                    "additionalProperties": false
+                }
+            ],
+            "description": "Single GH release per wave vs per-package."
+        },
+        "aggregateReleaseTagPattern": {
+            "type": "string",
+            "description": "Pattern for the workspace-level aggregate release tag (when `aggregateRelease.enabled`). Tokens: `{date}`, `{version}` (latest bumped pkg's version). Default: `\"release-{date}\"`."
+        },
+        "allowCustomCommands": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "description": "Trust gate for per-package custom commands."
+        },
+        "baseBranch": {
+            "type": "string",
+            "description": "Branch used for `--from` baseline in `status`/`generate`. Default: `\"main\"`."
+        },
+        "bumpDevDependencies": {
+            "anyOf": [
+                {
+                    "type": "boolean"
+                },
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            ],
+            "description": "Opt-in cascade for `devDependencies` bumps (changesets #944 parity).\n\nBy default, when a workspace package is bumped, only its `dependencies` / `peerDependencies` / `optionalDependencies` consumers are considered for propagation — devDependency consumers are silently ignored because consumers of the dependent don't observe the devDep at runtime.\n\nSome teams disagree (especially for type-only packages or build plugins) and want a devDep bump to still trigger a patch on its consumer so the lockfile stays in sync across machines. Set this to:\n\n  - `true` — every devDep cascade fires (patch-level on the     dependent), regardless of the source package.   - `string[]` — narrow allow-list of source package names. Only     bumps to packages whose name appears in the list will cascade     through devDependencies. Useful when only specific     \"infrastructure\" packages should propagate via devDeps.\n\nDefault: `false` (devDep cascades remain off — historical behaviour)."
+        },
+        "bumpMinorPreMajor": {
+            "type": "boolean",
+            "description": "For pre-1.0 versions, demote `major` bumps to `minor`. Common for 0.x libraries that don't want their first breaking change to leap to 2.0. Maps to release-please's `bump-minor-pre-major`. Default `false`."
+        },
+        "bumpPatchForMinorPreMajor": {
+            "type": "boolean",
+            "description": "Companion to `bumpMinorPreMajor` — also demote `minor` bumps to `patch` for pre-1.0 versions. Maps to release-please's `bump-patch-for-minor-pre-major`. No-op without `bumpMinorPreMajor`. Default `false`."
+        },
+        "changedFilePatterns": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Globs that count toward \"package changed\" detection."
         },
         "changelog": {
-            "description": "Changelog formatter selection.",
             "anyOf": [
-                { "type": "boolean", "enum": [false] },
-                { "type": "string", "enum": ["default", "github", "keep-a-changelog", "keepachangelog"] },
-                { "type": "string" },
+                {
+                    "type": "boolean",
+                    "const": false
+                },
+                {
+                    "type": "string"
+                },
                 {
                     "type": "array",
                     "minItems": 2,
                     "maxItems": 2,
-                    "items": [
-                        { "type": "string" },
-                        { "type": "object" }
+                    "prefixItems": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "object",
+                            "additionalProperties": {}
+                        }
                     ]
                 }
-            ]
+            ],
+            "description": "Changelog formatter selection. Pass `false` to disable changelog output, one of the built-in names (`\"default\"`, `\"github\"`, `\"keep-a-changelog\"`), a path to a custom module, or a `[path, options]` tuple."
         },
-        "changedFilePatterns": {
-            "type": "array",
-            "items": { "type": "string" }
+        "changesDir": {
+            "type": "string",
+            "description": "Directory holding change files. Default: `\".vis/release\"`."
         },
         "channels": {
             "type": "object",
-            "description": "Per-branch channel routing (semantic-release-style).",
             "additionalProperties": {
-                "type": "object",
-                "additionalProperties": false,
-                "required": ["tag"],
-                "properties": {
-                    "tag": { "type": "string" },
-                    "prerelease": { "type": "string" },
-                    "mode": {
-                        "type": "string",
-                        "enum": ["auto-publish", "version-pr"],
-                        "default": "auto-publish"
-                    },
-                    "range": {
-                        "anyOf": [
-                            { "type": "string", "enum": ["match"] },
-                            { "type": "string" }
-                        ]
-                    }
-                }
-            }
-        },
-        "defaultManaged": {
-            "type": "boolean",
-            "description": "Default value of release.managed for unconfigured packages.",
-            "default": false
+                "$ref": "#/$defs/ChannelConfig"
+            },
+            "description": "Per-channel routing config (semantic-release-style)."
         },
         "currentVersionResolver": {
             "type": "string",
-            "enum": ["disk", "registry", "git-tag"],
-            "default": "disk",
-            "description": "Source of truth for the per-package oldVersion field of the release plan. \"disk\" reads package.json#version, \"registry\" queries the package registry (npm view / cargo search / etc.), \"git-tag\" parses the latest releaseTagPattern-matching git tag. Non-disk modes fall back to the manifest on lookup failure and surface a plan warning. The --first-release CLI flag is the bootstrap shortcut: it forces \"disk\" + skips remote tag-collision checks."
+            "enum": [
+                "disk",
+                "git-tag",
+                "registry"
+            ],
+            "description": "Source of truth for \"what is the current version of this package?\", controlling how `oldVersion` is resolved when building the release plan.\n\n  `\"disk\"` (default) — read `package.json#version` (or the equivalent       manifest field for non-npm versionActions). Preserves vis's       historical behaviour and is the right choice when the manifest       on disk is the canonical source.   `\"registry\"` — query the package registry via the package's       `versionActions.readPublishedVersion()`. Useful when the manifest       drifts between repo and registry (e.g. teams that publish       out-of-band) and you want the registry to win.   `\"git-tag\"` — find the highest `releaseTagPattern`-matching tag in       the current commit's ancestry and parse the version out of it.       Matches nx's `git-tag` resolver and release-please's tag-based       lookup.\n\n`\"registry\"` and `\"git-tag\"` fall back to the manifest version when their primary source cannot produce a valid semver (e.g. registry 404 on a freshly-added package, no matching tag yet, etc.) and surface a plan warning so the operator sees what happened.\n\nOverridable per-package via `packages.&lt;name>.currentVersionResolver`.\n\nThe `--first-release` CLI flag is the bootstrap shortcut for this setting — it forces `\"disk\"` regardless of config and additionally skips remote-tag collision checks, so the very first run on a greenfield monorepo can't trip over missing tags or registry 404s."
         },
-        "successWalk": {
-            "type": "object",
-            "additionalProperties": false,
-            "description": "Post-release walk: drop a sticky per-PR comment and/or labels on the PRs included in a release. Default OFF; set `successWalk: {}` to opt in with defaults.",
-            "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "description": "Enable the walk. Defaults to true when `successWalk` is present."
-                },
-                "commentBody": {
-                    "type": "string",
-                    "description": "Override the sticky comment body template."
-                },
-                "labels": {
-                    "type": "array",
-                    "items": { "type": "string" },
-                    "description": "Labels to add to each released PR."
-                },
-                "skipPrerelease": {
-                    "type": "boolean",
-                    "description": "Skip the walk for prerelease channels."
-                }
-            }
-        },
-        "updateInternalDependencies": {
-            "type": "string",
-            "enum": ["patch", "minor", "out-of-range"],
-            "default": "out-of-range"
+        "defaultManaged": {
+            "type": "boolean",
+            "description": "Default `release.managed` for unconfigured packages. Default: `false`."
         },
         "dependencyBumpRules": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "dependencies": { "$ref": "#/definitions/dependencyBumpRule" },
-                "devDependencies": { "$ref": "#/definitions/dependencyBumpRule" },
-                "peerDependencies": { "$ref": "#/definitions/dependencyBumpRule" },
-                "optionalDependencies": { "$ref": "#/definitions/dependencyBumpRule" }
-            }
-        },
-        "bumpDevDependencies": {
-            "description": "Opt-in cascade for `devDependencies` bumps (changesets #944 parity). When `true`, any source bump cascades a patch to devDep consumers. When an array of package names, only listed sources cascade through devDeps. Default false.",
-            "anyOf": [
-                { "type": "boolean" },
-                { "type": "array", "items": { "type": "string" } }
-            ]
+            "$ref": "#/$defs/DependencyBumpRules",
+            "description": "Default dep-bump rules (overridable per-package)."
         },
         "detectCatalogChanges": {
             "type": "boolean",
-            "description": "Opt-in cascade for pnpm-workspace.yaml catalog version bumps (changesets #1707 parity). When `true`, vis diffs the catalog blocks between HEAD~1 and HEAD; consumer packages of any moved entry get a patch bump attributed as CATALOG_CHANGED. Default false.",
-            "default": false
+            "description": "Opt-in cascade for `pnpm-workspace.yaml` catalog version bumps (changesets #1707 parity).\n\npnpm's `catalog:` / `catalogs:` blocks let multiple packages share a single version range. When the operator bumps a catalog entry (e.g. `react: ^18.2.0` → `react: ^18.3.0`) every consumer package pulls the new version on its next `pnpm install`. Without detection, vis sees no change to the consumer's `package.json` and skips it — so the published tarball ends up shipping a stale `\"react\": \"catalog:\"` reference that resolves differently across machines.\n\nWhen `true`, vis diffs `pnpm-workspace.yaml` between `HEAD~1` (the previous release commit) and `HEAD` (working tree). Every catalog dep that moved triggers a `patch` bump on each consumer package, attributed as `BumpReason.CATALOG_CHANGED` in the release plan. Set on the consumer's dep cascade rules to widen the bump level via the same `dependencyBumpRules` knob used for direct dependency bumps.\n\nDefault: `false` (backwards-compat — the prior behaviour was to silently ignore catalog changes during plan assembly)."
         },
         "fixed": {
             "type": "array",
             "items": {
-                "oneOf": [
-                    {
-                        "type": "array",
-                        "items": { "type": "string" }
-                    },
-                    {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "required": ["packages"],
-                        "properties": {
-                            "packages": {
-                                "type": "array",
-                                "items": { "type": "string" }
-                            },
-                            "name": { "type": "string" },
-                            "changelog": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "required": ["mode"],
-                                "properties": {
-                                    "mode": { "type": "string", "enum": ["per-package", "shared"] },
-                                    "path": { "type": "string" }
-                                }
-                            }
-                        }
-                    }
-                ]
-            }
+                "$ref": "#/$defs/ReleaseGroupConfig"
+            },
+            "description": "Fixed groups: members share the same version, all bump on any change.\n\nTwo accepted shapes (backwards-compatible — the original `string[][]` keeps working):\n\n  - `string[]`            — bare list of package names / globs.                             Implicitly `{ changelog: { mode: \"per-package\" } }`.   - `{ packages, changelog }` — object form, lets you opt into a                                 SHARED changelog file for the group                                 (changesets #1059 parity). When                                 `changelog.mode === \"shared\"`, every                                 member's entry is rendered into one                                 group file (default                                 `&lt;first-member-dir>/GROUP-CHANGELOG.md`)."
+        },
+        "floatingMajorTag": {
+            "type": "boolean",
+            "description": "Floating major-version tag. When `true`, every non-prerelease, non-private release also force-updates a `&lt;safe-name>-v&lt;major>` tag to point at the release commit. `safe-name` is the package name with the leading `@` stripped and `/` replaced by `-`:\n\n  - `@acme/action` → `acme-action-v1`   - `@vendor/cli`  → `vendor-cli-v1`   - unscoped `cli` → `cli-v1`\n\nUseful for reusable GitHub Actions consumers who pin to `acme/action@acme-action-v1` and expect automatic patch / minor delivery without a tag-rev migration. The scope is included so two packages with the same unscoped name from different scopes (`@acme/cli` + `@vendor/cli`) don't both retarget the same floating tag.\n\nSkipped on:   - Prereleases (per-channel `prerelease` configured). The float     would otherwise yank the major pointer across an unstable     pre-release boundary.   - Packages whose `releaseTagPattern` already includes `{major}`     (the pattern is already serving the same role).   - Private packages (`package.json#private === true`) and     packages that set `skipNpmPublish: true` — there's no     published artifact for a consumer to pin against, so a     floating tag would just clutter the tag history.\n\nDefault: `false`. Semantic-release parity: #1515."
+        },
+        "githubHost": {
+            "type": "string",
+            "description": "Self-hosted GitHub Enterprise host (e.g. `\"github.acme.com\"` — no scheme). Translates to the `GH_HOST` env var that the `gh` CLI consumes natively, so all adapter calls land on the right instance. Operators can also export `GH_HOST` directly; this config knob is the typed, vis.config.ts-discoverable equivalent. Ignored when `provider` resolves to anything other than `github`."
+        },
+        "gitlabHost": {
+            "type": "string",
+            "description": "Self-hosted GitLab host (e.g. `\"gitlab.example.com\"`). Translates to the `GITLAB_HOST` env var that `glab` consumes natively, so all adapter calls land on the right instance. Ignored when `provider` resolves to anything other than `gitlab`."
+        },
+        "gitSignCommits": {
+            "type": "boolean",
+            "description": "Sign release-flow commits with `git commit -S`. Set to `true` in workspaces that enforce `commit.gpgsign = true`. The active git identity must have a configured signing key (gpg, ssh, x509). Default `false`."
+        },
+        "gitUser": {
+            "$ref": "#/$defs/GitUserConfig",
+            "description": "Git committer identity used by CI workflows."
+        },
+        "groupPreVersionCommands": {
+            "type": "object",
+            "additionalProperties": {
+                "type": "string"
+            },
+            "description": "Group-scoped preVersion command. Runs once before any package in the group is versioned. `groupName` matches a `fixed`/`linked` array's index (group-0, group-1, …) or a named entry (future)."
+        },
+        "httpProxy": {
+            "type": "string",
+            "description": "HTTPS proxy URL (e.g. `\"http://proxy.acme.com:8080\"`) for enterprise networks that route outbound HTTPS through a proxy.\n\nWired through to two surfaces:\n\n  1. `gh` / `glab` CLI subprocesses get `HTTPS_PROXY` and      `HTTP_PROXY` set on their env so they tunnel through the      proxy exactly as if the operator had exported the vars      manually.\n\n  2. Every internal `fetch()` call (registry probes in      version-actions/{cargo,python,maven,container}.ts and the      shared `safeFetchVersionMetadata` helper) attaches an undici      `ProxyAgent` via the `dispatcher` option, so Node's built-in      fetch routes through the proxy as well.\n\nNode 22's bundled undici handles the proxy plumbing — no `https-proxy-agent` dep needed."
+        },
+        "ignore": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Globs of packages to exclude from release entirely."
+        },
+        "include": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Globs that override `ignore` and `private` exclusion."
         },
         "linked": {
             "type": "array",
             "items": {
-                "oneOf": [
-                    {
-                        "type": "array",
-                        "items": { "type": "string" }
-                    },
-                    {
-                        "type": "object",
-                        "additionalProperties": false,
-                        "required": ["packages"],
-                        "properties": {
-                            "packages": {
-                                "type": "array",
-                                "items": { "type": "string" }
-                            },
-                            "name": { "type": "string" },
-                            "changelog": {
-                                "type": "object",
-                                "additionalProperties": false,
-                                "required": ["mode"],
-                                "properties": {
-                                    "mode": { "type": "string", "enum": ["per-package", "shared"] },
-                                    "path": { "type": "string" }
-                                }
-                            }
-                        }
-                    }
-                ]
-            }
+                "$ref": "#/$defs/ReleaseGroupConfig"
+            },
+            "description": "Linked groups: members share bump levels but only changed members publish. Accepts the same dual-shape format as `fixed` — see the `ReleaseGroupConfig` doc comment for details."
         },
-        "ignore": {
-            "type": "array",
-            "items": { "type": "string" }
+        "notifications": {
+            "$ref": "#/$defs/NotificationsConfig",
+            "description": "Notifications — post-release fan-out to chat / webhook destinations. See  {@link  NotificationsConfig } . Each channel runs in parallel; per-channel failures log a warning but do NOT fail the publish."
         },
-        "include": {
-            "type": "array",
-            "items": { "type": "string" }
+        "packages": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/PerPackageReleaseConfig"
+            },
+            "description": "Per-package overrides (matches `package.json[\"vis-release\"]`)."
+        },
+        "postPublishCommand": {
+            "type": "string",
+            "description": "Shell command run after all publishes complete."
+        },
+        "postVersionCommand": {
+            "type": "string",
+            "description": "Shell command run after versioning, before publish."
+        },
+        "prePublishCommand": {
+            "type": "string",
+            "description": "Shell command run after versioning, before publish."
+        },
+        "preVersionCommand": {
+            "type": "string",
+            "description": "Shell command run before any versioning."
         },
         "privatePackages": {
             "type": "object",
-            "additionalProperties": false,
             "properties": {
-                "version": { "type": "boolean" },
-                "tag": { "type": "boolean" }
-            }
+                "tag": {
+                    "type": "boolean"
+                },
+                "version": {
+                    "type": "boolean"
+                }
+            },
+            "required": [
+                "tag",
+                "version"
+            ],
+            "additionalProperties": false,
+            "description": "Whether to version + tag private packages."
+        },
+        "provider": {
+            "type": "string",
+            "enum": [
+                "github",
+                "gitlab",
+                "auto"
+            ],
+            "description": "Forge provider for remote operations (PR comments, releases, version PRs)."
         },
         "publish": {
+            "$ref": "#/$defs/PublishConfig",
+            "description": "Publish-related config."
+        },
+        "releaseNoteTemplate": {
             "type": "object",
-            "additionalProperties": false,
             "properties": {
-                "packManager": {
+                "footer": {
+                    "type": "string"
+                },
+                "header": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Wrap each per-package GitHub / GitLab release body with operator- supplied header / footer text. Common use: link a migration guide above the auto-generated body, or paste a sponsorship blurb below.\n\nBoth fields are template strings supporting tokens:   - `{name}` — package name   - `{version}` — new version   - `{previousVersion}` — previous version   - `{date}` — `YYYY-MM-DD`   - `{repo}` — `owner/repo` slug   - `{contributors}` — bullet list of authors collected from the     entire wave's change-file `author:` frontmatter (release-please     #292). Wave-scoped — every per-package release in the wave     sees the same set, so cascade and dependency-only bumps still     credit the upstream author. Block-only — keep this token on     its own line, typically under a heading; inline use like     `Thanks {contributors}!` will produce broken markdown.     Authors are de-duplicated case-insensitively, markdown-escaped,     and filtered through the github formatter's `internalAuthors`     list (when configured). Empty string when no change file in     the wave declared an author.\n\nWhen set, the rendered body is composed as `header\\n\\n&lt;body>\\n\\nfooter`. Empty / unset fields are skipped (no leading / trailing blank line).\n\n> **Aggregate-release mode (`release.aggregateRelease: true`)**: the > header and footer are NOT applied. The aggregate release body is > already operator-templated via `release.aggregateRelease.title` > and the per-package list is auto-rendered. If you want a custom > prefix/suffix on the aggregate body, override > `release.aggregateRelease.title` directly.\n\nRelease-please parity: #1274."
+        },
+        "releaseTagPattern": {
+            "type": "string",
+            "description": "Git tag template — overridable per-package via `package.json[\"vis-release\"][\"releaseTagPattern\"]`. Tokens: `{name}`, `{unscopedName}`, `{version}`, `{major}`, `{minor}`, `{patch}`, `{date}`, `{channel}`. Default: `\"{name}@{version}\"`."
+        },
+        "signing": {
+            "type": "object",
+            "properties": {
+                "key": {
+                    "type": "string"
+                },
+                "mode": {
                     "type": "string",
-                    "enum": ["auto", "npm", "pnpm", "yarn", "bun"],
-                    "default": "auto"
+                    "enum": [
+                        "gpg",
+                        "sigstore",
+                        "ssh"
+                    ]
+                }
+            },
+            "required": [
+                "mode"
+            ],
+            "additionalProperties": false,
+            "description": "Sign release tags. Wraps `git tag -s` / `-u &lt;key>` and adds a `gitsign`-based code path for sigstore-style keyless signing.\n\nModes:   - `\"gpg\"`      — `git tag -s` (or `-u &lt;key>` when `key` is set).                    Relies on `user.signingkey` in git config.   - `\"ssh\"`      — Same `-s` flag, but the operator must have                    `gpg.format=ssh` + `user.signingkey=&lt;path-to-key>`                    configured. Doctor surfaces missing config with a                    warning at preflight.   - `\"sigstore\"` — Experimental (\"preview\"). Uses `gitsign` when on                    PATH, otherwise falls back to GPG with a warning.\n\nPer-package signing is not supported (release tags are a workspace- wide artefact). Default: undefined (no signing).\n\nRelease-please parity: #1738, #1314."
+        },
+        "snapshot": {
+            "$ref": "#/$defs/SnapshotConfig",
+            "description": "Snapshot config."
+        },
+        "successWalk": {
+            "$ref": "#/$defs/SuccessWalkConfig",
+            "description": "Post-release notification walk. Configures the \"🎉 This is included in version X.Y.Z\" comment + `released` label pass that runs after a successful publish wave.\n\n**Default OFF.** Leave undefined and the walk never runs — vis will not touch third-party PRs referenced in changelog bodies. Set to `{}` to opt in with defaults, or pass an object to override the comment template / labels / prerelease behaviour."
+        },
+        "updateInternalDependencies": {
+            "$ref": "#/$defs/UpdateInternalDependenciesMode",
+            "description": "Dep-propagation mode. Default: `\"out-of-range\"`."
+        },
+        "versionPr": {
+            "$ref": "#/$defs/VersionPrConfig",
+            "description": "Version-PR config."
+        },
+        "workspaceChangelog": {
+            "anyOf": [
+                {
+                    "type": "boolean",
+                    "const": false
                 },
-                "publishStrategy": {
+                {
+                    "type": "object",
+                    "properties": {
+                        "file": {
+                            "type": "string"
+                        },
+                        "waveHeading": {
+                            "type": "string"
+                        }
+                    },
+                    "additionalProperties": false
+                }
+            ],
+            "description": "Workspace-level changelog config (RFC §6.1 / nx parity). When set, renders one CHANGELOG.md at the workspace root in addition to per-package files."
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "ChannelConfig": {
+            "type": "object",
+            "properties": {
+                "mode": {
+                    "$ref": "#/$defs/ChannelMode",
+                    "description": "CI behavior: `auto-publish` (push triggers publish) or `version-pr` (review gate)."
+                },
+                "prerelease": {
                     "type": "string",
-                    "enum": ["npm-publish-tarball", "native"],
-                    "default": "npm-publish-tarball"
+                    "description": "Pre-release identifier (e.g. `\"alpha\"`, `\"beta\"`, `\"rc\"`). Omit for stable channels."
                 },
-                "publishArgs": {
-                    "type": "array",
-                    "items": { "type": "string" }
-                },
-                "protocolResolution": {
+                "range": {
                     "type": "string",
-                    "enum": ["pack", "in-place", "none"],
-                    "default": "pack"
+                    "description": "For maintenance branches: `\"match\"` keeps releases inside the branch's semver range."
                 },
-                "catalogResolution": {
+                "tag": {
                     "type": "string",
-                    "enum": ["auto", "in-place", "delegate"],
-                    "default": "auto"
-                },
-                "registry": { "type": "string" },
-                "cleanPackageJson": {
-                    "oneOf": [
-                        { "type": "boolean" },
+                    "description": "npm dist-tag for publishes on this channel. Use `\"branch-name\"` to mirror the branch name."
+                }
+            },
+            "required": [
+                "tag"
+            ],
+            "additionalProperties": false
+        },
+        "ChannelMode": {
+            "type": "string",
+            "enum": [
+                "auto-publish",
+                "version-pr"
+            ]
+        },
+        "DependencyBumpRules": {
+            "type": "object",
+            "properties": {
+                "dependencies": {
+                    "anyOf": [
                         {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "strip": { "type": "array", "items": { "type": "string" } },
-                                "keep": { "type": "array", "items": { "type": "string" } }
-                            }
+                            "$ref": "#/$defs/DependencyBumpRule"
+                        },
+                        {
+                            "type": "boolean",
+                            "const": false
                         }
                     ]
                 },
-                "guards": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "packSecretScan": {
-                            "anyOf": [
-                                { "type": "boolean" },
-                                {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "properties": {
-                                        "ignore": { "type": "array", "items": { "type": "string" } }
-                                    }
-                                }
-                            ]
-                        },
-                        "exportsExist": { "type": "boolean" },
-                        "lifecycleScripts": {
-                            "anyOf": [
-                                { "type": "string", "enum": ["off", "warn", "strict"] },
-                                {
-                                    "type": "object",
-                                    "additionalProperties": false,
-                                    "required": ["mode"],
-                                    "properties": {
-                                        "mode": { "type": "string", "enum": ["off", "warn", "strict"] },
-                                        "allow": {
-                                            "type": "object",
-                                            "additionalProperties": { "type": "string" }
-                                        }
-                                    }
-                                }
-                            ]
-                        },
-                        "audit": {
-                            "type": "string",
-                            "enum": ["off", "low", "moderate", "high", "critical"]
-                        }
-                    }
-                },
-                "discussionCategory": {
-                    "type": "string",
-                    "description": "GitHub-only: link each created release to a Discussion in the named category (e.g. \"Announcements\"). The category must already exist."
-                },
-                "draftRelease": {
-                    "type": "boolean",
-                    "description": "Create the forge release as a draft (invisible until manually published from the UI). Useful when release notes need human review before going public.",
-                    "default": false
-                },
-                "noRelease": {
-                    "type": "boolean",
-                    "description": "Skip creating the GitHub / GitLab Release entirely while still pushing the git tag + publishing the package. Useful for teams who manage release notes elsewhere. Release-please parity: #1295.",
-                    "default": false
-                },
-                "addReleases": {
-                    "description": "Semantic-release/github parity. Prepend (\"top\") or append (\"bottom\") a \"Related releases\" block linking to the previous N releases of the same package. Aids navigation in the GH Releases UI. Honoured on GitHub; GitLab logs a warning. Aggregate-release mode is skipped (no per-package prior).",
-                    "default": false,
+                "devDependencies": {
                     "anyOf": [
-                        { "type": "boolean", "enum": [false] },
-                        { "type": "string", "enum": ["top", "bottom"] }
+                        {
+                            "$ref": "#/$defs/DependencyBumpRule"
+                        },
+                        {
+                            "type": "boolean",
+                            "const": false
+                        }
                     ]
                 },
-                "extraFiles": {
-                    "type": "array",
-                    "description": "Workspace-level files to regex-substitute the new version into (README badges, version constants, Cargo.toml, etc.). Paths are workspace-root-relative.",
-                    "items": { "$ref": "#/definitions/extraFileRule" }
-                },
-                "releaseAssets": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "stampHashes": { "type": "boolean" },
-                        "uploadTarball": { "type": "boolean" }
-                    }
-                },
-                "stage": {
-                    "description": "Use npm's staged-publishing flow (`npm stage publish`). The publish step blocks until a maintainer approves via 2FA on npmjs.com or `vis release stage approve <id>`. Rejection / timeout flow through skipped[] — CI stays green. Requires npm ≥ 11.15.0 + registry.npmjs.org.",
+                "peerDependencies": {
                     "anyOf": [
-                        { "type": "boolean" },
                         {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "properties": {
-                                "timeoutMs": {
-                                    "type": "integer",
-                                    "minimum": 1000,
-                                    "description": "Hard deadline for the approval wait in ms. Default 1_800_000 (30 min)."
-                                },
-                                "pollIntervalMs": {
-                                    "type": "integer",
-                                    "minimum": 1000,
-                                    "description": "Sleep between npm stage view checks in ms. Default 15_000 (15s)."
-                                }
-                            }
+                            "$ref": "#/$defs/DependencyBumpRule"
+                        },
+                        {
+                            "type": "boolean",
+                            "const": false
+                        }
+                    ]
+                },
+                "optionalDependencies": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/DependencyBumpRule"
+                        },
+                        {
+                            "type": "boolean",
+                            "const": false
                         }
                     ]
                 }
-            }
+            },
+            "additionalProperties": false
         },
-        "notifications": {
+        "DependencyBumpRule": {
             "type": "object",
-            "additionalProperties": false,
-            "description": "Post-release fan-out to chat / webhook destinations. Each channel runs in parallel; per-channel failures log a warning but do NOT fail the publish.",
             "properties": {
-                "skipPrerelease": {
-                    "type": "boolean",
-                    "default": true,
-                    "description": "Skip notifications when every published version carries a `-…` prerelease suffix."
+                "bumpAs": {
+                    "$ref": "#/$defs/BumpAs",
+                    "description": "Bump level to apply to the dependent. `\"match\"` = same as source."
                 },
-                "slack": {
-                    "anyOf": [
-                        { "$ref": "#/definitions/slackChannelConfig" },
-                        {
+                "trigger": {
+                    "$ref": "#/$defs/BumpLevel",
+                    "description": "Minimum source bump that activates this rule."
+                }
+            },
+            "required": [
+                "bumpAs",
+                "trigger"
+            ],
+            "additionalProperties": false
+        },
+        "BumpAs": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/BumpLevel"
+                },
+                {
+                    "type": "string",
+                    "const": "match"
+                }
+            ]
+        },
+        "BumpLevel": {
+            "type": "string",
+            "enum": [
+                "major",
+                "minor",
+                "patch",
+                "none"
+            ],
+            "description": "Public types for the vis release subsystem.\n\nImported via `@visulima/vis/release/types` sub-export. See the RFC at `packages/tooling/vis/rfc/design-release-manager.md` for the full design.\n\nStability: every type here is part of vis's public API surface — breaking changes require a vis major version bump (RFC §21.1)."
+        },
+        "ReleaseGroupConfig": {
+            "anyOf": [
+                {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "changelog": {
+                            "$ref": "#/$defs/ReleaseGroupChangelogConfig"
+                        },
+                        "name": {
+                            "type": "string",
+                            "description": "Optional name for the group. Used as the heading in the shared changelog when set; defaults to a \"group-N\"-style identifier derived from the array index."
+                        },
+                        "packages": {
                             "type": "array",
-                            "items": { "$ref": "#/definitions/slackChannelConfig" }
+                            "items": {
+                                "type": "string"
+                            },
+                            "description": "Package names or globs that belong to this group."
                         }
+                    },
+                    "required": [
+                        "packages"
+                    ],
+                    "additionalProperties": false
+                }
+            ],
+            "description": "Dual-shape config for `release.fixed` / `release.linked` entries.\n\nBare `string[]` is interpreted as `{ packages, changelog: { mode: \"per-package\" } }` — keeps existing configs working without migration."
+        },
+        "ReleaseGroupChangelogConfig": {
+            "type": "object",
+            "properties": {
+                "mode": {
+                    "type": "string",
+                    "enum": [
+                        "per-package",
+                        "shared"
                     ]
                 },
+                "path": {
+                    "type": "string",
+                    "description": "Override file path. Default: `&lt;first-member-dir>/GROUP-CHANGELOG.md`."
+                }
+            },
+            "required": [
+                "mode"
+            ],
+            "additionalProperties": false,
+            "description": "Per-group changelog routing.\n\n  - `\"per-package\"` (default) — every member writes to its own     `&lt;pkg-dir>/CHANGELOG.md` exactly as if it weren't grouped.   - `\"shared\"` — every member's entry is rendered into ONE shared     file. `path` overrides the default location     (`&lt;first-member-dir>/GROUP-CHANGELOG.md`). Useful for `core/utils`     pairs and other tightly-coupled package sets where one     consolidated changelog reads better than N tiny ones."
+        },
+        "GitUserConfig": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            },
+            "required": [
+                "email",
+                "name"
+            ],
+            "additionalProperties": false
+        },
+        "NotificationsConfig": {
+            "type": "object",
+            "properties": {
                 "discord": {
                     "anyOf": [
-                        { "$ref": "#/definitions/discordChannelConfig" },
+                        {
+                            "$ref": "#/$defs/DiscordConfig"
+                        },
                         {
                             "type": "array",
-                            "items": { "$ref": "#/definitions/discordChannelConfig" }
+                            "items": {
+                                "$ref": "#/$defs/DiscordConfig"
+                            }
                         }
-                    ]
-                },
-                "webhook": {
-                    "anyOf": [
-                        { "$ref": "#/definitions/webhookChannelConfig" },
-                        {
-                            "type": "array",
-                            "items": { "$ref": "#/definitions/webhookChannelConfig" }
-                        }
-                    ]
+                    ],
+                    "description": "Built-in Discord channel(s). Single config or array. Each posts a formatted embed with title + bullet-list of packages."
                 },
                 "plugins": {
                     "type": "array",
-                    "description": "Custom channel modules. Each entry is a path or [path, options].",
                     "items": {
-                        "oneOf": [
-                            { "type": "string" },
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
                             {
                                 "type": "array",
                                 "minItems": 2,
                                 "maxItems": 2,
-                                "items": [
-                                    { "type": "string" },
-                                    { "type": "object" }
+                                "prefixItems": [
+                                    {
+                                        "type": "string"
+                                    },
+                                    {
+                                        "type": "object",
+                                        "additionalProperties": {}
+                                    }
                                 ]
                             }
                         ]
-                    }
-                }
-            }
-        },
-        "snapshot": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "backend": {
-                    "oneOf": [
-                        { "type": "string", "enum": ["pkg-pr-new", "registry"] },
+                    },
+                    "description": "Custom channels loaded from a path. The module must export a default `NotificationChannel` (object with `.send`) OR a factory `(options) => NotificationChannel` for the tuple `[path, options]` form."
+                },
+                "skipPrerelease": {
+                    "type": "boolean",
+                    "description": "Skip notifications on prerelease waves (when every published version has a `-…` suffix). Default `true` — most teams want Slack noise only on stable releases."
+                },
+                "slack": {
+                    "anyOf": [
                         {
-                            "type": "object",
-                            "additionalProperties": false,
-                            "required": ["url"],
-                            "properties": {
-                                "url": { "type": "string" },
-                                "auth": { "type": "string" }
+                            "$ref": "#/$defs/SlackConfig"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/SlackConfig"
                             }
                         }
-                    ]
+                    ],
+                    "description": "Built-in Slack channel(s). Each posts a Block Kit message with a header + package list + context block."
                 },
-                "tags": {
-                    "type": "array",
-                    "items": { "type": "string", "enum": ["sha", "short-sha", "branch", "pr"] }
-                },
-                "cleanupOnPrClose": { "type": "boolean" },
-                "versionTemplate": { "type": "string" },
-                "registry": { "type": "string" }
-            }
-        },
-        "aggregateRelease": {
-            "oneOf": [
-                { "type": "boolean" },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "required": ["enabled"],
-                    "properties": {
-                        "enabled": { "type": "boolean" },
-                        "title": { "type": "string" }
-                    }
+                "webhook": {
+                    "anyOf": [
+                        {
+                            "$ref": "#/$defs/WebhookConfig"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/$defs/WebhookConfig"
+                            }
+                        }
+                    ],
+                    "description": "Generic webhook(s) for Teams / Mattermost / internal dashboards."
                 }
-            ]
+            },
+            "additionalProperties": false
         },
-        "gitUser": {
+        "DiscordConfig": {
             "type": "object",
-            "additionalProperties": false,
-            "required": ["name", "email"],
             "properties": {
-                "name": { "type": "string" },
-                "email": { "type": "string" }
-            }
-        },
-        "gitSignCommits": {
-            "type": "boolean",
-            "description": "Sign release-flow commits with `git commit -S`. Requires the active git identity to have a configured signing key (gpg, ssh, x509).",
-            "default": false
-        },
-        "signing": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["mode"],
-            "description": "Sign release tags. Wraps `git tag -s` / `-u <key>` and adds a `gitsign`-based code path for sigstore-style keyless signing. Modes: `gpg` (relies on `user.signingkey`), `ssh` (requires `gpg.format=ssh` + `user.signingkey=<path>`), `sigstore` (experimental — uses `gitsign` when on PATH, otherwise falls back to GPG with a warning). Per-package signing is not supported (release tags are a workspace-wide artefact). Release-please parity: #1738, #1314.",
-            "properties": {
-                "mode": {
+                "id": {
                     "type": "string",
-                    "enum": ["gpg", "ssh", "sigstore"],
-                    "description": "Signing scheme."
+                    "description": "Optional disambiguator for log lines + doctor checks."
                 },
-                "key": {
-                    "type": "string",
-                    "description": "Optional signing key id / path passed via `git tag -u <key>` for `gpg` / `ssh` modes."
-                }
-            }
-        },
-        "floatingMajorTag": {
-            "type": "boolean",
-            "description": "When `true`, every non-prerelease, non-private release also force-updates a `<safe-name>-v<major>` tag to point at the release commit. `safe-name` is the package name with the leading `@` stripped and `/` replaced by `-` (e.g. `@acme/action` → `acme-action-v1`, `@vendor/cli` → `vendor-cli-v1`, unscoped `cli` → `cli-v1`). Useful for reusable GitHub Actions consumers who pin to `acme/action@acme-action-v1` and expect automatic patch / minor delivery without a tag-rev migration. Skipped on prereleases, on packages whose `releaseTagPattern` already includes `{major}`, and on private packages or those with `skipNpmPublish: true`. Semantic-release parity: #1515.",
-            "default": false
-        },
-        "bumpMinorPreMajor": {
-            "type": "boolean",
-            "description": "For pre-1.0 versions, demote `major` bumps to `minor`. Keeps 0.x libraries from leaping to 2.0 on the first breaking change. Maps to release-please's same-named flag.",
-            "default": false
-        },
-        "bumpPatchForMinorPreMajor": {
-            "type": "boolean",
-            "description": "For pre-1.0 versions, also demote `minor` bumps to `patch`. No-op without `bumpMinorPreMajor`.",
-            "default": false
-        },
-        "versionPr": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "title": { "type": "string" },
-                "branch": { "type": "string" },
-                "preamble": { "type": "string" },
-                "commentMarker": { "type": "string" },
-                "labels": {
-                    "type": "array",
-                    "description": "Labels applied to the version PR every refresh. Default: [\"autorelease: pending\"]. Set to [] to disable.",
-                    "items": { "type": "string" }
-                },
-                "reviewers": {
-                    "type": "array",
-                    "description": "Auto-request reviews from these users / teams on PR creation. GitHub: usernames or `org/team`.",
-                    "items": { "type": "string" }
-                },
-                "assignees": {
-                    "type": "array",
-                    "description": "Auto-assign the PR to these users on creation.",
-                    "items": { "type": "string" }
-                },
-                "autoMerge": {
+                "includeSkipped": {
                     "type": "boolean",
-                    "description": "Enable GitHub's auto-merge once checks pass. Requires the repo to allow auto-merge.",
-                    "default": false
+                    "description": "Skip the `Skipped (N):` block. Default false (skipped are surfaced)."
                 },
-                "autoMergeMethod": {
+                "title": {
                     "type": "string",
-                    "enum": ["merge", "squash", "rebase"],
-                    "default": "squash"
+                    "description": "Title template — see `expandNotificationTemplate` for tokens (`{count}`, `{packages}`, `{firstName}`, `{firstVersion}`, `{channel}`, `{repo}`, `{date}`). When omitted, a sensible \"🚀 Released N packages\" default is used."
                 },
-                "autoRebase": {
+                "avatarUrl": {
+                    "type": "string",
+                    "description": "Override the embed avatar."
+                },
+                "color": {
+                    "type": "number",
+                    "description": "Embed colour as an integer RGB (e.g. `0x3B82F6` = blue-500)."
+                },
+                "username": {
+                    "type": "string",
+                    "description": "Bot display name override."
+                },
+                "webhook": {
+                    "type": "string",
+                    "description": "Discord webhook URL. Server+channel scoped."
+                }
+            },
+            "required": [
+                "webhook"
+            ],
+            "additionalProperties": false
+        },
+        "SlackConfig": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "description": "Optional disambiguator for log lines + doctor checks."
+                },
+                "includeSkipped": {
                     "type": "boolean",
-                    "description": "Periodically rebase the version-PR branch on top of base. The rebase runs via `vis release ci rebase-pr` (cron-driven).",
-                    "default": false
+                    "description": "Skip the `Skipped (N):` block. Default false (skipped are surfaced)."
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Title template — see `expandNotificationTemplate` for tokens (`{count}`, `{packages}`, `{firstName}`, `{firstVersion}`, `{channel}`, `{repo}`, `{date}`). When omitted, a sensible \"🚀 Released N packages\" default is used."
+                },
+                "channelOverride": {
+                    "type": "string",
+                    "description": "Override the channel the webhook posts to. Only honoured when the webhook was created with multi-channel posting allowed (rare)."
+                },
+                "iconEmoji": {
+                    "type": "string",
+                    "description": "Bot icon emoji (e.g. `\":rocket:\"`)."
+                },
+                "username": {
+                    "type": "string",
+                    "description": "Bot display name override."
+                },
+                "webhook": {
+                    "type": "string",
+                    "description": "Slack incoming-webhook URL. Workspace+channel scoped. Use env substitution if you don't want it inline: `webhook: \"${SLACK_WEBHOOK_URL}\"`."
                 }
-            }
+            },
+            "required": [
+                "webhook"
+            ],
+            "additionalProperties": false
         },
-        "packages": {
+        "WebhookConfig": {
             "type": "object",
-            "additionalProperties": { "$ref": "#/definitions/perPackageReleaseConfig" }
-        },
-        "allowCustomCommands": {
-            "oneOf": [
-                { "type": "boolean" },
-                { "type": "array", "items": { "type": "string" } }
-            ]
-        },
-        "preVersionCommand": { "type": "string" },
-        "postVersionCommand": { "type": "string" },
-        "prePublishCommand": { "type": "string" },
-        "postPublishCommand": { "type": "string" },
-        "groupPreVersionCommands": {
-            "type": "object",
-            "description": "Per-group pre-version hooks. Key is the group name (matches release.fixed/linked); value is a shell command.",
-            "additionalProperties": { "type": "string" }
-        },
-        "releaseTagPattern": {
-            "type": "string",
-            "description": "Workspace-wide tag template. Tokens: {name}, {unscopedName}, {version}, {major}, {minor}, {patch}, {date}, {channel}. Default: \"{name}@{version}\"."
-        },
-        "releaseNoteTemplate": {
-            "type": "object",
-            "additionalProperties": false,
-            "description": "Operator-supplied header / footer wrapped around per-package GitHub / GitLab release bodies. Tokens: {name}, {version}, {previousVersion}, {date}, {repo}, {contributors}. {contributors} is a wave-scoped bullet list (block-only, keep on its own line) collected from change-file `author:` frontmatter. Skipped in aggregate-release mode. Release-please parity: #1274, #292.",
             "properties": {
-                "header": { "type": "string", "description": "Markdown prepended to each release body." },
-                "footer": { "type": "string", "description": "Markdown appended to each release body." }
-            }
-        },
-        "aggregateReleaseTagPattern": {
-            "type": "string",
-            "description": "Tag template for aggregateRelease. Tokens: {date}, {version}. Default: \"release-{date}\"."
-        },
-        "workspaceChangelog": {
-            "description": "Workspace-level CHANGELOG.md aggregating every release in a wave. Set false to disable.",
-            "oneOf": [
-                { "type": "boolean", "enum": [false] },
-                {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "file": { "type": "string" },
-                        "waveHeading": { "type": "string" }
-                    }
-                }
-            ]
-        },
-        "acknowledgeUnstable": { "type": "boolean" },
-        "provider": {
-            "type": "string",
-            "enum": ["github", "gitlab", "auto"],
-            "default": "auto"
-        },
-        "gitlabHost": {
-            "type": "string",
-            "description": "Self-hosted GitLab host (no scheme), e.g. \"gitlab.example.com\". Maps to the GITLAB_HOST env var that glab consumes."
-        },
-        "githubHost": {
-            "type": "string",
-            "description": "Self-hosted GitHub Enterprise host (no scheme), e.g. \"github.acme.com\". Maps to the GH_HOST env var that the gh CLI consumes. Ignored when provider != github."
-        },
-        "httpProxy": {
-            "type": "string",
-            "description": "HTTPS proxy URL (e.g. \"http://proxy.acme.com:8080\") for enterprise networks. Sets HTTPS_PROXY / HTTP_PROXY on gh / glab subprocess env AND injects an undici ProxyAgent into every internal fetch()."
-        }
-    },
-    "definitions": {
-        "slackChannelConfig": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["webhook"],
-            "properties": {
-                "id": { "type": "string", "description": "Disambiguator for log lines + doctor checks." },
-                "webhook": { "type": "string", "description": "Slack incoming-webhook URL." },
-                "title": { "type": "string", "description": "Title template. Tokens: {count}, {packages}, {firstName}, {firstVersion}, {channel}, {repo}, {date}." },
-                "channelOverride": { "type": "string" },
-                "username": { "type": "string" },
-                "iconEmoji": { "type": "string" },
-                "includeSkipped": { "type": "boolean" }
-            }
-        },
-        "discordChannelConfig": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["webhook"],
-            "properties": {
-                "id": { "type": "string" },
-                "webhook": { "type": "string" },
-                "title": { "type": "string" },
-                "color": { "type": "integer", "description": "Embed colour as integer RGB (e.g. 3897343 = 0x3B82F6)." },
-                "username": { "type": "string" },
-                "avatarUrl": { "type": "string" },
-                "includeSkipped": { "type": "boolean" }
-            }
-        },
-        "webhookChannelConfig": {
-            "type": "object",
-            "additionalProperties": false,
-            "required": ["url"],
-            "properties": {
-                "id": { "type": "string" },
-                "url": { "type": "string" },
-                "method": { "type": "string", "enum": ["POST", "PUT"], "default": "POST" },
-                "headers": {
-                    "type": "object",
-                    "additionalProperties": { "type": "string" },
-                    "description": "Additional headers. Values run through template interpolation."
+                "id": {
+                    "type": "string",
+                    "description": "Optional disambiguator for log lines + doctor checks."
+                },
+                "includeSkipped": {
+                    "type": "boolean",
+                    "description": "Skip the `Skipped (N):` block. Default false (skipped are surfaced)."
+                },
+                "title": {
+                    "type": "string",
+                    "description": "Title template — see `expandNotificationTemplate` for tokens (`{count}`, `{packages}`, `{firstName}`, `{firstVersion}`, `{channel}`, `{repo}`, `{date}`). When omitted, a sensible \"🚀 Released N packages\" default is used."
                 },
                 "body": {
-                    "description": "Body template. When omitted the full NotificationContext is sent as JSON; string leaves are interpolated."
+                    "description": "Body template. When omitted, the full `NotificationContext` is sent verbatim as JSON. When provided, every string leaf is run through `expandNotificationTemplate`."
                 },
-                "title": { "type": "string" },
-                "includeSkipped": { "type": "boolean" }
-            }
-        },
-        "dependencyBumpRule": {
-            "oneOf": [
-                { "type": "boolean", "enum": [false] },
-                {
+                "headers": {
                     "type": "object",
-                    "additionalProperties": false,
-                    "required": ["trigger", "bumpAs"],
-                    "properties": {
-                        "trigger": { "type": "string", "enum": ["major", "minor", "patch", "none"] },
-                        "bumpAs": { "type": "string", "enum": ["major", "minor", "patch", "none", "match"] }
-                    }
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "description": "Additional headers (values run through template interpolation)."
+                },
+                "method": {
+                    "type": "string",
+                    "enum": [
+                        "POST",
+                        "PUT"
+                    ],
+                    "description": "HTTP method. Default `POST`."
+                },
+                "url": {
+                    "type": "string",
+                    "description": "Target URL."
                 }
-            ]
+            },
+            "required": [
+                "url"
+            ],
+            "additionalProperties": false
         },
-        "extraFileRule": {
+        "PerPackageReleaseConfig": {
             "type": "object",
-            "additionalProperties": false,
-            "required": ["path", "search"],
             "properties": {
-                "path": {
-                    "type": "string",
-                    "description": "File path. Workspace-root-relative on `release.publish.extraFiles`; package-directory-relative under `release.packages.<name>.extraFiles`."
-                },
-                "search": {
-                    "type": "string",
-                    "description": "JavaScript regex source (without delimiters)."
-                },
-                "replace": {
-                    "type": "string",
-                    "description": "Substitution template. `{version}` is replaced with the new version literal. Standard regex backreferences ($1, $2, $&) work too. When omitted, the entire match is replaced with the new version."
-                },
-                "flags": {
-                    "type": "string",
-                    "description": "Regex flags (default \"g\")."
-                }
-            }
-        },
-        "perPackageReleaseConfig": {
-            "type": "object",
-            "additionalProperties": false,
-            "properties": {
-                "managed": { "type": "boolean" },
-                "versionActions": {
-                    "type": "string",
-                    "description": "Built-in id (`npm`, `native-addon`, `private`, `shell`, `cargo`, `python`, `maven`, `container`, `jsr`) or a path to a custom implementation module."
-                },
-                "publishCommand": {
-                    "description": "Custom shell command run instead of `npm publish` (requires `allowCustomCommands`).",
-                    "oneOf": [
-                        { "type": "string" },
-                        { "type": "array", "items": { "type": "string" } }
-                    ]
+                "additionalPaths": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Extra directories (or globs) that logically belong to this package. Used by `vis release check --strict` to attribute changes outside the package's own directory to this package — e.g. a shared `docs/api/` directory whose updates should still trip the \"covered by a change file?\" gate for the package they document.\n\nGlobs are workspace-root-relative (NOT package-directory-relative). Examples:\n\n  ```ts   release: {     packages: {       \"@scope/cli\": {         additionalPaths: [\"docs/cli/**\", \"examples/cli/**\"],       },     },   }   ```\n\nDefault: `undefined` (only the package's own directory is attributed to it). Release-please parity: #1921."
                 },
                 "buildCommand": {
                     "type": "string",
@@ -714,7 +749,21 @@
                 },
                 "cargoTomlPath": {
                     "type": "string",
-                    "description": "Relative path from the package directory to `Cargo.toml` for the `cargo` versionActions. Set automatically by the `cargo()` preset from its `crateDir` option. Defaults to `Cargo.toml`."
+                    "description": "Relative path from the package directory to `Cargo.toml` for the `cargo` versionActions. Set automatically by the `cargo()` preset from its `crateDir` option. Defaults to `\"Cargo.toml\"`."
+                },
+                "cascadeTo": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/$defs/DependencyBumpRule"
+                    },
+                    "description": "Source-side cascade: glob → rule."
+                },
+                "changedFilePatterns": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Per-pkg override of `release.changedFilePatterns`. Replaces (does not merge)."
                 },
                 "checkPublished": {
                     "type": "string",
@@ -722,22 +771,26 @@
                 },
                 "containerBuildArgs": {
                     "type": "object",
-                    "additionalProperties": { "type": "string" },
+                    "additionalProperties": {
+                        "type": "string"
+                    },
                     "description": "Extra `--build-arg KEY=VALUE` pairs forwarded to `docker buildx build`. Useful for stamping the version into the image at build time. Consumed by the `container` versionActions."
                 },
                 "containerImage": {
                     "type": "string",
-                    "description": "Fully-qualified container image reference, e.g. `ghcr.io/scope/foo`. Required by the `container` versionActions (no built-in default since the registry hostname is operator-specific). Set automatically by the `container()` preset."
+                    "description": "Fully-qualified container image reference, e.g. `\"ghcr.io/scope/foo\"`. Required by the `container` versionActions (no built-in default since the registry hostname is operator- specific). Set automatically by the `container()` preset."
                 },
                 "containerPlatforms": {
                     "type": "array",
-                    "items": { "type": "string" },
+                    "items": {
+                        "type": "string"
+                    },
                     "description": "Target platforms passed to `docker buildx build --platform`. Defaults to `[\"linux/amd64\", \"linux/arm64\"]`. Single-arch builds can pass a one-entry array."
                 },
                 "containerSigning": {
                     "type": "string",
-                    "enum": ["cosign"],
-                    "description": "Post-push signing scheme for the `container` versionActions. `cosign` runs `cosign sign --yes <image>:<version>` against the just-pushed immutable tag."
+                    "const": "cosign",
+                    "description": "Post-push signing scheme for the `container` versionActions. `\"cosign\"` runs `cosign sign --yes &lt;image>:&lt;version>` against the just-pushed immutable tag. Future schemes (sigstore-bundle, notation, etc.) can extend this union."
                 },
                 "containerSkipLatest": {
                     "type": "boolean",
@@ -745,16 +798,53 @@
                 },
                 "currentVersionResolver": {
                     "type": "string",
-                    "enum": ["disk", "registry", "git-tag"],
-                    "description": "Per-package override of the workspace-level currentVersionResolver. Useful when one package lags behind the registry / git-tag baseline."
+                    "enum": [
+                        "disk",
+                        "git-tag",
+                        "registry"
+                    ],
+                    "description": "Per-package override of the workspace-level `currentVersionResolver`. Same set of modes: `\"disk\"`, `\"registry\"`, `\"git-tag\"`. Useful when one package in the monorepo lags behind the registry / git-tag baseline (e.g. a newly-added package that hasn't been published yet)."
+                },
+                "dependencyBumpRules": {
+                    "$ref": "#/$defs/DependencyBumpRules",
+                    "description": "Per-pkg override of inbound dep-bump rules."
+                },
+                "extraFiles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/ExtraFileRule"
+                    },
+                    "description": "Per-package `extra-files` rules with paths relative to the package directory. Merged with workspace-level `release.publish.extraFiles` (per-package wins on path collision)."
+                },
+                "jsrConfigPath": {
+                    "type": "string",
+                    "description": "Relative path from the package directory to the JSR manifest (`jsr.json` or `deno.json`) for the `jsr` versionActions. Set automatically by the `jsr()` preset from its `manifestPath` option. Defaults to `\"jsr.json\"`."
+                },
+                "managed": {
+                    "type": "boolean",
+                    "description": "Hard opt-in/out — overrides every other rule."
                 },
                 "mavenMetadataUrl": {
                     "type": "string",
-                    "description": "Override the Maven Central metadata URL used by the `maven` versionActions for already-published detection. Set this when publishing to a custom repository (Artifactory, Nexus, GitHub Packages); the URL should point at `<base>/<groupId>/<artifactId>/maven-metadata.xml`. Pass `\"\"` (empty string) to disable the metadata check entirely."
+                    "description": "Override the Maven Central metadata URL used by the `maven` versionActions for already-published detection. Set this when publishing to a custom repository (Artifactory, Nexus, GitHub Packages); the URL should point at `&lt;base>/&lt;groupId>/&lt;artifactId>/maven-metadata.xml`. Pass `\"\"` (empty string) to disable the metadata check entirely."
                 },
                 "pomPath": {
                     "type": "string",
-                    "description": "Override the path to `pom.xml` for the `maven` versionActions, relative to the package directory. Defaults to `pom.xml`."
+                    "description": "Override the path to `pom.xml` for the `maven` versionActions, relative to the package directory. Defaults to `\"pom.xml\"`."
+                },
+                "publishCommand": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "Custom shell command run instead of `npm publish` (requires `allowCustomCommands`)."
                 },
                 "pythonProjectDir": {
                     "type": "string",
@@ -772,53 +862,514 @@
                     "type": "boolean",
                     "description": "Skip the npm publish step but still create a git tag."
                 },
-                "changedFilePatterns": {
-                    "type": "array",
-                    "items": { "type": "string" },
-                    "description": "Per-pkg override of `release.changedFilePatterns`. Replaces (does not merge)."
-                },
-                "additionalPaths": {
-                    "type": "array",
-                    "description": "Extra workspace-root-relative globs that logically belong to this package. Changes matching any glob are attributed to this package by `vis release check --strict`. Release-please parity: #1921.",
-                    "items": { "type": "string" }
-                },
-                "extraFiles": {
-                    "type": "array",
-                    "description": "Per-package extra-files rules. Paths are package-directory-relative.",
-                    "items": { "$ref": "#/definitions/extraFileRule" }
-                },
-                "dependencyBumpRules": {
-                    "type": "object",
-                    "additionalProperties": false,
-                    "properties": {
-                        "dependencies": { "$ref": "#/definitions/dependencyBumpRule" },
-                        "devDependencies": { "$ref": "#/definitions/dependencyBumpRule" },
-                        "peerDependencies": { "$ref": "#/definitions/dependencyBumpRule" },
-                        "optionalDependencies": { "$ref": "#/definitions/dependencyBumpRule" }
-                    }
-                },
-                "cascadeTo": {
-                    "type": "object",
-                    "additionalProperties": { "$ref": "#/definitions/dependencyBumpRule" }
-                },
-                "jsrConfigPath": {
-                    "type": "string",
-                    "description": "Relative path from the package directory to the JSR manifest (jsr.json / deno.json) for the `jsr` versionActions. Set automatically by the `jsr()` preset from its `manifestPath` option."
-                },
                 "uvLockPath": {
                     "type": "string",
-                    "description": "Relative path from the package directory to uv.lock. Recorded so doctor can warn when the lockfile is missing. vis does NOT mutate uv.lock itself — operators should run `uv lock` between version + commit if they want the lockfile committed."
+                    "description": "Relative path from the package directory (or workspace root, for uv-workspace setups) to `uv.lock`. Set when the operator wants vis to acknowledge a uv-managed lockfile during doctor checks.\n\nvis does NOT mutate `uv.lock` itself — uv regenerates it on `uv sync` / `uv build`. The path is recorded only so doctor can warn when the file is missing despite the operator configuring uv-aware tooling. Operators wanting `uv.lock` in the release commit should run `uv lock` between `vis release version` and the commit step (typically wired via `postVersionCommand`).\n\nrelease-please parity: #2561."
                 },
                 "uvWorkspace": {
                     "type": "object",
-                    "additionalProperties": false,
-                    "required": ["root"],
                     "properties": {
-                        "root": { "type": "string", "description": "Relative path (from the package directory) to the uv workspace root containing [tool.uv.workspace] members." }
+                        "root": {
+                            "type": "string"
+                        }
                     },
-                    "description": "uv workspace marker. Triggers doctor's workspace-member check that the root pyproject lists this package."
+                    "required": [
+                        "root"
+                    ],
+                    "additionalProperties": false,
+                    "description": "uv workspace configuration. When set, the `python` versionActions and the `pyproject()` preset treat this package as a member of a uv workspace rooted at `uvWorkspace.root` (relative to the package directory — typically `\"..\"` or the path up to the repo root).\n\nDoctor checks:   - the root's pyproject.toml exists at `&lt;root>/pyproject.toml`   - `[tool.uv.workspace] members` lists the package's project     directory (relative path from the workspace root)\n\nSet automatically by the `pyproject({ uvWorkspace })` preset.\n\nrelease-please parity: #2560."
+                },
+                "versionActions": {
+                    "type": "string",
+                    "description": "Built-in id (`\"npm\"`, `\"native-addon\"`, `\"private\"`, `\"shell\"`, `\"cargo\"`, `\"python\"`, `\"maven\"`, `\"container\"`, `\"jsr\"`) or a path to a custom implementation module."
                 }
-            }
+            },
+            "additionalProperties": false
+        },
+        "ExtraFileRule": {
+            "anyOf": [
+                {
+                    "$ref": "#/$defs/ExtraFileAnnotationRule"
+                },
+                {
+                    "$ref": "#/$defs/ExtraFileRegexRule"
+                }
+            ],
+            "description": "Union of every extra-files rule shape. The regex form is the historical default; the annotation form was added for release-please ergonomics.\n\nWhen `type` is omitted, the rule is treated as a regex rule (preserves backwards-compat for every existing vis.config.ts in the wild)."
+        },
+        "ExtraFileAnnotationRule": {
+            "type": "object",
+            "properties": {
+                "anchor": {
+                    "type": "string",
+                    "description": "Limit the semver-replacement to occurrences anchored by this literal prefix on the marked line. Useful when the file has multiple version-shaped substrings (e.g. a lockfile or a Dockerfile referencing both APP_VERSION and a base-image tag).\n\nExample — `ENV APP_VERSION=\"0.1.0\"` with `anchor: \"APP_VERSION\"` only touches the version after that prefix. When omitted, the FIRST semver substring on the marked line is replaced.\n\n**Strongly recommended** for any file that contains more than one version-shaped substring (lockfiles, Dockerfiles with both APP and base-image tags, multi-version compose files). The default \"first semver wins\" behaviour is convenient for single-version files but a footgun on lockfiles — annotating a `package-lock .json` without an anchor would happily rewrite the first nested dep's `version`."
+                },
+                "marker": {
+                    "type": "string",
+                    "description": "Override the marker string. Default `\"x-release-please-version\"` (release-please compatibility). Match is plain substring (no regex), case-sensitive."
+                },
+                "path": {
+                    "type": "string",
+                    "description": "File path. Workspace-root-relative when declared on `release.publish.extraFiles`; package-directory-relative when on `release.packages.&lt;name>.extraFiles`."
+                },
+                "type": {
+                    "type": "string",
+                    "const": "annotation",
+                    "description": "Switch to annotation-comment mode. The substitution engine looks for lines tagged with the configured marker — by default `x-release-please-version` (release-please compatibility). The marked line (or the line immediately following an own-line marker) has its semver-shaped substring replaced with the new version."
+                }
+            },
+            "required": [
+                "path",
+                "type"
+            ],
+            "additionalProperties": false,
+            "description": "Annotation-comment file-substitution rule — release-please parity.\n\nInstead of authoring a regex, the operator drops an `x-release-please- version` (or custom-named) marker comment in the target file and vis locates the semver-shaped substring on the marked line (or the line immediately following an own-line marker) and replaces it with the new version. Far more ergonomic than the regex form for the common case of \"bump this version string here\".\n\nTwo recognised placements:\n\n  1. **Inline** — marker on the same line as the version:      ```ts      export const VERSION = \"0.1.0\"; // x-release-please-version      ```\n\n  2. **Preceding-line** — marker on the line just above the version:      ```dockerfile      # x-release-please-version      ENV APP_VERSION=\"0.1.0\"      ```\n\nLike the regex path, missing files / no marker found surface as `plan.warnings` rather than throwing."
+        },
+        "ExtraFileRegexRule": {
+            "type": "object",
+            "properties": {
+                "flags": {
+                    "type": "string",
+                    "description": "Regex flags (default `\"g\"`). Combine as needed: `\"gm\"`, `\"gmi\"`, etc."
+                },
+                "path": {
+                    "type": "string",
+                    "description": "File path. Workspace-root-relative when declared on `release.publish.extraFiles`; package-directory-relative when on `release.packages.&lt;name>.extraFiles`."
+                },
+                "replace": {
+                    "type": "string",
+                    "description": "Substitution template. `{version}` is replaced with the new version literal. Standard regex backreferences (`$1`, `$2`, `$&amp;`) work too. When omitted, the entire match is replaced with the new version."
+                },
+                "search": {
+                    "type": "string",
+                    "description": "JavaScript regex source (without delimiters)."
+                },
+                "type": {
+                    "type": "string",
+                    "const": "regex",
+                    "description": "Explicit type discriminator. Defaults to `\"regex\"` when omitted — legacy rules without a `type` field continue to work as regex rules."
+                }
+            },
+            "required": [
+                "path",
+                "search"
+            ],
+            "additionalProperties": false,
+            "description": "Regex-based file-substitution rule used by `publish.extraFiles` (workspace) or `packages.&lt;name>.extraFiles` (per-package) to keep version strings in non-package.json files in sync with the release."
+        },
+        "PublishConfig": {
+            "type": "object",
+            "properties": {
+                "addReleases": {
+                    "type": [
+                        "boolean",
+                        "string"
+                    ],
+                    "enum": [
+                        false,
+                        "bottom",
+                        "top"
+                    ],
+                    "description": "Semantic-release/github parity — when set, prepend (\"top\") or append (\"bottom\") a \"Related releases\" block to the per-package GitHub release body that links to the immediately previous N releases of the same package. Aids navigation in the Releases UI (\"what did 1.4.2 fix?\" is a single click from 1.5.0's release page).\n\nHonoured only on the GitHub adapter; GitLab logs a warning and skips the block. Aggregate-release mode is skipped — there's no per-package prior release to point at.\n\nDefault `false` (no link block)."
+                },
+                "catalogResolution": {
+                    "$ref": "#/$defs/CatalogResolutionMode",
+                    "description": "How to resolve `catalog:` protocols."
+                },
+                "cleanPackageJson": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "$ref": "#/$defs/CleanPackageJsonConfig"
+                        }
+                    ],
+                    "description": "Strip/keep config for the published `package.json`. `false` ships unmodified."
+                },
+                "discussionCategory": {
+                    "type": "string",
+                    "description": "GitHub-only: link each created release to a Discussion in the named category (e.g. `\"Announcements\"`, `\"Releases\"`). The category must already exist on the repository; GitHub creates the discussion automatically. Ignored on GitLab."
+                },
+                "draftRelease": {
+                    "type": "boolean",
+                    "description": "Create the forge release (GitHub Release / GitLab Release) as a draft. A draft release is invisible to consumers until a human publishes it through the UI — useful when release notes need a human review before going public. Default `false`.\n\nMaps to GitHub's `draft: true` API field and GitLab's released_at being absent (GitLab models drafts implicitly via no released_at)."
+                },
+                "extraFiles": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/ExtraFileRule"
+                    },
+                    "description": "Bump version strings in arbitrary files alongside package.json. Each rule's `path` is workspace-root-relative; per-package rules (under `packages.&lt;name>.extraFiles`) resolve relative to the package directory.\n\nThe `search` is a JavaScript regex source. Default `flags: \"g\"` for global replacement. The `replace` template supports the `{version}` token and standard regex backreferences (`$1`, `$2`, `$&amp;`, etc.). When `replace` is absent, the entire match is substituted with the new version.\n\nExamples — README badge, TS constant, Cargo.toml field:   `{ path: \"README.md\", search: \"v\\\\d+\\\\.\\\\d+\\\\.\\\\d+\" }`   `{ path: \"src/version.ts\", search: 'VERSION = \"[^\"]+\"',      replace: 'VERSION = \"{version}\"' }`   `{ path: \"Cargo.toml\", search: '^version = \"[^\"]+\"',      replace: 'version = \"{version}\"', flags: \"m\" }`\n\nFailed matches are non-fatal — the publish carries on, but a warning surfaces so misconfigured rules don't silently rot."
+                },
+                "guards": {
+                    "$ref": "#/$defs/PublishGuardsConfig",
+                    "description": "Pre-publish security gates. Each gate is opt-in."
+                },
+                "noRelease": {
+                    "type": "boolean",
+                    "description": "Skip creating the GitHub / GitLab Release entirely while still pushing the git tag and publishing the package to the registry. Useful for teams that maintain release notes elsewhere (a docs site, in-product changelog, etc.) and don't want the duplicate forge artifact.\n\nDefault `false`. Release-please parity: #1295."
+                },
+                "packManager": {
+                    "$ref": "#/$defs/PackManager",
+                    "description": "Which manager to invoke for `&lt;pm> pack`."
+                },
+                "preferStaticToken": {
+                    "type": "boolean",
+                    "description": "Auth-precedence escape hatch for the multi-language actions (cargo, python). Default `false`.\n\nDefault behaviour (false): when both an OIDC env signal (`ACTIONS_ID_TOKEN_REQUEST_URL`) AND a static token (`CARGO_REGISTRY_TOKEN` / `TWINE_PASSWORD`) are present, OIDC wins — an operator who enabled OIDC trusted publishing wants OIDC by default and a leftover token in the env shouldn't silently switch auth modes (M-3).\n\nSet `true` to flip the precedence: when both signals are present, the static token wins. Useful for operators migrating off OIDC, shadow-publishing during a cutover, or working around a temporary trusted-publishing outage at the registry."
+                },
+                "protocolResolution": {
+                    "$ref": "#/$defs/ProtocolResolutionMode",
+                    "description": "How to resolve `workspace:` protocols."
+                },
+                "publishArgs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Extra args appended to publish (`--provenance`, etc.). Skipped for managers that don't support them."
+                },
+                "publishStrategy": {
+                    "$ref": "#/$defs/PublishStrategy",
+                    "description": "Publish strategy — see RFC §11.3."
+                },
+                "registry": {
+                    "type": "string",
+                    "description": "Override default registry."
+                },
+                "releaseAssets": {
+                    "$ref": "#/$defs/ReleaseAssetsConfig",
+                    "description": "Post-publish asset attestation work."
+                },
+                "stage": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "pollIntervalMs": {
+                                    "type": "number",
+                                    "description": "Sleep between consecutive `npm stage view` checks while waiting. Default: 15_000 (15 seconds)."
+                                },
+                                "timeoutMs": {
+                                    "type": "number",
+                                    "description": "Hard deadline before the wait gives up and skips the publish. Default: 1_800_000 (30 minutes)."
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ],
+                    "description": "Use npm's staged-publishing flow (`npm stage publish`) instead of `npm publish`. The published version is invisible to consumers until a maintainer approves it via 2FA (`vis release stage approve` or the npmjs.com web UI). Requires npm CLI ≥ 11.15.0 and `registry.npmjs.org` as the registry; doctor warns when those preconditions aren't met.\n\nPublish blocks on the human-review gate so downstream pipeline steps (tags, GH release, post-hooks) only run against actually-live packages. Rejection and timeout are NOT CI failures — they flow through the skipped[] result so `vis release publish` exits 0; the unapproved package just doesn't get its downstream side-effects.\n\nPass `true` for defaults (30-min timeout, 15s poll). Pass an object to override per-workspace. Snapshots always publish directly (preview content shouldn't gate on review)."
+                }
+            },
+            "additionalProperties": false
+        },
+        "CatalogResolutionMode": {
+            "type": "string",
+            "enum": [
+                "auto",
+                "in-place",
+                "delegate"
+            ]
+        },
+        "CleanPackageJsonConfig": {
+            "type": "object",
+            "properties": {
+                "keep": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Fields to keep — overrides default strip behaviour."
+                },
+                "strip": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Fields to strip from the published package.json (extends defaults)."
+                }
+            },
+            "additionalProperties": false
+        },
+        "PublishGuardsConfig": {
+            "type": "object",
+            "properties": {
+                "audit": {
+                    "type": "string",
+                    "enum": [
+                        "critical",
+                        "high",
+                        "low",
+                        "moderate",
+                        "off"
+                    ],
+                    "description": "Run `npm audit --omit=dev` against the resolved package and fail at the configured severity. Skips devDependency CVEs (which don't ship to consumers). `\"off\"` disables."
+                },
+                "exportsExist": {
+                    "type": "boolean",
+                    "description": "Verify every leaf path declared in `package.json#exports` / `main` / `module` / `types` / `bin` exists post-build. Wildcard exports (`./feat/*.js`) check that the directory is non-empty after build.\n\nCatches \"deleted file but forgot to update exports\" before publish."
+                },
+                "lifecycleScripts": {
+                    "anyOf": [
+                        {
+                            "type": "string",
+                            "const": "off"
+                        },
+                        {
+                            "type": "string",
+                            "const": "strict"
+                        },
+                        {
+                            "type": "string",
+                            "const": "warn"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "allow": {
+                                    "type": "object",
+                                    "additionalProperties": {
+                                        "type": "string"
+                                    }
+                                },
+                                "mode": {
+                                    "type": "string",
+                                    "enum": [
+                                        "off",
+                                        "strict",
+                                        "warn"
+                                    ]
+                                }
+                            },
+                            "required": [
+                                "mode"
+                            ],
+                            "additionalProperties": false
+                        }
+                    ],
+                    "description": "Gate on lifecycle scripts (`preinstall` / `install` / `postinstall`) declared on the package being published. These run on the consumer's machine at install time, so unauthorized additions are a supply-chain vector.\n\nModes: `\"off\"` (skip), `\"warn\"` (log + continue), `\"strict\"` (fail). Object form provides an exact-match `allow` table — only commands matching the listed value pass through."
+                },
+                "packSecretScan": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "object",
+                            "properties": {
+                                "ignore": {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            },
+                            "additionalProperties": false
+                        }
+                    ],
+                    "description": "Scan the resolved tarball contents (post `npm pack`) for secrets. Catches `.npmignore`/`files` misconfigurations that would ship `.env`, AWS keys, etc. Different scope than log redaction — this gates what actually leaves the machine.\n\n`true` runs the default `@visulima/secret-scanner` ruleset. Object form lets callers narrow the rule set or skip files."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Pre-publish security gates — run after the manifest is rewritten and the tarball is packed but BEFORE `npm publish` is invoked. Each gate is opt-in; defaults aim for \"useful for new repos, easy to disable for established ones\"."
+        },
+        "PackManager": {
+            "type": "string",
+            "enum": [
+                "auto",
+                "npm",
+                "pnpm",
+                "yarn",
+                "bun"
+            ]
+        },
+        "ProtocolResolutionMode": {
+            "type": "string",
+            "enum": [
+                "pack",
+                "in-place",
+                "none"
+            ]
+        },
+        "PublishStrategy": {
+            "type": "string",
+            "enum": [
+                "npm-publish-tarball",
+                "native"
+            ]
+        },
+        "ReleaseAssetsConfig": {
+            "type": "object",
+            "properties": {
+                "stampHashes": {
+                    "type": "boolean",
+                    "description": "Compute SHA256 + SHA512 of the published tarball and append them to the release body. Lets consumers verify the registry tarball matches the audited build, defending against post-publish substitution."
+                },
+                "uploadTarball": {
+                    "type": "boolean",
+                    "description": "Upload the published tarball as a release asset alongside the GH release. Belt-and-suspenders alongside `stampHashes` — registry tampering is detectable by hash comparison."
+                }
+            },
+            "additionalProperties": false
+        },
+        "SnapshotConfig": {
+            "type": "object",
+            "properties": {
+                "backend": {
+                    "$ref": "#/$defs/SnapshotBackend"
+                },
+                "cleanupOnPrClose": {
+                    "type": "boolean",
+                    "description": "Whether to delete published snapshots on PR-close (no-op for `pkg-pr-new`)."
+                },
+                "registry": {
+                    "type": "string",
+                    "description": "When backend is `pkg-pr-new`, the registry URL is supplied automatically."
+                },
+                "tags": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/SnapshotTagKind"
+                    },
+                    "description": "Multi-tag publish — pick which tag types to emit per snapshot."
+                },
+                "versionTemplate": {
+                    "type": "string",
+                    "description": "Version template — interpolation tokens: `{tag}`, `{shortSha}`, `{sha}`, `{branch}`, `{pr}`, `{timestamp}`."
+                }
+            },
+            "additionalProperties": false
+        },
+        "SnapshotBackend": {
+            "anyOf": [
+                {
+                    "type": "string",
+                    "const": "pkg-pr-new"
+                },
+                {
+                    "type": "string",
+                    "const": "registry"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "auth": {
+                            "type": "string"
+                        },
+                        "url": {
+                            "type": "string"
+                        }
+                    },
+                    "required": [
+                        "url"
+                    ],
+                    "additionalProperties": false
+                }
+            ]
+        },
+        "SnapshotTagKind": {
+            "type": "string",
+            "enum": [
+                "sha",
+                "short-sha",
+                "branch",
+                "pr"
+            ]
+        },
+        "SuccessWalkConfig": {
+            "type": "object",
+            "properties": {
+                "commentBody": {
+                    "type": "string",
+                    "description": "Comment body template posted on every referenced PR / issue. Tokens:   - `{version}` — the published version (e.g. `1.2.0`)   - `{name}`    — the published package name   - `{tag}`     — the git tag created for this release   - `{url}`     — the forge release URL when available\n\nDefault mirrors semantic-release's `successComment`."
+                },
+                "enabled": {
+                    "type": "boolean",
+                    "description": "Enable the walk. Default `true` when `successWalk` is present in the config. Setting `enabled: false` is functionally equivalent to omitting `successWalk` entirely (no walk runs) — the difference is one of intent: an explicit `enabled: false` documents that the operator has considered the walk and disabled it.\n\nLeaving `successWalk` undefined at the top level is the recommended \"off\" stance — see the interface docstring."
+                },
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Labels added to every walked PR / issue. Default `[\"released\"]`."
+                },
+                "skipPrerelease": {
+                    "type": "boolean",
+                    "description": "Skip the walk entirely on prerelease channels — the typical \"don't notify users their PR shipped in a beta\" guardrail. Default `true`."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Post-release notification walk — semantic-release parity.\n\n**Default OFF.** Set `release.successWalk: {}` to opt in with defaults. Leaving `successWalk` undefined in the workspace config is the explicit \"don't touch third-party PRs\" stance — sticky comments and the `released` label are an irreversible side effect on every PR mentioned in a changelog body, so we never apply them implicitly.\n\nWhen opted in, after a successful publish wave vis walks every PR / issue referenced in the rendered changelog entries and:   1. Posts (or upserts) a sticky comment announcing the release version.   2. Adds the configured labels (default `[\"released\"]`).\n\nFailure to walk a single ref is non-fatal — the publish itself already succeeded; we don't want a forge API blip rolling that back."
+        },
+        "UpdateInternalDependenciesMode": {
+            "type": "string",
+            "enum": [
+                "patch",
+                "minor",
+                "out-of-range"
+            ]
+        },
+        "VersionPrConfig": {
+            "type": "object",
+            "properties": {
+                "assignees": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Auto-assign these users (logins) as the PR assignees on creation. Existing assignees are preserved; this only adds. Defaults to unassigned."
+                },
+                "autoMerge": {
+                    "type": "boolean",
+                    "description": "Enable GitHub's auto-merge once status checks pass. Maps to `gh pr merge --auto`. Requires the repo to have auto-merge enabled in settings. Default `false`."
+                },
+                "autoMergeMethod": {
+                    "type": "string",
+                    "enum": [
+                        "merge",
+                        "rebase",
+                        "squash"
+                    ],
+                    "description": "Merge strategy for auto-merge — defaults to `\"squash\"`. Honoured only when `autoMerge: true`."
+                },
+                "autoRebase": {
+                    "type": "boolean",
+                    "description": "Periodically rebase the version-PR branch on top of `base` so the PR doesn't drift behind. Default `false`. Enable when the version-PR sits open for long periods and conflicts with other PRs are likely. The actual rebase runs via `vis release ci rebase-pr` (which the CI workflow can schedule on a cron)."
+                },
+                "branch": {
+                    "type": "string"
+                },
+                "commentMarker": {
+                    "type": "string",
+                    "description": "Sentinel comment marker for sticky-update detection."
+                },
+                "labels": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Labels applied to the version-PR. Defaults to `[\"autorelease: pending\"]`. Set to `[]` to disable. The label is added on every PR refresh — external automation can rely on it being present until the lifecycle moves on (`autorelease: tagged` post-publish, etc.)."
+                },
+                "preamble": {
+                    "type": "string",
+                    "description": "Markdown prepended to the PR body."
+                },
+                "reviewers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Auto-request reviews from these users / teams on PR creation. Format: GitHub usernames or `org/team`. Existing reviewers are preserved."
+                },
+                "title": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false
         }
     }
 }

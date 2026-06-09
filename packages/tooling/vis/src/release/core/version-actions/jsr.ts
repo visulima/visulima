@@ -52,6 +52,7 @@ import { join } from "node:path";
 import { VisReleaseError } from "../../errors";
 import type { PerPackageReleaseConfig, VisReleaseConfig, WorkspacePackage } from "../../types";
 import type { PackageManagerAdapter, PublishResult } from "../package-managers/interface";
+import { resolveAuthMode } from "./auth";
 import { safeFetchVersionMetadata } from "./fetch";
 import type { PublishContext } from "./interface";
 import { VersionActions } from "./interface";
@@ -215,21 +216,7 @@ const fetchJsrLatestVersion = async (
 const shouldUseTrustedPublishing = (
     env: NodeJS.ProcessEnv,
     workspaceConfig?: VisReleaseConfig,
-): boolean => {
-    const hasOidc = Boolean(env["ACTIONS_ID_TOKEN_REQUEST_URL"]);
-    const hasStatic = Boolean(env["JSR_API_KEY"]);
-    const preferStatic = workspaceConfig?.publish?.preferStaticToken === true;
-
-    if (!hasOidc) {
-        return false;
-    }
-
-    if (preferStatic && hasStatic) {
-        return false;
-    }
-
-    return true;
-};
+): boolean => resolveAuthMode({ env, staticTokenVar: "JSR_API_KEY", workspaceConfig }) === "oidc";
 
 /**
  * Resolve the absolute path to the JSR manifest for a given workspace
