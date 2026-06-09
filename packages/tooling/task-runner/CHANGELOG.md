@@ -1,3 +1,14 @@
+## @visulima/task-runner [1.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.21...@visulima/task-runner@1.0.0-alpha.22) (2026-06-09)
+
+### Features
+
+* **task-runner:** surface native addon fallback loudly ([fd6e9d0](https://github.com/visulima/visulima/commit/fd6e9d045d9480e0e49a5d2aa6a240bf25a6799a))
+
+### Bug Fixes
+
+* **task-runner:** replace NUL in EDGE_SEPARATOR ([0e94f59](https://github.com/visulima/visulima/commit/0e94f59bb4e8a6f2ff215a26b0b52ef74309c84c))
+* **task-runner:** revalidate in-memory file-hash cache ([65ea6d5](https://github.com/visulima/visulima/commit/65ea6d5cee8f160b5ccbec2246d1c94e6a480bb2))
+
 ## @visulima/task-runner [1.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.20...@visulima/task-runner@1.0.0-alpha.21) (2026-06-07)
 
 ### Features
