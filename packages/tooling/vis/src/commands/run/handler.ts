@@ -1206,6 +1206,18 @@ const parseCacheBackend = (value: string | undefined): "http" | "reapi" | undefi
     return value;
 };
 
+const parseHashMode = (value: string | undefined): "declared" | "trace" | undefined => {
+    if (value === undefined || value === "") {
+        return undefined;
+    }
+
+    if (value !== "declared" && value !== "trace") {
+        throw new Error(`--hash-mode must be one of: declared, trace (received "${value}")`);
+    }
+
+    return value;
+};
+
 const execute = async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RunOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
@@ -1500,6 +1512,12 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
     const taskArgumentEnvVars = argumentResolution.env;
 
+    // `--hash-mode` overrides how the directly-run target is hashed for
+    // this run; when unset, the target's configured `hashMode` (if any)
+    // still applies. Validated early so a bad value fails before any task
+    // is scheduled. Dependency tasks keep their own configured hashMode.
+    const hashModeOverride = parseHashMode(options.hashMode);
+
     let initialTasks: Task[] = projectsWithTarget.map((projectName) => {
         const project = workspace.projects[projectName];
         const visTarget = projectTargetIndex.get(projectName)!;
@@ -1537,6 +1555,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
         return {
             cache: visTarget.cache,
+            hashMode: hashModeOverride ?? visTarget.hashMode,
             id: taskId,
             outputs: expandedOutputs,
             overrides: {
@@ -2096,8 +2115,9 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
             const task = taskGraph.tasks[id];
             const indent = "  ".repeat(depth + 1);
+            const annotations = `${task?.cache === false ? " (no-cache)" : ""}${task?.hashMode === "trace" ? " (trace)" : ""}`;
 
-            logger.info(`${indent}${id}${task?.cache === false ? " (no-cache)" : ""}`);
+            logger.info(`${indent}${id}${annotations}`);
         };
 
         for (const root of taskGraph.roots) {
