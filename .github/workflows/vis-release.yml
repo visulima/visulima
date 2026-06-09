@@ -1,0 +1,153 @@
+# vis release — primary release workflow.
+# Publishes packages with release.managed: true via @visulima/vis.
+#
+# Auto-publish vs version-PR is determined per-channel via vis.config.ts;
+# alpha/beta default to auto-publish, main/next default to version-PR.
+
+name: "vis release"
+
+"on":
+    push:
+        branches:
+            - "main"
+            - "next"
+            - "next-major"
+            - "alpha"
+            - "beta"
+            # Maintenance release branches (e.g. "1.x", "1.2.x"). GitHub
+            # Actions glob patterns don't support bash-style extglob, so
+            # match both shapes explicitly.
+            - "[0-9]*.x"
+            - "[0-9]*.[0-9]*.x"
+    workflow_dispatch: {}
+
+# Serialise releases per branch (RFC §19.1).
+concurrency:
+    group: "vis-release-${{ github.ref }}"
+    cancel-in-progress: false
+
+permissions:
+    contents: "write"
+    pull-requests: "write"
+    id-token: "write"
+
+jobs:
+    release:
+        name: "Release"
+        runs-on: "ubuntu-latest"
+        # Run inside the `release` GitHub environment so VIS_GH_TOKEN /
+        # NPM_TOKEN are gated by environment-level approvals + audit log
+        # (zizmor: secrets-without-environment).
+        environment: "release"
+        steps:
+            - name: "Harden runner"
+              uses: "step-security/harden-runner@fa2e9d605c4eeb9fcad4c99c224cee0c6c7f3594" # v2.16.0
+              with:
+                  egress-policy: "audit"
+
+            - name: "Checkout"
+              uses: "actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5" # v4.3.1
+              with:
+                  fetch-depth: 0
+                  token: "${{ secrets.VIS_GH_TOKEN || github.token }}"
+                  # Don't write credentials to the local .git/config — later
+                  # steps re-authenticate explicitly via VIS_GH_TOKEN.
+                  persist-credentials: false
+
+            - name: "Setup Node + pnpm"
+              uses: "anolilab/workflows/step/setup@c7103f1bfdb14c19596c4f80156c824951bfc117" # main
+
+            - name: "Build"
+              run: "pnpm run build:packages:prod"
+
+            - name: "Test"
+              run: "pnpm run test"
+              env:
+                  TEST_PROD_BUILD: "true"
+
+            # Wait for build-native.yml to deposit .node artifacts. The
+            # download step keeps `continue-on-error` so non-NAPI runs (where
+            # nothing has been uploaded) don't hard-fail; the verify step
+            # below blocks the publish if a NAPI parent ends up without its
+            # `.node` payloads.
+            - name: "Download native artifacts"
+              uses: "dawidd6/action-download-artifact@8a338493df3d275e4a7a63bcff3b8fe97e51a927" # v19
+              with:
+                  name_is_regexp: true
+                  name: "bindings-.*"
+                  path: "artifacts/"
+              continue-on-error: true
+
+            - name: "Distribute native artifacts to platform packages"
+              shell: "bash"
+              run: |
+                  set -euo pipefail
+
+                  if [ ! -d "artifacts" ]; then
+                      echo "No artifacts/ directory — skipping native artifact distribution."
+                      exit 0
+                  fi
+
+                  for pkg in task-runner tui vis secret-scanner; do
+                      pkgdir="packages/tooling/$pkg"
+
+                      if [ ! -d "$pkgdir" ]; then
+                          continue
+                      fi
+
+                      # Only act when this pkg actually has matching artifacts.
+                      matches=$(find artifacts -name "*.node" -path "*$pkg*" -print -quit)
+
+                      if [ -z "$matches" ]; then
+                          continue
+                      fi
+
+                      find artifacts -name "*.node" -path "*$pkg*" -exec mv {} "$pkgdir/" \;
+                      pnpm exec napi artifacts --output-dir "$pkgdir" --npm-dir "$pkgdir/npm"
+                      find "$pkgdir" -maxdepth 1 -name "*.node" -delete
+                  done
+
+            - name: "Verify native artifacts for NAPI parents"
+              shell: "bash"
+              run: |
+                  set -euo pipefail
+
+                  # If a NAPI parent's `npm/<target>` directory exists but is
+                  # empty (no .node payload), publishing would ship a broken
+                  # platform stub. Fail the job rather than continuing.
+                  missing=0
+
+                  for pkg in task-runner tui vis secret-scanner; do
+                      npmdir="packages/tooling/$pkg/npm"
+
+                      if [ ! -d "$npmdir" ]; then
+                          continue
+                      fi
+
+                      for target in "$npmdir"/*/; do
+                          if [ ! -d "$target" ]; then
+                              continue
+                          fi
+
+                          if ! find "$target" -maxdepth 2 -name "*.node" -print -quit | grep -q .; then
+                              echo "::error::Missing .node payload in $target"
+                              missing=1
+                          fi
+                      done
+                  done
+
+                  if [ "$missing" -ne 0 ]; then
+                      echo "Native artifact hydration is incomplete — refusing to publish."
+                      exit 1
+                  fi
+
+            - name: "Run vis release"
+              run: "pnpm exec vis release ci release"
+              env:
+                  GH_TOKEN: "${{ github.token }}"
+                  VIS_GH_TOKEN: "${{ secrets.VIS_GH_TOKEN || github.token }}"
+                  NPM_TOKEN: "${{ secrets.NPM_TOKEN }}"
+                  GIT_AUTHOR_NAME: "vis-release-bot"
+                  GIT_AUTHOR_EMAIL: "vis-release-bot@users.noreply.github.com"
+                  GIT_COMMITTER_NAME: "vis-release-bot"
+                  GIT_COMMITTER_EMAIL: "vis-release-bot@users.noreply.github.com"
