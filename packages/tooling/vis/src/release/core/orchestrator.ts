@@ -36,16 +36,8 @@ import type { PackageManagerAdapter } from "./package-managers/interface";
 import { collectContributors, expandReleaseNoteTemplate } from "./release-note-template";
 import { assembleReleasePlan } from "./release-plan";
 import { createShellRunner } from "./shell-runner";
-import { CargoVersionActions } from "./version-actions/cargo";
-import { ContainerActions } from "./version-actions/container";
 import type { VersionActions } from "./version-actions/interface";
-import { JsrVersionActions } from "./version-actions/jsr";
-import { MavenVersionActions } from "./version-actions/maven";
-import { NativeAddonVersionActions } from "./version-actions/native-addon";
-import { NpmVersionActions } from "./version-actions/npm";
-import { PrivateVersionActions } from "./version-actions/private";
-import { PythonVersionActions } from "./version-actions/python";
-import { ShellPublishActions } from "./version-actions/shell";
+import { createVersionActions } from "./version-actions/registry";
 import { discoverPackages, resolveVersionActionsId } from "./workspace";
 
 export interface OrchestratorContext {
@@ -1058,6 +1050,13 @@ export const publishContext = async (
         // O(1) lookup by name in the publish loop (was O(n²) via Array.find)
         const releaseByName = new Map(releases.map((r) => [r.name, r] as const));
 
+        // Names that must not have dependents published after them: either the
+        // package's own publish threw, or it was skipped because one of *its*
+        // runtime dependencies was already in this set. Topo order guarantees a
+        // dependency is processed before its dependents, so by the time we
+        // reach a dependent every blocking ancestor is already recorded here.
+        const failedNames = new Set<string>();
+
         // Build name → versioned manifest map for protocol resolution
         const versionedManifestByName = new Map<string, PackageManifest>();
 
@@ -1083,6 +1082,32 @@ export const publishContext = async (
             const pkg = context.depGraph.getPackage(name);
 
             if (!pkg) {
+                continue;
+            }
+
+            // Don't orphan a dependent. If one of this package's internal
+            // runtime dependencies failed to publish (or was itself skipped
+            // for the same reason), the `workspace:` range we rewrite at pack
+            // time would resolve to a version that never reached the registry,
+            // leaving consumers with an uninstallable tree. Skip the cascade
+            // and surface why. devDependencies are excluded — they aren't
+            // installed by downstream consumers and the topo sort already
+            // ignores them for ordering.
+            const blockingDeps = [
+                ...new Set(
+                    context.depGraph
+                        .getDependencies(name)
+                        .filter((dep) => dep.kind !== "devDependencies" && failedNames.has(dep.name))
+                        .map((dep) => dep.name),
+                ),
+            ];
+
+            if (blockingDeps.length > 0) {
+                result.skipped.push({
+                    name,
+                    reason: `dependency-failed: not published because ${blockingDeps.join(", ")} failed to publish (publishing would orphan this package's dependency range)`,
+                });
+                failedNames.add(name);
                 continue;
             }
 
@@ -1171,6 +1196,9 @@ export const publishContext = async (
                 }
             } catch (error) {
                 result.failed.push({ name, reason: (error as Error).message });
+                // Mark so dependents downstream in the topo order are skipped
+                // rather than published against a missing dependency version.
+                failedNames.add(name);
             }
         }
 
@@ -2079,38 +2107,6 @@ const createRemoteReleases = async (
             // forge-side issue (auth, rate limit, missing tag).
             // eslint-disable-next-line no-console
             console.warn(`createRelease failed for ${item.name}@${item.version} (tag ${tag}): ${(error as Error).message}`);
-        }
-    }
-};
-
-const createVersionActions = (id: string): VersionActions => {
-    switch (id) {
-        case "cargo": {
-            return new CargoVersionActions();
-        }
-        case "container": {
-            return new ContainerActions();
-        }
-        case "jsr": {
-            return new JsrVersionActions();
-        }
-        case "maven": {
-            return new MavenVersionActions();
-        }
-        case "native-addon": {
-            return new NativeAddonVersionActions();
-        }
-        case "private": {
-            return new PrivateVersionActions();
-        }
-        case "python": {
-            return new PythonVersionActions();
-        }
-        case "shell": {
-            return new ShellPublishActions();
-        }
-        default: {
-            return new NpmVersionActions();
         }
     }
 };

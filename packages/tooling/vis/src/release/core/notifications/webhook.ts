@@ -33,6 +33,7 @@
  */
 
 import type { WebhookConfig } from "../../types";
+import { redactTokens } from "../security";
 import type { NotificationChannel, NotificationContext } from "./interface";
 import { expandNotificationTemplate } from "./interface";
 
@@ -161,8 +162,12 @@ export class WebhookNotificationChannel implements NotificationChannel {
             const errorBody = await response.text().catch(() => "");
 
             // Intentionally redact the URL with a placeholder — the path
-            // may contain a bearer secret (Slack/Discord-style webhooks).
-            throw new Error(`Webhook ${this.id} POST <webhook-url> returned ${response.status} ${response.statusText}${errorBody ? `: ${errorBody.slice(0, 200)}` : ""}`);
+            // may contain a bearer secret (Slack/Discord-style webhooks). The
+            // response body is server-controlled and may echo a forwarded
+            // auth header, so it's run through redactTokens before surfacing.
+            const safeBody = errorBody ? `: ${redactTokens(errorBody.slice(0, 200))}` : "";
+
+            throw new Error(`Webhook ${this.id} POST <webhook-url> returned ${response.status} ${response.statusText}${safeBody}`);
         }
     }
 }

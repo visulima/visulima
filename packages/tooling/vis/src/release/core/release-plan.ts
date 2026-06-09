@@ -729,6 +729,44 @@ export const assembleReleasePlan = (
     // unique-fanout total, not the count at first-cross.
     const devDepFanoutCounts = new Map<string, Set<string>>();
 
+    // Resolve `releaseAs` pins BEFORE the fixed-point loop so phase-A /
+    // phase-C dependents see the pinned version when computing their own
+    // rewrites. (This used to be seeded during materialisation — after the
+    // loop — which meant cascades propagated the *computed* bump, not the
+    // operator's pin.) Conflicting pins for one package are a hard error.
+    const resolveReleaseAsPin = (packageName: string): string | undefined => {
+        const overrides = findChangeFilesFor(packageName, changeFiles)
+            .map((file) => ("releaseAs" in file.payload ? { file: file.path, version: file.payload.releaseAs } : undefined))
+            .filter((override): override is { file: string; version: string } => override !== undefined && typeof override.version === "string");
+
+        const distinctOverrides = new Set(overrides.map((o) => o.version));
+
+        if (distinctOverrides.size > 1) {
+            throw new VisReleaseError({
+                code: "BUMP_FILE_INVALID",
+                message: `Conflicting releaseAs values for ${packageName}: ${[...distinctOverrides].join(", ")}. Found in: ${overrides.map((o) => o.file).join(", ")}. Consolidate the change files to a single override.`,
+                packageName,
+            });
+        }
+
+        return overrides[0]?.version;
+    };
+
+    const releaseAsByPackage = new Map<string, string>();
+
+    for (const entry of plan.values()) {
+        if (entry.type === "none") {
+            continue;
+        }
+
+        const pin = resolveReleaseAsPin(entry.name);
+
+        if (pin) {
+            releaseAsByPackage.set(entry.name, pin);
+            versionsCache.set(entry.name, pin);
+        }
+    }
+
     // Fixed-point loop.
     for (let i = 0; i < MAX_ITERATIONS; i += 1) {
         const a = phaseA(plan, depGraph, versionsCache, options, warnings, config, devDepFanoutCounts);
@@ -775,26 +813,9 @@ export const assembleReleasePlan = (
 
         const filesForPkg = findChangeFilesFor(entry.name, changeFiles);
 
-        // releaseAs override: if any nested-shape change file pins a
-        // specific version for this package, use that literal value
-        // instead of computing via bumpVersion. Two change files
-        // disagreeing on the override is a hard error — the operator
-        // must consolidate.
-        const releaseAsOverrides = filesForPkg
-            .map((file) => ("releaseAs" in file.payload ? { file: file.path, version: file.payload.releaseAs } : undefined))
-            .filter((override): override is { file: string; version: string } => override !== undefined && typeof override.version === "string");
-
-        const distinctOverrides = new Set(releaseAsOverrides.map((o) => o.version));
-
-        if (distinctOverrides.size > 1) {
-            throw new VisReleaseError({
-                code: "BUMP_FILE_INVALID",
-                message: `Conflicting releaseAs values for ${entry.name}: ${[...distinctOverrides].join(", ")}. Found in: ${releaseAsOverrides.map((o) => o.file).join(", ")}. Consolidate the change files to a single override.`,
-                packageName: entry.name,
-            });
-        }
-
-        const releaseAsVersion = releaseAsOverrides[0]?.version;
+        // releaseAs override (resolved + cache-seeded before the fixed-point
+        // loop above, so cascades already propagated against the pin).
+        const releaseAsVersion = releaseAsByPackage.get(entry.name);
 
         const resolvedCurrent = options.currentVersions?.get(entry.name) ?? pkg.version;
         const newVersion = releaseAsVersion ?? versionsCache.get(entry.name) ?? bumpVersion({
@@ -804,12 +825,6 @@ export const assembleReleasePlan = (
             current: resolvedCurrent,
             prerelease: options.prerelease,
         });
-
-        if (releaseAsVersion) {
-            // Seed the cache so phase-A / phase-C dependents see the
-            // pinned version when computing their own rewrites.
-            versionsCache.set(entry.name, releaseAsVersion);
-        }
 
         releases.push({
             changeFiles: filesForPkg,

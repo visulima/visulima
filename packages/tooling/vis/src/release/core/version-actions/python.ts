@@ -78,6 +78,7 @@ import { join } from "node:path";
 import { VisReleaseError } from "../../errors";
 import type { PerPackageReleaseConfig, VisReleaseConfig, WorkspacePackage } from "../../types";
 import type { CommandRunner, PackageManagerAdapter, PublishResult } from "../package-managers/interface";
+import { resolveAuthMode } from "./auth";
 import { safeFetchVersionMetadata } from "./fetch";
 import type { PublishContext } from "./interface";
 import { VersionActions } from "./interface";
@@ -378,24 +379,7 @@ const resolveBuildEnv = (backend: PythonBuildBackend, hasUv: boolean): ResolvedB
 const detectAuthMode = (
     env: NodeJS.ProcessEnv,
     workspaceConfig?: VisReleaseConfig,
-): "oidc" | "token" | "missing" => {
-    const hasOidc = Boolean(env.ACTIONS_ID_TOKEN_REQUEST_URL);
-    const hasStatic = Boolean(env.TWINE_PASSWORD);
-    const preferStatic = workspaceConfig?.publish?.preferStaticToken === true;
-
-    // OIDC wins when the env signal is present, except when the
-    // operator explicitly opted into static-token precedence AND a
-    // static token is actually available.
-    if (hasOidc && !(preferStatic && hasStatic)) {
-        return "oidc";
-    }
-
-    if (hasStatic) {
-        return "token";
-    }
-
-    return "missing";
-};
+): "missing" | "oidc" | "token" => resolveAuthMode({ env, staticTokenVar: "TWINE_PASSWORD", workspaceConfig });
 
 /**
  * Single helper that fetches `https://pypi.org/pypi/&lt;name>/json` and

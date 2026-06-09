@@ -31,15 +31,7 @@ import semver from "semver";
 import type { PerPackageReleaseConfig, VisReleaseConfig, WorkspacePackage } from "../types";
 import type { DependencyGraph } from "./dep-graph";
 import type { CommandRunner, PackageManagerAdapter } from "./package-managers/interface";
-import { CargoVersionActions } from "./version-actions/cargo";
-import { ContainerActions } from "./version-actions/container";
-import type { VersionActions } from "./version-actions/interface";
-import { MavenVersionActions } from "./version-actions/maven";
-import { NativeAddonVersionActions } from "./version-actions/native-addon";
-import { NpmVersionActions } from "./version-actions/npm";
-import { PrivateVersionActions } from "./version-actions/private";
-import { PythonVersionActions } from "./version-actions/python";
-import { ShellPublishActions } from "./version-actions/shell";
+import { createVersionActions } from "./version-actions/registry";
 import { resolveVersionActionsId } from "./workspace";
 
 export type CurrentVersionResolverMode = "disk" | "git-tag" | "registry";
@@ -461,39 +453,6 @@ export const resolveCurrentVersionsForWorkspace = async (
     }
 
     return { versions, warnings };
-};
-
-// Local copy of the factory in orchestrator.ts. Kept in sync with that
-// switch deliberately rather than imported — orchestrator.ts already
-// owns the dispatch, and importing would create a circular dependency
-// between orchestrator.ts and version-resolver.ts.
-const createVersionActions = (id: string): VersionActions => {
-    switch (id) {
-        case "cargo": {
-            return new CargoVersionActions();
-        }
-        case "container": {
-            return new ContainerActions();
-        }
-        case "maven": {
-            return new MavenVersionActions();
-        }
-        case "native-addon": {
-            return new NativeAddonVersionActions();
-        }
-        case "private": {
-            return new PrivateVersionActions();
-        }
-        case "python": {
-            return new PythonVersionActions();
-        }
-        case "shell": {
-            return new ShellPublishActions();
-        }
-        default: {
-            return new NpmVersionActions();
-        }
-    }
 };
 
 // Renders a tag for a given package@version (re-exported for tests). Not a

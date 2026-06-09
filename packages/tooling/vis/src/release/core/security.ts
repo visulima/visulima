@@ -59,6 +59,32 @@ export const assertValidPackageName = (name: string): void => {
  */
 export const sq = (value: string): string => `'${value.replaceAll("'", String.raw`'\''`)}'`;
 
+/**
+ * Windows `cmd.exe` analogue of {@link sq}. `cmd.exe` does not treat single
+ * quotes as quoting characters, so `sq()` gives no protection there — a value
+ * like a registry URL containing shell metacharacters would break out of its
+ * argument slot. Wrapping in double quotes makes those metacharacters (pipe,
+ * redirection, caret, parentheses, and whitespace) literal; embedded double
+ * quotes are doubled per the cmd convention.
+ *
+ * Caveat: `%VAR%` / delayed-`!VAR!` expansion still happens inside double
+ * quotes. That residual is acceptable because custom commands are gated behind
+ * `allowCustomCommands`, and the substituted token values are the maintainer's
+ * own (package name — charset-validated — version, tag, registry).
+ * @example
+ *   cmdq("hello")            // returns '"hello"'
+ *   cmdq('say "hi"')         // returns '"say ""hi"""'
+ */
+export const cmdq = (value: string): string => `"${value.replaceAll(`"`, `""`)}"`;
+
+/**
+ * Quote a token value for whichever shell will run the command — `sh -c` on
+ * POSIX, `cmd /c` on Windows. The orchestrator and shell action both pick the
+ * shell from `process.platform`, so the quoting must match that decision.
+ */
+export const shellQuote = (value: string, isWindows: boolean = process.platform === "win32"): string =>
+    (isWindows ? cmdq(value) : sq(value));
+
 // ── Custom-command trust gate ──────────────────────────────────────
 
 /**
@@ -104,12 +130,13 @@ export const isCustomCommandAllowed = (
 export const interpolateCommand = (
     template: string,
     tokens: { name: string; registry?: string; tag?: string; version: string },
+    isWindows: boolean = process.platform === "win32",
 ): string =>
     template
-        .replaceAll("{{name}}", sq(tokens.name))
-        .replaceAll("{{version}}", sq(tokens.version))
-        .replaceAll("{{tag}}", sq(tokens.tag ?? ""))
-        .replaceAll("{{registry}}", sq(tokens.registry ?? ""));
+        .replaceAll("{{name}}", shellQuote(tokens.name, isWindows))
+        .replaceAll("{{version}}", shellQuote(tokens.version, isWindows))
+        .replaceAll("{{tag}}", shellQuote(tokens.tag ?? "", isWindows))
+        .replaceAll("{{registry}}", shellQuote(tokens.registry ?? "", isWindows));
 
 // ── OIDC / npm / GH token redaction ────────────────────────────────
 
@@ -140,9 +167,11 @@ const TOKEN_PATTERNS: ReadonlyArray<RegExp> = [
     // npmrc-style HTTP Basic auth header (base64-encoded user:password)
     /\bBasic\s+[A-Za-z0-9+/=]{16,}/g,
     // npm OTP values — `--otp=123456`, `--otp 123456`, or npm's EOTP error
-    // payload (`one-time password: 123456`). The numeric form is intentional
-    // (npm OTPs are 6-digit TOTPs) so we don't over-redact unrelated text.
-    /--otp[= ]\d{6,}/g,
+    // payload (`one-time password: 123456`). The flag form redacts whatever
+    // value follows (some registries issue alphanumeric one-time codes, not
+    // just npm's 6-digit numeric TOTP); the error-payload forms stay numeric
+    // (they're npm-specific) so we don't over-redact unrelated prose.
+    /--otp[= ]\S+/g,
     /\bone[- ]time password:?\s*\d{6,}/gi,
     /\bEOTP\s+\d{6,}/g,
     /Bearer (?!\[REDACTED\])[^\s"']+/g,

@@ -4026,7 +4026,8 @@
                         {
                             "type": "array",
                             "minItems": 2,
-                            "items": [
+                            "maxItems": 2,
+                            "prefixItems": [
                                 {
                                     "type": "string"
                                 },
@@ -4034,8 +4035,7 @@
                                     "type": "object",
                                     "additionalProperties": {}
                                 }
-                            ],
-                            "maxItems": 2
+                            ]
                         }
                     ],
                     "description": "Changelog formatter selection. Pass `false` to disable changelog output, one of the built-in names (`\"default\"`, `\"github\"`, `\"keep-a-changelog\"`), a path to a custom module, or a `[path, options]` tuple."
@@ -4485,7 +4485,8 @@
                             {
                                 "type": "array",
                                 "minItems": 2,
-                                "items": [
+                                "maxItems": 2,
+                                "prefixItems": [
                                     {
                                         "type": "string"
                                     },
@@ -4493,8 +4494,7 @@
                                         "type": "object",
                                         "additionalProperties": {}
                                     }
-                                ],
-                                "maxItems": 2
+                                ]
                             }
                         ]
                     },
