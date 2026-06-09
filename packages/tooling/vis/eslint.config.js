@@ -32,6 +32,10 @@ export default createConfig(
             // harness in __tests__/fixtures/schemas/load.ts. Refreshed via
             // scripts/refresh-vendored-schemas.ts and kept verbatim.
             "__tests__/fixtures/schemas/*.json",
+            // Release-subsystem migration/workspace fixtures. Hand-crafted
+            // package layouts (with package.json, .changeset/, index.js stubs)
+            // exercised by tests — not part of the source tree, not in tsconfig.
+            "__tests__/release/fixtures/**",
         ],
         typescript: {
             tsconfigPath: "./tsconfig.eslint.json",
@@ -118,6 +122,26 @@ export default createConfig(
             // tests use tmpdir() for fixtures — safe outside test runner
             "sonarjs/publicly-writable-directories": "off",
             "vitest/require-mock-type-parameters": "off",
+        },
+    },
+    {
+        // Adapter / client classes (package-managers, remote release clients,
+        // version-actions) implement abstract interfaces where some methods
+        // take all deps as args and don't need `this`. The class form is kept
+        // for symmetry across the set and DI-style construction; per-method
+        // `this`-usage isn't a useful signal here.
+        //
+        // The remote clients also co-locate small private helpers next to
+        // the public method that uses them — easier to read than enforcing
+        // strict public-first ordering across a ~600-line class.
+        files: [
+            "src/release/core/package-managers/**/*.ts",
+            "src/release/core/remote/**/*.ts",
+            "src/release/core/version-actions/**/*.ts",
+        ],
+        rules: {
+            "@typescript-eslint/member-ordering": "off",
+            "class-methods-use-this": "off",
         },
     },
     {
@@ -224,6 +248,24 @@ export default createConfig(
         files: ["src/commands/cache/handler.ts", "src/commands/clean/handler.ts", "src/commands/hook/handler.ts", "src/commands/service/handler.ts"],
         rules: {
             "no-restricted-imports": "off",
+        },
+    },
+    {
+        // Release-subsystem tests: scoped so unrelated test files keep these
+        // rules (and their inline disables) intact.
+        files: ["__tests__/release/**/*.ts"],
+        rules: {
+            // Mock adapter/client classes implement abstract interfaces whose
+            // methods don't need `this` (mirrors the source-side relaxation).
+            "class-methods-use-this": "off",
+            // Tests intentionally exercise deprecated/test-only helpers and
+            // use plain http:// mock/fixture URLs (never real network).
+            "sonarjs/deprecation": "off",
+            "sonarjs/no-clear-text-protocols": "off",
+            // The try/catch + `expect` on the caught error is the idiomatic way
+            // to assert on a specific error type/code/message here.
+            "vitest/no-conditional-expect": "off",
+            "vitest/require-to-throw-message": "off",
         },
     },
 );

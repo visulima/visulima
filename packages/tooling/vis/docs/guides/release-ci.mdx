@@ -1,0 +1,422 @@
+---
+title: Release CI
+description: "Wire vis release into GitHub Actions or GitLab CI — version-PR mode, auto-publish, snapshots, OIDC trusted publishing."
+---
+
+# Release CI
+
+This page walks you through wiring `vis release` into CI. Pair it with the [release guide](./release.mdx) for the mental model and the [commands reference](../commands/release.mdx) for per-flag detail.
+
+> 💡 **Don't write workflows by hand.** Run `vis release init --workflows` once. It writes the right files for your provider — `.github/workflows/vis-release{,-check,-snapshot}.yml` on GitHub or `.gitlab-ci.yml` on GitLab — and prints a follow-up checklist (`vis release ci setup`) for the secrets / OIDC trust pieces vis can't configure for you.
+
+## Pick your setup
+
+| Your situation                                          | Workflows to install                                                                     |
+| ------------------------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Stable releases on `main` + prereleases on `alpha`      | [A](#workflow-a-version-pr-on-main--next) + [B](#workflow-b-auto-publish-on-alpha--beta) |
+| Stable releases only                                    | [A](#workflow-a-version-pr-on-main--next)                                                |
+| Prereleases only (ship every push)                      | [B](#workflow-b-auto-publish-on-alpha--beta)                                             |
+| Want PR review comments showing what's about to release | Add [C](#workflow-c-pr-sticky-comment)                                                   |
+| Want installable previews from every PR                 | Add [D](#workflow-d-snapshot-previews-on-prs)                                            |
+
+## How channels decide what CI does
+
+The `mode` in `release.channels.<name>.mode` decides what happens when CI runs on that branch:
+
+| Mode           | Pending change files                                              | No pending change files                                             |
+| -------------- | ----------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `version-pr`   | Run `version` in a temp branch, force-push, open / update the PR. | Treat the push as the merged release-PR; publish + tag + push tags. |
+| `auto-publish` | `version + publish + tag + push tags + create releases` inline.   | No-op (`Nothing to release`).                                       |
+
+Typical channel layout:
+
+```typescript
+// vis.config.ts
+export default {
+    release: {
+        channels: {
+            main: { tag: "latest", mode: "version-pr" },
+            next: { tag: "next", prerelease: "next", mode: "version-pr" },
+            alpha: { tag: "alpha", prerelease: "alpha", mode: "auto-publish" },
+            beta: { tag: "beta", prerelease: "beta", mode: "auto-publish" },
+        },
+    },
+};
+```
+
+## Secrets and tokens
+
+| Secret / env   | Used for                                                                                                                                                                                                                                                              |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GH_TOKEN`     | Comments, reads, and PR creation. On GitHub Actions, default to `${{ github.token }}`.                                                                                                                                                                                |
+| `VIS_GH_TOKEN` | Force-pushing the version-PR branch. **Required** for `version-pr` mode on GitHub — the default `github.token` is locked against recursion so it cannot trigger downstream workflows on the version-PR. Use a fine-grained PAT or a GitHub App token with `contents:write`. |
+| `NPM_TOKEN`    | `npm publish`. Skip if you use OIDC trusted publishing (see below).                                                                                                                                                                                                   |
+| `GITLAB_TOKEN` | GitLab adapter — used by `glab` for MR comments + release creation.                                                                                                                                                                                                   |
+| `CI_JOB_TOKEN` | GitLab — pushes back to the project via the `oauth2:$CI_JOB_TOKEN@…` URL.                                                                                                                                                                                             |
+
+Run `vis release ci setup` to see the exact list for your provider.
+
+## OIDC trusted publishing
+
+npm trusted publishing skips long-lived registry tokens. Each package opts in via its npm settings page; CI claims an OIDC ID token at publish time and exchanges it for a one-shot registry credential.
+
+> 💡 **Use it.** Long-lived `NPM_TOKEN` secrets are the most common credential leak in npm-publishing CI setups. OIDC tokens last seconds and bind to the workflow that issued them.
+
+GitHub Actions — give the publish job `id-token: write`:
+
+```yaml
+permissions:
+    contents: write
+    id-token: write
+    pull-requests: write
+```
+
+GitLab CI — the same idea via `id_tokens`:
+
+```yaml
+release:
+    id_tokens:
+        SIGSTORE_ID_TOKEN:
+            aud: sigstore
+    script:
+        - pnpm exec vis release ci release
+```
+
+`vis release doctor` reports the OIDC sub claim it sees and which packages on the registry are configured to trust it.
+
+## GitHub Actions
+
+### Workflow A — version-PR on main / next
+
+**What you get.** Push to `main` with pending change files → CI opens or updates a **"Versioned release" PR** with the version bumps applied. Merge that PR → CI publishes, pushes tags, and creates GitHub releases.
+
+```yaml
+# .github/workflows/vis-release.yml
+name: vis release
+
+on:
+    push:
+        branches: [main, next]
+    workflow_dispatch:
+
+# Serialise releases per branch — a second push queues behind the first.
+concurrency:
+    group: vis-release-${{ github.ref }}
+    cancel-in-progress: false
+
+permissions:
+    contents: write
+    id-token: write
+    pull-requests: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  # VIS_GH_TOKEN lets the version-PR branch push trigger
+                  # downstream workflows. The default github.token is locked
+                  # against workflow recursion.
+                  token: ${{ secrets.VIS_GH_TOKEN || github.token }}
+                  persist-credentials: false
+
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+                  cache: pnpm
+
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run build:packages:prod
+
+            - run: pnpm exec vis release ci release
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  VIS_GH_TOKEN: ${{ secrets.VIS_GH_TOKEN || github.token }}
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+                  GIT_AUTHOR_NAME: "vis-release-bot"
+                  GIT_AUTHOR_EMAIL: "vis-release-bot@users.noreply.github.com"
+                  GIT_COMMITTER_NAME: "vis-release-bot"
+                  GIT_COMMITTER_EMAIL: "vis-release-bot@users.noreply.github.com"
+```
+
+### Workflow B — auto-publish on alpha / beta
+
+**What you get.** Every push to `alpha` or `beta` with pending change files publishes immediately. No PR review gate. Best for fast-iterating prereleases.
+
+The channel `mode` in `vis.config.ts` is what actually picks the path — `--auto-publish` is only needed if you want to override a `version-pr` channel from the CLI. Most teams set the mode in config (see [How channels decide what CI does](#how-channels-decide-what-ci-does)) and run the same `vis release ci release` command on every branch.
+
+```yaml
+# .github/workflows/vis-release-prerelease.yml
+name: vis release prerelease
+
+on:
+    push:
+        branches: [alpha, beta]
+
+concurrency:
+    group: vis-release-${{ github.ref }}
+    cancel-in-progress: false
+
+permissions:
+    contents: write
+    id-token: write
+
+jobs:
+    release:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+                  cache: pnpm
+
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run build:packages:prod
+
+            - run: pnpm exec vis release ci release
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+```
+
+### Workflow C — PR sticky-comment
+
+**What you get.** Every PR targeting `main` or `next` gets a sticky comment summarising the release plan. Reviewers see exactly what's about to ship before approving.
+
+```yaml
+# .github/workflows/vis-release-check.yml
+name: vis release check
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened]
+
+permissions:
+    contents: read
+    pull-requests: write
+
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm exec vis release ci check
+              env:
+                  GH_TOKEN: ${{ github.token }}
+```
+
+### Workflow D — snapshot previews on PRs
+
+**What you get.** Every PR publishes ephemeral `0.0.0-pr-<n>-<sha>` versions of affected packages. The PR gets a sticky comment with `pnpm add @scope/pkg@pr-<n>` snippets. Closes the PR → snapshots are cleaned up (GitHub only; pkg-pr-new GCs by TTL otherwise).
+
+```yaml
+# .github/workflows/vis-release-snapshot.yml
+name: vis release snapshot
+
+on:
+    pull_request:
+        types: [opened, synchronize, reopened, closed]
+
+concurrency:
+    group: vis-release-snapshot-${{ github.event.pull_request.number }}
+    cancel-in-progress: true
+
+permissions:
+    contents: read
+    id-token: write
+    pull-requests: write
+
+jobs:
+    snapshot:
+        if: github.event.action != 'closed'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm run build:packages:prod
+            - run: pnpm exec vis release ci snapshot
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+    cleanup:
+        if: github.event.action == 'closed'
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+                  persist-credentials: false
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: "22"
+                  cache: pnpm
+            - run: pnpm install --frozen-lockfile
+            - run: pnpm exec vis release ci snapshot --on-close
+              env:
+                  GH_TOKEN: ${{ github.token }}
+                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+```
+
+### Workflow E — gating downstream steps on the plan
+
+Use `vis release ci plan` when a later step needs to know whether anything is about to release.
+
+```yaml
+- id: plan
+  run: pnpm exec vis release ci plan
+  env:
+      GH_TOKEN: ${{ github.token }}
+
+- if: steps.plan.outputs.packages != ''
+  run: pnpm run prepare-release-notes
+```
+
+`vis release ci plan` writes `{ mode, packages, json }` to `$GITHUB_OUTPUT` and emits the JSON plan on stdout.
+
+## GitLab CI
+
+vis treats GitHub and GitLab the same — same commands, same modes, same secrets model. The remote adapter (`src/release/core/remote/gitlab.ts`) handles PR / MR upserts, sticky comments, and release creation via `glab`.
+
+Point `glab` at the right host by setting `release.gitlabHost` in `vis.config.ts` (or `GITLAB_HOST` via `$CI_SERVER_HOST` for self-hosted).
+
+```yaml
+# .gitlab-ci.yml
+stages: [build, release]
+
+variables:
+    NODE_VERSION: "24"
+
+.node:
+    image: node:${NODE_VERSION}
+    cache:
+        key: ${CI_COMMIT_REF_SLUG}-pnpm
+        paths: [.pnpm-store]
+    before_script:
+        - corepack enable
+        - pnpm config set store-dir .pnpm-store
+        - pnpm install --frozen-lockfile
+
+build:
+    extends: .node
+    stage: build
+    script:
+        - pnpm run build:packages:prod
+    artifacts:
+        paths: [packages/**/dist]
+
+release:
+    extends: .node
+    stage: release
+    needs: [build]
+    rules:
+        - if: $CI_COMMIT_BRANCH == "main"
+        - if: $CI_COMMIT_BRANCH == "next"
+        - if: $CI_COMMIT_BRANCH == "alpha"
+        - if: $CI_COMMIT_BRANCH == "beta"
+    id_tokens:
+        NPM_ID_TOKEN:
+            aud: npm:registry.npmjs.org
+    variables:
+        # `glab` honours these natively
+        GITLAB_TOKEN: $CI_JOB_TOKEN
+        GITLAB_HOST: $CI_SERVER_HOST
+    script:
+        - pnpm exec vis release ci release
+```
+
+For MR-equivalent snapshot previews, gate on `$CI_PIPELINE_SOURCE == "merge_request_event"`:
+
+```yaml
+snapshot:
+    extends: .node
+    stage: release
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    script:
+        - pnpm exec vis release ci snapshot
+```
+
+> ⚠ **`--on-close` cleanup is GitHub-only.** The cleanup path enumerates the closed PR's commits via `gh api`. On GitLab, snapshots clean themselves up via the [pkg-pr-new](https://pkg-pr-new.com) TTL.
+
+vis surfaces `glab`'s output verbatim with npm / GitHub / GitLab token patterns redacted to `[REDACTED]` in every log mode, so any GitLab-specific errors land in the job log unchanged.
+
+### Self-hosted GitLab
+
+Set `release.gitlabHost` once in `vis.config.ts`, or rely on the `GITLAB_HOST` env var that GitLab CI sets via `$CI_SERVER_HOST`:
+
+```typescript
+export default {
+    release: {
+        provider: "gitlab",
+        gitlabHost: "gitlab.acme.com",
+    },
+};
+```
+
+vis threads this through every `glab` invocation, so MR comments + releases land on the right instance.
+
+## Pre-publish guards
+
+The `release.publish.guards` block runs after `pack` but before `publish` — see the [security audit guide](./security-audit.mdx) for the full menu (`packSecretScan`, `exportsExist`, `lifecycleScripts`, `audit`, `releaseAssets`). Guards are evaluated inline in every CI mode; failures abort the publish for the offending package only.
+
+## Recovering from failures
+
+`vis release publish` pushes tags atomically and then creates a release per tag (or one aggregate release when `release.aggregateRelease.enabled`). If `git push --tags` fails or the workflow dies mid-publish, vis leaves a state file in place so the next run picks up where it left off.
+
+Typical recovery flow:
+
+1. **Inspect the failed job** — vis prints the offending package and step.
+2. **Re-run with the same revision** — `--resume` is implicit in `vis release ci release` when a state file exists; already-published packages are skipped.
+3. **If the tag exists upstream but the publish failed,** vis surfaces a `TAG_COLLISION` error pointing at the upstream tag. Delete it and re-run, or pin the existing tag's SHA if the work is salvageable.
+
+## Troubleshooting
+
+**The Versioned release PR never appears.**
+You're probably on `version-pr` mode without `VIS_GH_TOKEN`. Default `GITHUB_TOKEN` can read but can't trigger downstream workflows; vis aborts force-push if it detects this case. Set `VIS_GH_TOKEN` to a PAT or GitHub App token with `contents:write`.
+
+**`vis release publish` says "nothing to publish".**
+You're on a `version-pr` branch with no consumed change files yet. The publish path only runs after the version-PR has been merged. Check `vis release status` — if you see pending change files, you need to merge the version-PR first.
+
+**OIDC auth fails with "audience mismatch".**
+GitHub Actions: `aud` should be `npm:registry.npmjs.org` for npm trusted publishing. GitLab: same audience via the `id_tokens` block. Run `vis release doctor` to see the audience vis is requesting.
+
+**Snapshot publishes succeed but the sticky comment never appears.**
+The publish path doesn't require a remote token, but the comment does. Check `GH_TOKEN` (GitHub) or `GITLAB_TOKEN` (GitLab) is in the job env. vis logs a `WARN upsertStickyComment failed` line when this happens.
+
+**Releases don't trigger on tag push.**
+vis pushes tags atomically with `git push --atomic --tags` — if any single tag is rejected, the whole batch is rejected. Check the workflow log for the rejected tag (usually a collision with an existing tag).
+
+## Where to next
+
+- [Release guide](./release.mdx) — mental model, change files, channels
+- [Commands reference](../commands/release.mdx) — per-flag detail for every release subcommand
+- [Release comparison](./release-comparison.mdx) — vs changesets / semantic-release / release-please
+- [Security audit guide](./security-audit.mdx) — pre-publish gates in depth

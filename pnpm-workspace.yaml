@@ -17,6 +17,8 @@ packages:
   - "!packages/storage/storage/dist/adapter/nuxt"
   - "!packages/tooling/vis/examples/sample-workspace/**"
   - "!packages/tooling/vis/__fixtures__/sherif-lint/**"
+  - "!packages/tooling/vis/__fixtures__/init/**"
+  - "!packages/tooling/vis/__tests__/release/fixtures/**"
 
 allowBuilds:
   '@firebase/util': false
@@ -615,6 +617,7 @@ catalogs:
     slice-ansi: 9.0.0
     slug: 11.0.1
     slugify: 1.6.9
+    smol-toml: ^1.6.1
     stack-utils: ^2.0.6
     string-ts: 2.3.1
     string-width: 8.2.1
@@ -628,6 +631,7 @@ catalogs:
     tslog: ^4.10.2
     type-fest: 5.7.0
     type-is: ^2.1.0
+    undici: ^7.16.0
     unset-value: ^2.0.1
     vinxi: ^0.5.11
     walk: 2.3.15
