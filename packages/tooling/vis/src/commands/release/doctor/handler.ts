@@ -345,6 +345,61 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         }
     }
 
+    // JSR packages — `jsr publish --dry-run` pre-flight (parity with
+    // semantic-release-jsr's verifyConditions). Validates the package against
+    // JSR's slow-types / exports / manifest rules before a real publish is
+    // attempted. Warn-only: `npx jsr` needs the CLI + (often) network, so a
+    // failure here shouldn't hard-fail the doctor in environments that can't
+    // reach jsr.io. Only runs for packages whose versionActions resolve to
+    // `jsr`, so non-JSR workspaces (and the doctor test fixtures) skip it.
+    {
+        const { resolveVersionActionsId } = await import("../../../release/core/workspace");
+        const jsrPackages = ctx.packages.filter(
+            (pkg) => resolveVersionActionsId(pkg, ctx.perPackageConfig.get(pkg.name) ?? {}) === "jsr",
+        );
+
+        for (const pkg of jsrPackages) {
+            const perPkg = ctx.perPackageConfig.get(pkg.name) ?? {};
+            const args = ["jsr", "publish", "--dry-run", "--allow-dirty"];
+            const configRelative = perPkg.jsrConfigPath;
+
+            if (configRelative !== undefined && configRelative !== "jsr.json") {
+                args.push("--config", configRelative);
+            }
+
+            for (const extra of perPkg.jsrPublishArgs ?? []) {
+                args.push(extra);
+            }
+
+            try {
+                const result = await ctx.pm.runner.run("npx", args, { cwd: pkg.dir, silent: true });
+
+                if (result.exitCode === 0) {
+                    checks.push({
+                        message: `${pkg.name}: \`jsr publish --dry-run\` passed.`,
+                        name: `jsr-dry-run/${pkg.name}`,
+                        severity: "info",
+                        status: "pass",
+                    });
+                } else {
+                    checks.push({
+                        message: `${pkg.name}: \`jsr publish --dry-run\` reported issues (slow types / exports / auth?): ${(result.stderr || result.stdout).trim().slice(0, 300)}`,
+                        name: `jsr-dry-run/${pkg.name}`,
+                        severity: "warn",
+                        status: "fail",
+                    });
+                }
+            } catch (error) {
+                checks.push({
+                    message: `${pkg.name}: could not run \`npx jsr publish --dry-run\` (${(error as Error).message}). Install the jsr CLI / check network to enable this pre-flight.`,
+                    name: `jsr-dry-run/${pkg.name}`,
+                    severity: "warn",
+                    status: "skip",
+                });
+            }
+        }
+    }
+
     // Plan readability
     if (ctx.plan.warnings.length > 0) {
         for (const w of ctx.plan.warnings) {
