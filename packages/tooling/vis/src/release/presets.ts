@@ -302,6 +302,13 @@ export const container = (options: ContainerPresetOptions): PerPackageReleaseCon
 
 export interface JsrPresetOptions {
     /**
+     * Convenience for adding `--allow-slow-types` to `jsr publish`. JSR
+     * rejects packages whose exported API has types it can't statically infer
+     * unless this flag is set. Default `false`.
+     */
+    allowSlowTypes?: boolean;
+
+    /**
      * When `true`, also write the version literal into `deno.json` (in
      * addition to `jsr.json`). Useful for Deno-flavoured packages that
      * keep their full Deno config in `deno.json` and use `jsr.json` only
@@ -320,6 +327,13 @@ export interface JsrPresetOptions {
      * primary JSR manifest.
      */
     manifestPath?: string;
+
+    /**
+     * Extra arguments forwarded verbatim to `jsr publish` (e.g.
+     * `["--allow-slow-types"]`). `--allow-dirty` is always passed by vis and
+     * need not be listed. Merged after the `allowSlowTypes` shorthand.
+     */
+    publishArgs?: string[];
 }
 
 /**
@@ -366,6 +380,11 @@ export const jsr = (options: JsrPresetOptions = {}): PerPackageReleaseConfig => 
         }
         : undefined;
 
+    const jsrPublishArgs = [
+        ...(options.allowSlowTypes ? ["--allow-slow-types"] : []),
+        ...(options.publishArgs ?? []),
+    ];
+
     return {
         extraFiles: [
             versionRule,
@@ -376,6 +395,7 @@ export const jsr = (options: JsrPresetOptions = {}): PerPackageReleaseConfig => 
         // extra-files bump targets so the natively-parsed version always
         // matches the literal we just wrote.
         jsrConfigPath: manifestPath,
+        ...(jsrPublishArgs.length > 0 ? { jsrPublishArgs } : {}),
         versionActions: "jsr",
     };
 };
