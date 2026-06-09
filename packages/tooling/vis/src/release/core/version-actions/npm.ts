@@ -258,6 +258,35 @@ export class NpmVersionActions extends VersionActions {
                 const { hashTarball } = await import("../publish-guards");
                 const hashes = await hashTarball(packResult.tarball);
 
+                // RFC §11.3 escape hatch: `publishStrategy: "native"` publishes
+                // with the project's own package manager (`<pm> publish`) instead
+                // of the cross-PM `npm publish <tarball>` LCD path. The on-disk
+                // manifest was already resolved (workspace:/catalog: → literals)
+                // and cleaned above, so the manager packs the correct
+                // package.json. Staging is npm-tarball-only and does not apply.
+                if ((context.workspaceConfig?.publish?.publishStrategy ?? "npm-publish-tarball") === "native") {
+                    const pmId = context.pm.id;
+
+                    if (context.provenance && pmId === "bun") {
+                        process.stderr.write(`[vis release] ⚠ publishStrategy "native": bun has no --provenance/OIDC support; ${context.pkg.name}@${context.release.newVersion} publishes without provenance.\n`);
+                    }
+
+                    if (context.otp && pmId === "yarn") {
+                        process.stderr.write(`[vis release] ⚠ publishStrategy "native": \`yarn npm publish\` ignores --otp; configure 2FA via .yarnrc.yml for ${context.pkg.name}.\n`);
+                    }
+
+                    const nativeResult = await context.pm.publishNative({
+                        access: "public",
+                        cwd: context.pkg.dir,
+                        otp: context.otp,
+                        provenance: context.provenance,
+                        registry: context.registry,
+                        tag: context.tag,
+                    });
+
+                    return { ...nativeResult, tarball: hashes };
+                }
+
                 const stageConfig = resolveStageConfig(context.workspaceConfig?.publish?.stage);
 
                 if (stageConfig.enabled) {

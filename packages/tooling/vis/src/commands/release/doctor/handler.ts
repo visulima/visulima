@@ -1120,6 +1120,196 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         }
     }
 
+    // ── Tooling version minimums (RFC §19.6) ──────────────────────────
+    const { execFileSync } = await import("node:child_process");
+    const meetsMin = (actual: string, min: string): boolean => {
+        const a = actual.split(".").map((n) => Number.parseInt(n, 10));
+        const m = min.split(".").map((n) => Number.parseInt(n, 10));
+
+        for (const [index, mv] of m.entries()) {
+            const av = a[index] ?? 0;
+
+            if (av !== (mv ?? 0)) {
+                return av > (mv ?? 0);
+            }
+        }
+
+        return true;
+    };
+
+    // Node (engines: ^22.14.0 || >=24.10.0)
+    {
+        const nodeVersion = process.versions.node;
+        const [major = 0, minor = 0] = nodeVersion.split(".").map((n) => Number.parseInt(n, 10));
+        const ok = (major === 22 && minor >= 14) || major >= 24 || (major === 23);
+
+        checks.push({
+            message: `node@${nodeVersion} (min: 22.14.0 || >=24.10.0)`,
+            name: "node-version",
+            severity: ok ? "info" : "error",
+            status: ok ? "pass" : "fail",
+        });
+    }
+
+    // git ≥ 2.31, gh ≥ 2.40 (gh only when present)
+    for (const [bin, min, name] of [["git", "2.31", "git-version"], ["gh", "2.40", "gh-version"]] as const) {
+        try {
+            const raw = execFileSync(bin, ["--version"], { stdio: ["ignore", "pipe", "ignore"] }).toString();
+            const matched = /(\d+\.\d+\.\d+)/.exec(raw);
+
+            if (!matched) {
+                continue;
+            }
+
+            const ok = meetsMin(matched[1]!, min);
+
+            checks.push({
+                message: `${bin}@${matched[1]} (min: ${min})`,
+                name,
+                // gh is optional unless invoked; surface as warn. git is required.
+                severity: ok ? "info" : (bin === "git" ? "error" : "warn"),
+                status: ok ? "pass" : "fail",
+            });
+        } catch {
+            // Binary not installed — `gh` optionality + `git` presence are
+            // covered by other checks; skip the version probe here.
+        }
+    }
+
+    // ── Registry reachability (RFC §19.2) ──────────────────────────────
+    {
+        const registries = new Set<string>([ctx.config.publish?.registry ?? "https://registry.npmjs.org"]);
+
+        for (const pkg of ctx.packages) {
+            const reg = ctx.perPackageConfig.get(pkg.name)?.registry;
+
+            if (reg) {
+                registries.add(reg);
+            }
+        }
+
+        for (const registry of registries) {
+            try {
+                const base = registry.replace(/\/+$/, "");
+                const response = await fetch(`${base}/-/ping`, { method: "HEAD", signal: AbortSignal.timeout(3000) });
+
+                checks.push({
+                    message: `${registry} reachable (HTTP ${response.status}).`,
+                    name: "registry-reachable",
+                    severity: response.ok || response.status === 404 ? "info" : "warn",
+                    status: "pass",
+                });
+            } catch (error) {
+                checks.push({
+                    message: `${registry} not reachable: ${(error as Error).message}. Publishing may fail (or you're offline — this is a warning).`,
+                    name: "registry-reachable",
+                    severity: "warn",
+                    status: "fail",
+                });
+            }
+        }
+    }
+
+    // ── Existing tags parse as <pkg>@<version> (RFC §19.2) ─────────────
+    try {
+        const raw = execFileSync("git", ["tag", "--list"], { cwd, stdio: ["ignore", "pipe", "ignore"] }).toString();
+        const tags = raw.split(/\r?\n/).map((t) => t.trim()).filter(Boolean);
+        // Recognise `<name>@<semver>` and bare `v<semver>` / `<semver>` forms.
+        const tagPattern = /(?:^|@)\d+\.\d+\.\d+(?:[-+].+)?$/;
+        const unparseable = tags.filter((t) => !tagPattern.test(t) && !/^v?\d+\.\d+\.\d+/.test(t));
+
+        checks.push({
+            message: tags.length === 0
+                ? "No git tags yet (fresh repo)."
+                : `${tags.length - unparseable.length}/${tags.length} tags parse as a release tag${unparseable.length > 0 ? ` (unrecognised: ${unparseable.slice(0, 3).join(", ")}${unparseable.length > 3 ? "…" : ""})` : ""}.`,
+            name: "tags-parseable",
+            severity: "warn",
+            status: unparseable.length > 0 ? "fail" : "pass",
+        });
+    } catch {
+        // not a git repo / git missing — covered elsewhere.
+    }
+
+    // ── CHANGELOG.md format recognition (RFC §19.2) ────────────────────
+    {
+        const { readFile } = await import("node:fs/promises");
+        const nodePath = await import("node:path");
+        let recognised = 0;
+        let total = 0;
+
+        for (const pkg of ctx.packages) {
+            try {
+                const body = await readFile(nodePath.join(pkg.dir, "CHANGELOG.md"), "utf8");
+
+                total += 1;
+
+                // Recognised when it carries markdown headings the prepend
+                // logic keys off (`# Title` or `## <entry>`).
+                if (/^#{1,2}\s/m.test(body)) {
+                    recognised += 1;
+                }
+            } catch {
+                // no CHANGELOG yet — fine, one gets created on first release.
+            }
+        }
+
+        if (total > 0) {
+            checks.push({
+                message: `${recognised}/${total} existing CHANGELOG.md file(s) have a recognised heading structure.`,
+                name: "changelog-format",
+                severity: "info",
+                status: recognised === total ? "pass" : "fail",
+            });
+        }
+    }
+
+    // ── Catalog refs resolve against pnpm-workspace.yaml (RFC §19.2) ────
+    try {
+        const catalogYaml = await ctx.pm.readCatalogYaml(cwd);
+
+        if (catalogYaml) {
+            const { parseCatalogs } = await import("../../../release/core/catalog");
+            const catalogs = parseCatalogs(catalogYaml);
+            const missing: string[] = [];
+
+            for (const pkg of ctx.packages) {
+                for (const kind of ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"] as const) {
+                    const block = pkg.manifest[kind];
+
+                    if (!block || typeof block !== "object") {
+                        continue;
+                    }
+
+                    for (const [dep, range] of Object.entries(block)) {
+                        if (typeof range !== "string" || !range.startsWith("catalog:")) {
+                            continue;
+                        }
+
+                        const catalogName = range.slice("catalog:".length) || "default";
+                        const resolved = catalogName === "default"
+                            ? catalogs.default?.[dep]
+                            : catalogs.named?.[catalogName]?.[dep];
+
+                        if (!resolved) {
+                            missing.push(`${pkg.name} → ${dep} (${range})`);
+                        }
+                    }
+                }
+            }
+
+            checks.push({
+                message: missing.length === 0
+                    ? "All catalog: references resolve against pnpm-workspace.yaml."
+                    : `${missing.length} catalog: reference(s) don't resolve: ${missing.slice(0, 3).join("; ")}${missing.length > 3 ? "…" : ""}`,
+                name: "catalog-consistency",
+                severity: "warn",
+                status: missing.length === 0 ? "pass" : "fail",
+            });
+        }
+    } catch {
+        // No catalog support / parse failure — not fatal for the doctor.
+    }
+
     await emit(logger, options, checks);
 
     const hasErrors = checks.some((c) => c.severity === "error" && c.status === "fail");

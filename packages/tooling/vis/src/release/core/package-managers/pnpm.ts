@@ -16,12 +16,13 @@ import type {
     InstallLockfileOnlyOptions,
     PackOptions,
     PackResult,
+    PublishNativeOptions,
     PublishOptions,
     PublishResult,
     WorkspaceListEntry,
 } from "./interface";
 import { PackageManagerAdapter } from "./interface";
-import { NpmAdapter } from "./npm";
+import { interpretNativePublishResult, NpmAdapter } from "./npm";
 
 export class PnpmAdapter extends PackageManagerAdapter {
     public readonly id = "pnpm" as const;
@@ -107,6 +108,41 @@ export class PnpmAdapter extends PackageManagerAdapter {
     public async publish(options: PublishOptions): Promise<PublishResult> {
         // Delegate to npm CLI per RFC §11.3 (LCD path).
         return new NpmAdapter(this.runner).publish(options);
+    }
+
+    public override async publishNative(options: PublishNativeOptions): Promise<PublishResult> {
+        // `pnpm publish` packs + publishes from the package dir and resolves
+        // `catalog:` / `workspace:` natively. `--no-git-checks` because the
+        // release wave runs with a dirty tree (versions just written).
+        const args = ["publish", "--no-git-checks"];
+
+        if (options.tag) {
+            args.push("--tag", options.tag);
+        }
+
+        if (options.access) {
+            args.push("--access", options.access);
+        }
+
+        if (options.registry) {
+            args.push("--registry", options.registry);
+        }
+
+        if (options.otp) {
+            args.push("--otp", options.otp);
+        }
+
+        if (options.provenance) {
+            args.push("--provenance");
+        }
+
+        for (const extra of options.extraArgs ?? []) {
+            args.push(extra);
+        }
+
+        const result = await this.runner.run("pnpm", args, { cwd: options.cwd, silent: true });
+
+        return interpretNativePublishResult(result, "pnpm publish");
     }
 
     public async detectVersion(cwd: string): Promise<string | undefined> {

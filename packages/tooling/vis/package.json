@@ -71,6 +71,18 @@
             "types": "./dist/release/plugin-sdk.d.ts",
             "default": "./dist/release/plugin-sdk.js"
         },
+        "./release/version-actions": {
+            "types": "./dist/release/core/version-actions/index.d.ts",
+            "default": "./dist/release/core/version-actions/index.js"
+        },
+        "./release/changelog": {
+            "types": "./dist/release/core/changelog/index.d.ts",
+            "default": "./dist/release/core/changelog/index.js"
+        },
+        "./release/package-managers": {
+            "types": "./dist/release/core/package-managers/index.d.ts",
+            "default": "./dist/release/core/package-managers/index.js"
+        },
         "./schemas/project.schema.json": "./schemas/project.schema.json",
         "./schemas/vis-config.schema.json": "./schemas/vis-config.schema.json",
         "./schemas/vis-release-config.schema.json": "./schemas/vis-release-config.schema.json",

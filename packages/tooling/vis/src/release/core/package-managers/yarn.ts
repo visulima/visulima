@@ -20,12 +20,13 @@ import type {
     InstallLockfileOnlyOptions,
     PackOptions,
     PackResult,
+    PublishNativeOptions,
     PublishOptions,
     PublishResult,
     WorkspaceListEntry,
 } from "./interface";
 import { PackageManagerAdapter } from "./interface";
-import { NpmAdapter } from "./npm";
+import { interpretNativePublishResult, NpmAdapter } from "./npm";
 
 export class YarnAdapter extends PackageManagerAdapter {
     public readonly id = "yarn" as const;
@@ -114,6 +115,34 @@ export class YarnAdapter extends PackageManagerAdapter {
     public async publish(options: PublishOptions): Promise<PublishResult> {
         // Yarn doesn't accept tarball paths in `yarn npm publish`. Delegate to npm.
         return new NpmAdapter(this.runner).publish(options);
+    }
+
+    public override async publishNative(options: PublishNativeOptions): Promise<PublishResult> {
+        // Berry's `yarn npm publish` re-packs the workspace and publishes it.
+        // Registry + auth come from `.yarnrc.yml` (never flags), and OTP isn't
+        // accepted on the command line — operators relying on 2FA or a custom
+        // registry under native strategy must configure `.yarnrc.yml`.
+        const args = ["npm", "publish"];
+
+        if (options.tag) {
+            args.push("--tag", options.tag);
+        }
+
+        if (options.access) {
+            args.push("--access", options.access);
+        }
+
+        if (options.provenance) {
+            args.push("--provenance");
+        }
+
+        for (const extra of options.extraArgs ?? []) {
+            args.push(extra);
+        }
+
+        const result = await this.runner.run("yarn", args, { cwd: options.cwd, silent: true });
+
+        return interpretNativePublishResult(result, "yarn npm publish");
     }
 
     public async detectVersion(cwd: string): Promise<string | undefined> {

@@ -4079,6 +4079,10 @@
                     "type": "boolean",
                     "description": "Floating major-version tag. When `true`, every non-prerelease, non-private release also force-updates a `&lt;safe-name>-v&lt;major>` tag to point at the release commit. `safe-name` is the package name with the leading `@` stripped and `/` replaced by `-`:\n\n  - `@acme/action` → `acme-action-v1`   - `@vendor/cli`  → `vendor-cli-v1`   - unscoped `cli` → `cli-v1`\n\nUseful for reusable GitHub Actions consumers who pin to `acme/action@acme-action-v1` and expect automatic patch / minor delivery without a tag-rev migration. The scope is included so two packages with the same unscoped name from different scopes (`@acme/cli` + `@vendor/cli`) don't both retarget the same floating tag.\n\nSkipped on:   - Prereleases (per-channel `prerelease` configured). The float     would otherwise yank the major pointer across an unstable     pre-release boundary.   - Packages whose `releaseTagPattern` already includes `{major}`     (the pattern is already serving the same role).   - Private packages (`package.json#private === true`) and     packages that set `skipNpmPublish: true` — there's no     published artifact for a consumer to pin against, so a     floating tag would just clutter the tag history.\n\nDefault: `false`. Semantic-release parity: #1515."
                 },
+                "formatChangedFiles": {
+                    "type": "boolean",
+                    "description": "Run the project's Prettier over the files the version step writes (package.json bumps + CHANGELOG.md entries) before committing them (RFC §14 step 7). Scoped to the changed files only — never the whole tree. Resolves the project's own Prettier from the workspace root; soft-fails if Prettier isn't installed.\n\nDefault: `false` (opt-in — a project that doesn't use Prettier, or whose Prettier config conflicts with how vis writes JSON, leaves this off)."
+                },
                 "githubHost": {
                     "type": "string",
                     "description": "Self-hosted GitHub Enterprise host (e.g. `\"github.acme.com\"` — no scheme). Translates to the `GH_HOST` env var that the `gh` CLI consumes natively, so all adapter calls land on the right instance. Operators can also export `GH_HOST` directly; this config knob is the typed, vis.config.ts-discoverable equivalent. Ignored when `provider` resolves to anything other than `github`."
@@ -4130,6 +4134,10 @@
                 "notifications": {
                     "$ref": "#/$defs/NotificationsConfig",
                     "description": "Notifications — post-release fan-out to chat / webhook destinations. See  {@link  NotificationsConfig } . Each channel runs in parallel; per-channel failures log a warning but do NOT fail the publish."
+                },
+                "oneCommitPerPackage": {
+                    "type": "boolean",
+                    "description": "Emit one release commit per package (a `release(channel): pkg@version [skip ci]` message) instead of a single aggregate commit for the whole wave (RFC §19.5). Mirrors the per-package commit history that multi-semantic-release produced — useful for projects migrating off it that want to preserve `git log` shape. Only honoured when `aggregateRelease` is falsy. Shared artifacts (lockfile + consumed change-file deletions) ride along in the final package's commit.\n\nDefault: `false` (one aggregate commit per wave)."
                 },
                 "packages": {
                     "type": "object",

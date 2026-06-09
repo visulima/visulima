@@ -790,12 +790,19 @@ export const applyContext = async (
         // rather ship the version commit than block on lockfile noise.
     }
 
+    // Format changed files (RFC §14 step 7) — opt-in, scoped to the files the
+    // version step just wrote (package.json bumps + CHANGELOG entries),
+    // soft-fail. Runs after lockfile sync so a reformatted lockfile (if the
+    // PM emitted one) is included.
+    if (!options.dryRun && context.config.formatChangedFiles) {
+        await formatChangedFiles(applied.writes.map((w) => w.path), context.cwd);
+    }
+
     let commitSha: string | undefined;
 
     if (options.commit) {
         const { stageAndCommit } = await import("./git");
         const runner = createShellRunner();
-        const message = options.commitMessage ?? buildDefaultCommitMessage(context);
 
         // Lockfile paths to also stage (best-effort; some PMs don't have one yet).
         const lockfileCandidates = ["pnpm-lock.yaml", "package-lock.json", "yarn.lock", "bun.lock", "bun.lockb"];
@@ -811,21 +818,66 @@ export const applyContext = async (
             }
         }
 
-        // Include consumed change-file paths so `git add` stages their
-        // deletions — otherwise the worktree stays dirty and the change files
-        // never actually leave the repo.
-        const allFiles = [
-            ...applied.writes.map((w) => w.path),
-            ...applied.deletions,
-            ...lockfilesPresent,
-        ];
+        const aggregateEnabled = context.config.aggregateRelease === true
+            || (typeof context.config.aggregateRelease === "object" && context.config.aggregateRelease.enabled);
 
-        commitSha = await stageAndCommit(
-            { cwd: context.cwd, runner },
-            allFiles,
-            message,
-            { author: context.config.gitUser },
-        );
+        // RFC §19.5: one release commit per package (multi-semantic-release
+        // parity) when opted in and not aggregating. Shared artifacts
+        // (lockfiles + consumed change-file deletions) ride in the final
+        // package's commit. The per-package template ignores any aggregate
+        // `options.commitMessage` override (it's inherently single-message).
+        if (context.config.oneCommitPerPackage === true && !aggregateEnabled && context.plan.releases.length > 0) {
+            const channel = context.channel?.tag ?? context.branch ?? "main";
+            const writePaths = applied.writes.map((w) => w.path);
+            const claimed = new Set<string>();
+            const { releases } = context.plan;
+
+            for (let index = 0; index < releases.length; index += 1) {
+                const release = releases[index]!;
+                const pkg = context.depGraph.getPackage(release.name);
+                const pkgPrefix = pkg ? `${pkg.dir}${path.sep}` : undefined;
+                const pkgFiles = pkgPrefix ? writePaths.filter((p) => p.startsWith(pkgPrefix)) : [];
+
+                for (const file of pkgFiles) {
+                    claimed.add(file);
+                }
+
+                // Last package sweeps up anything unclaimed (writes outside a
+                // package dir, e.g. a root file), the change-file deletions,
+                // and the lockfiles.
+                const trailing = index === releases.length - 1
+                    ? [...writePaths.filter((p) => !claimed.has(p)), ...applied.deletions, ...lockfilesPresent]
+                    : [];
+
+                const files = [...pkgFiles, ...trailing];
+
+                if (files.length === 0) {
+                    continue;
+                }
+
+                commitSha = await stageAndCommit(
+                    { cwd: context.cwd, runner },
+                    files,
+                    `release(${channel}): ${release.name}@${release.newVersion} [skip ci]`,
+                    { author: context.config.gitUser },
+                );
+            }
+        } else {
+            // Single aggregate commit for the whole wave (default).
+            const message = options.commitMessage ?? buildDefaultCommitMessage(context);
+            const allFiles = [
+                ...applied.writes.map((w) => w.path),
+                ...applied.deletions,
+                ...lockfilesPresent,
+            ];
+
+            commitSha = await stageAndCommit(
+                { cwd: context.cwd, runner },
+                allFiles,
+                message,
+                { author: context.config.gitUser },
+            );
+        }
     }
 
     // Workspace-level changelog is intentionally NOT written here — the
@@ -869,6 +921,62 @@ export const applyContext = async (
         deletedFiles: applied.deletions,
         plan: context.plan,
     };
+};
+
+type PrettierModule = {
+    format: (source: string, options: Record<string, unknown>) => Promise<string>;
+    getFileInfo: (file: string) => Promise<{ ignored: boolean; inferredParser: null | string }>;
+    resolveConfig: (file: string) => Promise<Record<string, unknown> | null>;
+};
+
+/**
+ * Run the project's Prettier over the version step's written files (RFC §14
+ * step 7). Scoped to those files only; resolves the *project's* Prettier from
+ * `cwd` (not vis's own). Soft-fails entirely when Prettier isn't installed,
+ * and skips any file Prettier ignores or can't infer a parser for. Never
+ * throws — formatting must not fail a release.
+ */
+const formatChangedFiles = async (files: string[], cwd: string): Promise<void> => {
+    if (files.length === 0) {
+        return;
+    }
+
+    const { join } = await import("node:path");
+
+    let prettier: PrettierModule;
+
+    try {
+        const { createRequire } = await import("node:module");
+        const { pathToFileURL } = await import("node:url");
+        const requireFromProject = createRequire(join(cwd, "package.json"));
+
+        prettier = (await import(pathToFileURL(requireFromProject.resolve("prettier")).href)) as PrettierModule;
+    } catch {
+        // Prettier not installed in the target project — skip silently.
+        return;
+    }
+
+    const fsp = await import("node:fs/promises");
+
+    for (const file of files) {
+        try {
+            const info = await prettier.getFileInfo(file);
+
+            if (info.ignored || !info.inferredParser) {
+                continue;
+            }
+
+            const source = await fsp.readFile(file, "utf8");
+            const config = await prettier.resolveConfig(file);
+            const formatted = await prettier.format(source, { ...config, filepath: file });
+
+            if (formatted !== source) {
+                await fsp.writeFile(file, formatted);
+            }
+        } catch {
+            // Per-file soft-fail — never break a release on a formatting error.
+        }
+    }
 };
 
 const buildDefaultCommitMessage = (context: OrchestratorContext): string => {

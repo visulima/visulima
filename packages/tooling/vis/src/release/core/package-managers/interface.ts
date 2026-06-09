@@ -7,6 +7,8 @@
  * primitives; publishing happens uniformly via the `npm` adapter regardless.
  */
 
+import { VisReleaseError } from "../../errors";
+
 export interface PackResult {
     /** Whatever metadata the manager emitted (e.g. file list). Optional. */
     raw?: unknown;
@@ -53,6 +55,23 @@ export interface PublishOptions {
     tag?: string;
     /** Path to the `.tgz` to publish. */
     tarball: string;
+}
+
+export interface PublishNativeOptions {
+    /** `public` or `restricted`. */
+    access?: "public" | "restricted";
+    /** Package directory — the manager packs + publishes from here. */
+    cwd: string;
+    /** Extra args passed through to the publisher. */
+    extraArgs?: string[];
+    /** 2FA token (managers that support it on their native publish path). */
+    otp?: string;
+    /** Provenance attestation (npm/pnpm/yarn only; bun ignores). */
+    provenance?: boolean;
+    /** Override registry URL. */
+    registry?: string;
+    /** npm dist-tag. */
+    tag?: string;
 }
 
 export interface PublishResult {
@@ -123,6 +142,29 @@ export abstract class PackageManagerAdapter {
      * configured `publishStrategy` is `"npm-publish-tarball"` (default).
      */
     public abstract publish(options: PublishOptions): Promise<PublishResult>;
+
+    /**
+     * Native publish: run the package manager's own `publish` command directly
+     * from the package directory (the manager packs + publishes itself), used
+     * when the project opts into `publish.publishStrategy: "native"`. The
+     * default LCD path is `publish` (an `npm publish` of a packed tarball).
+     * Each adapter overrides this with its own publish command + flag surface;
+     * the default throws so an adapter that genuinely can't publish natively
+     * fails loudly rather than silently no-opping.
+     *
+     * Caveat (RFC §11.3): native publish lets the manager resolve
+     * `workspace:`/`catalog:` itself. Only pnpm rewrites `catalog:` — on
+     * npm/yarn/bun the operator must set `catalogResolution: "in-place"` (or
+     * have no catalog refs) or the published tarball will carry literal
+     * `catalog:` specifiers.
+     */
+    public async publishNative(_options: PublishNativeOptions): Promise<PublishResult> {
+        throw new VisReleaseError({
+            code: "CONFIG_INVALID",
+            hint: "Set publish.publishStrategy back to \"npm-publish-tarball\" (the default), or use a package manager whose adapter implements native publish.",
+            message: `publishStrategy "native" is not supported by the "${this.id}" adapter.`,
+        });
+    }
 
     /** Native pm version detection (e.g. `&lt;pm> --version`). */
     public abstract detectVersion(cwd: string): Promise<string | undefined>;

@@ -4,7 +4,11 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { BunAdapter } from "../../../src/release/core/package-managers/bun";
+import type { CommandRunner } from "../../../src/release/core/package-managers/interface";
 import { NpmAdapter } from "../../../src/release/core/package-managers/npm";
+import { PnpmAdapter } from "../../../src/release/core/package-managers/pnpm";
+import { YarnAdapter } from "../../../src/release/core/package-managers/yarn";
 import { MockRunner } from "../../../src/release/core/shell-runner";
 
 describe("npmAdapter — pack", () => {
@@ -296,5 +300,78 @@ describe("npmAdapter — detectVersion", () => {
         });
 
         await expect(new NpmAdapter(runner).detectVersion("/r")).resolves.toBeUndefined();
+    });
+});
+
+describe("publishNative — per-pm command construction (publishStrategy: native)", () => {
+    const capture = (): { adapterRunner: CommandRunner; seen: { args: ReadonlyArray<string>; command: string; cwd: string } } => {
+        const seen = { args: [] as ReadonlyArray<string>, command: "", cwd: "" };
+        const adapterRunner: CommandRunner = {
+            run: async (command, args, options) => {
+                seen.command = command;
+                seen.args = args;
+                seen.cwd = options.cwd;
+
+                return { exitCode: 0, stderr: "", stdout: "+ pkg@1.0.0" };
+            },
+        };
+
+        return { adapterRunner, seen };
+    };
+
+    it("npm: runs `npm publish` in the package dir with flags", async () => {
+        const { adapterRunner, seen } = capture();
+
+        const result = await new NpmAdapter(adapterRunner).publishNative({
+            access: "public",
+            cwd: "/repo/pkg",
+            provenance: true,
+            tag: "next",
+        });
+
+        expect(result.published).toBe(true);
+        expect(seen.command).toBe("npm");
+        expect(seen.args).toEqual(["publish", "--tag", "next", "--access", "public", "--provenance"]);
+        expect(seen.cwd).toBe("/repo/pkg");
+    });
+
+    it("pnpm: runs `pnpm publish --no-git-checks` in the package dir", async () => {
+        const { adapterRunner, seen } = capture();
+
+        await new PnpmAdapter(adapterRunner).publishNative({ cwd: "/repo/pkg", tag: "latest" });
+
+        expect(seen.command).toBe("pnpm");
+        expect(seen.args).toEqual(["publish", "--no-git-checks", "--tag", "latest"]);
+    });
+
+    it("yarn: runs `yarn npm publish` (no --otp/--registry flags)", async () => {
+        const { adapterRunner, seen } = capture();
+
+        await new YarnAdapter(adapterRunner).publishNative({ access: "restricted", cwd: "/repo/pkg", otp: "123456", registry: "https://r.example.com" });
+
+        expect(seen.command).toBe("yarn");
+        expect(seen.args).toEqual(["npm", "publish", "--access", "restricted"]);
+    });
+
+    it("bun: runs `bun publish` (no --provenance/--otp)", async () => {
+        const { adapterRunner, seen } = capture();
+
+        await new BunAdapter(adapterRunner).publishNative({ cwd: "/repo/pkg", otp: "123456", provenance: true, tag: "beta" });
+
+        expect(seen.command).toBe("bun");
+        expect(seen.args).toEqual(["publish", "--tag", "beta"]);
+    });
+
+    it("maps EPUBLISHCONFLICT to alreadyPublished", async () => {
+        const conflictRunner: CommandRunner = {
+            run: async () => {
+                return { exitCode: 1, stderr: "npm error code EPUBLISHCONFLICT", stdout: "" };
+            },
+        };
+
+        const result = await new PnpmAdapter(conflictRunner).publishNative({ cwd: "/repo/pkg" });
+
+        expect(result.alreadyPublished).toBe(true);
+        expect(result.published).toBe(false);
     });
 });

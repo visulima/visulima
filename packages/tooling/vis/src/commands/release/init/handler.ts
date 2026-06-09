@@ -297,6 +297,29 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         }
     }
 
+    // 1b) secretlintignore for change files (RFC §20.3). Author-handle
+    // patterns (`@danielbannert`) in change-file bodies false-positive on some
+    // secretlint rules; ignore the directory so the pre-commit hook stays
+    // green.
+    const secretlintEntry = ".vis/release/**";
+    const secretlintignorePath = join(cwd, ".secretlintignore");
+
+    if (dryRun) {
+        logger.info(`[dry-run] would add to .secretlintignore:\n    ${secretlintEntry}`);
+    } else {
+        try {
+            const existing = await readFile(secretlintignorePath, "utf8");
+
+            if (!existing.includes(secretlintEntry)) {
+                await writeFile(secretlintignorePath, `${existing.replace(/\n*$/, "\n")}\n# vis release change files (author handles false-positive secretlint)\n${secretlintEntry}\n`);
+                logger.info("Updated .secretlintignore.");
+            }
+        } catch {
+            await writeFile(secretlintignorePath, `# vis release change files (author handles false-positive secretlint)\n${secretlintEntry}\n`);
+            logger.info("Created .secretlintignore.");
+        }
+    }
+
     // 2) Source-specific migration
     switch (source) {
         case "bumpy": {

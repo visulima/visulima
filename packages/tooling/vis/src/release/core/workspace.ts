@@ -46,9 +46,36 @@ export const discoverPackages = async (
     const seen = new Map<string, string>();
     const cwdResolved = options.cwd === undefined ? undefined : resolvePath(options.cwd);
 
+    // RFC §12.4: platform packages live under a native-addon parent's `npm/`
+    // directory and are published by the parent's `native-addon` versionActions
+    // — never as standalone packages. Collect each native-addon parent's
+    // `npm/` prefix so we can exclude anything beneath it from discovery.
+    // Without this, with `defaultManaged: true` the platform packages would be
+    // discovered as ordinary npm packages and double-published.
+    const toPosix = (p: string): string => p.replaceAll("\\", "/");
+    const nativeAddonNpmPrefixes: string[] = [];
+
+    for (const { manifest, manifestPath } of entries) {
+        const merged = mergePerPackageConfig(typeof manifest.name === "string" ? manifest.name : "", manifest, config);
+        const isNativeAddon = manifest.napi !== undefined || merged.versionActions === "native-addon";
+
+        if (isNativeAddon) {
+            const parentDir = toPosix(manifestPath.replace(/[/\\]package\.json$/i, ""));
+
+            nativeAddonNpmPrefixes.push(`${parentDir}/npm/`);
+        }
+    }
+
     for (const { manifest, manifestPath } of entries) {
         if (typeof manifest.name !== "string" || manifest.name === "") {
             // Anonymous package (e.g. apps/web with no name) — skip silently.
+            continue;
+        }
+
+        // Skip native-addon platform packages — managed by the parent (§12.4).
+        const entryDirPosix = toPosix(manifestPath.replace(/[/\\]package\.json$/i, ""));
+
+        if (nativeAddonNpmPrefixes.some((prefix) => entryDirPosix.startsWith(prefix))) {
             continue;
         }
 
