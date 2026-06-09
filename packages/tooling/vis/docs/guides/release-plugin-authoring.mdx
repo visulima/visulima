@@ -1,0 +1,687 @@
+---
+title: Release plugin authoring
+description: "Extend `vis release` with custom notification channels, version actions, and changelog formatters — three small typed surfaces, three worked examples (Microsoft Teams, private Verdaccio, emoji-prefixed Keep-a-Changelog hybrid)."
+---
+
+# Plugin authoring for `vis release`
+
+`vis release` ships with batteries-included built-ins for the 80% case: npm / cargo / python / maven / container publishing, default / github / keep-a-changelog formatters, slack / discord / generic-webhook notifications. The other 20% has too much variety to bundle — your internal chat tool, your private registry, your house style guide — so vis exposes three typed plugin surfaces that you load from the workspace config.
+
+| Surface               | What it controls                                  | Where it loads from                                         |
+| --------------------- | ------------------------------------------------- | ----------------------------------------------------------- |
+| `NotificationChannel` | Post-publish chat / webhook fan-out               | `release.notifications.plugins: ["./my-channel.ts"]`        |
+| `VersionActions`      | Per-package read-published + publish steps        | `release.packages.<name>.versionActions: "./my-actions.ts"` |
+| `ChangelogFormatter`  | Per-release changelog rendering (file + GH body)  | `release.changelog: "./my-formatter.ts"`                    |
+
+All three plugin surfaces — types, identity wrappers, abstract base classes — are re-exported from `@visulima/vis/release/plugin-sdk`. Always import from there in your plugin modules; the deeper sub-paths (`/core/notifications/interface`, etc.) are internal and not covered by the stability contract.
+
+This guide covers all three. Each section ends with a complete worked example you can paste into `.vis/release/` and adapt.
+
+> **Trust gate.** Anything that runs shell commands you control (the `shell` version actions, `preReleaseCommand`, `publishCommand`) is gated by `release.allowCustomCommands` — either a workspace-wide boolean or an allow-list of package names. Plugin module loading itself is **not** gated, on the assumption that anything you commit to your repo is implicitly trusted. If you load plugins from outside the workspace (e.g. an npm package), audit them like any other dependency.
+
+## Custom `NotificationChannel`
+
+Use this when the three built-in channels (slack / discord / webhook) cannot model your destination — typically because the destination needs typed SDK access (PagerDuty, Linear, Statuspage), bespoke retry logic, durable persistence, or a routing decision that the operator does not want encoded in workspace config.
+
+### The interface
+
+```typescript
+import type {
+    NotificationChannel,
+    NotificationContext,
+    NotificationPackage,
+} from "@visulima/vis/release/plugin-sdk";
+
+interface NotificationChannel {
+    /** Stable id used in log messages: `"slack"`, `"discord"`, `"teams"`, …. */
+    readonly id: string;
+
+    /**
+     * Send the notification. Throw on hard failure (HTTP non-2xx,
+     * network error). The dispatcher catches and logs as a warn-level
+     * message; it does NOT propagate.
+     */
+    send(context: NotificationContext): Promise<void>;
+}
+
+interface NotificationContext {
+    /** Active channel name (`main`, `alpha`, …). */
+    channel?: string;
+    /** ISO-8601 wave-completion timestamp. */
+    completedAt: string;
+    /** Workspace name pulled from root `package.json#name`. */
+    monorepoName?: string;
+    /** Packages that successfully published in this wave. */
+    published: ReadonlyArray<NotificationPackage>;
+    /** Repo slug (`owner/name`). */
+    repo?: string;
+    /** Packages skipped at the publish gate. */
+    skipped: ReadonlyArray<{ name: string; reason: string }>;
+}
+
+interface NotificationPackage {
+    name: string;
+    version: string;
+    /** Release URL when known (`undefined` for packages with no canonical URL). */
+    url?: string;
+    /** dist-tag / channel name (`latest`, `alpha`, …). */
+    tag?: string;
+}
+```
+
+Two methods, four context fields. The interface is intentionally minimal — anything richer (multi-step delivery, ACK handshakes, message threading) lives inside your `send` implementation.
+
+### Where it loads from
+
+```typescript
+// vis.config.ts
+export default {
+    release: {
+        notifications: {
+            plugins: [
+                "./.vis/release/teams-channel.ts",
+                // Or with options (factory form):
+                ["./.vis/release/incident-channel.ts", { severity: "info" }],
+            ],
+        },
+    },
+};
+```
+
+Two shapes accepted:
+
+- `string` — path to a module whose `default` export is either a `NotificationChannel` object or a zero-arg factory `() => NotificationChannel`.
+- `[string, Record<string, unknown>]` — path + options. The module's `default` export must be a factory `(options) => NotificationChannel`.
+
+Paths starting with `.` resolve relative to the workspace cwd. Absolute paths and `file://` URLs are passed through unchanged. The loader uses `dynamicEsmImport`, which means both `.ts` and `.mts` / `.mjs` modules work (vis transpiles on the fly via `unbuild` / `tsx`).
+
+### The soft-fail contract
+
+Per-channel failures are isolated. When your `send` throws, the dispatcher:
+
+1. Catches the error.
+2. Pushes the (token-redacted) message onto `result.failed[]`.
+3. Logs a `[notifications:<id>] <message>` warning to stderr.
+4. Continues fanning out to every other channel.
+5. Returns control to the orchestrator, which surfaces the warning on `plan.warnings`.
+
+The publish itself is **not** failed. The release already shipped — your chat plugin's outage is not load-bearing for the package being on npm.
+
+Two implications for your implementation:
+
+- **Throw freely on hard failures.** A 502 from your endpoint should throw. A network unreachable error should throw. You do not need to catch and swallow — the dispatcher does that.
+- **Do not log the URL on failure.** Webhook URLs often contain bearer secrets in the path (Slack and Discord both do this). The dispatcher routes your thrown error message through `redactTokens` before logging, but the safest pattern is to never include the URL in the message in the first place. Wrap your `fetch` errors so the URL never escapes the function.
+
+### Worked example: Microsoft Teams channel
+
+Teams has Slack-compatible incoming webhooks (use the built-in `slack` channel for that path) **and** a native Adaptive Card / Office 365 Connector format (which the built-in `webhook` channel handles via a `body` template). So when would you want a custom Teams channel?
+
+Two scenarios:
+
+- Your Teams instance routes through the **Power Automate / Logic Apps** API rather than incoming webhooks, requiring OAuth.
+- You want per-package message threading, mention parsing, or attachment uploads — anything that needs more than a single POST.
+
+Below is a minimal Teams channel that uses an OAuth Bearer token and the Microsoft Graph chat-message endpoint. It is intentionally short — the structure is what matters, not the API specifics.
+
+```typescript
+// .vis/release/teams-channel.ts
+import {
+    defineNotificationChannel,
+    type NotificationChannel,
+    type NotificationContext,
+} from "@visulima/vis/release/plugin-sdk";
+
+export interface TeamsChannelOptions {
+    /** Microsoft Graph endpoint — your tenant + chat id baked in. */
+    endpoint: string;
+    /** OAuth bearer token (env-substituted in vis.config.ts). */
+    token: string;
+    /** Optional title template. Defaults to "Released {count} packages". */
+    titleTemplate?: string;
+}
+
+/**
+ * Factory form — receives the options object from the
+ * `["./teams-channel.ts", { ...options }]` config tuple.
+ */
+export default (options: TeamsChannelOptions): NotificationChannel => defineNotificationChannel({
+    id: "teams",
+
+    async send(context: NotificationContext) {
+        const title = (options.titleTemplate ?? "Released {count} packages")
+            .replaceAll("{count}", String(context.published.length))
+            .replaceAll("{repo}", context.repo ?? "")
+            .replaceAll("{channel}", context.channel ?? "");
+
+        const packageList = context.published
+            .map((p) => p.url ? `<li><a href="${p.url}">${p.name}@${p.version}</a></li>` : `<li>${p.name}@${p.version}</li>`)
+            .join("");
+
+        const body = {
+            body: {
+                contentType: "html",
+                content: `<h2>${title}</h2><ul>${packageList}</ul>`,
+            },
+        };
+
+        let response: Response;
+
+        try {
+            response = await fetch(options.endpoint, {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${options.token}`,
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify(body),
+            });
+        } catch (error) {
+            // Wrap the underlying error so neither the token (in
+            // Authorization) nor any URL fragments leak into the log line.
+            const reason = error instanceof Error ? error.name : "NetworkError";
+
+            throw new Error(`Teams channel fetch failed (${reason})`);
+        }
+
+        if (!response.ok) {
+            const errorBody = await response.text().catch(() => "");
+
+            throw new Error(`Teams channel returned ${response.status} ${response.statusText}${errorBody ? `: ${errorBody.slice(0, 200)}` : ""}`);
+        }
+    },
+});
+```
+
+Wire it up:
+
+```typescript
+// vis.config.ts
+export default {
+    release: {
+        notifications: {
+            plugins: [
+                ["./.vis/release/teams-channel.ts", {
+                    endpoint: "https://graph.microsoft.com/v1.0/chats/19:.../messages",
+                    token: "${TEAMS_BOT_TOKEN}",
+                    titleTemplate: "🚀 {repo} shipped {count} packages",
+                }],
+            ],
+        },
+    },
+};
+```
+
+Three things worth pointing out about the example:
+
+- **Factory form.** The default export is a function taking the options, returning the channel. The tuple form `[path, options]` in config is what passes the options through.
+- **Stable id.** `id: "teams"` shows up in log lines as `[notifications:teams]`. If you wire two instances of this channel (e.g. `internal-teams` and `customer-teams`), give them distinct ids — that is how operators tell them apart in failure logs.
+- **Error wrapping.** Every `fetch` call site wraps the rejection so the token and endpoint never leak. The dispatcher does redact via `redactTokens`, but defence in depth.
+
+For the **full template-substitution surface** (every `{token}` listed in the [notifications guide](./release-notifications.mdx#template-tokens)), you can implement the substitution manually or copy the built-in pattern: walk every string leaf, `replaceAll` each `{token}`, coerce non-string values via `String()`. The same logic backs every built-in channel, so emitting consistent tokens keeps your channel feeling first-class.
+
+## Custom `VersionActions`
+
+Use this when your package ships to a registry vis does not have a first-class adapter for: a private Verdaccio mirror, an internal Artifactory instance, a vendored Gemfury feed, a custom OCI registry workflow, a Helm chart museum. The generic `shell` actions handle most of these via a `publishCommand` string template — but that path is gated by `allowCustomCommands` (every operator running release has to opt in). For trusted, repo-local custom logic, the typed `VersionActions` plugin is cleaner.
+
+### The interface
+
+```typescript
+import {
+    VersionActions,
+    type PublishContext,
+    type PublishResult,
+} from "@visulima/vis/release/plugin-sdk";
+
+abstract class VersionActions {
+    /** Stable id (`"npm"`, `"cargo"`, `"shell"`, or a path for custom). */
+    public abstract readonly id: string;
+
+    /**
+     * Read the current published version of this package from the registry.
+     * Returns `undefined` for packages never published / not yet live.
+     */
+    public abstract readPublishedVersion(context: {
+        pkg: WorkspacePackage;
+        pm: PackageManagerAdapter;
+    }): Promise<string | undefined>;
+
+    /**
+     * Publish this package. Responsible for: protocol resolution, catalog
+     * rewriting, clean-package-json, pack-then-publish via the adapter.
+     */
+    public abstract publish(context: PublishContext): Promise<PublishResult>;
+}
+```
+
+`PublishContext` is the heavy one — it carries the workspace config, the per-package config, the planned release entry (with `newVersion`), the dist-tag, the dry-run flag, the OTP if applicable, the resolved registry URL, and a map of every other manifest being released in the same wave (so your `workspace:` / `catalog:` rewrites can resolve against the *bumped* versions, not the on-disk values).
+
+Two abstract methods. Two return shapes. The minimum bar is "produce a value from a registry, push a tarball / artefact to that registry".
+
+### Where it loads from
+
+Per-package config — `versionActions` accepts either a built-in id or a path:
+
+```typescript
+// vis.config.ts
+export default {
+    release: {
+        packages: {
+            "@scope/internal-package": {
+                versionActions: "./.vis/release/verdaccio-actions.ts",
+                // Per-package config your actions can read off
+                // PublishContext.perPackageConfig:
+                registry: "https://verdaccio.internal.example.com/",
+            },
+        },
+    },
+};
+```
+
+The path resolves relative to the workspace cwd; the module's `default` export must be a class extending `VersionActions` **or** a zero-arg factory returning an instance of one.
+
+### What "publish" actually has to do
+
+A typical implementation walks these steps:
+
+1. **Read configuration off `context.perPackageConfig` / `context.workspaceConfig`.** Registry URL, auth env vars, OIDC settings.
+2. **Pack the package** via `context.pm.pack(context.pkg.dir, ...)`. The active package manager (npm, pnpm, yarn, bun) handles workspace-aware packing.
+3. **Strip non-publishable fields** from the manifest if `cleanPackageJsonConfig` is set. Helper: `cleanPackageJsonForPublish`.
+4. **Rewrite `workspace:` / `catalog:` protocols** to concrete semver. Helpers: `rewriteRangeForVersion`, `rewriteCatalogRefs`.
+5. **Push the tarball** to your registry. This is the part that varies.
+6. **Return a `PublishResult`** — `{ published: boolean, output: string, ... }`.
+
+For the full set of helpers, study `src/release/core/version-actions/npm.ts` (the canonical workhorse) and `src/release/core/version-actions/cargo.ts` (which uses an HTTP API for `readPublishedVersion` instead of shelling out — a good pattern to copy).
+
+### The `allowCustomCommands` trust gate
+
+If your custom actions shell out (via `context.pm.runner.run("npm", ...)` or `child_process` directly), that is fine — actions code is repo-local and trusted. The trust gate (`release.allowCustomCommands`) applies only to **operator-configured shell strings** (`publishCommand`, `preReleaseCommand`, `checkPublished`) consumed by the generic `shell` actions. Your typed `VersionActions` plugin can shell out at will; you wrote it, you trust it.
+
+For the **inverse** — if your actions plugin wants to *use* an operator-supplied `publishCommand` — copy the trust-gate evaluation pattern from the built-in `shell` actions (`packages/tooling/vis/src/release/core/version-actions/shell.ts`). It calls the workspace's `allowCustomCommands` check before evaluating any operator-supplied command string.
+
+### Worked example: private Verdaccio actions
+
+Imagine your team runs a private Verdaccio instance for internal-only packages. You do not want to use the default `npm` actions because:
+
+- The auth flow is different (a long-lived token in `~/.npmrc` rather than `NPM_TOKEN` env).
+- You want to GC the previous version's tarball after a successful publish.
+- The `readPublishedVersion` path needs to query Verdaccio's HTTP API directly (npm CLI's `npm view` adds noisy timing overhead on a small registry).
+
+A skeleton:
+
+```typescript
+// .vis/release/verdaccio-actions.ts
+import {
+    VersionActions,
+    type PublishContext,
+    type PublishResult,
+} from "@visulima/vis/release/plugin-sdk";
+
+export default class VerdaccioVersionActions extends VersionActions {
+    public readonly id = "verdaccio" as const;
+
+    /**
+     * Query the Verdaccio HTTP API directly. Cheaper than `npm view`
+     * (no subprocess), and lets us distinguish "404 / never published"
+     * from "503 / registry unreachable" without parsing npm CLI output.
+     */
+    public async readPublishedVersion(context: Parameters<VersionActions["readPublishedVersion"]>[0]): Promise<string | undefined> {
+        const registry = process.env.VERDACCIO_URL ?? "https://verdaccio.internal.example.com/";
+        const url = `${registry.replace(/\/$/, "")}/${encodeURIComponent(context.pkg.name)}`;
+
+        let response: Response;
+
+        try {
+            response = await fetch(url, {
+                headers: { Authorization: `Bearer ${process.env.VERDACCIO_TOKEN ?? ""}` },
+            });
+        } catch {
+            // Network failure — treat as "unknown" so the orchestrator
+            // falls back to the manifest version. Do not throw —
+            // readPublishedVersion is a probe, not a gate.
+            return undefined;
+        }
+
+        if (response.status === 404) {
+            return undefined; // package not in registry yet
+        }
+
+        if (!response.ok) {
+            return undefined; // soft-fail; orchestrator handles fallback
+        }
+
+        const body = await response.json() as { "dist-tags"?: Record<string, string> };
+
+        return body["dist-tags"]?.latest;
+    }
+
+    /**
+     * Pack + publish to Verdaccio. Reuses the active adapter for the
+     * pack step (so workspace: protocols resolve correctly) and shells
+     * out for the upload (Verdaccio accepts the npm publish protocol).
+     */
+    public async publish(context: PublishContext): Promise<PublishResult> {
+        const registry = context.registry ?? process.env.VERDACCIO_URL ?? "https://verdaccio.internal.example.com/";
+
+        if (context.dryRun) {
+            return {
+                output: `[verdaccio:dry-run] would publish ${context.pkg.name}@${context.release.newVersion} to ${registry}`,
+                published: false,
+            };
+        }
+
+        // 1. Pack via the active adapter — npm/pnpm/yarn/bun all work.
+        const packResult = await context.pm.pack(context.pkg.dir, {
+            registry,
+            tag: context.tag,
+        });
+
+        // 2. Push the tarball. `npm publish <tarball> --registry=...` works
+        //    against any npm-protocol-compatible registry, Verdaccio included.
+        const publishResult = await context.pm.runner.run(
+            "npm",
+            [
+                "publish",
+                packResult.tarballPath,
+                `--registry=${registry}`,
+                `--tag=${context.tag ?? "latest"}`,
+            ],
+            { cwd: context.pkg.dir, silent: false },
+        );
+
+        if (publishResult.exitCode !== 0) {
+            throw new Error(`Verdaccio publish for ${context.pkg.name} failed (exit ${publishResult.exitCode}): ${publishResult.stderr.slice(0, 200)}`);
+        }
+
+        return {
+            output: publishResult.stdout,
+            published: true,
+        };
+    }
+}
+```
+
+Wire it up per-package:
+
+```typescript
+// vis.config.ts
+export default {
+    release: {
+        packages: {
+            "@scope/internal-tools": {
+                versionActions: "./.vis/release/verdaccio-actions.ts",
+            },
+            "@scope/internal-cli": {
+                versionActions: "./.vis/release/verdaccio-actions.ts",
+            },
+        },
+    },
+};
+```
+
+The actions instance is constructed once per package per release wave — there is no shared state, so storing the registry URL in the instance is safe.
+
+For the **full publish path** with catalog rewriting, clean-package-json, provenance flags, OTP handling, and stage-publish support, study `npm.ts` and `cargo.ts` — they implement the same interface and are dense with the corner-case handling a production-grade actions plugin needs. The skeleton above is the minimum bar; a real registry plugin will be three to five times longer.
+
+## Custom `ChangelogFormatter`
+
+Use this when neither the `default` formatter (plain Markdown), the `github` formatter (PR / commit / author links), nor the `keep-a-changelog` formatter (the [keepachangelog.com](https://keepachangelog.com) 1.1.0 layout) match your house style. Common reasons:
+
+- You want emoji prefixes per change type (`✨ Features`, `🐛 Bug Fixes`).
+- You ship to docs (Mintlify, Docusaurus) and need MDX-compatible output.
+- You aggregate change-file metadata your tool reads downstream.
+
+### The interface
+
+```typescript
+import {
+    defineChangelogFormatter,
+    type ChangelogContext,
+    type ChangelogFormatter,
+    type ChangelogTarget,
+} from "@visulima/vis/release/plugin-sdk";
+
+type ChangelogTarget = "changelog" | "github-release";
+
+interface ChangelogContext {
+    /** All change files contributing to this release (may be empty for pure dep bumps). */
+    changeFiles: ChangeFile[];
+    /** ISO date string `YYYY-MM-DD`. */
+    date: string;
+    /** The release entry being rendered. */
+    release: PlannedRelease;
+    /** Where the rendered output is going. */
+    target: ChangelogTarget;
+}
+
+type ChangelogFormatter = (context: ChangelogContext) => string | Promise<string>;
+```
+
+`defineChangelogFormatter` is an identity wrapper that gives your default export a typed signature; the source also exposes the same helper as `defineFormatter` from the deeper module for backwards compatibility.
+
+A single function. Input: a `ChangelogContext`. Output: a Markdown string. The same formatter is invoked twice per release:
+
+- `target: "changelog"` — output gets prepended to `packages/<name>/CHANGELOG.md` (and the workspace-level `CHANGELOG.md` aggregate).
+- `target: "github-release"` — output becomes the body of the GitHub / GitLab release.
+
+The convention: for `"github-release"`, **omit the version heading** (`## 1.2.3`). The release's own UI already shows the version above the body; a duplicate heading looks broken. The built-in `default` formatter does this; copy that pattern.
+
+### Where it loads from
+
+```typescript
+// vis.config.ts
+export default {
+    release: {
+        // Built-in id — `"default"`, `"github"`, or `"keep-a-changelog"`:
+        changelog: "github",
+        // Or false — no-op formatter (writes nothing):
+        // changelog: false,
+        // Or string path to a custom module:
+        // changelog: "./.vis/release/my-formatter.ts",
+        // Or tuple — path + options for a factory:
+        // changelog: ["./.vis/release/my-formatter.ts", { authorCredit: true }],
+    },
+};
+```
+
+For a custom module, the path resolves relative to the workspace cwd. The module's `default` export is either:
+
+- A `ChangelogFormatter` function directly (string form, or tuple-but-not-a-factory).
+- A factory `(options) => ChangelogFormatter` (tuple form).
+
+The resolver detects which by probing — it calls the export with the options first; if the call returns a function, that is treated as the formatter; otherwise the export itself is the formatter. Both patterns work. Use `defineChangelogFormatter` for the typed wrapper:
+
+```typescript
+import { defineChangelogFormatter } from "@visulima/vis/release/plugin-sdk";
+
+export default defineChangelogFormatter((context) => {
+    return `## ${context.release.newVersion}\n…`;
+});
+```
+
+### Worked example: emoji-prefixed Keep-a-Changelog hybrid
+
+Suppose you want the Keep-a-Changelog layout — `### Added | Changed | Fixed | Security` — but with an emoji prefix per section (`### ✨ Added`, `### 🔧 Changed`, …) and a small Conventional-Commits bucketing rule on top: anything that starts with `feat:` goes to Added, `fix:` to Fixed, `security:` to Security, `deprecate:` to Deprecated, `refactor:` / `perf:` / `chore:` to Changed.
+
+```typescript
+// .vis/release/emoji-keep-a-changelog.ts
+import {
+    defineChangelogFormatter,
+    type ChangelogContext,
+    type ChangelogFormatter,
+} from "@visulima/vis/release/plugin-sdk";
+
+export interface EmojiFormatterOptions {
+    /** Owner/repo for the trailing comparison link. */
+    repo?: string;
+    /** Section-emoji overrides. Defaults below. */
+    emoji?: Partial<Record<Section, string>>;
+}
+
+type Section = "Added" | "Changed" | "Deprecated" | "Removed" | "Fixed" | "Security";
+
+const SECTIONS_IN_ORDER: ReadonlyArray<Section> = ["Added", "Changed", "Deprecated", "Removed", "Fixed", "Security"];
+
+const DEFAULT_EMOJI: Record<Section, string> = {
+    Added: "✨",
+    Changed: "🔧",
+    Deprecated: "⚠️",
+    Removed: "🗑️",
+    Fixed: "🐛",
+    Security: "🔒",
+};
+
+const PREFIX_MAP: Record<string, Section> = {
+    feat: "Added",
+    feature: "Added",
+    fix: "Fixed",
+    bugfix: "Fixed",
+    perf: "Changed",
+    refactor: "Changed",
+    chore: "Changed",
+    deprecate: "Deprecated",
+    deprecated: "Deprecated",
+    remove: "Removed",
+    removed: "Removed",
+    security: "Security",
+    sec: "Security",
+};
+
+const CONVENTIONAL_RE = /^([a-z]+)(?:\([^)]+\))?!?:\s+(.*)$/i;
+
+const classify = (line: string, bumpLevel: "major" | "minor" | "patch"): { section: Section; text: string } => {
+    const stripped = line.replace(/^[-*]\s+/, "").trim();
+    const match = CONVENTIONAL_RE.exec(stripped);
+
+    if (match) {
+        const [, type, rest] = match;
+        const section = PREFIX_MAP[type!.toLowerCase()];
+
+        if (section) {
+            return { section, text: rest! };
+        }
+    }
+
+    // Fall back to bump level: major → Changed (likely breaking), minor → Added, patch → Fixed.
+    const fallback: Section = bumpLevel === "major" ? "Changed" : bumpLevel === "minor" ? "Added" : "Fixed";
+
+    return { section: fallback, text: stripped };
+};
+
+/**
+ * Default export is a FACTORY. The config tuple `[path, options]` passes
+ * the options through. Plain `path` (no tuple) invokes the factory with
+ * no arguments — handled by the `?? {}` fallback below.
+ */
+export default (options: EmojiFormatterOptions = {}): ChangelogFormatter =>
+    defineChangelogFormatter((context: ChangelogContext): string => {
+        const { changeFiles, date, release, target } = context;
+        const buckets: Record<Section, string[]> = {
+            Added: [],
+            Changed: [],
+            Deprecated: [],
+            Removed: [],
+            Fixed: [],
+            Security: [],
+        };
+
+        const bumpLevel = release.bumpLevel ?? "patch";
+
+        for (const file of changeFiles) {
+            for (const rawLine of file.body.split(/\r?\n/)) {
+                const line = rawLine.trim();
+
+                if (!line) {
+                    continue;
+                }
+
+                const { section, text } = classify(line, bumpLevel as "major" | "minor" | "patch");
+
+                buckets[section].push(`- ${text}`);
+            }
+        }
+
+        const emoji = { ...DEFAULT_EMOJI, ...(options.emoji ?? {}) };
+        const lines: string[] = [];
+
+        // Version heading — only for the CHANGELOG.md target. The github-release
+        // target omits it because the release UI already shows the version.
+        if (target !== "github-release") {
+            lines.push(`## [${release.newVersion}] - ${date}`);
+            lines.push("");
+        }
+
+        for (const section of SECTIONS_IN_ORDER) {
+            if (buckets[section].length === 0) {
+                continue;
+            }
+
+            lines.push(`### ${emoji[section]} ${section}`);
+            lines.push("");
+            lines.push(...buckets[section]);
+            lines.push("");
+        }
+
+        if (release.isCascadeBump || release.isGroupBump) {
+            for (const source of release.sources) {
+                const verb = release.isCascadeBump ? "Cascade from" : "Group bump with";
+
+                lines.push(`- ${verb} \`${source.name}@${source.newVersion}\``);
+            }
+        } else if (release.isDependencyBump && changeFiles.length === 0) {
+            for (const source of release.sources) {
+                lines.push(`- Updated dependency \`${source.name}@${source.newVersion}\``);
+            }
+        }
+
+        // Optional comparison link footer — Keep-a-Changelog convention.
+        if (options.repo && target !== "github-release") {
+            lines.push("");
+            lines.push(`[${release.newVersion}]: https://github.com/${options.repo}/compare/v${release.oldVersion}...v${release.newVersion}`);
+        }
+
+        return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+    });
+```
+
+Wire it up:
+
+```typescript
+// vis.config.ts
+export default {
+    release: {
+        changelog: ["./.vis/release/emoji-keep-a-changelog.ts", {
+            repo: "foo/bar",
+            emoji: {
+                Added: "🎁",  // override the default ✨
+            },
+        }],
+    },
+};
+```
+
+A few observations:
+
+- **`defineFormatter` is the typed wrapper.** It does nothing at runtime — just preserves the function reference under the typed name so editors infer the parameter and return types. Optional but recommended.
+- **The factory pattern is cleanest for options.** Plain default-export-as-formatter works too, but the factory form gets you typed options and lets the formatter close over them without polluting the global scope.
+- **The `target` field disambiguates `CHANGELOG.md` from the GH release body.** Always check it before emitting a top-level version heading — otherwise your GH releases will look like they have a duplicate title.
+- **The same formatter runs for cascade / group / dependency-only bumps.** When `release.changeFiles` is empty, the synthetic source-package list at the bottom is your only output; do not skip the function early on empty change files.
+
+### Re-using built-in formatters
+
+To layer a small tweak on top of a built-in — e.g. the github formatter with a footer — set `release.changelog` to the built-in id in your config and wrap the rendered output with a post-process step in your CI. For deeper composition (calling `createGithubFormatter` directly), copy the formatter logic into your own module: the built-in factories live at `packages/tooling/vis/src/release/core/changelog/{default,github,keep-a-changelog}.ts` and are not re-exported from the plugin SDK.
+
+## Cross-references
+
+- **Plugin SDK** — `@visulima/vis/release/plugin-sdk`. All three surfaces (`NotificationChannel`, `VersionActions`, `ChangelogFormatter`) plus their `define*` identity wrappers re-export from one path.
+- **Notifications behaviour** — see [Release notifications](./release-notifications.mdx) for the dispatch flow, template tokens, and `--resume` dedup contract.
+- **Version-resolver modes** — see [First-release & version resolver](./release-first-release-and-resolver.mdx) for `currentVersionResolver` (which routes through `versionActions.readPublishedVersion()` in `registry` mode).
+- **Built-in source** — `packages/tooling/vis/src/release/core/{notifications,version-actions,changelog}/`. Each directory has a small set of reference implementations (`npm.ts`, `cargo.ts`, `slack.ts`, …) worth reading before authoring your own.
+
+## Common pitfalls
+
+- **Forgetting the `id` field.** Every `NotificationChannel` and every `VersionActions` instance needs a stable `id`. It surfaces in log lines, in `result.failed[].id`, and in the `state.notified` ledger. Two channels with the same `id` are indistinguishable to operators reading CI logs.
+- **Logging the URL on failure.** Webhook URLs frequently contain bearer secrets. Wrap your `fetch` rejection and emit a message that never includes the URL. The dispatcher's `redactTokens` is defence-in-depth, not a primary defence.
+- **Mutating `context.published` / `context.release`.** Both objects are `Readonly` by convention (the types use `ReadonlyArray<…>`). Some channel implementations would otherwise sort the package list in place, breaking the next channel that runs in parallel. Treat the context as immutable input.
+- **Throwing from `readPublishedVersion`.** This method is a probe — the orchestrator treats `undefined` as "not yet published" and falls back gracefully. A thrown error from your implementation propagates and fails the release. Always wrap network calls in try/catch and return `undefined` on transport failure; let the publish path surface real auth / network errors separately.
+- **Skipping the `dry-run` branch in `publish`.** Every `VersionActions.publish` implementation must respect `context.dryRun` — return a no-op `PublishResult` with `published: false`. `vis release version --dry-run` and `vis release publish --dry-run` rely on this; an actions plugin that ignores the flag will accidentally publish from a preview run.
+- **Emitting the `## <version>` heading in `target: "github-release"`.** The release UI prepends its own version label; your `##` heading duplicates it. Always branch on `target` before writing the version line.

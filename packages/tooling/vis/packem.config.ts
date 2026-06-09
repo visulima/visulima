@@ -36,6 +36,15 @@ export default defineConfig({
         dts: {
             oxc: true,
         },
+        // The release changelog loader uses a runtime-resolved `import(url)` to
+        // load a user-supplied formatter module. The default
+        // @rollup/plugin-dynamic-import-vars rejects that pattern as
+        // statically un-analyzable, so we downgrade its errors to warnings —
+        // the variable import survives untransformed and is handled by Node
+        // at runtime.
+        dynamicVars: {
+            warnOnError: true,
+        },
         license: {
             path: "./LICENSE.md",
         },

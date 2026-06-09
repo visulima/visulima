@@ -55,8 +55,25 @@
             "types": "./index.d.ts",
             "default": "./index.js"
         },
+        "./release": {
+            "types": "./dist/release/index.d.ts",
+            "default": "./dist/release/index.js"
+        },
+        "./release/types": {
+            "types": "./dist/release/types.d.ts",
+            "default": "./dist/release/types.js"
+        },
+        "./release/presets": {
+            "types": "./dist/release/presets.d.ts",
+            "default": "./dist/release/presets.js"
+        },
+        "./release/plugin-sdk": {
+            "types": "./dist/release/plugin-sdk.d.ts",
+            "default": "./dist/release/plugin-sdk.js"
+        },
         "./schemas/project.schema.json": "./schemas/project.schema.json",
         "./schemas/vis-config.schema.json": "./schemas/vis-config.schema.json",
+        "./schemas/vis-release-config.schema.json": "./schemas/vis-release-config.schema.json",
         "./package.json": "./package.json"
     },
     "bin": {
@@ -101,16 +118,29 @@
         "test:watch": "vitest"
     },
     "dependencies": {
+        "@floating-ui/core": "1.7.5",
+        "@floating-ui/dom": "1.7.6",
+        "@hono/node-server": "catalog:backend",
+        "@visulima/error": "6.0.0-alpha.32",
         "@visulima/secret-scanner": "1.0.0-alpha.5",
+        "@visulima/source-map": "3.0.0-alpha.11",
         "@visulima/tabular": "4.0.0-alpha.13",
         "@visulima/task-runner": "1.0.0-alpha.21",
         "@visulima/tui": "1.0.0-alpha.23",
+        "conventional-commits-parser": "^6.2.0",
+        "graphology": "0.26.0",
+        "graphology-layout-forceatlas2": "0.10.1",
+        "graphology-types": "0.24.8",
+        "hono": "catalog:backend",
         "jiti": "catalog:dev",
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^1.2.1",
         "react": "catalog:frontend",
         "react-reconciler": ">=0.33.0",
-        "tinyexec": "catalog:dev"
+        "sigma": "3.0.3",
+        "smol-toml": "catalog:prod",
+        "tinyexec": "catalog:dev",
+        "undici": "catalog:prod"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -196,7 +226,6 @@
         "semver": "^7.8.0",
         "sigma": "3.0.3",
         "sigstore": "^4.1.0",
-        "smol-toml": "catalog:dev",
         "tailwind-csstree": "catalog:dev",
         "tailwindcss": "catalog:style",
         "ts-json-schema-generator": "catalog:dev",

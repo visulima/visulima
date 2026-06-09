@@ -5,15 +5,31 @@ description: "A CLI task runner for monorepo workspaces with task caching, depen
 
 # Visulima Vis
 
-**A CLI task runner for monorepo workspaces**, powered by [@visulima/task-runner](https://www.npmjs.com/package/@visulima/task-runner) and [@visulima/cerebro](https://www.npmjs.com/package/@visulima/cerebro).
+**One CLI for everything your monorepo needs** — task running, caching, dependency management, releases, security audits, and AI-agent integration. Powered by [@visulima/task-runner](https://www.npmjs.com/package/@visulima/task-runner) and [@visulima/cerebro](https://www.npmjs.com/package/@visulima/cerebro).
+
+```bash
+vis run build              # Run a target across the workspace
+vis affected test          # Test only what changed
+vis release ci release     # Ship versions, changelogs, tags
+vis ai heal                # Let Claude / Cursor fix failing tasks
+```
+
+Drop-in for Turbo and Vite Task; the breadth of Nx without the platform lock-in. See [Why vis vs. the alternatives](/guides/why-vis) for the side-by-side capability matrix.
 
 ## Key Features
 
-**Built for AI agents** _(unique vs. Turbo/Nx-without-Cloud/moon/Vite Task)_
+**Built for AI agents** _(unique vs. Turbo / Nx-without-Cloud / moon / Vite Task)_
 
 - **MCP server** — `@visulima/vis-mcp` exposes 8 read-only introspection tools to Claude / Cursor / Copilot, plus a paired Claude Skill
 - **`vis ai heal`** — propose-validate-comment loop on the failing task; `/vis heal accept` lands the patch as a signed commit (GitHub Actions, GitLab CI, Buildkite)
 - **Worktree-aware shared cache** — N parallel agents in N sibling git worktrees share one cache automatically
+
+**Release management** _(matches changesets / semantic-release / release-please feature-for-feature)_
+
+- **`vis release`** — change-file authoring, channel routing, version-PR mode, auto-publish for prereleases, snapshot previews, NAPI sidecar support
+- **One-command migration** — `vis release init` detects changesets / semantic-release / bumpy and migrates in place
+- **CI drivers built-in** — `vis release ci release / snapshot / check / plan` for GitHub Actions and GitLab CI
+- See the [release guide](/guides/release) for the 5-minute quickstart
 
 **Production-grade caching**
 
@@ -57,25 +73,22 @@ description: "A CLI task runner for monorepo workspaces with task caching, depen
 - `vis toolchain` delegates to proto / mise / fnm / volta
 - Built on Cerebro for help / version / shell completion
 
-See [Why vis vs. Vite Task / Turbo / Nx / moon](/guides/why-vis) for the side-by-side capability matrix.
-
-## Quick Start
+## A typical day with vis
 
 ```bash
-# Run a target across all workspace projects
-vis run build
+# Morning: pull, install, see what changed
+git pull
+vis install
+vis affected lint test --base=main
 
-# Run tests only on affected projects
-vis affected test --base=main
+# Build only what's affected, watch tests
+vis run build --watch
 
-# Check for outdated catalog dependencies
-vis check
+# Record a version bump for the change you just made
+vis release add --packages '@scope/cerebro:minor' --message 'Add tab completion'
 
-# Update catalog dependencies interactively
-vis update --interactive
-
-# Visualize the project dependency graph
-vis graph
+# Push — CI handles tagging, changelogs, npm publish
+git push
 ```
 
 ## Next Steps
@@ -85,7 +98,10 @@ vis graph
         Set up vis in your workspace
     </Card>
     <Card title="Quick Start" href="/quick-start">
-        Get up and running in minutes
+        The 10-minute walkthrough
+    </Card>
+    <Card title="Release Manager" href="/guides/release">
+        Ship versions, changelogs, and tags from change files
     </Card>
     <Card title="Commands" href="/commands/run">
         Full command reference

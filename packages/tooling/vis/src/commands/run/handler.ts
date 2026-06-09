@@ -4,6 +4,7 @@ import type {
     ConcurrentCommandInput,
     LifeCycleInterface,
     LogMode,
+    OutputSpec,
     ProcessEvent,
     TargetConfiguration,
     Task,
@@ -1527,7 +1528,11 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // root maps to `.` so the path stays a workspace-relative `./dist`
         // instead of an escaping `/dist`. Idempotent if already expanded.
         const outputsProjectRoot = project?.root && project.root.length > 0 ? project.root : ".";
-        const expandedOutputs = (visTarget.outputs ?? []).map((output) => {
+        // OutputSpec is a `string | { auto: true }` union, so the two
+        // branches legitimately return different runtime shapes — the
+        // `{ auto: true }` sentinel passes through, strings get expanded.
+        // eslint-disable-next-line sonarjs/function-return-type -- OutputSpec union; non-string sentinel passes through, strings are expanded
+        const expandedOutputs = (visTarget.outputs ?? []).map((output): OutputSpec => {
             if (typeof output !== "string") {
                 return output;
             }
@@ -2209,6 +2214,13 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // wins over a config value and relative paths are normalized
         // against `workspaceRoot` via `resolveCacheDirectory()`.
         cacheDirectory: resolvedCacheDirectory,
+        // Forward the vis-owned data directory so run summaries land in
+        // `<workspaceRoot>/.vis/` rather than the task-runner default
+        // `<workspaceRoot>/.task-runner/`. The config-supplied value
+        // (if any) is honoured because the spread above can carry it
+        // through; the explicit assignment here guarantees vis-driven
+        // runs always co-locate their state under `.vis/`.
+        dataDirectory: configTaskRunner.dataDirectory ?? getVisWorkspaceDataDir(workspaceRoot),
         // `namedInputs` lives at the TOP LEVEL of the vis config, not under
         // `taskRunner`, so the `...configTaskRunner` spread above does not carry
         // it. Forward it explicitly: without it the task-runner's hasher gets an
@@ -2219,13 +2231,17 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // change. (Tasks with no `inputs` fall back to `{projectRoot}/**/*`,
         // which is why `lint:types` worked while `build` did not.)
         namedInputs: config.namedInputs,
-        // Forward the vis-owned data directory so run summaries land in
-        // `<workspaceRoot>/.vis/` rather than the task-runner default
-        // `<workspaceRoot>/.task-runner/`. The config-supplied value
-        // (if any) is honoured because the spread above can carry it
-        // through; the explicit assignment here guarantees vis-driven
-        // runs always co-locate their state under `.vis/`.
-        dataDirectory: configTaskRunner.dataDirectory ?? getVisWorkspaceDataDir(workspaceRoot),
+        // Surface the hasher's "cacheable task resolved 0 input files" diagnostic
+        // through the logger — the early-warning for a dropped/misconfigured input
+        // that would otherwise silently false-cache-hit forever.
+        onDiagnostic: (taskId, message) => {
+            if (warnedEmptyInputs.has(taskId)) {
+                return;
+            }
+
+            warnedEmptyInputs.add(taskId);
+            logger.warn(message);
+        },
         // Bridge the typed `task:fingerprint` hook into task-runner's
         // `onFingerprint` callback. Placed after the config spread so
         // the plugin pipeline always runs — a config-supplied
@@ -2237,17 +2253,6 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // contract — see `VisHooks["task:fingerprint"]`).
         onFingerprint: async (task, contributor) => {
             await hooks.callHook("task:fingerprint", task, contributor);
-        },
-        // Surface the hasher's "cacheable task resolved 0 input files" diagnostic
-        // through the logger — the early-warning for a dropped/misconfigured input
-        // that would otherwise silently false-cache-hit forever.
-        onDiagnostic: (taskId, message) => {
-            if (warnedEmptyInputs.has(taskId)) {
-                return;
-            }
-
-            warnedEmptyInputs.add(taskId);
-            logger.warn(message);
         },
     };
 
