@@ -106,7 +106,6 @@
         "prettier": "catalog:lint",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
         "tailwind-csstree": "0.3.1",
         "vitest": "catalog:test"
     },

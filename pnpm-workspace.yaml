@@ -111,11 +111,8 @@ catalogs:
     vite-plugin-vue-devtools: 8.1.2
     webpack: ^5.106.2
   cli:
-    semantic-release: 25.0.3
     taze: 19.12.0
   dev:
-    '@anolilab/semantic-release-pnpm': ^8.1.9
-    '@anolilab/semantic-release-preset': ^13.4.10
     '@arethetypeswrong/cli': ^0.18.2
     '@aws-sdk/client-s3': 3.1048.0
     '@aws-sdk/credential-providers': 3.1048.0
@@ -139,7 +136,6 @@ catalogs:
     '@opentelemetry/api': 1.9.1
     '@pnpm/exe': 11.1.2
     '@remix-run/headers': 0.19.0
-    '@semantic-release/exec': ^7.1.0
     '@shikijs/langs': ^4.0.2
     '@shikijs/themes': ^4.0.2
     '@sveltejs/adapter-auto': ^7.0.1
@@ -431,7 +427,6 @@ catalogs:
   prod:
     '@alcalzone/ansi-tokenize': ^0.3.0
     '@anolilab/commitlint-config': 10.0.1
-    '@anolilab/multi-semantic-release': ^4.4.1
     '@anolilab/textlint-config': 13.0.1
     '@antfu/install-pkg': ^1.1.0
     '@apidevtools/swagger-parser': ^12.1.0

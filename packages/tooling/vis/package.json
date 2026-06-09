@@ -145,8 +145,6 @@
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@bomb.sh/tab": "catalog:dev",
         "@eslint-react/eslint-plugin": "catalog:lint",
@@ -160,7 +158,6 @@
         "@octokit/rest": "^22.0.1",
         "@opentelemetry/api": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
-        "@semantic-release/exec": "catalog:dev",
         "@shared/xxh3": "workspace:*",
         "@socketsecurity/registry": "^2.0.2",
         "@tailwindcss/forms": "catalog:frontend",
@@ -222,7 +219,6 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
         "semver": "^7.8.0",
         "sigma": "3.0.3",
         "sigstore": "^4.1.0",
@@ -285,5 +281,8 @@
             "x86_64-pc-windows-msvc",
             "aarch64-pc-windows-msvc"
         ]
+    },
+    "vis-release": {
+        "managed": true
     }
 }

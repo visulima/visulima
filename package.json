@@ -311,7 +311,6 @@
     "dependencies": {
         "@anolilab/commitlint-config": "catalog:prod",
         "@anolilab/lint-staged-config": "catalog:lint",
-        "@anolilab/multi-semantic-release": "catalog:prod",
         "@anolilab/prettier-config": "catalog:lint",
         "@anolilab/textlint-config": "catalog:prod",
         "@commitlint/cli": "catalog:prod",
@@ -333,7 +332,6 @@
         "read-pkg": "catalog:prod",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
         "sort-package-json": "catalog:dev",
         "textlint": "catalog:prod",
         "typescript": "catalog:tsc",

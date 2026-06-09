@@ -171,8 +171,6 @@
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@types/glob-parent": "^5.1.3",
         "@types/ini": "catalog:types",
@@ -200,7 +198,6 @@
         "redos-detector": "catalog:dev",
         "rimraf": "catalog:node",
         "safe-regex2": "catalog:dev",
-        "semantic-release": "catalog:cli",
         "smol-toml": "catalog:dev",
         "tempy": "catalog:dev",
         "tinyglobby": "^0.2.16",
@@ -244,5 +241,8 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
+    },
+    "vis-release": {
+        "managed": true
     }
 }

@@ -383,8 +383,6 @@
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@opentelemetry/api": "catalog:dev",
         "@react-email/render": "catalog:frontend",
@@ -418,7 +416,6 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
         "unstorage": "^1.13.0",
         "vitest": "catalog:test"
@@ -485,5 +482,8 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
+    },
+    "vis-release": {
+        "managed": true
     }
 }

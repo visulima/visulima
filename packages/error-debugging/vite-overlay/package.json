@@ -84,8 +84,6 @@
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@eslint/css": "catalog:lint",
         "@jridgewell/trace-mapping": "catalog:dev",
@@ -116,7 +114,6 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
         "tailwind-csstree": "catalog:dev",
         "tailwindcss": "catalog:style",
         "typescript": "catalog:tsc",
@@ -132,5 +129,8 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
+    },
+    "vis-release": {
+        "managed": true
     }
 }

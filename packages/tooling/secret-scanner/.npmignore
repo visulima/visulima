@@ -7,4 +7,3 @@ __fixtures__
 native
 .rpt2_cache
 fixup.sh
-.releaserc.json

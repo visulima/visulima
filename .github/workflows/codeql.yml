@@ -1,9 +1,25 @@
 name: "CodeQL"
 on:
     push:
-        branches: ["main", "alpha", "next", "beta"]
+        branches:
+            - "main"
+            - "next"
+            - "next-major"
+            - "alpha"
+            - "beta"
+            # Maintenance release branches (e.g. "1.x", "1.2.x").
+            - "[0-9]*.x"
+            - "[0-9]*.[0-9]*.x"
     pull_request:
-        branches: ["main", "alpha", "next", "beta"]
+        # The branches below must be a subset of the branches above
+        branches:
+            - "main"
+            - "next"
+            - "next-major"
+            - "alpha"
+            - "beta"
+            - "[0-9]*.x"
+            - "[0-9]*.[0-9]*.x"
     schedule:
         - cron: "0 0 * * 1"
 permissions: {}

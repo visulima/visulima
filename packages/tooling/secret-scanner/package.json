@@ -57,6 +57,9 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
+    "vis-release": {
+        "managed": true
+    },
     "scripts": {
         "build": "pnpm run build:rules && packem build --development",
         "build:native": "pnpm run build:rules:prod && napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
@@ -85,15 +88,12 @@
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@aws-sdk/client-sts": "3.1047.0",
         "@azure/storage-blob": "12.31.0",
         "@grpc/grpc-js": "1.14.3",
         "@napi-rs/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
-        "@semantic-release/exec": "catalog:dev",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/find-cache-dir": "3.0.0-alpha.11",
@@ -113,7 +113,6 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
         "smol-toml": "^1.6.1",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test",

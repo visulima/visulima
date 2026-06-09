@@ -449,7 +449,7 @@ jobs:
             # --- Upload NAPI loader files (index.js, index.d.ts) once ---
             # napi build regenerates these on every runner, but the content is
             # target-agnostic (derived from Rust signatures + napi.targets). Upload
-            # once from x86_64-unknown-linux-gnu so semantic-release.yml can copy
+            # once from x86_64-unknown-linux-gnu so vis-release.yml can copy
             # them into the package roots before publish — guarantees the
             # published .d.ts matches the Rust signatures of the .node binaries.
             - name: "Upload task-runner loader"

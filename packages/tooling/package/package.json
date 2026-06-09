@@ -125,8 +125,6 @@
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@inquirer/core": "catalog:dev",
         "@inquirer/type": "catalog:dev",
@@ -146,7 +144,6 @@
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
-        "semantic-release": "catalog:cli",
         "tempy": "catalog:dev",
         "tinyexec": "catalog:dev",
         "type-fest": "catalog:prod",
@@ -165,5 +162,8 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
+    },
+    "vis-release": {
+        "managed": true
     }
 }
