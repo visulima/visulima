@@ -1,3 +1,14 @@
+## @visulima/vis [1.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.34...@visulima/vis@1.0.0-alpha.35) (2026-06-09)
+
+### Features
+
+* **vis:** add run --hash-mode override flag ([b9c5efa](https://github.com/visulima/visulima/commit/b9c5efa05b9e9f142e8d52fa9d88ddac10d2d4f0))
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.22
+
 ## @visulima/vis [1.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.33...@visulima/vis@1.0.0-alpha.34) (2026-06-08)
 
 ### Features
