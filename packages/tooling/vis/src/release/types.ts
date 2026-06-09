@@ -500,6 +500,17 @@ export interface PerPackageReleaseConfig {
      * option. Defaults to `"jsr.json"`.
      */
     jsrConfigPath?: string;
+
+    /**
+     * Extra arguments forwarded verbatim to `jsr publish` for the `jsr`
+     * versionActions (the `jsr()` preset wires this from its `publishArgs` /
+     * `allowSlowTypes` options). The most common entry is
+     * `"--allow-slow-types"`, which JSR requires for packages whose public
+     * API has types it can't statically infer. `--allow-dirty` is always
+     * passed by vis (the version is bumped on disk before publish) and need
+     * not be listed here.
+     */
+    jsrPublishArgs?: string[];
     /** Hard opt-in/out — overrides every other rule. */
     managed?: boolean;
 

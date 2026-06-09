@@ -93,6 +93,7 @@ const ctx = (overrides: {
     dir: string;
     dryRun?: boolean;
     jsrConfigPath?: string;
+    jsrPublishArgs?: string[];
     newVersion?: string;
     pkgName?: string;
     runner?: CommandRunner;
@@ -103,6 +104,7 @@ const ctx = (overrides: {
         dryRun: overrides.dryRun,
         perPackageConfig: {
             jsrConfigPath: overrides.jsrConfigPath,
+            jsrPublishArgs: overrides.jsrPublishArgs,
         },
         pkg: {
             dir: overrides.dir,
@@ -387,6 +389,22 @@ describe("jsrVersionActions: publish — happy path", () => {
         expect(result.published).toBe(true);
         expect(result.output).toContain("trusted publishing");
         expect(calls[0]!.args).toEqual(["jsr", "publish", "--allow-dirty"]);
+    });
+
+    it("forwards jsrPublishArgs (e.g. --allow-slow-types) after the built-in flags", async () => {
+        writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.1" });
+        process.env["JSR_API_KEY"] = "jsr_dummy";
+        stubFetch({ body: { latest: "1.0.0" } });
+
+        const { calls, runner } = buildRunner([{ exitCode: 0 }]);
+
+        await new JsrVersionActions().publish(ctx({
+            dir: workspace,
+            jsrPublishArgs: ["--allow-slow-types"],
+            runner,
+        }));
+
+        expect(calls[0]!.args).toEqual(["jsr", "publish", "--allow-dirty", "--allow-slow-types"]);
     });
 
     it("passes --config when jsrConfigPath points at a non-default file (e.g. deno.json)", async () => {

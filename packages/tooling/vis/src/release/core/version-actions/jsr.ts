@@ -326,6 +326,12 @@ export class JsrVersionActions extends VersionActions {
             args.push("--config", configRelative);
         }
 
+        // Operator-supplied flags (e.g. `--allow-slow-types`), wired via the
+        // `jsr()` preset's `allowSlowTypes` / `publishArgs` options.
+        for (const extra of context.perPackageConfig?.jsrPublishArgs ?? []) {
+            args.push(extra);
+        }
+
         const result = await context.pm.runner.run("npx", args, {
             cwd: context.pkg.dir,
             silent: false,
