@@ -330,7 +330,7 @@ class InProcessTaskHasher implements TaskHasher {
 
     readonly #globalEnv: string[];
 
-    readonly #fileHashCache = new Map<string, string>();
+    readonly #fileHashCache = new Map<string, { hash: string; mtimeMs: number; size: number }>();
 
     readonly #native: ReturnType<typeof loadNativeBindings>;
 
@@ -698,8 +698,12 @@ class InProcessTaskHasher implements TaskHasher {
                     }
 
                     result[path] = hash;
-                    this.#fileHashCache.set(absPath, hash);
 
+                    // Intentionally NOT seeded into `#fileHashCache`: that cache
+                    // is mtime/size-revalidated in `#hashFile`, but the native
+                    // batch result carries no stat. Seeding a bare hash here is
+                    // exactly the stale-read vector — a later `#hashFile` for the
+                    // same path must re-validate against disk, not trust this.
                     if (incremental) {
                         recordPromises.push(
                             stat(absPath)
@@ -749,53 +753,60 @@ class InProcessTaskHasher implements TaskHasher {
     }
 
     async #hashFile(filePath: string): Promise<string | undefined> {
-        const cached = this.#fileHashCache.get(filePath);
+        // Stat first so both cache layers can be revalidated against the
+        // file's current mtime+size. The previous form trusted the in-memory
+        // `#fileHashCache` unconditionally, so a file mutated mid-run (e.g. an
+        // upstream task rewriting a sibling task's declared input) returned a
+        // stale within-run hash and could seed a false cache hit downstream.
+        let fileStat: Awaited<ReturnType<typeof stat>> | undefined;
 
-        if (cached) {
-            return cached;
+        try {
+            fileStat = await stat(filePath);
+        } catch {
+            fileStat = undefined;
         }
 
-        // Two-layer cache:
-        //   1. `#fileHashCache` — per-run, in-memory; checked above.
-        //   2. `#incrementalHasher` — cross-run, persisted, mtime+size
-        //      indexed; consulted when the in-memory miss hits.
-        // The incremental layer skips reading the file content when
-        // its mtime and size match the snapshot. Falls back to a full
-        // read whenever the snapshot is cold or stale.
-        if (this.#incrementalHasher) {
-            try {
-                const fileStat = await stat(filePath);
+        if (fileStat?.isFile()) {
+            // Layer 1: per-run, in-memory — reused only when mtime+size still match.
+            const cached = this.#fileHashCache.get(filePath);
 
-                if (fileStat.isFile()) {
-                    const snapshotHit = this.#incrementalHasher.getSnapshotHash(filePath, fileStat.mtimeMs, fileStat.size);
+            // eslint-disable-next-line @typescript-eslint/prefer-optional-chain -- the `cached &&` guard narrows `cached` for the `cached.hash` return; an optional chain would not.
+            if (cached && cached.mtimeMs === fileStat.mtimeMs && cached.size === fileStat.size) {
+                return cached.hash;
+            }
 
-                    if (snapshotHit) {
-                        this.#fileHashCache.set(filePath, snapshotHit);
+            // Layer 2: cross-run, persisted, mtime+size indexed. Skips the read
+            // when the snapshot still matches; falls back to a full read when cold.
+            if (this.#incrementalHasher) {
+                const snapshotHit = this.#incrementalHasher.getSnapshotHash(filePath, fileStat.mtimeMs, fileStat.size);
 
-                        return snapshotHit;
-                    }
+                if (snapshotHit) {
+                    this.#fileHashCache.set(filePath, { hash: snapshotHit, mtimeMs: fileStat.mtimeMs, size: fileStat.size });
 
-                    const content = await readFile(filePath);
-                    const hash = xxh3Hash(content);
-
-                    this.#incrementalHasher.recordSnapshot(filePath, hash, fileStat.mtimeMs, fileStat.size);
-                    this.#fileHashCache.set(filePath, hash);
-
-                    return hash;
+                    return snapshotHit;
                 }
+            }
+
+            try {
+                const content = await readFile(filePath);
+                const hash = xxh3Hash(content);
+
+                this.#incrementalHasher?.recordSnapshot(filePath, hash, fileStat.mtimeMs, fileStat.size);
+                this.#fileHashCache.set(filePath, { hash, mtimeMs: fileStat.mtimeMs, size: fileStat.size });
+
+                return hash;
             } catch {
-                // stat failed — fall through to the legacy readFile
-                // path so behaviour matches the non-incremental mode.
+                return undefined;
             }
         }
 
+        // No usable stat (special file, race, or permission error). Read
+        // best-effort without caching by mtime — matches the prior
+        // non-incremental path, just without a stale-prone cache entry.
         try {
             const content = await readFile(filePath);
-            const hash = xxh3Hash(content);
 
-            this.#fileHashCache.set(filePath, hash);
-
-            return hash;
+            return xxh3Hash(content);
         } catch {
             return undefined;
         }
