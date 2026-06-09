@@ -356,7 +356,7 @@ const resolveTaskDependencies = (task: Task, options: CreateTaskGraphOptions): R
 
 // Task ids are `project:target[:config]` and never contain whitespace,
 // so a space is a safe separator for a `from`-`to` edge key.
-const EDGE_SEPARATOR = " ";
+const EDGE_SEPARATOR = " ";
 
 const edgeKey = (from: string, to: string): string => `${from}${EDGE_SEPARATOR}${to}`;
 
