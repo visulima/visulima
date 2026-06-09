@@ -1210,6 +1210,19 @@ export interface VisReleaseConfig {
     floatingMajorTag?: boolean;
 
     /**
+     * Run the project's Prettier over the files the version step writes
+     * (package.json bumps + CHANGELOG.md entries) before committing them
+     * (RFC §14 step 7). Scoped to the changed files only — never the whole
+     * tree. Resolves the project's own Prettier from the workspace root;
+     * soft-fails if Prettier isn't installed.
+     *
+     * Default: `false` (opt-in — a project that doesn't use Prettier, or
+     * whose Prettier config conflicts with how vis writes JSON, leaves this
+     * off).
+     */
+    formatChangedFiles?: boolean;
+
+    /**
      * Self-hosted GitHub Enterprise host (e.g. `"github.acme.com"` — no
      * scheme). Translates to the `GH_HOST` env var that the `gh` CLI
      * consumes natively, so all adapter calls land on the right
@@ -1285,6 +1298,19 @@ export interface VisReleaseConfig {
      * fail the publish.
      */
     notifications?: NotificationsConfig;
+
+    /**
+     * Emit one release commit per package (a `release(channel): pkg@version
+     * [skip ci]` message) instead of a single aggregate commit for the whole
+     * wave (RFC §19.5). Mirrors the per-package commit history that
+     * multi-semantic-release produced — useful for projects migrating off it
+     * that want to preserve `git log` shape. Only honoured when
+     * `aggregateRelease` is falsy. Shared artifacts (lockfile + consumed
+     * change-file deletions) ride along in the final package's commit.
+     *
+     * Default: `false` (one aggregate commit per wave).
+     */
+    oneCommitPerPackage?: boolean;
     /** Per-package overrides (matches `package.json["vis-release"]`). */
     packages?: Record<string, PerPackageReleaseConfig>;
     /** Shell command run after all publishes complete. */

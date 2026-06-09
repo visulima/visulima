@@ -22,12 +22,13 @@ import type {
     InstallLockfileOnlyOptions,
     PackOptions,
     PackResult,
+    PublishNativeOptions,
     PublishOptions,
     PublishResult,
     WorkspaceListEntry,
 } from "./interface";
 import { PackageManagerAdapter } from "./interface";
-import { NpmAdapter } from "./npm";
+import { interpretNativePublishResult, NpmAdapter } from "./npm";
 
 export class BunAdapter extends PackageManagerAdapter {
     public readonly id = "bun" as const;
@@ -198,6 +199,34 @@ export class BunAdapter extends PackageManagerAdapter {
     public async publish(options: PublishOptions): Promise<PublishResult> {
         // Bun lacks OIDC + provenance; always delegate to npm CLI.
         return new NpmAdapter(this.runner).publish(options);
+    }
+
+    public override async publishNative(options: PublishNativeOptions): Promise<PublishResult> {
+        // `bun publish` packs + publishes from the package dir. Bun has no
+        // `--provenance` and no OIDC, and ignores `--otp`; the version-action
+        // emits a compatibility warning when those are requested under native
+        // strategy. We still forward `--tag`/`--access`/`--registry`.
+        const args = ["publish"];
+
+        if (options.tag) {
+            args.push("--tag", options.tag);
+        }
+
+        if (options.access) {
+            args.push("--access", options.access);
+        }
+
+        if (options.registry) {
+            args.push("--registry", options.registry);
+        }
+
+        for (const extra of options.extraArgs ?? []) {
+            args.push(extra);
+        }
+
+        const result = await this.runner.run("bun", args, { cwd: options.cwd, silent: true });
+
+        return interpretNativePublishResult(result, "bun publish");
     }
 
     public async detectVersion(cwd: string): Promise<string | undefined> {

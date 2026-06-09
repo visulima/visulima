@@ -22,6 +22,42 @@ describe("workspace: discoverPackages", () => {
         expect(result.packages.map((p) => p.name).sort()).toEqual(["a", "b", "c"]);
     });
 
+    it("excludes native-addon platform packages under <parent>/npm/ (RFC §12.4)", async () => {
+        const reader = {
+            listPackages: async () => [
+                // Native-addon parent (napi field) at packages/vis.
+                { manifest: { name: "@scope/vis", napi: { binaryName: "vis" }, version: "1.0.0" } as unknown as PackageManifest, manifestPath: "/repo/packages/vis/package.json" },
+                // Platform packages live under the parent's npm/ dir — managed
+                // by the parent, must NOT be discovered standalone.
+                { manifest: { name: "@scope/vis-binding-linux-x64", version: "1.0.0" } as PackageManifest, manifestPath: "/repo/packages/vis/npm/linux-x64/package.json" },
+                { manifest: { name: "@scope/vis-binding-darwin-arm64", version: "1.0.0" } as PackageManifest, manifestPath: "/repo/packages/vis/npm/darwin-arm64/package.json" },
+                // Unrelated package — kept.
+                mkPkg("@scope/other"),
+            ],
+        };
+
+        const result = await discoverPackages(reader, { defaultManaged: true });
+        const names = result.packages.map((p) => p.name);
+
+        expect(names).toContain("@scope/vis");
+        expect(names).toContain("@scope/other");
+        expect(names).not.toContain("@scope/vis-binding-linux-x64");
+        expect(names).not.toContain("@scope/vis-binding-darwin-arm64");
+    });
+
+    it("excludes platform packages of an explicit native-addon parent (no napi field)", async () => {
+        const reader = {
+            listPackages: async () => [
+                { manifest: { name: "@scope/native", version: "1.0.0", "vis-release": { versionActions: "native-addon" } } as unknown as PackageManifest, manifestPath: "/repo/packages/native/package.json" },
+                { manifest: { name: "@scope/native-binding-linux-x64", version: "1.0.0" } as PackageManifest, manifestPath: "/repo/packages/native/npm/linux-x64/package.json" },
+            ],
+        };
+
+        const result = await discoverPackages(reader, { defaultManaged: true });
+
+        expect(result.packages.map((p) => p.name)).toEqual(["@scope/native"]);
+    });
+
     it("rejects duplicate package names", async () => {
         const reader = {
             listPackages: async () => [mkPkg("a"), mkPkg("a")],

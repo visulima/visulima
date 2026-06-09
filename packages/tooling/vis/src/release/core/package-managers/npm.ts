@@ -15,11 +15,43 @@ import type {
     InstallLockfileOnlyOptions,
     PackOptions,
     PackResult,
+    PublishNativeOptions,
     PublishOptions,
     PublishResult,
     WorkspaceListEntry,
 } from "./interface";
 import { PackageManagerAdapter } from "./interface";
+
+/**
+ * Interpret a package manager `publish` exit into a publish result. Shared by
+ * the native-publish paths of every adapter so the already-published (registry
+ * 403/409 EPUBLISHCONFLICT) detection is consistent across managers.
+ * @param result spawn result.
+ * @param result.exitCode process exit code.
+ * @param result.stderr captured stderr.
+ * @param result.stdout captured stdout.
+ * @param label human label for the failure message (e.g. `"pnpm publish"`).
+ * @returns published / already-published result; throws PUBLISH_FAILED otherwise.
+ */
+export const interpretNativePublishResult = (
+    result: { exitCode: number; stderr: string; stdout: string },
+    label: string,
+): PublishResult => {
+    if (result.exitCode === 0) {
+        return { output: result.stdout, published: true };
+    }
+
+    const combined = `${result.stdout}\n${result.stderr}`;
+
+    if (/EPUBLISHCONFLICT|cannot publish over the previously published versions|forbidden.*409/i.test(combined)) {
+        return { alreadyPublished: true, output: combined, published: false };
+    }
+
+    throw new VisReleaseError({
+        code: "PUBLISH_FAILED",
+        message: `${label} failed: ${combined}`,
+    });
+};
 
 export class NpmAdapter extends PackageManagerAdapter {
     public readonly id = "npm" as const;
@@ -176,6 +208,38 @@ export class NpmAdapter extends PackageManagerAdapter {
             code: "PUBLISH_FAILED",
             message: `npm publish failed: ${combined}`,
         });
+    }
+
+    public override async publishNative(options: PublishNativeOptions): Promise<PublishResult> {
+        const args = ["publish"];
+
+        if (options.tag) {
+            args.push("--tag", options.tag);
+        }
+
+        if (options.access) {
+            args.push("--access", options.access);
+        }
+
+        if (options.registry) {
+            args.push("--registry", options.registry);
+        }
+
+        if (options.otp) {
+            args.push("--otp", options.otp);
+        }
+
+        if (options.provenance) {
+            args.push("--provenance");
+        }
+
+        for (const extra of options.extraArgs ?? []) {
+            args.push(extra);
+        }
+
+        const result = await this.runner.run("npm", args, { cwd: options.cwd, silent: true });
+
+        return interpretNativePublishResult(result, "npm publish");
     }
 
     public async detectVersion(cwd: string): Promise<string | undefined> {
