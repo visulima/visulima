@@ -1,3 +1,10 @@
+## @visulima/vis-mcp [1.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.24...@visulima/vis-mcp@1.0.0-alpha.25) (2026-06-09)
+
+
+### Dependencies
+
+* **@visulima/vis:** upgraded to 1.0.0-alpha.35
+
 ## @visulima/vis-mcp [1.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.23...@visulima/vis-mcp@1.0.0-alpha.24) (2026-06-08)
 
 
