@@ -261,20 +261,33 @@ const hostConfig: ReactReconciler.HostConfig<
         // for this node. This is critical for performance: returning true always
         // causes React to enqueue a fiber update for every node every frame,
         // leading to unbounded memory growth under high-frequency renders.
-        const oldKeys = Object.keys(oldProps).filter((k) => k !== "children");
-        const newKeys = Object.keys(newProps).filter((k) => k !== "children");
-
-        if (oldKeys.length !== newKeys.length) {
-            return true;
+        if (oldProps === newProps) {
+            return null;
         }
 
-        for (const key of newKeys) {
-            if (oldProps[key] !== newProps[key]) {
+        let oldCount = 0;
+
+        for (const k of Object.keys(oldProps)) {
+            if (k !== "children") {
+                oldCount += 1;
+            }
+        }
+
+        let newCount = 0;
+
+        for (const k of Object.keys(newProps)) {
+            if (k === "children") {
+                continue;
+            }
+
+            newCount += 1;
+
+            if (oldProps[k] !== newProps[k]) {
                 return true;
             }
         }
 
-        return null;
+        return oldCount === newCount ? null : true;
     },
     removeChild(parentInstance, child) {
         child.remove();
