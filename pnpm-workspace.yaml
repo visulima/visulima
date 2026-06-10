@@ -65,6 +65,10 @@ auditConfig:
     - CVE-2026-0540
   ignoreGhsas:
     - GHSA-chqc-8p9q-pq6q
+    # lodash.set prototype pollution — dev-only path
+    # (redact/__bench__ > @qiwi/masker); no patched release of the
+    # frozen per-method package exists. Re-check if @qiwi/masker updates.
+    - GHSA-p6mc-m468-83gw
 
 autoInstallPeers: true
 
@@ -82,7 +86,7 @@ catalogs:
     '@visulima/prisma-dmmf-transformer': 3.0.0-alpha.5
     express: ^5.2.1
     fastify: 5.8.5
-    hono: 4.12.19
+    hono: 4.12.25
     koa: 3.2.0
     prisma: 6.19.2
     swagger-ui-express: ^5.0.1
@@ -829,6 +833,7 @@ overrides:
   hono@<4.11.4: '>=4.11.4'
   hono@<4.11.7: '>=4.11.7'
   hono@<4.12.4: '>=4.12.4'
+  hono@<4.12.21: '>=4.12.21'
   hono@<4.9.7: '>=4.10.2'
   hono@>=4.8.0 <4.9.6: '>=4.10.2'
   immutable@<4.3.8: '>=4.3.8'
@@ -876,6 +881,7 @@ overrides:
   react-dom: 19.2.6
   rollup@>=4.0.0 <4.59.0: '>=4.59.0'
   serialize-javascript@<7.0.5: '>=7.0.5'
+  shell-quote@<1.8.4: '>=1.8.4'
   srvx@<0.11.13: '>=0.11.13'
   storybook@>=10.0.0-beta.0 <10.2.10: '>=10.2.10'
   svelte@<=5.51.4: '>=5.51.5'
@@ -889,6 +895,7 @@ overrides:
   tar@<=7.5.2: '>=7.5.3'
   tar@<=7.5.3: '>=7.5.4'
   tmp@<=0.2.3: '>=0.2.5'
+  tmp@<0.2.6: '>=0.2.6'
   undici@<6.23.0: '>=6.23.0'
   undici@<6.24.0: '>=6.24.0'
   undici@>=6.0.0 <6.24.0: '>=6.24.0'
