@@ -72,9 +72,9 @@ Every package follows the same layout:
 - `src/index.ts` — main export
 - `__tests__/` — Vitest tests (`.test.ts` or `.spec.ts`)
 - `vitest.config.ts` — per-package test config
-- `.releaserc.json` — extends `@anolilab/semantic-release-preset/pnpm`
 - `project.json` — Nx metadata with tags (e.g., `type:package`, `category:cli-terminal`)
 - `packem.config.ts` — bundler config (uses `@visulima/packem`)
+- `package.json` opts into the release pipeline via `"release": { "managed": true }`
 
 All packages are ESM (`"type": "module"`), use conditional exports, and have `"sideEffects": false`.
 
@@ -103,8 +103,8 @@ To add a new package to the website: add `category:<slug>` tag to its `project.j
 
 - 8 platform-specific packages in `npm/` (darwin, linux, windows × x64, arm64)
 - Built by `.github/workflows/build-native.yml` (matrix across all targets)
-- Published via `scripts/semantic-release-native-addons.mjs` (local semantic-release plugin, runs in `verifyConditions` + `prepare`)
-- Platform packages are excluded from `multi-semantic-release` via `--ignore-packages`
+- Published via vis's built-in `native-addon` VersionActions plugin. vis auto-detects NAPI parents via the `napi` field in `package.json`; the parent in `packages/tooling/task-runner/package.json` also pins `release.versionActions: "native-addon"` explicitly
+- Platform packages under `npm/<target>/` are not opted into vis (no `release.managed`); the parent's `native-addon` plugin publishes them alongside the parent
 - `binding.js` handles runtime platform detection and fallback to JS implementations
 
 ### Dependency Catalog
@@ -123,7 +123,7 @@ Husky + lint-staged runs on commit:
 
 ### Release
 
-Independent per-package versioning via `multi-semantic-release`. Each package has `.releaserc.json` extending the shared preset. The preset chain: commit-analyzer → release-notes-generator → changelog → clean-package-json → pnpm-publish → git → github.
+Independent per-package versioning via `@visulima/vis release`. Each package opts in with `"vis-release": { "managed": true }` in its `package.json`. Root `vis.config.ts` configures channels (main/next + alpha/beta + maintenance), publish settings, signing, and git identity. CI runs `vis release ci release` — see `.github/workflows/vis-release.yml`.
 
 Research the codebase before editing. Never change code you haven't read.
 

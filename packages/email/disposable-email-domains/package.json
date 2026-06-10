@@ -51,6 +51,9 @@
         "README.md",
         "CHANGELOG.md"
     ],
+    "vis-release": {
+        "managed": true
+    },
     "scripts": {
         "build": "packem build --development && pnpm run generate:domains",
         "build:prod": "packem build --production && pnpm run generate:domains",
@@ -71,8 +74,6 @@
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
@@ -89,7 +90,6 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },

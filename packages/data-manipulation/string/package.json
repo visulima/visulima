@@ -225,6 +225,9 @@
         "README.md",
         "CHANGELOG.md"
     ],
+    "vis-release": {
+        "managed": true
+    },
     "scripts": {
         "build": "pnpm run generate:charmap && packem build --development",
         "build:prod": "pnpm run generate:charmap && packem build --production",
@@ -246,8 +249,6 @@
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@optimize-lodash/rollup-plugin": "catalog:build",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
@@ -270,7 +271,6 @@
         "redent": "4.0.0",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
         "string-strip-html": "catalog:dev",
         "strip-indent": "4.1.1",
         "typescript": "catalog:tsc",

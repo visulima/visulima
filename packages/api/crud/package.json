@@ -74,6 +74,9 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
+    "vis-release": {
+        "managed": true
+    },
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
@@ -99,8 +102,6 @@
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@eslint-react/eslint-plugin": "catalog:lint",
         "@opentelemetry/api": "catalog:dev",
         "@prisma/client": "catalog:backend",
@@ -133,7 +134,6 @@
         "react": "catalog:frontend",
         "react-dom": "catalog:frontend",
         "rimraf": "catalog:node",
-        "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },

@@ -87,8 +87,6 @@
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@optimize-lodash/rollup-plugin": "catalog:build",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
@@ -109,7 +107,6 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
         "string-strip-html": "catalog:dev",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
@@ -120,5 +117,8 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
+    },
+    "vis-release": {
+        "managed": true
     }
 }

@@ -37,6 +37,5 @@ rules:
             - "lock-file-maintenance.yml"
             - "lock-issues.yaml"
             - "preview-release.yaml"
-            - "semantic-release.yml"
             - "stale-issues.yml"
             - "test.yml"

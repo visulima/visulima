@@ -133,8 +133,6 @@
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@bomb.sh/tab": "catalog:dev",
         "@total-typescript/ts-reset": "catalog:dev",
@@ -157,7 +155,6 @@
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
-        "semantic-release": "catalog:cli",
         "terminal-size": "catalog:prod",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
@@ -197,5 +194,8 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
+    },
+    "vis-release": {
+        "managed": true
     }
 }

@@ -158,8 +158,6 @@
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
-        "@anolilab/semantic-release-pnpm": "catalog:dev",
-        "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
@@ -176,7 +174,6 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
-        "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
@@ -186,5 +183,8 @@
     "publishConfig": {
         "access": "public",
         "provenance": true
+    },
+    "vis-release": {
+        "managed": true
     }
 }
