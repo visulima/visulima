@@ -85,7 +85,18 @@ const insertYamlPattern = (content: string, entry: string): string | undefined =
 
 const addToPackageJson = (workspaceRoot: string, entry: string, dryRun: boolean): boolean => {
     const packageJsonPath = join(workspaceRoot, "package.json");
-    const packageJson = readJsonSync(packageJsonPath) as PackageJson;
+
+    let packageJson: PackageJson;
+
+    try {
+        packageJson = readJsonSync(packageJsonPath) as PackageJson;
+    } catch {
+        // No readable/parseable package.json — treat as "no workspace config
+        // here" so the caller degrades to { status: "no-config" } rather than
+        // aborting the whole command.
+        return false;
+    }
+
     const { workspaces } = packageJson;
 
     if (Array.isArray(workspaces)) {
