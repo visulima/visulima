@@ -46,6 +46,73 @@ config["**/*.{md,mdx}"] = (files) => {
     return [`pnpm exec prettier --write ${filtered.map((f) => JSON.stringify(f)).join(" ")}`];
 };
 
+// Check-only ESLint on staged source files, run per-package so each package's
+// own eslint.config.js (which references its local tsconfig.eslint.json) is
+// used. The shared preset does not emit an eslint command for this repo's
+// flat-config setup, so violations were only surfacing in CI
+// (lint:affected:eslint). No --fix: eslint's vitest autofixers are unsafe
+// (they can silently break tests). --no-warn-ignored keeps files excluded by
+// eslint.config.js ignores from failing the hook.
+const findOwningEslintPackage = (file) => {
+    let dir = dirname(file);
+
+    while (dir.length > 1 && dir !== sep) {
+        if (existsSync(`${dir}/eslint.config.js`) && existsSync(`${dir}/package.json`)) {
+            try {
+                const { name } = JSON.parse(readFileSync(`${dir}/package.json`, "utf8"));
+
+                if (typeof name === "string" && name.length > 0) {
+                    return { name, root: dir };
+                }
+            } catch {
+                return null;
+            }
+        }
+
+        dir = dirname(dir);
+    }
+
+    return null;
+};
+
+config["**/*.{js,jsx,cjs,mjs,ts,tsx,cts,mts}"] = (files) => {
+    const filtered = files.filter((f) => !FIXTURES_PATH_PATTERN.test(f) && !/[/\\](examples|apps[/\\]web)[/\\]/.test(f));
+
+    if (filtered.length === 0) {
+        return [];
+    }
+
+    const groups = new Map();
+
+    for (const file of filtered) {
+        const owner = findOwningEslintPackage(file);
+
+        if (!owner) {
+            continue;
+        }
+
+        if (!groups.has(owner.name)) {
+            groups.set(owner.name, { files: [], root: owner.root });
+        }
+
+        groups.get(owner.name).files.push(file);
+    }
+
+    if (groups.size === 0) {
+        return [];
+    }
+
+    const commands = [];
+
+    for (const [pkgName, { files: pkgFiles, root }] of groups) {
+        const rels = pkgFiles.map((f) => JSON.stringify(relative(root, f))).join(" ");
+
+        commands.push(`pnpm --filter ${JSON.stringify(pkgName)} exec eslint --max-warnings=0 --no-warn-ignored ${rels}`);
+    }
+
+    return commands;
+};
+
 const E2E_PATH_PATTERN = /__tests__[/\\]e2e[/\\]/;
 
 // Group staged test files by their owning package and run vitest from that
