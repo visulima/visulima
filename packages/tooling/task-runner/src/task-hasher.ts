@@ -862,7 +862,7 @@ const computeTaskHash = (hashDetails: TaskHashDetails): string => {
 
     return native.computeTaskHash({
         command: hashDetails.command,
-        implicit_deps: implicitDeps,
+        implicitDeps,
         nodes,
         runtime,
     });
