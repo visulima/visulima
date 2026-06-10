@@ -1,6 +1,4 @@
-import { writeFileSync } from "node:fs";
-
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { basename, join, relative, resolve } from "@visulima/path";
 import { render } from "@visulima/tui";
@@ -362,6 +360,7 @@ const discoverPackageJsonFiles = (cwd: string, userIgnorePatterns: string[]): Di
 interface ProcessFileOptions {
     checkMode: boolean;
     cwd: string;
+    fs: CerebroFs;
     normalized: NormalizedConfig;
 }
 
@@ -371,7 +370,7 @@ interface ProcessFileOptions {
  * JSON parse / write) is tagged so the report can show *where* the
  * pipeline broke, not just that it broke.
  */
-const processFile = (filePath: string, { checkMode, cwd, normalized }: ProcessFileOptions): SortFileEntry => {
+const processFile = async (filePath: string, { checkMode, cwd, fs, normalized }: ProcessFileOptions): Promise<SortFileEntry> => {
     const relativePath = relative(cwd, filePath) || filePath;
     let contents: string;
 
@@ -439,7 +438,7 @@ const processFile = (filePath: string, { checkMode, cwd, normalized }: ProcessFi
     }
 
     try {
-        writeFileSync(filePath, sorted, "utf8");
+        await fs.writeFile(filePath, sorted, "utf8");
     } catch (error: unknown) {
         return {
             diff,
@@ -477,7 +476,7 @@ const printStaticError = (entry: SortFileEntry): void => {
     }
 };
 
-const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SortPackageJsonOptions>): Promise<void> => {
+const execute = async ({ fs, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SortPackageJsonOptions>): Promise<void> => {
     const cwd = wsRoot ?? process.cwd();
     const config = (visConfig as Record<string, unknown> | undefined)?.["sortPackageJson"] as SortPackageJsonConfig | undefined;
     const checkMode = options.check || false;
@@ -516,7 +515,8 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
     const entries: SortFileEntry[] = [];
 
     for (const filePath of files) {
-        entries.push(processFile(filePath, { checkMode, cwd, normalized }));
+        // eslint-disable-next-line no-await-in-loop
+        entries.push(await processFile(filePath, { checkMode, cwd, fs, normalized }));
     }
 
     let unsortedCount = 0;

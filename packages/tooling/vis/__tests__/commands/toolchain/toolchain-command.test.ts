@@ -10,6 +10,7 @@
  */
 
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -37,12 +38,15 @@ const makeLogger = () => {
     };
 };
 
+const testFs = { access, mkdir, readdir, readFile, rm, stat, writeFile } as never;
+
 const makeToolbox = (workspaceRoot: string, argument: string[], options: Record<string, unknown> = {}) => {
     const { calls, logger } = makeLogger();
 
     return {
         argument,
         calls,
+        fs: testFs,
         logger,
         options,
         runtime: {} as never,

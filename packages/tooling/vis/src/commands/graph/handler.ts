@@ -1,5 +1,3 @@
-import { writeFileSync } from "node:fs";
-
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { bold, cyan, dim } from "@visulima/colorize";
 import type { ProjectGraph } from "@visulima/task-runner";
@@ -228,7 +226,7 @@ const projectGraphToHtml = (projectGraph: ProjectGraph): string => {
     });
 };
 
-const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, GraphOptions>): Promise<void> => {
+const execute = async ({ fs, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, GraphOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
     }
@@ -300,7 +298,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     }
 
     if (outputFile) {
-        writeFileSync(outputFile, output, "utf8");
+        await fs.writeFile(outputFile, output, "utf8");
         logger.info(`Graph written to ${outputFile}`);
     } else {
         logger.info(output);

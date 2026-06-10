@@ -1,5 +1,3 @@
-import { rmSync } from "node:fs";
-
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { isAccessibleSync } from "@visulima/fs";
 import { dirname, join, parse as parsePath } from "@visulima/path";
@@ -42,7 +40,7 @@ const hasLockfile = (start: string): boolean => {
 const ALLOWED_BACKENDS: ReadonlySet<InstallBackend> = new Set(["aube", "auto", "bun", "npm", "pnpm", "yarn"]);
 
 const execute = async (toolbox: Toolbox<Console, InstallOptions>): Promise<void> => {
-    const { argument, logger, options, visConfig, workspaceRoot: wsRoot } = toolbox;
+    const { argument, fs, logger, options, visConfig, workspaceRoot: wsRoot } = toolbox;
     const cwd = wsRoot ?? process.cwd();
 
     // npm-style passthrough: `vis install <pkg>` (or aliased `npm install <pkg>`)
@@ -162,7 +160,7 @@ const execute = async (toolbox: Toolbox<Console, InstallOptions>): Promise<void>
         pail.info("Clean install: removing node_modules...");
 
         try {
-            rmSync(join(cwd, "node_modules"), { force: true, recursive: true });
+            await fs.rm(join(cwd, "node_modules"), { force: true, recursive: true });
         } catch (error: unknown) {
             pail.error(`Failed to remove node_modules: ${error instanceof Error ? error.message : String(error)}`);
             process.exitCode = 1;

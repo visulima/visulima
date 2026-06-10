@@ -1,4 +1,5 @@
 import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -48,6 +49,8 @@ const UNSORTED_PACKAGE_JSON = JSON.stringify(
     2,
 );
 
+const testFs = { access, mkdir, readdir, readFile, rm, stat, writeFile } as never;
+
 describe("sort-package-json .editorconfig integration", () => {
     let workDirectory: string;
 
@@ -59,7 +62,7 @@ describe("sort-package-json .editorconfig integration", () => {
         rmSync(workDirectory, { force: true, recursive: true });
     });
 
-    it("should derive 4-space indent from .editorconfig when no override is set", () => {
+    it("should derive 4-space indent from .editorconfig when no override is set", async () => {
         expect.assertions(2);
 
         writeFileSync(join(workDirectory, ".editorconfig"), "root = true\n\n[package.json]\nindent_style = space\nindent_size = 4\n", "utf8");
@@ -67,7 +70,7 @@ describe("sort-package-json .editorconfig integration", () => {
 
         writeFileSync(filePath, UNSORTED_PACKAGE_JSON, "utf8");
 
-        const result = processFile(filePath, { checkMode: false, cwd: workDirectory, normalized: baseNormalized() });
+        const result = await processFile(filePath, { checkMode: false, cwd: workDirectory, fs: testFs, normalized: baseNormalized() });
 
         expect(result.status).toBe("rewritten");
 
@@ -76,7 +79,7 @@ describe("sort-package-json .editorconfig integration", () => {
         expect(written).toContain("\n    \"version\"");
     });
 
-    it("should skip .editorconfig discovery when editorconfig is disabled", () => {
+    it("should skip .editorconfig discovery when editorconfig is disabled", async () => {
         expect.assertions(2);
 
         writeFileSync(join(workDirectory, ".editorconfig"), "root = true\n\n[package.json]\nindent_style = space\nindent_size = 4\n", "utf8");
@@ -84,9 +87,10 @@ describe("sort-package-json .editorconfig integration", () => {
 
         writeFileSync(filePath, UNSORTED_PACKAGE_JSON, "utf8");
 
-        const result = processFile(filePath, {
+        const result = await processFile(filePath, {
             checkMode: false,
             cwd: workDirectory,
+            fs: testFs,
             normalized: baseNormalized({ editorconfig: false }),
         });
 
@@ -98,7 +102,7 @@ describe("sort-package-json .editorconfig integration", () => {
         expect(written).toContain("\n  \"version\"");
     });
 
-    it("should let an explicit indent override beat .editorconfig", () => {
+    it("should let an explicit indent override beat .editorconfig", async () => {
         expect.assertions(2);
 
         writeFileSync(join(workDirectory, ".editorconfig"), "root = true\n\n[package.json]\nindent_style = space\nindent_size = 4\n", "utf8");
@@ -106,9 +110,10 @@ describe("sort-package-json .editorconfig integration", () => {
 
         writeFileSync(filePath, UNSORTED_PACKAGE_JSON, "utf8");
 
-        const result = processFile(filePath, {
+        const result = await processFile(filePath, {
             checkMode: false,
             cwd: workDirectory,
+            fs: testFs,
             normalized: baseNormalized({ indent: "\t" }),
         });
 
@@ -119,7 +124,7 @@ describe("sort-package-json .editorconfig integration", () => {
         expect(written).toContain("\n\t\"version\"");
     });
 
-    it("should derive tab indent from .editorconfig indent_style", () => {
+    it("should derive tab indent from .editorconfig indent_style", async () => {
         expect.assertions(2);
 
         writeFileSync(join(workDirectory, ".editorconfig"), "root = true\n\n[package.json]\nindent_style = tab\n", "utf8");
@@ -127,7 +132,7 @@ describe("sort-package-json .editorconfig integration", () => {
 
         writeFileSync(filePath, UNSORTED_PACKAGE_JSON, "utf8");
 
-        const result = processFile(filePath, { checkMode: false, cwd: workDirectory, normalized: baseNormalized() });
+        const result = await processFile(filePath, { checkMode: false, cwd: workDirectory, fs: testFs, normalized: baseNormalized() });
 
         expect(result.status).toBe("rewritten");
 
@@ -136,7 +141,7 @@ describe("sort-package-json .editorconfig integration", () => {
         expect(written).toContain("\n\t\"version\"");
     });
 
-    it("should derive crlf line endings from .editorconfig end_of_line", () => {
+    it("should derive crlf line endings from .editorconfig end_of_line", async () => {
         expect.assertions(2);
 
         writeFileSync(join(workDirectory, ".editorconfig"), "root = true\n\n[package.json]\nend_of_line = crlf\n", "utf8");
@@ -144,7 +149,7 @@ describe("sort-package-json .editorconfig integration", () => {
 
         writeFileSync(filePath, UNSORTED_PACKAGE_JSON, "utf8");
 
-        const result = processFile(filePath, { checkMode: false, cwd: workDirectory, normalized: baseNormalized() });
+        const result = await processFile(filePath, { checkMode: false, cwd: workDirectory, fs: testFs, normalized: baseNormalized() });
 
         expect(result.status).toBe("rewritten");
 
