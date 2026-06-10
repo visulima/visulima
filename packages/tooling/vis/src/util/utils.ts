@@ -18,6 +18,9 @@ const errorMessage = (error: unknown): string => {
     return String(error);
 };
 
+/** Strip a leading `./` and any trailing slash. Workspace paths are POSIX (`@visulima/path`'s `sep` is `/` everywhere). */
+const normalizeWorkspacePath = (value: string): string => value.replace(/^\.\//, "").replace(/\/+$/, "");
+
 const VERSION_SPEC_REGEX = /^(.+?)(?:@(.+))?$/;
 
 /**
@@ -55,4 +58,4 @@ const parsePackageArgument = (argument: string): { name: string; versionSpec: st
     return { name: match[1] ?? argument, versionSpec: match[2] };
 };
 
-export { errorMessage, parsePackageArgument, toStringArray };
+export { errorMessage, normalizeWorkspacePath, parsePackageArgument, toStringArray };
