@@ -4,6 +4,7 @@ import { configure as stringifyConfigure } from "safe-stable-stringify";
 import type { LiteralUnion, Primitive } from "type-fest";
 
 import { EMPTY_SYMBOL, EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
+import { CounterManager } from "./counter-manager";
 import RawReporter from "./reporter/raw/raw-reporter.browser";
 import { TimerManager } from "./timer-manager";
 import type {
@@ -80,7 +81,8 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     /** @internal Timer state delegated to TimerManager. */
     protected readonly timerManager: TimerManager;
 
-    protected countMap: Map<string, number>;
+    /** @internal Counter state delegated to CounterManager. */
+    protected readonly counterManager: CounterManager;
 
     protected readonly lastLog: {
         count?: number;
@@ -188,12 +190,13 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
         this.scopeName = arrayify(options.scope).filter(Boolean);
 
-        // TimerManager is initialized after `this.logger` is bound (see line below).
-        // The bind happens at end of constructor so we use an arrow here.
+        // TimerManager and CounterManager are initialized before the logger is preventLoop-wrapped;
+        // they receive arrow functions that call `this.logger` so they always pick up the final
+        // (wrapped) implementation via the instance slot set a few lines below.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         this.timerManager = new TimerManager((type: string, raw: boolean, force: boolean, ...args: any[]) => this.logger(type as never, raw, force, ...args), this.startTimerMessage, this.endTimerMessage);
-
-        this.countMap = new Map<string, number>();
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.counterManager = new CounterManager((type: string, raw: boolean, force: boolean, ...args: any[]) => this.logger(type as never, raw, force, ...args));
 
         this.groups = [];
 
@@ -740,14 +743,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * ```
      */
     public count(label = "default"): void {
-        const current = this.countMap.get(label) ?? 0;
-
-        this.countMap.set(label, current + 1);
-
-        this.logger("log", false, false, {
-            message: `${label}: ${String(current + 1)}`,
-            prefix: label,
-        });
+        this.counterManager.count(label);
     }
 
     /**
@@ -765,14 +761,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * ```
      */
     public countReset(label = "default"): void {
-        if (this.countMap.has(label)) {
-            this.countMap.delete(label);
-        } else {
-            this.logger("warn", false, false, {
-                message: `Count for ${label} does not exist`,
-                prefix: label,
-            });
-        }
+        this.counterManager.countReset(label);
     }
 
     /**
