@@ -3,14 +3,11 @@ import { describe, expect, expectTypeOf, it, vi } from "vitest";
 // We need to isolate module state between tests since native-binding.ts
 // uses module-level caching (loadAttempted flag).
 // Each test imports from a fresh module using dynamic import + vi.resetModules.
-
-// Bun cannot load napi-rs native addons, so tests that assert the binding
-// is loaded must be skipped on the bun runtime.
-const isBun = (globalThis as { Bun?: unknown }).Bun !== undefined;
+// (Bun loads napi-rs addons since 1.x, so these run on the bun runtime too.)
 
 describe("native-binding", () => {
     describe("loadNativeBindings", () => {
-        it.skipIf(isBun)("should load the native addon when the binary is compiled", async () => {
+        it("should load the native addon when the binary is compiled", async () => {
             expect.assertions(1);
 
             vi.resetModules();
@@ -41,7 +38,7 @@ describe("native-binding", () => {
     });
 
     describe("isNativeAvailable", () => {
-        it.skipIf(isBun)("should return true when native addon is compiled", async () => {
+        it("should return true when native addon is compiled", async () => {
             expect.assertions(1);
 
             vi.resetModules();

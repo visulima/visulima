@@ -1,13 +1,16 @@
 /**
- * Optional native bindings for performance-critical operations.
+ * Native bindings for performance-critical operations.
  *
  * The native addon (Rust via napi-rs) provides:
  * - Parallel file hashing using rayon + xxHash xxh3-128
  * - Optimized task hash computation
  * - Fast graph operations (cycle detection, topological sort)
  *
- * Falls back to pure TypeScript implementations when the native
- * addon is not available (not compiled, wrong platform, etc.).
+ * The addon is REQUIRED: every supported platform ships a prebuilt binding,
+ * so {@link loadNativeBindings} hard-fails with an actionable error when it
+ * cannot be loaded rather than degrading. (The concurrent runner's pure-JS
+ * path is unrelated — it is capability code for stdin/PTY/streaming the addon
+ * can't do, used when the addon IS present.)
  *
  * Build with: pnpm build:native
  * The napi v3 CLI outputs the .node file to the package root.
@@ -189,70 +192,52 @@ interface NativeSeccompTrackingResult {
 
 let nativeBindings: NativeBindings | undefined;
 let loadAttempted = false;
+let loadError: Error | undefined;
 
 const esmRequire = createRequire(import.meta.url);
 
 /**
- * When truthy, a missing/unusable native addon is a hard error instead of
- * a silent degrade to the slower pure-JS path. Intended for CI/production
- * where running on the fallback unnoticed would mask a broken install and
- * the perf/behaviour differences that come with it. Checked under both the
- * package-scoped name and the `VIS_`-prefixed alias `@visulima/vis` users
- * would reach for.
+ * Builds the hard-failure error for a missing/unusable native addon. The
+ * addon is required: every supported platform ships a prebuilt binding, so a
+ * load failure means a broken `optionalDependencies` install or a stale/
+ * mismatched binary, not an unsupported environment. Failing loudly here (and
+ * consistently with the other native packages) surfaces the gap instead of
+ * masking it behind a slower, separately-maintained pure-JS path.
  */
-const isRequireNativeEnabled = (): boolean => {
-    const value = process.env["TASK_RUNNER_REQUIRE_NATIVE"] ?? process.env["VIS_REQUIRE_NATIVE"];
-
-    return value === "1" || value === "true";
-};
-
-/**
- * Surfaces a missing native addon exactly once. Hard-fails when
- * `TASK_RUNNER_REQUIRE_NATIVE`/`VIS_REQUIRE_NATIVE` is set; otherwise emits a
- * single process warning so the degrade to pure JS is visible rather than
- * silent. Only fires for the genuine fallback case (hashing/graph ops) — the
- * concurrent runner's JS path is a deliberate capability choice (stdin/PTY/
- * streaming the addon can't do), not a degradation, so it never routes here.
- */
-const reportMissingNative = (cause: unknown): void => {
+const buildLoadError = (cause: unknown): Error => {
     const detail = cause instanceof Error ? cause.message : "native addon not found";
 
-    if (isRequireNativeEnabled()) {
-        throw new Error(
-            `@visulima/task-runner: native addon is required (TASK_RUNNER_REQUIRE_NATIVE/VIS_REQUIRE_NATIVE is set) but could not be loaded: ${detail}. `
-            + "Install the matching @visulima/task-runner-binding-* package, or build it with `pnpm build:native`.",
-        );
-    }
-
-    process.emitWarning(
-        `@visulima/task-runner native addon not loaded (${detail}); falling back to the slower pure-JS implementation. `
-        + "File hashing and graph operations will be slower. Install the matching @visulima/task-runner-binding-* package, "
-        + "or run `pnpm build:native`. Set TASK_RUNNER_REQUIRE_NATIVE=1 to fail instead, or NODE_NO_WARNINGS=1 to silence this.",
-        { code: "TASK_RUNNER_NATIVE_FALLBACK", type: "Warning" },
+    return new Error(
+        `@visulima/task-runner: native addon could not be loaded (${detail}). This package requires its platform binding. `
+        + "Install the matching @visulima/task-runner-binding-* package, or build it with `pnpm build:native`.",
+        { cause },
     );
 };
 
 /**
- * Attempts to load the native addon. Returns undefined if unavailable.
- * The result is cached after the first attempt.
+ * Loads the native addon, caching the result after the first attempt.
  *
  * napi v3 outputs the .node file to the package root as
  * `task-runner-native.&lt;platform>.node`. The napi-generated index.js
- * handles platform detection automatically.
+ * handles platform detection automatically; this uses createRequire because
+ * that index.js is CJS.
  *
- * Uses createRequire because the napi-generated index.js is CJS.
- *
- * On failure the degrade to JS is announced once via {@link reportMissingNative}
- * (or hard-fails under `TASK_RUNNER_REQUIRE_NATIVE`) so it is never silent.
+ * Throws a clear, actionable error when the addon cannot be loaded (missing
+ * binding or stale binary) rather than degrading silently. The
+ * `| undefined` return is retained so the many `if (native)` / `native?.x`
+ * call sites stay valid; in practice this never returns undefined — it either
+ * returns the bindings or throws.
  */
 const loadNativeBindings = (): NativeBindings | undefined => {
     if (loadAttempted) {
+        if (loadError) {
+            throw loadError;
+        }
+
         return nativeBindings;
     }
 
     loadAttempted = true;
-
-    let cause: unknown;
 
     try {
         const loaded = esmRequire("../index.js") as NativeBindings;
@@ -262,25 +247,31 @@ const loadNativeBindings = (): NativeBindings | undefined => {
         if (typeof loaded.hashCommand === "function" && typeof loaded.hashFile === "function" && typeof loaded.runConcurrent === "function") {
             nativeBindings = loaded;
         } else {
-            cause = new Error("native addon loaded but is missing expected exports (stale or version-mismatched binary)");
+            loadError = buildLoadError(new Error("native addon loaded but is missing expected exports (stale or version-mismatched binary)"));
         }
     } catch (error) {
-        // Native addon not available - will use TypeScript fallbacks
-        nativeBindings = undefined;
-        cause = error;
+        loadError = buildLoadError(error);
     }
 
-    if (nativeBindings === undefined) {
-        reportMissingNative(cause);
+    if (loadError) {
+        throw loadError;
     }
 
     return nativeBindings;
 };
 
 /**
- * Returns true if the native addon is loaded and available.
+ * Returns true if the native addon loads, false otherwise. Unlike
+ * {@link loadNativeBindings} this never throws — it is a safe probe for
+ * callers that want to branch on availability rather than hard-fail.
  */
-const isNativeAvailable = (): boolean => loadNativeBindings() !== undefined;
+const isNativeAvailable = (): boolean => {
+    try {
+        return loadNativeBindings() !== undefined;
+    } catch {
+        return false;
+    }
+};
 
 export type {
     NativeBindings,

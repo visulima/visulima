@@ -2,9 +2,10 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 
 // These tests force the native addon to fail to load (by mocking
 // `node:module`'s `createRequire` so the generated `../index.js` require
-// throws), then assert the loader no longer degrades *silently*:
-//   - default: emits exactly one process warning and returns undefined
-//   - TASK_RUNNER_REQUIRE_NATIVE / VIS_REQUIRE_NATIVE: throws instead
+// throws), then assert the loader HARD-FAILS with a clear, actionable error
+// instead of degrading silently. The addon is required on every supported
+// platform, so a load failure is a broken install/binary, not an env we
+// tolerate.
 //
 // A bare `vi.resetModules()` + dynamic import gives each test a fresh copy
 // of native-binding.ts (it caches the load result at module scope).
@@ -19,74 +20,46 @@ const mockRequireFailure = (): void => {
     });
 };
 
-describe("native-binding fallback visibility", () => {
+describe("native-binding hard-fail", () => {
     afterEach(() => {
         vi.doUnmock("node:module");
         vi.resetModules();
-        delete process.env["TASK_RUNNER_REQUIRE_NATIVE"];
-        delete process.env["VIS_REQUIRE_NATIVE"];
     });
 
-    it("warns once and returns undefined when the addon cannot be loaded", async () => {
-        expect.assertions(3);
+    it("throws an actionable error when the addon cannot be loaded", async () => {
+        expect.assertions(2);
 
         vi.resetModules();
         mockRequireFailure();
 
-        const warn = vi.spyOn(process, "emitWarning").mockImplementation(() => undefined);
+        const { loadNativeBindings } = await import("../../src/native-binding");
+
+        expect(() => loadNativeBindings()).toThrow(/native addon could not be loaded/);
+        expect(() => loadNativeBindings()).toThrow(/task-runner-binding-\*/);
+    });
+
+    it("re-throws on subsequent calls (single load attempt)", async () => {
+        expect.assertions(2);
+
+        vi.resetModules();
+        mockRequireFailure();
 
         const { loadNativeBindings } = await import("../../src/native-binding");
 
-        // Call twice — the module-level `loadAttempted` guard must keep the
-        // warning to a single emission, not one per call.
-        const first = loadNativeBindings();
-        const second = loadNativeBindings();
-
-        expect(first).toBeUndefined();
-        expect(second).toBeUndefined();
-        expect(warn).toHaveBeenCalledTimes(1);
-
-        warn.mockRestore();
+        // Both calls throw — the second re-throws the cached error rather than
+        // re-attempting the require (guarded by the module-level loadAttempted).
+        expect(() => loadNativeBindings()).toThrow(/native addon could not be loaded/);
+        expect(() => loadNativeBindings()).toThrow(/native addon could not be loaded/);
     });
 
-    it("tags the warning with the TASK_RUNNER_NATIVE_FALLBACK code", async () => {
+    it("isNativeAvailable() returns false instead of throwing when the addon is missing", async () => {
         expect.assertions(1);
 
         vi.resetModules();
         mockRequireFailure();
 
-        const warn = vi.spyOn(process, "emitWarning").mockImplementation(() => undefined);
+        const { isNativeAvailable } = await import("../../src/native-binding");
 
-        const { loadNativeBindings } = await import("../../src/native-binding");
-
-        loadNativeBindings();
-
-        expect(warn.mock.calls[0]?.[1]).toMatchObject({ code: "TASK_RUNNER_NATIVE_FALLBACK" });
-
-        warn.mockRestore();
-    });
-
-    it("throws instead of degrading when TASK_RUNNER_REQUIRE_NATIVE=1", async () => {
-        expect.assertions(1);
-
-        vi.resetModules();
-        mockRequireFailure();
-        process.env["TASK_RUNNER_REQUIRE_NATIVE"] = "1";
-
-        const { loadNativeBindings } = await import("../../src/native-binding");
-
-        expect(() => loadNativeBindings()).toThrow(/native addon is required/);
-    });
-
-    it("also honours the VIS_REQUIRE_NATIVE alias", async () => {
-        expect.assertions(1);
-
-        vi.resetModules();
-        mockRequireFailure();
-        process.env["VIS_REQUIRE_NATIVE"] = "true";
-
-        const { loadNativeBindings } = await import("../../src/native-binding");
-
-        expect(() => loadNativeBindings()).toThrow(/native addon is required/);
+        expect(isNativeAvailable()).toBe(false);
     });
 });
