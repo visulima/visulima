@@ -3,10 +3,9 @@ import { readFile, stat } from "node:fs/promises";
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
 import { matchesGlob } from "node:path";
 
-import type { Xxh3Hasher } from "@shared/xxh3";
 // eslint-disable-next-line import/no-extraneous-dependencies -- bundled inline by packem from workspace devDependency
 import { createXxh3Hasher, xxh3Hash } from "@shared/xxh3";
-import { join, relative, resolve } from "@visulima/path";
+import { join, resolve } from "@visulima/path";
 
 import { getFrameworkEnvVariables } from "./framework-inference";
 import type { IncrementalFileHasher } from "./incremental-hasher";
@@ -27,7 +26,7 @@ import type {
     Task,
     TaskHashDetails,
 } from "./types";
-import { collectFiles, hashStrings, sortObjectKeys } from "./utils";
+import { hashStrings, sortObjectKeys } from "./utils";
 
 /**
  * Interface for task hashers.
@@ -93,12 +92,6 @@ interface TaskHasherOptions {
     namedInputs?: NamedInputs;
 
     /**
-     * Plugin hook fired during fingerprint construction. See
-     * {@link FingerprintHook} for the contract — throwing aborts
-     * hashing for the offending task.
-     */
-    onFingerprint?: FingerprintHook;
-    /**
      * Non-fatal diagnostic sink. Currently fired when a cacheable task declares
      * file-set inputs that resolve to ZERO files — the signature that the task
      * will reuse one cache entry on every run (the failure mode a dropped
@@ -106,6 +99,13 @@ interface TaskHasherOptions {
      * caller wires this to its logger; the message is advisory, never throws.
      */
     onDiagnostic?: (taskId: string, message: string) => void;
+
+    /**
+     * Plugin hook fired during fingerprint construction. See
+     * {@link FingerprintHook} for the contract — throwing aborts
+     * hashing for the offending task.
+     */
+    onFingerprint?: FingerprintHook;
     /** Project configurations keyed by project name */
     projects: Record<string, ProjectConfiguration>;
 
@@ -127,34 +127,17 @@ interface TaskHasherOptions {
 
 const DEFAULT_GLOBAL_INPUTS = ["package-lock.json", "pnpm-lock.yaml", "yarn.lock", "tsconfig.base.json", "tsconfig.json", ".env"];
 
-const IGNORED_DIRS = new Set([".git", ".task-runner", ".task-runner-cache", ".vis", "coverage", "dist", "node_modules"]);
-
 const LOCKFILE_NAMES = new Set(["package-lock.json", "pnpm-lock.yaml", "yarn.lock"]);
 
 // Cache native bindings at module level for computeTaskHash
 let cachedNative: ReturnType<typeof loadNativeBindings> | undefined;
 
-const getNativeBindings = () => {
-    if (cachedNative === undefined) {
-        cachedNative = loadNativeBindings();
-    }
+// loadNativeBindings throws when the addon can't load (it is required), so
+// this never resolves to undefined — the cached value is always usable.
+const getNativeBindings = (): NonNullable<ReturnType<typeof loadNativeBindings>> => {
+    cachedNative ??= loadNativeBindings();
 
-    return cachedNative;
-};
-
-/**
- * Hashes sorted entries of a Record into a Hash object.
- */
-const hashSortedEntries = (hash: Xxh3Hasher, record: Record<string, string>, prefix?: string): void => {
-    for (const key of Object.keys(record).toSorted()) {
-        if (prefix) {
-            hash.update(`${prefix}${key}\0`);
-        } else {
-            hash.update(`${key}\0`);
-        }
-
-        hash.update(record[key] as string);
-    }
+    return cachedNative as NonNullable<typeof cachedNative>;
 };
 
 /**
@@ -332,7 +315,7 @@ class InProcessTaskHasher implements TaskHasher {
 
     readonly #fileHashCache = new Map<string, { hash: string; mtimeMs: number; size: number }>();
 
-    readonly #native: ReturnType<typeof loadNativeBindings>;
+    readonly #native: NonNullable<ReturnType<typeof loadNativeBindings>>;
 
     readonly #smartLockfileHashing: boolean;
 
@@ -524,8 +507,6 @@ class InProcessTaskHasher implements TaskHasher {
      * Both produce identical xxh3-128 output.
      */
     #hashCommand(task: Task): string {
-        const overridesJson = JSON.stringify(sortObjectKeys(task.overrides));
-
         // Resolve the command text and outputs deterministically so the
         // cache key changes when either does. Without this, editing
         // `"build": "tsc"` → `"build": "rolldown"` in package.json or
@@ -534,33 +515,15 @@ class InProcessTaskHasher implements TaskHasher {
         const commandText = this.#resolveCommandText(task) ?? "";
         const outputsJson = JSON.stringify(canonicaliseOutputs(task.outputs));
 
-        if (this.#native) {
-            // Native bindings expect a single overrides payload; fold
-            // command + outputs into it so the Rust hasher participates
-            // without an API/version change.
-            const compositeOverrides = JSON.stringify({
-                command: commandText,
-                outputs: outputsJson,
-                overrides: sortObjectKeys(task.overrides),
-            });
+        // Native bindings expect a single overrides payload; fold command +
+        // outputs into it so the Rust hasher participates without an API change.
+        const compositeOverrides = JSON.stringify({
+            command: commandText,
+            outputs: outputsJson,
+            overrides: sortObjectKeys(task.overrides),
+        });
 
-            return this.#native.hashCommand(task.target.project, task.target.target, task.target.configuration ?? undefined, compositeOverrides);
-        }
-
-        const hash = createXxh3Hasher();
-
-        hash.update(task.target.project);
-        hash.update(task.target.target);
-
-        if (task.target.configuration) {
-            hash.update(task.target.configuration);
-        }
-
-        hash.update(overridesJson);
-        hash.update(`command:${commandText}`);
-        hash.update(`outputs:${outputsJson}`);
-
-        return hash.digest();
+        return this.#native.hashCommand(task.target.project, task.target.target, task.target.configuration ?? undefined, compositeOverrides);
     }
 
     /**
@@ -678,73 +641,54 @@ class InProcessTaskHasher implements TaskHasher {
         const isExcluded = (filePath: string): boolean => absoluteNegations.some((neg) => matchesGlob(filePath, neg));
 
         try {
-            if (this.#native) {
-                const fileHashes = this.#native.hashFilesInDirectory(absoluteBase, this.#workspaceRoot);
-                const incremental = this.#incrementalHasher;
+            const fileHashes = this.#native.hashFilesInDirectory(absoluteBase, this.#workspaceRoot);
+            const incremental = this.#incrementalHasher;
 
-                // Populate the persistent snapshot with the native batch
-                // so subsequent runs can reuse these hashes via the
-                // incremental fast-path in `#hashFile`. Stat in parallel
-                // — snapshot writes are ordered by completion and cheap
-                // enough that a sequential loop would dominate for large
-                // workspaces.
-                const recordPromises: Promise<void>[] = [];
+            // Populate the persistent snapshot with the native batch so
+            // subsequent runs can reuse these hashes via the incremental
+            // fast-path in `#hashFile`. Stat in parallel — snapshot writes are
+            // ordered by completion and cheap enough that a sequential loop
+            // would dominate for large workspaces.
+            const recordPromises: Promise<void>[] = [];
 
-                for (const { hash, path } of fileHashes) {
-                    const absPath = resolve(this.#workspaceRoot, path);
+            for (const { hash, path } of fileHashes) {
+                const absPath = resolve(this.#workspaceRoot, path);
 
-                    if (isExcluded(absPath)) {
-                        continue;
-                    }
-
-                    result[path] = hash;
-
-                    // Intentionally NOT seeded into `#fileHashCache`: that cache
-                    // is mtime/size-revalidated in `#hashFile`, but the native
-                    // batch result carries no stat. Seeding a bare hash here is
-                    // exactly the stale-read vector — a later `#hashFile` for the
-                    // same path must re-validate against disk, not trust this.
-                    if (incremental) {
-                        recordPromises.push(
-                            stat(absPath)
-                                .then((s) => {
-                                    if (s.isFile()) {
-                                        incremental.recordSnapshot(absPath, hash, s.mtimeMs, s.size);
-                                    }
-
-                                    return undefined;
-                                })
-                                .catch(() => {
-                                    // Best-effort — missing or unreadable
-                                    // file just means the snapshot misses
-                                    // next run. Not a correctness issue.
-                                }),
-                        );
-                    }
+                if (isExcluded(absPath)) {
+                    continue;
                 }
 
-                if (recordPromises.length > 0) {
-                    await Promise.all(recordPromises);
-                }
+                result[path] = hash;
 
-                return result;
+                // Intentionally NOT seeded into `#fileHashCache`: that cache is
+                // mtime/size-revalidated in `#hashFile`, but the native batch
+                // result carries no stat. Seeding a bare hash here is exactly the
+                // stale-read vector — a later `#hashFile` for the same path must
+                // re-validate against disk, not trust this.
+                if (incremental) {
+                    recordPromises.push(
+                        stat(absPath)
+                            .then((s) => {
+                                if (s.isFile()) {
+                                    incremental.recordSnapshot(absPath, hash, s.mtimeMs, s.size);
+                                }
+
+                                return undefined;
+                            })
+                            .catch(() => {
+                                // Best-effort — missing or unreadable file just
+                                // means the snapshot misses next run. Not a
+                                // correctness issue.
+                            }),
+                    );
+                }
             }
 
-            const files = await collectFiles(absoluteBase, IGNORED_DIRS);
+            if (recordPromises.length > 0) {
+                await Promise.all(recordPromises);
+            }
 
-            const hashPromises = files.map(async (filePath) => {
-                if (isExcluded(filePath)) {
-                    return;
-                }
-
-                const hash = await this.#hashFile(filePath);
-
-                if (hash) {
-                    result[relative(this.#workspaceRoot, filePath)] = hash;
-                }
-            });
-
-            await Promise.all(hashPromises);
+            return result;
         } catch {
             // Directory doesn't exist or can't be read
         }
@@ -894,53 +838,34 @@ class InProcessTaskHasher implements TaskHasher {
 }
 
 /**
- * Computes the final hash for a task from its hash details.
- * Uses native Rust xxh3-128 when available, otherwise pure TS xxh3-ts.
- * Both produce identical xxh3-128 hashes, ensuring cache compatibility
- * regardless of whether the native addon is loaded.
+ * Computes the final hash for a task from its hash details using the native
+ * Rust xxh3-128 implementation.
  */
 const computeTaskHash = (hashDetails: TaskHashDetails): string => {
     const native = getNativeBindings();
 
-    if (native) {
-        const nodes = Object.keys(hashDetails.nodes)
+    const nodes = Object.keys(hashDetails.nodes)
+        .toSorted()
+        .map((key) => [key, hashDetails.nodes[key] as string]);
+
+    const implicitDeps = hashDetails.implicitDeps
+        ? Object.keys(hashDetails.implicitDeps)
             .toSorted()
-            .map((key) => [key, hashDetails.nodes[key] as string]);
+            .map((key) => [key, (hashDetails.implicitDeps as Record<string, string>)[key] as string])
+        : undefined;
 
-        const implicitDeps = hashDetails.implicitDeps
-            ? Object.keys(hashDetails.implicitDeps)
-                .toSorted()
-                .map((key) => [key, (hashDetails.implicitDeps as Record<string, string>)[key] as string])
-            : undefined;
+    const runtime = hashDetails.runtime
+        ? Object.keys(hashDetails.runtime)
+            .toSorted()
+            .map((key) => [key, (hashDetails.runtime as Record<string, string>)[key] as string])
+        : undefined;
 
-        const runtime = hashDetails.runtime
-            ? Object.keys(hashDetails.runtime)
-                .toSorted()
-                .map((key) => [key, (hashDetails.runtime as Record<string, string>)[key] as string])
-            : undefined;
-
-        return native.computeTaskHash({
-            command: hashDetails.command,
-            implicit_deps: implicitDeps,
-            nodes,
-            runtime,
-        });
-    }
-
-    const hash = createXxh3Hasher();
-
-    hash.update(hashDetails.command);
-    hashSortedEntries(hash, hashDetails.nodes);
-
-    if (hashDetails.implicitDeps) {
-        hashSortedEntries(hash, hashDetails.implicitDeps);
-    }
-
-    if (hashDetails.runtime) {
-        hashSortedEntries(hash, hashDetails.runtime);
-    }
-
-    return hash.digest();
+    return native.computeTaskHash({
+        command: hashDetails.command,
+        implicit_deps: implicitDeps,
+        nodes,
+        runtime,
+    });
 };
 
 export { computeTaskHash, InProcessTaskHasher };
