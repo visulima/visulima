@@ -7,6 +7,14 @@ import { normalizeWorkspacePath as normalize } from "../../util/utils";
 import { ensureWorkspaceMembership } from "../../util/workspace-register";
 import type { ImportOptions } from "./index";
 
+/**
+ * Execute the `vis import` command: pull an external git repository into the
+ * monorepo under a target prefix, preserving its history via `git subtree add`.
+ * Validates the source and prefix, refuses to overwrite an existing prefix,
+ * performs the subtree add on a clean worktree, and (unless `--no-register`)
+ * registers the new package in the workspace config. Throws when the source or
+ * prefix is missing, the cwd is not a git repo, or the prefix already exists.
+ */
 const execute: CommandExecute<Toolbox<Console, ImportOptions>> = async ({ argument, fs, logger, options, process: runtimeProcess, workspaceRoot }) => {
     const source = argument[0];
 

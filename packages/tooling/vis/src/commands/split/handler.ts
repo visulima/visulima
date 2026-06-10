@@ -15,7 +15,7 @@ import {
     removePathAndCommit,
     subtreeSplit,
 } from "../../util/git/subtree";
-import { normalizeWorkspacePath as normalize } from "../../util/utils";
+import { normalizeWorkspacePath as normalize, sanitizeGitRefComponent } from "../../util/utils";
 import type { SplitOptions } from "./index";
 
 export interface ResolvedPackage {
@@ -48,6 +48,16 @@ export const resolvePackageDirectory = async (
     return undefined;
 };
 
+/**
+ * Execute the `vis split` command: extract a single workspace package into a
+ * standalone git repository, preserving its history via `git subtree split`.
+ * Resolves the package argument to a workspace-relative directory, splits its
+ * history onto a temporary branch, seeds the destination repo from that branch,
+ * and — depending on options — configures a remote, pushes, and removes the
+ * package from the monorepo. The temporary branch is always cleaned up. Throws
+ * when no package is given, `--output` is missing outside `--dry-run`, the cwd
+ * is not a git repo, or the package cannot be resolved.
+ */
 const execute: CommandExecute<Toolbox<Console, SplitOptions>> = async ({
     argument,
     fs,
@@ -93,7 +103,7 @@ const execute: CommandExecute<Toolbox<Console, SplitOptions>> = async ({
 
     const { pkgName, relativeDir } = resolved;
     const branch = options.branch ?? visConfig?.defaultBase ?? "main";
-    const tempBranch = `vis/split/${relativeDir.replaceAll("/", "-")}`;
+    const tempBranch = `vis/split/${sanitizeGitRefComponent(relativeDir.replaceAll("/", "-"))}`;
     const outputDir = options.output ? (isAbsolute(options.output) ? options.output : join(wsRoot, options.output)) : undefined;
 
     if (options.dryRun) {
@@ -141,14 +151,16 @@ const execute: CommandExecute<Toolbox<Console, SplitOptions>> = async ({
 
     logger.info(`Splitting ${dim(relativeDir)} → ${destination} ...`);
 
-    subtreeSplit({
-        annotate: options.annotate ? `(${pkgName}) ` : undefined,
-        branch: tempBranch,
-        cwd: wsRoot,
-        prefix: relativeDir,
-    });
-
     try {
+        // Inside the try so the finally cleans up the temp branch even if the
+        // split itself fails after creating it.
+        subtreeSplit({
+            annotate: options.annotate ? `(${pkgName}) ` : undefined,
+            branch: tempBranch,
+            cwd: wsRoot,
+            prefix: relativeDir,
+        });
+
         initRepoFromBranch({ branch, source: wsRoot, sourceBranch: tempBranch, target: destination });
 
         if (options.remote) {
