@@ -1,5 +1,3 @@
-import { writeFileSync } from "node:fs";
-
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { ensureDirSync } from "@visulima/fs";
 import { dirname, resolve } from "@visulima/path";
@@ -15,7 +13,7 @@ const SBOM_FORMATS: ReadonlyArray<SbomFormat> = ["json", "xml"];
 
 const isSbomFormat = (value: string): value is SbomFormat => (SBOM_FORMATS as ReadonlyArray<string>).includes(value);
 
-const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SbomOptions>): Promise<void> => {
+const execute = async ({ fs, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SbomOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run inside a monorepo.");
     }
@@ -58,7 +56,7 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
     const outPath = resolve(wsRoot, output);
 
     ensureDirSync(dirname(outPath));
-    writeFileSync(outPath, serialized, "utf8");
+    await fs.writeFile(outPath, serialized, "utf8");
 
     const componentCount = bom.components?.length ?? 0;
     const dependencyCount = bom.dependencies?.length ?? 0;

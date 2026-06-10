@@ -1,7 +1,6 @@
 import { spawnSync } from "node:child_process";
-import { writeFileSync } from "node:fs";
 
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 import { dim, green, red, yellow } from "@visulima/colorize";
 import { join } from "@visulima/path";
 
@@ -333,12 +332,13 @@ const executeInstall = (workspaceRoot: string, toolchainConfig: ToolchainConfig 
     }
 };
 
-const executeUse = (
+const executeUse = async (
+    fs: CerebroFs,
     workspaceRoot: string,
     toolchainConfig: ToolchainConfig | undefined,
     rawSpec: string | undefined,
     options: Record<string, unknown>,
-): void => {
+): Promise<void> => {
     if (!rawSpec) {
         throw new Error("Usage: vis toolchain use <tool>@<version> (e.g. vis toolchain use node@22.13.0)");
     }
@@ -433,7 +433,7 @@ const executeUse = (
         }
 
         try {
-            writeFileSync(nvmrcPath, `${spec.version}\n`);
+            await fs.writeFile(nvmrcPath, `${spec.version}\n`);
         } catch (error: unknown) {
             pail.error(`Failed to write .nvmrc: ${(error as Error).message}`);
             process.exitCode = 1;
@@ -566,8 +566,8 @@ export const installExecute: CommandExecute<Toolbox<Console, ToolchainOptions>> 
 };
 
 /** `vis toolchain use &lt;tool>@&lt;version>` — pin a version via the best manager. */
-export const useExecute: CommandExecute<Toolbox<Console, ToolchainOptions>> = async ({ argument, options, visConfig, workspaceRoot }) => {
-    executeUse(requireRoot(workspaceRoot), visConfig?.toolchain, argument[0], options);
+export const useExecute: CommandExecute<Toolbox<Console, ToolchainOptions>> = async ({ argument, fs, options, visConfig, workspaceRoot }) => {
+    await executeUse(fs, requireRoot(workspaceRoot), visConfig?.toolchain, argument[0], options);
 };
 
 /** `vis toolchain which &lt;tool>` — resolve the binary path a manager would launch. */
