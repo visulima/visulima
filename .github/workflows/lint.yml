@@ -148,8 +148,7 @@ jobs:
                   node-version: "22"
                   install-node-gyp: "true"
                   cache-prefix: "lint"
-                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
-                  run-npm-audit: false
+                  run-npm-audit: true
                   # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
                   run-signatures-audit: false
 
@@ -220,8 +219,7 @@ jobs:
                   node-version: "22"
                   install-node-gyp: "true"
                   cache-prefix: "lint"
-                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
-                  run-npm-audit: false
+                  run-npm-audit: true
                   # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
                   run-signatures-audit: false
 
@@ -277,8 +275,7 @@ jobs:
                   node-version: "22"
                   install-node-gyp: "true"
                   cache-prefix: "lint"
-                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
-                  run-npm-audit: false
+                  run-npm-audit: true
                   # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
                   run-signatures-audit: false
 
