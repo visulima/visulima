@@ -35,6 +35,28 @@ export interface Key {
 
 export type InputHandler = (input: string, key: Key) => void;
 
+const KEY_BASE: Readonly<Key> = Object.freeze({
+    backspace: false,
+    ctrl: false,
+    delete: false,
+    downArrow: false,
+    end: false,
+    escape: false,
+    home: false,
+    leftArrow: false,
+    meta: false,
+    pageDown: false,
+    pageUp: false,
+    return: false,
+    rightArrow: false,
+    shift: false,
+    tab: false,
+    upArrow: false,
+});
+const makeKey = (overrides: Partial<Key>): Key => {
+    return { ...KEY_BASE, ...overrides };
+};
+
 /**
  * Subscribes to keyboard input. Uses a stable ref so the effect runs
  * exactly once (on mount) regardless of how often the component re-renders.
@@ -57,81 +79,59 @@ export const useInput = (handler: InputHandler): void => {
 
     // 3. Stable effect: subscribe once per context instance, use ref inside
     useEffect(() => {
-        const key = (overrides: Partial<Key>): Key => {
-            return {
-                backspace: false,
-                ctrl: false,
-                delete: false,
-                downArrow: false,
-                end: false,
-                escape: false,
-                home: false,
-                leftArrow: false,
-                meta: false,
-                pageDown: false,
-                pageUp: false,
-                return: false,
-                rightArrow: false,
-                shift: false,
-                tab: false,
-                upArrow: false,
-                ...overrides,
-            };
-        };
-
         const handleKeydown = (keyName: string) => {
             switch (keyName) {
                 case "backspace": {
-                    return handlerRef.current("", key({ backspace: true }));
+                    return handlerRef.current("", makeKey({ backspace: true }));
                 }
                 case "delete": {
-                    return handlerRef.current("", key({ delete: true }));
+                    return handlerRef.current("", makeKey({ delete: true }));
                 }
                 case "down": {
-                    return handlerRef.current("", key({ downArrow: true }));
+                    return handlerRef.current("", makeKey({ downArrow: true }));
                 }
                 case "end": {
-                    return handlerRef.current("", key({ end: true }));
+                    return handlerRef.current("", makeKey({ end: true }));
                 }
                 case "enter": {
-                    return handlerRef.current("", key({ return: true }));
+                    return handlerRef.current("", makeKey({ return: true }));
                 }
                 case "escape": {
-                    return handlerRef.current("", key({ escape: true }));
+                    return handlerRef.current("", makeKey({ escape: true }));
                 }
                 case "home": {
-                    return handlerRef.current("", key({ home: true }));
+                    return handlerRef.current("", makeKey({ home: true }));
                 }
                 case "left": {
-                    return handlerRef.current("", key({ leftArrow: true }));
+                    return handlerRef.current("", makeKey({ leftArrow: true }));
                 }
                 case "pageDown": {
-                    return handlerRef.current("", key({ pageDown: true }));
+                    return handlerRef.current("", makeKey({ pageDown: true }));
                 }
                 case "pageUp": {
-                    return handlerRef.current("", key({ pageUp: true }));
+                    return handlerRef.current("", makeKey({ pageUp: true }));
                 }
                 case "right": {
-                    return handlerRef.current("", key({ rightArrow: true }));
+                    return handlerRef.current("", makeKey({ rightArrow: true }));
                 }
                 case "shift-tab": {
-                    return handlerRef.current("", key({ shift: true, tab: true }));
+                    return handlerRef.current("", makeKey({ shift: true, tab: true }));
                 }
                 case "tab": {
-                    return handlerRef.current("", key({ tab: true }));
+                    return handlerRef.current("", makeKey({ tab: true }));
                 }
                 case "up": {
-                    return handlerRef.current("", key({ upArrow: true }));
+                    return handlerRef.current("", makeKey({ upArrow: true }));
                 }
             }
         };
 
         const handleCtrl = (letter: string) => {
-            handlerRef.current(letter, key({ ctrl: true }));
+            handlerRef.current(letter, makeKey({ ctrl: true }));
         };
 
         const handleMeta = (letter: string) => {
-            handlerRef.current(letter, key({ meta: true }));
+            handlerRef.current(letter, makeKey({ meta: true }));
         };
 
         const handleData = (data: string, flags?: { ctrl?: boolean; meta?: boolean }) => {
@@ -145,7 +145,7 @@ export const useInput = (handler: InputHandler): void => {
 
             handlerRef.current(
                 data,
-                key({
+                makeKey({
                     ctrl: flags?.ctrl ?? false,
                     meta: flags?.meta ?? false,
                 }),
