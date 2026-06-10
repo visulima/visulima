@@ -5,6 +5,7 @@ import type { LiteralUnion, Primitive } from "type-fest";
 
 import { EMPTY_SYMBOL, EXTENDED_RFC_5424_LOG_LEVELS, LOG_TYPES } from "./constants";
 import RawReporter from "./reporter/raw/raw-reporter.browser";
+import { TimerManager } from "./timer-manager";
 import type {
     ConstructorOptions,
     DefaultLoggerTypes,
@@ -76,11 +77,10 @@ const preventLoop = <T extends (this: ThisType<T>, ...args: Parameters<T>) => Re
  * ```
  */
 export class PailBrowserImpl<T extends string = string, L extends string = string> {
-    protected timersMap: Map<string, number>;
+    /** @internal Timer state delegated to TimerManager. */
+    protected readonly timerManager: TimerManager;
 
     protected countMap: Map<string, number>;
-
-    protected seqTimers: Set<string>;
 
     protected readonly lastLog: {
         count?: number;
@@ -188,12 +188,14 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
         this.scopeName = arrayify(options.scope).filter(Boolean);
 
-        this.timersMap = new Map<string, number>();
+        // TimerManager is initialized after `this.logger` is bound (see line below).
+        // The bind happens at end of constructor so we use an arrow here.
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        this.timerManager = new TimerManager((type: string, raw: boolean, force: boolean, ...args: any[]) => this.logger(type as never, raw, force, ...args), this.startTimerMessage, this.endTimerMessage);
+
         this.countMap = new Map<string, number>();
 
         this.groups = [];
-
-        this.seqTimers = new Set();
 
         // Track of last log
         this.lastLog = {};
@@ -628,20 +630,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * ```
      */
     public time(label = "default"): void {
-        if (this.seqTimers.has(label)) {
-            this.logger("warn", false, false, {
-                message: `Timer '${label}' already exists`,
-                prefix: label,
-            });
-        } else {
-            this.seqTimers.add(label);
-            this.timersMap.set(label, Date.now());
-
-            this.logger("start", false, false, {
-                message: this.startTimerMessage,
-                prefix: label,
-            });
-        }
+        this.timerManager.time(label);
     }
 
     /**
@@ -663,27 +652,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * ```
      */
     public timeLog(label?: string, ...data: unknown[]): void {
-        if (!label && this.seqTimers.size > 0) {
-            // eslint-disable-next-line no-param-reassign
-            label = [...this.seqTimers].pop();
-        }
-
-        if (label && this.timersMap.has(label)) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const span = Date.now() - this.timersMap.get(label)!;
-
-            this.logger("info", false, false, {
-                context: data,
-                message: span < 1000 ? `${String(span)} ms` : `${(span / 1000).toFixed(2)} s`,
-                prefix: label,
-            });
-        } else {
-            this.logger("warn", false, false, {
-                context: data,
-                message: "Timer not found",
-                prefix: label,
-            });
-        }
+        this.timerManager.timeLog(label, ...data);
     }
 
     /**
@@ -702,27 +671,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * ```
      */
     public timeEnd(label?: string): void {
-        if (!label && this.seqTimers.size > 0) {
-            // eslint-disable-next-line no-param-reassign
-            label = [...this.seqTimers].pop();
-        }
-
-        if (label && this.timersMap.has(label)) {
-            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-            const span = Date.now() - this.timersMap.get(label)!;
-
-            this.timersMap.delete(label);
-
-            this.logger("stop", false, false, {
-                message: `${this.endTimerMessage} ${span < 1000 ? `${String(span)} ms` : `${(span / 1000).toFixed(2)} s`}`,
-                prefix: label,
-            });
-        } else {
-            this.logger("warn", false, false, {
-                message: "Timer not found",
-                prefix: label,
-            });
-        }
+        this.timerManager.timeEnd(label);
     }
 
     /**
