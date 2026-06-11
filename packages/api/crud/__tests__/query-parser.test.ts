@@ -159,6 +159,14 @@ describe("parse where", () => {
             },
         });
     });
+
+    it("should throw a 400 http error for malformed where json", () => {
+        expect.assertions(1);
+
+        const url = "http://localhost/api/users?where={invalid";
+
+        expect(() => parseQuery(url)).toThrow(expect.objectContaining({ statusCode: 400 }));
+    });
 });
 
 describe("parse orderBy", () => {
@@ -190,6 +198,22 @@ describe("parse orderBy", () => {
         const url = "http://localhost/?orderBy={}";
 
         expect(() => parseQuery(url)).toThrow("a");
+    });
+
+    it("should throw a 400 http error for malformed orderBy json", () => {
+        expect.assertions(1);
+
+        const url = "http://localhost/api/users?orderBy={invalid";
+
+        expect(() => parseQuery(url)).toThrow(expect.objectContaining({ statusCode: 400 }));
+    });
+
+    it("should throw a 400 http error for a structurally invalid orderBy", () => {
+        expect.assertions(1);
+
+        const url = "http://localhost/?orderBy={\"a\": \"$asc\", \"b\": \"$desc\"}";
+
+        expect(() => parseQuery(url)).toThrow(expect.objectContaining({ statusCode: 400 }));
     });
 });
 

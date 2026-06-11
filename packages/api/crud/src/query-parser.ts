@@ -2,6 +2,7 @@ import { URL } from "node:url";
 
 // eslint-disable-next-line import/no-extraneous-dependencies, e18e/ban-dependencies -- dlv (recommended replacement) lacks setProperty equivalent; dset not in catalog
 import { setProperty } from "dot-prop";
+import createHttpError from "http-errors";
 
 import type { OrderByField, ParsedQueryParameters, RecursiveField, WhereField } from "./types";
 
@@ -18,7 +19,14 @@ const parseRecursive = (select: string): RecursiveField => {
 };
 
 const parseWhere = (where: string): WhereField => {
-    const whereObject = JSON.parse(where) as Record<string, unknown>;
+    let whereObject: Record<string, unknown>;
+
+    try {
+        whereObject = JSON.parse(where) as Record<string, unknown>;
+    } catch {
+        throw createHttpError(400, "Invalid JSON in \"where\" query parameter");
+    }
+
     const parsed: WhereField = {};
 
     Object.keys(whereObject).forEach((key) => {
@@ -29,12 +37,19 @@ const parseWhere = (where: string): WhereField => {
 };
 
 const parseOrderBy = (orderBy: string): OrderByField => {
-    const orderByObject = JSON.parse(orderBy) as Record<string, "$asc" | "$desc">;
+    let orderByObject: Record<string, "$asc" | "$desc">;
+
+    try {
+        orderByObject = JSON.parse(orderBy) as Record<string, "$asc" | "$desc">;
+    } catch {
+        throw createHttpError(400, "Invalid JSON in \"orderBy\" query parameter");
+    }
+
     const keys = Object.keys(orderByObject);
     const key = keys[0];
 
     if (keys.length !== 1 || key === undefined || (orderByObject[key] !== "$asc" && orderByObject[key] !== "$desc")) {
-        throw new Error("orderBy needs to be an object with exactly 1 property with either $asc or $desc value");
+        throw createHttpError(400, "orderBy needs to be an object with exactly 1 property with either $asc or $desc value");
     }
 
     return { [key]: orderByObject[key] };
