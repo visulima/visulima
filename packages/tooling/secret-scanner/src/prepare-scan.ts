@@ -107,14 +107,44 @@ export const buildRuleMeta = (config: GitleaksConfig): Map<string, RuleMeta> => 
     return map;
 };
 
-/**
- * Resolve the effective ruleset, expand `tag:` selectors in
- * `rules.enable`/`include`/`exclude` against the loaded rules (throws on
- * unknown tags — typos surface early), union enable + include into the
- * enablement set, gate `defaultEnabled: false` rules, and flatten the
- * user's grouped options into the shape the native binding expects.
- */
-export const prepareScan = (options: ScanOptions | undefined): PreparedScan => {
+// Memoise prepared scans by the subset of options that actually shape the
+// native config + rule meta. An editor integration calling `scanString` per
+// save re-runs `resolveConfig` + `gateOptInRules` + `buildRuleMeta` over
+// ~1,058 rules on every keystroke otherwise. Inline configs are *not* cached
+// (their identity is the object reference, which we can't cheaply serialise and
+// which callers often rebuild) — the key includes a marker that forces a miss.
+const preparedScanCache = new Map<string, PreparedScan>();
+const PREPARED_CACHE_LIMIT = 32;
+
+/** Test-only: drop the prepared-scan memo so config-fixture mutations don't leak across tests. */
+export const resetPrepareScanCacheForTests = (): void => {
+    preparedScanCache.clear();
+};
+
+const preparedCacheKey = (options: ScanOptions | undefined): string | undefined => {
+    // Inline configs carry an object whose contents drive the result; we don't
+    // serialise it (could be large / non-deterministic ordering), so skip the
+    // cache for that path.
+    if (options?.config?.inline !== undefined) {
+        return undefined;
+    }
+
+    return JSON.stringify({
+        concurrency: options?.concurrency,
+        extendBundled: options?.config?.extendBundled,
+        includeHidden: options?.walk?.includeHidden,
+        maxFileSize: options?.walk?.maxFileSize,
+        minConfidence: options?.config?.minConfidence,
+        path: options?.config?.path,
+        redact: options?.redact,
+        respectGitignore: options?.walk?.gitignore,
+        rules: options?.rules,
+        walkExcludeFromFiles: options?.walk?.excludeFromFiles,
+        walkExcludePatterns: options?.walk?.excludePatterns,
+    });
+};
+
+const buildPreparedScan = (options: ScanOptions | undefined): PreparedScan => {
     const base = resolveConfig({
         config: options?.config?.inline,
         configPath: options?.config?.path,
@@ -146,4 +176,46 @@ export const prepareScan = (options: ScanOptions | undefined): PreparedScan => {
         },
         ruleMeta: buildRuleMeta(config),
     };
+};
+
+/**
+ * Resolve the effective ruleset, expand `tag:` selectors in
+ * `rules.enable`/`include`/`exclude` against the loaded rules (throws on
+ * unknown tags — typos surface early), union enable + include into the
+ * enablement set, gate `defaultEnabled: false` rules, and flatten the
+ * user's grouped options into the shape the native binding expects.
+ *
+ * Results are memoised by the config-shaping subset of `options` (inline
+ * configs excepted) so repeated `scanString`/`scan` calls with the same config
+ * skip the O(rules) resolve + rule-meta rebuild.
+ */
+export const prepareScan = (options: ScanOptions | undefined): PreparedScan => {
+    const cacheKey = preparedCacheKey(options);
+
+    if (cacheKey !== undefined) {
+        const cached = preparedScanCache.get(cacheKey);
+
+        if (cached !== undefined) {
+            return cached;
+        }
+    }
+
+    const prepared = buildPreparedScan(options);
+
+    if (cacheKey !== undefined) {
+        // Bounded LRU-ish: evict the oldest entry when over the limit so a
+        // long-lived process scanning many distinct configs doesn't grow
+        // unbounded.
+        if (preparedScanCache.size >= PREPARED_CACHE_LIMIT) {
+            const oldest = preparedScanCache.keys().next().value;
+
+            if (oldest !== undefined) {
+                preparedScanCache.delete(oldest);
+            }
+        }
+
+        preparedScanCache.set(cacheKey, prepared);
+    }
+
+    return prepared;
 };

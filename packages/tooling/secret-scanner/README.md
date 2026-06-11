@@ -104,8 +104,12 @@ import {
     scanFiles,
     scanString,
     listRules,
+    listTags,
     inspectRuleset,
     fingerprint,
+    toSarif,
+    createBaseline,
+    writeBaseline,
     transformYamlBlockScalars,
     isLockFile,
     isPotentialUuid,
@@ -151,6 +155,33 @@ const verified = await scan([process.cwd()], { config: { validate: true, onlyVer
 //    don't invalidate the baseline entry. Legacy line-based baselines
 //    (`file:ruleID:startLine`) are still accepted on read.
 for (const f of findings) console.log(fingerprint(f));
+
+// 10) Discover presets/tags for a `--list-presets` UX. Counts every tag in the
+//     effective ruleset (the same tags `tag:<name>` selectors expand against).
+for (const { tag, count } of listTags()) console.log(`${tag} (${count})`);
+
+// 11) Emit SARIF 2.1.0 for GitHub code scanning (or any SARIF viewer).
+import { writeFileSync } from "node:fs";
+writeFileSync("secrets.sarif", JSON.stringify(toSarif(findings, { toolVersion: "1.0.0" })));
+
+// 12) Inline baseline — suppress without a file round-trip (ideal for editors).
+//     `baseline` accepts a path, an inline `Finding[]`, or a pre-computed
+//     `Set<string>` of fingerprints.
+const known = await scan([process.cwd()]);
+await writeBaseline("./.secrets-baseline.json", known); // or: createBaseline(known) → string
+const onlyNew = await scanString(content, "edited.ts", { baseline: known });
+
+// 13) Cancel the (network-bound) validation stage from a CLI/editor host.
+const controller = new AbortController();
+const validated = await scan([process.cwd()], { config: { validate: true }, signal: controller.signal });
+// controller.abort() from elsewhere stops in-flight validators.
+
+// 14) Lock validators to a host allowlist when loading an untrusted config —
+//     a third-party rule whose `validation.url` points off-allowlist is skipped
+//     instead of leaking the secret.
+await scan([process.cwd()], {
+    config: { path: "./shared-rules.json", validate: true, validateAllowedHosts: ["api.github.com", "api.openai.com"] },
+});
 ```
 
 ### Ruleset
@@ -198,7 +229,7 @@ token: |
 
 **Baseline JSON**
 
-- Array of `Finding` objects (same shape `scan()` returns). Pass via `baseline: "./path.json"`. Findings whose content-hash fingerprint (SHA-256 over `secret + ruleId + file`, truncated to 16 hex chars) matches an entry in the baseline are suppressed. Line-shift tolerant; the legacy `file:ruleID:startLine` format continues to suppress correctly without a migration.
+- Array of `Finding` objects (same shape `scan()` returns). Pass via `baseline: "./path.json"`, or inline as `baseline: findings` (a `Finding[]`, no file IO), or as a pre-computed `baseline: set` (`ReadonlySet<string>` of fingerprints). Findings whose content-hash fingerprint (SHA-256 over `secret + ruleId + file`, truncated to 16 hex chars) matches an entry in the baseline are suppressed. Line-shift tolerant; the legacy `file:ruleID:startLine` format continues to suppress correctly without a migration. Write one with `createBaseline(findings)` (returns the JSON string) or `writeBaseline(path, findings)`.
 - `rules.include` / `rules.exclude` arrays for rule-id level filtering.
 - Use `.gitignore` to exclude paths from scanning (respected by the walker), or `walk.excludePatterns` / `walk.excludeFromFiles` for extra gitignore-syntax filters.
 
@@ -250,8 +281,8 @@ Scope: handles `key: |` and `key: >` at any indent level, including quoted keys.
 
 ```ts
 interface ScanOptions {
-    /** Path to a baseline JSON array of `Finding` objects (suppression list). */
-    baseline?: string;
+    /** Suppression list: a path, an inline `Finding[]`, or a `ReadonlySet<string>` of fingerprints. */
+    baseline?: Finding[] | ReadonlySet<string> | string;
     /** Rayon worker threads. 0 / omit = auto. */
     concurrency?: number;
 
@@ -275,10 +306,15 @@ interface ScanOptions {
         path?: string;
         /** Opt in to HTTP / transport validators. WARNING: sends candidates to the provider. */
         validate?: boolean;
+        /** Host allowlist for HTTP validators — off-allowlist hosts are skipped, not contacted. */
+        validateAllowedHosts?: string[];
     };
 
     /** Mask `match` / `secret` strings in every finding. */
     redact?: boolean;
+
+    /** Abort the (network-bound) validation stage. Forwarded to each validator's `fetch()`. */
+    signal?: AbortSignal;
 
     /**
      * Rule-id filters. Entries are either literal ids or `tag:<name>` selectors.
@@ -342,9 +378,19 @@ declare function scan(paths: string[], options?: ScanOptions): Promise<Finding[]
 declare function scanFiles(files: string[], options?: ScanOptions): Promise<Finding[]>;
 declare function scanString(content: string, file: string, options?: ScanOptions): Promise<Finding[]>;
 declare function listRules(options?: ScanOptions): Promise<RuleInfo[]>;
+declare function listTags(options?: ScanOptions): { tag: string; count: number }[];
 declare function inspectRuleset(options?: ScanOptions): Promise<SkippedRule[]>;
 declare function fingerprint(f: Finding): string;
 declare const bundledConfigPath: string;
+
+// Baseline helpers — write/read suppression lists.
+declare function createBaseline(findings: readonly Finding[]): string;
+declare function writeBaseline(path: string, findings: readonly Finding[]): Promise<void>;
+declare function buildBaselineSet(findings: readonly Finding[]): Set<string>;
+declare function loadBaselineSet(path: string | undefined): Promise<Set<string>>;
+
+// Report serializer — SARIF 2.1.0 for GitHub code scanning / SARIF viewers.
+declare function toSarif(findings: readonly Finding[], options?: { toolVersion?: string }): SarifLog;
 
 // Heuristic helpers — the same predicates the pipeline applies. Exported so
 // custom pre-filters (editor plugins, CI gates) can reuse the logic.

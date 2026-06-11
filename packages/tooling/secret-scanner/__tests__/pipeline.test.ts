@@ -393,6 +393,96 @@ describe("postProcess — validation with resolved dependencies", () => {
     });
 });
 
+describe("postProcess — validation host allowlist + cancellation", () => {
+    let server: Server;
+    let url: string;
+    let host: string;
+
+    beforeEach(async () => {
+        server = createServer((_request: IncomingMessage, response: ServerResponse) => {
+            response.writeHead(200, { "Content-Type": "application/json" });
+            response.end('{"ok":true}');
+        });
+
+        await new Promise<void>((_resolve) => {
+            server.listen(0, "127.0.0.1", _resolve);
+        });
+
+        const address = server.address() as AddressInfo;
+
+        url = `http://127.0.0.1:${String(address.port)}/v`;
+        host = `127.0.0.1:${String(address.port)}`;
+    });
+
+    afterEach(async () => {
+        await new Promise<void>((_resolve) => {
+            server.close(() => {
+                _resolve();
+            });
+        });
+    });
+
+    const httpMeta = (): Map<string, RuleMeta> =>
+        new Map<string, RuleMeta>([
+            [
+                "rule.http",
+                {
+                    validation: { content: { request: { response_matcher: [{ status: [200], type: "StatusMatch" }], url } }, type: "Http" },
+                },
+            ],
+        ]);
+
+    it("skips findings whose validator host is not in `validateAllowedHosts`", async () => {
+        expect.assertions(1);
+
+        const findings = [sampleFinding({ ruleId: "rule.http" })];
+        const out = await postProcess(findings, preparedScan(httpMeta()), {
+            config: { validate: true, validateAllowedHosts: ["api.github.com"] },
+        });
+
+        expect(out[0]?.validation).toBe("skipped");
+    });
+
+    it("verifies when the validator host is allowlisted", async () => {
+        expect.assertions(1);
+
+        const findings = [sampleFinding({ ruleId: "rule.http" })];
+        const out = await postProcess(findings, preparedScan(httpMeta()), {
+            config: { validate: true, validateAllowedHosts: [host] },
+        });
+
+        expect(out[0]?.validation).toBe("verified");
+    });
+
+    it("propagates an already-aborted signal so the validator errors out", async () => {
+        expect.assertions(1);
+
+        const controller = new AbortController();
+
+        controller.abort();
+
+        const findings = [sampleFinding({ ruleId: "rule.http" })];
+        const out = await postProcess(findings, preparedScan(httpMeta()), {
+            config: { validate: true },
+            signal: controller.signal,
+        });
+
+        expect(out[0]?.validation).toBe("error");
+    });
+});
+
+describe("postProcess — inline baseline suppression", () => {
+    it("suppresses via an inline Finding[] baseline (no file IO)", async () => {
+        expect.assertions(1);
+
+        const suppressed = sampleFinding({ ruleId: "known-leak", secret: "old-value" });
+        const fresh = sampleFinding({ ruleId: "fresh-leak" });
+        const out = await postProcess([suppressed, fresh], preparedScan(), { baseline: [suppressed] });
+
+        expect(out.map((f) => f.ruleId)).toStrictEqual(["fresh-leak"]);
+    });
+});
+
 describe("postProcess — suppressions", () => {
     it("drops findings whose content-hash or legacy fingerprint is in the baseline", async () => {
         expect.assertions(1);
