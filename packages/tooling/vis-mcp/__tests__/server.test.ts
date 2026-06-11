@@ -58,6 +58,7 @@ describe(createMcpServer, () => {
                 "get_run_logs",
                 "lint",
                 "list_projects",
+                "list_runs",
                 "list_targets",
                 "list_templates",
             ]);

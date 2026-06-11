@@ -3,7 +3,8 @@ import * as z from "zod";
 
 import { execVis } from "../exec";
 import type { ToolContext, ToolDeps } from "../response";
-import { errorResponse, okResponse } from "../response";
+import { errorResponse, okStructuredResponse } from "../response";
+import { appendPositionalFiles } from "../validation";
 
 const findingSchema = z
     .object({
@@ -35,6 +36,16 @@ const fmtJsonSchema = z
     })
     .catchall(z.unknown());
 
+// Output shape advertised to MCP clients. `exitCode` and a normalized `mode` are
+// appended by the handler; unknown finding keys are tolerated by client
+// validation (zod object validation ignores extras it doesn't know about).
+const fmtOutputSchema = {
+    exitCode: z.number(),
+    findings: z.array(findingSchema),
+    mode: z.enum(["check", "fix"]),
+    runs: z.array(runSchema),
+};
+
 export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void => {
     server.registerTool(
         "fmt",
@@ -51,6 +62,7 @@ export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void =>
                 since: z.string().optional().describe("Forward `--since <ref>` so only files changed vs `<ref>` are checked."),
                 staged: z.boolean().optional().describe("Forward `--staged` so only files in the git index are checked."),
             },
+            outputSchema: fmtOutputSchema,
         },
         async (input: {
             files?: string[];
@@ -71,8 +83,10 @@ export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void =>
                     args.push("--since", input.since);
                 }
 
-                if (input.files && input.files.length > 0) {
-                    args.push(...input.files);
+                const fileError = appendPositionalFiles(args, input.files);
+
+                if (fileError !== undefined) {
+                    return errorResponse(new Error(fileError));
                 }
 
                 // `vis fmt --check` exits 1 when files would change — that's the
@@ -82,6 +96,10 @@ export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void =>
 
                 if (result.timedOut) {
                     return errorResponse(new Error(`vis fmt timed out`));
+                }
+
+                if (result.overflowed) {
+                    return errorResponse(new Error(`vis fmt produced more output than the buffer ceiling allows and was killed`));
                 }
 
                 if (result.stdout.trim().length === 0) {
@@ -100,7 +118,7 @@ export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void =>
 
                 const payload = fmtJsonSchema.parse(raw);
 
-                return okResponse({ ...payload, exitCode: result.exitCode, mode: payload.mode ?? "check" });
+                return okStructuredResponse({ ...payload, exitCode: result.exitCode, mode: payload.mode ?? "check" });
             } catch (error) {
                 return errorResponse(error);
             }

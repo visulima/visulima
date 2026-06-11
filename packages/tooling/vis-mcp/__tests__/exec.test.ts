@@ -44,6 +44,17 @@ describe(execVis, () => {
         // the error branch in execVis without mocking child_process.
         await expect(execVis(FAKE_VIS, ["list", "--json"], { cwd: "/this/path/definitely/does/not/exist/ever" })).rejects.toThrow(/ENOENT|no such file/);
     });
+
+    it("should flag overflowed and kill the child when output exceeds maxBufferBytes", async () => {
+        expect.assertions(2);
+
+        // fake-vis "flood-stdout" streams 200k chars then idles, so the kill
+        // (not a natural exit) is what ends the process.
+        const result = await execVis(FAKE_VIS, ["flood-stdout"], { maxBufferBytes: 1024, timeoutMs: 5000 });
+
+        expect(result.overflowed).toBe(true);
+        expect(result.timedOut).toBe(false);
+    });
 });
 
 describe(execVisJson, () => {
@@ -82,5 +93,11 @@ describe(execVisJson, () => {
         expect.assertions(1);
 
         await expect(execVisJson(process.execPath, ["-e", "setInterval(() => {}, 1000)"], { timeoutMs: 100 })).rejects.toThrow(/timed out after 100ms/);
+    });
+
+    it("should throw an output-limit error when the subprocess exceeds maxBufferBytes", async () => {
+        expect.assertions(1);
+
+        await expect(execVisJson(FAKE_VIS, ["flood-stdout"], { maxBufferBytes: 1024, timeoutMs: 5000 })).rejects.toThrow(/exceeded the 1024-byte output limit/);
     });
 });

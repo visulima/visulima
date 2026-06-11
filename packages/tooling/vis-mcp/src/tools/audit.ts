@@ -3,7 +3,7 @@ import * as z from "zod";
 
 import { execVisJson } from "../exec";
 import type { ToolContext, ToolDeps } from "../response";
-import { errorResponse, okResponse } from "../response";
+import { errorResponse, okStructuredResponse } from "../response";
 
 const vulnerabilitySchema = z.object({
     fixedVersions: z.array(z.string()).optional(),
@@ -46,6 +46,11 @@ const auditJsonSchema = z
 
 type AuditJson = z.infer<typeof auditJsonSchema>;
 
+// Output shape advertised to MCP clients. Derived from the parse schema's known
+// fields; forward-compatible CLI keys preserved by `.catchall` are tolerated by
+// client-side validation (zod object validation ignores keys it doesn't know).
+const auditOutputSchema = auditJsonSchema.shape;
+
 const SEVERITY_VALUES = ["low", "medium", "high", "critical"] as const;
 
 export const registerAudit = ({ server }: ToolDeps, context: ToolContext): void => {
@@ -65,6 +70,7 @@ export const registerAudit = ({ server }: ToolDeps, context: ToolContext): void 
                 showAccepted: z.boolean().optional().describe("Include findings already on the workspace's accepted-risk list."),
                 usage: z.boolean().optional().describe("Apply the reachability filter — only report vulnerabilities in statically-imported packages."),
             },
+            outputSchema: auditOutputSchema,
         },
         async (input: {
             ecosystem?: string;
@@ -104,7 +110,7 @@ export const registerAudit = ({ server }: ToolDeps, context: ToolContext): void 
                 const raw = await execVisJson<AuditJson>(context.visBin, args, { cwd: context.workspaceRoot });
                 const payload = auditJsonSchema.parse(raw);
 
-                return okResponse(payload);
+                return okStructuredResponse(payload);
             } catch (error) {
                 return errorResponse(error);
             }

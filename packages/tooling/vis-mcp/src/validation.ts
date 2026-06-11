@@ -18,3 +18,40 @@ export const isValidRunId = (value: string): boolean => RUN_ID_PATTERN.test(valu
  * inert, but a leading `-` would be parsed as a CLI flag by the vis CLI.
  */
 export const isValidTaskId = (value: string): boolean => value.length > 0 && !value.startsWith("-") && value.includes(":");
+
+/**
+ * Guard for free-form positional arguments forwarded to the vis CLI (template
+ * names, file paths). Spawn is argv-form so shell metacharacters are inert, but
+ * a leading `-` would be parsed as a CLI flag — turning an LLM-supplied
+ * `files: ["--fix"]` into a write operation that violates the `readOnlyHint`
+ * contract clients rely on for auto-approval. Callers must additionally insert
+ * a literal `--` separator before any positionals so a value that *becomes*
+ * flag-shaped through some other path can never be reinterpreted as an option.
+ */
+export const isSafePositional = (value: string): boolean => value.length > 0 && !value.startsWith("-");
+
+/**
+ * Validate and append user-supplied positional file paths to a `vis` argv. On
+ * success the paths are pushed after a literal `--` separator (so they can never
+ * be reinterpreted as flags) and `undefined` is returned. When any entry is
+ * flag-shaped, the argv is left untouched and a human-readable rejection message
+ * is returned for the caller to surface as an `errorResponse`.
+ *
+ * Shared by the `lint` and `fmt` tools, which both forward an optional `files`
+ * list and are annotated `readOnlyHint: true`.
+ */
+export const appendPositionalFiles = (args: string[], files: string[] | undefined): string | undefined => {
+    if (!files || files.length === 0) {
+        return undefined;
+    }
+
+    const unsafe = files.find((file) => !isSafePositional(file));
+
+    if (unsafe !== undefined) {
+        return `Invalid file path "${unsafe}". A leading "-" would be parsed as a CLI flag.`;
+    }
+
+    args.push("--", ...files);
+
+    return undefined;
+};
