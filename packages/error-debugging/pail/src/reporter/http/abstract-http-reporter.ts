@@ -95,6 +95,14 @@ export type AbstractHttpReporterOptions = AbstractJsonReporterOptions & {
     maxPayloadSize?: number;
 
     /**
+     * Maximum number of entries to keep queued while the endpoint is unavailable.
+     * When the queue exceeds this limit, the oldest entries are dropped (drop-oldest)
+     * so a sustained outage cannot grow memory without bound.
+     * @default 10000
+     */
+    maxQueueSize?: number;
+
+    /**
      * Number of retry attempts before giving up
      * @default 3
      */
@@ -118,6 +126,12 @@ export type AbstractHttpReporterOptions = AbstractJsonReporterOptions & {
         req: { body: string | Uint8Array; headers: Record<string, string>; method: string; url: string };
         res: { body: string; headers: Record<string, string>; status: number; statusText: string };
     }) => void;
+
+    /**
+     * Optional callback invoked when queued log entries are dropped because the queue
+     * exceeded `maxQueueSize`. Receives the number of dropped entries.
+     */
+    onDrop?: (droppedCount: number) => void;
 
     /**
      * Optional callback for error handling
@@ -167,6 +181,10 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
     protected batchContentType: string;
 
     protected onError?: (error: Error) => void;
+
+    protected onDrop?: (droppedCount: number) => void;
+
+    protected maxQueueSize: number;
 
     protected onDebug?: (entry: Record<string, unknown>) => void;
 
@@ -225,6 +243,8 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
         this.contentType = config.contentType ?? "application/json";
         this.batchContentType = config.batchContentType ?? "application/json";
         this.onError = config.onError;
+        this.onDrop = config.onDrop;
+        this.maxQueueSize = config.maxQueueSize ?? 10_000;
         this.onDebug = config.onDebug;
         this.onDebugRequestResponse = config.onDebugRequestResponse;
         this.payloadTemplate = config.payloadTemplate ?? ((data) => JSON.stringify(data));
@@ -247,6 +267,59 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
         this.maxLogSize = config.maxLogSize ?? 1_048_576; // 1MB
         this.maxPayloadSize = config.maxPayloadSize ?? 5_242_880; // 5MB
         this.edgeCompat = config.edgeCompat ?? false;
+    }
+
+    /**
+     * Flushes all queued log entries to the HTTP endpoint immediately.
+     *
+     * Returns a promise that resolves once the queue has been drained (or rejects
+     * if a batch send fails terminally). Use this before a serverless function or
+     * short-lived process exits so the tail of the batch is not lost.
+     * @example
+     * ```typescript
+     * await reporter.flush();
+     * ```
+     */
+    public async flush(): Promise<void> {
+        // Cancel any pending timer so we don't double-process.
+        if (this.batchTimeout) {
+            clearTimeout(this.batchTimeout);
+            this.batchTimeout = undefined;
+        }
+
+        while (this.batchQueue.length > 0 || this.isProcessingBatch) {
+            if (this.isProcessingBatch) {
+                // Wait for the in-flight batch to settle before continuing.
+                // eslint-disable-next-line no-await-in-loop, no-promise-executor-return
+                await new Promise((resolve) => setTimeout(resolve, 0));
+
+                continue;
+            }
+
+            // eslint-disable-next-line no-await-in-loop
+            await this.processBatch();
+        }
+    }
+
+    /**
+     * Flushes any remaining queued entries and clears pending timers.
+     *
+     * Counterpart to a transport lifecycle `end`/`dispose`. After calling `close()`
+     * the reporter can still be used, but any pending batch timeout is cleared.
+     * @example
+     * ```typescript
+     * process.on("beforeExit", () => reporter.close());
+     * ```
+     */
+    public async close(): Promise<void> {
+        await this.flush();
+    }
+
+    /**
+     * Alias for {@link close} to match common transport `dispose` conventions.
+     */
+    public async dispose(): Promise<void> {
+        await this.close();
     }
 
     /**
@@ -342,6 +415,19 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
         this.batchQueue.push(payload);
         this.currentBatchSize += logEntrySize + this.batchSendDelimiter.length;
 
+        // Enforce the queue cap (drop-oldest) so a sustained endpoint outage cannot grow
+        // memory without bound while retries back off.
+        if (this.batchQueue.length > this.maxQueueSize) {
+            const dropped = this.batchQueue.splice(0, this.batchQueue.length - this.maxQueueSize);
+
+            // Recompute the tracked size for the trimmed queue.
+            this.currentBatchSize = this.#computeQueueSize();
+
+            if (this.onDrop) {
+                this.onDrop(dropped.length);
+            }
+        }
+
         // Start batch timeout if not already running
         this.batchTimeout ??= setTimeout(() => {
             // eslint-disable-next-line no-void -- void needed to handle floating promise
@@ -353,6 +439,24 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
             // eslint-disable-next-line no-void -- void needed to handle floating promise
             void this.processBatch();
         }
+    }
+
+    /**
+     * Computes the tracked uncompressed size (bytes) of the current batch queue,
+     * including delimiters between entries.
+     */
+    #computeQueueSize(): number {
+        let size = 0;
+
+        for (let i = 0; i < this.batchQueue.length; i += 1) {
+            const payload = this.batchQueue[i];
+            const payloadSize
+                = this.edgeCompat || typeof TextEncoder === "undefined" ? Buffer.byteLength(payload, "utf8") : new TextEncoder().encode(payload).length;
+
+            size += payloadSize + (i < this.batchQueue.length - 1 ? this.batchSendDelimiter.length : 0);
+        }
+
+        return size;
     }
 
     /**
@@ -375,16 +479,7 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
         const batch = this.batchQueue.splice(0, this.batchSize);
 
         // Recalculate batch size for remaining items in queue
-        this.currentBatchSize = 0;
-
-        for (let i = 0; i < this.batchQueue.length; i += 1) {
-            const payload = this.batchQueue[i];
-            const payloadSize
-                = this.edgeCompat || typeof TextEncoder === "undefined" ? Buffer.byteLength(payload, "utf8") : new TextEncoder().encode(payload).length;
-
-            // Add payload size plus delimiter (except for last item)
-            this.currentBatchSize += payloadSize + (i < this.batchQueue.length - 1 ? this.batchSendDelimiter.length : 0);
-        }
+        this.currentBatchSize = this.#computeQueueSize();
 
         try {
             await this.sendBatch(batch);

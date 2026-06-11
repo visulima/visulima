@@ -94,6 +94,33 @@ describe("prettyReporter", () => {
         stderrSpy.mockRestore();
     });
 
+    it.each(["warning", "critical", "alert", "emergency"])("should route %s-level output to stderr (RFC 5424 severity)", (level) => {
+        expect.assertions(2);
+
+        const prettyReporter = new PrettyReporter();
+        const meta = {
+            badge: "",
+            date,
+            groups: [],
+            label: "",
+            message: `${level} message`,
+            type: {
+                level,
+                name: level,
+            },
+        };
+        const stdoutSpy = vi.spyOn(stdout, "write").mockImplementation(() => true);
+        const stderrSpy = vi.spyOn(stderr, "write").mockImplementation(() => true);
+
+        prettyReporter.log(meta as ReadonlyMeta<string>);
+
+        expect(stderrSpy).toHaveBeenCalledTimes(1);
+        expect(stdoutSpy).not.toHaveBeenCalled();
+
+        stdoutSpy.mockRestore();
+        stderrSpy.mockRestore();
+    });
+
     it("should update the stdout stream correctly when setStdout is called", () => {
         expect.assertions(1);
 

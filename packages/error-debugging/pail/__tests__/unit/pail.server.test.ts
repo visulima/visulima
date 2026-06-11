@@ -24,8 +24,9 @@ describe("pailServerImpl", () => {
         pailServer.error("Error message");
 
         expect(logStdoutSpy).toHaveBeenCalledWith("Info message");
-        expect(logStdoutSpy).toHaveBeenCalledWith("Warning message");
-        expect(logStderrSpy).toHaveBeenCalledExactlyOnceWith("Error message");
+        // RFC 5424: the "warning" level is high-severity and must route to stderr, not stdout.
+        expect(logStderrSpy).toHaveBeenCalledWith("Warning message");
+        expect(logStderrSpy).toHaveBeenCalledWith("Error message");
     });
 
     it("should handle interactive mode correctly", () => {
@@ -59,7 +60,8 @@ describe("pailServerImpl", () => {
         expect.assertions(2);
 
         const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
-        const logStdoutSpy = vi.spyOn(stdout, "write");
+        // The "warning" level routes to stderr, so observe the loop guard there.
+        const logStderrSpy = vi.spyOn(stderr, "write");
 
         pailServer.wrapConsole();
 
@@ -77,9 +79,9 @@ describe("pailServerImpl", () => {
         pailServer.restoreConsole();
 
         // Should have at least one log call (the original warn call)
-        expect(logStdoutSpy.mock.calls.length).toBeGreaterThan(0);
+        expect(logStderrSpy.mock.calls.length).toBeGreaterThan(0);
         // Should not have hundreds of calls (which would indicate infinite looping)
-        expect(logStdoutSpy.mock.calls.length).toBeLessThan(100);
+        expect(logStderrSpy.mock.calls.length).toBeLessThan(100);
     });
 
     it("should wrap and restore stdout and stderr streams", () => {
@@ -164,6 +166,59 @@ describe("pailServerImpl", () => {
         expect(() => pailServer.scope("validScope")).not.toThrow();
     });
 
+    it("scope() should return a new instance without mutating the parent", () => {
+        expect.assertions(3);
+
+        const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+        const scoped = pailServer.scope("outer");
+
+        // A different instance is returned (documented behavior), not `this`.
+        expect(scoped).not.toBe(pailServer);
+
+        const logStdoutSpy = vi.spyOn(stdout, "write");
+
+        // The parent stays unscoped.
+        pailServer.log("parent message");
+
+        expect(logStdoutSpy).toHaveBeenCalledWith("parent message");
+
+        logStdoutSpy.mockClear();
+
+        // Nested scope extends rather than replaces.
+        const inner = scoped.scope("inner");
+
+        inner.log("inner message");
+
+        // The raw reporter prints "[outer > inner] inner message" — assert the scope chain nests.
+        expect(logStdoutSpy).toHaveBeenCalledWith(expect.stringContaining("inner message"));
+    });
+
+    it("wrapException()/restoreException() should add and remove process handlers idempotently", () => {
+        expect.assertions(4);
+
+        const pailServer = new PailServer({ stderr, stdout });
+
+        const before = process.listenerCount("uncaughtException");
+
+        pailServer.wrapException();
+
+        expect(process.listenerCount("uncaughtException")).toBe(before + 1);
+
+        // Repeated wrapException() must not stack a second handler.
+        pailServer.wrapException();
+
+        expect(process.listenerCount("uncaughtException")).toBe(before + 1);
+
+        pailServer.restoreException();
+
+        expect(process.listenerCount("uncaughtException")).toBe(before);
+
+        // restoreException() is safe to call when nothing is installed.
+        expect(() => {
+            pailServer.restoreException();
+        }).not.toThrow();
+    });
+
     it("should handle logging with circular references in objects", () => {
         expect.assertions(1);
 
@@ -183,6 +238,7 @@ describe("pailServerImpl", () => {
 
         const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
         const logStdoutSpy = vi.spyOn(stdout, "write");
+        const logStderrSpy = vi.spyOn(stderr, "write");
 
         const newLogger3 = pailServer.scope("group");
 
@@ -202,7 +258,8 @@ describe("pailServerImpl", () => {
         expect(logStdoutSpy).toHaveBeenCalledWith("    Level 2");
         expect(logStdoutSpy).toHaveBeenCalledWith("    Hello world!");
         expect(logStdoutSpy).toHaveBeenCalledWith("        Level 3");
-        expect(logStdoutSpy).toHaveBeenCalledWith("        More of level 3");
+        // warning-level output is routed to stderr (RFC 5424 severity), not stdout
+        expect(logStderrSpy).toHaveBeenCalledWith("        More of level 3");
         expect(logStdoutSpy).toHaveBeenCalledWith("    Back to level 2");
         expect(logStdoutSpy).toHaveBeenCalledWith("Back to the outer level");
     });
@@ -217,9 +274,9 @@ describe("pailServerImpl", () => {
             // Pause the logger
             pailServer.pause();
 
-            // These messages should be queued
+            // These messages should be queued (all stdout-routed levels so the count is unambiguous)
             pailServer.info("Message 1");
-            pailServer.warn("Message 2");
+            pailServer.info("Message 2");
             pailServer.debug("Message 3");
 
             // No messages should have been logged yet
@@ -282,7 +339,7 @@ describe("pailServerImpl", () => {
 
             pailServer.pause();
             pailServer.info("First");
-            pailServer.warn("Second");
+            pailServer.info("Second");
             pailServer.debug("Third");
             pailServer.resume();
 

@@ -140,9 +140,9 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
             throw new Error("No scope name was defined.");
         }
 
-        this.scopeName = name.flat();
-
-        return this as unknown as PailServerType<N, L>;
+        // Return a *new* logger (as documented) instead of mutating `this`. The new scope
+        // extends the parent's scope, so nested `scope()` calls nest rather than replace.
+        return this.child<N>({ scope: name });
     }
 
     /**

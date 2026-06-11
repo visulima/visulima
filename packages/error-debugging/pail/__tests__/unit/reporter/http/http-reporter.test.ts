@@ -1606,4 +1606,85 @@ describe(HttpReporter, () => {
 
         expect(mockSendWithRetry.mock.calls.length).toBeGreaterThan(0);
     });
+
+    describe("lifecycle (flush/close/dispose)", () => {
+        it("flush() drains queued entries immediately without waiting for the batch timeout", async () => {
+            expect.assertions(2);
+
+            const reporter = createReporter({
+                batchSendTimeout: 1_000_000,
+                batchSize: 100,
+                enableBatchSend: true,
+                payloadTemplate: ({ message }) => JSON.stringify({ message }),
+                url: "https://api.example.com/logs",
+            });
+
+            reporter.log({ ...baseMeta, message: "buffered" });
+
+            // Nothing has been sent yet — the batch is still buffered behind the long timeout.
+            expect(mockSendWithRetry).not.toHaveBeenCalled();
+
+            await reporter.flush();
+
+            expect(mockSendWithRetry).toHaveBeenCalledTimes(1);
+        });
+
+        it("close() and dispose() flush the queue", async () => {
+            expect.assertions(2);
+
+            const closeReporter = createReporter({
+                batchSendTimeout: 1_000_000,
+                enableBatchSend: true,
+                payloadTemplate: ({ message }) => JSON.stringify({ message }),
+                url: "https://api.example.com/logs",
+            });
+
+            closeReporter.log({ ...baseMeta, message: "via-close" });
+
+            await closeReporter.close();
+
+            expect(mockSendWithRetry).toHaveBeenCalledTimes(1);
+
+            mockSendWithRetry.mockClear();
+
+            const disposeReporter = createReporter({
+                batchSendTimeout: 1_000_000,
+                enableBatchSend: true,
+                payloadTemplate: ({ message }) => JSON.stringify({ message }),
+                url: "https://api.example.com/logs",
+            });
+
+            disposeReporter.log({ ...baseMeta, message: "via-dispose" });
+
+            await disposeReporter.dispose();
+
+            expect(mockSendWithRetry).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe("bounded queue (maxQueueSize)", () => {
+        it("drops the oldest entries and reports the dropped count when the queue exceeds maxQueueSize", () => {
+            expect.assertions(1);
+
+            const dropped: number[] = [];
+
+            const reporter = createReporter({
+                batchSendTimeout: 1_000_000,
+                // Never auto-send on size so the queue can grow past the cap.
+                batchSize: 1_000_000,
+                enableBatchSend: true,
+                maxQueueSize: 3,
+                onDrop: (count) => dropped.push(count),
+                payloadTemplate: ({ message }) => JSON.stringify({ message }),
+                url: "https://api.example.com/logs",
+            });
+
+            for (let index = 0; index < 5; index += 1) {
+                reporter.log({ ...baseMeta, message: `Message ${index}` });
+            }
+
+            // 5 entries enqueued, cap is 3 → 2 single-entry drops reported.
+            expect(dropped).toStrictEqual([1, 1]);
+        });
+    });
 });

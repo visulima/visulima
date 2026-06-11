@@ -7,6 +7,7 @@ import type { InteractiveManager } from "@visulima/interactive-manager";
 
 import { EMPTY_SYMBOL } from "../../constants";
 import type { ReadonlyMeta, StreamAwareReporter } from "../../types";
+import isStderrLevel from "../../utils/is-stderr-level";
 import writeStream from "../../utils/write-stream";
 
 class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
@@ -66,7 +67,7 @@ class RawReporter<L extends string = string> implements StreamAwareReporter<L> {
             );
         }
 
-        const streamType = ["error", "trace", "warn"].includes(type.level) ? "stderr" : "stdout";
+        const streamType = isStderrLevel<L>(type.level) ? "stderr" : "stdout";
         const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
         const groupSpaces: string = groups.map(() => "    ").join("");
 

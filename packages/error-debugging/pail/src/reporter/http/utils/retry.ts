@@ -18,6 +18,50 @@ interface FetchResponse {
 const calculateBackoffDelay = (baseDelay: number, attempt: number): number => baseDelay * 2 ** attempt;
 
 /**
+ * Upper bound (ms) applied to a server-supplied `Retry-After` so a hostile or
+ * misconfigured value cannot stall the pipeline indefinitely.
+ */
+const MAX_RETRY_AFTER_MS = 60_000;
+
+/** Matches the RFC 7231 delta-seconds form of `Retry-After` (an integer number of seconds). */
+const DELTA_SECONDS_REGEX = /^\d+$/;
+
+/**
+ * Parses an HTTP `Retry-After` header value.
+ *
+ * Supports both forms defined by RFC 7231:
+ * - delta-seconds (e.g. `"120"`)
+ * - HTTP-date (e.g. `"Wed, 21 Oct 2015 07:28:00 GMT"`)
+ *
+ * The resulting delay is clamped to `[0, MAX_RETRY_AFTER_MS]`. Returns `undefined`
+ * when the value cannot be parsed (so the caller falls back to exponential backoff
+ * instead of `setTimeout(resolve, NaN)`, which would fire immediately).
+ * @param value The raw `Retry-After` header value.
+ * @returns Delay in milliseconds, or `undefined` if unparseable.
+ */
+const parseRetryAfter = (value: string): number | undefined => {
+    const trimmed = value.trim();
+
+    // delta-seconds form: an integer number of seconds.
+    if (DELTA_SECONDS_REGEX.test(trimmed)) {
+        const seconds = Number.parseInt(trimmed, 10);
+
+        return Math.min(Math.max(seconds, 0) * 1000, MAX_RETRY_AFTER_MS);
+    }
+
+    // HTTP-date form: parse and compute the delta from now.
+    const dateMs = Date.parse(trimmed);
+
+    if (Number.isNaN(dateMs)) {
+        return undefined;
+    }
+
+    const delta = dateMs - Date.now();
+
+    return Math.min(Math.max(delta, 0), MAX_RETRY_AFTER_MS);
+};
+
+/**
  * Sleeps for the specified number of milliseconds.
  * @param delay Delay in milliseconds
  */
@@ -122,8 +166,11 @@ const processResponse = async (
 const handleRateLimit = (response: FetchResponse, respectRateLimit: boolean, retryDelay: number, attempt: number, maxRetries: number): number | undefined => {
     if (response.status === 429 && respectRateLimit && attempt < maxRetries) {
         const retryAfter = response.headers.get("retry-after");
+        const parsed = retryAfter ? parseRetryAfter(retryAfter) : undefined;
 
-        return retryAfter ? Number.parseInt(retryAfter, 10) * 1000 : calculateBackoffDelay(retryDelay, attempt);
+        // Fall back to exponential backoff when the header is missing or unparseable
+        // (previously an HTTP-date value produced NaN and fired the retry immediately).
+        return parsed ?? calculateBackoffDelay(retryDelay, attempt);
     }
 
     return undefined;
@@ -282,4 +329,5 @@ const sendWithRetry = async (
     }
 };
 
+export { parseRetryAfter };
 export default sendWithRetry;
