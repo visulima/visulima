@@ -447,11 +447,7 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
 
         // Emit a type declaration so the `./domains` subpath export carries types
         // (`import domains from "@visulima/disposable-email-domains/domains" with { type: "json" }`).
-        await fs.writeFile(
-            join(this.syncOptions.outputPath, "domains.d.ts"),
-            "declare const domains: string[];\nexport default domains;\n",
-            "utf8",
-        );
+        await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport default domains;\n", "utf8");
     }
 
     /**
