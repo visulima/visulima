@@ -1,9 +1,37 @@
 // @vitest-environment node
 import { describe, expect, it } from "vitest";
 
-import matcher from "../../src/vite/matcher";
+import matcher, { compileMatcher } from "../../src/vite/matcher";
 
 describe("vite/matcher", () => {
+    describe(compileMatcher, () => {
+        it("returns a predicate that behaves like matcher for globs and RegExps", () => {
+            expect.assertions(4);
+
+            const isMatch = compileMatcher(["/never/*.js", /\.svg$/]);
+
+            expect(isMatch("/icons/logo.svg")).toBe(true);
+            expect(isMatch("/never/a.js")).toBe(true);
+            expect(isMatch("/icons/logo.png")).toBe(false);
+            expect(isMatch("/never/nested/a.js")).toBe(false);
+        });
+
+        it("anchors glob patterns", () => {
+            expect.assertions(2);
+
+            const isMatch = compileMatcher(["Button"]);
+
+            expect(isMatch("Button")).toBe(true);
+            expect(isMatch("IconButton")).toBe(false);
+        });
+
+        it("never matches when the pattern list is empty", () => {
+            expect.assertions(1);
+
+            expect(compileMatcher([])("anything")).toBe(false);
+        });
+    });
+
     describe(matcher, () => {
         it("matches a plain literal glob", () => {
             expect.assertions(2);

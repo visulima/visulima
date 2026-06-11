@@ -251,6 +251,66 @@ describe("rpc/server", () => {
             );
         });
 
+        it("readFile rejects a file with a disallowed extension", async () => {
+            expect.assertions(1);
+
+            await fs.writeFile(path.join(tmpDir, ".env"), "SECRET=1");
+
+            const { server, viteServer } = makeServer(tmpDir);
+
+            createServerRPCContext(viteServer);
+
+            const { client, send } = makeClient();
+
+            await server.ws.getHandler()?.({ args: [".env"], id: "req-ext", method: "readFile" }, client);
+
+            expect(send).toHaveBeenCalledWith(
+                "dev-toolbar:rpc:error",
+                expect.objectContaining({ error: expect.stringContaining("disallowed extension"), id: "req-ext" }),
+            );
+        });
+
+        it("readFile honors a custom extension allowlist", async () => {
+            expect.assertions(2);
+
+            await fs.writeFile(path.join(tmpDir, "data.csv"), "a,b");
+            await fs.writeFile(path.join(tmpDir, "code.ts"), "const a = 1;");
+
+            const { server, viteServer } = makeServer(tmpDir);
+
+            createServerRPCContext(viteServer, undefined, { readFile: { extensions: ["csv"] } });
+
+            const { client, send } = makeClient();
+
+            await server.ws.getHandler()?.({ args: ["data.csv"], id: "req-csv", method: "readFile" }, client);
+            await server.ws.getHandler()?.({ args: ["code.ts"], id: "req-ts", method: "readFile" }, client);
+
+            expect(send).toHaveBeenCalledWith("dev-toolbar:rpc:response", { id: "req-csv", result: "a,b" });
+            expect(send).toHaveBeenCalledWith(
+                "dev-toolbar:rpc:error",
+                expect.objectContaining({ error: expect.stringContaining("disallowed extension"), id: "req-ts" }),
+            );
+        });
+
+        it("does not register readFile when readFile is false", async () => {
+            expect.assertions(1);
+
+            await fs.writeFile(path.join(tmpDir, "code.ts"), "const a = 1;");
+
+            const { server, viteServer } = makeServer(tmpDir);
+
+            createServerRPCContext(viteServer, undefined, { readFile: false });
+
+            const { client, send } = makeClient();
+
+            await server.ws.getHandler()?.({ args: ["code.ts"], id: "req-off", method: "readFile" }, client);
+
+            expect(send).toHaveBeenCalledWith("dev-toolbar:rpc:error", {
+                error: "Unknown RPC method: readFile",
+                id: "req-off",
+            });
+        });
+
         it("openInEditor uses the configured editor for an in-root file", async () => {
             expect.assertions(1);
 

@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import type { Plugin, ResolvedConfig, UserConfig } from "vite";
 import { normalizePath } from "vite";
 
+import type { ReadFileOptions } from "./rpc/server";
 import { createServerRPCContext } from "./rpc/server";
 import type { DevToolbarApp, ServerFunctions } from "./types/index";
 import type { InjectSourceIgnore } from "./vite/inject-source";
@@ -109,6 +110,18 @@ export interface DevToolbarOptions {
     editor?: string;
 
     /**
+     * Master switch for the whole plugin. When `false`, `devToolbar()` returns an
+     * empty plugin array, so no virtual modules, RPC server, or client overlay are
+     * registered — the equivalent of removing the plugin from `vite.config.ts`
+     * without editing the config.
+     *
+     * Handy for CI/preview environments:
+     * `devToolbar({ enabled: !process.env.CI })`.
+     * @default true
+     */
+    enabled?: boolean;
+
+    /**
      * Initial panel height as a percentage of the viewport height (20–95).
      * @default 60
      */
@@ -163,6 +176,20 @@ export interface DevToolbarOptions {
     position?: "bottom" | "left" | "right" | "top";
 
     /**
+     * Policy for the built-in `readFile` RPC endpoint, which lets toolbar apps read
+     * text files under the project root.
+     *
+     * Set to `false` to remove the endpoint entirely — recommended when the dev
+     * server is exposed on the network (`vite --host`), since any device on the LAN
+     * can then call RPC methods. Pass an object to override the allowed extensions.
+     *
+     * By default the endpoint is restricted to a curated allowlist of source/markup/
+     * text extensions, so `.env`, lockfiles, and key material are never served.
+     * @default { extensions: curated source/text list }
+     */
+    readFile?: ReadFileOptions | false;
+
+    /**
      * Reduce motion for accessibility (disables all CSS animations).
      * @default false
      */
@@ -205,9 +232,31 @@ export interface DevToolbarOptions {
 }
 
 /**
+ * Clamp a numeric panel dimension (height/width percentage) into the documented
+ * 20–95 range. Falls back to the provided default when the value is missing or
+ * not a finite number, so an out-of-range or garbage option never produces a
+ * broken, off-screen panel.
+ */
+const clampPercentage = (value: number | undefined, fallback: number): number => {
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+        return fallback;
+    }
+
+    return Math.min(95, Math.max(20, value));
+};
+
+/**
  * Returns the Vite plugin array for the dev toolbar.
+ *
+ * Returns an empty array when `options.enabled === false`, so the plugin can be
+ * gated for CI/preview builds without removing it from `vite.config.ts`.
  */
 export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
+    // Master enable switch — opt out of the entire toolbar without editing config.
+    if (options.enabled === false) {
+        return [];
+    }
+
     const devToolbarPath = getDevToolbarPath();
     const removeOnBuild = options.removeDevtoolsOnBuild ?? true;
     const injectSourceEnabled = options.injectSource?.enabled ?? true;
@@ -286,7 +335,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
         configureServer(srv) {
             // Setup RPC context
-            createServerRPCContext(srv, options.serverFunctions, { editor: options.editor });
+            createServerRPCContext(srv, options.serverFunctions, { editor: options.editor, readFile: options.readFile });
 
             // Send init event to clients on connection
             srv.ws.on("connection", () => {
@@ -401,7 +450,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                     customApps: serializableCustomApps,
                     defaultVisible: options.defaultVisible ?? true,
                     editor: options.editor ?? "",
-                    height: options.height ?? 60,
+                    // Clamp to the documented 20–95 range so an out-of-range value
+                    // can't render an unusable, off-screen panel.
+                    height: clampPercentage(options.height, 60),
                     keybindings: options.keybindings ?? {},
                     minimizePanelInactive: options.minimizePanelInactive ?? 5000,
                     placement: options.placement ?? "bottom-center",
@@ -409,7 +460,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
                     reduceMotion: options.reduceMotion ?? false,
                     requireUrlFlag: options.requireUrlFlag ?? false,
                     urlFlagName: options.urlFlagName ?? "devtools",
-                    width: options.width ?? 80,
+                    width: clampPercentage(options.width, 80),
                 })};`;
             }
 
@@ -516,6 +567,15 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
         },
     };
 
+    // Per-id memo of the last transform result, keyed by the input `code` length +
+    // disk mtime, so an unchanged module isn't re-parsed (twice) on every HMR
+    // trigger. The Babel parse + position-map build + generator pass is the most
+    // expensive part of dev startup for JSX-heavy apps.
+    type GeneratedResult = NonNullable<Awaited<ReturnType<typeof import("./vite/inject-source.js")["addSourceToJsx"]>>>;
+    type InjectSourceResult = { code: string; map: GeneratedResult["map"] | undefined } | undefined;
+
+    const injectSourceCache = new Map<string, { key: string; result: InjectSourceResult }>();
+
     const injectSourcePlugin: Plugin = {
         enforce: "pre",
 
@@ -542,12 +602,32 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
             // addSourceToJsx builds a position map from the real source and injects positions
             // from that map into `code`'s AST — so both builds produce identical
             // data-vdt-source values and React hydration never sees a mismatch.
-            const { readFile } = await import("node:fs/promises");
+            const filePath = id.split("?")[0] ?? id;
+            const { readFile, stat } = await import("node:fs/promises");
+
+            // Build a cheap cache key from the input code length and the on-disk
+            // mtime. If neither changed since the last transform of this id, return
+            // the memoized result and skip the two Babel parses entirely.
+            let cacheKey: string | undefined;
+
+            try {
+                const { mtimeMs } = await stat(filePath);
+
+                cacheKey = `${code.length}:${mtimeMs}`;
+
+                const cached = injectSourceCache.get(id);
+
+                if (cached && cached.key === cacheKey) {
+                    return cached.result;
+                }
+            } catch {
+                // No on-disk file (virtual/generated module) — skip caching.
+            }
 
             let originalCode: string | undefined;
 
             try {
-                const diskContent = await readFile(id.split("?")[0] ?? id, "utf8");
+                const diskContent = await readFile(filePath, "utf8");
 
                 if (diskContent !== code) {
                     originalCode = diskContent;
@@ -557,13 +637,15 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
             }
 
             const { addSourceToJsx } = await import("./vite/inject-source.js");
-            const result = addSourceToJsx(code, id, options.injectSource?.ignore, originalCode);
+            const generated = addSourceToJsx(code, id, options.injectSource?.ignore, originalCode);
 
-            if (!result) {
-                return undefined;
+            const result = generated ? { code: generated.code ?? code, map: generated.map ?? undefined } : undefined;
+
+            if (cacheKey !== undefined) {
+                injectSourceCache.set(id, { key: cacheKey, result });
             }
 
-            return { code: result.code ?? code, map: result.map ?? undefined };
+            return result;
         },
     };
 
