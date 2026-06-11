@@ -2,8 +2,6 @@
 // MIT License
 // Copyright (c) Sindre Sorhus <sindresorhus@gmail.com> (https://sindresorhus.com)
 
-import { release as osRelease } from "node:os";
-
 import { SPACE_16_COLORS, SPACE_256_COLORS, SPACE_MONO, SPACE_TRUE_COLORS } from "./color-spaces";
 import type { ColorSupportLevel, CreateIsColorSupportedOptions } from "./types";
 
@@ -21,6 +19,26 @@ const TEAMCITY_RE = /^(9\.(0*[1-9]\d*)\.|\d{2,}\.)/;
 // eslint-disable-next-line regexp/no-unused-capturing-group
 const TERM_256_RE = /-256(color)?$/i;
 const TERM_COLOR_RE = /^screen|^tmux|^xterm|^vt[1-5]\d\d|^ansi|color|mintty|rxvt|cygwin|linux/i;
+
+/**
+ * Lazily resolve `os.release()` without a static `node:os` import.
+ *
+ * A static `import ... from "node:os"` is rewritten by bundlers (packem's
+ * `requireCJS.builtinNodeModules`) into a top-level `getBuiltinModule("node:os")`
+ * shim that crashes at module load under runtimes lacking `process.getBuiltinModule`
+ * (e.g. Vitest's process shim). Resolving it lazily and guarding the call keeps the
+ * module importable everywhere; it is only needed as a last-resort Windows fallback.
+ * @returns the OS release string, or an empty string when unavailable.
+ */
+const getOsRelease = (): string => {
+    const getBuiltinModule = (globalThis as { process?: { getBuiltinModule?: (id: string) => { release(): string } } }).process?.getBuiltinModule;
+
+    if (typeof getBuiltinModule !== "function") {
+        return "";
+    }
+
+    return getBuiltinModule("node:os").release();
+};
 
 /**
  * Compute the ANSI color-support level for a given standard stream.
@@ -179,7 +197,7 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
                 // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
                 rawRelease = proc.os.release();
             } else {
-                rawRelease = osRelease();
+                rawRelease = getOsRelease();
             }
 
             const release = rawRelease.split(".");
