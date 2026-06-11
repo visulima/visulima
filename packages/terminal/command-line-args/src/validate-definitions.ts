@@ -92,7 +92,7 @@ const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseI
             }
 
             if (definition.alias === "-") {
-                throw new InvalidDefinitionsError("Invalid option definition: alias cannot be \"-\"");
+                throw new InvalidDefinitionsError('Invalid option definition: alias cannot be "-"');
             }
 
             // Check for duplicate aliases (case-sensitive and case-insensitive)
@@ -127,11 +127,11 @@ const validateDefinitions = (definitions: ReadonlyArray<OptionDefinition>, caseI
 
         // Check for valid type
         if (definition.type !== undefined) {
-            const isValidType
-                = definition.type === Boolean
-                    || definition.type === Number
-                    || definition.type === String
-                    || (typeof definition.type === "function" && isValidCustomTypeFunction(definition.type));
+            const isValidType =
+                definition.type === Boolean ||
+                definition.type === Number ||
+                definition.type === String ||
+                (typeof definition.type === "function" && isValidCustomTypeFunction(definition.type));
 
             if (!isValidType) {
                 throw new InvalidDefinitionsError("Invalid option definition: invalid type");
