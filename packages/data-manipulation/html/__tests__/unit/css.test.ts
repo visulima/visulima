@@ -191,6 +191,38 @@ describe(css, () => {
 
             expect(result).toBe(".test { display: true; }");
         });
+
+        it("should preserve whitespace inside double-quoted CSS strings", () => {
+            expect.assertions(1);
+
+            const result = css`
+                .test::before {
+                    content: "a   b";
+                }
+            `;
+
+            expect(result).toBe(".test::before { content: \"a   b\"; }");
+        });
+
+        it("should preserve whitespace inside single-quoted CSS strings", () => {
+            expect.assertions(1);
+
+            const result = css`
+                .test::after {
+                    content: 'x   y';
+                }
+            `;
+
+            expect(result).toBe(".test::after { content: 'x   y'; }");
+        });
+
+        it("should still collapse whitespace outside of quoted strings", () => {
+            expect.assertions(1);
+
+            const result = css`.a   {   color:    red;   }   .b { content: "keep   me"; }`;
+
+            expect(result).toBe(".a { color: red; } .b { content: \"keep   me\"; }");
+        });
     });
 
     describe("function call with string input", () => {

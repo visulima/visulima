@@ -1,8 +1,8 @@
-import type { Properties } from "csstype";
-
+export type { CSSProperties, FlexibleCSSProperties } from "./css";
 export { default as css } from "./css";
 export { default as escapeHtml } from "./escape-html";
-export { default as html } from "./html";
+export type { RawHtml } from "./html";
+export { default as html, isRawHtml } from "./html";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
 export { escapeCss } from "@std/html/unstable-escape-css";
@@ -10,11 +10,12 @@ export { escapeCss } from "@std/html/unstable-escape-css";
 export { escapeJs } from "@std/html/unstable-escape-js";
 // eslint-disable-next-line import/no-extraneous-dependencies
 export { isValidCustomElementName } from "@std/html/unstable-is-valid-custom-element-name";
-export type { Properties as CSSProperties } from "csstype";
 // eslint-disable-next-line import/no-extraneous-dependencies
 export * from "html-entities";
 // eslint-disable-next-line import/no-extraneous-dependencies
 export { default as htmlTags, voidHtmlTags } from "html-tags";
+// eslint-disable-next-line import/no-extraneous-dependencies
+export { default as isHtml } from "is-html";
 export { default as sanitizeHtml } from "sanitize-html";
 // TODO: Check this tickets
 // - https://github.com/codsen/codsen/issues/84
@@ -30,11 +31,3 @@ export type {
 } from "string-strip-html";
 // eslint-disable-next-line import/no-extraneous-dependencies
 export { stripHtml, defaults as stripHtmlDefaultOptions } from "string-strip-html";
-
-/**
- * Flexible CSS properties type that allows autocomplete for property names
- * while accepting string, number, null, or undefined values.
- */
-export type FlexibleCSSProperties = {
-    [K in keyof Properties]?: Properties[K] | string | number | null | undefined;
-};
