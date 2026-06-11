@@ -4,11 +4,17 @@ import { get, writable } from "svelte/store";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
-import type { FileMeta, UploadResult } from "../react/types";
+import type { FileMeta, HeadersResolver, UploadRestrictions, UploadResult } from "../react/types";
 
 export interface CreateMultipartUploadOptions {
     /** Upload endpoint URL */
     endpoint: string;
+
+    /**
+     * Static or dynamically-resolved headers attached to every request — e.g. an
+     * `Authorization` token for an authenticated endpoint.
+     */
+    headers?: HeadersResolver;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
     /** Callback when upload fails */
@@ -19,6 +25,8 @@ export interface CreateMultipartUploadOptions {
     onStart?: () => void;
     /** Callback when upload completes successfully */
     onSuccess?: (file: UploadResult) => void;
+    /** Client-side upload restrictions, validated before any network request. */
+    restrictions?: UploadRestrictions;
 }
 
 export interface CreateMultipartUploadReturn {
@@ -42,7 +50,7 @@ export interface CreateMultipartUploadReturn {
  * @returns Upload functions and state stores
  */
 export const createMultipartUpload = (options: CreateMultipartUploadOptions): CreateMultipartUploadReturn => {
-    const { endpoint, metadata, onError, onProgress, onStart, onSuccess } = options;
+    const { endpoint, headers, metadata, onError, onProgress, onStart, onSuccess, restrictions } = options;
 
     const progress = writable(0);
     const isUploading = writable(false);
@@ -54,7 +62,9 @@ export const createMultipartUpload = (options: CreateMultipartUploadOptions): Cr
     // Create uploader instance (create once, reuse)
     const uploaderInstance = createMultipartAdapter({
         endpoint,
+        headers,
         metadata,
+        restrictions,
     });
 
     // Subscribe to uploader events

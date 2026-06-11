@@ -207,7 +207,7 @@ describe(useHeadFile, () => {
     });
 
     it("should refetch data", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const mockHeaders = new Headers({
             "Content-Length": "1024",

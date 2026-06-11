@@ -1,7 +1,7 @@
 import type { Readable } from "svelte/store";
 import { derived } from "svelte/store";
 
-import type { UploadMethod, UploadResult } from "../react/types";
+import type { HeadersResolver, UploadMethod, UploadRestrictions, UploadResult } from "../react/types";
 import type { CreateChunkedRestUploadOptions } from "./create-chunked-rest-upload";
 import { createChunkedRestUpload } from "./create-chunked-rest-upload";
 import type { CreateMultipartUploadOptions } from "./create-multipart-upload";
@@ -20,6 +20,12 @@ export interface CreateUploadOptions {
     endpointMultipart?: string;
     /** TUS upload endpoint URL */
     endpointTus?: string;
+
+    /**
+     * Static or dynamically-resolved headers attached to every request — e.g. an
+     * `Authorization` token for an authenticated endpoint.
+     */
+    headers?: HeadersResolver;
     /** Maximum number of retry attempts (TUS and chunked REST only) */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -38,6 +44,8 @@ export interface CreateUploadOptions {
     onStart?: () => void;
     /** Callback when upload completes successfully */
     onSuccess?: (file: UploadResult) => void;
+    /** Client-side upload restrictions, validated before any network request. */
+    restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure (TUS and chunked REST only) */
     retry?: boolean;
     /** File size threshold for auto-selecting TUS (default: 10MB) */
@@ -85,6 +93,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         endpointChunkedRest,
         endpointMultipart,
         endpointTus,
+        headers,
         maxRetries,
         metadata,
         method,
@@ -94,6 +103,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         onResume,
         onStart,
         onSuccess,
+        restrictions,
         retry,
         tusThreshold = DEFAULT_TUS_THRESHOLD,
     } = options;
@@ -130,6 +140,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         chunkedRestOptions = {
             chunkSize,
             endpoint: endpointChunkedRest,
+            headers,
             maxRetries,
             metadata,
             onError,
@@ -138,6 +149,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             onResume,
             onStart,
             onSuccess,
+            restrictions,
             retry,
         };
     }
@@ -147,11 +159,13 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
     if (endpointMultipart) {
         multipartOptions = {
             endpoint: endpointMultipart,
+            headers,
             metadata,
             onError,
             onProgress,
             onStart,
             onSuccess,
+            restrictions,
         };
     }
 
@@ -161,6 +175,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
         tusOptions = {
             chunkSize,
             endpoint: endpointTus,
+            headers,
             maxRetries,
             metadata,
             onError,
@@ -169,6 +184,7 @@ export const createUpload = (options: CreateUploadOptions): CreateUploadReturn =
             onResume,
             onStart,
             onSuccess,
+            restrictions,
             retry,
         };
     }

@@ -43,10 +43,11 @@ export const useGetFile = (options: UseGetFileOptions): UseGetFileReturn => {
 
     const query = useQuery({
         enabled: enabled && !!id,
-        queryFn: async () => {
+        queryFn: async ({ signal }) => {
             const url = buildUrl(endpoint, id, transform);
             const response = await fetch(url, {
                 method: "GET",
+                signal,
             });
 
             if (!response.ok) {

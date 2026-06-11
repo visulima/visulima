@@ -56,9 +56,9 @@ export const useGetFileList = (options: UseGetFileListOptions): UseGetFileListRe
 
     const query = useQuery({
         enabled,
-        queryFn: async (): Promise<FileListResponse> => {
+        queryFn: async ({ signal }): Promise<FileListResponse> => {
             const url = buildUrl(endpoint, "", { limit, page });
-            const data = await fetchJson<FileListResponse | FileMeta[]>(url);
+            const data = await fetchJson<FileListResponse | FileMeta[]>(url, { signal });
 
             // Handle both paginated and non-paginated responses
             if (Array.isArray(data)) {

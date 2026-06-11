@@ -6,7 +6,7 @@ import type { FingerprintFunction } from "../core/fingerprint";
 import { createTusAdapter } from "../core/tus-adapter";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
-import type { UploadResult } from "../react/types";
+import type { HeadersResolver, UploadRestrictions, UploadResult } from "../react/types";
 
 export interface CreateTusUploadOptions {
     /** Chunk size for TUS uploads (default: 1MB) */
@@ -17,6 +17,12 @@ export interface CreateTusUploadOptions {
     endpoint: string;
     /** Customise the resume fingerprint. */
     fingerprint?: FingerprintFunction;
+
+    /**
+     * Static or dynamically-resolved headers attached to every request — e.g. an
+     * `Authorization` token for an authenticated endpoint.
+     */
+    headers?: HeadersResolver;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -33,6 +39,8 @@ export interface CreateTusUploadOptions {
     onStart?: () => void;
     /** Callback when upload completes successfully */
     onSuccess?: (file: UploadResult) => void;
+    /** Client-side upload restrictions, validated before any network request. */
+    restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
     retry?: boolean;
     /** Persistent storage for resume URLs. */
@@ -70,7 +78,7 @@ export interface CreateTusUploadReturn {
  * @returns Upload functions and state stores
  */
 export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } =
+    const { chunkSize, control, endpoint, fingerprint, headers, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, restrictions, retry, urlStorage } =
         options;
 
     const progress = writable(0);
@@ -86,8 +94,10 @@ export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploa
         control,
         endpoint,
         fingerprint,
+        headers,
         maxRetries,
         metadata,
+        restrictions,
         retry,
         urlStorage,
     });
