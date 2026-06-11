@@ -158,7 +158,12 @@ describe(omit, () => {
     it("should traverse arrays of objects with an indexed path", () => {
         expect.assertions(1);
 
-        const input = { users: [{ name: "a", password: "p1" }, { name: "b", password: "p2" }] };
+        const input = {
+            users: [
+                { name: "a", password: "p1" },
+                { name: "b", password: "p2" },
+            ],
+        };
         const result = omit(input, ["users.0.password"]);
 
         expect(result).toStrictEqual({ users: [{ name: "a" }, { name: "b", password: "p2" }] });
@@ -167,7 +172,12 @@ describe(omit, () => {
     it("should traverse arrays of objects with a wildcard path", () => {
         expect.assertions(1);
 
-        const input = { users: [{ name: "a", password: "p1" }, { name: "b", password: "p2" }] };
+        const input = {
+            users: [
+                { name: "a", password: "p1" },
+                { name: "b", password: "p2" },
+            ],
+        };
         const result = omit(input, ["users.*.password"]);
 
         expect(result).toStrictEqual({ users: [{ name: "a" }, { name: "b" }] });
