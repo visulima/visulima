@@ -5,7 +5,6 @@
  * to a plain `Blob`. Re-constructing via the `File` constructor matches the
  * structured-clone behaviour.
  */
-const copyFile = <Value extends File>(file: Value): Value =>
-    new File([file], file.name, { lastModified: file.lastModified, type: file.type }) as Value;
+const copyFile = <Value extends File>(file: Value): Value => new File([file], file.name, { lastModified: file.lastModified, type: file.type }) as Value;
 
 export default copyFile;
