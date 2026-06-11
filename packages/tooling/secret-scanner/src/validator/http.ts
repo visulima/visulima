@@ -266,7 +266,14 @@ export interface HttpValidationInput {
     validation: Record<string, unknown>;
 }
 
-export const runHttpValidation = async ({ allowedHosts, extraVariables, perHostLimiter, secret, signal, validation }: HttpValidationInput): Promise<ValidationStatus> => {
+export const runHttpValidation = async ({
+    allowedHosts,
+    extraVariables,
+    perHostLimiter,
+    secret,
+    signal,
+    validation,
+}: HttpValidationInput): Promise<ValidationStatus> => {
     const content = asObject(validation["content"]);
     const request = asObject(content?.["request"]) as HttpRequestTemplate | undefined;
 

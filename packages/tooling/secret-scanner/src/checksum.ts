@@ -183,6 +183,7 @@ export const checkChecksum = (match: string, rulePattern: string, spec: Checksum
         try {
             regex = ruleRegexToJs(rulePattern);
         } catch {
+            // eslint-disable-next-line unicorn/no-null -- null is the cached "compilation failed" sentinel, distinct from undefined ("not yet cached"); see RULE_REGEX_CACHE type and the regex === null check below
             regex = null;
         }
 

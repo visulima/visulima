@@ -4,14 +4,7 @@ import { resolve } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-    buildBaselineSet,
-    createBaseline,
-    loadBaselineSet,
-    resetBaselineCacheForTests,
-    resolveBaselineSet,
-    writeBaseline,
-} from "../src/baseline";
+import { buildBaselineSet, createBaseline, loadBaselineSet, resetBaselineCacheForTests, resolveBaselineSet, writeBaseline } from "../src/baseline";
 import { fingerprint, legacyFingerprint } from "../src/fingerprint";
 import type { Finding } from "../src/types";
 
