@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Content safety filtering with multi-language banned word detection. Supports 17 languages with word-boundary matching, match position reporting, and both browser and server runtime compatibility.</h3>
+<h3 align="center">Content safety filtering with multi-language banned word detection. Supports 19 languages with word-boundary matching, match position reporting, and both browser and server runtime compatibility.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
@@ -37,7 +37,10 @@
 ### Key Features
 
 - **Multi-Language Support**: 19 languages including English, German, Spanish, French, Italian, Russian, Arabic, Japanese, Korean, Chinese, Hindi, and more
-- **High Performance**: Pre-compiled regex cache for optimal speed (~1-2ms per check)
+- **High Performance**: Map/Set lookups with lazily-built tables and a single-pass CJK matcher — no giant-regex JIT cost
+- **Language Filtering**: Restrict checks to specific languages to avoid cross-language false positives
+- **Built-in Censoring**: One-call `censorText()` masks matches without manual index bookkeeping
+- **Custom Dictionaries & Allowlists**: `createChecker()` for domain-specific words, the Scunthorpe problem, and `category`/`severity` metadata
 - **Precise Position Tracking**: Returns exact indices for highlighting or censoring
 - **Unicode-Aware**: Full support for CJK, RTL scripts, complex scripts, and diacritics
 - **Case-Insensitive**: Matches regardless of capitalization
@@ -108,31 +111,57 @@ function moderateContent(userInput: string) {
 
 ### Text Censoring
 
-Replace banned words with asterisks:
+Mask banned words in a single call:
+
+```typescript
+import { censorText } from "@visulima/content-safety";
+
+console.log(censorText("This is badword text"));
+// "This is ******* text"
+
+// Use a custom mask character
+console.log(censorText("This is badword text", { replacement: "#" }));
+// "This is ####### text"
+```
+
+`censorText` masks overlapping matches once (longest wins), so the output length always equals the input length.
+
+### Restricting Languages
+
+By default every language dictionary is checked, which can cause cross-language false positives
+(e.g. Latin transliterations from the Russian or Arabic lists). Restrict the check to the languages
+you actually support:
 
 ```typescript
 import { checkBannedWords } from "@visulima/content-safety";
 
-function censorText(text: string): string {
-    const result = checkBannedWords(text);
-
-    if (!result.hasBannedWords) {
-        return text;
-    }
-
-    let censored = text;
-    // Process in reverse to maintain indices
-    for (const match of [...result.matches].reverse()) {
-        const replacement = "*".repeat(match.word.length);
-        censored = censored.slice(0, match.startIndex) + replacement + censored.slice(match.endIndex);
-    }
-
-    return censored;
-}
-
-console.log(censorText("This is badword text"));
-// "This is ******* text"
+const result = checkBannedWords("some user text", { languages: ["en"] });
 ```
+
+### Custom Dictionaries, Allowlists & Severity
+
+`BANNED_WORDS` is frozen — mutating it has no effect. Use `createChecker` to match against your own
+dictionary, allowlist domain-specific terms (the Scunthorpe problem), or attach `category`/`severity`
+metadata that is surfaced on every match:
+
+```typescript
+import { createChecker } from "@visulima/content-safety";
+
+const checker = createChecker({
+    words: {
+        en: [{ word: "frobnicate", category: "spam", severity: 1 }],
+    },
+    allowlist: ["scunthorpe"],
+});
+
+const result = checker.check("please do not frobnicate");
+console.log(result.matches[0]?.category); // "spam"
+console.log(result.matches[0]?.severity); // 1
+
+console.log(checker.censor("frobnicate now")); // "********** now"
+```
+
+Lookup tables are built lazily on first use, so creating a checker is cheap.
 
 ### Highlighting Matches
 
@@ -222,13 +251,14 @@ console.log(BANNED_WORDS.en.length);
 
 ## API
 
-### checkBannedWords(text: string): BannedWordsResult
+### checkBannedWords(text: string, options?: CheckOptions): BannedWordsResult
 
-Checks text for banned words across all configured languages.
+Checks text for banned words across the configured languages.
 
 **Parameters:**
 
 - `text` (string): The text to check
+- `options` (`CheckOptions`, optional): `{ languages?: string[] }` — restrict the check to specific language codes
 
 **Returns:** `BannedWordsResult`
 
@@ -243,6 +273,37 @@ interface BannedWordMatch {
     startIndex: number; // Start position (inclusive)
     endIndex: number; // End position (exclusive)
     language: string; // ISO 639-1 language code
+    category?: string; // Optional moderation category (custom dictionaries)
+    severity?: number; // Optional severity score (custom dictionaries)
+}
+```
+
+### censorText(text: string, options?: CensorOptions): string
+
+Masks banned words in `text`. Returns the input unchanged when nothing matches.
+
+**Parameters:**
+
+- `text` (string): The text to censor
+- `options` (`CensorOptions`, optional): `{ replacement?: string; languages?: string[] }` — mask character (defaults to `"*"`) and optional language restriction
+
+### createChecker(options?: CreateCheckerOptions): Checker
+
+Creates a reusable checker bound to a custom dictionary and/or allowlist.
+
+**Parameters:**
+
+- `options` (`CreateCheckerOptions`, optional):
+    - `words?: BannedWordDictionary` — `Record<string, (string | BannedWordEntry)[]>`; defaults to the built-in lists
+    - `allowlist?: string[]` — words that are never reported (case-insensitive)
+
+**Returns:** `Checker` with `check(text, options?)` and `censor(text, options?)` methods.
+
+```typescript
+interface BannedWordEntry {
+    word: string;
+    category?: string;
+    severity?: number;
 }
 ```
 
