@@ -81,7 +81,6 @@ const walk = (value: unknown, omittedKeys: ReadonlyArray<string[]>, currentPath:
  * @param omittedKeys The omitted paths, already split into segment arrays.
  * @returns A new object/array without the omitted props.
  */
-const recursiveOmit = <T extends { [key in string]: unknown }>(object: T, omittedKeys: ReadonlyArray<string[]>): T =>
-    walk(object, omittedKeys, []) as T;
+const recursiveOmit = <T extends { [key in string]: unknown }>(object: T, omittedKeys: ReadonlyArray<string[]>): T => walk(object, omittedKeys, []) as T;
 
 export default recursiveOmit;

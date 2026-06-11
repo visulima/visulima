@@ -76,7 +76,6 @@ const walk = (value: unknown, pickedKeys: ReadonlyArray<string[]>, currentPath: 
  * @param pickedKeys The picked paths, already split into segment arrays.
  * @returns A new object/array with only the picked props.
  */
-const recursivePick = <T extends { [key in string]: unknown }>(object: T, pickedKeys: ReadonlyArray<string[]>): T =>
-    walk(object, pickedKeys, []) as T;
+const recursivePick = <T extends { [key in string]: unknown }>(object: T, pickedKeys: ReadonlyArray<string[]>): T => walk(object, pickedKeys, []) as T;
 
 export default recursivePick;
