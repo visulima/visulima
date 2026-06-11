@@ -40,8 +40,11 @@
 - Anonymize specific categories in a text, including emails, monetary values, organizations, people, and phone numbers and more.
 - Customizable anonymization: Specify which categories to anonymize and which to exclude.
 - Built-in compatibility with nlp NER - compromise.
-- Does not modify input objects
+- Never mutates the input (circular references are tracked with a `WeakMap`, not by stamping marker keys onto your objects), so frozen/sealed inputs are safe
 - Performs a deep copy of the input object
+- Partial masking via censor functions (e.g. keep the last 4 digits of a card)
+- Remove keys entirely with `remove: true`
+- Compile rules once with `createRedactor()` for hot paths (loggers)
 - Handles circular references
 - Filters valid JSON strings
 - Filters valid and malformed URL query params
@@ -90,6 +93,26 @@
     - secret
 - TypeScript support
 - Fast and powerful, see the [benchmarks](__bench__/README.md)
+
+> [!WARNING]
+> The default rule set (`standardRules`) is intentionally aggressive. Several rules match
+> plain numeric/prose data and **will** mangle ordinary values — for example `bankacc`
+> (`\b\d{10,12}\b`), `id`/`routing` (`\b\d{9}\b`), `zip_code` (`\b[0-9]{5}\b`), weekday names
+> (`monday`, ...) and relative dates (`today`, ...). For most use cases prefer composing only
+> the themed subsets you need, or use `exclude` to drop the noisy groups:
+>
+> ```typescript
+> import { redact, credentialRules, piiRules, dateTimeRules, standardRules } from "@visulima/redact";
+>
+> // Only credentials/secrets (safest):
+> redact(input, [...credentialRules]);
+>
+> // Credentials + PII, but not date/time matching:
+> redact(input, [...credentialRules, ...piiRules]);
+>
+> // Full default set minus the noisiest rules:
+> redact(input, standardRules, { exclude: ["bankacc", "zip_code", "id", "routing", "date"] });
+> ```
 
 ## Install
 
@@ -141,6 +164,47 @@ console.log(result);
 //        password: "<USER.PASSWORD>",
 //    },
 //}
+```
+
+### Partial masking with a censor function
+
+A rule's `replacement` may be a function `(value, path) => newValue`. Use it to keep part of
+the value — e.g. the last four digits of a card, or mask the local part of an email:
+
+```typescript
+import { redact } from "@visulima/redact";
+
+redact({ card: "4111111111111111" }, [
+    { key: "card", replacement: (value) => `****${String(value).slice(-4)}` },
+]);
+// => { card: "****1111" }
+```
+
+The same works for `pattern`-based string rules (the matched substring is passed as `value`).
+
+### Removing keys
+
+Set `remove: true` to delete a matching key instead of replacing it. Works on objects and `Map`s,
+including nested and dotted-path keys:
+
+```typescript
+redact({ keep: 1, secret: "x" }, [{ key: "secret", remove: true }]);
+// => { keep: 1 }
+```
+
+### Reusable redactor (hot paths)
+
+`createRedactor(rules, options?)` compiles the rules once and returns a function you can call
+repeatedly — ideal for loggers, where it avoids re-lowercasing keys and re-compiling patterns
+on every call:
+
+```typescript
+import { createRedactor, standardRules } from "@visulima/redact";
+
+const scrub = createRedactor(standardRules);
+
+logger.info(scrub(payload));
+logger.info(scrub(anotherPayload));
 ```
 
 - stringAnonymize(input, rules, options)
