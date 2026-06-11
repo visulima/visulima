@@ -377,7 +377,10 @@ const execute = async ({ argument, options, visConfig, workspaceRoot }: Toolbox<
         }
     }
 
-    const baselineFullPath = scanOptions.baseline ?? join(root, DEFAULT_BASELINE);
+    // `ScanOptions.baseline` also accepts an inline Finding[]/fingerprint Set, but this
+    // command only resolves a baseline file path (see resolveScanOptions), so narrow to
+    // the string form and fall back to the default path otherwise.
+    const baselineFullPath = typeof scanOptions.baseline === "string" ? scanOptions.baseline : join(root, DEFAULT_BASELINE);
     const showDiff = !flags.quiet && isAccessibleSync(baselineFullPath);
 
     if (flags.updateBaseline) {

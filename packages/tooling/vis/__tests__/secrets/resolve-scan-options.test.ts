@@ -63,4 +63,23 @@ describe("resolveScanOptions presets shorthand", () => {
 
         expect(opts.rules?.enable).toBeUndefined();
     });
+
+    // `ScanOptions.baseline` also accepts an inline Finding[]/fingerprint Set, but the secrets
+    // command resolves it to an absolute file path only — the handler relies on that to narrow
+    // `scanOptions.baseline` to a string before using it as a path.
+    it("resolves `baseline` to an absolute string path from the flag", () => {
+        expect.assertions(1);
+
+        const opts = resolveScanOptions({ baseline: ".secrets-baseline.json" }, undefined, ROOT);
+
+        expect(opts.baseline).toBe("/workspace/.secrets-baseline.json");
+    });
+
+    it("leaves `baseline` undefined (never a non-string value) when no path is configured", () => {
+        expect.assertions(1);
+
+        const opts = resolveScanOptions(NO_FLAGS, undefined, ROOT);
+
+        expect(opts.baseline).toBeUndefined();
+    });
 });
