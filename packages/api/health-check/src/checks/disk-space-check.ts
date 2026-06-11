@@ -46,9 +46,7 @@ const diskSpaceCheck
                     displayName: `${DISPLAY_NAME} ${path}`,
                     health: {
                         healthy,
-                        message: healthy
-                            ? `${DISPLAY_NAME} ${path} passed.`
-                            : `Free space ${free} bytes is below limit ${limit} bytes`,
+                        message: healthy ? `${DISPLAY_NAME} ${path} passed.` : `Free space ${free} bytes is below limit ${limit} bytes`,
                         timestamp: new Date().toISOString(),
                     },
                     meta: {

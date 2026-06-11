@@ -147,7 +147,9 @@ class Healthcheck implements HealthcheckInterface {
 
         const report: HealthReport = {};
 
-        const services = Object.keys(this.healthCheckers).filter((service) => type === undefined || (this.healthCheckers[service] as RegisteredChecker).types.has(type));
+        const services = Object.keys(this.healthCheckers).filter(
+            (service) => type === undefined || (this.healthCheckers[service] as RegisteredChecker).types.has(type),
+        );
 
         await Promise.all(services.map(async (service) => await this.invokeChecker(service, report)));
 

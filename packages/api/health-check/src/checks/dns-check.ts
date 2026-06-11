@@ -14,42 +14,27 @@ interface DnsOptions extends Options {
 /**
  * Register the `dns` checker to ensure that a domain is reachable.
  */
-const dnsCheck
-    = (host: string, expectedAddresses?: string[], options?: DnsOptions): Checker => {
-        const { family = "all", hints, ...config } = options ?? {};
+const dnsCheck = (host: string, expectedAddresses?: string[], options?: DnsOptions): Checker => {
+    const { family = "all", hints, ...config } = options ?? {};
 
-        const cacheable = new CacheableLookup(config);
+    const cacheable = new CacheableLookup(config);
 
-        return async () => {
-            try {
-                const meta: EntryObject | EntryObject[] = await cacheable.lookupAsync(normalizeHost(host), {
-                    hints,
-                    ...family === "all" ? { all: true } : { family },
-                } as LookupOptions);
+    return async () => {
+        try {
+            const meta = (await cacheable.lookupAsync(normalizeHost(host), {
+                hints,
+                ...family === "all" ? { all: true } : { family },
+            } as LookupOptions)) as EntryObject | ReadonlyArray<EntryObject>;
 
-                const resolvedAddresses = Array.isArray(meta) ? meta.map((entry) => entry.address) : [meta.address];
+            const resolvedAddresses: string[] = Array.isArray(meta) ? meta.map((entry: EntryObject) => entry.address) : [(meta as EntryObject).address];
 
-                if (Array.isArray(expectedAddresses) && !resolvedAddresses.some((address) => expectedAddresses.includes(address))) {
-                    return {
-                        displayName: `${DISPLAY_NAME} ${host}`,
-                        health: {
-                            healthy: false,
-
-                            message: `${DISPLAY_NAME} ${host} returned address ${resolvedAddresses.join(", ")} instead of ${expectedAddresses.join(", ")}.`,
-                            timestamp: new Date().toISOString(),
-                        },
-                        meta: {
-                            addresses: meta,
-                            host,
-                        },
-                    };
-                }
-
+            if (Array.isArray(expectedAddresses) && !resolvedAddresses.some((address) => expectedAddresses.includes(address))) {
                 return {
                     displayName: `${DISPLAY_NAME} ${host}`,
                     health: {
-                        healthy: true,
-                        message: `${DISPLAY_NAME} ${host} were resolved.`,
+                        healthy: false,
+
+                        message: `${DISPLAY_NAME} ${host} returned address ${resolvedAddresses.join(", ")} instead of ${expectedAddresses.join(", ")}.`,
                         timestamp: new Date().toISOString(),
                     },
                     meta: {
@@ -57,20 +42,34 @@ const dnsCheck
                         host,
                     },
                 };
-            } catch (error) {
-                return {
-                    displayName: `${DISPLAY_NAME} ${host}`,
-                    health: {
-                        healthy: false,
-                        message: (error as Error).message,
-                        timestamp: new Date().toISOString(),
-                    },
-                    meta: {
-                        host,
-                    },
-                };
             }
-        };
+
+            return {
+                displayName: `${DISPLAY_NAME} ${host}`,
+                health: {
+                    healthy: true,
+                    message: `${DISPLAY_NAME} ${host} were resolved.`,
+                    timestamp: new Date().toISOString(),
+                },
+                meta: {
+                    addresses: meta,
+                    host,
+                },
+            };
+        } catch (error) {
+            return {
+                displayName: `${DISPLAY_NAME} ${host}`,
+                health: {
+                    healthy: false,
+                    message: (error as Error).message,
+                    timestamp: new Date().toISOString(),
+                },
+                meta: {
+                    host,
+                },
+            };
+        }
     };
+};
 
 export default dnsCheck;
