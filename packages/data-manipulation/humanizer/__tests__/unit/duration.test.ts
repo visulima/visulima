@@ -529,6 +529,21 @@ describe(parseDuration, () => {
         expect(parseDuration("1.000,5 s", { language: deDurationLanguage })).toBe(1000.5 * 1000);
     });
 
+    it("should convert every comma-decimal value with a localized separator (regression)", () => {
+        expect.assertions(2);
+
+        // Previously only the first comma was converted, so the second value was
+        // treated as inter-match noise (and silently dropped instead of summed).
+        expect(parseDuration("1,5 stunden 2,5 minuten", { language: deDurationLanguage })).toBe(1.5 * 3_600_000 + 2.5 * 60_000);
+        expect(parseDuration("0,5 tage 0,25 stunden", { language: deDurationLanguage })).toBe(0.5 * 86_400_000 + 0.25 * 3_600_000);
+    });
+
+    it("should reject non-whitespace noise between two matched units", () => {
+        expect.assertions(1);
+
+        expect(parseDuration("1h garbage 2m")).toBeUndefined();
+    });
+
     it("should return undefined for a numeric string when the default unit is unknown", () => {
         expect.assertions(1);
 
@@ -541,6 +556,31 @@ describe(parseDuration, () => {
         expect(parseDuration("PT1H")).toBe(3_600_000);
         expect(parseDuration("PT30M")).toBe(30 * 60_000);
         expect(parseDuration("PT1H30M")).toBe(3_600_000 + 30 * 60_000);
+    });
+
+    it("should parse full ISO-8601 durations with a date part", () => {
+        expect.assertions(4);
+
+        expect(parseDuration("P3DT4H")).toBe(3 * 86_400_000 + 4 * 3_600_000);
+        expect(parseDuration("P1W")).toBe(604_800_000);
+        expect(parseDuration("P1Y2M")).toBe(31_556_952_000 + 2 * 2_629_746_000);
+        expect(parseDuration("P1Y2M3W4DT5H6M7S")).toBe(
+            31_556_952_000 + 2 * 2_629_746_000 + 3 * 604_800_000 + 4 * 86_400_000 + 5 * 3_600_000 + 6 * 60_000 + 7000,
+        );
+    });
+
+    it("should parse fractional ISO-8601 seconds", () => {
+        expect.assertions(2);
+
+        expect(parseDuration("PT1.5S")).toBe(1500);
+        expect(parseDuration("PT0,5S")).toBe(500);
+    });
+
+    it("should return undefined for a bare ISO-8601 prefix with no components", () => {
+        expect.assertions(2);
+
+        expect(parseDuration("P")).toBeUndefined();
+        expect(parseDuration("PT")).toBeUndefined();
     });
 
     it("should skip a matched unit whose lower-cased form is not in the unit map", () => {

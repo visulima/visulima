@@ -70,9 +70,24 @@ console.log(formatBytes(123412341, { decimals: 2, unit: "KB" })); // "120,519.86
 // Use a long unit
 console.log(formatBytes(123412341, { decimals: 2, unit: "GB", long: true })); // "0.11 Gigabytes"
 
-// Use a differnet base
+// Use a different base
 console.log(formatBytes(123412341, { decimals: 2, base: 10 })); // "123.41 MB"
+
+// Format network throughput in bits (1 byte = 8 bits)
+console.log(formatBytes(1_500_000, { bits: true, base: 10, decimals: 1 })); // "12.0 Mbit"
+
+// Always show the sign for deltas/diff UIs (zero is never signed)
+console.log(formatBytes(1_200_000, { signed: true, base: 10, decimals: 1 })); // "+1.2 MB"
 ```
+
+> **Why does `KB` mean `1024`?** The default `base` is `2` (binary), so the SI
+> short units (`KB`, `MB`, …) are scaled by 1024 rather than 1000 — i.e.
+> `parseBytes("1 KB")` returns `1024`. Pass `base: 10` for strict SI (1000), or
+> use the IEC units (`units: "iec"`, e.g. `KiB`) for unambiguous binary prefixes.
+>
+> Note on the `parseBytes` error contract: it **throws** a `TypeError` for
+> non-string input or strings longer than 100 characters, but **returns `NaN`**
+> for strings it cannot parse (malformed numbers or unknown units).
 
 #### Supported locales
 
@@ -701,13 +716,59 @@ console.log(parseDuration("1:25:05"));
 console.log(parseDuration("15:30"));
 // => 930000
 
-// Parsing ISO 8601 duration format (PT#H#M#S)
+// Parsing ISO 8601 durations — full grammar incl. date part, week form and
+// fractional values (e.g. YouTube / schema.org / OpenAPI durations)
 console.log(parseDuration("PT2H30M5S"));
 // => 9005000
+console.log(parseDuration("P3DT4H")); // 3 days + 4 hours
+// => 273600000
+console.log(parseDuration("P1Y2M")); // 1 year + 2 months
+// => 36816444000
+console.log(parseDuration("P2W")); // 2 weeks
+// => 1209600000
+console.log(parseDuration("PT1.5S")); // fractional seconds
+// => 1500
 
 // Parsing just numbers (uses defaultUnit)
 console.log(parseDuration("1500")); // Default unit is 'ms'
 // => 1500
+```
+
+#### Creating a preconfigured instance with `humanizer()`
+
+Instead of passing the same options (language, units, …) to every call, create a
+preconfigured instance:
+
+```ts
+import { humanizer } from "@visulima/humanizer";
+import { durationLanguage as es } from "@visulima/humanizer/language/es";
+
+const h = humanizer({ language: es, units: ["h", "m"] });
+
+h.duration(3_600_000 + 30 * 60_000);
+// => "1 hora, 30 minutos"
+
+h.parseDuration("2 horas");
+// => 7200000
+
+// Per-call options are merged over the instance defaults.
+h.duration(90_000, { units: ["s"] });
+// => "90 segundos"
+```
+
+#### Loading a language pack by code at runtime
+
+Language packs are normally imported as objects (`@visulima/humanizer/language/de`),
+which keeps the package tree-shakeable. When the locale is only known at runtime,
+use `loadDurationLanguage`, which lazily `import()`s the matching subpath:
+
+```ts
+import { duration, loadDurationLanguage } from "@visulima/humanizer";
+
+const de = await loadDurationLanguage("de");
+
+duration(3_600_000, { language: de });
+// => "1 Stunde"
 ```
 
 #### Options for `duration`

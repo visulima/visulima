@@ -18,7 +18,13 @@ interface BytesOptions {
     units?: "iec_octet" | "iec" | "metric_octet" | "metric";
 }
 
-export type IntlLocale
+/**
+ * A BCP-47 locale tag. The large list of named tags below preserves editor
+ * autocomplete for well-known locales while `(string & {})` keeps the union
+ * open so valid tags like `"de-DE"` are still accepted (and the published
+ * `.d.ts` does not force the whole closed union on every consumer).
+ */
+export type KnownIntlLocale
     = | "af-NA"
         | "af"
         | "agq"
@@ -591,6 +597,10 @@ export type IntlLocale
         | "zh"
         | "zu";
 
+// `Record<never, never> & string` keeps the union open (accepting any BCP-47
+// tag) while preserving autocomplete for the known locales above.
+export type IntlLocale = KnownIntlLocale | (Record<never, never> & string);
+
 export type DurationUnit = string | ((unitCount: number) => string);
 
 export type DurationUnitName = "d" | "h" | "m" | "mo" | "ms" | "s" | "w" | "y";
@@ -654,7 +664,6 @@ export interface DurationOptions {
     decimal?: string;
     delimiter?: string;
     digitReplacements?: DurationDigitReplacements;
-    fallbacks?: string[];
     language?: DurationLanguage;
     largest?: number;
     maxDecimalPoints?: number;
@@ -672,8 +681,20 @@ export interface DurationPiece {
 }
 
 export type ParseByteOptions = BytesOptions;
-export interface FormateByteOptions<ByteSize>
+
+/**
+ * Options for the `formatBytes` function.
+ */
+export interface FormatBytesOptions<ByteSize>
     extends BytesOptions, Omit<Intl.NumberFormatOptions, "currency" | "currencyDisplay" | "currencySign" | "style" | "unit" | "unitDisplay"> {
+    /**
+     * Format the value in bits instead of bytes (1 byte = 8 bits), emitting
+     * bit-suffixed unit labels such as `"12.5 Mbit"`. Useful for network
+     * throughput. Mirrors `pretty-bytes`/`filesize`'s `bits` option.
+     * @default false
+     */
+    bits?: boolean;
+
     /**
      * Specify the number of decimals to include in the output.
      *
@@ -689,6 +710,13 @@ export interface FormateByteOptions<ByteSize>
     long?: boolean;
 
     /**
+     * Always display the sign for the value, prefixing positive numbers with
+     * `+` (e.g. `"+1.2 MB"`). Useful for deltas/diff UIs. Zero is never signed.
+     * @default false
+     */
+    signed?: boolean;
+
+    /**
      * Whether to include a space between the number and the unit.
      * @default true
      */
@@ -701,6 +729,12 @@ export interface FormateByteOptions<ByteSize>
      */
     unit?: ByteSize;
 }
+
+/**
+ * @deprecated Misspelled name kept for backwards compatibility. Use
+ * {@link FormatBytesOptions} instead. This alias will be removed in v3 stable.
+ */
+export type FormateByteOptions<ByteSize> = FormatBytesOptions<ByteSize>;
 
 /**
  * Options for the parseDuration function.
