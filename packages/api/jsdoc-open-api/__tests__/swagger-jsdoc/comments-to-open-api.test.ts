@@ -460,4 +460,45 @@ describe(commentsToOpenApi, () => {
 
         expect(() => commentsToOpenApi(fileContents, true)).toThrow("Imbedded within:");
     });
+
+    it("skips ordinary code comments that carry no @openapi/@swagger/@asyncapi tag", () => {
+        expect.assertions(1);
+
+        const fileContents = `
+/**
+ * A normal function doc.
+ * @param {string} name
+ * @returns {void}
+ */
+function greet(name) {}
+`;
+
+        // Previously these emitted empty \`{ loc, spec: {} }\` entries; now they are filtered out.
+        expect(commentsToOpenApi(fileContents)).toStrictEqual([]);
+    });
+
+    it("only processes the comment blocks that contain a swagger tag", () => {
+        expect.assertions(1);
+
+        const fileContents = `
+/**
+ * Just a regular comment.
+ * @param {number} id
+ */
+const ignored = true;
+
+/**
+ * @swagger
+ * /ping:
+ *   get:
+ *     responses:
+ *       '200':
+ *         description: pong
+ */
+`;
+
+        const result = commentsToOpenApi(fileContents);
+
+        expect(result).toHaveLength(1);
+    });
 });

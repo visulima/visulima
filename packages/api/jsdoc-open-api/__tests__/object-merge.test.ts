@@ -151,6 +151,46 @@ describe(objectMerge, () => {
         expect(a).toStrictEqual(expected);
     });
 
+    it("ignores __proto__ keys instead of polluting the prototype", () => {
+        expect.assertions(3);
+
+        const a: Record<string, unknown> = {};
+        // Build `b` with a real own `__proto__` key (as the `yaml` parser surfaces it).
+        const b: Record<string, unknown> = {};
+
+        Object.defineProperty(b, "__proto__", {
+            configurable: true,
+            enumerable: true,
+            value: { polluted: true },
+            writable: true,
+        });
+
+        objectMerge(a, b);
+
+        expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+        expect(Object.prototype).not.toHaveProperty("polluted");
+        expect(Object.getPrototypeOf(a)).toBe(Object.prototype);
+    });
+
+    it("ignores forbidden sub-keys during deep merge", () => {
+        expect.assertions(2);
+
+        const a: Record<string, Record<string, unknown>> = { components: { schemas: {} } };
+        const b: Record<string, Record<string, unknown>> = { components: {} };
+
+        Object.defineProperty(b.components, "constructor", {
+            configurable: true,
+            enumerable: true,
+            value: { hacked: true },
+            writable: true,
+        });
+
+        objectMerge(a, b);
+
+        expect((a.components as Record<string, unknown>).hacked).toBeUndefined();
+        expect(a.components.constructor).toBe(Object);
+    });
+
     it("overrides 4 deep", () => {
         expect.assertions(1);
 

@@ -11,6 +11,10 @@ import type {
 } from "./exported";
 import objectMerge from "./util/object-merge";
 
+// Keys that must never be assigned onto the spec object — they would corrupt
+// the prototype chain rather than add a spec field.
+const FORBIDDEN_TOP_LEVEL_KEYS = new Set(["__proto__", "constructor", "prototype"]);
+
 class SpecBuilder implements OpenApiObject {
     public components?: ComponentsObject;
 
@@ -66,6 +70,10 @@ class SpecBuilder implements OpenApiObject {
 
             // overwrite everything else:
             Object.entries(rest).forEach(([key, value]) => {
+                if (FORBIDDEN_TOP_LEVEL_KEYS.has(key)) {
+                    return;
+                }
+
                 // @ts-expect-error dynamic key assignment across heterogeneous OpenAPI fields
                 this[key as keyof OpenApiObject] = value;
             });

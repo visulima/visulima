@@ -45,7 +45,14 @@ describe("commander generate command", () => {
 
         expect(sub).toBeDefined();
         expect(sub?.description()).toBe("Generates OpenAPI (Swagger) documentation from JSDoc's");
-        expect(sub?.options.map((option) => option.long)).toStrictEqual(["--config", "--output", "--verbose", "--very-verbose"]);
+        expect(sub?.options.map((option) => option.long)).toStrictEqual([
+            "--config",
+            "--definition",
+            "--output",
+            "--watch",
+            "--verbose",
+            "--very-verbose",
+        ]);
     });
 
     it("forwards parsed paths and options to the base generate command", async () => {

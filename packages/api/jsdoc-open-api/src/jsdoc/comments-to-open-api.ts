@@ -1,4 +1,4 @@
-import type { Spec } from "comment-parser";
+import type { Block, Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
 import { mergeWith } from "es-toolkit";
 
@@ -365,8 +365,10 @@ const tagsToObjects = (tags: Spec[], _verbose?: boolean) =>
         }
     });
 
-const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: number; spec: OpenApiObject }[] => {
-    const jsDocumentComments = parseComments(fileContents, { spacing: "preserve" });
+const commentsToOpenApi = (fileContents: string, verbose?: boolean, comments?: Block[]): { loc: number; spec: OpenApiObject }[] => {
+    // Reuse already-parsed blocks when provided (see `parseFileMulti`) to avoid a
+    // redundant `comment-parser` pass.
+    const jsDocumentComments = comments ?? parseComments(fileContents, { spacing: "preserve" });
 
     return jsDocumentComments
         .filter((comment) => OPEN_API_REGEX.test(comment.description.trim()))

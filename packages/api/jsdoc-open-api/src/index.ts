@@ -1,7 +1,11 @@
 export type { BaseDefinition, OpenApiObject } from "./exported";
 export { default as jsDocumentCommentsToOpenApi } from "./jsdoc/comments-to-open-api";
-export { default as parseFile } from "./parse-file";
+export { default as DEFAULT_OPTIONS } from "./options";
+export type { CommentsToOpenApi } from "./parse-file";
+export { default as parseFile, parseFileMulti } from "./parse-file";
 export { default as SpecBuilder } from "./spec-builder";
 export { default as swaggerJsDocumentCommentsToOpenApi } from "./swagger-jsdoc/comments-to-open-api";
+export { default as loadDefinition } from "./util/load-definition";
 export { default as yamlLoc } from "./util/yaml-loc";
+export { default as validate } from "./validate";
 export { default as SwaggerCompilerPlugin } from "./webpack/swagger-compiler-plugin";
