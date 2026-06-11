@@ -24,9 +24,9 @@ const operatorsAssociation: {
 const isDateString = (value: string) => /^\d{4}-[01]\d-[0-3]\d(?:T[0-2](?:\d:[0-5]){2}\d(?:\.\d+)?(?:Z|[+-][0-2]\d(?::?[0-5]\d)?)?)?$/g.test(value);
 
 // eslint-disable-next-line sonarjs/function-return-type -- intentionally returns Date | null | original primitive depending on input
-const getSearchValue = (originalValue: unknown): SearchCondition => {
-    if (isDateString(originalValue as string)) {
-        return new Date(originalValue as string);
+const getSearchValue = (originalValue: unknown, coerceDates: boolean): SearchCondition => {
+    if (coerceDates && typeof originalValue === "string" && isDateString(originalValue)) {
+        return new Date(originalValue);
     }
 
     if (typeof originalValue === "string" && originalValue === "$isnull") {
@@ -64,6 +64,7 @@ const parseRelation = (
     key: string,
     parsed: PrismaWhereField,
     manyRelations: string[],
+    coerceDates: boolean,
 ) => {
     // Reverse the keys so that we can format our object by nesting
     const fields = key.split(".").toReversed();
@@ -74,7 +75,7 @@ const parseRelation = (
         // If we iterate over the property name, which is index 0, we parse it like a normal field
         if (index === 0) {
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
-            basicParse(value, field, formatFields as PrismaWhereField, manyRelations);
+            basicParse(value, field, formatFields as PrismaWhereField, manyRelations, coerceDates);
             // Else we format the relation filter in the prisma way
         } else {
             formatFields = {
@@ -100,14 +101,14 @@ const parseRelation = (
     };
 };
 
-const parseObjectCombination = (object: Condition, manyRelations: string[]): PrismaFieldFilter => {
+const parseObjectCombination = (object: Condition, manyRelations: string[], coerceDates: boolean): PrismaFieldFilter => {
     const parsed: PrismaFieldFilter = {};
 
     Object.keys(object).forEach((key) => {
         const value = object[key];
 
         if (isRelation(key, manyRelations)) {
-            parseRelation(value as WhereCondition, key, parsed, manyRelations);
+            parseRelation(value as WhereCondition, key, parsed, manyRelations, coerceDates);
         } else if (isPrimitive(value)) {
             parsed[key] = value;
         } else if (isObject(value)) {
@@ -122,16 +123,22 @@ const parseObjectCombination = (object: Condition, manyRelations: string[]): Pri
     return parsed;
 };
 
-const basicParse = (value: Condition | Date | WhereCondition | boolean | number | string, key: string, parsed: PrismaWhereField, manyRelations: string[]) => {
+const basicParse = (
+    value: Condition | Date | WhereCondition | boolean | number | string,
+    key: string,
+    parsed: PrismaWhereField,
+    manyRelations: string[],
+    coerceDates: boolean,
+) => {
     if (isPrimitive(value)) {
         // eslint-disable-next-line no-param-reassign
-        parsed[key] = getSearchValue(value);
+        parsed[key] = getSearchValue(value, coerceDates);
     } else {
         switch (key) {
             case "$and": {
                 if (isObject(value)) {
                     // eslint-disable-next-line no-param-reassign
-                    parsed.AND = parseObjectCombination(value as Condition, manyRelations);
+                    parsed.AND = parseObjectCombination(value as Condition, manyRelations, coerceDates);
                 }
 
                 break;
@@ -139,7 +146,7 @@ const basicParse = (value: Condition | Date | WhereCondition | boolean | number 
             case "$not": {
                 if (isObject(value)) {
                     // eslint-disable-next-line no-param-reassign
-                    parsed.NOT = parseObjectCombination(value as Condition, manyRelations);
+                    parsed.NOT = parseObjectCombination(value as Condition, manyRelations, coerceDates);
                 }
 
                 break;
@@ -147,7 +154,7 @@ const basicParse = (value: Condition | Date | WhereCondition | boolean | number 
             case "$or": {
                 if (isObject(value)) {
                     // eslint-disable-next-line no-param-reassign
-                    parsed.OR = parseObjectCombination(value as Condition, manyRelations);
+                    parsed.OR = parseObjectCombination(value as Condition, manyRelations, coerceDates);
                 }
 
                 break;
@@ -161,7 +168,19 @@ const basicParse = (value: Condition | Date | WhereCondition | boolean | number 
     }
 };
 
-const parsePrismaWhere = (where: WhereField, manyRelations: string[]): PrismaWhereField => {
+/**
+ * Convert the package's `where` filter object into a Prisma `where` clause.
+ *
+ * When `coerceDates` is `true` (the default, for backwards compatibility) ISO
+ * date-looking strings are converted to `Date` instances so they match Prisma
+ * `DateTime` columns. Set it to `false` (via the adapter's
+ * `coerceWhereDates: false` option) to keep them as strings — required when
+ * filtering a *string* column whose values happen to look like dates.
+ * @param where the parsed `where` query object.
+ * @param manyRelations relation paths that should be treated as `some` filters.
+ * @param coerceDates whether to coerce ISO date-looking strings to `Date`.
+ */
+const parsePrismaWhere = (where: WhereField, manyRelations: string[], coerceDates = true): PrismaWhereField => {
     const parsed: PrismaWhereField = {};
 
     Object.keys(where).forEach((key) => {
@@ -191,9 +210,9 @@ const parsePrismaWhere = (where: WhereField, manyRelations: string[]): PrismaWhe
          * ```
          */
         if (isRelation(key, manyRelations)) {
-            parseRelation(value as WhereCondition, key, parsed, manyRelations);
+            parseRelation(value as WhereCondition, key, parsed, manyRelations, coerceDates);
         } else {
-            basicParse(value as Condition, key, parsed, manyRelations);
+            basicParse(value as Condition, key, parsed, manyRelations, coerceDates);
         }
     });
 

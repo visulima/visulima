@@ -36,6 +36,13 @@
 
 ## Features
 
+- Auto-generated RESTful CRUD routes (`list`, `read`, `create`, `update`, `delete`) from your Prisma models.
+- Rich query syntax over the URL: `select`, `include`, `where` (with `$eq`/`$cont`/`$in`/… operators), `orderBy`, `limit`/`page` pagination, `cursor`, `distinct`.
+- Framework-agnostic core (`baseHandler` + the `Adapter` interface) with a ready-made Prisma adapter and Next.js (`nodeHandler`/`edgeHandler`) bindings.
+- OpenAPI 3 generation from your Prisma DMMF via `modelsToOpenApi`.
+- Built-in guardrails: per-model field allowlists (`writableFields`/`selectableFields`/`filterableFields`/`includableRelations`/`readableFields`), body validation schemas (`createSchema`/`updateSchema`, e.g. zod), an `onRequest` access hook, and a `maxPerPage` cap.
+- Prisma 3, 4, 5 and 6 support.
+
 ## Installation
 
 ```sh
@@ -54,26 +61,58 @@ pnpm add @visulima/crud prisma @prisma/client
 
 To use the `@visulima/crud` package, you need to have a [Prisma](https://www.prisma.io/) schema.
 
+> **Important:** build the handler **once** (at module scope), not inside the request callback.
+> `nodeHandler`/`edgeHandler` are async factories that run `adapter.init()`, map the DMMF and open
+> the connection pool — doing that per request is slow. Reuse the returned handler across requests.
+
 ```ts
 // pages/api/[...crud].ts
 
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
+import { Prisma } from "@prisma/client";
+import type { User, Post } from "@prisma/client";
 import { PrismaAdapter } from "@visulima/crud";
 import { nodeHandler } from "@visulima/crud/next";
-import type { User, Post, Prisma } from "@prisma/client";
 
 import { prisma } from "../../lib/prisma-client";
 
 const prismaAdapter = new PrismaAdapter<User | Post, Prisma.ModelName>({
     prismaClient: prisma,
+    // Required for Prisma 5/6 (the private DMMF internals were removed):
+    dmmf: Prisma.dmmf,
 });
 
-export default async (request, response) => {
-    const handler = await nodeHandler<User | Post, any, NextApiRequest, NextApiResponse, Prisma.ModelName>(prismaAdapter);
+// Created once — `nodeHandler` runs adapter.init() and connects the pool here.
+const handlerPromise = nodeHandler<User | Post, any, NextApiRequest, NextApiResponse, Prisma.ModelName>(prismaAdapter);
+
+export default async (request: NextApiRequest, response: NextApiResponse) => {
+    const handler = await handlerPromise;
 
     await handler(request, response);
 };
+```
+
+For the **App Router / edge runtime**, use `edgeHandler`, which returns the `Response`:
+
+```ts
+// app/api/[...crud]/route.ts
+import { Prisma } from "@prisma/client";
+import { PrismaAdapter } from "@visulima/crud";
+import { edgeHandler } from "@visulima/crud/next";
+
+import { prisma } from "../../../lib/prisma-client";
+
+const adapter = new PrismaAdapter({ prismaClient: prisma, dmmf: Prisma.dmmf });
+const handlerPromise = edgeHandler(adapter);
+
+const route = async (request: Request) => {
+    const handler = await handlerPromise;
+
+    return handler(request, undefined);
+};
+
+export { route as GET, route as POST, route as PUT, route as PATCH, route as DELETE };
 ```
 
 To use it with `api-platform connect` you need to install the `@visulima/api-platform` package.
@@ -83,24 +122,107 @@ To use it with `api-platform connect` you need to install the `@visulima/api-pla
 
 // Next.js API route support: https://nextjs.org/docs/api-routes/introduction
 import type { NextApiRequest, NextApiResponse } from "next";
+import { Prisma } from "@prisma/client";
+import type { User, Post } from "@prisma/client";
 import { createNodeRouter } from "@visulima/api-platform";
 import { PrismaAdapter } from "@visulima/crud";
 import { nodeHandler } from "@visulima/crud/next";
-import type { User, Post, Prisma } from "@prisma/client";
 
 import { prisma } from "../../lib/prisma-client";
 
 const prismaAdapter = new PrismaAdapter<User | Post, Prisma.ModelName>({
     prismaClient: prisma,
+    dmmf: Prisma.dmmf,
 });
 
+const handlerPromise = nodeHandler<User | Post, any, NextApiRequest, NextApiResponse, Prisma.ModelName>(prismaAdapter);
+
 const router = createNodeRouter<NextApiRequest, NextApiResponse>().all(async (request, response) => {
-    const handler = await nodeHandler<User | Post, any, NextApiRequest, NextApiResponse, Prisma.ModelName>(prismaAdapter);
+    const handler = await handlerPromise;
 
     await handler(request, response);
 });
 
 export default router.handler();
+```
+
+### Query syntax
+
+CRUD endpoints accept the following query-string parameters (all optional):
+
+| Param      | Example                                                | Description                                                                                 |
+| ---------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `select`   | `?select=id,name,profile.bio`                          | Comma-separated fields to return. Dotted paths select nested fields.                         |
+| `include`  | `?include=posts,profile`                               | Comma-separated relations to expand.                                                         |
+| `where`    | `?where={"name":{"$cont":"ada"}}`                      | JSON filter object (see operators below). URL-encode it.                                     |
+| `orderBy`  | `?orderBy={"createdAt":"$desc"}`                       | JSON object with exactly one field and `$asc`/`$desc`.                                       |
+| `limit`    | `?limit=20`                                            | Page size / `take`. Capped by `maxPerPage` when configured.                                  |
+| `page`     | `?page=2`                                              | 1-based page number; enables paginated (`@visulima/pagination`) responses.                   |
+| `skip`     | `?skip=40`                                             | Offset (`skip`) for non-paginated reads.                                                     |
+| `cursor`   | `?cursor={"id":42}`                                    | JSON cursor for cursor-based pagination.                                                     |
+| `distinct` | `?distinct=email`                                      | Field name to apply `distinct` on.                                                           |
+
+#### `where` operators
+
+| Operator   | Prisma equivalent | Meaning                |
+| ---------- | ----------------- | ---------------------- |
+| `$eq`      | `equals`          | equals                 |
+| `$neq`     | `not`             | not equal              |
+| `$in`      | `in`              | in list                |
+| `$notin`   | `notIn`           | not in list            |
+| `$lt`      | `lt`              | less than              |
+| `$lte`     | `lte`             | less than or equal     |
+| `$gt`      | `gt`              | greater than           |
+| `$gte`     | `gte`             | greater than or equal  |
+| `$cont`    | `contains`        | string contains        |
+| `$starts`  | `startsWith`      | string starts with     |
+| `$ends`    | `endsWith`        | string ends with       |
+| `$isnull`  | `null`            | is null                |
+
+`where` also supports the `$and`, `$or` and `$not` combinators. By default ISO-date-looking
+strings are coerced to `Date` instances so they match `DateTime` columns; pass
+`coerceWhereDates: false` to the `PrismaAdapter` constructor to keep them as strings (needed when
+filtering a *string* column whose values look like dates).
+
+### Security & access control
+
+CRUD exposes every model with no field-level restrictions by default. Lock it down per model:
+
+```ts
+import { RouteType } from "@visulima/crud";
+
+const handlerPromise = nodeHandler(adapter, {
+    // Global cap so `?limit=100000000` can't dump a whole table.
+    maxPerPage: 100,
+    // Throw to deny a request (row/field access guard).
+    onRequest: async ({ routeType, resourceName }) => {
+        if (routeType === RouteType.DELETE) throw createHttpError(403, "forbidden");
+    },
+    models: {
+        User: {
+            only: [RouteType.READ_ALL, RouteType.READ_ONE, RouteType.UPDATE],
+            // Mass-assignment guard: clients can only write these columns.
+            writableFields: ["name", "email"],
+            // Never return these even if a client requests ?select=passwordHash.
+            readableFields: ["passwordHash"],
+            // Allowlist what may be filtered/sorted and selected/included.
+            filterableFields: ["id", "name", "email"],
+            selectableFields: ["id", "name", "email"],
+            includableRelations: ["posts"],
+            // Validate/transform the body (any zod-like schema works).
+            updateSchema: userUpdateSchema,
+        },
+    },
+});
+```
+
+### Framework-agnostic usage
+
+The `baseHandler` and `Adapter` interface are exported from the root entry, so you can wire CRUD to
+Express, Fastify, Hono or any runtime without Next.js:
+
+```ts
+import { baseHandler, PrismaAdapter } from "@visulima/crud";
 ```
 
 ## Supported Node.js Versions

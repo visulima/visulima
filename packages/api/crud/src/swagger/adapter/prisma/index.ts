@@ -43,6 +43,7 @@ const overwritePathsExampleWithModel = (swaggerPaths: OpenAPIV3.PathsObject, exa
 const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePrismaClient>({
     crud = { models: {} },
     defaultExposeStrategy = "all",
+    dmmf: ctorDmmf,
     models: ctorModels,
     prismaClient,
     swagger = { allowedMediaTypes: { "application/json": true }, models: {} },
@@ -57,8 +58,13 @@ const modelsToOpenApi = async <M extends string = string, PrismaClient = FakePri
     let dmmf: Dmmf | undefined;
     let prismaDmmfModels: Record<string, object> | undefined;
 
-    // eslint-disable-next-line no-underscore-dangle
-    if (prismaClient._dmmf !== undefined) {
+    // Prisma 5/6: the private `_dmmf`/`_getDmmf` internals were removed. Callers can
+    // pass an explicit `dmmf` (the full DMMF document) instead.
+    if (ctorDmmf !== undefined) {
+        dmmf = ctorDmmf;
+        prismaDmmfModels = ctorDmmf.mappingsMap;
+        // eslint-disable-next-line no-underscore-dangle
+    } else if (prismaClient._dmmf !== undefined) {
         // eslint-disable-next-line no-underscore-dangle
         dmmf = prismaClient._dmmf as Dmmf;
         prismaDmmfModels = dmmf.mappingsMap;
@@ -122,6 +128,13 @@ export interface ModelsToOpenApiParameters<M extends string, PrismaClient> {
         models: ModelsOptions<M>;
     };
     defaultExposeStrategy?: "all" | "none";
+
+    /**
+     * The full Prisma DMMF document (must contain `mappingsMap`). Required for
+     * Prisma 5/6, where the private `_dmmf`/`_getDmmf` internals this generator
+     * used to read were removed.
+     */
+    dmmf?: { mappingsMap: Record<string, object> };
     models?: M[];
     prismaClient: FakePrismaClient & PrismaClient;
     swagger?: Partial<{

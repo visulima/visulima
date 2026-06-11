@@ -6,9 +6,80 @@ export enum RouteType {
     UPDATE = "UPDATE",
 }
 
-export interface ModelOption {
+/**
+ * A minimal validation schema. It is intentionally structural so that any
+ * validator exposing a synchronous/asynchronous `parse`/`safeParse` (e.g. zod)
+ * can be plugged in without pulling a hard dependency on the validator.
+ *
+ * The returned (possibly transformed) value replaces `request.body` before it
+ * reaches the adapter.
+ */
+export interface BodySchema<T = unknown> {
+    parse: (data: unknown) => Promise<T> | T;
+}
+
+/**
+ * Per-model access policy. Every field is optional and additive on top of the
+ * route-level `only`/`exclude` knobs.
+ */
+export interface ModelAccessPolicy {
+    /**
+     * Validation/transform schema applied to the body of `CREATE` requests
+     * before it is forwarded to the adapter. Throwing rejects the request
+     * with the thrown error (use an `http-errors` 4xx for a clean status).
+     */
+    createSchema?: BodySchema;
+
+    /**
+     * Allowlist of field names a client may filter on (via `where`) or order by.
+     * When set, any other field referenced in `where`/`orderBy` is rejected with
+     * a 400. Prevents blind-exfiltration oracles on secret columns.
+     */
+    filterableFields?: string[];
+
+    /**
+     * Allowlist of relation names a client may `include`. When set, requesting
+     * any other relation is rejected with a 400.
+     */
+    includableRelations?: string[];
+
+    /**
+     * Field names that must never be returned to a client. They are stripped
+     * from `select` (if a client tried to select them) and forced into Prisma's
+     * `omit`-style exclusion is left to the adapter; here we simply drop them
+     * from an explicit `select`. Pair with `selectableFields` for a strict
+     * allowlist.
+     */
+    readableFields?: string[];
+
+    /**
+     * Allowlist of field names a client may request via `select`. When set, any
+     * other selected field is dropped. Prevents `?select=passwordHash`.
+     */
+    selectableFields?: string[];
+
+    /**
+     * Validation/transform schema applied to the body of `UPDATE` requests.
+     */
+    updateSchema?: BodySchema;
+
+    /**
+     * Allowlist of field names a client may write (CREATE/UPDATE body). When set,
+     * any other key in the body is stripped before reaching the adapter,
+     * preventing mass-assignment of columns like `role`/`isAdmin`.
+     */
+    writableFields?: string[];
+}
+
+export interface ModelOption extends ModelAccessPolicy {
     exclude?: RouteType[];
     formatResourceId?: (resourceId: string) => number | string;
+
+    /**
+     * Hard cap on the number of rows a list request may return, regardless of
+     * the client-supplied `limit`. Overrides the handler-level `maxPerPage`.
+     */
+    maxPerPage?: number;
     name?: string;
     only?: RouteType[];
 }
@@ -64,7 +135,22 @@ export interface HandlerOptions<M extends string = string> {
         list?: ListHandler;
         update?: UpdateHandler;
     };
+
+    /**
+     * Default hard cap on the number of rows a list request may return for any
+     * model, regardless of the client-supplied `limit`. Defaults to no cap.
+     * Per-model `maxPerPage` overrides this.
+     */
+    maxPerPage?: number;
     models?: ModelsOptions<M>;
+
+    /**
+     * Called once per request after the route type is resolved and before the
+     * adapter is invoked. Throw (ideally an `http-errors` error) to reject the
+     * request — a row/field access guard hook. Receives the resolved model name,
+     * route type and resource id (for single-resource routes).
+     */
+    onRequest?: (context: { method: string; resourceId?: number | string; resourceName: string; routeType: RouteType; url: string }) => Promise<void> | void;
     pagination?: PaginationConfig;
 }
 
@@ -142,7 +228,7 @@ export interface ParsedQueryParameters {
     where?: WhereField;
 }
 
-export type ExecuteHandler<Request, Response> = (request: Request, response: Response) => Promise<void>;
+export type ExecuteHandler<Request, Response, Result = void> = (request: Request, response: Response) => Promise<Result>;
 
 export interface FakePrismaClient {
     $connect: () => Promise<void> | void;

@@ -29,6 +29,18 @@ describe("prisma parse where", () => {
         });
     });
 
+    it("should keep date-looking strings as strings when coerceDates is false", () => {
+        expect.assertions(1);
+
+        const baseQuery = {
+            slug: "2024-01-15",
+        };
+
+        expect(parsePrismaWhere(baseQuery, [], false)).toStrictEqual<PrismaWhereField>({
+            slug: "2024-01-15",
+        });
+    });
+
     it("should handle operators", () => {
         expect.assertions(1);
 

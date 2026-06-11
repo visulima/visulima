@@ -13,7 +13,33 @@ import parsePrismaOrderBy from "./utils/parse-order-by";
 import parsePrismaRecursiveField from "./utils/parse-recursive";
 import parsePrismaWhere from "./utils/parse-where";
 
+/**
+ * The shape of `Prisma.dmmf` exposed by Prisma 5/6 generated clients. Only the
+ * model names are needed by this adapter.
+ */
+interface PrismaDmmf {
+    datamodel?: {
+        models?: { name: string }[];
+    };
+}
+
 interface AdapterCtorArguments<M extends string, PrismaClient> {
+    /**
+     * When `true` (default) ISO date-looking strings in `where` filters are
+     * coerced to `Date` instances so they match Prisma `DateTime` columns. Set
+     * to `false` to keep them as strings — required when filtering a *string*
+     * column whose values happen to look like dates.
+     */
+    coerceWhereDates?: boolean;
+
+    /**
+     * The `Prisma.dmmf` object from your generated client
+     * (`import { Prisma } from "@prisma/client"`). Required for Prisma 5/6,
+     * where the private `_dmmf`/`_getDmmf` internals this adapter used to read
+     * were removed. If omitted, the adapter falls back to those internals for
+     * Prisma 3/4 compatibility, then to `prismaClient._runtimeDataModel`.
+     */
+    dmmf?: PrismaDmmf;
     manyRelations?: {
         [key in M]?: string[];
     };
@@ -39,11 +65,24 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
 
     private readonly prismaClient: FakePrismaClient & PrismaClient;
 
-    public constructor({ manyRelations = {}, models, primaryKey = "id", prismaClient }: AdapterCtorArguments<M, FakePrismaClient & PrismaClient>) {
+    private readonly coerceWhereDates: boolean;
+
+    private readonly ctorDmmf?: PrismaDmmf;
+
+    public constructor({
+        coerceWhereDates = true,
+        dmmf,
+        manyRelations = {},
+        models,
+        primaryKey = "id",
+        prismaClient,
+    }: AdapterCtorArguments<M, FakePrismaClient & PrismaClient>) {
         this.prismaClient = prismaClient;
         this.primaryKey = primaryKey;
         this.manyRelations = manyRelations;
         this.ctorModels = models as M[];
+        this.coerceWhereDates = coerceWhereDates;
+        this.ctorDmmf = dmmf;
     }
 
     public async connect(): Promise<void> {
@@ -173,7 +212,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
         }
 
         if (query.where) {
-            parsed.where = parsePrismaWhere(query.where, this.manyRelations[resourceName] ?? []);
+            parsed.where = parsePrismaWhere(query.where, this.manyRelations[resourceName] ?? [], this.coerceWhereDates);
         }
 
         if (query.orderBy) {
@@ -216,6 +255,26 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
     }
 
     private readonly getPrismaClientModels = async (): Promise<Record<string, object>> => {
+        // Prisma 5/6: model metadata is exposed via the public `Prisma.dmmf`
+        // (passed to the constructor) or, as a fallback, the client's
+        // `_runtimeDataModel`. The legacy `_dmmf`/`_getDmmf` internals were removed.
+        // Model names are kept in their original (PascalCase) form to match the
+        // `mappingsMap` keys the legacy DMMF path returned; `getPrismaDelegate`
+        // lowercases the first character to find the delegate on the client.
+        const modelsFromDatamodel = this.ctorDmmf?.datamodel?.models;
+
+        if (modelsFromDatamodel !== undefined) {
+            return Object.fromEntries(modelsFromDatamodel.map((model) => [model.name, {}]));
+        }
+
+        // eslint-disable-next-line no-underscore-dangle -- Prisma 5/6 exposes the runtime data model under this private key
+        const runtimeModels = (this.prismaClient as { _runtimeDataModel?: { models?: Record<string, object> } })._runtimeDataModel?.models;
+
+        if (runtimeModels !== undefined) {
+            return Object.fromEntries(Object.keys(runtimeModels).map((name) => [name, {}]));
+        }
+
+        // Prisma 3/4 compatibility: private DMMF internals.
         // eslint-disable-next-line no-underscore-dangle
         if (this.prismaClient._dmmf !== undefined) {
             // eslint-disable-next-line no-underscore-dangle
@@ -232,7 +291,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
             return this.dmmf.mappingsMap;
         }
 
-        throw new Error("Couldn't get prisma client models");
+        throw new Error("Couldn't get prisma client models. For Prisma 5/6 pass `dmmf: Prisma.dmmf` to the PrismaAdapter constructor.");
     };
 
     private getPrismaDelegate(resourceName: M): Delegate<T> {
