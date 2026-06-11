@@ -29,8 +29,8 @@ export interface ResolveOutputOptions {
 const wrapStream = (stream: NodeJS.WritableStream): OutputSink => {
     return {
         close: () => {
-        // process.stdout / process.stderr aren't ours to close; the
-        // host process owns the stream lifecycle.
+            // process.stdout / process.stderr aren't ours to close; the
+            // host process owns the stream lifecycle.
         },
         write: (chunk) => {
             stream.write(chunk);

@@ -68,10 +68,7 @@ describe("ruffCheckAdapter", () => {
     it("detects via pyproject.toml [tool.ruff] section", () => {
         expect.assertions(2);
 
-        writeFileSync(
-            join(workspaceRoot, "pyproject.toml"),
-            "[tool.ruff]\nline-length = 100\n",
-        );
+        writeFileSync(join(workspaceRoot, "pyproject.toml"), "[tool.ruff]\nline-length = 100\n");
         const result = ruffCheckAdapter.detect(workspaceRoot, {});
 
         expect(result).toBeDefined();
@@ -81,10 +78,7 @@ describe("ruffCheckAdapter", () => {
     it("detects via pyproject.toml [tool.ruff.lint] subsection", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspaceRoot, "pyproject.toml"),
-            "[tool.ruff.lint]\nselect = [\"E\"]\n",
-        );
+        writeFileSync(join(workspaceRoot, "pyproject.toml"), "[tool.ruff.lint]\nselect = [\"E\"]\n");
 
         expect(ruffCheckAdapter.detect(workspaceRoot, {})).toBeDefined();
     });
@@ -92,10 +86,7 @@ describe("ruffCheckAdapter", () => {
     it("ignores pyproject.toml without [tool.ruff]", () => {
         expect.assertions(1);
 
-        writeFileSync(
-            join(workspaceRoot, "pyproject.toml"),
-            "[tool.poetry]\nname = \"foo\"\n",
-        );
+        writeFileSync(join(workspaceRoot, "pyproject.toml"), "[tool.poetry]\nname = \"foo\"\n");
 
         expect(ruffCheckAdapter.detect(workspaceRoot, {})).toBeUndefined();
     });

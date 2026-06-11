@@ -103,7 +103,7 @@ const resolveGithub = (env: NodeJS.ProcessEnv, defaultBase: string, readEventPay
     const payload = eventPath ? readEventPayload(eventPath) : undefined;
 
     if (payload) {
-        const before = typeof payload["before"] === "string" ? (payload["before"]) : undefined;
+        const before = typeof payload["before"] === "string" ? payload["before"] : undefined;
 
         if (isNonEmptySha(before)) {
             notes.push(`push: event.before=${before}`);

@@ -96,9 +96,7 @@ describe(exitCodeFor, () => {
     it("returns 0 when there are no errors and no process failures", () => {
         expect.assertions(1);
 
-        const result = aggregate([
-            { adapter: "prettier", durationMs: 1, exitCode: 0, findingCount: 1, findings: [finding({ severity: "info" })] },
-        ]);
+        const result = aggregate([{ adapter: "prettier", durationMs: 1, exitCode: 0, findingCount: 1, findings: [finding({ severity: "info" })] }]);
 
         expect(exitCodeFor(result)).toBe(0);
     });
@@ -106,9 +104,7 @@ describe(exitCodeFor, () => {
     it("returns 1 when at least one finding is an error", () => {
         expect.assertions(1);
 
-        const result = aggregate([
-            { adapter: "eslint", durationMs: 1, exitCode: 1, findingCount: 1, findings: [finding({ severity: "error" })] },
-        ]);
+        const result = aggregate([{ adapter: "eslint", durationMs: 1, exitCode: 1, findingCount: 1, findings: [finding({ severity: "error" })] }]);
 
         expect(exitCodeFor(result)).toBe(1);
     });
@@ -116,9 +112,7 @@ describe(exitCodeFor, () => {
     it("returns 1 when there was a process failure", () => {
         expect.assertions(1);
 
-        const result = aggregate([
-            { adapter: "eslint", durationMs: 1, exitCode: 2, findingCount: 0, findings: [] },
-        ]);
+        const result = aggregate([{ adapter: "eslint", durationMs: 1, exitCode: 2, findingCount: 0, findings: [] }]);
 
         expect(exitCodeFor(result)).toBe(1);
     });

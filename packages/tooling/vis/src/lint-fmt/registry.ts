@@ -47,10 +47,7 @@ const ADAPTER_ORDER: ReadonlyArray<AdapterId> = [
  * @param customOrder Optional user-specified id order that takes precedence.
  * @returns Adapters in effective precedence order.
  */
-export const registerAdapters = (
-    adapters: ReadonlyArray<ToolAdapter>,
-    customOrder?: ReadonlyArray<AdapterId>,
-): ReadonlyArray<ToolAdapter> => {
+export const registerAdapters = (adapters: ReadonlyArray<ToolAdapter>, customOrder?: ReadonlyArray<AdapterId>): ReadonlyArray<ToolAdapter> => {
     const byId = new Map(adapters.map((a) => [a.id, a]));
     const ordered: ToolAdapter[] = [];
     const seen = new Set<AdapterId>();

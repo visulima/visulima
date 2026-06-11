@@ -37,19 +37,11 @@ const commandFor = (severity: FindingSeverity): "error" | "notice" | "warning" =
 // GitHub's workflow-command parser requires `%`, `\r` and `\n` to be
 // percent-encoded inside the message body so multi-line annotations
 // don't terminate the command prematurely.
-const encodeMessage = (value: string): string =>
-    value
-        .replaceAll("%", "%25")
-        .replaceAll("\r", "%0D")
-        .replaceAll("\n", "%0A");
+const encodeMessage = (value: string): string => value.replaceAll("%", "%25").replaceAll("\r", "%0D").replaceAll("\n", "%0A");
 
 // Property values (file, title) are comma- and colon-sensitive — same
 // percent encoding plus `,`, `:`, `=`.
-const encodeProperty = (value: string): string =>
-    encodeMessage(value)
-        .replaceAll(",", "%2C")
-        .replaceAll(":", "%3A")
-        .replaceAll("=", "%3D");
+const encodeProperty = (value: string): string => encodeMessage(value).replaceAll(",", "%2C").replaceAll(":", "%3A").replaceAll("=", "%3D");
 
 const relativeFile = (file: string, workspaceRoot: string | undefined): string => {
     if (workspaceRoot && file.startsWith(`${workspaceRoot}/`)) {

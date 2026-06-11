@@ -69,7 +69,14 @@ export const pruneExecute: CommandExecute<Toolbox<Console, DockerPruneOptions>> 
 };
 
 /** `vis docker lint` — lint a Dockerfile with hadolint (downloaded on demand). */
-export const lintExecute: CommandExecute<Toolbox<Console, DockerLintOptions>> = async ({ argument, fs, logger, options, process: runtimeProcess, workspaceRoot }) => {
+export const lintExecute: CommandExecute<Toolbox<Console, DockerLintOptions>> = async ({
+    argument,
+    fs,
+    logger,
+    options,
+    process: runtimeProcess,
+    workspaceRoot,
+}) => {
     const code = await runDockerLint({
         autoInstall: Boolean(options.install),
         configPath: options.config,
@@ -111,7 +118,14 @@ const confirmOverwrite = async (path: string): Promise<boolean> => {
 };
 
 /** `vis docker init` — generate a multi-stage Dockerfile (create-only). */
-export const initExecute: CommandExecute<Toolbox<Console, DockerInitOptions>> = async ({ argument, fs, logger, options, process: runtimeProcess, workspaceRoot }) => {
+export const initExecute: CommandExecute<Toolbox<Console, DockerInitOptions>> = async ({
+    argument,
+    fs,
+    logger,
+    options,
+    process: runtimeProcess,
+    workspaceRoot,
+}) => {
     const wsRoot = workspaceRoot ?? runtimeProcess.cwd;
     const requested = argument[0] ?? "Dockerfile";
     const outPath = isAbsolute(requested) ? requested : join(wsRoot, requested);

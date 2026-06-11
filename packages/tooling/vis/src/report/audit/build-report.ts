@@ -148,7 +148,13 @@ export const buildAuditReport = (input: BuildAuditReportInput): AuditReport => {
     const results: AuditReportEntry[] = filtered.map((entry) => {
         return {
             acceptedRisk: entry.acceptedRisk ?? null,
-            dependencyPaths: entry.dependencyPaths ? entry.dependencyPaths.map((path) => path.map((node) => { return { name: node.name, version: node.version }; })) : [],
+            dependencyPaths: entry.dependencyPaths
+                ? entry.dependencyPaths.map((path) =>
+                    path.map((node) => {
+                        return { name: node.name, version: node.version };
+                    }),
+                )
+                : [],
             name: entry.name,
             socketAlerts: entry.socketReport?.alerts ?? [],
             socketScore: entry.socketReport?.score.overall ?? null,

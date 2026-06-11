@@ -4,13 +4,7 @@ import { tmpdir } from "node:os";
 import { join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
 
-import {
-    applyCatalogUpdates,
-    detectJsonIndent,
-    hasCatalogs,
-    parseBunCatalogs,
-    readCatalogs,
-} from "../../src/util/catalog";
+import { applyCatalogUpdates, detectJsonIndent, hasCatalogs, parseBunCatalogs, readCatalogs } from "../../src/util/catalog";
 
 // --- applyCatalogUpdates ---
 

@@ -57,26 +57,7 @@ export const dprintAdapter: ToolAdapter = {
         };
     },
 
-    extensions: [
-        "cjs",
-        "css",
-        "cts",
-        "dockerfile",
-        "html",
-        "js",
-        "json",
-        "jsonc",
-        "jsx",
-        "md",
-        "mdx",
-        "mjs",
-        "mts",
-        "toml",
-        "ts",
-        "tsx",
-        "yaml",
-        "yml",
-    ],
+    extensions: ["cjs", "css", "cts", "dockerfile", "html", "js", "json", "jsonc", "jsx", "md", "mdx", "mjs", "mts", "toml", "ts", "tsx", "yaml", "yml"],
     id: "dprint",
     kind: "fmt",
 

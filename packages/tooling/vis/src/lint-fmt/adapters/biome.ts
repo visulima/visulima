@@ -127,7 +127,7 @@ export const biomeAdapter: ToolAdapter = {
                 file: path,
                 fixable: true,
                 line: start?.line && start.line > 0 ? start.line : undefined,
-                message: isFormat ? "Code style issues would be auto-fixed" : diagnostic.message ?? "",
+                message: isFormat ? "Code style issues would be auto-fixed" : (diagnostic.message ?? ""),
                 ruleId: category || undefined,
                 severity: SEVERITY_MAP[diagnostic.severity ?? ""] ?? "warning",
             });

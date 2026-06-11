@@ -5,14 +5,7 @@ import { join } from "@visulima/path";
 import { describe, expect, it, vi } from "vitest";
 
 import type { CatalogCheckOptions } from "../../src/util/catalog";
-import {
-    applyPackageJsonUpdates,
-    checkOutdated,
-    hasCatalogs,
-    hasPackageJsonDeps,
-    readCatalogs,
-    readPackageJsonDeps,
-} from "../../src/util/catalog";
+import { applyPackageJsonUpdates, checkOutdated, hasCatalogs, hasPackageJsonDeps, readCatalogs, readPackageJsonDeps } from "../../src/util/catalog";
 import { mockFetch } from "./catalog-test-helpers";
 
 // --- includeLocked (collectEntries via checkOutdated) ---

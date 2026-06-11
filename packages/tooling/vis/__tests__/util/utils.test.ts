@@ -37,7 +37,7 @@ describe(sanitizeGitRefComponent, () => {
         expect.assertions(1);
 
         // NUL, unit-separator (0x1F), and DEL (0x7F) interleaved with letters.
-        const input = `a${String.fromCodePoint(0)}b${String.fromCodePoint(0x1F)}c${String.fromCodePoint(0x7F)}d`;
+        const input = `a${String.fromCodePoint(0)}b${String.fromCodePoint(0x1f)}c${String.fromCodePoint(0x7f)}d`;
 
         expect(sanitizeGitRefComponent(input)).toBe("a-b-c-d");
     });

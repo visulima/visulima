@@ -60,7 +60,9 @@ const stubAdapter = (id: string, scriptPath: string, extra: Partial<ToolAdapter>
     };
 };
 
-const stubPresence = (): ToolPresence => { return { adapter: "oxlint", declared: false, root: workspaceRoot }; };
+const stubPresence = (): ToolPresence => {
+    return { adapter: "oxlint", declared: false, root: workspaceRoot };
+};
 
 describe("lint-fmt runner", () => {
     beforeEach(() => {

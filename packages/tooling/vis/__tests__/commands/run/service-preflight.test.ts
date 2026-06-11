@@ -4,7 +4,14 @@ import { join } from "@visulima/path";
 import type { Task, TaskGraph } from "@visulima/task-runner";
 import { afterEach, describe, expect, it } from "vitest";
 
-import { buildBootstrapPaths, extractPreflightTasks, injectServiceTasks, linearize, planTopoLevels, resolveServicesPolicy } from "../../../src/commands/run/service-preflight";
+import {
+    buildBootstrapPaths,
+    extractPreflightTasks,
+    injectServiceTasks,
+    linearize,
+    planTopoLevels,
+    resolveServicesPolicy,
+} from "../../../src/commands/run/service-preflight";
 import type { VisTargetOptions } from "../../../src/task/target-options";
 
 const buildTask = (id: string, overrides: Partial<Task["overrides"]> & { command?: string; visOptions?: VisTargetOptions } = {}): Task => {

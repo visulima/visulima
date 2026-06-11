@@ -163,9 +163,7 @@ export const formatEcosystemReport = (result: EcosystemCheckResult, options: { p
         // Make it unmistakable that these CI / Docker / GitLab references
         // are NOT rewritten on the back of an npm bump — the user has to
         // opt in. Mirrors the actionable hint emitted for minimal/json.
-        lines.push(
-            `\n  ${yellow("ℹ")} ${dim("Not applied automatically — re-run with `--interactive` to choose which to apply, or `--yes` to apply all.")}`,
-        );
+        lines.push(`\n  ${yellow("ℹ")} ${dim("Not applied automatically — re-run with `--interactive` to choose which to apply, or `--yes` to apply all.")}`);
     }
 
     return lines.join("\n");

@@ -25,7 +25,9 @@ const stubAdapter = (id: string, cacheKeyValue = "stub-key"): ToolAdapter => {
     };
 };
 
-const stubPresence = (): ToolPresence => { return { adapter: "oxlint", declared: false, root: workspaceRoot }; };
+const stubPresence = (): ToolPresence => {
+    return { adapter: "oxlint", declared: false, root: workspaceRoot };
+};
 
 const sampleResult: RunResult = {
     durationMs: 12,
@@ -225,7 +227,9 @@ describe("lint-fmt cache", () => {
 
             // A `\0` byte in the cache root forces a filesystem write failure
             // — the cache must not throw for opportunistic writes.
-            expect(() => { writeCacheEntry("\0/invalid", adapter, "k", sampleResult, []); }).not.toThrow();
+            expect(() => {
+                writeCacheEntry("\0/invalid", adapter, "k", sampleResult, []);
+            }).not.toThrow();
         });
     });
 });

@@ -814,7 +814,9 @@ const executeAudit = async (
 
             return { ...entry, dependencyPaths: paths };
         })
-        : filtered.map((entry) => { return { ...entry, dependencyPaths: [] as DependencyPath[] }; });
+        : filtered.map((entry) => {
+            return { ...entry, dependencyPaths: [] as DependencyPath[] };
+        });
 
     const findingsForReport = (): {
         acknowledged: boolean;

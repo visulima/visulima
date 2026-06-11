@@ -47,10 +47,7 @@ const seedWorkspace = (workspaceRoot: string): void => {
     writeFileSync(join(declaredDir, "project.json"), JSON.stringify({ targets: { build: { command: "echo declared", outputs: [] } } }));
 
     writeFileSync(join(tracedDir, "package.json"), JSON.stringify({ name: "@my/traced" }));
-    writeFileSync(
-        join(tracedDir, "project.json"),
-        JSON.stringify({ targets: { build: { command: "echo traced", hashMode: "trace", outputs: [] } } }),
-    );
+    writeFileSync(join(tracedDir, "project.json"), JSON.stringify({ targets: { build: { command: "echo traced", hashMode: "trace", outputs: [] } } }));
 };
 
 const collectInfoText = (calls: LoggerCall[]): string =>

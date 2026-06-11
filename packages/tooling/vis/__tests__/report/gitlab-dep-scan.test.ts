@@ -81,7 +81,7 @@ describe(emitGitlabDepScan, () => {
 
         const finding = { acknowledged: false, packageName: "lodash", packageVersion: "4.17.20", vulnerability: vuln() };
         const report = emitGitlabDepScan({ findings: [finding], now: fixedNow, tool, workspaceRoot: "/repo" });
-        const { location } = (report.vulnerabilities[0]!);
+        const { location } = report.vulnerabilities[0]!;
 
         expect(location.dependency.package.name).toBe("lodash");
         expect(location.dependency.version).toBe("4.17.20");

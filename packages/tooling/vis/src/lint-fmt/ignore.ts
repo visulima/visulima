@@ -140,18 +140,10 @@ export const loadIgnoreFile = (path: string): IgnoreRule[] => {
  * @param extraFiles Additional ignore files to load (e.g. `.prettierignore`).
  * @returns The merged rule list, in application order.
  */
-export const buildIgnoreRules = (
-    root: string,
-    extras: ReadonlyArray<string> = [],
-    extraFiles: ReadonlyArray<string> = [],
-): IgnoreRule[] => {
+export const buildIgnoreRules = (root: string, extras: ReadonlyArray<string> = [], extraFiles: ReadonlyArray<string> = []): IgnoreRule[] => {
     const fromExtraFiles = extraFiles.flatMap((file) => loadIgnoreFile(file));
 
-    return [
-        ...loadIgnoreFile(join(root, ".gitignore")),
-        ...fromExtraFiles,
-        ...parsePatterns(extras.join("\n")),
-    ];
+    return [...loadIgnoreFile(join(root, ".gitignore")), ...fromExtraFiles, ...parsePatterns(extras.join("\n"))];
 };
 
 /**

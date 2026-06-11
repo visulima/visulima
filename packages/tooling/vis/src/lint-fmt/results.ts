@@ -66,10 +66,13 @@ export const aggregate = (entries: ReadonlyArray<AdapterRunSummary & { findings:
             findingCount: entry.findings.length,
         });
 
-        if (entry.exitCode !== 0 && entry.exitCode !== null // Some linters (eslint) exit 1 purely because they found issues —
+        if (
+            entry.exitCode !== 0
+            && entry.exitCode !== null // Some linters (eslint) exit 1 purely because they found issues —
             // that's not a process failure. We only flag failures the parse
             // layer couldn't account for: zero findings but non-zero exit.
-            && entry.findings.length === 0) {
+            && entry.findings.length === 0
+        ) {
             hadProcessFailure = true;
         }
 

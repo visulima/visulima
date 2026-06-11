@@ -65,7 +65,11 @@ const findIndexFiles = (dir: string, base: string): string[] => {
             results.push(...findIndexFiles(join(dir, entry.name), base));
         } else if (entry.name === "index.ts") {
             // Store as relative path from `base` (forward-slash normalised)
-            results.push(join(dir, entry.name).slice(base.length + 1).replaceAll("\\", "/"));
+            results.push(
+                join(dir, entry.name)
+                    .slice(base.length + 1)
+                    .replaceAll("\\", "/"),
+            );
         }
     }
 
@@ -86,8 +90,7 @@ const stripTypeImports = (source: string): string =>
  * Return true when the file's content looks like a cerebro command definition
  * (default-exports an object with both `name:` and `description:` properties).
  */
-const isCommandDefinition = (source: string): boolean =>
-    /name\s*:/.test(source) && /description\s*:/.test(source) && /export\s+default\b/.test(source);
+const isCommandDefinition = (source: string): boolean => /name\s*:/.test(source) && /description\s*:/.test(source) && /export\s+default\b/.test(source);
 
 // ---------------------------------------------------------------------------
 // Locate command definitions
@@ -177,8 +180,7 @@ describe("command definition laziness guard", () => {
 
             expect(
                 hasEagerHandler,
-                `${relPath}: found a non-type import of ./handler. `
-                + `Use \`loader: () => import("./handler")\` instead to keep startup lazy.`,
+                `${relPath}: found a non-type import of ./handler. Use \`loader: () => import("./handler")\` instead to keep startup lazy.`,
             ).toBe(false);
         });
     });
@@ -219,8 +221,7 @@ describe("command definition laziness guard", () => {
 
             expect(
                 mustHaveLoader ? source.includes("loader:") : true,
-                `${relPath}: command definition is missing a \`loader:\` property. `
-                + `Add \`loader: () => import("./handler")\` to keep startup lazy.`,
+                `${relPath}: command definition is missing a \`loader:\` property. Add \`loader: () => import("./handler")\` to keep startup lazy.`,
             ).toBe(true);
         });
     });

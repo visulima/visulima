@@ -150,12 +150,14 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
         try {
             switch (format) {
                 case "github": {
-                    sink!.write(emitGitHub({
-                        runs: runs.map((run) => {
-                            return { findings: run.findings };
+                    sink!.write(
+                        emitGitHub({
+                            runs: runs.map((run) => {
+                                return { findings: run.findings };
+                            }),
+                            workspaceRoot: root,
                         }),
-                        workspaceRoot: root,
-                    }));
+                    );
 
                     break;
                 }
@@ -165,12 +167,14 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
                     break;
                 }
                 case "junit": {
-                    sink!.write(emitJUnit({
-                        runs: runs.map((run) => {
-                            return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
+                    sink!.write(
+                        emitJUnit({
+                            runs: runs.map((run) => {
+                                return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
+                            }),
+                            workspaceRoot: root,
                         }),
-                        workspaceRoot: root,
-                    }));
+                    );
 
                     break;
                 }
@@ -180,16 +184,18 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
                     break;
                 }
                 case "sarif": {
-                    sink!.write(emitSarif({
-                        runs: runs.map((run) => {
-                            return {
-                                adapter: run.adapter.id,
-                                findings: run.findings,
-                                presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
-                            };
+                    sink!.write(
+                        emitSarif({
+                            runs: runs.map((run) => {
+                                return {
+                                    adapter: run.adapter.id,
+                                    findings: run.findings,
+                                    presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
+                                };
+                            }),
+                            workspaceRoot: root,
                         }),
-                        workspaceRoot: root,
-                    }));
+                    );
 
                     break;
                 }
@@ -203,7 +209,8 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
 
         // In `fix` mode, "would change" findings shouldn't fail the run — the
         // tool just wrote them. Only escalate when the user asked for `--check`.
-        const exitCode = mode === "fix" ? (result.hadProcessFailure ? 1 : 0) : exitCodeFor({ ...result, maxSeverity: result.findings.length > 0 ? "error" : undefined });
+        const exitCode
+            = mode === "fix" ? (result.hadProcessFailure ? 1 : 0) : exitCodeFor({ ...result, maxSeverity: result.findings.length > 0 ? "error" : undefined });
 
         if (exitCode !== 0) {
             process.exitCode = exitCode;
@@ -217,7 +224,9 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
             extensions,
             initialFiles: sinceFiles,
             label: "fmt",
-            log: (message) => { logger.info(message); },
+            log: (message) => {
+                logger.info(message);
+            },
             runCycle,
             workspaceRoot: root,
         });

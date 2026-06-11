@@ -19,7 +19,14 @@ const baseOptions: EcosystemUpdateOptions = {
 };
 
 const fetchTags = (tags: { name: string; sha: string }[]): typeof fetch =>
-    vi.fn(async () => Response.json(tags.map((tag) => { return { commit: { sha: tag.sha }, name: tag.name }; }), { status: 200 }));
+    vi.fn(async () =>
+        Response.json(
+            tags.map((tag) => {
+                return { commit: { sha: tag.sha }, name: tag.name };
+            }),
+            { status: 200 },
+        ),
+    );
 
 describe("actions scanner quote preservation", () => {
     it("captures the original quote character when uses: is single-quoted", () => {

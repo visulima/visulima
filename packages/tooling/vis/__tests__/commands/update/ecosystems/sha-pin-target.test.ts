@@ -20,7 +20,14 @@ const baseOptions: EcosystemUpdateOptions = {
 };
 
 const fetchTags = (tags: { name: string; sha: string }[]): typeof fetch =>
-    vi.fn(async () => Response.json(tags.map((tag) => { return { commit: { sha: tag.sha }, name: tag.name }; }), { status: 200 }));
+    vi.fn(async () =>
+        Response.json(
+            tags.map((tag) => {
+                return { commit: { sha: tag.sha }, name: tag.name };
+            }),
+            { status: 200 },
+        ),
+    );
 
 const SHA_PIN_NO_HINT: UsesReference = {
     file: "/tmp/wf.yml",

@@ -17,7 +17,9 @@ const stubAdapter = (id: AdapterId, kind: AdapterKind, extensions: string[]): To
     };
 };
 
-const presence = (id: AdapterId): ToolPresence => { return { adapter: id, declared: true, root: "/repo" }; };
+const presence = (id: AdapterId): ToolPresence => {
+    return { adapter: id, declared: true, root: "/repo" };
+};
 
 describe(registerAdapters, () => {
     it("orders adapters by static precedence", () => {
@@ -45,11 +47,7 @@ describe(registerAdapters, () => {
         expect.assertions(1);
 
         const ordered = registerAdapters(
-            [
-                stubAdapter("oxlint", "lint", ["ts"]),
-                stubAdapter("biome", "both", ["ts"]),
-                stubAdapter("eslint", "lint", ["ts"]),
-            ],
+            [stubAdapter("oxlint", "lint", ["ts"]), stubAdapter("biome", "both", ["ts"]), stubAdapter("eslint", "lint", ["ts"])],
             ["eslint", "biome"],
         );
 
@@ -60,10 +58,7 @@ describe(registerAdapters, () => {
     it("falls back to the static order when the custom order is empty", () => {
         expect.assertions(1);
 
-        const ordered = registerAdapters(
-            [stubAdapter("prettier", "fmt", ["ts"]), stubAdapter("oxlint", "lint", ["ts"])],
-            [],
-        );
+        const ordered = registerAdapters([stubAdapter("prettier", "fmt", ["ts"]), stubAdapter("oxlint", "lint", ["ts"])], []);
 
         expect(ordered.map((adapter) => adapter.id)).toStrictEqual(["oxlint", "prettier"]);
     });

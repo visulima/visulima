@@ -115,7 +115,9 @@ export class GitlabResolver {
             }
 
             const tags = json
-                .map((entry) => { return { name: typeof entry.name === "string" ? entry.name : "", sha: typeof entry.commit?.id === "string" ? entry.commit.id : "" }; })
+                .map((entry) => {
+                    return { name: typeof entry.name === "string" ? entry.name : "", sha: typeof entry.commit?.id === "string" ? entry.commit.id : "" };
+                })
                 .filter((entry) => entry.name !== "");
             const parsed: (ParsedTag & { sha: string })[] = [];
 

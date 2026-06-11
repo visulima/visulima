@@ -30,12 +30,14 @@ describe(emitSarif, () => {
     it("emits one run per adapter with results", () => {
         expect.assertions(3);
 
-        const out = JSON.parse(emitSarif({
-            runs: [
-                { adapter: "eslint", findings: [baseFinding()] },
-                { adapter: "oxlint", findings: [] },
-            ],
-        })) as { runs: { results: unknown[]; tool: { driver: { name: string } } }[] };
+        const out = JSON.parse(
+            emitSarif({
+                runs: [
+                    { adapter: "eslint", findings: [baseFinding()] },
+                    { adapter: "oxlint", findings: [] },
+                ],
+            }),
+        ) as { runs: { results: unknown[]; tool: { driver: { name: string } } }[] };
 
         expect(out.runs).toHaveLength(2);
         expect(out.runs[0]!.tool.driver.name).toBe("eslint");
@@ -45,18 +47,20 @@ describe(emitSarif, () => {
     it("maps severities to SARIF levels", () => {
         expect.assertions(3);
 
-        const out = JSON.parse(emitSarif({
-            runs: [
-                {
-                    adapter: "eslint",
-                    findings: [
-                        baseFinding({ severity: "error" }),
-                        baseFinding({ line: 11, severity: "warning" }),
-                        baseFinding({ line: 12, severity: "info" }),
-                    ],
-                },
-            ],
-        })) as { runs: { results: { level: string }[] }[] };
+        const out = JSON.parse(
+            emitSarif({
+                runs: [
+                    {
+                        adapter: "eslint",
+                        findings: [
+                            baseFinding({ severity: "error" }),
+                            baseFinding({ line: 11, severity: "warning" }),
+                            baseFinding({ line: 12, severity: "info" }),
+                        ],
+                    },
+                ],
+            }),
+        ) as { runs: { results: { level: string }[] }[] };
 
         const levels = out.runs[0]!.results.map((r) => r.level);
 
@@ -68,10 +72,12 @@ describe(emitSarif, () => {
     it("relativises file paths against workspaceRoot via SRCROOT", () => {
         expect.assertions(2);
 
-        const out = JSON.parse(emitSarif({
-            runs: [{ adapter: "eslint", findings: [baseFinding({ file: "/repo/src/a.ts" })] }],
-            workspaceRoot: "/repo",
-        })) as { runs: { results: { locations: { physicalLocation: { artifactLocation: { uri: string; uriBaseId?: string } } }[] }[] }[] };
+        const out = JSON.parse(
+            emitSarif({
+                runs: [{ adapter: "eslint", findings: [baseFinding({ file: "/repo/src/a.ts" })] }],
+                workspaceRoot: "/repo",
+            }),
+        ) as { runs: { results: { locations: { physicalLocation: { artifactLocation: { uri: string; uriBaseId?: string } } }[] }[] }[] };
 
         const loc = out.runs[0]!.results[0]!.locations[0]!.physicalLocation.artifactLocation;
 
@@ -82,10 +88,12 @@ describe(emitSarif, () => {
     it("keeps absolute paths when outside workspaceRoot", () => {
         expect.assertions(1);
 
-        const out = JSON.parse(emitSarif({
-            runs: [{ adapter: "eslint", findings: [baseFinding({ file: "/other/x.ts" })] }],
-            workspaceRoot: "/repo",
-        })) as { runs: { results: { locations: { physicalLocation: { artifactLocation: { uri: string } } }[] }[] }[] };
+        const out = JSON.parse(
+            emitSarif({
+                runs: [{ adapter: "eslint", findings: [baseFinding({ file: "/other/x.ts" })] }],
+                workspaceRoot: "/repo",
+            }),
+        ) as { runs: { results: { locations: { physicalLocation: { artifactLocation: { uri: string } } }[] }[] }[] };
 
         expect(out.runs[0]!.results[0]!.locations[0]!.physicalLocation.artifactLocation.uri).toBe("/other/x.ts");
     });
@@ -93,9 +101,11 @@ describe(emitSarif, () => {
     it("includes a region when line/column data is present", () => {
         expect.assertions(2);
 
-        const out = JSON.parse(emitSarif({
-            runs: [{ adapter: "eslint", findings: [baseFinding({ column: 5, endColumn: 12, endLine: 11, line: 10 })] }],
-        })) as { runs: { results: { locations: { physicalLocation: { region: Record<string, number> } }[] }[] }[] };
+        const out = JSON.parse(
+            emitSarif({
+                runs: [{ adapter: "eslint", findings: [baseFinding({ column: 5, endColumn: 12, endLine: 11, line: 10 })] }],
+            }),
+        ) as { runs: { results: { locations: { physicalLocation: { region: Record<string, number> } }[] }[] }[] };
 
         const { region } = out.runs[0]!.results[0]!.locations[0]!.physicalLocation;
 
@@ -117,7 +127,7 @@ describe(emitSarif, () => {
         };
 
         const order = out.runs[0]!.results.map((r) => {
-            const { physicalLocation } = (r.locations[0]!);
+            const { physicalLocation } = r.locations[0]!;
 
             return `${physicalLocation.artifactLocation.uri}:${String(physicalLocation.region.startLine)}`;
         });
@@ -128,16 +138,20 @@ describe(emitSarif, () => {
     it("aggregates unique rules into tool.driver.rules", () => {
         expect.assertions(2);
 
-        const out = JSON.parse(emitSarif({
-            runs: [{
-                adapter: "eslint",
-                findings: [
-                    baseFinding({ ruleId: "no-explicit-any" }),
-                    baseFinding({ line: 11, ruleId: "no-explicit-any" }),
-                    baseFinding({ line: 12, ruleId: "no-unused-vars" }),
+        const out = JSON.parse(
+            emitSarif({
+                runs: [
+                    {
+                        adapter: "eslint",
+                        findings: [
+                            baseFinding({ ruleId: "no-explicit-any" }),
+                            baseFinding({ line: 11, ruleId: "no-explicit-any" }),
+                            baseFinding({ line: 12, ruleId: "no-unused-vars" }),
+                        ],
+                    },
                 ],
-            }],
-        })) as { runs: { tool: { driver: { rules: { id: string }[] } } }[] };
+            }),
+        ) as { runs: { tool: { driver: { rules: { id: string }[] } } }[] };
 
         const ruleIds = out.runs[0]!.tool.driver.rules.map((r) => r.id).sort();
 
@@ -148,13 +162,17 @@ describe(emitSarif, () => {
     it("surfaces declaredVersion as tool.driver.version", () => {
         expect.assertions(1);
 
-        const out = JSON.parse(emitSarif({
-            runs: [{
-                adapter: "eslint",
-                findings: [],
-                presence: { adapter: "eslint", declared: true, declaredVersion: "8.42.0", root: "/repo" },
-            }],
-        })) as { runs: { tool: { driver: { version?: string } } }[] };
+        const out = JSON.parse(
+            emitSarif({
+                runs: [
+                    {
+                        adapter: "eslint",
+                        findings: [],
+                        presence: { adapter: "eslint", declared: true, declaredVersion: "8.42.0", root: "/repo" },
+                    },
+                ],
+            }),
+        ) as { runs: { tool: { driver: { version?: string } } }[] };
 
         expect(out.runs[0]!.tool.driver.version).toBe("8.42.0");
     });

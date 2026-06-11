@@ -62,9 +62,11 @@ const hasMatchingExtension = (path: string, extensions: Set<string>): boolean =>
  */
 export const runWatchLoop = async (options: WatchLoopOptions): Promise<void> => {
     const { extensions, initialFiles, label, log, runCycle, workspaceRoot } = options;
-    const print = log ?? ((message: string): void => {
-        process.stdout.write(`${message}\n`);
-    });
+    const print
+        = log
+            ?? ((message: string): void => {
+                process.stdout.write(`${message}\n`);
+            });
     const extensionSet = buildExtensionSet(extensions);
 
     await runCycle(initialFiles);

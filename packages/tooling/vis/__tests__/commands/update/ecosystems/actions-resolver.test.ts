@@ -46,8 +46,8 @@ describe(ActionsResolver, () => {
     it("caches per repo so repeated lookups share one round-trip", async () => {
         expect.assertions(1);
 
-        const fetchImpl = vi.fn(
-            async () => Response.json([{ commit: { sha: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef" }, name: "v1.0.0" }], { status: 200 }),
+        const fetchImpl = vi.fn(async () =>
+            Response.json([{ commit: { sha: "deadbeefdeadbeefdeadbeefdeadbeefdeadbeef" }, name: "v1.0.0" }], { status: 200 }),
         ) as typeof fetch;
         const resolver = new ActionsResolver({ apiBase: "https://api.github.com", fetch: fetchImpl, token: undefined });
 
