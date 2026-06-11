@@ -48,7 +48,10 @@ describe("redactProcessor", () => {
         const meta = { message: "Sensitive data" } as Meta<string>;
         const result = processor.process(meta);
 
-        expect(result.message).toBe("<REDACT> data");
+        // The rule supplies an explicit `replacement`, which @visulima/redact now
+        // honors for RegExp patterns (a non-global user RegExp previously hung the
+        // anonymizer, masking the bug behind the default `<REDACT>` numbered mask).
+        expect(result.message).toBe("[REDACTED] data");
     });
 
     it("should handle undefined values in meta fields", () => {
