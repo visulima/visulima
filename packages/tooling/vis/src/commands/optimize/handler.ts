@@ -1,7 +1,5 @@
-import { writeFileSync } from "node:fs";
-
 import { getManifestData } from "@socketsecurity/registry";
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 import { glob, isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
 import { join, resolve } from "@visulima/path";
 import { render } from "@visulima/tui";
@@ -260,7 +258,7 @@ interface CodemodResult {
  * Runs a codemod for a single package across all source files in the project.
  * Returns the number of files modified.
  */
-const runCodemod = async (workspaceRoot: string, packageName: string): Promise<CodemodResult> => {
+const runCodemod = async (fs: CerebroFs, workspaceRoot: string, packageName: string): Promise<CodemodResult> => {
     let filesChanged = 0;
 
     try {
@@ -285,7 +283,7 @@ const runCodemod = async (workspaceRoot: string, packageName: string): Promise<C
                 const result = await codemod.transform({ file: { filename: filePath, source } });
 
                 if (result !== source) {
-                    writeFileSync(filePath, result, "utf8");
+                    await fs.writeFile(filePath, result, "utf8");
                     filesChanged++;
                 }
             } catch (error) {
@@ -311,7 +309,7 @@ const collectSourceFiles = async (dir: string): Promise<string[]> =>
         ignore: ["**/.*/**", "**/.*", "**/node_modules/**", "**/dist/**", "**/coverage/**", "**/.git/**", "**/.next/**", "**/.nuxt/**"],
     });
 
-const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, OptimizeOptions>): Promise<void> => {
+const execute = async ({ fs, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, OptimizeOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
     }
@@ -396,7 +394,7 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
             pail.info(`\nRunning ${String(selectedE18eWithCodemod.length)} codemod${selectedE18eWithCodemod.length === 1 ? "" : "s"}...\n`);
 
             for (const entry of selectedE18eWithCodemod) {
-                const result = await runCodemod(wsRoot, entry.packageName);
+                const result = await runCodemod(fs, wsRoot, entry.packageName);
 
                 if (result.filesChanged > 0) {
                     pail.success(`  ${entry.packageName}: ${String(result.filesChanged)} file${result.filesChanged === 1 ? "" : "s"} updated`);

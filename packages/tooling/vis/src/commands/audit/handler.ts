@@ -1,8 +1,7 @@
 import { spawnSync } from "node:child_process";
-import { existsSync, writeFileSync } from "node:fs";
 import { createInterface } from "node:readline";
 
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
 import { resolve as resolvePath } from "@visulima/path";
 import isInCi from "is-in-ci";
@@ -275,7 +274,13 @@ const runAubeAudit = (workspaceRoot: string, options: Record<string, unknown>, _
     return result.status ?? 1;
 };
 
-const executeAudit = async (workspaceRoot: string, options: Record<string, unknown>, visConfig: VisConfig | undefined, _logger: Console): Promise<void> => {
+const executeAudit = async (
+    fs: CerebroFs,
+    workspaceRoot: string,
+    options: Record<string, unknown>,
+    visConfig: VisConfig | undefined,
+    _logger: Console,
+): Promise<void> => {
     const backend = resolveAuditBackend(options.backend as string | undefined, visConfig?.security?.audit?.backend, visConfig);
 
     if (backend === "aube") {
@@ -337,8 +342,12 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
     // network-flakiness footgun this whole flow is meant to avoid.
     if (isOffline) {
         const resolvedDb = dbPath ?? resolveAdvisoryDbPath(workspaceRoot);
+        const dbExists = await fs
+            .access(resolvedDb)
+            .then(() => true)
+            .catch(() => false);
 
-        if (!existsSync(resolvedDb)) {
+        if (!dbExists) {
             const error = new AdvisoryDbNotFoundError(resolvedDb);
 
             if (quietHeader) {
@@ -1024,7 +1033,7 @@ const executeAudit = async (workspaceRoot: string, options: Record<string, unkno
 
         const outPath = resolvePath(workspaceRoot, reportPath);
 
-        writeFileSync(outPath, html, "utf8");
+        await fs.writeFile(outPath, html, "utf8");
 
         if (!quietHeader) {
             pail.success(`HTML report written to ${outPath}`);
@@ -1599,12 +1608,12 @@ const runApplyTransitive = async (arguments_: RunApplyTransitiveArguments): Prom
     return 0;
 };
 
-const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, AuditOptions>): Promise<void> => {
+const execute = async ({ fs, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, AuditOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
     }
 
-    await executeAudit(wsRoot, options, visConfig, logger);
+    await executeAudit(fs, wsRoot, options, visConfig, logger);
 };
 
 export default execute as CommandExecute<Toolbox>;

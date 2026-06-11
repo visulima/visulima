@@ -1,4 +1,3 @@
-import { rmSync } from "node:fs";
 import { homedir } from "node:os";
 import { createInterface } from "node:readline";
 
@@ -48,7 +47,7 @@ const cleanShellProfiles = (logger: Console): string[] => {
     return cleaned;
 };
 
-const execute = async ({ logger, options }: Toolbox<Console, ImplodeOptions>): Promise<void> => {
+const execute = async ({ fs, logger, options }: Toolbox<Console, ImplodeOptions>): Promise<void> => {
     if (!isAccessibleSync(VIS_HOME)) {
         logger.info("vis is not installed (no ~/.vis directory found).");
 
@@ -92,7 +91,7 @@ const execute = async ({ logger, options }: Toolbox<Console, ImplodeOptions>): P
 
     // Remove installation directory
     try {
-        rmSync(VIS_HOME, { force: true, recursive: true });
+        await fs.rm(VIS_HOME, { force: true, recursive: true });
         logger.info(`\n✓ Removed ${VIS_HOME}`);
     } catch (error: unknown) {
         throw new Error(`Failed to remove ${VIS_HOME}: ${error instanceof Error ? error.message : String(error)}`, { cause: error });

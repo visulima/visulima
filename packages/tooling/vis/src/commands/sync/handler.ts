@@ -1,6 +1,4 @@
-import { readFileSync } from "node:fs";
-
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 import { ensureDirSync, writeFileSync, writeJsonSync } from "@visulima/fs";
 import { dirname, join, relative } from "@visulima/path";
 import zeptomatch from "zeptomatch";
@@ -95,12 +93,13 @@ const matchesAnyGlob = (name: string, globs: string[]): boolean => globs.some((p
  * independently of the CODEOWNERS sync so it still fires when there
  * are no `owners` entries. No-ops silently when nothing is restricted.
  */
-const handleWriteGuard = (
+const handleWriteGuard = async (
+    fs: CerebroFs,
     logger: Console,
     root: string,
     workspace: { projects: Record<string, { restricted?: boolean; root?: string }> },
     checkMode: boolean,
-): void => {
+): Promise<void> => {
     const restricted: RestrictedProject[] = Object.entries(workspace.projects)
         .filter(([, project]) => project.restricted === true)
         .map(([name, project]) => {
@@ -124,7 +123,7 @@ const handleWriteGuard = (
             let existing = "";
 
             try {
-                existing = readFileSync(outPath, "utf8");
+                existing = await fs.readFile(outPath, "utf8");
             } catch (error: unknown) {
                 if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
                     throw error;
@@ -157,13 +156,13 @@ const handleWriteGuard = (
     logger.info(`Write Guard CI scoped to ${restricted.length} restricted project${restricted.length === 1 ? "" : "s"}.`);
 };
 
-const runCodeowners = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SyncOptions>): Promise<void> => {
+const runCodeowners = async ({ fs, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, SyncOptions>): Promise<void> => {
     const root = wsRoot as string;
     const { workspace } = discoverWorkspace(root, visConfig);
     const codeownersConfig = visConfig?.codeowners;
 
     if (options.writeGuard === true) {
-        handleWriteGuard(logger, root, workspace, options.check === true);
+        await handleWriteGuard(fs, logger, root, workspace, options.check === true);
     }
 
     const sources = parseCsvOption<CodeownersSource>(options.from, codeownersConfig?.sources ?? ["project-json"], isCodeownersSource);
@@ -206,7 +205,7 @@ const runCodeowners = async ({ logger, options, visConfig, workspaceRoot: wsRoot
     let existing = "";
 
     try {
-        existing = readFileSync(outPath, "utf8");
+        existing = await fs.readFile(outPath, "utf8");
     } catch (error: unknown) {
         if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
             throw error;
