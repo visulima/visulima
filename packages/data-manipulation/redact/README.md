@@ -174,9 +174,7 @@ the value — e.g. the last four digits of a card, or mask the local part of an 
 ```typescript
 import { redact } from "@visulima/redact";
 
-redact({ card: "4111111111111111" }, [
-    { key: "card", replacement: (value) => `****${String(value).slice(-4)}` },
-]);
+redact({ card: "4111111111111111" }, [{ key: "card", replacement: (value) => `****${String(value).slice(-4)}` }]);
 // => { card: "****1111" }
 ```
 

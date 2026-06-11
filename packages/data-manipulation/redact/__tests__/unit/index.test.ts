@@ -50,7 +50,7 @@ describe(redact, () => {
                 12_345,
                 // @ts-expect-error using null as a placeholder
                 [{ password: "qwery123456", username: "alice.smith" }, "Hello World", null],
-                "{ \"amount\": 9.75, \"credit_card_number\": \"4551201891449281\" }",
+                '{ "amount": 9.75, "credit_card_number": "4551201891449281" }',
             ];
 
             mixedArrayInput[2][2] = mixedArrayInput;
@@ -81,7 +81,7 @@ describe(redact, () => {
                 expect(input[2][0].username).toBe("alice.smith");
                 expect(input[2][1]).toBe("Hello World");
                 expect(input[2][2]).toBe(input);
-                expect(input[3]).toBe("{ \"amount\": 9.75, \"credit_card_number\": \"4551201891449281\" }");
+                expect(input[3]).toBe('{ "amount": 9.75, "credit_card_number": "4551201891449281" }');
             });
 
             it("maintains non-sensitive data in the output object, including circular references", () => {
@@ -248,7 +248,7 @@ describe(redact, () => {
                 _header: String.raw`GET /some/items\nAuthorization: Bearer someheadertoken`,
                 Authorization: "Bearer somedatatoken",
                 body: {
-                    info: "{ \"first_name\": \"Bob\", \"last_name\": \"Bobbington\", \"PASSWORD\": \"asecurepassword1234\", \"amount\": 4 }",
+                    info: '{ "first_name": "Bob", "last_name": "Bobbington", "PASSWORD": "asecurepassword1234", "amount": 4 }',
                     notes: "Use https://login.example.com?username=jon.smith&password=qwerty/?authentic=true to login.",
                     "Private-Data": "somesecretstuff",
                 },
@@ -283,7 +283,7 @@ describe(redact, () => {
                 expect(input.Authorization).toBe("Bearer somedatatoken");
                 expect(input.method).toBe("POST");
                 expect(input.body["Private-Data"]).toBe("somesecretstuff");
-                expect(input.body.info).toBe("{ \"first_name\": \"Bob\", \"last_name\": \"Bobbington\", \"PASSWORD\": \"asecurepassword1234\", \"amount\": 4 }");
+                expect(input.body.info).toBe('{ "first_name": "Bob", "last_name": "Bobbington", "PASSWORD": "asecurepassword1234", "amount": 4 }');
                 expect(input.body.notes).toBe("Use https://login.example.com?username=jon.smith&password=qwerty/?authentic=true to login.");
                 expect(input.body.parent).toStrictEqual(input);
                 expect(input.numRetries).toBe(6);
@@ -850,7 +850,7 @@ describe(redact, () => {
             customJsonParseError.Authorization = "Username: Bob, Password: pa$$word";
             customJsonParseError.customData = {
                 error: customJsonParseError,
-                info: "{ \"json\": false, \"veryPrivateInfo\": \"credentials\" }",
+                info: '{ "json": false, "veryPrivateInfo": "credentials" }',
             };
 
             const input = customJsonParseError;
@@ -882,7 +882,7 @@ describe(redact, () => {
                 expect(input.stack).toBe(inputStack);
 
                 expect(input.Authorization).toBe("Username: Bob, Password: pa$$word");
-                expect(input.customData.info).toBe("{ \"json\": false, \"veryPrivateInfo\": \"credentials\" }");
+                expect(input.customData.info).toBe('{ "json": false, "veryPrivateInfo": "credentials" }');
                 expect(input.customData.error).toBe(input);
             });
 
