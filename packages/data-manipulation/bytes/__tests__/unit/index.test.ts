@@ -2,7 +2,20 @@ import { Buffer } from "node:buffer";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { asciiToUint8Array, bufferToUint8Array, isUint8Array, toUint8Array, utf8ToUint8Array } from "../../src/index";
+import {
+    asciiToUint8Array,
+    base64ToUint8Array,
+    bufferToUint8Array,
+    hexToUint8Array,
+    isUint8Array,
+    toUint8Array,
+    Uint8ArrayIncompatibleError,
+    uint8ArrayToAscii,
+    uint8ArrayToBase64,
+    uint8ArrayToHex,
+    uint8ArrayToUtf8,
+    utf8ToUint8Array,
+} from "../../src/index";
 
 /**
  * Build an array-like object that satisfies `TemplateStringsArray` but is NOT a
@@ -277,20 +290,227 @@ describe("@visulima/bytes", () => {
         });
     });
 
+    describe("isUint8Array cross-realm", () => {
+        it("should recognise a Uint8Array from another realm via toStringTag", () => {
+            expect.assertions(2);
+
+            // Simulate a cross-realm value: an object that fails `instanceof`
+            // Uint8Array but reports `[object Uint8Array]`.
+            const crossRealm = Object.create(null) as Record<PropertyKey, unknown>;
+
+            Object.defineProperty(crossRealm, Symbol.toStringTag, { value: "Uint8Array" });
+
+            expect(crossRealm instanceof Uint8Array).toBe(false);
+            expect(isUint8Array(crossRealm)).toBe(true);
+        });
+
+        it("should not match plain objects", () => {
+            expect.assertions(1);
+
+            expect(isUint8Array({})).toBe(false);
+        });
+    });
+
+    describe("toUint8Array error contract", () => {
+        it("should throw Uint8ArrayIncompatibleError with a code property", () => {
+            expect.assertions(4);
+
+            let caught: unknown;
+
+            try {
+                toUint8Array(123);
+            } catch (error) {
+                caught = error;
+            }
+
+            expect(caught).toBeInstanceOf(Uint8ArrayIncompatibleError);
+            expect((caught as Uint8ArrayIncompatibleError).code).toBe("UINT8ARRAY_INCOMPATIBLE");
+            expect((caught as Error).message).toContain("UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array");
+            expect((caught as Error).message).toContain("number");
+        });
+
+        it("should report the rejected value type for null", () => {
+            expect.assertions(1);
+
+            // eslint-disable-next-line unicorn/no-null
+            const nullValue = null;
+
+            expect(() => toUint8Array(nullValue)).toThrow("received: null");
+        });
+    });
+
+    describe("toUint8Array copy option", () => {
+        it("should return the same reference without copy", () => {
+            expect.assertions(1);
+
+            const u8 = new Uint8Array([1, 2, 3]);
+
+            expect(toUint8Array(u8)).toBe(u8);
+        });
+
+        it("should return a distinct copy with { copy: true }", () => {
+            expect.assertions(2);
+
+            const u8 = new Uint8Array([1, 2, 3]);
+            const result = toUint8Array(u8, { copy: true });
+
+            expect(result).not.toBe(u8);
+            expect(result).toStrictEqual(u8);
+        });
+
+        it("should copy ArrayBuffer-backed data with { copy: true }", () => {
+            expect.assertions(1);
+
+            const ab = new Uint8Array([1, 2, 3]).buffer;
+            const result = toUint8Array(ab, { copy: true });
+
+            expect(result.buffer).not.toBe(ab);
+        });
+    });
+
+    describe(uint8ArrayToUtf8, () => {
+        it("should decode UTF-8 bytes", () => {
+            expect.assertions(1);
+
+            expect(uint8ArrayToUtf8(new Uint8Array([228, 189, 160, 229, 165, 189]))).toBe("你好");
+        });
+
+        it("should round-trip with utf8ToUint8Array", () => {
+            expect.assertions(1);
+
+            const text = "Hello 🌍 你好 €";
+
+            expect(uint8ArrayToUtf8(utf8ToUint8Array(text))).toBe(text);
+        });
+
+        it("should accept an ArrayBuffer", () => {
+            expect.assertions(1);
+
+            expect(uint8ArrayToUtf8(new Uint8Array([72, 105]).buffer)).toBe("Hi");
+        });
+    });
+
+    describe(uint8ArrayToAscii, () => {
+        it("should decode latin1 bytes", () => {
+            expect.assertions(1);
+
+            expect(uint8ArrayToAscii(new Uint8Array([72, 105, 33]))).toBe("Hi!");
+        });
+
+        it("should round-trip with asciiToUint8Array for latin1 input", () => {
+            expect.assertions(1);
+
+            expect(uint8ArrayToAscii(asciiToUint8Array("Hello!"))).toBe("Hello!");
+        });
+    });
+
+    describe("hex codecs", () => {
+        it("should encode bytes to lowercase hex", () => {
+            expect.assertions(1);
+
+            expect(uint8ArrayToHex(new Uint8Array([0, 15, 255, 171]))).toBe("000fffab");
+        });
+
+        it("should decode hex (both cases) to bytes", () => {
+            expect.assertions(2);
+
+            expect(hexToUint8Array("0fff")).toStrictEqual(new Uint8Array([15, 255]));
+            expect(hexToUint8Array("0FFF")).toStrictEqual(new Uint8Array([15, 255]));
+        });
+
+        it("should round-trip", () => {
+            expect.assertions(1);
+
+            const bytes = new Uint8Array([0, 1, 2, 200, 255]);
+
+            expect(hexToUint8Array(uint8ArrayToHex(bytes))).toStrictEqual(bytes);
+        });
+
+        it("should throw on odd-length input", () => {
+            expect.assertions(1);
+
+            expect(() => hexToUint8Array("abc")).toThrow("even length");
+        });
+
+        it("should throw on non-hex characters", () => {
+            expect.assertions(1);
+
+            expect(() => hexToUint8Array("zz")).toThrow("non-hex character");
+        });
+    });
+
+    describe("base64 codecs", () => {
+        it("should encode bytes to base64", () => {
+            expect.assertions(1);
+
+            expect(uint8ArrayToBase64(new Uint8Array([104, 105]))).toBe("aGk=");
+        });
+
+        it("should decode base64 to bytes", () => {
+            expect.assertions(1);
+
+            expect(base64ToUint8Array("aGk=")).toStrictEqual(new Uint8Array([104, 105]));
+        });
+
+        it("should round-trip arbitrary bytes", () => {
+            expect.assertions(1);
+
+            const bytes = new Uint8Array([0, 1, 250, 255, 128, 64]);
+
+            expect(base64ToUint8Array(uint8ArrayToBase64(bytes))).toStrictEqual(bytes);
+        });
+
+        it("should encode a subarray view correctly", () => {
+            expect.assertions(1);
+
+            const view = new Uint8Array([0, 104, 105, 0]).subarray(1, 3);
+
+            expect(uint8ArrayToBase64(view)).toBe("aGk=");
+        });
+    });
+
+    describe("@std/bytes re-export smoke", () => {
+        it("should re-export concat, equals and indexOfNeedle", async () => {
+            expect.assertions(3);
+
+            const module = await import("../../src/index");
+
+            // `concat` here is the @std/bytes slice-concat (takes an array of
+            // Uint8Arrays), not Array.prototype.concat.
+            // eslint-disable-next-line unicorn/prefer-spread
+            expect(module.concat([new Uint8Array([1]), new Uint8Array([2, 3])])).toStrictEqual(new Uint8Array([1, 2, 3]));
+            expect(module.equals(new Uint8Array([1, 2]), new Uint8Array([1, 2]))).toBe(true);
+            expect(module.indexOfNeedle(new Uint8Array([0, 1, 2, 3]), new Uint8Array([2, 3]))).toBe(2);
+        });
+    });
+
     describe("browser environment (no Buffer)", () => {
+        // The module branches on `typeof Buffer === "function"` at evaluation
+        // time, so to exercise the browser/edge code paths we delete the global
+        // `Buffer` and re-import a fresh module copy.
+        const importWithoutBuffer = async () => {
+            const originalBuffer = globalThis.Buffer;
+
+            // @ts-expect-error simulate a runtime without Buffer
+            delete globalThis.Buffer;
+
+            vi.resetModules();
+
+            try {
+                return await import("../../src/index");
+            } finally {
+                globalThis.Buffer = originalBuffer;
+            }
+        };
+
         afterEach(() => {
             vi.resetModules();
-            vi.doUnmock("node:buffer");
         });
 
         it("isUint8Array uses the non-Buffer code path", async () => {
             expect.assertions(3);
 
-            vi.doMock(import("node:buffer"), () => {
-                return { Buffer: undefined };
-            });
-
-            const bytesModule = await import("../../src/index");
+            const bytesModule = await importWithoutBuffer();
 
             expect(bytesModule.isUint8Array(new Uint8Array([1]))).toBe(true);
             expect(bytesModule.isUint8Array([1, 2])).toBe(false);
@@ -300,11 +520,7 @@ describe("@visulima/bytes", () => {
         it("toUint8Array still converts Uint8Array, ArrayBuffer and number arrays", async () => {
             expect.assertions(3);
 
-            vi.doMock(import("node:buffer"), () => {
-                return { Buffer: undefined };
-            });
-
-            const bytesModule = await import("../../src/index");
+            const bytesModule = await importWithoutBuffer();
             const u8 = new Uint8Array([9]);
 
             expect(bytesModule.toUint8Array(u8)).toBe(u8);
@@ -312,17 +528,42 @@ describe("@visulima/bytes", () => {
             expect(bytesModule.toUint8Array([4, 5])).toStrictEqual(new Uint8Array([4, 5]));
         });
 
-        it("toUint8Array throws for strings when Buffer is unavailable", async () => {
+        it("utf8ToUint8Array works via TextEncoder without Buffer", async () => {
             expect.assertions(2);
 
-            vi.doMock(import("node:buffer"), () => {
-                return { Buffer: undefined };
-            });
+            const bytesModule = await importWithoutBuffer();
 
-            const bytesModule = await import("../../src/index");
+            expect(bytesModule.utf8ToUint8Array("Hi!")).toStrictEqual(new Uint8Array([72, 105, 33]));
+            expect(bytesModule.utf8ToUint8Array("你好")).toStrictEqual(new Uint8Array([228, 189, 160, 229, 165, 189]));
+        });
 
-            expect(() => bytesModule.toUint8Array("string")).toThrow("UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array");
-            expect(() => bytesModule.toUint8Array(123)).toThrow("UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array");
+        it("asciiToUint8Array works via the manual loop without Buffer", async () => {
+            expect.assertions(1);
+
+            const bytesModule = await importWithoutBuffer();
+
+            expect(bytesModule.asciiToUint8Array("Hi!")).toStrictEqual(new Uint8Array([72, 105, 33]));
+        });
+
+        it("toUint8Array converts strings via TextEncoder when Buffer is unavailable", async () => {
+            expect.assertions(2);
+
+            const bytesModule = await importWithoutBuffer();
+
+            expect(bytesModule.toUint8Array("string")).toStrictEqual(new Uint8Array([115, 116, 114, 105, 110, 103]));
+            expect(() => bytesModule.toUint8Array(123)).toThrow("UINT8ARRAY_INCOMPATIBLE");
+        });
+
+        it("hex and base64 codecs work without Buffer", async () => {
+            expect.assertions(4);
+
+            const bytesModule = await importWithoutBuffer();
+            const bytes = new Uint8Array([104, 105]);
+
+            expect(bytesModule.uint8ArrayToHex(bytes)).toBe("6869");
+            expect(bytesModule.hexToUint8Array("6869")).toStrictEqual(bytes);
+            expect(bytesModule.uint8ArrayToBase64(bytes)).toBe("aGk=");
+            expect(bytesModule.base64ToUint8Array("aGk=")).toStrictEqual(bytes);
         });
     });
 });

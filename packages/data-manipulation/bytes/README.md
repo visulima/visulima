@@ -270,13 +270,17 @@ This package provides the following utility functions for working with `Uint8Arr
 - **`lastIndexOfNeedle`**: Returns the index of the last occurrence of the needle array in the source array, or -1 if it is not present.
 - **`repeat`**: Returns a new byte slice composed of count repetitions of the source array.
 - **`startsWith`**: Returns true if the prefix array appears at the start of the source array, false otherwise.
-- **`bufferToUint8Array(buf: Buffer): Uint8Array`**: Converts a Node.js `Buffer` to a `Uint8Array`.
-- **`isUint8Array(x: unknown): x is Uint8Array`**: Checks if a value is a `Uint8Array` or (in Node.js) a `Buffer`.
-- **`asciiToUint8Array(txt: TemplateStringsArray | string | [string]): Uint8Array`**: Converts an ASCII string to a `Uint8Array`.
-- **`utf8ToUint8Array(txt: TemplateStringsArray | string | [string]): Uint8Array`**: Converts a UTF-8 string to a `Uint8Array` (requires Node.js `Buffer` support).
-- **`toUint8Array(data: unknown): Uint8Array`**: Attempts to convert various data types (like `ArrayBuffer`, `Array` of numbers, `Buffer`, strings via `Buffer.from`) to a `Uint8Array`.
+- **`bufferToUint8Array(buf: Buffer): Uint8Array`**: Converts a Node.js `Buffer` to a `Uint8Array` (returns a view; see the security note below).
+- **`isUint8Array(x: unknown): x is Uint8Array`**: Checks if a value is a `Uint8Array` or (in Node.js) a `Buffer`. Cross-realm safe.
+- **`asciiToUint8Array(txt): Uint8Array`**: Converts a latin1 string (one byte per code unit, low byte kept) to a `Uint8Array`.
+- **`utf8ToUint8Array(txt): Uint8Array`**: Converts a UTF-8 string to a `Uint8Array` (cross-runtime, via `TextEncoder`).
+- **`uint8ArrayToUtf8(data): string`**: Decodes bytes as a UTF-8 string.
+- **`uint8ArrayToAscii(data): string`**: Decodes bytes as a latin1 string (inverse of `asciiToUint8Array`).
+- **`uint8ArrayToHex(data): string` / `hexToUint8Array(hex): Uint8Array`**: Hex codecs.
+- **`uint8ArrayToBase64(data): string` / `base64ToUint8Array(base64): Uint8Array`**: Base64 (RFC 4648) codecs.
+- **`toUint8Array(data, options?): Uint8Array`**: Converts various data types (`ArrayBuffer`, `Array` of numbers, `Buffer`, strings) to a `Uint8Array`. Pass `{ copy: true }` to force an owned copy. Throws `Uint8ArrayIncompatibleError` (with a `code` property) on unsupported input.
 
-## Related
+## Local helper reference
 
 ### `bufferToUint8Array`
 
@@ -326,9 +330,9 @@ assert.deepStrictEqual(templateAscii, new Uint8Array([87, 111, 114, 108, 100]));
 
 ### `utf8ToUint8Array`
 
-Converts a UTF-8 string to a `Uint8Array`.
+Converts a UTF-8 string to a `Uint8Array` (cross-runtime, via `TextEncoder`).
 
-````typescript
+```typescript
 import { utf8ToUint8Array } from "@visulima/bytes";
 import assert from "node:assert";
 
@@ -337,12 +341,40 @@ assert.deepStrictEqual(utf8Array, new Uint8Array([228, 189, 160, 229, 165, 189])
 
 const templateUtf8 = utf8ToUint8Array`🌍`; // Globe emoji
 assert.deepStrictEqual(templateUtf8, new Uint8Array([240, 159, 140, 141]));
+```
+
+### `uint8ArrayToUtf8` / `uint8ArrayToAscii`
+
+Decode bytes back into a string.
+
+```typescript
+import { uint8ArrayToUtf8, uint8ArrayToAscii } from "@visulima/bytes";
+import assert from "node:assert";
+
+assert.strictEqual(uint8ArrayToUtf8(new Uint8Array([228, 189, 160, 229, 165, 189])), "你好");
+assert.strictEqual(uint8ArrayToAscii(new Uint8Array([72, 105])), "Hi");
+```
+
+### Hex & Base64 codecs
+
+```typescript
+import { uint8ArrayToHex, hexToUint8Array, uint8ArrayToBase64, base64ToUint8Array } from "@visulima/bytes";
+import assert from "node:assert";
+
+assert.strictEqual(uint8ArrayToHex(new Uint8Array([15, 255])), "0fff");
+assert.deepStrictEqual(hexToUint8Array("0fff"), new Uint8Array([15, 255]));
+
+assert.strictEqual(uint8ArrayToBase64(new Uint8Array([104, 105])), "aGk=");
+assert.deepStrictEqual(base64ToUint8Array("aGk="), new Uint8Array([104, 105]));
+```
+
+### `toUint8Array`
 
 Attempts to convert various data types to a `Uint8Array`.
 
 ```typescript
-import { toUint8Array } from "@visulima/bytes";
-import { Buffer } from "buffer";
+import { toUint8Array, Uint8ArrayIncompatibleError } from "@visulima/bytes";
+import { Buffer } from "node:buffer";
 import assert from "node:assert";
 
 // From Uint8Array
@@ -362,15 +394,19 @@ assert.deepStrictEqual(toUint8Array([4, 5, 6]), new Uint8Array([4, 5, 6]));
 const nodeBuf = Buffer.from("Node");
 assert.deepStrictEqual(toUint8Array(nodeBuf), new Uint8Array([78, 111, 100, 101]));
 
-// From string (via Buffer.from in Node.js)
+// From string (UTF-8)
 assert.deepStrictEqual(toUint8Array("String"), new Uint8Array([83, 116, 114, 105, 110, 103]));
+
+// Force an owned copy (avoids sharing memory with the input)
+assert.deepStrictEqual(toUint8Array(u8, { copy: true }), u8);
 
 try {
   toUint8Array(123); // Not convertible
-} catch (e: any) {
-  assert.strictEqual(e.message, "UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array");
+} catch (error) {
+  assert.ok(error instanceof Uint8ArrayIncompatibleError);
+  assert.strictEqual(error.code, "UINT8ARRAY_INCOMPATIBLE");
 }
-````
+```
 
 ## Supported Node.js Versions
 
