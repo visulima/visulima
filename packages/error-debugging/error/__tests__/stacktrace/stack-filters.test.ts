@@ -15,11 +15,7 @@ describe("stack filters presets", () => {
         expect.assertions(2);
 
         const error = makeError(
-            [
-                "Error: boom",
-                "    at Object.<anonymous> (/app/index.js:10:5)",
-                "    at Module._compile (node:internal/modules/cjs/loader:1234:14)",
-            ].join("\n"),
+            ["Error: boom", "    at Object.<anonymous> (/app/index.js:10:5)", "    at Module._compile (node:internal/modules/cjs/loader:1234:14)"].join("\n"),
         );
 
         const frames = parseStacktrace(error);
@@ -51,11 +47,7 @@ describe("stack filters presets", () => {
         expect.assertions(2);
 
         const error = makeError(
-            [
-                "Error: boom",
-                "    at Object.<anonymous> (/app/index.js:10:5)",
-                "    at handler (/app/node_modules/some-dep/dist/index.js:42:3)",
-            ].join("\n"),
+            ["Error: boom", "    at Object.<anonymous> (/app/index.js:10:5)", "    at handler (/app/node_modules/some-dep/dist/index.js:42:3)"].join("\n"),
         );
 
         const frames = parseStacktrace(error, { filter: stackFilters.nodeModules });

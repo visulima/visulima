@@ -55,7 +55,7 @@ const getCacheDirectory = (directory?: string): string => {
         return directory;
     }
 
-    const xdgCacheHome = typeof process !== "undefined" ? process.env?.XDG_CACHE_HOME : undefined;
+    const xdgCacheHome = typeof process === "undefined" ? undefined : process.env.XDG_CACHE_HOME;
     const base = xdgCacheHome && xdgCacheHome.length > 0 ? xdgCacheHome : join(homedir(), ".cache");
 
     return join(base, "visulima-error-cache");

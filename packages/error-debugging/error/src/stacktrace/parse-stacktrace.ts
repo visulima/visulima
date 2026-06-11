@@ -19,7 +19,13 @@ const isDebugEnabled = (): boolean => process.env?.DEBUG === "true";
  */
 const debugLog = (message: string, ...arguments_: unknown[]): void => {
     if (isDebugEnabled()) {
-        const resolved = arguments_.map((argument) => (typeof argument === "function" ? (argument as () => unknown)() : argument));
+        const resolved = arguments_.map((argument) => {
+            if (typeof argument === "function") {
+                return (argument as () => unknown)();
+            }
+
+            return argument;
+        });
 
         // eslint-disable-next-line no-console
         console.debug(`error:parse-stacktrace: ${message}`, ...resolved);
@@ -284,7 +290,7 @@ const parseChromium = (line: string): Trace | undefined => {
             // Tag Node internal frames (`node:internal/...`, `node:*`, bare `internal/...`) so
             // consumers can filter them by type. eval/native take precedence.
             // eslint-disable-next-line sonarjs/no-nested-conditional
-            type: (isEval ? "eval" : isNative ? "native" : isNodeInternalFile(file) ? "internal" : undefined) as TraceType,
+            type: isEval ? "eval" : isNative ? "native" : isNodeInternalFile(file) ? "internal" : undefined,
         };
 
         if (windowsParts) {
@@ -422,7 +428,6 @@ const NODE_MODULES_LINE_REGEX = /node_modules[/\\]/;
  * Each preset is a predicate over a raw stack line that returns `true` to KEEP the frame. They are
  * the one-liners users coming from `clean-stack`/`youch` expect; compose them with
  * {@link composeFilters}.
- *
  * @example
  *
  * ```ts
@@ -445,8 +450,8 @@ const stackFilters: {
  */
 const composeFilters
     = (...filters: ((line: string) => boolean)[]) =>
-    (line: string): boolean =>
-        filters.every((filter) => filter(line));
+        (line: string): boolean =>
+            filters.every((filter) => filter(line));
 
 const parseStacktrace = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (line: string) => boolean; frameLimit: number }> = {}): Trace[] => {
     // Some error types (e.g. Opera) use `stacktrace` instead of `stack`
