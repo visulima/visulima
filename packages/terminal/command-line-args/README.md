@@ -78,6 +78,32 @@ import { commandLineArgs } from "@visulima/command-line-args";
 const args = commandLineArgs(definitions);
 ```
 
+**Drop-in migration:** a default export is provided so code written against the original
+`command-line-args` package only needs to change the import specifier:
+
+```typescript
+import commandLineArgs from "@visulima/command-line-args";
+const args = commandLineArgs(definitions);
+```
+
+### Typed Results
+
+Pass an `as const` array (or wrap it with `defineOptions`) to infer a precise result type
+instead of the loose `CommandLineOptions` shape:
+
+```typescript
+import { defineOptions, parseArgs } from "@visulima/command-line-args";
+
+const definitions = defineOptions([
+    { name: "file", type: String },
+    { name: "verbose", type: Boolean },
+    { name: "ports", type: Number, multiple: true },
+]);
+
+const args = parseArgs(definitions);
+// args: { file: string | null; verbose: boolean; ports: number[] }
+```
+
 ### Working with Multiple Values
 
 Use the `multiple` flag to accept multiple values for an option:
@@ -209,6 +235,44 @@ const args = commandLineArgs(definitions, { stopAtFirstUnknown: true });
 // Result: { verbose: true, _unknown: ["--unknown-option", "value"] }
 ```
 
+### Boolean Negation (`--no-<flag>`)
+
+Enable `negation` to let `--no-<flag>` set a `Boolean` option to `false` (like minimist,
+yargs and Node's `util.parseArgs` `allowNegative`):
+
+```typescript
+import { commandLineArgs } from "@visulima/command-line-args";
+
+const definitions = [{ name: "verbose", type: Boolean, defaultValue: true }];
+
+const args = commandLineArgs(definitions, { negation: true });
+// Usage: node script.js --no-verbose
+// Result: { verbose: false }
+```
+
+An explicitly defined option (e.g. `{ name: "no-verbose" }`) always takes precedence over
+implicit negation, and only `Boolean`-typed options can be negated.
+
+### Strict Type Validation
+
+By default `type: Number` mirrors the original library and produces `NaN` for unparseable
+input (`--port abc` → `{ port: NaN }`). Enable `strictTypes` to throw an `InvalidValueError`
+instead:
+
+```typescript
+import { commandLineArgs, InvalidValueError } from "@visulima/command-line-args";
+
+const definitions = [{ name: "port", type: Number }];
+
+try {
+    commandLineArgs(definitions, { argv: ["--port", "abc"], strictTypes: true });
+} catch (error) {
+    if (error instanceof InvalidValueError) {
+        console.error(error.message); // Invalid Number value 'abc' for option 'port'
+    }
+}
+```
+
 ### Custom Type Conversion
 
 Define custom type conversion functions:
@@ -292,13 +356,13 @@ if (options.verbose) console.log("Verbose mode enabled");
 
 ## Features
 
-- ✅ **Lightweight**: Zero dependencies, only ~33KB bundle size
-- ✅ **Fast**: Optimized parsing with smart memoization
-- ✅ **TypeScript**: Full type safety and excellent IDE support
+- ✅ **Lightweight**: A single runtime dependency (`@visulima/error`, used for the typed error classes)
+- ✅ **Fast**: Linear tokenizer and single-pass resolver
+- ✅ **TypeScript**: Full type safety, inferred result types via `as const`/`defineOptions`
 - ✅ **Flexible**: Supports boolean, string, number, and custom types
-- ✅ **Powerful**: Default options, multiple values, grouping, and more
-- ✅ **Robust**: Comprehensive error handling and validation
-- ✅ **Well-tested**: 146+ unit tests with 100% pass rate
+- ✅ **Powerful**: Default options, multiple values, grouping, `--no-<flag>` negation, and more
+- ✅ **Robust**: Comprehensive error handling, validation, and prototype-safe parsing
+- ✅ **Well-tested**: Extensive unit-test suite across the parsing pipeline
 
 ## API Reference
 
@@ -339,6 +403,8 @@ const args = commandLineArgs(definitions, options);
 | `debug`              | `boolean`  | `false`                 | Enable debug logging                  |
 | `partial`            | `boolean`  | `false`                 | Allow unknown options                 |
 | `stopAtFirstUnknown` | `boolean`  | `false`                 | Stop parsing at first unknown option  |
+| `negation`           | `boolean`  | `false`                 | Enable `--no-<flag>` boolean negation |
+| `strictTypes`        | `boolean`  | `false`                 | Throw on invalid type conversions     |
 
 #### OptionDefinition
 
@@ -368,6 +434,7 @@ Returns a `CommandLineOptions` object with parsed values and special keys:
 - **`UnknownOptionError`**: Unknown option encountered (strict mode)
 - **`UnknownValueError`**: Unconsumed positional arguments (strict mode)
 - **`AlreadySetError`**: Option set multiple times (non-multiple mode)
+- **`InvalidValueError`**: Value failed type conversion (when `strictTypes` is enabled)
 
 ## Related
 

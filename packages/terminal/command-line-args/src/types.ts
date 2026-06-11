@@ -37,6 +37,13 @@ export interface ParseOptions {
     debug?: boolean;
 
     /**
+     * If `true`, a `--no-NAME` flag (e.g. `--no-verbose`) sets the matching `Boolean`
+     * option to `false` (so `--no-verbose` produces `{ verbose: false }`). Mirrors the behaviour of
+     * minimist, yargs and Node's `util.parseArgs` `allowNegative`. Defaults to `false`.
+     */
+    negation?: boolean;
+
+    /**
      * If `true`, `commandLineArgs` will not throw on unknown options or values, instead returning them in the `_unknown` property of the output.
      */
     partial?: boolean;
@@ -46,12 +53,23 @@ export interface ParseOptions {
      * and the remaining arguments returned in the `_unknown` property of the output. If set, `partial: true` is implied.
      */
     stopAtFirstUnknown?: boolean;
+
+    /**
+     * If `true`, type conversions that produce invalid values throw an `InvalidValueError`
+     * instead of silently propagating. Currently this catches `type: Number` values that parse
+     * to `NaN` (e.g. `--port abc`). Defaults to `false` for parity with the original library.
+     */
+    strictTypes?: boolean;
 }
 
 /**
  * Definition for a command-line option.
+ *
+ * The optional `Name` and `Value` type parameters allow {@link CommandLineOptions}
+ * to be inferred from an `as const` array of definitions. They default to the
+ * loose runtime shape so plain `OptionDefinition` usage is unaffected.
  */
-export interface OptionDefinition {
+export interface OptionDefinition<Name extends string = string, Value = unknown> {
     /**
      * A getopt-style short option name. Can be any single character except a digit or hyphen.
      */
@@ -66,8 +84,7 @@ export interface OptionDefinition {
     /**
      * An initial value for the option.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    defaultValue?: any;
+    defaultValue?: Value;
 
     /**
      * One or more group names the option belongs to.
@@ -87,12 +104,40 @@ export interface OptionDefinition {
     /**
      * The long option name.
      */
-    name: string;
+    name: Name;
 
     /**
      * A setter function (you receive the output from this) enabling you to be specific about the type and value received. Typical values
      * are `String` (the default), `Number` and `Boolean` but you can use a custom function. If no option value was set you will receive `null`.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    type?: (input: string) => any;
+    type?: (input: string) => Value;
 }
+
+/**
+ * Resolve a single {@link OptionDefinition} to the type of its parsed value,
+ * taking `type`, `multiple`/`lazyMultiple` and `defaultValue` into account.
+ * @internal
+ */
+export type InferOptionValue<Definition extends OptionDefinition> = Definition extends { type: (input: string) => infer R }
+    ? Definition extends { lazyMultiple: true } | { multiple: true }
+        ? R[]
+        : R | (Definition extends { defaultValue: infer D } ? D : null)
+    : Definition extends { lazyMultiple: true } | { multiple: true }
+        ? string[]
+        : Definition extends { type: BooleanConstructor }
+            ? boolean
+            : string | null;
+
+/**
+ * Infer the parsed result object from a tuple/array of {@link OptionDefinition}s.
+ * Use with an `as const` array (or `defineOptions`) to get a precisely-typed
+ * result, e.g. `{ file?: string; verbose?: boolean }`.
+ *
+ * Falls back to the loose {@link CommandLineOptions} shape when the definitions
+ * are a plain (non-`const`) `OptionDefinition[]`.
+ * For example, given an `as const` array with a `file: String` and a `verbose: Boolean`
+ * definition, the inferred result is `{ file: string | null; verbose: boolean; _unknown?: string[] }`.
+ */
+export type InferCommandLineOptions<Definitions extends ReadonlyArray<OptionDefinition>> = string extends Definitions[number]["name"]
+    ? CommandLineOptions
+    : { [Definition in Definitions[number] as Definition["name"]]: InferOptionValue<Definition> } & { _unknown?: string[] };
