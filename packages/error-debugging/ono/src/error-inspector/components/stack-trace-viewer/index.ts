@@ -41,13 +41,14 @@ const stackTraceViewer = async (
             return entities[char] ?? char;
         });
 
-    const tabs: { html: string; type: GroupType }[] = [];
-    const sourceCode: string[] = [];
-
-    for (const [index, trace] of traces.entries()) {
+    // Build every frame concurrently — each frame pays an independent disk read (getFileSource) plus
+    // Shiki highlighting; awaiting them in a sequential for-loop made a 30-frame stack pay 30 serial
+    // round-trips. Promise.all fans them out while the returned array preserves the original frame order.
+    const frames = await Promise.all(
+        // eslint-disable-next-line sonarjs/cognitive-complexity
+        traces.map(async (trace, index): Promise<{ tab: { html: string; type: GroupType }; sourceCode: string }> => {
         const defaultSource = `// Unable to load source code for ${trace.file ?? ""}:${String(trace.line ?? "")}:${String(trace.column ?? "")}`;
 
-        // eslint-disable-next-line no-await-in-loop -- sequential file I/O per stack frame
         const source = trace.file ? await getFileSource(trace.file) : undefined;
         const isClickable = Boolean(source);
         const sourceCodeFrame = source
@@ -75,7 +76,6 @@ const stackTraceViewer = async (
         if (lang === "text") {
             safeCode = `<pre class="shiki"><code>${escapeHtml(sourceCodeFrame)}</code></pre>`;
         } else {
-            // eslint-disable-next-line no-await-in-loop -- sequential syntax highlighting per frame
             const highlighter = await getHighlighter([lang]);
 
             const code = highlighter.codeToHtml(sourceCodeFrame, {
@@ -95,7 +95,7 @@ const stackTraceViewer = async (
         const safeMethod = sanitizeHtml(trace.methodName ?? "");
         const safeRelativePath = sanitizeHtml(relativeFilePath);
 
-        tabs.push({
+        const tab = {
             html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${String(index)}" data-stack-tab="#source-code-tabs-${uniqueKey}-${String(index)}" aria-controls="source-code-tabs-${uniqueKey}-${String(index)}" ${
                 isClickable ? "" : "disabled aria-disabled=\"true\""
             } class="${cn(
@@ -108,7 +108,7 @@ const stackTraceViewer = async (
     </div>
 </button>`,
             type: trace.file ? getType(trace.file) : undefined,
-        });
+        };
 
         let openInEditorButton = safeRelativePath;
 
@@ -122,15 +122,21 @@ const stackTraceViewer = async (
             )}" data-column="${sanitizeAttribute(trace.column ?? 1)}" title="Open ${safeRelativePath} in editor">${safeRelativePath} — Open in editor</button>`;
         }
 
-        sourceCode.push(`<div id="source-code-tabs-${uniqueKey}-${String(index)}" class="${
+        const sourceCodeHtml = `<div id="source-code-tabs-${uniqueKey}-${String(index)}" class="${
             index === 0 && isClickable ? "block" : "hidden"
         }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${String(index)}" tabindex="0">
 <div class="pt-6 px-6 text-sm text-right text-[var(--ono-text)]">
     ${openInEditorButton}
 </div>
 <div class="p-6">${safeCode}</div>
-</div>`);
-    }
+</div>`;
+
+        return { sourceCode: sourceCodeHtml, tab };
+        }),
+    );
+
+    const tabs: { html: string; type: GroupType }[] = frames.map((frame) => frame.tab);
+    const sourceCode: string[] = frames.map((frame) => frame.sourceCode);
 
     const grouped = groupSimilarTypes(tabs);
 

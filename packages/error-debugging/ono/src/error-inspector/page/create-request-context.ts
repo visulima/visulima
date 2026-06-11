@@ -314,8 +314,42 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
 
     const cookiesRecord: Record<string, string> = parseCookieString(cookieHeader);
 
+    // Cookies are sensitive by default (the `cookie` header matches SENSITIVE_HEADER_PATTERNS), so their
+    // individual values are masked everywhere they surface — the Cookies panel, the copyable cURL, and the
+    // hidden clipboard input — unless the consumer explicitly disables masking by passing an empty maskValue.
+    // This keeps the "smart data sanitization and masking" guarantee for staging-reachable error pages.
+    const cookiesAreMasked = Boolean(maskValue) && isSensitiveHeader("cookie", headerDenylist);
+    const maskedCookiesRecord: Record<string, string> = cookiesAreMasked
+        ? Object.fromEntries(Object.keys(cookiesRecord).map((name) => [name, maskValue]))
+        : cookiesRecord;
+
     const previewBytes = Math.max(0, options.previewBytes ?? 64_000);
     const requestBody: unknown = await readRequestBody(request, previewBytes);
+
+    // Mask sensitive-looking keys in the request body so login passwords / tokens posted as JSON
+    // do not land verbatim in the rendered HTML or the cURL --data flag.
+    const maskBodyValue = (value: unknown): unknown => {
+        if (!maskValue) {
+            return value;
+        }
+
+        if (Array.isArray(value)) {
+            return value.map((item) => maskBodyValue(item));
+        }
+
+        if (value && typeof value === "object") {
+            return Object.fromEntries(
+                Object.entries(value as Record<string, unknown>).map(([key, v]) => [
+                    key,
+                    isSensitiveHeader(key, headerDenylist) ? maskValue : maskBodyValue(v),
+                ]),
+            );
+        }
+
+        return value;
+    };
+
+    const maskedRequestBody: unknown = maskBodyValue(requestBody);
 
     const buildCurl = (): string => {
         const method = (safeGetString(request, "method") ?? "GET").toUpperCase();
@@ -335,9 +369,13 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
             });
         }
 
-        const cookieHeaderForCurl = buildCookieHeader(cookiesRecord);
+        const cookieHeaderForCurl = buildCookieHeader(maskedCookiesRecord);
 
-        if (cookieHeaderForCurl && !headersForCurl["cookie"]) {
+        // Case-insensitive guard: a `Cookie`-cased header already in the (masked) headers table must not be
+        // overwritten with raw cookie values here.
+        const hasCookieHeader = Object.keys(headersForCurl).some((k) => k.toLowerCase() === "cookie");
+
+        if (cookieHeaderForCurl && !hasCookieHeader) {
             headersForCurl["Cookie"] = cookieHeaderForCurl;
         }
 
@@ -349,8 +387,8 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
 
         let dataFlag = "";
 
-        if (requestBody !== undefined && requestBody !== null && method !== "GET") {
-            const bodyString = typeof requestBody === "string" ? requestBody : safeJsonStringify(requestBody);
+        if (maskedRequestBody !== undefined && maskedRequestBody !== null && method !== "GET") {
+            const bodyString = typeof maskedRequestBody === "string" ? maskedRequestBody : safeJsonStringify(maskedRequestBody);
 
             dataFlag = `--data ${shellQuote(bodyString)}`;
         }
@@ -676,7 +714,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
     <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable(filteredHeaders)}</div>
   </section>
 
-  <input type="hidden" id="clipboard-body-${uniqueId}" value="${attributeEscape(safeJsonStringify(requestBody ?? {}))}">
+  <input type="hidden" id="clipboard-body-${uniqueId}" value="${attributeEscape(safeJsonStringify(maskedRequestBody ?? {}))}">
   <section id="context-body" class="mb-4 rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-1)] overflow-hidden bg-[var(--ono-surface)] border border-[var(--ono-border)]">
     <div class="px-4 py-2 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${bracesIcon}'); mask-image:url('${bracesIcon}')"></span>
@@ -685,7 +723,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
       <a href="#context-body" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ label: "Copy JSON", targetId: `clipboard-body-${uniqueId}` }).html}
     </div>
-    <div class="max-w-full overflow-auto mt-2">${renderBodyContent(requestBody)}</div>
+    <div class="max-w-full overflow-auto mt-2">${renderBodyContent(maskedRequestBody)}</div>
   </section>
 
   <input type="hidden" id="clipboard-session-${uniqueId}" value="${attributeEscape(JSON.stringify((request as RequestLike & { session?: Record<string, unknown> }).session ?? {}))}">
@@ -700,7 +738,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
             <div class="max-w-full overflow-auto mt-2">${renderObjectTable((request as RequestLike & { session?: Record<string, unknown> }).session)}</div>
   </section>
 
-  <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attributeEscape(JSON.stringify(cookiesRecord))}">
+  <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attributeEscape(JSON.stringify(maskedCookiesRecord))}">
   <section id="context-cookies" class="mb-4 rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-1)] overflow-hidden bg-[var(--ono-surface)] border border-[var(--ono-border)]">
     <div class="px-4 py-2 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${cookieIcon}'); mask-image:url('${cookieIcon}')"></span>
@@ -709,7 +747,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
       <a href="#context-cookies" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ label: "Copy JSON", targetId: `clipboard-cookies-${uniqueId}` }).html}
     </div>
-    <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable(cookiesRecord)}
+    <div class="max-w-full overflow-auto mt-2">${renderKeyValueTable(maskedCookiesRecord)}
     </div>
   </section>${contextSections.content}
 </div>`;

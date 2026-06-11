@@ -136,7 +136,7 @@ describe("context page", () => {
             expect(page?.code.html).toContain("[masked]"); // authorization should be masked
         });
 
-        it("should handle cookies", async () => {
+        it("should handle cookies, masking values by default", async () => {
             expect.assertions(4);
 
             const mockRequest = {
@@ -149,9 +149,27 @@ describe("context page", () => {
 
             const page = await createRequestContextPage(mockRequest, {});
 
+            // Cookie names remain visible, but their values are masked (cookies are sensitive by default).
             expect(page?.code.html).toContain("session");
-            expect(page?.code.html).toContain("abc123");
             expect(page?.code.html).toContain("user");
+            expect(page?.code.html).not.toContain("abc123");
+            expect(page?.code.html).not.toContain("john");
+        });
+
+        it("should expose raw cookie values when masking is disabled", async () => {
+            expect.assertions(2);
+
+            const mockRequest = {
+                headers: {
+                    cookie: "session=abc123; user=john",
+                },
+                method: "GET",
+                url: "http://example.com/test",
+            } as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, { maskValue: "" });
+
+            expect(page?.code.html).toContain("abc123");
             expect(page?.code.html).toContain("john");
         });
 
@@ -386,7 +404,8 @@ describe("context page", () => {
                 url: "http://example.com/api",
             } as unknown as RequestLike;
 
-            const page = await createRequestContextPage(mockRequest, {});
+            // maskValue: "" disables masking so the parsed cookie value is observable for this parsing test.
+            const page = await createRequestContextPage(mockRequest, { maskValue: "" });
 
             expect(page?.code.html).toContain("header-value");
             expect(page?.code.html).toContain("from-headers-obj");
@@ -404,7 +423,7 @@ describe("context page", () => {
                 url: "http://example.com/test",
             } as unknown as RequestLike;
 
-            const page = await createRequestContextPage(mockRequest, {});
+            const page = await createRequestContextPage(mockRequest, { maskValue: "" });
 
             expect(page?.code.html).toContain("array-cookie");
             expect(page?.code.html).toContain("jane");
@@ -421,7 +440,7 @@ describe("context page", () => {
                 url: "http://example.com/test",
             } as unknown as RequestLike;
 
-            const page = await createRequestContextPage(mockRequest, {});
+            const page = await createRequestContextPage(mockRequest, { maskValue: "" });
 
             expect(page?.code.html).toContain("session");
             expect(page?.code.html).toContain("john");
@@ -441,6 +460,7 @@ describe("context page", () => {
 
             const page = await createRequestContextPage(mockRequest, {
                 headerAllowlist: ["content-type"],
+                maskValue: "",
             });
 
             expect(page?.code.html).toContain("Cookie: session=curl-cookie");
@@ -708,6 +728,64 @@ describe("context page", () => {
             const page = await createRequestContextPage(mockRequest, {});
 
             expect(page?.code.html).toContain("(no body)");
+        });
+    });
+
+    describe("sensitive data masking", () => {
+        it("should not leak raw cookie values into the copyable cURL when a Cookie-cased header is present", async () => {
+            expect.assertions(2);
+
+            const mockRequest = {
+                headers: {
+                    // Capitalized header name — the case-insensitive guard must treat it as the cookie header.
+                    Cookie: "session=topsecret",
+                },
+                method: "GET",
+                url: "http://example.com/test",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).not.toContain("topsecret");
+            expect(page?.code.html).toContain("[masked]");
+        });
+
+        it("should mask sensitive-looking keys inside the request body", async () => {
+            expect.assertions(3);
+
+            const mockRequest = {
+                headers: {
+                    "content-type": "application/json",
+                },
+                json: () => Promise.resolve({ password: "hunter2", token: "abc.def", username: "alice" }),
+                method: "POST",
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            // Non-sensitive fields stay visible, sensitive ones are masked everywhere (body panel + cURL --data).
+            expect(page?.code.html).toContain("alice");
+            expect(page?.code.html).not.toContain("hunter2");
+            expect(page?.code.html).not.toContain("abc.def");
+        });
+
+        it("should leave the body untouched when masking is disabled", async () => {
+            expect.assertions(2);
+
+            const mockRequest = {
+                headers: {
+                    "content-type": "application/json",
+                },
+                json: () => Promise.resolve({ password: "hunter2" }),
+                method: "POST",
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, { maskValue: "" });
+
+            expect(page?.code.html).toContain("hunter2");
+            expect(page?.code.html).not.toContain("[masked]");
         });
     });
 });
