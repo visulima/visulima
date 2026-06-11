@@ -205,19 +205,19 @@ provider's CLI invocation (passing an unsupported option is a no-op). The
 "Bypass flag" column lists the permission-bypass flag that is only added when
 you opt in with `{ dangerous: true }` / `--dangerous`.
 
-| Provider | Command    | Env Variable    | Default Model    | `model` | `maxTokens` | Bypass flag (opt-in)                       |
-| -------- | ---------- | --------------- | ---------------- | ------- | ----------- | ------------------------------------------ |
-| Amp      | `amp`      | `AMP_PATH`      | provider-default | ✗       | ✗           | `--dangerously-allow-all`                  |
-| Claude   | `claude`   | `CLAUDE_PATH`   | provider-default | ✓       | ✗           | `--dangerously-skip-permissions`           |
+| Provider | Command    | Env Variable    | Default Model    | `model` | `maxTokens` | Bypass flag (opt-in)                         |
+| -------- | ---------- | --------------- | ---------------- | ------- | ----------- | -------------------------------------------- |
+| Amp      | `amp`      | `AMP_PATH`      | provider-default | ✗       | ✗           | `--dangerously-allow-all`                    |
+| Claude   | `claude`   | `CLAUDE_PATH`   | provider-default | ✓       | ✗           | `--dangerously-skip-permissions`             |
 | Codex    | `codex`    | `CODEX_PATH`    | provider-default | ✓       | ✗           | `--dangerously-bypass-approvals-and-sandbox` |
-| Copilot  | `copilot`  | `COPILOT_PATH`  | provider-default | ✓       | ✗           | `--allow-all-tools`                        |
-| Crush    | `crush`    | `CRUSH_PATH`    | provider-default | ✓       | ✗           | `--yolo`                                   |
-| Cursor   | `agent`    | `CURSOR_PATH`   | provider-default | ✓       | ✗           | `--force`                                  |
-| Droid    | `droid`    | `DROID_PATH`    | provider-default | ✓       | ✗           | `--skip-permissions-unsafe`                |
-| Gemini   | `gemini`   | `GEMINI_PATH`   | `gemini-2.5-pro` | ✓       | ✓           | drops `--sandbox`                          |
-| Kimi     | `kimi`     | `KIMI_PATH`     | provider-default | ✓       | ✗           | —                                          |
-| OpenCode | `opencode` | `OPENCODE_PATH` | provider-default | ✓       | ✗           | —                                          |
-| Qwen     | `qwen`     | `QWEN_PATH`     | provider-default | ✓       | ✗           | `--yolo`                                   |
+| Copilot  | `copilot`  | `COPILOT_PATH`  | provider-default | ✓       | ✗           | `--allow-all-tools`                          |
+| Crush    | `crush`    | `CRUSH_PATH`    | provider-default | ✓       | ✗           | `--yolo`                                     |
+| Cursor   | `agent`    | `CURSOR_PATH`   | provider-default | ✓       | ✗           | `--force`                                    |
+| Droid    | `droid`    | `DROID_PATH`    | provider-default | ✓       | ✗           | `--skip-permissions-unsafe`                  |
+| Gemini   | `gemini`   | `GEMINI_PATH`   | `gemini-2.5-pro` | ✓       | ✓           | drops `--sandbox`                            |
+| Kimi     | `kimi`     | `KIMI_PATH`     | provider-default | ✓       | ✗           | —                                            |
+| OpenCode | `opencode` | `OPENCODE_PATH` | provider-default | ✓       | ✗           | —                                            |
+| Qwen     | `qwen`     | `QWEN_PATH`     | provider-default | ✓       | ✗           | `--yolo`                                     |
 
 > Codex targets the modern Rust CLI surface (`codex exec "<prompt>"`); the
 > retired `--approval-mode`/`--max-tokens` flags are no longer emitted.
