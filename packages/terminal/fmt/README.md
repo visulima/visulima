@@ -77,6 +77,39 @@ capability serializers such as [`fast-safe-stringify`](http://github.com/davidma
 
 > uses `JSON.stringify` instead of `util.inspect`, this means functions _will not be serialized_.
 
+#### options.appendExtraArguments
+
+By default any arguments that are not consumed by a specifier are dropped. Set
+`appendExtraArguments: true` to append them to the end of the output,
+space-separated, the way Node's `util.format("hi", err)` appends leftover
+values. Objects are passed through `stringify`.
+
+```typescript
+format("hi", [{ code: 1 }], { appendExtraArguments: true }); // 'hi {"code":1}'
+format("%s done", ["task", "extra"], { appendExtraArguments: true }); // 'task done extra'
+```
+
+#### options.colors
+
+Controls whether `%c` emits ANSI styling. When omitted, styling is emitted only
+outside of a browser-like environment (i.e. when `globalThis.window` is
+`undefined`). Pass `colors: false` to strip `%c` styling unconditionally (useful
+for CI logs or files), or `colors: true` to force it on.
+
+> Note: `%c` always emits 24-bit truecolor (`38;2;R;G;B`) sequences; there is no
+> automatic downsampling to 256/16 colors. The `colors` option is an on/off gate
+> only.
+
+### Formatting an object as the format argument
+
+If the first argument is an object instead of a format string, the object and
+every additional argument are JSON-stringified and joined with a single space:
+
+```typescript
+format({ a: 1 }, ["b", 2]); // '{"a":1} "b" 2'
+format({}, []); // '{}'
+```
+
 ### build
 
 With the `build` function you can generate a `format` function that is optimized for your use case.
@@ -110,10 +143,14 @@ The most commonly used format specifiers supported are:
 | %i        | Used for all values except `BigInt` and `Symbol`.                                                                                                                                                                                                                                                                                                                                                                                                                             |
 | %f        | Used to convert a value to type `Float`. It does not support conversion of values of type `Symbol`.                                                                                                                                                                                                                                                                                                                                                                           |
 | %j        | Used to add JSON data. If a circular reference is present, the string ‘[Circular]’ is added instead.                                                                                                                                                                                                                                                                                                                                                                          |
-| %o        | Adds the string representation of an object. Note that it does not contain non-enumerable characteristics of the object.                                                                                                                                                                                                                                                                                                                                                      |
-| %O        | Adds the string representation of an object. Note that it will contain all characteristics of the object, including non-enumerable ones.                                                                                                                                                                                                                                                                                                                                      |
-| %c        | Will parse basic CSS from the substitution subject like `color: red` into ANSI color codes. These codes will then be placed where the `%c` specifier is. Supported CSS properties are `color`, `background-color`, `font-weight`, `font-style`, `text-decoration`, `text-decoration-color`, and `text-decoration-line`. Unsupported CSS properties are ignored. An empty `%c` CSS string substitution will become an ANSI style reset. If color is disabled, `%c` is ignored. |
+| %o        | JSON serialization of the value (alias of `%j`). Unlike Node's `util.inspect`-based `%o`, it does **not** produce an inspect-style representation. Strings are quoted; functions become `[Function: name]`.                                                                                                                                                                                                                                                                     |
+| %O        | JSON serialization of the value (alias of `%j`/`%o`). Unlike Node, it does **not** include non-enumerable properties — `%j`, `%o` and `%O` share a single JSON code path.                                                                                                                                                                                                                                                                                                      |
+| %c        | Will parse basic CSS from the substitution subject like `color: red` into ANSI color codes. These codes will then be placed where the `%c` specifier is. Supported CSS properties are `color`, `background-color`, `font-weight`, `font-style`, `text-decoration`, `text-decoration-color`, and `text-decoration-line`. Unsupported CSS properties are ignored. An empty `%c` CSS string substitution will become an ANSI style reset. Styling can be toggled via `options.colors` (see above); when omitted it is emitted only outside browser-like environments. |
 | %%        | Used to add the % sign.                                                                                                                                                                                                                                                                                                                                                                                                                                                       |
+
+> Unknown specifiers (e.g. `%x`) are passed through verbatim and do **not** consume an argument, matching Node's `util.format`. Use [`build`](#build) to register custom single-character specifiers.
+>
+> `printf`-style width/precision (e.g. `%5d`, `%.2f`) is **not** supported; only single-character specifiers are recognized.
 
 ## Benchmark
 
