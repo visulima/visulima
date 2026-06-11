@@ -64,7 +64,7 @@ describe(getJSONSchemaProperty, () => {
             expect.assertions(1);
 
             expect(() => transform(createField({ isRequired: true, name: "weird", type: "Geometry" }))).toThrow(
-                "Unhandled discriminated union member: \"Geometry\"",
+                'Unhandled discriminated union member: "Geometry"',
             );
         });
     });
@@ -222,7 +222,7 @@ describe(getJSONSchemaProperty, () => {
                         type: "Geometry",
                     }),
                 ),
-            ).toThrow("Unhandled discriminated union member: \"Geometry\"");
+            ).toThrow('Unhandled discriminated union member: "Geometry"');
         });
     });
 
@@ -278,10 +278,9 @@ describe(getJSONSchemaProperty, () => {
         it("maps BigInt to string when bigIntType is 'string'", () => {
             expect.assertions(1);
 
-            const [, property] = transform(
-                createField({ default: "34534535435353", hasDefaultValue: true, isRequired: true, name: "count", type: "BigInt" }),
-                { bigIntType: "string" },
-            );
+            const [, property] = transform(createField({ default: "34534535435353", hasDefaultValue: true, isRequired: true, name: "count", type: "BigInt" }), {
+                bigIntType: "string",
+            });
 
             expect(property).toStrictEqual({ default: "34534535435353", type: "string" });
         });
@@ -335,10 +334,9 @@ describe(getJSONSchemaProperty, () => {
         it("adds maxLength from @db.VarChar", () => {
             expect.assertions(1);
 
-            const [, property] = transform(
-                createField({ isRequired: true, name: "title", nativeType: ["VarChar", ["255"]], type: "String" }),
-                { enrichNativeTypes: true },
-            );
+            const [, property] = transform(createField({ isRequired: true, name: "title", nativeType: ["VarChar", ["255"]], type: "String" }), {
+                enrichNativeTypes: true,
+            });
 
             expect(property).toStrictEqual({ maxLength: 255, type: "string" });
         });
