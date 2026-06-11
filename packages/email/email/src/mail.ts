@@ -586,6 +586,8 @@ export class Mail {
     private async* sendManySerial(messages: Iterable<SendableMessage> | AsyncIterable<SendableMessage>, signal?: AbortSignal): AsyncIterable<Receipt> {
         const providerName = this.provider.name;
         let processedCount = 0;
+        let successCount = 0;
+        let failureCount = 0;
 
         if (this.logger) {
             this.logger.debug("Starting batch email send", { provider: providerName });
@@ -598,7 +600,7 @@ export class Mail {
 
             if (signal?.aborted) {
                 if (this.logger) {
-                    this.logger.warn("Batch send operation was aborted", { processed: processedCount });
+                    this.logger.warn("Batch send operation was aborted", { failed: failureCount, processed: processedCount, successful: successCount });
                 }
 
                 yield { errorMessages: ["Send operation was aborted"], provider: providerName, successful: false };
@@ -609,11 +611,19 @@ export class Mail {
             processedCount += 1;
 
             // eslint-disable-next-line no-await-in-loop
-            yield await this.sendOneToReceipt(message);
+            const receipt = await this.sendOneToReceipt(message);
+
+            if (receipt.successful) {
+                successCount += 1;
+            } else {
+                failureCount += 1;
+            }
+
+            yield receipt;
         }
 
         if (this.logger) {
-            this.logger.debug("Batch email send completed", { processedCount, provider: providerName });
+            this.logger.debug("Batch email send completed", { failureCount, processedCount, provider: providerName, successCount });
         }
     }
 

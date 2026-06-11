@@ -846,6 +846,32 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                     // (RFC 3461) above, not via a message header.
                     const additionalHeaders: string[] = [];
 
+                    // DSN fallback: when the server does NOT advertise the DSN
+                    // extension we cannot use the RCPT TO NOTIFY=... envelope
+                    // parameter, so surface the request as an X-DSN-NOTIFY message
+                    // header instead. When the server supports DSN the envelope
+                    // parameter is authoritative and this header is omitted to avoid
+                    // a redundant, server-ignored header.
+                    if (emailOptions.dsn && !serverSupportsDsn) {
+                        const notify: string[] = [];
+
+                        if (emailOptions.dsn.success) {
+                            notify.push("SUCCESS");
+                        }
+
+                        if (emailOptions.dsn.failure) {
+                            notify.push("FAILURE");
+                        }
+
+                        if (emailOptions.dsn.delay) {
+                            notify.push("DELAY");
+                        }
+
+                        if (notify.length > 0) {
+                            additionalHeaders.push(`X-DSN-NOTIFY: ${notify.join(",")}`);
+                        }
+                    }
+
                     // Add priority if specified
                     if (emailOptions.priority) {
                         let priorityValue = "";
