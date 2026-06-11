@@ -7,24 +7,24 @@
  * `emit` callback so this class stays decoupled from the pipeline.
  * @internal
  */
+// eslint-disable-next-line import/prefer-default-export -- internal class imported by name in pail.browser.ts and tests; keeping a named export avoids changing those importers/public surface
 export class TimerManager {
-    readonly #timersMap: Map<string, number> = new Map();
+    readonly #timersMap = new Map<string, number>();
 
-    readonly #seqTimers: Set<string> = new Set();
+    readonly #seqTimers = new Set<string>();
 
     readonly #startMessage: string;
 
     readonly #endMessage: string;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readonly #emit: (type: string, raw: boolean, force: boolean, ...args: any[]) => void;
 
     /**
-     * @param emit - Delegates log emission to the owning PailBrowserImpl's `logger` method.
-     * @param startMessage - The message emitted when a timer is started (e.g. "Initialized timer...").
-     * @param endMessage - The message prefix emitted when a timer ends (e.g. "Timer run for:").
+     * @param emit Delegates log emission to the owning PailBrowserImpl's `logger` method.
+     * @param startMessage The message emitted when a timer is started (e.g. "Initialized timer...").
+     * @param endMessage The message prefix emitted when a timer ends (e.g. "Timer run for:").
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     public constructor(emit: (type: string, raw: boolean, force: boolean, ...args: any[]) => void, startMessage: string, endMessage: string) {
         this.#emit = emit;
         this.#startMessage = startMessage;
@@ -35,7 +35,7 @@ export class TimerManager {
      * Starts a timer with the given label.
      *
      * If the label is already active, emits a warning instead of overwriting.
-     * @param label - Timer label, defaults to `"default"`.
+     * @param label Timer label, defaults to `"default"`.
      */
     public time(label = "default"): void {
         if (this.#seqTimers.has(label)) {
@@ -58,11 +58,10 @@ export class TimerManager {
      * Logs the elapsed time for a running timer without stopping it.
      *
      * When `label` is omitted the most-recently-started timer is used.
-     * @param label - Timer label (optional).
-     * @param data - Additional context to include in the log message.
+     * @param label Timer label (optional).
+     * @param data Additional context to include in the log message.
      */
     public timeLog(label?: string, ...data: unknown[]): void {
-        // eslint-disable-next-line no-param-reassign
         if (!label && this.#seqTimers.size > 0) {
             // eslint-disable-next-line no-param-reassign
             label = [...this.#seqTimers].pop();
@@ -90,10 +89,9 @@ export class TimerManager {
      * Stops a timer and logs the total elapsed time.
      *
      * When `label` is omitted the most-recently-started timer is used.
-     * @param label - Timer label (optional).
+     * @param label Timer label (optional).
      */
     public timeEnd(label?: string): void {
-        // eslint-disable-next-line no-param-reassign
         if (!label && this.#seqTimers.size > 0) {
             // eslint-disable-next-line no-param-reassign
             label = [...this.#seqTimers].pop();

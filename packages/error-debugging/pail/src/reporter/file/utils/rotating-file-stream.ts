@@ -58,7 +58,7 @@ class RotatingFileStream {
 
         if (!this.#immediate) {
             this.#stream = this.#createRfsStream(this.#filePath, options);
-            this.#handler = new SafeStreamHandler(this.#stream as Writable, this.#filePath);
+            this.#handler = new SafeStreamHandler(this.#stream, this.#filePath);
         }
     }
 
@@ -72,7 +72,7 @@ class RotatingFileStream {
     public write(message: string): void {
         if (this.#immediate) {
             const fileStream = (this.#createRfsStream as typeof createRotatingStream)(this.#filePath, this.#options);
-            const stream = new SafeStreamHandler(fileStream as Writable, this.#filePath);
+            const stream = new SafeStreamHandler(fileStream, this.#filePath);
 
             stream.write(message);
             stream.end();

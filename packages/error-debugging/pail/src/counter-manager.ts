@@ -6,24 +6,23 @@
  * stays decoupled from the logging pipeline.
  * @internal
  */
+// eslint-disable-next-line import/prefer-default-export -- internal class imported by name in pail.browser.ts and tests; keeping a named export avoids changing those importers/public surface
 export class CounterManager {
-    readonly #countMap: Map<string, number> = new Map();
+    readonly #countMap = new Map<string, number>();
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     readonly #emit: (type: string, raw: boolean, force: boolean, ...args: any[]) => void;
 
     /**
-     * @param emit - Delegates log emission to the owning PailBrowserImpl's `logger` method.
+     * @param emit Delegates log emission to the owning PailBrowserImpl's `logger` method.
      */
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+
     public constructor(emit: (type: string, raw: boolean, force: boolean, ...args: any[]) => void) {
         this.#emit = emit;
     }
 
     /**
      * Increments and logs the counter for the given label.
-     *
-     * @param label - Counter label, defaults to `"default"`.
+     * @param label Counter label, defaults to `"default"`.
      */
     public count(label = "default"): void {
         const current = this.#countMap.get(label) ?? 0;
@@ -40,7 +39,7 @@ export class CounterManager {
      * Resets the counter for the given label.
      *
      * Emits a warning when the label has no active counter.
-     * @param label - Counter label, defaults to `"default"`.
+     * @param label Counter label, defaults to `"default"`.
      */
     public countReset(label = "default"): void {
         if (this.#countMap.has(label)) {

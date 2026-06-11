@@ -78,10 +78,16 @@ const preventLoop = <T extends (this: ThisType<T>, ...args: Parameters<T>) => Re
  * ```
  */
 export class PailBrowserImpl<T extends string = string, L extends string = string> {
-    /** @internal Timer state delegated to TimerManager. */
+    /**
+     * Timer state delegated to TimerManager.
+     * @internal
+     */
     protected readonly timerManager: TimerManager;
 
-    /** @internal Counter state delegated to CounterManager. */
+    /**
+     * Counter state delegated to CounterManager.
+     * @internal
+     */
     protected readonly counterManager: CounterManager;
 
     protected readonly lastLog: {
@@ -193,10 +199,12 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         // TimerManager and CounterManager are initialized before the logger is preventLoop-wrapped;
         // they receive arrow functions that call `this.logger` so they always pick up the final
         // (wrapped) implementation via the instance slot set a few lines below.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.timerManager = new TimerManager((type: string, raw: boolean, force: boolean, ...args: any[]) => this.logger(type as never, raw, force, ...args), this.startTimerMessage, this.endTimerMessage);
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        this.counterManager = new CounterManager((type: string, raw: boolean, force: boolean, ...args: any[]) => this.logger(type as never, raw, force, ...args));
+        this.timerManager = new TimerManager((type: string, raw: boolean, force: boolean, ...args: unknown[]) => {
+            this.logger(type as never, raw, force, ...args);
+        }, this.startTimerMessage, this.endTimerMessage);
+        this.counterManager = new CounterManager((type: string, raw: boolean, force: boolean, ...args: unknown[]) => {
+            this.logger(type as never, raw, force, ...args);
+        });
 
         this.groups = [];
 
