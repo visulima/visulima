@@ -36,9 +36,7 @@ export default function ErrorOverview({ error }: Props): ReactElement {
     const traceKeyCounts = new Map<string, number>();
     const tracesWithKeys = traces.map((trace) => {
         const base
-            = !trace.methodName && !trace.file
-                ? `raw:${trace.raw}`
-                : `${cleanupPath(trace.file) ?? ""}:${trace.line}:${trace.column}:${trace.methodName ?? ""}`;
+            = !trace.methodName && !trace.file ? `raw:${trace.raw}` : `${cleanupPath(trace.file) ?? ""}:${trace.line}:${trace.column}:${trace.methodName ?? ""}`;
         const occurrence = traceKeyCounts.get(base) ?? 0;
 
         traceKeyCounts.set(base, occurrence + 1);

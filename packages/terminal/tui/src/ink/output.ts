@@ -342,9 +342,9 @@ export default class Output {
                 const span = srcSpans[spanCursor];
                 const hasStyles
                     = (span !== undefined && (span.formatFlags & ~FULL_WIDTH_MASK) !== 0)
-                    || span?.fgColor !== undefined
-                    || span?.bgColor !== undefined
-                    || span?.link !== undefined;
+                        || span?.fgColor !== undefined
+                        || span?.bgColor !== undefined
+                        || span?.link !== undefined;
 
                 if (value !== " " || hasStyles) {
                     const flags = (span?.formatFlags ?? 0) | (srcLine.getFullWidth(rx) ? FULL_WIDTH_MASK : 0);
