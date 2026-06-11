@@ -920,4 +920,30 @@ describe(computeTaskHash, () => {
 
         expect(computeTaskHash(details1)).toBe(computeTaskHash(details2));
     });
+
+    it("should fold implicitDeps into the hash so lockfile/dependency changes invalidate the cache", () => {
+        // Regression: the native struct field is camelCased by NAPI (`implicitDeps`).
+        // If the call site or binding type uses snake_case `implicit_deps`, the value is
+        // silently dropped and these two would collide — meaning a changed lockfile hash
+        // would NOT invalidate the cache.
+        expect.assertions(2);
+
+        const base: TaskHashDetails = {
+            command: "abc",
+            nodes: { file1: "hash1" },
+        };
+
+        const withDeps: TaskHashDetails = {
+            ...base,
+            implicitDeps: { __lockfile__: "lock-v1" },
+        };
+
+        const withChangedDeps: TaskHashDetails = {
+            ...base,
+            implicitDeps: { __lockfile__: "lock-v2" },
+        };
+
+        expect(computeTaskHash(withDeps)).not.toBe(computeTaskHash(base));
+        expect(computeTaskHash(withDeps)).not.toBe(computeTaskHash(withChangedDeps));
+    });
 });

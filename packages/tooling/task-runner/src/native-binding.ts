@@ -25,7 +25,10 @@ interface NativeFileHash {
 
 interface NativeTaskHashDetails {
     command: string;
-    implicit_deps?: string[][];
+    // NAPI camelCases Rust snake_case struct fields, so the runtime key is `implicitDeps`
+    // (see generated index.d.ts). Passing `implicit_deps` would silently drop the value
+    // and break lockfile/dependency cache invalidation.
+    implicitDeps?: string[][];
     nodes: string[][];
     runtime?: string[][];
 }
