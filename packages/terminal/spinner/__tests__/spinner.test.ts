@@ -13,8 +13,8 @@ describe("spinner", () => {
 
             expect(spinner).toBeDefined();
             expect(spinner.isRunning).toBe(false);
-            expect(spinner.getText).toBe("");
-            expect(spinner.getPrefixText).toBe("");
+            expect(spinner.text).toBe("");
+            expect(spinner.prefixText).toBe("");
         });
 
         it("should create a spinner with custom name", () => {
@@ -50,7 +50,7 @@ describe("spinner", () => {
 
             const spinner = new Spinner({ prefixText: "[TASK]" });
 
-            expect(spinner.getPrefixText).toBe("[TASK]");
+            expect(spinner.prefixText).toBe("[TASK]");
         });
     });
 
@@ -71,7 +71,7 @@ describe("spinner", () => {
             spinner.start("Loading...");
 
             expect(spinner.isRunning).toBe(true);
-            expect(spinner.getText).toBe("Loading...");
+            expect(spinner.text).toBe("Loading...");
 
             spinner.succeed();
         });
@@ -95,7 +95,7 @@ describe("spinner", () => {
             const result2 = spinner.start("Second");
 
             expect(result1).toBe(result2);
-            expect(spinner.getText).toBe("First");
+            expect(spinner.text).toBe("First");
 
             spinner.succeed();
         });
@@ -107,7 +107,7 @@ describe("spinner", () => {
 
             spinner.start("Loading...", { prefixText: "[INFO]" });
 
-            expect(spinner.getPrefixText).toBe("[INFO]");
+            expect(spinner.prefixText).toBe("[INFO]");
 
             spinner.succeed();
         });
@@ -194,7 +194,7 @@ describe("spinner", () => {
 
             spinner.text = "New text";
 
-            expect(spinner.getText).toBe("New text");
+            expect(spinner.text).toBe("New text");
         });
 
         it("should set prefixText via setter", () => {
@@ -204,7 +204,7 @@ describe("spinner", () => {
 
             spinner.prefixText = "[PREFIX]";
 
-            expect(spinner.getPrefixText).toBe("[PREFIX]");
+            expect(spinner.prefixText).toBe("[PREFIX]");
         });
     });
 
@@ -391,7 +391,7 @@ describe("multiSpinner", () => {
         const spinner = multi.create("Task 1");
 
         expect(spinner).toBeInstanceOf(Spinner);
-        expect(spinner.getText).toBe("Task 1");
+        expect(spinner.text).toBe("Task 1");
     });
 
     it("should remove spinners", () => {

@@ -4,8 +4,8 @@ import { styleText } from "node:util";
 
 import type { InteractiveManager } from "@visulima/interactive-manager";
 
-import { getSpinner } from "./spinners";
-import type { SpinnerIcons, SpinnerName, SpinnerOptions, SpinnerStartOptions, SpinnerStyle } from "./types";
+import { getSpinner, getSpinnerNames } from "./spinners";
+import type { SpinnerFrame, SpinnerIcons, SpinnerName, SpinnerOptions, SpinnerStartOptions, SpinnerStyle } from "./types";
 
 /**
  * Default icons for spinner completion states.
@@ -15,6 +15,18 @@ const DEFAULT_ICONS: Required<SpinnerIcons> = {
     info: "ℹ",
     success: "✓",
     warning: "⚠",
+};
+
+/**
+ * Detect whether the current environment looks like a non-interactive CI runner.
+ *
+ * Mirrors ora's behaviour: animation is suppressed so CI logs aren't spammed with
+ * one line per frame. Detection is intentionally cheap and dependency-free.
+ */
+const isCi = (): boolean => {
+    const { env } = process;
+
+    return Boolean(env.CI) || env.CONTINUOUS_INTEGRATION === "true" || "BUILD_NUMBER" in env || "RUN_ID" in env;
 };
 
 /**
@@ -63,10 +75,20 @@ const resolveStyleToFunction = (style: SpinnerStyle): ((text: string) => string)
 /**
  * Spinner class for creating loading indicators in terminal applications.
  *
- * Works standalone with direct stream output, or with an InteractiveManager
- * for coordinated terminal output (e.g., alongside progress bars or logs).
+ * Works standalone with direct stream output (defaults to `process.stderr`), or with
+ * an `InteractiveManager` for coordinated terminal output (e.g., alongside progress
+ * bars or logs).
+ *
+ * Animation is automatically disabled when the target stream is not a TTY or when a
+ * CI environment is detected — the final status line is still printed, but no
+ * per-frame redraws happen. Pass `verbose: false` to silence output entirely.
  * @example
  * ```typescript
+ * // Zero-config — writes directly to process.stderr
+ * const spinner = new Spinner({ name: "dots" });
+ * spinner.start("Loading...");
+ * spinner.succeed("Done!");
+ *
  * // With declarative style (uses Node.js util.styleText)
  * const spinner = new Spinner({
  *   name: "dots",
@@ -78,6 +100,9 @@ const resolveStyleToFunction = (style: SpinnerStyle): ((text: string) => string)
  *   name: "dots",
  *   style: (text) => colorize.bold.blue(text),
  * });
+ *
+ * // With a custom frame set
+ * const spinner = new Spinner({ frames: { frames: ["-", "\\", "|", "/"], interval: 80 } });
  * ```
  */
 
@@ -102,9 +127,18 @@ export class Spinner {
 
     #finalOutput: string = "";
 
-    readonly #spinnerName: SpinnerName;
+    /** Resolved frame set, cached so the catalog isn't re-looked-up per frame. */
+    readonly #spinner: SpinnerFrame;
 
     readonly #verbose: boolean;
+
+    readonly #stream: NodeJS.WriteStream;
+
+    /** Whether the spinner may animate (TTY + not CI + not standalone). */
+    readonly #animate: boolean;
+
+    /** Number of lines the standalone direct render last wrote (for in-place clear). */
+    #standaloneLines: number = 0;
 
     readonly #applyStyle?: (text: string) => string;
 
@@ -114,13 +148,30 @@ export class Spinner {
      * Creates a new Spinner instance.
      * @param options Configuration options for the spinner
      * @param interactiveManager Optional interactive manager for terminal control
+     * @throws {Error} If `options.name` is not a known spinner and no custom `frames` are supplied.
      */
     public constructor(options: SpinnerOptions = {}, interactiveManager?: InteractiveManager) {
-        this.#spinnerName = options.name ?? "dots";
+        if (options.frames) {
+            this.#spinner = options.frames;
+        } else {
+            const name: SpinnerName = options.name ?? "dots";
+            const resolved = getSpinner(name);
+
+            if (!resolved) {
+                throw new Error(`Unknown spinner "${name}". Pass a custom \`frames\` set or use one of: ${getSpinnerNames().join(", ")}.`);
+            }
+
+            this.#spinner = resolved;
+        }
+
         this.#verbose = options.verbose !== false;
         this.#prefixText = options.prefixText ?? "";
 
         this.#interactiveManager = interactiveManager;
+        this.#stream = options.stream ?? process.stderr;
+        // With a manager the manager owns the surface; standalone only animates on a
+        // real TTY outside CI so non-interactive logs aren't spammed one line per frame.
+        this.#animate = interactiveManager ? true : this.#stream.isTTY && !isCi();
         this.#icons = { ...DEFAULT_ICONS, ...options.icons };
 
         // Resolve style: function stays as-is, object gets converted via util.styleText
@@ -145,23 +196,11 @@ export class Spinner {
         return this.#text;
     }
 
-    /**
-     * Get the spinner text.
-     * @deprecated Use the `text` getter instead.
-     */
-    public get getText(): string {
-        return this.#text;
-    }
-
     public set text(value: string) {
         this.#text = value;
 
         if (this.#isActive) {
-            if (this.#multiSpinner) {
-                this.#multiSpinner.renderAll();
-            } else if (this.#interactiveManager) {
-                this.#render();
-            }
+            this.#requestRender();
         }
     }
 
@@ -172,23 +211,11 @@ export class Spinner {
         return this.#prefixText;
     }
 
-    /**
-     * Get the prefix text.
-     * @deprecated Use the `prefixText` getter instead.
-     */
-    public get getPrefixText(): string {
-        return this.#prefixText;
-    }
-
     public set prefixText(value: string) {
         this.#prefixText = value;
 
         if (this.#isActive) {
-            if (this.#multiSpinner) {
-                this.#multiSpinner.renderAll();
-            } else if (this.#interactiveManager) {
-                this.#render();
-            }
+            this.#requestRender();
         }
     }
 
@@ -216,6 +243,19 @@ export class Spinner {
     }
 
     /**
+     * Advance the spinner to the next frame and redraw. Owned by `MultiSpinner` so a
+     * single shared timer can drive all children.
+     * @internal
+     */
+    public tick(): void {
+        if (!this.#isActive) {
+            return;
+        }
+
+        this.#frame = (this.#frame + 1) % this.#spinner.frames.length;
+    }
+
+    /**
      * Start the spinner with optional text.
      * @param text Optional text to display
      * @param options Optional start options
@@ -234,6 +274,7 @@ export class Spinner {
         this.#startTime = Date.now();
         this.#endTime = 0;
         this.#frame = 0;
+        this.#finalOutput = "";
 
         if (text) {
             this.#text = text;
@@ -243,33 +284,92 @@ export class Spinner {
             this.#prefixText = options.prefixText;
         }
 
-        const manager = this.#multiSpinner ?? this.#interactiveManager;
+        if (this.#multiSpinner) {
+            // The MultiSpinner owns the shared render timer; just trigger a redraw.
+            this.#multiSpinner.renderAll();
 
-        if (manager) {
-            if (this.#multiSpinner) {
-                (manager as MultiSpinner).renderAll();
-            } else {
-                (manager as InteractiveManager).hook();
-                this.#render();
-            }
+            return this;
         }
 
-        // Start animation loop
-        const spinner = getSpinner(this.#spinnerName);
-
-        this.#frameInterval = setInterval(() => {
-            if (this.#isActive) {
-                this.#frame = (this.#frame + 1) % spinner.frames.length;
-
-                if (this.#multiSpinner) {
-                    this.#multiSpinner.renderAll();
-                } else if (this.#interactiveManager) {
-                    this.#render();
-                }
-            }
-        }, spinner.interval);
+        if (this.#interactiveManager) {
+            this.#interactiveManager.hook();
+            this.#render();
+            this.#startTimer();
+        } else {
+            // Standalone direct-stream mode.
+            this.#renderStandalone();
+            this.#startTimer();
+        }
 
         return this;
+    }
+
+    /**
+     * Stop the spinner without printing a status icon and clear its line.
+     *
+     * Useful before showing a prompt or other output. Mirrors ora's `stop()`.
+     */
+    public stop(): void {
+        if (!this.#isActive) {
+            return;
+        }
+
+        this.#clearTimer();
+        this.#isActive = false;
+        this.#endTime = Date.now();
+        this.#finalOutput = "";
+
+        if (this.#multiSpinner) {
+            this.#multiSpinner.renderAll();
+
+            return;
+        }
+
+        if (this.#interactiveManager) {
+            this.#interactiveManager.erase("stdout");
+            this.#interactiveManager.unhook(false);
+        } else {
+            this.#eraseStandalone();
+        }
+    }
+
+    /**
+     * Stop the spinner and persist a custom line (no status icon unless provided).
+     *
+     * Mirrors ora's `stopAndPersist`. When `symbol` is omitted, the current text is
+     * persisted as-is.
+     * @param options Optional overrides for the persisted line.
+     * @param options.prefixText Prefix shown before the symbol (defaults to the current prefix).
+     * @param options.symbol Leading symbol/glyph (defaults to none).
+     * @param options.text Text shown after the symbol (defaults to the current text).
+     */
+    public stopAndPersist(options?: { prefixText?: string; symbol?: string; text?: string }): void {
+        if (!this.#isActive) {
+            return;
+        }
+
+        this.#clearTimer();
+        this.#isActive = false;
+        this.#endTime = Date.now();
+
+        if (!this.#verbose) {
+            return;
+        }
+
+        const prefix = options?.prefixText ?? this.#prefixText;
+        const text = options?.text ?? this.#text;
+
+        let output = options?.symbol ?? "";
+
+        if (prefix) {
+            output = output ? `${prefix} ${output}` : prefix;
+        }
+
+        if (text) {
+            output = output ? `${output} ${text}` : text;
+        }
+
+        this.#persist(output);
     }
 
     /**
@@ -308,10 +408,7 @@ export class Spinner {
      * Pause the spinner without stopping it.
      */
     public pause(): void {
-        if (this.#frameInterval) {
-            clearInterval(this.#frameInterval);
-            this.#frameInterval = undefined;
-        }
+        this.#clearTimer();
     }
 
     /**
@@ -322,23 +419,12 @@ export class Spinner {
             return;
         }
 
-        if (this.#frameInterval) {
-            clearInterval(this.#frameInterval);
+        this.#clearTimer();
+
+        // MultiSpinner children are driven by the shared timer, never their own.
+        if (!this.#multiSpinner) {
+            this.#startTimer();
         }
-
-        const spinner = getSpinner(this.#spinnerName);
-
-        this.#frameInterval = setInterval(() => {
-            if (this.#isActive) {
-                this.#frame = (this.#frame + 1) % spinner.frames.length;
-
-                if (this.#multiSpinner) {
-                    this.#multiSpinner.renderAll();
-                } else if (this.#interactiveManager) {
-                    this.#render();
-                }
-            }
-        }, spinner.interval);
     }
 
     /**
@@ -350,8 +436,7 @@ export class Spinner {
             return this.#finalOutput;
         }
 
-        const spinner = getSpinner(this.#spinnerName);
-        const frame = spinner.frames[this.#frame] as string;
+        const frame = this.#spinner.frames[this.#frame] as string;
 
         let output = this.#applyStyle ? this.#applyStyle(frame) : frame;
 
@@ -366,9 +451,91 @@ export class Spinner {
         return output;
     }
 
+    /**
+     * Start the per-frame animation timer for standalone / single-manager mode.
+     * The interval is `.unref()`'d so a forgotten spinner never holds the event loop open.
+     */
+    #startTimer(): void {
+        if (!this.#animate) {
+            return;
+        }
+
+        this.#frameInterval = setInterval(() => {
+            if (!this.#isActive) {
+                return;
+            }
+
+            this.#frame = (this.#frame + 1) % this.#spinner.frames.length;
+
+            this.#requestRender();
+        }, this.#spinner.interval);
+
+        // Don't keep the process alive solely for the animation timer.
+        this.#frameInterval.unref();
+    }
+
+    #clearTimer(): void {
+        if (this.#frameInterval) {
+            clearInterval(this.#frameInterval);
+            this.#frameInterval = undefined;
+        }
+    }
+
+    /** Redraw the spinner via whichever render path is active. */
+    #requestRender(): void {
+        if (this.#multiSpinner) {
+            this.#multiSpinner.renderAll();
+        } else if (this.#interactiveManager) {
+            this.#render();
+        } else {
+            this.#renderStandalone();
+        }
+    }
+
     #render(): void {
         if (this.#interactiveManager) {
             this.#interactiveManager.update("stdout", [this.getFrameOutput()]);
+        }
+    }
+
+    /** Direct-stream render for standalone mode (no InteractiveManager). */
+    #renderStandalone(): void {
+        const output = this.getFrameOutput();
+
+        this.#eraseStandalone();
+
+        if (this.#stream.isTTY) {
+            this.#stream.write(output);
+            this.#standaloneLines = 1;
+        } else {
+            // Non-TTY: print the line once so it lands in logs without cursor tricks.
+            this.#stream.write(`${output}\n`);
+            this.#standaloneLines = 0;
+        }
+    }
+
+    /** Erase the previously written standalone line(s) in-place on a TTY. */
+    #eraseStandalone(): void {
+        if (this.#standaloneLines > 0 && this.#stream.isTTY) {
+            // Carriage return + clear-to-end-of-line.
+            this.#stream.write("\r[K");
+        }
+
+        this.#standaloneLines = 0;
+    }
+
+    /** Persist a final line and tear down whichever render path is active. */
+    #persist(output: string): void {
+        this.#finalOutput = output;
+
+        if (this.#multiSpinner) {
+            this.#multiSpinner.renderAll();
+        } else if (this.#interactiveManager) {
+            this.#interactiveManager.update("stdout", [output]);
+            this.#interactiveManager.unhook(false);
+        } else {
+            this.#eraseStandalone();
+            this.#stream.write(`${output}\n`);
         }
     }
 
@@ -377,10 +544,7 @@ export class Spinner {
             return;
         }
 
-        if (this.#frameInterval) {
-            clearInterval(this.#frameInterval);
-            this.#frameInterval = undefined;
-        }
+        this.#clearTimer();
 
         this.#isActive = false;
         this.#endTime = Date.now();
@@ -405,24 +569,15 @@ export class Spinner {
             output = `${output} ${text}`;
         }
 
-        this.#finalOutput = output;
-
-        const manager = this.#multiSpinner ?? this.#interactiveManager;
-
-        if (manager) {
-            if (this.#multiSpinner) {
-                this.#multiSpinner.renderAll();
-            } else if (this.#interactiveManager) {
-                this.#interactiveManager.update("stdout", [output]);
-
-                this.#interactiveManager.unhook(false);
-            }
-        }
+        this.#persist(output);
     }
 }
 
 /**
  * Multi-Spinner class for managing multiple spinners concurrently.
+ *
+ * A single shared timer (owned by the MultiSpinner) drives every child, so rendering
+ * is O(N) per tick rather than N uncoordinated timers each redrawing all N lines.
  * @example
  * ```typescript
  * const multiSpinner = new MultiSpinner({ name: "dots" }, interactiveManager);
@@ -431,7 +586,7 @@ export class Spinner {
  * spinner1.start();
  * spinner2.start();
  * spinner1.succeed();
- * spinner2.succeed();
+ * spinner2.failed();
  * multiSpinner.stop();
  * ```
  */
@@ -444,12 +599,19 @@ export class MultiSpinner {
 
     #isActive: boolean = false;
 
+    #sharedTimer: ReturnType<typeof setInterval> | undefined;
+
     readonly #options: SpinnerOptions;
+
+    /** Shared tick interval in ms, derived from the configured frame set. */
+    readonly #interval: number;
 
     public constructor(options: SpinnerOptions = {}, interactiveManager?: InteractiveManager) {
         this.#options = options;
-
         this.#interactiveManager = interactiveManager;
+
+        // Resolve the interval once from the shared frame configuration.
+        this.#interval = options.frames ? options.frames.interval : getSpinner(options.name ?? "dots")?.interval ?? 80;
     }
 
     /** @internal */
@@ -479,6 +641,10 @@ export class MultiSpinner {
                 this.#spinners.delete(id);
                 this.renderAll();
 
+                if (this.#spinners.size === 0) {
+                    this.#clearSharedTimer();
+                }
+
                 return true;
             }
         }
@@ -486,10 +652,15 @@ export class MultiSpinner {
         return false;
     }
 
+    /**
+     * Stop the group: tear down the shared timer and the manager hook, leaving each
+     * child's last rendered state intact (already-finished spinners keep their status).
+     *
+     * Unlike a force-`succeed()`, this does NOT mark in-progress or failed tasks as
+     * successful.
+     */
     public stop(): void {
-        for (const spinner of this.#spinners.values()) {
-            spinner.succeed();
-        }
+        this.#clearSharedTimer();
 
         this.#spinners.clear();
         this.#isActive = false;
@@ -499,12 +670,20 @@ export class MultiSpinner {
         }
     }
 
+    /**
+     * Clear the group: erase the rendered region and drop all children without
+     * persisting any status icon.
+     */
     public clear(): void {
-        for (const spinner of this.#spinners.values()) {
-            spinner.succeed();
+        this.#clearSharedTimer();
+
+        if (this.#interactiveManager && this.#isActive) {
+            this.#interactiveManager.erase("stdout");
+            this.#interactiveManager.unhook(false);
         }
 
         this.#spinners.clear();
+        this.#isActive = false;
     }
 
     /** @internal */
@@ -517,6 +696,58 @@ export class MultiSpinner {
             this.#isActive = true;
 
             this.#interactiveManager.hook();
+            this.#startSharedTimer();
+        }
+
+        const lines: string[] = [];
+
+        for (const spinner of this.#spinners.values()) {
+            lines.push(spinner.getFrameOutput());
+        }
+
+        if (lines.length > 0) {
+            this.#interactiveManager.update("stdout", lines);
+        }
+    }
+
+    /**
+     * Start the single shared animation timer. Each tick advances every child by one
+     * frame then performs a single batched redraw — O(N) work per tick total.
+     */
+    #startSharedTimer(): void {
+        if (this.#sharedTimer) {
+            return;
+        }
+
+        this.#sharedTimer = setInterval(() => {
+            let anyActive = false;
+
+            for (const spinner of this.#spinners.values()) {
+                if (spinner.isRunning) {
+                    spinner.tick();
+                    anyActive = true;
+                }
+            }
+
+            if (anyActive) {
+                this.#renderLines();
+            }
+        }, this.#interval);
+
+        this.#sharedTimer.unref();
+    }
+
+    #clearSharedTimer(): void {
+        if (this.#sharedTimer) {
+            clearInterval(this.#sharedTimer);
+            this.#sharedTimer = undefined;
+        }
+    }
+
+    /** Batched redraw without the hook bookkeeping in `renderAll`. */
+    #renderLines(): void {
+        if (!this.#interactiveManager) {
+            return;
         }
 
         const lines: string[] = [];

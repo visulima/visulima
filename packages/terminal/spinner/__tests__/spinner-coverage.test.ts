@@ -162,7 +162,7 @@ describe("text and prefix setters while active", () => {
         spinner.start("Loading");
         spinner.text = "Still loading";
 
-        expect(spinner.getText).toBe("Still loading");
+        expect(spinner.text).toBe("Still loading");
 
         spinner.succeed();
     });
@@ -175,7 +175,7 @@ describe("text and prefix setters while active", () => {
         spinner.start("Loading");
         spinner.prefixText = "[standalone]";
 
-        expect(spinner.getPrefixText).toBe("[standalone]");
+        expect(spinner.prefixText).toBe("[standalone]");
 
         spinner.succeed();
     });
@@ -406,7 +406,7 @@ describe("multiSpinner additional paths", () => {
         const multi = new MultiSpinner({ name: "dots" });
         const spinner = multi.create();
 
-        expect(spinner.getText).toBe("");
+        expect(spinner.text).toBe("");
     });
 
     it("should remove a spinner that is not the first entry in the stack", () => {

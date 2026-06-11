@@ -81,12 +81,33 @@ export interface SpinnerIcons {
  * Options for creating a Spinner instance.
  */
 export interface SpinnerOptions {
+    /**
+     * Custom frame set, mirroring ora's `spinner` option.
+     *
+     * Provide an explicit {@link SpinnerFrame} (`{ frames, interval }`) to use a
+     * brand-specific animation without registering it in the bundled catalog.
+     * When set, this takes precedence over {@link SpinnerOptions.name}.
+     * @example
+     * ```typescript
+     * new Spinner({ frames: { frames: ["-", "\\", "|", "/"], interval: 80 } });
+     * ```
+     */
+    frames?: SpinnerFrame;
     /** Custom icons for completion states */
     icons?: SpinnerIcons;
     /** Name of the spinner from the registry */
     name?: SpinnerName;
     /** Prefix text to show before the spinner */
     prefixText?: string;
+
+    /**
+     * Stream the spinner writes to when no `InteractiveManager` is supplied.
+     *
+     * Used to derive TTY/CI awareness (animation is auto-disabled on non-TTY
+     * streams) and as the direct-output target in standalone mode. Defaults to
+     * `process.stderr`.
+     */
+    stream?: NodeJS.WriteStream;
 
     /**
      * Style applied to spinner frames and icons.
@@ -114,4 +135,23 @@ export interface SpinnerOptions {
 export interface SpinnerStartOptions {
     /** Prefix text to show before the spinner */
     prefixText?: string;
+}
+
+/**
+ * Options for `spinnerPromise`, the `oraPromise`-style helper.
+ */
+export interface SpinnerPromiseOptions extends SpinnerOptions {
+    /**
+     * Text (or a function receiving the rejection reason) shown when the promise
+     * rejects. When omitted the in-progress `text` is kept.
+     */
+    failText?: ((error: unknown) => string) | string;
+
+    /**
+     * Text (or a function receiving the resolved value) shown when the promise
+     * resolves. When omitted the in-progress `text` is kept.
+     */
+    successText?: ((result: never) => string) | string;
+    /** Initial text shown while the promise is pending. */
+    text?: string;
 }
