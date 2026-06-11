@@ -207,8 +207,7 @@ const resolveStartDirectory = (options?: Options): URL | string => {
     return options?.cwd ?? cwd();
 };
 
-const cacheDirectoryError = (start: URL | string): NotFoundError =>
-    new NotFoundError(`No package.json found searching upwards from '${toPath(start)}'.`);
+const cacheDirectoryError = (start: URL | string): NotFoundError => new NotFoundError(`No package.json found searching upwards from '${toPath(start)}'.`);
 
 /**
  * Returns true when `directory` exists on disk but is not writable. A
@@ -370,8 +369,7 @@ const findCacheDirectorySync = (name: string, options?: Options): CacheDirectory
         return finalize(cacheNameDirectory, options?.thunk);
     }
 
-    const unwritable
-        = existsButUnwritableSync(cacheNameDirectory) || existsButUnwritableSync(cacheDirectory) || existsButUnwritableSync(nodeModulesDirectory);
+    const unwritable = existsButUnwritableSync(cacheNameDirectory) || existsButUnwritableSync(cacheDirectory) || existsButUnwritableSync(nodeModulesDirectory);
 
     if (unwritable) {
         if (options?.useGlobalCacheFallback) {
