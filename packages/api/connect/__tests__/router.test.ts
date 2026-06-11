@@ -949,4 +949,55 @@ describe("router", () => {
             expect(context.find("POST", "/bar").middleOnly).toBe(false);
         });
     });
+
+    it("find() - URL-decodes captured params", async () => {
+        expect.assertions(3);
+
+        const context = new Router<AnyHandler>().add("GET", "/users/:name", noop);
+
+        // Percent-encoded UTF-8 (Jürgen) is decoded.
+        expect(context.find("GET", "/users/J%C3%BCrgen").params.name).toBe("Jürgen");
+        // Plain segments are returned untouched.
+        expect(context.find("GET", "/users/alice").params.name).toBe("alice");
+        // Malformed percent-sequences fall back to the raw value instead of throwing.
+        expect(context.find("GET", "/users/%E0%A4%A").params.name).toBe("%E0%A4%A");
+    });
+
+    it("find() - strips the correct prefix when mounting on a parameterized base", async () => {
+        expect.assertions(3);
+
+        const sub = new Router<AnyHandler>().add("GET", "/posts", noop);
+        // Base pattern string (`/users/:id`, 10 chars) is longer than the matched prefix
+        // (`/users/4`, 8 chars); the router must strip the matched prefix, not the string length.
+        const context = new Router<AnyHandler>().use("/users/:id", sub);
+
+        const result = context.find("GET", "/users/4/posts");
+
+        expect(result.fns, "matched the sub-route under the parameterized base").toHaveLength(1);
+        expect(result.params.id, "captured the base param").toBe("4");
+        expect(context.find("GET", "/users/4/missing").fns, "non-existent sub-route does not match").toHaveLength(0);
+    });
+
+    it("find() - reports allowedMethods for a 405 (path exists, wrong method)", async () => {
+        expect.assertions(4);
+
+        const context = new Router<AnyHandler>().add("POST", "/users", noop).add("PUT", "/users", noop).add("GET", "/posts", noop);
+
+        const result = context.find("GET", "/users");
+
+        expect(result.fns, "no executable handler for GET /users").toHaveLength(0);
+        expect(result.middleOnly, "treated as no-match").toBe(true);
+        expect(result.allowedMethods, "exposes the methods registered for the path").toStrictEqual(expect.arrayContaining(["POST", "PUT"]));
+
+        // A genuinely unknown path is a 404, not a 405 — allowedMethods stays absent.
+        expect(context.find("GET", "/nope").allowedMethods).toBeUndefined();
+    });
+
+    it("find() - does not set allowedMethods on a successful match", async () => {
+        expect.assertions(1);
+
+        const context = new Router<AnyHandler>().add("GET", "/users", noop).add("POST", "/users", noop);
+
+        expect(context.find("GET", "/users").allowedMethods).toBeUndefined();
+    });
 });

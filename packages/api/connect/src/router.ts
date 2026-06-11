@@ -43,6 +43,27 @@ export class Router<H extends FunctionLike> {
         return first(...arguments_, next) as Promise<unknown>;
     }
 
+    /**
+     * URL-decode a captured route parameter. Falls back to the raw value when the segment contains a
+     * malformed percent-sequence (so a bad request never throws inside the router). Matches the
+     * behaviour of Express / find-my-way / Hono, which all decode captures.
+     */
+    private static decodeParam(value: string | undefined): string {
+        if (value === undefined) {
+            return value as unknown as string;
+        }
+
+        if (!value.includes("%")) {
+            return value;
+        }
+
+        try {
+            return decodeURIComponent(value);
+        } catch {
+            return value;
+        }
+    }
+
     private static extractRegExpParams(matches: RegExpExecArray): Record<string, string> {
         const result: Record<string, string> = {};
 
@@ -51,7 +72,7 @@ export class Router<H extends FunctionLike> {
         }
 
         for (const key of Object.keys(matches.groups)) {
-            result[key] = matches.groups[key] as string;
+            result[key] = Router.decodeParam(matches.groups[key]);
         }
 
         return result;
@@ -61,7 +82,7 @@ export class Router<H extends FunctionLike> {
         const result: Record<string, string> = {};
 
         for (const [index, parameterKey] of keys.entries()) {
-            result[parameterKey] = matches[index + 1] as string;
+            result[parameterKey] = Router.decodeParam(matches[index + 1]);
         }
 
         return result;
@@ -71,9 +92,12 @@ export class Router<H extends FunctionLike> {
         return routeMethod === method || routeMethod === "" || (isHead && routeMethod === "GET");
     }
 
-    private static matchRoute<H>(route: Route<H>, pathname: string): { matched: false } | { matched: true; params: Record<string, string> } {
+    private static matchRoute<H>(
+        route: Route<H>,
+        pathname: string,
+    ): { matched: false } | { matched: true; matchedPrefix: string; params: Record<string, string> } {
         if ("matchAll" in route) {
-            return { matched: true, params: {} };
+            return { matched: true, matchedPrefix: "", params: {} };
         }
 
         if (route.keys === false) {
@@ -84,7 +108,7 @@ export class Router<H extends FunctionLike> {
                 return { matched: false };
             }
 
-            return { matched: true, params: Router.extractRegExpParams(matches) };
+            return { matched: true, matchedPrefix: matches[0], params: Router.extractRegExpParams(matches) };
         }
 
         if (route.keys.length > 0) {
@@ -94,11 +118,13 @@ export class Router<H extends FunctionLike> {
                 return { matched: false };
             }
 
-            return { matched: true, params: Router.extractKeyedParams(matches, route.keys) };
+            return { matched: true, matchedPrefix: matches[0], params: Router.extractKeyedParams(matches, route.keys) };
         }
 
-        if (route.pattern.test(pathname)) {
-            return { matched: true, params: {} };
+        const matches = route.pattern.exec(pathname);
+
+        if (matches !== null) {
+            return { matched: true, matchedPrefix: matches[0], params: {} };
         }
 
         return { matched: false };
@@ -108,15 +134,16 @@ export class Router<H extends FunctionLike> {
         routeFns: (Nextable<H> | Router<H>)[],
         method: HttpMethod,
         pathname: string,
+        matchedPrefix: string,
         onSubResult: (params: Record<string, string>, middleOnly: boolean) => void,
     ): Nextable<H>[] {
         return routeFns.flatMap((function_): Nextable<H>[] => {
             if (function_ instanceof Router) {
-                const { base } = function_;
-
-                let stripPathname = pathname.slice(base.length);
-
-                // fix stripped pathname, not sure why this happens
+                // Strip the prefix that the mount route actually matched at runtime, NOT the raw
+                // base pattern string. For a parameterized base like `/users/:id`, the literal
+                // pattern (`/users/:id`, 10 chars) is longer than what it matches (`/users/4`,
+                // 8 chars), so slicing by the string length would corrupt the remaining pathname.
+                let stripPathname = pathname.slice(matchedPrefix.length);
 
                 if (!stripPathname.startsWith("/")) {
                     stripPathname = `/${stripPathname}`;
@@ -182,11 +209,20 @@ export class Router<H extends FunctionLike> {
         const fns: Nextable<H>[] = [];
         const parameters: Record<string, string> = {};
         const isHead = method === "HEAD";
+        // Methods registered for this path that did NOT match the requested method — used to detect
+        // a 405 (path exists, method doesn't) and to build an `Allow` header.
+        const allowed = new Set<HttpMethod>();
 
         for (let routeIndex = 0; routeIndex < this.routes.length; routeIndex += 1) {
             const route = this.routes[routeIndex] as Route<Nextable<H>>;
 
             if (!Router.isMethodMatch(route.method, method, isHead)) {
+                // Track the allowed method for non-middleware routes whose path still matches, so the
+                // caller can distinguish "no such path" (404) from "wrong method" (405).
+                if (!route.isMiddleware && route.method !== "" && Router.matchRoute(route, pathname).matched) {
+                    allowed.add(route.method);
+                }
+
                 continue;
             }
 
@@ -199,7 +235,7 @@ export class Router<H extends FunctionLike> {
             Object.assign(parameters, matchResult.params);
 
             fns.push(
-                ...Router.resolveRouteFns(route.fns, method, pathname, (subParams, subMiddleOnly) => {
+                ...Router.resolveRouteFns(route.fns, method, pathname, matchResult.matchedPrefix, (subParams, subMiddleOnly) => {
                     Object.assign(parameters, subParams);
 
                     if (!subMiddleOnly) {
@@ -213,7 +249,15 @@ export class Router<H extends FunctionLike> {
             }
         }
 
-        return { fns, middleOnly, params: parameters };
+        const result: FindResult<H> = { fns, middleOnly, params: parameters };
+
+        // Only surface allowedMethods for a genuine 405 (no executable route matched the method);
+        // keeping it absent on successful matches preserves the existing FindResult shape.
+        if (middleOnly && allowed.size > 0) {
+            result.allowedMethods = [...allowed];
+        }
+
+        return result;
     }
 
     public use(base: Nextable<H> | RouteMatch | Router<H>, ...fns: (Nextable<H> | Router<H>)[]): this {

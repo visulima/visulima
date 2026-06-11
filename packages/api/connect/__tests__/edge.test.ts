@@ -584,7 +584,7 @@ describe("edge", () => {
     });
 
     it("getPathname() - returns pathname correctly", async () => {
-        expect.assertions(3);
+        expect.assertions(7);
 
         expect(getPathname({ url: "http://google.com/foo/bar" } as Request)).toBe("/foo/bar");
         expect(getPathname({ url: "http://google.com/foo/bar?q=quz" } as Request)).toBe("/foo/bar");
@@ -595,5 +595,37 @@ describe("edge", () => {
             } as unknown as Request),
             "get pathname using req.nextUrl",
         ).toBe("/foo/bar");
+
+        // String-scan fast path (no URL allocation) must handle the remaining shapes.
+        expect(getPathname({ url: "https://google.com/foo/bar#frag" } as Request), "strips fragments").toBe("/foo/bar");
+        expect(getPathname({ url: "http://google.com" } as Request), "no path -> /").toBe("/");
+        expect(getPathname({ url: "http://google.com/" } as Request), "root path").toBe("/");
+        expect(getPathname({ url: "/relative/path?x=1" } as Request), "relative url fallback").toBe("/relative/path");
+    });
+
+    it("method() - runs every handler when a route is followed by multiple plain handlers", async () => {
+        expect.assertions(1);
+
+        const order: string[] = [];
+        const request = { method: "GET", url: "http://localhost/protected" } as unknown as Request;
+
+        // Regression: `.get("/protected", a, b)` previously dropped `b`.
+        await createEdgeRouter()
+            .get(
+                "/protected",
+                (async (_request: unknown, _context: unknown, next: () => Promise<unknown>) => {
+                    order.push("a");
+
+                    return next();
+                }) as never,
+                (async () => {
+                    order.push("b");
+
+                    return new Response("ok");
+                }) as never,
+            )
+            .handler()(request, {});
+
+        expect(order).toStrictEqual(["a", "b"]);
     });
 });

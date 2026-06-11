@@ -20,7 +20,21 @@ import type {
 
 const onNoMatch = (request: IncomingMessage, response: ServerResponse) => {
     response.statusCode = 404;
-    response.end(request.method === "HEAD" ? undefined : `Route ${String(request.method)} ${String(request.url)} not found`);
+
+    if (request.method === "HEAD") {
+        response.end();
+
+        return;
+    }
+
+    // Set an explicit text/plain content type so the (attacker-controllable) request target
+    // reflected in the body cannot be MIME-sniffed as HTML by the browser. Guard the calls so a
+    // minimal/mocked response object without the full `ServerResponse` API still works.
+    if (!response.headersSent && typeof response.setHeader === "function" && (typeof response.hasHeader !== "function" || !response.hasHeader("content-type"))) {
+        response.setHeader("content-type", "text/plain; charset=utf-8");
+    }
+
+    response.end(`Route ${String(request.method)} ${String(request.url)} not found`);
 };
 
 const onError = (error: unknown, _request: IncomingMessage, response: ServerResponse) => {
@@ -169,14 +183,16 @@ export class NodeRouter<
         let resolvedFns: Nextable<RequestHandler<Request, Response>>[];
 
         if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
-            resolvedFns = [zodOrRouteOrFunction];
+            // `.get("/path", handlerA, handlerB, ...)` — keep every handler in the chain.
+            resolvedFns = [zodOrRouteOrFunction, ...fns];
         } else if (typeof zodOrRouteOrFunction === "object") {
             resolvedFns
                 = typeof routeOrFunction === "function"
                     ? [withZod(zodOrRouteOrFunction as Schema, routeOrFunction)]
                     : fns.map((function_) => withZod(zodOrRouteOrFunction as Schema, function_));
         } else if (typeof zodOrRouteOrFunction === "function") {
-            resolvedFns = [zodOrRouteOrFunction];
+            // `.get(handlerA, handlerB, ...)` (no route) — keep every handler in the chain.
+            resolvedFns = [zodOrRouteOrFunction, ...fns];
         } else {
             resolvedFns = fns;
         }
