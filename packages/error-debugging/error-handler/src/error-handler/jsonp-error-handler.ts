@@ -54,8 +54,8 @@ const jsonpErrorHandler
             // is what Express prepends to JSONP responses for the same reason.
             const body = JSON.stringify(payload)
                 // Escape U+2028/U+2029 which are valid JSON but break JS string literals.
-                .replace(/ /gu, "\\u2028")
-                .replace(/ /gu, "\\u2029");
+                .replace(/\u2028/gu, "\\u2028")
+                .replace(/\u2029/gu, "\\u2029");
 
             response.end(`/**/ typeof ${callbackName} === 'function' && ${callbackName}(${body});`);
         };
