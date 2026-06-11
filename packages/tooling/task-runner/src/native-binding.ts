@@ -16,7 +16,7 @@
  * The napi v3 CLI outputs the .node file to the package root.
  */
 
-import { createRequire } from "node:module";
+import loadNativeRootBinding from "./load-native-root-binding";
 
 interface NativeFileHash {
     hash: string;
@@ -197,8 +197,6 @@ let nativeBindings: NativeBindings | undefined;
 let loadAttempted = false;
 let loadError: Error | undefined;
 
-const esmRequire = createRequire(import.meta.url);
-
 /**
  * Builds the hard-failure error for a missing/unusable native addon. The
  * addon is required: every supported platform ships a prebuilt binding, so a
@@ -221,9 +219,10 @@ const buildLoadError = (cause: unknown): Error => {
  * Loads the native addon, caching the result after the first attempt.
  *
  * napi v3 outputs the .node file to the package root as
- * `task-runner-native.&lt;platform>.node`. The napi-generated index.js
- * handles platform detection automatically; this uses createRequire because
- * that index.js is CJS.
+ * `task-runner-native.&lt;platform>.node`. The napi-generated index.js handles
+ * platform detection automatically; {@link loadNativeRootBinding} resolves and
+ * requires it from the package root regardless of how packem nests this module
+ * under dist/.
  *
  * Throws a clear, actionable error when the addon cannot be loaded (missing
  * binding or stale binary) rather than degrading silently. The
@@ -243,7 +242,7 @@ const loadNativeBindings = (): NativeBindings | undefined => {
     loadAttempted = true;
 
     try {
-        const loaded = esmRequire("../index.js") as NativeBindings;
+        const loaded = loadNativeRootBinding(import.meta.url) as NativeBindings;
 
         // Validate that the loaded binding has the expected API surface.
         // A stale .node binary may load successfully but be missing functions.
