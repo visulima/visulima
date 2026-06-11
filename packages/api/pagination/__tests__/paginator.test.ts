@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { paginate, Paginator } from "../src";
+import { paginate, Paginator, snakeCaseNamingStrategy } from "../src";
 
 describe("paginator", () => {
     it("should return the correct values for all public variables", () => {
@@ -199,5 +199,89 @@ describe("paginator", () => {
         expect(paginator.isEmpty).toBe(false);
         expect(paginator.hasPages).toBe(true);
         expect(paginator.hasTotal).toBe(true);
+    });
+
+    it("should clamp invalid page/perPage/total to sane values", () => {
+        expect.assertions(4);
+
+        const paginator = paginate(0, -5, Number.NaN, [1, 2, 3]);
+
+        expect(paginator.currentPage).toBe(1);
+        expect(paginator.perPage).toBe(1);
+        expect(paginator.total).toBe(0);
+        expect(paginator.lastPage).toBe(1);
+    });
+
+    it("should not stack-overflow constructing a very large page via paginate", () => {
+        expect.assertions(2);
+
+        const rows = Array.from({ length: 200_000 }, (_, index) => index);
+
+        const paginator = paginate(1, 200_000, 200_000, rows);
+
+        expect(paginator).toHaveLength(200_000);
+        expect(paginator.all()).toHaveLength(200_000);
+    });
+
+    it("should return a defensive copy from all()", () => {
+        expect.assertions(2);
+
+        const paginator = paginate(3, 3, 3, [1, 2, 3]);
+        const rows = paginator.all();
+
+        rows.push(99);
+
+        expect(paginator.all()).toStrictEqual([1, 2, 3]);
+        expect(Array.isArray(rows)).toBe(true);
+    });
+
+    it("should transform meta keys with a naming strategy", () => {
+        expect.assertions(1);
+
+        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+
+        expect(paginator.getMeta(snakeCaseNamingStrategy)).toStrictEqual({
+            first_page: 1,
+            first_page_url: "/?page=1",
+            last_page: 10,
+            last_page_url: "/?page=10",
+            next_page_url: "/?page=2",
+            page: 1,
+            per_page: 10,
+            previous_page_url: null,
+            total: 100,
+        });
+    });
+
+    it("should build a windowed url range with ellipsis markers", () => {
+        expect.assertions(2);
+
+        const paginator = paginate(10, 10, 200, []);
+
+        const window = paginator.getUrlsForWindow({ eachSide: 1 });
+
+        expect(window).toStrictEqual([
+            { isActive: false, page: 1, url: "/?page=1" },
+            { isActive: false, page: null, url: null },
+            { isActive: false, page: 9, url: "/?page=9" },
+            { isActive: true, page: 10, url: "/?page=10" },
+            { isActive: false, page: 11, url: "/?page=11" },
+            { isActive: false, page: null, url: null },
+            { isActive: false, page: 20, url: "/?page=20" },
+        ]);
+        // No ellipsis when total pages fit inside the window.
+        expect(paginate(1, 10, 30, []).getUrlsForWindow({ eachSide: 2 })).toStrictEqual([
+            { isActive: true, page: 1, url: "/?page=1" },
+            { isActive: false, page: 2, url: "/?page=2" },
+            { isActive: false, page: 3, url: "/?page=3" },
+        ]);
+    });
+
+    it("should percent-encode query string values in urls", () => {
+        expect.assertions(1);
+
+        const paginator = paginate(1, 10, 100, []).queryString({ q: "a b&c" });
+
+        expect(paginator.getUrl(2)).toBe("/?q=a+b%26c&page=2");
     });
 });

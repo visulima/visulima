@@ -30,10 +30,23 @@ describe("swagger", () => {
                         $ref: "#/components/schemas/PaginationData",
                     },
                 },
+                required: ["data", "meta"],
                 type: "object",
                 xml: {
                     name,
                 },
+            },
+        });
+    });
+
+    it("should allow overriding the meta reference via options", () => {
+        expect.assertions(1);
+
+        const items: OpenAPIV3.SchemaObject = { items: { type: "string" }, type: "array" };
+
+        expect(createPaginationSchemaObject("Test", items, { metaReference: "#/components/schemas/CustomMeta" }).Test).toMatchObject({
+            properties: {
+                meta: { $ref: "#/components/schemas/CustomMeta" },
             },
         });
     });
@@ -63,7 +76,8 @@ describe("swagger", () => {
                         type: "string",
                     },
                     nextPageUrl: {
-                        description: "The URL for the next page",
+                        description: "The URL for the next page, or null when on the last page",
+                        nullable: true,
                         type: "string",
                     },
                     page: {
@@ -77,7 +91,8 @@ describe("swagger", () => {
                         type: "integer",
                     },
                     previousPageUrl: {
-                        description: "The URL for the previous page",
+                        description: "The URL for the previous page, or null when on the first page",
+                        nullable: true,
                         type: "string",
                     },
                     total: {
@@ -86,11 +101,27 @@ describe("swagger", () => {
                         type: "integer",
                     },
                 },
+                required: ["firstPage", "firstPageUrl", "lastPage", "lastPageUrl", "nextPageUrl", "page", "perPage", "previousPageUrl", "total"],
                 type: "object",
                 xml: {
                     name: "PaginationData",
                 },
             },
+        });
+    });
+
+    it("should emit OpenAPI 3.1 nullable url fields when requested", () => {
+        expect.assertions(2);
+
+        const schema = createPaginationMetaSchemaObject("PaginationData", { openApiVersion: "3.1" }).PaginationData;
+
+        expect((schema.properties as Record<string, unknown>).nextPageUrl).toStrictEqual({
+            description: "The URL for the next page, or null when on the last page",
+            type: ["string", "null"],
+        });
+        expect((schema.properties as Record<string, unknown>).previousPageUrl).toStrictEqual({
+            description: "The URL for the previous page, or null when on the first page",
+            type: ["string", "null"],
         });
     });
 
@@ -121,7 +152,8 @@ describe("swagger", () => {
                         type: "string",
                     },
                     nextPageUrl: {
-                        description: "The URL for the next page",
+                        description: "The URL for the next page, or null when on the last page",
+                        nullable: true,
                         type: "string",
                     },
                     page: {
@@ -135,7 +167,8 @@ describe("swagger", () => {
                         type: "integer",
                     },
                     previousPageUrl: {
-                        description: "The URL for the previous page",
+                        description: "The URL for the previous page, or null when on the first page",
+                        nullable: true,
                         type: "string",
                     },
                     total: {
@@ -144,6 +177,7 @@ describe("swagger", () => {
                         type: "integer",
                     },
                 },
+                required: ["firstPage", "firstPageUrl", "lastPage", "lastPageUrl", "nextPageUrl", "page", "perPage", "previousPageUrl", "total"],
                 type: "object",
                 xml: {
                     name,
