@@ -11,7 +11,7 @@ const writeConsoleLogBasedOnLevel = <L extends string = string>(level: LiteralUn
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const c = console as Record<string, any>;
 
-    if (ERROR_LEVELS.has(level as string)) {
+    if (ERROR_LEVELS.has(level)) {
         // eslint-disable-next-line no-console, no-underscore-dangle, @typescript-eslint/no-unsafe-return
         return c.__error ?? console.error;
     }

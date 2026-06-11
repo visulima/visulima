@@ -1041,32 +1041,32 @@ When a log entry exceeds `maxLogSize`, a `LogSizeError` is thrown. When a batch 
 
 ### Configuration Options
 
-| Option                   | Type                                       | Default              | Description                                   |
-| ------------------------ | ------------------------------------------ | -------------------- | --------------------------------------------- |
-| `url`                    | `string`                                   | **required**         | HTTP endpoint URL                             |
-| `method`                 | `string`                                   | `"POST"`             | HTTP method                                   |
-| `headers`                | `Record<string, string> \| (() => ...)`    | `{}`                 | Request headers (object or function)          |
-| `contentType`            | `string`                                   | `"application/json"` | Content type for single requests              |
-| `batchContentType`       | `string`                                   | `"application/json"` | Content type for batch requests               |
-| `enableBatchSend`        | `boolean`                                  | `true`               | Enable automatic batching                     |
-| `batchSize`              | `number`                                   | `100`                | Number of logs to batch before sending        |
-| `batchSendTimeout`       | `number`                                   | `5000`               | Timeout (ms) to send batch regardless of size |
-| `batchMode`              | `"delimiter" \| "array" \| "field"`        | `"delimiter"`        | Batch format mode                             |
-| `batchSendDelimiter`     | `string`                                   | `"\n"`               | Delimiter for batch entries                   |
-| `batchFieldName`         | `string`                                   | `undefined`          | Field name for "field" batch mode             |
-| `compression`            | `boolean`                                  | `false`              | Enable gzip compression                       |
-| `maxRetries`             | `number`                                   | `3`                  | Maximum retry attempts                        |
-| `retryDelay`             | `number`                                   | `1000`               | Base delay between retries (ms)               |
-| `respectRateLimit`       | `boolean`                                  | `true`               | Wait on 429 rate limit responses              |
-| `maxLogSize`             | `number`                                   | `1048576`            | Maximum size per log entry (bytes)            |
-| `maxPayloadSize`         | `number`                                   | `5242880`            | Maximum size per payload (bytes)              |
+| Option                   | Type                                       | Default              | Description                                    |
+| ------------------------ | ------------------------------------------ | -------------------- | ---------------------------------------------- |
+| `url`                    | `string`                                   | **required**         | HTTP endpoint URL                              |
+| `method`                 | `string`                                   | `"POST"`             | HTTP method                                    |
+| `headers`                | `Record<string, string> \| (() => ...)`    | `{}`                 | Request headers (object or function)           |
+| `contentType`            | `string`                                   | `"application/json"` | Content type for single requests               |
+| `batchContentType`       | `string`                                   | `"application/json"` | Content type for batch requests                |
+| `enableBatchSend`        | `boolean`                                  | `true`               | Enable automatic batching                      |
+| `batchSize`              | `number`                                   | `100`                | Number of logs to batch before sending         |
+| `batchSendTimeout`       | `number`                                   | `5000`               | Timeout (ms) to send batch regardless of size  |
+| `batchMode`              | `"delimiter" \| "array" \| "field"`        | `"delimiter"`        | Batch format mode                              |
+| `batchSendDelimiter`     | `string`                                   | `"\n"`               | Delimiter for batch entries                    |
+| `batchFieldName`         | `string`                                   | `undefined`          | Field name for "field" batch mode              |
+| `compression`            | `boolean`                                  | `false`              | Enable gzip compression                        |
+| `maxRetries`             | `number`                                   | `3`                  | Maximum retry attempts                         |
+| `retryDelay`             | `number`                                   | `1000`               | Base delay between retries (ms)                |
+| `respectRateLimit`       | `boolean`                                  | `true`               | Wait on 429 rate limit responses               |
+| `maxLogSize`             | `number`                                   | `1048576`            | Maximum size per log entry (bytes)             |
+| `maxPayloadSize`         | `number`                                   | `5242880`            | Maximum size per payload (bytes)               |
 | `maxQueueSize`           | `number`                                   | `10000`              | Max queued entries before drop-oldest kicks in |
-| `edgeCompat`             | `boolean`                                  | `false`              | Enable Edge Runtime compatibility             |
-| `onError`                | `(error: Error) => void`                   | `undefined`          | Error callback                                |
+| `edgeCompat`             | `boolean`                                  | `false`              | Enable Edge Runtime compatibility              |
+| `onError`                | `(error: Error) => void`                   | `undefined`          | Error callback                                 |
 | `onDrop`                 | `(droppedCount: number) => void`           | `undefined`          | Called when queued entries are dropped         |
-| `onDebug`                | `(entry: Record<string, unknown>) => void` | `undefined`          | Debug callback for log entries                |
-| `onDebugRequestResponse` | `(reqRes: {...}) => void`                  | `undefined`          | Debug callback for HTTP requests/responses    |
-| `payloadTemplate`        | `(data: {...}) => string`                  | `undefined`          | Custom payload formatter                      |
+| `onDebug`                | `(entry: Record<string, unknown>) => void` | `undefined`          | Debug callback for log entries                 |
+| `onDebugRequestResponse` | `(reqRes: {...}) => void`                  | `undefined`          | Debug callback for HTTP requests/responses     |
+| `payloadTemplate`        | `(data: {...}) => string`                  | `undefined`          | Custom payload formatter                       |
 
 ### Flushing & Shutdown
 
