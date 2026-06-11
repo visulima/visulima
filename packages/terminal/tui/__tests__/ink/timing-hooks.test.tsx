@@ -6,7 +6,7 @@ import { Text } from "../../src/components/index";
 import { useHotkey } from "../../src/ink/hooks/use-hotkey";
 import { useInterval } from "../../src/ink/hooks/use-interval";
 import { useKeyChord } from "../../src/ink/hooks/use-key-chord";
-import { createMemoryStorage, usePersistentState } from "../../src/ink/hooks/use-persistent-state";
+import { createFileStorage, createMemoryStorage, usePersistentState } from "../../src/ink/hooks/use-persistent-state";
 import { useTimeout } from "../../src/ink/hooks/use-timeout";
 import { render } from "../../src/ink/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
@@ -267,5 +267,56 @@ describe(usePersistentState, () => {
         await delay(30);
 
         expect(storage.read("prefs")).toBe(JSON.stringify("dark"));
+    });
+
+    it("should write each committed value exactly once (no write inside the updater)", async () => {
+        expect.assertions(2);
+
+        const writes: [string, string][] = [];
+        const backing = createMemoryStorage();
+        const storage = {
+            read: backing.read,
+            write: (key: string, value: string) => {
+                writes.push([key, value]);
+                backing.write(key, value);
+            },
+        };
+
+        let setter: ((value: string) => void) | undefined;
+
+        mount(
+            <Harness
+                initial="light"
+                onExposeSet={(set) => {
+                    setter = set;
+                }}
+                storage={storage}
+                storageKey="prefs"
+            />,
+        );
+
+        setter?.("dark");
+        await delay(30);
+
+        // The committed value should be persisted exactly once. The initial
+        // value matches storage (undefined -> fallback) so it is not re-written.
+        expect(writes).toStrictEqual([["prefs", JSON.stringify("dark")]]);
+        expect(storage.read("prefs")).toBe(JSON.stringify("dark"));
+    });
+});
+
+describe(createFileStorage, () => {
+    it("should reject namespaces that contain a path separator", () => {
+        expect.assertions(3);
+
+        expect(() => createFileStorage("../escape")).toThrow(/invalid namespace/);
+        expect(() => createFileStorage("nested/name")).toThrow(/invalid namespace/);
+        expect(() => createFileStorage("")).toThrow(/invalid namespace/);
+    });
+
+    it("should accept a plain namespace", () => {
+        expect.assertions(1);
+
+        expect(() => createFileStorage("my-app")).not.toThrow();
     });
 });

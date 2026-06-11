@@ -1,9 +1,13 @@
 /**
- * Barrel file for every component exported from `@visulima/tui`.
+ * Internal barrel listing every component shipped by `@visulima/tui`.
  *
  * Kept sorted alphabetically by component name so grepping and diffing stays
- * predictable. Consumers should import from `@visulima/tui` (the ink barrel)
- * rather than from this file directly.
+ * predictable. This file is **not** a public entry point and is not reachable
+ * via any subpath export. Consumers must import each component from its own
+ * deep subpath (e.g. `@visulima/tui/components/box`) so they only pay for what
+ * they use; the bare `@visulima/tui` entry intentionally does not re-export
+ * components. This barrel exists only as a maintenance index / type-coverage
+ * aid for contributors.
  */
 export type { AccordionItem, Props as AccordionProps } from "./accordion";
 export { default as Accordion } from "./accordion";

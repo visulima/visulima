@@ -3,7 +3,7 @@ import { homedir } from "node:os";
 import path from "node:path";
 import process from "node:process";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 export type PersistentStorage = {
     /**
@@ -49,15 +49,37 @@ export const createMemoryStorage = (): PersistentStorage => {
     };
 };
 
+const PATH_SEPARATOR_PATTERN = /[/\\]/;
+
+/**
+ * Reject namespaces that could escape the `~/.cache/visulima-tui/` directory.
+ * The namespace is interpolated directly into a file path, so path separators
+ * (`/`, `\`) and traversal segments (`..`) must be rejected defensively even
+ * though it is developer-supplied rather than end-user input.
+ */
+const assertSafeNamespace = (namespace: string): void => {
+    if (namespace === "" || namespace === "." || namespace === ".." || PATH_SEPARATOR_PATTERN.test(namespace) || namespace.includes("\0")) {
+        throw new Error(`[visulima/tui] usePersistentState: invalid namespace ${JSON.stringify(namespace)} — must not be empty or contain path separators.`);
+    }
+};
+
 /**
  * Default file-backed storage. Reads/writes a single JSON object per
  * namespace, keyed by `key`. The directory is created on first write and
  * updates use a temp-file + rename to avoid partial writes if the process
  * crashes mid-write. Errors are forwarded to `process.stderr.write` so they
  * are visible without crashing the UI.
+ *
+ * The namespace object is parsed from disk once (lazily) and kept in memory;
+ * subsequent reads/writes operate on the cached object instead of re-reading
+ * and re-parsing the whole file on every call.
  */
 export const createFileStorage = (namespace: string): PersistentStorage => {
+    assertSafeNamespace(namespace);
+
     const filePath = path.join(homedir(), ".cache", "visulima-tui", `${namespace}.json`);
+
+    let cache: Record<string, string> | undefined;
 
     const reportError = (operation: string, error: unknown): void => {
         const message = error instanceof Error ? error.message : String(error);
@@ -66,15 +88,15 @@ export const createFileStorage = (namespace: string): PersistentStorage => {
     };
 
     const load = (): Record<string, string> => {
+        if (cache !== undefined) {
+            return cache;
+        }
+
         try {
             const raw = readFileSync(filePath, "utf8");
             const parsed = JSON.parse(raw);
 
-            if (parsed && typeof parsed === "object") {
-                return parsed as Record<string, string>;
-            }
-
-            return {};
+            cache = parsed && typeof parsed === "object" ? (parsed as Record<string, string>) : {};
         } catch (error) {
             // ENOENT and EACCES are expected on first run; log everything else.
             const code = (error as NodeJS.ErrnoException | undefined)?.code;
@@ -83,8 +105,10 @@ export const createFileStorage = (namespace: string): PersistentStorage => {
                 reportError("read", error);
             }
 
-            return {};
+            cache = {};
         }
+
+        return cache;
     };
 
     return {
@@ -93,12 +117,12 @@ export const createFileStorage = (namespace: string): PersistentStorage => {
             const directory = path.dirname(filePath);
             const temporaryPath = `${filePath}.tmp.${process.pid}`;
 
+            const current = load();
+
+            current[key] = value;
+
             try {
                 mkdirSync(directory, { recursive: true });
-
-                const current = load();
-
-                current[key] = value;
 
                 // Write to a temp file in the same directory then atomically
                 // rename — prevents readers from ever seeing a half-written
@@ -134,7 +158,13 @@ const readInitial = <T>(storage: PersistentStorage, key: string, fallback: T): T
 /**
  * `useState` that persists its value through the configured `storage`
  * backend (file on disk by default). Behaves identically to `useState` at
- * the call-site; the writes happen synchronously after each update.
+ * the call-site.
+ *
+ * Persistence happens in a commit-phase effect, **not** inside the state
+ * updater — updaters must be pure (React may double-invoke them under
+ * StrictMode or discard them under concurrent rendering), so writing from
+ * inside one risked double or phantom disk writes. Writing after commit means
+ * only values that actually render are persisted.
  *
  * **Lifecycle note:** the storage backend (resolved from `options.storage`
  * or a fresh `createFileStorage(namespace)`) is captured once on mount and
@@ -144,30 +174,42 @@ const readInitial = <T>(storage: PersistentStorage, key: string, fallback: T): T
  * @param key Unique identifier within the backend namespace.
  * @param initialValue Value used when the backend has no entry for `key`.
  * @param options Optional storage backend + namespace overrides.
- * @returns A `[value, setValue]` tuple. Writes flush synchronously after
- * the React state update.
+ * @returns A `[value, setValue]` tuple. Writes flush in a post-commit effect.
  */
 const usePersistentState = <T>(key: string, initialValue: T, options?: UsePersistentStateOptions): readonly [T, (value: T | ((previous: T) => T)) => void] => {
-    const storageRef = useRef(options?.storage ?? createFileStorage(options?.namespace ?? "tui"));
+    const storageRef = useRef<PersistentStorage | undefined>(undefined);
 
-    const [value, setValue] = useState<T>(() => readInitial(storageRef.current, key, initialValue));
+    storageRef.current ??= options?.storage ?? createFileStorage(options?.namespace ?? "tui");
 
-    const update = useCallback(
-        (next: T | ((previous: T) => T)) => {
-            setValue((previous) => {
-                const resolved = typeof next === "function" ? (next as (previous: T) => T)(previous) : next;
+    const storage = storageRef.current;
 
-                try {
-                    storageRef.current.write(key, JSON.stringify(resolved));
-                } catch {
-                    // Non-serializable value; skip persistence.
-                }
+    const [value, setValue] = useState<T>(() => readInitial(storage, key, initialValue));
 
-                return resolved;
-            });
-        },
-        [key],
-    );
+    // Tracks the value that has already been persisted, so the effect does not
+    // re-serialize and re-write the same value. Seeded on the first render with
+    // the value sourced from storage so the mount effect is a no-op for an
+    // unchanged value (we only persist values that actually change).
+    const persistedRef = useRef<{ key: string; value: T } | undefined>(undefined);
+
+    persistedRef.current ??= { key, value };
+
+    // Persist after commit. The updater (below) stays pure.
+    useEffect(() => {
+        if (persistedRef.current?.key === key && Object.is(persistedRef.current.value, value)) {
+            return;
+        }
+
+        try {
+            storage.write(key, JSON.stringify(value));
+            persistedRef.current = { key, value };
+        } catch {
+            // Non-serializable value; skip persistence.
+        }
+    }, [key, value, storage]);
+
+    const update = useCallback((next: T | ((previous: T) => T)) => {
+        setValue(next);
+    }, []);
 
     return [value, update] as const;
 };
