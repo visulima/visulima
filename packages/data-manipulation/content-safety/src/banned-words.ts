@@ -39,6 +39,10 @@ import zh from "./words/zh";
  * - Words are normalized to NFC Unicode form for consistent matching
  * - Multi-word phrases are supported (e.g., "white trash")
  * - Leet-speak variants are included where applicable
+ *
+ * The object is **frozen** (`Object.freeze`): mutating it (e.g. `BANNED_WORDS.en.push(...)`)
+ * has no effect because the checker builds its lookup tables from a snapshot. To match against
+ * a custom dictionary or allowlist, use the `createChecker` factory instead.
  * @example
  * ```typescript
  * import { BANNED_WORDS } from "@visulima/content-safety";
@@ -49,7 +53,7 @@ import zh from "./words/zh";
  * @public
  */
 // eslint-disable-next-line import/prefer-default-export
-export const BANNED_WORDS: Record<string, ReadonlyArray<string>> = {
+export const BANNED_WORDS: Readonly<Record<string, ReadonlyArray<string>>> = Object.freeze({
     /** Arabic banned words */
     ar,
     /** Azerbaijani banned words */
@@ -88,4 +92,4 @@ export const BANNED_WORDS: Record<string, ReadonlyArray<string>> = {
     tr,
     /** Chinese banned words */
     zh,
-};
+});
