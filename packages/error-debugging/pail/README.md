@@ -1060,11 +1060,40 @@ When a log entry exceeds `maxLogSize`, a `LogSizeError` is thrown. When a batch 
 | `respectRateLimit`       | `boolean`                                  | `true`               | Wait on 429 rate limit responses              |
 | `maxLogSize`             | `number`                                   | `1048576`            | Maximum size per log entry (bytes)            |
 | `maxPayloadSize`         | `number`                                   | `5242880`            | Maximum size per payload (bytes)              |
+| `maxQueueSize`           | `number`                                   | `10000`              | Max queued entries before drop-oldest kicks in |
 | `edgeCompat`             | `boolean`                                  | `false`              | Enable Edge Runtime compatibility             |
 | `onError`                | `(error: Error) => void`                   | `undefined`          | Error callback                                |
+| `onDrop`                 | `(droppedCount: number) => void`           | `undefined`          | Called when queued entries are dropped         |
 | `onDebug`                | `(entry: Record<string, unknown>) => void` | `undefined`          | Debug callback for log entries                |
 | `onDebugRequestResponse` | `(reqRes: {...}) => void`                  | `undefined`          | Debug callback for HTTP requests/responses    |
 | `payloadTemplate`        | `(data: {...}) => string`                  | `undefined`          | Custom payload formatter                      |
+
+### Flushing & Shutdown
+
+`HttpReporter` batches entries (up to `batchSize`, or every `batchSendTimeout` ms). Before a
+short-lived or serverless process exits, call `flush()` (or `close()` / `dispose()`) so the
+tail of the batch is shipped rather than lost:
+
+```typescript
+const reporter = new HttpReporter({ url: "https://logs.example.com" });
+
+// ... log ...
+
+// Drain the queue before exit
+await reporter.flush();
+```
+
+If the endpoint is unavailable, the queue is capped at `maxQueueSize` entries using a
+drop-oldest policy, so a sustained outage cannot grow memory without bound. Provide `onDrop`
+to be notified when entries are dropped.
+
+`JsonFileReporter` likewise exposes `close()` / `dispose()` to end its rotating-file stream:
+
+```typescript
+process.on("beforeExit", () => {
+    fileReporter.close();
+});
+```
 
 ## Wide Events
 

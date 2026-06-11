@@ -237,15 +237,16 @@ describe("wideEvent", () => {
 
             const pail = createMockPail();
             const errorSpy = vi.spyOn(console, "error");
+            const warnSpy = vi.spyOn(console, "warn");
             const wideEvent = createWideEvent({ autoEmit: false, name: "test", pail });
 
             wideEvent.setError(new Error("fail"));
-            // Override to "warn" instead of auto-detected "error"
-            // Note: pail's "warn" type uses log level "warning" which the RawReporter
-            // routes through console.log (not console.warn), so we check console.log
+            // Override to "warn" instead of auto-detected "error".
+            // pail's "warn" type uses log level "warning", which (correctly) routes through
+            // console.warn — not console.log and not console.error.
             wideEvent.emit("warn");
 
-            expect(consoleSpy).toHaveBeenCalledTimes(1);
+            expect(warnSpy).toHaveBeenCalledTimes(1);
             expect(errorSpy).not.toHaveBeenCalled();
         });
 
@@ -779,13 +780,15 @@ describe("wideEvent", () => {
             const pail = createMockPail();
             const wideEvent = createWideEvent({ autoEmit: false, name: "test", pail });
 
+            const warnSpy = vi.spyOn(console, "warn");
+
             wideEvent.warn("elevated warning");
             wideEvent.emit();
 
-            // Pail's "warn" type uses log level "warning" which the RawReporter
-            // routes through console.log, so we verify console.log was called
-            // with the payload and the event level was escalated to "warn"
-            expect(consoleSpy).toHaveBeenCalledTimes(1);
+            // Pail's "warn" type uses log level "warning", which (correctly) routes through
+            // console.warn, so we verify console.warn was called with the payload and the
+            // event level was escalated to "warn".
+            expect(warnSpy).toHaveBeenCalledTimes(1);
             expect(wideEvent.getLevel()).toBe("warn");
         });
     });

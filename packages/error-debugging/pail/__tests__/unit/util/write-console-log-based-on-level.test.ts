@@ -28,13 +28,23 @@ describe(writeConsoleLogBasedOnLevel, () => {
         expect(logFunction).toBe(console.error);
     });
 
-    it("should return console.warn when level is \"warn\"", () => {
+    it("should return console.warn when level is the RFC 5424 \"warning\" level", () => {
         expect.assertions(1);
 
-        const logFunction = writeConsoleLogBasedOnLevel("warn");
+        const logFunction = writeConsoleLogBasedOnLevel("warning");
 
         // eslint-disable-next-line no-console
         expect(logFunction).toBe(console.warn);
+    });
+
+    it("should return console.log for the \"warn\" *type* name (never a level)", () => {
+        expect.assertions(1);
+
+        // "warn" is a logger type, not an RFC 5424 level, so it must not map to console.warn.
+        const logFunction = writeConsoleLogBasedOnLevel("warn");
+
+        // eslint-disable-next-line no-console
+        expect(logFunction).toBe(console.log);
     });
 
     it("should return console.log when level is not a valid ExtendedRfc5424LogLevels type", () => {

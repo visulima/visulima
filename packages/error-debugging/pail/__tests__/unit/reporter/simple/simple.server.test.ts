@@ -269,8 +269,10 @@ describe("simpleReporter", () => {
         // Create a reporter with custom types that include Unicode characters
         const simpleReporter = new SimpleReporter();
 
-        // Override the logger types to include a wide Unicode character
-        (simpleReporter as any).loggerTypes = {
+        // Override the logger types to include a wide Unicode character.
+        // Use setLoggerTypes (the supported API) so the reporter's cached longest
+        // badge/label are refreshed for the new types.
+        (simpleReporter as any).setLoggerTypes({
             info: {
                 color: "blueBright",
                 label: "信息", // Chinese characters (3 bytes but 2 display width)
@@ -281,7 +283,7 @@ describe("simpleReporter", () => {
                 label: "WARN", // ASCII characters (4 bytes, 4 display width)
                 logLevel: "warning",
             },
-        };
+        });
 
         const meta = {
             badge: "信息",
@@ -314,7 +316,8 @@ describe("simpleReporter", () => {
         // Create a reporter with types that have different display widths
         const simpleReporter = new SimpleReporter();
 
-        (simpleReporter as any).loggerTypes = {
+        // Use setLoggerTypes (the supported API) so the cached longest badge/label refresh.
+        (simpleReporter as any).setLoggerTypes({
             debug: {
                 color: "grey",
                 label: "DBG", // 3 characters, 3 display width
@@ -325,7 +328,7 @@ describe("simpleReporter", () => {
                 label: "🚨ERROR", // 7 characters but 7 display width (emoji + text)
                 logLevel: "error",
             },
-        };
+        });
 
         const meta = {
             badge: undefined,

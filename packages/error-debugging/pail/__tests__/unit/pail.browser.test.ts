@@ -252,7 +252,8 @@ describe("pailBrowserImpl", () => {
             throttleMin: 5,
         });
 
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+        // The duplicate-timer notice is emitted at the "warning" level, which routes to console.warn.
+        const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
         logger.time("testTimer");
         logger.time("testTimer");
@@ -275,7 +276,8 @@ describe("pailBrowserImpl", () => {
             throttleMin: 5,
         });
 
-        const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+        // The missing-timer notice is emitted at the "warning" level, which routes to console.warn.
+        const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
         logger.timeEnd("nonExistentTimer");
 
@@ -550,9 +552,9 @@ describe("pailBrowserImpl", () => {
             // Pause the logger
             logger.pause();
 
-            // These messages should be queued
+            // These messages should be queued (all console.log-routed levels so the count is unambiguous)
             logger.info("Message 1");
-            logger.warn("Message 2");
+            logger.info("Message 2");
             logger.debug("Message 3");
 
             // No messages should have been logged yet
@@ -645,7 +647,7 @@ describe("pailBrowserImpl", () => {
 
             logger.pause();
             logger.info("First");
-            logger.warn("Second");
+            logger.info("Second");
             logger.debug("Third");
             logger.resume();
 
@@ -1011,8 +1013,8 @@ describe("pailBrowserImpl", () => {
     });
 
     describe("scope", () => {
-        it("should set the scope name via scope()", () => {
-            expect.assertions(1);
+        it("should return a new scoped instance via scope() without mutating the parent", () => {
+            expect.assertions(2);
 
             const logger = new PailBrowser({
                 logLevel: "debug",
@@ -1023,9 +1025,12 @@ describe("pailBrowserImpl", () => {
                 throttleMin: 5,
             });
 
-            logger.scope("auth", "login");
+            const scoped = logger.scope("auth", "login");
 
-            expect(logger.scopeName).toStrictEqual(["auth", "login"]);
+            // scope() returns a new instance carrying the scope...
+            expect(scoped.scopeName).toStrictEqual(["auth", "login"]);
+            // ...and must not re-scope the parent logger.
+            expect(logger.scopeName).toStrictEqual([]);
         });
 
         it("should throw when scope() is called without a name", () => {
@@ -1202,7 +1207,8 @@ describe("pailBrowserImpl", () => {
                 throttleMin: 5,
             });
 
-            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+            // The "counter does not exist" notice is emitted at the "warning" level → console.warn.
+            const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
             logger.countReset("missing");
 
@@ -1325,7 +1331,8 @@ describe("pailBrowserImpl", () => {
                 throttleMin: 5,
             });
 
-            const consoleSpy = vi.spyOn(console, "log").mockImplementation(() => {});
+            // The missing-timer notice is emitted at the "warning" level → console.warn.
+            const consoleSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
 
             logger.timeLog("missing");
 
@@ -1633,6 +1640,49 @@ describe("pailBrowserImpl", () => {
 
             consoleSpy.mockRestore();
             vi.useRealTimers();
+        });
+    });
+
+    describe("log level normalization", () => {
+        it("warns once about an unknown log level instead of silently falling back to debug", () => {
+            expect.assertions(3);
+
+            const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+            const logger = new PailBrowser({
+                // "warn" is a *type* name, not a valid level — a common misconfiguration.
+                logLevel: "warn" as never,
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+            });
+
+            // The unknown level is warned about exactly once during construction.
+            expect(warnSpy).toHaveBeenCalledTimes(1);
+            expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Unknown log level \"warn\""));
+
+            // Reference the instance so the construction is not flagged as a useless side-effect.
+            expect(logger).toBeDefined();
+
+            warnSpy.mockRestore();
+        });
+
+        it("accepts a custom level whose priority is 0", () => {
+            expect.assertions(2);
+
+            const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+            const logger = new PailBrowser({
+                logLevel: "silent" as never,
+                logLevels: { silent: 0 },
+                rawReporter: new RawReporter(),
+                reporters: [new RawReporter()],
+            });
+
+            // Priority 0 must be recognized as a valid level — no warning emitted.
+            expect(warnSpy).not.toHaveBeenCalled();
+            expect(logger).toBeDefined();
+
+            warnSpy.mockRestore();
         });
     });
 });

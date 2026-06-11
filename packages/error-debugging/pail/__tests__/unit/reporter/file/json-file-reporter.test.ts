@@ -65,4 +65,30 @@ describe("jsonFileReporter", () => {
             reporter.log(meta);
         }).not.toThrow();
     });
+
+    it("close() ends the underlying stream so buffered writes flush", () => {
+        expect.assertions(1);
+
+        const reporter = new JsonFileReporter({ filePath: "test.log" });
+
+        // @ts-expect-error - stream is protected
+        const endSpy = vi.spyOn(reporter.stream, "end");
+
+        reporter.close();
+
+        expect(endSpy).toHaveBeenCalledTimes(1);
+    });
+
+    it("dispose() is an alias for close()", () => {
+        expect.assertions(1);
+
+        const reporter = new JsonFileReporter({ filePath: "test.log" });
+
+        // @ts-expect-error - stream is protected
+        const endSpy = vi.spyOn(reporter.stream, "end");
+
+        reporter.dispose();
+
+        expect(endSpy).toHaveBeenCalledTimes(1);
+    });
 });

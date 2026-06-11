@@ -55,6 +55,29 @@ export class JsonFileReporter<L extends string = string> extends AbstractJsonRep
     }
 
     /**
+     * Closes the underlying rotating file stream.
+     *
+     * Ends the buffered stream so any queued writes are flushed to disk before the
+     * process exits. Without this the tail of the log can be lost on a short-lived
+     * process. After calling `close()` no further writes should be made (unless
+     * `writeImmediately` was enabled, in which case each write owns its own stream).
+     * @example
+     * ```typescript
+     * process.on("beforeExit", () => reporter.close());
+     * ```
+     */
+    public close(): void {
+        this.stream.end();
+    }
+
+    /**
+     * Alias for {@link close} to match common transport `dispose` conventions.
+     */
+    public dispose(): void {
+        this.close();
+    }
+
+    /**
      * Writes a JSON message to the rotating file stream.
      * @param message The JSON-formatted log message to write
      * @protected

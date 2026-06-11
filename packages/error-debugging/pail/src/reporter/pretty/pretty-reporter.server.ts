@@ -15,9 +15,10 @@ import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
 
 import { EMPTY_SYMBOL } from "../../constants";
-import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, ReadonlyMeta } from "../../types";
+import type { DefaultLogTypes, ExtendedRfc5424LogLevels, InteractiveStreamReporter, LoggerTypesConfig, ReadonlyMeta } from "../../types";
 import getLongestBadge from "../../utils/get-longest-badge";
 import getLongestLabel from "../../utils/get-longest-label";
+import isStderrLevel from "../../utils/is-stderr-level";
 import writeStream from "../../utils/write-stream";
 import defaultInspectorConfig from "../utils/default-inspector-config";
 import formatLabel from "../utils/format-label";
@@ -77,6 +78,19 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
     readonly #errorOptions: Partial<Omit<RenderErrorOptions, "message | prefix">>;
 
+    // Cached terminal size — refreshed on stdout `resize` rather than re-measured per log line.
+    // Measuring on every `_formatMessage` can shell out to `tput` synchronously (with a 500ms
+    // timeout) when stdout/stderr aren't TTYs and COLUMNS/LINES are unset (CI, pipes, Docker).
+    #columns: number | undefined;
+
+    #resizeListenerAttached = false;
+
+    // Longest badge/label are derived from the (fixed) logger types; cache them on setLoggerTypes
+    // instead of iterating every type on each formatted message.
+    #longestBadge = "";
+
+    #longestLabel = "";
+
     /**
      * Creates a new Server Pretty Reporter instance.
      * @param options Configuration options for styling, error rendering, and object inspection
@@ -106,6 +120,18 @@ export class PrettyReporter<T extends string = string, L extends string = string
         };
         this.#stdout = stdout;
         this.#stderr = stderr;
+
+        this.#refreshLongest();
+    }
+
+    /**
+     * Sets the logger types configuration and refreshes cached badge/label widths.
+     * @param types Logger type configurations with colors and labels
+     */
+    public override setLoggerTypes(types: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>): void {
+        super.setLoggerTypes(types);
+
+        this.#refreshLongest();
     }
 
     /**
@@ -114,6 +140,9 @@ export class PrettyReporter<T extends string = string, L extends string = string
      */
     public setStdout(stdout_: NodeJS.WriteStream): void {
         this.#stdout = stdout_;
+        // Stream changed — drop the cached size and resize listener so they re-bind lazily.
+        this.#columns = undefined;
+        this.#resizeListenerAttached = false;
     }
 
     /**
@@ -145,11 +174,34 @@ export class PrettyReporter<T extends string = string, L extends string = string
         this._log(this._formatMessage(meta), meta.type.level);
     }
 
+    #refreshLongest(): void {
+        this.#longestBadge = getLongestBadge<L, T>(this.loggerTypes);
+        this.#longestLabel = getLongestLabel<L, T>(this.loggerTypes);
+    }
+
+    /**
+     * Returns the current terminal column count, caching the measurement and
+     * invalidating it on the stdout `resize` event. Avoids a synchronous
+     * `tput`/`terminal-size` probe on every formatted message.
+     */
+    #getColumns(): number {
+        if (!this.#resizeListenerAttached && typeof this.#stdout.on === "function") {
+            this.#resizeListenerAttached = true;
+            this.#stdout.on("resize", () => {
+                this.#columns = undefined;
+            });
+        }
+
+        if (this.#columns === undefined) {
+            this.#columns = terminalSize().columns;
+        }
+
+        return this.#columns;
+    }
+
     // eslint-disable-next-line sonarjs/cognitive-complexity, no-underscore-dangle
     protected _formatMessage(data: ReadonlyMeta<L>): string {
-        const { columns } = terminalSize();
-
-        let size = columns;
+        let size = this.#getColumns();
 
         if (typeof this.styles.messageLength === "number") {
             size = this.styles.messageLength;
@@ -176,14 +228,14 @@ export class PrettyReporter<T extends string = string, L extends string = string
         if (badge) {
             items.push(colorized(badge));
         } else {
-            const longestBadge: string = getLongestBadge<L, T>(this.loggerTypes);
+            const longestBadge: string = this.#longestBadge;
 
             if (longestBadge.length > 0) {
                 items.push(`${grey(".".repeat(longestBadge.length))} `);
             }
         }
 
-        const longestLabel: string = getLongestLabel<L, T>(this.loggerTypes);
+        const longestLabel: string = this.#longestLabel;
 
         if (label) {
             const longestLabelWidth = getStringWidth(longestLabel);
@@ -302,7 +354,7 @@ export class PrettyReporter<T extends string = string, L extends string = string
 
     // eslint-disable-next-line no-underscore-dangle
     protected _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {
-        const streamType = ["error", "trace", "warn"].includes(logLevel) ? "stderr" : "stdout";
+        const streamType = isStderrLevel<L>(logLevel) ? "stderr" : "stdout";
         const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
 
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {

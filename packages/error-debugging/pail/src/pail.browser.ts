@@ -135,6 +135,16 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
     protected force: Record<string, LoggerFunction> = {} as Record<string, LoggerFunction>;
 
+    // Tracks unknown log-level names already warned about, so #normalizeLogLevel emits the
+    // misconfiguration warning at most once per level instead of on every log call.
+    readonly #warnedLogLevels = new Set<string>();
+
+    // References to the handlers installed by wrapException(), so restoreException() can remove
+    // them and a repeated wrapException() does not stack duplicate listeners.
+    #uncaughtExceptionHandler: ((error: Error) => void) | undefined;
+
+    #unhandledRejectionHandler: ((error: unknown) => void) | undefined;
+
     /**
      * Creates a new Pail browser logger instance.
      *
@@ -335,20 +345,61 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * ```
      */
     public wrapException(): void {
-        if (typeof process !== "undefined") {
-            process.on("uncaughtException", (error: Error) => {
-                // @TODO: Fix typings
-                // @ts-expect-error - dynamic property
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                (this as unknown as PailBrowserImpl<T, L>).error(error);
-            });
+        if (typeof process === "undefined") {
+            return;
+        }
 
-            process.on("unhandledRejection", (error: unknown) => {
-                // @TODO: Fix typings
-                // @ts-expect-error - dynamic property
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-                (this as unknown as PailBrowserImpl<T, L>).error(error);
-            });
+        // Idempotent: a second call without restoreException() would otherwise stack a new
+        // pair of listeners that can never be removed (the previous implementation kept no
+        // references). Bail out if handlers are already installed.
+        if (this.#uncaughtExceptionHandler || this.#unhandledRejectionHandler) {
+            return;
+        }
+
+        this.#uncaughtExceptionHandler = (error: Error): void => {
+            // @TODO: Fix typings
+            // @ts-expect-error - dynamic property
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            (this as unknown as PailBrowserImpl<T, L>).error(error);
+        };
+
+        this.#unhandledRejectionHandler = (error: unknown): void => {
+            // @TODO: Fix typings
+            // @ts-expect-error - dynamic property
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+            (this as unknown as PailBrowserImpl<T, L>).error(error);
+        };
+
+        process.on("uncaughtException", this.#uncaughtExceptionHandler);
+        process.on("unhandledRejection", this.#unhandledRejectionHandler);
+    }
+
+    /**
+     * Removes the global exception/rejection handlers installed by {@link wrapException}.
+     *
+     * Counterpart to `wrapException()` (mirrors `wrapConsole()`/`restoreConsole()`).
+     * Safe to call when no handlers are installed.
+     * @example
+     * ```typescript
+     * const logger = createPail();
+     * logger.wrapException();
+     * // ... later ...
+     * logger.restoreException(); // global handlers removed
+     * ```
+     */
+    public restoreException(): void {
+        if (typeof process === "undefined") {
+            return;
+        }
+
+        if (this.#uncaughtExceptionHandler) {
+            process.off("uncaughtException", this.#uncaughtExceptionHandler);
+            this.#uncaughtExceptionHandler = undefined;
+        }
+
+        if (this.#unhandledRejectionHandler) {
+            process.off("unhandledRejection", this.#unhandledRejectionHandler);
+            this.#unhandledRejectionHandler = undefined;
         }
     }
 
@@ -477,9 +528,10 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
             throw new Error("No scope name was defined.");
         }
 
-        this.scopeName = name.flat();
-
-        return this as unknown as PailBrowserType<N, L>;
+        // Return a *new* logger (as documented) instead of mutating `this`. The new scope
+        // extends the parent's scope, so `outer.scope("inner")` nests rather than replacing.
+        // (Previously `this.scopeName = name.flat()` re-scoped the receiver in place.)
+        return this.child<N>({ scope: name });
     }
 
     /**
@@ -858,7 +910,25 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
     }
 
     #normalizeLogLevel(level: LiteralUnion<ExtendedRfc5424LogLevels, L> | undefined): LiteralUnion<ExtendedRfc5424LogLevels, L> {
-        return level && this.logLevels[level] ? level : "debug";
+        let resolved: LiteralUnion<ExtendedRfc5424LogLevels, L> = "debug";
+
+        // Use an own-property check rather than truthiness so a custom level mapped to
+        // priority `0` is still recognised as valid (previously `this.logLevels[level]`
+        // was falsy for `0` and the level was rejected).
+        if (level !== undefined && Object.hasOwn(this.logLevels, level)) {
+            resolved = level;
+        } else if (level !== undefined && !this.#warnedLogLevels.has(level)) {
+            // An unknown level name (e.g. a typo like `PAIL_LOG_LEVEL=warn`) used to silently
+            // fall through to `debug` — the most verbose level — flooding output. Warn the
+            // caller so the misconfiguration is visible instead of silently worsening.
+            // (`undefined` is the documented "use the default" case and is not warned about.)
+            this.#warnedLogLevels.add(level);
+
+            // eslint-disable-next-line no-console
+            console.warn(`[pail] Unknown log level "${String(level)}". Valid levels: ${Object.keys(this.logLevels).join(", ")}. Falling back to "debug".`);
+        }
+
+        return resolved;
     }
 
     // eslint-disable-next-line sonarjs/cognitive-complexity
@@ -978,6 +1048,21 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         if (force || this.logLevels[logLevel] >= this.logLevels[this.generalLogLevel]) {
             let meta = this.#buildMeta(type, typeConfig, ...messageObject);
 
+            // Compute the dedup signature for the pre-processor meta exactly once.
+            // It is reused both for the throttle comparison below and (when no processors
+            // are registered, so the relevant fields are guaranteed unchanged) for storage
+            // in resolveLog — avoiding a second JSON.stringify of the same large tuple.
+            let preProcessorSignature: string | undefined;
+
+            try {
+                preProcessorSignature = JSON.stringify([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix, meta.context]);
+            } catch {
+                // Circular References - leave undefined so throttle dedup is skipped for this log.
+                preProcessorSignature = undefined;
+            }
+
+            const hasProcessors = this.processors.size > 0;
+
             /**
              * @param newLog false if the throttle expired and we don't want to log a duplicate
              */
@@ -1009,11 +1094,17 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
                     this.lastLog.object = meta;
 
-                    try {
-                        this.lastLog.signature = JSON.stringify([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix, meta.context]);
-                    } catch {
-                        // Circular References - leave signature unset so throttle dedup is skipped for this log
-                        this.lastLog.signature = undefined;
+                    if (hasProcessors) {
+                        // Processors may have mutated the signature-relevant fields, so recompute.
+                        try {
+                            this.lastLog.signature = JSON.stringify([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix, meta.context]);
+                        } catch {
+                            // Circular References - leave signature unset so throttle dedup is skipped for this log
+                            this.lastLog.signature = undefined;
+                        }
+                    } else {
+                        // No processors ran — the precomputed signature still describes this meta.
+                        this.lastLog.signature = preProcessorSignature;
                     }
 
                     this.#report(meta, raw);
@@ -1029,8 +1120,8 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
             if (diffTime < this.throttle) {
                 try {
-                    const currentSignature = JSON.stringify([meta.label, meta.scope, meta.type, meta.message, meta.prefix, meta.suffix, meta.context]);
-                    const isSameLog = this.lastLog.object && currentSignature === this.lastLog.signature;
+                    const currentSignature = preProcessorSignature;
+                    const isSameLog = this.lastLog.object && currentSignature !== undefined && currentSignature === this.lastLog.signature;
 
                     if (isSameLog) {
                         this.lastLog.count = (this.lastLog.count ?? 0) + 1;

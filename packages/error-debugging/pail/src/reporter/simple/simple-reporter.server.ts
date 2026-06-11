@@ -15,9 +15,10 @@ import terminalSize from "terminal-size";
 import type { LiteralUnion } from "type-fest";
 
 import { EMPTY_SYMBOL } from "../../constants";
-import type { ExtendedRfc5424LogLevels, InteractiveStreamReporter, ReadonlyMeta } from "../../types";
+import type { DefaultLogTypes, ExtendedRfc5424LogLevels, InteractiveStreamReporter, LoggerTypesConfig, ReadonlyMeta } from "../../types";
 import getLongestBadge from "../../utils/get-longest-badge";
 import getLongestLabel from "../../utils/get-longest-label";
+import isStderrLevel from "../../utils/is-stderr-level";
 import writeStream from "../../utils/write-stream";
 import type { PrettyStyleOptions } from "../pretty/abstract-pretty-reporter";
 import { AbstractPrettyReporter } from "../pretty/abstract-pretty-reporter";
@@ -49,6 +50,17 @@ export class SimpleReporter<T extends string = string, L extends string = string
 
     readonly #errorOptions: Partial<Omit<RenderErrorOptions, "message | prefix">>;
 
+    // Cached terminal size — refreshed on stdout `resize` rather than re-measured per log line
+    // (a synchronous `tput` probe when stdout/stderr aren't TTYs and COLUMNS/LINES are unset).
+    #columns: number | undefined;
+
+    #resizeListenerAttached = false;
+
+    // Longest badge/label derived from the fixed logger types; cached on setLoggerTypes.
+    #longestBadge = "";
+
+    #longestLabel = "";
+
     public constructor(options: Partial<SimpleReporterOptions> = {}) {
         const { error: errorOptions, inspect: inspectOptions, ...rest }: Partial<SimpleReporterOptions> = options;
 
@@ -74,10 +86,20 @@ export class SimpleReporter<T extends string = string, L extends string = string
         };
         this.#stdout = stdout;
         this.#stderr = stderr;
+
+        this.#refreshLongest();
+    }
+
+    public override setLoggerTypes(types: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, T>, L>): void {
+        super.setLoggerTypes(types);
+
+        this.#refreshLongest();
     }
 
     public setStdout(stdout_: NodeJS.WriteStream): void {
         this.#stdout = stdout_;
+        this.#columns = undefined;
+        this.#resizeListenerAttached = false;
     }
 
     public setStderr(stderr_: NodeJS.WriteStream): void {
@@ -96,7 +118,7 @@ export class SimpleReporter<T extends string = string, L extends string = string
         const message = this.formatMessage(meta);
         const logLevel = meta.type.level as LiteralUnion<ExtendedRfc5424LogLevels, L>;
 
-        const streamType = ["error", "trace", "warn"].includes(logLevel) ? "stderr" : "stdout";
+        const streamType = isStderrLevel<L>(logLevel) ? "stderr" : "stdout";
         const stream = streamType === "stderr" ? this.#stderr : this.#stdout;
 
         if (this.#interactive && this.#interactiveManager !== undefined && stream.isTTY) {
@@ -106,11 +128,33 @@ export class SimpleReporter<T extends string = string, L extends string = string
         }
     }
 
+    #refreshLongest(): void {
+        this.#longestBadge = getLongestBadge<L, T>(this.loggerTypes);
+        this.#longestLabel = getLongestLabel<L, T>(this.loggerTypes);
+    }
+
+    /**
+     * Returns the current terminal column count, caching the measurement and
+     * invalidating it on the stdout `resize` event.
+     */
+    #getColumns(): number {
+        if (!this.#resizeListenerAttached && typeof this.#stdout.on === "function") {
+            this.#resizeListenerAttached = true;
+            this.#stdout.on("resize", () => {
+                this.#columns = undefined;
+            });
+        }
+
+        if (this.#columns === undefined) {
+            this.#columns = terminalSize().columns;
+        }
+
+        return this.#columns;
+    }
+
     // eslint-disable-next-line sonarjs/cognitive-complexity
     protected formatMessage(data: ReadonlyMeta<L>): string {
-        const { columns } = terminalSize();
-
-        let size = columns;
+        let size = this.#getColumns();
 
         if (typeof this.styles.messageLength === "number") {
             size = this.styles.messageLength;
@@ -136,14 +180,14 @@ export class SimpleReporter<T extends string = string, L extends string = string
         if (badge) {
             items.push(bold(colorized(badge)));
         } else {
-            const longestBadge: string = getLongestBadge<L, T>(this.loggerTypes);
+            const longestBadge: string = this.#longestBadge;
 
             if (longestBadge.length > 0) {
                 items.push(grey(" ".repeat(longestBadge.length)));
             }
         }
 
-        const longestLabel: string = getLongestLabel<L, T>(this.loggerTypes);
+        const longestLabel: string = this.#longestLabel;
         const longestWidth: number = getStringWidth(longestLabel);
 
         if (label) {
