@@ -69,7 +69,9 @@ describe("healthCheckHandler options", () => {
         service.addChecker("live", healthyChecker, { type: "liveness" });
         service.addChecker(
             "ready",
-            async () => { return { displayName: "ready", health: { healthy: false, message: "down", timestamp: dateString } }; },
+            async () => {
+                return { displayName: "ready", health: { healthy: false, message: "down", timestamp: dateString } };
+            },
             { type: "readiness" },
         );
 
@@ -103,7 +105,9 @@ describe(healthLiveHandler, () => {
 
         downService.addChecker(
             "live",
-            async () => { return { displayName: "live", health: { healthy: false, message: "dead", timestamp: dateString } }; },
+            async () => {
+                return { displayName: "live", health: { healthy: false, message: "dead", timestamp: dateString } };
+            },
             { type: "liveness" },
         );
 

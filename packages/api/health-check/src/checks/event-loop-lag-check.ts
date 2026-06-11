@@ -44,9 +44,7 @@ const eventLoopLagCheck
                 displayName: DISPLAY_NAME,
                 health: {
                     healthy,
-                    message: healthy
-                        ? `${DISPLAY_NAME} passed.`
-                        : `Event loop lag ${lag.toFixed(2)}ms exceeds limit ${maxLagMs}ms`,
+                    message: healthy ? `${DISPLAY_NAME} passed.` : `Event loop lag ${lag.toFixed(2)}ms exceeds limit ${maxLagMs}ms`,
                     timestamp: new Date().toISOString(),
                 },
                 meta: {

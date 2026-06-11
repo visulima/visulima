@@ -82,7 +82,7 @@ describe("healthCheck features", () => {
             expect.assertions(2);
 
             const healthCheck = new HealthCheck({ cacheTtl: 10_000 });
-            const spy = vi.fn(healthyChecker);
+            const spy = vi.fn<typeof healthyChecker>(healthyChecker);
 
             healthCheck.addChecker("db", spy);
 
@@ -102,7 +102,7 @@ describe("healthCheck features", () => {
             expect.assertions(1);
 
             const healthCheck = new HealthCheck();
-            const spy = vi.fn(healthyChecker);
+            const spy = vi.fn<typeof healthyChecker>(healthyChecker);
 
             healthCheck.addChecker("db", spy);
 
@@ -122,7 +122,9 @@ describe("healthCheck features", () => {
             healthCheck.addChecker("live", healthyChecker, { type: "liveness" });
             healthCheck.addChecker(
                 "ready",
-                async () => { return { displayName: "ready", health: { healthy: false, message: "down", timestamp: dateString } }; },
+                async () => {
+                    return { displayName: "ready", health: { healthy: false, message: "down", timestamp: dateString } };
+                },
                 { type: "readiness" },
             );
 
