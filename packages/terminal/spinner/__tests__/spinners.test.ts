@@ -73,8 +73,8 @@ describe("spinners", () => {
             const spinner = getSpinner("dots");
 
             expect(spinner).toBeDefined();
-            expect(spinner.frames).toBeDefined();
-            expect(spinner.interval).toBe(80);
+            expect(spinner?.frames).toBeDefined();
+            expect(spinner?.interval).toBe(80);
         });
 
         it("should return valid spinner object", () => {
@@ -82,8 +82,17 @@ describe("spinners", () => {
 
             const spinner = getSpinner("line");
 
-            expect(spinner.frames).toStrictEqual(["-", "\\", "|", "/"]);
-            expect(spinner.interval).toBe(130);
+            expect(spinner?.frames).toStrictEqual(["-", "\\", "|", "/"]);
+            expect(spinner?.interval).toBe(130);
+        });
+
+        it("should return undefined for an unknown spinner name", () => {
+            expect.assertions(1);
+
+            // Cast: the registry has no such key; getSpinner must not throw, just return undefined.
+            const spinner = getSpinner("definitely-not-a-spinner" as SpinnerName);
+
+            expect(spinner).toBeUndefined();
         });
 
         it("should work with various spinner names", () => {
@@ -95,8 +104,8 @@ describe("spinners", () => {
                 const spinner = getSpinner(name);
 
                 expect(spinner).toBeDefined();
-                expect(spinner.interval).toBeGreaterThan(0);
-                expect(spinner.frames.length).toBeGreaterThan(0);
+                expect(spinner?.interval).toBeGreaterThan(0);
+                expect(spinner?.frames.length).toBeGreaterThan(0);
             });
         });
     });

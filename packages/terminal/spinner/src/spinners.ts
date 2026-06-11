@@ -162,9 +162,9 @@ export const spinners: Record<SpinnerName, SpinnerFrame> = {
 /**
  * Retrieves a spinner from the registry by name.
  * @param name The name of the spinner to retrieve
- * @returns The spinner frame object, or undefined if not found
+ * @returns The spinner frame object, or `undefined` if the name is not in the registry
  */
-export const getSpinner = (name: SpinnerName): SpinnerFrame => spinners[name];
+export const getSpinner = (name: SpinnerName): SpinnerFrame | undefined => spinners[name];
 
 /**
  * Retrieves a randomly selected spinner from the registry.
