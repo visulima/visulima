@@ -28,6 +28,24 @@ export const copyObjectLoose = <Value extends Record<PropertyKey, unknown>>(obje
     // eslint-disable-next-line no-restricted-syntax
     for (const key in object) {
         if (Object.hasOwnProperty.call(object, key)) {
+            // Guard against prototype pollution: assigning to `__proto__` via the
+            // index setter would invoke the `Object.prototype.__proto__` accessor and
+            // replace the clone's prototype with attacker-controlled data (e.g. when
+            // cloning the result of `JSON.parse('{"__proto__":{...}}')`, which has an
+            // own enumerable `__proto__` key). Define it as a plain own data property
+            // instead so the clone faithfully mirrors the source without re-parenting.
+            if (key === "__proto__") {
+                Object.defineProperty(clone, key, {
+                    configurable: true,
+                    enumerable: true,
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    value: state.clone((object as any)[key], state),
+                    writable: true,
+                });
+
+                continue;
+            }
+
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
             (clone as any)[key] = state.clone(object[key], state);
         }

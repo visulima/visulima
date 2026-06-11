@@ -1,13 +1,10 @@
-/* eslint-disable @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call,@typescript-eslint/unbound-method */
+/* eslint-disable @typescript-eslint/no-unsafe-return,@typescript-eslint/no-unsafe-call */
 import type { TypedArray } from "../types";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const typeHandlers: Record<string, new (buffer: any) => any> = {
     BigInt64Array,
     BigUint64Array,
-    // @ts-expect-error - Buffer has no constructor
-
-    Buffer: Buffer.from,
     Float32Array,
     Float64Array,
     Int8Array,
@@ -18,6 +15,12 @@ const typeHandlers: Record<string, new (buffer: any) => any> = {
     Uint16Array,
     Uint32Array,
 };
+
+// `Buffer` only exists in Node-like runtimes. Reference the global lazily/guarded
+// so that importing this module in a browser or edge runtime (where `Buffer` is
+// undefined) does not throw a `ReferenceError` at evaluation time.
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const cloneBuffer = (value: any): any => Buffer.from(value);
 
 const copyArrayBuffer = <Value extends ArrayBuffer | ArrayBufferView | Buffer | TypedArray>(arrayBuffer: Value): Value => {
     if (arrayBuffer instanceof ArrayBuffer) {
@@ -30,7 +33,13 @@ const copyArrayBuffer = <Value extends ArrayBuffer | ArrayBufferView | Buffer | 
         return newBuffer as Value;
     }
 
-    const Ctor = typeHandlers[arrayBuffer.constructor.name] ?? undefined;
+    const constructorName = arrayBuffer.constructor.name;
+
+    if (constructorName === "Buffer" && typeof Buffer !== "undefined") {
+        return cloneBuffer(arrayBuffer) as Value;
+    }
+
+    const Ctor = typeHandlers[constructorName] ?? undefined;
 
     if (Ctor) {
         return new Ctor(arrayBuffer);
@@ -40,7 +49,7 @@ const copyArrayBuffer = <Value extends ArrayBuffer | ArrayBufferView | Buffer | 
     const buf = copyArrayBuffer(arrayBuffer.buffer as ArrayBuffer);
 
     // @ts-expect-error - Fallback to ArrayBufferView, constructor is not typed as newable
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-member-access
     return new Ctor2(buf, arrayBuffer.byteOffset, (arrayBuffer as any).length);
 };
 

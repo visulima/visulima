@@ -4,6 +4,7 @@ export { default as copyBlob } from "./handler/copy-blob";
 export { default as copyDataView } from "./handler/copy-data-view";
 export { default as copyDate } from "./handler/copy-date";
 export { default as copyError } from "./handler/copy-error";
+export { default as copyFile } from "./handler/copy-file";
 export { copyMapLoose, copyMapStrict } from "./handler/copy-map";
 export { copyObjectLoose, copyObjectStrict } from "./handler/copy-object";
 export { copyRegExpLoose, copyRegExpStrict } from "./handler/copy-regexp";

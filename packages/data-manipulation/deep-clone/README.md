@@ -53,11 +53,24 @@ pnpm add @visulima/deep-clone
 Copy or deep clone an input value to an arbitrary depth. The function accepts both objects and primitives.
 
 ```typescript
-import deepClone from "@visulima/deep-clone";
+import { deepClone } from "@visulima/deep-clone";
 
 const cloned = deepClone({ a: 1, b: { c: 2 } });
 
 console.log(cloned); // => {a: 1, b: {c: 2}}
+```
+
+### createDeepClone(options?)
+
+For hot loops that clone many values with the same configuration, create a pre-configured cloner once and reuse it. This resolves the handler table a single time instead of on every call.
+
+```typescript
+import { createDeepClone } from "@visulima/deep-clone";
+
+const cloneStrict = createDeepClone({ strict: true });
+
+const a = cloneStrict({ a: 1 });
+const b = cloneStrict({ b: 2 });
 ```
 
 ## API
@@ -82,30 +95,46 @@ Default: `false`
 
 If `true`, it will copy all properties, including non-enumerable ones and symbols.
 
-##### handlers
+##### handler
 
-Type: `object`
+Type: `object` (all keys optional)
 
-A set of custom handlers for specific type of value. Each handler is a function that takes the original value and returns a new value or throws an error if the value is not supported.
+A set of custom handlers for specific types of value. Each handler is a function `(value, state) => value` that takes the original value and returns a new value (or throws if the value is not supported). You only need to provide the keys you want to override — the rest fall back to the built-in defaults:
 
-- Array: InternalHandler<unknown[]>;
-- ArrayBuffer: InternalHandler<ArrayBuffer>;
-- Blob: InternalHandler<Blob>;
-- DataView: InternalHandler<DataView>;
-- Date: InternalHandler<Date>;
-- Error: InternalHandler<Error>;
-- Float32Array: InternalHandler<Float32Array>;
-- Float64Array: InternalHandler<Float64Array>;
-- Int8Array: InternalHandler<Int8Array>;
-- Int16Array: InternalHandler<Int16Array>;
-- Int32Array: InternalHandler<Int32Array>;
-- Map: InternalHandler<Map<unknown, unknown>>;
-- Object: InternalHandler<Record<string, unknown>>;
-- Promise: InternalHandler<Promise<unknown>>;
-- RegExp: InternalHandler<RegExp>;
-- Set: InternalHandler<Set<unknown>>;
-- WeakMap: InternalHandler<WeakMap<any, unknown>>;
-- WeakSet: InternalHandler<WeakSet<any>>;
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+// Override just the Date handler; everything else uses the defaults.
+const cloned = deepClone(
+    { when: new Date() },
+    {
+        handler: {
+            Date: (date) => new Date(date.getTime() + 1000),
+        },
+    },
+);
+```
+
+Supported handler keys (each is an `InternalHandler<T>`):
+
+- `Array`
+- `ArrayBuffer`
+- `Blob`
+- `DataView`
+- `Date`
+- `Error`
+- `File`
+- `Function`
+- `Map`
+- `Object`
+- `Promise`
+- `RegExp`
+- `Set`
+- `SharedArrayBuffer`
+- `WeakMap`
+- `WeakSet`
+
+> Note: typed arrays (`Uint8Array`, `Float64Array`, …) are always cloned through the `ArrayBuffer` handler, so there are no dedicated typed-array keys.
 
 ## Utils
 
@@ -172,13 +201,13 @@ console.log(clean); // => {}
     - `Buffer` ([Node.js][node-buffer])
     - `DataView`
     - `Blob`
+    - `File` (preserves `name` and `lastModified`)
 
 - List of **unsupported** values/types:
     - `DOMElement`: to copy DOM elements, use `element.cloneNode()`.
     - `Symbol`
     - `WeakMap`
     - `WeakSet`
-    - `File`
     - `FileList`
     - `ImageData`
     - `ImageBitmap`
