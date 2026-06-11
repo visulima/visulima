@@ -23,6 +23,9 @@ const DEFAULT_SECURE = false;
 const DEFAULT_MAX_CONNECTIONS = 5;
 const DEFAULT_POOL_WAIT_TIMEOUT = 30_000;
 
+// Matches a leading '.' at the very start of the DATA payload for RFC 5321 §4.5.2 dot-stuffing.
+const LEADING_DOT_REGEX = /^\./;
+
 /**
  * SMTP provider for sending emails via SMTP protocol
  */
@@ -924,7 +927,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                     // a '.' must be prefixed with an extra '.' so the message body cannot be
                     // truncated or injected by a leading-dot line that the server would read as
                     // the end-of-data terminator.
-                    const stuffedMessage = mimeMessage.replace(/\r\n\./g, "\r\n..").replace(/^\./, "..");
+                    const stuffedMessage = mimeMessage.replaceAll("\r\n.", "\r\n..").replace(LEADING_DOT_REGEX, "..");
 
                     await sendSmtpCommand(socket, `${stuffedMessage}\r\n.`, "250");
 
