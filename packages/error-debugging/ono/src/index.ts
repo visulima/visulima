@@ -45,7 +45,7 @@ export const renderAnsi = async (error: unknown, options: CliOptions = {}): Prom
  * @param error the value thrown (any value is coerced to an `Error`).
  * @param options optional custom `solutionFinders`.
  */
-export const renderJson = toJSON;
+export const renderJson: typeof toJSON = toJSON;
 
 /**
  * Convenience class wrapping the standalone {@link renderHtml}, {@link renderAnsi} and
