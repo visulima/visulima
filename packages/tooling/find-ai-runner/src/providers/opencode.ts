@@ -3,7 +3,7 @@ import type { AiProviderConfig } from "../types";
 // opencode run "prompt" [-m provider/model]
 const opencode: AiProviderConfig = {
     alternateCommands: [],
-    buildArgs: (prompt, model, _maxTokens) => {
+    buildArgs: (prompt, { model }) => {
         const args = ["run", prompt];
 
         if (model) {
@@ -13,8 +13,11 @@ const opencode: AiProviderConfig = {
         return args;
     },
     command: "opencode",
-    defaultModel: "anthropic/claude-sonnet-4",
+    // Empty default = provider-default model, avoids pinning a stale snapshot.
+    defaultModel: "",
     envVariable: "OPENCODE_PATH",
+    supportsMaxTokens: false,
+    supportsModel: true,
 };
 
 export default opencode;

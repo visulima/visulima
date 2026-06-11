@@ -6,6 +6,7 @@ import { buildCliArgs, detectAllProviders, detectProvider, runProvider } from ".
 import type { AiProviderName } from "./types";
 
 interface CliValues {
+    dangerous?: boolean;
     help?: boolean;
     json?: boolean;
     "max-tokens"?: string;
@@ -14,18 +15,56 @@ interface CliValues {
     version?: boolean;
 }
 
+/** Option definitions, shared between parsing and unknown-flag diagnostics. */
+const OPTION_DEFINITIONS = {
+    dangerous: { type: "boolean" },
+    help: { short: "h", type: "boolean" },
+    json: { short: "j", type: "boolean" },
+    "max-tokens": { type: "string" },
+    model: { short: "m", type: "string" },
+    timeout: { short: "t", type: "string" },
+    version: { short: "v", type: "boolean" },
+} as const;
+
+// `strict: false` keeps positional prompt words that look like flags from blowing up,
+// but it also silently swallows typos like `--mdoel`. We re-scan argv below to warn.
 const { positionals, values } = parseArgs({
     allowPositionals: true,
-    options: {
-        help: { short: "h", type: "boolean" },
-        json: { short: "j", type: "boolean" },
-        "max-tokens": { type: "string" },
-        model: { short: "m", type: "string" },
-        timeout: { short: "t", type: "string" },
-        version: { short: "v", type: "boolean" },
-    },
+    options: OPTION_DEFINITIONS,
     strict: false,
 }) as { positionals: string[]; values: CliValues };
+
+const KNOWN_LONG_FLAGS = new Set<string>(Object.keys(OPTION_DEFINITIONS));
+const KNOWN_SHORT_FLAGS = new Set<string>();
+
+for (const definition of Object.values(OPTION_DEFINITIONS)) {
+    if ("short" in definition) {
+        KNOWN_SHORT_FLAGS.add(definition.short);
+    }
+}
+
+/** Warn about flag-shaped argv tokens that are not recognized options (typos, wrong casing). */
+const warnUnknownFlags = (): void => {
+    for (const token of process.argv.slice(2)) {
+        if (!token.startsWith("-") || token === "-" || token === "--") {
+            continue;
+        }
+
+        if (token.startsWith("--")) {
+            const name = token.slice(2).split("=", 1)[0] ?? "";
+
+            if (name && !KNOWN_LONG_FLAGS.has(name)) {
+                console.error(`Warning: unknown option "--${name}" was ignored.`);
+            }
+        } else {
+            const short = token.slice(1, 2);
+
+            if (short && !KNOWN_SHORT_FLAGS.has(short)) {
+                console.error(`Warning: unknown option "-${short}" was ignored.`);
+            }
+        }
+    }
+};
 
 const printUsage = (): void => {
     console.log(`find-ai-runner - Detect and invoke AI CLI tools
@@ -46,6 +85,8 @@ Options:
   -m, --model <model>         Model override (for run command)
   --max-tokens <n>            Max tokens (default: 4096)
   -t, --timeout <ms>          Timeout in ms (default: 300000)
+  --dangerous                 Enable permission-bypass mode (UNSAFE: grants the
+                              agent unattended tool/file/shell access)
 
 Providers:
   ${PROVIDER_NAMES.join(", ")}
@@ -154,6 +195,7 @@ const handleRun = async (cliPositionals: string[], cliValues: CliValues): Promis
     const timeoutRaw = cliValues.timeout ? Number(cliValues.timeout) : undefined;
 
     const result = await runProvider(provider, prompt, {
+        dangerous: cliValues.dangerous === true,
         maxTokens: maxTokensRaw !== undefined && Number.isFinite(maxTokensRaw) ? maxTokensRaw : undefined,
         model: cliValues.model,
         timeoutMs: timeoutRaw !== undefined && Number.isFinite(timeoutRaw) ? timeoutRaw : undefined,
@@ -182,10 +224,11 @@ const handleArgs = (cliPositionals: string[], cliValues: CliValues): void => {
         return;
     }
 
-    const maxTokensArg = cliValues["max-tokens"] ? Number(cliValues["max-tokens"]) : undefined;
+    const maxTokensArgument = cliValues["max-tokens"] ? Number(cliValues["max-tokens"]) : undefined;
 
     const args = buildCliArgs(name, prompt, {
-        maxTokens: maxTokensArg !== undefined && Number.isFinite(maxTokensArg) ? maxTokensArg : undefined,
+        dangerous: cliValues.dangerous === true,
+        maxTokens: maxTokensArgument !== undefined && Number.isFinite(maxTokensArgument) ? maxTokensArgument : undefined,
         model: cliValues.model,
     });
 
@@ -214,6 +257,8 @@ const main = async (): Promise<void> => {
 
         return;
     }
+
+    warnUnknownFlags();
 
     switch (command) {
         case "args": {

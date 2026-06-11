@@ -32,14 +32,17 @@ npx @visulima/find-ai-runner args claude "Explain this code" --json
 
 ### CLI Options
 
-| Option             | Short | Description                      |
-| ------------------ | ----- | -------------------------------- |
-| `--help`           | `-h`  | Show help message                |
-| `--version`        | `-v`  | Show version                     |
-| `--json`           | `-j`  | Output as JSON                   |
-| `--model <model>`  | `-m`  | Model override (for run command) |
-| `--max-tokens <n>` |       | Max tokens (default: 4096)       |
-| `--timeout <ms>`   | `-t`  | Timeout in ms (default: 300000)  |
+| Option             | Short | Description                                       |
+| ------------------ | ----- | ------------------------------------------------- |
+| `--help`           | `-h`  | Show help message                                 |
+| `--version`        | `-v`  | Show version                                      |
+| `--json`           | `-j`  | Output as JSON                                    |
+| `--model <model>`  | `-m`  | Model override (for run command)                  |
+| `--max-tokens <n>` |       | Max tokens (default: 4096)                        |
+| `--timeout <ms>`   | `-t`  | Timeout in ms (default: 300000)                   |
+| `--dangerous`      |       | Enable permission-bypass mode (UNSAFE, see below) |
+
+> **Warning:** `--dangerous` (or `{ dangerous: true }` in the API) adds the provider's permission-bypass / auto-approval flag, granting the agent unattended tool/file/shell access. Untrusted content in the prompt that prompt-injects the agent then runs with all safety rails off. Only use it for fully trusted prompts. Unknown flags are reported as warnings on stderr.
 
 ## Programmatic API
 
@@ -84,6 +87,31 @@ if (claude.available) {
 }
 ```
 
+### Faster detection (parallel, skip version probe)
+
+`detectAllProviders`/`detectProvider` cold-start each found CLI for its
+`--version` banner, which can cost ~0.5-2 s per Node-based CLI. Skip it with
+`{ version: false }`, and use `detectAllProvidersAsync` to probe in parallel:
+
+```typescript
+import { detectAllProvidersAsync } from "@visulima/find-ai-runner";
+
+const providers = await detectAllProvidersAsync({ version: false });
+```
+
+### Find the first available runner
+
+```typescript
+import { findRunner } from "@visulima/find-ai-runner";
+
+// Prefer claude, then codex, then gemini; stops at the first installed one.
+const runner = findRunner(["claude", "codex", "gemini"]);
+
+if (runner) {
+    console.log(`Using ${runner.name} at ${runner.path}`);
+}
+```
+
 ## Running Prompts
 
 ### Basic execution
@@ -96,6 +124,35 @@ const provider = detectProvider("claude");
 if (provider.available) {
     const result = await runProvider(provider, "Explain this error: TypeError: Cannot read property 'foo' of undefined");
     console.log(result.stdout);
+    console.log(`exit ${result.exitCode} in ${result.durationMs}ms`);
+}
+```
+
+### Working directory, env, cancellation, streaming, and errors
+
+```typescript
+import { AiRunError, detectProvider, runProvider } from "@visulima/find-ai-runner";
+
+const provider = detectProvider("claude");
+const controller = new AbortController();
+
+if (provider.available) {
+    try {
+        const result = await runProvider(provider, "Review the staged changes", {
+            cwd: "/path/to/repo", // point the agent at a target repo
+            env: { ANTHROPIC_API_KEY: process.env.MY_KEY }, // per-run env, merged over process.env
+            signal: controller.signal, // controller.abort() cancels the run
+            onStdout: (chunk) => process.stdout.write(chunk), // stream progress
+        });
+
+        console.log(result.stdout);
+    } catch (error) {
+        if (error instanceof AiRunError) {
+            // Partial output + exit metadata are preserved for debugging.
+            console.error(`timedOut=${error.timedOut} aborted=${error.aborted} exit=${error.exitCode}`);
+            console.error(error.stdout);
+        }
+    }
 }
 ```
 
@@ -126,12 +183,15 @@ Build the CLI arguments without executing, useful for logging or debugging:
 import { buildCliArgs } from "@visulima/find-ai-runner";
 
 const args = buildCliArgs("claude", "Explain this code", {
-    model: "claude-sonnet-4-20250514",
-    maxTokens: 4096,
+    model: "claude-opus-4-20250514",
 });
 
 console.log(args);
-// ["--dangerously-skip-permissions", "--model", "claude-sonnet-4-20250514", "--output-format", "text", "-p", "Explain this code"]
+// ["--model", "claude-opus-4-20250514", "--output-format", "text", "-p", "Explain this code"]
+
+// With dangerous: true, the permission-bypass flag is prepended:
+const unsafe = buildCliArgs("claude", "Explain this code", { dangerous: true });
+// ["--dangerously-skip-permissions", "--output-format", "text", "-p", "Explain this code"]
 ```
 
 ## Detection Strategies

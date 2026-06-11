@@ -69,12 +69,21 @@ npx @visulima/find-ai-runner run claude "Explain this error"
 npx @visulima/find-ai-runner args claude "Explain this code" --json
 ```
 
+> [!WARNING]
+> **Permission-bypass mode is opt-in.** By default every provider runs with its
+> normal safety prompts. Pass `{ dangerous: true }` (or `--dangerous` on the CLI)
+> to enable the provider's permission-bypass / auto-approval flag
+> (`--dangerously-skip-permissions`, `--yolo`, `--dangerously-bypass-approvals-and-sandbox`, …).
+> In that mode the agent gets unattended tool/file/shell access, so any untrusted
+> content embedded in the prompt that prompt-injects the agent executes with all
+> safety rails disabled. **Only enable it for fully trusted prompts.**
+
 ## Programmatic Usage
 
 ### Detect all AI CLI tools
 
 ```typescript
-import { detectAllProviders, detectAvailableProviders } from "@visulima/find-ai-runner";
+import { detectAllProviders, detectAllProvidersAsync, detectAvailableProviders } from "@visulima/find-ai-runner";
 
 // Detect all 11 supported providers (available or not)
 const all = detectAllProviders();
@@ -83,6 +92,28 @@ const all = detectAllProviders();
 const available = detectAvailableProviders();
 console.log(available);
 // [{ name: "claude", available: true, path: "/usr/local/bin/claude", version: "1.2.3" }, ...]
+
+// Faster: probe providers in parallel and skip the (slow) `--version` cold start
+const fast = await detectAllProvidersAsync({ version: false });
+```
+
+> Detection spawns `which`/`where` per provider and, unless you pass
+> `{ version: false }`, cold-starts each found CLI to read its `--version`
+> banner (which can cost ~0.5–2 s per Node-based CLI). Skip version probing
+> when you only need availability + path.
+
+### Find the first available runner
+
+```typescript
+import { findRunner } from "@visulima/find-ai-runner";
+
+// Returns the first installed provider, preferring claude, then codex, then gemini.
+// Stops at the first hit (faster than detecting all 11), version probing is opt-in.
+const runner = findRunner(["claude", "codex", "gemini"]);
+
+if (runner) {
+    console.log(`Using ${runner.name} at ${runner.path}`);
+}
 ```
 
 ### Run a prompt
@@ -95,6 +126,44 @@ const [provider] = detectAvailableProviders();
 if (provider) {
     const result = await runProvider(provider, "Explain this error: TypeError: Cannot read property 'foo' of undefined");
     console.log(result.stdout);
+    console.log(`exit ${result.exitCode} in ${result.durationMs}ms`);
+}
+```
+
+### Working directory, env, cancellation, and streaming
+
+```typescript
+import { detectProvider, runProvider } from "@visulima/find-ai-runner";
+
+const provider = detectProvider("claude");
+const controller = new AbortController();
+
+if (provider.available) {
+    const result = await runProvider(provider, "Review the staged changes", {
+        cwd: "/path/to/repo", // point the agent at a target repo
+        env: { ANTHROPIC_API_KEY: process.env.MY_KEY }, // per-run env, merged over process.env
+        signal: controller.signal, // cancel programmatically with controller.abort()
+        onStdout: (chunk) => process.stdout.write(chunk), // stream progress
+    });
+}
+```
+
+### Error handling
+
+`runProvider` rejects with an `AiRunError` on timeout, abort, non-zero exit, or
+spawn failure. The error carries the partial output captured so far plus exit
+metadata, which is exactly what you need to debug a hung agent:
+
+```typescript
+import { AiRunError, runProvider } from "@visulima/find-ai-runner";
+
+try {
+    await runProvider(provider, prompt, { timeoutMs: 60_000 });
+} catch (error) {
+    if (error instanceof AiRunError) {
+        console.error(`timed out: ${error.timedOut}, aborted: ${error.aborted}, exit: ${error.exitCode}`);
+        console.error(error.stdout); // partial output before failure
+    }
 }
 ```
 
@@ -126,21 +195,32 @@ if (provider.available) {
 }
 ```
 
+> Note: `maxTokens` is only wired into providers that expose a token-limit flag
+> (currently Gemini); see the support matrix below.
+
 ## Supported Providers
 
-| Provider | Command    | Env Variable    | Default Model               | Prompt Flags                             |
-| -------- | ---------- | --------------- | --------------------------- | ---------------------------------------- |
-| Amp      | `amp`      | `AMP_PATH`      |                             | `-x --dangerously-allow-all`             |
-| Claude   | `claude`   | `CLAUDE_PATH`   | `claude-sonnet-4-20250514`  | `--dangerously-skip-permissions -p`      |
-| Codex    | `codex`    | `CODEX_PATH`    | `o3`                        | positional + `--approval-mode full-auto` |
-| Copilot  | `copilot`  | `COPILOT_PATH`  |                             | `-p --allow-all-tools`                   |
-| Crush    | `crush`    | `CRUSH_PATH`    |                             | `run --yolo`                             |
-| Cursor   | `agent`    | `CURSOR_PATH`   |                             | `-p --force`                             |
-| Droid    | `droid`    | `DROID_PATH`    |                             | positional + `--skip-permissions-unsafe` |
-| Gemini   | `gemini`   | `GEMINI_PATH`   | `gemini-2.5-pro`            | `--sandbox -p`                           |
-| Kimi     | `kimi`     | `KIMI_PATH`     |                             | `--quiet -p`                             |
-| OpenCode | `opencode` | `OPENCODE_PATH` | `anthropic/claude-sonnet-4` | `run` subcommand                         |
-| Qwen     | `qwen`     | `QWEN_PATH`     |                             | `-p --yolo -o text`                      |
+`model` / `maxTokens` columns show whether the option is wired into that
+provider's CLI invocation (passing an unsupported option is a no-op). The
+"Bypass flag" column lists the permission-bypass flag that is only added when
+you opt in with `{ dangerous: true }` / `--dangerous`.
+
+| Provider | Command    | Env Variable    | Default Model    | `model` | `maxTokens` | Bypass flag (opt-in)                       |
+| -------- | ---------- | --------------- | ---------------- | ------- | ----------- | ------------------------------------------ |
+| Amp      | `amp`      | `AMP_PATH`      | provider-default | ✗       | ✗           | `--dangerously-allow-all`                  |
+| Claude   | `claude`   | `CLAUDE_PATH`   | provider-default | ✓       | ✗           | `--dangerously-skip-permissions`           |
+| Codex    | `codex`    | `CODEX_PATH`    | provider-default | ✓       | ✗           | `--dangerously-bypass-approvals-and-sandbox` |
+| Copilot  | `copilot`  | `COPILOT_PATH`  | provider-default | ✓       | ✗           | `--allow-all-tools`                        |
+| Crush    | `crush`    | `CRUSH_PATH`    | provider-default | ✓       | ✗           | `--yolo`                                   |
+| Cursor   | `agent`    | `CURSOR_PATH`   | provider-default | ✓       | ✗           | `--force`                                  |
+| Droid    | `droid`    | `DROID_PATH`    | provider-default | ✓       | ✗           | `--skip-permissions-unsafe`                |
+| Gemini   | `gemini`   | `GEMINI_PATH`   | `gemini-2.5-pro` | ✓       | ✓           | drops `--sandbox`                          |
+| Kimi     | `kimi`     | `KIMI_PATH`     | provider-default | ✓       | ✗           | —                                          |
+| OpenCode | `opencode` | `OPENCODE_PATH` | provider-default | ✓       | ✗           | —                                          |
+| Qwen     | `qwen`     | `QWEN_PATH`     | provider-default | ✓       | ✗           | `--yolo`                                   |
+
+> Codex targets the modern Rust CLI surface (`codex exec "<prompt>"`); the
+> retired `--approval-mode`/`--max-tokens` flags are no longer emitted.
 
 ## Detection Strategies
 
@@ -152,17 +232,25 @@ Providers are detected using three strategies (tried in order):
 
 ## API
 
-### `detectAllProviders(): AiProviderInfo[]`
+### `detectAllProviders(options?: AiDetectOptions): AiProviderInfo[]`
 
-Returns info for all 11 providers, whether installed or not.
+Returns info for all 11 providers, whether installed or not. Pass `{ version: false }` to skip the version probe.
 
-### `detectAvailableProviders(): AiProviderInfo[]`
+### `detectAllProvidersAsync(options?: AiDetectOptions): Promise<AiProviderInfo[]>`
+
+Async/parallel variant of `detectAllProviders`.
+
+### `detectAvailableProviders(options?: AiDetectOptions): AiProviderInfo[]`
 
 Returns only providers that are installed on the system.
 
-### `detectProvider(name: AiProviderName): AiProviderInfo`
+### `detectProvider(name: AiProviderName, options?: AiDetectOptions): AiProviderInfo`
 
 Detect a specific provider by name.
+
+### `findRunner(preference?: AiProviderName[], options?: AiDetectOptions): AiProviderInfo | undefined`
+
+Returns the first available provider in preference order, stopping at the first hit. Version probing is opt-in (`{ version: true }`).
 
 ### `buildCliArgs(name: AiProviderName, prompt: string, options?: AiRunOptions): string[]`
 
@@ -170,7 +258,11 @@ Build the CLI arguments array for a provider without executing.
 
 ### `runProvider(provider: AiProviderInfo, prompt: string, options?: AiRunOptions): Promise<AiRunResult>`
 
-Execute a prompt against a detected provider. Returns `{ stdout, stderr, provider }`.
+Execute a prompt against a detected provider. Returns `{ stdout, stderr, provider, exitCode, durationMs }`. Rejects with an `AiRunError` (carrying partial output) on failure. Supports `cwd`, `env`, `signal`, `onStdout`, `onStderr`, and `dangerous`.
+
+### `AiRunError`
+
+Error thrown by `runProvider`. Carries `provider`, `exitCode`, `durationMs`, partial `stdout`/`stderr`, and `timedOut`/`aborted` flags.
 
 ### `PROVIDERS: Record<AiProviderName, AiProviderConfig>`
 

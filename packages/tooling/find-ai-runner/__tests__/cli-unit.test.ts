@@ -236,10 +236,32 @@ describe("cLI module", () => {
             await runCli(["run", "claude", "hello", "--model", "opus", "--max-tokens", "2048", "--timeout", "1000"]);
 
             expect(runProvider).toHaveBeenCalledWith(expect.any(Object), "hello", {
+                dangerous: false,
                 maxTokens: 2048,
                 model: "opus",
                 timeoutMs: 1000,
             });
+        });
+
+        it("should forward the dangerous flag when --dangerous is passed", async () => {
+            expect.assertions(1);
+
+            detectProvider.mockReturnValue(makeInfo({ available: true, path: "/bin/claude" }));
+
+            await runCli(["run", "claude", "hello", "--dangerous"]);
+
+            expect(runProvider).toHaveBeenCalledWith(expect.any(Object), "hello", expect.objectContaining({ dangerous: true }));
+        });
+
+        it("should warn about an unknown flag and still run", async () => {
+            expect.assertions(2);
+
+            detectProvider.mockReturnValue(makeInfo({ available: true, path: "/bin/claude" }));
+
+            await runCli(["run", "claude", "hello", "--mdoel", "opus"]);
+
+            expect(errorOutput()).toContain("unknown option \"--mdoel\"");
+            expect(runProvider).toHaveBeenCalledTimes(1);
         });
 
         it("should fail when the provider is not available", async () => {
@@ -323,7 +345,7 @@ describe("cLI module", () => {
 
             await runCli(["args", "claude", "hi", "--model", "opus", "--max-tokens", "999"]);
 
-            expect(buildCliArgs).toHaveBeenCalledWith("claude", "hi", { maxTokens: 999, model: "opus" });
+            expect(buildCliArgs).toHaveBeenCalledWith("claude", "hi", { dangerous: false, maxTokens: 999, model: "opus" });
         });
 
         it("should fail without a prompt", async () => {
