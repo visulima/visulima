@@ -45,7 +45,7 @@
 
 > **Important:** `Paginator`/`paginate()` do **not** slice your rows. Pass in the
 > rows for the current page already sliced at the data source
-> (offset `(page - 1) * perPage`, limit `perPage`). `total` is the count of *all*
+> (offset `(page - 1) * perPage`, limit `perPage`). `total` is the count of _all_
 > matching records and is what drives `lastPage` and the URLs.
 
 ## Installation

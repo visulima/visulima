@@ -26,17 +26,7 @@ interface CreatePaginationSchemaOptions {
 /**
  * The meta fields that are always present in a paginator's `meta` object.
  */
-const REQUIRED_META_FIELDS = [
-    "firstPage",
-    "firstPageUrl",
-    "lastPage",
-    "lastPageUrl",
-    "nextPageUrl",
-    "page",
-    "perPage",
-    "previousPageUrl",
-    "total",
-] as const;
+const REQUIRED_META_FIELDS = ["firstPage", "firstPageUrl", "lastPage", "lastPageUrl", "nextPageUrl", "page", "perPage", "previousPageUrl", "total"] as const;
 
 const nullableStringSchema = (description: string, openApiVersion: OpenApiVersion): OpenAPIV3.SchemaObject => {
     if (openApiVersion === "3.1") {
@@ -58,10 +48,7 @@ const nullableStringSchema = (description: string, openApiVersion: OpenApiVersio
  * @param name The schema/component name. Defaults to `"PaginationData"`.
  * @param options Schema-building options.
  */
-const createPaginationMetaSchemaObject = (
-    name = "PaginationData",
-    options: CreatePaginationMetaSchemaOptions = {},
-): Record<string, OpenAPIV3.SchemaObject> => {
+const createPaginationMetaSchemaObject = (name = "PaginationData", options: CreatePaginationMetaSchemaOptions = {}): Record<string, OpenAPIV3.SchemaObject> => {
     const { openApiVersion = "3.0" } = options;
 
     return {
@@ -125,10 +112,8 @@ const createPaginationSchemaObject = (
     items: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject,
     metaReferenceOrOptions: string | CreatePaginationSchemaOptions = "#/components/schemas/PaginationData",
 ): Record<string, OpenAPIV3.SchemaObject> => {
-    const metaReference
-        = typeof metaReferenceOrOptions === "string"
-            ? metaReferenceOrOptions
-            : metaReferenceOrOptions.metaReference ?? "#/components/schemas/PaginationData";
+    const metaReference =
+        typeof metaReferenceOrOptions === "string" ? metaReferenceOrOptions : (metaReferenceOrOptions.metaReference ?? "#/components/schemas/PaginationData");
 
     return {
         [name]: {
