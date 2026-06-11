@@ -7,6 +7,7 @@ export default createConfig(
             "dist",
             "node_modules",
             "coverage",
+            "__bench__",
             "__fixtures__",
             "__docs__",
             "examples",
