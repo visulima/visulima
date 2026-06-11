@@ -12,6 +12,28 @@ const getTruncated = (input: string, options: StringTruncatedWidthOptions): stri
     return `${input.slice(0, result.index)}${result.ellipsed ? ellipsis : ""}`;
 };
 
+describe("charWidthCache config isolation", () => {
+    // The internal width cache only activates for very long strings (> 10,000 chars).
+    // Regression test for a bug where the cache was keyed only by code point, so the
+    // first long-string call's width options permanently poisoned later calls with
+    // different options. U+2030 (per mille) has "ambiguous" East Asian width, so its
+    // width depends on `ambiguousIsNarrow`.
+    const length = 10_001; // just over the > 10,000 cache-activation threshold
+    const longAmbiguous = "‰".repeat(length);
+
+    it("does not let one width config poison another for long strings", () => {
+        expect.assertions(4);
+
+        // ambiguousIsNarrow: true => width 1 per char
+        expect(getStringTruncatedWidth(longAmbiguous, { ambiguousIsNarrow: true }).width).toBe(length);
+        // ambiguousIsNarrow: false => width 2 per char (must NOT reuse the cached width above)
+        expect(getStringTruncatedWidth(longAmbiguous, { ambiguousIsNarrow: false }).width).toBe(length * 2);
+        // Repeat in the opposite order to ensure the second config didn't poison the first.
+        expect(getStringTruncatedWidth(longAmbiguous, { ambiguousIsNarrow: false }).width).toBe(length * 2);
+        expect(getStringTruncatedWidth(longAmbiguous, { ambiguousIsNarrow: true }).width).toBe(length);
+    }, 20_000);
+});
+
 describe(getStringTruncatedWidth, () => {
     describe("calculating the raw result", () => {
         it("supports strings that do not need to be truncated", () => {

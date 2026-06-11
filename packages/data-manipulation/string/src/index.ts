@@ -63,7 +63,7 @@ export { getStringWidth } from "./get-string-width";
 export type { IndentOptions } from "./indent";
 export { dedent, indent, redent, stripIndent } from "./indent";
 export { default as isFullwidthCodePoint } from "./is-fullwidth-code-point";
-export { closest, closestN, distance } from "./levenshtein";
+export { closest, closestN, distance, similarity } from "./levenshtein";
 export type { Outdent, Options as OutdentOptions } from "./outdent";
 export { outdent } from "./outdent";
 export { default as replaceString } from "./replace-string";

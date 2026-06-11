@@ -76,6 +76,23 @@ describe(wordWrap, () => {
         expect(result.split("\n").every((line) => stripVTControlCharacters(line).length <= 5)).toBe(true);
     });
 
+    it("should reset colors other than the two previously-hardcoded ones at line breaks", () => {
+        expect.assertions(1);
+
+        // Regression: resetAnsiAtLineBreak used to only close foreground-black / bg-green.
+        // A blue foreground token broken across multiple wrapped lines must get the
+        // foreground reset appended to each line that still has blue open, so the color
+        // does not bleed into the next line.
+        const blueText = "[34mblueword anotherbluetoken[39m";
+        const result = wordWrap(blueText, { trim: false, width: 9, wrapMode: WrapMode.BREAK_WORDS });
+
+        const lines = result.split("\n");
+        const openedBlue = lines.filter((line) => line.includes("[34m"));
+        const allReset = openedBlue.every((line) => line.includes("[39m"));
+
+        expect(openedBlue.length > 0 && allReset).toBe(true);
+    });
+
     // ANSI handling tests
     it("should handle colored string that wraps onto multiple lines", () => {
         expect.assertions(3);

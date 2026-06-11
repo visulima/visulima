@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { closestN } from "../../src/levenshtein";
+import { closestN, similarity } from "../../src/levenshtein";
 
 describe("levenshtein", () => {
     it("test closest1", () => {
@@ -29,5 +29,28 @@ describe("levenshtein", () => {
         const expected = ["feast", "fest", "faster", "fanta"];
 
         expect(actual).toStrictEqual(expected);
+    });
+
+    describe("similarity", () => {
+        it("should return 1 for identical strings", () => {
+            expect.assertions(2);
+
+            expect(similarity("foo", "foo")).toBe(1);
+            expect(similarity("", "")).toBe(1);
+        });
+
+        it("should return a normalized score in the [0, 1] range", () => {
+            expect.assertions(2);
+
+            // distance("kitten", "sitting") === 3, max length 7 => 1 - 3/7
+            expect(similarity("kitten", "sitting")).toBeCloseTo(1 - 3 / 7, 10);
+            expect(similarity("abc", "xyz")).toBe(0);
+        });
+
+        it("should handle one empty string", () => {
+            expect.assertions(1);
+
+            expect(similarity("", "abcd")).toBe(0);
+        });
     });
 });

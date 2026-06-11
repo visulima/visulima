@@ -6,12 +6,43 @@ import { eastAsianWidthType } from "get-east-asian-width";
 import { RE_ANSI, RE_CONTROL, RE_EMOJI } from "./constants";
 
 /**
- * Cache for storing pre-calculated character widths
- * Uses a two-level structure for memory efficiency:
+ * Cache for storing pre-calculated character widths.
+ *
+ * The cache is keyed by a signature derived from the width configuration so that
+ * two calls with different width options never share (and therefore poison) each
+ * other's cached values. For a given config signature the structure is a
+ * two-level map for memory efficiency:
  * - First level: Maps the high 16 bits of code point to a second-level map
  * - Second level: Maps the low 16 bits to actual width values
  */
-const charWidthCache = new Map<number, Map<number, number>>();
+const charWidthCaches = new Map<string, Map<number, Map<number, number>>>();
+
+/**
+ * Builds a stable signature for the width portion of a config so that distinct
+ * width settings get distinct cache buckets.
+ * @param width The width configuration to derive a signature from.
+ * @returns A string uniquely identifying the width configuration.
+ */
+const getWidthConfigSignature = (width: StringTruncatedWidthConfig["width"]): string =>
+    [width.ambiguousIsNarrow ? 1 : 0, width.control, width.fullWidth, width.regular, width.wide].join("|");
+
+/**
+ * Gets (creating if necessary) the per-config two-level width cache.
+ * @param config Character width configuration.
+ * @returns The two-level cache associated with the config's width signature.
+ */
+const getCharWidthCache = (config: StringTruncatedWidthConfig): Map<number, Map<number, number>> => {
+    const signature = getWidthConfigSignature(config.width);
+
+    let cache = charWidthCaches.get(signature);
+
+    if (!cache) {
+        cache = new Map<number, Map<number, number>>();
+        charWidthCaches.set(signature, cache);
+    }
+
+    return cache;
+};
 
 /**
  * Regular expression for Latin characters with sticky flag for better performance.
@@ -94,16 +125,19 @@ type StringTruncatedWidthConfig = {
  * @returns The visual width of the character
  */
 const getCachedCharWidth = (codePoint: number, config: StringTruncatedWidthConfig): number => {
+    // Per-config cache so width options never poison results for other configs.
+    const cache = getCharWidthCache(config);
+
     // Split the code point into high and low parts for efficient caching
     const highBits = Math.floor(codePoint / 65_536);
     const lowBits = codePoint % 65_536;
 
     // Get or create the second-level map
-    let lowMap = charWidthCache.get(highBits);
+    let lowMap = cache.get(highBits);
 
     if (!lowMap) {
         lowMap = new Map();
-        charWidthCache.set(highBits, lowMap);
+        cache.set(highBits, lowMap);
     }
 
     // Check if width is already cached
@@ -114,13 +148,17 @@ const getCachedCharWidth = (codePoint: number, config: StringTruncatedWidthConfi
     // Calculate width based on character type
     let width;
 
-    // Fast path for common character ranges
-    if (getCharType(codePoint) === "latin") {
+    // Fast path for common character ranges (kept in sync with the uncached path)
+    const charType = getCharType(codePoint);
+
+    if (charType === "latin") {
         width = config.width.regular;
-    } else if (getCharType(codePoint) === "control") {
+    } else if (charType === "control") {
         width = config.width.control;
-    } else if (getCharType(codePoint) === "wide") {
+    } else if (charType === "wide") {
         width = config.width.wide;
+    } else if (charType === "zero") {
+        width = 0;
     } else {
         // Fall back to East Asian width calculation for other characters
         const eaw = eastAsianWidthType(codePoint);

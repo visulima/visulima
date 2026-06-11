@@ -33,28 +33,55 @@ const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray 
     return replaceArray;
 };
 
+/**
+ * Precompiled Thai romanization rules built once at module load.
+ *
+ * Previously {@link applyThaiRomanization} compiled a fresh `RegExp` for every
+ * `"r"` entry and ran a linear `thaiReplacement.find(...)` inside each replace
+ * callback (O(entries x matches)) on every Thai-containing input. We now build:
+ * - `thaiConsonantMap`: a consonant -> replacement lookup (O(1) per match), and
+ * - `thaiCompiledRules`: the ordered list of rules with regexes precompiled for
+ *   `"r"` entries, so the per-call work is just running the rules.
+ */
+const thaiConsonantMap = new Map<string, string>();
+
+for (const [consonant, replacement, type] of thaiReplacement) {
+    if (typeof consonant === "string" && typeof replacement === "string" && (!type || type === "c")) {
+        // First definition wins, matching the previous `find(...)` semantics.
+        if (!thaiConsonantMap.has(consonant)) {
+            thaiConsonantMap.set(consonant, replacement);
+        }
+    }
+}
+
+type ThaiCompiledRule = { regex: RegExp; replace: string; type: "r" } | { replace: string; search: string; type: "s" };
+
+const thaiCompiledRules: ThaiCompiledRule[] = [];
+
+for (const [search, replace, type] of thaiReplacement) {
+    if (typeof search !== "string" || typeof replace !== "string") {
+        continue;
+    }
+
+    if (type === "r") {
+        thaiCompiledRules.push({ regex: new RegExp(search, "g"), replace, type: "r" });
+    } else {
+        thaiCompiledRules.push({ replace, search, type: "s" });
+    }
+}
+
 const applyThaiRomanization = (input: string): string => {
     let output = input;
 
-    for (let entryIndex = 0; entryIndex < thaiReplacement.length; entryIndex += 1) {
-        const entry = thaiReplacement[entryIndex] as (typeof thaiReplacement)[number];
-        const [search, replace, type] = entry;
+    for (const rule of thaiCompiledRules) {
+        if (rule.type === "r") {
+            output = output.replace(rule.regex, (_, p1: string) => {
+                const consonantReplace = thaiConsonantMap.get(p1);
 
-        if (typeof search !== "string" || typeof replace !== "string") {
-            continue;
-        }
-
-        if (type === "r") {
-            const regex = new RegExp(search, "g");
-
-            output = output.replace(regex, (_, p1: string) => {
-                // Find consonant replacement for the captured group
-                const consonantReplace = thaiReplacement.find(([c, , t]) => c === p1 && (!t || t === "c"));
-
-                return consonantReplace && typeof consonantReplace[1] === "string" ? consonantReplace[1] + replace : p1 + replace;
+                return consonantReplace === undefined ? p1 + rule.replace : consonantReplace + rule.replace;
             });
         } else {
-            output = output.split(search).join(replace);
+            output = output.split(rule.search).join(rule.replace);
         }
     }
 
