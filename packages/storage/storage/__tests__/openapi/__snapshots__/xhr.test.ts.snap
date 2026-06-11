@@ -152,6 +152,10 @@ exports[`openapi:xhr > should match snapshot 1`] = `
             "$ref": "#/components/schemas/PaginationMeta",
           },
         },
+        "required": [
+          "data",
+          "meta",
+        ],
         "type": "object",
         "xml": {
           "name": "FileMetaPagination",
@@ -178,7 +182,8 @@ exports[`openapi:xhr > should match snapshot 1`] = `
             "type": "string",
           },
           "nextPageUrl": {
-            "description": "The URL for the next page",
+            "description": "The URL for the next page, or null when on the last page",
+            "nullable": true,
             "type": "string",
           },
           "page": {
@@ -192,7 +197,8 @@ exports[`openapi:xhr > should match snapshot 1`] = `
             "type": "integer",
           },
           "previousPageUrl": {
-            "description": "The URL for the previous page",
+            "description": "The URL for the previous page, or null when on the first page",
+            "nullable": true,
             "type": "string",
           },
           "total": {
@@ -201,6 +207,17 @@ exports[`openapi:xhr > should match snapshot 1`] = `
             "type": "integer",
           },
         },
+        "required": [
+          "firstPage",
+          "firstPageUrl",
+          "lastPage",
+          "lastPageUrl",
+          "nextPageUrl",
+          "page",
+          "perPage",
+          "previousPageUrl",
+          "total",
+        ],
         "type": "object",
         "xml": {
           "name": "PaginationMeta",
@@ -872,6 +889,10 @@ exports[`openapi:xhr > should match snapshot with custom options 1`] = `
             "$ref": "#/components/schemas/PaginationMeta",
           },
         },
+        "required": [
+          "data",
+          "meta",
+        ],
         "type": "object",
         "xml": {
           "name": "FileMetaPagination",
@@ -898,7 +919,8 @@ exports[`openapi:xhr > should match snapshot with custom options 1`] = `
             "type": "string",
           },
           "nextPageUrl": {
-            "description": "The URL for the next page",
+            "description": "The URL for the next page, or null when on the last page",
+            "nullable": true,
             "type": "string",
           },
           "page": {
@@ -912,7 +934,8 @@ exports[`openapi:xhr > should match snapshot with custom options 1`] = `
             "type": "integer",
           },
           "previousPageUrl": {
-            "description": "The URL for the previous page",
+            "description": "The URL for the previous page, or null when on the first page",
+            "nullable": true,
             "type": "string",
           },
           "total": {
@@ -921,6 +944,17 @@ exports[`openapi:xhr > should match snapshot with custom options 1`] = `
             "type": "integer",
           },
         },
+        "required": [
+          "firstPage",
+          "firstPageUrl",
+          "lastPage",
+          "lastPageUrl",
+          "nextPageUrl",
+          "page",
+          "perPage",
+          "previousPageUrl",
+          "total",
+        ],
         "type": "object",
         "xml": {
           "name": "PaginationMeta",
@@ -1592,6 +1626,10 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
             "$ref": "#/components/schemas/PaginationMeta",
           },
         },
+        "required": [
+          "data",
+          "meta",
+        ],
         "type": "object",
         "xml": {
           "name": "FileMetaPagination",
@@ -1618,7 +1656,8 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
             "type": "string",
           },
           "nextPageUrl": {
-            "description": "The URL for the next page",
+            "description": "The URL for the next page, or null when on the last page",
+            "nullable": true,
             "type": "string",
           },
           "page": {
@@ -1632,7 +1671,8 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
             "type": "integer",
           },
           "previousPageUrl": {
-            "description": "The URL for the previous page",
+            "description": "The URL for the previous page, or null when on the first page",
+            "nullable": true,
             "type": "string",
           },
           "total": {
@@ -1641,6 +1681,17 @@ exports[`openapi:xhr > should match snapshot with custom options 2`] = `
             "type": "integer",
           },
         },
+        "required": [
+          "firstPage",
+          "firstPageUrl",
+          "lastPage",
+          "lastPageUrl",
+          "nextPageUrl",
+          "page",
+          "perPage",
+          "previousPageUrl",
+          "total",
+        ],
         "type": "object",
         "xml": {
           "name": "PaginationMeta",
