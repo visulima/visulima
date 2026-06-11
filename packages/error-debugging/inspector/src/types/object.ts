@@ -23,13 +23,15 @@ const chaiInspectSymbol = Symbol.for("chai/inspect");
  * `chai/inspect` handler so the normal recursion prints the literal marker
  * instead of trying to descend into it.
  */
-const makeMarker = (text: string): { [chaiInspectSymbol]: () => string } => ({ [chaiInspectSymbol]: () => text });
+const makeMarker = (text: string): { [chaiInspectSymbol]: () => string } => {
+    return { [chaiInspectSymbol]: () => text };
+};
 
 /**
  * Safely reads an own property. The inspector must never crash on the value it
  * is asked to render (its primary consumer is a logger), so accessor getters are
  * invoked inside a try/catch and a placeholder is substituted on failure —
- * mirroring `util.inspect`'s `[Getter]` / `<Inspection threw>` behaviour.
+ * mirroring `util.inspect`'s `[Getter]` / `&lt;Inspection threw>` behaviour.
  */
 const safeReadProperty = (object: object, key: PropertyKey): unknown => {
     const descriptor = Object.getOwnPropertyDescriptor(object, key);

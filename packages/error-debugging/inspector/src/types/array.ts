@@ -20,17 +20,12 @@ const multiLineValues = (values: unknown[]): boolean => {
 const getNonIndexProperties = (array: unknown[]): string[] => {
     const nonIndex: string[] = [];
 
-    for (const key in array) {
-        // eslint-disable-next-line no-restricted-syntax
-        if (!Object.hasOwn(array, key)) {
-            continue;
-        }
-
+    for (const key of Object.keys(array)) {
         // A canonical array index is a non-negative integer < 2^32 - 1 whose string
         // form round-trips. Anything else (e.g. "foo", "-1", "1.5") is a real prop.
         const asNumber = Number(key);
 
-        if (Number.isInteger(asNumber) && asNumber >= 0 && String(asNumber) === key && asNumber < 0xff_ff_ff_ff) {
+        if (Number.isInteger(asNumber) && asNumber >= 0 && String(asNumber) === key && asNumber < 0xFF_FF_FF_FF) {
             continue;
         }
 
