@@ -7,7 +7,7 @@
 import Module from "node:module";
 
 type PnpApi = {
-    resolveRequest: (request: string, issuer: string) => string | null;
+    resolveRequest: (request: string, issuer: string, options?: { extensions?: string[] }) => string | null;
 };
 
 /**

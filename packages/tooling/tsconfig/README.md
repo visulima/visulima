@@ -37,10 +37,11 @@
 ## Features
 
 - Tested against TypeScript for correctness
-- Supports comments & dangling commas in tsconfig.json
-- Resolves extends
+- Supports comments & dangling commas in tsconfig.json (JSONC)
+- Resolves `extends` (relative paths, package names, and Yarn PnP)
+- Resolves `${configDir}` template variables
 - Fully typed tsconfig.json
-- Validates and throws parsing errors
+- Synchronous and asynchronous search helpers
 
 ## Install
 
@@ -58,37 +59,77 @@ pnpm add @visulima/tsconfig
 
 ## Usage
 
-### findTsConfig
+### findTsConfig / findTsConfigSync
 
-Retrieves the TsConfig by searching for the "tsconfig.json" file from a given current working directory.
-
-```ts
-import { findTsConfig } from "@visulima/tsconfig";
-
-const tsconfig = await findTsConfig(); // => { path: "/Users/../Projects/visulima/packages/tsconfig/tsconfig.json", config: { compilerOptions: { ... } } }
-```
-
-### writeTsConfig
-
-Writes the provided TypeScript configuration object to a tsconfig.json file.
+Retrieves the TsConfig by searching upward for a `tsconfig.json` file (falling back to `jsconfig.json`) from a given directory. `findTsConfig` is asynchronous; `findTsConfigSync` is the synchronous variant.
 
 ```ts
-import { writeTsConfig } from '@visulima/package';
+import { findTsConfig, findTsConfigSync } from "@visulima/tsconfig";
 
-writeTsConfig({ compilerOptions: { ... } }/* ,{ cwd: "./" }*/);
+const tsconfig = await findTsConfig();
+// => { path: "/Users/.../visulima/packages/tsconfig/tsconfig.json", config: { compilerOptions: { ... } } }
+
+// Synchronous, with a custom start directory
+const tsconfigSync = findTsConfigSync("/path/to/project");
 ```
+
+Options (`findTsConfig`/`findTsConfigSync`):
+
+| Option              | Type                                 | Default          | Description                                                                                                            |
+| ------------------- | ------------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `configFileName`    | `string`                             | `"tsconfig.json"` | Name of the file to search for. Supplying a custom name disables the `jsconfig.json` fallback.                        |
+| `cache`             | `boolean \| Map<string, TsConfigResult>` | `undefined`      | Cache parsed configs. `true` uses a process-wide cache; pass a `Map` for a caller-owned cache. Keys embed the file mtime, so on-disk edits invalidate cached entries automatically. |
+| `tscCompatible`     | see [readTsConfig](#readtsconfig)    | `undefined`      | Forwarded to `readTsConfig`.                                                                                          |
+| `typescriptVersion` | see [readTsConfig](#readtsconfig)    | `undefined`      | Forwarded to `readTsConfig`.                                                                                          |
+
+> Note: only the upward file search is async. Parsing (including the full `extends` chain) is synchronous, so a very deep `extends` chain still blocks the event loop during parse.
 
 ### readTsConfig
 
-Reads the TypeScript configuration from a tsconfig.json file.
+Reads and parses the TypeScript configuration from a `tsconfig.json` path. **This function is synchronous** — it returns the resolved config object directly (no `await`).
 
 ```ts
-import { readTsConfig } from "@visulima/package";
+import { readTsConfig } from "@visulima/tsconfig";
 
-const tsconfig = await readTsConfig("/Users/../Projects/visulima/packages/tsconfig.json" /* { tscCompatible: false } */);
+const tsconfig = readTsConfig("/path/to/tsconfig.json");
+
+// Make derived defaults match a specific TypeScript version
+const compatible = readTsConfig("/path/to/tsconfig.json", { tscCompatible: "5.8" });
+
+// Apply the unconditional compiler-option defaults of the installed TypeScript
+const withDefaults = readTsConfig("/path/to/tsconfig.json", { typescriptVersion: "auto" });
 ```
 
-> tscCompatible: If true, the configuration will be parsed in a way that is compatible with the TypeScript compiler.
+Options (`ReadTsConfigOptions`):
+
+| Option              | Type                                                             | Default     | Description                                                                                                                                                                                       |
+| ------------------- | --------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tscCompatible`     | `"5.4" \| "5.5" \| "5.6" \| "5.7" \| "5.8" \| "5.9" \| "6.0" \| true` | `undefined` | Synthesize the *derived* defaults TypeScript would imply from other options for the given version (e.g. `module: nodenext` ⇒ `moduleResolution: nodenext`). `true` targets the latest supported version. |
+| `typescriptVersion` | `"auto" \| false \| string`                                     | `false`     | Apply the *unconditional* compiler-option defaults of a TypeScript version. `"auto"` detects the installed version (including Yarn PnP); a string pins an explicit version; `false` applies none. Can be combined with `tscCompatible`. |
+
+### writeTsConfig / writeTsConfigSync
+
+Writes the provided TypeScript configuration object to a `tsconfig.json` file. `writeTsConfig` is asynchronous; `writeTsConfigSync` is the synchronous variant.
+
+```ts
+import { writeTsConfig, writeTsConfigSync } from "@visulima/tsconfig";
+
+await writeTsConfig({ compilerOptions: { strict: true } }, { cwd: "./" });
+
+writeTsConfigSync({ compilerOptions: { strict: true } }, { cwd: "./" });
+```
+
+### configDirectoryPlaceholder
+
+The literal `${configDir}` template string used by TypeScript. Re-exported so consumers can detect un-interpolated values without deep-importing internals.
+
+```ts
+import { configDirectoryPlaceholder } from "@visulima/tsconfig";
+
+if (someValue.startsWith(configDirectoryPlaceholder)) {
+    // value still references ${configDir}
+}
+```
 
 ## Api Docs
 
