@@ -20,6 +20,16 @@ export type HtmlErrorHandlerOptions = {
         }) => string | Promise<string>);
 };
 
+// Escape the five HTML-significant characters so error messages and stack
+// traces cannot break out of the page or inject markup.
+const escapeHtml = (value: string): string =>
+    value
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll("\"", "&quot;")
+        .replaceAll("'", "&#39;");
+
 export const htmlErrorHandler
     = (options: HtmlErrorHandlerOptions = {}): ErrorHandler =>
         async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
@@ -29,6 +39,23 @@ export const htmlErrorHandler
 
             const title = getReasonPhrase(response.statusCode) || "Error";
             const nonceAttribute = options.cspNonce ? ` nonce="${options.cspNonce}"` : "";
+
+            // The negotiator sets `expose` when stack traces are allowed
+            // (development / `showTrace: true`). When set, surface the error
+            // message and stack in the default page so a browser hit during
+            // development is not a blank "500" card. Both are HTML-escaped.
+            const { expose } = error as Error & { expose?: boolean };
+            const detailsHtml = expose
+                ? String.raw`
+                <div class="max-w-6xl mx-auto px-6 mt-8">
+                    <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg overflow-hidden">
+                        <div class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white border-r-0 border-gray-200 dark:border-gray-700">
+                            ${escapeHtml(error.message || title)}
+                        </div>
+                        <pre class="px-6 py-4 text-sm text-gray-700 dark:text-gray-400" style="white-space:pre-wrap;word-break:break-word;margin:0;"><code>${escapeHtml(error.stack ?? "")}</code></pre>
+                    </div>
+                </div>`
+                : "";
 
             if (options.errorPage) {
                 const override
@@ -81,7 +108,7 @@ export const htmlErrorHandler
                     </div>
                 </div>
             </div>
-        </div>
+        </div>${detailsHtml}
     </body>
 </html>`);
         };
