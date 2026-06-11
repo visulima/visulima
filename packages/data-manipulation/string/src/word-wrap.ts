@@ -33,41 +33,36 @@ const getSingleCharWidth = (char: string): number => {
     return charWidth;
 };
 
-// Matches every SGR escape sequence (e.g. "ESC[1;31m") so we can replay them
-// through an AnsiStateTracker and compute the exact set of codes still active
-// at the end of a line.
-// eslint-disable-next-line no-control-regex, unicorn/no-hex-escape
-const RE_SGR_SEQUENCE = /\x1B\[[\d;]*m/g;
-
 /**
- * Resets any ANSI SGR codes still open at the end of a wrapped line so colors
- * and formatting do not bleed into the next line.
+ * Resets ANSI sequences at line breaks.
  *
- * Previously this only knew two hardcoded codes. Now it replays every SGR
- * sequence on the line through an {@link AnsiStateTracker} and appends the
- * precise closing escapes for whatever foreground/background/formatting codes
- * remain active - mirroring how wrap-ansi closes active codes per line.
+ * Deliberately narrow: this only closes the foreground-black / background-green
+ * codes. {@link preserveAnsi} (applied to the wrapped line array) is the
+ * canonical mechanism that closes *and* re-opens every active SGR code per line.
+ * Closing all active codes here as well would defeat that re-open pass - it makes
+ * `preserveAnsi`'s scanner see the color as already closed before the newline, so
+ * continuation lines lose their color entirely (e.g. `boxen(red(longText))` was
+ * coloring only its first line). Do not generalize this to close all codes.
  * @param currentLine Current line of text
- * @returns Line with reset codes appended if any SGR code is still open
+ * @returns Line with reset codes if needed
  */
 const resetAnsiAtLineBreak = (currentLine: string): string => {
     if (!currentLine.includes("\u001B")) {
         return currentLine;
     }
 
-    const sequences = currentLine.match(RE_SGR_SEQUENCE);
+    let result = currentLine;
 
-    if (!sequences) {
-        return currentLine;
+    // Add reset codes in reverse order of how they were applied
+    if (currentLine.includes("\u001B[30m")) {
+        result += "\u001B[39m"; // foreground reset
     }
 
-    const tracker = new AnsiStateTracker();
-
-    for (const sequence of sequences) {
-        tracker.processEscape(sequence);
+    if (currentLine.includes("\u001B[42m")) {
+        result += "\u001B[49m"; // background reset
     }
 
-    return currentLine + tracker.getEndEscapesForAllActiveAttributes();
+    return result;
 };
 
 /**
