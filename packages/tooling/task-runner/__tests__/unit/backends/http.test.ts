@@ -6,7 +6,7 @@ import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { actionDigestForTaskHash, containsByTaskHash, retrieveByTaskHash, storeByTaskHash } from "../../../src/backends/hash-bridge";
 import { HttpRemoteCache } from "../../../src/backends/http";
@@ -88,6 +88,18 @@ const artifactPath = (taskHash: string): string => {
 
 describe(HttpRemoteCache, () => {
     let cacheDirectory: string;
+
+    // Warm Node's global `fetch` (undici) once before the suite. Its lazy
+    // first-call init — dispatcher + connection pool — costs multiple seconds
+    // on network-instrumented Windows/macOS CI runners, enough to blow the
+    // default 5s per-test timeout. Test order is randomised by the sequence
+    // seed, so whichever fetch-making test happens to run first would eat that
+    // cold start; warming here makes every real fetch fast regardless of order.
+    // A refused connection still triggers the one-time init, so the target need
+    // not exist.
+    beforeAll(async () => {
+        await fetch("http://127.0.0.1:1/").catch(() => {});
+    });
 
     beforeEach(async () => {
         cacheDirectory = await createTemporaryDirectory();
