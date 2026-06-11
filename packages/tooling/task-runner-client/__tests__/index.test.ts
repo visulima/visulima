@@ -1,12 +1,24 @@
 import { mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { join, resolve } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { disableCache, getEnv, getEnvs, ignoreInput, ignoreOutput } from "../src";
-
-const HINTS_ENV = "TASK_RUNNER_HINTS";
+import {
+    disableCache,
+    getEnv,
+    getEnvs,
+    getProtocolVersion,
+    HINTS_ENV,
+    ignoreInput,
+    ignoreOutput,
+    isManaged,
+    PROTOCOL_ENV,
+    SUPPORTED_PROTOCOL_VERSION,
+    trackInput,
+    trackOutput,
+    trackValue,
+} from "../src";
 
 describe("task-runner-client", () => {
     let directory: string;
@@ -25,7 +37,37 @@ describe("task-runner-client", () => {
 
     afterEach(() => {
         delete process.env[HINTS_ENV];
+        delete process.env[PROTOCOL_ENV];
         rmSync(directory, { force: true, recursive: true });
+    });
+
+    describe("constants and predicates", () => {
+        it("exports the wire-contract env-var names", () => {
+            expect.assertions(2);
+
+            expect(HINTS_ENV).toBe("TASK_RUNNER_HINTS");
+            expect(PROTOCOL_ENV).toBe("TASK_RUNNER_PROTOCOL");
+        });
+
+        it("isManaged reflects the presence of TASK_RUNNER_HINTS", () => {
+            expect.assertions(2);
+
+            expect(isManaged()).toBe(false);
+
+            process.env[HINTS_ENV] = hintsFile;
+
+            expect(isManaged()).toBe(true);
+        });
+
+        it("getProtocolVersion returns undefined outside a runner and the runner value inside", () => {
+            expect.assertions(2);
+
+            expect(getProtocolVersion()).toBeUndefined();
+
+            process.env[PROTOCOL_ENV] = SUPPORTED_PROTOCOL_VERSION;
+
+            expect(getProtocolVersion()).toBe("1");
+        });
     });
 
     describe("outside a runner (no TASK_RUNNER_HINTS)", () => {
@@ -36,7 +78,10 @@ describe("task-runner-client", () => {
             expect(() => {
                 ignoreInput("/x");
                 ignoreOutput("/y");
-                disableCache();
+                trackInput("/a");
+                trackOutput("/b");
+                trackValue("schema", "v3");
+                disableCache("flaky");
                 getEnv("PATH");
                 getEnvs("PATH*");
             }).not.toThrow();
@@ -58,24 +103,67 @@ describe("task-runner-client", () => {
             process.env[HINTS_ENV] = hintsFile;
         });
 
-        it("appends one NDJSON line per path hint", () => {
+        it("appends one NDJSON line per path hint and resolves paths to absolute", () => {
             expect.assertions(1);
 
             ignoreInput("./node_modules/.cache/eslint");
             ignoreOutput("./tmp/scratch");
 
             expect(readLines()).toStrictEqual([
-                { op: "ignoreInput", path: "./node_modules/.cache/eslint" },
-                { op: "ignoreOutput", path: "./tmp/scratch" },
+                { op: "ignoreInput", path: resolve("./node_modules/.cache/eslint") },
+                { op: "ignoreOutput", path: resolve("./tmp/scratch") },
             ]);
         });
 
-        it("emits disableCache", () => {
+        it("resolves ignore paths against the current cwd, not the runner's view", () => {
+            expect.assertions(1);
+
+            const previous = process.cwd();
+
+            try {
+                process.chdir(directory);
+                ignoreInput("cache");
+
+                expect(readLines()).toStrictEqual([{ op: "ignoreInput", path: resolve(directory, "cache") }]);
+            } finally {
+                process.chdir(previous);
+            }
+        });
+
+        it("emits trackInput and trackOutput as positive hints with absolute paths", () => {
+            expect.assertions(1);
+
+            trackInput("./hidden-input");
+            trackOutput("./hidden-output");
+
+            expect(readLines()).toStrictEqual([
+                { op: "trackInput", path: resolve("./hidden-input") },
+                { op: "trackOutput", path: resolve("./hidden-output") },
+            ]);
+        });
+
+        it("emits a custom cache-key value via trackValue", () => {
+            expect.assertions(1);
+
+            trackValue("db-schema", "rev-42");
+
+            expect(readLines()).toStrictEqual([{ key: "db-schema", op: "trackValue", value: "rev-42" }]);
+        });
+
+        it("emits disableCache without a reason", () => {
             expect.assertions(1);
 
             disableCache();
 
             expect(readLines()).toStrictEqual([{ op: "disableCache" }]);
+        });
+
+        it("emits disableCache with a reason when provided", () => {
+            expect.assertions(1);
+
+            disableCache("network flake");
+
+            expect(readLines()).toStrictEqual([{ op: "disableCache", reason: "network flake" }]);
         });
 
         it("getEnv returns the value AND registers a trackEnv hint by default", () => {
@@ -113,6 +201,59 @@ describe("task-runner-client", () => {
             delete process.env["VITE_A"];
             delete process.env["VITE_B"];
             delete process.env["OTHER"];
+        });
+
+        it("de-duplicates repeated identical hints within one task", () => {
+            expect.assertions(2);
+
+            process.env["CI"] = "true";
+
+            // Simulate a per-file loop reading the same env var repeatedly.
+            for (let index = 0; index < 5; index += 1) {
+                getEnv("CI");
+            }
+
+            expect(readLines()).toStrictEqual([{ name: "CI", op: "trackEnv" }]);
+
+            // A different payload still gets written.
+            getEnv("HOME");
+
+            expect(readLines()).toHaveLength(2);
+
+            delete process.env["CI"];
+        });
+
+        describe("env glob matching", () => {
+            it("escapes regex metacharacters so a literal dot is not a wildcard", () => {
+                expect.assertions(2);
+
+                process.env["A.B_X"] = "match";
+                process.env["AXB_X"] = "nope";
+
+                // `A.B*` must match `A.B_X` literally, NOT `AXB_X`.
+                expect(getEnvs("A.B*", { tracked: false })).toStrictEqual({ "A.B_X": "match" });
+                expect(getEnvs("A.B*", { tracked: false })).not.toHaveProperty("AXB_X");
+
+                delete process.env["A.B_X"];
+                delete process.env["AXB_X"];
+            });
+
+            it("materializes a clean Object (no prototype pollution) for matched vars", () => {
+                expect.assertions(2);
+
+                process.env["TRC_CLEAN"] = "ok";
+
+                const result = getEnvs("TRC_*", { tracked: false });
+
+                // The returned value keeps a normal Object prototype (the Map +
+                // Object.fromEntries materialization defends against reserved
+                // names like `__proto__`/`constructor` triggering setters), and
+                // the global Object prototype is never touched.
+                expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+                expect(Object.prototype).not.toHaveProperty("TRC_CLEAN");
+
+                delete process.env["TRC_CLEAN"];
+            });
         });
     });
 });
