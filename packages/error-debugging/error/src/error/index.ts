@@ -1,6 +1,6 @@
 export { default as captureRawStackTrace } from "./capture-raw-stack-trace";
 export { default as getErrorCauses } from "./get-error-causes";
-export type { Options as RenderErrorOptions } from "./render/error";
+export type { Options as RenderErrorOptions, ResolvedSourceLocation, SourceMapLocation, SourceMapResolver } from "./render/error";
 export { renderError } from "./render/error";
 export { default as deserializeError } from "./serialize/deserialize";
 export { addKnownErrorConstructor, isErrorLike } from "./serialize/error-constructors";

@@ -118,6 +118,15 @@ const reconstructError = (serialized: Record<string, unknown>, options: Deserial
  */
 const deserializeValue = (value: unknown, options: DeserializeOptionsType, depth: number): unknown => {
     if (isPlainObject(value)) {
+        // Reconstruct Map/Set from the structured form produced by `serializeValue`.
+        if (value.__dataType === "Map" && Array.isArray(value.value)) {
+            return new Map((value.value as [unknown, unknown][]).map(([k, v]) => [deserializeValue(k, options, depth + 1), deserializeValue(v, options, depth + 1)]));
+        }
+
+        if (value.__dataType === "Set" && Array.isArray(value.value)) {
+            return new Set((value.value as unknown[]).map((v) => deserializeValue(v, options, depth + 1)));
+        }
+
         // Check if it looks like a serialized error
         if (isErrorLike(value)) {
             return deserializePlainObject(value, options, depth);
@@ -129,6 +138,11 @@ const deserializeValue = (value: unknown, options: DeserializeOptionsType, depth
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         for (const [key, value_] of Object.entries(value)) {
+            // Skip prototype-pollution vectors when rebuilding nested plain objects.
+            if (key === "__proto__" || key === "constructor" || key === "prototype") {
+                continue;
+            }
+
             result[key] = deserializeValue(value_, options, depth + 1);
         }
 
@@ -156,15 +170,28 @@ const restoreErrorProperties = (
     const errorCopy = error as unknown as Record<string, unknown>;
 
     for (const [key, value] of Object.entries(properties)) {
-        if (key === "cause" && cause !== undefined) {
+        if (key === "__proto__" || key === "constructor" || key === "prototype") {
+            // Skip prototype-pollution / prototype-replacement vectors. A payload such as
+            // `{"name":"Error","message":"x","__proto__":{"isAdmin":true}}` would otherwise trigger
+            // the `__proto__` setter and replace the reconstructed error's prototype with
+            // attacker-controlled data (so `instanceof Error` becomes false). Since deserialization
+            // of cross-boundary, potentially untrusted data is this API's purpose, these keys are dropped.
+            continue;
+        } else if (key === "cause" && cause !== undefined) {
             // Cause is already handled above, skip
             continue;
         } else if (key === "errors" && name === "AggregateError") {
             // Errors are already handled above for AggregateError, skip
             continue;
         } else {
-            // Recursively deserialize nested values
-            errorCopy[key] = deserializeValue(value, options, depth + 1);
+            // Recursively deserialize nested values, assigned as an own data property so a
+            // payload key like "constructor" cannot clobber inherited accessors.
+            Object.defineProperty(errorCopy, key, {
+                configurable: true,
+                enumerable: true,
+                value: deserializeValue(value, options, depth + 1),
+                writable: true,
+            });
         }
     }
 };

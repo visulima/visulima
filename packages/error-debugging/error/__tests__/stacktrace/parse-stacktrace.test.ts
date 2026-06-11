@@ -1146,8 +1146,8 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames).toHaveLength(8);
             expect(stackFrames[0]).toMatchStackFrame(["<unknown>", "/var/app/scratch/my project/index.js", 2, 9]);
             expect(stackFrames[1]).toMatchStackFrame(["Object.<anonymous>", "/var/app/scratch/my project/index.js", 2, 9]);
-            expect(stackFrames[2]).toMatchStackFrame(["Module._compile", "internal/modules/cjs/loader.js", 774, 30]);
-            expect(stackFrames[3]).toMatchStackFrame(["Object.Module._extensions..js", "internal/modules/cjs/loader.js", 785, 10]);
+            expect(stackFrames[2]).toMatchStackFrame(["Module._compile", "internal/modules/cjs/loader.js", 774, 30, "internal"]);
+            expect(stackFrames[3]).toMatchStackFrame(["Object.Module._extensions..js", "internal/modules/cjs/loader.js", 785, 10, "internal"]);
         });
 
         it("should handle Node.js stacks with parentheses", () => {
@@ -1157,12 +1157,12 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
 
             expect(stackFrames).toHaveLength(7);
             expect(stackFrames[0]).toMatchStackFrame(["Object.<anonymous>", "/var/app/scratch/my project (top secret)/index.js", 2, 9]);
-            expect(stackFrames[1]).toMatchStackFrame(["Module._compile", "internal/modules/cjs/loader.js", 774, 30]);
-            expect(stackFrames[2]).toMatchStackFrame(["Object.Module._extensions..js", "internal/modules/cjs/loader.js", 785, 10]);
-            expect(stackFrames[3]).toMatchStackFrame(["Module.load", "internal/modules/cjs/loader.js", 641, 32]);
-            expect(stackFrames[4]).toMatchStackFrame(["Function.Module._load", "internal/modules/cjs/loader.js", 556, 12]);
-            expect(stackFrames[5]).toMatchStackFrame(["Function.Module.runMain", "internal/modules/cjs/loader.js", 837, 10]);
-            expect(stackFrames[6]).toMatchStackFrame(["<unknown>", "internal/main/run_main_module.js", 17, 11]);
+            expect(stackFrames[1]).toMatchStackFrame(["Module._compile", "internal/modules/cjs/loader.js", 774, 30, "internal"]);
+            expect(stackFrames[2]).toMatchStackFrame(["Object.Module._extensions..js", "internal/modules/cjs/loader.js", 785, 10, "internal"]);
+            expect(stackFrames[3]).toMatchStackFrame(["Module.load", "internal/modules/cjs/loader.js", 641, 32, "internal"]);
+            expect(stackFrames[4]).toMatchStackFrame(["Function.Module._load", "internal/modules/cjs/loader.js", 556, 12, "internal"]);
+            expect(stackFrames[5]).toMatchStackFrame(["Function.Module.runMain", "internal/modules/cjs/loader.js", 837, 10, "internal"]);
+            expect(stackFrames[6]).toMatchStackFrame(["<unknown>", "internal/main/run_main_module.js", 17, 11, "internal"]);
         });
 
         it("should parses node error with space in path", () => {
@@ -1175,7 +1175,7 @@ react-dom.development.js:67 Warning: Each child in a list should have a unique "
             expect(stackFrames[1]).toMatchStackFrame(["Object.get", String.raw`C:\project files\spect\src\index.js`, 43, 36]);
             expect(stackFrames[2]).toMatchStackFrame(["<unknown>", "<anonymous>", undefined, undefined]);
             expect(stackFrames[3]).toMatchStackFrame(["(anonymous function).then", String.raw`C:\project files\spect\src\index.js`, 165, 33]);
-            expect(stackFrames[4]).toMatchStackFrame(["process.runNextTicks [as _tickCallback]", "internal/process/task_queues.js", 52, 5]);
+            expect(stackFrames[4]).toMatchStackFrame(["process.runNextTicks [as _tickCallback]", "internal/process/task_queues.js", 52, 5, "internal"]);
             expect(stackFrames[5]).toMatchStackFrame(["<unknown>", String.raw`C:\project files\spect\node_modules\esm\esm.js`, 1, 34_535]);
             expect(stackFrames[6]).toMatchStackFrame(["<unknown>", String.raw`C:\project files\spect\node_modules\esm\esm.js`, 1, 34_176]);
             expect(stackFrames[7]).toMatchStackFrame(["process.<anonymous>", String.raw`C:\project files\spect\node_modules\esm\esm.js`, 1, 34_506]);

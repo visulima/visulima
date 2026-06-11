@@ -371,7 +371,26 @@ Type: `object`
 
 Type: `Function`
 
-A function to filter the stack frames.
+A predicate `(line: string) => boolean` that runs against each raw stack line. Return `true` to keep
+the frame, `false` to drop it.
+
+Two ready-made presets and a combinator are exported for the common "clean stack" cases:
+
+```ts
+import { parseStacktrace, stackFilters, composeFilters } from "@visulima/error";
+
+// Drop Node internals (node:internal/..., node:*, internal/...)
+parseStacktrace(error, { filter: stackFilters.internals });
+
+// Drop node_modules frames
+parseStacktrace(error, { filter: stackFilters.nodeModules });
+
+// Combine both (a frame is kept only if every filter keeps it)
+parseStacktrace(error, { filter: composeFilters(stackFilters.internals, stackFilters.nodeModules) });
+```
+
+Node internal frames are also tagged with `type: "internal"` on the parsed `Trace`, so you can
+filter them after parsing as well.
 
 ##### options.frameLimit
 
@@ -390,6 +409,11 @@ The maximum number of frames to parse.
 - Can keep constructor's arguments
 - Works recursively with error.cause and AggregateError
 - Buffer properties are replaced with [object Buffer]
+- `RegExp` properties are serialized to their string form (e.g. `"/\\d+/g"`)
+- `URL` properties are serialized to their `href`
+- `Map` and `Set` properties are serialized to a structured form (`{ __dataType: "Map", value: [...] }` /
+  `{ __dataType: "Set", value: [...] }`) and restored back to `Map`/`Set` by `deserializeError`,
+  instead of collapsing to `{}`
 - Circular references are handled.
 - If the input object has a .toJSON() method, then it's called instead of serializing the object's properties.
 - It's up to .toJSON() implementation to handle circular references and enumerability of the properties.
@@ -415,6 +439,8 @@ Deserialize a previously serialized error back to an Error instance.
 - Supports AggregateError deserialization
 - Preserves error properties and cause chains
 - Wraps non-error-like objects in NonError
+- Safe against prototype pollution: `__proto__` / `constructor` / `prototype` payload keys are ignored
+  (so a malicious JSON payload cannot replace the reconstructed error's prototype or pollute `Object.prototype`)
 
 ```ts
 import { serializeError, deserializeError } from "@visulima/error";
@@ -561,6 +587,24 @@ Type: `boolean` \
 Default: `false`
 
 Hide the error message.
+
+##### options.sourceMap
+
+Type: `(location: { file: string; line: number; column?: number }) => { file?: string; line?: number; column?: number; source?: string } | undefined`
+
+An optional, synchronous source-map resolver hook. When provided, each frame's compiled
+`file:line:column` is passed to it and the returned location is used for the rendered frame and code
+frame. Any omitted field falls back to the compiled value, and a returned `source` string is used
+directly as the code-frame content (e.g. from an inlined `sourcesContent`) instead of reading the
+resolved file from disk. Returning `undefined` or throwing leaves the frame untouched, so a broken
+resolver never breaks rendering. Use this to map transpiled `*.js` positions back to the original
+TS/JSX source.
+
+> **Security note**: `renderError` reads any file path that appears in a stack frame and prints the
+> surrounding source lines. When rendering errors whose stack you do not fully control (e.g. an error
+> reconstructed from cross-boundary data via `deserializeError`), this can disclose the contents of
+> arbitrary readable files at attacker-chosen line numbers. Treat `renderError` as a development /
+> trusted-input tool, or sanitize/allowlist frame paths before rendering untrusted errors.
 
 ### `deserializeError`
 

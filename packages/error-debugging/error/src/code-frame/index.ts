@@ -38,9 +38,12 @@ export const codeFrame = (source: string, loc: CodeFrameNodeLocation, options?: 
 
     const hasColumns = typeof loc.start.column === "number";
 
-    let lines = normalizeLF(source).split("\n");
+    // Avoid allocating a normalized copy of the whole file when there are no CRLF/CR line endings.
+    let lines = (source.includes("\r") ? normalizeLF(source) : source).split("\n");
 
-    if (typeof config.tabWidth === "number") {
+    // Tab expansion only matters (and is only worth its O(file) cost) when the source actually
+    // contains a tab. Most sources don't, so this skips a full pass over large bundled files.
+    if (typeof config.tabWidth === "number" && source.includes("\t")) {
         lines = lines.map((ln) => ln.replaceAll("\t", " ".repeat(config.tabWidth as number)));
     }
 
