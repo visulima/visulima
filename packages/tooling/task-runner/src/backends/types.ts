@@ -98,7 +98,9 @@ export type RemoteCacheCompression = "brotli" | "gzip";
  * When set, every upload carries an `X-Artifact-Signature` header
  * containing the HMAC-SHA256 digest of `hash | body`. On download,
  * the client recomputes the HMAC and rejects any artifact whose
- * signature doesn't match (constant-time comparison). REAPI servers
+ * signature doesn't match (constant-time comparison). Verification is
+ * enabled by default once a secret is set — see
+ * {@link RemoteCacheSigning.verifyOnDownload}. REAPI servers
  * do not consume this — REAPI integrity rides on sha256
  * content-addressing instead.
  */
@@ -108,8 +110,15 @@ export interface RemoteCacheSigning {
 
     /**
      * Reject downloads whose signature doesn't match or is missing.
-     * Set to `true` once every upload on your server is signed.
-     * @default false
+     *
+     * Defaults to `true` whenever a {@link RemoteCacheSigning.secret} is
+     * configured: signing implies the intent to authenticate artifacts, so
+     * the secure default is to verify. Set to `false` only during a
+     * migration window where some uploads on your server are not yet signed —
+     * be aware this re-opens the cache-poisoning attack surface (a server or
+     * MITM can strip the signature header and have unsigned artifacts
+     * extracted as build outputs).
+     * @default true
      */
     verifyOnDownload?: boolean;
 }

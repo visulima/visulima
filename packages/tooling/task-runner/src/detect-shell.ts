@@ -32,10 +32,20 @@ export const detectScriptShell = (): string | undefined => {
         return envShell;
     }
 
-    // 2. Query npm config (one-time ~200ms cost, result cached)
+    // 2. Query npm config (one-time ~200ms cost, result cached).
+    //
+    // On Windows, `npm` is a `.cmd` shim. Since Node's CVE-2024-27980
+    // hardening, spawning a `.cmd` via `execFileSync` without `shell: true`
+    // throws EINVAL/ENOENT, which the catch below would swallow — silently
+    // degrading the advertised "Honors `npm config set script-shell`
+    // (Git Bash, etc.)" feature on exactly the platform (Windows) where the
+    // Git Bash use case matters. Use `npm.cmd` + `shell: true` there.
+    const isWindows = process.platform === "win32";
+
     try {
-        const result = execFileSync("npm", ["config", "get", "script-shell"], {
+        const result = execFileSync(isWindows ? "npm.cmd" : "npm", ["config", "get", "script-shell"], {
             encoding: "utf8",
+            shell: isWindows,
             stdio: ["ignore", "pipe", "ignore"],
             timeout: 5000,
         }).trim();

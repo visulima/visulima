@@ -67,7 +67,7 @@ export { IncrementalFileHasher } from "./incremental-hasher";
 export { CompositeLifeCycle, ConsoleLifeCycle, EmptyLifeCycle } from "./life-cycle";
 // Smart lockfile hashing
 export type { PackageLockfileHash, ResolvedDependency } from "./lockfile-hasher";
-export { extractPackageName, LockfileHasher, parseNpmLockfile, parsePnpmLockfile, parseYarnLockfile } from "./lockfile-hasher";
+export { extractPackageName, LockfileHasher, parseBunLockfile, parseNpmLockfile, parsePnpmLockfile, parseYarnLockfile } from "./lockfile-hasher";
 // Log reporter (--log=interleaved|labeled|grouped, matches vite-task)
 export type { LogMode } from "./log-reporter";
 export { createLogReporter, LogReporter } from "./log-reporter";

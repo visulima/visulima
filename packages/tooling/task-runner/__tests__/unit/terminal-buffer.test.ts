@@ -239,6 +239,82 @@ describe(TerminalBuffer, () => {
         expect(buf.toString()).toBe("abcXYf");
     });
 
+    it("should overwrite a mid-line run in a single write (batched run)", () => {
+        expect.assertions(1);
+
+        const buf = new TerminalBuffer();
+
+        buf.write("abcdefgh");
+        buf.write("\r"); // back to col 0
+        buf.write("\u001B[2C"); // forward 2
+        buf.write("XYZ"); // overwrite cde -> XYZ
+
+        expect(buf.toString()).toBe("abXYZfgh");
+    });
+
+    it("should pad with spaces when a run starts past the visible end", () => {
+        expect.assertions(1);
+
+        const buf = new TerminalBuffer();
+
+        buf.write("ab");
+        buf.write("\u001B[6G"); // jump to column 6 (1-based) -> visual col 5
+        buf.write("XY");
+
+        expect(buf.toString()).toBe("ab   XY");
+    });
+
+    it("should overwrite glyphs while preserving embedded SGR sequences mid-line", () => {
+        expect.assertions(2);
+
+        const buf = new TerminalBuffer();
+
+        // Write colored text, then overwrite the visible glyphs after it.
+        buf.write("\u001B[31mabc\u001B[0mdef");
+        buf.write("\r");
+        buf.write("\u001B[3C"); // move to visual col 3 (just after "abc")
+        buf.write("XYZ"); // overwrite "def"
+
+        const result = buf.toString();
+
+        expect(result).toContain("\u001B[31m");
+        expect(result).toContain("XYZ");
+    });
+
+    it("should produce identical output to per-character writes for a long run", () => {
+        expect.assertions(1);
+
+        const batched = new TerminalBuffer();
+        const perChar = new TerminalBuffer();
+        const run = "x".repeat(5000);
+
+        batched.write(run);
+
+        for (const ch of run) {
+            perChar.write(ch);
+        }
+
+        expect(batched.toString()).toBe(perChar.toString());
+    });
+
+    it("should handle a long printable line without quadratic blowup", () => {
+        expect.assertions(2);
+
+        const buf = new TerminalBuffer(1024 * 1024);
+        const line = "y".repeat(100_000);
+
+        const start = Date.now();
+
+        buf.write(line);
+
+        const elapsed = Date.now() - start;
+
+        expect(buf.toString()).toBe(line);
+        // A quadratic implementation re-walks 100k chars 100k times and would
+        // take many seconds; the linear path finishes well under a second.
+        expect(elapsed).toBeLessThan(2000);
+    });
+
     it("should handle erase from cursor to end of display (CSI 0J)", () => {
         expect.assertions(1);
 

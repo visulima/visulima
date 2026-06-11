@@ -199,6 +199,89 @@ const parseYarnLockfile = (content: string): Map<string, string> => {
 };
 
 /**
+ * Strips JSONC comments and trailing commas so a Bun `bun.lock` (which is
+ * JSONC, not strict JSON, since Bun 1.2) can be `JSON.parse`d. Kept tiny and
+ * dependency-free: it removes `//` line comments, block comments, and commas
+ * that immediately precede a closing `}` or `]`.
+ */
+const stripJsonc = (content: string): string =>
+    content
+        // Block comments
+        .replaceAll(/\/\*[\s\S]*?\*\//g, "")
+        // Line comments (not inside strings — best effort; bun.lock never puts
+        // `//` inside string values)
+        .replaceAll(/(^|[^:"'])\/\/[^\n\r]*/g, "$1")
+        // Trailing commas before } or ]
+        .replaceAll(/,(\s*[}\]])/g, "$1");
+
+/**
+ * Parses Bun's `bun.lock` (text/JSONC format, Bun >= 1.2) to extract resolved
+ * versions. The `packages` map is keyed by the dependency name and each value
+ * is a tuple whose first element is `"name@version"`:
+ *
+ * ```jsonc
+ * {
+ *   "lockfileVersion": 1,
+ *   "packages": {
+ *     "lodash": ["lodash@4.17.21", "", {}, "sha512-..."],
+ *     "@scope/name": ["@scope/name@1.0.0", ...]
+ *   }
+ * }
+ * ```
+ */
+const parseBunLockfile = (content: string): Map<string, string> => {
+    const versions = new Map<string, string>();
+
+    try {
+        const lockfile = JSON.parse(stripJsonc(content)) as {
+            packages?: Record<string, unknown>;
+        };
+
+        if (!lockfile.packages) {
+            return versions;
+        }
+
+        for (const [key, entry] of Object.entries(lockfile.packages)) {
+            // The descriptor is the first tuple element ("name@version").
+            const descriptor = Array.isArray(entry) ? entry[0] : entry;
+
+            if (typeof descriptor !== "string") {
+                continue;
+            }
+
+            // Split on the LAST "@" so scoped names ("@scope/name@1.0.0") keep
+            // their leading "@".
+            const atIndex = descriptor.lastIndexOf("@");
+
+            if (atIndex <= 0) {
+                continue;
+            }
+
+            const name = descriptor.slice(0, atIndex);
+            const version = descriptor.slice(atIndex + 1);
+
+            // Skip workspace / catalog / link protocols that don't carry a
+            // concrete semver — they invalidate via the package.json itself.
+            if (!version || version.includes(":")) {
+                continue;
+            }
+
+            // The key is the bare dependency name; prefer it when it matches a
+            // scoped form, otherwise trust the descriptor-derived name.
+            const resolvedName = key && !key.includes("@", 1) ? key : name;
+
+            if (!versions.has(resolvedName)) {
+                versions.set(resolvedName, version);
+            }
+        }
+    } catch {
+        // Invalid JSON / JSONC
+    }
+
+    return versions;
+};
+
+/**
  * Smart lockfile hasher that only hashes the resolved versions
  * of a package's actual dependencies, not the entire lockfile.
  *
@@ -209,13 +292,14 @@ const parseYarnLockfile = (content: string): Map<string, string> => {
  * - package-lock.json (npm v2/v3)
  * - pnpm-lock.yaml (pnpm)
  * - yarn.lock (Yarn Classic + Berry)
+ * - bun.lock (Bun >= 1.2, text/JSONC format)
  */
 class LockfileHasher {
     readonly #workspaceRoot: string;
 
     #lockfileCache: Map<string, string> | undefined;
 
-    #lockfileType: "npm" | "pnpm" | "yarn" | undefined;
+    #lockfileType: "bun" | "npm" | "pnpm" | "yarn" | undefined;
 
     public constructor(workspaceRoot: string) {
         this.#workspaceRoot = workspaceRoot;
@@ -276,7 +360,7 @@ class LockfileHasher {
     /**
      * Returns the type of lockfile detected, or undefined if none found.
      */
-    public get lockfileType(): "npm" | "pnpm" | "yarn" | undefined {
+    public get lockfileType(): "bun" | "npm" | "pnpm" | "yarn" | undefined {
         return this.#lockfileType;
     }
 
@@ -298,10 +382,11 @@ class LockfileHasher {
             return this.#lockfileCache.size > 0 ? this.#lockfileCache : undefined;
         }
 
-        const parsers: { file: string; parser: (content: string) => Map<string, string>; type: "npm" | "pnpm" | "yarn" }[] = [
+        const parsers: { file: string; parser: (content: string) => Map<string, string>; type: "bun" | "npm" | "pnpm" | "yarn" }[] = [
             { file: "package-lock.json", parser: parseNpmLockfile, type: "npm" },
             { file: "pnpm-lock.yaml", parser: parsePnpmLockfile, type: "pnpm" },
             { file: "yarn.lock", parser: parseYarnLockfile, type: "yarn" },
+            { file: "bun.lock", parser: parseBunLockfile, type: "bun" },
         ];
 
         for (const { file, parser, type } of parsers) {
@@ -327,4 +412,4 @@ class LockfileHasher {
 }
 
 export type { PackageLockfileHash, ResolvedDependency };
-export { extractPackageName, LockfileHasher, parseNpmLockfile, parsePnpmLockfile, parseYarnLockfile };
+export { extractPackageName, LockfileHasher, parseBunLockfile, parseNpmLockfile, parsePnpmLockfile, parseYarnLockfile };

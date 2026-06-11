@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { extractPackageName, LockfileHasher, parseNpmLockfile, parsePnpmLockfile, parseYarnLockfile } from "../../src/lockfile-hasher";
+import { extractPackageName, LockfileHasher, parseBunLockfile, parseNpmLockfile, parsePnpmLockfile, parseYarnLockfile } from "../../src/lockfile-hasher";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -160,6 +160,49 @@ describe(parseYarnLockfile, () => {
 
         expect(versions.get("lodash")).toBe("4.17.21");
         expect(versions.get("@types/node")).toBe("20.10.0");
+    });
+});
+
+describe(parseBunLockfile, () => {
+    it("should parse bun.lock (text/JSONC) packages", () => {
+        expect.assertions(2);
+
+        const lockfile = `{
+  // Bun lockfile
+  "lockfileVersion": 1,
+  "packages": {
+    "lodash": ["lodash@4.17.21", "", {}, "sha512-abc"],
+    "@types/node": ["@types/node@20.10.0", "", {}, "sha512-def"],
+  },
+}`;
+
+        const versions = parseBunLockfile(lockfile);
+
+        expect(versions.get("lodash")).toBe("4.17.21");
+        expect(versions.get("@types/node")).toBe("20.10.0");
+    });
+
+    it("should skip workspace/catalog protocol versions", () => {
+        expect.assertions(2);
+
+        const lockfile = `{
+  "lockfileVersion": 1,
+  "packages": {
+    "internal-pkg": ["internal-pkg@workspace:packages/internal", "", {}, ""],
+    "react": ["react@18.2.0", "", {}, "sha512-x"]
+  }
+}`;
+
+        const versions = parseBunLockfile(lockfile);
+
+        expect(versions.has("internal-pkg")).toBe(false);
+        expect(versions.get("react")).toBe("18.2.0");
+    });
+
+    it("should return an empty map for invalid content", () => {
+        expect.assertions(1);
+
+        expect(parseBunLockfile("not json").size).toBe(0);
     });
 });
 

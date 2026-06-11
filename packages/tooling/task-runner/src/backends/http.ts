@@ -154,7 +154,14 @@ class HttpRemoteCache implements RemoteCacheBackend {
             }
 
             this.#signingSecret = options.signing.secret;
-            this.#verifyOnDownload = options.signing.verifyOnDownload ?? false;
+            // Secure-by-default: configuring a signing secret signals the
+            // intent to authenticate artifacts, so verify downloads unless
+            // the caller explicitly opts out. A compromised cache server or
+            // MITM that strips the signature header would otherwise have its
+            // unsigned artifacts extracted into the workspace and replayed as
+            // build outputs (remote-cache poisoning -> arbitrary code
+            // execution in consumers' builds).
+            this.#verifyOnDownload = options.signing.verifyOnDownload ?? true;
         } else {
             this.#signingSecret = undefined;
             this.#verifyOnDownload = false;

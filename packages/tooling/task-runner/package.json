@@ -40,6 +40,18 @@
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
         },
+        "./cache": {
+            "types": "./dist/cache/index.d.ts",
+            "default": "./dist/cache/index.js"
+        },
+        "./concurrent": {
+            "types": "./dist/concurrent/index.d.ts",
+            "default": "./dist/concurrent/index.js"
+        },
+        "./graph": {
+            "types": "./dist/graph/index.d.ts",
+            "default": "./dist/graph/index.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
