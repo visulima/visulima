@@ -77,6 +77,50 @@ console.log(bar.render());
 // Downloading [████████████████████░░░░░░░░░░░░░░░░░░░░] 50% | 100/200
 ```
 
+### Format Tokens
+
+The `format` string supports the following tokens:
+
+| Token             | Description                                              |
+| ----------------- | -------------------------------------------------------- |
+| `{bar}`           | The rendered bar segment                                 |
+| `{percentage}`    | Integer percentage (0–100)                               |
+| `{value}`         | Current value                                            |
+| `{total}`         | Total value                                              |
+| `{eta}`           | Estimated seconds remaining (raw number)                 |
+| `{eta_formatted}` | Estimated time remaining, formatted (e.g. `1m30s`)       |
+| `{duration}`      | Elapsed time since `start()`, formatted (e.g. `1m30s`)   |
+| `{rate}`          | Processed items per second (rounded)                     |
+| `{<payloadKey>}`  | Any key present on the `payload` object                  |
+
+ETA and rate use a sliding window of recent samples, so they stay accurate for variable-rate work such as downloads.
+
+### Render Throttling (`fps`)
+
+Live rendering (when an `InteractiveManager` is attached) is throttled to `fps` frames per second (default `10`). Updates that arrive faster than this are coalesced, and a final frame is always flushed on `stop()`. `render()` itself is never throttled. Set `fps: 0` to disable throttling.
+
+### Colorizing the Bar
+
+Use the `formatBar` callback to transform the rendered bar segment (e.g. apply ANSI colors) without post-processing the whole line:
+
+```typescript
+const bar = new ProgressBar({
+    total: 100,
+    // `yellow`/`green` stand in for any ANSI color function (e.g. from picocolors/chalk).
+    formatBar: (segment, { percentage }) => (percentage < 50 ? yellow(segment) : green(segment)),
+});
+```
+
+### Auto-stop / Clear on Complete
+
+```typescript
+// Stop automatically at 100% and erase the bar from the terminal.
+const bar = new ProgressBar({ total: 100, stopOnComplete: true, clearOnComplete: true }, manager);
+```
+
+- `stopOnComplete` — calls `stop()` automatically once `value >= total`.
+- `clearOnComplete` — erases the rendered bar on `stop()` instead of leaving the final frame (requires an `InteractiveManager`).
+
 ### Multiple Progress Bars
 
 ```typescript
@@ -92,15 +136,39 @@ bar2.update(100);
 multi.stop();
 ```
 
-### With Interactive Manager
+#### Per-bar options
 
-For real-time terminal updates (animated progress), install `@visulima/interactive-manager` as an additional dependency:
+`create()` accepts per-bar overrides (4th argument). Anything omitted falls back to the `MultiProgressBar` defaults:
 
-```sh
-pnpm add @visulima/interactive-manager
+```typescript
+const multi = new MultiProgressBar({ style: "shades_classic" });
+
+const download = multi.create(100, 0, { task: "download" }, { style: "braille", width: 20 });
+const extract = multi.create(100, 0, { task: "extract" }, { format: "{task} {percentage}%" });
 ```
 
-Then pass it to the progress bar constructor:
+#### Composite mode
+
+`composite: true` merges every bar into a single bar where each column is shaded by how many bars have filled it (using a per-style gradient). Composite mode **requires** the `format` to contain a bracketed `[{bar}]` region — if it does not, rendering silently falls back to the first bar's output, and the constructor logs a warning.
+
+```typescript
+import { MultiProgressBar } from "@visulima/progress-bar";
+import type { MultiBarInstance } from "@visulima/progress-bar";
+
+const multi = new MultiProgressBar({ composite: true, format: "[{bar}] {percentage}%" }, manager);
+const a = multi.create(100);
+const b = multi.create(100);
+
+// Optional: colorize an individual bar's contribution to the composite.
+multi.setBarColor(a as unknown as MultiBarInstance, (text) => red(text));
+
+a.update(40);
+b.update(70);
+```
+
+### With Interactive Manager
+
+Real-time terminal updates (animated progress) are powered by `@visulima/interactive-manager`, which is a runtime dependency of this package (no separate install needed). Pass an instance to the constructor to opt into live rendering; `render()` works without it for one-off string output.
 
 ```typescript
 import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";

@@ -2,7 +2,7 @@
 import type { InteractiveManager } from "@visulima/interactive-manager";
 
 import { ProgressBar } from "./progress-bar";
-import type { MultiBarOptions, ProgressBarOptions, ProgressBarPayload } from "./types";
+import type { MultiBarCreateOptions, MultiBarOptions, ProgressBarOptions, ProgressBarPayload } from "./types";
 import { getBarChar } from "./utils";
 
 const BAR_REGEX = /\[([^[\]]*)\]/u;
@@ -44,11 +44,16 @@ export class MultiBarInstance extends ProgressBar {
 
 /**
  * Multi-bar progress manager for displaying multiple progress bars simultaneously.
+ *
+ * Two layouts are supported. Stacked (default) renders one line per bar.
+ * Composite (`composite: true`) merges all bars into a single bar where each column
+ * is shaded by how many bars have filled it; composite layout requires the format to
+ * contain a bracketed `[{bar}]` region, otherwise it falls back to the first bar's output.
  * @example
  * ```typescript
  * const multi = new MultiProgressBar({}, interactiveManager);
  * const bar1 = multi.create(100);
- * const bar2 = multi.create(200);
+ * const bar2 = multi.create(200, 0, undefined, { style: "braille", width: 20 });
  * bar1.update(50);
  * bar2.update(100);
  * multi.stop();
@@ -71,8 +76,8 @@ export class MultiProgressBar {
 
     public constructor(options: MultiBarOptions = {}, interactiveManager?: InteractiveManager) {
         this.options = {
-            barCompleteChar: getBarChar(undefined, "shades_classic"),
-            barIncompleteChar: getBarChar(undefined, "shades_classic", false),
+            barCompleteChar: getBarChar(undefined, options.style ?? "shades_classic"),
+            barIncompleteChar: getBarChar(undefined, options.style ?? "shades_classic", false),
             composite: false,
             format: "progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}",
             fps: 10,
@@ -80,22 +85,47 @@ export class MultiProgressBar {
         };
         this.composite = this.options.composite ?? false;
         this.interactiveManager = interactiveManager;
+
+        if (this.composite && !BAR_REGEX.test(this.options.format ?? "")) {
+            // eslint-disable-next-line no-console
+            console.warn(
+                "[@visulima/progress-bar] composite mode requires a bracketed `[{bar}]` region in `format`; rendering will fall back to the first bar.",
+            );
+        }
     }
 
-    public create(total: number, current: number = 0, payload?: ProgressBarPayload): ProgressBar {
+    /**
+     * Create and register a new bar.
+     * @param total Total value for the new bar.
+     * @param current Initial value.
+     * @param payload Initial payload tokens.
+     * @param barOptions Per-bar overrides (width, style, format, chars, glue, formatBar, fps); anything omitted falls back to the multi-bar defaults.
+     * @returns The created bar instance.
+     */
+    public create(total: number, current: number = 0, payload?: ProgressBarPayload, barOptions: MultiBarCreateOptions = {}): ProgressBar {
         // eslint-disable-next-line no-plusplus
         const barId = `bar_${String(this.nextBarId++)}`;
+
+        const style = barOptions.style ?? this.options.style;
+
+        // When a per-bar style is supplied (and differs from the multi default), derive
+        // the bar characters from that style instead of inheriting the multi-level chars,
+        // unless the caller explicitly overrides them.
+        const inheritChars = barOptions.style === undefined || barOptions.style === this.options.style;
 
         const bar = new MultiBarInstance(
             this,
             {
-                barCompleteChar: this.options.barCompleteChar,
-                barIncompleteChar: this.options.barIncompleteChar,
+                barCompleteChar: barOptions.barCompleteChar ?? (inheritChars ? this.options.barCompleteChar : undefined),
+                barGlue: barOptions.barGlue ?? this.options.barGlue,
+                barIncompleteChar: barOptions.barIncompleteChar ?? (inheritChars ? this.options.barIncompleteChar : undefined),
                 current,
-                format: this.options.format,
-                fps: this.options.fps,
+                format: barOptions.format ?? this.options.format,
+                formatBar: barOptions.formatBar ?? this.options.formatBar,
+                fps: barOptions.fps ?? this.options.fps,
+                style,
                 total,
-                width: 40,
+                width: barOptions.width ?? 40,
             },
             payload,
         );
@@ -134,6 +164,9 @@ export class MultiProgressBar {
         return false;
     }
 
+    /**
+     * Re-render every registered bar to the interactive manager.
+     */
     public renderAll(): void {
         if (!this.interactiveManager || !this.isActive) {
             return;
@@ -204,26 +237,38 @@ export class MultiProgressBar {
 
         const width = barMatch[1].length;
 
-        const grid: number[][] = Array.from({ length: width }, () => []);
-
-        bars.forEach((bar, index) => {
+        // Compute each bar's filled count and percentage once per frame
+        // (instead of re-calling getBarState() per column inside getCompositeChar).
+        const states = bars.map((bar) => {
             const state = bar.getBarState();
-            const filled = Math.round((state.current / Math.max(1, state.total)) * width);
+            const safeTotal = Math.max(1, state.total);
 
-            for (let i = 0; i < width; i += 1) {
-                if (i < filled) {
-                    grid[i]?.push(index);
-                }
-            }
+            return {
+                color: this.barColors.get(bar),
+                filled: Math.round((state.current / safeTotal) * width),
+                percent: (state.current / safeTotal) * 100,
+            };
         });
 
-        const composite = Array.from({ length: width }, (_, i) => this.getCompositeChar(bars, grid[i])).join("");
+        let composite = "";
+
+        for (let column = 0; column < width; column += 1) {
+            const stack: number[] = [];
+
+            for (const [index, state] of states.entries()) {
+                if (column < state.filled) {
+                    stack.push(index);
+                }
+            }
+
+            composite += this.getCompositeChar(states, stack);
+        }
 
         return output.replace(BAR_REGEX, `[${composite}]`);
     }
 
-    private getCompositeChar(bars: MultiBarInstance[], stack?: number[]): string {
-        if (!stack || stack.length === 0) {
+    private getCompositeChar(states: { color?: (text: string) => string; filled: number; percent: number }[], stack: number[]): string {
+        if (stack.length === 0) {
             return getBarChar(undefined, this.options.style ?? "shades_classic", false);
         }
 
@@ -243,16 +288,14 @@ export class MultiProgressBar {
         let selectedBar: number | undefined;
         let smallestPercent = 100;
 
-        for (const element of stack) {
-            const stackBarIndex = element;
-            const bar = bars[stackBarIndex];
+        for (const stackBarIndex of stack) {
+            const state = states[stackBarIndex];
 
-            if (!bar) {
+            if (!state) {
                 continue;
             }
 
-            const barState = bar.getBarState();
-            const barPercent = (barState.current / Math.max(1, barState.total)) * 100;
+            const barPercent = state.percent;
 
             if (barPercent < smallestPercent || (barPercent === smallestPercent && (selectedBar === undefined || stackBarIndex > selectedBar))) {
                 smallestPercent = barPercent;
@@ -260,14 +303,8 @@ export class MultiProgressBar {
             }
         }
 
-        const barIndex = selectedBar ?? stack[0];
-        const targetBar = bars[barIndex ?? 0];
-
-        if (!targetBar) {
-            return char;
-        }
-
-        const barColor = this.barColors.get(targetBar);
+        const barIndex = selectedBar ?? stack[0] ?? 0;
+        const barColor = states[barIndex]?.color;
 
         return barColor ? barColor(char) : char;
     }

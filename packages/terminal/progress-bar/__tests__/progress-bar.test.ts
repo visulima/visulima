@@ -199,12 +199,20 @@ describe("progressBar (extra coverage)", () => {
         it("should call interactive manager update on update() when active", () => {
             expect.assertions(1);
 
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+
             const { manager, state } = createManagerStub();
-            const bar = new ProgressBar({ format: "{value}", total: 100 }, manager);
+            const bar = new ProgressBar({ format: "{value}", fps: 10, total: 100 }, manager);
 
             bar.start();
             state.updates.length = 0;
+            // Live renders are throttled by fps; advance past one frame interval so
+            // the update is flushed instead of coalesced.
+            vi.setSystemTime(200);
             bar.update(42);
+
+            vi.useRealTimers();
 
             expect(state.updates.at(-1)?.[0]).toBe("42");
         });
@@ -437,6 +445,176 @@ describe("progressBar (extra coverage)", () => {
             vi.setSystemTime(2000);
 
             expect(bar.render()).toBe("6");
+        });
+
+        it("should format eta, duration and rate tokens", () => {
+            expect.assertions(3);
+
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+
+            const bar = new ProgressBar({ current: 0, format: "{eta_formatted}|{duration}|{rate}", total: 1000 });
+
+            bar.start(1000, 0);
+
+            // record a second sample so the sliding window has a rate
+            vi.setSystemTime(10_000);
+            bar.update(100);
+
+            vi.setSystemTime(10_000);
+
+            // 100 done in 10s => rate 10/s; remaining 900 => eta 90s => "1m30s"; duration 10s.
+            expect(bar.render()).toContain("1m30s");
+            expect(bar.render()).toContain("10s");
+            expect(bar.render()).toContain("10");
+        });
+    });
+
+    describe("fps throttling", () => {
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it("should coalesce rapid updates and only render once within a frame", () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+
+            const { manager, state } = createManagerStub();
+            const bar = new ProgressBar({ format: "{value}", fps: 10, total: 100 }, manager);
+
+            bar.start();
+            state.updates.length = 0;
+
+            // Advance one frame so the first update flushes, then two more in the same
+            // frame must be coalesced => exactly one render.
+            vi.setSystemTime(200);
+            bar.update(1);
+            bar.update(2);
+            bar.update(3);
+
+            expect(state.updates).toHaveLength(1);
+        });
+
+        it("should render every update when fps is 0 (disabled)", () => {
+            expect.assertions(1);
+
+            const { manager, state } = createManagerStub();
+            const bar = new ProgressBar({ format: "{value}", fps: 0, total: 100 }, manager);
+
+            bar.start();
+            state.updates.length = 0;
+
+            bar.update(1);
+            bar.update(2);
+            bar.update(3);
+
+            expect(state.updates).toHaveLength(3);
+        });
+
+        it("should always flush a final frame on stop()", () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+
+            const { manager, state } = createManagerStub();
+            const bar = new ProgressBar({ format: "{value}", fps: 10, total: 100 }, manager);
+
+            bar.start();
+            bar.update(1);
+            bar.update(42); // throttled away
+            bar.stop();
+
+            expect(state.updates.at(-1)?.[0]).toBe("42");
+        });
+    });
+
+    describe("formatBar", () => {
+        it("should transform the rendered bar segment", () => {
+            expect.assertions(1);
+
+            const bar = new ProgressBar({
+                current: 50,
+                format: "[{bar}]",
+                formatBar: (segment) => `<${segment}>`,
+                style: "ascii",
+                total: 100,
+                width: 4,
+            });
+
+            expect(bar.render()).toBe("[<##-->]");
+        });
+
+        it("should pass live state to the formatBar callback", () => {
+            expect.assertions(1);
+
+            const bar = new ProgressBar({
+                current: 25,
+                format: "{bar}",
+                formatBar: (_segment, state) => `${String(state.percentage)}-${String(state.value)}-${String(state.total)}`,
+                style: "ascii",
+                total: 100,
+                width: 4,
+            });
+
+            expect(bar.render()).toBe("25-25-100");
+        });
+    });
+
+    describe("stopOnComplete / clearOnComplete", () => {
+        it("should auto-stop and unhook when value reaches total", () => {
+            expect.assertions(2);
+
+            const { manager, state } = createManagerStub();
+            const bar = new ProgressBar({ format: "{value}", stopOnComplete: true, total: 100 }, manager);
+
+            bar.start();
+            bar.update(100);
+
+            expect(state.unhookCalls).toBe(1);
+            expect(state.updates.at(-1)?.[0]).toBe("100");
+        });
+
+        it("should erase the bar on stop when clearOnComplete is set", () => {
+            expect.assertions(1);
+
+            const { manager } = createManagerStub();
+            const eraseSpy = vi.spyOn(manager, "erase");
+            const bar = new ProgressBar({ clearOnComplete: true, format: "{value}", total: 100 }, manager);
+
+            bar.start();
+            bar.update(50);
+            bar.stop();
+
+            expect(eraseSpy).toHaveBeenCalledWith("stdout");
+        });
+
+        it("should not erase on stop by default", () => {
+            expect.assertions(1);
+
+            const { manager } = createManagerStub();
+            const eraseSpy = vi.spyOn(manager, "erase");
+            const bar = new ProgressBar({ format: "{value}", total: 100 }, manager);
+
+            bar.start();
+            bar.stop();
+
+            expect(eraseSpy).not.toHaveBeenCalled();
+        });
+
+        it("should not fire complete logic twice when stop() is called after auto-stop", () => {
+            expect.assertions(1);
+
+            const { manager, state } = createManagerStub();
+            const bar = new ProgressBar({ format: "{value}", stopOnComplete: true, total: 100 }, manager);
+
+            bar.start();
+            bar.update(100);
+            bar.stop();
+
+            expect(state.unhookCalls).toBe(1);
         });
     });
 });
