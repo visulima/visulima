@@ -384,7 +384,9 @@ assert.deepStrictEqual(toUint8Array(u8), u8);
 // From ArrayBuffer
 const buffer = new ArrayBuffer(3);
 const view = new Uint8Array(buffer);
-view[0] = 1; view[1] = 2; view[2] = 3;
+view[0] = 1;
+view[1] = 2;
+view[2] = 3;
 assert.deepStrictEqual(toUint8Array(buffer), new Uint8Array([1, 2, 3]));
 
 // From Array of numbers
@@ -401,10 +403,10 @@ assert.deepStrictEqual(toUint8Array("String"), new Uint8Array([83, 116, 114, 105
 assert.deepStrictEqual(toUint8Array(u8, { copy: true }), u8);
 
 try {
-  toUint8Array(123); // Not convertible
+    toUint8Array(123); // Not convertible
 } catch (error) {
-  assert.ok(error instanceof Uint8ArrayIncompatibleError);
-  assert.strictEqual(error.code, "UINT8ARRAY_INCOMPATIBLE");
+    assert.ok(error instanceof Uint8ArrayIncompatibleError);
+    assert.strictEqual(error.code, "UINT8ARRAY_INCOMPATIBLE");
 }
 ```
 
