@@ -1,8 +1,44 @@
-import { Buffer } from "node:buffer"; // Explicit import for Buffer
-
 import type { LiteralUnion } from "type-fest";
 
 import { BEL, OSC } from "./constants";
+
+/**
+ * Encodes a `Uint8Array` to a Base64 string in a runtime-agnostic way.
+ *
+ * Prefers the standardized `Uint8Array.prototype.toBase64` (Node ≥ 24, modern
+ * browsers). Falls back to `btoa` (browsers/Deno) and finally to Node's
+ * `Buffer` so this module — and therefore the package barrel that re-exports
+ * `image` — stays usable in xterm.js / browser bundles without pulling in
+ * `node:buffer`.
+ * @param data The bytes to encode.
+ * @returns The Base64 representation of `data`.
+ */
+const toBase64 = (data: Uint8Array): string => {
+    const maybeToBase64 = (data as unknown as { toBase64?: () => string }).toBase64;
+
+    if (typeof maybeToBase64 === "function") {
+        return maybeToBase64.call(data);
+    }
+
+    if (typeof btoa === "function") {
+        let binary = "";
+
+        for (const byte of data) {
+            binary += String.fromCodePoint(byte);
+        }
+
+        return btoa(binary);
+    }
+
+    // Node.js fallback for runtimes without `toBase64`/`btoa`.
+    const nodeBuffer = (globalThis as { Buffer?: { from: (input: Uint8Array) => { toString: (encoding: string) => string } } }).Buffer;
+
+    if (nodeBuffer === undefined) {
+        throw new Error("No Base64 encoder available: Uint8Array.prototype.toBase64, btoa and Buffer are all missing.");
+    }
+
+    return nodeBuffer.from(data).toString("base64");
+};
 
 /**
  * Options for controlling the display of an inline image in iTerm2.
@@ -45,7 +81,6 @@ export interface ImageOptions {
  * @param options Optional parameters to control how the image is displayed (e.g., width, height, aspect ratio).
  * See {@link ImageOptions}.
  * @returns A string containing the ANSI escape sequence for displaying the image in iTerm2.
- * Returns an empty string if `data` is null or undefined, though TypeScript should prevent this.
  * @example
  * ```typescript
  * import { image } from '@visulima/ansi/image'; // Adjust import path
@@ -69,9 +104,9 @@ export interface ImageOptions {
  * ```
  * @remarks
  * - This sequence is specific to iTerm2 and may not work in other terminal emulators.
- * - For Node.js environments, `Buffer.from(data).toString("base64")` is used for Base64 encoding.
- * In browser environments, a polyfill or an alternative method for Base64 encoding `Uint8Array` would be necessary
- * if `Buffer` is not available (e.g., `btoa(String.fromCharCode(...data))` after careful handling of binary data).
+ * - Base64 encoding is runtime-agnostic: it prefers the standardized
+ * `Uint8Array.prototype.toBase64` (Node ≥ 24, modern browsers), then `btoa`,
+ * then Node's `Buffer`, so the helper works in browser/xterm.js bundles too.
  * - The `name` parameter (for filename) is not directly supported by this simplified helper but is part of the
  * full iTerm2 inline image protocol. For more advanced features, consider using the more detailed iTerm2 sequence
  * builders in `iterm2/` files.
@@ -95,9 +130,7 @@ export const image = (data: Uint8Array, options: ImageOptions = {}): string => {
         returnValue += ";preserveAspectRatio=0";
     }
 
-    // In Node.js, Buffer is readily available.
-    // For browsers, ensure Buffer polyfill or use alternative Base64 encoding for Uint8Array.
-    const base64Data = Buffer.from(data).toString("base64");
+    const base64Data = toBase64(data);
 
     return `${returnValue}:${base64Data}${BEL}`;
 };

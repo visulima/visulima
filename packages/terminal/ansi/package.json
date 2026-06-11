@@ -76,6 +76,14 @@
             "types": "./dist/clear.d.ts",
             "default": "./dist/clear.js"
         },
+        "./clipboard": {
+            "types": "./dist/clipboard.d.ts",
+            "default": "./dist/clipboard.js"
+        },
+        "./constants": {
+            "types": "./dist/constants.d.ts",
+            "default": "./dist/constants.js"
+        },
         "./cursor": {
             "types": "./dist/cursor.d.ts",
             "default": "./dist/cursor.js"
@@ -131,6 +139,10 @@
         "./passthrough": {
             "types": "./dist/passthrough.d.ts",
             "default": "./dist/passthrough.js"
+        },
+        "./progress": {
+            "types": "./dist/progress.d.ts",
+            "default": "./dist/progress.js"
         },
         "./reset": {
             "types": "./dist/reset.d.ts",
