@@ -33,7 +33,7 @@ interface UpgradeCheckCache {
 }
 
 /** Commands that should NOT trigger upgrade checks. */
-const EXCLUDED_COMMANDS: Set<string> = new Set<string>(["--help", "--version", "-h", "-V", "help", "implode", "self-update", "upgrade"]);
+const EXCLUDED_COMMANDS: Set<string> = new Set<string>(["--help", "--version", "-h", "-V", "help", "implode", "upgrade"]);
 
 const readCache = (): UpgradeCheckCache | undefined => {
     try {

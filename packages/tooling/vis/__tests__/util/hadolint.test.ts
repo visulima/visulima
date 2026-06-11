@@ -4,7 +4,7 @@ import { join } from "node:path";
 
 import { describe, expect, it } from "vitest";
 
-import { HADOLINT_VERSION, resolveHadolintAsset, runHadolint } from "../../src/util/hadolint";
+import { HADOLINT_VERSION, pinnedAssetDigest, resolveHadolintAsset, runHadolint } from "../../src/util/hadolint";
 
 describe("hadolint binary resolution", () => {
     it("pins a versioned release", () => {
@@ -39,6 +39,36 @@ describe("hadolint binary resolution", () => {
 
         expect(resolveHadolintAsset("freebsd", "x64")).toBeUndefined();
         expect(resolveHadolintAsset("linux", "ppc64")).toBeUndefined();
+    });
+});
+
+describe("hadolint pinned digests", () => {
+    const supported: [NodeJS.Platform, string][] = [
+        ["linux", "x64"],
+        ["linux", "arm64"],
+        ["darwin", "x64"],
+        ["darwin", "arm64"],
+        ["win32", "x64"],
+        ["win32", "arm64"],
+    ];
+
+    it("pins a source-baked SHA-256 for every resolvable asset", () => {
+        expect.assertions(supported.length);
+
+        for (const [platform, arch] of supported) {
+            const asset = resolveHadolintAsset(platform, arch);
+
+            // Every platform vis can resolve an asset for must have an
+            // attacker-independent digest baked in, so the download check
+            // never falls back to the same-origin sidecar.
+            expect(asset === undefined ? undefined : pinnedAssetDigest(asset)).toMatch(/^[\da-f]{64}$/u);
+        }
+    });
+
+    it("returns undefined for an unpinned asset name", () => {
+        expect.assertions(1);
+
+        expect(pinnedAssetDigest("hadolint-solaris-sparc")).toBeUndefined();
     });
 });
 

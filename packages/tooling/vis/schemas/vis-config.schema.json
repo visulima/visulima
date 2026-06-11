@@ -848,6 +848,10 @@
                     ],
                     "description": "Wrap each task's CI log block in collapsible groups so users can fold/unfold per-task output in the host CI's web UI. Failed tasks always render expanded so the failure is visible without an extra click.\n\n- `auto` (default): pick the format from the detected runner —   `GITHUB_ACTIONS=true` → `github` (`::group::`),   `GITLAB_CI=true` → `gitlab` (`section_start:` ANSI sequences),   `BUILDKITE=true` → `buildkite` (`---` collapsed headers),   `TF_BUILD=True` → `azure` (`##[group]`),   no grouping otherwise.\n- `off`: never group (raw separators only — useful when   piping through tools that mangle the directives).\n- `azure` / `buildkite` / `github` / `gitlab`: force the format   regardless of detected environment (useful for self-hosted   runners that don't set the standard env vars).\n\nCircleCI is intentionally not auto-detected: its 2.0+ format has no inline grouping directive — steps auto-group in the web UI without any markup from the runner."
                 },
+                "quietOnSuccess": {
+                    "type": "boolean",
+                    "description": "Stay quiet when a run succeeds. When enabled:\n- non-interactive output suppresses successful and cached tasks   and prints only failures (failed tasks always render in full —   in CI as expanded log blocks), equivalent to   `--output-style=quiet`; and\n- the interactive TUI auto-closes a few seconds after a clean run   via a countdown dialog. A run with any failure stays open so the   user can inspect it.\n\nThe explicit `--output-style` CLI flag overrides the output side, a per-target `options.outputStyle` overrides both, and `tui.autoExit` overrides the auto-close countdown.\n\nDefault: `false` — every task's output is echoed and the TUI waits for the user. Set to `true` to opt into quiet, auto-closing runs."
+                },
                 "services": {
                     "type": "string",
                     "enum": [

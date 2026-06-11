@@ -144,7 +144,7 @@ const run: Command = {
         },
         {
             description:
-                "Output style: normal (print every task) or quiet (skip output for successful/cached tasks; failed tasks still print in CI mode, and remain in TUI scrollback in interactive mode). Per-target options.outputStyle overrides this.",
+                "Output style: normal (print every task) or quiet (skip output for successful/cached tasks; failed tasks still print in CI mode, and remain in TUI scrollback in interactive mode). Defaults to normal; set run.quietOnSuccess in config to make quiet the default. Per-target options.outputStyle overrides this.",
             name: "output-style",
             type: String,
         },

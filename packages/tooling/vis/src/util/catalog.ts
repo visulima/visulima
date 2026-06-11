@@ -1482,42 +1482,49 @@ const fetchVersionsBatched = async (
     // or starve the registry (1000).
     const concurrency = Math.max(1, Math.min(64, Math.floor(maxConcurrentRequests ?? 8) || 8));
     let completed = 0;
+    let nextIndex = 0;
 
-    for (let index = 0; index < uniquePackages.length; index += concurrency) {
-        const batch = uniquePackages.slice(index, index + concurrency);
+    const fetchOne = async (name: string): Promise<void> => {
+        try {
+            const registry = npmrcConfig ? getRegistryForPackage(name, npmrcConfig) : undefined;
+            const info = await fetchPackageVersions(
+                name,
+                registry ? { authToken: registry.token, url: registry.url } : undefined,
+                DEFAULT_FETCH_TIMEOUT,
+                fetchPublishTimes,
+            );
 
-        const results = await Promise.allSettled(
-            batch.map(async (name) => {
-                const registry = npmrcConfig ? getRegistryForPackage(name, npmrcConfig) : undefined;
-                const info = await fetchPackageVersions(
-                    name,
-                    registry ? { authToken: registry.token, url: registry.url } : undefined,
-                    DEFAULT_FETCH_TIMEOUT,
-                    fetchPublishTimes,
-                );
-
-                versionCache.set(name, info);
-
-                return name;
-            }),
-        );
-
-        for (const [batchIndex, batchResult] of results.entries()) {
+            versionCache.set(name, info);
+        } catch {
+            failed.push(name);
+        } finally {
             completed += 1;
 
-            if (batchResult.status === "rejected") {
-                const batchPackage = batch[batchIndex];
-
-                if (batchPackage) {
-                    failed.push(batchPackage);
-                }
+            if (onProgress) {
+                onProgress(completed, uniquePackages.length);
             }
         }
+    };
 
-        if (onProgress) {
-            onProgress(completed, uniquePackages.length);
+    // Sliding worker pool: keep `concurrency` requests in flight and refill
+    // from the queue the instant any one settles, instead of waiting for a
+    // whole fixed-size batch to finish. This stops a single slow registry
+    // response (up to DEFAULT_FETCH_TIMEOUT) from head-of-line-blocking the
+    // next batch, which meaningfully cuts `vis check` wall time on large
+    // catalogs behind a flaky private registry.
+    const worker = async (): Promise<void> => {
+        while (nextIndex < uniquePackages.length) {
+            const name = uniquePackages[nextIndex] as string;
+
+            nextIndex += 1;
+
+            await fetchOne(name);
         }
-    }
+    };
+
+    const workerCount = Math.min(concurrency, uniquePackages.length);
+
+    await Promise.all(Array.from({ length: workerCount }, () => worker()));
 
     return { failed, versionCache };
 };
