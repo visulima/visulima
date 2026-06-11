@@ -1,8 +1,10 @@
 import nlp from "compromise";
 
-import type { RedactOptions, Rules, StringAnonymize } from "./types";
+import type { Censor, RedactOptions, Rules, StringAnonymize } from "./types";
 
 interface IDocumentTerm {
+    /** Optional explicit replacement (static string or {@link Censor}) from the matching rule. */
+    replacement?: Censor | string;
     start: number;
     tag: string;
     text: string;
@@ -38,8 +40,17 @@ const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTe
     let outputResult = output;
 
     for (const documentTerm of documentTerms) {
-        const { tag, text } = documentTerm;
-        const mask = maskText(maskMaps, text, tag);
+        const { replacement, tag, text } = documentTerm;
+
+        let mask: string;
+
+        if (typeof replacement === "function") {
+            mask = String(replacement(text, undefined));
+        } else if (typeof replacement === "string") {
+            mask = replacement;
+        } else {
+            mask = maskText(maskMaps, text, tag);
+        }
 
         outputResult = outputResult.replace(text, mask);
     }
@@ -99,16 +110,38 @@ const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: st
 
         // eslint-disable-next-line no-cond-assign
         while ((match = rx.exec(input)) !== null) {
+            const internal = modifier as { replacement?: Censor | string; userReplacement?: boolean };
+
             processedTerms.push({
+                // Only honour an explicit, user-supplied replacement; default (`<KEY>`-filled) rules
+                // keep the numbered-mask behaviour produced by maskText.
+                replacement: internal.userReplacement ? internal.replacement : undefined,
                 start: match.index,
                 tag: key,
                 text: match[0],
             });
+
+            // Guard against zero-width matches (e.g. a user pattern like `\d*`): without
+            // advancing lastIndex, rx.exec would match the empty string forever and hang.
+            if (match.index === rx.lastIndex) {
+                rx.lastIndex += 1;
+            }
         }
     }
 
     return processedTerms;
 };
+
+// Maps an NLP type (as a `typesToAnonymize` entry) to the compromise extractor that detects it.
+// `people` covers both firstname and lastname tags.
+const nlpExtractors: { method: "emails" | "money" | "organizations" | "people" | "phoneNumbers" | "urls"; types: string[] }[] = [
+    { method: "emails", types: ["email"] },
+    { method: "money", types: ["money"] },
+    { method: "organizations", types: ["organization"] },
+    { method: "people", types: ["firstname", "lastname"] },
+    { method: "phoneNumbers", types: ["phonenumber"] },
+    { method: "urls", types: ["url"] },
+];
 
 const processTerms = (
     typesToAnonymize: string[],
@@ -117,16 +150,21 @@ const processTerms = (
 
     logger?: { debug: (...arguments_: unknown[]) => void },
 ): IDocumentTerm[] => {
+    const requested = nlpExtractors.filter((extractor) => extractor.types.some((type) => typesToAnonymize.includes(type)));
+
+    // Skip the (expensive) compromise parse entirely when no NLP-backed rule was requested.
+    if (requested.length === 0) {
+        return processedTerms;
+    }
+
     const nlpDocument = nlp(input);
 
-    const processedDocument: CompromiseOffset[] = [
-        ...(nlpDocument.emails().out("offset") as unknown as CompromiseOffset[]),
-        ...(nlpDocument.money().out("offset") as unknown as CompromiseOffset[]),
-        ...(nlpDocument.organizations().out("offset") as unknown as CompromiseOffset[]),
-        ...(nlpDocument.people().out("offset") as unknown as CompromiseOffset[]),
-        ...(nlpDocument.phoneNumbers().out("offset") as unknown as CompromiseOffset[]),
-        ...(nlpDocument.urls().out("offset") as unknown as CompromiseOffset[]),
-    ];
+    const processedDocument: CompromiseOffset[] = [];
+
+    // Only run the extractors whose tags were actually requested, instead of all six.
+    for (const extractor of requested) {
+        processedDocument.push(...(nlpDocument[extractor.method]().out("offset") as unknown as CompromiseOffset[]));
+    }
 
     for (const documentObject of processedDocument) {
         const { terms } = documentObject;
