@@ -873,22 +873,6 @@ catalogs:
     commander:
       specifier: ^14.0.3
       version: 14.0.3
-  peer:
-    '@ai-sdk/anthropic':
-      specifier: 3.0.78
-      version: 3.0.78
-    '@ai-sdk/azure':
-      specifier: 3.0.65
-      version: 3.0.65
-    '@ai-sdk/google':
-      specifier: 3.0.75
-      version: 3.0.75
-    '@ai-sdk/mistral':
-      specifier: 3.0.37
-      version: 3.0.37
-    '@ai-sdk/openai':
-      specifier: 3.0.64
-      version: 3.0.64
   prod:
     '@anolilab/commitlint-config':
       specifier: 10.0.1
@@ -5291,30 +5275,12 @@ importers:
 
   packages/error-debugging/ono:
     dependencies:
-      '@ai-sdk/anthropic':
-        specifier: catalog:peer
-        version: 3.0.78(zod@4.4.3)
-      '@ai-sdk/azure':
-        specifier: catalog:peer
-        version: 3.0.65(zod@4.4.3)
-      '@ai-sdk/google':
-        specifier: catalog:peer
-        version: 3.0.75(zod@4.4.3)
-      '@ai-sdk/mistral':
-        specifier: catalog:peer
-        version: 3.0.37(zod@4.4.3)
-      '@ai-sdk/openai':
-        specifier: catalog:peer
-        version: 3.0.64(zod@4.4.3)
       '@shikijs/langs':
         specifier: catalog:prod
         version: 4.0.2
       '@visulima/error':
         specifier: 6.0.0-alpha.32
         version: link:../error
-      ai:
-        specifier: ^6.0.175
-        version: 6.0.184(zod@4.4.3)
       isomorphic-dompurify:
         specifier: catalog:prod
         version: 3.13.0(@noble/hashes@1.8.0)
@@ -9084,9 +9050,6 @@ importers:
       '@vitest/ui':
         specifier: catalog:test
         version: 4.1.6(vitest@4.1.7)
-      ansi-regex:
-        specifier: catalog:dev
-        version: 6.2.2
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 9.3.1
@@ -10790,6 +10753,9 @@ importers:
       typescript:
         specifier: catalog:tsc
         version: 6.0.3
+      vitest:
+        specifier: catalog:test
+        version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.2)(happy-dom@20.9.0)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.2)(typescript@6.0.3))(vite@8.0.13(@types/node@25.9.2)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.46.1)(tsx@4.22.1)(yaml@2.9.0))
 
   shared/xxh3:
     devDependencies:
@@ -10820,38 +10786,8 @@ packages:
   '@ag-ui/core@0.0.52':
     resolution: {integrity: sha512-Xo0bUaNV56EqylzcrAuhUkQX7et7+SZIrqZZtEByGwEq/I1EHny6ZMkWHLkKR7UNi0FJZwJyhKYmKJS3B2SEgA==}
 
-  '@ai-sdk/anthropic@3.0.78':
-    resolution: {integrity: sha512-0OY12G20cUt6iU6htpEA1491Oz++NVxZxlmWGX4B7rSbeZ5pnDmOu6YtW9BKzdZlNx5Gn23i6WMxyZFoMKNcgA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/azure@3.0.65':
-    resolution: {integrity: sha512-i8KdHakLrlBuX4D6pk+AIMSUaj2ZgxcsyKmgrRhZmR+wdunNZf0sh0rjd7LLCItHSPfMk4BWIAeW656R0wJlvg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
   '@ai-sdk/gateway@3.0.115':
     resolution: {integrity: sha512-xonmGfN9pt54WdKqMzWe68BRYS3rsYvraBzioyA0gfNcecHs8Ir5qk/X8grJSyZ95hghjWiOphrK6bAc11E6SA==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/google@3.0.75':
-    resolution: {integrity: sha512-XAm31ftiOrzlb8NjDzT7kw0xw+4lmgFdGFn1QKM73nXFFKyN1kWLESBV75UGNfjXP8X1YJ0YydnMVqO0jaPghw==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/mistral@3.0.37':
-    resolution: {integrity: sha512-KkdaMjs4C2y+vrZWJE990E3ZxBFiOTHQ94ZlquuIttpphcqJTMxNoIpnKT/4UzMVWXL0BUEE2vs+1UEVXkN8Kg==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      zod: ^3.25.76 || ^4.1.8
-
-  '@ai-sdk/openai@3.0.64':
-    resolution: {integrity: sha512-epO4iS6QwktaY2PF6uBcPnDTJ3BxPOfsGS7/OEtBe3GtNj7C8h8gMDVtIe5K8W16HNDbn0tbR4dcQfpfs+XVFg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
@@ -35082,42 +35018,11 @@ snapshots:
     dependencies:
       zod: 3.25.76
 
-  '@ai-sdk/anthropic@3.0.78(zod@4.4.3)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.27(zod@4.4.3)
-      zod: 4.4.3
-
-  '@ai-sdk/azure@3.0.65(zod@4.4.3)':
-    dependencies:
-      '@ai-sdk/openai': 3.0.64(zod@4.4.3)
-      '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.27(zod@4.4.3)
-      zod: 4.4.3
-
   '@ai-sdk/gateway@3.0.115(zod@4.4.3)':
     dependencies:
       '@ai-sdk/provider': 3.0.10
       '@ai-sdk/provider-utils': 4.0.27(zod@4.4.3)
       '@vercel/oidc': 3.2.0
-      zod: 4.4.3
-
-  '@ai-sdk/google@3.0.75(zod@4.4.3)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.27(zod@4.4.3)
-      zod: 4.4.3
-
-  '@ai-sdk/mistral@3.0.37(zod@4.4.3)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.27(zod@4.4.3)
-      zod: 4.4.3
-
-  '@ai-sdk/openai@3.0.64(zod@4.4.3)':
-    dependencies:
-      '@ai-sdk/provider': 3.0.10
-      '@ai-sdk/provider-utils': 4.0.27(zod@4.4.3)
       zod: 4.4.3
 
   '@ai-sdk/provider-utils@4.0.27(zod@4.4.3)':
