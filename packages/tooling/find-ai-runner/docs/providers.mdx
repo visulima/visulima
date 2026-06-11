@@ -29,19 +29,19 @@ Each provider uses different flags to accept prompts and configure behavior.
 The permission-bypass / auto-approval flag in the last column is **only added
 when you opt in** with `{ dangerous: true }` (or `--dangerous` on the CLI).
 
-| Provider | Prompt Flags (safe default)                  | Bypass flag (opt-in via `dangerous`)         |
-| -------- | -------------------------------------------- | -------------------------------------------- |
-| Amp      | `-x` + prompt                                | `--dangerously-allow-all`                    |
-| Claude   | `[--model <model>] --output-format text -p`  | `--dangerously-skip-permissions`             |
-| Codex    | `exec [--model <model>]` + prompt            | `--dangerously-bypass-approvals-and-sandbox` |
-| Copilot  | `-p` + prompt `[--model <model>]`            | `--allow-all-tools`                          |
-| Crush    | `run [-m <model>]` + prompt                  | `--yolo`                                     |
-| Cursor   | `-p --output-format text [--model <m>]` + prompt | `--force`                                |
-| Droid    | prompt + `-o text [-m <model>]`              | `--skip-permissions-unsafe`                  |
-| Gemini   | `--sandbox [--model <m>] --max-output-tokens <n> -p` + prompt | drops `--sandbox`           |
-| Kimi     | `--quiet -p` + prompt `[-m <model>]`         | —                                            |
-| OpenCode | `run` + prompt `[-m <model>]`               | —                                            |
-| Qwen     | `-p` + prompt + `-o text [-m <model>]`       | `--yolo`                                     |
+| Provider | Prompt Flags (safe default)                                   | Bypass flag (opt-in via `dangerous`)         |
+| -------- | ------------------------------------------------------------- | -------------------------------------------- |
+| Amp      | `-x` + prompt                                                 | `--dangerously-allow-all`                    |
+| Claude   | `[--model <model>] --output-format text -p`                   | `--dangerously-skip-permissions`             |
+| Codex    | `exec [--model <model>]` + prompt                             | `--dangerously-bypass-approvals-and-sandbox` |
+| Copilot  | `-p` + prompt `[--model <model>]`                             | `--allow-all-tools`                          |
+| Crush    | `run [-m <model>]` + prompt                                   | `--yolo`                                     |
+| Cursor   | `-p --output-format text [--model <m>]` + prompt              | `--force`                                    |
+| Droid    | prompt + `-o text [-m <model>]`                               | `--skip-permissions-unsafe`                  |
+| Gemini   | `--sandbox [--model <m>] --max-output-tokens <n> -p` + prompt | drops `--sandbox`                            |
+| Kimi     | `--quiet -p` + prompt `[-m <model>]`                          | —                                            |
+| OpenCode | `run` + prompt `[-m <model>]`                                 | —                                            |
+| Qwen     | `-p` + prompt + `-o text [-m <model>]`                        | `--yolo`                                     |
 
 ## Provider Details
 

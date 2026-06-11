@@ -49,7 +49,7 @@ const needsShell = (commandPath: string): boolean => IS_WINDOWS && WINDOWS_SHIM_
 /** Quote a single argument for `cmd.exe` so spaces and metacharacters are preserved literally. */
 const quoteWindowsArgument = (argument: string): string => {
     // Escape embedded double quotes, then wrap the whole thing in double quotes.
-    const escaped = argument.replaceAll("\"", "\"\"");
+    const escaped = argument.replaceAll('"', '""');
 
     return `"${escaped}"`;
 };
@@ -331,12 +331,12 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
             const error = aborted
                 ? new AiRunError(`${provider.name} CLI run was aborted.`, { aborted: true, durationMs, provider: provider.name, stderr, stdout })
                 : new AiRunError(`${provider.name} CLI timed out after ${String(timeoutMs)}ms`, {
-                    durationMs,
-                    provider: provider.name,
-                    stderr,
-                    stdout,
-                    timedOut: true,
-                });
+                      durationMs,
+                      provider: provider.name,
+                      stderr,
+                      stdout,
+                      timedOut: true,
+                  });
 
             reject(error);
         };
