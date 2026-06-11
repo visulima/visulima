@@ -13,9 +13,10 @@ describe("connect/middleware/rate-limiter-middleware", () => {
         const limiter = new RateLimiterMemory({ duration: 60, points: 5 });
 
         const { req, res } = createMocks({
-            headers: { "x-forwarded-for": "203.0.113.5" },
             method: "GET",
         });
+
+        (req as typeof req & { ip?: string }).ip = "203.0.113.5";
 
         const next = vi.fn<() => void>();
 
@@ -42,7 +43,46 @@ describe("connect/middleware/rate-limiter-middleware", () => {
         expect(consume).toHaveBeenCalledWith("198.51.100.10");
     });
 
-    it("should fall back to x-real-ip when no other source is present", async () => {
+    it("should ignore spoofable forwarding headers by default", async () => {
+        expect.assertions(1);
+
+        const limiter = new RateLimiterMemory({ duration: 60, points: 5 });
+        const consume = vi.spyOn(limiter, "consume");
+
+        const { req, res } = createMocks({
+            headers: { "x-forwarded-for": "203.0.113.7" },
+            method: "GET",
+        });
+
+        delete (req as { ip?: string }).ip;
+        (req.socket as { remoteAddress?: string }).remoteAddress = "203.0.113.1";
+
+        await rateLimiterMiddleware(limiter)(req, res, vi.fn());
+
+        // The forged X-Forwarded-For must NOT be used as the key by default.
+        expect(consume).toHaveBeenCalledWith("203.0.113.1");
+    });
+
+    it("should honour x-forwarded-for only when trustProxy is enabled", async () => {
+        expect.assertions(1);
+
+        const limiter = new RateLimiterMemory({ duration: 60, points: 5 });
+        const consume = vi.spyOn(limiter, "consume");
+
+        const { req, res } = createMocks({
+            headers: { "x-forwarded-for": "203.0.113.7, 203.0.113.99" },
+            method: "GET",
+        });
+
+        delete (req as { ip?: string }).ip;
+
+        await rateLimiterMiddleware(limiter, { trustProxy: true })(req, res, vi.fn());
+
+        // The first hop (client IP) is used, not the proxy.
+        expect(consume).toHaveBeenCalledWith("203.0.113.7");
+    });
+
+    it("should fall back to x-real-ip when trustProxy is enabled and no forwarded-for is present", async () => {
         expect.assertions(1);
 
         const limiter = new RateLimiterMemory({ duration: 60, points: 5 });
@@ -55,9 +95,43 @@ describe("connect/middleware/rate-limiter-middleware", () => {
 
         delete (req as { ip?: string }).ip;
 
-        await rateLimiterMiddleware(limiter)(req, res, vi.fn());
+        await rateLimiterMiddleware(limiter, { trustProxy: true })(req, res, vi.fn());
 
         expect(consume).toHaveBeenCalledWith("203.0.113.7");
+    });
+
+    it("should use a custom keyGenerator when provided", async () => {
+        expect.assertions(1);
+
+        const limiter = new RateLimiterMemory({ duration: 60, points: 5 });
+        const consume = vi.spyOn(limiter, "consume");
+
+        const { req, res } = createMocks({
+            headers: { "x-api-key": "abc123" },
+            method: "GET",
+        });
+
+        await rateLimiterMiddleware(limiter, {
+            keyGenerator: (request) => request.headers["x-api-key"] as string | undefined,
+        })(req, res, vi.fn());
+
+        expect(consume).toHaveBeenCalledWith("abc123");
+    });
+
+    it("should emit IETF standard headers when standardHeaders is enabled", async () => {
+        expect.assertions(3);
+
+        const limiter = new RateLimiterMemory({ duration: 60, points: 5 });
+
+        const { req, res } = createMocks({ method: "GET" });
+
+        (req as typeof req & { ip?: string }).ip = "203.0.113.5";
+
+        await rateLimiterMiddleware(limiter, { standardHeaders: true })(req, res, vi.fn());
+
+        expect(res.getHeader("RateLimit-Limit")).toBe(5);
+        expect(res.getHeader("RateLimit-Remaining")).toBe(4);
+        expect(res.getHeader("RateLimit-Reset")).toStrictEqual(expect.any(Number));
     });
 
     it("should invoke the headers callback with the limiter result and apply its returned headers", async () => {
@@ -65,10 +139,9 @@ describe("connect/middleware/rate-limiter-middleware", () => {
 
         const limiter = new RateLimiterMemory({ duration: 60, points: 5 });
 
-        const { req, res } = createMocks({
-            headers: { "x-forwarded-for": "203.0.113.13" },
-            method: "GET",
-        });
+        const { req, res } = createMocks({ method: "GET" });
+
+        (req as typeof req & { ip?: string }).ip = "203.0.113.13";
 
         // The middleware invokes the callback with the rate-limit result and
         // spreads the headers it returns.
@@ -105,10 +178,9 @@ describe("connect/middleware/rate-limiter-middleware", () => {
             consume: () => Promise.reject(new Error("limit reached")),
         } as unknown as RateLimiterAbstract;
 
-        const { req, res } = createMocks({
-            headers: { "x-forwarded-for": "203.0.113.9" },
-            method: "GET",
-        });
+        const { req, res } = createMocks({ method: "GET" });
+
+        (req as typeof req & { ip?: string }).ip = "203.0.113.9";
 
         let thrown: HttpError | undefined;
 
@@ -122,21 +194,36 @@ describe("connect/middleware/rate-limiter-middleware", () => {
         expect(thrown?.message).toBe("Too Many Requests");
     });
 
+    it("should not convert a downstream handler error into a 429", async () => {
+        expect.assertions(1);
+
+        const limiter = new RateLimiterMemory({ duration: 60, points: 5 });
+
+        const { req, res } = createMocks({ method: "GET" });
+
+        (req as typeof req & { ip?: string }).ip = "203.0.113.42";
+
+        const next = vi.fn<() => Promise<void>>(() => Promise.reject(new Error("downstream boom")));
+
+        // The downstream error must propagate untouched, not become a 429.
+        await expect(rateLimiterMiddleware(limiter)(req, res, next)).rejects.toThrow("downstream boom");
+    });
+
     it("should round Retry-After up from msBeforeNext", async () => {
         expect.assertions(1);
 
         const limiter = {
             consume: () =>
                 Promise.resolve({
+                    consumedPoints: 3,
                     msBeforeNext: 4200,
                     remainingPoints: 2,
                 } as RateLimiterRes),
         } as unknown as RateLimiterAbstract;
 
-        const { req, res } = createMocks({
-            headers: { "x-forwarded-for": "203.0.113.11" },
-            method: "GET",
-        });
+        const { req, res } = createMocks({ method: "GET" });
+
+        (req as typeof req & { ip?: string }).ip = "203.0.113.11";
 
         await rateLimiterMiddleware(limiter)(req, res, vi.fn());
 

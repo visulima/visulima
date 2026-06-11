@@ -36,20 +36,27 @@ const problemErrorHandler: ErrorHandler = (error, _request, response) => {
             type: type ?? defaultType,
             // eslint-disable-next-line perfectionist/sort-objects, @typescript-eslint/prefer-nullish-coalescing -- intentional: getReasonPhrase returns "" for unknown codes; falsy fallback chain is required to skip empty strings
             title: title || getReasonPhrase(statusCode) || defaultTitle,
-            // eslint-disable-next-line perfectionist/sort-objects
-            details: message,
+            // Only surface the raw message when http-errors marks the error as
+            // safe to expose. Unexposed 5xx messages may leak SQL errors, file
+            // paths, etc. — fall back to the generic reason phrase instead.
+            // eslint-disable-next-line perfectionist/sort-objects -- details intentionally follows title
+            details: expose ? message : getReasonPhrase(statusCode) || defaultTitle,
             ...expose ? { trace: stack } : {},
         });
     } else {
         addStatusCodeToResponse(response, error);
 
+        // Non-HttpError values default to a 500 with no `expose` flag, so the
+        // raw message is suppressed unless the error explicitly opts in.
+        const expose = (error as Error & { expose?: boolean }).expose === true;
+
         sendJson(response, {
             type: defaultType,
             // eslint-disable-next-line perfectionist/sort-objects
             title: getReasonPhrase(response.statusCode) || defaultTitle,
-            // eslint-disable-next-line perfectionist/sort-objects
-            details: message,
-            ...(error as Error & { expose: boolean }).expose ? { trace: stack } : {},
+            // eslint-disable-next-line perfectionist/sort-objects -- details intentionally follows title
+            details: expose ? message : getReasonPhrase(response.statusCode) || defaultTitle,
+            ...expose ? { trace: stack } : {},
         });
     }
 };

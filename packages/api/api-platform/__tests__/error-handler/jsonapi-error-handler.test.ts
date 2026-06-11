@@ -6,21 +6,38 @@ import { describe, expect, it } from "vitest";
 import jsonapiErrorHandler from "../../src/error-handler/jsonapi-error-handler";
 
 describe("jsonapi-error-handler", () => {
-    it("should render normal error", async () => {
+    it("should suppress the raw message of a non-exposed error", async () => {
         expect.assertions(2);
 
         const { req, res } = createMocks({
             method: "GET",
         });
 
-        const error = new Error("test");
+        // A generic Error (e.g. an unexpected SQL/file-path leak) must not have
+        // its message reflected to the client.
+        const error = new Error("connection to db at /var/secret failed");
 
         await jsonapiErrorHandler(error, req, res);
 
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("{\"errors\":[{\"code\":\"500\",\"title\":\"Internal Server Error\",\"detail\":\"test\"}]}");
+        expect(res._getData()).toBe("{\"errors\":[{\"code\":\"500\",\"title\":\"Internal Server Error\",\"detail\":\"Internal Server Error\"}]}");
+    });
+
+    it("should expose the message of an opted-in error", async () => {
+        expect.assertions(1);
+
+        const { req, res } = createMocks({
+            method: "GET",
+        });
+
+        const error = Object.assign(new Error("safe message"), { expose: true });
+
+        await jsonapiErrorHandler(error, req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        expect(res._getData()).toBe("{\"errors\":[{\"code\":\"500\",\"title\":\"Internal Server Error\",\"detail\":\"safe message\"}]}");
     });
 
     it("should render http-errors", async () => {
@@ -54,7 +71,7 @@ describe("jsonapi-error-handler", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("{\"errors\":[{\"code\":\"500\",\"title\":\"Internal Server Error\"}]}");
+        expect(res._getData()).toBe("{\"errors\":[{\"code\":\"500\",\"title\":\"Internal Server Error\",\"detail\":\"Internal Server Error\"}]}");
     });
 
     it("should serialize a real JapiError instance through the ErrorSerializer branch", async () => {
