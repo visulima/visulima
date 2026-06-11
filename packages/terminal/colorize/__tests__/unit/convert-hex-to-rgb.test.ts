@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { convertHexToRgb } from "../../src/util/convert-hex-to-rgb";
 
@@ -46,5 +46,33 @@ describe("convertHexToRgb tests", () => {
         const expected = [0, 0, 0];
 
         expect(received).toStrictEqual(expected);
+    });
+
+    describe("invalid input dev warning", () => {
+        afterEach(() => {
+            vi.restoreAllMocks();
+        });
+
+        it("should warn when the input is not a valid hex color", () => {
+            expect.assertions(2);
+
+            const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+            const received = convertHexToRgb("#GGG");
+
+            expect(received).toStrictEqual([0, 0, 0]);
+            expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("Invalid hex color"));
+        });
+
+        it("should not warn for a valid hex color", () => {
+            expect.assertions(2);
+
+            const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+            const received = convertHexToRgb("#96C");
+
+            expect(received).toStrictEqual([153, 102, 204]);
+            expect(warnSpy).not.toHaveBeenCalled();
+        });
     });
 });

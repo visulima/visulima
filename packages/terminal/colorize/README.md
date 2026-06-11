@@ -489,6 +489,8 @@ bgRgb(224, 17, 95)`Ruby`;
 bold.hex("#E0115F").bgHex("#96C")`ruby bold text on amethyst background`;
 ```
 
+> **Note:** `hex()` / `bgHex()` accept 3- or 6-digit hex strings with an optional `#` prefix. An invalid value (e.g. `hex("#GGG")` or `hex("96C9")`) falls back to black `#000000`, and a warning is logged in development (`NODE_ENV !== "production"`).
+
 ## Fallback
 
 If a terminal does not support ANSI colors, the library will automatically fall back to the next supported color space.
@@ -544,6 +546,35 @@ const string = colorize.strip(ansiString);
 ```
 
 The variable `string` will contain the pure string without ANSI codes.
+
+`strip()` behaves identically in the browser build (`@visulima/colorize/browser`): it removes any ANSI escape codes from the input string.
+
+## Color support level
+
+By default each instance auto-detects the terminal's color-support level from `stdout` at import time (truecolor → 256 → 16 → no color). You can override this per instance with the `level` option — useful to force truecolor for snapshot tests, disable color when piping to a file, or render at a chosen level at runtime:
+
+```typescript
+import { Colorize } from "@visulima/colorize";
+
+// 0 = disabled, 1 = ANSI 16, 2 = ANSI 256, 3 = TrueColor
+const forced = new Colorize({ level: 3 });
+console.log(forced.hex("#E0115F")("always truecolor"));
+
+const plain = new Colorize({ level: 0 });
+console.log(plain.red("no ANSI codes")); // -> "no ANSI codes"
+```
+
+Each instance owns its own style state, so creating one with a custom level never affects any other instance or the default export.
+
+### Styling stderr
+
+`stdout` and `stderr` can have different TTY capabilities (e.g. `node app > out.txt` leaves `stderr` a TTY while `stdout` is a redirected file). Use the `colorizeStderr` export, which is bound to the detected `stderr` level, for error output:
+
+```typescript
+import { colorizeStderr } from "@visulima/colorize";
+
+console.error(colorizeStderr.red("something went wrong"));
+```
 
 ## New lines
 
