@@ -4,7 +4,7 @@ import type { FingerprintFunction } from "../core/fingerprint";
 import { createTusAdapter } from "../core/tus-adapter";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
-import type { HeadersResolver, UploadResult, UploadRestrictions } from "./types";
+import type { HeadersResolver, UploadRestrictions, UploadResult } from "./types";
 
 export interface UseTusUploadOptions {
     /** Chunk size for TUS uploads (default: 1MB) */
@@ -20,6 +20,7 @@ export interface UseTusUploadOptions {
     endpoint: string;
     /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
     fingerprint?: FingerprintFunction;
+
     /**
      * Static or dynamically-resolved headers attached to every request — e.g. an
      * `Authorization` token for an authenticated endpoint.
@@ -41,10 +42,10 @@ export interface UseTusUploadOptions {
     onStart?: () => void;
     /** Callback when upload completes successfully */
     onSuccess?: (file: UploadResult) => void;
-    /** Enable automatic retry on failure */
-    retry?: boolean;
     /** Client-side upload restrictions, validated before any network request. */
     restrictions?: UploadRestrictions;
+    /** Enable automatic retry on failure */
+    retry?: boolean;
     /** Persistent storage for resume URLs (e.g. `defaultUrlStorage()` in the browser). */
     urlStorage?: UrlStorage;
 }
@@ -80,8 +81,24 @@ export interface UseTusUploadReturn {
  * @returns Upload functions and state
  */
 export const useTusUpload = (options: UseTusUploadOptions): UseTusUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, headers, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, restrictions, urlStorage } =
-        options;
+    const {
+        chunkSize,
+        control,
+        endpoint,
+        fingerprint,
+        headers,
+        maxRetries,
+        metadata,
+        onError,
+        onPause,
+        onProgress,
+        onResume,
+        onStart,
+        onSuccess,
+        restrictions,
+        retry,
+        urlStorage,
+    } = options;
 
     const [progress, setProgress] = useState(0);
     const [isUploading, setIsUploading] = useState(false);

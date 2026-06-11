@@ -84,8 +84,25 @@ export interface CreateChunkedRestUploadReturn {
  * @returns Upload functions and state stores
  */
 export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions): CreateChunkedRestUploadReturn => {
-    const { checksum, chunkSize, control, endpoint, fingerprint, headers, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, restrictions, retry, urlStorage } =
-        options;
+    const {
+        checksum,
+        chunkSize,
+        control,
+        endpoint,
+        fingerprint,
+        headers,
+        maxRetries,
+        metadata,
+        onError,
+        onPause,
+        onProgress,
+        onResume,
+        onStart,
+        onSuccess,
+        restrictions,
+        retry,
+        urlStorage,
+    } = options;
 
     const progress = writable(0);
     const isUploading = writable(false);

@@ -315,7 +315,7 @@ describe("tus-adapter resume", () => {
             statusText: "Server Error",
         });
 
-        await expect(adapter.upload(file)).rejects.toThrow();
+        await expect(adapter.upload(file)).rejects.toThrow(/Failed to upload chunk/);
 
         // Entry MUST still be there so the caller can retry from the saved fileId.
         const persisted = await urlStorage.findEntry(fingerprint);
@@ -401,9 +401,11 @@ describe("tus-adapter resume", () => {
         });
 
         control.pause();
+
         expect(adapter.isPaused()).toBe(true);
 
         await control.resume();
+
         expect(adapter.isPaused()).toBe(false);
 
         // Let the in-flight PATCH complete so the test cleans up.

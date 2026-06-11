@@ -16,7 +16,7 @@ type FakeAdapter = {
 
 const lastAdapter: { current: FakeAdapter | undefined } = { current: undefined };
 
-vi.mock("../../src/core/multipart-adapter", () => {
+vi.mock(import("../../src/core/multipart-adapter"), () => {
     return {
         createMultipartAdapter: vi.fn(() => {
             const adapter: FakeAdapter = {
@@ -61,15 +61,15 @@ const mountComposable = <T>(composable: () => T): { result: T } => {
     return { result: captured as T };
 };
 
-beforeEach(() => {
-    lastAdapter.current = undefined;
-});
-
-afterEach(() => {
-    vi.clearAllMocks();
-});
-
 describe("vue abort and retry composables", () => {
+    beforeEach(() => {
+        lastAdapter.current = undefined;
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
     describe(useAbortAll, () => {
         it("calls adapter.abort when abortAll is invoked", () => {
             expect.assertions(2);
@@ -77,7 +77,9 @@ describe("vue abort and retry composables", () => {
             const { result } = mountComposable(() => useAbortAll({ endpoint: "/upload" }));
 
             expect(typeof result.abortAll).toBe("function");
+
             result.abortAll();
+
             expect(lastAdapter.current?.abort).toHaveBeenCalledTimes(1);
         });
     });

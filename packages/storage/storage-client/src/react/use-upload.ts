@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 
-import type { HeadersResolver, UploadMethod, UploadResult, UploadRestrictions } from "./types";
+import type { HeadersResolver, UploadMethod, UploadRestrictions, UploadResult } from "./types";
 import type { UseChunkedRestUploadOptions } from "./use-chunked-rest-upload";
 import { useChunkedRestUpload } from "./use-chunked-rest-upload";
 import type { UseMultipartUploadOptions } from "./use-multipart-upload";
@@ -17,6 +17,7 @@ interface UseUploadOptions {
     endpointMultipart?: string;
     /** TUS upload endpoint URL */
     endpointTus?: string;
+
     /**
      * Static or dynamically-resolved headers attached to every request — e.g. an
      * `Authorization` token for an authenticated endpoint.
@@ -40,10 +41,10 @@ interface UseUploadOptions {
     onStart?: () => void;
     /** Callback when upload completes successfully */
     onSuccess?: (file: UploadResult) => void;
-    /** Enable automatic retry on failure (TUS and chunked REST only) */
-    retry?: boolean;
     /** Client-side upload restrictions, validated before any network request. */
     restrictions?: UploadRestrictions;
+    /** Enable automatic retry on failure (TUS and chunked REST only) */
+    retry?: boolean;
     /** File size threshold for auto-selecting TUS (default: 10MB) */
     tusThreshold?: number;
 }
@@ -100,8 +101,8 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         onResume,
         onStart,
         onSuccess,
-        retry,
         restrictions,
+        retry,
         tusThreshold = DEFAULT_TUS_THRESHOLD,
     } = options;
 

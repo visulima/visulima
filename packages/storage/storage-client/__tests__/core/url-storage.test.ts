@@ -51,12 +51,12 @@ describe(MemoryUrlStorage, () => {
 
         await storage.addEntry(entry);
 
-        expect(await storage.findEntry(entry.fingerprint)).toStrictEqual(entry);
+        await expect(storage.findEntry(entry.fingerprint)).resolves.toStrictEqual(entry);
 
         await storage.removeEntry(entry.fingerprint);
 
-        expect(await storage.findEntry(entry.fingerprint)).toBeUndefined();
-        expect(await storage.listEntries()).toStrictEqual([]);
+        await expect(storage.findEntry(entry.fingerprint)).resolves.toBeUndefined();
+        await expect(storage.listEntries()).resolves.toStrictEqual([]);
     });
 
     it("returns undefined for a missing fingerprint", async () => {
@@ -64,7 +64,7 @@ describe(MemoryUrlStorage, () => {
 
         const storage = new MemoryUrlStorage();
 
-        expect(await storage.findEntry("does-not-exist")).toBeUndefined();
+        await expect(storage.findEntry("does-not-exist")).resolves.toBeUndefined();
     });
 
     it("overwrites an existing entry with the same fingerprint", async () => {
@@ -110,7 +110,7 @@ describe(LocalStorageUrlStorage, () => {
         await storage.addEntry(entry);
 
         expect(ls.getItem(`visulima-upload::${entry.fingerprint}`)).toBe(JSON.stringify(entry));
-        expect(await storage.findEntry(entry.fingerprint)).toStrictEqual(entry);
+        await expect(storage.findEntry(entry.fingerprint)).resolves.toStrictEqual(entry);
     });
 
     it("honours a custom prefix", async () => {
@@ -153,7 +153,7 @@ describe(LocalStorageUrlStorage, () => {
 
         const storage = new LocalStorageUrlStorage(ls);
 
-        expect(await storage.findEntry("corrupt")).toBeUndefined();
+        await expect(storage.findEntry("corrupt")).resolves.toBeUndefined();
         expect(ls.getItem("visulima-upload::corrupt")).toBeNull();
     });
 

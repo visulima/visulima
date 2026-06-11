@@ -14,7 +14,7 @@ type FakeAdapter = {
 
 const lastAdapter: { current: FakeAdapter | undefined } = { current: undefined };
 
-vi.mock("../../src/core/multipart-adapter", () => {
+vi.mock(import("../../src/core/multipart-adapter"), () => {
     return {
         createMultipartAdapter: vi.fn(() => {
             const adapter: FakeAdapter = {
@@ -43,15 +43,15 @@ const { createAbortItem } = await import("../../src/svelte/create-abort-item");
 const { createBatchRetry } = await import("../../src/svelte/create-batch-retry");
 const { createRetry } = await import("../../src/svelte/create-retry");
 
-beforeEach(() => {
-    lastAdapter.current = undefined;
-});
-
-afterEach(() => {
-    vi.clearAllMocks();
-});
-
 describe("svelte abort and retry factories", () => {
+    beforeEach(() => {
+        lastAdapter.current = undefined;
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
     describe(createAbortAll, () => {
         it("calls adapter.abort", () => {
             expect.assertions(1);

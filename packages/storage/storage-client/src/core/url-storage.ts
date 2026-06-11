@@ -82,9 +82,9 @@ export class LocalStorageUrlStorage implements UrlStorage {
     readonly #storage: LocalStorageLike;
 
     public constructor(storage?: LocalStorageLike, prefix: string = DEFAULT_LOCAL_STORAGE_PREFIX) {
-        const resolved
+        const resolved =
             // eslint-disable-next-line n/no-unsupported-features/node-builtins -- guarded access to the browser localStorage global; Node's experimental localStorage is irrelevant here
-            = storage ?? (typeof globalThis === "undefined" ? undefined : (globalThis as { localStorage?: LocalStorageLike }).localStorage);
+            storage ?? (typeof globalThis === "undefined" ? undefined : (globalThis as { localStorage?: LocalStorageLike }).localStorage);
 
         if (!resolved) {
             throw new Error("LocalStorageUrlStorage: no localStorage-like object available");
@@ -159,9 +159,9 @@ export class LocalStorageUrlStorage implements UrlStorage {
  * Browser → `LocalStorageUrlStorage`. Everywhere else → `MemoryUrlStorage`.
  */
 export const defaultUrlStorage = (): UrlStorage => {
-    const ls
+    const ls =
         // eslint-disable-next-line n/no-unsupported-features/node-builtins -- guarded access to the browser localStorage global; Node's experimental localStorage is irrelevant here
-        = typeof globalThis === "undefined" ? undefined : (globalThis as { localStorage?: LocalStorageLike }).localStorage;
+        typeof globalThis === "undefined" ? undefined : (globalThis as { localStorage?: LocalStorageLike }).localStorage;
 
     if (ls) {
         try {

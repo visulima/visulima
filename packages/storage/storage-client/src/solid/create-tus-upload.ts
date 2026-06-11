@@ -77,8 +77,24 @@ export interface CreateTusUploadReturn {
  * @returns Upload functions and state signals
  */
 export const createTusUpload = (options: CreateTusUploadOptions): CreateTusUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, headers, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, restrictions, retry, urlStorage } =
-        options;
+    const {
+        chunkSize,
+        control,
+        endpoint,
+        fingerprint,
+        headers,
+        maxRetries,
+        metadata,
+        onError,
+        onPause,
+        onProgress,
+        onResume,
+        onStart,
+        onSuccess,
+        restrictions,
+        retry,
+        urlStorage,
+    } = options;
 
     const [progress, setProgress] = createSignal(0);
     const [isUploading, setIsUploading] = createSignal(false);
