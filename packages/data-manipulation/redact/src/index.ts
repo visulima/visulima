@@ -50,8 +50,8 @@ const recursivelyFilterAttributes = (
                 const currentIdentifier = identifier ? `${identifier}.${lowerKey}` : lowerKey;
 
                 if (
-                    (!modifier.wildcard && lowerKey === modifier.key)
-                    || (modifier.wildcard && (wildcard(lowerKey, modifier.key) || wildcard(currentIdentifier, modifier.key)))
+                    (!modifier.wildcard && lowerKey === modifier.key) ||
+                    (modifier.wildcard && (wildcard(lowerKey, modifier.key) || wildcard(currentIdentifier, modifier.key)))
                 ) {
                     if (modifier.remove) {
                         // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-dynamic-delete
@@ -303,10 +303,10 @@ const prepareModifiers = (rules: Rules, options?: RedactOptions): InternalAnonym
 
     for (const modifier of rules) {
         if (
-            options?.exclude
-            && ((typeof modifier === "string" && options.exclude.includes(modifier))
-                || (typeof modifier === "number" && options.exclude.includes(modifier))
-                || (typeof modifier === "object" && options.exclude.includes(modifier.key)))
+            options?.exclude &&
+            ((typeof modifier === "string" && options.exclude.includes(modifier)) ||
+                (typeof modifier === "number" && options.exclude.includes(modifier)) ||
+                (typeof modifier === "object" && options.exclude.includes(modifier.key)))
         ) {
             continue;
         }
@@ -314,7 +314,13 @@ const prepareModifiers = (rules: Rules, options?: RedactOptions): InternalAnonym
         if (typeof modifier === "string") {
             const hasWildcard = modifier.includes("*");
 
-            preparedModifiers.push({ deep: false, key: modifier.toLowerCase(), replacement: `<${modifier.toUpperCase()}>`, userReplacement: false, wildcard: hasWildcard });
+            preparedModifiers.push({
+                deep: false,
+                key: modifier.toLowerCase(),
+                replacement: `<${modifier.toUpperCase()}>`,
+                userReplacement: false,
+                wildcard: hasWildcard,
+            });
         } else if (typeof modifier === "number") {
             preparedModifiers.push({ deep: false, key: modifier.toString(), replacement: "<REDACTED>" });
         } else {
@@ -419,7 +425,7 @@ export const redact = <V>(input: V, rules: Rules, options?: RedactOptions): V =>
  * @param options Optional settings applied at compile time (`exclude`) and per call (`logger`).
  * @returns A function `(input) => redactedCopy`.
  */
-export const createRedactor = (rules: Rules, options?: RedactOptions): <V>(input: V) => V => {
+export const createRedactor = (rules: Rules, options?: RedactOptions): (<V>(input: V) => V) => {
     const preparedModifiers = prepareModifiers(rules, options);
 
     return <V>(input: V): V => runRedact(input, preparedModifiers, options);
