@@ -5,7 +5,7 @@ import type {
 import type { HttpError } from "http-errors";
 import createHttpError from "http-errors";
 
-import type { Adapter, FakePrismaClient, PaginationData, ParsedQueryParameters, WhereField } from "../../types";
+import type { Adapter, FakePrismaClient, PaginationData, ParsedQueryParameters } from "../../types";
 import type { PrismaParsedQueryParameters } from "./types";
 import modelsToRouteNames from "./utils/models-to-route-names";
 import parsePrismaCursor from "./utils/parse-cursor";
@@ -47,7 +47,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
     }
 
     public async connect(): Promise<void> {
-        return await this.prismaClient.$connect();
+        await this.prismaClient.$connect();
     }
 
     public async create(resourceName: M, data: unknown, query: PrismaParsedQueryParameters): Promise<T> {
@@ -173,7 +173,7 @@ export default class PrismaAdapter<T, M extends string, PrismaClient> implements
         }
 
         if (query.where) {
-            parsed.where = parsePrismaWhere(query.where as WhereField, this.manyRelations[resourceName] ?? []);
+            parsed.where = parsePrismaWhere(query.where, this.manyRelations[resourceName] ?? []);
         }
 
         if (query.orderBy) {

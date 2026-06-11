@@ -15,7 +15,7 @@ export const getResourceNameFromUrl = <M extends string = string>(
         throw new TypeError("Path is undefined");
     }
 
-    const segments = realPath.split("/").filter(Boolean);
+    const segments = new Set(realPath.split("/").filter(Boolean));
 
     const modelName = (Object.keys(models) as M[]).find((name) => {
         const routeName = models[name];
@@ -26,7 +26,7 @@ export const getResourceNameFromUrl = <M extends string = string>(
             return true;
         }
 
-        return segments.includes(routeName) || segments.includes(ensureCamelCase(routeName));
+        return segments.has(routeName) || segments.has(ensureCamelCase(routeName));
     });
 
     if (modelName === undefined) {
