@@ -78,7 +78,9 @@ const createMockServer = (overrides: Partial<ViteDevServer> = {}) => {
             }),
         },
         ssrFixStacktrace: vi.fn(() => {}),
-        transformRequest: vi.fn(async (_url: string) => { return { code: "/* original */" }; }),
+        transformRequest: vi.fn(async (_url: string) => {
+            return { code: "/* original */" };
+        }),
         ws,
         ...overrides,
     };
@@ -239,12 +241,7 @@ describe("errorOverlayPlugin.transform hook", () => {
         expect.assertions(2);
 
         const plugin = getPlugin();
-        const result = (plugin.transform as any).call(
-            {},
-            "var ErrorOverlay = class extends HTMLElement {};",
-            "/node_modules/vite/dist/client/client.mjs",
-            {},
-        );
+        const result = (plugin.transform as any).call({}, "var ErrorOverlay = class extends HTMLElement {};", "/node_modules/vite/dist/client/client.mjs", {});
 
         // patchOverlay returns a string and should contain our injected style or wiring.
         expect(typeof result).toBe("string");
@@ -255,12 +252,7 @@ describe("errorOverlayPlugin.transform hook", () => {
         expect.assertions(1);
 
         const plugin = getPlugin();
-        const result = (plugin.transform as any).call(
-            {},
-            "var ErrorOverlay = class extends HTMLElement {};",
-            "https://example.com/@vite/client",
-            {},
-        );
+        const result = (plugin.transform as any).call({}, "var ErrorOverlay = class extends HTMLElement {};", "https://example.com/@vite/client", {});
 
         expect(typeof result).toBe("string");
     });
@@ -269,12 +261,7 @@ describe("errorOverlayPlugin.transform hook", () => {
         expect.assertions(1);
 
         const plugin = getPlugin({ overlay: { balloon: { enabled: false } } });
-        const result = (plugin.transform as any).call(
-            {},
-            "var ErrorOverlay = class extends HTMLElement {};",
-            "/node_modules/vite/dist/client/client.mjs",
-            {},
-        );
+        const result = (plugin.transform as any).call({}, "var ErrorOverlay = class extends HTMLElement {};", "/node_modules/vite/dist/client/client.mjs", {});
 
         expect(typeof result).toBe("string");
     });
@@ -620,14 +607,18 @@ describe("errorOverlayPlugin HMR client error handler", () => {
 
         const client = buildClient();
 
-        await dispatch(MESSAGE_TYPE, {
-            column: 5,
-            file: "/tmp/project-root/src/App.tsx",
-            line: 10,
-            message: "client boom",
-            name: "TypeError",
-            stack: "TypeError: client boom\n    at /tmp/project-root/src/App.tsx:10:5",
-        }, client);
+        await dispatch(
+            MESSAGE_TYPE,
+            {
+                column: 5,
+                file: "/tmp/project-root/src/App.tsx",
+                line: 10,
+                message: "client boom",
+                name: "TypeError",
+                stack: "TypeError: client boom\n    at /tmp/project-root/src/App.tsx:10:5",
+            },
+            client,
+        );
 
         // Either send was called with a payload, or it bailed early & still finished.
         expect(client.send).toHaveBeenCalled();
