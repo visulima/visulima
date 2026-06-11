@@ -50,25 +50,63 @@ pnpm add @visulima/prisma-dmmf-transformer
 
 ## Usage
 
+`transformDMMF` takes a Prisma DMMF document. Get one with `@prisma/internals` (the
+supported, public way across Prisma 3–6):
+
 ```ts
-import { transformDMMF, getJSONSchemaProperty } from "@visulima/prisma-dmmf-transformer";
+import { getDMMF } from "@prisma/internals";
+import { transformDMMF } from "@visulima/prisma-dmmf-transformer";
 
-const generator = async (prismaClient) => {
-    const dmmf = await prismaClient._getDmmf();
-    const schema = transformDMMF(dmmf);
+const datamodel = `
+    model User {
+        id    Int    @id @default(autoincrement())
+        email String @unique
+    }
+`;
 
-    console.log(schema);
-};
+const dmmf = await getDMMF({ datamodel });
+const schema = transformDMMF(dmmf);
+
+console.log(schema);
 ```
 
-The generator currently supports a few options as a second argument:
+You can also pass a DMMF you already have at runtime — e.g. `Prisma.dmmf` from a
+generated client:
 
-| Key                      | Default Value | Description                                                                                                                                                                                            |
-| ------------------------ | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| keepRelationScalarFields | "false"       | By default, the JSON Schema that’s generated will output only objects for related model records. If set to "true", this will cause the generator to also output foreign key fields for related records |
-| schemaId                 | undefined     | Add an id to the generated schema. All references will include the schema id                                                                                                                           |
-| includeRequiredFields    | "false"       | If this flag is `"true"` all required scalar prisma fields that do not have a default value, will be added to the `required` properties field for that schema definition.                              |
-| persistOriginalType      | "false"       | If this flag is `"true"` the original type will be outputed under the property key "originalType"                                                                                                      |
+```ts
+import { Prisma } from "@prisma/client";
+import { transformDMMF } from "@visulima/prisma-dmmf-transformer";
+
+const schema = transformDMMF(Prisma.dmmf);
+```
+
+### Per-field helper
+
+`getJSONSchemaProperty` is exported for callers that want the JSON Schema fragment for a single
+DMMF field instead of a whole document. It is curried and returns a `[name, definition, metadata]`
+tuple:
+
+```ts
+import { getJSONSchemaProperty } from "@visulima/prisma-dmmf-transformer";
+
+const [name, definition] = getJSONSchemaProperty({ enums: [] }, {})(field);
+```
+
+### Options
+
+`transformDMMF` accepts an options object as a second argument. Boolean flags accept either a real
+`boolean` or the string literals `"true"` / `"false"` (the latter for compatibility with Prisma
+generator configuration, which only delivers strings):
+
+| Key                      | Default Value  | Description                                                                                                                                                                          |
+| ------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| keepRelationScalarFields | `false`        | By default the generated schema outputs only objects for related model records. When enabled, foreign-key scalar fields for related records are kept as well.                       |
+| schemaId                 | `undefined`    | Adds an `$id` to the generated schema. All `$ref`s are prefixed with the schema id.                                                                                                 |
+| includeRequiredFields    | `false`        | When enabled, all required scalar Prisma fields without a default value are added to the `required` array of their schema definition.                                                |
+| persistOriginalType      | `false`        | When enabled, the original Prisma type is emitted under the property key `originalType`.                                                                                            |
+| bigIntType               | `"integer"`    | Maps `BigInt` fields to a JSON Schema type. Set to `"string"` to emit `type: "string"` (the common practice for values larger than 2^53; also fixes string defaults self-validating). |
+| nullableMode             | `"json-schema"`| `"json-schema"` expresses nullability via type unions / `anyOf`. `"openapi"` emits a single `type` plus `nullable: true` for OpenAPI 3.0 compatibility.                             |
+| enrichNativeTypes        | `false`        | When enabled, derives extra constraints from Prisma attributes: `@db.VarChar(n)` → `maxLength`, `@default(uuid())` → `format: "uuid"`, `@default(cuid())` → `pattern`, `Bytes` → `contentEncoding: "base64"`. |
 
 ## Examples
 
