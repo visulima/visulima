@@ -1,5 +1,16 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { serializeError as serializeErrorBase } from "@visulima/error/error";
+
 import type { PailBrowserImpl } from "./pail.browser";
 import type { DefaultLogTypes, LoggerFunction } from "./types";
+
+/**
+ * Bounded recursion depth for serializing the cause chain. Wide events are a
+ * single bounded log line, so the chain is capped to keep the line small while
+ * still covering nested causes. The base serializer's circular guard protects
+ * against cyclic chains regardless of this cap.
+ */
+const SERIALIZE_MAX_DEPTH = 8;
 
 /**
  * A pail instance with dynamically generated log methods.
@@ -81,39 +92,68 @@ const formatDuration = (ms: number): string => {
 };
 
 /**
- * Serialize an Error into a plain object suitable for structured logging.
- * Extracts common HTTP error properties (status, statusCode) and recursively
- * serializes the cause chain.
+ * Reshape one node of a `@visulima/error` serialized error (which always emits
+ * `stack` and fans out every own-prop, `AggregateError.errors`, etc.) into
+ * wide-event's deliberately shallow {@link SerializedError} shape: coalesce
+ * `status`/`statusCode` into a single `status`, omit `stack` when absent, and
+ * keep only `name`/`message`/`stack?`/`status?`/`data?`/`cause?`.
+ *
+ * The cause chain is driven off the original `Error` (not the serialized
+ * output) so wide-event's `instanceof Error` gate is preserved: a non-Error
+ * cause is dropped, while a cyclic cause surfaces as the base serializer's
+ * "[Circular]" marker instead of overflowing the stack.
  */
-const serializeError = (error: Error): SerializedError => {
+const reshapeSerialized = (base: Record<string, unknown>, source: Error): SerializedError => {
     const serialized: SerializedError = {
-        message: error.message,
-        name: error.name,
+        message: typeof base.message === "string" ? base.message : "",
+        name: typeof base.name === "string" ? base.name : "Error",
     };
 
-    if (error.stack) {
-        serialized.stack = error.stack;
+    // The base serializer always emits a `stack` key (even when undefined);
+    // wide-event omits it entirely when the source error had no stack.
+    if (base.stack) {
+        serialized.stack = base.stack as string;
     }
 
-    // Extract HTTP status from common error shapes
-    const errorWithStatus = error as Error & { data?: unknown; status?: number; statusCode?: number };
-
-    if (errorWithStatus.status !== undefined) {
-        serialized.status = errorWithStatus.status;
-    } else if (errorWithStatus.statusCode !== undefined) {
-        serialized.status = errorWithStatus.statusCode;
+    // Coalesce HTTP status: prefer `status`, fall back to `statusCode`. The raw
+    // `statusCode` key is never emitted.
+    if (base.status !== undefined) {
+        serialized.status = base.status as number;
+    } else if (base.statusCode !== undefined) {
+        serialized.status = base.statusCode as number;
     }
 
-    if (errorWithStatus.data !== undefined) {
-        serialized.data = errorWithStatus.data;
+    if (base.data !== undefined) {
+        serialized.data = base.data;
     }
 
-    if (error.cause instanceof Error) {
-        serialized.cause = serializeError(error.cause);
+    // Only recurse Error causes (the original `instanceof Error` gate). The base
+    // serializer already replaced a cyclic cause with "[Circular]"; surface that
+    // marker rather than re-walking the cycle.
+    if (source.cause instanceof Error) {
+        const { cause } = base;
+
+        if (cause === "[Circular]") {
+            serialized.cause = "[Circular]" as unknown as SerializedError;
+        } else if (cause !== null && typeof cause === "object") {
+            serialized.cause = reshapeSerialized(cause as Record<string, unknown>, source.cause);
+        }
     }
 
     return serialized;
 };
+
+/**
+ * Serialize an Error into a plain object suitable for structured logging.
+ * Extracts common HTTP error properties (status, statusCode) and recursively
+ * serializes the cause chain.
+ *
+ * Thin wrapper around `@visulima/error`'s `serializeError` (the same serializer
+ * used by pail's JSON reporter) that re-applies wide-event's HTTP-status
+ * coalescing and shallow output shape. Routing through the shared serializer
+ * also fixes the previous hand-rolled cause recursion's missing circular guard.
+ */
+const serializeError = (error: Error): SerializedError => reshapeSerialized(serializeErrorBase(error, { maxDepth: SERIALIZE_MAX_DEPTH }), error);
 
 /**
  * Severity levels for wide events.
