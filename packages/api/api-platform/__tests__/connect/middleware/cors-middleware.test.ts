@@ -12,7 +12,7 @@ describe("connect/middleware/cors-middleware", () => {
             method: "GET",
         });
 
-        const next = vi.fn();
+        const next = vi.fn<() => void>();
 
         await corsMiddleware()(req, res, next);
 

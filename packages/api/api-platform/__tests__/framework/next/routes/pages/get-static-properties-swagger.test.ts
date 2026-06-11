@@ -15,7 +15,7 @@ describe("framework/next/routes/pages/get-static-properties-swagger", () => {
     });
 
     it("should fetch the swagger url and return cloned props", async () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue({
             json: () => Promise.resolve(swaggerDocument),
@@ -27,11 +27,9 @@ describe("framework/next/routes/pages/get-static-properties-swagger", () => {
 
         expect(fetchSpy).toHaveBeenCalledWith("https://example.test/swagger.json");
 
-        if (!("props" in result)) {
-            throw new Error("Expected getStaticProps to return props");
-        }
+        expect(result).toHaveProperty("props");
 
-        const { props } = result;
+        const { props } = result as Extract<typeof result, { props: unknown }>;
 
         expect(props.swaggerUrl).toBe("https://example.test/swagger.json");
         expect(props.swaggerData).toStrictEqual(swaggerDocument);

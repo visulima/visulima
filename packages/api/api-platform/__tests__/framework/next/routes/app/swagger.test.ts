@@ -68,9 +68,7 @@ describe("framework/next/routes/app/swagger", () => {
 
         writeSwaggerFile(baseSpec);
 
-        const response = await swaggerRouteHandler()(
-            new Request("http://localhost/api/docs", { headers: { accept: "application/x-yaml" } }),
-        );
+        const response = await swaggerRouteHandler()(new Request("http://localhost/api/docs", { headers: { accept: "application/x-yaml" } }));
 
         expect(response.headers.get("Content-Type")).toBe("application/x-yaml");
         await expect(response.text()).resolves.toContain("openapi:");
@@ -88,9 +86,7 @@ describe("framework/next/routes/app/swagger", () => {
 
         expect(etag).toStrictEqual(expect.any(String));
 
-        const second = await handler(
-            new Request("http://localhost/api/docs", { headers: { "if-none-match": etag as string } }),
-        );
+        const second = await handler(new Request("http://localhost/api/docs", { headers: { "if-none-match": etag as string } }));
 
         expect(second.status).toBe(304);
     });

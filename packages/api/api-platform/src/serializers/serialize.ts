@@ -11,7 +11,7 @@ import type { Serializers } from "./types";
 const contentTypeKey = "Content-Type";
 const yamlTypeRegex = /yaml|yml/u;
 
-/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters, sonarjs/function-return-type -- Request/Response generics flow into call sites in connect/middleware/serializers-middleware; intentional Buffer | Uint8Array | string union for downstream content-type negotiation */
+/* eslint-disable @typescript-eslint/no-unnecessary-type-parameters, sonarjs/function-return-type, sonarjs/cognitive-complexity -- Request/Response generics flow into call sites in connect/middleware/serializers-middleware; intentional Buffer | Uint8Array | string union for downstream content-type negotiation; nested content-type negotiation loop is inherently branchy and clearer kept inline */
 const serialize = <Request extends IncomingMessage, Response extends ServerResponse>(
     serializers: Serializers,
     request: Request,
@@ -36,14 +36,14 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
             if (regex.test(type)) {
                 response.setHeader(contentTypeKey, type);
 
-                return serializer(data) as Buffer | Uint8Array | string;
+                return serializer(data);
             }
         }
 
         if (yamlTypeRegex.test(type)) {
             response.setHeader(contentTypeKey, type);
 
-            return yamlTransformer(hasJsonStructure(data) ? JSON.parse(data as string) : data) as Buffer | Uint8Array | string;
+            return yamlTransformer(hasJsonStructure(data) ? JSON.parse(data as string) : data);
         }
 
         if (type.includes("xml")) {
@@ -53,12 +53,12 @@ const serialize = <Request extends IncomingMessage, Response extends ServerRespo
 
             return xmlTransformer({
                 [xmlRootKey]: hasJsonStructure(data) ? JSON.parse(data as string) : data,
-            }) as Buffer | Uint8Array | string;
+            });
         }
     }
 
     return data as Buffer | Uint8Array | string;
 };
-/* eslint-enable @typescript-eslint/no-unnecessary-type-parameters, sonarjs/function-return-type */
+/* eslint-enable @typescript-eslint/no-unnecessary-type-parameters, sonarjs/function-return-type, sonarjs/cognitive-complexity */
 
 export default serialize;

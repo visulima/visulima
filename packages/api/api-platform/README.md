@@ -185,9 +185,7 @@ import type { ErrorHandler, ErrorHandlers } from "@visulima/api-platform";
 await problemErrorHandler(new NotFound("User not found"), req, res);
 
 // Register a custom handler for a specific content type:
-const errorHandlers: ErrorHandlers = [
-    { regex: /application\/xml/u, handler: myXmlErrorHandler satisfies ErrorHandler },
-];
+const errorHandlers: ErrorHandlers = [{ regex: /application\/xml/u, handler: myXmlErrorHandler satisfies ErrorHandler }];
 ```
 
 ### Serializers

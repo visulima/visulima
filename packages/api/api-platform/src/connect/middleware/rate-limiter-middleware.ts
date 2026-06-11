@@ -66,85 +66,84 @@ interface RateLimiterMiddlewareOptions {
 }
 
 /* eslint-disable @typescript-eslint/no-unnecessary-type-parameters -- Request/Response generics flow into the returned function so callers retain their concrete types */
-const rateLimiterMiddleware
-    = (
-        rateLimiter: RateLimiterAbstract,
-        headers?: ((limiterResponse: RateLimiterRes) => Record<string, HeaderValue>) | RateLimiterMiddlewareOptions,
-        options: RateLimiterMiddlewareOptions = {},
-    ): <Request extends IncomingMessage, Response extends ServerResponse>(
+const rateLimiterMiddleware = (
+    rateLimiter: RateLimiterAbstract,
+    headers?: ((limiterResponse: RateLimiterRes) => Record<string, HeaderValue>) | RateLimiterMiddlewareOptions,
+    options: RateLimiterMiddlewareOptions = {},
+): <Request extends IncomingMessage, Response extends ServerResponse>(
+    request: Request,
+    response: NextApiResponse | Response,
+    next: NextHandler,
+) => Promise<void> => {
+    // Backwards-compatible overload: the second argument used to be the
+    // header callback. Support both `(limiter, headersFn)` and
+    // `(limiter, headersFn, options)` plus `(limiter, options)`.
+    let headersFunction: ((limiterResponse: RateLimiterRes) => Record<string, HeaderValue>) | undefined;
+    let resolvedOptions: RateLimiterMiddlewareOptions;
+
+    if (typeof headers === "function") {
+        headersFunction = headers;
+        resolvedOptions = options;
+    } else {
+        headersFunction = undefined;
+        resolvedOptions = headers ?? options;
+    }
+
+    const { keyGenerator, standardHeaders = false, trustProxy = false } = resolvedOptions;
+
+    return async <Request extends IncomingMessage, Response extends ServerResponse>(
         request: Request,
         response: NextApiResponse | Response,
         next: NextHandler,
-    ) => Promise<void> => {
-        // Backwards-compatible overload: the second argument used to be the
-        // header callback. Support both `(limiter, headersFn)` and
-        // `(limiter, headersFn, options)` plus `(limiter, options)`.
-        let headersFunction: ((limiterResponse: RateLimiterRes) => Record<string, HeaderValue>) | undefined;
-        let resolvedOptions: RateLimiterMiddlewareOptions;
+    ): Promise<void> => {
+        const key = keyGenerator ? keyGenerator(request) : getIP(request, trustProxy);
 
-        if (typeof headers === "function") {
-            headersFunction = headers;
-            resolvedOptions = options;
-        } else {
-            headersFunction = undefined;
-            resolvedOptions = headers ?? options;
+        if (key === undefined || key === "") {
+            throw createHttpError(400, "Missing IP");
         }
 
-        const { keyGenerator, standardHeaders = false, trustProxy = false } = resolvedOptions;
+        let limiter: RateLimiterRes;
 
-        return async <Request extends IncomingMessage, Response extends ServerResponse>(
-            request: Request,
-            response: NextApiResponse | Response,
-            next: NextHandler,
-        ): Promise<void> => {
-            const key = keyGenerator ? keyGenerator(request) : getIP(request, trustProxy);
+        try {
+            limiter = await rateLimiter.consume(key);
+        } catch {
+            throw createHttpError(429, "Too Many Requests");
+        }
 
-            if (key === undefined || key === "") {
-                throw createHttpError(400, "Missing IP");
-            }
+        const resetSeconds = Math.round(limiter.msBeforeNext / 1000) || 1;
 
-            let limiter: RateLimiterRes;
-
-            try {
-                limiter = await rateLimiter.consume(key);
-            } catch {
-                throw createHttpError(429, "Too Many Requests");
-            }
-
-            const resetSeconds = Math.round(limiter.msBeforeNext / 1000) || 1;
-
-            const mergedHeaders: Record<string, HeaderValue> = {
-                "Retry-After": resetSeconds,
-                "X-RateLimit-Remaining": limiter.remainingPoints,
-                "X-RateLimit-Reset": new Date(Date.now() + limiter.msBeforeNext).toISOString(),
-            };
-
-            if (standardHeaders) {
-                // IETF draft "RateLimit header fields for HTTP" (draft-ietf-httpapi-ratelimit-headers).
-                mergedHeaders["RateLimit-Remaining"] = limiter.remainingPoints;
-                mergedHeaders["RateLimit-Reset"] = resetSeconds;
-
-                const limit = limiter.remainingPoints + limiter.consumedPoints;
-
-                if (Number.isFinite(limit)) {
-                    mergedHeaders["RateLimit-Limit"] = limit;
-                }
-            }
-
-            if (typeof headersFunction === "function") {
-                Object.assign(mergedHeaders, headersFunction(limiter));
-            }
-
-            Object.keys(mergedHeaders).forEach((headerKey) => {
-                response.setHeader(headerKey, mergedHeaders[headerKey] as HeaderValue);
-            });
-
-            // `next()` is intentionally called outside the consume try/catch:
-            // a downstream handler throwing (e.g. a genuine NotFound) must not
-            // be reported to the client as "429 Too Many Requests".
-            await next();
+        const mergedHeaders: Record<string, HeaderValue> = {
+            "Retry-After": resetSeconds,
+            "X-RateLimit-Remaining": limiter.remainingPoints,
+            "X-RateLimit-Reset": new Date(Date.now() + limiter.msBeforeNext).toISOString(),
         };
+
+        if (standardHeaders) {
+            // IETF draft "RateLimit header fields for HTTP" (draft-ietf-httpapi-ratelimit-headers).
+            mergedHeaders["RateLimit-Remaining"] = limiter.remainingPoints;
+            mergedHeaders["RateLimit-Reset"] = resetSeconds;
+
+            const limit = limiter.remainingPoints + limiter.consumedPoints;
+
+            if (Number.isFinite(limit)) {
+                mergedHeaders["RateLimit-Limit"] = limit;
+            }
+        }
+
+        if (typeof headersFunction === "function") {
+            Object.assign(mergedHeaders, headersFunction(limiter));
+        }
+
+        Object.keys(mergedHeaders).forEach((headerKey) => {
+            response.setHeader(headerKey, mergedHeaders[headerKey] as HeaderValue);
+        });
+
+        // `next()` is intentionally called outside the consume try/catch:
+        // a downstream handler throwing (e.g. a genuine NotFound) must not
+        // be reported to the client as "429 Too Many Requests".
+        await next();
     };
+};
 /* eslint-enable @typescript-eslint/no-unnecessary-type-parameters */
 
 export type { RateLimiterMiddlewareOptions };
