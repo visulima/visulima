@@ -14,10 +14,34 @@ const multiLineValues = (values: unknown[]): boolean => {
     return false;
 };
 
+// Collect own enumerable string keys that are NOT array indices. A reverse scan
+// avoids `Object.keys(array).slice(array.length)`, which materializes the full
+// list of N index strings only to throw them away — wasteful for large arrays.
+const getNonIndexProperties = (array: unknown[]): string[] => {
+    const nonIndex: string[] = [];
+
+    for (const key in array) {
+        // eslint-disable-next-line no-restricted-syntax
+        if (!Object.hasOwn(array, key)) {
+            continue;
+        }
+
+        // A canonical array index is a non-negative integer < 2^32 - 1 whose string
+        // form round-trips. Anything else (e.g. "foo", "-1", "1.5") is a real prop.
+        const asNumber = Number(key);
+
+        if (Number.isInteger(asNumber) && asNumber >= 0 && String(asNumber) === key && asNumber < 0xff_ff_ff_ff) {
+            continue;
+        }
+
+        nonIndex.push(key);
+    }
+
+    return nonIndex;
+};
+
 const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options, inspect: InternalInspect, indent: Indent | undefined): string => {
-    // Object.keys will always output the Array indices first, so we can slice by
-    // `array.length` to get non-index properties
-    const nonIndexProperties = Object.keys(array).slice(array.length);
+    const nonIndexProperties = getNonIndexProperties(array);
 
     if (array.length === 0 && nonIndexProperties.length === 0) {
         return "[]";
@@ -28,7 +52,7 @@ const inspectArray: InspectType<unknown[]> = (array: unknown[], options: Options
 
     const hasIndent = Boolean(indent) && multiLineValues(array);
 
-    let listContents = inspectList(array, array, options, inspect, undefined, hasIndent ? INDENT_SEPARATOR : ", ");
+    let listContents = inspectList(array, array, options, inspect, undefined, hasIndent ? INDENT_SEPARATOR : ", ", options.maxArrayLength);
 
     // eslint-disable-next-line no-param-reassign
     options.truncate -= listContents.length;

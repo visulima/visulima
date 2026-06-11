@@ -69,47 +69,97 @@ console.log(inspect(obj)); // { a: 1, b: [ 3, 4 ], c: [Circular] }
 
 ## API
 
-### inspect(input: any, options?: InspectOptions): string
+### inspect(input: unknown, options?: Partial<Options>): string
+
+Returns a human-readable string representation of `input`.
 
 #### input
 
-Type: `any`
+Type: `unknown`
 
 The input value to inspect.
 
 #### options
 
-Type: `InspectOptions`
+Type: `Partial<Options>`
 
-The options for the inspect function.
+All options are optional; the documented defaults are used for any you omit.
 
-#### options.breakLength
+| Option             | Type                                          | Default              | Description                                                                                                                            |
+| ------------------ | --------------------------------------------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `depth`            | `number`                                      | `5`                  | Maximum nesting depth before a value collapses to `[Object]` / `[Array]`. `<= 0` disables the limit.                                  |
+| `indent`           | `number \| "\t" \| undefined`                 | `undefined`          | Pretty-print indentation: `"\t"` for tabs, a positive integer for that many spaces, `undefined` for single-line output.               |
+| `truncate`         | `number`                                      | `Infinity`           | Maximum length (characters) of a rendered value before it is truncated with an ellipsis.                                              |
+| `maxArrayLength`   | `number`                                      | `Infinity`           | Maximum number of array / typed-array elements to render before the remainder is replaced with `… N more`.                            |
+| `quoteStyle`       | `"single" \| "double"`                        | `"single"`           | Quote character used for strings and complex object keys.                                                                             |
+| `numericSeparator` | `boolean`                                      | `true`               | Render large numbers / bigints with `_` digit-group separators (e.g. `1_000_000`).                                                    |
+| `showHidden`       | `boolean`                                      | `false`              | Also render non-enumerable own properties of plain objects.                                                                           |
+| `customInspect`    | `boolean`                                      | `true`               | Honour custom inspectors (see [Custom inspectors](#custom-inspectors)).                                                               |
+| `stylize`          | `(value: string, styleType: string) => string`| identity             | Colourize / decorate rendered fragments (e.g. wire up `@visulima/colorize`).                                                          |
 
-Type: `number`
+```typescript
+import { inspect } from "@visulima/inspector";
 
-Default: `Number.POSITIVE_INFINITY`
+inspect([1, 2, 3, 4, 5, 6], { maxArrayLength: 2 }); // [ 1, 2, … 4 more ]
+inspect({ a: 1, b: { c: 2 } }, { indent: 2 });
+```
 
-#### options.customInspect
+### Custom inspectors
 
-Type: `boolean`
+When `customInspect` is `true` (the default), `inspect` will defer to a value's own
+inspector in this order:
 
-Default: `true`
+1. `value[Symbol.for("chai/inspect")](options)` — also exposed as the `custom` symbol export.
+2. `value[Symbol.for("nodejs.util.inspect.custom")](depth, options)` — Node only.
+3. `value.inspect(depth, options)`.
 
-#### options.depth
+You can also register inspectors for whole classes or `Symbol.toStringTag` values at
+runtime:
 
-Type: `number`
+#### custom
 
-Default: `5`
+Type: `symbol`
 
-The maximum depth to traverse.
+The `Symbol.for("chai/inspect")` symbol. Attach a function under this key to control
+how an instance is rendered:
 
-#### options.indent
+```typescript
+import { custom, inspect } from "@visulima/inspector";
 
-Type: `number | "\t" | undefined`
+const value = { [custom]: () => "<redacted>" };
 
-Default: `undefined`
+inspect(value); // <redacted>
+```
 
-The indentation to use.
+#### registerConstructor(constructor: Function, inspector: (value, options) => string): boolean
+
+Registers an inspector keyed by constructor function. Returns `false` if one is
+already registered for that constructor.
+
+```typescript
+import { inspect, registerConstructor } from "@visulima/inspector";
+
+class Money {
+    constructor(public amount: number) {}
+}
+
+registerConstructor(Money, (value) => `$${(value as Money).amount}`);
+
+inspect(new Money(42)); // $42
+```
+
+#### registerStringTag(stringTag: string, inspector: (value, options) => string): boolean
+
+Registers an inspector keyed by a value's `Symbol.toStringTag`. Returns `false` if
+one is already registered for that tag.
+
+```typescript
+import { inspect, registerStringTag } from "@visulima/inspector";
+
+registerStringTag("Temperature", () => "registered-tag");
+
+inspect({ [Symbol.toStringTag]: "Temperature" }); // registered-tag
+```
 
 ## Related
 

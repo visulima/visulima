@@ -16,6 +16,46 @@ const gPO = (typeof Reflect === "function" ? Reflect.getPrototypeOf : Object.get
         : undefined);
 /* eslint-enable no-proto, no-restricted-properties */
 
+const chaiInspectSymbol = Symbol.for("chai/inspect");
+
+/**
+ * Builds a marker value that renders as `text` verbatim. It carries a
+ * `chai/inspect` handler so the normal recursion prints the literal marker
+ * instead of trying to descend into it.
+ */
+const makeMarker = (text: string): { [chaiInspectSymbol]: () => string } => ({ [chaiInspectSymbol]: () => text });
+
+/**
+ * Safely reads an own property. The inspector must never crash on the value it
+ * is asked to render (its primary consumer is a logger), so accessor getters are
+ * invoked inside a try/catch and a placeholder is substituted on failure —
+ * mirroring `util.inspect`'s `[Getter]` / `<Inspection threw>` behaviour.
+ */
+const safeReadProperty = (object: object, key: PropertyKey): unknown => {
+    const descriptor = Object.getOwnPropertyDescriptor(object, key);
+
+    // Data property (or no descriptor): read directly, guarding against proxies
+    // whose `get` trap throws.
+    if (descriptor === undefined || "value" in descriptor) {
+        try {
+            return object[key as keyof typeof object];
+        } catch {
+            return makeMarker("[Inspection threw]");
+        }
+    }
+
+    // Accessor without a getter — nothing to read.
+    if (descriptor.get === undefined) {
+        return makeMarker("[Setter]");
+    }
+
+    try {
+        return object[key as keyof typeof object];
+    } catch {
+        return makeMarker("[Inspection threw]");
+    }
+};
+
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const inspectObject: InspectType<object> = (object: object, options: Options, inspect: InternalInspect, indent: Indent | undefined): string => {
     if ("window" in globalThis && object === globalThis) {
@@ -26,9 +66,17 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
         return "{ [object globalThis] }";
     }
 
-    const properties = Object.getOwnPropertyNames(object);
+    const allPropertyNames = Object.getOwnPropertyNames(object);
 
-    const symbols = Object.getOwnPropertySymbols(object);
+    // By default only enumerable own properties are shown; `showHidden` opts into
+    // non-enumerable ones too (mirrors util.inspect).
+    const properties = options.showHidden
+        ? allPropertyNames
+        : allPropertyNames.filter((key) => Object.getOwnPropertyDescriptor(object, key)?.enumerable);
+
+    const symbols = Object.getOwnPropertySymbols(object).filter(
+        (key) => options.showHidden || Object.getOwnPropertyDescriptor(object, key)?.enumerable,
+    );
 
     const isPlainObject = gPO(object) === Object.prototype || object.constructor === Object;
 
@@ -54,7 +102,7 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
     const entrySeparator = indent ? INDENT_SEPARATOR : ", ";
 
     const propertyContents = inspectList(
-        properties.map((key) => [key, object[key as keyof typeof object]]),
+        properties.map((key) => [key, safeReadProperty(object, key)]),
         object,
         options,
         inspect,
@@ -62,7 +110,7 @@ const inspectObject: InspectType<object> = (object: object, options: Options, in
         entrySeparator,
     );
     const symbolContents = inspectList(
-        symbols.map((key) => [key, object[key as keyof typeof object]]),
+        symbols.map((key) => [key, safeReadProperty(object, key)]),
         object,
         options,
         inspect,

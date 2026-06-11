@@ -2,11 +2,14 @@ import { inspectHTMLElement, inspectNodeCollection } from "./html";
 import type { Inspect, InspectType, InternalInspect, Options } from "./types";
 import inspectArguments from "./types/arguments";
 import inspectArray from "./types/array";
+import inspectArrayBuffer from "./types/array-buffer";
 import inspectBigInt from "./types/bigint";
 import inspectClass from "./types/class";
+import inspectDataView from "./types/data-view";
 import inspectDate from "./types/date";
 import inspectError from "./types/error";
 import inspectFunction from "./types/function";
+import inspectGenerator from "./types/generator";
 import inspectMap from "./types/map";
 import inspectNumber from "./types/number";
 import inspectObject from "./types/object";
@@ -20,21 +23,28 @@ import { getIndent } from "./utils/indent";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 const constructorMap = new WeakMap<Function, Inspect>();
-const stringTagMap: Record<string, Inspect> = {};
+
+// `stringTagMap` and `baseTypesMap` are dispatched into with attacker-influenced
+// keys (`Object.prototype.toString` slugs / `Symbol.toStringTag` values). Using a
+// null-prototype object means a hostile tag like `"valueOf"` or `"toString"` can
+// never resolve to an inherited `Object.prototype` method (which previously caused
+// crashes / bogus output), and lets `registerStringTag("toString", …)` succeed.
+const stringTagMap: Record<string, Inspect> = Object.create(null) as Record<string, Inspect>;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-const baseTypesMap: Record<string, InspectType<any>> = {
+const baseTypesMap: Record<string, InspectType<any>> = Object.assign(Object.create(null) as Record<string, InspectType<any>>, {
     Arguments: inspectArguments,
     Array: inspectArray,
 
-    ArrayBuffer: () => "",
+    ArrayBuffer: inspectArrayBuffer,
+    AsyncGenerator: inspectGenerator,
     BigInt: inspectBigInt,
 
     bigint: inspectBigInt,
     Boolean: (value: boolean, options: Options) => options.stylize(String(value), "boolean"),
 
     boolean: (value: boolean, options: Options) => options.stylize(String(value), "boolean"),
-    DataView: () => "",
+    DataView: inspectDataView,
 
     Date: inspectDate,
     Error: inspectError,
@@ -45,7 +55,7 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     Function: inspectFunction,
     function: inspectFunction,
 
-    Generator: () => "",
+    Generator: inspectGenerator,
     HTMLCollection: inspectNodeCollection,
     Int8Array: inspectTypedArray,
     Int16Array: inspectTypedArray,
@@ -60,6 +70,7 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     Promise: inspectPromise,
     RegExp: inspectRegExp,
     Set: inspectSet,
+    SharedArrayBuffer: inspectArrayBuffer,
     String: inspectString,
     string: inspectString,
     // A Symbol polyfill will return `Symbol` not `symbol` from typedetect
@@ -78,7 +89,7 @@ const baseTypesMap: Record<string, InspectType<any>> = {
     // WeakSet, WeakMap are totally opaque to us
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     WeakSet: (_value: WeakSet<any>, options: Options) => options.stylize("WeakSet{…}", "special"),
-} as const;
+});
 
 const nodeInspectCustomSymbol = Symbol.for("nodejs.util.inspect.custom");
 
@@ -112,7 +123,9 @@ const inspectCustom = (value: object, options: Options, type: string, depth: num
         return constructorMap.get(value.constructor)?.(value, options) ?? "unknown";
     }
 
-    const tagInspector = stringTagMap[type];
+    // `stringTagMap` is a null-prototype object, so an attacker-supplied tag (e.g.
+    // `"toString"`) can only resolve to an entry the consumer explicitly registered.
+    const tagInspector = Object.hasOwn(stringTagMap, type) ? stringTagMap[type] : undefined;
 
     if (tagInspector) {
         return tagInspector(value, options);
@@ -209,7 +222,6 @@ export type { Options } from "./types";
 
 export const inspect = (value: unknown, options_: Partial<Options> = {}): string => {
     const options = {
-        breakLength: Number.POSITIVE_INFINITY,
         customInspect: true,
         depth: 5,
         indent: undefined,
@@ -217,7 +229,6 @@ export const inspect = (value: unknown, options_: Partial<Options> = {}): string
         numericSeparator: true,
         quoteStyle: "single",
         showHidden: false,
-        showProxy: false,
         stylize: (s: string) => s,
         truncate: Number.POSITIVE_INFINITY,
         ...options_,
@@ -286,7 +297,10 @@ export const registerConstructor = (constructor: Function, inspector: Inspect): 
 };
 
 export const registerStringTag = (stringTag: string, inspector: Inspect): boolean => {
-    if (stringTag in stringTagMap) {
+    // `stringTagMap` is a null-prototype object, so `Object.hasOwn` (rather than the
+    // former `in`, which also matched inherited keys) means tags like `"toString"`
+    // or `"valueOf"` are no longer rejected as "already registered".
+    if (Object.hasOwn(stringTagMap, stringTag)) {
         return false;
     }
 
