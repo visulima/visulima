@@ -5,12 +5,11 @@ import { TimerManager } from "../../src/timer-manager";
 const START_MESSAGE = "Initialized timer...";
 const END_MESSAGE = "Timer run for:";
 
-/* eslint-disable sonarjs/slow-regex */
 const MS_REGEX = /^\d+ ms$/;
 const S_REGEX = /^\d+\.\d{2} s$/;
-/* eslint-enable sonarjs/slow-regex */
+const TIMER_RUN_REGEX = /^Timer run for:/;
 
-describe("TimerManager", () => {
+describe(TimerManager, () => {
     let emit: ReturnType<typeof vi.fn>;
     let manager: TimerManager;
 
@@ -29,7 +28,7 @@ describe("TimerManager", () => {
             expect(emit).toHaveBeenCalledWith("start", false, false, { message: START_MESSAGE, prefix: "op" });
         });
 
-        it('should default label to "default"', () => {
+        it("should default label to \"default\"", () => {
             expect.assertions(1);
 
             manager.time();
@@ -59,10 +58,10 @@ describe("TimerManager", () => {
 
             expect(emit).toHaveBeenCalledTimes(1);
 
-            const [type, , , msg] = emit.mock.calls[0] as [string, boolean, boolean, { message: string; prefix: string }];
+            const call = emit.mock.calls[0] as [string, boolean, boolean, { message: string; prefix: string }];
 
-            expect(type).toBe("info");
-            expect((msg as { message: string }).message).toMatch(MS_REGEX);
+            expect(call[0]).toBe("info");
+            expect(call[3].message).toMatch(MS_REGEX);
         });
 
         it("should log elapsed time in seconds when >= 1000 ms", () => {
@@ -75,9 +74,9 @@ describe("TimerManager", () => {
             manager.timeLog("slow");
             vi.useRealTimers();
 
-            const [, , , msg] = emit.mock.calls[0] as [string, boolean, boolean, { message: string }];
+            const call = emit.mock.calls[0] as [string, boolean, boolean, { message: string }];
 
-            expect((msg as { message: string }).message).toMatch(S_REGEX);
+            expect(call[3].message).toMatch(S_REGEX);
         });
 
         it("should emit a warning for a missing label", () => {
@@ -96,9 +95,9 @@ describe("TimerManager", () => {
             emit.mockClear();
             manager.timeLog();
 
-            const [, , , msg] = emit.mock.calls[0] as [string, boolean, boolean, { prefix: string }];
+            const call = emit.mock.calls[0] as [string, boolean, boolean, { prefix: string }];
 
-            expect((msg as { prefix: string }).prefix).toBe("second");
+            expect(call[3].prefix).toBe("second");
         });
 
         it("should pass additional data as context", () => {
@@ -108,9 +107,9 @@ describe("TimerManager", () => {
             emit.mockClear();
             manager.timeLog("ctx", "extra", 42);
 
-            const [, , , msg] = emit.mock.calls[0] as [string, boolean, boolean, { context: unknown[] }];
+            const call = emit.mock.calls[0] as [string, boolean, boolean, { context: unknown[] }];
 
-            expect((msg as { context: unknown[] }).context).toStrictEqual(["extra", 42]);
+            expect(call[3].context).toStrictEqual(["extra", 42]);
         });
     });
 
@@ -124,10 +123,10 @@ describe("TimerManager", () => {
 
             expect(emit).toHaveBeenCalledTimes(1);
 
-            const [type, , , msg] = emit.mock.calls[0] as [string, boolean, boolean, { message: string }];
+            const call = emit.mock.calls[0] as [string, boolean, boolean, { message: string }];
 
-            expect(type).toBe("stop");
-            expect((msg as { message: string }).message).toMatch(/^Timer run for:/);
+            expect(call[0]).toBe("stop");
+            expect(call[3].message).toMatch(TIMER_RUN_REGEX);
         });
 
         it("should emit a warning for a missing label", () => {
@@ -145,9 +144,9 @@ describe("TimerManager", () => {
             emit.mockClear();
             manager.timeEnd();
 
-            const [, , , msg] = emit.mock.calls[0] as [string, boolean, boolean, { prefix: string }];
+            const call = emit.mock.calls[0] as [string, boolean, boolean, { prefix: string }];
 
-            expect((msg as { prefix: string }).prefix).toBe("solo");
+            expect(call[3].prefix).toBe("solo");
         });
 
         it("should format elapsed time in seconds when >= 1000 ms", () => {
@@ -160,9 +159,9 @@ describe("TimerManager", () => {
             manager.timeEnd("long");
             vi.useRealTimers();
 
-            const [, , , msg] = emit.mock.calls[0] as [string, boolean, boolean, { message: string }];
+            const call = emit.mock.calls[0] as [string, boolean, boolean, { message: string }];
 
-            expect((msg as { message: string }).message).toBe("Timer run for: 1.50 s");
+            expect(call[3].message).toBe("Timer run for: 1.50 s");
         });
 
         it("should warn when restarting a label that was ended but not cleared from seqTimers", () => {
