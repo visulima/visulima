@@ -1,6 +1,26 @@
 import transliterate from "./transliterate";
-import type { SlugifyOptions } from "./types";
+import type { OptionReplaceArray, SlugifyOptions } from "./types";
 import { escapeRegExp } from "./utilities";
+import getLocaleReplacements from "./utils/locale-charmap";
+
+/**
+ * Merges locale-specific replacements (e.g. German `ö -> oe`) ahead of any
+ * user-provided `replaceBefore` pairs so they are applied before the global
+ * charmap. User `replaceBefore` entries still take precedence for the same
+ * search term because they are applied after the locale entries.
+ * @param locale The locale tag, or empty string for none.
+ * @param replaceBefore The user-supplied `replaceBefore` option.
+ * @returns A merged `replaceBefore` array.
+ */
+const mergeLocaleReplacements = (locale: string, replaceBefore: SlugifyOptions["replaceBefore"]): OptionReplaceArray => {
+    const localePairs = locale ? getLocaleReplacements(locale) : [];
+
+    const userPairs: OptionReplaceArray = Array.isArray(replaceBefore)
+        ? replaceBefore
+        : Object.entries(replaceBefore ?? {});
+
+    return [...localePairs, ...userPairs];
+};
 
 /**
  * Removes all characters from a string that are not in the allowed characters list.
@@ -25,7 +45,7 @@ const removeDisallowedChars = (input: string, allowedChars: string, separator: s
  * @returns The generated slug.
  */
 const slugify = (input: string, options?: SlugifyOptions): string => {
-    const config: Required<SlugifyOptions> = {
+    const config: Required<Omit<SlugifyOptions, "locale">> & { locale?: string } = {
         allowedChars: "a-zA-Z0-9-_.~",
         fixChineseSpacing: true,
         ignore: [],
@@ -41,10 +61,11 @@ const slugify = (input: string, options?: SlugifyOptions): string => {
     };
 
     if (config.lowercase && config.uppercase) {
-        // eslint-disable-next-line no-console
-        console.warn("slugify: Both lowercase and uppercase options are true. Defaulting to lowercase.");
-        config.uppercase = false;
+        throw new TypeError("slugify: The `lowercase` and `uppercase` options are mutually exclusive; enable at most one.");
     }
+
+    // Apply locale-aware replacements (if any) ahead of the global charmap.
+    config.replaceBefore = mergeLocaleReplacements(config.locale ?? "", config.replaceBefore);
 
     let slug = config.transliterate ? transliterate(input, config) : input.normalize("NFC");
 

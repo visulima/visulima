@@ -644,8 +644,23 @@ export interface SlugifyOptions extends OptionsTransliterate {
     fixChineseSpacing?: boolean;
 
     /**
+     * Locale to use for locale-aware transliteration. When set, locale-specific
+     * character replacements are applied *before* the global charmap, so e.g.
+     * German `ö` becomes `oe` instead of `o`, and Turkish `ı` becomes `i`.
+     *
+     * Only the primary subtag is considered (case-insensitively), so `"de-DE"`
+     * resolves to `"de"`. Unknown locales fall back to the global charmap.
+     *
+     * Supported locales: `de`, `da`, `nb`, `sr`, `tr`, `vi`. Use `replaceBefore`
+     * for any additional custom mappings.
+     * @default undefined
+     */
+    locale?: string;
+
+    /**
      * Whether the result should be converted into lowercase.
-     * Cannot be true if `uppercase` is true.
+     * Cannot be true if `uppercase` is true. Passing both `lowercase: true` and
+     * `uppercase: true` throws a `TypeError`.
      * @default true
      */
     lowercase?: boolean;

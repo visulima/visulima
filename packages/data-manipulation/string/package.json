@@ -194,6 +194,42 @@
             "types": "./dist/case/upper-first.d.ts",
             "default": "./dist/case/upper-first.js"
         },
+        "./transliterate": {
+            "types": "./dist/transliterate.d.ts",
+            "default": "./dist/transliterate.js"
+        },
+        "./excerpt": {
+            "types": "./dist/excerpt.d.ts",
+            "default": "./dist/excerpt.js"
+        },
+        "./direction": {
+            "types": "./dist/direction.d.ts",
+            "default": "./dist/direction.js"
+        },
+        "./count-occurrences": {
+            "types": "./dist/count-occurrences.d.ts",
+            "default": "./dist/count-occurrences.js"
+        },
+        "./levenshtein": {
+            "types": "./dist/levenshtein.d.ts",
+            "default": "./dist/levenshtein.js"
+        },
+        "./east-asian-width": {
+            "types": "./dist/east-asian-width.d.ts",
+            "default": "./dist/east-asian-width.js"
+        },
+        "./indent": {
+            "types": "./dist/indent.d.ts",
+            "default": "./dist/indent.js"
+        },
+        "./replace-string": {
+            "types": "./dist/replace-string.d.ts",
+            "default": "./dist/replace-string.js"
+        },
+        "./is-fullwidth-code-point": {
+            "types": "./dist/is-fullwidth-code-point.d.ts",
+            "default": "./dist/is-fullwidth-code-point.js"
+        },
         "./test/utils": {
             "types": "./dist/test/utils.d.ts",
             "default": "./dist/test/utils.js"

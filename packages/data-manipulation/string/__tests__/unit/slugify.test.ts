@@ -93,10 +93,15 @@ describe("slugify function", () => {
     });
 
     it("should respect the lowercase option", () => {
-        expect.assertions(2);
+        expect.assertions(1);
 
         expect(slugify("Hello World", { lowercase: true, uppercase: false })).toBe("hello-world");
-        expect(slugify("Hello World", { lowercase: true, uppercase: true })).toBe("hello-world"); // lowercase wins if both true
+    });
+
+    it("should throw when both lowercase and uppercase are enabled", () => {
+        expect.assertions(1);
+
+        expect(() => slugify("Hello World", { lowercase: true, uppercase: true })).toThrow(TypeError);
     });
 
     it("should respect the uppercase option", () => {
@@ -384,6 +389,43 @@ describe("slugify function", () => {
             expect(slugify("foo-bar -")).toBe("foo-bar");
             expect(slugify("foo-bar - ")).toBe("foo-bar");
             expect(slugify("foo-bar ")).toBe("foo-bar");
+        });
+    });
+
+    describe("locale option", () => {
+        it("should apply German umlaut mappings", () => {
+            expect.assertions(3);
+
+            expect(slugify("Käse-Spätzle", { locale: "de" })).toBe("kaese-spaetzle");
+            expect(slugify("Schöne Grüße", { locale: "de" })).toBe("schoene-gruesse");
+            expect(slugify("Straße", { locale: "de" })).toBe("strasse");
+        });
+
+        it("should accept a region subtag and resolve to the primary locale", () => {
+            expect.assertions(1);
+
+            expect(slugify("Köln", { locale: "de-DE" })).toBe("koeln");
+        });
+
+        it("should map Turkish dotless/dotted i correctly", () => {
+            expect.assertions(1);
+
+            expect(slugify("Işık", { locale: "tr" })).toBe("isik");
+        });
+
+        it("should apply Serbian-specific mappings that differ from the global charmap", () => {
+            expect.assertions(2);
+
+            // Serbian: Đ -> DJ (the global charmap maps it to a bare "d").
+            expect(slugify("Đorđe", { locale: "sr" })).toBe("djordje");
+            expect(slugify("Đorđe")).toBe("dorde");
+        });
+
+        it("should fall back to the global charmap for unknown locales", () => {
+            expect.assertions(1);
+
+            // An unknown locale must behave exactly like passing no locale at all.
+            expect(slugify("Köln", { locale: "xx" })).toBe(slugify("Köln"));
         });
     });
 });

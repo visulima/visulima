@@ -1076,13 +1076,14 @@ It transliterates non-ASCII characters using the `transliterate` function (if en
     - `allowedChars?: string`: Characters allowed in the slug. Others are replaced by `separator`. (Default: `"a-zA-Z0-9-_.~"`)
     - `fixChineseSpacing?: boolean`: Passed to `transliterate`. Determines if a space is added between transliterated Chinese characters (default: `true`).
     - `ignore?: string[]`: Passed to `transliterate`. Characters/strings to ignore during the initial transliteration phase (default: `[]`).
-    - `lowercase?: boolean`: Convert to lowercase. (Default: `true`). Cannot be true if `uppercase` is true.
+    - `locale?: string`: Locale-aware transliteration. When set, locale-specific replacements are applied _before_ the global character map, so e.g. German `ö` becomes `oe` and Serbian `đ` becomes `dj`. Only the primary subtag is used (so `"de-DE"` resolves to `"de"`); unknown locales fall back to the global map. Supported locales: `de`, `da`, `nb`, `sr`, `tr`, `vi`. (Default: `undefined`).
+    - `lowercase?: boolean`: Convert to lowercase. (Default: `true`). Cannot be `true` if `uppercase` is `true` — passing both throws a `TypeError`.
     - `replaceAfter?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply _after_ the character map transliteration but _before_ slugification logic (default: `[]`).
     - `replaceBefore?: OptionReplaceCombined`: Passed to `transliterate`. Search/replace pairs to apply _before_ any transliteration (default: `[]`).
     - `separator?: string`: Custom separator. (Default: `"-"`).
     - `transliterate?: boolean`: Whether to perform the initial transliteration of non-ASCII characters. If `false`, only case conversion and character filtering/replacement are performed on the input string. (Default: `true`).
     - `unknown?: string`: Passed to `transliterate`. Character to use for unknown characters during transliteration (default: `""`).
-    - `uppercase?: boolean`: Convert to uppercase. (Default: `false`). Cannot be true if `lowercase` is true.
+    - `uppercase?: boolean`: Convert to uppercase. (Default: `false`). Cannot be `true` if `lowercase` is `true` — passing both throws a `TypeError`.
 
 **Returns:**
 
@@ -1101,7 +1102,43 @@ slugify("FOO BAR", { lowercase: false, uppercase: true }); // 'FOO-BAR'
 slugify("foo bar baz", { separator: "_", allowedChars: "a-z_" }); // 'foo_bar_baz'
 slugify("Keep C++", { replaceBefore: { "C++": "cpp" } }); // 'keep-cpp'
 slugify("Keep !@#$", { allowedChars: "a-z!@$" }); // 'keep!@$'
+
+// Locale-aware transliteration
+slugify("Käse-Spätzle", { locale: "de" }); // 'kaese-spaetzle'
+slugify("Đorđe", { locale: "sr" }); // 'djordje'
 ```
+
+### String Similarity
+
+The package ships several similarity helpers built on Levenshtein edit distance, useful for "did you mean?" UX, fuzzy matching, and sorting suggestions.
+
+```typescript
+import { closest, closestN, compareSimilarity, closestString, distance, similarity, wordSimilaritySort } from "@visulima/string";
+
+// Raw Levenshtein edit distance (number of single-character edits).
+distance("kitten", "sitting"); // 3
+
+// Normalized similarity score in the range [0, 1] (1 === identical).
+similarity("kitten", "sitting"); // ~0.571
+similarity("foo", "foo"); // 1
+
+// The single closest match from a list.
+closest("fast", ["slow", "faster", "fastest"]); // 'faster'
+
+// The N closest matches, best-first.
+closestN("fast", ["slow", "faster", "fastest", "fanta"], 2); // ['faster', 'fastest']
+
+// Find the closest string (with options), e.g. for command suggestions.
+closestString("instal", ["install", "uninstall", "list"]); // 'install'
+
+// Sort an array by similarity to a target string.
+wordSimilaritySort("hlelo", ["hello", "world", "help"]); // ['hello', 'help', 'world']
+
+// A comparator you can pass to Array#sort.
+["bar", "baz", "foo"].sort(compareSimilarity("ba")); // ['bar', 'baz', 'foo']
+```
+
+> `compareSimilarity`, `closestString`, and `wordSimilaritySort` accept an options object (`CompareSimilarityOptions` / `ClosestStringOptions` / `WordSimilaritySortOptions`) — see the inline JSDoc for details.
 
 ### Text Alignment
 

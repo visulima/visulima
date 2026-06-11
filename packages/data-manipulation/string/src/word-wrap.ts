@@ -8,27 +8,66 @@ const RE_SPLIT_WHITESPACE = /(?=\s)|(?<=\s)/;
 const RE_WHITESPACE_ONLY = /^\s+$/;
 
 /**
- * Resets ANSI sequences at line breaks.
+ * Memoized single-character width lookup for the character-level wrap hot loop.
+ *
+ * `wrapWithBreakAtWidth` iterates the input one UTF-16 unit at a time and needs
+ * the visual width of each unit. Calling {@link getStringWidth} per character
+ * spins up a fresh options/config plus a result object on every call; the set of
+ * distinct single characters in any real document is tiny, so memoizing the
+ * width (with default options) collapses that to a single computation per unique
+ * character. Behavior is identical to `getStringWidth(char)`.
+ */
+const singleCharWidthCache = new Map<string, number>();
+
+const getSingleCharWidth = (char: string): number => {
+    const cached = singleCharWidthCache.get(char);
+
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    const charWidth = getStringWidth(char);
+
+    singleCharWidthCache.set(char, charWidth);
+
+    return charWidth;
+};
+
+// Matches every SGR escape sequence (e.g. "ESC[1;31m") so we can replay them
+// through an AnsiStateTracker and compute the exact set of codes still active
+// at the end of a line.
+// eslint-disable-next-line no-control-regex, unicorn/no-hex-escape
+const RE_SGR_SEQUENCE = /\x1B\[[\d;]*m/g;
+
+/**
+ * Resets any ANSI SGR codes still open at the end of a wrapped line so colors
+ * and formatting do not bleed into the next line.
+ *
+ * Previously this only knew two hardcoded codes. Now it replays every SGR
+ * sequence on the line through an {@link AnsiStateTracker} and appends the
+ * precise closing escapes for whatever foreground/background/formatting codes
+ * remain active - mirroring how wrap-ansi closes active codes per line.
  * @param currentLine Current line of text
- * @returns Line with reset codes if needed
+ * @returns Line with reset codes appended if any SGR code is still open
  */
 const resetAnsiAtLineBreak = (currentLine: string): string => {
     if (!currentLine.includes("\u001B")) {
         return currentLine;
     }
 
-    let result = currentLine;
+    const sequences = currentLine.match(RE_SGR_SEQUENCE);
 
-    // Add reset codes in reverse order of how they were applied
-    if (currentLine.includes("\u001B[30m")) {
-        result += "\u001B[39m"; // foreground reset
+    if (!sequences) {
+        return currentLine;
     }
 
-    if (currentLine.includes("\u001B[42m")) {
-        result += "\u001B[49m"; // background reset
+    const tracker = new AnsiStateTracker();
+
+    for (const sequence of sequences) {
+        tracker.processEscape(sequence);
     }
 
-    return result;
+    return currentLine + tracker.getEndEscapesForAllActiveAttributes();
 };
 
 /**
@@ -117,7 +156,7 @@ const wrapWithBreakAtWidth = (string: string, width: number, trim: boolean): str
             continue;
         }
 
-        const charWidth = getStringWidth(char);
+        const charWidth = getSingleCharWidth(char);
         const isSpace = char === " ";
 
         // Skip zero-width characters
