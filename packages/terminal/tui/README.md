@@ -132,6 +132,23 @@ const Spinner = () => {
 
 Returns `{ frame, time, delta, reset }`. See the [full hooks reference](https://visulima.com/packages/tui/hooks#useanimation) for detailed return values, more examples (sine waves, physics, pausable, reset), and `maxFps` interaction.
 
+The full list of hooks (each at `@visulima/tui/hooks/<name>`): `use-animation`, `use-app`, `use-box-metrics`, `use-clipboard`, `use-color-blindness`, `use-console-capture`, `use-cursor`, `use-element-position`, `use-focus`, `use-focus-manager`, `use-form`, `use-hotkey`, `use-input`, `use-interval`, `use-is-screen-reader-enabled`, `use-key-bindings`, `use-key-chord`, `use-linked-scroll`, `use-mouse`, `use-mouse-action`, `use-mouse-position`, `use-on-mouse-click`, `use-on-mouse-hover`, `use-on-mouse-state`, `use-paste`, `use-persistent-state`, `use-scroll-acceleration`, `use-scroll-input`, `use-stderr`, `use-stdin`, `use-stdout`, `use-stopwatch`, `use-terminal-palette`, `use-text-buffer`, `use-text-selection`, `use-timeout`, `use-timer`, `use-window-size`. See the [hooks reference](https://visulima.com/packages/tui/hooks) for details.
+
+## Component Catalog
+
+`@visulima/tui` ships 90+ components, each at its own subpath `@visulima/tui/components/<name>`:
+
+- **Layout & text**: `box`, `text`, `paragraph`, `heading`, `divider`, `spacer`, `newline`, `transform`, `gradient`, `big-text`, `shimmer-text`, `streaming-text`, `placeholder`, `link`, `kbd`, `code`, `markdown`, `diff-view`.
+- **Lists & data**: `ordered-list`, `unordered-list`, `definition-list`, `option-list`, `table`, `tree-view`, `operation-tree`, `breadcrumb`, `paginator`, `tag`, `badge`, `model-badge`.
+- **Inputs & forms**: `text-input`, `textarea`, `masked-input`, `search-input`, `confirm-input`, `select-input` (`select-input-item`, `select-input-indicator`), `multi-select`, `checkbox`, `radio-group`, `switch`, `slider`, `date-picker`, `calendar`, `form`, `button`, `file-picker`.
+- **Feedback & status**: `alert`, `toast`, `status-line`, `status-message`, `progress-bar`, `gauge`, `spinner`, `loading-indicator`, `blink-dot`, `stepper`, `timer`, `stopwatch`, `cursor`.
+- **Overlays & navigation**: `dialog`, `confirm-dialog`, `approval-prompt`, `command-palette`, `command-block`, `menu`, `tooltip`, `tab`, `tabs`, `content-switcher`, `accordion`, `collapsible`, `help`, `console-overlay`, `message-bubble`.
+- **Charts & viz**: `area-chart`, `bar-chart`, `line-chart`, `scatter-plot`, `histogram`, `heatmap`, `sparkline`, `canvas`, `card`.
+- **Scrolling**: `scroll-view`, `controlled-scroll-view`, `scroll-list`, `scroll-bar`, `scroll-bar-box`.
+- **Animation & rendering**: `animate-presence`, `transition`, `static`, `static-render`.
+
+Browse the live gallery and per-component APIs in the [component docs](https://visulima.com/packages/tui/components).
+
 ## Documentation
 
 Full documentation, API reference, component gallery, and guides are available at:

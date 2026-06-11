@@ -42,6 +42,7 @@ export default createConfig(
             "**/*.js",
             "**/*.d.ts",
             "docs/**",
+            "scripts/**",
         ],
         typescript: {
             tsconfigPath: "./tsconfig.eslint.json",

@@ -35,9 +35,6 @@
         "email": "d.bannert@anolilab.de"
     },
     "sideEffects": [
-        "./dist/components/**",
-        "./dist/ink/**",
-        "./dist/react/**",
         "./index.js"
     ],
     "type": "module",
@@ -442,6 +439,10 @@
             "types": "./dist/ink/hooks/use-color-blindness.d.ts",
             "default": "./dist/ink/hooks/use-color-blindness.js"
         },
+        "./hooks/use-element-position": {
+            "types": "./dist/ink/mouse/use-element-position.d.ts",
+            "default": "./dist/ink/mouse/use-element-position.js"
+        },
         "./hooks/use-console-capture": {
             "types": "./dist/ink/hooks/use-console-capture.d.ts",
             "default": "./dist/ink/hooks/use-console-capture.js"
@@ -489,6 +490,30 @@
         "./hooks/use-linked-scroll": {
             "types": "./dist/ink/hooks/use-linked-scroll.d.ts",
             "default": "./dist/ink/hooks/use-linked-scroll.js"
+        },
+        "./hooks/use-mouse": {
+            "types": "./dist/ink/mouse/use-mouse.d.ts",
+            "default": "./dist/ink/mouse/use-mouse.js"
+        },
+        "./hooks/use-mouse-action": {
+            "types": "./dist/ink/mouse/use-mouse-action.d.ts",
+            "default": "./dist/ink/mouse/use-mouse-action.js"
+        },
+        "./hooks/use-mouse-position": {
+            "types": "./dist/ink/mouse/use-mouse-position.d.ts",
+            "default": "./dist/ink/mouse/use-mouse-position.js"
+        },
+        "./hooks/use-on-mouse-click": {
+            "types": "./dist/ink/mouse/use-on-mouse-click.d.ts",
+            "default": "./dist/ink/mouse/use-on-mouse-click.js"
+        },
+        "./hooks/use-on-mouse-hover": {
+            "types": "./dist/ink/mouse/use-on-mouse-hover.d.ts",
+            "default": "./dist/ink/mouse/use-on-mouse-hover.js"
+        },
+        "./hooks/use-on-mouse-state": {
+            "types": "./dist/ink/mouse/use-on-mouse-state.d.ts",
+            "default": "./dist/ink/mouse/use-on-mouse-state.js"
         },
         "./hooks/use-paste": {
             "types": "./dist/ink/hooks/use-paste.d.ts",
@@ -578,6 +603,7 @@
         "lint:attw": "attw --pack --profile esm-only",
         "lint:eslint": "eslint . --cache --concurrency auto",
         "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:exports": "node scripts/validate-exports.mjs",
         "lint:package-json": "publint --strict",
         "lint:prettier": "prettier --config=prettier.config.js --check .",
         "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
