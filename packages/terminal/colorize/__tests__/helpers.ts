@@ -8,14 +8,28 @@ const esc = (string_: string): string => string_.replaceAll("\u001B", String.raw
 
 const TRAILING_NEWLINE_REGEX = /\n$/;
 
+// Color-forcing env vars that a test runner (nx, CI) injects into the ambient
+// environment. They must be stripped from the child's inherited env, otherwise an
+// ambient FORCE_COLOR leaks through cross-env and overrides the variable a test is
+// actually exercising (e.g. it makes `NO_COLOR=1` a no-op). Each test re-adds the
+// forcing var it needs via the `environment` argument, so stripping the inherited
+// copy only removes runner noise — it never drops a value the test set on purpose.
+const FORCING_COLOR_ENV_KEYS = ["FORCE_COLOR", "NO_COLOR", "CLICOLOR", "CLICOLOR_FORCE", "COLOR"];
+
 /**
  * Return output of javascript file.
  */
 const execScriptSync = (file: string, flags: string[] = [], environment: string[] = []): string => {
+    const childEnvironment = { ...process.env };
+
+    for (const key of FORCING_COLOR_ENV_KEYS) {
+        delete childEnvironment[key];
+    }
+
     const environmentVariables = environment.length > 0 ? `${environment.join(" ")} ` : "";
     const cmd = `cross-env ${environmentVariables}node "${file}" ${flags.join(" ")}`;
     // eslint-disable-next-line sonarjs/os-command
-    const result = execSync(cmd);
+    const result = execSync(cmd, { env: childEnvironment });
 
     // replace last newline in result
     return result.toString().replace(TRAILING_NEWLINE_REGEX, "");

@@ -53,7 +53,9 @@ export const convertHexToRgb = (hex: string): [number, number, number] => {
 
         if (environment?.env?.NODE_ENV !== "production") {
             // eslint-disable-next-line no-console
-            console.warn(`[@visulima/colorize] Invalid hex color "${hex}"; expected a 3- or 6-digit hex string (e.g. "#96C" or "#E0115F"). Falling back to black.`);
+            console.warn(
+                `[@visulima/colorize] Invalid hex color "${hex}"; expected a 3- or 6-digit hex string (e.g. "#96C" or "#E0115F"). Falling back to black.`,
+            );
         }
 
         return [0, 0, 0];

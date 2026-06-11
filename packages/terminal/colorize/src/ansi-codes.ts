@@ -67,7 +67,8 @@ const createAnsiCodes = (supportedColor: ColorSupportLevel): AnsiCodes => {
 
     let createRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc(`38;2;${String(r)};${String(g)};${String(b)}`, closeCode);
 
-    let createBgRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc(`48;2;${String(r)};${String(g)};${String(b)}`, bgCloseCode);
+    let createBgRgb = (r: number | string, g: number | string, b: number | string): ColorData =>
+        esc(`48;2;${String(r)};${String(g)};${String(b)}`, bgCloseCode);
 
     if (supportedColor === 1) {
         // ANSI 16 colors
@@ -161,10 +162,14 @@ const stderrColorLevel: ColorSupportLevel = isStderrColorSupported();
 const defaultCodes = createAnsiCodes(stdoutColorLevel);
 
 // Backwards-compatible module-level codes (resolved for the detected stdout level).
-// Explicitly typed (not destructured) so isolated-declaration `.d.ts` emit succeeds.
-const baseColors: AnsiCodes["baseColors"] = defaultCodes.baseColors;
-const baseStyles: AnsiCodes["baseStyles"] = defaultCodes.baseStyles;
-const styleMethods: AnsiCodes["styleMethods"] = defaultCodes.styleMethods;
+// Explicitly typed (not destructured) so isolated-declaration `.d.ts` emit succeeds:
+// these consts are re-exported, and a destructured binding can't be exported under
+// `--isolatedDeclarations` (TS9019), so `prefer-destructuring` must stay disabled here.
+/* eslint-disable prefer-destructuring -- exported binding can't be destructured under --isolatedDeclarations (TS9019) */
+const baseColors: Required<Record<AnsiColors, ColorData>> = defaultCodes.baseColors;
+const baseStyles: Required<Record<AnsiStyles, ColorData>> = defaultCodes.baseStyles;
+const styleMethods: StyleMethods = defaultCodes.styleMethods;
+/* eslint-enable prefer-destructuring -- re-enable after the isolated-declaration exports */
 
 export type { AnsiCodes, StyleMethods };
 
