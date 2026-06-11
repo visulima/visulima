@@ -115,6 +115,13 @@ const recursiveFilter = (
         return input;
     }
 
+    // A boxed `String` object is coerced to its primitive here and re-run, so it is
+    // anonymized as a string (regex/JSON/URL) rather than shallow-copied into an
+    // index-keyed character object by the generic object branch below.
+    if (typeof input === "object" && input.constructor === String) {
+        return recursiveFilter(String(input), examinedObjects, saveCopy, rules, options, identifier);
+    }
+
     // Circular-reference tracking via a WeakMap keyed on the original object — this never
     // mutates caller inputs (so frozen/sealed objects are safe and nothing leaks on throw).
     if (typeof input === "object" && examinedObjects.has(input)) {
@@ -232,11 +239,10 @@ const recursiveFilter = (
         return copy;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison -- typeof null === "object", so null guard is needed
-    if (typeof input === "string" || (typeof input === "object" && input !== null && input.constructor === String)) {
-        // A boxed `String` object must be coerced to a primitive before regex/JSON handling.
-        // eslint-disable-next-line @typescript-eslint/no-base-to-string
-        const stringInput = typeof input === "string" ? input : input.toString();
+    if (typeof input === "string") {
+        // Boxed `String` objects were already coerced to a primitive above, so this branch
+        // only ever sees a real string.
+        const stringInput = input;
 
         try {
             const parsed: unknown = JSON.parse(stringInput);
@@ -413,7 +419,7 @@ export const redact = <V>(input: V, rules: Rules, options?: RedactOptions): V =>
  * @param options Optional settings applied at compile time (`exclude`) and per call (`logger`).
  * @returns A function `(input) => redactedCopy`.
  */
-export const createRedactor = (rules: Rules, options?: RedactOptions): (<V>(input: V) => V) => {
+export const createRedactor = (rules: Rules, options?: RedactOptions): <V>(input: V) => V => {
     const preparedModifiers = prepareModifiers(rules, options);
 
     return <V>(input: V): V => runRedact(input, preparedModifiers, options);
