@@ -303,9 +303,7 @@ describe(PrismaAdapter, () => {
 
             const error = new PrismaClientKnownRequestError("bad request");
 
-            expect(() => adapter.handleError(error)).toThrow(
-                expect.objectContaining({ statusCode: 400 }),
-            );
+            expect(() => adapter.handleError(error)).toThrow(expect.objectContaining({ statusCode: 400 }));
         });
 
         it("should rethrow PrismaClientValidationError as 400", () => {
@@ -313,9 +311,7 @@ describe(PrismaAdapter, () => {
 
             const error = new PrismaClientValidationError("validation");
 
-            expect(() => adapter.handleError(error)).toThrow(
-                expect.objectContaining({ statusCode: 400 }),
-            );
+            expect(() => adapter.handleError(error)).toThrow(expect.objectContaining({ statusCode: 400 }));
         });
 
         it("should rethrow other errors as 500", () => {
@@ -323,9 +319,7 @@ describe(PrismaAdapter, () => {
 
             const error = new Error("kaboom");
 
-            expect(() => adapter.handleError(error)).toThrow(
-                expect.objectContaining({ statusCode: 500 }),
-            );
+            expect(() => adapter.handleError(error)).toThrow(expect.objectContaining({ statusCode: 500 }));
         });
     });
 

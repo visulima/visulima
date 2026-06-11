@@ -193,9 +193,7 @@ describe("base-crud-handler access policy", () => {
 
         await handler(buildRequest({ method: "GET", url: "/api/users/5" }), {});
 
-        expect(onRequest).toHaveBeenCalledWith(
-            expect.objectContaining({ method: "GET", resourceId: 5, resourceName: "users", routeType: RouteType.READ_ONE }),
-        );
+        expect(onRequest).toHaveBeenCalledWith(expect.objectContaining({ method: "GET", resourceId: 5, resourceName: "users", routeType: RouteType.READ_ONE }));
 
         const denying = await baseHandler(vi.fn(), vi.fn().mockResolvedValue(undefined), buildAdapter(), {
             onRequest: () => {

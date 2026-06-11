@@ -150,39 +150,39 @@ export default router.handler();
 
 CRUD endpoints accept the following query-string parameters (all optional):
 
-| Param      | Example                                                | Description                                                                                 |
-| ---------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `select`   | `?select=id,name,profile.bio`                          | Comma-separated fields to return. Dotted paths select nested fields.                         |
-| `include`  | `?include=posts,profile`                               | Comma-separated relations to expand.                                                         |
-| `where`    | `?where={"name":{"$cont":"ada"}}`                      | JSON filter object (see operators below). URL-encode it.                                     |
-| `orderBy`  | `?orderBy={"createdAt":"$desc"}`                       | JSON object with exactly one field and `$asc`/`$desc`.                                       |
-| `limit`    | `?limit=20`                                            | Page size / `take`. Capped by `maxPerPage` when configured.                                  |
-| `page`     | `?page=2`                                              | 1-based page number; enables paginated (`@visulima/pagination`) responses.                   |
-| `skip`     | `?skip=40`                                             | Offset (`skip`) for non-paginated reads.                                                     |
-| `cursor`   | `?cursor={"id":42}`                                    | JSON cursor for cursor-based pagination.                                                     |
-| `distinct` | `?distinct=email`                                      | Field name to apply `distinct` on.                                                           |
+| Param      | Example                           | Description                                                                |
+| ---------- | --------------------------------- | -------------------------------------------------------------------------- |
+| `select`   | `?select=id,name,profile.bio`     | Comma-separated fields to return. Dotted paths select nested fields.       |
+| `include`  | `?include=posts,profile`          | Comma-separated relations to expand.                                       |
+| `where`    | `?where={"name":{"$cont":"ada"}}` | JSON filter object (see operators below). URL-encode it.                   |
+| `orderBy`  | `?orderBy={"createdAt":"$desc"}`  | JSON object with exactly one field and `$asc`/`$desc`.                     |
+| `limit`    | `?limit=20`                       | Page size / `take`. Capped by `maxPerPage` when configured.                |
+| `page`     | `?page=2`                         | 1-based page number; enables paginated (`@visulima/pagination`) responses. |
+| `skip`     | `?skip=40`                        | Offset (`skip`) for non-paginated reads.                                   |
+| `cursor`   | `?cursor={"id":42}`               | JSON cursor for cursor-based pagination.                                   |
+| `distinct` | `?distinct=email`                 | Field name to apply `distinct` on.                                         |
 
 #### `where` operators
 
-| Operator   | Prisma equivalent | Meaning                |
-| ---------- | ----------------- | ---------------------- |
-| `$eq`      | `equals`          | equals                 |
-| `$neq`     | `not`             | not equal              |
-| `$in`      | `in`              | in list                |
-| `$notin`   | `notIn`           | not in list            |
-| `$lt`      | `lt`              | less than              |
-| `$lte`     | `lte`             | less than or equal     |
-| `$gt`      | `gt`              | greater than           |
-| `$gte`     | `gte`             | greater than or equal  |
-| `$cont`    | `contains`        | string contains        |
-| `$starts`  | `startsWith`      | string starts with     |
-| `$ends`    | `endsWith`        | string ends with       |
-| `$isnull`  | `null`            | is null                |
+| Operator  | Prisma equivalent | Meaning               |
+| --------- | ----------------- | --------------------- |
+| `$eq`     | `equals`          | equals                |
+| `$neq`    | `not`             | not equal             |
+| `$in`     | `in`              | in list               |
+| `$notin`  | `notIn`           | not in list           |
+| `$lt`     | `lt`              | less than             |
+| `$lte`    | `lte`             | less than or equal    |
+| `$gt`     | `gt`              | greater than          |
+| `$gte`    | `gte`             | greater than or equal |
+| `$cont`   | `contains`        | string contains       |
+| `$starts` | `startsWith`      | string starts with    |
+| `$ends`   | `endsWith`        | string ends with      |
+| `$isnull` | `null`            | is null               |
 
 `where` also supports the `$and`, `$or` and `$not` combinators. By default ISO-date-looking
 strings are coerced to `Date` instances so they match `DateTime` columns; pass
 `coerceWhereDates: false` to the `PrismaAdapter` constructor to keep them as strings (needed when
-filtering a *string* column whose values look like dates).
+filtering a _string_ column whose values look like dates).
 
 ### Security & access control
 
