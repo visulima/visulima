@@ -26,14 +26,11 @@ SOFTWARE.
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
-
 The published @visulima/jsdoc-open-api artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
-
 ## commander
-
 License: MIT
 By: TJ Holowaychuk
 Repository: git+https://github.com/tj/commander.js.git

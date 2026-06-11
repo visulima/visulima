@@ -23,22 +23,18 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/object artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
-
 ## deeks
-
 License: MIT
 By: mrodrig
 Repository: git+https://github.com/mrodrig/deeks.git
 
----
+---------------------------------------
 
 ## dot-prop
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/dot-prop
@@ -58,22 +54,18 @@ Repository: sindresorhus/dot-prop
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
-
 The published @visulima/object artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
-
 ## deeks
-
 License: MIT
 By: mrodrig
 Repository: git+https://github.com/mrodrig/deeks.git
 
----
+---------------------------------------
 
 ## dot-prop
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/dot-prop

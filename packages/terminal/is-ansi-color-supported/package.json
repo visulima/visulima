@@ -104,9 +104,9 @@
     "typesVersions": {
         ">=5.0": {
             ".": [
-                "./dist/is-color-supported.server.d.ts",
                 "./dist/is-color-supported.edge-light.d.ts",
-                "./dist/is-color-supported.browser.d.ts"
+                "./dist/is-color-supported.browser.d.ts",
+                "./dist/is-color-supported.server.d.ts"
             ],
             "edge-light": [
                 "./dist/is-color-supported.edge-light.d.ts"
