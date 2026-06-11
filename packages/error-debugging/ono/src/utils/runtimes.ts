@@ -14,9 +14,9 @@ const g = globalThis as unknown as GlobalHints;
 const runtimeChecks: [boolean, RuntimeName][] = [
     [!!g.Netlify, "netlify"],
     [!!g.EdgeRuntime, "edge-light"],
-    // https://developers.cloudono.com/workers/runtime-apis/web-standards/#navigatoruseragent
+    // https://developers.cloudflare.com/workers/runtime-apis/web-standards/#navigatoruseragent
     // eslint-disable-next-line n/no-unsupported-features/node-builtins
-    [g.navigator?.userAgent === "Cloudono-Workers", "workerd"],
+    [g.navigator?.userAgent === "Cloudflare-Workers", "workerd"],
     [!!g.Deno, "deno"],
     // https://nodejs.org/api/process.html#processrelease
     // eslint-disable-next-line no-underscore-dangle

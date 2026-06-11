@@ -138,7 +138,6 @@ function closeAllDropdowns() {
 document.addEventListener('click', function(e) {
   const trigger = e.target.closest('.ono-dropdown-toggle');
   if (trigger) {
-    console.log('Copy dropdown: Click detected on toggle button');
     e.preventDefault();
     toggleDropdown(trigger);
     return;
@@ -193,7 +192,6 @@ document.addEventListener('click', function(e) {
 });
 
 ready(function() {
-  console.log('Copy dropdown: Script initialized and ready');
   // Dropdown and clipboard initialization complete
 });
 `;
@@ -259,36 +257,7 @@ ready(function() {
 `;
 
 const copyButtonScript = `
-// Clipboard functionality for copy buttons
-function copyToClipboard(text, successCallback) {
-  if (!text) {
-      return;
-  }
-
-  navigator.clipboard.writeText(text).then(function() {
-    if (successCallback) {
-      successCallback();
-    }
-  }).catch(function(err) {
-    console.warn('Failed to copy:', err);
-  });
-}
-
-function showCopySuccess(button) {
-  const defaultIcon = $('.ono-copy-default', button);
-  const successIcon = $('.ono-copy-success', button);
-
-  if (defaultIcon && successIcon) {
-    addClass(defaultIcon, 'hidden');
-    removeClass(successIcon, 'hidden');
-    setTimeout(() => {
-      removeClass(defaultIcon, 'hidden');
-      addClass(successIcon, 'hidden');
-    }, 2000);
-  }
-}
-
-// Handle copy buttons
+// Handle copy buttons — reuses the global copyToClipboard/showCopySuccess defined in copyDropdownScript
 document.addEventListener('click', function(e) {
   const copyBtn = e.target.closest('.ono-copy-btn');
   if (copyBtn) {

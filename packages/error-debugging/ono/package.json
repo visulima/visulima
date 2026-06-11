@@ -135,37 +135,6 @@
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },
-    "peerDependencies": {
-        "@ai-sdk/anthropic": "catalog:peer",
-        "@ai-sdk/azure": "catalog:peer",
-        "@ai-sdk/google": "catalog:peer",
-        "@ai-sdk/mistral": "catalog:peer",
-        "@ai-sdk/openai": "catalog:peer",
-        "ai": "^6.0.175"
-    },
-    "peerDependenciesMeta": {
-        "@ai-sdk/anthropic": {
-            "optional": true
-        },
-        "@ai-sdk/azure": {
-            "optional": true
-        },
-        "@ai-sdk/google": {
-            "optional": true
-        },
-        "@ai-sdk/mistral": {
-            "optional": true
-        },
-        "@ai-sdk/openai": {
-            "optional": true
-        },
-        "ai": {
-            "optional": true
-        },
-        "open-editor": {
-            "optional": true
-        }
-    },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
     },

@@ -263,6 +263,44 @@ Renders an error as ANSI terminal output.
 
 Returns an object with `errorAnsi` (the formatted error) and optional `solutionBox` (suggested solutions).
 
+##### `toJSON(error, options?)` => `Promise<OnoJson>`
+
+Renders an error as a structured, JSON-serializable payload — the error name/message, the parsed
+stack frames for the error and every entry in its `cause` chain, the detected runtime, and a
+suggested solution (using the same solution-finder protocol as `toHTML`/`toANSI`). Useful for
+SPA/REST error responses when the client sends `Accept: application/json`.
+
+- **error**: `unknown` - The error to render
+- **options**: `ToJsonOptions` (optional)
+    - `solutionFinders?: SolutionFinder[]` - Custom solution finders
+
+```ts
+import { renderJson } from "@visulima/ono";
+
+app.use((error, request, response, next) => {
+    if (request.accepts("json")) {
+        renderJson(error).then((payload) => response.status(500).json(payload));
+
+        return;
+    }
+
+    next(error);
+});
+```
+
+#### Standalone renderers
+
+The same three renderers are also exported as standalone, tree-shakeable functions — prefer these
+over instantiating `Ono`:
+
+```ts
+import { renderAnsi, renderHtml, renderJson } from "@visulima/ono";
+
+const html = await renderHtml(error);
+const { errorAnsi } = await renderAnsi(error);
+const json = await renderJson(error);
+```
+
 ### createRequestContextPage(request, options) => `Promise<ContentPage | undefined>`
 
 Creates a context page with detailed request debugging information.
@@ -323,10 +361,10 @@ try {
 Use `createRequestContextPage()` to create a "Context" tab with comprehensive debugging information:
 
 - **Request Overview** - cURL command with proper formatting and copy functionality
-- **Headers** - HTTP headers with smart masking for sensitive data
-- **Body** - Request body content with proper formatting
+- **Headers** - HTTP headers with smart masking for sensitive data (authorization, cookies, API keys, tokens, secrets)
+- **Body** - Request body content with sensitive-looking keys (password, token, secret, …) masked in both the rendered body and the copyable cURL
 - **Session** - Session data in organized key-value tables
-- **Cookies** - Cookie information in readable format
+- **Cookies** - Cookie values are masked by default (the `cookie` header is treated as sensitive); pass an empty `maskValue` to disable
 - **Dynamic Context Sections** - Any additional context keys you provide are automatically rendered as sections with:
     - Proper titles (capitalized)
     - Copy buttons for JSON data
@@ -495,9 +533,9 @@ Try these routes:
 
 From `@visulima/ono/server/open-in-editor`:
 
-- `openInEditor(request, options)` — core function (uses `open-editor` under the hood)
-- `createNodeHttpHandler(options)` — returns `(req, res) => void` for Node http servers
-- `createExpressHandler(options)` — returns `(req, res) => void` for Express/Connect
+- `createOpenInEditorMiddleware(options)` — universal handler factory (Node `http` and Connect/Express), backed by `launch-editor-middleware`
+- `createNodeHttpHandler(options)` — returns `(req, res) => Promise<void>` for Node `http` servers
+- `createExpressHandler(options)` — returns an Express/Connect-compatible handler
 
 Options:
 
