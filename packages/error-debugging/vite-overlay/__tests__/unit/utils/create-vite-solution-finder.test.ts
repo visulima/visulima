@@ -208,4 +208,69 @@ describe(createViteSolutionFinder, () => {
 
         expect(solution?.header).toBe("Path Resolution");
     });
+
+    it("ranks the closest, most relevant file first (ranking regression)", async () => {
+        expect.assertions(2);
+
+        const finder = createViteSolutionFinder(temporaryRoot);
+        // Importing "./Button" from the components dir: `Button.tsx` is the exact-name neighbour and
+        // must rank ahead of the fuzzy `Buton.tsx`. With the previous ascending sort the best match
+        // came last (and could be dropped by the slice).
+        const error = new Error("Failed to resolve import \"./Button\" from \"src/components/App.tsx\"");
+        const solution = await finder.handle(error, context({ file: join(temporaryRoot, "src", "components", "App.tsx"), language: "typescript" }));
+
+        const body = solution?.body ?? "";
+        // Extract `<li>` entries in listed order.
+        const listed = [...body.matchAll(/<li>`([^`]+)`<\/li>/g)].map((m) => m[1] ?? "");
+
+        const exactPosition = listed.findIndex((entry) => entry.includes("Button.tsx"));
+        const typoPosition = listed.findIndex((entry) => entry.includes("Buton.tsx"));
+
+        // The exact-name match must be present...
+        expect(exactPosition).not.toBe(-1);
+        // ...and when the typo neighbour is also listed, the exact match must rank ahead of it.
+        expect(typoPosition === -1 || exactPosition < typoPosition).toBe(true);
+    });
+
+    it("falls back to a framework plugin hint when no similar files exist (dead-code regression)", async () => {
+        expect.assertions(2);
+
+        const finder = createViteSolutionFinder(temporaryRoot);
+        // No file named anything like "totally_absent_widget" exists, so findSimilarFiles returns ""
+        // (not an empty <ul>), making the React-plugin fallback reachable. The message mentions react
+        // so the React branch fires regardless of the resolved language.
+        const error = new Error("Failed to resolve import \"./totally_absent_widget_qzv\" from \"src/App.tsx\" (react)");
+        const solution = await finder.handle(error, context({ file: join(temporaryRoot, "src", "App.tsx"), language: "typescript" }));
+
+        expect(solution?.header).toBe("Missing React Plugin");
+        expect(solution?.body).toContain("@vitejs/plugin-react");
+    });
+
+    it("offers a Svelte plugin hint for unresolved svelte imports", async () => {
+        expect.assertions(2);
+
+        const finder = createViteSolutionFinder(temporaryRoot);
+        const error = new Error("Failed to resolve import \"./absent_component_qzv\" from \"src/App.svelte\"");
+        const solution = await finder.handle(error, context({ file: join(temporaryRoot, "src", "App.svelte"), language: "svelte" }));
+
+        expect(solution?.header).toBe("Missing Svelte Plugin");
+        expect(solution?.body).toContain("@sveltejs/vite-plugin-svelte");
+    });
+
+    it("HTML-escapes the unresolved import path in the solution body when it has markup (XSS regression)", async () => {
+        expect.assertions(2);
+
+        const finder = createViteSolutionFinder(temporaryRoot);
+        // A crafted import specifier with markup that still fuzzy-matches a real file (so the
+        // import-path-bearing body is produced) must not survive raw into the innerHTML-injected body.
+        // Basename "logo<>" is within the fuzzy threshold of the existing "logo.svg".
+        const error = new Error("Failed to resolve import \"./logo<>\" from \"src/App.tsx\"");
+        const solution = await finder.handle(error, context({ file: join(temporaryRoot, "src", "App.tsx"), language: "typescript" }));
+
+        const body = solution?.body ?? "";
+
+        // The raw `<>` must be escaped, not echoed into the body verbatim.
+        expect(body).toContain("./logo&lt;&gt;");
+        expect(body).not.toContain("./logo<>");
+    });
 });

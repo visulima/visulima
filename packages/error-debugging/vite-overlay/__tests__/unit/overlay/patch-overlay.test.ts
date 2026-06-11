@@ -54,6 +54,22 @@ class ErrorOverlay {
         expect(result).toContain("__v_o__overlay");
     });
 
+    it("does not inject Google Fonts <link> tags (offline / no-phone-home regression)", () => {
+        expect.assertions(3);
+
+        const inputCode = `
+class ErrorOverlay {
+    constructor() {}
+}
+`;
+
+        const result = patchOverlay(inputCode, true);
+
+        expect(result).not.toContain("fonts.googleapis.com");
+        expect(result).not.toContain("fonts.gstatic.com");
+        expect(result).not.toContain("preconnect");
+    });
+
     it("should inject error overlay scripts", () => {
         expect.assertions(3);
 

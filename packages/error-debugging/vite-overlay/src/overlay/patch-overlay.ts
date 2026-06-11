@@ -297,10 +297,11 @@ const generateOverlayTemplate = (showBalloonButton: boolean, balloonConfig?: Bal
     const cssString = customCSSToString(customCSS);
     const customStyleTag = cssString ? `<style>${cssString}</style>` : "";
 
-    return `<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<style>${styleCss}</style>
+    // Note: we deliberately do not inject Google Fonts <link> tags here. A dev-only overlay must
+    // work offline / air-gapped and must not phone home. The overlay CSS already declares a
+    // system-font stack fallback ("Space Grotesk" -> system-ui; "Space Mono" -> ui-monospace),
+    // so typography degrades gracefully without any network request.
+    return `<style>${styleCss}</style>
 ${customStyleTag}
 ${rootElement("__v_o__root", editorOptions)}
 

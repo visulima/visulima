@@ -33,6 +33,26 @@ const has = (message: string, ...needles: string[]): boolean => {
     return needles.some((n) => lower.includes(n.toLowerCase()));
 };
 
+const HTML_ESCAPE_RE = /[&<>"']/g;
+const HTML_ESCAPE_MAP: Record<string, string> = {
+    "\"": "&quot;",
+    "&": "&amp;",
+    "'": "&#39;",
+    "<": "&lt;",
+    ">": "&gt;",
+};
+
+/**
+ * Escapes HTML-significant characters in error-derived text before it is interpolated
+ * into solution bodies. Solution bodies are rendered through `marked` (which preserves
+ * raw HTML) and ultimately injected via `innerHTML` on the dev origin, so values that
+ * originate from attacker-influenceable error messages / import specifiers must be escaped
+ * to avoid markup/script injection.
+ * @param value The untrusted text to escape
+ * @returns The HTML-escaped text
+ */
+const escapeHtml = (value: string): string => value.replace(HTML_ESCAPE_RE, (char) => HTML_ESCAPE_MAP[char] ?? char);
+
 /**
  * Gets the relative path from one directory to another, ensuring it starts with './' if needed.
  * @param fromDirectory The source directory
@@ -196,12 +216,15 @@ const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: s
         const nameDistance = distance(importBaseName, candidate.baseName);
         const pathDistance = calculatePathDistance(fromDirectory, path.dirname(candidate.fullPath));
 
-        const score = candidate.relevanceScore * 0.7 + pathDistance * 0.2 + nameDistance * 0.1;
+        // relevanceScore is higher-is-better; pathDistance/nameDistance are lower-is-better.
+        // Reward relevance and penalize distance so the closest, most relevant candidate ranks first.
+        const score = candidate.relevanceScore * 0.7 - pathDistance * 0.2 - nameDistance * 0.1;
 
         return { ...candidate, nameDistance, pathDistance, score };
     });
 
-    scoredFiles.sort((a, b) => a.score - b.score);
+    // Highest score first — the best suggestion must come first.
+    scoredFiles.sort((a, b) => b.score - a.score);
 
     const suggestions: string[] = [];
     const topMatches = scoredFiles.slice(0, 8);

@@ -27,6 +27,12 @@ const LOC_NO_PARENS_COLON1_RE = /[^(\s][^:]*:\d+/;
 const URL_LOCATION_RE = /:(\d+)(?::(\d+))?$/;
 const NEWLINE_RE = /\n/;
 
+// Upper bound for a single stack-frame line. Real frames are far shorter; stacks arrive verbatim
+// from the browser over the HMR channel, so a pathological single-line "stack" (e.g. a very long
+// `a:a:a:...`) could otherwise drive super-linear backtracking in the location regexes below.
+// Lines longer than this are treated as non-frames before any regex runs.
+const MAX_STACK_LINE_LENGTH = 2048;
+
 const SUPPORTED_EXTENSIONS = new Set<SupportedExtension>([".cjs", ".js", ".jsx", ".mjs", ".svelte", ".ts", ".tsx", ".vue"]);
 
 const VALID_STACK_KEYWORDS = new Set<string>(["<anonymous>", "<unknown>", "native"]);
@@ -86,6 +92,10 @@ const formatAbsolutePath = (absolutePath: string, line?: string, col?: string): 
  */
 const isValidStackFrame: StackFrameValidator = (line: string): boolean => {
     const trimmed = line.trim();
+
+    if (trimmed.length > MAX_STACK_LINE_LENGTH) {
+        return false;
+    }
 
     if (!trimmed.startsWith(AT_PREFIX)) {
         return false;

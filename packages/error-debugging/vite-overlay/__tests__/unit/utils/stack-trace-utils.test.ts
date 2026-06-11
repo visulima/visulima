@@ -281,6 +281,22 @@ describe(isValidStackFrame, () => {
         expect(isValidStackFrame("at <anonymous> (/path/to/file.js:10:5)")).toBe(true);
         expect(isValidStackFrame("at <anonymous> (file.js:10:5)")).toBe(true);
     });
+
+    it("rejects pathologically long lines before running the location regexes (ReDoS guard)", () => {
+        expect.assertions(2);
+
+        // A long single-line "stack" arriving over the HMR channel must not drive the
+        // super-linear-backtracking location regexes; it is rejected on length alone.
+        const pathological = `at ${"a:".repeat(5000)}.js`;
+
+        const start = performance.now();
+        const result = isValidStackFrame(pathological);
+        const elapsed = performance.now() - start;
+
+        expect(result).toBe(false);
+        // Length-gated, so this returns effectively instantly regardless of the regex shape.
+        expect(elapsed).toBeLessThan(100);
+    });
 });
 
 describe(absolutizeStackUrls, () => {
