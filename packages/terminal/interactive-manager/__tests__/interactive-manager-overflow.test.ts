@@ -33,6 +33,7 @@ const createMockStream = (): { captured: string[]; stream: NodeJS.WriteStream } 
 
     Object.defineProperty(stream, "columns", { configurable: true, value: 80 });
     Object.defineProperty(stream, "rows", { configurable: true, value: 3 });
+    Object.defineProperty(stream, "isTTY", { configurable: true, value: true });
 
     return { captured, stream };
 };
@@ -111,10 +112,95 @@ describe("interactiveManager overflow (height <= actualLength)", () => {
         manager.hook();
         manager.update("stdout", makeRows(10));
         // from (50) > height (3) -> position clamps to height - 1, exercising the
-        // `from > height` true branch.
+        // clamp upper bound.
 
         expect(() => {
             manager.update("stdout", makeRows(4), 50);
         }).not.toThrow();
+    });
+});
+
+describe("interactiveManager wrapped-row bookkeeping", () => {
+    beforeEach(() => {
+        // Wide enough viewport (rows) so we exercise the wrap path, not the overflow path.
+        terminalSizeMock.mockReturnValue({ columns: 10, rows: 50 });
+    });
+
+    it("counts visual lines, not logical rows, when a row exceeds terminal width", () => {
+        expect.assertions(1);
+
+        const { manager } = createManager();
+
+        manager.hook();
+        // A single 30-char row in a 10-column terminal wraps to 3 visual lines.
+        manager.update("stdout", ["x".repeat(30)]);
+
+        // Previously this reported 1 (input row count); it must now report the 3 wrapped lines.
+        expect(manager.lastLength).toBe(3);
+    });
+
+    it("sums wrapped visual lines across multiple rows", () => {
+        expect.assertions(1);
+
+        const { manager } = createManager();
+
+        manager.hook();
+        // Two rows: a 20-char row (2 lines) + a short row (1 line) = 3 visual lines.
+        manager.update("stdout", ["y".repeat(20), "short"]);
+
+        expect(manager.lastLength).toBe(3);
+    });
+});
+
+describe("interactiveManager clear / done / empty update", () => {
+    beforeEach(() => {
+        terminalSizeMock.mockReturnValue({ columns: 80, rows: 24 });
+    });
+
+    it("clear() wipes the region and resets bookkeeping", () => {
+        expect.assertions(2);
+
+        const { manager } = createManager();
+
+        manager.hook();
+        manager.update("stdout", ["a", "b", "c"]);
+
+        expect(manager.lastLength).toBe(3);
+
+        manager.clear("stdout");
+
+        expect(manager.lastLength).toBe(0);
+    });
+
+    it("update() with an empty array clears the region", () => {
+        expect.assertions(2);
+
+        const { manager } = createManager();
+
+        manager.hook();
+        manager.update("stdout", ["a", "b"]);
+
+        expect(manager.lastLength).toBe(2);
+
+        manager.update("stdout", []);
+
+        expect(manager.lastLength).toBe(0);
+    });
+
+    it("done() resets bookkeeping without erasing on-screen output", () => {
+        expect.assertions(2);
+
+        const { capturedOut, manager } = createManager();
+
+        manager.hook();
+        manager.update("stdout", ["final frame"]);
+
+        const before = capturedOut.join("");
+
+        manager.done("stdout");
+
+        // No additional erase sequence was emitted by done().
+        expect(capturedOut.join("")).toBe(before);
+        expect(manager.lastLength).toBe(0);
     });
 });

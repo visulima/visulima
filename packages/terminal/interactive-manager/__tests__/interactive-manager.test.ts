@@ -24,6 +24,7 @@ const createMockStream = (): { captured: string[]; stream: NodeJS.WriteStream } 
     // our fake streams (the manager only writes to them so this is enough).
     Object.defineProperty(stream, "columns", { configurable: true, value: 80 });
     Object.defineProperty(stream, "rows", { configurable: true, value: 24 });
+    Object.defineProperty(stream, "isTTY", { configurable: true, value: true });
 
     return { captured, stream };
 };

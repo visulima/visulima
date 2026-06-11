@@ -58,12 +58,93 @@ const manager = new InteractiveManager(stdoutHook, stderrHook);
 // Start interactive mode
 manager.hook();
 
-// Update output dynamically
+// Update output dynamically (re-renders the interactive region in place)
 manager.update("stdout", ["Processing...", "50% complete"]);
 
-// End interactive mode
+// End interactive mode and replay any output buffered while hooked
 manager.unhook();
 ```
+
+## API
+
+### `InteractiveManager`
+
+Coordinates a stdout and a stderr hook, owns the cursor, and tracks how many lines the
+interactive region currently occupies so it can redraw without leaving artifacts.
+
+#### `manager.update(stream, rows, from = 0)`
+
+Renders `rows` (one string per line) to the given stream (`"stdout"` or `"stderr"`),
+erasing the previously rendered region first. Rows wider than the terminal are wrapped,
+and the wrapped visual lines are counted correctly when erasing the next frame.
+
+- `from` is the line index from which content is overwritten (used for partial redraws).
+- Passing an **empty array** clears the interactive region (equivalent to `clear()`).
+
+```typescript
+manager.update("stdout", ["downloading", "[####------] 40%"]);
+manager.update("stdout", []); // clear the region
+```
+
+#### `manager.clear(stream)`
+
+Wipes the interactive region for a stream and resets the internal line bookkeeping. This
+is the intent-revealing way to erase what `update()` last rendered without unhooking.
+
+#### `manager.done(stream)`
+
+Persists the currently rendered frame (leaves it on screen) and resets the bookkeeping so
+the next `update()` starts a fresh region below it. Useful for "freezing" a final
+spinner/progress frame in the scrollback.
+
+#### `manager.erase(stream, count = manager.lastLength)`
+
+Low-level erase of `count` lines from a stream. Most callers should prefer `clear()`.
+
+#### `manager.suspend(stream, erase = true)` / `manager.resume(stream, eraseRowCount?)`
+
+`suspend()` temporarily releases the hooks so external code can write to the terminal
+directly (e.g. a stray `console.log`) without tearing the interactive region; by default
+it erases the current region first. `resume()` re-installs the hooks (optionally erasing
+`eraseRowCount` leftover lines) and continues interactive rendering.
+
+```typescript
+manager.suspend("stdout");
+console.log("a one-off log line");
+manager.resume("stdout");
+```
+
+#### `manager.hook()` / `manager.unhook(separateHistory = true)`
+
+`hook()` installs the stream interceptors and returns `true` on the transition (false if
+already hooked). While hooked, all writes to the stream are buffered. `unhook()` releases
+the interceptors and **replays the buffered output** in order; `separateHistory` prepends a
+blank line before the replayed history. On an interactive TTY, `hook()` also starts
+tracking terminal-resize events so frame widths stay correct.
+
+#### Read-only state
+
+`manager.isHooked`, `manager.isSuspended`, `manager.lastLength` (lines in the current
+region, counting wrapped lines), `manager.outside` (lines scrolled above the viewport).
+
+### `InteractiveStreamHook`
+
+The per-stream interceptor. You normally create one for stdout and one for stderr and hand
+both to an `InteractiveManager`, but it can be used directly.
+
+```typescript
+const hook = new InteractiveStreamHook(process.stdout, { maxHistory: 5000 });
+```
+
+- **Non-TTY fallback** — when the underlying stream is not a TTY (piped output, CI logs,
+  redirection to a file), the hook degrades to plain sequential writes and skips all
+  cursor/erase escape sequences, so logs stay readable. Check `hook.isTTY`.
+- **Bounded history** — while active, writes are buffered for replay. `maxHistory`
+  (default `10000`) caps the buffer; once exceeded, the oldest entries are flushed above
+  the interactive region so a long-running, chatty session does not leak memory. Set to
+  `Infinity` to keep everything.
+- **Defensive restore** — if another tool re-patches `stream.write` after the hook was
+  installed, releasing the hook will not stomp that patch (it warns instead).
 
 ## Supported Node.js Versions
 

@@ -39,6 +39,12 @@ class InteractiveManager {
 
     #outside = 0;
 
+    /** Cached terminal dimensions, refreshed on `resize` instead of per-frame. */
+    #size: { columns: number; rows: number };
+
+    /** Bound resize handler so it can be detached on unhook. */
+    readonly #onResize: () => void;
+
     /**
      * Creates a new InteractiveManager with the given stream hooks.
      * @param stdout Hook for stdout stream
@@ -48,6 +54,13 @@ class InteractiveManager {
         this.#stream = {
             stderr,
             stdout,
+        };
+
+        this.#size = terminalSize();
+        this.#onResize = () => {
+            // Querying terminal dimensions is an ioctl round-trip; spinners call update()
+            // ~12x/sec per stream, so we cache the size and only refresh it on resize.
+            this.#size = terminalSize();
         };
     }
 
@@ -80,6 +93,39 @@ class InteractiveManager {
     }
 
     /**
+     * Clears the interactive region for a stream and resets its line bookkeeping.
+     *
+     * This is the public, intent-revealing way to wipe what `update()` last rendered
+     * without unhooking. Equivalent to `erase(stream)` followed by a length reset.
+     * @param stream The stream whose interactive region should be cleared.
+     */
+    public clear(stream: StreamType): void {
+        this.erase(stream);
+        this.#lastLength = 0;
+        this.#outside = 0;
+    }
+
+    /**
+     * Persists the currently rendered frame and resets the line bookkeeping.
+     *
+     * Unlike {@link clear}, the on-screen output is left in place; subsequent
+     * `update()` calls start a fresh interactive region below it. Useful for
+     * "freezing" a final spinner/progress frame in the scrollback.
+     *
+     * The bookkeeping is shared across streams, so the `stream` argument is accepted
+     * for symmetry with the other methods but does not change behaviour.
+     * @param _stream The stream whose frame should be persisted.
+     */
+    public done(_stream: StreamType): void {
+        // Leave the rendered output untouched, just forget about it so the next
+        // update() does not try to erase the now-persisted lines. update() already
+        // terminates each frame with a trailing "\n", so the cursor is on a fresh
+        // line below the persisted frame; we only need to reset the bookkeeping.
+        this.#lastLength = 0;
+        this.#outside = 0;
+    }
+
+    /**
      * Removes lines from the terminal output.
      * @param stream The stream to erase lines from
      * @param count Number of lines to remove (defaults to lastLength)
@@ -101,6 +147,15 @@ class InteractiveManager {
 
         for (const hook of hooks) {
             hook.active();
+        }
+
+        // Refresh cached size on hook and keep it current via the resize event.
+        this.#size = terminalSize();
+
+        // Only listen for resize on an interactive TTY; piped/redirected output never
+        // emits "resize" and attaching there would just leak a listener.
+        if (typeof process !== "undefined" && process.stdout.isTTY && typeof process.stdout.on === "function") {
+            process.stdout.on("resize", this.#onResize);
         }
 
         this.#clear(true);
@@ -168,6 +223,10 @@ class InteractiveManager {
             hook.inactive(separateHistory);
         }
 
+        if (typeof process !== "undefined" && typeof process.stdout.off === "function") {
+            process.stdout.off("resize", this.#onResize);
+        }
+
         this.#clear();
 
         return true;
@@ -175,42 +234,54 @@ class InteractiveManager {
 
     /**
      * Update output.
+     *
+     * Passing an empty `rows` array clears the interactive region for the stream
+     * (equivalent to {@link clear}).
      * @param stream Stream to write to
      * @param rows Text lines to write
      * @param from Index of the line starting from which contents are overwritten
      */
     public update(stream: StreamType, rows: string[], from: number = 0): void {
-        if (rows.length > 0) {
-            const hook = this.#stream[stream];
-            const { columns: width, rows: height } = terminalSize();
+        if (rows.length === 0) {
+            // An empty update means "clear the region" — there is otherwise no way to
+            // wipe the interactive area through the main API.
+            this.clear(stream);
 
-            const position = from > height ? height - 1 : Math.max(0, Math.min(height - 1, from));
-            const actualLength = this.lastLength - position;
-            const outside = Math.max(actualLength - height, this.outside);
-
-            let output = rows.map((row) =>
-                wordWrap(row, {
-                    trim: false,
-                    width,
-                    wrapMode: WrapMode.STRICT_WIDTH,
-                }),
-            );
-
-            if (height <= actualLength) {
-                hook.erase(height);
-
-                if (position < outside) {
-                    output = output.slice(outside - position + 1);
-                }
-            } else if (actualLength) {
-                hook.erase(actualLength);
-            }
-
-            hook.write(`${output.join("\n")}\n`);
-
-            this.#lastLength = outside ? outside + output.length + 1 : output.length;
-            this.#outside = Math.max(this.lastLength - height, this.outside);
+            return;
         }
+
+        const hook = this.#stream[stream];
+        const { columns: width, rows: height } = this.#size;
+
+        const position = Math.max(0, Math.min(height - 1, from));
+        const actualLength = this.lastLength - position;
+        const outside = Math.max(actualLength - height, this.outside);
+
+        // wordWrap returns a single string with embedded "\n" for rows wider than the
+        // terminal. Splitting on "\n" turns each logical row into its real visual lines
+        // so the erase/length bookkeeping below counts what is actually on screen.
+        let output = rows.flatMap((row) =>
+            wordWrap(row, {
+                trim: false,
+                width,
+                wrapMode: WrapMode.STRICT_WIDTH,
+            }).split("\n"),
+        );
+
+        if (height <= actualLength) {
+            hook.erase(height);
+
+            if (position < outside) {
+                output = output.slice(outside - position + 1);
+            }
+        } else if (actualLength) {
+            hook.erase(actualLength);
+        }
+
+        hook.write(`${output.join("\n")}\n`);
+
+        this.#lastLength = outside ? outside + output.length + 1 : output.length;
+        this.#outside = Math.max(this.lastLength - height, this.outside);
     }
 
     #clear(status: boolean = false): void {
