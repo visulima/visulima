@@ -4,7 +4,7 @@
  * Public API used:
  *   - `InProcessTaskHasher` — constructor takes `TaskHasherOptions`
  *     (workspaceRoot, projects, smartLockfileHashing?, globalInputs?, …)
- *   - `hashTask(task: Task): Promise<TaskHashDetails>` — the method that
+ *   - `hashTask(task: Task): Promise&lt;TaskHashDetails>` — the method that
  *     returns the per-task hash details bag
  *   - `computeTaskHash(details: TaskHashDetails): string` — converts the bag
  *     into a single opaque hash string
@@ -63,12 +63,14 @@ importers:
 `;
 
 /** Minimal Task fixture for the "lib-a:build" target. */
-const makeTask = (): Task => ({
-    id: "lib-a:build",
-    outputs: [],
-    overrides: {},
-    target: { project: "lib-a", target: "build" },
-});
+const makeTask = (): Task => {
+    return {
+        id: "lib-a:build",
+        outputs: [],
+        overrides: {},
+        target: { project: "lib-a", target: "build" },
+    };
+};
 
 // ---------------------------------------------------------------------------
 // Suite

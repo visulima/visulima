@@ -150,10 +150,10 @@ describe(Cache, () => {
             const restored = await cache.restoreOutputs("nested", ["packages/a/dist"]);
 
             expect(restored).toBe(true);
-            expect(await readFile(join(workspaceRoot, "packages", "a", "dist", "bundle.js"), "utf8")).toBe("built-a");
+            await expect(readFile(join(workspaceRoot, "packages", "a", "dist", "bundle.js"), "utf8")).resolves.toBe("built-a");
             // The bug deleted these two:
-            expect(await readFile(join(workspaceRoot, "packages", "a", "index.ts"), "utf8")).toBe("source-a");
-            expect(await readFile(join(workspaceRoot, "packages", "b", "src", "main.ts"), "utf8")).toBe("source-b");
+            await expect(readFile(join(workspaceRoot, "packages", "a", "index.ts"), "utf8")).resolves.toBe("source-a");
+            await expect(readFile(join(workspaceRoot, "packages", "b", "src", "main.ts"), "utf8")).resolves.toBe("source-b");
         });
 
         it("writes an outputs manifest naming the exact captured leaf paths", async () => {
@@ -186,7 +186,7 @@ describe(Cache, () => {
             const restored = await cache.restoreOutputs("legacy", ["packages/a/dist"]);
 
             expect(restored).toBe(false);
-            expect(await readFile(join(workspaceRoot, "packages", "a", "keep.ts"), "utf8")).toBe("keep");
+            await expect(readFile(join(workspaceRoot, "packages", "a", "keep.ts"), "utf8")).resolves.toBe("keep");
         });
 
         it("should return true when no outputs to restore", async () => {
@@ -554,7 +554,7 @@ describe(Cache, () => {
             await writeFile(join(workspaceRoot, "important.txt"), "keep");
             await misconfigured.clear();
 
-            expect(await readFile(join(workspaceRoot, "important.txt"), "utf8")).toBe("keep");
+            await expect(readFile(join(workspaceRoot, "important.txt"), "utf8")).resolves.toBe("keep");
         });
     });
 

@@ -919,6 +919,15 @@ export interface TaskRunnerOptions {
     namespaceByGlobalEnv?: boolean;
 
     /**
+     * Non-fatal diagnostic sink, forwarded to the task hasher. Fires when a
+     * cacheable task's file-set inputs resolve to zero files (the signature of a
+     * dropped `namedInputs`, a wrong `{projectRoot}`, or a glob matching
+     * nothing — a task that will reuse one cache entry forever). `vis` wires this
+     * to its logger.
+     */
+    onDiagnostic?: (taskId: string, message: string) => void;
+
+    /**
      * Plugin extension point invoked during task fingerprinting. Fires
      * once per task after the built-in inputs (filesets, runtime, env)
      * have been gathered and before the hash is sealed. Contributions
@@ -933,14 +942,6 @@ export interface TaskRunnerOptions {
      * standalone task-runner consumers can pass a callback directly.
      */
     onFingerprint?: FingerprintHook;
-    /**
-     * Non-fatal diagnostic sink, forwarded to the task hasher. Fires when a
-     * cacheable task's file-set inputs resolve to zero files (the signature of a
-     * dropped `namedInputs`, a wrong `{projectRoot}`, or a glob matching
-     * nothing — a task that will reuse one cache entry forever). `vis` wires this
-     * to its logger.
-     */
-    onDiagnostic?: (taskId: string, message: string) => void;
     /** Maximum number of parallel tasks */
     parallel?: number | boolean;
 

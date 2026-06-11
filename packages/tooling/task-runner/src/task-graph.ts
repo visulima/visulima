@@ -302,10 +302,16 @@ const resolveConfigDependency = (
         const projects = Array.isArray(dep.projects) ? dep.projects : [dep.projects];
 
         for (const projectName of projects) {
-            tasks.push(...asHardDependencies(getSameProjectTask(projectName, dep.target, dep.params === "forward" ? task.overrides : {}, workspace, targetDefaults)));
+            tasks.push(
+                ...asHardDependencies(getSameProjectTask(projectName, dep.target, dep.params === "forward" ? task.overrides : {}, workspace, targetDefaults)),
+            );
         }
     } else {
-        tasks.push(...asHardDependencies(getSameProjectTask(task.target.project, dep.target, dep.params === "forward" ? task.overrides : {}, workspace, targetDefaults)));
+        tasks.push(
+            ...asHardDependencies(
+                getSameProjectTask(task.target.project, dep.target, dep.params === "forward" ? task.overrides : {}, workspace, targetDefaults),
+            ),
+        );
     }
 
     return tasks;

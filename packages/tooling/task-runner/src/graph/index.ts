@@ -20,11 +20,4 @@ export {
     reverseTaskGraph,
     walkTaskGraph,
 } from "../task-graph-utils";
-export type {
-    ProjectGraph,
-    ProjectGraphDependency,
-    ProjectGraphProjectNode,
-    Task,
-    TaskGraph,
-    TaskTarget,
-} from "../types";
+export type { ProjectGraph, ProjectGraphDependency, ProjectGraphProjectNode, Task, TaskGraph, TaskTarget } from "../types";
