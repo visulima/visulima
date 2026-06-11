@@ -515,7 +515,6 @@ const execute = async ({ fs, options, visConfig, workspaceRoot: wsRoot }: Toolbo
     const entries: SortFileEntry[] = [];
 
     for (const filePath of files) {
-        // eslint-disable-next-line no-await-in-loop
         entries.push(await processFile(filePath, { checkMode, cwd, fs, normalized }));
     }
 
