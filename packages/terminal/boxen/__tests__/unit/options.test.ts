@@ -62,9 +62,11 @@ describe("fullscreen callback shapes", () => {
     it("accepts a { columns, rows } object", () => {
         expect.assertions(2);
 
-        const box = boxen("foo", { fullscreen: (width, height) => {
-            return { columns: width, rows: height };
-        } });
+        const box = boxen("foo", {
+            fullscreen: (width, height) => {
+                return { columns: width, rows: height };
+            },
+        });
         const lines = box.split("\n");
 
         expect(lines).toHaveLength(24);
@@ -75,9 +77,11 @@ describe("fullscreen callback shapes", () => {
         expect.assertions(1);
 
         const tuple = boxen("foo bar", { fullscreen: (width, height) => [width - 4, height - 2] });
-        const object = boxen("foo bar", { fullscreen: (width, height) => {
-            return { columns: width - 4, rows: height - 2 };
-        } });
+        const object = boxen("foo bar", {
+            fullscreen: (width, height) => {
+                return { columns: width - 4, rows: height - 2 };
+            },
+        });
 
         expect(tuple).toBe(object);
     });

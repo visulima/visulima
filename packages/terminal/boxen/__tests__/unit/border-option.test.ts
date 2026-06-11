@@ -44,7 +44,7 @@ describe("border option", () => {
         expect(() => {
             // @ts-ignore - intentional error for testing
             boxen("foo", { borderColor: "greasy-white" });
-        }).toThrow("\"borderColor\" must be a function, got string");
+        }).toThrow('"borderColor" must be a function, got string');
     });
 
     it("border style (single)", () => {
