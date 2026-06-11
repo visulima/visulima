@@ -567,6 +567,56 @@ describe("smtp provider (extended)", () => {
             expect(allWrites().filter((write) => write.startsWith("RCPT TO"))).toHaveLength(4);
         });
 
+        it("appends RFC 3461 NOTIFY=... to RCPT TO when the server advertises DSN", async () => {
+            expect.assertions(3);
+
+            useServer({ ehloCaps: ["DSN"] });
+
+            const provider = smtpProvider(plainConfig());
+            const result = await provider.sendEmail({
+                ...baseEmail,
+                dsn: { failure: true, success: true },
+            });
+
+            const rcpt = allWrites().find((write) => write.startsWith("RCPT TO")) ?? "";
+
+            expect(result.success).toBe(true);
+            expect(rcpt).toContain("NOTIFY=SUCCESS,FAILURE");
+            // The bogus X-DSN-NOTIFY header must no longer be emitted into the message.
+            expect(lastMessage()).not.toContain("X-DSN-NOTIFY");
+        });
+
+        it("does not request DSN when the server does not advertise the extension", async () => {
+            expect.assertions(2);
+
+            useServer({ ehloCaps: [] });
+
+            const provider = smtpProvider(plainConfig());
+            const result = await provider.sendEmail({
+                ...baseEmail,
+                dsn: { failure: true },
+            });
+
+            const rcpt = allWrites().find((write) => write.startsWith("RCPT TO")) ?? "";
+
+            expect(result.success).toBe(true);
+            expect(rcpt).not.toContain("NOTIFY=");
+        });
+
+        it("does not omit BCC from the delivered SMTP message", async () => {
+            expect.assertions(2);
+
+            const provider = smtpProvider(plainConfig());
+            const result = await provider.sendEmail({
+                ...baseEmail,
+                bcc: { email: "secret@example.com" },
+            });
+
+            expect(result.success).toBe(true);
+            // The Bcc list must not leak into the message body sent via DATA.
+            expect(lastMessage()).not.toContain("secret@example.com");
+        });
+
         it("adds DSN, high priority and threading headers to the message", async () => {
             expect.assertions(10);
 

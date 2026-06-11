@@ -732,14 +732,17 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                 let socket = await createSmtpConnection();
 
                 try {
-                    // EHLO handshake
-                    await sendSmtpCommand(socket, `EHLO ${options.host}`, "250");
+                    // EHLO handshake. Track advertised ESMTP extensions so we only
+                    // request DSN (RFC 3461) when the server actually supports it.
+                    let serverCapabilities = parseEhloResponse(await sendSmtpCommand(socket, `EHLO ${options.host}`, "250"));
 
                     // Support for STARTTLS (if not already using TLS and server supports it)
                     if (!options.secure) {
                         try {
                             const ehloResponse = await sendSmtpCommand(socket, `EHLO ${options.host}`, "250");
                             const capabilities = parseEhloResponse(ehloResponse);
+
+                            serverCapabilities = capabilities;
 
                             if (Object.keys(capabilities).includes("STARTTLS")) {
                                 // Server supports STARTTLS, so use it
@@ -751,8 +754,9 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                                 // Replace socket reference with secure version
                                 socket = tlsSocket;
 
-                                // Re-issue EHLO command over secured connection
-                                await sendSmtpCommand(socket, `EHLO ${options.host}`, "250");
+                                // Re-issue EHLO command over secured connection and refresh
+                                // capabilities (some servers only advertise extensions post-TLS).
+                                serverCapabilities = parseEhloResponse(await sendSmtpCommand(socket, `EHLO ${options.host}`, "250"));
                             }
                         } catch (error) {
                             // STARTTLS not supported or failed, continue with plain connection
@@ -764,6 +768,34 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
 
                     // Authenticate if credentials are provided
                     await authenticate(socket);
+
+                    // Build the RFC 3461 NOTIFY=... parameter for RCPT TO when DSN is
+                    // requested and the server advertises the DSN extension. Servers
+                    // ignore the made-up X-DSN-NOTIFY header, so the envelope-level
+                    // parameter is the only way the dsn option actually takes effect.
+                    const serverSupportsDsn = Object.keys(serverCapabilities).some((key) => key.toUpperCase() === "DSN");
+                    let dsnRcptParameter = "";
+
+                    if (emailOptions.dsn && serverSupportsDsn) {
+                        const notify: string[] = [];
+
+                        if (emailOptions.dsn.success) {
+                            notify.push("SUCCESS");
+                        }
+
+                        if (emailOptions.dsn.failure) {
+                            notify.push("FAILURE");
+                        }
+
+                        if (emailOptions.dsn.delay) {
+                            notify.push("DELAY");
+                        }
+
+                        // SUCCESS/FAILURE/DELAY are mutually exclusive with NEVER per RFC 3461.
+                        if (notify.length > 0) {
+                            dsnRcptParameter = ` NOTIFY=${notify.join(",")}`;
+                        }
+                    }
 
                     // MAIL FROM command
                     await sendSmtpCommand(socket, `MAIL FROM:<${emailOptions.from.email}>`, "250");
@@ -800,7 +832,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
 
                     for (const recipient of recipients) {
                         // eslint-disable-next-line no-await-in-loop
-                        await sendSmtpCommand(socket, `RCPT TO:<${recipient}>`, "250");
+                        await sendSmtpCommand(socket, `RCPT TO:<${recipient}>${dsnRcptParameter}`, "250");
                     }
 
                     // DATA command
@@ -809,29 +841,10 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                     // Build and send MIME message
                     let mimeMessage = await buildMimeMessage(emailOptions);
 
-                    // Add special headers based on email options
+                    // Add special headers based on email options.
+                    // DSN is requested at the envelope level via RCPT TO NOTIFY=...
+                    // (RFC 3461) above, not via a message header.
                     const additionalHeaders: string[] = [];
-
-                    // Add DSN headers if requested
-                    if (emailOptions.dsn) {
-                        const dsnOptions = [];
-
-                        if (emailOptions.dsn.success) {
-                            dsnOptions.push("SUCCESS");
-                        }
-
-                        if (emailOptions.dsn.failure) {
-                            dsnOptions.push("FAILURE");
-                        }
-
-                        if (emailOptions.dsn.delay) {
-                            dsnOptions.push("DELAY");
-                        }
-
-                        if (dsnOptions.length > 0) {
-                            additionalHeaders.push(`X-DSN-NOTIFY: ${dsnOptions.join(",")}`);
-                        }
-                    }
 
                     // Add priority if specified
                     if (emailOptions.priority) {

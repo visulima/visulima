@@ -82,6 +82,15 @@ const buildPersonalized = async (base: EmailOptions, personalization: Personaliz
 export type SendableMessage = MailMessage | EmailOptions;
 
 /**
+ * Base message accepted by {@link Mail.sendBatch}.
+ *
+ * Unlike {@link SendableMessage}, the `to` field is optional here: every outgoing message gets its
+ * recipients from its {@link Personalization}, so the base never needs a (always-ignored) `to`. A
+ * {@link MailMessage} is also accepted — its `to` is built lazily and may legitimately be unset.
+ */
+export type BatchBase = MailMessage | (Omit<EmailOptions, "to"> & { to?: EmailAddress | EmailAddress[] });
+
+/**
  * Renders a template string against per-recipient data (e.g. a Handlebars/Liquid renderer).
  */
 export type BatchRenderer = (template: string, data: Record<string, unknown>) => MaybePromise<string>;
@@ -133,6 +142,12 @@ export interface Personalization {
  * Options for {@link Mail.sendBatch}.
  */
 export interface SendBatchOptions {
+    /**
+     * Maximum number of messages to send in parallel. Defaults to `1` (serial). See
+     * {@link Mail.sendMany} for the concurrency semantics.
+     */
+    concurrency?: number;
+
     /**
      * Renders the base `subject`/`html`/`text` templates against each personalization's `data`.
      */
@@ -400,8 +415,10 @@ export class Mail {
             "X-Unsent": "1",
         };
 
-        // Build MIME message (EML format)
-        const eml = await buildMimeMessage(emailOptions);
+        // Build MIME message (EML format). Drafts are inspected by a human and
+        // never delivered through a transport, so the Bcc header is retained here
+        // (transports omit it to avoid disclosing the blind-copy list).
+        const eml = await buildMimeMessage(emailOptions, { includeBcc: true });
 
         if (this.logger) {
             this.logger.debug("Draft created successfully in EML format", {
@@ -505,14 +522,70 @@ export class Mail {
      * @param messages An iterable of MailMessage instances or email options to send.
      * @param options Optional parameters for sending.
      * @param options.signal Abort signal to cancel the operation.
+     * @param options.concurrency Maximum number of messages to send in parallel. Defaults to `1`
+     *   (strictly serial). Values > 1 spin up a bounded worker pool and yield receipts as they
+     *   settle (so the yield order is completion order, not input order) — a large win for
+     *   latency-bound HTTP providers (Resend/SendGrid/etc.).
      * @returns An async iterable that yields receipts for each sent message.
      */
-    // eslint-disable-next-line sonarjs/cognitive-complexity
-    public async* sendMany(messages: Iterable<SendableMessage> | AsyncIterable<SendableMessage>, options?: { signal?: AbortSignal }): AsyncIterable<Receipt> {
+    public sendMany(
+        messages: Iterable<SendableMessage> | AsyncIterable<SendableMessage>,
+        options?: { concurrency?: number; signal?: AbortSignal },
+    ): AsyncIterable<Receipt> {
+        const concurrency = Math.max(1, Math.floor(options?.concurrency ?? 1));
+
+        if (concurrency === 1) {
+            return this.sendManySerial(messages, options?.signal);
+        }
+
+        return this.sendManyConcurrent(messages, concurrency, options?.signal);
+    }
+
+    /**
+     * Sends a single message and converts the result to a {@link Receipt}.
+     * Shared by the serial and concurrent {@link Mail.sendMany} paths.
+     * @param message The message to send (must not be a draft).
+     * @returns The receipt describing success or failure.
+     */
+    private async sendOneToReceipt(message: SendableMessage): Promise<Receipt> {
+        const providerName = this.provider.name;
+
+        try {
+            const result = await this.send(message);
+
+            if (result.success && result.data) {
+                return {
+                    messageId: result.data.messageId,
+                    provider: result.data.provider ?? providerName,
+                    response: result.data.response,
+                    successful: true,
+                    timestamp: result.data.timestamp,
+                };
+            }
+
+            return {
+                errorMessages: Mail.extractErrorMessages(result.error),
+                provider: providerName,
+                successful: false,
+            };
+        } catch (error) {
+            return {
+                errorMessages: Mail.extractErrorMessages(error),
+                provider: providerName,
+                successful: false,
+            };
+        }
+    }
+
+    /**
+     * Serial implementation of {@link Mail.sendMany} (concurrency 1).
+     * @param messages The messages to send.
+     * @param signal Optional abort signal.
+     * @yields A receipt per message, in input order.
+     */
+    private async* sendManySerial(messages: Iterable<SendableMessage> | AsyncIterable<SendableMessage>, signal?: AbortSignal): AsyncIterable<Receipt> {
         const providerName = this.provider.name;
         let processedCount = 0;
-        let successCount = 0;
-        let failureCount = 0;
 
         if (this.logger) {
             this.logger.debug("Starting batch email send", { provider: providerName });
@@ -523,85 +596,106 @@ export class Mail {
                 throw new TypeError("Cannot send draft messages. Convert to MailMessage first or remove X-Unsent header.");
             }
 
-            if (options?.signal?.aborted) {
+            if (signal?.aborted) {
                 if (this.logger) {
-                    this.logger.warn("Batch send operation was aborted", {
-                        failed: failureCount,
-                        processed: processedCount,
-                        successful: successCount,
-                    });
+                    this.logger.warn("Batch send operation was aborted", { processed: processedCount });
                 }
 
-                yield {
-                    errorMessages: ["Send operation was aborted"],
-                    provider: providerName,
-                    successful: false,
-                };
+                yield { errorMessages: ["Send operation was aborted"], provider: providerName, successful: false };
 
                 return;
             }
 
             processedCount += 1;
 
-            try {
-                const result = await this.send(message);
-
-                if (result.success && result.data) {
-                    successCount += 1;
-
-                    if (this.logger) {
-                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                        this.logger.debug(`Email ${processedCount} sent successfully`, {
-                            messageId: result.data.messageId,
-                        });
-                    }
-
-                    yield {
-                        messageId: result.data.messageId,
-                        provider: result.data.provider ?? providerName,
-                        response: result.data.response,
-                        successful: true,
-                        timestamp: result.data.timestamp,
-                    };
-                } else {
-                    failureCount += 1;
-
-                    if (this.logger) {
-                        // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                        this.logger.error(`Email ${processedCount} send failed`, {
-                            error: result.error,
-                        });
-                    }
-
-                    yield {
-                        errorMessages: Mail.extractErrorMessages(result.error),
-                        provider: providerName,
-                        successful: false,
-                    };
-                }
-            } catch (error) {
-                failureCount += 1;
-
-                if (this.logger) {
-                    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                    this.logger.error(`Email ${processedCount} send failed with exception`, error);
-                }
-
-                yield {
-                    errorMessages: Mail.extractErrorMessages(error),
-                    provider: providerName,
-                    successful: false,
-                };
-            }
+            // eslint-disable-next-line no-await-in-loop
+            yield await this.sendOneToReceipt(message);
         }
 
         if (this.logger) {
-            this.logger.debug("Batch email send completed", {
-                failureCount,
-                processedCount,
-                provider: providerName,
-                successCount,
-            });
+            this.logger.debug("Batch email send completed", { processedCount, provider: providerName });
+        }
+    }
+
+    /**
+     * Concurrent implementation of {@link Mail.sendMany}.
+     *
+     * Maintains a bounded pool of in-flight sends; as each settles its receipt is
+     * yielded immediately (completion order) and the next pending message is pulled
+     * from the source iterator, keeping the pool full without buffering the whole input.
+     * @param messages The messages to send.
+     * @param concurrency Maximum number of in-flight sends (>= 2).
+     * @param signal Optional abort signal.
+     * @yields A receipt per message, in completion order.
+     */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    private async* sendManyConcurrent(
+        messages: Iterable<SendableMessage> | AsyncIterable<SendableMessage>,
+        concurrency: number,
+        signal?: AbortSignal,
+    ): AsyncIterable<Receipt> {
+        const providerName = this.provider.name;
+
+        if (this.logger) {
+            this.logger.debug("Starting concurrent batch email send", { concurrency, provider: providerName });
+        }
+
+        const iterator = (messages as AsyncIterable<SendableMessage>)[Symbol.asyncIterator]?.()
+            ?? (messages as Iterable<SendableMessage>)[Symbol.iterator]();
+        // Each entry resolves to its receipt; we race them and remove the settled one.
+        const pool = new Map<number, Promise<{ id: number; receipt: Receipt }>>();
+        let nextId = 0;
+        let exhausted = false;
+        let aborted = false;
+
+        const pump = async (): Promise<void> => {
+            while (!exhausted && !aborted && pool.size < concurrency) {
+                // eslint-disable-next-line no-await-in-loop
+                const next = await (iterator as AsyncIterator<SendableMessage> | Iterator<SendableMessage>).next();
+
+                if (next.done) {
+                    exhausted = true;
+
+                    break;
+                }
+
+                const message = next.value;
+
+                if (message instanceof DraftMailMessage) {
+                    throw new TypeError("Cannot send draft messages. Convert to MailMessage first or remove X-Unsent header.");
+                }
+
+                const id = nextId;
+
+                nextId += 1;
+                pool.set(id, this.sendOneToReceipt(message).then((receipt) => ({ id, receipt })));
+            }
+        };
+
+        await pump();
+
+        while (pool.size > 0) {
+            if (signal?.aborted) {
+                aborted = true;
+
+                yield { errorMessages: ["Send operation was aborted"], provider: providerName, successful: false };
+
+                return;
+            }
+
+            // eslint-disable-next-line no-await-in-loop
+            const { id, receipt } = await Promise.race(pool.values());
+
+            pool.delete(id);
+
+            yield receipt;
+
+            // eslint-disable-next-line no-await-in-loop
+            await pump();
+        }
+
+        if (this.logger) {
+            this.logger.debug("Concurrent batch email send completed", { processedCount: nextId, provider: providerName });
         }
     }
 
@@ -612,25 +706,27 @@ export class Mail {
      * `options.render` is supplied, the base `subject`/`html`/`text` are treated as templates and
      * rendered against each personalization's `data`. Results stream back as {@link Receipt}s, exactly
      * like {@link Mail.sendMany}.
-     * @param base The shared base message (MailMessage or EmailOptions). Its `to` is ignored.
+     * @param base The shared base message (MailMessage or a {@link BatchBase}). Its `to` is optional
+     *   and ignored — each personalization supplies its own recipients.
      * @param personalizations One entry per outgoing message.
-     * @param options Optional renderer and abort signal. See {@link SendBatchOptions}.
+     * @param options Optional renderer, abort signal and concurrency. See {@link SendBatchOptions}.
      * @returns An async iterable of receipts, one per personalization.
      * @example
      * ```ts
      * import { renderHandlebars } from "@visulima/email/template/handlebars";
      *
      * for await (const receipt of mail.sendBatch(
-     *   // `to` is required on EmailOptions but ignored here — each personalization supplies its own.
-     *   { from: { email: "a@x.com" }, to: { email: "placeholder@x.com" }, subject: "Hi {{name}}", html: "<p>Hello {{name}}</p>" },
+     *   // No `to` needed on the base — each personalization supplies its own.
+     *   { from: { email: "a@x.com" }, subject: "Hi {{name}}", html: "<p>Hello {{name}}</p>" },
      *   [{ to: { email: "b@x.com" }, data: { name: "Bob" } }],
      *   { render: (tpl, data) => renderHandlebars(tpl, data) },
      * )) { /* ... *\/ }
      * ```
      */
-    public sendBatch(base: SendableMessage, personalizations: Personalization[], options?: SendBatchOptions): AsyncIterable<Receipt> {
+    public sendBatch(base: BatchBase, personalizations: Personalization[], options?: SendBatchOptions): AsyncIterable<Receipt> {
         const build = async function* (): AsyncIterable<SendableMessage> {
-            const baseOptions = base instanceof MailMessage ? await base.build() : base;
+            // `to` is always overridden per personalization, so a missing base `to` is fine.
+            const baseOptions = (base instanceof MailMessage ? await base.build() : base) as EmailOptions;
 
             for (const personalization of personalizations) {
                 // eslint-disable-next-line no-await-in-loop
@@ -638,7 +734,7 @@ export class Mail {
             }
         };
 
-        return this.sendMany(build(), { signal: options?.signal });
+        return this.sendMany(build(), { concurrency: options?.concurrency, signal: options?.signal });
     }
 
     /**

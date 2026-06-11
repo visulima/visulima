@@ -105,7 +105,7 @@ describe(buildMimeMessage, () => {
             expect(message).toContain("Cc: \"CC Recipient\" <cc@example.com>");
         });
 
-        it("should handle BCC recipients", async () => {
+        it("should omit BCC recipients from transport output by default", async () => {
             expect.assertions(3);
 
             const options: EmailOptions = {
@@ -117,6 +117,25 @@ describe(buildMimeMessage, () => {
             };
 
             const message = await buildMimeMessage(options);
+
+            // Bcc must NOT leak into the delivered message; recipients are reached via the envelope.
+            expect(message).not.toContain("Bcc:");
+            expect(message).not.toContain("bcc1@example.com");
+            expect(message).not.toContain("bcc2@example.com");
+        });
+
+        it("should include BCC recipients when includeBcc is set (draft/EML output)", async () => {
+            expect.assertions(3);
+
+            const options: EmailOptions = {
+                bcc: [{ email: "bcc1@example.com" }, { email: "bcc2@example.com" }],
+                from: { email: "sender@example.com" },
+                subject: "Test",
+                text: "Test",
+                to: { email: "recipient@example.com" },
+            };
+
+            const message = await buildMimeMessage(options, { includeBcc: true });
 
             expect(message).toContain("Bcc:");
             expect(message).toContain("bcc1@example.com");
@@ -641,6 +660,100 @@ describe(buildMimeMessage, () => {
 
             expect(message).toContain("Content-Transfer-Encoding: quoted-printable");
             expect(message).toContain(Buffer.from("quoted body").toString("base64"));
+        });
+    });
+
+    describe("non-ascii header encoding (RFC 2047)", () => {
+        it("should RFC 2047 encode a non-ASCII subject", async () => {
+            expect.assertions(2);
+
+            const message = await buildMimeMessage({
+                from: { email: "sender@example.com" },
+                subject: "Grüße aus München",
+                text: "hi",
+                to: { email: "recipient@example.com" },
+            });
+
+            // Raw UTF-8 must not appear in the header; it is encoded as an encoded-word.
+            expect(message).not.toContain("Subject: Grüße aus München");
+            expect(message).toContain("=?UTF-8?B?");
+        });
+
+        it("should leave an ASCII subject untouched", async () => {
+            expect.assertions(1);
+
+            const message = await buildMimeMessage({
+                from: { email: "sender@example.com" },
+                subject: "Plain ASCII Subject",
+                text: "hi",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(message).toContain("Subject: Plain ASCII Subject");
+        });
+
+        it("should encode non-ASCII bodies as quoted-printable instead of mislabelling them 7bit", async () => {
+            expect.assertions(3);
+
+            const message = await buildMimeMessage({
+                from: { email: "sender@example.com" },
+                html: "<p>Grüße</p>",
+                subject: "x",
+                text: "Grüße",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(message).toContain("Content-Transfer-Encoding: quoted-printable");
+            // The raw multibyte ü must not be emitted under a 7bit label.
+            expect(message).toContain("Gr=C3=BC=C3=9Fe");
+            expect(message).not.toContain("Content-Transfer-Encoding: 7bit\r\n\r\nGrüße");
+        });
+    });
+
+    describe("attachment metadata header injection", () => {
+        it("should strip CRLF from attachment contentType, disposition, cid and encoding", async () => {
+            expect.assertions(3);
+
+            const message = await buildMimeMessage({
+                attachments: [
+                    {
+                        cid: "abc\r\nX-Injected-Cid: yes",
+                        content: "data",
+                        contentDisposition: "attachment\r\nX-Injected-Disp: yes" as never,
+                        contentType: "text/plain\r\nX-Injected-Type: yes",
+                        encoding: "base64\r\nX-Injected-Enc: yes",
+                        filename: "file.txt",
+                    },
+                ],
+                from: { email: "sender@example.com" },
+                subject: "x",
+                text: "hi",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(message).not.toContain("X-Injected-Type");
+            expect(message).not.toContain("X-Injected-Disp");
+            expect(message).not.toContain("X-Injected-Cid");
+        });
+
+        it("should RFC 2047 encode a non-ASCII attachment filename", async () => {
+            expect.assertions(1);
+
+            const message = await buildMimeMessage({
+                attachments: [
+                    {
+                        content: "data",
+                        contentType: "text/plain",
+                        filename: "Grüße.txt",
+                    },
+                ],
+                from: { email: "sender@example.com" },
+                subject: "x",
+                text: "hi",
+                to: { email: "recipient@example.com" },
+            });
+
+            expect(message).toContain("=?UTF-8?B?");
         });
     });
 });

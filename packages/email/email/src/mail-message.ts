@@ -7,7 +7,6 @@ import ical from "ical-generator";
 import type { AttachmentDataOptions, AttachmentOptions } from "./attachment-helpers";
 import { detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers";
 import type { EmailEncrypter, EmailSigner } from "./crypto";
-import htmlToText from "./template-engines/html-to-text";
 import type { TemplateRenderer } from "./template-engines/types";
 import type { Attachment, CalendarEventOptions, EmailAddress, EmailHeaders, EmailOptions, Priority } from "./types";
 import type { Logger } from "./utils/create-logger";
@@ -15,6 +14,16 @@ import { createLogger } from "./utils/create-logger";
 import headersToRecord from "./utils/headers-to-record";
 
 type AddressInput = EmailAddress | EmailAddress[] | string | string[];
+
+/**
+ * Lazily loads the `html-to-text` conversion helper.
+ *
+ * `html-to-text` is only needed for the auto-text fallback (HTML -> plain text), which is reachable
+ * exclusively from the async `build()` / `view()` paths. Importing it lazily keeps it out of the
+ * eager module graph so consumers who never trigger auto-text don't pay its bundle/load cost.
+ * @returns The default-exported `htmlToText` function.
+ */
+const loadHtmlToText = async (): Promise<typeof import("./template-engines/html-to-text").default> => (await import("./template-engines/html-to-text")).default;
 
 const normalizeAddresses = (address: AddressInput): EmailAddress[] => {
     if (Array.isArray(address)) {
@@ -662,7 +671,7 @@ export class MailMessage {
             this.html(html);
 
             if (autoTextEnabled && html) {
-                this.tryAutoGenerateText(html);
+                await this.tryAutoGenerateText(html);
             }
 
             if (this.logger) {
@@ -747,6 +756,8 @@ export class MailMessage {
 
         if (this.htmlContent && !this.textContent && this.autoTextEnabled) {
             try {
+                const htmlToText = await loadHtmlToText();
+
                 this.textContent = htmlToText(this.htmlContent);
 
                 if (this.logger) {
@@ -1000,8 +1011,9 @@ export class MailMessage {
      * @param html The HTML content to convert.
      * @private
      */
-    private tryAutoGenerateText(html: string): void {
+    private async tryAutoGenerateText(html: string): Promise<void> {
         try {
+            const htmlToText = await loadHtmlToText();
             const text = htmlToText(html);
 
             if (text && !this.textContent) {
