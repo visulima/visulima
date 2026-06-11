@@ -65,7 +65,9 @@ const _createWalkEntry = async (path: string): Promise<WalkEntry> => {
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export default async function* walk(
     directory: URL | string,
-    {
+    options: WalkOptions = {},
+): AsyncIterableIterator<WalkEntry> {
+    const {
         extensions,
         followSymlinks = false,
         includeDirs: includeDirectories = true,
@@ -74,13 +76,17 @@ export default async function* walk(
         match,
         maxDepth = Number.POSITIVE_INFINITY,
         skip,
-    }: WalkOptions = {},
-): AsyncIterableIterator<WalkEntry> {
+    } = options;
+
     assertValidFileOrDirectoryPath(directory);
 
     if (maxDepth < 0) {
         return;
     }
+
+    // Internal: tracks resolved real paths already visited to avoid infinite
+    // recursion on self-referencing symlinks when `followSymlinks` is enabled.
+    const visited = (options as { visited?: Set<string> }).visited ?? new Set<string>();
 
     const mappedMatch = match
         ? match.map(
@@ -116,10 +122,31 @@ export default async function* walk(
         for (const entry of entries) {
             let path = join(directory, entry.name);
 
+            // Track whether the entry needs to be re-stat'd because it is a
+            // symlink we are resolving. The original dirent reports the link
+            // itself (isDirectory()/isFile() are both false), so after resolving
+            // we must inspect the real target to decide how to handle it.
+            let isDirectory = entry.isDirectory();
+            let isFile = entry.isFile();
+
             if (entry.isSymbolicLink()) {
                 if (followSymlinks) {
                     // eslint-disable-next-line no-await-in-loop
-                    path = await realpath(path);
+                    const realPath = await realpath(path);
+
+                    // Cycle detection: skip targets already visited so a symlink
+                    // pointing at an ancestor directory cannot loop forever.
+                    if (visited.has(realPath)) {
+                        continue;
+                    }
+
+                    path = realPath;
+
+                    // eslint-disable-next-line no-await-in-loop
+                    const info = await stat(realPath);
+
+                    isDirectory = info.isDirectory();
+                    isFile = info.isFile();
                 } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                     yield createWalkEntry(entry, entry.name, path);
 
@@ -129,7 +156,11 @@ export default async function* walk(
                 }
             }
 
-            if (entry.isDirectory()) {
+            if (isDirectory) {
+                if (followSymlinks) {
+                    visited.add(path);
+                }
+
                 yield* walk(path, {
                     extensions,
                     followSymlinks,
@@ -139,8 +170,9 @@ export default async function* walk(
                     match: mappedMatch,
                     maxDepth: maxDepth - 1,
                     skip: mappedSkip,
-                });
-            } else if (entry.isFile() && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
+                    visited,
+                } as WalkOptions);
+            } else if (isFile && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                 yield createWalkEntry(entry, entry.name, path);
             }
         }

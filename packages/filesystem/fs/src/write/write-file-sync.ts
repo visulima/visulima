@@ -5,10 +5,12 @@ import { dirname } from "@visulima/path";
 import { toPath } from "@visulima/path/utils";
 
 import { F_OK } from "../constants";
+import AlreadyExistsError from "../error/already-exists-error";
 import isAccessibleSync from "../is-accessible-sync";
 import type { WriteFileOptions } from "../types";
 import assertValidFileContents from "../utils/assert-valid-file-contents";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import temporaryPath from "./utils/temporary-path";
 import toUint8Array from "./utils/to-uint-8-array";
 
 /**
@@ -42,6 +44,7 @@ import toUint8Array from "./utils/to-uint-8-array";
 const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): void => {
     // eslint-disable-next-line no-param-reassign
     options = {
+        backup: false,
         encoding: "utf8",
         flag: "w",
         overwrite: true,
@@ -55,24 +58,30 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
     // eslint-disable-next-line no-param-reassign
     path = toPath(path);
 
-    const temporaryPath = `${path}.tmp`;
+    const pathExists = isAccessibleSync(path, F_OK);
+
+    if (pathExists && !options.overwrite) {
+        throw new AlreadyExistsError(`file already exists, open '${path}'`);
+    }
+
+    // Use an unpredictable temp path so concurrent writers don't collide and a
+    // pre-created symlink at a predictable path can't be written through.
+    const temporary = temporaryPath(path);
 
     try {
-        const pathExists = isAccessibleSync(path, F_OK);
-
         if (!pathExists && options.recursive) {
-            const directory = dirname(path);
-
-            if (!isAccessibleSync(directory, F_OK)) {
-                mkdirSync(directory, { recursive: true });
-            }
+            // `mkdir` with `recursive: true` is idempotent — no error if the
+            // directory already exists — so a pre-flight access check is redundant.
+            mkdirSync(dirname(path), { recursive: true });
         }
 
         let stat: Stats | undefined;
 
-        nodeWriteFileSync(temporaryPath, typeof content === "string" ? Buffer.from(content, options.encoding ?? "utf8") : toUint8Array(content), { flag: options.flag });
+        // `wx` (O_CREAT | O_EXCL) refuses to follow or open an existing path,
+        // so the temp file is always freshly created by this process.
+        nodeWriteFileSync(temporary, typeof content === "string" ? Buffer.from(content, options.encoding ?? "utf8") : toUint8Array(content), { flag: "wx" });
 
-        if (pathExists && !options.overwrite) {
+        if (pathExists && options.backup) {
             stat = statSync(path);
 
             // eslint-disable-next-line no-param-reassign
@@ -83,21 +92,21 @@ const writeFileSync = (path: URL | string, content: ArrayBuffer | ArrayBufferVie
 
         if (options.chown) {
             try {
-                chownSync(temporaryPath, options.chown.uid, options.chown.gid);
+                chownSync(temporary, options.chown.uid, options.chown.gid);
             } catch {
                 // On linux permissionless filesystems like exfat and fat32 the entire filesystem is normally owned by root,
                 // and trying to chown it causes as permissions error.
             }
         }
 
-        chmodSync(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
+        chmodSync(temporary, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
 
-        renameSync(temporaryPath, path);
+        renameSync(temporary, path);
     } catch (error: unknown) {
         throw new Error(`Failed to write file at: ${path} - ${(error as Error).message}`, { cause: error });
     } finally {
-        if (isAccessibleSync(temporaryPath)) {
-            unlinkSync(`${path}.tmp`);
+        if (isAccessibleSync(temporary)) {
+            unlinkSync(temporary);
         }
     }
 };

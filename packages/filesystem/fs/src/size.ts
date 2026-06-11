@@ -1,5 +1,4 @@
-import { existsSync, readFileSync, statSync } from "node:fs";
-import { readFile } from "node:fs/promises";
+import { createReadStream, existsSync, readFileSync, statSync } from "node:fs";
 import { isAbsolute, resolve } from "node:path";
 import { Readable } from "node:stream";
 import { URL } from "node:url";
@@ -112,9 +111,9 @@ const processInputEfficiently = async (
         const path = toPath(input);
 
         if (fileExists(path)) {
-            // For files, we create a readable stream to process them in chunks
-
-            const fileStream = Readable.from(await readFile(path));
+            // For files, we open a true file read stream so the contents are
+            // processed in chunks without buffering the whole file in memory.
+            const fileStream = createReadStream(path);
 
             return await streamProcessor(fileStream);
         }

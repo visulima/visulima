@@ -41,16 +41,20 @@ describe.each([
         expect(result).toBe(`hello world!${isWindows ? "\r\n" : "\n"}`);
     });
 
-    it("should throw a error on a missing file", async () => {
-        expect.assertions(1);
+    it("should throw a NotFoundError on a missing file", async () => {
+        expect.assertions(2);
 
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readFile") {
             // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(() => function_("/missing")).rejects.toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
+            await expect(() => function_("/missing")).rejects.toThrow("ENOENT");
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(() => function_("/missing")).rejects.toMatchObject({ name: "NotFoundError" });
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(() => function_("/missing")).toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
+            expect(() => function_("/missing")).toThrow("ENOENT");
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(() => function_("/missing")).toThrow(expect.objectContaining({ name: "NotFoundError" }));
         }
     });
 

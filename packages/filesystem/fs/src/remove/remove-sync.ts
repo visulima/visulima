@@ -1,4 +1,4 @@
-import { rmSync, unlinkSync } from "node:fs";
+import { rmSync } from "node:fs";
 
 import type { RetryOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
@@ -31,17 +31,10 @@ import buildRmOptions from "./utils/build-rm-options";
 const removeSync = (path: URL | string, options: RetryOptions = {}): void => {
     assertValidFileOrDirectoryPath(path);
 
-    try {
-        unlinkSync(path);
-    } catch {
-        /* empty */
-    }
-
-    try {
-        rmSync(path, buildRmOptions(options));
-    } catch {
-        /* empty */
-    }
+    // A single `rm` with `force + recursive` removes both files and directories
+    // and is ENOENT-safe (a missing path is a no-op). Real errors such as
+    // `EACCES`/`EBUSY` propagate to the caller instead of being swallowed.
+    rmSync(path, buildRmOptions(options));
 };
 
 export default removeSync;

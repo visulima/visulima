@@ -3,11 +3,9 @@ import { brotliDecompressSync, unzipSync } from "node:zlib";
 
 import { toPath } from "@visulima/path/utils";
 
-import { R_OK } from "../constants";
-import PermissionError from "../error/permission-error";
-import isAccessibleSync from "../is-accessible-sync";
 import type { ContentType, ReadFileOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import mapReadError from "./utils/map-read-error";
 
 type DecompressionMethod = (buffer: Buffer) => Buffer;
 
@@ -58,22 +56,23 @@ const readFileSync = <O extends ReadFileOptions<keyof typeof decompressionMethod
     // eslint-disable-next-line no-param-reassign
     path = toPath(path);
 
-    if (!isAccessibleSync(path)) {
-        throw new PermissionError(`unable to read the non-accessible file: ${path}`);
-    }
-
-    if (!isAccessibleSync(path, R_OK)) {
-        throw new PermissionError(`invalid access to read file at: ${path}`);
-    }
-
     const { buffer, compression, encoding, flag } = options ?? {};
 
-    const content = nodeReadFileSync(path, flag ? { flag: flag as string } : {});
+    let content: Buffer;
+
+    // Read directly and translate the thrown errno into a typed error class.
+    // This avoids extra `access()` pre-flight syscalls and the TOCTOU window
+    // they introduced.
+    try {
+        content = nodeReadFileSync(path, flag ? { flag: flag as string } : {});
+    } catch (error) {
+        throw mapReadError(error, path);
+    }
 
     const decompress = decompressionMethods[compression ?? "none"] as DecompressionMethod;
     const decompressed = decompress(content);
 
-    return (buffer ? decompressed : decompressed.toString((encoding ?? "utf8") as BufferEncoding)) as ContentType<O>;
+    return (buffer ? decompressed : decompressed.toString(encoding ?? "utf8")) as ContentType<O>;
 };
 
 export default readFileSync;

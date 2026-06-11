@@ -368,6 +368,51 @@ describe(walk, () => {
         }
     });
 
+    it("should yield a file symlink target when followSymlinks is true", async () => {
+        expect.assertions(2);
+
+        const temporaryDirectory = resolve(fixture, "_tmp_follow_symlink_file_test");
+
+        await mkdir(temporaryDirectory, { recursive: true });
+        await writeFile(resolve(temporaryDirectory, "real-file.txt"), "hello");
+        await symlink(resolve(temporaryDirectory, "real-file.txt"), resolve(temporaryDirectory, "link-to-file.txt"));
+
+        try {
+            const entries = await getEntries(temporaryDirectory, { followSymlinks: true });
+            const paths = entries.map(({ path }) => path);
+
+            // Regression: previously the resolved file was silently dropped because the
+            // original dirent (a symlink) reported isFile() === false after realpath().
+            expect(paths).toContain(resolve(temporaryDirectory, "real-file.txt"));
+            // The real file is yielded once for itself and once via the resolved symlink
+            // (the symlink path is replaced by its realpath when followSymlinks is true).
+            expect(paths.filter((path) => path.endsWith("real-file.txt"))).toHaveLength(2);
+        } finally {
+            await rm(temporaryDirectory, { recursive: true });
+        }
+    });
+
+    it("should not loop forever on a self-referencing directory symlink when followSymlinks is true", async () => {
+        expect.assertions(1);
+
+        const temporaryDirectory = resolve(fixture, "_tmp_follow_symlink_cycle_test");
+
+        await mkdir(resolve(temporaryDirectory, "real-dir"), { recursive: true });
+        await writeFile(resolve(temporaryDirectory, "real-dir", "inner.txt"), "hello");
+        // A symlink inside real-dir pointing back at real-dir would loop forever
+        // without cycle detection.
+        await symlink(resolve(temporaryDirectory, "real-dir"), resolve(temporaryDirectory, "real-dir", "loop"));
+
+        try {
+            const entries = await getEntries(temporaryDirectory, { followSymlinks: true });
+            const paths = entries.map(({ path }) => path);
+
+            expect(paths).toContain(resolve(temporaryDirectory, "real-dir", "inner.txt"));
+        } finally {
+            await rm(temporaryDirectory, { recursive: true });
+        }
+    });
+
     it("should skip a symlink entry when includeSymlinks is false and followSymlinks is false", async () => {
         expect.assertions(2);
 
