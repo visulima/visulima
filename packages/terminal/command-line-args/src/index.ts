@@ -1,20 +1,46 @@
 import resolveArgs from "./resolve-args";
 import { parseArgsTokens } from "./tokenizer";
-import type { CommandLineOptions, OptionDefinition, ParseOptions } from "./types";
+import type { CommandLineOptions, InferCommandLineOptions, OptionDefinition, ParseOptions } from "./types";
 import debugLog from "./utils/debug";
 import validateDefinitions from "./validate-definitions";
 
-export { AlreadySetError, InvalidDefinitionsError, UnknownOptionError, UnknownValueError } from "./errors";
-export type { CommandLineOptions, OptionDefinition, ParseOptions } from "./types";
+export { AlreadySetError, InvalidDefinitionsError, InvalidValueError, UnknownOptionError, UnknownValueError } from "./errors";
+export type { CommandLineOptions, InferCommandLineOptions, InferOptionValue, OptionDefinition, ParseOptions } from "./types";
+
+/**
+ * Identity helper that preserves the literal types of an option-definition array
+ * so {@link commandLineArgs}/{@link parseArgs} can infer a precise result type
+ * without an explicit `as const`.
+ * @example
+ * ```ts
+ * const definitions = defineOptions([
+ *   { name: "file", type: String },
+ *   { name: "verbose", type: Boolean },
+ * ]);
+ * const args = parseArgs(definitions); // { file: string | null; verbose: boolean }
+ * ```
+ */
+export const defineOptions = <const T extends ReadonlyArray<OptionDefinition>>(definitions: T): T => definitions;
 
 /**
  * Returns an object containing option values parsed from the command line. By default it parses the global `process.argv` array.
  * Parsing is strict by default. To be more permissive, enable `partial` or `stopAtFirstUnknown` modes.
+ *
+ * When called with an `as const` array (or one created via {@link defineOptions}), the result type is
+ * inferred from the definitions; otherwise it falls back to the loose {@link CommandLineOptions} shape.
+ * Throws `InvalidDefinitionsError` for invalid definitions, `UnknownOptionError`/`UnknownValueError`
+ * in strict mode, `AlreadySetError` for duplicate non-multiple options, and `InvalidValueError`
+ * when `strictTypes` is enabled and a value fails type conversion.
  * @param optionDefinitions Single definition or array of option definitions
- * @param options Parsing options (argv, camelCase, caseInsensitive, debug, partial, stopAtFirstUnknown)
+ * @param options Parsing options (argv, camelCase, caseInsensitive, debug, negation, partial, stopAtFirstUnknown, strictTypes)
  * @returns Parsed command-line arguments as key-value pairs
  */
-export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyArray<OptionDefinition>, options: ParseOptions = {}): CommandLineOptions => {
+export function commandLineArgs<const T extends ReadonlyArray<OptionDefinition>>(
+    optionDefinitions: T,
+    options?: ParseOptions,
+): InferCommandLineOptions<T>;
+export function commandLineArgs(optionDefinitions: OptionDefinition | ReadonlyArray<OptionDefinition>, options?: ParseOptions): CommandLineOptions;
+export function commandLineArgs(optionDefinitions: OptionDefinition | ReadonlyArray<OptionDefinition>, options: ParseOptions = {}): CommandLineOptions {
     const debugEnabled = options.debug ?? false;
 
     debugLog(debugEnabled, "Starting command-line-args parsing", "index");
@@ -94,10 +120,18 @@ export const commandLineArgs = (optionDefinitions: OptionDefinition | ReadonlyAr
     debugLog(debugEnabled, "Command-line-args parsing completed", "index");
 
     return result;
-};
+}
 
 /**
- * Alias for commandLineArgs with a more concise name.
+ * Alias for {@link commandLineArgs} with a more concise name.
+ *
+ * `options` is optional, matching the documented `parseArgs(definitions)` usage.
  * @see commandLineArgs
  */
-export const parseArgs: (optionDefinitions: OptionDefinition | ReadonlyArray<OptionDefinition>, options: ParseOptions) => CommandLineOptions = commandLineArgs;
+export const parseArgs = commandLineArgs;
+
+/**
+ * Default export of {@link commandLineArgs} for drop-in compatibility with the
+ * original `command-line-args` package (`import commandLineArgs from "@visulima/command-line-args"`).
+ */
+export default commandLineArgs;

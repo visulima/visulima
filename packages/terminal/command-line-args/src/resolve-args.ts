@@ -151,9 +151,15 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         }
     }
 
-    const output: CommandLineOptions = {};
+    // Use null-prototype accumulators so option names that collide with
+    // Object.prototype members (e.g. `toString`, `__proto__`, `constructor`)
+    // are treated as plain data keys rather than inherited properties.
+    // This fixes two correctness bugs (a `toString` option throwing a false
+    // AlreadySetError on first use, a `__proto__` option silently losing its
+    // values) and closes a prototype-pollution gap at the same time.
+    const output: CommandLineOptions = Object.create(null) as CommandLineOptions;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const values: Record<string, any> = {};
+    const values: Record<string, any> = Object.create(null) as Record<string, any>;
     const unknownArgs: { index: number; value: string }[] = [];
     const unknownTokenIndexEntries: { index: number; value: string }[] = [];
     const consumedPositionalIndices = new Set<number>();
@@ -161,7 +167,9 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
 
     const defaultOptionDefinition = definitions.find((d) => d.defaultOption);
     const hasGroups = definitions.some((d) => d.group);
-    const hasNumberType = definitions.some((d) => d.type === Number);
+    // Precompute the first Number-typed definition once instead of re-scanning
+    // `definitions` for every numeric token encountered in the loop below.
+    const numberTypedDefinition = definitions.find((d) => d.type === Number);
 
     // Single optimized pass through tokens
     // eslint-disable-next-line no-plusplus
@@ -179,13 +187,24 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
             let definition = getDefinition(token.name, definitionMap, aliasMap, caseInsensitiveNameMap, caseInsensitiveAliasMap);
 
             // Handle numeric option names
-            if (!definition && token.value === undefined && hasNumberType && NUMERIC_PATTERN.test(token.name)) {
-                const numberDefinition = definitions.find((anyDefinition) => anyDefinition.type === Number);
+            if (!definition && token.value === undefined && numberTypedDefinition && NUMERIC_PATTERN.test(token.name)) {
+                definition = numberTypedDefinition;
+                token.value = token.name;
+                token.name = numberTypedDefinition.name;
+            }
 
-                if (numberDefinition) {
-                    definition = numberDefinition;
-                    token.value = token.name;
-                    token.name = numberDefinition.name;
+            // Handle `--no-<flag>` boolean negation (opt-in via `negation`).
+            // Only long-option tokens without an inline value qualify; the base
+            // option must resolve to a Boolean-typed definition.
+            let negated = false;
+
+            if (!definition && options.negation && token.value === undefined && token.name.startsWith("no-")) {
+                const baseName = token.name.slice(3);
+                const baseDefinition = getDefinition(baseName, definitionMap, aliasMap, caseInsensitiveNameMap, caseInsensitiveAliasMap);
+
+                if (baseDefinition?.type && isBooleanType(baseDefinition.type)) {
+                    definition = baseDefinition;
+                    negated = true;
                 }
             }
 
@@ -193,7 +212,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
             const isMultiple = definition?.multiple;
             const isLazyMultiple = definition?.lazyMultiple;
 
-            if (values[optionName] !== undefined && !isMultiple && !isLazyMultiple && !options.partial) {
+            if (Object.hasOwn(values, optionName) && values[optionName] !== undefined && !isMultiple && !isLazyMultiple && !options.partial) {
                 throw new AlreadySetError(optionName);
             }
 
@@ -259,7 +278,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                         i++;
                     }
                 } else if (definition?.type && isBooleanType(definition.type)) {
-                    createOrAppendArray(values, optionName, true, isMultiple);
+                    createOrAppendArray(values, optionName, !negated, isMultiple);
                 } else {
                     // eslint-disable-next-line unicorn/no-null
                     values[optionName] = isMultiple ? [] : null;
@@ -343,22 +362,26 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         }
     }
 
-    // When stopAtFirstUnknown is set, find the argv index of the first truly unknown option.
-    // Positionals before this point can be consumed by defaultOption; positionals at or after belong to _unknown.
+    // Shared predicate: does this token reference an option not present in any
+    // definition/alias map (honouring case-insensitive lookups)?
+    const isUnknownOptionToken = (token: ArgumentToken): boolean =>
+        token.kind === "option"
+        && !definitionMap.has(token.name ?? "")
+        && !aliasMap.has(token.name ?? "")
+        && (!options.caseInsensitive
+            || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() ?? "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() ?? "")));
+
+    // When stopAtFirstUnknown is set, locate the first truly unknown option once
+    // and reuse the result for both the defaultOption cut-off (argv index) and the
+    // final _unknown slice (token-array index) below.
+    let firstUnknownOptionTokenIndex = -1;
     let stopAtUnknownArgvIndex = Number.POSITIVE_INFINITY;
 
     if (options.stopAtFirstUnknown && !stoppedByTerminator) {
-        for (const token of tokens) {
-            if (
-                token.kind === "option"
-                && !definitionMap.has(token.name ?? "")
-                && !aliasMap.has(token.name ?? "")
-                && (!options.caseInsensitive
-                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() ?? "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() ?? "")))
-            ) {
-                stopAtUnknownArgvIndex = token.index;
-                break;
-            }
+        firstUnknownOptionTokenIndex = tokens.findIndex((token) => isUnknownOptionToken(token));
+
+        if (firstUnknownOptionTokenIndex !== -1) {
+            stopAtUnknownArgvIndex = (tokens[firstUnknownOptionTokenIndex] as ArgumentToken).index;
         }
     }
 
@@ -428,17 +451,8 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         }
     }
 
-    // Handle stopAtFirstUnknown
+    // Handle stopAtFirstUnknown (reuses firstUnknownOptionTokenIndex from above)
     if (options.stopAtFirstUnknown && !stoppedByTerminator) {
-        const firstUnknownOptionTokenIndex = tokens.findIndex(
-            (token) =>
-                token.kind === "option"
-                && !definitionMap.has(token.name ?? "")
-                && !aliasMap.has(token.name ?? "")
-                && (!options.caseInsensitive
-                    || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() ?? "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() ?? ""))),
-        );
-
         const firstUnconsumedPositionalTokenIndex = tokens.findIndex((token) => token.kind === "positional" && !consumedPositionalIndices.has(token.index));
 
         let firstTokenIndex = -1;
@@ -467,8 +481,12 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         const finalKey = options.camelCase ? camelCaseMap?.get(key) ?? key : key;
         const definition = definitionMap.get(key);
 
-        // eslint-disable-next-line unicorn/no-null, sonarjs/no-nested-conditional, @typescript-eslint/no-unsafe-assignment
-        output[finalKey] = definition?.type ? convertValue(value, definition.type) : value === undefined ? null : value;
+        if (definition?.type) {
+            output[finalKey] = convertValue(value, definition.type, { optionName: definition.name, strictTypes: options.strictTypes });
+        } else {
+            // eslint-disable-next-line unicorn/no-null, @typescript-eslint/no-unsafe-assignment
+            output[finalKey] = value === undefined ? null : value;
+        }
     }
 
     // Handle default values
@@ -482,7 +500,6 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
             if (isMultipleDefinition) {
                 output[key] = Array.isArray(definition.defaultValue) ? [...definition.defaultValue] : [definition.defaultValue];
             } else {
-                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
                 output[key] = definition.defaultValue;
             }
         }
@@ -563,9 +580,17 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
         Object.assign(output, groupedOutput);
     }
 
-    debugLog(debugEnabled, "Final parsed result:", "resolver", output);
+    // Normalize the null-prototype accumulator back to an ordinary object so the
+    // public result has the expected Object prototype (instanceof / toStrictEqual /
+    // structuredClone all behave as callers expect). Use property descriptors
+    // rather than Object.assign so own keys that collide with Object.prototype
+    // members (e.g. `toString`, `__proto__`) survive as plain data properties
+    // instead of triggering inherited setters.
+    const result = Object.defineProperties({}, Object.getOwnPropertyDescriptors(output)) as CommandLineOptions;
 
-    return output;
+    debugLog(debugEnabled, "Final parsed result:", "resolver", result);
+
+    return result;
 };
 
 export default resolveArgs;

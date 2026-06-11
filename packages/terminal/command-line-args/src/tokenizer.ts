@@ -113,15 +113,26 @@ export interface ArgumentToken {
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
     const tokens: ArgumentToken[] = [];
-    const remainings = [...args];
+    // Walk `args` with an index pointer (O(1) per step) instead of copying and
+    // draining via shift() (O(n) each). Expanded short-option groups are held in
+    // a small pending queue that is consumed before advancing through `args`.
+    let cursor = 0;
+    let pending: string[] = [];
+    let pendingIndex = 0;
     let index = -1;
     let groupCount = 0;
 
-    while (remainings.length > 0) {
-        const argument = remainings.shift();
+    while (pendingIndex < pending.length || cursor < args.length) {
+        let argument: string;
 
-        if (argument === undefined) {
-            break;
+        if (pendingIndex < pending.length) {
+            argument = pending[pendingIndex] as string;
+            // eslint-disable-next-line no-plusplus
+            pendingIndex++;
+        } else {
+            argument = args[cursor] as string;
+            // eslint-disable-next-line no-plusplus
+            cursor++;
         }
 
         if (groupCount > 0) {
@@ -138,6 +149,10 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
                 index,
                 kind: "option-terminator",
             });
+
+            // Everything after `--` (any leftover pending group items plus the
+            // untouched tail of `args`) becomes positional.
+            const remainings = [...pending.slice(pendingIndex), ...args.slice(cursor)];
 
             const mapped = remainings.map((argument_, index_) => {
                 return { index: index + index_ + 1, kind: "positional", value: argument_ };
@@ -196,7 +211,10 @@ export const parseArgsTokens = (args: string[]): ArgumentToken[] => {
                 }
             }
 
-            remainings.unshift(...expanded);
+            // Queue the expanded short options ahead of any not-yet-consumed
+            // pending items (preserves the original unshift ordering).
+            pending = pendingIndex < pending.length ? [...expanded, ...pending.slice(pendingIndex)] : expanded;
+            pendingIndex = 0;
             groupCount = expanded.length;
             continue;
         }
