@@ -14,10 +14,7 @@ describe("query-client typed errors and request options", () => {
         it("should return an UploadError carrying status and code", async () => {
             expect.assertions(4);
 
-            const response = Response.json(
-                { error: { code: "PAYLOAD_TOO_LARGE", message: "Too big" } },
-                { status: 413, statusText: "Payload Too Large" },
-            );
+            const response = Response.json({ error: { code: "PAYLOAD_TOO_LARGE", message: "Too big" } }, { status: 413, statusText: "Payload Too Large" });
 
             const error = await parseApiError(response);
 

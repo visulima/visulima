@@ -3,11 +3,12 @@ import { onBeforeUnmount, onMounted, ref } from "vue";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
-import type { FileMeta, HeadersResolver, UploadResult, UploadRestrictions } from "../react/types";
+import type { FileMeta, HeadersResolver, UploadRestrictions, UploadResult } from "../react/types";
 
 export interface UseMultipartUploadOptions {
     /** Upload endpoint URL */
     endpoint: string;
+
     /**
      * Static or dynamically-resolved headers attached to every request — e.g. an
      * `Authorization` token for an authenticated endpoint.

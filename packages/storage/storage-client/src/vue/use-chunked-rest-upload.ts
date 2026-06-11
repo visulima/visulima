@@ -6,7 +6,7 @@ import { createChunkedRestAdapter } from "../core/chunked-rest-adapter";
 import type { FingerprintFunction } from "../core/fingerprint";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
-import type { HeadersResolver, UploadResult, UploadRestrictions } from "../react/types";
+import type { HeadersResolver, UploadRestrictions, UploadResult } from "../react/types";
 
 export interface UseChunkedRestUploadOptions {
     /**
@@ -22,6 +22,7 @@ export interface UseChunkedRestUploadOptions {
     endpoint: string;
     /** Customise the resume fingerprint. */
     fingerprint?: FingerprintFunction;
+
     /**
      * Static or dynamically-resolved headers attached to every request — e.g. an
      * `Authorization` token for an authenticated endpoint.
@@ -43,10 +44,10 @@ export interface UseChunkedRestUploadOptions {
     onStart?: () => void;
     /** Callback when upload completes successfully */
     onSuccess?: (file: UploadResult) => void;
-    /** Enable automatic retry on failure */
-    retry?: boolean;
     /** Client-side upload restrictions, validated before any network request. */
     restrictions?: UploadRestrictions;
+    /** Enable automatic retry on failure */
+    retry?: boolean;
     /** Persistent storage for resume identifiers. */
     urlStorage?: UrlStorage;
 }
@@ -82,8 +83,25 @@ export interface UseChunkedRestUploadReturn {
  * @returns Upload functions and state
  */
 export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseChunkedRestUploadReturn => {
-    const { checksum, chunkSize, control, endpoint, fingerprint, headers, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, restrictions, urlStorage } =
-        options;
+    const {
+        checksum,
+        chunkSize,
+        control,
+        endpoint,
+        fingerprint,
+        headers,
+        maxRetries,
+        metadata,
+        onError,
+        onPause,
+        onProgress,
+        onResume,
+        onStart,
+        onSuccess,
+        restrictions,
+        retry,
+        urlStorage,
+    } = options;
 
     const progress = ref(0);
     const isUploading = ref(false);

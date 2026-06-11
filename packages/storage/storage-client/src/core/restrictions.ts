@@ -76,10 +76,7 @@ const validateFiles = (files: File[], restrictions?: UploadRestrictions): void =
     }
 
     if (restrictions.maxNumberOfFiles !== undefined && files.length > restrictions.maxNumberOfFiles) {
-        throw new RestrictionError(
-            `Too many files (${String(files.length)}, max ${String(restrictions.maxNumberOfFiles)}).`,
-            "tooManyFiles",
-        );
+        throw new RestrictionError(`Too many files (${String(files.length)}, max ${String(restrictions.maxNumberOfFiles)}).`, "tooManyFiles");
     }
 
     for (const file of files) {

@@ -76,8 +76,11 @@ export class UploadControl {
             }
         }
 
-        if (snapshot.protocol !== "tus" && snapshot.protocol !== "chunked-rest") {
-            throw new Error(`UploadControl: snapshot has invalid protocol ${String(snapshot.protocol)}`);
+        // `snapshot` may come from untrusted JSON, so `protocol` is not guaranteed to match the literal type at runtime.
+        const protocol = snapshot.protocol as string;
+
+        if (protocol !== "tus" && protocol !== "chunked-rest") {
+            throw new Error(`UploadControl: snapshot has invalid protocol ${protocol}`);
         }
 
         const control = new UploadControl();

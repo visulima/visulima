@@ -25,7 +25,9 @@ const createStubUploader = (): {
     });
 
     const emit = (event: UploaderEventType, payload: UploadItem | BatchState): void => {
-        handlers.get(event)?.forEach((handler) => { handler(payload); });
+        handlers.get(event)?.forEach((handler) => {
+            handler(payload);
+        });
     };
 
     return { emit, handlers, off, on };
@@ -34,7 +36,7 @@ const createStubUploader = (): {
 type StubUploader = ReturnType<typeof createStubUploader>;
 const stubRef: { current: StubUploader | undefined } = { current: undefined };
 
-vi.mock("../../src/core/multipart-adapter", () => {
+vi.mock(import("../../src/core/multipart-adapter"), () => {
     return {
         createMultipartAdapter: vi.fn(() => {
             const stub = createStubUploader();
@@ -103,21 +105,23 @@ const mountComposable = (composable: () => void): { unmount: () => void } => {
     return { unmount };
 };
 
-beforeEach(() => {
-    stubRef.current = undefined;
-});
-
-afterEach(() => {
-    vi.clearAllMocks();
-});
-
 describe("vue listener composables", () => {
+    beforeEach(() => {
+        stubRef.current = undefined;
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
     describe(useAllAbortListener, () => {
         it("subscribes on mount and unsubscribes on unmount", () => {
             expect.assertions(3);
 
             const onAbort = vi.fn();
-            const { unmount } = mountComposable(() => { useAllAbortListener({ endpoint: "/upload", onAbort }); });
+            const { unmount } = mountComposable(() => {
+                useAllAbortListener({ endpoint: "/upload", onAbort });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("ITEM_ABORT", expect.any(Function));
 
@@ -133,7 +137,9 @@ describe("vue listener composables", () => {
             const onAbort = vi.fn();
             const item = makeItem({ status: "aborted" });
 
-            mountComposable(() => { useAllAbortListener({ endpoint: "/upload", onAbort }); });
+            mountComposable(() => {
+                useAllAbortListener({ endpoint: "/upload", onAbort });
+            });
 
             stubRef.current?.emit("ITEM_ABORT", item);
             // Batch payload should be ignored
@@ -151,13 +157,18 @@ describe("vue listener composables", () => {
             const onBatchCancelled = vi.fn();
             const batch = makeBatch({ status: "cancelled" });
 
-            const { unmount } = mountComposable(() => { useBatchCancelledListener({ endpoint: "/upload", onBatchCancelled }); });
+            const { unmount } = mountComposable(() => {
+                useBatchCancelledListener({ endpoint: "/upload", onBatchCancelled });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_CANCELLED", expect.any(Function));
+
             stubRef.current?.emit("BATCH_CANCELLED", batch);
+
             expect(onBatchCancelled).toHaveBeenCalledWith(batch);
 
             unmount();
+
             expect(stubRef.current?.off).toHaveBeenCalledWith("BATCH_CANCELLED", expect.any(Function));
         });
     });
@@ -169,13 +180,18 @@ describe("vue listener composables", () => {
             const onBatchError = vi.fn();
             const batch = makeBatch({ errorCount: 1, status: "error" });
 
-            const { unmount } = mountComposable(() => { useBatchErrorListener({ endpoint: "/upload", onBatchError }); });
+            const { unmount } = mountComposable(() => {
+                useBatchErrorListener({ endpoint: "/upload", onBatchError });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_ERROR", expect.any(Function));
+
             stubRef.current?.emit("BATCH_ERROR", batch);
+
             expect(onBatchError).toHaveBeenCalledWith(batch);
 
             unmount();
+
             expect(stubRef.current?.off).toHaveBeenCalledWith("BATCH_ERROR", expect.any(Function));
         });
     });
@@ -187,13 +203,18 @@ describe("vue listener composables", () => {
             const onBatchFinalize = vi.fn();
             const batch = makeBatch({ completedCount: 1, status: "completed" });
 
-            const { unmount } = mountComposable(() => { useBatchFinalizeListener({ endpoint: "/upload", onBatchFinalize }); });
+            const { unmount } = mountComposable(() => {
+                useBatchFinalizeListener({ endpoint: "/upload", onBatchFinalize });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_FINALIZE", expect.any(Function));
+
             stubRef.current?.emit("BATCH_FINALIZE", batch);
+
             expect(onBatchFinalize).toHaveBeenCalledWith(batch);
 
             unmount();
+
             expect(stubRef.current?.off).toHaveBeenCalledWith("BATCH_FINALIZE", expect.any(Function));
         });
     });
@@ -205,13 +226,18 @@ describe("vue listener composables", () => {
             const onBatchFinish = vi.fn();
             const batch = makeBatch({ progress: 100, status: "completed" });
 
-            const { unmount } = mountComposable(() => { useBatchFinishListener({ endpoint: "/upload", onBatchFinish }); });
+            const { unmount } = mountComposable(() => {
+                useBatchFinishListener({ endpoint: "/upload", onBatchFinish });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_FINISH", expect.any(Function));
+
             stubRef.current?.emit("BATCH_FINISH", batch);
+
             expect(onBatchFinish).toHaveBeenCalledWith(batch);
 
             unmount();
+
             expect(stubRef.current?.off).toHaveBeenCalledWith("BATCH_FINISH", expect.any(Function));
         });
     });
@@ -223,7 +249,9 @@ describe("vue listener composables", () => {
             const onBatchProgress = vi.fn();
             const batch = makeBatch({ progress: 50, status: "uploading" });
 
-            mountComposable(() => { useBatchProgressListener({ endpoint: "/upload", onBatchProgress }); });
+            mountComposable(() => {
+                useBatchProgressListener({ endpoint: "/upload", onBatchProgress });
+            });
 
             stubRef.current?.emit("BATCH_PROGRESS", batch);
             stubRef.current?.emit("BATCH_PROGRESS", makeItem());
@@ -241,13 +269,18 @@ describe("vue listener composables", () => {
             const onBatchStart = vi.fn();
             const batch = makeBatch({ status: "uploading" });
 
-            const { unmount } = mountComposable(() => { useBatchStartListener({ endpoint: "/upload", onBatchStart }); });
+            const { unmount } = mountComposable(() => {
+                useBatchStartListener({ endpoint: "/upload", onBatchStart });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_START", expect.any(Function));
+
             stubRef.current?.emit("BATCH_START", batch);
+
             expect(onBatchStart).toHaveBeenCalledWith(batch);
 
             unmount();
+
             expect(stubRef.current?.off).toHaveBeenCalledWith("BATCH_START", expect.any(Function));
         });
     });
@@ -260,7 +293,9 @@ describe("vue listener composables", () => {
             const firstAttempt = makeItem({ retryCount: 0, status: "uploading" });
             const retriedItem = makeItem({ id: "item-2", retryCount: 1, status: "uploading" });
 
-            mountComposable(() => { useRetryListener({ endpoint: "/upload", onRetry }); });
+            mountComposable(() => {
+                useRetryListener({ endpoint: "/upload", onRetry });
+            });
 
             stubRef.current?.emit("ITEM_START", firstAttempt);
             stubRef.current?.emit("ITEM_START", retriedItem);

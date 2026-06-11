@@ -41,7 +41,7 @@ describe(createHeadFile, () => {
     // captures a static undefined snapshot — async-resolved data never reaches
     // the store. Surfacing it needs a `$effect` bridge in a `.svelte.ts` module.
     // Tracked separately from the coverage work; the no-fetch case below still runs.
-    it.skip("extracts content-length and upload-offset from HEAD response headers", async () => {
+    it.todo("extracts content-length and upload-offset from HEAD response headers", async () => {
         expect.assertions(2);
 
         mockFetch.mockResolvedValueOnce({

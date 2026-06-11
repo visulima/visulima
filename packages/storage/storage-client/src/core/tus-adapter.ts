@@ -722,8 +722,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     // 1. Resume from an explicit snapshot on the supplied UploadControl.
                     const snapshot = control?.snapshot;
 
-                    let candidate: string | undefined
-                        = snapshot?.protocol === "tus" && snapshot.fingerprint === fingerprint ? snapshot.uploadUrl : undefined;
+                    let candidate: string | undefined = snapshot?.protocol === "tus" && snapshot.fingerprint === fingerprint ? snapshot.uploadUrl : undefined;
 
                     // 2. Fall back to the persistent url storage.
                     if (candidate === undefined && urlStorage) {

@@ -96,21 +96,23 @@ const makeBatch = (overrides: Partial<BatchState> = {}): BatchState => {
     };
 };
 
-beforeEach(() => {
-    stubRef.current = undefined;
-});
-
-afterEach(() => {
-    vi.clearAllMocks();
-});
-
 describe("react listener hooks", () => {
+    beforeEach(() => {
+        stubRef.current = undefined;
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
+    });
+
     describe(useAllAbortListener, () => {
         it("subscribes to ITEM_ABORT on mount and unsubscribes on unmount", () => {
             expect.assertions(4);
 
             const onAbort = vi.fn();
-            const { unmount } = renderHook(() => { useAllAbortListener({ endpoint: "/upload", onAbort }); });
+            const { unmount } = renderHook(() => {
+                useAllAbortListener({ endpoint: "/upload", onAbort });
+            });
 
             const stub = stubRef.current;
 
@@ -129,7 +131,9 @@ describe("react listener hooks", () => {
             const onAbort = vi.fn();
             const item = makeItem({ status: "aborted" });
 
-            renderHook(() => { useAllAbortListener({ endpoint: "/upload", onAbort }); });
+            renderHook(() => {
+                useAllAbortListener({ endpoint: "/upload", onAbort });
+            });
             stubRef.current?.emit("ITEM_ABORT", item);
 
             expect(onAbort).toHaveBeenCalledWith(item);
@@ -140,7 +144,9 @@ describe("react listener hooks", () => {
 
             const onAbort = vi.fn();
 
-            renderHook(() => { useAllAbortListener({ endpoint: "/upload", onAbort }); });
+            renderHook(() => {
+                useAllAbortListener({ endpoint: "/upload", onAbort });
+            });
             // BatchState payload shouldn't reach the user callback.
             stubRef.current?.emit("ITEM_ABORT", makeBatch());
 
@@ -153,7 +159,9 @@ describe("react listener hooks", () => {
             expect.assertions(2);
 
             const onBatchCancelled = vi.fn();
-            const { unmount } = renderHook(() => { useBatchCancelledListener({ endpoint: "/upload", onBatchCancelled }); });
+            const { unmount } = renderHook(() => {
+                useBatchCancelledListener({ endpoint: "/upload", onBatchCancelled });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_CANCELLED", expect.any(Function));
 
@@ -168,7 +176,9 @@ describe("react listener hooks", () => {
             const onBatchCancelled = vi.fn();
             const batch = makeBatch({ status: "cancelled" });
 
-            renderHook(() => { useBatchCancelledListener({ endpoint: "/upload", onBatchCancelled }); });
+            renderHook(() => {
+                useBatchCancelledListener({ endpoint: "/upload", onBatchCancelled });
+            });
             stubRef.current?.emit("BATCH_CANCELLED", batch);
             // UploadItem payload must be filtered out.
             stubRef.current?.emit("BATCH_CANCELLED", makeItem());
@@ -183,7 +193,9 @@ describe("react listener hooks", () => {
             expect.assertions(2);
 
             const onBatchError = vi.fn();
-            const { unmount } = renderHook(() => { useBatchErrorListener({ endpoint: "/upload", onBatchError }); });
+            const { unmount } = renderHook(() => {
+                useBatchErrorListener({ endpoint: "/upload", onBatchError });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_ERROR", expect.any(Function));
 
@@ -198,7 +210,9 @@ describe("react listener hooks", () => {
             const onBatchError = vi.fn();
             const batch = makeBatch({ errorCount: 1, status: "error" });
 
-            renderHook(() => { useBatchErrorListener({ endpoint: "/upload", onBatchError }); });
+            renderHook(() => {
+                useBatchErrorListener({ endpoint: "/upload", onBatchError });
+            });
             stubRef.current?.emit("BATCH_ERROR", batch);
 
             expect(onBatchError).toHaveBeenCalledWith(batch);
@@ -210,7 +224,9 @@ describe("react listener hooks", () => {
             expect.assertions(2);
 
             const onBatchFinalize = vi.fn();
-            const { unmount } = renderHook(() => { useBatchFinalizeListener({ endpoint: "/upload", onBatchFinalize }); });
+            const { unmount } = renderHook(() => {
+                useBatchFinalizeListener({ endpoint: "/upload", onBatchFinalize });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_FINALIZE", expect.any(Function));
 
@@ -225,7 +241,9 @@ describe("react listener hooks", () => {
             const onBatchFinalize = vi.fn();
             const batch = makeBatch({ completedCount: 1, status: "completed" });
 
-            renderHook(() => { useBatchFinalizeListener({ endpoint: "/upload", onBatchFinalize }); });
+            renderHook(() => {
+                useBatchFinalizeListener({ endpoint: "/upload", onBatchFinalize });
+            });
             stubRef.current?.emit("BATCH_FINALIZE", batch);
 
             expect(onBatchFinalize).toHaveBeenCalledWith(batch);
@@ -237,7 +255,9 @@ describe("react listener hooks", () => {
             expect.assertions(2);
 
             const onBatchFinish = vi.fn();
-            const { unmount } = renderHook(() => { useBatchFinishListener({ endpoint: "/upload", onBatchFinish }); });
+            const { unmount } = renderHook(() => {
+                useBatchFinishListener({ endpoint: "/upload", onBatchFinish });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_FINISH", expect.any(Function));
 
@@ -252,7 +272,9 @@ describe("react listener hooks", () => {
             const onBatchFinish = vi.fn();
             const batch = makeBatch({ progress: 100, status: "completed" });
 
-            renderHook(() => { useBatchFinishListener({ endpoint: "/upload", onBatchFinish }); });
+            renderHook(() => {
+                useBatchFinishListener({ endpoint: "/upload", onBatchFinish });
+            });
             stubRef.current?.emit("BATCH_FINISH", batch);
 
             expect(onBatchFinish).toHaveBeenCalledWith(batch);
@@ -264,7 +286,9 @@ describe("react listener hooks", () => {
             expect.assertions(2);
 
             const onBatchProgress = vi.fn();
-            const { unmount } = renderHook(() => { useBatchProgressListener({ endpoint: "/upload", onBatchProgress }); });
+            const { unmount } = renderHook(() => {
+                useBatchProgressListener({ endpoint: "/upload", onBatchProgress });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_PROGRESS", expect.any(Function));
 
@@ -279,7 +303,9 @@ describe("react listener hooks", () => {
             const onBatchProgress = vi.fn();
             const batch = makeBatch({ progress: 42, status: "uploading" });
 
-            renderHook(() => { useBatchProgressListener({ endpoint: "/upload", onBatchProgress }); });
+            renderHook(() => {
+                useBatchProgressListener({ endpoint: "/upload", onBatchProgress });
+            });
             stubRef.current?.emit("BATCH_PROGRESS", batch);
             stubRef.current?.emit("BATCH_PROGRESS", makeItem());
 
@@ -293,7 +319,9 @@ describe("react listener hooks", () => {
             expect.assertions(2);
 
             const onBatchStart = vi.fn();
-            const { unmount } = renderHook(() => { useBatchStartListener({ endpoint: "/upload", onBatchStart }); });
+            const { unmount } = renderHook(() => {
+                useBatchStartListener({ endpoint: "/upload", onBatchStart });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("BATCH_START", expect.any(Function));
 
@@ -308,7 +336,9 @@ describe("react listener hooks", () => {
             const onBatchStart = vi.fn();
             const batch = makeBatch({ status: "uploading" });
 
-            renderHook(() => { useBatchStartListener({ endpoint: "/upload", onBatchStart }); });
+            renderHook(() => {
+                useBatchStartListener({ endpoint: "/upload", onBatchStart });
+            });
             stubRef.current?.emit("BATCH_START", batch);
 
             expect(onBatchStart).toHaveBeenCalledWith(batch);
@@ -320,7 +350,9 @@ describe("react listener hooks", () => {
             expect.assertions(2);
 
             const onRetry = vi.fn();
-            const { unmount } = renderHook(() => { useRetryListener({ endpoint: "/upload", onRetry }); });
+            const { unmount } = renderHook(() => {
+                useRetryListener({ endpoint: "/upload", onRetry });
+            });
 
             expect(stubRef.current?.on).toHaveBeenCalledWith("ITEM_START", expect.any(Function));
 
@@ -336,7 +368,9 @@ describe("react listener hooks", () => {
             const firstAttempt = makeItem({ retryCount: 0, status: "uploading" });
             const retriedItem = makeItem({ id: "item-2", retryCount: 2, status: "uploading" });
 
-            renderHook(() => { useRetryListener({ endpoint: "/upload", onRetry }); });
+            renderHook(() => {
+                useRetryListener({ endpoint: "/upload", onRetry });
+            });
             // Initial start — should NOT trigger.
             stubRef.current?.emit("ITEM_START", firstAttempt);
             // Retry — SHOULD trigger.
@@ -356,9 +390,14 @@ describe("react listener hooks", () => {
             const first = vi.fn();
             const second = vi.fn();
 
-            const { rerender } = renderHook(({ cb }: { cb: (item: UploadItem) => void }) => { useAllAbortListener({ endpoint: "/upload", onAbort: cb }); }, {
-                initialProps: { cb: first },
-            });
+            const { rerender } = renderHook(
+                ({ cb }: { cb: (item: UploadItem) => void }) => {
+                    useAllAbortListener({ endpoint: "/upload", onAbort: cb });
+                },
+                {
+                    initialProps: { cb: first },
+                },
+            );
 
             rerender({ cb: second });
             stubRef.current?.emit("ITEM_ABORT", makeItem());
