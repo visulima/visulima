@@ -1,10 +1,14 @@
 import type { AiProviderConfig } from "../types";
 
-// copilot -p "prompt" --allow-all-tools [--model model]
+// copilot -p "prompt" [--allow-all-tools] [--model model]
 const copilot: AiProviderConfig = {
     alternateCommands: [],
-    buildArgs: (prompt, model, _maxTokens) => {
-        const args = ["-p", prompt, "--allow-all-tools"];
+    buildArgs: (prompt, { dangerous, model }) => {
+        const args = ["-p", prompt];
+
+        if (dangerous) {
+            args.push("--allow-all-tools");
+        }
 
         if (model) {
             args.push("--model", model);
@@ -15,6 +19,8 @@ const copilot: AiProviderConfig = {
     command: "copilot",
     defaultModel: "",
     envVariable: "COPILOT_PATH",
+    supportsMaxTokens: false,
+    supportsModel: true,
 };
 
 export default copilot;

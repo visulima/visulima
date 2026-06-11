@@ -3,7 +3,7 @@ import type { AiProviderConfig } from "../types";
 // kimi --quiet -p "prompt" [-m model]
 const kimi: AiProviderConfig = {
     alternateCommands: [],
-    buildArgs: (prompt, model, _maxTokens) => {
+    buildArgs: (prompt, { model }) => {
         const args = ["--quiet", "-p", prompt];
 
         if (model) {
@@ -15,6 +15,8 @@ const kimi: AiProviderConfig = {
     command: "kimi",
     defaultModel: "",
     envVariable: "KIMI_PATH",
+    supportsMaxTokens: false,
+    supportsModel: true,
 };
 
 export default kimi;

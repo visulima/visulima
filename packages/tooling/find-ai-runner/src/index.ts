@@ -1,4 +1,4 @@
-import type { SpawnOptionsWithoutStdio } from "node:child_process";
+import type { SpawnOptions } from "node:child_process";
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
@@ -16,7 +16,8 @@ import gemini from "./providers/gemini";
 import kimi from "./providers/kimi";
 import opencode from "./providers/opencode";
 import qwen from "./providers/qwen";
-import type { AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult } from "./types";
+import type { AiDetectOptions, AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult } from "./types";
+import { AiRunError } from "./types"; // used as a value inside runProvider
 
 /** All supported AI CLI provider configurations, keyed by name. */
 const PROVIDERS: Record<AiProviderName, AiProviderConfig> = {
@@ -31,6 +32,26 @@ const PROVIDERS: Record<AiProviderName, AiProviderConfig> = {
     kimi,
     opencode,
     qwen,
+};
+
+/** Matches Windows `.cmd`/`.bat` shim extensions. */
+const WINDOWS_SHIM_REGEX = /\.(?:bat|cmd)$/i;
+
+/**
+ * On Windows, npm-installed CLIs resolve to `.cmd`/`.bat` shims. Since the
+ * CVE-2024-27980 fix (Node >= 18.20 / 20.12 / 22), spawning those without
+ * `shell: true` throws `EINVAL`. We therefore run them through the shell on
+ * Windows — which means we must quote arguments ourselves, since the shell
+ * (not Node) parses the command line.
+ */
+const needsShell = (commandPath: string): boolean => IS_WINDOWS && WINDOWS_SHIM_REGEX.test(commandPath);
+
+/** Quote a single argument for `cmd.exe` so spaces and metacharacters are preserved literally. */
+const quoteWindowsArgument = (argument: string): string => {
+    // Escape embedded double quotes, then wrap the whole thing in double quotes.
+    const escaped = argument.replaceAll("\"", "\"\"");
+
+    return `"${escaped}"`;
 };
 
 /** Resolve `~` to the user's home directory. */
@@ -93,6 +114,8 @@ const detectVersion = (commandPath: string): string | undefined => {
     try {
         const result = execFileSync(commandPath, ["--version"], {
             encoding: "utf8",
+            // Windows `.cmd`/`.bat` shims require the shell since the CVE-2024-27980 fix.
+            shell: needsShell(commandPath),
             stdio: ["pipe", "pipe", "pipe"],
             timeout: VERSION_TIMEOUT,
         });
@@ -114,18 +137,28 @@ const detectVersion = (commandPath: string): string | undefined => {
  * 2. `which`/`where` command lookup on PATH.
  * 3. Known installation paths (`/opt/homebrew/bin/`, `~/.local/bin/`, etc.).
  * @param name The provider to detect (e.g., `"claude"`, `"gemini"`).
+ * @param options Detection options; set `{ version: false }` to skip the (slow) version probe.
  * @returns Provider info including availability, path, and version.
  */
-const detectProvider = (name: AiProviderName): AiProviderInfo => {
+const detectProvider = (name: AiProviderName, options: AiDetectOptions = {}): AiProviderInfo => {
     const config = PROVIDERS[name];
     const base: AiProviderInfo = { available: false, name };
+    const probeVersion = options.version !== false;
+
+    const versionOf = (path: string): string | undefined => {
+        if (!probeVersion) {
+            return undefined;
+        }
+
+        return detectVersion(path);
+    };
 
     const envPath = process.env[config.envVariable];
 
     if (envPath && existsSync(resolveHome(envPath))) {
         const resolved = resolveHome(envPath);
 
-        return { ...base, available: true, detectionMethod: "envvar", path: resolved, version: detectVersion(resolved) };
+        return { ...base, available: true, detectionMethod: "envvar", path: resolved, version: versionOf(resolved) };
     }
 
     const allCommands = [config.command, ...config.alternateCommands];
@@ -134,14 +167,14 @@ const detectProvider = (name: AiProviderName): AiProviderInfo => {
         const found = whichCommand(cmd);
 
         if (found) {
-            return { ...base, available: true, detectionMethod: "which", path: found, version: detectVersion(found) };
+            return { ...base, available: true, detectionMethod: "which", path: found, version: versionOf(found) };
         }
     }
 
     for (const cmd of allCommands) {
         for (const knownPath of getKnownPaths(cmd)) {
             if (existsSync(knownPath)) {
-                return { ...base, available: true, detectionMethod: "known-path", path: knownPath, version: detectVersion(knownPath) };
+                return { ...base, available: true, detectionMethod: "known-path", path: knownPath, version: versionOf(knownPath) };
             }
         }
     }
@@ -151,22 +184,62 @@ const detectProvider = (name: AiProviderName): AiProviderInfo => {
 
 /**
  * Detect all supported AI CLI providers (installed or not).
+ * @param options Detection options; set `{ version: false }` to skip the version probe.
  * @returns An array of provider info for all 11 supported providers.
  */
-const detectAllProviders = (): AiProviderInfo[] => PROVIDER_NAMES.map((name) => detectProvider(name));
+const detectAllProviders = (options: AiDetectOptions = {}): AiProviderInfo[] => PROVIDER_NAMES.map((name) => detectProvider(name, options));
+
+/**
+ * Detect all supported AI CLI providers in parallel.
+ *
+ * Faster than the synchronous {@link detectAllProviders} because each provider's
+ * (blocking) detection runs on its own microtask turn. For the absolute fastest
+ * path when you only need availability + path, pass `{ version: false }` to skip
+ * the per-provider `--version` cold start.
+ * @param options Detection options; set `{ version: false }` to skip the version probe.
+ * @returns A promise resolving to provider info for all 11 supported providers (in registration order).
+ */
+const detectAllProvidersAsync = (options: AiDetectOptions = {}): Promise<AiProviderInfo[]> =>
+    Promise.all(PROVIDER_NAMES.map((name) => Promise.resolve().then(() => detectProvider(name, options))));
 
 /**
  * Detect only the AI CLI providers that are installed on the system.
+ * @param options Detection options; set `{ version: false }` to skip the version probe.
  * @returns An array of provider info for available providers only.
  */
-const detectAvailableProviders = (): AiProviderInfo[] => detectAllProviders().filter((provider) => provider.available);
+const detectAvailableProviders = (options: AiDetectOptions = {}): AiProviderInfo[] => detectAllProviders(options).filter((provider) => provider.available);
+
+/**
+ * Find the first available AI CLI provider, honoring a preference order.
+ *
+ * Stops at the first hit, so it is faster than detecting all 11 providers when
+ * you just want "whatever AI CLI this machine has". Version probing is opt-in
+ * via `options.version` (defaults to `false` here, since callers usually only
+ * need the path).
+ * @param preference Ordered list of providers to try. Defaults to {@link PROVIDER_NAMES}.
+ * @param options Detection options; set `{ version: true }` to also probe the version.
+ * @returns The first available provider, or `undefined` if none is installed.
+ */
+const findRunner = (preference: AiProviderName[] = PROVIDER_NAMES, options: AiDetectOptions = {}): AiProviderInfo | undefined => {
+    const probeVersion = options.version === true;
+
+    for (const name of preference) {
+        const info = detectProvider(name, { version: probeVersion });
+
+        if (info.available) {
+            return info;
+        }
+    }
+
+    return undefined;
+};
 
 /**
  * Build the CLI arguments array for a provider without executing.
  * Useful for previewing or logging what command would be run.
  * @param name The provider name.
  * @param prompt The prompt text to send.
- * @param options Optional model, maxTokens, and timeout overrides.
+ * @param options Optional model, maxTokens, timeout, and `dangerous` overrides.
  * @returns The arguments array to pass to the CLI binary.
  */
 const buildCliArgs = (name: AiProviderName, prompt: string, options: AiRunOptions = {}): string[] => {
@@ -174,7 +247,7 @@ const buildCliArgs = (name: AiProviderName, prompt: string, options: AiRunOption
     const model = options.model ?? config.defaultModel;
     const maxTokens = options.maxTokens !== undefined && Number.isFinite(options.maxTokens) ? options.maxTokens : DEFAULT_MAX_TOKENS;
 
-    return config.buildArgs(prompt, model, maxTokens);
+    return config.buildArgs(prompt, { dangerous: options.dangerous === true, maxTokens, model });
 };
 
 /**
@@ -182,78 +255,168 @@ const buildCliArgs = (name: AiProviderName, prompt: string, options: AiRunOption
  *
  * Uses Node.js `spawn` with stdin closed immediately for non-interactive execution.
  * The process environment is sanitized with `NO_COLOR=1` and `FORCE_COLOR=0` for clean output.
+ *
+ * By default the provider runs with its normal safety prompts; pass `{ dangerous: true }`
+ * to enable permission-bypass mode (unattended tool/file/shell access — only for trusted prompts).
  * @param provider A detected provider (from `detectProvider` or `detectAvailableProviders`).
  * @param prompt The prompt text to send.
- * @param options Optional model, maxTokens, and timeout overrides.
- * @returns The stdout/stderr output from the CLI.
- * @throws If the provider is not available, times out, or exits with a non-zero code.
+ * @param options Optional model, maxTokens, timeout, cwd, env, signal, streaming, and `dangerous` overrides.
+ * @returns The stdout/stderr output plus exit metadata from the CLI.
+ * @throws {AiRunError} If the provider is unavailable, times out, is aborted, or exits non-zero. Carries partial output.
  */
 const runProvider = async (provider: AiProviderInfo, prompt: string, options: AiRunOptions = {}): Promise<AiRunResult> => {
     if (!provider.available || !provider.path) {
-        throw new Error(`AI provider "${provider.name}" is not available.`);
+        throw new AiRunError(`AI provider "${provider.name}" is not available.`, { durationMs: 0, provider: provider.name });
     }
 
     const cliArguments = buildCliArgs(provider.name, prompt, options);
     const timeoutMs = options.timeoutMs !== undefined && Number.isFinite(options.timeoutMs) ? options.timeoutMs : DEFAULT_RUN_TIMEOUT;
+    const commandPath = provider.path;
+    const useShell = needsShell(commandPath);
+    const startedAt = Date.now();
+
+    // Already-aborted signal: fail fast without spawning.
+    if (options.signal?.aborted) {
+        throw new AiRunError(`${provider.name} CLI run was aborted.`, { aborted: true, durationMs: 0, provider: provider.name });
+    }
 
     return new Promise((resolve, reject) => {
-        const spawnOptions: SpawnOptionsWithoutStdio = {
-            env: { ...process.env, FORCE_COLOR: "0", NO_COLOR: "1" },
+        const spawnOptions: SpawnOptions = {
+            cwd: options.cwd,
+            env: { ...process.env, ...options.env, FORCE_COLOR: "0", NO_COLOR: "1" },
+            shell: useShell,
             stdio: ["pipe", "pipe", "pipe"],
         };
 
-        const child = spawn(provider.path as string, cliArguments, spawnOptions);
+        // On Windows shells we must quote args ourselves; on POSIX, spawn passes them verbatim.
+        const spawnArguments = useShell ? cliArguments.map((argument) => quoteWindowsArgument(argument)) : cliArguments;
 
-        child.stdin.end();
+        const child = spawn(useShell ? quoteWindowsArgument(commandPath) : commandPath, spawnArguments, spawnOptions);
+
+        child.stdin?.end();
 
         let stdout = "";
         let stderr = "";
-        let timedOut = false;
+        let settled = false;
 
         let killTimer: NodeJS.Timeout | undefined;
+        let timer: NodeJS.Timeout | undefined;
+        let onAbort: (() => void) | undefined;
 
-        const timer = setTimeout(() => {
-            timedOut = true;
-            child.kill("SIGTERM");
-            killTimer = setTimeout(() => child.kill("SIGKILL"), 5000);
-            reject(new Error(`${provider.name} CLI timed out after ${String(timeoutMs)}ms`));
-        }, timeoutMs);
-
-        child.stdout.on("data", (data: Buffer) => {
-            stdout += data.toString("utf8");
-        });
-
-        child.stderr.on("data", (data: Buffer) => {
-            stderr += data.toString("utf8");
-        });
-
-        child.on("close", (code: number | null) => {
+        const cleanup = (): void => {
             clearTimeout(timer);
             clearTimeout(killTimer);
 
-            if (timedOut) {
+            if (onAbort) {
+                options.signal?.removeEventListener("abort", onAbort);
+            }
+        };
+
+        const forceKill = (): void => {
+            child.kill("SIGKILL");
+        };
+
+        // Kill the child and reject for a timeout (`aborted: false`) or an abort (`aborted: true`).
+        const killChildAndReject = (aborted: boolean): void => {
+            if (settled) {
                 return;
             }
 
+            settled = true;
+            child.kill("SIGTERM");
+            killTimer = setTimeout(forceKill, 5000);
+            cleanup();
+
+            const durationMs = Date.now() - startedAt;
+            const error = aborted
+                ? new AiRunError(`${provider.name} CLI run was aborted.`, { aborted: true, durationMs, provider: provider.name, stderr, stdout })
+                : new AiRunError(`${provider.name} CLI timed out after ${String(timeoutMs)}ms`, {
+                    durationMs,
+                    provider: provider.name,
+                    stderr,
+                    stdout,
+                    timedOut: true,
+                });
+
+            reject(error);
+        };
+
+        timer = setTimeout(killChildAndReject, timeoutMs, false);
+
+        onAbort = (): void => {
+            killChildAndReject(true);
+        };
+
+        options.signal?.addEventListener("abort", onAbort, { once: true });
+
+        child.stdout?.on("data", (data: Buffer) => {
+            const chunk = data.toString("utf8");
+
+            stdout += chunk;
+            options.onStdout?.(chunk);
+        });
+
+        child.stderr?.on("data", (data: Buffer) => {
+            const chunk = data.toString("utf8");
+
+            stderr += chunk;
+            options.onStderr?.(chunk);
+        });
+
+        child.on("close", (code: number | null) => {
+            if (settled) {
+                return;
+            }
+
+            settled = true;
+            cleanup();
+
+            const durationMs = Date.now() - startedAt;
+
             if (code === 0) {
-                resolve({ provider: provider.name, stderr, stdout });
+                resolve({ durationMs, exitCode: code, provider: provider.name, stderr, stdout });
             } else {
-                reject(new Error(`${provider.name} CLI exited with code ${String(code)}: ${stderr || stdout}`));
+                reject(
+                    new AiRunError(`${provider.name} CLI exited with code ${String(code)}: ${stderr || stdout}`, {
+                        durationMs,
+                        exitCode: code,
+                        provider: provider.name,
+                        stderr,
+                        stdout,
+                    }),
+                );
             }
         });
 
         child.on("error", (error: Error) => {
-            clearTimeout(timer);
-            clearTimeout(killTimer);
-
-            if (!timedOut) {
-                reject(new Error(`Failed to spawn ${provider.name} CLI: ${error.message}`));
+            if (settled) {
+                return;
             }
+
+            settled = true;
+            cleanup();
+            reject(
+                new AiRunError(`Failed to spawn ${provider.name} CLI: ${error.message}`, {
+                    durationMs: Date.now() - startedAt,
+                    provider: provider.name,
+                    stderr,
+                    stdout,
+                }),
+            );
         });
     });
 };
 
-export { buildCliArgs, detectAllProviders, detectAvailableProviders, detectProvider, PROVIDERS, runProvider };
+export { buildCliArgs, detectAllProviders, detectAllProvidersAsync, detectAvailableProviders, detectProvider, findRunner, PROVIDERS, runProvider };
 
 export { PROVIDER_NAMES } from "./constants";
-export { type AiProviderConfig, type AiProviderInfo, type AiProviderName, type AiRunOptions, type AiRunResult } from "./types";
+export { AiRunError } from "./types";
+export {
+    type AiBuildArgsOptions,
+    type AiDetectOptions,
+    type AiProviderConfig,
+    type AiProviderInfo,
+    type AiProviderName,
+    type AiRunOptions,
+    type AiRunResult,
+} from "./types";

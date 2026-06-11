@@ -124,12 +124,14 @@ describe("buildCliArgs with empty model overrides", () => {
         expect(args).not.toContain("-m");
     });
 
-    it("should still include the default opencode model when none is overridden", () => {
+    it("should omit the opencode model flag when no default is set (provider-default)", () => {
         expect.assertions(2);
+
+        // opencode now defaults to the provider-default (empty) model.
+        expect(PROVIDERS.opencode.defaultModel).toBe("");
 
         const args = buildCliArgs("opencode", "do it");
 
-        expect(args).toContain("-m");
-        expect(args).toContain(PROVIDERS.opencode.defaultModel);
+        expect(args).not.toContain("-m");
     });
 });

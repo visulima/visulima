@@ -1,10 +1,14 @@
 import type { AiProviderConfig } from "../types";
 
-// crush run --yolo [-m model] "prompt"
+// crush run [--yolo] [-m model] "prompt"
 const crush: AiProviderConfig = {
     alternateCommands: [],
-    buildArgs: (prompt, model, _maxTokens) => {
-        const args = ["run", "--yolo"];
+    buildArgs: (prompt, { dangerous, model }) => {
+        const args = ["run"];
+
+        if (dangerous) {
+            args.push("--yolo");
+        }
 
         if (model) {
             args.push("-m", model);
@@ -17,6 +21,8 @@ const crush: AiProviderConfig = {
     command: "crush",
     defaultModel: "",
     envVariable: "CRUSH_PATH",
+    supportsMaxTokens: false,
+    supportsModel: true,
 };
 
 export default crush;

@@ -1,10 +1,16 @@
 import type { AiProviderConfig } from "../types";
 
-// droid "prompt" --skip-permissions-unsafe -o text [-m model]
+// droid "prompt" [--skip-permissions-unsafe] -o text [-m model]
 const droid: AiProviderConfig = {
     alternateCommands: [],
-    buildArgs: (prompt, model, _maxTokens) => {
-        const args = [prompt, "--skip-permissions-unsafe", "-o", "text"];
+    buildArgs: (prompt, { dangerous, model }) => {
+        const args = [prompt];
+
+        if (dangerous) {
+            args.push("--skip-permissions-unsafe");
+        }
+
+        args.push("-o", "text");
 
         if (model) {
             args.push("-m", model);
@@ -15,6 +21,8 @@ const droid: AiProviderConfig = {
     command: "droid",
     defaultModel: "",
     envVariable: "DROID_PATH",
+    supportsMaxTokens: false,
+    supportsModel: true,
 };
 
 export default droid;

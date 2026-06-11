@@ -73,9 +73,19 @@ describe("pROVIDERS", () => {
     it("should define default models for major providers", () => {
         expect.assertions(3);
 
-        expect(PROVIDERS.claude.defaultModel).toContain("claude");
+        // claude/codex now default to provider-default (empty) to avoid pinning stale snapshots.
+        expect(PROVIDERS.claude.defaultModel).toBe("");
         expect(PROVIDERS.gemini.defaultModel).toContain("gemini");
-        expect(PROVIDERS.codex.defaultModel).toBe("o3");
+        expect(PROVIDERS.codex.defaultModel).toBe("");
+    });
+
+    it("should declare model and maxTokens support per provider", () => {
+        expect.assertions(4);
+
+        expect(PROVIDERS.gemini.supportsModel).toBe(true);
+        expect(PROVIDERS.gemini.supportsMaxTokens).toBe(true);
+        expect(PROVIDERS.amp.supportsModel).toBe(false);
+        expect(PROVIDERS.claude.supportsMaxTokens).toBe(false);
     });
 
     it("should define alternate commands where applicable", () => {
@@ -401,17 +411,32 @@ describe(detectAvailableProviders, () => {
 // --- buildCliArgs ---
 
 describe(buildCliArgs, () => {
-    it("should build claude args", () => {
-        expect.assertions(6);
+    it("should build safe claude args without the permission-bypass flag by default", () => {
+        expect.assertions(5);
 
         const args = buildCliArgs("claude", "analyze this");
 
-        expect(args).toContain("--dangerously-skip-permissions");
+        expect(args).not.toContain("--dangerously-skip-permissions");
         expect(args).toContain("--output-format");
         expect(args).toContain("text");
         expect(args).toContain("-p");
         expect(args).toContain("analyze this");
-        expect(args).toContain("--model");
+    });
+
+    it("should add the claude permission-bypass flag when dangerous is true", () => {
+        expect.assertions(1);
+
+        const args = buildCliArgs("claude", "analyze this", { dangerous: true });
+
+        expect(args).toContain("--dangerously-skip-permissions");
+    });
+
+    it("should omit the claude --model flag when no model is set (provider-default)", () => {
+        expect.assertions(1);
+
+        const args = buildCliArgs("claude", "analyze this");
+
+        expect(args).not.toContain("--model");
     });
 
     it("should build gemini args", () => {
@@ -425,15 +450,24 @@ describe(buildCliArgs, () => {
         expect(args).toContain("analyze this");
     });
 
-    it("should build codex args", () => {
+    it("should build codex args targeting the modern `codex exec` surface", () => {
         expect.assertions(4);
 
         const args = buildCliArgs("codex", "analyze this");
 
-        expect(args[0]).toBe("analyze this");
-        expect(args).toContain("--approval-mode");
-        expect(args).toContain("full-auto");
-        expect(args).toContain("--quiet");
+        expect(args[0]).toBe("exec");
+        expect(args).toContain("analyze this");
+        // The retired flags must not be emitted anymore.
+        expect(args).not.toContain("--approval-mode");
+        expect(args).not.toContain("--max-tokens");
+    });
+
+    it("should add the codex bypass flag when dangerous is true", () => {
+        expect.assertions(1);
+
+        const args = buildCliArgs("codex", "analyze this", { dangerous: true });
+
+        expect(args).toContain("--dangerously-bypass-approvals-and-sandbox");
     });
 
     it("should use custom model", () => {
@@ -453,21 +487,29 @@ describe(buildCliArgs, () => {
         expect(args).toContain("8192");
     });
 
-    it("should use default model when not specified", () => {
+    it("should use the gemini default model when not specified", () => {
         expect.assertions(1);
 
-        const args = buildCliArgs("claude", "test");
+        const args = buildCliArgs("gemini", "test");
 
-        expect(args).toContain(PROVIDERS.claude.defaultModel);
+        expect(args).toContain(PROVIDERS.gemini.defaultModel);
     });
 
-    it("should build amp args with -x flag", () => {
+    it("should build amp args with -x flag and no bypass flag by default", () => {
         expect.assertions(3);
 
         const args = buildCliArgs("amp", "analyze this");
 
         expect(args).toContain("-x");
         expect(args).toContain("analyze this");
+        expect(args).not.toContain("--dangerously-allow-all");
+    });
+
+    it("should add the amp bypass flag when dangerous is true", () => {
+        expect.assertions(1);
+
+        const args = buildCliArgs("amp", "analyze this", { dangerous: true });
+
         expect(args).toContain("--dangerously-allow-all");
     });
 
@@ -508,27 +550,43 @@ describe(buildCliArgs, () => {
         expect(args).toContain("anthropic/claude-opus-4");
     });
 
-    it("should build qwen args with -p and --yolo", () => {
+    it("should build qwen args with -p and -o text, no --yolo by default", () => {
         expect.assertions(5);
 
         const args = buildCliArgs("qwen", "analyze this");
 
         expect(args).toContain("-p");
         expect(args).toContain("analyze this");
-        expect(args).toContain("--yolo");
+        expect(args).not.toContain("--yolo");
         expect(args).toContain("-o");
         expect(args).toContain("text");
     });
 
-    it("should build droid args with positional prompt", () => {
+    it("should add the qwen --yolo flag when dangerous is true", () => {
+        expect.assertions(1);
+
+        const args = buildCliArgs("qwen", "analyze this", { dangerous: true });
+
+        expect(args).toContain("--yolo");
+    });
+
+    it("should build droid args with positional prompt and no bypass flag by default", () => {
         expect.assertions(4);
 
         const args = buildCliArgs("droid", "analyze this");
 
         expect(args[0]).toBe("analyze this");
-        expect(args).toContain("--skip-permissions-unsafe");
+        expect(args).not.toContain("--skip-permissions-unsafe");
         expect(args).toContain("-o");
         expect(args).toContain("text");
+    });
+
+    it("should add the droid bypass flag when dangerous is true", () => {
+        expect.assertions(1);
+
+        const args = buildCliArgs("droid", "analyze this", { dangerous: true });
+
+        expect(args).toContain("--skip-permissions-unsafe");
     });
 
     it("should build droid args with custom model", () => {
@@ -540,16 +598,24 @@ describe(buildCliArgs, () => {
         expect(args).toContain("gpt-4");
     });
 
-    it("should build cursor args with -p and --force", () => {
+    it("should build cursor args with -p and no --force by default", () => {
         expect.assertions(5);
 
         const args = buildCliArgs("cursor", "analyze this");
 
         expect(args).toContain("-p");
-        expect(args).toContain("--force");
+        expect(args).not.toContain("--force");
         expect(args).toContain("--output-format");
         expect(args).toContain("text");
         expect(args).toContain("analyze this");
+    });
+
+    it("should add the cursor --force flag when dangerous is true", () => {
+        expect.assertions(1);
+
+        const args = buildCliArgs("cursor", "analyze this", { dangerous: true });
+
+        expect(args).toContain("--force");
     });
 
     it("should build cursor args with custom model", () => {
@@ -561,13 +627,21 @@ describe(buildCliArgs, () => {
         expect(args).toContain("gpt-5.2");
     });
 
-    it("should build copilot args with -p and --allow-all-tools", () => {
+    it("should build copilot args with -p and no --allow-all-tools by default", () => {
         expect.assertions(3);
 
         const args = buildCliArgs("copilot", "analyze this");
 
         expect(args).toContain("-p");
         expect(args).toContain("analyze this");
+        expect(args).not.toContain("--allow-all-tools");
+    });
+
+    it("should add the copilot --allow-all-tools flag when dangerous is true", () => {
+        expect.assertions(1);
+
+        const args = buildCliArgs("copilot", "analyze this", { dangerous: true });
+
         expect(args).toContain("--allow-all-tools");
     });
 
@@ -580,14 +654,22 @@ describe(buildCliArgs, () => {
         expect(args).toContain("claude-sonnet-4.5");
     });
 
-    it("should build crush args with run subcommand and --yolo", () => {
+    it("should build crush args with run subcommand and no --yolo by default", () => {
         expect.assertions(3);
 
         const args = buildCliArgs("crush", "analyze this");
 
         expect(args[0]).toBe("run");
-        expect(args).toContain("--yolo");
+        expect(args).not.toContain("--yolo");
         expect(args).toContain("analyze this");
+    });
+
+    it("should add the crush --yolo flag when dangerous is true", () => {
+        expect.assertions(1);
+
+        const args = buildCliArgs("crush", "analyze this", { dangerous: true });
+
+        expect(args).toContain("--yolo");
     });
 
     it("should build crush args with custom model", () => {
