@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { GridItem, InternalGridItem } from "../../../src/types";
-import { EMPTY_CELL_REPRESENTATION, normalizeGridCell } from "../../../src/utils/normalize-cell";
+import { normalizeGridCell } from "../../../src/utils/normalize-cell";
 
 const INVALID_ITEM_REGEX = /Invalid item type in grid cell/;
 
@@ -46,8 +46,8 @@ describe("normalizeCell", () => {
 
         const result = normalizeGridCell(null);
 
-        // Assuming null becomes an empty representation internally
-        expect(result).toStrictEqual<InternalGridItem>({ content: EMPTY_CELL_REPRESENTATION });
+        // null becomes an empty-string content tagged with the internal isEmpty flag
+        expect(result).toStrictEqual<InternalGridItem>({ content: "", isEmpty: true });
     });
 
     it("should handle undefined content", () => {
@@ -55,8 +55,17 @@ describe("normalizeCell", () => {
 
         const result = normalizeGridCell(undefined);
 
-        // Assuming undefined becomes an empty representation internally
-        expect(result).toStrictEqual<InternalGridItem>({ content: EMPTY_CELL_REPRESENTATION });
+        // undefined becomes an empty-string content tagged with the internal isEmpty flag
+        expect(result).toStrictEqual<InternalGridItem>({ content: "", isEmpty: true });
+    });
+
+    it("should NOT treat a user cell literally containing the old sentinel as empty", () => {
+        expect.assertions(2);
+
+        const result = normalizeGridCell("__EMPTY__");
+
+        expect(result).toStrictEqual<InternalGridItem>({ content: "__EMPTY__" });
+        expect(result.isEmpty).toBeUndefined();
     });
 
     it("should handle object GridItem content", () => {
@@ -85,8 +94,8 @@ describe("normalizeCell", () => {
         const resultNull = normalizeGridCell(cellNull);
         const resultUndef = normalizeGridCell(cellUndef);
 
-        expect(resultNull).toStrictEqual({ ...cellNull, content: EMPTY_CELL_REPRESENTATION });
-        expect(resultUndef).toStrictEqual({ ...cellUndef, content: EMPTY_CELL_REPRESENTATION });
+        expect(resultNull).toStrictEqual({ ...cellNull, content: "", isEmpty: true });
+        expect(resultUndef).toStrictEqual({ ...cellUndef, content: "", isEmpty: true });
     });
 
     it("should throw error for invalid object type", () => {

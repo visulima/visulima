@@ -1,10 +1,20 @@
 import type { GridCell, InternalGridItem } from "../types";
 
+/**
+ * @deprecated No longer used as a content sentinel. Empty cells are now marked
+ * with the internal `isEmpty` flag on {@link InternalGridItem} and render as an
+ * empty string. Kept only for backwards compatibility and will be removed.
+ */
 export const EMPTY_CELL_REPRESENTATION = "__EMPTY__";
 
 /**
  * Normalizes a GridCell input into an InternalGridItem.
  * Ensures the 'content' property is always a string.
+ *
+ * Cells that originate from `null`/`undefined` are normalized to an empty
+ * string and tagged with the internal `isEmpty` flag, so the layout engine can
+ * recognize them without resorting to a magic content string that could collide
+ * with legitimate user content (e.g. a cell literally containing `"__EMPTY__"`).
  * @param cell The input cell (string, number, null, undefined, or GridItem object).
  * @returns The normalized InternalGridItem.
  * @throws {TypeError} If the input cell type is invalid.
@@ -19,27 +29,29 @@ export const normalizeGridCell = (cell: GridCell): InternalGridItem => {
     }
 
     if (cell === null || cell === undefined) {
-        return { content: EMPTY_CELL_REPRESENTATION }; // Represent null/undefined as empty string
+        return { content: "", isEmpty: true };
     }
 
     if (typeof cell === "object" && "content" in cell) {
         let { content } = cell;
+        let isEmpty = false;
 
         if (typeof content === "number" || typeof content === "bigint" || typeof content === "boolean") {
             content = String(content);
         } else if (content === null || content === undefined) {
-            content = EMPTY_CELL_REPRESENTATION;
+            content = "";
+            isEmpty = true;
         } else if (typeof content !== "string") {
             throw new TypeError(
                 `Invalid item type in grid cell: expected string, number, null, undefined, or GridItem object, but received ${JSON.stringify(cell)} (type: ${typeof cell})`,
             );
         }
 
-        return { ...cell, content };
+        return isEmpty ? { ...cell, content, isEmpty: true } : { ...cell, content };
     }
 
-    // If it's none of the above, throw an error (e.g., bigint, boolean, function)
-    // Use String() for potentially non-primitive types in the error message
+    // If it's none of the above, throw an error (e.g., function, symbol).
+    // Use JSON.stringify for potentially non-primitive types in the error message.
     throw new TypeError(
         `Invalid item type in grid cell: expected string, number, null, undefined, or GridItem object, but received ${JSON.stringify(cell)} (type: ${typeof cell})`,
     );

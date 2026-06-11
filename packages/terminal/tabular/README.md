@@ -387,10 +387,77 @@ All width-related properties (`columnWidths`, `maxWidth`, `width`) **include pad
 
 **Width Priority Order** (highest to lowest):
 
-1. `cell.width` - Exact cell width (overrides table columnWidths)
+1. `cell.width` - Exact cell width (overrides table columnWidths). Honored by `Table` only; `Grid` ignores `GridItem.width` and emits a dev warning if it is set.
 2. `table.columnWidths` - Table-level column width constraints
 3. `cell.maxWidth` - Maximum cell width constraint
 4. Auto-calculated width (balanced or content-based)
+
+> **Note on `Grid` vs `Table` width:** `GridItem.width` is only consumed by
+> `Table`, which folds it into the table-level fixed column widths. When using
+> `Grid` directly, constrain columns with `fixedColumnWidths` or `maxWidth`
+> instead. If you want a fresh terminal-width probe between renders (e.g. after a
+> resize), call `clearTerminalWidthCache()`; the detected terminal width is
+> cached module-wide for performance.
+
+#### Auto-sizing heuristics
+
+When no fixed width is supplied, the auto-calculated content width is **not**
+always exactly `getStringWidth(content)`. To keep wrapped/long content readable,
+the sizing pass applies a few internal heuristics:
+
+- A short-content threshold (~20 columns) below which content is laid out on a
+  single line where possible.
+- Small buffers (a few columns) added to wrappable content so words are less
+  likely to be split awkwardly.
+- A minimum floor (~12 columns) for wrappable columns.
+
+These keep tables looking sensible by default. If you need the column width to
+match `getStringWidth(content)` exactly, set an explicit `columnWidths` (or
+per-cell `width`) for that column.
+
+### Per-column defaults
+
+Instead of setting alignment/wrapping on every cell, declare per-column
+defaults. Cell-level options always win over column defaults.
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+    // shorthand: right-align the numeric column
+    colAligns: [undefined, "right"],
+    // richer per-column defaults (alignment, maxWidth, truncate, wordWrap, vAlign)
+    columnDefaults: [undefined, { maxWidth: 12, truncate: true }],
+});
+
+table.setHeaders(["Item", "Price"]);
+table.addRow(["Coffee", "4.50"]);
+table.addRow(["Tea", "3.00"]);
+
+console.log(table.toString());
+```
+
+### Inspecting and mutating rows
+
+`Table` exposes accessors so live dashboards do not need a separate shadow copy
+of their data:
+
+```typescript
+table.getRows(); // shallow copy of the body rows
+table.rowCount; // number of body rows
+table.removeRow(0); // remove a single body row (throws RangeError if out of bounds)
+table.clear(); // remove all body rows (headers/footers preserved)
+```
+
+### Routing diagnostics
+
+By default non-fatal diagnostics (e.g. "could not place item") go to
+`console.warn`. Provide an `onWarn` handler on `TableOptions`/`GridOptions` to
+capture, suppress, or re-route them instead of polluting your CLI's stderr:
+
+```typescript
+const table = createTable({ onWarn: (message) => myLogger.debug(message) });
+```
 
 ### Complete Example
 

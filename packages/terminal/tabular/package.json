@@ -90,7 +90,6 @@
         "@visulima/string": "3.0.0-alpha.15",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
-        "ansi-regex": "catalog:dev",
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",

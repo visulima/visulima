@@ -11,6 +11,14 @@ interface BaseRenderingOptions {
     /** Maximum width for the entire table/grid. */
     maxWidth?: number;
 
+    /**
+     * Optional handler for non-fatal diagnostics emitted during rendering.
+     * When provided it replaces the default `console.warn`, so a library
+     * consumer can capture, suppress, or re-route these messages instead of
+     * having them leak to stderr. Defaults to `console.warn`.
+     */
+    onWarn?: WarnHandler;
+
     /** Explicit terminal width (overrides detected) */
     terminalWidth?: number;
 
@@ -26,6 +34,13 @@ interface BaseRenderingOptions {
     /** Global word wrap options/flag */
     wordWrap?: Omit<WordWrapOptions, "width"> | boolean;
 }
+
+/**
+ * Handler invoked for non-fatal diagnostics (e.g. an item that could not be
+ * placed in the grid). Receiving a handler lets consumers route these messages
+ * to their own logger instead of polluting stderr via `console.warn`.
+ */
+export type WarnHandler = (message: string) => void;
 
 export type AnsiColorFunction = (text: string) => string;
 
@@ -84,6 +99,15 @@ export type GridCell = Content | GridItem;
 /** Represents a GridItem with content guaranteed to be a string */
 export interface InternalGridItem extends GridItem {
     content: string;
+
+    /**
+     * Internal flag marking a cell that originated from `null`/`undefined`
+     * input (an "empty" placeholder cell). Used by the layout engine to skip
+     * placement for non-spanning empty cells without relying on a magic content
+     * string that could collide with legitimate user content.
+     * @internal
+     */
+    isEmpty?: boolean;
 }
 
 export interface TableItem extends GridItem {
@@ -172,9 +196,43 @@ export interface Style {
 }
 
 /**
+ * Per-column default cell options applied to every cell in a column unless the
+ * cell overrides them. A convenience for the common "right-align this numeric
+ * column" / "wrap this column" story without setting options on every cell.
+ */
+export interface ColumnDefault {
+    /** Default horizontal alignment for cells in this column. */
+    hAlign?: HorizontalAlignment;
+
+    /** Default maximum width for cells in this column. */
+    maxWidth?: number;
+
+    /** Default truncation behaviour for cells in this column. */
+    truncate?: TruncateOptions | boolean;
+
+    /** Default vertical alignment for cells in this column. */
+    vAlign?: VerticalAlignment;
+
+    /** Default word-wrap behaviour for cells in this column. */
+    wordWrap?: Omit<WordWrapOptions, "width"> | boolean;
+}
+
+/**
  * Options specific to Table construction.
  */
 export interface TableOptions extends BaseRenderingOptions {
+    /**
+     * Per-column default horizontal alignment, indexed by column. A shorthand
+     * for `columnDefaults[i].hAlign`. Cell-level `hAlign` always wins.
+     */
+    colAligns?: (HorizontalAlignment | undefined)[];
+
+    /**
+     * Per-column default options, indexed by column. Applied to every cell in
+     * the column unless the individual cell overrides the same option.
+     */
+    columnDefaults?: (ColumnDefault | undefined)[];
+
     /**
      * Fixed column widths.
      * Can be a single number for all columns or an array for specific columns.
