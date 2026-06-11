@@ -14,7 +14,7 @@ import {
 
 // jsdom does not implement matchMedia, so install a stub that returns the given
 // matches value. Returns a restore function to delete it afterwards.
-const stubMatchMedia = (matches: boolean): () => void => {
+const stubMatchMedia = (matches: boolean): (() => void) => {
     const original = Object.getOwnPropertyDescriptor(globalThis.window, "matchMedia");
 
     Object.defineProperty(globalThis.window, "matchMedia", {
