@@ -75,12 +75,12 @@ const tsconfigSync = findTsConfigSync("/path/to/project");
 
 Options (`findTsConfig`/`findTsConfigSync`):
 
-| Option              | Type                                 | Default          | Description                                                                                                            |
-| ------------------- | ------------------------------------ | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
-| `configFileName`    | `string`                             | `"tsconfig.json"` | Name of the file to search for. Supplying a custom name disables the `jsconfig.json` fallback.                        |
-| `cache`             | `boolean \| Map<string, TsConfigResult>` | `undefined`      | Cache parsed configs. `true` uses a process-wide cache; pass a `Map` for a caller-owned cache. Keys embed the file mtime, so on-disk edits invalidate cached entries automatically. |
-| `tscCompatible`     | see [readTsConfig](#readtsconfig)    | `undefined`      | Forwarded to `readTsConfig`.                                                                                          |
-| `typescriptVersion` | see [readTsConfig](#readtsconfig)    | `undefined`      | Forwarded to `readTsConfig`.                                                                                          |
+| Option              | Type                                     | Default           | Description                                                                                                                                                                         |
+| ------------------- | ---------------------------------------- | ----------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `configFileName`    | `string`                                 | `"tsconfig.json"` | Name of the file to search for. Supplying a custom name disables the `jsconfig.json` fallback.                                                                                      |
+| `cache`             | `boolean \| Map<string, TsConfigResult>` | `undefined`       | Cache parsed configs. `true` uses a process-wide cache; pass a `Map` for a caller-owned cache. Keys embed the file mtime, so on-disk edits invalidate cached entries automatically. |
+| `tscCompatible`     | see [readTsConfig](#readtsconfig)        | `undefined`       | Forwarded to `readTsConfig`.                                                                                                                                                        |
+| `typescriptVersion` | see [readTsConfig](#readtsconfig)        | `undefined`       | Forwarded to `readTsConfig`.                                                                                                                                                        |
 
 > Note: only the upward file search is async. Parsing (including the full `extends` chain) is synchronous, so a very deep `extends` chain still blocks the event loop during parse.
 
@@ -102,10 +102,10 @@ const withDefaults = readTsConfig("/path/to/tsconfig.json", { typescriptVersion:
 
 Options (`ReadTsConfigOptions`):
 
-| Option              | Type                                                             | Default     | Description                                                                                                                                                                                       |
-| ------------------- | --------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tscCompatible`     | `"5.4" \| "5.5" \| "5.6" \| "5.7" \| "5.8" \| "5.9" \| "6.0" \| true` | `undefined` | Synthesize the *derived* defaults TypeScript would imply from other options for the given version (e.g. `module: nodenext` ⇒ `moduleResolution: nodenext`). `true` targets the latest supported version. |
-| `typescriptVersion` | `"auto" \| false \| string`                                     | `false`     | Apply the *unconditional* compiler-option defaults of a TypeScript version. `"auto"` detects the installed version (including Yarn PnP); a string pins an explicit version; `false` applies none. Can be combined with `tscCompatible`. |
+| Option              | Type                                                                  | Default     | Description                                                                                                                                                                                                                             |
+| ------------------- | --------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tscCompatible`     | `"5.4" \| "5.5" \| "5.6" \| "5.7" \| "5.8" \| "5.9" \| "6.0" \| true` | `undefined` | Synthesize the _derived_ defaults TypeScript would imply from other options for the given version (e.g. `module: nodenext` ⇒ `moduleResolution: nodenext`). `true` targets the latest supported version.                                |
+| `typescriptVersion` | `"auto" \| false \| string`                                           | `false`     | Apply the _unconditional_ compiler-option defaults of a TypeScript version. `"auto"` detects the installed version (including Yarn PnP); a string pins an explicit version; `false` applies none. Can be combined with `tscCompatible`. |
 
 ### writeTsConfig / writeTsConfigSync
 

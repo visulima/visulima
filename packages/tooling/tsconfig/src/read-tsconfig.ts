@@ -125,12 +125,12 @@ const resolveExtends = (
     return extendsConfig;
 };
 
-// eslint-disable-next-line sonarjs/cognitive-complexity
 const internalParseTsConfig = (
     tsconfigPath: string,
     options?: Options,
     circularExtendsTracker = new Set<string>(),
     resolveExtendsCache: Cache<string> = new Map<string, string>(),
+    // eslint-disable-next-line sonarjs/cognitive-complexity -- load-bearing tsconfig parser tested for parity against the live TypeScript compiler; refactoring risks behavioral drift
 ): TsConfigJsonResolved => {
     /**
      * Decided not to cache the TsConfigJsonResolved object because it's
