@@ -123,7 +123,7 @@ const getMainFrame = (trace: Trace, options: Options, deep = 0): string => {
 
     const { fileLine, method } = color;
 
-    return `${getPrefix(prefix, indentation, deep)}at ${frame.methodName ? `${method(frame.methodName)} ` : ""}${fileLine(filePath as string)}:${fileLine(
+    return `${getPrefix(prefix, indentation, deep)}at ${frame.methodName ? `${method(frame.methodName)} ` : ""}${fileLine(filePath)}:${fileLine(
         frame.line?.toString() ?? "",
     )}`;
 };
@@ -138,10 +138,7 @@ const getCode = (trace: Trace, options: Options, deep: number): string | undefin
 
     let fileContent: string;
 
-    if (resolvedSource !== undefined) {
-        // The resolver supplied the original source directly (e.g. inlined sourcesContent).
-        fileContent = resolvedSource;
-    } else {
+    if (resolvedSource === undefined) {
         const filePath = frame.file.replace("file://", "");
 
         if (!existsSync(filePath)) {
@@ -149,6 +146,9 @@ const getCode = (trace: Trace, options: Options, deep: number): string | undefin
         }
 
         fileContent = readFileSync(filePath, "utf8");
+    } else {
+        // The resolver supplied the original source directly (e.g. inlined sourcesContent).
+        fileContent = resolvedSource;
     }
 
     return codeFrame(
@@ -222,11 +222,9 @@ const getCause = (error: RenderableError, options: Options, deep: number, seen: 
     }
 
     if (cause.cause) {
-        if (seen.has(cause)) {
-            message += `\n${getPrefix(options.prefix, options.indentation, deep + 1)}Caused by: [Circular]`;
-        } else {
-            message += `\n${getCause(cause, options, deep + 1, seen)}`;
-        }
+        message += seen.has(cause)
+            ? `\n${getPrefix(options.prefix, options.indentation, deep + 1)}Caused by: [Circular]`
+            : `\n${getCause(cause, options, deep + 1, seen)}`;
     }
 
     return `\n${message}`;

@@ -30,17 +30,17 @@ const aiSolutionResponse = (rawText: string): string => {
     const linksRaw = between("LINKS", "ENDLINKS", rawText);
     const links = linksRaw
         ? linksRaw
-              .split("\n")
-              .map((line) => line.trim())
-              .filter(Boolean)
-              .map((link) => {
-                  try {
-                      return JSON.parse(link) as { title: string; url: string };
-                  } catch {
-                      return undefined;
-                  }
-              })
-              .filter((link): link is { title: string; url: string } => link !== undefined)
+            .split("\n")
+            .map((line) => line.trim())
+            .filter(Boolean)
+            .map((link) => {
+                try {
+                    return JSON.parse(link) as { title: string; url: string };
+                } catch {
+                    return undefined;
+                }
+            })
+            .filter((link): link is { title: string; url: string } => link !== undefined)
         : [];
 
     const linksSection

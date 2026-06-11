@@ -44,7 +44,10 @@ describe("serialize/deserialize round-trip for Map/Set/RegExp/URL", () => {
 
         const error = new Error("boom") as Error & { data: Map<string, number> };
 
-        error.data = new Map([["a", 1], ["b", 2]]);
+        error.data = new Map([
+            ["a", 1],
+            ["b", 2],
+        ]);
 
         const serialized = serializeError(error);
 
@@ -52,11 +55,22 @@ describe("serialize/deserialize round-trip for Map/Set/RegExp/URL", () => {
         // eslint-disable-next-line unicorn/prefer-structured-clone
         const roundTrippedJson = JSON.parse(JSON.stringify(serialized)) as Record<string, unknown>;
 
-        expect(roundTrippedJson.data).toStrictEqual({ __dataType: "Map", value: [["a", 1], ["b", 2]] });
+        expect(roundTrippedJson.data).toStrictEqual({
+            __dataType: "Map",
+            value: [
+                ["a", 1],
+                ["b", 2],
+            ],
+        });
 
         const restored = deserializeError(roundTrippedJson) as unknown as { data: Map<string, number> };
 
-        expect(restored.data).toStrictEqual(new Map([["a", 1], ["b", 2]]));
+        expect(restored.data).toStrictEqual(
+            new Map([
+                ["a", 1],
+                ["b", 2],
+            ]),
+        );
     });
 
     it("should serialize and restore a Set property", () => {

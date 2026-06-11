@@ -119,12 +119,16 @@ const reconstructError = (serialized: Record<string, unknown>, options: Deserial
 const deserializeValue = (value: unknown, options: DeserializeOptionsType, depth: number): unknown => {
     if (isPlainObject(value)) {
         // Reconstruct Map/Set from the structured form produced by `serializeValue`.
+        // eslint-disable-next-line no-underscore-dangle -- serialization marker
         if (value.__dataType === "Map" && Array.isArray(value.value)) {
-            return new Map((value.value as [unknown, unknown][]).map(([k, v]) => [deserializeValue(k, options, depth + 1), deserializeValue(v, options, depth + 1)]));
+            return new Map(
+                (value.value as [unknown, unknown][]).map(([k, v]) => [deserializeValue(k, options, depth + 1), deserializeValue(v, options, depth + 1)]),
+            );
         }
 
+        // eslint-disable-next-line no-underscore-dangle -- serialization marker
         if (value.__dataType === "Set" && Array.isArray(value.value)) {
-            return new Set((value.value as unknown[]).map((v) => deserializeValue(v, options, depth + 1)));
+            return new Set(value.value.map((v) => deserializeValue(v, options, depth + 1)));
         }
 
         // Check if it looks like a serialized error
