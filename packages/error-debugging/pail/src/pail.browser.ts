@@ -209,9 +209,13 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
         // TimerManager and CounterManager are initialized before the logger is preventLoop-wrapped;
         // they receive arrow functions that call `this.logger` so they always pick up the final
         // (wrapped) implementation via the instance slot set a few lines below.
-        this.timerManager = new TimerManager((type: string, raw: boolean, force: boolean, ...args: unknown[]) => {
-            this.logger(type as never, raw, force, ...args);
-        }, this.startTimerMessage, this.endTimerMessage);
+        this.timerManager = new TimerManager(
+            (type: string, raw: boolean, force: boolean, ...args: unknown[]) => {
+                this.logger(type as never, raw, force, ...args);
+            },
+            this.startTimerMessage,
+            this.endTimerMessage,
+        );
         this.counterManager = new CounterManager((type: string, raw: boolean, force: boolean, ...args: unknown[]) => {
             this.logger(type as never, raw, force, ...args);
         });
