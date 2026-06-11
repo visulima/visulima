@@ -2,6 +2,17 @@
     "name": "@shared/utils",
     "version": "0.0.0",
     "private": true,
+    "type": "module",
+    "main": "./index.ts",
+    "exports": {
+        ".": "./index.ts",
+        "./cli-error-builder": "./cli-error-builder.ts",
+        "./editors": "./editors.ts",
+        "./find-language-based-on-extension": "./find-language-based-on-extension.ts",
+        "./get-file-source": "./get-file-source.ts",
+        "./get-highlighter": "./get-highlighter.ts",
+        "./get-language-import": "./get-language-import.ts"
+    },
     "dependencies": {
         "@visulima/error": "workspace:*"
     },
@@ -10,6 +21,7 @@
         "@shikijs/themes": "catalog:dev",
         "@visulima/boxen": "workspace:*",
         "shiki": "catalog:syntax",
-        "typescript": "catalog:tsc"
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
     }
 }

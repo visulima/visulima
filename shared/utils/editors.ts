@@ -11,8 +11,11 @@ enum Editors {
     cursor = "Cursor",
     emacs = "GNU Emacs",
     emacsforosx = "GNU Emacs for Mac OS X",
+    fleet = "JetBrains Fleet",
+    helix = "Helix",
     intellij = "IntelliJ IDEA",
     idea = "IntelliJ IDEA",
+    kiro = "Kiro",
     nano = "GNU nano",
     neovim = "NeoVim",
     "notepad++" = "Notepad++",
@@ -27,8 +30,9 @@ enum Editors {
     vscode = "Visual Studio Code",
     vscodium = "VSCodium",
     webstorm = "WebStorm",
+    windsurf = "Windsurf",
     xcode = "Xcode",
     zed = "Zed",
 }
 
-export default Editors
+export default Editors;

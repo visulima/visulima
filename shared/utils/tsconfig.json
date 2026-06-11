@@ -1,7 +1,7 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "extends": "../../tsconfig.base.json",
-    "include": ["*.ts", "*.d.ts"],
+    "include": ["*.ts", "*.d.ts", "__tests__/**/*.ts"],
     "compilerOptions": {
         "moduleResolution": "bundler"
     }

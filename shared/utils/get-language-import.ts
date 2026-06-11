@@ -10,6 +10,7 @@ export const LANGUAGE_IMPORT_MAP: Record<string, () => Promise<LanguageInput>> =
     jsx: () => import("@shikijs/langs/jsx"),
     tsx: () => import("@shikijs/langs/tsx"),
     json: () => import("@shikijs/langs/json"),
+    json5: () => import("@shikijs/langs/json5"),
     jsonc: () => import("@shikijs/langs/jsonc"),
     xml: () => import("@shikijs/langs/xml"),
     sql: () => import("@shikijs/langs/sql"),
@@ -26,6 +27,15 @@ export const LANGUAGE_IMPORT_MAP: Record<string, () => Promise<LanguageInput>> =
     vue: () => import("@shikijs/langs/vue"),
     bash: () => import("@shikijs/langs/bash"),
     shell: () => import("@shikijs/langs/shell"),
+    yaml: () => import("@shikijs/langs/yaml"),
+    toml: () => import("@shikijs/langs/toml"),
+    python: () => import("@shikijs/langs/python"),
+    go: () => import("@shikijs/langs/go"),
+    rust: () => import("@shikijs/langs/rust"),
+    ruby: () => import("@shikijs/langs/ruby"),
+    php: () => import("@shikijs/langs/php"),
+    graphql: () => import("@shikijs/langs/graphql"),
+    dockerfile: () => import("@shikijs/langs/dockerfile"),
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     text: () => Promise.resolve({ name: "text", patterns: [], scopeName: "source.text", repository: {} } as any as LanguageInput),
 };
