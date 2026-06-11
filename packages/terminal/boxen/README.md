@@ -241,6 +241,15 @@ Can be any of the above predefined styles or an object with the following keys:
 }
 ```
 
+The built-in catalog is also exported as `boxes`, so you can derive a custom style from a predefined one without copying box-drawing characters by hand:
+
+```js
+import { boxen, boxes } from "@visulima/boxen";
+import type { BorderStyleName } from "@visulima/boxen";
+
+console.log(boxen("foo", { borderStyle: { ...boxes.round, top: "=" } }));
+```
+
 ##### headerText
 
 Type: `string`
@@ -419,18 +428,27 @@ console.log(boxen("foo bar", { height: 5 }));
 
 ##### fullscreen
 
-Type: `boolean | (width: number, height: number) => [width: number, height: number]`
+Type: `boolean | ((width: number, height: number) => [width: number, height: number] | { columns: number; rows: number })`
 
 Whether or not to fit all available space within the terminal.
 
-Pass a callback function to control box dimensions:
+Pass a callback function to control box dimensions. The callback may return
+either a `[width, height]` tuple or a `{ columns, rows }` object:
 
 ```js
 import { boxen } from "@visulima/boxen";
 
+// Tuple form
 console.log(
     boxen("foo bar", {
         fullscreen: (width, height) => [width, height - 1],
+    }),
+);
+
+// Object form
+console.log(
+    boxen("foo bar", {
+        fullscreen: (width, height) => ({ columns: width, rows: height - 1 }),
     }),
 );
 ```
@@ -483,6 +501,61 @@ Default: `'left'`\
 Values: `'left'` `'center'` `'right'`
 
 Align the text in the box based on the widest line.
+
+##### backgroundColor
+
+Type: `(line: string) => string`
+
+Fill the interior of each content line (including padding) with a color. Receives the already-padded interior of a single line and must return it re-styled. Useful for solid-fill status banners.
+
+```js
+import { bgRed } from "@visulima/colorize";
+import { boxen } from "@visulima/boxen";
+
+console.log(
+    boxen("alert", {
+        backgroundColor: (line) => bgRed(line),
+    }),
+);
+```
+
+##### verticalAlignment
+
+Type: `string`\
+Default: `'top'`\
+Values: `'top'` `'center'` `'bottom'`
+
+When a fixed `height` leaves spare rows, align the content vertically within the box.
+
+```js
+import { boxen } from "@visulima/boxen";
+
+console.log(
+    boxen("foo bar", {
+        height: 5,
+        verticalAlignment: "center",
+    }),
+);
+// ┌───────┐
+// │       │
+// │foo bar│
+// │       │
+// └───────┘
+```
+
+##### terminalColumns
+
+Type: `number`
+
+Number of columns the box may occupy. When omitted, the current terminal width is probed via `terminal-size`.
+
+Providing this skips the (potentially blocking, in non-TTY/CI contexts) terminal-size probe and makes rendering deterministic for snapshot tests.
+
+##### terminalRows
+
+Type: `number`
+
+Number of rows the terminal has, used only by `fullscreen`. When omitted, the current terminal height is probed via `terminal-size`.
 
 ##### transformTabToSpace
 

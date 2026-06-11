@@ -48,7 +48,7 @@ describe("text option", () => {
         expect(() => {
             // @ts-ignore - intentional error for testing
             boxen("foo", { textColor: "dark-yellow" });
-        }).toThrow("\"textColor\" is not a valid function");
+        }).toThrow("\"textColor\" must be a function, got string");
     });
 
     it("text alignement option (left)", () => {
