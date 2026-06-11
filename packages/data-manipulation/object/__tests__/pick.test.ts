@@ -195,4 +195,41 @@ describe(pick, () => {
             },
         });
     });
+
+    it("should traverse arrays of objects with an indexed path", () => {
+        expect.assertions(1);
+
+        const input = { users: [{ name: "a", password: "p1" }, { name: "b", password: "p2" }] };
+        const expected = pick(input, ["users.0.name"]);
+
+        expect(expected).toStrictEqual({ users: [{ name: "a" }] });
+    });
+
+    it("should traverse arrays of objects with a wildcard path", () => {
+        expect.assertions(1);
+
+        const input = { users: [{ name: "a", password: "p1" }, { name: "b", password: "p2" }] };
+        const expected = pick(input, ["users.*.name"]);
+
+        expect(expected).toStrictEqual({ users: [{ name: "a" }, { name: "b" }] });
+    });
+
+    it("should target keys containing literal dots via backslash escaping", () => {
+        expect.assertions(1);
+
+        const input = { "a.b": "keep", c: "drop" };
+        const expected = pick(input, [String.raw`a\.b`]);
+
+        expect(expected).toStrictEqual({ "a.b": "keep" });
+    });
+
+    it("should not share structure with the source object", () => {
+        expect.assertions(2);
+
+        const input = { nested: { keep: 1 } };
+        const result = pick(input, ["nested"]);
+
+        expect(result).toStrictEqual({ nested: { keep: 1 } });
+        expect(result.nested).not.toBe(input.nested);
+    });
 });

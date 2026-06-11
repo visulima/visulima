@@ -50,56 +50,113 @@ pnpm add @visulima/object
 
 ## Usage
 
-### deleteProperty
-
-### escapePath
-
-### getProperty
-
-### hasProperty
-
-### setProperty
-
-### deepKeys
-
-### deepKeysFromList
-
-### isPlainObject
+`@visulima/object` exposes two local helpers (`pick`, `omit`) plus a curated set
+of re-exports from [`dot-prop`](https://github.com/sindresorhus/dot-prop) and
+[`deeks`](https://github.com/mrodrig/deeks).
 
 ### pick
 
-With `pick` you pass an object and an array of keys of an object - **the props which may stay**.
+With `pick` you pass an object and an array of keys - **the props which may stay**.
 
 ```js
 import { pick } from "@visulima/object";
 
 const squirtle = { id: "007", name: "Squirtle", type: "water" };
 
-const newObject = pick(squirtle, ["name", "type"]);
-// returns { name: 'Squirtle', type: 'water' }
+pick(squirtle, ["name", "type"]);
+// => { name: 'Squirtle', type: 'water' }
 
 const doc = { items: { keep: "📌", discard: "✂️" } };
 
 pick(doc, ["items.keep"]);
-// returns {items: {keep: '📌'}}
+// => { items: { keep: '📌' } }
 ```
+
+`pick` returns a **new object** and never shares structure with the input. An
+empty key list returns `{}`.
 
 ### omit
 
-With `omit` you pass an object and an array of keys of an object - the props which should be removed.
+With `omit` you pass an object and an array of keys - the props which should be removed.
 
 ```js
 import { omit } from "@visulima/object";
 
 const squirtle = { id: "007", name: "Squirtle", type: "water" };
 
-const withoutId = omit(squirtle, ["id"]);
-// returns { name: 'Squirtle', type: 'water' }
+omit(squirtle, ["id"]);
+// => { name: 'Squirtle', type: 'water' }
 
 const doc = { items: { keep: "📌", discard: "✂️" } };
 
 omit(doc, ["items.discard"]);
-// returns {items: {keep: '📌'}}
+// => { items: { keep: '📌' } }
+```
+
+`omit` always returns a **fresh deep copy** — even when the key list is empty —
+so mutating the result never affects the input.
+
+### Path features (`pick` / `omit`)
+
+Both helpers share the same path dialect:
+
+- **Dot-notation** for nested props: `nested.prop`.
+- **Wildcard segments** with `*` to match any single key: `items.*.secret`.
+- **Array traversal** by index or wildcard: `users.0.password`, `users.*.password`.
+- **Backslash-escaped dots** for keys that literally contain a `.`: `omit(obj, ["a\\.b"])`
+  targets the key named `"a.b"` (compatible with the re-exported `escapePath`).
+- **Symbol-keyed properties** are always preserved (string paths can never name them).
+
+```js
+omit({ users: [{ name: "a", password: "x" }] }, ["users.*.password"]);
+// => { users: [{ name: "a" }] }
+```
+
+### isPlainObject
+
+Returns `true` only for objects created from `{}` or `Object.create(null)`
+(arrays, class instances, `Map`/`Set`, etc. return `false`).
+
+```js
+import { isPlainObject } from "@visulima/object";
+
+isPlainObject({}); // => true
+isPlainObject([]); // => false
+isPlainObject(new Map()); // => false
+```
+
+### getProperty / setProperty / hasProperty / deleteProperty / escapePath
+
+Re-exported from [`dot-prop`](https://github.com/sindresorhus/dot-prop) for
+get/set/has/delete on nested objects using a dot path (this uses dot-prop's own
+`a.b[0].c` array syntax). `escapePath` escapes a string so dots inside it are
+treated as literal characters.
+
+```js
+import { getProperty, setProperty, hasProperty, deleteProperty, escapePath } from "@visulima/object";
+
+getProperty({ foo: { bar: "baz" } }, "foo.bar"); // => "baz"
+setProperty({}, "foo.bar", "baz"); // => { foo: { bar: "baz" } }
+hasProperty({ foo: { bar: "baz" } }, "foo.bar"); // => true
+deleteProperty({ foo: { bar: "baz" } }, "foo.bar"); // => true (mutates input)
+escapePath("foo.bar"); // => "foo\\.bar"
+```
+
+> Note: the `dot-prop` helpers use dot-prop's own path/array syntax, while
+> `pick`/`omit` use the dialect described above. Use `escapePath` for the
+> dot-prop helpers and `\\.`-escaping for `pick`/`omit`.
+
+### deepKeys / deepKeysFromList
+
+Re-exported from [`deeks`](https://github.com/mrodrig/deeks) — collect every
+dot-notation key path from a single object (`deepKeys`) or an array of objects
+(`deepKeysFromList`). Accepts a `DeepKeysOptions` object.
+
+```js
+import { deepKeys, deepKeysFromList } from "@visulima/object";
+
+deepKeys({ a: { b: 1, c: 2 } }); // => ["a.b", "a.c"]
+deepKeysFromList([{ a: 1 }, { b: { c: 2 } }]); // => [["a"], ["b.c"]]
 ```
 
 ## Related

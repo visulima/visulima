@@ -5,70 +5,78 @@
  *
  * Copyright (c) 2018 Luca Ban - Mesqueeb
  */
-import type { Paths } from "type-fest";
-
 import isPlainObject from "./is-plain-object";
-import pathsAreEqual from "./paths-are-equal";
+import { segmentsAreEqual } from "./paths-are-equal";
+import safeAssign from "./safe-assign";
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-const recursivePick = <T extends { [key in string]: unknown }, PickedKeys extends Paths<T>[]>(object: T, pickedKeys: PickedKeys, pathUntilNow = ""): T => {
-    if (!isPlainObject(object)) {
-        return object;
+/**
+ * Determine whether the current path is on the way to (or at) any picked key.
+ *
+ * A node passes when, comparing up to the shorter of the two depths, the
+ * concrete path and a picked path agree (allowing `*` wildcards). This keeps a
+ * branch alive while descending toward a deeper picked key.
+ * @param path The segment path leading to the current node.
+ * @param pickedKeys The picked paths, pre-split into segment arrays.
+ * @returns `true` if the node should be kept/traversed.
+ */
+const pathPasses = (path: ReadonlyArray<string>, pickedKeys: ReadonlyArray<string[]>): boolean =>
+    pickedKeys.some((pickedKey) => {
+        const depth = Math.min(path.length, pickedKey.length);
+
+        return segmentsAreEqual(path.slice(0, depth), pickedKey.slice(0, depth));
+    });
+
+/**
+ * Recursively copy `value`, keeping only the branches that lead to one of the
+ * pre-split `pickedKeys`. Plain objects and arrays are both traversed.
+ * @param value The value currently being copied.
+ * @param pickedKeys The picked paths, pre-split into segment arrays.
+ * @param currentPath The segment path leading to `value`.
+ * @returns A new value containing only the picked branches.
+ */
+const walk = (value: unknown, pickedKeys: ReadonlyArray<string[]>, currentPath: ReadonlyArray<string>): unknown => {
+    if (Array.isArray(value)) {
+        const result: unknown[] = [];
+
+        for (const [index, element] of value.entries()) {
+            const path = [...currentPath, String(index)];
+
+            if (pickedKeys.length > 0 && !pathPasses(path, pickedKeys)) {
+                continue;
+            }
+
+            result.push(walk(element, pickedKeys, path));
+        }
+
+        return result;
     }
 
-    // eslint-disable-next-line unicorn/no-array-reduce
-    return Object.entries(object).reduce<{ [key in string]: unknown }>((carry, [key, value]) => {
-        let path = pathUntilNow;
+    if (!isPlainObject(value)) {
+        return value;
+    }
 
-        if (path) {
-            path += ".";
+    const carry: Record<string, unknown> = {};
+
+    for (const [key, child] of Object.entries(value)) {
+        const path = [...currentPath, key];
+
+        if (pickedKeys.length > 0 && !pathPasses(path, pickedKeys)) {
+            continue;
         }
 
-        path += key;
+        safeAssign(carry, key, walk(child, pickedKeys, path));
+    }
 
-        // check pickedKeys up to this point
-        if (pickedKeys.length > 0) {
-            let passed = false;
-
-            const pathPieces = path.split(".");
-            const pathDepth = pathPieces.length;
-
-            pickedKeys.forEach((pickedKey: Paths<T>) => {
-                const pickedKeyPieces = (pickedKey as string).split(".");
-                const pickedKeyDepth = pickedKeyPieces.length;
-                const pickedKeyUpToNow = pickedKeyPieces.slice(0, pathDepth).join(".");
-                const pathUpToPickedKeyDepth = pathPieces.slice(0, pickedKeyDepth).join(".");
-
-                if (pathsAreEqual(pathUpToPickedKeyDepth, pickedKeyUpToNow)) {
-                    passed = true;
-                }
-            });
-
-            // there's not one pickedKey that allows up to now
-
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-            if (!passed) {
-                return carry;
-            }
-        }
-
-        // no further recursion needed
-        if (!isPlainObject(value)) {
-            Object.defineProperty(carry, key, { configurable: true, enumerable: true, value, writable: true });
-
-            return carry;
-        }
-
-        Object.defineProperty(carry, key, {
-            configurable: true,
-            enumerable: true,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
-            value: recursivePick<T, any>(object[key] as any, pickedKeys, path),
-            writable: true,
-        });
-
-        return carry;
-    }, {}) as T;
+    return carry;
 };
+
+/**
+ * Recursively pick the given pre-split paths from a plain object or array.
+ * @param object The target object to pick props from.
+ * @param pickedKeys The picked paths, already split into segment arrays.
+ * @returns A new object/array with only the picked props.
+ */
+const recursivePick = <T extends { [key in string]: unknown }>(object: T, pickedKeys: ReadonlyArray<string[]>): T =>
+    walk(object, pickedKeys, []) as T;
 
 export default recursivePick;
