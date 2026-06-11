@@ -17,9 +17,11 @@ const startWatchMode = async (configName: string, paths: string[], options: Gene
         await baseGenerateCommand(configName, paths, options);
     };
 
-    const watchers = paths.map((p) => watch(p, { recursive: true }, () => {
-        run().catch(logError);
-    }));
+    const watchers = paths.map((p) =>
+        watch(p, { recursive: true }, () => {
+            run().catch(logError);
+        }),
+    );
 
     const close = (): void => {
         watchers.forEach((w) => {
