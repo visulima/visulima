@@ -42,6 +42,22 @@ export const detectFileTypeFromStream = async (
 
     // Use a Transform stream to peek at data
     const peekStream = new Transform({
+        flush(callback) {
+            // Stream ended before reaching sampleSize: detect on whatever was accumulated
+            if (!detectionStarted && chunks.length > 0) {
+                detectionStarted = true;
+
+                detectionPromise = fileTypeFromBuffer(Buffer.concat(chunks))
+                    .then((detected) => {
+                        fileType = detected;
+
+                        return detected;
+                    })
+                    .catch(() => undefined);
+            }
+
+            callback();
+        },
         objectMode: false,
         transform(chunk: Buffer, _encoding, callback) {
             // Collect chunks for detection until we have enough data
@@ -67,22 +83,6 @@ export const detectFileTypeFromStream = async (
 
             // Pass all chunks through
             callback(undefined, chunk);
-        },
-        flush(callback) {
-            // Stream ended before reaching sampleSize: detect on whatever was accumulated
-            if (!detectionStarted && chunks.length > 0) {
-                detectionStarted = true;
-
-                detectionPromise = fileTypeFromBuffer(Buffer.concat(chunks))
-                    .then((detected) => {
-                        fileType = detected;
-
-                        return detected;
-                    })
-                    .catch(() => undefined);
-            }
-
-            callback();
         },
     });
 
