@@ -5,13 +5,14 @@ const parse = (version: string): { nums: number[]; pre: string | undefined } => 
     return { nums, pre };
 };
 
+// eslint-disable-next-line sonarjs/cognitive-complexity -- semver precedence comparison is inherently branchy; refactoring risks subtle ordering bugs
 const semverGt = (version1: string, version2: string): boolean => {
     const v1 = parse(version1);
     const v2 = parse(version2);
 
     const length = Math.max(v1.nums.length, v2.nums.length);
 
-    for (let index = 0; index < length; index++) {
+    for (let index = 0; index < length; index += 1) {
         const a = v1.nums[index] ?? 0;
         const b = v2.nums[index] ?? 0;
 
@@ -42,7 +43,7 @@ const semverGt = (version1: string, version2: string): boolean => {
     const preB = (v2.pre as string).split(".");
     const preLength = Math.max(preA.length, preB.length);
 
-    for (let index = 0; index < preLength; index++) {
+    for (let index = 0; index < preLength; index += 1) {
         const identifierA = preA[index];
         const identifierB = preB[index];
 

@@ -4,6 +4,8 @@ import camelCase from "@visulima/string/case/camel-case";
 import type { OptionDefinition } from "../../types/command";
 import type { Toolbox as IToolbox } from "../../types/toolbox";
 
+const NO_PREFIX_REGEX = /^no-/;
+
 /**
  * Converts option names to camelCase and adds them as __camelCaseName__ properties.
  * @template OD The option definition type
@@ -42,7 +44,7 @@ export const addNegatableOptions = (command: { name: string; options?: OptionDef
 
     for (const option of command.options) {
         if (option.name.startsWith("no-")) {
-            const nonNegatedName = option.name.replace(/^no-/, "");
+            const nonNegatedName = option.name.replace(NO_PREFIX_REGEX, "");
 
             if (!optionNames.has(nonNegatedName)) {
                 if (option.type !== Boolean) {
