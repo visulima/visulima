@@ -445,7 +445,10 @@ const verifyArc = (email: EmailOptions, headers: ArcHeaderSet | Record<string, s
 
     // ARC-Message-Signature: canonicalize the h= headers + the AMS header with an emptied b=.
     const messageHeaders = buildHeaders(email);
-    const signedNames = (amsTags.h ?? "").split(":").map((name) => name.trim().toLowerCase()).filter(Boolean);
+    const signedNames = (amsTags.h ?? "")
+        .split(":")
+        .map((name) => name.trim().toLowerCase())
+        .filter(Boolean);
     const canonicalizedHeaders = signedNames
         .map((name) => {
             const key = Object.keys(messageHeaders).find((header) => header.toLowerCase() === name);

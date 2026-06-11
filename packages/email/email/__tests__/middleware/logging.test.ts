@@ -79,6 +79,9 @@ describe(loggingMiddleware, () => {
         // The middleware must surface the failed result unchanged, not turn it into a success.
         expect(result.success).toBe(false);
         expect(logger.error).toHaveBeenCalledTimes(1);
-        expect(logger.error).toHaveBeenCalledWith("[@visulima/email] send failed", expect.objectContaining({ error: "smtp blew up", to: ["j•••@example.com"] }));
+        expect(logger.error).toHaveBeenCalledWith(
+            "[@visulima/email] send failed",
+            expect.objectContaining({ error: "smtp blew up", to: ["j•••@example.com"] }),
+        );
     });
 });

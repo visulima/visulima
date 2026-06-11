@@ -147,7 +147,12 @@ const parseDmarcReport = async (xml: string): Promise<DmarcAggregateReport> => {
     try {
         ({ XMLParser: Parser } = await import("fast-xml-parser"));
     } catch (error) {
-        if (error instanceof Error && ((error as NodeJS.ErrnoException).code === "ERR_MODULE_NOT_FOUND" || error.message.includes("Cannot find module") || error.message.includes("Cannot find package"))) {
+        if (
+            error instanceof Error
+            && ((error as NodeJS.ErrnoException).code === "ERR_MODULE_NOT_FOUND"
+                || error.message.includes("Cannot find module")
+                || error.message.includes("Cannot find package"))
+        ) {
             throw new EmailError("deliverability", "fast-xml-parser is not installed. Please install it: pnpm add fast-xml-parser", { cause: error });
         }
 

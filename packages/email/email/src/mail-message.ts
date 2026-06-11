@@ -23,7 +23,11 @@ type AddressInput = EmailAddress | EmailAddress[] | string | string[];
  * eager module graph so consumers who never trigger auto-text don't pay its bundle/load cost.
  * @returns The default-exported `htmlToText` function.
  */
-const loadHtmlToText = async (): Promise<typeof import("./template-engines/html-to-text").default> => (await import("./template-engines/html-to-text")).default;
+const loadHtmlToText = async (): Promise<typeof import("./template-engines/html-to-text").default> => {
+    const module = await import("./template-engines/html-to-text");
+
+    return module.default;
+};
 
 const normalizeAddresses = (address: AddressInput): EmailAddress[] => {
     if (Array.isArray(address)) {

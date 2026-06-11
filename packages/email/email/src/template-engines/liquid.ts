@@ -26,7 +26,12 @@ const liquid: TemplateRenderer = async (template: unknown, data?: Record<string,
             throw error;
         }
 
-        if (error instanceof Error && ((error as NodeJS.ErrnoException).code === "ERR_MODULE_NOT_FOUND" || error.message.includes("Cannot find module") || error.message.includes("Cannot find package"))) {
+        if (
+            error instanceof Error
+            && ((error as NodeJS.ErrnoException).code === "ERR_MODULE_NOT_FOUND"
+                || error.message.includes("Cannot find module")
+                || error.message.includes("Cannot find package"))
+        ) {
             throw new EmailError("liquid", "liquidjs is not installed. Please install it: pnpm add liquidjs", { cause: error });
         }
 

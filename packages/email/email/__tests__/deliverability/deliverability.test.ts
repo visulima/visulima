@@ -86,10 +86,7 @@ describe("deliverability", () => {
 
             const store = new MemorySuppressionStore([{ address: "blocked@example.com", reason: "unsubscribe" }]);
 
-            const result = await filterSuppressed(
-                [{ email: "ok@example.com" }, { email: "Blocked@example.com", name: "Blocked" }],
-                store,
-            );
+            const result = await filterSuppressed([{ email: "ok@example.com" }, { email: "Blocked@example.com", name: "Blocked" }], store);
 
             expect(result.allowed).toStrictEqual([{ email: "ok@example.com" }]);
             expect(result.suppressed).toStrictEqual([{ email: "Blocked@example.com", name: "Blocked" }]);

@@ -23,7 +23,9 @@ describe("webhooks", () => {
 
         const sign = (timestamp: number): string => {
             const key = Buffer.from(secret.slice("whsec_".length), "base64");
-            const signature = createHmac("sha256", key).update(`${id}.${String(timestamp)}.${payload}`).digest("base64");
+            const signature = createHmac("sha256", key)
+                .update(`${id}.${String(timestamp)}.${payload}`)
+                .digest("base64");
 
             return `v1,${signature}`;
         };
@@ -118,7 +120,9 @@ describe("webhooks", () => {
 
             // signingKey is a throwaway test fixture, not a real credential.
             // eslint-disable-next-line sonarjs/hardcoded-secret-signatures
-            const signature = createHmac("sha256", signingKey).update(`${String(NOW_SECONDS)}${token}`).digest("hex");
+            const signature = createHmac("sha256", signingKey)
+                .update(`${String(NOW_SECONDS)}${token}`)
+                .digest("hex");
 
             const result = verifyMailgunWebhook({ now: NOW, signature, signingKey, timestamp: NOW_SECONDS, token });
 

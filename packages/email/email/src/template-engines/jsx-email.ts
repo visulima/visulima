@@ -21,7 +21,12 @@ const jsxEmail: TemplateRenderer = async (template: unknown, _data?: Record<stri
             pretty: options?.pretty as boolean | undefined,
         });
     } catch (error) {
-        if (error instanceof Error && ((error as NodeJS.ErrnoException).code === "ERR_MODULE_NOT_FOUND" || error.message.includes("Cannot find module") || error.message.includes("Cannot find package"))) {
+        if (
+            error instanceof Error
+            && ((error as NodeJS.ErrnoException).code === "ERR_MODULE_NOT_FOUND"
+                || error.message.includes("Cannot find module")
+                || error.message.includes("Cannot find package"))
+        ) {
             throw new EmailError("jsx-email", "jsx-email is not installed. Please install it: pnpm add jsx-email", { cause: error });
         }
 

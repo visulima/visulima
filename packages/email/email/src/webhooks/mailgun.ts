@@ -52,7 +52,9 @@ export const verifyMailgunWebhook = (options: MailgunWebhookOptions): WebhookVer
         return { reason: "timestamp-out-of-tolerance", valid: false };
     }
 
-    const expected = createHmac("sha256", signingKey).update(`${String(timestamp)}${token}`).digest("hex");
+    const expected = createHmac("sha256", signingKey)
+        .update(`${String(timestamp)}${token}`)
+        .digest("hex");
 
     if (!timingSafeStringEqual(signature, expected)) {
         return { reason: "signature-mismatch", valid: false };

@@ -1,9 +1,10 @@
 import type { EmailOptions, EmailResult, Result } from "../types";
 import type { Middleware } from "./types";
 
-const defaultSleep = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const defaultSleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 /**
  * Options for the {@link retryMiddleware}.

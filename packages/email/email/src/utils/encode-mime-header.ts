@@ -61,7 +61,7 @@ export const encodeMimeHeaderValue = (value: string): string => {
         // continuation bytes match 0b10xxxxxx (0x80-0xBF).
         if (end < bytes.length) {
             // eslint-disable-next-line no-bitwise
-            while (end > offset && ((bytes[end] as number) & 0xC0) === 0x80) {
+            while (end > offset && ((bytes[end] as number) & 0xc0) === 0x80) {
                 end -= 1;
             }
         }

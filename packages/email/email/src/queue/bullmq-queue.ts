@@ -31,12 +31,7 @@ export type BullmqProcessor = (job: BullmqJobLike) => Promise<EmailResult>;
  * @param jobName The name to enqueue the job under.
  * @returns The id of the created BullMQ job.
  */
-export const enqueueToBullmq = async (
-    queue: BullmqQueueLike,
-    message: EmailOptions,
-    options: EnqueueOptions = {},
-    jobName = "email",
-): Promise<string> => {
+export const enqueueToBullmq = async (queue: BullmqQueueLike, message: EmailOptions, options: EnqueueOptions = {}, jobName = "email"): Promise<string> => {
     let delay: number | undefined;
 
     if (options.scheduledAt !== undefined) {
@@ -59,13 +54,14 @@ export const enqueueToBullmq = async (
  * @param send The send function — typically `mail.send.bind(mail)`.
  * @returns A BullMQ processor function.
  */
-export const createBullmqProcessor = (send: (message: EmailOptions) => Promise<Result<EmailResult>>): BullmqProcessor =>
-    async (job: BullmqJobLike): Promise<EmailResult> => {
-        const result = await send(job.data);
+export const createBullmqProcessor
+    = (send: (message: EmailOptions) => Promise<Result<EmailResult>>): BullmqProcessor =>
+        async (job: BullmqJobLike): Promise<EmailResult> => {
+            const result = await send(job.data);
 
-        if (!result.success || !result.data) {
-            throw result.error instanceof Error ? result.error : new Error("Email send failed");
-        }
+            if (!result.success || !result.data) {
+                throw result.error instanceof Error ? result.error : new Error("Email send failed");
+            }
 
-        return result.data;
-    };
+            return result.data;
+        };

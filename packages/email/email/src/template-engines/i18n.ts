@@ -97,5 +97,7 @@ export type LocalizedRenderer = (
  * await render({ en: "Hello {{name}}", de: "Hallo {{name}}" }, "de", { name: "Ada" });
  * ```
  */
-export const createI18nRenderer = (renderer: TemplateRenderer, defaultLocale?: string): LocalizedRenderer =>
-    (templates, locale, data, rendererOptions) => renderI18n(templates, locale, renderer, data, { defaultLocale, rendererOptions });
+export const createI18nRenderer
+    = (renderer: TemplateRenderer, defaultLocale?: string): LocalizedRenderer =>
+        (templates, locale, data, rendererOptions) =>
+            renderI18n(templates, locale, renderer, data, { defaultLocale, rendererOptions });

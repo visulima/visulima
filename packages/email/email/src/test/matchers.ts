@@ -32,11 +32,7 @@ const addressesOf = (value: EmailAddress | EmailAddress[] | undefined): string[]
     return (Array.isArray(value) ? value : [value]).map((address) => address.email.toLowerCase());
 };
 
-const recipientsOf = (options: EmailOptions): string[] => [
-    ...addressesOf(options.to),
-    ...addressesOf(options.cc),
-    ...addressesOf(options.bcc),
-];
+const recipientsOf = (options: EmailOptions): string[] => [...addressesOf(options.to), ...addressesOf(options.cc), ...addressesOf(options.bcc)];
 
 /**
  * Asserts that at least one captured message was addressed to `address` (in To, Cc, or Bcc).
@@ -105,10 +101,11 @@ const toHaveSentWithAttachment = (target: MatcherTarget, filename?: string): Mat
  * @returns The matcher result.
  */
 const toHaveSentMatching = (target: MatcherTarget, matcher: Partial<EmailOptions> | ((options: EmailOptions) => boolean)): MatcherResult => {
-    const predicate = typeof matcher === "function"
-        ? matcher
-        : (options: EmailOptions): boolean =>
-            Object.entries(matcher).every(([key, value]) => (options as unknown as Record<string, unknown>)[key] === value);
+    const predicate
+        = typeof matcher === "function"
+            ? matcher
+            : (options: EmailOptions): boolean =>
+                Object.entries(matcher).every(([key, value]) => (options as unknown as Record<string, unknown>)[key] === value);
 
     const pass = toEntries(target).some((entry) => predicate(entry.options));
 

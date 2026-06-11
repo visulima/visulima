@@ -26,9 +26,14 @@ describe("middleware wrappers", () => {
             expect.assertions(1);
 
             const send = vi.fn(() => Promise.resolve(okResult()));
-            const composed = composeMiddleware([withRender((email) => {
-                return { ...email, html: "<p>rendered</p>" };
-            })], send);
+            const composed = composeMiddleware(
+                [
+                    withRender((email) => {
+                        return { ...email, html: "<p>rendered</p>" };
+                    }),
+                ],
+                send,
+            );
 
             await composed(message);
 

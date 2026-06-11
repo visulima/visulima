@@ -5,7 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 // Mock nodemailer before importing the provider.
 const createTransportMock = vi.fn<(...arguments_: unknown[]) => unknown>();
 
-vi.mock("nodemailer", () => {
+vi.mock(import("nodemailer"), () => {
     return {
         default: {
             createTransport: (...arguments_: unknown[]) => createTransportMock(...arguments_),

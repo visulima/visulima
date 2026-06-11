@@ -1,8 +1,9 @@
 import type { Middleware } from "./types";
 
-const defaultSleep = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const defaultSleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 /**
  * Options for the {@link rateLimitMiddleware}.
