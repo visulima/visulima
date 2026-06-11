@@ -1,7 +1,8 @@
 export type { ExecOptions, ExecResult } from "./exec";
 export { execVis, execVisJson } from "./exec";
+export { clearListCache, listVisJson } from "./list-cache";
 export type { McpToolResponse, ToolContext, ToolDeps } from "./response";
-export { errorResponse, okResponse } from "./response";
+export { errorResponse, okResponse, okStructuredResponse } from "./response";
 export { createMcpServer, registerAllTools, startMcpServer } from "./server";
 export { registerAdvisoryStatus } from "./tools/advisory-status";
 export { registerAudit } from "./tools/audit";
@@ -13,6 +14,7 @@ export { registerFmt } from "./tools/fmt";
 export { registerGetRunLogs } from "./tools/get-run-logs";
 export { registerLint } from "./tools/lint";
 export { registerListProjects } from "./tools/list-projects";
+export { registerListRuns } from "./tools/list-runs";
 export { registerListTargets } from "./tools/list-targets";
 export { registerListTemplates } from "./tools/list-templates";
-export { isValidRunId, isValidTaskId } from "./validation";
+export { isSafePositional, isValidRunId, isValidTaskId } from "./validation";

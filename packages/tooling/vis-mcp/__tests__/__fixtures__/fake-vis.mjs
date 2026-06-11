@@ -11,7 +11,13 @@ const command = join(argv);
 const writeJson = (value) => process.stdout.write(JSON.stringify(value));
 const writeStderr = (msg) => process.stderr.write(msg);
 
-if (command.startsWith("list --targets --json")) {
+if (command === "flood-stdout") {
+    // Emit far more than any small test ceiling, then idle (never exiting) so
+    // the parent's maxBufferBytes guard — not a natural exit — is what ends us.
+    // Exercises the overflow branch in execVis.
+    process.stdout.write("x".repeat(200_000));
+    setInterval(() => {}, 1000);
+} else if (command.startsWith("list --targets --json")) {
     writeJson([
         {
             name: "@scope/alpha",
@@ -71,7 +77,10 @@ if (command === "generate --list --json") {
 }
 
 if (argv[0] === "generate" && argv.includes("--describe") && argv.includes("--json")) {
-    const name = argv[1];
+    // The MCP boundary appends positionals after a literal `--` separator so a
+    // flag-shaped name can't be reinterpreted as an option. Honour that here.
+    const dashDash = argv.indexOf("--");
+    const name = dashDash === -1 ? argv[1] : argv[dashDash + 1];
 
     if (name === "package") {
         writeJson({

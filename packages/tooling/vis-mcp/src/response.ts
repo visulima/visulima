@@ -12,6 +12,13 @@ export interface McpToolResponse {
     [key: string]: unknown;
     content: { text: string; type: "text" }[];
     isError?: boolean;
+
+    /**
+     * Typed payload mirrored from `content`. Present only for tools that declare
+     * an `outputSchema`; lets MCP clients validate and render the result instead
+     * of re-parsing the JSON string in the text block.
+     */
+    structuredContent?: Record<string, unknown>;
 }
 
 export const okResponse = (payload: unknown): McpToolResponse => {
@@ -22,6 +29,24 @@ export const okResponse = (payload: unknown): McpToolResponse => {
                 type: "text",
             },
         ],
+    };
+};
+
+/**
+ * Like {@link okResponse} but also attaches `structuredContent` so clients of a
+ * tool that declared an `outputSchema` get a validated, typed payload alongside
+ * the JSON text block. Only object payloads are valid structured content per the
+ * MCP spec, so the caller must pass a record.
+ */
+export const okStructuredResponse = (payload: Record<string, unknown>): McpToolResponse => {
+    return {
+        content: [
+            {
+                text: JSON.stringify(payload),
+                type: "text",
+            },
+        ],
+        structuredContent: payload,
     };
 };
 

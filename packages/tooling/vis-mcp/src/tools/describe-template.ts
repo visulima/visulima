@@ -4,6 +4,7 @@ import * as z from "zod";
 import { execVisJson } from "../exec";
 import type { ToolContext, ToolDeps } from "../response";
 import { errorResponse, okResponse } from "../response";
+import { isSafePositional } from "../validation";
 
 interface TemplateDescription {
     [key: string]: unknown;
@@ -37,8 +38,14 @@ export const registerDescribeTemplate = ({ server }: ToolDeps, context: ToolCont
             },
         },
         async ({ name }: { name: string }) => {
+            if (!isSafePositional(name)) {
+                return errorResponse(new Error(`Invalid template name "${name}". A leading "-" would be parsed as a CLI flag.`));
+            }
+
             try {
-                const description = await execVisJson<TemplateDescription>(context.visBin, ["generate", name, "--describe", "--json"], {
+                // `--` terminates option parsing so the template name can never be
+                // reinterpreted as a flag by the vis CLI.
+                const description = await execVisJson<TemplateDescription>(context.visBin, ["generate", "--describe", "--json", "--", name], {
                     cwd: context.workspaceRoot,
                 });
 

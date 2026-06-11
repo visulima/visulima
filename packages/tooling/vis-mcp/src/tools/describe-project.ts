@@ -1,7 +1,7 @@
 // eslint-disable-next-line import/no-namespace -- zod's `z` is a namespace export per zod/consistent-import
 import * as z from "zod";
 
-import { execVisJson } from "../exec";
+import { listVisJson } from "../list-cache";
 import type { ToolContext, ToolDeps } from "../response";
 import { errorResponse, okResponse } from "../response";
 
@@ -22,7 +22,7 @@ export const registerDescribeProject = ({ server }: ToolDeps, context: ToolConte
         },
         async ({ name }: { name: string }) => {
             try {
-                const projects = await execVisJson<ProjectListEntry[]>(context.visBin, ["list", "--json"], { cwd: context.workspaceRoot });
+                const projects = await listVisJson<ProjectListEntry[]>(context.visBin, context.workspaceRoot, ["list", "--json"]);
                 const project = projects.find((entry) => entry.name === name);
 
                 if (!project) {

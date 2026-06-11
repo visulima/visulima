@@ -1,10 +1,11 @@
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, utimesSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { clearListCache } from "../src/list-cache";
 import type { McpToolResponse, ToolContext, ToolDeps } from "../src/response";
 import { registerAdvisoryStatus } from "../src/tools/advisory-status";
 import { registerAudit } from "../src/tools/audit";
@@ -16,6 +17,7 @@ import { registerFmt } from "../src/tools/fmt";
 import { registerGetRunLogs } from "../src/tools/get-run-logs";
 import { registerLint } from "../src/tools/lint";
 import { registerListProjects } from "../src/tools/list-projects";
+import { registerListRuns } from "../src/tools/list-runs";
 import { registerListTargets } from "../src/tools/list-targets";
 import { registerListTemplates } from "../src/tools/list-templates";
 
@@ -59,6 +61,9 @@ let workspaceRoot: string;
 
 beforeEach(() => {
     workspaceRoot = mkdtempSync(join(tmpdir(), "vis-mcp-test-"));
+    // The list memo is keyed on workspaceRoot+args; clearing keeps each test's
+    // assertions independent of any earlier subprocess invocation.
+    clearListCache();
 });
 
 afterEach(() => {
@@ -500,6 +505,34 @@ describe(registerDescribeTemplate, () => {
 
         expect(error.error).toContain("not found");
     });
+
+    it("should reject a flag-shaped template name before spawning the CLI", async () => {
+        expect.assertions(2);
+
+        const { calls, server } = makeFakeServer();
+
+        registerDescribeTemplate({ server }, ctx());
+
+        const force = parseError(await calls[0]!.handler({ name: "--force" }));
+        const empty = parseError(await calls[0]!.handler({ name: "" }));
+
+        expect(force.error).toContain("Invalid template name");
+        expect(empty.error).toContain("Invalid template name");
+    });
+
+    it("should pass the name after a `--` separator so it can never be parsed as a flag", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerDescribeTemplate({ server }, ctx());
+
+        // The fake-vis resolves the name from after `--`; a successful lookup
+        // proves the separator is in place and the name still reaches the CLI.
+        const result = parseOk(await calls[0]!.handler({ name: "package" })) as { name: string };
+
+        expect(result.name).toBe("package");
+    });
 });
 
 describe(registerCacheHash, () => {
@@ -695,6 +728,20 @@ describe(registerLint, () => {
         expect(result.runs[0]!.adapter).toBe("eslint");
     });
 
+    it("should advertise an outputSchema and return matching structuredContent", async () => {
+        expect.assertions(2);
+
+        const { calls, server } = makeFakeServer();
+
+        registerLint({ server }, ctx());
+
+        expect((calls[0]!.config as { outputSchema?: unknown }).outputSchema).toBeDefined();
+
+        const response = await calls[0]!.handler({});
+
+        expect((response.structuredContent as { exitCode: number }).exitCode).toBe(1);
+    });
+
     it("should forward --since when no --staged", async () => {
         expect.assertions(2);
 
@@ -741,8 +788,8 @@ describe(registerLint, () => {
         expect(flags[flags.indexOf("--max-warnings") + 1]).toBe("0");
     });
 
-    it("should append positional files at the end", async () => {
-        expect.assertions(2);
+    it("should append positional files after a `--` separator", async () => {
+        expect.assertions(3);
 
         const { calls, server } = makeFakeServer();
 
@@ -754,6 +801,23 @@ describe(registerLint, () => {
 
         expect(flags).toContain("src/a.ts");
         expect(flags).toContain("src/b.ts");
+        // Both files come after the `--` terminator so they can't be parsed as
+        // flags by the CLI.
+        expect(flags.indexOf("--")).toBeLessThan(flags.indexOf("src/a.ts"));
+    });
+
+    it("should reject a flag-shaped file entry (e.g. --fix) before spawning", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerLint({ server }, ctx());
+
+        // `lint` is annotated readOnlyHint:true; an LLM-supplied `--fix` must not
+        // be smuggled in as a positional and turn it into a write operation.
+        const error = parseError(await calls[0]!.handler({ files: ["src/a.ts", "--fix"] }));
+
+        expect(error.error).toContain("Invalid file path");
     });
 
     it("should surface CLI spawn failures via errorResponse", async () => {
@@ -821,6 +885,33 @@ describe(registerFmt, () => {
         expect(sincePayload.flags ?? []).toContain("--since");
     });
 
+    it("should reject a flag-shaped file entry (e.g. --write) before spawning", async () => {
+        expect.assertions(1);
+
+        const { calls, server } = makeFakeServer();
+
+        registerFmt({ server }, ctx());
+
+        const error = parseError(await calls[0]!.handler({ files: ["src/a.ts", "--write"] }));
+
+        expect(error.error).toContain("Invalid file path");
+    });
+
+    it("should append positional files after a `--` separator", async () => {
+        expect.assertions(2);
+
+        const { calls, server } = makeFakeServer();
+
+        registerFmt({ server }, ctx());
+
+        const response = await calls[0]!.handler({ files: ["src/a.ts"] });
+        const payload = JSON.parse(response.content[0]!.text) as { flags?: string[] };
+        const flags = payload.flags ?? [];
+
+        expect(flags).toContain("src/a.ts");
+        expect(flags.indexOf("--")).toBeLessThan(flags.indexOf("src/a.ts"));
+    });
+
     it("should surface CLI spawn failures via errorResponse", async () => {
         expect.assertions(1);
 
@@ -831,5 +922,102 @@ describe(registerFmt, () => {
         const error = parseError(await calls[0]!.handler({}));
 
         expect(error.error).toBeTruthy();
+    });
+});
+
+describe(registerListRuns, () => {
+    it("should return an empty list when no runs directory exists", async () => {
+        expect.assertions(3);
+
+        const { calls, server } = makeFakeServer();
+
+        registerListRuns({ server }, ctx());
+
+        expect(calls[0]!.name).toBe("list_runs");
+
+        const result = parseOk(await calls[0]!.handler({})) as { count: number; runs: unknown[] };
+
+        expect(result.count).toBe(0);
+        expect(result.runs).toStrictEqual([]);
+    });
+
+    it("should list runs newest-first with derived status and task counts", async () => {
+        expect.assertions(4);
+
+        const runsDir = join(workspaceRoot, ".task-runner", "runs");
+
+        mkdirSync(runsDir, { recursive: true });
+        writeFileSync(
+            join(runsDir, "run-old.json"),
+            JSON.stringify({ runId: "run-old", tasks: [{ status: "success", taskId: "@scope/alpha:build" }] }),
+        );
+        writeFileSync(
+            join(runsDir, "run-new.json"),
+            JSON.stringify({
+                runId: "run-new",
+                tasks: [
+                    { status: "success", taskId: "@scope/alpha:build" },
+                    { status: "failure", taskId: "@scope/beta:build" },
+                ],
+            }),
+        );
+
+        // Force a deterministic mtime ordering: bump run-new so it sorts first.
+        const future = Date.now() / 1000 + 60;
+
+        utimesSync(join(runsDir, "run-new.json"), future, future);
+
+        const { calls, server } = makeFakeServer();
+
+        registerListRuns({ server }, ctx());
+
+        const result = parseOk(await calls[0]!.handler({})) as {
+            count: number;
+            runs: { failedTasks?: number; runId: string; status?: string; taskCount?: number }[];
+        };
+
+        expect(result.count).toBe(2);
+        expect(result.runs[0]!.runId).toBe("run-new");
+        expect(result.runs[0]!.status).toBe("failure");
+        expect(result.runs[0]!.failedTasks).toBe(1);
+    });
+
+    it("should honour the `limit` argument", async () => {
+        expect.assertions(1);
+
+        const runsDir = join(workspaceRoot, ".task-runner", "runs");
+
+        mkdirSync(runsDir, { recursive: true });
+
+        for (let index = 0; index < 5; index += 1) {
+            writeFileSync(join(runsDir, `run-${String(index)}.json`), JSON.stringify({ runId: `run-${String(index)}`, tasks: [] }));
+        }
+
+        const { calls, server } = makeFakeServer();
+
+        registerListRuns({ server }, ctx());
+
+        const result = parseOk(await calls[0]!.handler({ limit: 2 })) as { count: number };
+
+        expect(result.count).toBe(2);
+    });
+
+    it("should skip malformed run files instead of failing the listing", async () => {
+        expect.assertions(2);
+
+        const runsDir = join(workspaceRoot, ".task-runner", "runs");
+
+        mkdirSync(runsDir, { recursive: true });
+        writeFileSync(join(runsDir, "good.json"), JSON.stringify({ runId: "good", tasks: [] }));
+        writeFileSync(join(runsDir, "bad.json"), "{not valid json");
+
+        const { calls, server } = makeFakeServer();
+
+        registerListRuns({ server }, ctx());
+
+        const result = parseOk(await calls[0]!.handler({})) as { count: number; runs: { runId: string }[] };
+
+        expect(result.count).toBe(1);
+        expect(result.runs[0]!.runId).toBe("good");
     });
 });

@@ -3,7 +3,7 @@ import * as z from "zod";
 
 import { execVisJson } from "../exec";
 import type { ToolContext, ToolDeps } from "../response";
-import { errorResponse, okResponse } from "../response";
+import { errorResponse, okStructuredResponse } from "../response";
 
 const ecosystemSummarySchema = z.object({
     advisoryCount: z.number(),
@@ -27,6 +27,9 @@ const advisoryStatusJsonSchema = z
 
 type AdvisoryStatusJson = z.infer<typeof advisoryStatusJsonSchema>;
 
+// Output shape advertised to MCP clients (see audit.ts for the catchall caveat).
+const advisoryStatusOutputSchema = advisoryStatusJsonSchema.shape;
+
 export const registerAdvisoryStatus = ({ server }: ToolDeps, context: ToolContext): void => {
     server.registerTool(
         "advisory_status",
@@ -39,6 +42,7 @@ export const registerAdvisoryStatus = ({ server }: ToolDeps, context: ToolContex
             inputSchema: {
                 db: z.string().min(1).optional().describe("Override the cache DB path (default: <cache>/vis/advisories/db.sqlite)."),
             },
+            outputSchema: advisoryStatusOutputSchema,
         },
         async (input: { db?: string }) => {
             try {
@@ -51,7 +55,7 @@ export const registerAdvisoryStatus = ({ server }: ToolDeps, context: ToolContex
                 const raw = await execVisJson<AdvisoryStatusJson>(context.visBin, args, { cwd: context.workspaceRoot });
                 const payload = advisoryStatusJsonSchema.parse(raw);
 
-                return okResponse(payload);
+                return okStructuredResponse(payload);
             } catch (error) {
                 return errorResponse(error);
             }
