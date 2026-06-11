@@ -93,14 +93,23 @@ export default defineConfig({
             // Array of console method names to forward (default: ["error"])
             forwardedConsoleMethods: ["error", "warn"],
 
-            // Custom React plugin name for detection (optional)
+            // Custom plugin names for framework detection (all optional)
             reactPluginName: "@vitejs/plugin-react",
-
-            // Custom Vue plugin name for detection (optional)
             vuePluginName: "@vitejs/plugin-vue",
+            sveltePluginName: "@sveltejs/vite-plugin-svelte",
+            preactPluginName: "@preact/preset-vite",
+            solidPluginName: "vite-plugin-solid",
+
+            // Explicit framework override; skips auto-detection (optional)
+            // "react" | "vue" | "svelte" | "preact" | "solid"
+            framework: "react",
+
+            // Capture process-wide unhandled rejections and show them in the overlay (default: true).
+            // Set to false to leave Node's default crash semantics untouched.
+            interceptUnhandledRejection: true,
 
             // Whether to show the balloon button in the overlay (default: true)
-            showBallonButton: true,
+            showBalloonButton: true,
 
             // Overlay configuration (optional)
             overlay: {
@@ -140,17 +149,23 @@ export default defineConfig({
 
 | Option                    | Type                       | Default     | Description                                                                      |
 | ------------------------- | -------------------------- | ----------- | -------------------------------------------------------------------------------- |
-| `forwardConsole`          | `boolean`                  | `true`      | Enable/disable client-side runtime error logging and overlay display             |
-| `forwardedConsoleMethods` | `string[]`                 | `["error"]` | Array of console method names to intercept and forward to overlay                |
-| `reactPluginName`         | `string`                   | `undefined` | Custom React plugin name for detection (useful for custom React plugins)         |
-| `vuePluginName`           | `string`                   | `undefined` | Custom Vue plugin name for detection (useful for custom Vue plugins)             |
-| `showBallonButton`        | `boolean`                  | `true`      | Whether to show the floating balloon button for error navigation                 |
-| `overlay`                 | `OverlayConfig`            | `undefined` | Overlay configuration options                                                    |
-| `overlay.balloon`         | `BalloonConfig`            | `undefined` | Balloon button configuration                                                     |
-| `overlay.balloon.style`   | `string \| CSS.Properties` | `undefined` | Balloon button styles (string or CSS.Properties object)                          |
-| `overlay.customCSS`       | `string \| CSS.Properties` | `undefined` | Custom CSS to inject for styling customization (string or CSS.Properties object) |
-| `solutionFinders`         | `SolutionFinder[]`         | `[]`        | Array of custom solution finder functions for enhanced error analysis            |
-| `logClientRuntimeError`   | `boolean`                  | `undefined` | **@deprecated** Use `forwardConsole` instead                                     |
+| `forwardConsole`              | `boolean`                                            | `true`      | Enable/disable client-side runtime error logging and overlay display             |
+| `forwardedConsoleMethods`     | `string[]`                                           | `["error"]` | Array of console method names to intercept and forward to overlay                |
+| `framework`                   | `"react" \| "vue" \| "svelte" \| "preact" \| "solid"` | `undefined` | Explicit framework override; skips auto-detection                                |
+| `interceptUnhandledRejection` | `boolean`                                            | `true`      | Capture process-wide `unhandledRejection` and render it in the overlay           |
+| `reactPluginName`             | `string`                                             | `undefined` | Custom React plugin name for detection                                            |
+| `vuePluginName`               | `string`                                             | `undefined` | Custom Vue plugin name for detection                                              |
+| `sveltePluginName`            | `string`                                             | `undefined` | Custom Svelte plugin name for detection                                           |
+| `preactPluginName`            | `string`                                             | `undefined` | Custom Preact plugin name for detection                                           |
+| `solidPluginName`             | `string`                                             | `undefined` | Custom Solid plugin name for detection                                            |
+| `showBalloonButton`           | `boolean`                                            | `true`      | Whether to show the floating balloon button for error navigation                 |
+| `overlay`                     | `OverlayConfig`                                      | `undefined` | Overlay configuration options                                                    |
+| `overlay.balloon`             | `BalloonConfig`                                      | `undefined` | Balloon button configuration                                                     |
+| `overlay.balloon.style`       | `string \| CSS.Properties`                           | `undefined` | Balloon button styles (string or CSS.Properties object)                          |
+| `overlay.customCSS`           | `string \| CSS.Properties`                           | `undefined` | Custom CSS to inject for styling customization (string or CSS.Properties object) |
+| `solutionFinders`             | `SolutionFinder[]`                                   | `[]`        | Array of custom solution finder functions for enhanced error analysis            |
+| `showBallonButton`            | `boolean`                                            | `undefined` | **@deprecated** Misspelling of `showBalloonButton`                                |
+| `logClientRuntimeError`       | `boolean`                                            | `undefined` | **@deprecated** Use `forwardConsole` instead                                     |
 
 ## Error Handling
 
@@ -188,7 +203,7 @@ When errors occur, a floating balloon button appears in the bottom-right corner 
 - Navigate through multiple errors
 - Access error overlay controls
 
-The balloon button can be disabled by setting `showBallonButton: false` in the plugin options.
+The balloon button can be disabled by setting `showBalloonButton: false` in the plugin options.
 
 ### Keyboard Shortcuts
 

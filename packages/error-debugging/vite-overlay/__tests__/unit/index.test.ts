@@ -1,7 +1,33 @@
 import { describe, expect, expectTypeOf, it } from "vitest";
 
-import errorOverlayPlugin from "../../src/index";
+import type { BalloonConfig, BalloonPosition, Framework, OverlayConfig, VisulimaViteOverlayOptions } from "../../src/index";
+import errorOverlayPlugin, { createViteSolutionFinder } from "../../src/index";
 import generateClientScript from "../../src/utils/generate-client-script";
+
+describe("public exports", () => {
+    it("re-exports createViteSolutionFinder as a named export", () => {
+        expect.assertions(2);
+
+        expect(createViteSolutionFinder).toBeDefined();
+        expect(typeof createViteSolutionFinder).toBe("function");
+    });
+
+    it("exposes the public option/config types", () => {
+        expect.assertions(1);
+
+        // Type-only smoke test: these must be importable so consumers can type a shared config.
+        const options: VisulimaViteOverlayOptions = {
+            framework: "svelte" satisfies Framework,
+            overlay: {
+                balloon: { enabled: true, position: "top-left" satisfies BalloonPosition },
+            } satisfies OverlayConfig,
+            showBalloonButton: true,
+        };
+        const balloon: BalloonConfig = options.overlay?.balloon ?? {};
+
+        expect(balloon.enabled).toBe(true);
+    });
+});
 
 describe(errorOverlayPlugin, () => {
     it("should return a plugin object", () => {

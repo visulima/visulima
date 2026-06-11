@@ -110,6 +110,18 @@ describe("errorOverlayPlugin metadata", () => {
 
         warnSpy.mockRestore();
     });
+
+    it("warns about the misspelled showBallonButton option", () => {
+        expect.assertions(1);
+
+        const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => {});
+
+        getPlugin({ showBallonButton: true });
+
+        expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining("'showBallonButton' option is misspelled"));
+
+        warnSpy.mockRestore();
+    });
 });
 
 describe("errorOverlayPlugin.config hook", () => {
@@ -155,6 +167,30 @@ describe("errorOverlayPlugin.config hook", () => {
 
         expect(reactResult).toBe(reactConfig);
         expect(vueResult).toBe(vueConfig);
+    });
+
+    it("detects Svelte from the project's plugin list", () => {
+        expect.assertions(1);
+
+        const plugin = getPlugin();
+        const inputConfig: any = { plugins: [{ name: "vite-plugin-svelte" }] };
+
+        const result = (plugin.config as any)(inputConfig, { mode: "development" });
+
+        expect(result).toBe(inputConfig);
+    });
+
+    it("detects Solid and Preact from the project's plugin list", () => {
+        expect.assertions(2);
+
+        const solidConfig: any = { plugins: [{ name: "vite-plugin-solid" }] };
+        const preactConfig: any = { plugins: [{ name: "@preact/preset-vite" }] };
+
+        const solidResult = (getPlugin().config as any)(solidConfig, { mode: "development" });
+        const preactResult = (getPlugin().config as any)(preactConfig, { mode: "development" });
+
+        expect(solidResult).toBe(solidConfig);
+        expect(preactResult).toBe(preactConfig);
     });
 
     it("handles missing plugins array without throwing", () => {
@@ -293,6 +329,43 @@ describe("errorOverlayPlugin.configureServer", () => {
         expect(globalRegistered.some((r) => r.event === "unhandledRejection")).toBe(true);
         // httpServer.on('close', ...) registered
         expect(server.httpServer.on).toHaveBeenCalledWith("close", expect.any(Function));
+    });
+
+    it("does NOT register an unhandledRejection listener when interceptUnhandledRejection is false", () => {
+        expect.assertions(2);
+
+        const plugin = getPlugin({ interceptUnhandledRejection: false });
+        const { server } = createMockServer();
+
+        (plugin.configureServer as any)(server);
+
+        // ws interception is still wired, but the process-wide rejection handler is opt-out.
+        expect(server.ws.on).toHaveBeenCalledWith(MESSAGE_TYPE, expect.any(Function));
+        expect(globalRegistered.some((r) => r.event === "unhandledRejection")).toBe(false);
+    });
+
+    it("does not mutate the caller-supplied solutionFinders array across errors", async () => {
+        expect.assertions(1);
+
+        const userFinders: any[] = [];
+        const plugin = getPlugin({ solutionFinders: userFinders });
+        const { server } = createMockServer();
+
+        (plugin.configureServer as any)(server);
+
+        // Two distinct errors (distinct signatures) so neither is deduplicated.
+        const payload = (n: number) => {
+            return {
+                err: { message: `boom-${n}`, name: "Error", stack: `Error: boom\n    at /tmp/project-root/x-${n}.ts:1:1` },
+                type: "error",
+            };
+        };
+
+        await server.ws.send(payload(1));
+        await server.ws.send(payload(2));
+
+        // The built-in finders must never be appended onto the caller's array.
+        expect(userFinders).toHaveLength(0);
     });
 
     it("removes the unhandledRejection listener on httpServer close", () => {

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-type-conversion, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-base-to-string, @typescript-eslint/await-thenable, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-misused-promises, @typescript-eslint/prefer-optional-chain, sonarjs/prefer-regexp-exec */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unnecessary-condition, @typescript-eslint/prefer-nullish-coalescing, @typescript-eslint/no-unnecessary-type-conversion, @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-base-to-string, @typescript-eslint/await-thenable, @typescript-eslint/no-confusing-void-expression, @typescript-eslint/no-misused-promises, @typescript-eslint/prefer-optional-chain, sonarjs/prefer-regexp-exec, sonarjs/deprecation */
 import { styleText } from "node:util";
 
 import { codeToANSI } from "@shikijs/cli";
@@ -15,10 +15,10 @@ import { patchOverlay } from "./overlay/patch-overlay";
 import type {
     DevelopmentLogger,
     ExtendedError,
-    OverlayConfig,
     RawErrorData,
     RecentErrorTracker,
     VisulimaViteOverlayErrorPayload,
+    VisulimaViteOverlayOptions,
     ViteErrorData,
 } from "./types";
 import createViteSolutionFinder from "./utils/create-vite-solution-finder";
@@ -31,6 +31,11 @@ const AT_PAREN_FRAME_RE = /at\s+[^(\s]+\s*\(([^:)]+):(\d+):(\d+)\)/;
 // eslint-disable-next-line sonarjs/slow-regex, regexp/no-super-linear-backtracking
 const AT_BARE_FRAME_RE = /at\s+([^:)]+):(\d+):(\d+)/;
 const FAILED_RESOLVE_IMPORT_RE = /Failed to resolve import ["']([^"']+)["'] from ["']([^"']+)["']/;
+
+// Stack strings arrive verbatim from the browser over the HMR channel. The frame regexes above
+// carry super-linear-backtracking suppressions, so bound the input length before matching to
+// neutralize a pathological single-line "stack".
+const MAX_STACK_LINE_LENGTH = 2048;
 
 /**
  * Logs an error using the Vite dev server's logger with a prefix.
@@ -146,18 +151,39 @@ const createUnhandledRejectionHandler = (server: ViteDevServer, rootPath: string
 };
 
 /**
+ * Logs (under DEBUG only) that a solution finder threw and was skipped, so a buggy
+ * user-supplied finder is diagnosable instead of failing silently.
+ * @param name Identifier of the finder that threw
+ * @param finderError The error value thrown by the finder
+ */
+const logFinderError = (name: string, finderError: unknown): void => {
+    if (!process.env.DEBUG) {
+        return;
+    }
+
+    const messageText = finderError instanceof Error ? finderError.message : String(finderError);
+
+    // eslint-disable-next-line no-console
+    console.debug(`Solution finder "${name}" threw and was skipped: ${messageText}`);
+};
+
+/**
  * Finds a solution for an error by running through available solution finders.
  * @param error The extended error to find a solution for
- * @param solutionFinders Array of solution finder handlers
- * @param rootPath The root path of the project
+ * @param solutionFinders User-supplied finders, tried before the built-ins
+ * @param builtinFinders The plugin's own finders, built once per dev server
  * @returns A solution object if found, undefined otherwise
  */
-const findSolution = async (error: ExtendedError, solutionFinders: SolutionFinder[], rootPath: string): Promise<Solution | undefined> => {
+const findSolution = async (error: ExtendedError, solutionFinders: SolutionFinder[], builtinFinders: SolutionFinder[]): Promise<Solution | undefined> => {
     let hint: Solution | undefined;
 
-    solutionFinders.push(errorHintFinder, createViteSolutionFinder(rootPath), ruleBasedFinder);
+    // Merge into a fresh array — never mutate the caller-owned `solutionFinders` reference, which is
+    // captured once for the whole dev session. Pushing here previously appended the three built-in
+    // finders on every displayed error, so the list grew unbounded (and re-walked the project tree
+    // per duplicate).
+    const finders = [...solutionFinders, ...builtinFinders];
 
-    for await (const handler of solutionFinders.toSorted((a, b) => b.priority - a.priority)) {
+    for await (const handler of finders.toSorted((a, b) => b.priority - a.priority)) {
         const { handle: solutionHandler, name } = handler;
 
         if (process.env.DEBUG) {
@@ -198,7 +224,11 @@ const findSolution = async (error: ExtendedError, solutionFinders: SolutionFinde
             };
 
             break;
-        } catch {
+        } catch (finderError) {
+            // A buggy (often user-supplied) finder must not abort solution lookup, but it should be
+            // diagnosable rather than swallowed silently.
+            logFinderError(name, finderError);
+
             continue;
         }
     }
@@ -224,6 +254,7 @@ const buildExtendedError = async (
     errorType: "client" | "server",
     solutionFinders: SolutionFinder[],
     framework: string | undefined,
+    builtinFinders: SolutionFinder[],
 ): Promise<VisulimaViteOverlayErrorPayload> => {
     const allErrors = getErrorCauses(rawError);
 
@@ -240,7 +271,7 @@ const buildExtendedError = async (
                 const stackLines = error?.stack?.split("\n") || [];
                 const firstStackLine = stackLines.find((line: string) => line.includes("at ") && !line.includes("node_modules"));
 
-                if (firstStackLine) {
+                if (firstStackLine && firstStackLine.length <= MAX_STACK_LINE_LENGTH) {
                     const match = firstStackLine.match(AT_PAREN_FRAME_RE) || firstStackLine.match(AT_BARE_FRAME_RE);
 
                     if (match) {
@@ -278,7 +309,7 @@ const buildExtendedError = async (
         }),
     );
 
-    const solution = await findSolution(extendedErrors[0] as ExtendedError, solutionFinders, rootPath);
+    const solution = await findSolution(extendedErrors[0] as ExtendedError, solutionFinders, builtinFinders);
 
     return {
         errors: extendedErrors,
@@ -330,6 +361,7 @@ const setupWebSocketInterception = (
     rootPath: string,
     solutionFinders: SolutionFinder[],
     framework: string | undefined,
+    builtinFinders: SolutionFinder[],
 ): void => {
     const originalSend = server.ws.send.bind(server.ws);
 
@@ -367,6 +399,7 @@ const setupWebSocketInterception = (
                             "server",
                             solutionFinders,
                             framework,
+                            builtinFinders,
                         );
 
                         // eslint-disable-next-line no-param-reassign
@@ -395,7 +428,16 @@ const setupWebSocketInterception = (
                         }
                         : undefined;
 
-                    const extensionPayload = await buildExtendedError(syntheticError, server, rootPath, viteErrorData, "server", solutionFinders, framework);
+                    const extensionPayload = await buildExtendedError(
+                        syntheticError,
+                        server,
+                        rootPath,
+                        viteErrorData,
+                        "server",
+                        solutionFinders,
+                        framework,
+                        builtinFinders,
+                    );
 
                     // eslint-disable-next-line no-param-reassign
                     data.err = extensionPayload;
@@ -432,6 +474,7 @@ const setupHMRHandler = (
     solutionFinders: SolutionFinder[],
     forwardConsole: boolean,
     framework: string | undefined,
+    builtinFinders: SolutionFinder[],
 ): void => {
     server.ws.on(MESSAGE_TYPE, async (data: unknown, client: WebSocketClient) => {
         // Skip processing client runtime errors if forwardConsole is disabled
@@ -480,6 +523,7 @@ const setupHMRHandler = (
                 "client",
                 solutionFinders,
                 framework,
+                builtinFinders,
             );
 
             // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -590,6 +634,64 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
         );
 
 /**
+ * Checks if the Vite configuration includes a Svelte plugin (`@sveltejs/vite-plugin-svelte`).
+ * @param plugins Array of Vite plugins to check
+ * @param sveltePluginName Optional custom Svelte plugin name to look for
+ * @returns True if a Svelte plugin is found
+ */
+const hasSveltePlugin = (plugins: PluginOption[], sveltePluginName?: string): boolean =>
+    plugins
+        .flat()
+        .some(
+            (plugin) =>
+                plugin
+                && ((sveltePluginName && (plugin as Plugin).name === sveltePluginName)
+                    || (plugin as Plugin).name === "vite-plugin-svelte"
+                    || (plugin as Plugin).name === "@sveltejs/vite-plugin-svelte"
+                    || (typeof plugin === "function" && (plugin as unknown as Plugin).name?.includes("svelte"))
+                    || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("Svelte"))),
+        );
+
+/**
+ * Checks if the Vite configuration includes a Preact plugin (`@preact/preset-vite`).
+ * @param plugins Array of Vite plugins to check
+ * @param preactPluginName Optional custom Preact plugin name to look for
+ * @returns True if a Preact plugin is found
+ */
+const hasPreactPlugin = (plugins: PluginOption[], preactPluginName?: string): boolean =>
+    plugins
+        .flat()
+        .some(
+            (plugin) =>
+                plugin
+                && ((preactPluginName && (plugin as Plugin).name === preactPluginName)
+                    || (plugin as Plugin).name === "preact:config"
+                    || (plugin as Plugin).name === "vite:preact-jsx"
+                    || (plugin as Plugin).name === "@preact/preset-vite"
+                    || (typeof plugin === "function" && (plugin as unknown as Plugin).name?.includes("preact"))
+                    || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("Preact"))),
+        );
+
+/**
+ * Checks if the Vite configuration includes a Solid plugin (`vite-plugin-solid`).
+ * @param plugins Array of Vite plugins to check
+ * @param solidPluginName Optional custom Solid plugin name to look for
+ * @returns True if a Solid plugin is found
+ */
+const hasSolidPlugin = (plugins: PluginOption[], solidPluginName?: string): boolean =>
+    plugins
+        .flat()
+        .some(
+            (plugin) =>
+                plugin
+                && ((solidPluginName && (plugin as Plugin).name === solidPluginName)
+                    || (plugin as Plugin).name === "solid"
+                    || (plugin as Plugin).name === "vite-plugin-solid"
+                    || (typeof plugin === "function" && (plugin as unknown as Plugin).name?.includes("solid"))
+                    || ((plugin as Plugin).constructor && (plugin as Plugin).constructor.name?.includes("Solid"))),
+        );
+
+/**
  * Main Vite plugin for error overlay functionality.
  * Intercepts runtime errors and displays them in a user-friendly overlay.
  * @param options Plugin configuration options
@@ -599,35 +701,38 @@ const hasVuePlugin = (plugins: PluginOption[], vuePluginName?: string): boolean 
  * @param options.reactPluginName Custom React plugin name (optional)
  * @param options.solutionFinders Custom solution finders (optional)
  * @param options.vuePluginName Custom Vue plugin name (optional)
- * @param options.showBallonButton Whether to show the balloon button (optional, deprecated - use overlay.balloon.enabled)
+ * @param options.sveltePluginName Custom Svelte plugin name (optional)
+ * @param options.preactPluginName Custom Preact plugin name (optional)
+ * @param options.solidPluginName Custom Solid plugin name (optional)
+ * @param options.framework Explicit framework override; skips auto-detection (optional)
+ * @param options.interceptUnhandledRejection Capture process-wide unhandled rejections (optional, default true)
+ * @param options.showBalloonButton Whether to show the balloon button (optional)
+ * @param options.showBallonButton [deprecated] Misspelling of showBalloonButton
  * @param options.overlay Overlay configuration (optional)
  * @returns The Vite plugin configuration
  */
-const errorOverlayPlugin = (
-    options: {
-        forwardConsole?: boolean;
-        forwardedConsoleMethods?: string[];
-        // @deprecated Please use the new forwardConsole option
-        logClientRuntimeError?: boolean;
-        overlay?: OverlayConfig;
-        reactPluginName?: string;
-        showBallonButton?: boolean;
-        solutionFinders?: SolutionFinder[];
-        vuePluginName?: string;
-    } = {},
-): Plugin => {
+const errorOverlayPlugin = (options: VisulimaViteOverlayOptions = {}): Plugin => {
     let mode: string;
     let isReactProject: boolean;
     let isVueProject: boolean;
+    let isSvelteProject: boolean;
+    let isPreactProject: boolean;
+    let isSolidProject: boolean;
 
     // Handle deprecated option for backward compatibility
     const forwardConsole = (options.logClientRuntimeError === undefined ? options.forwardConsole : options.logClientRuntimeError) ?? true;
     const forwardedConsoleMethods = options.forwardedConsoleMethods ?? ["error"];
+    const interceptUnhandledRejection = options.interceptUnhandledRejection ?? true;
 
     // Warn about deprecated option
     if (options.logClientRuntimeError !== undefined) {
         // eslint-disable-next-line no-console
         console.warn("[vite-overlay] The 'logClientRuntimeError' option is deprecated. Please use 'forwardConsole' instead.");
+    }
+
+    if (options.showBallonButton !== undefined) {
+        // eslint-disable-next-line no-console
+        console.warn("[vite-overlay] The 'showBallonButton' option is misspelled and deprecated. Please use 'showBalloonButton' instead.");
     }
 
     if (forwardedConsoleMethods.length === 0) {
@@ -641,6 +746,9 @@ const errorOverlayPlugin = (
             if (config.plugins) {
                 isReactProject = hasReactPlugin(config.plugins, options?.reactPluginName);
                 isVueProject = hasVuePlugin(config.plugins, options?.vuePluginName);
+                isSvelteProject = hasSveltePlugin(config.plugins, options?.sveltePluginName);
+                isPreactProject = hasPreactPlugin(config.plugins, options?.preactPluginName);
+                isSolidProject = hasSolidPlugin(config.plugins, options?.solidPluginName);
             }
 
             mode = environment.mode || "development";
@@ -676,24 +784,39 @@ const errorOverlayPlugin = (
                 }
             };
 
-            let framework: string | undefined;
+            let framework: string | undefined = options?.framework;
 
-            if (isReactProject) {
-                framework = "react";
-            } else if (isVueProject) {
-                framework = "vue";
+            if (framework === undefined) {
+                if (isReactProject) {
+                    framework = "react";
+                } else if (isVueProject) {
+                    framework = "vue";
+                } else if (isSvelteProject) {
+                    framework = "svelte";
+                } else if (isPreactProject) {
+                    framework = "preact";
+                } else if (isSolidProject) {
+                    framework = "solid";
+                }
             }
 
-            setupWebSocketInterception(server, shouldSkip, rootPath, options?.solutionFinders ?? [], framework);
+            // Build the built-in finders once per dev server (not once per error). Each invocation
+            // of createViteSolutionFinder owns a directory-listing cache, so reusing one instance
+            // keeps the cache warm across errors.
+            const builtinFinders: SolutionFinder[] = [errorHintFinder, createViteSolutionFinder(rootPath), ruleBasedFinder];
 
-            setupHMRHandler(server, developmentLogger, shouldSkip, rootPath, options?.solutionFinders ?? [], forwardConsole, framework);
+            setupWebSocketInterception(server, shouldSkip, rootPath, options?.solutionFinders ?? [], framework, builtinFinders);
 
-            const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
+            setupHMRHandler(server, developmentLogger, shouldSkip, rootPath, options?.solutionFinders ?? [], forwardConsole, framework, builtinFinders);
 
-            process.on("unhandledRejection", handleUnhandledRejection);
-            server.httpServer?.on("close", () => {
-                process.off("unhandledRejection", handleUnhandledRejection);
-            });
+            if (interceptUnhandledRejection) {
+                const handleUnhandledRejection = createUnhandledRejectionHandler(server, rootPath, developmentLogger);
+
+                process.on("unhandledRejection", handleUnhandledRejection);
+                server.httpServer?.on("close", () => {
+                    process.off("unhandledRejection", handleUnhandledRejection);
+                });
+            }
         },
         enforce: "pre",
 
@@ -710,8 +833,9 @@ const errorOverlayPlugin = (
                 return null;
             }
 
-            // Backward compatibility: showBallonButton takes precedence over overlay.balloon.enabled
-            const balloonEnabled = options?.showBallonButton === undefined ? options?.overlay?.balloon?.enabled ?? true : options.showBallonButton;
+            // Resolve balloon visibility. Precedence: correctly-spelled `showBalloonButton`, then the
+            // deprecated misspelling `showBallonButton`, then `overlay.balloon.enabled`, default true.
+            const balloonEnabled = options?.showBalloonButton ?? options?.showBallonButton ?? options?.overlay?.balloon?.enabled ?? true;
 
             return patchOverlay(code, balloonEnabled, options?.overlay?.balloon, options?.overlay?.customCSS);
         },
@@ -737,3 +861,15 @@ const errorOverlayPlugin = (
  * Use this plugin to enable error overlay functionality in your Vite project.
  */
 export default errorOverlayPlugin;
+
+export type {
+    BalloonConfig,
+    BalloonPosition,
+    BalloonStyle,
+    Framework,
+    OverlayConfig,
+    Solution,
+    SolutionFinder,
+    VisulimaViteOverlayOptions,
+} from "./types";
+export { default as createViteSolutionFinder } from "./utils/create-vite-solution-finder";
