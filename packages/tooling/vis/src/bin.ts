@@ -38,6 +38,7 @@ import graphCommand from "./commands/graph";
 import hookCommands from "./commands/hook";
 import ignoreCommand from "./commands/ignore";
 import implodeCommand from "./commands/implode";
+import importCommand from "./commands/import";
 import infoCommand from "./commands/info";
 import initCommand from "./commands/init";
 import inspectCommand from "./commands/inspect";
@@ -59,6 +60,7 @@ import secretsCommand from "./commands/secrets";
 import securityCommands from "./commands/security";
 import serviceCommands from "./commands/service";
 import sortPackageJsonCommand from "./commands/sort-package-json";
+import splitCommand from "./commands/split";
 import stagedCommand from "./commands/staged";
 import statusCommand from "./commands/status";
 import syncCommand from "./commands/sync";
@@ -217,6 +219,10 @@ cli.addCommand(generateCommand);
 cli.addCommand(devcontainerCommand);
 cli.addCommand(upgradeCommand);
 cli.addCommand(implodeCommand);
+
+// Workspace lifecycle commands
+cli.addCommand(splitCommand);
+cli.addCommand(importCommand);
 
 // Security commands
 cli.addCommand(approveBuildsCommand);

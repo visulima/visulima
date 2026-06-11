@@ -18,6 +18,39 @@ const errorMessage = (error: unknown): string => {
     return String(error);
 };
 
+/** Strip a leading `./` and any trailing slash. Workspace paths are POSIX (`@visulima/path`'s `sep` is `/` everywhere). */
+const normalizeWorkspacePath = (value: string): string => value.replace(/^\.\//, "").replace(/\/+$/, "");
+
+// Control chars (incl. DEL), space, and git's forbidden refname characters: ~ ^ : ? * [ \
+// eslint-disable-next-line no-control-regex
+const FORBIDDEN_REF_CHARS_REGEX = /[\u0000-\u001F\u007F ~^:?*[\\]/g;
+
+/**
+ * Sanitize a string into a single, valid git refname component (no slashes).
+ *
+ * git forbids a range of characters in refnames; an unsanitized package path
+ * fed into `git subtree split` can produce an invalid ref and abort the split.
+ * This replaces control characters, spaces, and git's forbidden set
+ * (`~ ^ : ? * [ \`), neutralizes the `@{` reflog selector and `..` range
+ * operator, drops a trailing `.lock`, and trims leading/trailing dots, dashes,
+ * or slashes. Falls back to `"split"` if the input sanitizes to empty.
+ * @see https://git-scm.com/docs/git-check-ref-format
+ */
+const sanitizeGitRefComponent = (value: string): string => {
+    const cleaned = value
+        // `@{` is a reflog selector; `..` is a range operator — neither is a valid ref substring.
+        .replaceAll("@{", "-")
+        .replaceAll("..", "-")
+        .replaceAll(FORBIDDEN_REF_CHARS_REGEX, "-")
+        // A refname component may not end with `.lock`.
+        .replace(/\.lock$/i, "")
+        // No leading/trailing dot, dash, or slash.
+        .replace(/^[./-]+/, "")
+        .replace(/[./-]+$/, "");
+
+    return cleaned.length > 0 ? cleaned : "split";
+};
+
 const VERSION_SPEC_REGEX = /^(.+?)(?:@(.+))?$/;
 
 /**
@@ -55,4 +88,4 @@ const parsePackageArgument = (argument: string): { name: string; versionSpec: st
     return { name: match[1] ?? argument, versionSpec: match[2] };
 };
 
-export { errorMessage, parsePackageArgument, toStringArray };
+export { errorMessage, normalizeWorkspacePath, parsePackageArgument, sanitizeGitRefComponent, toStringArray };

@@ -3,6 +3,7 @@ import type { CerebroFs } from "@visulima/cerebro";
 export const pathExists = async (fs: CerebroFs, path: string): Promise<boolean> => {
     try {
         await fs.access(path);
+
         return true;
     } catch {
         return false;
