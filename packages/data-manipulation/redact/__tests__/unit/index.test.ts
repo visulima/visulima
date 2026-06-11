@@ -12,6 +12,10 @@ import { beforeEach, describe, expect, it } from "vitest";
 import { redact } from "../../src";
 import standardModifierRules from "../../src/rules";
 
+const RE_SENSITIVE = /sensitive/;
+const RE_DIGITS_GLOBAL = /\d+/g;
+const RE_DIGITS_GLOBAL_LAST_INDEX = /\d+/g;
+
 type PlainJsObject = {
     _header: string;
     Authorization: string;
@@ -985,5 +989,57 @@ describe(redact, () => {
         const result = redact(input, ["password"], { exclude: ["unrelated"] });
 
         expect(result).toStrictEqual({ password: "<PASSWORD>", username: "bob" });
+    });
+
+    // Regression: a non-global user RegExp pattern must not hang/OOM and must
+    // still match case-insensitively. The string-anonymizer drives the pattern
+    // with `while (rx.exec())`, which requires the global flag; a non-global
+    // regex re-matches index 0 forever. The pattern is always recompiled to a
+    // fresh `new RegExp(source, "giu")` so the caller's regex is never mutated.
+    describe("regExp pattern modifier", () => {
+        it("should not hang and should mask a non-global RegExp pattern match", () => {
+            expect.assertions(1);
+
+            const result = redact("Sensitive data", [{ key: "redact", pattern: RE_SENSITIVE }]);
+
+            expect(result).toBe("<REDACT> data");
+        });
+
+        it("should match a RegExp pattern case-insensitively regardless of source flags", () => {
+            expect.assertions(1);
+
+            const result = redact("SENSITIVE data", [{ key: "redact", pattern: RE_SENSITIVE }]);
+
+            expect(result).toBe("<REDACT> data");
+        });
+
+        it("should honor an explicit replacement for a RegExp pattern match", () => {
+            expect.assertions(1);
+
+            const result = redact("Sensitive data", [{ key: "redact", pattern: RE_SENSITIVE, replacement: "[REDACTED]" }]);
+
+            expect(result).toBe("[REDACTED] data");
+        });
+
+        it("should mask every match of a global RegExp pattern with numbered masks", () => {
+            expect.assertions(1);
+
+            const result = redact("a1 b22 c3", [{ key: "n", pattern: RE_DIGITS_GLOBAL }]);
+
+            expect(result).toBe("a<N> b<N1> c<N2>");
+        });
+
+        it("should not mutate the lastIndex of a caller-supplied global RegExp", () => {
+            expect.assertions(2);
+
+            const pattern = RE_DIGITS_GLOBAL_LAST_INDEX;
+
+            pattern.lastIndex = 5;
+
+            const result = redact("a1 b22", [{ key: "n", pattern }]);
+
+            expect(result).toBe("a<N> b<N1>");
+            expect(pattern.lastIndex).toBe(5);
+        });
     });
 });
