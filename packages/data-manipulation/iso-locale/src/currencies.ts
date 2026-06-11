@@ -1,4 +1,4 @@
-import { all as countriesAll } from "./countries";
+import { all as countriesAll, byAlpha2 } from "./countries";
 import currenciesData from "./data/currencies";
 import { currencySymbolMap } from "./data/currency-symbol";
 import type { Currency } from "./types";
@@ -77,7 +77,8 @@ export const getByNumber = (number: string | number): Currency | undefined => {
  * @returns Array of Currency objects
  */
 export const getByCountry = (countryCode: string): Currency[] => {
-    const country = countriesAll.find((c) => c.alpha2 === countryCode.toUpperCase());
+    // Use the pre-built alpha-2 map instead of an O(n) scan of the country list.
+    const country = byAlpha2[countryCode.toUpperCase()];
 
     if (!country?.currencies) {
         return [];
@@ -171,3 +172,9 @@ export const searchCurrencies = (query: string): Currency[] => {
 
     return allCurrencies.filter((currency) => currency.name.toLowerCase().includes(normalizedQuery));
 };
+
+/**
+ * Literal union of every ISO 4217 alphabetic currency code present in the dataset.
+ * Derived directly from the const dataset so it stays in sync automatically.
+ */
+export type CurrencyCode = (typeof currenciesData)[number]["code"];

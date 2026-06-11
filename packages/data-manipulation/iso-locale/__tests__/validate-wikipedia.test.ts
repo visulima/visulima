@@ -256,7 +256,12 @@ const parseCurrencySymbolTable = (html: string): { code: string; name: string; s
     return parseSymbolTableRows(tableMatch[0]);
 };
 
-describe("wikipedia Validation", () => {
+// Live network validation against Wikipedia. Skipped by default so plain
+// `vitest run` stays deterministic offline/in CI; opt in with VALIDATE_ISO_DATA=1
+// (e.g. in a scheduled data-freshness workflow).
+const runWikipediaValidation = process.env.VALIDATE_ISO_DATA === "1";
+
+describe.skipIf(!runWikipediaValidation)("wikipedia Validation", () => {
     let wikipediaISO4217: { code: string; name: string; number: string }[];
     let wikipediaCurrencySymbols: { code: string; name: string; symbol: string }[];
 

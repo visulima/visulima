@@ -53,11 +53,15 @@ pnpm add @visulima/iso-locale
 ### Countries
 
 ```typescript
-import { getByAlpha2, getCountryByName, getEmoji, getCallingCode, getLanguages } from "@visulima/iso-locale";
+import { getByAlpha2, getCountry, getCountryByName, getCountryName, getEmoji, getCallingCode, getLanguages } from "@visulima/iso-locale";
 
 // Get country by code
 const country = getByAlpha2("US");
 console.log(country.name); // "United States"
+
+// Get country by ANY code format (alpha-2, alpha-3, or numeric)
+console.log(getCountry("US")?.name); // "United States"
+console.log(getCountry("USA")?.name); // "United States"
 
 // Get country by name
 const country2 = getCountryByName("United States");
@@ -70,6 +74,23 @@ console.log(getCallingCode("US")); // "+1"
 
 // Get languages
 console.log(getLanguages("US")); // ["eng"]
+
+// Localized country name (uses the runtime Intl.DisplayNames API)
+console.log(getCountryName("DE", "fr")); // "Allemagne"
+console.log(getCountryName("US")); // "United States"
+```
+
+### Strongly-typed codes
+
+The country and currency code unions are derived directly from the bundled
+datasets, so consumers get autocomplete and compile-time validation for free:
+
+```typescript
+import type { Alpha2Code, Alpha3Code, CurrencyCode } from "@visulima/iso-locale";
+
+const region: Alpha2Code = "US"; // ✅
+const wrong: Alpha2Code = "ZZ"; // ❌ compile error
+const money: CurrencyCode = "EUR"; // ✅
 ```
 
 ### Currencies
@@ -145,8 +166,41 @@ const parsed = parseBCP47Tag("zh-Hant-TW");
 console.log(parsed);
 // { language: "zh", script: "Hant", country: "TW" }
 
-// Generate BCP 47 tag
+// Generate BCP 47 tag (script subtags are canonicalized to title case)
 console.log(generateBCP47Tag("en", "US")); // "en-US"
+console.log(generateBCP47Tag("zh", "TW", "hant")); // "zh-Hant-TW"
+```
+
+### Languages
+
+```typescript
+import { getCountriesByLanguage, getLanguageName } from "@visulima/iso-locale";
+
+// Reverse lookup: which countries use a language (accepts ISO 639-1 or 639-3)
+console.log(getCountriesByLanguage("de")); // ["AT", "BE", "CH", "DE", "LI", ...]
+
+// Localized language name (uses the runtime Intl.DisplayNames API)
+console.log(getLanguageName("de", "fr")); // "allemand"
+```
+
+## Subpath entrypoints
+
+Every domain is also available as a focused entrypoint, so you can import only
+the dataset you need and let bundlers tree-shake the rest:
+
+| Import | Contents |
+| ------ | -------- |
+| `@visulima/iso-locale` | Aggregate barrel re-exporting everything below |
+| `@visulima/iso-locale/countries` | ISO 3166-1 country lookups + `Alpha2Code`/`Alpha3Code` |
+| `@visulima/iso-locale/currencies` | ISO 4217 currency lookups + `CurrencyCode` |
+| `@visulima/iso-locale/locale` | BCP 47 helpers, `getCurrency`, `getLanguageName` |
+| `@visulima/iso-locale/regions` | UN M.49 region helpers |
+| `@visulima/iso-locale/timezones` | IANA timezone helpers |
+| `@visulima/iso-locale/types` | Shared TypeScript interfaces |
+
+```typescript
+// Only pulls in the currency dataset, not countries/regions/timezones
+import { getByCode, getSymbol } from "@visulima/iso-locale/currencies";
 ```
 
 ## Related

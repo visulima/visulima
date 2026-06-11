@@ -11,10 +11,13 @@ import {
     getByNumeric,
     getCallingCode,
     getCallingCodes,
+    getCountriesByLanguage,
+    getCountry,
     getCountryByName,
     getEmoji,
     getIOC,
     getLanguages,
+    getName,
     isValid,
     numericToAlpha2,
     numericToAlpha3,
@@ -332,6 +335,76 @@ describe("countries", () => {
         it("should return undefined for getIOC", () => {
             expect.assertions(1);
             expect(getIOC("X")).toBeUndefined();
+        });
+    });
+
+    describe("getCountry (unified resolver)", () => {
+        it("should resolve by alpha-2 code", () => {
+            expect.assertions(1);
+            expect(getCountry("us")?.alpha3).toBe("USA");
+        });
+
+        it("should resolve by alpha-3 code", () => {
+            expect.assertions(1);
+            expect(getCountry("usa")?.alpha2).toBe("US");
+        });
+
+        it("should return undefined for an unknown numeric code", () => {
+            expect.assertions(2);
+            // The bundled dataset carries no numeric codes, so numeric lookups miss.
+            expect(getCountry(840)).toBeUndefined();
+            expect(getCountry("840")).toBeUndefined();
+        });
+
+        it("should return undefined for invalid lengths", () => {
+            expect.assertions(2);
+            expect(getCountry("X")).toBeUndefined();
+            expect(getCountry("LONG")).toBeUndefined();
+        });
+    });
+
+    describe("getCountriesByLanguage", () => {
+        it("should resolve countries via an ISO 639-1 code", () => {
+            expect.assertions(2);
+
+            const countries = getCountriesByLanguage("de");
+
+            expect(countries).toContain("DE");
+            expect(countries).toContain("AT");
+        });
+
+        it("should resolve countries via an ISO 639-3 code", () => {
+            expect.assertions(1);
+            expect(getCountriesByLanguage("deu")).toContain("DE");
+        });
+
+        it("should return an empty array for an unknown language", () => {
+            expect.assertions(1);
+            expect(getCountriesByLanguage("zzz")).toStrictEqual([]);
+        });
+    });
+
+    describe("getName (localized)", () => {
+        it("should return the English name by default", () => {
+            expect.assertions(1);
+            expect(getName("US")).toBe("United States");
+        });
+
+        it("should localize the name when Intl supports the region", () => {
+            expect.assertions(1);
+            // Intl.DisplayNames is available on Node 22+, so a French name is expected.
+            expect(getName("DE", "fr")).toBe("Allemagne");
+        });
+
+        it("should fall back to the English name when the locale is invalid", () => {
+            expect.assertions(1);
+            // "!" is a structurally invalid BCP 47 tag and makes Intl.DisplayNames throw.
+            expect(getName("DE", "!")).toBe("Germany");
+        });
+
+        it("should return undefined for an unknown country", () => {
+            expect.assertions(1);
+            expect(getName("ZZ")).toBeUndefined();
         });
     });
 });

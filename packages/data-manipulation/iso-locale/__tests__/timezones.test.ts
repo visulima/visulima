@@ -108,6 +108,16 @@ describe("timezones", () => {
 
             expect(Array.isArray(countries)).toBe(true);
         });
+
+        it("should return a fresh array on each call (cached reverse map is not leaked)", () => {
+            expect.assertions(2);
+
+            const first = getCountriesForTimezone("Europe/London");
+            const second = getCountriesForTimezone("Europe/London");
+
+            expect(first).toStrictEqual(second);
+            expect(first).not.toBe(second);
+        });
     });
 
     describe(all, () => {
