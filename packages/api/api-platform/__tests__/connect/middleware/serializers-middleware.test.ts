@@ -9,7 +9,7 @@ import type { Serializers } from "../../../src/serializers";
 
 const CSV_REGEX = /csv/u;
 
-const csvSerializer = vi.fn((data: unknown) => `csv:${JSON.stringify(data)}`);
+const csvSerializer = vi.fn<(data: unknown) => string>((data: unknown) => `csv:${JSON.stringify(data)}`);
 
 const csvSerializers: Serializers = [
     {
@@ -29,7 +29,7 @@ describe("connect/middleware/serializers-middleware", () => {
             method: "GET",
         });
 
-        const next = vi.fn();
+        const next = vi.fn<() => void>();
 
         await serializersMiddleware(csvSerializers)(req, res, next);
 
@@ -42,7 +42,7 @@ describe("connect/middleware/serializers-middleware", () => {
     it("should restore the original send after a single interception", async () => {
         expect.assertions(2);
 
-        const originalSend = vi.fn();
+        const originalSend = vi.fn<(body: unknown) => void>();
 
         const request = {
             headers: { accept: "text/csv" },
@@ -51,7 +51,7 @@ describe("connect/middleware/serializers-middleware", () => {
         const response = {
             getHeader: () => undefined,
             send: originalSend,
-            setHeader: vi.fn(),
+            setHeader: vi.fn<(name: string, value: string) => void>(),
         } as unknown as NextApiResponse;
 
         await serializersMiddleware(csvSerializers)(request, response, vi.fn());
@@ -72,13 +72,13 @@ describe("connect/middleware/serializers-middleware", () => {
             headers: { accept: "text/csv" },
         } as unknown as IncomingMessage;
 
-        const json = vi.fn();
+        const json = vi.fn<(body: unknown) => void>();
 
         const response = {
             json,
         } as unknown as ServerResponse;
 
-        const next = vi.fn();
+        const next = vi.fn<() => void>();
 
         await serializersMiddleware(csvSerializers)(request, response, next);
 
@@ -92,7 +92,7 @@ describe("connect/middleware/serializers-middleware", () => {
         csvSerializer.mockClear();
 
         const captured: unknown[] = [];
-        const originalEnd = vi.fn((...arguments_: unknown[]) => {
+        const originalEnd = vi.fn<(...arguments_: unknown[]) => void>((...arguments_: unknown[]) => {
             captured.push(...arguments_);
         });
 
@@ -104,10 +104,10 @@ describe("connect/middleware/serializers-middleware", () => {
         const response = {
             end: originalEnd,
             getHeader: () => undefined,
-            setHeader: vi.fn(),
+            setHeader: vi.fn<(name: string, value: string) => void>(),
         } as unknown as ServerResponse;
 
-        const next = vi.fn();
+        const next = vi.fn<() => void>();
 
         await serializersMiddleware(csvSerializers)(request, response, next);
 

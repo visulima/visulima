@@ -21,7 +21,9 @@ describe("jsonapi-error-handler", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("{\"type\":\"https://tools.ietf.org/html/rfc2616#section-10\",\"title\":\"Internal Server Error\",\"details\":\"Internal Server Error\"}");
+        expect(res._getData()).toBe(
+            "{\"type\":\"https://tools.ietf.org/html/rfc2616#section-10\",\"title\":\"Internal Server Error\",\"details\":\"Internal Server Error\"}",
+        );
     });
 
     it("should expose the message of an opted-in error", async () => {
