@@ -41,12 +41,15 @@ const KKEY = Buffer.from(
 
 const getView = (buf: Buffer, offset = 0): Buffer => Buffer.from(buf.buffer, buf.byteOffset + offset, buf.length - offset);
 
+// Allocation-free 64-bit byte swap (pure BigInt shift/mask), mirroring bswap32.
 const bswap64 = (a: bigint): bigint => {
-    const scratch = Buffer.allocUnsafe(8);
+    let v = a & MASK_64;
 
-    scratch.writeBigUInt64LE(a);
+    v = ((v & 0x00000000FFFFFFFFn) << 32n) | ((v & 0xFFFFFFFF00000000n) >> 32n);
+    v = ((v & 0x0000FFFF0000FFFFn) << 16n) | ((v & 0xFFFF0000FFFF0000n) >> 16n);
+    v = ((v & 0x00FF00FF00FF00FFn) << 8n) | ((v & 0xFF00FF00FF00FF00n) >> 8n);
 
-    return scratch.readBigUInt64BE();
+    return v & MASK_64;
 };
 
 const bswap32 = (a: bigint): bigint => {
@@ -94,10 +97,12 @@ const avalanche64 = (h: bigint): bigint => {
     return v;
 };
 
-const accumulate512 = (acc: BigUint64Array, data: Buffer, key: Buffer): BigUint64Array => {
+// `dataOffset` / `keyOffset` are byte offsets into the shared buffers, threaded
+// through to avoid allocating per-stripe Buffer views on the long-hash hot path.
+const accumulate512 = (acc: BigUint64Array, data: Buffer, key: Buffer, dataOffset = 0, keyOffset = 0): BigUint64Array => {
     for (let i = 0; i < ACC_NB; i++) {
-        const dataVal = data.readBigUInt64LE(i * 8);
-        const dataKey = dataVal ^ key.readBigUInt64LE(i * 8);
+        const dataVal = data.readBigUInt64LE(dataOffset + i * 8);
+        const dataKey = dataVal ^ key.readBigUInt64LE(keyOffset + i * 8);
 
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         acc[i ^ 1]! += dataVal;
@@ -108,17 +113,17 @@ const accumulate512 = (acc: BigUint64Array, data: Buffer, key: Buffer): BigUint6
     return acc;
 };
 
-const accumulate = (acc: BigUint64Array, data: Buffer, key: Buffer, nbStripes: number): BigUint64Array => {
+const accumulate = (acc: BigUint64Array, data: Buffer, key: Buffer, nbStripes: number, dataOffset = 0): BigUint64Array => {
     for (let i = 0; i < nbStripes; i++) {
-        accumulate512(acc, getView(data, i * STRIPE_LEN), getView(key, i * 8));
+        accumulate512(acc, data, key, dataOffset + i * STRIPE_LEN, i * 8);
     }
 
     return acc;
 };
 
-const scrambleAcc = (acc: BigUint64Array, key: Buffer): BigUint64Array => {
+const scrambleAcc = (acc: BigUint64Array, key: Buffer, keyOffset = 0): BigUint64Array => {
     for (let i = 0; i < ACC_NB; i++) {
-        const key64 = key.readBigUInt64LE(i * 8);
+        const key64 = key.readBigUInt64LE(keyOffset + i * 8);
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         let acc64 = acc[i]!;
 
@@ -131,17 +136,19 @@ const scrambleAcc = (acc: BigUint64Array, key: Buffer): BigUint64Array => {
     return acc;
 };
 
-const mix2Accs = (acc: BigUint64Array, key: Buffer): bigint =>
+// `accStart` indexes into `acc` and `keyOffset` into `key` to avoid the four
+// `BigUint64Array` copies (`acc.slice(...)`) and Buffer views per merge.
+const mix2Accs = (acc: BigUint64Array, accStart: number, key: Buffer, keyOffset: number): bigint =>
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    mul128Fold64(acc[0]! ^ key.readBigUInt64LE(0), acc[1]! ^ key.readBigUInt64LE(U64));
+    mul128Fold64(acc[accStart]! ^ key.readBigUInt64LE(keyOffset), acc[accStart + 1]! ^ key.readBigUInt64LE(keyOffset + U64));
 
-const mergeAccs = (acc: BigUint64Array, key: Buffer, start: bigint): bigint => {
+const mergeAccs = (acc: BigUint64Array, key: Buffer, keyOffset: number, start: bigint): bigint => {
     let result64 = start;
 
-    result64 += mix2Accs(acc.slice(0), getView(key, 0));
-    result64 += mix2Accs(acc.slice(2), getView(key, 16));
-    result64 += mix2Accs(acc.slice(4), getView(key, 32));
-    result64 += mix2Accs(acc.slice(6), getView(key, 48));
+    result64 += mix2Accs(acc, 0, key, keyOffset + 0);
+    result64 += mix2Accs(acc, 2, key, keyOffset + 16);
+    result64 += mix2Accs(acc, 4, key, keyOffset + 32);
+    result64 += mix2Accs(acc, 6, key, keyOffset + 48);
 
     return avalanche(result64 & MASK_64);
 };
@@ -152,16 +159,39 @@ const hashLong = (acc: BigUint64Array, data: Buffer, secret: Buffer): BigUint64A
     const nbBlocks = Math.floor((data.byteLength - 1) / blockLen);
 
     for (let i = 0; i < nbBlocks; i++) {
-        accumulate(acc, getView(data, i * blockLen), secret, nbStripesPerBlock);
-        scrambleAcc(acc, getView(secret, secret.byteLength - STRIPE_LEN));
+        accumulate(acc, data, secret, nbStripesPerBlock, i * blockLen);
+        scrambleAcc(acc, secret, secret.byteLength - STRIPE_LEN);
     }
 
     const nbStripes = Math.floor((data.byteLength - 1 - blockLen * nbBlocks) / STRIPE_LEN);
 
-    accumulate(acc, getView(data, nbBlocks * blockLen), secret, nbStripes);
-    accumulate512(acc, getView(data, data.byteLength - STRIPE_LEN), getView(secret, secret.byteLength - STRIPE_LEN - 7));
+    accumulate(acc, data, secret, nbStripes, nbBlocks * blockLen);
+    accumulate512(acc, data, secret, data.byteLength - STRIPE_LEN, secret.byteLength - STRIPE_LEN - 7);
 
     return acc;
+};
+
+/**
+ * Derives a per-seed custom secret, mirroring the reference
+ * `XXH3_initCustomSecret`. Required so that seeded hashes of inputs > 240 bytes
+ * are correct: the long-hash path otherwise ignores the seed entirely.
+ *
+ * For each 16-byte lane of the default secret, the low 64 bits get `+ seed` and
+ * the high 64 bits get `- seed` (mod 2^64), written back little-endian.
+ */
+const initCustomSecret = (seed: bigint): Buffer => {
+    const customSecret = Buffer.from(KKEY);
+    const nbRounds = KKEY.byteLength >> 4;
+
+    for (let i = 0; i < nbRounds; i++) {
+        const lo = (customSecret.readBigUInt64LE(i * 16) + seed) & MASK_64;
+        const hi = (customSecret.readBigUInt64LE(i * 16 + 8) - seed) & MASK_64;
+
+        customSecret.writeBigUInt64LE(lo, i * 16);
+        customSecret.writeBigUInt64LE(hi, i * 16 + 8);
+    }
+
+    return customSecret;
 };
 
 const hashLong128b = (data: Buffer, secret: Buffer): bigint => {
@@ -169,10 +199,11 @@ const hashLong128b = (data: Buffer, secret: Buffer): bigint => {
 
     hashLong(acc, data, secret);
 
-    const low64 = mergeAccs(acc, getView(secret, 11), (BigInt(data.byteLength) * PRIME64_1) & MASK_64);
+    const low64 = mergeAccs(acc, secret, 11, (BigInt(data.byteLength) * PRIME64_1) & MASK_64);
     const high64 = mergeAccs(
         acc,
-        getView(secret, secret.byteLength - STRIPE_LEN - 11),
+        secret,
+        secret.byteLength - STRIPE_LEN - 11,
         ~(BigInt(data.byteLength) * PRIME64_2) & MASK_64,
     );
 
@@ -201,7 +232,15 @@ const mix32B = (acc: bigint, data1: Buffer, data2: Buffer, key: Buffer, seed: bi
 
 const len1to3_128b = (data: Buffer, key32: Buffer, seed: bigint): bigint => {
     const len = data.byteLength;
-    const combined = BigInt(data.readUInt8(len - 1)) | BigInt(len << 8) | BigInt(data.readUInt8(0) << 16) | BigInt(data.readUInt8(len >> 1) << 24);
+    // NOTE: each term must be widened to BigInt *before* the shift. `byte << 24`
+    // in JS number space overflows int32 when the byte is >= 0x80 (e.g.
+    // `0xbf << 24` is negative), which would corrupt the low-64 lane of
+    // `combined` and diverge from the reference/native xxh3 implementation.
+    const combined
+        = BigInt(data.readUInt8(len - 1))
+            | (BigInt(len) << 8n)
+            | (BigInt(data.readUInt8(0)) << 16n)
+            | (BigInt(data.readUInt8(len >> 1)) << 24n);
     const blow = (BigInt(key32.readUInt32LE(0)) ^ BigInt(key32.readUInt32LE(4))) + seed;
     const low = (combined ^ blow) & MASK_64;
     const bhigh = (BigInt(key32.readUInt32LE(8)) ^ BigInt(key32.readUInt32LE(12))) - seed;
@@ -341,7 +380,9 @@ const xxh3_128 = (data: Buffer, seed = 0n): bigint => {
         return len129to240_128b(data, KKEY, seed);
     }
 
-    return hashLong128b(data, KKEY);
+    // For seeded long inputs the reference algorithm derives a per-seed custom
+    // secret; seed 0 uses the default secret (bit-exact with the native addon).
+    return hashLong128b(data, seed === 0n ? KKEY : initCustomSecret(seed));
 };
 
 // ─── Public API ─────────────────────────────────────────────────────────────
@@ -360,40 +401,77 @@ const bigintToHex = (value: bigint): string => {
 };
 
 /**
- * Hashes a Buffer using xxh3-128.
- * Returns a 32-character hex string.
+ * Hashes a value using xxh3-128 and returns a 32-character lowercase hex string.
+ *
+ * Accepts a `string` (encoded as UTF-8, matching the native `hashString`) or a
+ * `Buffer`. With `seed = 0n` (the default) the output is bit-exact with the
+ * native Rust addon.
+ *
+ * @param data The value to hash. Strings are UTF-8 encoded.
+ * @param seed Optional 64-bit seed. Defaults to `0n`. Non-zero seeds change the
+ *   hash for every length class, including inputs > 240 bytes (a per-seed custom
+ *   secret is derived). The native addon does not expose seeded hashing, so
+ *   seeded output cannot be cross-checked against it.
  */
-const xxh3Hash = (data: Buffer): string => bigintToHex(xxh3_128(data));
+const xxh3Hash = (data: string | Buffer, seed = 0n): string =>
+    bigintToHex(xxh3_128(typeof data === "string" ? Buffer.from(data) : data, seed));
 
 /**
- * Incremental xxh3-128 hasher that accumulates data
- * and produces a final hash.
+ * Incremental xxh3-128 hasher that accumulates data and produces a final hash.
  *
- * xxh3 doesn't support streaming, so data is accumulated
- * into a single buffer before hashing.
+ * xxh3 does not support true streaming, so chunks are buffered and hashed as a
+ * single concatenated buffer at `digest()` time.
+ *
+ * Semantics differ from `node:crypto` hashers: the instance is reusable. After
+ * `digest()` you may continue to `update()` and call `digest()` again (the new
+ * digest covers all chunks, old and new), or call `reset()` to clear the
+ * accumulated chunks and seed and start over.
  */
 class Xxh3Hasher {
     readonly #chunks: Buffer[] = [];
 
+    #seed: bigint;
+
+    public constructor(seed = 0n) {
+        this.#seed = seed;
+    }
+
+    /** Appends data to the buffer. Strings are UTF-8 encoded. Chainable. */
     public update(data: string | Buffer): this {
-        if (typeof data === "string") {
-            this.#chunks.push(Buffer.from(data));
-        } else {
-            this.#chunks.push(data);
-        }
+        this.#chunks.push(typeof data === "string" ? Buffer.from(data) : data);
 
         return this;
     }
 
+    /**
+     * Returns the xxh3-128 hash of all data fed so far as a 32-character hex
+     * string. Non-terminal: the hasher remains usable afterwards.
+     */
     public digest(): string {
-        return xxh3Hash(Buffer.concat(this.#chunks));
+        return xxh3Hash(Buffer.concat(this.#chunks), this.#seed);
+    }
+
+    /**
+     * Clears all accumulated chunks so the hasher can be reused from scratch.
+     * Optionally sets a new seed; omitting it keeps the current seed. Chainable.
+     */
+    public reset(seed?: bigint): this {
+        this.#chunks.length = 0;
+
+        if (seed !== undefined) {
+            this.#seed = seed;
+        }
+
+        return this;
     }
 }
 
 /**
  * Creates a new incremental xxh3-128 hasher.
+ *
+ * @param seed Optional 64-bit seed forwarded to {@link xxh3Hash}. Defaults to `0n`.
  */
-const createXxh3Hasher = (): Xxh3Hasher => new Xxh3Hasher();
+const createXxh3Hasher = (seed = 0n): Xxh3Hasher => new Xxh3Hasher(seed);
 
 export type { Xxh3Hasher };
 export { createXxh3Hasher, xxh3Hash };
