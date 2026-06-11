@@ -1,4 +1,5 @@
 // Countries
+export type { Alpha2Code, Alpha3Code } from "./countries";
 export {
     alpha2ToAlpha3,
     alpha2ToNumeric,
@@ -13,7 +14,10 @@ export {
     getByNumeric,
     getCallingCode,
     getCallingCodes,
+    getCountriesByLanguage,
+    getCountry,
     getCountryByName,
+    getName as getCountryName,
     getEmoji,
     getIOC,
     getLanguages,
@@ -27,6 +31,7 @@ export {
 export { all as countries } from "./countries";
 export { isValid } from "./countries";
 // Currencies
+export type { CurrencyCode } from "./currencies";
 export {
     byCode,
     byNumber,
@@ -47,7 +52,7 @@ export { all as currencies } from "./currencies";
 export { convert6393To6391, iso6393To6391 } from "./data/iso-639-mapping";
 
 // Locale utilities
-export { generateBCP47Tag, getBCP47Tags, getCurrency, getLocales, isValidBCP47Tag, parseBCP47Tag } from "./locale";
+export { generateBCP47Tag, getBCP47Tags, getCurrency, getLanguageName, getLocales, isValidBCP47Tag, parseBCP47Tag } from "./locale";
 
 // Regions
 export {

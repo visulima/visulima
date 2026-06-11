@@ -1,4 +1,5 @@
 import countriesData from "./data/countries";
+import { iso6393To6391 } from "./data/iso-639-mapping";
 import type { Country } from "./types";
 
 const DIGITS_ONLY_REGEX = /^\d+$/;
@@ -66,6 +67,31 @@ export const getByNumeric = (code: string | number): Country | undefined => {
     const numericCode = typeof code === "number" ? String(code).padStart(3, "0") : code.padStart(3, "0");
 
     return countriesByNumeric[numericCode];
+};
+
+/**
+ * Resolve a country from a code in any supported format.
+ * Numbers and digit-only strings are treated as ISO 3166-1 numeric codes,
+ * 2-letter strings as alpha-2, and 3-letter strings as alpha-3.
+ * @param countryCode ISO 3166-1 alpha-2, alpha-3, or numeric code
+ * @returns Country object or undefined
+ */
+export const getCountry = (countryCode: string | number): Country | undefined => {
+    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
+        return getByNumeric(countryCode);
+    }
+
+    const upperCode = countryCode.toUpperCase();
+
+    if (upperCode.length === 2) {
+        return getByAlpha2(upperCode);
+    }
+
+    if (upperCode.length === 3) {
+        return getByAlpha3(upperCode);
+    }
+
+    return undefined;
 };
 
 /**
@@ -153,115 +179,35 @@ export const byNumeric: Readonly<Record<string, Country>> = Object.freeze(countr
  * @param countryCode ISO 3166-1 alpha-2, alpha-3, or numeric code
  * @returns Flag emoji or undefined
  */
-export const getEmoji = (countryCode: string | number): string | undefined => {
-    let country: Country | undefined;
-
-    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
-        country = getByNumeric(countryCode);
-    } else {
-        const upperCode = countryCode.toUpperCase();
-
-        if (upperCode.length === 2) {
-            country = getByAlpha2(upperCode);
-        } else if (upperCode.length === 3) {
-            country = getByAlpha3(upperCode);
-        }
-    }
-
-    return country?.emoji;
-};
+export const getEmoji = (countryCode: string | number): string | undefined => getCountry(countryCode)?.emoji;
 
 /**
  * Get country calling code (phone prefix) for a country.
  * @param countryCode ISO 3166-1 alpha-2, alpha-3, or numeric code
  * @returns First calling code or undefined
  */
-export const getCallingCode = (countryCode: string | number): string | undefined => {
-    let country: Country | undefined;
-
-    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
-        country = getByNumeric(countryCode);
-    } else {
-        const upperCode = countryCode.toUpperCase();
-
-        if (upperCode.length === 2) {
-            country = getByAlpha2(upperCode);
-        } else if (upperCode.length === 3) {
-            country = getByAlpha3(upperCode);
-        }
-    }
-
-    return country?.countryCallingCodes?.[0];
-};
+export const getCallingCode = (countryCode: string | number): string | undefined => getCountry(countryCode)?.countryCallingCodes?.[0];
 
 /**
  * Get all calling codes for a country.
  * @param countryCode ISO 3166-1 alpha-2, alpha-3, or numeric code
  * @returns Array of calling codes or empty array
  */
-export const getCallingCodes = (countryCode: string | number): string[] => {
-    let country: Country | undefined;
-
-    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
-        country = getByNumeric(countryCode);
-    } else {
-        const upperCode = countryCode.toUpperCase();
-
-        if (upperCode.length === 2) {
-            country = getByAlpha2(upperCode);
-        } else if (upperCode.length === 3) {
-            country = getByAlpha3(upperCode);
-        }
-    }
-
-    return country?.countryCallingCodes ?? [];
-};
+export const getCallingCodes = (countryCode: string | number): string[] => getCountry(countryCode)?.countryCallingCodes ?? [];
 
 /**
  * Get languages for a country.
  * @param countryCode ISO 3166-1 alpha-2, alpha-3, or numeric code
  * @returns Array of ISO 639 language codes or empty array
  */
-export const getLanguages = (countryCode: string | number): string[] => {
-    let country: Country | undefined;
-
-    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
-        country = getByNumeric(countryCode);
-    } else {
-        const upperCode = countryCode.toUpperCase();
-
-        if (upperCode.length === 2) {
-            country = getByAlpha2(upperCode);
-        } else if (upperCode.length === 3) {
-            country = getByAlpha3(upperCode);
-        }
-    }
-
-    return country?.languages ?? [];
-};
+export const getLanguages = (countryCode: string | number): string[] => getCountry(countryCode)?.languages ?? [];
 
 /**
  * Get International Olympic Committee code for a country.
  * @param countryCode ISO 3166-1 alpha-2, alpha-3, or numeric code
  * @returns IOC code or undefined
  */
-export const getIOC = (countryCode: string | number): string | undefined => {
-    let country: Country | undefined;
-
-    if (typeof countryCode === "number" || DIGITS_ONLY_REGEX.test(countryCode)) {
-        country = getByNumeric(countryCode);
-    } else {
-        const upperCode = countryCode.toUpperCase();
-
-        if (upperCode.length === 2) {
-            country = getByAlpha2(upperCode);
-        } else if (upperCode.length === 3) {
-            country = getByAlpha3(upperCode);
-        }
-    }
-
-    return country?.ioc;
-};
+export const getIOC = (countryCode: string | number): string | undefined => getCountry(countryCode)?.ioc;
 
 /**
  * Get country by name (exact match, case-insensitive).
@@ -289,5 +235,70 @@ export const searchCountries = (query: string): Country[] => {
     return (allCountries as unknown as Country[]).filter((country) => country.name.toLowerCase().includes(normalizedQuery));
 };
 
+/**
+ * Get the localized display name of a country using the runtime `Intl.DisplayNames` API.
+ *
+ * Falls back to the English `name` from the dataset when `Intl.DisplayNames` is
+ * unavailable or cannot resolve the code (e.g. unsupported region).
+ * @param countryCode ISO 3166-1 alpha-2, alpha-3, or numeric code
+ * @param locale BCP 47 locale to translate the name into (defaults to "en")
+ * @returns Localized country name or undefined if the country is unknown
+ */
+export const getName = (countryCode: string | number, locale = "en"): string | undefined => {
+    const country = getCountry(countryCode);
+
+    if (!country) {
+        return undefined;
+    }
+
+    if (typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function") {
+        try {
+            const displayNames = new Intl.DisplayNames([locale], { type: "region" });
+            const localized = displayNames.of(country.alpha2);
+
+            // Intl returns the input code unchanged when it cannot resolve a name.
+            if (localized && localized !== country.alpha2) {
+                return localized;
+            }
+        } catch {
+            // Invalid locale or unsupported environment — fall through to English.
+        }
+    }
+
+    return country.name;
+};
+
+/**
+ * Get all countries whose language list includes the given ISO 639 language code.
+ *
+ * Accepts both ISO 639-1 (2-letter, e.g. "de") and ISO 639-3 (3-letter, e.g. "deu")
+ * codes; the underlying dataset stores ISO 639-3, so 2-letter codes are matched
+ * against the converted form.
+ * @param languageCode ISO 639-1 or ISO 639-3 language code
+ * @returns Array of ISO 3166-1 alpha-2 country codes that use the language
+ */
+export const getCountriesByLanguage = (languageCode: string): string[] => {
+    const normalized = languageCode.toLowerCase();
+
+    return (allCountries as unknown as Country[])
+        .filter(
+            (country) =>
+                country.status !== "deleted"
+                && country.languages.some((lang) => lang === normalized || iso6393To6391(lang) === normalized),
+        )
+        .map((country) => country.alpha2);
+};
+
 // Export all at the end
 export const all: Country[] = allCountries as unknown as Country[];
+
+/**
+ * Literal union of every ISO 3166-1 alpha-2 code present in the dataset.
+ * Derived directly from the const dataset so it stays in sync automatically.
+ */
+export type Alpha2Code = (typeof countriesData)[number]["alpha2"];
+
+/**
+ * Literal union of every ISO 3166-1 alpha-3 code present in the dataset.
+ */
+export type Alpha3Code = (typeof countriesData)[number]["alpha3"];

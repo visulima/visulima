@@ -1,6 +1,6 @@
 import { getByAlpha2, getLanguages } from "./countries";
 import { getByCountry, getCountriesByCurrency } from "./currencies";
-import { convert6393To6391 } from "./data/iso-639-mapping";
+import { convert6393To6391, iso6393To6391 } from "./data/iso-639-mapping";
 
 const ALPHA2_REGEX = /^[A-Z]{2}$/;
 const LANG_REGEX = /^[a-z]{2,3}$/;
@@ -64,6 +64,41 @@ export const getCurrency = (locale: string): string | undefined => {
  * @returns Array of ISO 3166-1 alpha-2 country codes
  */
 export const getLocales = (currencyCode: string): string[] => getCountriesByCurrency(currencyCode);
+
+/**
+ * Get the localized display name of a language using the runtime `Intl.DisplayNames` API.
+ *
+ * Accepts both ISO 639-1 (2-letter, e.g. "de") and ISO 639-3 (3-letter, e.g. "deu")
+ * codes — 3-letter codes are converted to their 2-letter form first.
+ * @param languageCode ISO 639-1 or ISO 639-3 language code
+ * @param locale BCP 47 locale to translate the name into (defaults to "en")
+ * @returns Localized language name or undefined if it cannot be resolved
+ */
+export const getLanguageName = (languageCode: string, locale = "en"): string | undefined => {
+    const normalized = languageCode.toLowerCase();
+    // The dataset stores ISO 639-3; Intl expects ISO 639-1, so convert when needed.
+    let iso6391 = normalized;
+
+    if (normalized.length === 3) {
+        iso6391 = iso6393To6391(normalized) ?? normalized;
+    }
+
+    if (typeof Intl !== "undefined" && typeof Intl.DisplayNames === "function") {
+        try {
+            const displayNames = new Intl.DisplayNames([locale], { type: "language" });
+            const localized = displayNames.of(iso6391);
+
+            // Intl returns the input code unchanged when it cannot resolve a name.
+            if (localized && localized !== iso6391) {
+                return localized;
+            }
+        } catch {
+            // Invalid locale or unsupported environment.
+        }
+    }
+
+    return undefined;
+};
 
 /**
  * Parse a BCP 47 language tag into its components.
@@ -132,7 +167,8 @@ export const generateBCP47Tag = (languageCode: string, countryCode: string, scri
     const parts = [languageCode.toLowerCase()];
 
     if (script) {
-        parts.push(script);
+        // Canonicalize script subtags to title case (BCP 47), e.g. "hant" -> "Hant".
+        parts.push(script.charAt(0).toUpperCase() + script.slice(1).toLowerCase());
     }
 
     parts.push(countryCode.toUpperCase());

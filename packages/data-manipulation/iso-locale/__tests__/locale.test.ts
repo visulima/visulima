@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { convert6393To6391, iso6393To6391 } from "../src/data/iso-639-mapping";
-import { generateBCP47Tag, getBCP47Tags, getCurrency, getLocales, isValidBCP47Tag, parseBCP47Tag } from "../src/locale";
+import { generateBCP47Tag, getBCP47Tags, getCurrency, getLanguageName, getLocales, isValidBCP47Tag, parseBCP47Tag } from "../src/locale";
 
 describe("locale", () => {
     it("should get currency from BCP 47 locale", () => {
@@ -150,6 +150,30 @@ describe("locale", () => {
         it("should handle case-insensitive inputs", () => {
             expect.hasAssertions();
             expect(generateBCP47Tag("EN", "us")).toBe("en-US");
+        });
+
+        it("should canonicalize the script subtag to title case", () => {
+            expect.assertions(2);
+            expect(generateBCP47Tag("zh", "tw", "hant")).toBe("zh-Hant-TW");
+            expect(generateBCP47Tag("sr", "rs", "CYRL")).toBe("sr-Cyrl-RS");
+        });
+    });
+
+    describe("getLanguageName", () => {
+        it("should localize an ISO 639-1 language code", () => {
+            expect.assertions(1);
+            expect(getLanguageName("de", "en")).toBe("German");
+        });
+
+        it("should accept an ISO 639-3 language code", () => {
+            expect.assertions(1);
+            expect(getLanguageName("deu", "en")).toBe("German");
+        });
+
+        it("should return undefined for an invalid locale", () => {
+            expect.assertions(1);
+            // "!" is a structurally invalid BCP 47 tag and makes Intl.DisplayNames throw.
+            expect(getLanguageName("de", "!")).toBeUndefined();
         });
     });
 

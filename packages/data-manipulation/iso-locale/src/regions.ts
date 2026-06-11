@@ -2,6 +2,21 @@ import countryRegionsData from "./data/regions";
 import type { Region } from "./types";
 
 /**
+ * Memoized continent list (the dataset is static).
+ */
+let sortedContinents: string[] | undefined;
+
+/**
+ * Memoized subregion lists keyed by continent filter ("" = all continents).
+ */
+const subregionCache = new Map<string, string[]>();
+
+/**
+ * Memoized intermediary-region lists keyed by continent filter ("" = all continents).
+ */
+const intermediaryCache = new Map<string, string[]>();
+
+/**
  * Get region information for a country.
  * @param countryCode ISO 3166-1 alpha-2 country code (e.g., "US")
  * @returns Region object or undefined
@@ -43,13 +58,17 @@ export const getCountriesInIntermediary = (intermediary: string): string[] =>
  * @returns Array of continental region names
  */
 export const getContinents = (): string[] => {
-    const continents = new Set<string>();
+    if (!sortedContinents) {
+        const continents = new Set<string>();
 
-    Object.values(countryRegionsData).forEach((region) => {
-        continents.add(region.continent);
-    });
+        Object.values(countryRegionsData).forEach((region) => {
+            continents.add(region.continent);
+        });
 
-    return [...continents].toSorted((a, b) => a.localeCompare(b));
+        sortedContinents = [...continents].toSorted((a, b) => a.localeCompare(b));
+    }
+
+    return [...sortedContinents];
 };
 
 /**
@@ -58,15 +77,23 @@ export const getContinents = (): string[] => {
  * @returns Array of subregion names
  */
 export const getSubregions = (continent?: string): string[] => {
-    const subregions = new Set<string>();
+    const cacheKey = continent ?? "";
+    let cached = subregionCache.get(cacheKey);
 
-    Object.values(countryRegionsData).forEach((region) => {
-        if (!continent || region.continent === continent) {
-            subregions.add(region.subregion);
-        }
-    });
+    if (!cached) {
+        const subregions = new Set<string>();
 
-    return [...subregions].toSorted((a, b) => a.localeCompare(b));
+        Object.values(countryRegionsData).forEach((region) => {
+            if (!continent || region.continent === continent) {
+                subregions.add(region.subregion);
+            }
+        });
+
+        cached = [...subregions].toSorted((a, b) => a.localeCompare(b));
+        subregionCache.set(cacheKey, cached);
+    }
+
+    return [...cached];
 };
 
 /**
@@ -75,15 +102,23 @@ export const getSubregions = (continent?: string): string[] => {
  * @returns Array of intermediary region names
  */
 export const getIntermediaryRegions = (continent?: string): string[] => {
-    const intermediaries = new Set<string>();
+    const cacheKey = continent ?? "";
+    let cached = intermediaryCache.get(cacheKey);
 
-    Object.values(countryRegionsData).forEach((region) => {
-        if (region.intermediary && (!continent || region.continent === continent)) {
-            intermediaries.add(region.intermediary);
-        }
-    });
+    if (!cached) {
+        const intermediaries = new Set<string>();
 
-    return [...intermediaries].toSorted((a, b) => a.localeCompare(b));
+        Object.values(countryRegionsData).forEach((region) => {
+            if (region.intermediary && (!continent || region.continent === continent)) {
+                intermediaries.add(region.intermediary);
+            }
+        });
+
+        cached = [...intermediaries].toSorted((a, b) => a.localeCompare(b));
+        intermediaryCache.set(cacheKey, cached);
+    }
+
+    return [...cached];
 };
 
 /**
