@@ -47,6 +47,19 @@ const isSensitiveHeader = (name: string, denylist: string[] | undefined): boolea
     return SENSITIVE_HEADER_PATTERNS.some((re) => re.test(name));
 };
 
+// Request bodies carry credential-shaped keys (password, pwd, credentials) that
+// never appear as header names, so body masking needs a superset of the header
+// patterns rather than reusing them verbatim.
+const SENSITIVE_BODY_KEY_PATTERNS = [...SENSITIVE_HEADER_PATTERNS, /passw(?:or)?d/i, /pwd/i, /credential/i, /passphrase/i];
+
+const isSensitiveBodyKey = (name: string, denylist: string[] | undefined): boolean => {
+    if (denylist?.some((d) => d.toLowerCase() === name.toLowerCase())) {
+        return true;
+    }
+
+    return SENSITIVE_BODY_KEY_PATTERNS.some((re) => re.test(name));
+};
+
 const normalizeHeadersToEntries = (headers: HeadersInput): [string, HeaderValue][] => {
     if (!headers) {
         return [];
@@ -328,28 +341,40 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
 
     // Mask sensitive-looking keys in the request body so login passwords / tokens posted as JSON
     // do not land verbatim in the rendered HTML or the cURL --data flag.
-    const maskBodyValue = (value: unknown): unknown => {
-        if (!maskValue) {
+    const maskBodyValue = (value: unknown, seen: WeakSet<object>): unknown => {
+        if (!maskValue || value === null || typeof value !== "object") {
             return value;
         }
 
-        if (Array.isArray(value)) {
-            return value.map((item) => maskBodyValue(item));
+        // Guard against circular references (e.g. `body.self = body`) so masking a
+        // self-referential body can never recurse forever and blow the stack.
+        if (seen.has(value)) {
+            return "[Circular]";
         }
 
-        if (value && typeof value === "object") {
-            return Object.fromEntries(
+        seen.add(value);
+
+        let result: unknown;
+
+        if (Array.isArray(value)) {
+            result = value.map((item) => maskBodyValue(item, seen));
+        } else {
+            result = Object.fromEntries(
                 Object.entries(value as Record<string, unknown>).map(([key, v]) => [
                     key,
-                    isSensitiveHeader(key, headerDenylist) ? maskValue : maskBodyValue(v),
+                    isSensitiveBodyKey(key, headerDenylist) ? maskValue : maskBodyValue(v, seen),
                 ]),
             );
         }
 
-        return value;
+        // Drop the node once its subtree is masked so genuine shared (non-cyclic)
+        // references in sibling branches are not misreported as circular.
+        seen.delete(value);
+
+        return result;
     };
 
-    const maskedRequestBody: unknown = maskBodyValue(requestBody);
+    const maskedRequestBody: unknown = maskBodyValue(requestBody, new WeakSet());
 
     const buildCurl = (): string => {
         const method = (safeGetString(request, "method") ?? "GET").toUpperCase();
