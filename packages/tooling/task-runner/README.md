@@ -256,7 +256,7 @@ const results = await defaultTaskRunner(
 The barrel (`@visulima/task-runner`) pulls in the cache, CAS, graph, scheduler, and remote-backend code. If you only need a slice, import a subpath so the rest can be tree-shaken / never loaded at require time:
 
 | Subpath                            | What it exports                                                                                                                                  |
-| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `@visulima/task-runner/concurrent` | The lightweight concurrent runner (`runConcurrently`, command parser, flow controllers, log reporter) — a `concurrently` / vite-task replacement |
 | `@visulima/task-runner/cache`      | Local cache façade (`Cache`, size helpers) + CAS primitives (`digestFile`, blob store, v2 paths)                                                 |
 | `@visulima/task-runner/graph`      | Task-graph construction, traversal utilities, and graph visualization                                                                            |
@@ -307,16 +307,16 @@ Run commands concurrently with process management and output streaming.
 
 Two backends are selected by `mode`: an HTTP backend that speaks the Turborepo `/v8/artifacts` wire protocol, and a Bazel **REAPI** gRPC backend.
 
-| Field          | Type                                          | Default       | Description                                                              |
-| -------------- | --------------------------------------------- | ------------- | ----------------------------------------------------------------------- |
-| `url`          | `string`                                      | —             | Cache server base URL.                                                   |
-| `token`        | `string`                                      | —             | Bearer token sent on every request.                                     |
-| `teamId`       | `string`                                      | —             | Turborepo team/slug scoping.                                             |
-| `mode`         | `"read" \| "write" \| "readwrite"`            | `"readwrite"` | Read-only, write-only, or both.                                         |
-| `compression`  | `"gzip" \| "none"`                            | `"gzip"`      | HTTP tarball compression.                                               |
-| `timeout`      | `number`                                      | `30000`       | Per-request timeout in ms.                                              |
-| `signing`      | `{ secret; verifyOnDownload? }`               | —             | HMAC-SHA256 artifact signing (see below).                              |
-| `attestation`  | `{ verifyArtifact?; requireOnDownload?; ... }`| —             | Keyless (Sigstore-style) attestation hooks layered above signing.       |
+| Field         | Type                                           | Default       | Description                                                       |
+| ------------- | ---------------------------------------------- | ------------- | ----------------------------------------------------------------- |
+| `url`         | `string`                                       | —             | Cache server base URL.                                            |
+| `token`       | `string`                                       | —             | Bearer token sent on every request.                               |
+| `teamId`      | `string`                                       | —             | Turborepo team/slug scoping.                                      |
+| `mode`        | `"read" \| "write" \| "readwrite"`             | `"readwrite"` | Read-only, write-only, or both.                                   |
+| `compression` | `"gzip" \| "none"`                             | `"gzip"`      | HTTP tarball compression.                                         |
+| `timeout`     | `number`                                       | `30000`       | Per-request timeout in ms.                                        |
+| `signing`     | `{ secret; verifyOnDownload? }`                | —             | HMAC-SHA256 artifact signing (see below).                         |
+| `attestation` | `{ verifyArtifact?; requireOnDownload?; ... }` | —             | Keyless (Sigstore-style) attestation hooks layered above signing. |
 
 #### Signing (`signing`)
 
