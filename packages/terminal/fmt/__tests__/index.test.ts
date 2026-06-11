@@ -296,4 +296,80 @@ describe("fmt", () => {
         // start of the string, leaves `result` empty so `usedStyle` is never flipped on.
         expect(format("%cfoo", [""])).toBe("foo");
     });
+
+    describe("unknown specifiers", () => {
+        it("should pass an unknown specifier through verbatim without consuming an argument", () => {
+            expect.assertions(2);
+
+            // `%x` has no formatter, so it must stay literal AND not eat the "hello" arg.
+            expect(format("%x %s", ["hello"])).toBe("%x hello");
+            expect(format("%s %x %s", ["a", "b"])).toBe("a %x b");
+        });
+
+        it("should keep later specifiers aligned after an unknown specifier", () => {
+            expect.assertions(1);
+
+            expect(format("%x%d", [42])).toBe("%x42");
+        });
+    });
+
+    describe("appendExtraArguments option", () => {
+        it("should append unconsumed arguments space-separated", () => {
+            expect.assertions(3);
+
+            expect(format("%s done", ["task", "extra"], { appendExtraArguments: true })).toBe("task done extra");
+            expect(format("hi", [1, 2, 3], { appendExtraArguments: true })).toBe("hi 1 2 3");
+            expect(format("%s", ["only"], { appendExtraArguments: true })).toBe("only");
+        });
+
+        it("should stringify object extras", () => {
+            expect.assertions(1);
+
+            expect(format("hi", [{ code: 1 }], { appendExtraArguments: true })).toBe("hi {\"code\":1}");
+        });
+
+        it("should use the provided stringify for object extras", () => {
+            expect.assertions(1);
+
+            expect(
+                format("hi", [{ code: 1 }], {
+                    appendExtraArguments: true,
+                    stringify: () => "REPLACED",
+                }),
+            ).toBe("hi REPLACED");
+        });
+
+        it("should append extras even when the format string has no specifiers", () => {
+            expect.assertions(1);
+
+            // No specifier means `lastPosition` stays -1; extras must still be appended.
+            expect(format("plain", ["a", "b"], { appendExtraArguments: true })).toBe("plain a b");
+        });
+
+        it("should drop extras when the option is not set (default)", () => {
+            expect.assertions(1);
+
+            expect(format("%s", ["a", "b", "c"])).toBe("a");
+        });
+    });
+
+    describe("colors option", () => {
+        afterEach(() => {
+            delete (globalThis as { window?: unknown }).window;
+        });
+
+        it("should force %c off when colors is false", () => {
+            expect.assertions(1);
+
+            expect(format("%cfoo bar", ["color: red"], { colors: false })).toBe("foo bar");
+        });
+
+        it("should force %c on when colors is true even in a browser-like environment", () => {
+            expect.assertions(1);
+
+            (globalThis as { window?: unknown }).window = {};
+
+            expect(format("%cfoo", ["color: red"], { colors: true })).toBe("[31mfoo[0m");
+        });
+    });
 });
