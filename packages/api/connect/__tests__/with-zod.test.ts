@@ -47,13 +47,13 @@ describe(withZod, () => {
         expect(innerHandler).not.toHaveBeenCalled();
     });
 
-    it("throws a 422 http error using the raw error message when a non-zod error is thrown", async () => {
-        expect.assertions(2);
+    it("throws a 422 http error with a generic public message (not the raw error) when a non-zod error is thrown", async () => {
+        expect.assertions(4);
 
         // Build a fake "schema" whose parseAsync throws a generic Error so we hit the fallback branch
         const fakeSchema = {
             parseAsync: async () => {
-                throw new Error("boom");
+                throw new Error("secret internal db failure");
             },
         } as unknown as z.ZodObject;
 
@@ -68,6 +68,10 @@ describe(withZod, () => {
         );
 
         expect(httpError.statusCode).toBe(422);
-        expect(httpError.message).toBe("boom");
+        // The internal error message must NOT leak to the client (http-errors exposes 4xx messages).
+        expect(httpError.message).toBe("Request validation failed");
+        expect(httpError.message).not.toContain("secret internal db failure");
+        // The original error is preserved as `cause` for server-side logging.
+        expect((httpError.cause as Error).message).toBe("secret internal db failure");
     });
 });

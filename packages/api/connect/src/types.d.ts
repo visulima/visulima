@@ -16,6 +16,12 @@ export type NextHandler = () => ValueOrPromise<unknown>;
 export type Nextable<H extends FunctionLike> = (...arguments_: [...Parameters<H>, NextHandler]) => ValueOrPromise<any>;
 
 export interface FindResult<H extends FunctionLike> {
+    /**
+     * HTTP methods registered for the matched path under a *different* method than the one requested.
+     * Only present (and non-empty) when the path exists but no route matched the requested method,
+     * i.e. a 405 Method Not Allowed situation. Use it to populate the `Allow` header.
+     */
+    allowedMethods?: HttpMethod[];
     fns: Nextable<H>[];
     middleOnly: boolean;
     params: Record<string, string>;

@@ -38,7 +38,7 @@
 
 - Async middleware
 - [Lightweight](https://bundlephobia.com/scan-results?packages=express,@visulima/connect,koa,micro) => Suitable for serverless environment
-- [way faster](https://github.com/visulima/packages/connect/tree/main/bench) than Express.js. Compatible with Express.js via [a wrapper](#expressjs-compatibility).
+- [way faster](https://github.com/visulima/visulima/tree/main/packages/api/connect/bench) than Express.js. Compatible with Express.js via [a wrapper](#expressjs-compatibility).
 - Works with async handlers (with error catching)
 - TypeScript support
 
@@ -60,7 +60,7 @@ pnpm add @visulima/connect
 
 > **Note**
 >
-> Although `@visulima/connect` is initially written for Next.js, it can be used in [http server](https://nodejs.org/api/http.html#httpcreateserveroptions-requestlistener), [Vercel](https://vercel.com/docs/concepts/functions/serverless-functions). See [Examples](./examples/) for more integrations.
+> Although `@visulima/connect` is initially written for Next.js, it can be used in [http server](https://nodejs.org/api/http.html#httpcreateserveroptions-requestlistener), [Vercel](https://vercel.com/docs/concepts/functions/serverless-functions). The usage examples below cover the common integrations.
 
 Below are use cases.
 
@@ -315,7 +315,9 @@ router3
 
 `pattern` (optional) - match routes based on [supported pattern](https://github.com/lukeed/regexparam#regexparam-) or match any if omitted.
 
-`fn`(s) are functions of `(req, res[, next])`.
+`fn`(s) are functions of `(req, res[, next])`. You may pass **multiple** handlers and they run in order (each must `await next()` to continue the chain) — e.g. `router.get("/api/user", authenticate, loadUser, sendUser)`.
+
+You can also pass a zod schema as the second argument to validate the request before your handler runs: `router.post("/users", schema, handler)` — see [Request validation](#request-validation).
 
 ```javascript
 router.get("/api/user", (req, res, next) => {
@@ -411,6 +413,74 @@ router
 
 await router.run(req, res);
 ```
+
+## Request validation
+
+`@visulima/connect` ships two validation adapters. Both run before your handler, and on a validation failure they throw a `422` [`http-errors`](https://github.com/jshttp/http-errors) error whose message lists the offending fields. The structured issues are attached as `error.issues` so a custom `onError` can serialize per-field details.
+
+### `withZod(schema, handler)` and the `.METHOD(route, schema, handler)` overload
+
+Pass a zod **object** schema either directly via `withZod`, or inline as the second argument of any route method:
+
+```ts
+import { createNodeRouter, withZod } from "@visulima/connect";
+import { z } from "zod";
+
+const createUser = z.object({
+    name: z.string().min(1),
+    email: z.string().email(),
+});
+
+const router = createNodeRouter();
+
+// Inline overload — equivalent to `router.post("/users", withZod(createUser, handler))`
+router.post("/users", createUser, (req, res) => {
+    res.end("ok");
+});
+
+// Or wrap a handler explicitly
+router.put("/users/:id", withZod(createUser, (req, res) => {
+    res.end("updated");
+}));
+```
+
+> [!IMPORTANT]
+> `withZod` replaces the request passed to your handler with the **parsed output** of `schema.parseAsync(request)`. Because zod object schemas strip unknown keys by default, the handler receives a plain validated object — **not** the original `IncomingMessage`. If you need access to the raw request (headers, `req.pipe`, etc.), validate a sub-object (e.g. `z.object({ body: ... })`) or use `withValidation` and read the request separately. Non-zod errors thrown inside `.transform`/`.refine` are reported as a generic `422 Request validation failed` (the original error is preserved on `error.cause`) so internal details never leak to the client.
+
+### `withValidation(schema, handler)` — any Standard Schema
+
+`withValidation` accepts any [Standard Schema](https://github.com/standard-schema/standard-schema) (zod v4, valibot, arktype, …), decoupling your routes from a single validator's major version:
+
+```ts
+import { createNodeRouter, withValidation } from "@visulima/connect";
+import * as v from "valibot";
+
+const schema = v.object({ name: v.string() });
+
+const router = createNodeRouter();
+
+router.post("/users", withValidation(schema, (req, res) => {
+    res.end("ok");
+}));
+```
+
+## Utilities
+
+### `sendJson(res, statusCode, body)`
+
+Sets `content-type: application/json; charset=utf-8`, the status code, and writes the JSON body (compact, no pretty-print):
+
+```ts
+import { sendJson } from "@visulima/connect";
+
+router.get("/api/me", (req, res) => {
+    sendJson(res, 200, { id: 1, name: "Ada" });
+});
+```
+
+### `router.clone()`
+
+Returns a new router instance pre-populated with the same routes and `onError`/`onNoMatch` options. Useful for per-route handlers in serverless setups (see [Serverless](#nextjs) below).
 
 ## Common errors
 

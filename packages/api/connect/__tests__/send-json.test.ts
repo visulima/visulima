@@ -22,8 +22,8 @@ const createMockResponse = (): { calls: { end: string[]; setHeader: [string, str
 };
 
 describe(sendJson, () => {
-    it("writes the content-type header, status code, and pretty-printed JSON body for an object payload", () => {
-        expect.assertions(3);
+    it("writes the content-type header, status code, and compact JSON body for an object payload", () => {
+        expect.assertions(4);
 
         const { calls, response } = createMockResponse();
 
@@ -31,7 +31,9 @@ describe(sendJson, () => {
 
         expect(calls.setHeader).toStrictEqual([["content-type", "application/json; charset=utf-8"]]);
         expect(response.statusCode).toBe(200);
-        expect(calls.end[0]).toBe(JSON.stringify({ hello: "world" }, undefined, 2));
+        expect(calls.end[0]).toBe(JSON.stringify({ hello: "world" }));
+        // Body is compact (no pretty-print indentation) to keep the hot path cheap.
+        expect(calls.end[0]).not.toContain("\n");
     });
 
     it("supports arbitrary status codes and array bodies", () => {
@@ -42,7 +44,7 @@ describe(sendJson, () => {
         sendJson(response, 201, [1, 2, 3]);
 
         expect(response.statusCode).toBe(201);
-        expect(calls.end[0]).toBe(JSON.stringify([1, 2, 3], undefined, 2));
+        expect(calls.end[0]).toBe(JSON.stringify([1, 2, 3]));
     });
 
     it("serializes primitives and undefined bodies safely", () => {

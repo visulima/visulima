@@ -1,5 +1,7 @@
 export type { ExpressRequestHandler } from "./adapter/express";
 export { default as expressWrapper } from "./adapter/express";
+export type { StandardSchemaV1 } from "./adapter/with-validation";
+export { default as withValidation } from "./adapter/with-validation";
 export { default as withZod } from "./adapter/with-zod";
 export type { RequestHandler as EdgeRequestHandler } from "./edge";
 export { createEdgeRouter, EdgeRouter } from "./edge";

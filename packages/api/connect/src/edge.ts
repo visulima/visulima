@@ -25,7 +25,45 @@ const onError = (error: unknown) => {
     return new Response("Internal Server Error", { status: 500 });
 };
 
-export const getPathname = (request: Request & { nextUrl?: URL }): string => (request.nextUrl ?? new URL(request.url)).pathname;
+export const getPathname = (request: Request & { nextUrl?: URL }): string => {
+    if (request.nextUrl !== undefined) {
+        return request.nextUrl.pathname;
+    }
+
+    // Scan the absolute request URL for the pathname instead of allocating a full `URL` parser
+    // on every request. `request.url` for a Fetch `Request` is always absolute (e.g.
+    // `https://host/path?query`), so locate the start of the path after the `://` authority.
+    const { url } = request;
+    const schemeIndex = url.indexOf("://");
+
+    if (schemeIndex === -1) {
+        // Fallback for relative or otherwise non-standard URLs. The base host is only a dummy used to
+        // satisfy the URL parser; it never reaches the network.
+        // eslint-disable-next-line sonarjs/no-clear-text-protocols -- dummy base for relative-URL parsing only, no network use
+        return new URL(url, "http://n").pathname;
+    }
+
+    const pathStart = url.indexOf("/", schemeIndex + 3);
+
+    if (pathStart === -1) {
+        return "/";
+    }
+
+    const queryIndex = url.indexOf("?", pathStart);
+    const hashIndex = url.indexOf("#", pathStart);
+
+    let end = url.length;
+
+    if (queryIndex !== -1) {
+        end = Math.min(end, queryIndex);
+    }
+
+    if (hashIndex !== -1) {
+        end = Math.min(end, hashIndex);
+    }
+
+    return url.slice(pathStart, end);
+};
 
 export type RequestHandler<R extends Request, Context> = (request: R, context_: Context) => ValueOrPromise<Response | undefined>;
 
@@ -167,14 +205,16 @@ export class EdgeRouter<
         let resolvedFns: Nextable<RequestHandler<R, Context>>[];
 
         if (typeof routeOrFunction === "string" && typeof zodOrRouteOrFunction === "function") {
-            resolvedFns = [zodOrRouteOrFunction];
+            // `.get("/path", handlerA, handlerB, ...)` — keep every handler in the chain.
+            resolvedFns = [zodOrRouteOrFunction, ...fns];
         } else if (typeof zodOrRouteOrFunction === "object") {
             resolvedFns
                 = typeof routeOrFunction === "function"
                     ? [withZod(zodOrRouteOrFunction as Schema, routeOrFunction)]
                     : fns.map((function_) => withZod(zodOrRouteOrFunction as Schema, function_));
         } else if (typeof zodOrRouteOrFunction === "function") {
-            resolvedFns = [zodOrRouteOrFunction];
+            // `.get(handlerA, handlerB, ...)` (no route) — keep every handler in the chain.
+            resolvedFns = [zodOrRouteOrFunction, ...fns];
         } else {
             resolvedFns = fns;
         }

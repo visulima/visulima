@@ -617,4 +617,76 @@ describe(createRouter, () => {
             props: { ...defaultProps },
         });
     });
+
+    it("method() - runs every handler when a route is followed by multiple plain handlers", async () => {
+        expect.assertions(4);
+
+        const order: string[] = [];
+        const request = { method: "GET", url: "/protected" } as IncomingMessage;
+        let ended = false;
+        const response = {
+            end() {
+                ended = true;
+            },
+        } as unknown as ServerResponse;
+
+        const auth: AnyHandler = async (_request: unknown, _response: unknown, next: () => Promise<unknown>) => {
+            order.push("auth");
+
+            await next();
+        };
+        const final: AnyHandler = (_request: unknown, responseArgument: ServerResponse) => {
+            order.push("handler");
+            responseArgument.end();
+        };
+
+        // Regression: `.get("/protected", auth, final)` previously dropped `final`, so the chain
+        // resolved to nothing after `auth` called next() and the response never ended.
+        await createRouter().get("/protected", auth, final).handler()(request, response);
+
+        expect(order, "both handlers ran in order").toStrictEqual(["auth", "handler"]);
+        expect(ended, "response was ended by the final handler").toBe(true);
+
+        // Same for the no-route form `.get(fn1, fn2)`.
+        const order2: string[] = [];
+
+        await createRouter()
+            .get(
+                async (_request: unknown, _response: unknown, next: () => Promise<unknown>) => {
+                    order2.push("a");
+
+                    await next();
+                },
+                async () => {
+                    order2.push("b");
+                },
+            )
+            .handler()({ method: "GET", url: "/" } as IncomingMessage, {} as ServerResponse);
+
+        expect(order2, "both handlers in the no-route form ran").toStrictEqual(["a", "b"]);
+        expect(order2, "second handler was not dropped").toContain("b");
+    });
+
+    it("onNoMatch() - sets a text/plain content-type on the default 404", async () => {
+        expect.assertions(3);
+
+        const request = { method: "GET", url: "/missing" } as IncomingMessage;
+        const headers: Record<string, string> = {};
+        const response = {
+            end(chunk: string) {
+                expect(this.statusCode).toBe(404);
+                expect(chunk).toBe("Route GET /missing not found");
+            },
+            hasHeader: (name: string) => name.toLowerCase() in headers,
+            headersSent: false,
+            setHeader(name: string, value: string) {
+                headers[name.toLowerCase()] = value;
+            },
+        } as unknown as ServerResponse;
+
+        await createRouter().handler()(request, response);
+
+        // text/plain prevents the reflected request target from being MIME-sniffed as HTML.
+        expect(headers["content-type"]).toBe("text/plain; charset=utf-8");
+    });
 });

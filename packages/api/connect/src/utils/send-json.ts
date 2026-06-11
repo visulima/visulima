@@ -11,7 +11,8 @@ const sendJson = (response: ServerResponse, statusCode: number, jsonBody: unknow
     response.setHeader("content-type", "application/json; charset=utf-8");
 
     response.statusCode = statusCode;
-    response.end(JSON.stringify(jsonBody, undefined, 2));
+    // Emit compact JSON (no indentation) — pretty-printing inflates payload size and CPU on a hot path.
+    response.end(JSON.stringify(jsonBody));
 };
 
 export default sendJson;
