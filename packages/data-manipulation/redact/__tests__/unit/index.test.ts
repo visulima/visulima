@@ -819,6 +819,20 @@ describe(redact, () => {
             expect(result).toMatch("<FIRSTNAME> <LASTNAME> will be 30 on <DATE>");
         });
 
+        it("should anonymize a boxed String object as a string, not a char-indexed object", () => {
+            // Regression: a boxed `String` (typeof "object") previously fell into the generic
+            // object branch and was shallow-copied into an index-keyed object ({0:'J',1:'o',...}).
+            // It must be coerced to its primitive and anonymized like a real string — `toMatch`
+            // throws on a non-string receiver, so it also proves the result is a primitive string.
+            expect.assertions(1);
+
+            // eslint-disable-next-line unicorn/new-for-builtins, no-new-wrappers, sonarjs/no-primitive-wrappers -- intentionally exercising the boxed-String path
+            const input = new String("John Doe will be 30 on 2024-06-10.");
+            const result = redact(input, standardModifierRules);
+
+            expect(result).toMatch("<FIRSTNAME> <LASTNAME> will be 30 on <DATE>");
+        });
+
         describe("filtering a JSON parse error", () => {
             // eslint-disable-next-line vitest/require-hook,unicorn/error-message
             let jsonParseError = new SyntaxError();
@@ -909,7 +923,7 @@ describe(redact, () => {
     it("should return numbers unchanged", () => {
         expect.assertions(1);
 
-        const output = redact(42 as unknown, ["password"]);
+        const output = redact(42, ["password"]);
 
         expect(output).toBe(42);
     });
@@ -917,7 +931,7 @@ describe(redact, () => {
     it("should return booleans unchanged", () => {
         expect.assertions(1);
 
-        const output = redact(false as unknown, ["password"]);
+        const output = redact(false, ["password"]);
 
         expect(output).toBe(false);
     });
