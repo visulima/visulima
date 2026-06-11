@@ -81,17 +81,17 @@ console.log(bar.render());
 
 The `format` string supports the following tokens:
 
-| Token             | Description                                              |
-| ----------------- | -------------------------------------------------------- |
-| `{bar}`           | The rendered bar segment                                 |
-| `{percentage}`    | Integer percentage (0–100)                               |
-| `{value}`         | Current value                                            |
-| `{total}`         | Total value                                              |
-| `{eta}`           | Estimated seconds remaining (raw number)                 |
-| `{eta_formatted}` | Estimated time remaining, formatted (e.g. `1m30s`)       |
-| `{duration}`      | Elapsed time since `start()`, formatted (e.g. `1m30s`)   |
-| `{rate}`          | Processed items per second (rounded)                     |
-| `{<payloadKey>}`  | Any key present on the `payload` object                  |
+| Token             | Description                                            |
+| ----------------- | ------------------------------------------------------ |
+| `{bar}`           | The rendered bar segment                               |
+| `{percentage}`    | Integer percentage (0–100)                             |
+| `{value}`         | Current value                                          |
+| `{total}`         | Total value                                            |
+| `{eta}`           | Estimated seconds remaining (raw number)               |
+| `{eta_formatted}` | Estimated time remaining, formatted (e.g. `1m30s`)     |
+| `{duration}`      | Elapsed time since `start()`, formatted (e.g. `1m30s`) |
+| `{rate}`          | Processed items per second (rounded)                   |
+| `{<payloadKey>}`  | Any key present on the `payload` object                |
 
 ETA and rate use a sliding window of recent samples, so they stay accurate for variable-rate work such as downloads.
 
