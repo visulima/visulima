@@ -1,11 +1,10 @@
-/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-duplicate-type-constituents, @typescript-eslint/no-unsafe-assignment, import/no-commonjs */
-// ESM wrapper around the NAPI-RS CJS native binding
-import { createRequire } from "node:module";
+/* eslint-disable @typescript-eslint/naming-convention, @typescript-eslint/no-duplicate-type-constituents */
+// ESM wrapper around the NAPI-RS native binding
+import loadNativeRootBinding from "./load-native-root-binding";
 
-const require = createRequire(import.meta.url);
-
-// Load the native binding through the NAPI-RS generated platform-detecting loader
-const native = require("../../index.js");
+// Load the native binding through the NAPI-RS generated platform-detecting
+// loader, resolved from the package root regardless of bundle nesting.
+const native = loadNativeRootBinding(import.meta.url);
 
 export interface TerminalSize {
     cols: number;
