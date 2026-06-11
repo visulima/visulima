@@ -94,8 +94,12 @@ describe("tsconfig", () => {
             const cache = new Map<string, TsConfigResult>();
             const options = { cache };
 
-            const first: TsConfigResult = (name === "findTsConfig" ? await function_(distribution, options) : function_(distribution, options)) as TsConfigResult;
-            const second: TsConfigResult = (name === "findTsConfig" ? await function_(distribution, options) : function_(distribution, options)) as TsConfigResult;
+            const first: TsConfigResult = (
+                name === "findTsConfig" ? await function_(distribution, options) : function_(distribution, options)
+            ) as TsConfigResult;
+            const second: TsConfigResult = (
+                name === "findTsConfig" ? await function_(distribution, options) : function_(distribution, options)
+            ) as TsConfigResult;
 
             // Same object identity proves the cached entry was reused.
             expect(second).toBe(first);
@@ -111,7 +115,9 @@ describe("tsconfig", () => {
             const cache = new Map<string, TsConfigResult>();
             const options = { cache };
 
-            const first: TsConfigResult = (name === "findTsConfig" ? await function_(distribution, options) : function_(distribution, options)) as TsConfigResult;
+            const first: TsConfigResult = (
+                name === "findTsConfig" ? await function_(distribution, options) : function_(distribution, options)
+            ) as TsConfigResult;
 
             // Rewrite with different content and bump the mtime into the future.
             writeJsonSync(path, { compilerOptions: { strict: false } });
@@ -120,7 +126,9 @@ describe("tsconfig", () => {
 
             utimesSync(path, future, future);
 
-            const second: TsConfigResult = (name === "findTsConfig" ? await function_(distribution, options) : function_(distribution, options)) as TsConfigResult;
+            const second: TsConfigResult = (
+                name === "findTsConfig" ? await function_(distribution, options) : function_(distribution, options)
+            ) as TsConfigResult;
 
             expect(second).not.toBe(first);
             expect(second.config.compilerOptions?.strict).toBe(false);

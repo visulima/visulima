@@ -9,7 +9,8 @@ import type { TsConfigJsonResolved } from "./types";
 
 const TsConfigFileCache = new Map<string, TsConfigResult>();
 
-export type Options = ReadTsConfigOptions & {
+// eslint-disable-next-line import/exports-last -- Options is consumed by function signatures throughout this file; keep its declaration co-located with the types it composes
+export type Options = {
     /**
      * Cache parsed configs across calls.
      * - `true` — use a process-wide shared cache.
@@ -27,8 +28,9 @@ export type Options = ReadTsConfigOptions & {
      * default — supplying a custom name searches for that name only.
      */
     configFileName?: string;
-};
+} & ReadTsConfigOptions;
 
+// eslint-disable-next-line import/exports-last -- TsConfigResult is referenced earlier (TsConfigFileCache, Options) and by function signatures; keep its declaration here
 export type TsConfigResult = {
     config: TsConfigJsonResolved;
     path: string;
