@@ -46,10 +46,13 @@ export type Props = {
  * Spinner component that renders an animated loading indicator.
  */
 export default function Spinner({ type = "dots" }: Props): ReactElement {
-    const spinner = getSpinner(type);
-    const { frame } = useAnimation({ interval: spinner.interval });
+    // `getSpinner` returns `undefined` for an unknown name; fall back to the
+    // "dots" preset and, defensively, to a single blank frame.
+    const spinner = getSpinner(type) ?? getSpinner("dots");
+    const frames = spinner?.frames ?? [" "];
+    const { frame } = useAnimation({ interval: spinner?.interval ?? 80 });
 
-    return <Text>{spinner.frames[frame % spinner.frames.length]}</Text>;
+    return <Text>{frames[frame % frames.length]}</Text>;
 }
 
 export { Spinner };
