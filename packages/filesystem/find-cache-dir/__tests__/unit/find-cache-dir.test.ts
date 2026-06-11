@@ -261,12 +261,12 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
             // eslint-disable-next-line vitest/no-conditional-expect
             await expect(async () =>
                 (function_ as typeof findCacheDirectory)("this_dir_will_never_exist", { cwd: "/this_dir_will_never_exist", throwError: true }),
-            ).rejects.toThrow("ENOENT: No such file or directory found.");
+            ).rejects.toThrow("ENOENT: No package.json found searching upwards from '/this_dir_will_never_exist'.");
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect
             expect(() =>
                 (function_ as typeof findCacheDirectorySync)("this_dir_will_never_exist", { cwd: "/this_dir_will_never_exist", throwError: true }),
-            ).toThrow("ENOENT: No such file or directory found.");
+            ).toThrow("ENOENT: No package.json found searching upwards from '/this_dir_will_never_exist'.");
         }
     });
 
