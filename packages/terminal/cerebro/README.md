@@ -271,16 +271,16 @@ await cli.run();
 
 Pass any of the new `CliOptions` to swap the runtime context. Each override defaults to a sensible host value:
 
-| Option   | Default                      | Used for                                                  |
-| -------- | ---------------------------- | --------------------------------------------------------- |
-| `fs`     | `node:fs/promises` adapter   | Filesystem operations from `toolbox.fs`                   |
-| `exit`   | Runtime-agnostic exit helper | `toolbox.process.exit`                                    |
-| `env`    | Host `process.env`           | `toolbox.process.env` (does **not** affect `toolbox.env`) |
-| `stdin`  | `""` (empty string)          | `toolbox.process.stdin`                                   |
-| `cwd`    | Runtime cwd                  | `toolbox.process.cwd`                                     |
-| `logger` | Verbosity-aware console shim | `toolbox.logger` and `toolbox.console`                    |
-| `maxArguments`  | A very generous cap   | Upper bound on argv tokens; set `Number.POSITIVE_INFINITY` to disable entirely      |
-| `strictOptions` | `false`               | Reject unknown `--options` (before `--`) with a did-you-mean instead of swallowing  |
+| Option          | Default                      | Used for                                                                           |
+| --------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| `fs`            | `node:fs/promises` adapter   | Filesystem operations from `toolbox.fs`                                            |
+| `exit`          | Runtime-agnostic exit helper | `toolbox.process.exit`                                                             |
+| `env`           | Host `process.env`           | `toolbox.process.env` (does **not** affect `toolbox.env`)                          |
+| `stdin`         | `""` (empty string)          | `toolbox.process.stdin`                                                            |
+| `cwd`           | Runtime cwd                  | `toolbox.process.cwd`                                                              |
+| `logger`        | Verbosity-aware console shim | `toolbox.logger` and `toolbox.console`                                             |
+| `maxArguments`  | A very generous cap          | Upper bound on argv tokens; set `Number.POSITIVE_INFINITY` to disable entirely     |
+| `strictOptions` | `false`                      | Reject unknown `--options` (before `--`) with a did-you-mean instead of swallowing |
 
 ```ts
 const exitSpy = vi.fn();
