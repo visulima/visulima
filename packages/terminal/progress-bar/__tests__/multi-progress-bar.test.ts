@@ -465,4 +465,81 @@ describe("multiProgressBar", () => {
             expect(bar.getBarState().char).toBe("█");
         });
     });
+
+    describe("per-bar create options", () => {
+        it("should honour a per-bar width override", () => {
+            expect.assertions(1);
+
+            const multi = new MultiProgressBar();
+            const bar = multi.create(100, 50, undefined, { format: "[{bar}]", style: "ascii", width: 10 });
+
+            expect(bar.render()).toBe("[#####-----]");
+        });
+
+        it("should honour a per-bar format override", () => {
+            expect.assertions(1);
+
+            const multi = new MultiProgressBar();
+            const bar = multi.create(100, 50, { task: "build" }, { format: "{task} {percentage}%" });
+
+            expect(bar.render()).toBe("build 50%");
+        });
+
+        it("should honour a per-bar style override that differs from the multi default", () => {
+            expect.assertions(1);
+
+            const multi = new MultiProgressBar({ style: "ascii" });
+            const bar = multi.create(100, 50, undefined, { format: "[{bar}]", style: "braille", width: 10 });
+
+            // Braille style adds pill caps -> the right cap char must be present.
+            expect(bar.render()).toContain("⡷");
+        });
+
+        it("should forward the multi-level style to created bars (braille caps)", () => {
+            expect.assertions(1);
+
+            const multi = new MultiProgressBar({ format: "[{bar}]", style: "braille" });
+            const bar = multi.create(100, 50, undefined, { width: 10 });
+
+            expect(bar.render()).toContain("⡷");
+        });
+
+        it("should forward the multi-level barGlue to created bars", () => {
+            expect.assertions(1);
+
+            const multi = new MultiProgressBar({ barGlue: "-", format: "[{bar}]", style: "ascii" });
+            const bar = multi.create(100, 100, undefined, { width: 3 });
+
+            // 3 filled chars joined by "-" glue.
+            expect(bar.render()).toBe("[#-#-#]");
+        });
+    });
+
+    describe("composite warning", () => {
+        it("should warn when composite is enabled without a bracketed bar region", () => {
+            expect.assertions(2);
+
+            const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+            const multi = new MultiProgressBar({ composite: true, format: "{percentage}%" });
+
+            expect(multi).toBeDefined();
+            expect(warnSpy).toHaveBeenCalledTimes(1);
+
+            warnSpy.mockRestore();
+        });
+
+        it("should not warn when composite has a bracketed bar region", () => {
+            expect.assertions(2);
+
+            const warnSpy = vi.spyOn(console, "warn").mockImplementation(() => undefined);
+
+            const multi = new MultiProgressBar({ composite: true, format: "[{bar}]" });
+
+            expect(multi).toBeDefined();
+            expect(warnSpy).not.toHaveBeenCalled();
+
+            warnSpy.mockRestore();
+        });
+    });
 });
