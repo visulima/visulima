@@ -1,7 +1,7 @@
 {
     "name": "@visulima/storage",
     "version": "1.0.0-alpha.34",
-    "description": "Visulima upload - Store files in a web-accessible location via a simplified API. Can automatically scale and rotate images. Includes S3, Azure, GCS and local filesystem-based backends with the most convenient features of each.",
+    "description": "Server-side file-storage abstraction - store files in a web-accessible location via a simplified API. Includes S3, Azure, GCS, local filesystem and 20+ other backends with TUS/multipart/REST upload handlers and the most convenient features of each.",
     "keywords": [
         "anolilab",
         "astro",
@@ -60,11 +60,11 @@
         "vercel-edge",
         "visulima"
     ],
-    "homepage": "https://visulima.com/packages/uploads",
+    "homepage": "https://visulima.com/packages/storage",
     "repository": {
         "type": "git",
         "url": "https://github.com/visulima/visulima.git",
-        "directory": "packages/storage"
+        "directory": "packages/storage/storage"
     },
     "funding": [
         {

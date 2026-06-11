@@ -16,6 +16,7 @@ export type {
     DownloadOptions,
     DownloadRange,
     DownloadResult,
+    DownloadStreamResult,
     FileBody,
     FileObject,
     FilesHooks,

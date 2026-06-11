@@ -6,7 +6,7 @@
 
 </a>
 
-<h3 align="center">Visulima upload - Store files in a web-accessible location via a simplified API. Can automatically scale and rotate images. Includes S3, Azure, GCS and local filesystem-based backends with the most convenient features of each.</h3>
+<h3 align="center">Server-side file-storage abstraction - store files in a web-accessible location via a simplified API. Includes S3, Azure, GCS, local filesystem and 20+ other backends with TUS/multipart/REST upload handlers and the most convenient features of each.</h3>
 
 <!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
 
@@ -56,6 +56,9 @@ await files.upload("avatars/abc.png", buffer, { contentType: "image/png" });
 
 const url = await files.url("avatars/abc.png", { expiresIn: 900 });
 const { body } = await files.download("avatars/abc.png");
+
+// Stream large objects without buffering the whole payload in memory:
+const { body: stream } = await files.downloadStream("avatars/abc.png");
 ```
 
 Swap the adapter to change provider — everything else stays the same:
@@ -68,7 +71,7 @@ new Files({ adapter: new DiskStorage({ directory: "./uploads" }) });
 new Files({ adapter: new BunnyStorage({ zone, accessKey, region: "de" }) });
 ```
 
-→ See the [Files facade reference](https://visulima.com/docs/packages/storage/files-facade) for the full method surface (`upload`, `download`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`, `.raw`) and body-type matrix. `list({ delimiter: "/" })` returns directory-style `{ files, prefixes }`; pass `{ readonly: true }` (or call `files.readonly()`) for a locked view, and read `files.capabilities` to branch on adapter support. Top-level `transfer(source, destination)` streams whole buckets between adapters; `sync(source, destination)` does an incremental, optionally-pruning mirror (with `dryRun`).
+→ See the [Files facade reference](https://visulima.com/docs/packages/storage/files-facade) for the full method surface (`upload`, `download`, `downloadStream`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `listAll`, `url`, `signedUploadUrl`, `.raw`) and body-type matrix. `list({ delimiter: "/" })` returns directory-style `{ files, prefixes }`; pass `{ readonly: true }` (or call `files.readonly()`) for a locked view, and read `files.capabilities` to branch on adapter support. Top-level `transfer(source, destination)` streams whole buckets between adapters; `sync(source, destination)` does an incremental, optionally-pruning mirror (with `dryRun`).
 
 ## Building an upload server?
 
