@@ -83,32 +83,45 @@ Start your dev server and press **`Alt`+`Shift`+`D`** to open the toolbar.
 | **Tailwind**      | Browse all resolved Tailwind CSS design tokens and their values               |
 | **Settings**      | Theme, toolbar behaviour, panel sizing, and custom keyboard shortcuts         |
 
-All apps are enabled by default. Disable individual apps via plugin options:
+Most apps are **disabled by default** to keep the toolbar minimal. Out of the box
+only **Settings** and **Vite Config** are shown (and **Annotations**, which is
+auto-enabled whenever the inspector is). Opt into the apps you want:
 
 ```ts
 devToolbar({
     apps: {
-        performance: false,
-        seo: false,
+        inspector: true,
+        a11y: true,
+        seo: true,
     },
 });
 ```
+
+> Enabling `inspector` also auto-enables `annotations` (the inspector's badge
+> links to the annotations panel). Set `annotations: false` to suppress it.
 
 ## Plugin Options
 
 ```ts
 devToolbar({
-    // Built-in apps (all true by default)
+    // Master switch — `false` returns an empty plugin array, disabling the whole
+    // toolbar without removing it from vite.config.ts (handy for CI/preview).
+    enabled: true,
+
+    // Built-in apps. Only `settings` and `viteConfig` default to true; everything
+    // else defaults to false. Set an app to true to enable it.
     apps: {
-        a11y: true,
-        moduleGraph: true,
-        performance: true,
-        seo: true,
-        settings: true,
-        timeline: true,
-        viteConfig: true,
-        inspector: true,
-        tailwind: true,
+        a11y: false,
+        annotations: false, // auto-enabled when `inspector` is true
+        assets: false,
+        inspector: false,
+        moduleGraph: false,
+        performance: false,
+        seo: false,
+        settings: true, // enabled by default
+        tailwind: false,
+        timeline: false,
+        viteConfig: true, // enabled by default
     },
 
     // Register custom apps
@@ -118,9 +131,10 @@ devToolbar({
     placement: "bottom-center", // "bottom-left" | "bottom-center" | "bottom-right"
     position: "bottom", // "bottom" | "top" | "left" | "right"
 
-    // Panel defaults (users can override via Settings app)
-    height: 60, // % of viewport height
-    width: 80, // % of viewport width
+    // Panel defaults (users can override via Settings app).
+    // height/width are clamped to the 20–95 range.
+    height: 60, // % of viewport height (20–95)
+    width: 80, // % of viewport width (20–95)
     minimizePanelInactive: 5000, // ms; -1 = never auto-hide
     closeOnOutsideClick: true,
 
@@ -135,6 +149,11 @@ devToolbar({
 
     // Force a specific editor for "Open in editor" (auto-detected if omitted)
     editor: "webstorm",
+
+    // `readFile` RPC policy. Restricted to a curated extension allowlist by
+    // default. Set to `false` to remove it entirely (recommended with `vite --host`),
+    // or override the allowed extensions.
+    readFile: { extensions: ["ts", "tsx", "js", "jsx", "css", "json", "md"] },
 
     // JSX source injection for click-to-source in the inspector
     injectSource: {
@@ -208,7 +227,35 @@ devToolbar({
 const routes = await helpers.rpc.getRoutes();
 ```
 
-Built-in RPC functions: `getViteConfig()`, `getModuleGraph()`, `openInEditor(file, line, col)`.
+Built-in RPC functions:
+
+| Function                              | Returns                                           |
+| ------------------------------------- | ------------------------------------------------- |
+| `getViteConfig()`                     | Fully resolved Vite config (serializable subset)  |
+| `getModuleGraph()`                    | Vite's live module dependency graph               |
+| `getStaticAssets()`                   | Files under `publicDir` (capped at 5000)          |
+| `getTailwindConfig()`                 | Resolved Tailwind theme tokens                    |
+| `openInEditor(file, line?, col?)`     | Opens the file in the configured editor           |
+| `readFile(path)`                      | Text file under the project root (allowlisted)    |
+| `getAnnotations()`                    | All saved annotations                             |
+| `createAnnotation(data)`              | Creates an annotation                             |
+| `updateAnnotation(id, data)`          | Updates an annotation                             |
+| `deleteAnnotation(id)`                | Deletes an annotation + its screenshot            |
+| `saveScreenshot(id, dataUrl)`         | Stores a screenshot, returns its relative path    |
+| `getScreenshot(id)`                   | Returns a screenshot as a base64 data URL         |
+
+## Security
+
+The dev toolbar runs only during `vite dev` and is stripped from production builds
+(`removeDevtoolsOnBuild`, default `true`). Still, be aware of the RPC surface:
+
+- **`readFile` returns project files to any connected WebSocket client.** It is
+  confined to the project root and a curated extension allowlist (no `.env`,
+  lockfiles, or key material by default), but if you run the dev server with
+  `vite --host` (e.g. for mobile testing) **any device on your LAN can call it**.
+  Disable it (`readFile: false`) or narrow `readFile.extensions` in that scenario.
+- Screenshot/annotation writes are path-traversal hardened and symlink escapes are
+  rejected; `openInEditor` confines paths to the project root and never shells out.
 
 ## Global API
 

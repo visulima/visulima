@@ -6,7 +6,7 @@ import _traverse from "@babel/traverse";
 import * as t from "@babel/types";
 import { normalizePath } from "vite";
 
-import matcher from "./matcher";
+import matcher, { compileMatcher } from "./matcher";
 
 // CJS/ESM interop — @babel/traverse and @babel/generator ship CJS with a .default wrapper
 
@@ -110,7 +110,7 @@ const transformJSX = (
     element: NodePath<t.JSXOpeningElement>,
     propsName: string | undefined,
     file: string,
-    ignoreComponents: (RegExp | string)[],
+    isIgnoredComponent: (value: string) => boolean,
     posMap: PositionMap | undefined,
     occurrenceCounter: Map<string, number> | undefined,
 ): boolean => {
@@ -141,7 +141,7 @@ const transformJSX = (
         || nameOfElement === "html"
         || nameOfElement === "head"
         || nameOfElement === "body"
-        || matcher(ignoreComponents, nameOfElement)
+        || isIgnoredComponent(nameOfElement)
     ) {
         return false;
     }
@@ -180,10 +180,14 @@ const transform = (ast: ReturnType<typeof parse>, file: string, ignoreComponents
     // position map built from the original source.
     const occurrenceCounter = posMap ? new Map<string, number>() : undefined;
 
+    // Precompile the ignore globs once per file instead of recompiling them for
+    // every JSX opening element (a large component can contain hundreds).
+    const isIgnoredComponent = compileMatcher(ignoreComponents);
+
     const visitJSX
         = (propsName: string | undefined) =>
             (element: NodePath<t.JSXOpeningElement>): void => {
-                if (transformJSX(element, propsName, file, ignoreComponents, posMap, occurrenceCounter)) {
+                if (transformJSX(element, propsName, file, isIgnoredComponent, posMap, occurrenceCounter)) {
                     didTransform = true;
                 }
             };

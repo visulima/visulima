@@ -23,6 +23,10 @@ const globToRegex = (glob: string): RegExp => {
 /**
  * Returns true if `value` matches any of the given patterns.
  * Strings are treated as glob patterns; RegExps are tested directly.
+ *
+ * Note: string patterns are compiled to a RegExp on every call. For hot paths
+ * that match the same pattern list many times (e.g. one JSX element per call),
+ * precompile the patterns once with {@link compileMatcher} and reuse the result.
  */
 const matcher = (patterns: (RegExp | string)[], value: string): boolean =>
     patterns.some((p) => {
@@ -33,4 +37,17 @@ const matcher = (patterns: (RegExp | string)[], value: string): boolean =>
         return globToRegex(p).test(value);
     });
 
+/**
+ * Precompile a list of glob/RegExp patterns into a single predicate so the glob
+ * patterns are converted to RegExps exactly once. Reuse the returned function
+ * across many values (e.g. every JSX opening element in a file) to avoid
+ * recompiling the same globs on every invocation.
+ */
+export const compileMatcher = (patterns: (RegExp | string)[]): ((value: string) => boolean) => {
+    const compiled = patterns.map((p) => (p instanceof RegExp ? p : globToRegex(p)));
+
+    return (value: string): boolean => compiled.some((re) => re.test(value));
+};
+
+export { globToRegex };
 export default matcher;

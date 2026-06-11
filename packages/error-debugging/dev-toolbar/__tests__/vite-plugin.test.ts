@@ -159,6 +159,22 @@ describe("devToolbar()", () => {
             expect(main.transformIndexHtml).toBeDefined();
         });
 
+        it("returns an empty array when enabled is false", () => {
+            expect.hasAssertions();
+
+            const plugins = devToolbar({ enabled: false });
+
+            expect(plugins).toHaveLength(0);
+        });
+
+        it("returns the full plugin array when enabled is true", () => {
+            expect.hasAssertions();
+
+            const plugins = devToolbar({ enabled: true });
+
+            expect(plugins).toHaveLength(3);
+        });
+
         it("works with no options passed (defaults apply)", () => {
             expect.hasAssertions();
 
@@ -296,7 +312,7 @@ describe("devToolbar()", () => {
             (main.configResolved as PluginHookFn)(buildMockResolvedConfig());
             (main.configureServer as PluginHookFn)(server);
 
-            expect(mockCreateServerRPCContext).toHaveBeenCalledWith(server, undefined, { editor: undefined });
+            expect(mockCreateServerRPCContext).toHaveBeenCalledWith(server, undefined, { editor: undefined, readFile: undefined });
         });
 
         it("registers a connection listener on server.ws", () => {
@@ -463,6 +479,44 @@ describe("devToolbar()", () => {
 
             // annotations auto-enabled when inspector is enabled
             expect(apps["annotations"]).toBe(true);
+        });
+
+        it("clamps out-of-range height/width into the 20-95 range", async () => {
+            expect.hasAssertions();
+
+            const plugins = devToolbar({ height: 5, width: 200 });
+            const main = findPlugin(plugins, "@visulima/dev-toolbar");
+
+            (main.configResolved as PluginHookFn)(buildMockResolvedConfig());
+
+            const raw = await (main.load as PluginHookFn).call(
+                { addWatchFile: vi.fn() },
+                "\0virtual:visulima-dev-toolbar-options",
+            ) as string;
+
+            const exported = JSON.parse(raw.replace(/^export default /, "").replace(/;$/, "")) as Record<string, unknown>;
+
+            expect(exported["height"]).toBe(20);
+            expect(exported["width"]).toBe(95);
+        });
+
+        it("falls back to defaults for non-finite height/width", async () => {
+            expect.hasAssertions();
+
+            const plugins = devToolbar({ height: Number.NaN, width: undefined });
+            const main = findPlugin(plugins, "@visulima/dev-toolbar");
+
+            (main.configResolved as PluginHookFn)(buildMockResolvedConfig());
+
+            const raw = await (main.load as PluginHookFn).call(
+                { addWatchFile: vi.fn() },
+                "\0virtual:visulima-dev-toolbar-options",
+            ) as string;
+
+            const exported = JSON.parse(raw.replace(/^export default /, "").replace(/;$/, "")) as Record<string, unknown>;
+
+            expect(exported["height"]).toBe(60);
+            expect(exported["width"]).toBe(80);
         });
     });
 
