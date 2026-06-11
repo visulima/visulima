@@ -6,17 +6,34 @@
  * Copyright (c) 2023, webdiscus
  */
 
+import type { ColorSupportLevel } from "@visulima/is-ansi-color-supported";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import ansiRegex from "ansi-regex";
 
-import { baseColors, baseStyles, styleMethods } from "./ansi-codes";
+import { createAnsiCodes, stdoutColorLevel } from "./ansi-codes";
 import type { ColorData, ColorizeType } from "./types";
 import { stringReplaceAll } from "./util/string-replace-all";
 
-const styles: Record<string, object> = {};
+type ColorizeProperties = { close: string; closeStack: string; open: string; openStack: string; props: ColorizeProperties };
 
-// eslint-disable-next-line unicorn/no-null -- Object.setPrototypeOf requires null, not undefined
-let stylePrototype: object | null = null;
+/**
+ * Options accepted by the {@link Colorize} constructor.
+ */
+type ColorizeOptions = {
+    /**
+     * Force a specific color-support level instead of auto-detecting it from the
+     * terminal at import time. Useful to force TrueColor for snapshot tests, to
+     * disable color when piping to a file, or to render at a chosen level at runtime.
+     *
+     * - `0` — disabled (no ANSI codes)
+     * - `1` — basic 16 colors
+     * - `2` — 256 colors
+     * - `3` — TrueColor (16 million colors)
+     *
+     * Defaults to the auto-detected stdout level.
+     */
+    level?: ColorSupportLevel;
+};
 
 const wrapText = (
     strings: ArrayLike<string> | ReadonlyArray<string> | number | string | { raw: ArrayLike<string> | ReadonlyArray<string> },
@@ -37,7 +54,7 @@ const wrapText = (
         string = String.raw(strings as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
     }
 
-    if (string.includes("\u001B")) {
+    if (string.includes("")) {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
         for (let currentProperties = properties; currentProperties; currentProperties = currentProperties.props) {
             string = stringReplaceAll(string, currentProperties.close, currentProperties.open);
@@ -52,33 +69,54 @@ const wrapText = (
     return properties.openStack + string + properties.closeStack;
 };
 
-type ColorizeProperties = { close: string; closeStack: string; open: string; openStack: string; props: ColorizeProperties };
-
-const createStyle = (
-    { props }: { props?: ColorizeProperties },
-    { close, open }: ColorData,
-): {
-    (strings: ArrayLike<string> | ReadonlyArray<string> | string, ...values: string[]): string;
-    close: string;
-    open: string;
-    props: { close: string; closeStack: string; open: string; openStack: string; props?: ColorizeProperties };
-} => {
-    const openStack: string = (props?.openStack ?? "") + open;
-    const closeStack: string = close + (props?.closeStack ?? "");
-
-    const style = (strings: ArrayLike<string> | ReadonlyArray<string> | string, ...values: string[]) => wrapText(strings, values, style.props);
-
-    Object.setPrototypeOf(style, stylePrototype);
-
-    style.props = { close, closeStack, open, openStack, props } as ColorizeProperties;
-    style.open = openStack;
-    style.close = closeStack;
-
-    return style;
-};
+/**
+ * The Colorize class. A `new Colorize()` instance is a callable that styles
+ * strings via chained getters (`red.bold`), style methods (`hex`, `rgb`, …) and
+ * tagged templates.
+ *
+ * Unlike the module-level singleton, each instance owns its own style prototype
+ * and color codes, so creating one with a custom `level` does not affect any
+ * other instance.
+ */
+type ColorizeConstructor = new (options?: ColorizeOptions) => ColorizeType;
 
 // eslint-disable-next-line func-names
-const Colorize = function () {
+const Colorize = function (this: ColorizeType, options?: ColorizeOptions) {
+    const level: ColorSupportLevel = options?.level ?? stdoutColorLevel;
+
+    const { baseColors, baseStyles, styleMethods } = createAnsiCodes(level);
+
+    // Per-instance style descriptors + prototype. Building these on the instance
+    // (instead of mutating module-level shared state) means user-created instances
+    // never stomp on each other, and the work is scoped to the level being used.
+    const styles: Record<string, object> = {};
+
+    // eslint-disable-next-line unicorn/no-null -- Object.setPrototypeOf requires null, not undefined
+    let stylePrototype: object | null = null;
+
+    const createStyle = (
+        { props }: { props?: ColorizeProperties },
+        { close, open }: ColorData,
+    ): {
+        (strings: ArrayLike<string> | ReadonlyArray<string> | string, ...values: string[]): string;
+        close: string;
+        open: string;
+        props: { close: string; closeStack: string; open: string; openStack: string; props?: ColorizeProperties };
+    } => {
+        const openStack: string = (props?.openStack ?? "") + open;
+        const closeStack: string = close + (props?.closeStack ?? "");
+
+        const style = (strings: ArrayLike<string> | ReadonlyArray<string> | string, ...values: string[]) => wrapText(strings, values, style.props);
+
+        Object.setPrototypeOf(style, stylePrototype);
+
+        style.props = { close, closeStack, open, openStack, props } as ColorizeProperties;
+        style.open = openStack;
+        style.close = closeStack;
+
+        return style;
+    };
+
     // eslint-disable-next-line unicorn/prefer-native-coercion-functions
     const self = (string_: number | string) => String(string_);
 
@@ -110,6 +148,20 @@ const Colorize = function () {
         };
     }
 
+    // eslint-disable-next-line guard-for-in,no-restricted-syntax
+    for (const name in styleMethods) {
+        styles[name as keyof typeof styleMethods] = {
+            get() {
+                return (...arguments_: (number | string)[]) =>
+                    // @ts-expect-error: TODO: fix typing of `arguments_`
+                    createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
+            },
+        };
+    }
+
+    styles.ansi256 = styles.fg as object;
+    styles.bgAnsi256 = styles.bg as object;
+
     // This needs to be the last thing we do, so that the prototype is fully populated.
     stylePrototype = Object.defineProperties({}, styles);
 
@@ -117,20 +169,10 @@ const Colorize = function () {
 
     return self;
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} as any as new () => ColorizeType;
+} as any as ColorizeConstructor;
 
-// eslint-disable-next-line guard-for-in,no-restricted-syntax
-for (const name in styleMethods) {
-    styles[name as keyof typeof styleMethods] = {
-        get() {
-            return (...arguments_: (number | string)[]) =>
-                // @ts-expect-error: TODO: fix typing of `arguments_`
-                createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
-        },
-    };
-}
+export type { ColorizeConstructor, ColorizeOptions };
 
-styles.ansi256 = styles.fg as object;
-styles.bgAnsi256 = styles.bg as object;
+export { stderrColorLevel, stdoutColorLevel } from "./ansi-codes";
 
 export default Colorize;

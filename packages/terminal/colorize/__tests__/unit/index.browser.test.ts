@@ -141,10 +141,19 @@ describe("functional tests", () => {
         expect(received).toStrictEqual(expected);
     });
 
-    it(`should return the input unchanged from strip()`, () => {
+    it(`should return a string without ANSI codes unchanged from strip()`, () => {
         expect.assertions(1);
 
         const received = colorize.strip("foo");
+        const expected = "foo";
+
+        expect(received).toStrictEqual(expected);
+    });
+
+    it(`should strip ANSI escape codes from a string`, () => {
+        expect.assertions(1);
+
+        const received = colorize.strip("[31mfoo[39m");
         const expected = "foo";
 
         expect(received).toStrictEqual(expected);

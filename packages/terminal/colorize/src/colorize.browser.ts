@@ -1,3 +1,6 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import ansiRegex from "ansi-regex";
+
 import { baseColors, baseStyles, styleMethods } from "./css-code";
 import type { ColorizeType } from "./types";
 
@@ -93,7 +96,10 @@ const WebColorize = function () {
     // eslint-disable-next-line unicorn/prefer-native-coercion-functions
     const self = (string_: number | string) => String(string_);
 
-    self.strip = (value: string): string => value;
+    // Strip ANSI escape codes just like the server build. The browser build styles
+    // via CSS `%c` directives rather than ANSI, but strings can still arrive with
+    // ANSI codes (e.g. forwarded server output), so this must not be a no-op.
+    self.strip = (value: string): string => value.replaceAll(ansiRegex(), "");
 
     // eslint-disable-next-line guard-for-in,no-restricted-syntax
     for (const name in baseColors) {

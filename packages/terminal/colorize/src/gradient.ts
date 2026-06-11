@@ -40,17 +40,21 @@ export const gradient = (
             colorCache.set(colorsCount, cached);
         }
 
-        const colors = [...cached];
-
+        // Walk the cached color list with an index cursor instead of copying the
+        // array and calling `Array#shift()` per character (both O(n)), which made
+        // long-string gradients quadratic. Each color is a single-level rgb() style,
+        // so concatenating `open + char + close` directly skips the wrapText machinery.
+        let cursor = 0;
         let result = "";
 
         for (const s of string_) {
             if (WHITESPACE_TEST.test(s)) {
                 result += s;
             } else {
-                const color = colors.shift();
+                const color = cached[cursor] as ColorizeType;
 
-                result += (color as ColorizeType)(s);
+                cursor += 1;
+                result += color.open + s + color.close;
             }
         }
 
@@ -95,12 +99,20 @@ export const multilineGradient = (
         const results: string[] = [];
 
         for (const line of lines) {
-            const lineColors = [...colors];
-
+            // Reset the cursor per line (each line restarts the gradient) but reuse
+            // the cached color array directly instead of copying + shifting.
+            let cursor = 0;
             let lineResult = "";
 
             for (const l of line) {
-                lineResult += WHITESPACE_TEST.test(l) ? l : (lineColors.shift() as ColorizeType)(l);
+                if (WHITESPACE_TEST.test(l)) {
+                    lineResult += l;
+                } else {
+                    const color = colors[cursor] as ColorizeType;
+
+                    cursor += 1;
+                    lineResult += color.open + l + color.close;
+                }
             }
 
             results.push(lineResult);
