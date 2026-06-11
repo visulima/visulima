@@ -35,6 +35,51 @@ export const listRules = async (options?: ScanOptions): Promise<RuleInfo[]> => {
 };
 
 /**
+ * Discover every tag (preset/category) present in the effective ruleset, with
+ * the number of rules carrying each. Lets a CLI build a `--list-presets` /
+ * `--list-tags` UX without hand-rolling the aggregation, and mirrors the tags
+ * accepted by the `tag:&lt;name>` selectors in `rules.enable`/`include`/`exclude`.
+ * Sorted by descending rule count, then tag name for stable output.
+ *
+ * Derived from the resolved gitleaks-shaped config (the same source
+ * `tag:` selectors expand against) — not the native `listRules()`, whose
+ * `RuleInfo.tags` is not populated for the bundled set.
+ */
+export const listTags = (options?: ScanOptions): { count: number; tag: string }[] => {
+    const resolved = resolveConfig({
+        config: options?.config?.inline,
+        configPath: options?.config?.path,
+        extendBundled: options?.config?.extendBundled,
+    });
+    const counts = new Map<string, number>();
+
+    for (const rule of resolved.rules ?? []) {
+        // eslint-disable-next-line sonarjs/different-types-comparison -- Defensive: `rule` is typed `GitleaksRule` but the underlying config holds `unknown` at runtime; guard against `null` slipping through.
+        if (typeof rule !== "object" || rule === null) {
+            continue;
+        }
+
+        const { tags } = rule as { tags?: unknown };
+
+        if (!Array.isArray(tags)) {
+            continue;
+        }
+
+        for (const tag of tags) {
+            if (typeof tag === "string") {
+                counts.set(tag, (counts.get(tag) ?? 0) + 1);
+            }
+        }
+    }
+
+    return [...counts.entries()]
+        .map(([tag, count]) => {
+            return { count, tag };
+        })
+        .toSorted((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+};
+
+/**
  * Report every non-HTTP validator type that appears in the current ruleset,
  * along with the optional peer-dep users need to install to verify findings
  * from those rules. Returns an empty array when the ruleset has no validators
@@ -104,9 +149,11 @@ export const scanString = async (content: string, file: string, options?: ScanOp
     return postProcess(raw, prepared, options);
 };
 
+export { buildBaselineSet, createBaseline, loadBaselineSet, resolveBaselineSet, writeBaseline } from "./baseline";
 export { bundledConfigPath, type GitleaksConfig } from "./config-loader";
 export { fingerprint, legacyFingerprint } from "./fingerprint";
 export { isLockFile, isNotAlphanumericString, isPotentialUuid, isSequentialString } from "./heuristics";
+export { type SarifLog, toSarif, type ToSarifOptions } from "./sarif";
 export { transformYamlBlockScalars } from "./transformers/yaml";
 export type { ValidatorReport } from "./transports";
 export type { Confidence, Finding, RuleInfo, ScanOptions, SkippedRule, ValidationStatus } from "./types";

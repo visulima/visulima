@@ -26,21 +26,63 @@ const asObject = (value: unknown): Record<string, unknown> | undefined => {
     return undefined;
 };
 
+/** Optional knobs for {@link validateFinding}. */
+export interface ValidateFindingOptions {
+    /**
+     * Host allowlist for HTTP validators. When set, a rendered request whose
+     * host is not in the set is skipped without firing — closes the
+     * untrusted-config secret-exfiltration channel.
+     */
+    allowedHosts?: ReadonlySet<string>;
+    /** `depends_on_rule`-injected template vars (e.g. `AKID` from `aws.1`). */
+    extraVariables?: Record<string, string>;
+    /** Per-authority outbound-HTTP gate shared across the validation pool. */
+    perHostLimiter?: PerHostLimiter;
+    /** Abort signal — propagated to the underlying `fetch()`. */
+    signal?: AbortSignal;
+}
+
 /**
  * Evaluate a single rule's validation block against the candidate secret.
  * Returns a terminal `ValidationStatus`.
  *
  * `extraVariables` carries `depends_on_rule`-injected template vars (e.g.
  * `AKID` from `aws.1` when validating `aws.2`). `perHostLimiter`, when
- * supplied, gates outbound HTTP by authority.
+ * supplied, gates outbound HTTP by authority. `allowedHosts`, when supplied,
+ * restricts which hosts an HTTP validator may contact.
+ *
+ * Two call forms are accepted: the options-object form
+ * `validateFinding(block, secret, { signal, extraVariables, perHostLimiter, allowedHosts })`,
+ * and the legacy positional form
+ * `validateFinding(block, secret, signal, extraVariables, perHostLimiter)`.
  */
-export const validateFinding = async (
+export async function validateFinding(ruleValidation: unknown, secret: string, options?: ValidateFindingOptions): Promise<ValidationStatus>;
+export async function validateFinding(
     ruleValidation: unknown,
     secret: string,
     signal?: AbortSignal,
-    extraVariables: Record<string, string> = {},
+    extraVariables?: Record<string, string>,
     perHostLimiter?: PerHostLimiter,
-): Promise<ValidationStatus> => {
+): Promise<ValidationStatus>;
+export async function validateFinding(
+    ruleValidation: unknown,
+    secret: string,
+    optionsOrSignal?: AbortSignal | ValidateFindingOptions,
+    legacyExtraVariables?: Record<string, string>,
+    legacyPerHostLimiter?: PerHostLimiter,
+): Promise<ValidationStatus> {
+    let options: ValidateFindingOptions;
+
+    if (optionsOrSignal instanceof AbortSignal) {
+        options = { extraVariables: legacyExtraVariables, perHostLimiter: legacyPerHostLimiter, signal: optionsOrSignal };
+    } else if (optionsOrSignal === undefined && (legacyExtraVariables !== undefined || legacyPerHostLimiter !== undefined)) {
+        // Legacy positional call with an explicit `undefined` signal slot.
+        options = { extraVariables: legacyExtraVariables, perHostLimiter: legacyPerHostLimiter };
+    } else {
+        options = optionsOrSignal ?? {};
+    }
+
+    const { allowedHosts, extraVariables = {}, perHostLimiter, signal } = options;
     const validation = asObject(ruleValidation);
 
     if (!validation) {
@@ -60,6 +102,7 @@ export const validateFinding = async (
 
     if (type === "Http") {
         return runHttpValidation({
+            allowedHosts,
             extraVariables,
             perHostLimiter,
             secret,
@@ -77,9 +120,10 @@ export const validateFinding = async (
     }
 
     return "skipped";
-};
+}
 
 export type { ValidationStatus } from "../types";
 export { ConcurrencyLimiter } from "./concurrency";
+export { runHttpValidation } from "./http";
 export { PerHostLimiter } from "./per-host-limiter";
 export { renderTemplate } from "./template";

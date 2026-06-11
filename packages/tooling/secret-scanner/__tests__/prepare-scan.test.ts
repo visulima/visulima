@@ -1,7 +1,43 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 
 import type { GitleaksConfig } from "../src/config-loader";
-import { buildRuleMeta } from "../src/prepare-scan";
+import { buildRuleMeta, prepareScan, resetPrepareScanCacheForTests } from "../src/prepare-scan";
+
+afterEach(() => {
+    resetPrepareScanCacheForTests();
+});
+
+describe("prepareScan — memoization", () => {
+    it("returns the same prepared bundle for two calls with equivalent non-inline options", () => {
+        expect.assertions(1);
+
+        const options = { config: { minConfidence: "medium" as const } };
+        const first = prepareScan(options);
+        const second = prepareScan({ config: { minConfidence: "medium" as const } });
+
+        // Cache hit → identical object reference (no re-resolve / re-buildRuleMeta).
+        expect(second).toBe(first);
+    });
+
+    it("does not cache inline configs (rebuilds each call)", () => {
+        expect.assertions(1);
+
+        const inline: GitleaksConfig = { rules: [{ id: "custom.rule", regex: "x" }] };
+        const first = prepareScan({ config: { extendBundled: false, inline } });
+        const second = prepareScan({ config: { extendBundled: false, inline } });
+
+        expect(second).not.toBe(first);
+    });
+
+    it("misses the cache when a config-shaping option differs", () => {
+        expect.assertions(1);
+
+        const a = prepareScan({ config: { minConfidence: "low" as const } });
+        const b = prepareScan({ config: { minConfidence: "high" as const } });
+
+        expect(b).not.toBe(a);
+    });
+});
 
 describe(buildRuleMeta, () => {
     it("maps a well-formed rule's checksum, pattern, validation, and deps", () => {

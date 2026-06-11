@@ -1,10 +1,17 @@
-import { mkdtemp, rm, writeFile } from "node:fs/promises";
+import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { resolve } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { loadBaselineSet } from "../src/baseline";
+import {
+    buildBaselineSet,
+    createBaseline,
+    loadBaselineSet,
+    resetBaselineCacheForTests,
+    resolveBaselineSet,
+    writeBaseline,
+} from "../src/baseline";
 import { fingerprint, legacyFingerprint } from "../src/fingerprint";
 import type { Finding } from "../src/types";
 
@@ -31,6 +38,7 @@ let tmp: string;
 
 beforeEach(async () => {
     tmp = await mkdtemp(resolve(tmpdir(), "secret-scanner-baseline-test-"));
+    resetBaselineCacheForTests();
 });
 
 afterEach(async () => {
@@ -147,5 +155,118 @@ describe(loadBaselineSet, () => {
 
         // Only the valid entry makes it through → 2 fingerprints (content + legacy).
         expect(set.size).toBe(2);
+    });
+
+    it("caches by path + mtime and re-reads after the file changes", async () => {
+        expect.assertions(3);
+
+        const baselinePath = resolve(tmp, "cached.json");
+        const first = sampleFinding({ ruleId: "rule-a" });
+
+        await writeFile(baselinePath, JSON.stringify([first]));
+
+        const set1 = await loadBaselineSet(baselinePath);
+
+        expect(set1.has(fingerprint(first))).toBe(true);
+
+        // Second read with the file unchanged returns the *same* Set instance
+        // (cache hit — no re-parse).
+        const set2 = await loadBaselineSet(baselinePath);
+
+        expect(set2).toBe(set1);
+
+        // Rewrite with different content + a bumped mtime → cache must invalidate.
+        const second = sampleFinding({ ruleId: "rule-b" });
+
+        await writeFile(baselinePath, JSON.stringify([second]));
+        // Force a distinct mtime even on coarse-grained filesystems.
+        await new Promise((_resolve) => {
+            setTimeout(_resolve, 10);
+        });
+        await writeFile(baselinePath, JSON.stringify([second]));
+
+        const set3 = await loadBaselineSet(baselinePath);
+
+        expect(set3.has(fingerprint(second))).toBe(true);
+    });
+});
+
+describe(buildBaselineSet, () => {
+    it("indexes inline findings under both fingerprints", () => {
+        expect.assertions(3);
+
+        const finding = sampleFinding();
+        const set = buildBaselineSet([finding]);
+
+        expect(set.size).toBe(2);
+        expect(set.has(fingerprint(finding))).toBe(true);
+        expect(set.has(legacyFingerprint(finding))).toBe(true);
+    });
+
+    it("skips non-finding entries", () => {
+        expect.assertions(1);
+
+        // eslint-disable-next-line unicorn/no-null -- exercise the non-object guard.
+        const set = buildBaselineSet([sampleFinding(), { junk: true } as never, null as never]);
+
+        expect(set.size).toBe(2);
+    });
+});
+
+describe(resolveBaselineSet, () => {
+    it("returns an empty set for undefined", async () => {
+        expect.assertions(1);
+
+        await expect(resolveBaselineSet(undefined)).resolves.toStrictEqual(new Set());
+    });
+
+    it("builds a set from inline findings", async () => {
+        expect.assertions(1);
+
+        const finding = sampleFinding();
+        const set = await resolveBaselineSet([finding]);
+
+        expect(set.has(fingerprint(finding))).toBe(true);
+    });
+
+    it("returns a pre-computed fingerprint Set as-is", async () => {
+        expect.assertions(1);
+
+        const pre = new Set(["abc123"]);
+
+        await expect(resolveBaselineSet(pre)).resolves.toBe(pre);
+    });
+
+    it("loads from a path", async () => {
+        expect.assertions(1);
+
+        const finding = sampleFinding();
+        const baselinePath = resolve(tmp, "from-path.json");
+
+        await writeFile(baselinePath, JSON.stringify([finding]));
+
+        const set = await resolveBaselineSet(baselinePath);
+
+        expect(set.has(fingerprint(finding))).toBe(true);
+    });
+});
+
+describe(createBaseline, () => {
+    it("serialises findings as a pretty-printed JSON array round-trippable by the loader", async () => {
+        expect.assertions(2);
+
+        const finding = sampleFinding();
+        const json = createBaseline([finding]);
+
+        expect(json.endsWith("\n")).toBe(true);
+
+        const baselinePath = resolve(tmp, "written.json");
+
+        await writeBaseline(baselinePath, [finding]);
+
+        const onDisk = await readFile(baselinePath, "utf8");
+        const set = await loadBaselineSet(baselinePath);
+
+        expect(onDisk === json && set.has(fingerprint(finding))).toBe(true);
     });
 });

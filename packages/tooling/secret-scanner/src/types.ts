@@ -33,8 +33,17 @@ export type ValidationStatus = "error" | "rejected" | "skipped" | "verified";
  * at each level.
  */
 export interface ScanOptions {
-    /** Path to a baseline JSON array of `Finding` objects (suppression list). */
-    baseline?: string;
+    /**
+     * Suppression list. Accepts either:
+     *
+     * - a path to a baseline JSON array of findings, or
+     * - an inline findings array (no file IO, ideal for `scanString`/editor hosts), or
+     * - a pre-computed set of fingerprint strings (e.g. a cached set reused across calls).
+     *
+     * Inline findings are indexed under both the content-hash and the legacy
+     * line-based fingerprint, mirroring on-disk baseline loading.
+     */
+    baseline?: Finding[] | ReadonlySet<string> | string;
 
     /** Rayon worker threads. `0` / omit = auto (use rayon's global pool). */
     concurrency?: number;
@@ -103,6 +112,20 @@ export interface ScanOptions {
          * enable on repos you own.
          */
         validate?: boolean;
+
+        /**
+         * Host allowlist for HTTP validators. When set (with `validate: true`),
+         * a finding whose rule renders a request to a host **not** in this list
+         * is reported as `"skipped"` and no request is fired.
+         *
+         * Closes the untrusted-config exfiltration channel: a shared or
+         * third-party config loaded via `config.path` can otherwise add a rule
+         * whose `validation.url` points at an attacker host and leak every
+         * matching secret. Leave unset to allow any host (bundled rules only
+         * target legitimate provider APIs). Hosts are matched case-insensitively
+         * against `URL.host` (`host` or `host:port`).
+         */
+        validateAllowedHosts?: string[];
     };
 
     /** Mask `match` / `secret` strings in every finding. */
@@ -130,6 +153,14 @@ export interface ScanOptions {
         /** Only report findings whose ruleId — or expanded tag membership — is in this list. Implies enablement. */
         include?: string[];
     };
+
+    /**
+     * Abort the scan's validation stage. When `config.validate: true` a scan can
+     * fire one HTTP request per finding (plus DB-driver connections); pass a
+     * signal so a CLI/editor host can cancel mid-flight. The signal is forwarded
+     * to each validator's `fetch()` — already-resolved detection is unaffected.
+     */
+    signal?: AbortSignal;
 
     /** Print diagnostics (skipped rules, etc.) to stderr on first run. */
     verbose?: boolean;

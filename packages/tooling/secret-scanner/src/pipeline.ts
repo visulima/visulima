@@ -10,7 +10,7 @@
 // Each stage is pure + testable in isolation; `postProcess` is the orchestrator.
 /* eslint-enable no-secrets/no-secrets */
 
-import { loadBaselineSet } from "./baseline";
+import { resolveBaselineSet } from "./baseline";
 import { checkChecksum } from "./checksum";
 import { fingerprint, legacyFingerprint } from "./fingerprint";
 import { isLockFile, isNotAlphanumericString, isPotentialUuid, isSequentialString } from "./heuristics";
@@ -121,16 +121,20 @@ const applyChecksumFilter = (findings: Finding[], ruleMeta: Map<string, RuleMeta
     });
 };
 
+interface ValidationContext {
+    allowedHosts?: ReadonlySet<string>;
+    findingsByFileAndRule: Map<string, Finding>;
+    perHostLimiter: PerHostLimiter;
+    ruleMeta: Map<string, RuleMeta>;
+    signal?: AbortSignal;
+}
+
 /**
  * Resolve one finding's validation status. Split out so the worker-pool
  * pattern in `applyValidation` stays flat and cancellation-friendly.
  */
-const resolveOneValidation = async (
-    finding: Finding,
-    ruleMeta: Map<string, RuleMeta>,
-    findingsByFileAndRule: Map<string, Finding>,
-    perHostLimiter: PerHostLimiter,
-): Promise<Finding> => {
+const resolveOneValidation = async (finding: Finding, context: ValidationContext): Promise<Finding> => {
+    const { allowedHosts, findingsByFileAndRule, perHostLimiter, ruleMeta, signal } = context;
     const meta = ruleMeta.get(finding.ruleId);
     const validationBlock = meta?.validation;
 
@@ -153,7 +157,7 @@ const resolveOneValidation = async (
         extras[dep.variable] = depFinding.secret;
     }
 
-    const status = await validateFinding(validationBlock, finding.secret, undefined, extras, perHostLimiter);
+    const status = await validateFinding(validationBlock, finding.secret, { allowedHosts, extraVariables: extras, perHostLimiter, signal });
 
     return { ...finding, validation: status };
 };
@@ -172,6 +176,27 @@ const applyValidation = async (findings: Finding[], options: ScanOptions | undef
         return findings;
     }
 
+    // Pre-partition: findings whose rule has no validation block can never be
+    // verified, so mark them `"skipped"` here and keep them out of the worker
+    // pool entirely. In the common case (most rules ship no validator) this
+    // avoids both the pool round-trip and the per-finding clone for the
+    // majority. `validatable` keeps original indices so the result order is
+    // preserved.
+    const results: Finding[] = Array.from({ length: findings.length });
+    const validatableIndices: number[] = [];
+
+    for (const [index, finding] of findings.entries()) {
+        if (ruleMeta.get(finding.ruleId)?.validation === undefined) {
+            results[index] = { ...finding, validation: "skipped" as const };
+        } else {
+            validatableIndices.push(index);
+        }
+    }
+
+    if (validatableIndices.length === 0) {
+        return results;
+    }
+
     // Index findings by `(file, ruleId)` so we can resolve `depends_on_rule`
     // against other findings in the *same file* without N² scans. Kingfisher's
     // dep semantics are "any match of rule X in this file" → pick the first
@@ -186,27 +211,35 @@ const applyValidation = async (findings: Finding[], options: ScanOptions | undef
         }
     }
 
-    const perHostLimiter = new PerHostLimiter();
-    const results: Finding[] = Array.from({ length: findings.length });
+    const allowedHostsList = options?.config?.validateAllowedHosts;
+    const context: ValidationContext = {
+        allowedHosts: allowedHostsList === undefined ? undefined : new Set(allowedHostsList.map((host) => host.toLowerCase())),
+        findingsByFileAndRule,
+        perHostLimiter: new PerHostLimiter(),
+        ruleMeta,
+        signal: options?.signal,
+    };
     let cursor = 0;
 
     // Worker-pool pattern. Spawning `VALIDATOR_CONCURRENCY` workers that pull
     // from a shared cursor caps live promise chains at the pool size — with
     // `findings.map(async ...)` we'd materialise N continuations up-front
     // before the limiter gated any of them.
-    const workerCount = Math.min(VALIDATOR_CONCURRENCY, findings.length);
+    const workerCount = Math.min(VALIDATOR_CONCURRENCY, validatableIndices.length);
     const workers = Array.from({ length: workerCount }, async () => {
         for (;;) {
-            const index = cursor;
+            const slot = cursor;
 
             cursor += 1;
 
-            if (index >= findings.length) {
+            if (slot >= validatableIndices.length) {
                 return;
             }
 
+            const index = validatableIndices[slot] as number;
+
             // eslint-disable-next-line no-await-in-loop -- Sequential by design: a worker processes one finding at a time so concurrency stays bounded by the pool size.
-            results[index] = await resolveOneValidation(findings[index] as Finding, ruleMeta, findingsByFileAndRule, perHostLimiter);
+            results[index] = await resolveOneValidation(findings[index] as Finding, context);
         }
     });
 
@@ -249,7 +282,7 @@ export const resetPipelineWarningsForTests = (): void => {
 };
 
 const applySuppressions = async (findings: Finding[], options: ScanOptions | undefined): Promise<Finding[]> => {
-    const baseline = await loadBaselineSet(options?.baseline);
+    const baseline = await resolveBaselineSet(options?.baseline);
 
     if (baseline.size === 0) {
         return findings;
