@@ -27,6 +27,21 @@ export type OutputStyle = "normal" | "quiet";
  */
 export const parseOutputStyle = (value: string | undefined): OutputStyle => (value === "quiet" ? "quiet" : "normal");
 
+/**
+ * Resolves the run-wide {@link OutputStyle} from the optional
+ * `--output-style` flag and the `run.quietOnSuccess` config knob. An
+ * explicit flag always wins (parsed leniently); absent the flag, output is
+ * `normal` unless config opts in with `quietOnSuccess: true`, which
+ * silences successful and cached tasks while keeping failures visible.
+ */
+export const resolveOutputStyle = (flag: string | undefined, quietOnSuccess: boolean | undefined): OutputStyle => {
+    if (typeof flag === "string") {
+        return parseOutputStyle(flag.toLowerCase());
+    }
+
+    return quietOnSuccess === true ? "quiet" : "normal";
+};
+
 interface StaticOutputOptions {
     args: {
         targets: string[];

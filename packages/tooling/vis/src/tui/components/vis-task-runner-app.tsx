@@ -138,14 +138,17 @@ const VisTaskRunnerApp = ({
         [store],
     );
 
-    // Auto-show quit dialog when tasks complete — only if autoExit is enabled
+    // Auto-show the countdown quit dialog when tasks complete — only if
+    // autoExit is enabled AND the run was clean. A run with any failure
+    // stays open so the user can inspect what broke; the countdown would
+    // otherwise close the TUI out from under them.
     const previousDoneRef = useRef(false);
 
     useEffect(() => {
         if (state.done && !previousDoneRef.current) {
             previousDoneRef.current = true;
 
-            if (autoExitSeconds > 0) {
+            if (autoExitSeconds > 0 && state.failed === 0) {
                 setQuitDialogVisible(true);
             }
         }
@@ -154,7 +157,7 @@ const VisTaskRunnerApp = ({
             previousDoneRef.current = false;
             setQuitDialogVisible(false);
         }
-    }, [state.done, autoExitSeconds]);
+    }, [state.done, state.failed, autoExitSeconds]);
 
     // Filter rows by status and text. Service rows are hidden from the
     // task list because the dock already shows them with richer state

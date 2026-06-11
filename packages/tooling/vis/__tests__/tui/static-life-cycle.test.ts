@@ -2,7 +2,7 @@ import { strip } from "@visulima/colorize";
 import type { Task, TaskResult } from "@visulima/task-runner";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { parseOutputStyle, StaticOutputLifeCycle } from "../../src/tui/static-life-cycle";
+import { parseOutputStyle, resolveOutputStyle, StaticOutputLifeCycle } from "../../src/tui/static-life-cycle";
 
 const createTask = (project: string, target: string): Task => {
     return {
@@ -300,5 +300,49 @@ describe(parseOutputStyle, () => {
 
         expect(parseOutputStyle("verbose")).toBe("normal");
         expect(parseOutputStyle("loud")).toBe("normal");
+    });
+});
+
+describe(resolveOutputStyle, () => {
+    it("defaults to 'normal' when neither flag nor config is set", () => {
+        expect.assertions(1);
+
+        expect(resolveOutputStyle(undefined, undefined)).toBe("normal");
+    });
+
+    it("returns 'quiet' when quietOnSuccess is enabled and no flag is given", () => {
+        expect.assertions(1);
+
+        expect(resolveOutputStyle(undefined, true)).toBe("quiet");
+    });
+
+    it("returns 'normal' when quietOnSuccess is explicitly disabled", () => {
+        expect.assertions(1);
+
+        expect(resolveOutputStyle(undefined, false)).toBe("normal");
+    });
+
+    it("lets an explicit --output-style flag win over the config (quiet flag, config off)", () => {
+        expect.assertions(1);
+
+        expect(resolveOutputStyle("quiet", false)).toBe("quiet");
+    });
+
+    it("lets an explicit --output-style flag win over the config (normal flag, config on)", () => {
+        expect.assertions(1);
+
+        expect(resolveOutputStyle("normal", true)).toBe("normal");
+    });
+
+    it("parses the flag case-insensitively when callers pass mixed case", () => {
+        expect.assertions(1);
+
+        expect(resolveOutputStyle("QUIET".toLowerCase(), false)).toBe("quiet");
+    });
+
+    it("falls back to 'normal' for an unknown flag even when quietOnSuccess is on", () => {
+        expect.assertions(1);
+
+        expect(resolveOutputStyle("verbose", true)).toBe("normal");
     });
 });

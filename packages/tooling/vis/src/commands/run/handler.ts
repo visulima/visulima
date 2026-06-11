@@ -61,7 +61,7 @@ import { detectCurrentOs, loadEnvFile, matchesRunnerTags, resolveTargetShell, re
 import { ServiceDockStore } from "../../tui/components/service-dock/service-dock-store";
 import type { TaskStore } from "../../tui/components/task-store";
 import { createDynamicOutputRenderer } from "../../tui/dynamic-life-cycle";
-import { parseOutputStyle, StaticOutputLifeCycle } from "../../tui/static-life-cycle";
+import { resolveOutputStyle, StaticOutputLifeCycle } from "../../tui/static-life-cycle";
 import type { StdinEntry } from "../../tui/types";
 import type { VisHooks } from "../../util/hooks";
 import { createVisHooks, HookableLifeCycle, registerPlugins } from "../../util/hooks";
@@ -2362,7 +2362,14 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     }
 
     const isTTY = process.stdout.isTTY && !isInCi;
-    const autoExitConfig = config.tui?.autoExit ?? false;
+    // Opt-in "quiet on success": suppress successful/cached task output and,
+    // in the interactive TUI, auto-close a few seconds after a clean run.
+    // Defaults to off; `--output-style` and `tui.autoExit` still override.
+    const quietOnSuccess = visConfig?.run?.quietOnSuccess === true;
+    // Auto-exit the interactive TUI after a clean run when quietOnSuccess is
+    // on (3s countdown). An explicit `tui.autoExit` wins. A failed run never
+    // auto-closes — VisTaskRunnerApp only arms the countdown when failed === 0.
+    const autoExitConfig = config.tui?.autoExit ?? (quietOnSuccess ? 3 : false);
     // Include persistent tasks in the lifecycle's view so the header
     // ("Running targets serve for 1 project") and summary count them
     // even when the regular task graph is empty (e.g. `vis run serve`
@@ -2380,7 +2387,9 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const hookLifeCycle = new HookableLifeCycle(hooks, onHookError);
     const failureLogLifeCycle = new FailureLogLifeCycle(workspaceRoot);
 
-    const outputStyle = parseOutputStyle(typeof options.outputStyle === "string" ? options.outputStyle.toLowerCase() : undefined);
+    // Explicit `--output-style` wins; absent the flag, quiet only when
+    // run.quietOnSuccess is on (computed above, defaults to off).
+    const outputStyle = resolveOutputStyle(options.outputStyle, visConfig?.run?.quietOnSuccess);
 
     // Fire service:attach for each registered service we attached to.
     // Computed earlier in `applyServiceRegistry`; the hook fires here

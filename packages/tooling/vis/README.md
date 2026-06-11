@@ -104,6 +104,14 @@ yarn add @visulima/vis
 pnpm add @visulima/vis
 ```
 
+### Binaries
+
+`@visulima/vis` installs four executables:
+
+- `vis` — the full CLI (recommended; use this in scripts and CI).
+- `v` — a short alias for `vis`. Note that `v` collides with the [V language](https://vlang.io/) compiler and is a common personal shell alias, so it may be shadowed. Prefer `vis` for anything you commit; see [`docs/guides/shell-alias.mdx`](./docs/guides/shell-alias.mdx) if you want your own short alias.
+- `vx` / `visx` — the lean `dlx`-only entry point for one-off package execution.
+
 ### Cold start (no Node? no manager?)
 
 One-liner bootstrap that installs Node and `vis` in one go. When no Node is found it installs the latest Node LTS directly by default (OS package manager, falling back to the official nodejs.org build); a version manager (proto / fnm / mise / volta) is offered as an opt-in alternative. Pin a specific major with `VIS_NODE_MAJOR`.
@@ -400,6 +408,42 @@ vis migrate lint-staged    # moves the config into vis.config.ts and rewrites ho
 ```
 
 The migrator detects `package.json` keys, `.lintstagedrc*` files, and `lint-staged.config.*`, prompts before rewriting husky/vis hooks to call `vis staged`, and removes `lint-staged` from the dependency list.
+
+## Configuration API
+
+The `@visulima/vis/config` subpath export is the programmatic surface for typed config and the plugin system. It ships more than `defineConfig`:
+
+| Export                                           | Kind     | Purpose                                                                        |
+| ------------------------------------------------ | -------- | ------------------------------------------------------------------------------ |
+| `defineConfig`                                   | function | Type-checked `vis.config.ts` helper (root config).                             |
+| `defineTaskConfig`                               | function | Type-checked task-only config (`vis.task.config.ts`).                          |
+| `definePlugin`                                   | function | Author a vis plugin (hooks, fingerprint contributors, OTel, …).                |
+| `otelPlugin`                                     | function | Built-in OpenTelemetry plugin factory.                                         |
+| `loadVisConfig` / `loadVisTaskConfig`            | function | Resolve + load the config from disk programmatically.                          |
+| `findVisConfigFile` / `findVisTaskConfigFile`    | function | Locate the config file without loading it.                                      |
+| `applyDefaults`                                  | function | Merge a partial config with vis defaults.                                       |
+| `CONFIG_FILES` / `TASK_CONFIG_FILES`             | const    | The recognised config filenames, in resolution order.                          |
+| `SECURITY_DEFAULTS`                              | const    | The default audit/security policy applied when none is configured.             |
+| `VisConfig`, `VisTaskConfig`, `VisPlugin`, `VisHooks`, `OtelPluginOptions`, `FingerprintContributor` | type | Public config & plugin types. |
+
+```ts
+import { defineConfig, definePlugin, otelPlugin } from "@visulima/vis/config";
+
+const auditLogger = definePlugin({
+    name: "audit-logger",
+    hooks: {
+        "task:after": (task, result) => {
+            console.log(`${task.id} finished with exit code ${result.exitCode}`);
+        },
+    },
+});
+
+export default defineConfig({
+    plugins: [auditLogger, otelPlugin({ serviceName: "my-monorepo" })],
+});
+```
+
+See [`docs/configuration.mdx`](./docs/configuration.mdx) for the full config model and [`docs/guides/plugins.mdx`](./docs/guides/plugins.mdx) for the plugin authoring guide. A `@visulima/vis/generate` subpath export is also available for programmatic scaffolding.
 
 ## Documentation
 

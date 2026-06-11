@@ -33,6 +33,37 @@ export const HADOLINT_VERSION = "v2.14.0";
 
 const RELEASE_BASE = `https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}`;
 
+/**
+ * Source-pinned SHA-256 digests for every {@link HADOLINT_VERSION} release
+ * asset, keyed by asset filename.
+ *
+ * The `.sha256` sidecar published on the GitHub release lives on the *same
+ * origin* as the binary, so trusting it alone means a compromised release
+ * (or a successful single-origin MITM) defeats verification — the attacker
+ * controls both the binary and "its" checksum. Pinning the digests in source
+ * makes the check attacker-independent: even a tampered binary + tampered
+ * sidecar can't match a value baked into the vis bundle.
+ *
+ * Regenerate when bumping {@link HADOLINT_VERSION} by fetching each
+ * `RELEASE_BASE/{asset}.sha256` and copying the first token here.
+ */
+const PINNED_ASSET_DIGESTS: Readonly<Record<string, string>> = {
+    "hadolint-linux-arm64": "331f1d3511b84a4f1e3d18d52fec284723e4019552f4f47b19322a53ce9a40ed",
+    "hadolint-linux-x86_64": "6bf226944684f56c84dd014e8b979d27425c0148f61b3bd99bcc6f39e9dc5a47",
+    "hadolint-macos-arm64": "3625e2e9f43dcfe7bd38738a5f5520ed50ce39ed28485266e6803dd7bc197b10",
+    "hadolint-macos-x86_64": "2b69a853433f1eca522ffb921cd490bd1321424d03331fd8390f93b7fb4a02e9",
+    "hadolint-windows-x86_64.exe": "8e0ee174f88edb14f207a68430c7a53c2883ed509cdbde9a3a26fffa140fa5e4",
+};
+
+/**
+ * Returns the source-pinned SHA-256 digest for an asset, or `undefined`
+ * when the asset isn't pinned (e.g. a future arch added to
+ * {@link resolveHadolintAsset} but not to the digest table).
+ *
+ * Exported for tests.
+ */
+export const pinnedAssetDigest = (asset: string): string | undefined => PINNED_ASSET_DIGESTS[asset];
+
 /** A single hadolint (or embedded ShellCheck) finding from `--format json`. */
 export interface HadolintFinding {
     /** Pattern id — `DL3006`, `SC2086`, … */
@@ -101,9 +132,15 @@ const fetchBuffer = async (url: string): Promise<Buffer> => {
 };
 
 /**
- * Downloads the pinned hadolint binary + its `.sha256` sidecar, verifies
- * the digest, writes it to {@link cachedBinaryPath} and marks it
+ * Downloads the pinned hadolint binary, verifies its SHA-256 against the
+ * source-pinned digest in {@link PINNED_ASSET_DIGESTS} (authoritative,
+ * attacker-independent), writes it to {@link cachedBinaryPath} and marks it
  * executable.
+ *
+ * When the asset is pinned, the same-origin `.sha256` sidecar is *not*
+ * fetched — trusting it adds no security over the binary itself. Only
+ * assets with no source-pinned digest fall back to the sidecar (fail-closed
+ * if it is missing/unparseable).
  * @param asset The release asset filename.
  * @returns The path to the cached executable.
  * @throws If the download fails or the checksum does not match.
@@ -111,19 +148,29 @@ const fetchBuffer = async (url: string): Promise<Buffer> => {
 const downloadHadolint = async (asset: string): Promise<string> => {
     const destination = cachedBinaryPath(asset);
 
-    const [binary, sidecar] = await Promise.all([fetchBuffer(`${RELEASE_BASE}/${asset}`), fetchBuffer(`${RELEASE_BASE}/${asset}.sha256`)]);
-
-    const expected = parseSha256Sidecar(sidecar.toString("utf8")).toLowerCase();
+    const pinned = pinnedAssetDigest(asset);
+    const binary = await fetchBuffer(`${RELEASE_BASE}/${asset}`);
     const actual = createHash("sha256").update(binary).digest("hex");
 
-    // Fail closed: a missing/unparseable checksum is treated as a failure
-    // rather than silently trusting an unverified binary.
-    if (expected === "") {
-        throw new Error("hadolint checksum sidecar was empty or unparseable. Refusing to use the download.");
-    }
+    if (pinned === undefined) {
+        // Fallback for assets not yet pinned in source: cross-check the
+        // same-origin sidecar. Weaker (single-origin trust) but better than
+        // nothing, and still fail-closed.
+        const sidecar = await fetchBuffer(`${RELEASE_BASE}/${asset}.sha256`);
+        const expected = parseSha256Sidecar(sidecar.toString("utf8")).toLowerCase();
 
-    if (expected !== actual) {
-        throw new Error(`hadolint checksum mismatch (expected ${expected}, got ${actual}). Refusing to use the download.`);
+        if (expected === "") {
+            throw new Error("hadolint checksum sidecar was empty or unparseable. Refusing to use the download.");
+        }
+
+        if (expected !== actual) {
+            throw new Error(`hadolint checksum mismatch (expected ${expected}, got ${actual}). Refusing to use the download.`);
+        }
+    } else if (pinned.toLowerCase() !== actual) {
+        // Authoritative path: compare against the digest baked into vis. A
+        // compromised release (tampered binary + tampered sidecar) cannot
+        // satisfy this because the expected value never leaves the bundle.
+        throw new Error(`hadolint checksum mismatch (expected ${pinned.toLowerCase()}, got ${actual}). Refusing to use the download.`);
     }
 
     ensureDirSync(join(getVisCacheDir(), "hadolint", HADOLINT_VERSION));
@@ -244,8 +291,13 @@ export const runHadolint = async (binary: string, files: string[], configPath?: 
     const cliArguments = ["--format", "json", "--no-fail", ...(configPath !== undefined && configPath !== "" ? ["--config", configPath] : []), ...files];
 
     const stdout = await new Promise<string>((resolve, reject) => {
+        // No `shell: true`: the hadolint binary is a real `.exe` on Windows
+        // (resolved as `hadolint.exe`), not a `.cmd`/`.bat` shim, so Node can
+        // exec it directly. Avoiding the shell means the repo-derived Dockerfile
+        // paths in `files` are passed to the child argv untouched rather than
+        // concatenated unquoted into a cmd.exe line — a directory legally named
+        // `app & calc` in an untrusted clone can no longer inject shell syntax.
         const child = spawn(binary, cliArguments, {
-            shell: process.platform === "win32",
             stdio: ["ignore", "pipe", "pipe"],
             windowsHide: true,
         });

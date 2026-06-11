@@ -11,6 +11,8 @@ describe(appendToShellHistory, () => {
     let originalShell: string | undefined;
     let originalHistFile: string | undefined;
     let originalVisNoHistory: string | undefined;
+    let originalPsHistory: string | undefined;
+    let originalAppData: string | undefined;
 
     beforeEach(async () => {
         // eslint-disable-next-line sonarjs/pseudo-random -- temp-dir suffix in tests, not security-sensitive
@@ -21,6 +23,8 @@ describe(appendToShellHistory, () => {
         originalShell = process.env["SHELL"];
         originalHistFile = process.env["HISTFILE"];
         originalVisNoHistory = process.env["VIS_NO_SHELL_HISTORY"];
+        originalPsHistory = process.env["VIS_PSREADLINE_HISTORY"];
+        originalAppData = process.env["APPDATA"];
         delete process.env["VIS_NO_SHELL_HISTORY"];
     });
 
@@ -43,6 +47,18 @@ describe(appendToShellHistory, () => {
             delete process.env["VIS_NO_SHELL_HISTORY"];
         } else {
             process.env["VIS_NO_SHELL_HISTORY"] = originalVisNoHistory;
+        }
+
+        if (originalPsHistory === undefined) {
+            delete process.env["VIS_PSREADLINE_HISTORY"];
+        } else {
+            process.env["VIS_PSREADLINE_HISTORY"] = originalPsHistory;
+        }
+
+        if (originalAppData === undefined) {
+            delete process.env["APPDATA"];
+        } else {
+            process.env["APPDATA"] = originalAppData;
         }
     });
 
@@ -103,5 +119,51 @@ describe(appendToShellHistory, () => {
 
         // Must not throw and must not touch anything.
         await expect(appendToShellHistory("vis run build")).resolves.toBeUndefined();
+    });
+
+    it.skipIf(process.platform === "win32")("collapses control characters so a newline cannot inject an extra history entry", async () => {
+        expect.assertions(2);
+
+        const histFile = join(workDirectory, ".bash_history");
+
+        await writeFile(histFile, "");
+        process.env["SHELL"] = "/bin/bash";
+        process.env["HISTFILE"] = histFile;
+
+        await appendToShellHistory("vis run build\nrm -rf /");
+
+        const content = await readFile(histFile, "utf8");
+
+        // The injected `rm -rf /` must not become its own line.
+        expect(content).toBe("vis run build rm -rf /\n");
+        expect(content.split("\n").filter((line) => line !== "")).toHaveLength(1);
+    });
+
+    it.runIf(process.platform === "win32")("appends to the PowerShell PSReadLine history file on Windows", async () => {
+        expect.assertions(1);
+
+        const histFile = join(workDirectory, "ConsoleHost_history.txt");
+
+        process.env["VIS_PSREADLINE_HISTORY"] = histFile;
+
+        await appendToShellHistory("vis run build");
+
+        const content = await readFile(histFile, "utf8");
+
+        expect(content).toBe("vis run build\r\n");
+    });
+
+    it.runIf(process.platform === "win32")("collapses control characters in the PSReadLine entry", async () => {
+        expect.assertions(1);
+
+        const histFile = join(workDirectory, "nested", "ConsoleHost_history.txt");
+
+        process.env["VIS_PSREADLINE_HISTORY"] = histFile;
+
+        await appendToShellHistory("vis run test\nmalicious");
+
+        const content = await readFile(histFile, "utf8");
+
+        expect(content).toBe("vis run test malicious\r\n");
     });
 });

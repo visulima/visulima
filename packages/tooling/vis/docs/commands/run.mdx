@@ -229,6 +229,38 @@ To keep a critical task verbose even when the rest of the run is quiet:
 
 Skipped tasks still print their reason — quiet only swallows successful and cached output. Unknown values for `--output-style` (e.g. `--output-style=verbose`) fall back to `normal` so a typo never silently mutes CI.
 
+### Quiet on success
+
+Passing `--output-style=quiet` on every invocation gets old. Set `run.quietOnSuccess` in `vis.config.ts` to make a clean run quiet by default:
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    run: {
+        // Default: false. When true, a successful run is quiet and the
+        // interactive TUI auto-closes a few seconds after it finishes.
+        quietOnSuccess: true,
+    },
+});
+```
+
+When enabled, `quietOnSuccess` does two things:
+
+- **Non-interactive output** behaves as if `--output-style=quiet` were passed — successful and cached tasks are silenced, failures still print in full (expanded as their own log group in CI).
+- **The interactive TUI auto-closes after a clean run.** When every task succeeds, a countdown dialog (`Exiting in 3…`) appears and the TUI exits on its own; press any key to cancel the countdown and stay, or `q` to leave immediately. **A run with any failure never auto-closes** — the TUI stays open on the results so you can inspect what broke.
+
+Precedence (most specific wins):
+
+| Setting                       | Scope                          | Overrides                          |
+| ----------------------------- | ------------------------------ | ---------------------------------- |
+| `options.outputStyle` (target) | A single task                  | Everything below, for that task    |
+| `--output-style` (CLI flag)   | The whole run's output         | `run.quietOnSuccess` output side   |
+| `tui.autoExit` (config)       | The TUI auto-close countdown   | `run.quietOnSuccess` countdown side |
+| `run.quietOnSuccess` (config) | Output **and** TUI auto-close  | The built-in defaults              |
+
+So you can opt the whole repo into quiet, auto-closing runs with `quietOnSuccess: true`, then force a verbose run when debugging with `vis run build --output-style=normal` — the explicit flag wins and the TUI stays put.
+
 ### Env file layering
 
 `envFile` accepts three shapes:

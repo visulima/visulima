@@ -59,6 +59,28 @@ describe("toolbox-fs helpers", () => {
 
             await expect(readJsonFile(fs, "/bad.json")).rejects.toThrow(SyntaxError);
         });
+
+        it("includes the file path in the error message", async () => {
+            expect.assertions(1);
+
+            const fs = makeFakeFs();
+
+            vi.mocked(fs.readFile).mockResolvedValue("not-json");
+
+            await expect(readJsonFile(fs, "/some/dir/bad.json")).rejects.toThrow("/some/dir/bad.json");
+        });
+
+        it("preserves the original error as cause", async () => {
+            expect.assertions(1);
+
+            const fs = makeFakeFs();
+
+            vi.mocked(fs.readFile).mockResolvedValue("{ broken");
+
+            const error = await readJsonFile(fs, "/bad.json").catch((error_: unknown) => error_);
+
+            expect((error as { cause?: unknown }).cause).toBeInstanceOf(SyntaxError);
+        });
     });
 
     describe(writeJsonFile, () => {

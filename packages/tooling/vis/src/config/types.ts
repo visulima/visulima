@@ -1021,6 +1021,25 @@ export interface VisConfig {
         ciGrouping?: "auto" | "azure" | "buildkite" | "github" | "gitlab" | "off";
 
         /**
+         * Stay quiet when a run succeeds. When enabled:
+         * - non-interactive output suppresses successful and cached tasks
+         *   and prints only failures (failed tasks always render in full —
+         *   in CI as expanded log blocks), equivalent to
+         *   `--output-style=quiet`; and
+         * - the interactive TUI auto-closes a few seconds after a clean run
+         *   via a countdown dialog. A run with any failure stays open so the
+         *   user can inspect it.
+         *
+         * The explicit `--output-style` CLI flag overrides the output side,
+         * a per-target `options.outputStyle` overrides both, and
+         * `tui.autoExit` overrides the auto-close countdown.
+         *
+         * Default: `false` — every task's output is echoed and the TUI waits
+         * for the user. Set to `true` to opt into quiet, auto-closing runs.
+         */
+        quietOnSuccess?: boolean;
+
+        /**
          * One knob controlling auto-start of missing service deps.
          * - `auto` (default in TTY): pick by task — `dev` → ephemeral,
          *   others → persistent.
