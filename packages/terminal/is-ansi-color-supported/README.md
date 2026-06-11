@@ -65,9 +65,29 @@ console.log(isStdoutColorSupported()); // 3
 console.log(isStderrColorSupported()); // 3
 ```
 
+### Custom detection (`createIsColorSupported`)
+
+For library authors who need more control, `createIsColorSupported` lets you pick the
+stream, disable CLI flag sniffing, or force the TTY state:
+
+```typescript
+import { createIsColorSupported } from "@visulima/is-ansi-color-supported";
+
+// Detect stdout color support without inspecting `process.argv`
+// (useful when your CLI defines its own `--color` semantics):
+const level = createIsColorSupported("stdout", { sniffFlags: false });
+
+// Probe stderr while forcing the TTY state (e.g. when writing to a log file):
+const stderrLevel = createIsColorSupported("stderr", { isTTY: false });
+```
+
+> The `browser` and `edge-light` builds also export `createIsColorSupported` for API
+> parity, but ignore the `stream`/`options` arguments (those runtimes have no streams,
+> CLI args, `tty`, or `os`).
+
 ## Color support
 
-Ansis automatically detects the supported color space:
+This package automatically detects the supported color space:
 
 - TrueColor
 - ANSI 256 colors
@@ -114,8 +134,13 @@ The value is not important, e.g., `NO_COLOR=1` `NO_COLOR=true` disable colors.
 See standard description by [NO_COLOR](https://no-color.org/).
 
 The `FORCE_COLOR` variable should be presents with one of values:\
-`FORCE_COLOR=0` force disable colors\
-`FORCE_COLOR=1` force enable colors
+`FORCE_COLOR=0` (or `FORCE_COLOR=false`) force disable colors\
+`FORCE_COLOR=1`, `2`, `3` (or `FORCE_COLOR=true`) force enable colors at the given level
+
+When `FORCE_COLOR` requests color (any value other than `0`/`false`) it takes precedence over the
+`NO_COLOR` environment variable, so `FORCE_COLOR=true NO_COLOR=1` and `FORCE_COLOR=1 NO_COLOR=1` both
+enable colors. The `--no-color` CLI flag still wins over everything, since command-line arguments have
+the highest priority.
 
 ## CLI arguments
 
@@ -145,6 +170,12 @@ $ ./colors.js --color=true > log.txt # output in file with ANSI codes
 > **Warning**
 >
 > The command line arguments have a higher priority than environment variable.
+
+> **Note**
+>
+> A 256-color `TERM` (e.g. `TERM=xterm-256color`) reports level `2` even when the output is piped
+> to a file and not a TTY. This is intentional (ansis-style behaviour). If you need supports-color's
+> stricter TTY-first gating, use `createIsColorSupported("stdout", { isTTY: false })`.
 
 ## Info
 

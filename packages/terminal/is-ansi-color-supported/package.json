@@ -58,14 +58,6 @@
     "type": "module",
     "exports": {
         ".": {
-            "import": {
-                "types": "./dist/is-color-supported.server.d.mts",
-                "default": "./dist/is-color-supported.server.mjs"
-            },
-            "require": {
-                "types": "./dist/is-color-supported.server.d.cts",
-                "default": "./dist/is-color-supported.server.cjs"
-            },
             "edge-light": {
                 "types": "./dist/is-color-supported.edge-light.d.mts",
                 "default": "./dist/is-color-supported.edge-light.mjs"
@@ -73,6 +65,14 @@
             "browser": {
                 "types": "./dist/is-color-supported.browser.d.mts",
                 "default": "./dist/is-color-supported.browser.mjs"
+            },
+            "import": {
+                "types": "./dist/is-color-supported.server.d.mts",
+                "default": "./dist/is-color-supported.server.mjs"
+            },
+            "require": {
+                "types": "./dist/is-color-supported.server.d.cts",
+                "default": "./dist/is-color-supported.server.cjs"
             }
         },
         "./browser": {
@@ -164,11 +164,6 @@
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
     },
-    "os": [
-        "darwin",
-        "linux",
-        "win32"
-    ],
     "publishConfig": {
         "access": "public",
         "provenance": true

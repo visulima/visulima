@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { isStderrColorSupported, isStdoutColorSupported } from "../src/is-color-supported.server";
+import { createIsColorSupported, isStderrColorSupported, isStdoutColorSupported } from "../src/is-color-supported.server";
 
 describe("node.JS", () => {
     it(`process undefined`, () => {
@@ -1339,5 +1339,256 @@ describe("support colors in terminals", () => {
         vi.unstubAllGlobals();
 
         expect(received).toBe(1);
+    });
+});
+
+describe("windows real-node detection (regression)", () => {
+    it("should not return 0 on win32 with no `os` property on process (uses node:os release)", () => {
+        expect.assertions(1);
+
+        // Real Node's `process` has no `os` property. The previous code called
+        // `proc.os.release()`, threw a TypeError that the catch swallowed, and the
+        // win32 branch returned nothing -> colors fully disabled. Now it falls back
+        // to `node:os` release(), so a Windows terminal gets at least level 1.
+        vi.stubGlobal("process", {
+            argv: [],
+            env: {},
+            platform: "win32",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBeGreaterThanOrEqual(1);
+    });
+
+    it("should return 3 on win32 when WT_SESSION (Windows Terminal) is set", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { WT_SESSION: "abc-123" },
+            platform: "win32",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(3);
+    });
+
+    it("should return 1 on win32 when ANSICON is set", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { ANSICON: "121x9 (121x9)" },
+            platform: "win32",
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+});
+
+describe("fORCE_COLOR vs NO_COLOR precedence", () => {
+    it("should let FORCE_COLOR=1 override NO_COLOR (already worked)", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { FORCE_COLOR: "1", NO_COLOR: "1", TERM: "xterm" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+
+    it("should let FORCE_COLOR=true override NO_COLOR (consistency fix)", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { FORCE_COLOR: "true", NO_COLOR: "1", TERM: "xterm" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+
+    it("should still let NO_COLOR win when FORCE_COLOR is absent", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { NO_COLOR: "1", TERM: "xterm" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(0);
+    });
+
+    it("should still let FORCE_COLOR=0 disable colors", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { FORCE_COLOR: "0", TERM: "xterm" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(0);
+    });
+
+    it("should let the --no-color CLI flag win over FORCE_COLOR=true", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: ["--no-color"],
+            env: { FORCE_COLOR: "true", TERM: "xterm" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = isStdoutColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(0);
+    });
+});
+
+describe("createIsColorSupported", () => {
+    it("should default to stdout detection", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { TERM: "xterm" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = createIsColorSupported();
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+
+    it("should target stderr when requested", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { TERM: "color" },
+            platform: "linux",
+            stderr: { isTTY: true },
+            stdout: { isTTY: false },
+        });
+
+        const received = createIsColorSupported("stderr");
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+
+    it("should ignore CLI flags when sniffFlags is false", () => {
+        expect.assertions(2);
+
+        vi.stubGlobal("process", {
+            argv: ["--color=256"],
+            env: {},
+            platform: "linux",
+            stdout: { isTTY: false },
+        });
+
+        // With sniffing on, the flag is honored.
+        const withSniff = createIsColorSupported("stdout", { sniffFlags: true });
+        // With sniffing off, the unrelated flag is ignored and detection falls through to 0.
+        const withoutSniff = createIsColorSupported("stdout", { sniffFlags: false });
+
+        vi.unstubAllGlobals();
+
+        expect(withSniff).toBe(2);
+        expect(withoutSniff).toBe(0);
+    });
+
+    it("should not be disabled by a --no-color flag when sniffFlags is false", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: ["--no-color"],
+            env: { TERM: "xterm" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = createIsColorSupported("stdout", { sniffFlags: false });
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+
+    it("should honor a forced isTTY=true override", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { TERM: "color" },
+            platform: "linux",
+            // No stdout stream object at all -> default detection would see isTTY=false.
+        });
+
+        const received = createIsColorSupported("stdout", { isTTY: true });
+
+        vi.unstubAllGlobals();
+
+        expect(received).toBe(1);
+    });
+
+    it("should honor a forced isTTY=false override (gating a color TERM)", () => {
+        expect.assertions(1);
+
+        vi.stubGlobal("process", {
+            argv: [],
+            env: { TERM: "color" },
+            platform: "linux",
+            stdout: { isTTY: true },
+        });
+
+        const received = createIsColorSupported("stdout", { isTTY: false });
+
+        vi.unstubAllGlobals();
+
+        // `TERM=color` only yields level 1 behind the isTTY gate; forcing isTTY=false skips it.
+        expect(received).toBe(0);
     });
 });
