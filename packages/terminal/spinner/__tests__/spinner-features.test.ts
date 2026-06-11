@@ -285,11 +285,7 @@ describe("spinnerPromise helper", () => {
 
         const manager = createMockManager();
 
-        const result = await spinnerPromise(
-            Promise.resolve(42),
-            { successText: "done", text: "working" },
-            manager as unknown as InteractiveManager,
-        );
+        const result = await spinnerPromise(Promise.resolve(42), { successText: "done", text: "working" }, manager as unknown as InteractiveManager);
 
         expect(result).toBe(42);
         expect(manager.updates.flat().some((line) => line.includes("done"))).toBe(true);
