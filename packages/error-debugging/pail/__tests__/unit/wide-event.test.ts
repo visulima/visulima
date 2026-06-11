@@ -458,6 +458,80 @@ describe("wideEvent", () => {
             expect(cause).toHaveProperty("message", "Root cause");
             expect(cause).toHaveProperty("name", "Error");
         });
+
+        it("should omit stack but keep data when the error has no stack", () => {
+            expect.assertions(3);
+
+            const pail = createMockPail();
+            const wideEvent = createWideEvent({ autoEmit: false, name: "test", pail });
+            const testError = new Error("No stack with data") as Error & { data: unknown };
+
+            testError.stack = undefined;
+            testError.data = { field: "email", reason: "invalid" };
+
+            wideEvent.setError(testError);
+            wideEvent.emit();
+
+            // eslint-disable-next-line no-console
+            const emitted = (console.error as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as Record<string, unknown>;
+            const serializedError = emitted?.error as Record<string, unknown>;
+
+            expect(serializedError).toHaveProperty("message", "No stack with data");
+            expect(serializedError).not.toHaveProperty("stack");
+            expect(serializedError).toHaveProperty("data", { field: "email", reason: "invalid" });
+        });
+
+        it("should drop a non-Error cause (instanceof Error gate)", () => {
+            expect.assertions(2);
+
+            const pail = createMockPail();
+            const wideEvent = createWideEvent({ autoEmit: false, name: "test", pail });
+            const testError = new Error("Wrapper") as Error & { cause: unknown };
+
+            // Non-Error cause (string). wide-event intentionally only recurses Error causes.
+            testError.cause = "plain string cause";
+
+            wideEvent.setError(testError);
+            wideEvent.emit();
+
+            // eslint-disable-next-line no-console
+            const emitted = (console.error as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as Record<string, unknown>;
+            const serializedError = emitted?.error as Record<string, unknown>;
+
+            expect(serializedError).toHaveProperty("message", "Wrapper");
+            expect(serializedError).not.toHaveProperty("cause");
+        });
+
+        it("should not overflow on a circular cause chain", () => {
+            expect.assertions(4);
+
+            const pail = createMockPail();
+            const wideEvent = createWideEvent({ autoEmit: false, name: "test", pail });
+
+            const errorA = new Error("Error A") as Error & { cause: unknown };
+            const errorB = new Error("Error B") as Error & { cause: unknown };
+
+            // Cyclic cause chain: a.cause = b; b.cause = a;
+            errorA.cause = errorB;
+            errorB.cause = errorA;
+
+            wideEvent.setError(errorA);
+
+            // Must NOT throw a RangeError / stack overflow (the latent-bug fix).
+            expect(() => {
+                wideEvent.emit();
+            }).not.toThrow();
+
+            // eslint-disable-next-line no-console
+            const emitted = (console.error as ReturnType<typeof vi.fn>).mock.calls[0]?.[0] as Record<string, unknown>;
+            const serializedError = emitted?.error as Record<string, unknown>;
+            const causeB = serializedError?.cause as Record<string, unknown>;
+
+            expect(serializedError).toHaveProperty("message", "Error A");
+            expect(causeB).toHaveProperty("message", "Error B");
+            // The cycle back to A must terminate with a circular marker, not recurse forever.
+            expect(causeB?.cause).toBe("[Circular]");
+        });
     });
 
     describe("lifecycle logging", () => {
