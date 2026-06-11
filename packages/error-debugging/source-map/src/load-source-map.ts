@@ -6,7 +6,8 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import type { TraceMap } from "@jridgewell/trace-mapping";
 import { AnyMap } from "@jridgewell/trace-mapping";
 
-import { SourceMapParseError, SourceMapReadError } from "./errors";
+import { SourceMapReadError } from "./errors";
+import { SourceMapParseError } from "./parse-error";
 
 const INLINE_SOURCEMAP_REGEX = /^data:application\/json[^,]+base64,/;
 const REMOTE_URL_REGEX = /^[a-z][a-z0-9+.-]*:\/\//i;
@@ -202,19 +203,31 @@ const parseMap = (traceMapContent: string, mapBaseUrl: string, context: string):
  * @param sourceCode      The full source code containing a `sourceMappingURL` comment.
  * @param sourceDirectory Directory used to resolve relative `.map` references.
  * @param options         Optional remote resolver hook.
+ * @param sourceContextPath When set (by the file-based {@link loadSourceMap}), read/parse
+ *                          errors reference this originating file instead of the resolved
+ *                          `.map`/inline target, so messages name the file the caller asked about.
  * @returns A {@link TraceMap}, or `undefined` when no usable sourcemap is referenced.
  * @throws {SourceMapReadError}  When a referenced `.map` file cannot be read.
  * @throws {SourceMapParseError} When the source map cannot be parsed.
  */
-export const loadSourceMapFromSource = (sourceCode: string, sourceDirectory: string, options: LoadSourceMapOptions = {}): TraceMap | undefined => {
+export const loadSourceMapFromSource = (
+    sourceCode: string,
+    sourceDirectory: string,
+    options: LoadSourceMapOptions = {},
+    sourceContextPath?: string,
+): TraceMap | undefined => {
     const reference = resolveSourceMapReference(sourceCode, sourceDirectory);
 
     if (!reference) {
         return undefined;
     }
 
+    const errorTarget = sourceContextPath === undefined ? undefined : toNamespacedPath(sourceContextPath);
+
     if (reference.inline) {
-        return parseMap(decodeInlineMap(reference.inline), reference.inline, `Error parsing inline sourcemap`);
+        const inlineContext = errorTarget === undefined ? `Error parsing inline sourcemap` : `Error parsing sourcemap for file "${errorTarget}"`;
+
+        return parseMap(decodeInlineMap(reference.inline), reference.inline, inlineContext);
     }
 
     if (reference.remote) {
@@ -228,16 +241,17 @@ export const loadSourceMapFromSource = (sourceCode: string, sourceDirectory: str
     }
 
     const mapPath = reference.path as string;
+    const fileContext = errorTarget ?? toNamespacedPath(mapPath);
 
     let traceMapContent: string;
 
     try {
         traceMapContent = readFileSync(mapPath, { encoding: "utf8" });
     } catch (error: unknown) {
-        throw new SourceMapReadError(`Error reading sourcemap for file "${toNamespacedPath(mapPath)}"`, error);
+        throw new SourceMapReadError(`Error reading sourcemap for file "${fileContext}"`, error);
     }
 
-    return parseMap(traceMapContent, pathToFileURL(mapPath).href, `Error parsing sourcemap for file "${toNamespacedPath(mapPath)}"`);
+    return parseMap(traceMapContent, pathToFileURL(mapPath).href, `Error parsing sourcemap for file "${fileContext}"`);
 };
 
 /**
@@ -266,7 +280,7 @@ const loadSourceMap = (filename: string, options: LoadSourceMapOptions = {}): Tr
         throw new SourceMapReadError(`Error reading sourcemap for file "${toNamespacedPath(filename)}"`, error);
     }
 
-    return loadSourceMapFromSource(sourceMapContent, dirname(filename), options);
+    return loadSourceMapFromSource(sourceMapContent, dirname(filename), options, filename);
 };
 
 /**
@@ -295,8 +309,10 @@ export const loadSourceMapAsync = async (filename: string, options: LoadSourceMa
         return undefined;
     }
 
+    const fileContext = toNamespacedPath(filename);
+
     if (reference.inline) {
-        return parseMap(decodeInlineMap(reference.inline), reference.inline, `Error parsing inline sourcemap`);
+        return parseMap(decodeInlineMap(reference.inline), reference.inline, `Error parsing sourcemap for file "${fileContext}"`);
     }
 
     if (reference.remote) {
@@ -316,10 +332,10 @@ export const loadSourceMapAsync = async (filename: string, options: LoadSourceMa
     try {
         traceMapContent = await readFile(mapPath, { encoding: "utf8" });
     } catch (error: unknown) {
-        throw new SourceMapReadError(`Error reading sourcemap for file "${toNamespacedPath(mapPath)}"`, error);
+        throw new SourceMapReadError(`Error reading sourcemap for file "${fileContext}"`, error);
     }
 
-    return parseMap(traceMapContent, pathToFileURL(mapPath).href, `Error parsing sourcemap for file "${toNamespacedPath(mapPath)}"`);
+    return parseMap(traceMapContent, pathToFileURL(mapPath).href, `Error parsing sourcemap for file "${fileContext}"`);
 };
 
 export default loadSourceMap;
