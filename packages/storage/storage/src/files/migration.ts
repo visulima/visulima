@@ -1,15 +1,6 @@
 import type { Files } from "./files";
 import { DEFAULT_BULK_CONCURRENCY, objectsMatch, runConcurrent, toBulkError } from "./internal";
-import type {
-    BulkError,
-    FileObject,
-    SyncOptions,
-    SyncProgress,
-    SyncResult,
-    TransferOptions,
-    TransferProgress,
-    TransferResult,
-} from "./types";
+import type { BulkError, FileObject, SyncOptions, SyncProgress, SyncResult, TransferOptions, TransferProgress, TransferResult } from "./types";
 
 /**
  * Streams every object from `source` to `destination` for cross-provider migration.
