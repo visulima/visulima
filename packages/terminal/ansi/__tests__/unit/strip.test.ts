@@ -76,6 +76,26 @@ describe(`ansi`, () => {
             expect(strip("array]0;value")).toBe("array]0;value");
         });
 
+        it("should strip an 8-bit C1 CSI SGR sequence (0x9b)", () => {
+            expect.assertions(1);
+
+            // Regression: strip previously dropped only the 0x9b byte, leaking
+            // the SGR parameters ("31m"/"0m") as visible text.
+            expect(strip("A31mgreen0mB")).toBe("AgreenB");
+        });
+
+        it("should strip an 8-bit C1 OSC hyperlink terminated by ST (0x9d)", () => {
+            expect.assertions(1);
+
+            expect(strip("8;;https://example.comlink8;;")).toBe("link");
+        });
+
+        it("should strip C1 sequences even when no ESC byte is present (fast path)", () => {
+            expect.assertions(1);
+
+            expect(strip("plain1mbold")).toBe("plainbold");
+        });
+
         it("should be linear on adversarial unterminated OSC prefixes (no ReDoS)", () => {
             expect.assertions(1);
 
