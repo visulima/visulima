@@ -45,6 +45,29 @@ const getNativeBindings = (): WorktreeBindings | undefined => {
 };
 
 /**
+ * Strips the Windows extended-length ("verbatim") prefix from a path.
+ *
+ * The Rust worktree resolver canonicalises paths, and Windows
+ * `fs::canonicalize` returns verbatim paths: `\\?\C:\…` for drives and
+ * `\\?\UNC\server\share` for network shares. Downstream `@visulima/path`
+ * joins normalise separators to `/` but keep the prefix, producing
+ * `/?/C:/…` which never matches a plain `C:/…` anchor. Stripping it at the
+ * boundary keeps the rest of the pipeline working with ordinary paths.
+ * No-op on POSIX, where the prefix never appears.
+ */
+const stripWindowsVerbatimPrefix = (path: string): string => {
+    if (path.startsWith("\\\\?\\UNC\\")) {
+        return `\\\\${path.slice(8)}`;
+    }
+
+    if (path.startsWith("\\\\?\\")) {
+        return path.slice(4);
+    }
+
+    return path;
+};
+
+/**
  * Returns the absolute path to the *main* git worktree root when
  * `workspaceRoot` is a linked worktree, or `undefined` for primary
  * checkouts and non-git directories.
@@ -57,7 +80,7 @@ const getNativeBindings = (): WorktreeBindings | undefined => {
 export const getMainWorktreeRoot = (workspaceRoot: string): string | undefined => {
     const result = getNativeBindings()?.getMainWorktreeRoot(workspaceRoot);
 
-    return typeof result === "string" && result.length > 0 ? result : undefined;
+    return typeof result === "string" && result.length > 0 ? stripWindowsVerbatimPrefix(result) : undefined;
 };
 
 /**
