@@ -53,27 +53,42 @@ pnpm add @visulima/find-cache-dir
 ```typescript
 import { findCacheDir, findCacheDirSync } from "@visulima/find-cache-dir";
 
+// findCacheDir is async and returns a Promise — remember to await it.
 const cacheDir = await findCacheDir("my-app");
 
-console.log(cacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
+console.log(cacheDir); //=> '/path/to/project/node_modules/.cache/my-app'
 
 const syncCacheDir = findCacheDirSync("my-app");
 
-console.log(syncCacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
+console.log(syncCacheDir); //=> '/path/to/project/node_modules/.cache/my-app'
 ```
 
-The same can be done for cjs:
+The same can be done for cjs (note that `findCacheDir` returns a `Promise`, so it
+must be awaited inside an async function):
 
 ```javascript
 const { findCacheDir, findCacheDirSync } = require("@visulima/find-cache-dir");
 
-const cacheDir = findCacheDir("my-app");
+(async () => {
+    const cacheDir = await findCacheDir("my-app");
 
-console.log(cacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
+    console.log(cacheDir); //=> '/path/to/project/node_modules/.cache/my-app'
+})();
 
 const syncCacheDir = findCacheDirSync("my-app");
 
-console.log(syncCacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
+console.log(syncCacheDir); //=> '/path/to/project/node_modules/.cache/my-app'
+```
+
+### `thunk`
+
+Pass `thunk: true` to get back a function that joins paths onto the resolved
+cache directory, so you don't have to re-join the base path every time:
+
+```typescript
+const thunk = await findCacheDir("my-app", { thunk: true });
+
+thunk?.("manifest.json"); //=> '/path/to/project/node_modules/.cache/my-app/manifest.json'
 ```
 
 ## API
@@ -83,32 +98,70 @@ console.log(syncCacheDir); //=> '/Users/test/Library/node_mdules/.cache/my-app'
 _Required_\
 Type: `string`
 
-Should be the same as your project name in `package.json`.
+Should be the same as your project name in `package.json`. Must not contain path
+separators — it is joined onto the resolved cache root as a single segment.
 
 ### options
 
 Type: `object`
 
+The options shape is exported as `Options` (also aliased `FindCacheDirOptions`):
+
+```typescript
+import type { Options } from "@visulima/find-cache-dir";
+```
+
 ##### cwd
 
-Type: `string`\
+Type: `URL | string`\
 Default `process.cwd()`
 
-The directory to start searching for a `package.json` from.
+The directory to start searching for a `package.json` from. Ignored when `files`
+is provided or when the `CACHE_DIR` environment variable is set.
+
+##### files
+
+Type: `(URL | string)[]`
+
+A set of files whose closest common ancestor directory is used as the starting
+point for the `package.json` lookup instead of `cwd`. Useful for monorepo tooling
+that wants the cache next to the workspace package owning the processed files.
 
 ##### create
 
 Type: `boolean`\
 Default `false`
 
-Create the directory synchronously before returning.
+Create the resolved directory before returning. The async `findCacheDir` uses a
+non-blocking `ensureDir`; `findCacheDirSync` uses `ensureDirSync`.
+
+##### thunk
+
+Type: `boolean`\
+Default `false`
+
+Return a function `(...paths: string[]) => string` that joins path segments onto
+the resolved cache directory instead of returning the directory string. Returns
+`undefined` when no cache directory could be resolved.
 
 ##### throwError
 
 Type: `boolean`\
 Default `false`
 
-Throw an error if a `.cache` folder can't be found.
+Throw a `NotFoundError` (from `@visulima/fs/error`) when no ancestor
+`package.json` can be found, instead of returning `undefined`. Ignored when
+`useGlobalCacheFallback` is enabled (the fallback is returned first).
+
+##### useGlobalCacheFallback
+
+Type: `boolean`\
+Default `false`
+
+Fall back to the OS user cache directory (honouring `$XDG_CACHE_HOME` on Linux)
+when no writable `node_modules` exists — e.g. read-only installs, globally
+installed tools, or CI images. When enabled, a missing/unwritable `node_modules`
+yields `<os-cache>/<name>` instead of `undefined`.
 
 ## Tips
 
