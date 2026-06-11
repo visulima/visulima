@@ -30,8 +30,8 @@ import { BEL, OSC, SEP } from "./constants";
 const OSC_SANITIZE_REGEX = /[]/g;
 
 const hyperlink = (text: string, url: string): string => {
-    const safeUrl = url.replace(OSC_SANITIZE_REGEX, "");
-    const safeText = text.replace(OSC_SANITIZE_REGEX, "");
+    const safeUrl = url.replaceAll(OSC_SANITIZE_REGEX, "");
+    const safeText = text.replaceAll(OSC_SANITIZE_REGEX, "");
 
     return [OSC, "8", SEP, SEP, safeUrl, BEL, safeText, OSC, "8", SEP, SEP, BEL].join("");
 };

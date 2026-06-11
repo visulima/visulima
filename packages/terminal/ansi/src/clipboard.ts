@@ -96,8 +96,7 @@ export const setClipboard = (data: string, selection: ClipboardSelection = "c", 
  * ```
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html}
  */
-export const requestClipboard = (selection: ClipboardSelection = "c", terminator: string = BEL): string =>
-    `${OSC}52;${selection};?${terminator}`;
+export const requestClipboard = (selection: ClipboardSelection = "c", terminator: string = BEL): string => `${OSC}52;${selection};?${terminator}`;
 
 /**
  * Clears the terminal's clipboard for the given selection via OSC 52.
