@@ -75,6 +75,26 @@ describe(SpecBuilder, () => {
         expect(spec.info).toStrictEqual({ title: "Overwritten", version: "9.9.9" });
     });
 
+    it("does not allow addData to overwrite the prototype chain via forbidden keys", () => {
+        expect.assertions(2);
+
+        const spec = new SpecBuilder(minimalDefinition);
+
+        const malicious: Record<string, unknown> = { openapi: "3.0.0" };
+
+        Object.defineProperty(malicious, "__proto__", {
+            configurable: true,
+            enumerable: true,
+            value: { polluted: true },
+            writable: true,
+        });
+
+        spec.addData([malicious as OpenApiObject]);
+
+        expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+        expect(Object.getPrototypeOf(spec)).toBe(SpecBuilder.prototype);
+    });
+
     it("defaults missing paths/components to empty objects in addData", () => {
         expect.assertions(2);
 

@@ -134,11 +134,23 @@ jsdoc-open-api generate src/routes/**/*.js src/controllers/
 # Specify output file
 jsdoc-open-api generate -o ./public/swagger.json src/
 
+# Emit YAML instead of JSON (format is inferred from the extension)
+jsdoc-open-api generate -o ./openapi.yaml src/
+
+# Write the spec to stdout (useful for piping into other tools)
+jsdoc-open-api generate -o - src/
+
+# Seed info/servers/components from a standalone base-definition file
+jsdoc-open-api generate -d ./definition.yaml src/
+
+# Re-generate automatically whenever a watched path changes
+jsdoc-open-api generate --watch src/
+
 # Use verbose output
 jsdoc-open-api generate -v src/
 
 # Use very verbose output for debugging
-jsdoc-open-api generate -d src/
+jsdoc-open-api generate --very-verbose src/
 ```
 
 ### `generate` Command Options:
@@ -149,54 +161,59 @@ jsdoc-open-api generate [options] [path ...]
 
 - `[path ...]` : Paths to files or directories to parse (optional, uses configuration if not provided).
 - `-c, --config [.openapirc.js]` : Specify the configuration file path. Defaults to `.openapirc.js`.
-- `-o, --output [swaggerSpec.json]` : Specify the output file for the OpenAPI specification. Defaults to `swaggerSpec.json`.
+- `-d, --definition [definition.yaml]` : Base OpenAPI definition file (YAML or JSON) used to seed `info`/`servers`/`components`. The config's `swaggerDefinition` takes precedence over the file.
+- `-o, --output [swaggerSpec.json]` : Specify the output file for the OpenAPI specification. Defaults to `swagger.json`. Use a `.yaml`/`.yml` extension to emit YAML, or `-` to write to stdout.
+- `-w, --watch` : Re-generate the specification whenever one of the watched paths changes (press Ctrl+C to exit).
 - `-v, --verbose` : Enable verbose output during generation.
-- `-d, --very-verbose` : Enable _very_ verbose output for detailed debugging.
+- `--very-verbose` : Enable _very_ verbose output for detailed debugging.
 
 ---
 
 ## Programmatic Usage
 
-You can integrate the generation process directly into your Node.js scripts.
+You can assemble a specification directly in your Node.js scripts. The package
+exposes the building blocks rather than a single all-in-one function:
+
+- `SpecBuilder` — merges per-file results into a single OpenAPI document.
+- `parseFile` / `parseFileMulti` — read a file and run one (or several) comment translators over it. `parseFileMulti` reads + parses the comments only once when you need both dialects.
+- `jsDocumentCommentsToOpenApi` / `swaggerJsDocumentCommentsToOpenApi` — the two JSDoc dialect translators.
+- `validate` — validate the assembled document with `@apidevtools/swagger-parser` (the same check the CLI runs).
+- `loadDefinition` — load a standalone base-definition file (YAML or JSON).
 
 ```javascript
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import jsdocOpenApi from "@visulima/jsdoc-open-api"; // Adjust import based on your module system (require vs import)
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import {
+    SpecBuilder,
+    parseFileMulti,
+    jsDocumentCommentsToOpenApi,
+    swaggerJsDocumentCommentsToOpenApi,
+    validate,
+} from "@visulima/jsdoc-open-api";
 
-const options = {
-    definition: {
-        openapi: "3.0.0",
-        info: {
-            title: "My Programmatic API",
-            version: "1.0.0",
-            description: "API documentation generated programmatically",
-        },
-        // Add other base OpenAPI definition properties here
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+const spec = new SpecBuilder({
+    openapi: "3.0.0",
+    info: {
+        title: "My Programmatic API",
+        version: "1.0.0",
+        description: "API documentation generated programmatically",
     },
-    // Glob patterns pointing to your source files with JSDoc comments
-    sources: [path.join(__dirname, "src/routes/**/*.js")],
-    // Optional: Specify output path (defaults to 'swaggerSpec.json' in current dir)
-    // output: path.join(__dirname, 'public/api-docs.json'),
-    // Optional: Enable verbose logging
-    // verbose: true,
-};
+});
 
-async function generateDocs() {
-    try {
-        const specification = await jsdocOpenApi(options);
-        console.log("OpenAPI specification generated successfully:");
-        // The specification object is returned, and also written to the output file if specified.
-        // console.log(JSON.stringify(specification, null, 2));
-    } catch (error) {
-        console.error("Error generating OpenAPI specification:", error);
-    }
+const translators = [jsDocumentCommentsToOpenApi, swaggerJsDocumentCommentsToOpenApi];
+
+// Feed each source file through both dialects (single read + single comment parse).
+for (const file of [path.join(__dirname, "src/routes/users.js")]) {
+    spec.addData(parseFileMulti(file, translators).map((entry) => entry.spec));
 }
 
-generateDocs();
+// Re-use the exact validation the CLI performs.
+await validate(structuredClone(spec));
+
+console.log(JSON.stringify(spec, null, 2));
 ```
 
 ---

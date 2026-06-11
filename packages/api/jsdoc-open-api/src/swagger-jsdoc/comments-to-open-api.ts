@@ -1,4 +1,4 @@
-import type { Spec } from "comment-parser";
+import type { Block, Spec } from "comment-parser";
 import { parse as parseComments } from "comment-parser";
 import { mergeWith } from "es-toolkit";
 import type { YAMLError } from "yaml";
@@ -69,36 +69,45 @@ const tagsToObjects = (specs: Spec[], verbose?: boolean) =>
         return {};
     });
 
-const commentsToOpenApi = (fileContents: string, verbose?: boolean): { loc: number; spec: OpenApiObject }[] => {
-    const jsDocumentComments = parseComments(fileContents, { spacing: "preserve" });
+const SWAGGER_TAGS = new Set(["asyncapi", "openapi", "swagger"]);
 
-    return jsDocumentComments.map((comment) => {
-        // Line count, number of tags + 1 for description.
-        // - Don't count line-breaking due to long descriptions
-        // - Don't count empty lines
-        const loc = comment.tags.length + 1;
-        const result: Record<string, any> = {};
+const commentsToOpenApi = (fileContents: string, verbose?: boolean, comments?: Block[]): { loc: number; spec: OpenApiObject }[] => {
+    // Reuse already-parsed blocks when provided (see `parseFileMulti`) to avoid a
+    // redundant `comment-parser` pass.
+    const jsDocumentComments = comments ?? parseComments(fileContents, { spacing: "preserve" });
 
-        for (const source of tagsToObjects(comment.tags, verbose)) {
-            mergeWith(result, source, customizer);
-        }
+    return jsDocumentComments
+        // Only process comments that actually carry an @openapi/@swagger/@asyncapi
+        // tag — skip ordinary code docs so we don't run them through the YAML
+        // parser + merge + JSON roundtrip only to emit an empty `{}`.
+        .filter((comment) => comment.tags.some((tag) => SWAGGER_TAGS.has(tag.tag)))
+        .map((comment) => {
+            // Line count, number of tags + 1 for description.
+            // - Don't count line-breaking due to long descriptions
+            // - Don't count empty lines
+            const loc = comment.tags.length + 1;
+            const result: Record<string, any> = {};
 
-        ["definitions", "responses", "parameters", "securityDefinitions", "components", "tags"].forEach((property) => {
-            if (result[property] !== undefined && hasEmptyProperty(result[property])) {
-                // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
-                delete result[property];
+            for (const source of tagsToObjects(comment.tags, verbose)) {
+                mergeWith(result, source, customizer);
             }
+
+            ["definitions", "responses", "parameters", "securityDefinitions", "components", "tags"].forEach((property) => {
+                if (result[property] !== undefined && hasEmptyProperty(result[property])) {
+                    // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+                    delete result[property];
+                }
+            });
+
+            // Purge all undefined properties — the JSON roundtrip drops them.
+            // eslint-disable-next-line unicorn/prefer-structured-clone
+            const spec = JSON.parse(JSON.stringify(result));
+
+            return {
+                loc,
+                spec,
+            };
         });
-
-        // Purge all undefined properties — the JSON roundtrip drops them.
-        // eslint-disable-next-line unicorn/prefer-structured-clone
-        const spec = JSON.parse(JSON.stringify(result));
-
-        return {
-            loc,
-            spec,
-        };
-    });
 };
 
 export default commentsToOpenApi;

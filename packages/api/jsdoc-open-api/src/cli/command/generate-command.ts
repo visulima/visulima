@@ -1,61 +1,99 @@
 import { lstat, mkdir, realpath, writeFile } from "node:fs/promises";
-import { dirname, normalize } from "node:path";
+import { dirname, extname, normalize } from "node:path";
+import { stdout } from "node:process";
 import { pathToFileURL } from "node:url";
 
 import { collect } from "@visulima/fs";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { MultiBar, Presets } from "cli-progress";
+import yaml from "yaml";
 
 import { DEFAULT_EXCLUDE } from "../../constants";
 import type { BaseDefinition } from "../../exported";
 import jsDocumentCommentsToOpenApi from "../../jsdoc/comments-to-open-api";
-import parseFile from "../../parse-file";
+import { parseFileMulti } from "../../parse-file";
 import SpecBuilder from "../../spec-builder";
 import swaggerJsDocumentCommentsToOpenApi from "../../swagger-jsdoc/comments-to-open-api";
+import loadDefinition from "../../util/load-definition";
 import validate from "../../validate";
 
-const generateCommand = async (
-    configName: string,
-    paths: string[],
-    options: {
-        config?: string;
-        output?: string;
-        verbose?: boolean;
-        veryVerbose?: boolean;
-    },
-): Promise<void> => {
-    type OpenApiConfig = {
-        exclude: string[];
-        extensions?: string[];
-        followSymlinks?: boolean;
-        include?: (RegExp | string)[];
-        swaggerDefinition: BaseDefinition;
-    };
+const YAML_OUTPUT_EXTENSIONS = new Set([".yaml", ".yml"]);
 
-    let openapiConfig: OpenApiConfig;
+const STDOUT_OUTPUT = "-";
 
+const translators = [jsDocumentCommentsToOpenApi, swaggerJsDocumentCommentsToOpenApi];
+
+type OpenApiConfig = {
+    definition?: string;
+    exclude: string[];
+    extensions?: string[];
+    followSymlinks?: boolean;
+    include?: (RegExp | string)[];
+    swaggerDefinition: BaseDefinition;
+};
+
+const loadConfig = async (configPath: string): Promise<OpenApiConfig> => {
     try {
-        let config = await import(pathToFileURL(normalize(options.config ?? configName)).href);
+        let config = await import(pathToFileURL(normalize(configPath)).href);
 
         if (config?.default) {
             config = config.default;
         }
 
-        openapiConfig = config;
-    } catch {
-        throw new Error(`No config file found, on: ${options.config ?? ".openapirc.js"}\n`);
+        return config as OpenApiConfig;
+    } catch (error: any) {
+        // Distinguish a genuinely missing file from a config that exists but
+        // throws while being evaluated (syntax error, bad export, throwing
+        // top-level code). Reporting the latter as "No config file found" hides
+        // the real cause.
+        if (error?.code === "ERR_MODULE_NOT_FOUND" || error?.code === "MODULE_NOT_FOUND" || error?.code === "ERR_LOAD_URL") {
+            throw new Error(`No config file found, on: ${configPath}\n`, { cause: error });
+        }
+
+        const message = error instanceof Error ? error.message : String(error);
+
+        throw new Error(`Failed to load config file "${configPath}": ${message}`, { cause: error });
+    }
+};
+
+const buildSpec = async (
+    configName: string,
+    paths: string[],
+    options: {
+        config?: string;
+        definition?: string;
+        output?: string;
+        verbose?: boolean;
+        veryVerbose?: boolean;
+    },
+): Promise<SpecBuilder> => {
+    const openapiConfig = await loadConfig(options.config ?? configName);
+
+    // A standalone base-definition file (`-d definition.yaml`) seeds info/servers/
+    // components; CLI flag wins over the config's `definition` field.
+    const definitionPath = options.definition ?? openapiConfig.definition;
+
+    let { swaggerDefinition } = openapiConfig;
+
+    if (definitionPath) {
+        swaggerDefinition = { ...loadDefinition(definitionPath), ...swaggerDefinition };
     }
 
-    const multibar = new MultiBar(
-        {
-            clearOnComplete: false,
-            format: "{value}/{total} | {bar} | {filename}",
-            hideCursor: true,
-        },
-        Presets.shades_grey,
-    );
+    const writeToStdout = options.output === STDOUT_OUTPUT;
 
-    const spec = new SpecBuilder(openapiConfig.swaggerDefinition);
+    // The progress bar writes to stdout — suppress it when piping the spec there.
+    const multibar = writeToStdout
+        ? undefined
+        : new MultiBar(
+            {
+                clearOnComplete: false,
+                format: "{value}/{total} | {bar} | {filename}",
+                hideCursor: true,
+            },
+            Presets.shades_grey,
+        );
+
+    const spec = new SpecBuilder(swaggerDefinition);
     const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...openapiConfig.exclude]);
 
     // eslint-disable-next-line unicorn/prevent-abbreviations
@@ -68,15 +106,8 @@ const generateCommand = async (
         const realDirectory = await realpath(dir);
 
         if (!isDirectory) {
-            const parsedJsDocumentFile = parseFile(realDirectory, jsDocumentCommentsToOpenApi, options.verbose);
+            spec.addData(parseFileMulti(realDirectory, translators, options.verbose).map((item) => item.spec));
 
-            spec.addData(parsedJsDocumentFile.map((item) => item.spec));
-
-            const parsedSwaggerJsDocumentFile = parseFile(realDirectory, swaggerJsDocumentCommentsToOpenApi, options.verbose);
-
-            spec.addData(parsedSwaggerJsDocumentFile.map((item) => item.spec));
-
-            // eslint-disable-next-line no-continue
             continue;
         }
 
@@ -98,7 +129,7 @@ const generateCommand = async (
             console.log(files);
         }
 
-        const bar = multibar.create(files.length, 0);
+        const bar = multibar?.create(files.length, 0);
 
         files.forEach((file) => {
             if (options.verbose) {
@@ -106,15 +137,9 @@ const generateCommand = async (
                 console.log(`Parsing file ${file}`);
             }
 
-            bar.increment(1, { filename: realDirectory });
+            bar?.increment(1, { filename: realDirectory });
 
-            const parsedJsDocumentFile = parseFile(file, jsDocumentCommentsToOpenApi, options.verbose);
-
-            spec.addData(parsedJsDocumentFile.map((item) => item.spec));
-
-            const parsedSwaggerJsDocumentFile = parseFile(file, swaggerJsDocumentCommentsToOpenApi, options.verbose);
-
-            spec.addData(parsedSwaggerJsDocumentFile.map((item) => item.spec));
+            spec.addData(parseFileMulti(file, translators, options.verbose).map((item) => item.spec));
         });
     }
 
@@ -130,9 +155,40 @@ const generateCommand = async (
 
     await validate(structuredClone(spec) as unknown as Record<string, unknown>);
 
+    multibar?.stop();
+
+    return spec;
+};
+
+const serializeSpec = (spec: SpecBuilder, output: string): string => {
+    if (YAML_OUTPUT_EXTENSIONS.has(extname(output))) {
+        // structuredClone strips the SpecBuilder class wrapper to a plain object.
+        return yaml.stringify(structuredClone(spec));
+    }
+
+    return JSON.stringify(spec, undefined, 2);
+};
+
+const generateCommand = async (
+    configName: string,
+    paths: string[],
+    options: {
+        config?: string;
+        definition?: string;
+        output?: string;
+        verbose?: boolean;
+        veryVerbose?: boolean;
+    },
+): Promise<void> => {
+    const spec = await buildSpec(configName, paths, options);
+
     const output = options.output ?? "swagger.json";
 
-    multibar.stop();
+    if (output === STDOUT_OUTPUT) {
+        stdout.write(`${serializeSpec(spec, "swagger.json")}\n`);
+
+        return;
+    }
 
     if (options.verbose) {
         // eslint-disable-next-line no-console
@@ -140,7 +196,7 @@ const generateCommand = async (
     }
 
     await mkdir(dirname(output), { recursive: true });
-    await writeFile(output, JSON.stringify(spec, undefined, 2));
+    await writeFile(output, serializeSpec(spec, output));
 
     // eslint-disable-next-line no-console
     console.log(`\nSwagger specification is ready, check the "${output}" file.`);

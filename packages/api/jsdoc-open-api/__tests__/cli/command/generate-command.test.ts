@@ -3,8 +3,10 @@ import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import * as fs from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import process from "node:process";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import yaml from "yaml";
 
 import generateCommand from "../../../src/cli/command/generate-command";
 
@@ -34,12 +36,14 @@ describe("generate command", () => {
         await expect(generateCommand(".openapirc.js", paths, options)).rejects.toThrow("No config file found, on: /path/to/nonexistent/config.js");
     });
 
-    it("falls back to the default \".openapirc.js\" name in the error when no config option is given", async () => {
+    it("reports the resolved config name in the error when no config option is given", async () => {
         expect.assertions(1);
 
-        // No `config` option, and the resolved config name does not exist on disk.
+        // No `config` option, so it falls back to the positional config name. The
+        // error now reports the path it actually tried to load (previously it always
+        // printed the literal ".openapirc.js", masking the real path).
         await expect(generateCommand("/path/to/missing/.openapirc.js", ["/path/to/dir"], {})).rejects.toThrow(
-            "No config file found, on: .openapirc.js",
+            "No config file found, on: /path/to/missing/.openapirc.js",
         );
     });
 
@@ -113,5 +117,95 @@ describe("generate command", () => {
         expect(messages).toContain("\nSwagger specification is ready, check the \"swagger.json\" file.");
 
         consoleLogMock.mockRestore();
+    });
+
+    it("surfaces the real error when the config file exists but fails to evaluate", async () => {
+        expect.assertions(1);
+
+        const workDirectory = mkdtempSync(join(tmpdir(), "generate-bad-config-"));
+        const configPath = join(workDirectory, "broken.cjs");
+
+        // Valid module path, but the module throws while being evaluated.
+        writeFileSync(configPath, "throw new Error(\"kaboom from config\");\n");
+
+        try {
+            await expect(generateCommand(".openapirc.js", [fixturesDirectory], { config: configPath })).rejects.toThrow("kaboom from config");
+        } finally {
+            rmSync(workDirectory, { force: true, recursive: true });
+        }
+    });
+
+    it("writes YAML output when the output path ends with .yaml", async () => {
+        expect.assertions(2);
+
+        const writeFileSpy = vi.spyOn(fs, "writeFile");
+        const consoleLogMock = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+        try {
+            await generateCommand(".openapirc.js", [fixturesDirectory], {
+                config: join(fixturesDirectory, ".openapirc.js"),
+                output: "openapi.yaml",
+            });
+
+            const [path, contents] = writeFileSpy.mock.calls.at(-1) as [string, string];
+
+            expect(path).toBe("openapi.yaml");
+            // The serialized payload must be parseable YAML carrying the openapi field.
+            expect((yaml.parse(contents) as { openapi?: string }).openapi).toBeDefined();
+        } finally {
+            consoleLogMock.mockRestore();
+        }
+    });
+
+    it("writes to stdout and skips the file write when output is \"-\"", async () => {
+        expect.assertions(2);
+
+        const writeFileSpy = vi.spyOn(fs, "writeFile");
+        const stdoutSpy = vi.spyOn(process.stdout, "write").mockImplementation(() => true);
+
+        try {
+            await generateCommand(".openapirc.js", [fixturesDirectory], {
+                config: join(fixturesDirectory, ".openapirc.js"),
+                output: "-",
+            });
+
+            expect(stdoutSpy).toHaveBeenCalledTimes(1);
+            expect(writeFileSpy).not.toHaveBeenCalled();
+        } finally {
+            stdoutSpy.mockRestore();
+        }
+    });
+
+    it("seeds the spec from a base-definition file passed via the definition option", async () => {
+        expect.assertions(1);
+
+        const workDirectory = mkdtempSync(join(tmpdir(), "generate-definition-"));
+        const definitionPath = join(workDirectory, "definition.json");
+        const configPath = join(workDirectory, "config.cjs");
+
+        writeFileSync(
+            definitionPath,
+            JSON.stringify({ info: { title: "From Definition", version: "9.9.9" }, openapi: "3.0.0" }),
+        );
+        // Config without swaggerDefinition.info so the definition file supplies it.
+        writeFileSync(configPath, "module.exports = { exclude: [], swaggerDefinition: {} };\n");
+
+        const writeFileSpy = vi.spyOn(fs, "writeFile");
+        const consoleLogMock = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+        try {
+            await generateCommand(".openapirc.js", [join(fixturesDirectory, "routes")], {
+                config: configPath,
+                definition: definitionPath,
+            });
+
+            const [, contents] = writeFileSpy.mock.calls.at(-1) as [string, string];
+            const parsed = JSON.parse(contents) as { info: { title: string } };
+
+            expect(parsed.info.title).toBe("From Definition");
+        } finally {
+            consoleLogMock.mockRestore();
+            rmSync(workDirectory, { force: true, recursive: true });
+        }
     });
 });

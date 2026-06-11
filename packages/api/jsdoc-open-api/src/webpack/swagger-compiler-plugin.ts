@@ -1,13 +1,12 @@
 import { mkdir, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
-import { exit } from "node:process";
 
 import { collect } from "@visulima/fs";
 
 import { DEFAULT_EXCLUDE } from "../constants";
 import type { BaseDefinition } from "../exported";
 import jsDocumentCommentsToOpenApi from "../jsdoc/comments-to-open-api";
-import parseFile from "../parse-file";
+import { parseFileMulti } from "../parse-file";
 import SpecBuilder from "../spec-builder";
 import swaggerJsDocumentCommentsToOpenApi from "../swagger-jsdoc/comments-to-open-api";
 import validate from "../validate";
@@ -17,20 +16,24 @@ import validate from "../validate";
 // keeps the import out of the module-level import graph for dts generation.
 
 type WebpackCompiler = import("webpack").Compiler;
+type WebpackCompilation = import("webpack").Compilation;
 
-const errorHandler = (error: any) => {
-    if (error) {
-        // eslint-disable-next-line no-console
-        console.error(error);
+const translators = [jsDocumentCommentsToOpenApi, swaggerJsDocumentCommentsToOpenApi];
 
-        exit(1);
+const toError = (error: unknown): Error => {
+    if (error instanceof Error) {
+        return error;
     }
+
+    return new Error(String(error));
 };
 
 class SwaggerCompilerPlugin {
     private readonly assetsPath: string;
 
     private readonly ignore: (RegExp | string)[];
+
+    private readonly silent: boolean;
 
     private readonly sources: string[];
 
@@ -44,6 +47,8 @@ class SwaggerCompilerPlugin {
         swaggerDefinition: BaseDefinition,
         options: {
             ignore?: (RegExp | string)[];
+            /** Suppress the informational "Build paused…" / "switching back…" logs. */
+            silent?: boolean;
             verbose?: boolean;
         },
     ) {
@@ -51,93 +56,87 @@ class SwaggerCompilerPlugin {
         this.swaggerDefinition = swaggerDefinition;
         this.sources = sources;
         this.verbose = options.verbose ?? false;
+        this.silent = options.silent ?? false;
         this.ignore = options.ignore ?? [];
     }
 
     public apply(compiler: WebpackCompiler): void {
         const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...this.ignore]);
 
-        // eslint-disable-next-line @typescript-eslint/no-misused-promises
-        compiler.hooks.make.tapAsync("SwaggerCompilerPlugin", async (_, callback: VoidFunction): Promise<void> => {
-            // eslint-disable-next-line no-console
-            console.log("Build paused, switching to swagger build");
+        compiler.hooks.make.tapAsync(
+            "SwaggerCompilerPlugin",
+            // eslint-disable-next-line @typescript-eslint/no-misused-promises
+            async (compilation: WebpackCompilation, callback: (error?: Error) => void): Promise<void> => {
+                this.log("Build paused, switching to swagger build");
 
-            const spec = new SpecBuilder(this.swaggerDefinition);
+                const spec = new SpecBuilder(this.swaggerDefinition);
 
-            // eslint-disable-next-line unicorn/prevent-abbreviations
-            for (const dir of this.sources) {
-                // eslint-disable-next-line no-await-in-loop
-                const files: string[] = await collect(dir, {
-                    extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
-                    includeDirs: false,
-                    skip: [...skip],
-                });
+                try {
+                    // eslint-disable-next-line unicorn/prevent-abbreviations
+                    for (const dir of this.sources) {
+                        // eslint-disable-next-line no-await-in-loop
+                        const files: string[] = await collect(dir, {
+                            extensions: [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
+                            includeDirs: false,
+                            skip: [...skip],
+                        });
 
-                if (this.verbose) {
-                    // eslint-disable-next-line no-console
-                    console.log(`Found ${String(files.length)} files in ${dir}`);
-                    // eslint-disable-next-line no-console
-                    console.log(files);
-                }
+                        if (this.verbose) {
+                            this.log(`Found ${String(files.length)} files in ${dir}`);
+                            this.log(JSON.stringify(files));
+                        }
 
-                files.forEach((file) => {
+                        files.forEach((file) => {
+                            if (this.verbose) {
+                                this.log(`Parsing file ${file}`);
+                            }
+
+                            spec.addData(parseFileMulti(file, translators, this.verbose).map((item) => item.spec));
+                        });
+                    }
+
                     if (this.verbose) {
-                        // eslint-disable-next-line no-console
-                        console.log(`Parsing file ${file}`);
+                        this.log("Validating swagger spec");
+                        this.log(JSON.stringify(spec, undefined, 2));
                     }
 
-                    try {
-                        const parsedJsDocumentFile = parseFile(file, jsDocumentCommentsToOpenApi, this.verbose);
+                    await validate(structuredClone(spec) as unknown as Record<string, unknown>);
 
-                        spec.addData(parsedJsDocumentFile.map((item) => item.spec));
+                    const { assetsPath } = this;
 
-                        const parsedSwaggerJsDocumentFile = parseFile(file, swaggerJsDocumentCommentsToOpenApi, this.verbose);
+                    await mkdir(dirname(assetsPath), { recursive: true });
+                    await writeFile(assetsPath, JSON.stringify(spec, undefined, 2));
 
-                        spec.addData(parsedSwaggerJsDocumentFile.map((item) => item.spec));
-                    } catch (error) {
-                        // eslint-disable-next-line no-console
-                        console.error(error);
-
-                        exit(1);
+                    if (this.verbose) {
+                        this.log(`Written swagger spec to "${this.assetsPath}" file`);
                     }
-                });
-            }
+                } catch (error) {
+                    // Surface the failure through webpack's diagnostics instead of
+                    // killing the host process (e.g. the Next.js dev server).
+                    const wrapped = toError(error);
 
-            try {
-                if (this.verbose) {
-                    // eslint-disable-next-line no-console
-                    console.log("Validating swagger spec");
-                    // eslint-disable-next-line no-console
-                    console.log(JSON.stringify(spec, undefined, 2));
+                    // `compilation.errors` may be unavailable on minimal/fake compilers.
+                    if (Array.isArray((compilation as { errors?: unknown[] }).errors)) {
+                        (compilation as { errors: Error[] }).errors.push(wrapped);
+                    }
+
+                    callback(wrapped);
+
+                    return;
                 }
 
-                await validate(structuredClone(spec) as unknown as Record<string, unknown>);
-            } catch (error: any) {
-                // eslint-disable-next-line no-console
-                console.error(error.toJSON());
+                this.log("switching back to normal build");
 
-                exit(1);
-            }
+                callback();
+            },
+        );
+    }
 
-            const { assetsPath } = this;
-
-            try {
-                await mkdir(dirname(assetsPath), { recursive: true });
-                await writeFile(assetsPath, JSON.stringify(spec, undefined, 2));
-            } catch (error) {
-                errorHandler(error);
-            }
-
-            if (this.verbose) {
-                // eslint-disable-next-line no-console
-                console.log(`Written swagger spec to "${this.assetsPath}" file`);
-            }
-
+    private log(message: string): void {
+        if (!this.silent) {
             // eslint-disable-next-line no-console
-            console.log("switching back to normal build");
-
-            callback();
-        });
+            console.log(message);
+        }
     }
 }
 

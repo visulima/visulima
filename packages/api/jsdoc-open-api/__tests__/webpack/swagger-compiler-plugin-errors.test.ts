@@ -4,28 +4,14 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const { exitMock } = vi.hoisted(() => {
-    return {
-        exitMock: vi.fn<(code?: number) => never>(),
-    };
-});
-
-vi.mock(import("node:process"), async () => {
-    return {
-        ...await vi.importActual<typeof import("node:process")>("node:process"),
-        exit: exitMock,
-    };
-});
-
-// eslint-disable-next-line import/first
 import SwaggerCompilerPlugin from "../../src/webpack/swagger-compiler-plugin";
 
-type TapAsyncCallback = (compilation: unknown, callback: () => void) => Promise<void> | void;
+type TapAsyncCallback = (compilation: unknown, callback: (error?: Error) => void) => Promise<void> | void;
 
 interface FakeCompiler {
     hooks: {
         make: {
-            run: () => Promise<void>;
+            run: (compilation: { errors: Error[] }) => Promise<Error | undefined>;
             tapAsync: (name: string, callback: TapAsyncCallback) => void;
         };
     };
@@ -37,16 +23,20 @@ const createFakeCompiler = (): FakeCompiler => {
     return {
         hooks: {
             make: {
-                run: async () => {
+                // Resolves with the error passed to `callback`, mirroring how webpack
+                // surfaces async plugin failures (never via `process.exit`).
+                run: async (compilation: { errors: Error[] }) => {
                     const callback = registered;
 
                     if (!callback) {
                         throw new Error("tapAsync was never called");
                     }
 
-                    await new Promise<void>((resolve, reject) => {
+                    return await new Promise<Error | undefined>((resolve, reject) => {
                         try {
-                            const maybePromise = callback({}, () => { resolve(); });
+                            const maybePromise = callback(compilation, (error?: Error) => {
+                                resolve(error);
+                            });
 
                             if (maybePromise && typeof (maybePromise as Promise<unknown>).then === "function") {
                                 (maybePromise as Promise<unknown>).catch((error: unknown) => {
@@ -73,13 +63,14 @@ const baseDefinition = {
 
 describe("swaggerCompilerPlugin error handling", () => {
     let workDirectory: string;
-    let consoleErrorSpy: ReturnType<typeof vi.spyOn>;
+    let exitSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
         workDirectory = mkdtempSync(join(tmpdir(), "swagger-plugin-error-"));
         vi.spyOn(console, "log").mockImplementation(() => undefined);
-        consoleErrorSpy = vi.spyOn(console, "error").mockImplementation(() => undefined);
-        exitMock.mockReset();
+        vi.spyOn(console, "error").mockImplementation(() => undefined);
+        // Guard against any accidental hard exit — the plugin must never call it.
+        exitSpy = vi.spyOn(process, "exit").mockImplementation((() => undefined) as never);
     });
 
     afterEach(() => {
@@ -87,8 +78,8 @@ describe("swaggerCompilerPlugin error handling", () => {
         vi.restoreAllMocks();
     });
 
-    it("logs the error and exits when a source file cannot be parsed", async () => {
-        expect.assertions(2);
+    it("pushes the parse error onto compilation.errors and reports it via the callback instead of exiting", async () => {
+        expect.assertions(3);
 
         const sourceFile = join(workDirectory, "broken.js");
 
@@ -106,16 +97,18 @@ describe("swaggerCompilerPlugin error handling", () => {
         const plugin = new SwaggerCompilerPlugin(join(workDirectory, "swagger.json"), [workDirectory], baseDefinition, {});
 
         const compiler = createFakeCompiler();
+        const compilation = { errors: [] as Error[] };
 
         plugin.apply(compiler as unknown as Parameters<SwaggerCompilerPlugin["apply"]>[0]);
 
-        await compiler.hooks.make.run();
+        const reported = await compiler.hooks.make.run(compilation);
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.any(Error));
-        expect(exitMock).toHaveBeenCalledWith(1);
+        expect(reported).toBeInstanceOf(Error);
+        expect(compilation.errors).toHaveLength(1);
+        expect(exitSpy).not.toHaveBeenCalled();
     });
 
-    it("invokes the error handler and exits when the output directory cannot be created", async () => {
+    it("reports a write failure via the callback instead of exiting", async () => {
         expect.assertions(2);
 
         // Make the parent of the asset path a regular file so `mkdir` (recursive) fails.
@@ -128,17 +121,32 @@ describe("swaggerCompilerPlugin error handling", () => {
         const plugin = new SwaggerCompilerPlugin(assetsPath, [workDirectory], baseDefinition, {});
 
         const compiler = createFakeCompiler();
+        const compilation = { errors: [] as Error[] };
 
         plugin.apply(compiler as unknown as Parameters<SwaggerCompilerPlugin["apply"]>[0]);
 
-        await compiler.hooks.make.run();
+        const reported = await compiler.hooks.make.run(compilation);
 
-        // Allow the async mkdir/writeFile callbacks to flush.
-        await new Promise<void>((resolve) => {
-            setTimeout(resolve, 50);
-        });
+        expect(reported).toBeInstanceOf(Error);
+        expect(exitSpy).not.toHaveBeenCalled();
+    });
 
-        expect(consoleErrorSpy).toHaveBeenCalledWith(expect.any(Error));
-        expect(exitMock).toHaveBeenCalledWith(1);
+    it("suppresses informational logs when silent is set", async () => {
+        expect.assertions(1);
+
+        const consoleLogSpy = vi.spyOn(console, "log");
+
+        const plugin = new SwaggerCompilerPlugin(join(workDirectory, "swagger.json"), [workDirectory], baseDefinition, { silent: true });
+
+        const compiler = createFakeCompiler();
+        const compilation = { errors: [] as Error[] };
+
+        plugin.apply(compiler as unknown as Parameters<SwaggerCompilerPlugin["apply"]>[0]);
+
+        await compiler.hooks.make.run(compilation);
+
+        const messages = consoleLogSpy.mock.calls.map((call) => call[0]);
+
+        expect(messages).not.toContain("Build paused, switching to swagger build");
     });
 });
