@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { DEFAULT_BORDER } from "../../../src/style";
-import { getHorizontalBorderChars, getVerticalBorderChars } from "../../../src/utils/border-utilities.ts";
+import { getHorizontalBorderChars, getVerticalBorderChars } from "../../../src/utils/border-utilities";
 
 describe(getHorizontalBorderChars, () => {
     it("returns the top border components", () => {

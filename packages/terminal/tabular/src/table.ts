@@ -1,7 +1,8 @@
 import { Grid } from "./grid";
 import { DEFAULT_BORDER } from "./style";
-import type { Content, GridItem, GridOptions, TableCell, TableItem, TableOptions } from "./types";
+import type { ColumnDefault, Content, GridItem, GridOptions, TableCell, TableItem, TableOptions } from "./types";
 import computeRowLogicalWidth from "./utils/compute-row-logical-width";
+import sanitizeHref from "./utils/sanitize-href";
 
 /**
  * A versatile table generator for CLI applications.
@@ -18,6 +19,23 @@ export class Table {
     #isDirty = true;
 
     #cachedString: string | undefined = undefined;
+
+    /**
+     * Emit a non-fatal diagnostic. Routes to the consumer-provided `onWarn`
+     * handler when set, otherwise falls back to `console.warn`.
+     */
+    #warn(message: string): void {
+        const handler = this.#options.onWarn;
+
+        if (handler) {
+            handler(message);
+
+            return;
+        }
+
+        // eslint-disable-next-line no-console
+        console.warn(message);
+    }
 
     /**
      * Initializes a new Table instance.
@@ -113,6 +131,57 @@ export class Table {
     }
 
     /**
+     * Returns a shallow copy of the current body rows.
+     *
+     * The outer array is a fresh copy (mutating it does not affect the table),
+     * but the row arrays and cell objects are the same references stored in the
+     * table. Useful for live dashboards that need to inspect or re-render the
+     * current data without keeping a separate shadow copy.
+     * @returns A copy of the body rows.
+     */
+    public getRows(): TableCell[][] {
+        return this.#rows.map((row) => [...row]);
+    }
+
+    /**
+     * Returns the number of body rows currently stored in the table.
+     * @returns The body row count.
+     */
+    public get rowCount(): number {
+        return this.#rows.length;
+    }
+
+    /**
+     * Removes a single body row by index.
+     * @param index Zero-based index of the body row to remove.
+     * @returns The Table instance for chaining.
+     * @throws {RangeError} If the index is out of bounds.
+     */
+    public removeRow(index: number): this {
+        if (!Number.isInteger(index) || index < 0 || index >= this.#rows.length) {
+            throw new RangeError(`Row index ${String(index)} is out of bounds (0..${String(this.#rows.length - 1)})`);
+        }
+
+        this.#rows.splice(index, 1);
+        this.#isDirty = true;
+        this.#cachedString = undefined;
+
+        return this;
+    }
+
+    /**
+     * Removes all body rows. Headers and footers are preserved.
+     * @returns The Table instance for chaining.
+     */
+    public clear(): this {
+        this.#rows.length = 0;
+        this.#isDirty = true;
+        this.#cachedString = undefined;
+
+        return this;
+    }
+
+    /**
      * Renders the table to a string.
      * @returns The string representation of the table.
      */
@@ -147,8 +216,7 @@ export class Table {
             if (Array.isArray(row)) {
                 numberColumns = Math.max(numberColumns, computeRowLogicalWidth(row));
             } else {
-                // eslint-disable-next-line no-console
-                console.error(`Unexpected non-array element found while calculating columns:`, row);
+                this.#warn(`Unexpected non-array element found while calculating columns: ${JSON.stringify(row)}`);
             }
         }
 
@@ -234,6 +302,7 @@ export class Table {
             foregroundColor: this.#options.style?.foregroundColor,
             gap: this.#options.gap ?? 0,
             maxWidth: this.#options.maxWidth,
+            onWarn: this.#options.onWarn,
             paddingLeft: this.#options.style?.paddingLeft,
             paddingRight: this.#options.style?.paddingRight,
             terminalWidth: this.#options.terminalWidth,
@@ -249,14 +318,35 @@ export class Table {
 
         const grid = new Grid(options);
 
+        // Merge `colAligns` shorthand into the richer `columnDefaults` map so
+        // there is a single source of per-column defaults to consult below.
+        const columnDefaults: (ColumnDefault | undefined)[] = [];
+
+        if (this.#options.columnDefaults) {
+            for (const [index, value] of this.#options.columnDefaults.entries()) {
+                if (value) {
+                    columnDefaults[index] = { ...value };
+                }
+            }
+        }
+
+        if (this.#options.colAligns) {
+            for (const [index, value] of this.#options.colAligns.entries()) {
+                if (value !== undefined) {
+                    columnDefaults[index] = { ...columnDefaults[index], hAlign: columnDefaults[index]?.hAlign ?? value };
+                }
+            }
+        }
+
+        const hasColumnDefaults = columnDefaults.length > 0;
+
         const gridItems: GridItem[] = [];
 
         for (const [currentRowIndex, allRow] of allRows.entries()) {
             const row = allRow;
 
             if (!Array.isArray(row)) {
-                // eslint-disable-next-line no-console
-                console.error(`Skipping non-array row while creating GridItems:`, row);
+                this.#warn(`Skipping non-array row while creating GridItems: ${JSON.stringify(row)}`);
 
                 continue;
             }
@@ -269,6 +359,10 @@ export class Table {
             const applyHeaderColspan = isHeaderRow && row.length === 1 && numberColumns > 1;
             const applyFooterColspan = isFooterRow && row.length === 1 && numberColumns > 1;
 
+            // Tracks the logical grid column of the current cell so per-column
+            // defaults (`colAligns` / `columnDefaults`) can be looked up.
+            let columnCursor = 0;
+
             for (const element of row) {
                 let cellInput: Content | TableItem = element;
                 let cellOptions: Omit<GridItem, "content"> = {};
@@ -276,10 +370,26 @@ export class Table {
                 if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
                     const { content, href, ...rest } = cellInput;
 
-                    cellInput = href ? `\u001B]8;;${href}\u001B\\${String(content)}\u001B]8;;\u001B\\` : content;
+                    cellInput = href ? `\u001B]8;;${sanitizeHref(href)}\u001B\\${String(content)}\u001B]8;;\u001B\\` : content;
 
                     cellOptions = rest;
                 }
+
+                // Apply per-column defaults; cell-level options always win.
+                const columnDefault = hasColumnDefaults ? columnDefaults[columnCursor] : undefined;
+
+                if (columnDefault) {
+                    cellOptions = {
+                        ...cellOptions,
+                        hAlign: cellOptions.hAlign ?? columnDefault.hAlign,
+                        maxWidth: cellOptions.maxWidth ?? columnDefault.maxWidth,
+                        truncate: cellOptions.truncate ?? columnDefault.truncate,
+                        vAlign: cellOptions.vAlign ?? columnDefault.vAlign,
+                        wordWrap: cellOptions.wordWrap ?? columnDefault.wordWrap,
+                    };
+                }
+
+                columnCursor += cellOptions.colSpan ?? 1;
 
                 // Apply auto colSpan for single-cell header rows
                 if (applyHeaderColspan) {
@@ -301,8 +411,11 @@ export class Table {
                         ? cellInput.replaceAll("\t", " ".repeat(this.#options.transformTabToSpace))
                         : cellInput;
 
-                // For cell maxWidth and width, use the cell-specific values (table-level columnWidths are handled separately)
-                const { maxWidth, width } = cellOptions;
+                // For cell maxWidth, use the cell-specific value (table-level columnWidths are handled separately).
+                // `width` is intentionally NOT forwarded to the Grid item: Table has already
+                // folded any cell-level `width` into the fixed column widths above, and Grid
+                // ignores `GridItem.width` (and would emit a dev warning for it).
+                const { maxWidth } = cellOptions;
 
                 gridItems.push({
                     backgroundColor: cellOptions.backgroundColor,
@@ -314,7 +427,6 @@ export class Table {
                     rowSpan: cellOptions.rowSpan,
                     truncate: cellOptions.truncate ?? (maxWidth === undefined ? undefined : true),
                     vAlign: cellOptions.vAlign,
-                    width, // Exact width override for this cell
                     wordWrap: cellOptions.wordWrap, // Enable wrap if maxWidth > 0
                 } satisfies GridItem);
             }

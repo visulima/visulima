@@ -16,16 +16,38 @@ import type {
     GridOptions,
     InternalGridItem,
 } from "./types";
-import { getHorizontalBorderChars, getVerticalBorderChars } from "./utils/border-utilities.ts";
+import { getHorizontalBorderChars, getVerticalBorderChars } from "./utils/border-utilities";
 import calculateCellTotalWidth from "./utils/calculate-cell-total-width";
 import calculateRowHeights from "./utils/calculate-row-heights";
 import determineCellVerticalPosition from "./utils/determine-cell-vertical-position";
 import findFirstOccurrenceRow from "./utils/find-first-occurrence-row";
-import { EMPTY_CELL_REPRESENTATION, normalizeGridCell } from "./utils/normalize-cell";
+import { normalizeGridCell } from "./utils/normalize-cell";
 import padAndAlignContent from "./utils/pad-and-align-content";
 
 const NEWLINE_REGEX = /\r?\n/;
 const WHITESPACE_REGEX = /\s+/;
+
+// `terminalSize()` probes the TTY (ioctl / env / spawned `tput`), which is
+// comparatively expensive and was previously re-run on every uncached render.
+// Cache the detected column count module-wide; consumers needing a fresh value
+// for a single render can pass `terminalWidth` explicitly, or call
+// `clearTerminalWidthCache()` to force re-detection (e.g. on SIGWINCH).
+let cachedTerminalColumns: number | undefined;
+
+const getTerminalColumns = (): number => {
+    cachedTerminalColumns ??= terminalSize().columns;
+
+    return cachedTerminalColumns;
+};
+
+/**
+ * Clears the cached terminal column count so the next `Grid` constructed without
+ * an explicit `terminalWidth` re-probes the terminal. Useful after a terminal
+ * resize (e.g. from a `SIGWINCH` handler).
+ */
+const clearTerminalWidthCache = (): void => {
+    cachedTerminalColumns = undefined;
+};
 
 const applyColor = (char: string, color: AnsiColorFunction | AnsiColorObject | undefined): string => {
     if (!char || !color) {
@@ -84,6 +106,56 @@ export class Grid {
     // Cache for determineCellVerticalPosition results
     #cellVerticalPositionCache = new WeakMap<GridItem, { firstRow: number; lastRow: number }>();
 
+    // Per-render cache of each cell's split lines and widest line. Both width
+    // passes re-split the same content and re-run getStringWidth on the same
+    // lines; this memoizes that work per cell object. Reset every toString().
+    #cellLineMetricsCache = new WeakMap<GridItem, { lines: string[]; maxLineWidth: number }>();
+
+    /**
+     * Returns the cell's content split into lines plus the widest line width,
+     * memoized per render. Behaviour-preserving cache over the previous
+     * `String(content).split(NEWLINE_REGEX)` + per-line `getStringWidth`.
+     */
+    #getCellLineMetrics(cell: GridItem): { lines: string[]; maxLineWidth: number } {
+        const cached = this.#cellLineMetricsCache.get(cell);
+
+        if (cached) {
+            return cached;
+        }
+
+        const lines = String(cell.content ?? "").split(NEWLINE_REGEX);
+        let maxLineWidth = 0;
+
+        for (const line of lines) {
+            maxLineWidth = Math.max(maxLineWidth, getStringWidth(line));
+        }
+
+        const metrics = { lines, maxLineWidth };
+
+        this.#cellLineMetricsCache.set(cell, metrics);
+
+        return metrics;
+    }
+
+    /**
+     * Emit a non-fatal diagnostic. Routes to the consumer-provided `onWarn`
+     * handler when set, otherwise falls back to `console.warn` so a library
+     * consumer can capture or suppress these messages instead of having them
+     * leak unconditionally to stderr.
+     */
+    #warn(message: string): void {
+        const handler = this.#options.onWarn;
+
+        if (handler) {
+            handler(message);
+
+            return;
+        }
+
+        // eslint-disable-next-line no-console
+        console.warn(message);
+    }
+
     /**
      * Create the initial grid layout array (will be dynamically sized later).
      * @returns An empty grid layout array
@@ -135,15 +207,9 @@ export class Grid {
             showBorders: options.border !== undefined || (options.showBorders ?? false),
         };
 
-        let { terminalWidth } = this.#options;
+        const { terminalWidth } = this.#options;
 
-        if (terminalWidth === undefined) {
-            const { columns } = terminalSize();
-
-            terminalWidth = columns;
-        }
-
-        this.#terminalWidth = terminalWidth;
+        this.#terminalWidth = terminalWidth ?? getTerminalColumns();
 
         // Handle optional maxWidth relative to terminal width
         if (this.#options.maxWidth) {
@@ -157,9 +223,25 @@ export class Grid {
      * @returns The grid instance for method chaining
      */
     public addItem(cell: GridCell): this {
-        this.#items.push(normalizeGridCell(cell));
+        const item = normalizeGridCell(cell);
+
+        this.#warnIfWidthIgnored(item);
+        this.#items.push(item);
 
         return this;
+    }
+
+    /**
+     * Warns when a cell sets `width`, which `Grid` does not honour (only `Table`
+     * folds it into fixed column widths). Surfaces the silent no-op documented
+     * on {@link GridItem.width}.
+     */
+    #warnIfWidthIgnored(item: InternalGridItem): void {
+        if (item.width !== undefined) {
+            this.#warn(
+                "@visulima/tabular: GridItem.width is ignored by Grid (it is only consumed by Table). Use fixedColumnWidths or maxWidth to constrain Grid column widths.",
+            );
+        }
     }
 
     /**
@@ -168,7 +250,12 @@ export class Grid {
      * @returns The grid instance for method chaining
      */
     public addItems(items: GridCell[]): this {
-        this.#items.push(...items.map((item) => normalizeGridCell(item)));
+        for (const cell of items) {
+            const item = normalizeGridCell(cell);
+
+            this.#warnIfWidthIgnored(item);
+            this.#items.push(item);
+        }
 
         return this;
     }
@@ -239,6 +326,7 @@ export class Grid {
         // layout-dependent vertical positions change after setColumns/setRows/addItem/etc.
         this.#alignCellContentCache = new WeakMap();
         this.#cellVerticalPositionCache = new WeakMap();
+        this.#cellLineMetricsCache = new WeakMap();
 
         this.placeItems(gridLayout);
 
@@ -280,7 +368,7 @@ export class Grid {
             const item = this.#items[itemIndex] as InternalGridItem;
 
             // Skip placement for designated empty cells that don't span
-            if (item.content === EMPTY_CELL_REPRESENTATION && !(item.rowSpan && item.rowSpan > 1) && !(item.colSpan && item.colSpan > 1)) {
+            if (item.isEmpty && !(item.rowSpan && item.rowSpan > 1) && !(item.colSpan && item.colSpan > 1)) {
                 if (this.#options.autoFlow === "row") {
                     currentCol += 1;
 
@@ -391,8 +479,7 @@ export class Grid {
 
             if (!foundPosition) {
                 // Warn if an item couldn't be placed after extensive search
-                // eslint-disable-next-line no-console
-                console.warn(
+                this.#warn(
                     `@visulima/tabular: Could not find position for item: ${JSON.stringify(item)} after ${String(attempts)} attempts. Grid might be too small or layout impossible.`,
                 );
 
@@ -455,8 +542,7 @@ export class Grid {
         for (let row = startRow; row < startRow + rowSpan; row += 1) {
             if (row < gridLayout.length) {
                 if (!gridLayout[row]) {
-                    // eslint-disable-next-line no-console
-                    console.warn(`Grid layout unexpectedly missing row ${String(row)} during canPlaceItem check.`);
+                    this.#warn(`Grid layout unexpectedly missing row ${String(row)} during canPlaceItem check.`);
 
                     return false;
                 }
@@ -544,8 +630,7 @@ export class Grid {
             for (let col = startCol; col < startCol + colSpan; col += 1) {
                 if (col < this.#options.columns) {
                     if (!gridLayout[row]) {
-                        // eslint-disable-next-line no-console
-                        console.error(`Logic error: Row ${String(row)} not found in placeItem despite check.`);
+                        this.#warn(`Logic error: Row ${String(row)} not found in placeItem despite check.`);
                         // eslint-disable-next-line no-param-reassign
                         gridLayout[row] = Array.from<GridItem | undefined>({ length: this.#options.columns }).fill(undefined);
                     }
@@ -849,17 +934,14 @@ export class Grid {
 
                 const colSpan = cell.colSpan ?? 1;
                 const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
-                const lines = String(cell.content ?? "").split(NEWLINE_REGEX);
+                const { lines, maxLineWidth } = this.#getCellLineMetrics(cell);
 
                 // Determine if this cell can word wrap
                 const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
 
-                let contentWidth = 0;
-
-                // First, calculate the full content width needed
-                for (const line of lines) {
-                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
-                }
+                // Full content width needed, clamped by maxWidth.
+                // Equivalent to max_i(min(width(line_i), maxWidth)).
+                let contentWidth = Math.min(maxLineWidth, cellMaxWidth);
 
                 // Determine appropriate minimum width based on wrapping capability
                 contentWidth = this.computeWrappedContentWidth(contentWidth, lines, cellMaxWidth, canWordWrap);
@@ -893,17 +975,14 @@ export class Grid {
 
                 if (colSpan > 1) {
                     const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
-                    const lines = String(cell.content ?? "").split(NEWLINE_REGEX);
+                    const { lines, maxLineWidth } = this.#getCellLineMetrics(cell);
 
                     // Determine if this cell can word wrap
                     const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
 
-                    let contentWidth = 0;
-
-                    // First, calculate the full content width needed
-                    for (const line of lines) {
-                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
-                    }
+                    // Full content width needed, clamped by maxWidth.
+                    // Equivalent to max_i(min(width(line_i), maxWidth)).
+                    let contentWidth = Math.min(maxLineWidth, cellMaxWidth);
 
                     // Determine appropriate minimum width based on wrapping capability
                     contentWidth = this.computeWrappedContentWidth(contentWidth, lines, cellMaxWidth, canWordWrap);
@@ -1031,13 +1110,10 @@ export class Grid {
 
                 const colSpan = cell.colSpan ?? 1;
                 const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
-                const lines = String(cell.content ?? "").split(NEWLINE_REGEX);
+                const { maxLineWidth } = this.#getCellLineMetrics(cell);
 
-                let contentWidth = 0;
-
-                for (const line of lines) {
-                    contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
-                }
+                // Equivalent to max_i(min(width(line_i), maxWidth)).
+                const contentWidth = Math.min(maxLineWidth, cellMaxWidth);
 
                 if (colSpan === 1) {
                     columnWidths[colIndex] = Math.max(columnWidths[colIndex] ?? 0, contentWidth + totalPadding);
@@ -1063,16 +1139,13 @@ export class Grid {
 
                 if (colSpan > 1) {
                     const cellMaxWidth = cell.maxWidth ?? Number.POSITIVE_INFINITY;
-                    const lines = String(cell.content ?? "").split(NEWLINE_REGEX);
+                    const { lines, maxLineWidth } = this.#getCellLineMetrics(cell);
                     // Determine if this cell can word wrap
                     const canWordWrap = this.#options.wordWrap && cell.wordWrap !== false;
 
-                    let contentWidth = 0;
-
-                    // First, calculate the full content width needed
-                    for (const line of lines) {
-                        contentWidth = Math.max(contentWidth, Math.min(getStringWidth(line), cellMaxWidth));
-                    }
+                    // Full content width needed, clamped by maxWidth.
+                    // Equivalent to max_i(min(width(line_i), maxWidth)).
+                    let contentWidth = Math.min(maxLineWidth, cellMaxWidth);
 
                     // Determine appropriate minimum width based on wrapping capability
                     contentWidth = this.computeWrappedContentWidth(contentWidth, lines, cellMaxWidth, canWordWrap);
@@ -1190,8 +1263,7 @@ export class Grid {
                 const verticalPosition = this.getCachedCellVerticalPosition(gridLayout, rowIndex, col, cell);
 
                 if (verticalPosition.firstRow !== firstOccurrenceRow) {
-                    // eslint-disable-next-line no-console
-                    console.warn(
+                    this.#warn(
                         `Mismatch between findFirstOccurrenceRow (${String(firstOccurrenceRow)}) and determineCellVerticalPosition (${String(verticalPosition.firstRow)})`,
                     );
                 }
@@ -1811,3 +1883,5 @@ export class Grid {
  * @returns A new Grid instance
  */
 export const createGrid = (options: GridOptions): Grid => new Grid(options);
+
+export { clearTerminalWidthCache };
