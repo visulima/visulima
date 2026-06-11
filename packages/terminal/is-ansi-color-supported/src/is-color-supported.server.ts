@@ -31,7 +31,7 @@ const TERM_COLOR_RE = /^screen|^tmux|^xterm|^vt[1-5]\d\d|^ansi|color|mintty|rxvt
  * @returns the OS release string, or an empty string when unavailable.
  */
 const getOsRelease = (): string => {
-    const getBuiltinModule = (globalThis as { process?: { getBuiltinModule?: (id: string) => { release(): string } } }).process?.getBuiltinModule;
+    const getBuiltinModule = (globalThis as { process?: { getBuiltinModule?: (id: string) => { release: () => string } } }).process?.getBuiltinModule;
 
     if (typeof getBuiltinModule !== "function") {
         return "";
