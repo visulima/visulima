@@ -326,7 +326,16 @@ const prepareModifiers = (rules: Rules, options?: RedactOptions): InternalAnonym
             };
 
             if (prepared.pattern !== undefined) {
-                prepared.compiledPattern = prepared.pattern instanceof RegExp ? prepared.pattern : new RegExp(prepared.pattern, "giu");
+                // Always compile to a FRESH global/case-insensitive/unicode regex.
+                // The string-anonymizer drives the pattern with a `while (rx.exec())`
+                // loop that requires the global flag — a non-global regex re-matches
+                // index 0 forever and hangs the process (OOM). Building a new RegExp
+                // (instead of reusing a user-supplied one) also avoids mutating the
+                // caller's regex `lastIndex`, and restores the long-standing
+                // case-insensitive matching that string patterns already get.
+                const patternSource = prepared.pattern instanceof RegExp ? prepared.pattern.source : prepared.pattern;
+
+                prepared.compiledPattern = new RegExp(patternSource, "giu");
             }
 
             preparedModifiers.push(prepared);
