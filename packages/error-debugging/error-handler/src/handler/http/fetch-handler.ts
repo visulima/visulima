@@ -13,7 +13,13 @@ const fetchHandler = (
 ): (request: Request) => Promise<Response> => {
     const defaultHtml = fetchHtmlErrorHandler(options);
 
-    const negotiated = createFetchNegotiatedErrorHandler(options.extraHandlers ?? [], options.showTrace ?? true, defaultHtml);
+    // Default to exposing traces only outside production so stack traces are not
+    // leaked into JSON/text/XML/JSONP response bodies by accident. Consumers can
+    // still force traces on/off explicitly via `showTrace`. `globalThis.process`
+    // may be undefined on edge runtimes, hence the optional chaining.
+    const showTrace = options.showTrace ?? globalThis.process?.env?.NODE_ENV !== "production";
+
+    const negotiated = createFetchNegotiatedErrorHandler(options.extraHandlers ?? [], showTrace, defaultHtml);
 
     return async (request: Request): Promise<Response> => {
         if (options.onError) {

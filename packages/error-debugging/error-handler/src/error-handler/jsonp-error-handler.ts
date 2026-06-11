@@ -46,7 +46,18 @@ const jsonpErrorHandler
             }
 
             response.setHeader("content-type", "application/javascript; charset=utf-8");
-            response.end(`${callbackName}(${JSON.stringify(payload)});`);
+            // Prevent content-type sniffing so a browser cannot reinterpret the
+            // JSONP payload as HTML, mirroring Express's `res.jsonp` hardening.
+            response.setHeader("x-content-type-options", "nosniff");
+
+            // The `/**/` prologue defeats Flash-based content-type confusion and
+            // is what Express prepends to JSONP responses for the same reason.
+            const body = JSON.stringify(payload)
+                // Escape U+2028/U+2029 which are valid JSON but break JS string literals.
+                .replace(/ /gu, "\\u2028")
+                .replace(/ /gu, "\\u2029");
+
+            response.end(`/**/ typeof ${callbackName} === 'function' && ${callbackName}(${body});`);
         };
 
 export type JsonpErrorBody = Record<string, unknown> | unknown[];

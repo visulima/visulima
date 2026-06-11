@@ -61,6 +61,9 @@ pnpm add @visulima/error-handler
 
 ### Node.js HTTP Server
 
+`httpHandler(error, options?)` is synchronous and returns the `(req, res)`
+request handler — there is no need to `await` it.
+
 ```ts
 import { createServer } from "node:http";
 import httpHandler from "@visulima/error-handler/handler/http/node";
@@ -70,10 +73,10 @@ const server = createServer(async (req, res) => {
         // your app logic...
         throw new Error("Boom!");
     } catch (error) {
-        const handler = await httpHandler(error as Error, {
+        const handler = httpHandler(error as Error, {
             showTrace: process.env.NODE_ENV !== "production",
         });
-        return handler(req, res);
+        await handler(req, res);
     }
 });
 
@@ -82,26 +85,33 @@ server.listen(3000);
 
 ### Express Setup
 
+Prefer the one-line error middleware instead of wrapping every route in
+`try/catch`. Register `createErrorMiddleware` once and Express will route any
+error (thrown synchronously or passed to `next(error)`) through it:
+
 ```ts
 import express from "express";
-import httpHandler from "@visulima/error-handler/handler/http/node";
+import { createErrorMiddleware } from "@visulima/error-handler";
 
 const app = express();
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-    try {
-        throw new Error("Example error");
-    } catch (error) {
-        const handler = await httpHandler(error as Error, {
-            showTrace: process.env.NODE_ENV !== "production",
-        });
-        return handler(req, res);
-    }
+app.get("/", () => {
+    throw new Error("Example error");
 });
+
+// Must be registered last, after your routes.
+app.use(createErrorMiddleware({
+    showTrace: process.env.NODE_ENV !== "production",
+}));
 
 app.listen(3000);
 ```
+
+> `createErrorMiddleware` is also available as a subpath import:
+> `import createErrorMiddleware from "@visulima/error-handler/handler/middleware";`.
+> If the response has already started streaming (`res.headersSent`) it delegates
+> to `next(error)` so it never double-writes.
 
 ### Hono (Fetch Runtime)
 

@@ -5,25 +5,39 @@ import { describe, expect, it } from "vitest";
 
 import { jsonpErrorHandler } from "../../src/error-handler/jsonp-error-handler";
 
+// Extract the JSON argument from the hardened JSONP envelope
+// (`/**/ typeof cb === 'function' && cb({...});`).
+const parseJsonp = (body: string): Record<string, unknown> => {
+    const match = /&&\s*[\w$.]+\((.*)\);$/su.exec(body);
+
+    if (!match) {
+        throw new Error(`Unexpected JSONP body: ${body}`);
+    }
+
+    return JSON.parse(match[1] as string) as Record<string, unknown>;
+};
+
 describe("jsonp-error-handler with normal Error", () => {
     it("renders default 500 JSONP response for normal Error", async () => {
-        expect.assertions(4);
+        expect.assertions(5);
 
         const { req, res } = createMocks({ method: "GET", url: "/?callback=myCb" });
 
         await jsonpErrorHandler()(new Error("boom"), req, res);
 
         expect(String(res.getHeader("content-type"))).toBe("application/javascript; charset=utf-8");
+        // The hardened response disables content sniffing.
+        expect(String(res.getHeader("x-content-type-options"))).toBe("nosniff");
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
 
         // eslint-disable-next-line no-underscore-dangle
-        const body = res._getData();
+        const body = res._getData() as string;
 
-        expect(body.startsWith("myCb(")).toBe(true);
+        // The body is wrapped in the `/**/` prologue and a typeof guard.
+        expect(body.startsWith("/**/ typeof myCb === 'function' && myCb(")).toBe(true);
 
-        const json = body.slice("myCb(".length, -2);
-        const parsed = JSON.parse(json) as { statusCode: number };
+        const parsed = parseJsonp(body) as { statusCode: number };
 
         expect(parsed.statusCode).toBe(500);
     });
@@ -42,7 +56,7 @@ describe("jsonp-error-handler with normal Error", () => {
         const body = res._getData() as string;
 
         // No callback query param -> defaults to "callback".
-        expect(body.startsWith("callback(")).toBe(true);
+        expect(body.startsWith("/**/ typeof callback === 'function' && callback(")).toBe(true);
         expect(body.endsWith(");")).toBe(true);
     });
 
@@ -56,7 +70,7 @@ describe("jsonp-error-handler with normal Error", () => {
 
         // eslint-disable-next-line no-underscore-dangle
         const body = res._getData() as string;
-        const parsed = JSON.parse(body.slice("cb(".length, -2)) as { message: string };
+        const parsed = parseJsonp(body) as { message: string };
 
         // Empty message -> message falls back to the reason phrase.
         expect(parsed.message).toBe("Internal Server Error");

@@ -20,7 +20,7 @@ describe("jsonapi-error-handler", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("{\"errors\":[{\"code\":\"500\",\"title\":\"Internal Server Error\",\"detail\":\"test\"}]}");
+        expect(res._getData()).toBe("{\"errors\":[{\"code\":500,\"title\":\"Internal Server Error\",\"detail\":\"test\"}]}");
     });
 
     it("should render http-errors", async () => {
@@ -54,7 +54,7 @@ describe("jsonapi-error-handler", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(500);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("{\"errors\":[{\"code\":\"500\",\"title\":\"Internal Server Error\"}]}");
+        expect(res._getData()).toBe("{\"errors\":[{\"code\":500,\"title\":\"Internal Server Error\"}]}");
     });
 
     it("should prefer the http-error's own title property", async () => {
@@ -114,5 +114,31 @@ describe("jsonapi-error-handler", () => {
 
         expect(body.errors).toStrictEqual([{ detail: "Validation failed", status: "422", title: "Unprocessable Entity" }]);
         expect(body.jsonapi).toStrictEqual({ version: "1.0" });
+    });
+
+    it("uses the resolved status code (not a hardcoded 500) for a plain error with a 4xx statusCode", async () => {
+        expect.assertions(3);
+
+        const { req, res } = createMocks({
+            method: "GET",
+        });
+
+        // A plain Error (not an http-errors instance) carrying a 4xx statusCode:
+        // addStatusCodeToResponse resolves 422, and the generic branch must emit
+        // that code as a number rather than the old hardcoded "500".
+        const error = new Error("nope") as Error & { statusCode: number };
+
+        error.statusCode = 422;
+
+        await jsonapiErrorHandler(error, req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        expect(res._getStatusCode()).toBe(422);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const body = JSON.parse(res._getData()) as { errors: { code: number; detail: string; title: string }[] };
+
+        expect(body.errors[0]?.code).toBe(422);
+        expect(body.errors[0]?.title).toBe("Unprocessable Entity");
     });
 });

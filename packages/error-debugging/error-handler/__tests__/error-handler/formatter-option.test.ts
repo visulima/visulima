@@ -60,7 +60,7 @@ describe("error-handler formatter option", () => {
         })(new Error("boom"), req, res);
 
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toBe("callback({\"custom\":\"jsonp-value\"});");
+        expect(res._getData()).toBe("/**/ typeof callback === 'function' && callback({\"custom\":\"jsonp-value\"});");
     });
 
     it("should pass the negotiated status code to the formatter", async () => {

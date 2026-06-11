@@ -19,9 +19,9 @@ describe("jsonp-error-handler with http-errors", () => {
         // eslint-disable-next-line no-underscore-dangle
         const body = res._getData();
 
-        expect(body.startsWith("myCb(")).toBe(true);
+        expect(body.startsWith("/**/ typeof myCb === 'function' && myCb(")).toBe(true);
 
-        const json = body.slice("myCb(".length, -2);
+        const json = /&&\s*[\w$.]+\((.*)\);$/su.exec(body)?.[1] ?? "";
         const parsed = JSON.parse(json) as { statusCode: number };
 
         expect(parsed.statusCode).toBe(400);

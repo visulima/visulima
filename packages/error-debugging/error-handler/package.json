@@ -71,6 +71,10 @@
             "types": "./dist/handler/http/node-handler.d.ts",
             "default": "./dist/handler/http/node-handler.js"
         },
+        "./handler/middleware": {
+            "types": "./dist/handler/http/create-error-middleware.d.ts",
+            "default": "./dist/handler/http/create-error-middleware.js"
+        },
         "./handler/http/hono": {
             "types": "./dist/handler/http/fetch-handler.d.ts",
             "default": "./dist/handler/http/fetch-handler.js"
@@ -122,6 +126,10 @@
         "./error-handler/xml": {
             "types": "./dist/error-handler/xml-error-handler.d.ts",
             "default": "./dist/error-handler/xml-error-handler.js"
+        },
+        "./error-handler/fetch-utils": {
+            "types": "./dist/error-handler/fetch-utils.d.ts",
+            "default": "./dist/error-handler/fetch-utils.js"
         },
         "./package.json": "./package.json"
     },

@@ -46,12 +46,16 @@ const jsonapiErrorHandler: ErrorHandler = (error: Error | HttpError | tsJapi.Jap
         });
     } else {
         const { message } = error;
+        // Use the status code already resolved onto the response by
+        // addStatusCodeToResponse rather than a hardcoded 500, and emit it as a
+        // number so the shape matches the http-error branch above.
+        const statusCode = response.statusCode;
 
         sendJson(response, {
             errors: [
                 {
-                    code: "500",
-                    title: getReasonPhrase(response.statusCode),
+                    code: statusCode,
+                    title: getReasonPhrase(statusCode),
                     // eslint-disable-next-line perfectionist/sort-objects
                     detail: message,
                 },

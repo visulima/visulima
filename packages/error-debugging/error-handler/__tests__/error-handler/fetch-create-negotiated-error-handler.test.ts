@@ -101,7 +101,7 @@ describe(createFetchNegotiatedErrorHandler, () => {
         await expect(result.text()).resolves.toBe("overridden");
     });
 
-    it("should expose the stack in the body and set error.expose when showTrace is true", async () => {
+    it("should expose the stack in the body when showTrace is true without leaking error.expose", async () => {
         expect.assertions(2);
 
         const error = new Error("boom");
@@ -109,7 +109,9 @@ describe(createFetchNegotiatedErrorHandler, () => {
         const result = await handler(error, makeRequest("application/json"));
 
         await expect(result.json()).resolves.toHaveProperty("stack");
-        expect((error as Error & { expose?: boolean }).expose).toBe(true);
+        // The negotiator must not permanently mutate the caller's error object;
+        // the temporary `expose` flag is removed once the handler resolves.
+        expect(Object.hasOwn(error, "expose")).toBe(false);
     });
 
     it("should omit the stack from the body when showTrace is false", async () => {
@@ -158,6 +160,38 @@ describe(createFetchNegotiatedErrorHandler, () => {
         // The non-matching override is skipped; the negotiated JSON handler runs.
         expect(overrideCalled).toBe(false);
         expect(result.headers.get("content-type")).toBe("application/json; charset=utf-8");
+    });
+
+    it("should honour client q-values when picking the response type", async () => {
+        expect.assertions(1);
+
+        const handler = createFetchNegotiatedErrorHandler([], false);
+        // text/html is the server's first preference but the client weighted it
+        // far below application/json, so JSON must win.
+        const result = await handler(new Error("boom"), makeRequest("text/html;q=0.1, application/json;q=0.9"));
+
+        expect(result.headers.get("content-type")).toBe("application/json; charset=utf-8");
+    });
+
+    it("should fall back to server preference order when q-values tie", async () => {
+        expect.assertions(1);
+
+        const htmlResponse = new Response("<html>boom</html>", { headers: { "content-type": "text/html" }, status: 500 });
+        const handler = createFetchNegotiatedErrorHandler([], false, () => Promise.resolve(htmlResponse));
+        // Equal quality -> the server's first preference (text/html) wins.
+        const result = await handler(new Error("boom"), makeRequest("application/json, text/html"));
+
+        expect(result.headers.get("content-type")).toBe("text/html");
+    });
+
+    it("should ignore types the client rejected with q=0", async () => {
+        expect.assertions(1);
+
+        const handler = createFetchNegotiatedErrorHandler([], false);
+        // text/html is rejected outright; the next acceptable type is plain text.
+        const result = await handler(new Error("boom"), makeRequest("text/html;q=0, text/plain"));
+
+        expect(result.headers.get("content-type")).toBe("text/plain; charset=utf-8");
     });
 
     it("should match a regex override against an empty string when no Accept header is present", async () => {

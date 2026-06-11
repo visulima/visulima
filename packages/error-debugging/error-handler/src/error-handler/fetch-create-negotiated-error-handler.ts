@@ -1,12 +1,12 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { jsonErrorHandler as JsonErrorHandler } from "./json-error-handler";
-import JsonapiErrorHandler from "./jsonapi-error-handler";
-import { jsonpErrorHandler as JsonpErrorHandler } from "./jsonp-error-handler";
-import ProblemErrorHandler from "./problem-error-handler";
-import { textErrorHandler as TextErrorHandler } from "./text-error-handler";
+import { jsonErrorHandler } from "./json-error-handler";
+import jsonapiErrorHandler from "./jsonapi-error-handler";
+import { jsonpErrorHandler } from "./jsonp-error-handler";
+import problemErrorHandler from "./problem-error-handler";
+import { textErrorHandler } from "./text-error-handler";
 import type { ErrorHandler, FetchErrorHandlers } from "./types";
-import { xmlErrorHandler as XmlErrorHandler } from "./xml-error-handler";
+import { xmlErrorHandler } from "./xml-error-handler";
 
 type HeaderValue = string | number | string[];
 
@@ -64,6 +64,11 @@ const serverPreferences: { chosen: string; types: string[] }[] = [
 // Parses the Accept header into (media type, q-value) pairs, drops entries with
 // q=0, and matches against the server preference order using full media-type
 // comparison (plus `*/*` and `type/*` wildcards) rather than substring includes.
+//
+// Client q-values are honoured: among the server's supported types, the one the
+// client weighted highest wins, so `Accept: text/html;q=0.1, application/json`
+// returns JSON — matching the q-value-aware `@tinyhttp/accepts` node path. Ties
+// fall back to the server's preference order.
 const negotiateContentType = (acceptHeader: string | null): string => {
     if (!acceptHeader) {
         return "text/html";
@@ -106,29 +111,49 @@ const negotiateContentType = (acceptHeader: string | null): string => {
         return "text/html";
     }
 
-    const matches = (candidate: string): boolean => {
+    // Highest client quality for a given candidate media type, or -1 when the
+    // client does not accept it at all.
+    const qualityFor = (candidate: string): number => {
         const [candidateType, candidateSubtype] = candidate.split("/");
 
-        return accepted.some(({ subtype, type }) => {
-            if (type === "*" && subtype === "*") {
-                return true;
-            }
+        let best = -1;
 
-            if (type === candidateType && subtype === "*") {
-                return true;
-            }
+        for (const { quality, subtype, type } of accepted) {
+            const wildcardAll = type === "*" && subtype === "*";
+            const wildcardSubtype = type === candidateType && subtype === "*";
+            const exact = type === candidateType && subtype === candidateSubtype;
 
-            return type === candidateType && subtype === candidateSubtype;
-        });
+            if ((wildcardAll || wildcardSubtype || exact) && quality > best) {
+                best = quality;
+            }
+        }
+
+        return best;
     };
 
+    let chosenType = "text/html";
+    let chosenQuality = -1;
+
+    // Iterate in server-preference order so equal-quality candidates keep the
+    // server's ordering (the later entry only wins on a strictly higher q-value).
     for (const { chosen, types } of serverPreferences) {
-        if (types.some((type) => matches(type))) {
-            return chosen;
+        let preferenceQuality = -1;
+
+        for (const type of types) {
+            const quality = qualityFor(type);
+
+            if (quality > preferenceQuality) {
+                preferenceQuality = quality;
+            }
+        }
+
+        if (preferenceQuality > chosenQuality) {
+            chosenQuality = preferenceQuality;
+            chosenType = chosen;
         }
     }
 
-    return "text/html"; // default
+    return chosenQuality < 0 ? "text/html" : chosenType;
 };
 
 // Adapter to convert node-style error handler to fetch-style
@@ -160,13 +185,49 @@ const adaptErrorHandlerToFetch
             });
         };
 
+// These node formatters take no options, so both the formatter and its fetch
+// adapter are pure and instantiated once at module load rather than per request.
+const fetchJsonpHandler = adaptErrorHandlerToFetch(jsonpErrorHandler());
+const fetchJsonHandler = adaptErrorHandlerToFetch(jsonErrorHandler());
+const fetchProblemHandler = adaptErrorHandlerToFetch(problemErrorHandler);
+const fetchJsonapiHandler = adaptErrorHandlerToFetch(jsonapiErrorHandler);
+const fetchXmlHandler = adaptErrorHandlerToFetch(xmlErrorHandler());
+const fetchTextHandler = adaptErrorHandlerToFetch(textErrorHandler());
+
+/**
+ * Apply the `expose` flag without permanently mutating the caller's error
+ * object; the original state is restored once the handler resolves. See the
+ * node twin in `create-negotiated-error-handler.ts` for the rationale.
+ */
+const withExpose = async (error: Error, showTrace: boolean, run: () => Promise<Response>): Promise<Response> => {
+    const hadOwnExpose = Object.prototype.hasOwnProperty.call(error, "expose");
+    const previousExpose = (error as Error & { expose?: boolean }).expose;
+
+    if (!showTrace) {
+        (error as Error & { expose: boolean }).expose = false;
+    } else if (!("expose" in error)) {
+        (error as Error & { expose: boolean }).expose = true;
+    }
+
+    try {
+        return await run();
+    } finally {
+        if (hadOwnExpose) {
+            (error as Error & { expose?: boolean }).expose = previousExpose;
+        } else {
+            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            delete (error as Error & { expose?: boolean }).expose;
+        }
+    }
+};
+
 const createFetchNegotiatedErrorHandler
     = (errorHandlers: FetchErrorHandlers, showTrace: boolean, defaultHtmlHandler?: (error: Error, request: Request) => Promise<Response>) =>
         async (error: Error, request: Request): Promise<Response> => {
             const accept = request.headers.get("accept");
             const chosenType = negotiateContentType(accept);
 
-            let fetchErrorHandler: (error: Error, request: Request) => Promise<Response> = defaultHtmlHandler ?? adaptErrorHandlerToFetch(ProblemErrorHandler);
+            let fetchErrorHandler: (error: Error, request: Request) => Promise<Response> = defaultHtmlHandler ?? fetchProblemHandler;
 
             // Convert node handlers to fetch handlers
             if (chosenType === "text/html" && defaultHtmlHandler) {
@@ -174,32 +235,32 @@ const createFetchNegotiatedErrorHandler
             } else {
                 switch (chosenType) {
                     case "application/javascript": {
-                        fetchErrorHandler = adaptErrorHandlerToFetch(JsonpErrorHandler());
+                        fetchErrorHandler = fetchJsonpHandler;
 
                         break;
                     }
                     case "application/json": {
-                        fetchErrorHandler = adaptErrorHandlerToFetch(JsonErrorHandler());
+                        fetchErrorHandler = fetchJsonHandler;
 
                         break;
                     }
                     case "application/problem+json": {
-                        fetchErrorHandler = adaptErrorHandlerToFetch(ProblemErrorHandler);
+                        fetchErrorHandler = fetchProblemHandler;
 
                         break;
                     }
                     case "application/vnd.api+json": {
-                        fetchErrorHandler = adaptErrorHandlerToFetch(JsonapiErrorHandler);
+                        fetchErrorHandler = fetchJsonapiHandler;
 
                         break;
                     }
                     case "application/xml": {
-                        fetchErrorHandler = adaptErrorHandlerToFetch(XmlErrorHandler());
+                        fetchErrorHandler = fetchXmlHandler;
 
                         break;
                     }
                     case "text/plain": {
-                        fetchErrorHandler = adaptErrorHandlerToFetch(TextErrorHandler());
+                        fetchErrorHandler = fetchTextHandler;
 
                         break;
                     }
@@ -220,19 +281,7 @@ const createFetchNegotiatedErrorHandler
                 }
             }
 
-            // When the caller opts out of traces (showTrace === false), honour that
-            // explicitly and suppress traces regardless of the error's own expose flag.
-            // When traces are requested, preserve an http-errors instance's own expose
-            // semantics and only set the flag if the error does not already define it.
-            if (!showTrace) {
-                // eslint-disable-next-line no-param-reassign
-                (error as Error & { expose: boolean }).expose = false;
-            } else if (!("expose" in error)) {
-                // eslint-disable-next-line no-param-reassign
-                (error as Error & { expose: boolean }).expose = true;
-            }
-
-            return fetchErrorHandler(error, request);
+            return withExpose(error, showTrace, () => fetchErrorHandler(error, request));
         };
 
 export default createFetchNegotiatedErrorHandler;
