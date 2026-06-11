@@ -142,4 +142,64 @@ describe(omit, () => {
             picks: { 456: { no: false, yes: true } },
         });
     });
+
+    it("should return a fresh copy when no keys are provided (not the original reference)", () => {
+        expect.assertions(3);
+
+        const input = { nested: { keep: 1 }, top: 2 };
+        const result = omit(input, []);
+
+        expect(result).toStrictEqual(input);
+        expect(result).not.toBe(input);
+        // mutating the result must not affect the input
+        expect(input.nested.keep).toBe(1);
+    });
+
+    it("should traverse arrays of objects with an indexed path", () => {
+        expect.assertions(1);
+
+        const input = { users: [{ name: "a", password: "p1" }, { name: "b", password: "p2" }] };
+        const result = omit(input, ["users.0.password"]);
+
+        expect(result).toStrictEqual({ users: [{ name: "a" }, { name: "b", password: "p2" }] });
+    });
+
+    it("should traverse arrays of objects with a wildcard path", () => {
+        expect.assertions(1);
+
+        const input = { users: [{ name: "a", password: "p1" }, { name: "b", password: "p2" }] };
+        const result = omit(input, ["users.*.password"]);
+
+        expect(result).toStrictEqual({ users: [{ name: "a" }, { name: "b" }] });
+    });
+
+    it("should target keys containing literal dots via backslash escaping", () => {
+        expect.assertions(1);
+
+        const input = { "a.b": "drop", c: "keep" };
+        const result = omit(input, [String.raw`a\.b`]);
+
+        expect(result).toStrictEqual({ c: "keep" });
+    });
+
+    it("should preserve symbol-keyed properties", () => {
+        expect.assertions(2);
+
+        const symbol = Symbol("meta");
+        const input = { drop: 1, keep: 2, [symbol]: "kept" };
+        const result = omit(input, ["drop"]);
+
+        expect(result).toStrictEqual({ keep: 2, [symbol]: "kept" });
+        expect(result[symbol]).toBe("kept");
+    });
+
+    it("should not pollute Object.prototype when omitting near a __proto__ key", () => {
+        expect.assertions(2);
+
+        const input = JSON.parse(`{ "__proto__": { "polluted": true }, "safe": 1 }`) as Record<string, unknown>;
+        const result = omit(input, ["safe"]);
+
+        expect(({} as Record<string, unknown>).polluted).toBeUndefined();
+        expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+    });
 });

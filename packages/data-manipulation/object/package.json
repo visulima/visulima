@@ -74,6 +74,9 @@
         "test:ui": "vitest --ui --coverage.enabled=true",
         "test:watch": "vitest"
     },
+    "dependencies": {
+        "type-fest": "catalog:prod"
+    },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
         "@anolilab/prettier-config": "catalog:lint",
@@ -98,7 +101,6 @@
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
-        "type-fest": "catalog:prod",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },

@@ -5,11 +5,25 @@ import recursiveOmit from "../../src/utils/recursive-omit";
 type AnyRecord = Record<string, unknown>;
 
 describe("recursive-omit", () => {
-    it("returns the value unchanged when the input is not a plain object", () => {
+    it("returns a copy of the value unchanged when nothing matches", () => {
         expect.assertions(1);
 
-        const value = [1, 2, 3] as unknown as AnyRecord;
+        const value = { a: 1, b: 2 } as AnyRecord;
 
-        expect(recursiveOmit(value, ["0"])).toBe(value);
+        expect(recursiveOmit(value, [])).toStrictEqual(value);
+    });
+
+    it("returns primitives unchanged", () => {
+        expect.assertions(1);
+
+        expect(recursiveOmit(42 as unknown as AnyRecord, [["a"]])).toBe(42);
+    });
+
+    it("traverses arrays and removes matching indexed paths", () => {
+        expect.assertions(1);
+
+        const value = { list: [{ keep: 1, secret: 2 }] } as AnyRecord;
+
+        expect(recursiveOmit(value, [["list", "0", "secret"]])).toStrictEqual({ list: [{ keep: 1 }] });
     });
 });

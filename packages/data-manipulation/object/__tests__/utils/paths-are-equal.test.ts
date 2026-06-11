@@ -57,6 +57,15 @@ describe("paths-are-equal", () => {
         expect(pathsAreEqual("a.b.c", "*.*.*")).toBe(true);
     });
 
+    it("should treat backslash-escaped dots as a single segment", () => {
+        expect.assertions(3);
+
+        expect(pathsAreEqual(String.raw`a\.b`, String.raw`a\.b`)).toBe(true);
+        // "a.b" (two segments) must NOT equal the single-segment "a\.b".
+        expect(pathsAreEqual("a.b", String.raw`a\.b`)).toBe(false);
+        expect(pathsAreEqual(String.raw`a\.b.c`, String.raw`a\.b.*`)).toBe(true);
+    });
+
     it("should handle paths containing special characters correctly", () => {
         expect.assertions(12);
 

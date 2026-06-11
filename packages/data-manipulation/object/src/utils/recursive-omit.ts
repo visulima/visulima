@@ -5,48 +5,83 @@
  *
  * Copyright (c) 2018 Luca Ban - Mesqueeb
  */
-import type { Paths } from "type-fest";
-
 import isPlainObject from "./is-plain-object";
-import pathsAreEqual from "./paths-are-equal";
+import { segmentsAreEqual } from "./paths-are-equal";
+import safeAssign from "./safe-assign";
 
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters
-const recursiveOmit = <T extends { [key in string]: unknown }, OmittedKeys extends Paths<T>[]>(object: T, omittedKeys: OmittedKeys, pathUntilNow = ""): T => {
-    if (!isPlainObject(object)) {
-        return object;
+/**
+ * Copy the enumerable symbol-keyed own properties from `source` onto `target`.
+ *
+ * String paths can never target symbol keys, so they are always preserved
+ * verbatim (matching lodash's `omit`).
+ * @param source The object to read symbol properties from.
+ * @param target The object to copy symbol properties onto.
+ */
+const copySymbols = (source: object, target: Record<PropertyKey, unknown>): void => {
+    for (const symbol of Object.getOwnPropertySymbols(source)) {
+        const descriptor = Object.getOwnPropertyDescriptor(source, symbol);
+
+        if (descriptor?.enumerable) {
+            // eslint-disable-next-line no-param-reassign
+            target[symbol] = (source as Record<PropertyKey, unknown>)[symbol];
+        }
+    }
+};
+
+/**
+ * Recursively copy `value`, dropping any property whose path matches one of
+ * the pre-split `omittedKeys`. Plain objects and arrays are both traversed.
+ * @param value The value currently being copied.
+ * @param omittedKeys The omitted paths, pre-split into segment arrays.
+ * @param currentPath The segment path leading to `value`.
+ * @returns A new value with the omitted paths removed.
+ */
+const walk = (value: unknown, omittedKeys: ReadonlyArray<string[]>, currentPath: ReadonlyArray<string>): unknown => {
+    if (Array.isArray(value)) {
+        const result: unknown[] = [];
+
+        for (const [index, element] of value.entries()) {
+            const path = [...currentPath, String(index)];
+
+            if (omittedKeys.some((guardPath) => segmentsAreEqual(path, guardPath))) {
+                // Skip omitted elements while keeping the array shape.
+                continue;
+            }
+
+            result.push(walk(element, omittedKeys, path));
+        }
+
+        return result;
     }
 
-    // eslint-disable-next-line unicorn/no-array-reduce
-    return Object.entries(object).reduce<{ [key in string]: unknown }>((carry, [key, value]) => {
-        let path = pathUntilNow;
+    if (!isPlainObject(value)) {
+        return value;
+    }
 
-        if (path) {
-            path += ".";
+    const carry: Record<string, unknown> = {};
+
+    for (const [key, child] of Object.entries(value)) {
+        const path = [...currentPath, key];
+
+        if (omittedKeys.some((guardPath) => segmentsAreEqual(path, guardPath))) {
+            continue;
         }
 
-        path += key;
+        safeAssign(carry, key, walk(child, omittedKeys, path));
+    }
 
-        if (omittedKeys.some((guardPath) => pathsAreEqual(path, guardPath))) {
-            return carry;
-        }
+    copySymbols(value, carry);
 
-        // no further recursion needed
-        if (!isPlainObject(value)) {
-            Object.defineProperty(carry, key, { configurable: true, enumerable: true, value, writable: true });
-
-            return carry;
-        }
-
-        Object.defineProperty(carry, key, {
-            configurable: true,
-            enumerable: true,
-            // eslint-disable-next-line @typescript-eslint/no-explicit-any,@typescript-eslint/no-unsafe-argument
-            value: recursiveOmit<T, any>(object[key] as any, omittedKeys, path),
-            writable: true,
-        });
-
-        return carry;
-    }, {}) as T;
+    return carry;
 };
+
+/**
+ * Recursively omit the given pre-split paths from a plain object or array.
+ * @param object The target object to omit props from.
+ * @param omittedKeys The omitted paths, already split into segment arrays.
+ * @returns A new object/array without the omitted props.
+ */
+const recursiveOmit = <T extends { [key in string]: unknown }>(object: T, omittedKeys: ReadonlyArray<string[]>): T =>
+    walk(object, omittedKeys, []) as T;
 
 export default recursiveOmit;
