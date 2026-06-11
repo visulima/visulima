@@ -50,7 +50,7 @@ export const registerListRuns = ({ server }: ToolDeps, context: ToolContext): vo
             description:
                 "List recorded vis runs from `.task-runner/runs/`, most recent first. Each entry includes the run ID, start "
                 + "timestamp, derived status, task count, and failed-task count — use it to discover run IDs for `get_run_logs`, "
-                + "`cache_hash`, or `cache_why` (e.g. \"compare this run to the previous one\").",
+                + '`cache_hash`, or `cache_why` (e.g. "compare this run to the previous one").',
             inputSchema: {
                 limit: z.int().positive().max(100).optional().describe("Maximum runs to return (default: 20, newest first)."),
             },

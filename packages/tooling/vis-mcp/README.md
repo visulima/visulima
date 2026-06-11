@@ -87,21 +87,21 @@ Add the server to `~/Library/Application Support/Claude/claude_desktop_config.js
 
 All tools are read-only (each is annotated `readOnlyHint: true`). The agent prepares commands; a human runs anything that writes. The `lint` and `fmt` tools always run in check-only mode and never apply fixes — invoke `vis lint --fix` / `vis fmt` directly for that.
 
-| Tool                | What it does                                                                                                |
-| ------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `list_projects`     | List all workspace projects, optionally filtered by a vis query string.                                    |
-| `describe_project`  | Return full metadata for one project (language, layer, stack, targets).                                    |
-| `list_targets`      | Flatten projects into per-target rows; optionally narrow to one project.                                   |
-| `list_templates`    | List scaffolding templates discovered in the workspace, with source and one-line description.              |
-| `describe_template` | Return template metadata: description, default destination, and the variable schema for `vis generate`.    |
-| `get_run_logs`      | Read a run summary from `.task-runner/`; optionally filter to one task.                                     |
-| `list_runs`         | List recorded runs from `.task-runner/runs/` (newest first) with status and task counts to discover run IDs.|
-| `cache_why`         | Diff a task's hash inputs against the previous run to explain a rotation.                                   |
-| `cache_hash`        | Print the recorded hash and per-input hash details for a task.                                              |
-| `audit`             | Audit installed packages for known vulnerabilities and supply-chain risk (`vis audit`).                    |
-| `advisory_status`   | Report local OSV advisory DB freshness (path, schema version, per-ecosystem counts, last sync).            |
-| `lint`              | Run the vis lint orchestrator in check-only mode (`vis lint --format json`) and return `{ findings, runs }`.|
-| `fmt`               | Run the vis fmt orchestrator in `--check` mode and return the files that would change.                     |
+| Tool                | What it does                                                                                                 |
+| ------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `list_projects`     | List all workspace projects, optionally filtered by a vis query string.                                      |
+| `describe_project`  | Return full metadata for one project (language, layer, stack, targets).                                      |
+| `list_targets`      | Flatten projects into per-target rows; optionally narrow to one project.                                     |
+| `list_templates`    | List scaffolding templates discovered in the workspace, with source and one-line description.                |
+| `describe_template` | Return template metadata: description, default destination, and the variable schema for `vis generate`.      |
+| `get_run_logs`      | Read a run summary from `.task-runner/`; optionally filter to one task.                                      |
+| `list_runs`         | List recorded runs from `.task-runner/runs/` (newest first) with status and task counts to discover run IDs. |
+| `cache_why`         | Diff a task's hash inputs against the previous run to explain a rotation.                                    |
+| `cache_hash`        | Print the recorded hash and per-input hash details for a task.                                               |
+| `audit`             | Audit installed packages for known vulnerabilities and supply-chain risk (`vis audit`).                      |
+| `advisory_status`   | Report local OSV advisory DB freshness (path, schema version, per-ecosystem counts, last sync).              |
+| `lint`              | Run the vis lint orchestrator in check-only mode (`vis lint --format json`) and return `{ findings, runs }`. |
+| `fmt`               | Run the vis fmt orchestrator in `--check` mode and return the files that would change.                       |
 
 Tools backed by a typed CLI payload (`audit`, `advisory_status`, `lint`, `fmt`) also expose an `outputSchema` and return `structuredContent`, so MCP-aware clients can validate and render the result instead of re-parsing the JSON text block.
 
