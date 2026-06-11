@@ -36,4 +36,42 @@ describe(edgeHandler, () => {
 
         expect(adapter.getAll).toHaveBeenCalledTimes(1);
     });
+
+    it("should return the Response produced by the executor", async () => {
+        expect.assertions(3);
+
+        const adapter = buildAdapter();
+        const handler = await edgeHandler(adapter);
+
+        const request = {
+            headers: { host: "example.com" },
+            method: "GET",
+            url: "/users",
+        } as unknown as Request;
+
+        const response = await handler(request, undefined);
+
+        expect(response).toBeInstanceOf(Response);
+        expect(response.status).toBe(200);
+        await expect(response.json()).resolves.toStrictEqual([{ id: 1 }]);
+    });
+
+    it("should read the host from a real Fetch Request Headers instance", async () => {
+        expect.assertions(2);
+
+        const adapter = buildAdapter();
+        const handler = await edgeHandler(adapter);
+
+        // A real Fetch Request exposes `headers` as a `Headers` instance, not a plain object.
+        const request = {
+            headers: new Headers({ host: "example.com" }),
+            method: "GET",
+            url: "/users",
+        } as unknown as Request;
+
+        const response = await handler(request, undefined);
+
+        expect(response).toBeInstanceOf(Response);
+        expect(adapter.getAll).toHaveBeenCalledTimes(1);
+    });
 });

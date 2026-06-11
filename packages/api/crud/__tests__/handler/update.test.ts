@@ -4,7 +4,7 @@ import updateHandler from "../../src/handler/update";
 import type { Adapter, ParsedQueryParameters } from "../../src/types";
 
 describe(updateHandler, () => {
-    it("should return updated resource with status 201 when resource exists", async () => {
+    it("should return updated resource with status 200 when resource exists", async () => {
         expect.assertions(3);
 
         const updated = { id: 1, name: "Updated" };
@@ -24,7 +24,7 @@ describe(updateHandler, () => {
 
         expect(adapter.getOne).toHaveBeenCalledWith("users", 1, {});
         expect(adapter.update).toHaveBeenCalledWith("users", 1, { name: "Updated" }, {});
-        expect(result).toStrictEqual({ data: updated, status: 201 });
+        expect(result).toStrictEqual({ data: updated, status: 200 });
     });
 
     it("should throw 404 when resource not found", async () => {

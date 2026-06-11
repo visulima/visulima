@@ -3,6 +3,30 @@ import { match } from "path-to-regexp";
 
 import { RouteType } from "../types";
 
+type Matcher = ReturnType<typeof match>;
+
+/**
+ * `path-to-regexp` compilers are pure functions of `resourceName`, but were
+ * previously rebuilt on every request. Cache them per resource name so the
+ * regex is compiled once and reused for the lifetime of the process.
+ */
+const matcherCache = new Map<string, { entityMatcher: Matcher; simpleMatcher: Matcher }>();
+
+const getMatchers = (resourceName: string): { entityMatcher: Matcher; simpleMatcher: Matcher } => {
+    let matchers = matcherCache.get(resourceName);
+
+    if (matchers === undefined) {
+        matchers = {
+            entityMatcher: match(`/*placeholder/${resourceName}{/:id}`, { decode: decodeURIComponent }),
+            simpleMatcher: match(`/*placeholder/${resourceName}`, { decode: decodeURIComponent }),
+        };
+
+        matcherCache.set(resourceName, matchers);
+    }
+
+    return matchers;
+};
+
 const getRouteType = (method: string, url: string, resourceName: string): GetRouteType => {
     // Exclude the query params from the path
     const realPath = url.split("?")[0];
@@ -15,10 +39,7 @@ const getRouteType = (method: string, url: string, resourceName: string): GetRou
         throw new Error(`invalid resource name '${resourceName}' for route '${realPath}'`);
     }
 
-    const entityMatcher = match(`/*placeholder/${resourceName}{/:id}`, { decode: decodeURIComponent });
-    const simpleMatcher = match(`/*placeholder/${resourceName}`, {
-        decode: decodeURIComponent,
-    });
+    const { entityMatcher, simpleMatcher } = getMatchers(resourceName);
 
     switch (method) {
         case "DELETE": {

@@ -62,7 +62,7 @@ describe(baseHandler, () => {
     });
 
     it("should dispatch GET list to adapter.getAll and call response/final executors", async () => {
-        expect.assertions(4);
+        expect.assertions(3);
 
         const adapter = buildAdapter({
             getAll: vi.fn<Adapter<any, any>["getAll"]>().mockResolvedValue([{ id: 1 }]),
@@ -75,9 +75,26 @@ describe(baseHandler, () => {
         await handler(buildRequest({ method: "GET", url: "/users" }), {});
 
         expect(adapter.getAll).toHaveBeenCalledTimes(1);
-        expect(adapter.connect).toHaveBeenCalledTimes(1);
-        expect(adapter.disconnect).toHaveBeenCalledTimes(1);
+        expect(finalExecutor).toHaveBeenCalledTimes(1);
         expect(responseExecutor).toHaveBeenCalledWith({}, { data: [{ id: 1 }], status: 200 });
+    });
+
+    it("should connect once at factory time, not per request", async () => {
+        expect.assertions(2);
+
+        const adapter = buildAdapter();
+        const responseExecutor = vi.fn().mockResolvedValue(undefined);
+        const finalExecutor = vi.fn().mockResolvedValue(undefined);
+
+        const handler = await baseHandler(responseExecutor, finalExecutor, adapter);
+
+        await handler(buildRequest({ method: "GET", url: "/users" }), {});
+        await handler(buildRequest({ method: "GET", url: "/users" }), {});
+
+        // connect is called exactly once during handler construction, regardless of request count.
+        expect(adapter.connect).toHaveBeenCalledTimes(1);
+        // disconnect is no longer torn down per request.
+        expect(adapter.disconnect).not.toHaveBeenCalled();
     });
 
     it("should dispatch GET one to adapter.getOne with formatted resource id", async () => {
@@ -131,7 +148,7 @@ describe(baseHandler, () => {
         await handler(buildRequest({ body: { name: "Updated" }, method: "PATCH", url: "/api/users/5" }), {});
 
         expect(adapter.update).toHaveBeenCalledWith("users", 5, { name: "Updated" }, expect.any(Object));
-        expect(responseExecutor).toHaveBeenCalledWith({}, { data: { id: 5, name: "Updated" }, status: 201 });
+        expect(responseExecutor).toHaveBeenCalledWith({}, { data: { id: 5, name: "Updated" }, status: 200 });
     });
 
     it("should dispatch DELETE to adapter.delete", async () => {

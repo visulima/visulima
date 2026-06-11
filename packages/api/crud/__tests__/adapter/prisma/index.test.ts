@@ -127,6 +127,43 @@ describe(PrismaAdapter, () => {
             expect(a.getModels()).toStrictEqual(["User"]);
         });
 
+        it("should resolve models from the Prisma 5/6 dmmf option (datamodel.models)", async () => {
+            expect.assertions(1);
+
+            const client = makeClient() as Record<string, unknown> & TestClient;
+
+            // Prisma 5/6 removed the private _dmmf/_getDmmf internals.
+            delete client["_dmmf"];
+
+            const a = new PrismaAdapter({
+                dmmf: { datamodel: { models: [{ name: "User" }] } },
+                models: ["User"],
+                prismaClient: client,
+            });
+
+            await a.init();
+
+            expect(a.getModels()).toStrictEqual(["User"]);
+        });
+
+        it("should resolve models from the client's _runtimeDataModel fallback", async () => {
+            expect.assertions(1);
+
+            const client = makeClient() as Record<string, unknown> & TestClient;
+
+            delete client["_dmmf"];
+            client["_runtimeDataModel"] = { models: { User: {} } };
+
+            const a = new PrismaAdapter({
+                models: ["User"],
+                prismaClient: client,
+            });
+
+            await a.init();
+
+            expect(a.getModels()).toStrictEqual(["User"]);
+        });
+
         it("should throw when client exposes neither _dmmf nor _getDmmf", async () => {
             expect.assertions(1);
 

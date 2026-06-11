@@ -11,7 +11,7 @@ const updateHandler: UpdateHandler = async ({ adapter, query, request, resourceI
 
         return {
             data: updatedResource,
-            status: 201,
+            status: 200,
         };
     }
 
