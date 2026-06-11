@@ -35,10 +35,7 @@ export const defineOptions = <const T extends ReadonlyArray<OptionDefinition>>(d
  * @param options Parsing options (argv, camelCase, caseInsensitive, debug, negation, partial, stopAtFirstUnknown, strictTypes)
  * @returns Parsed command-line arguments as key-value pairs
  */
-export function commandLineArgs<const T extends ReadonlyArray<OptionDefinition>>(
-    optionDefinitions: T,
-    options?: ParseOptions,
-): InferCommandLineOptions<T>;
+export function commandLineArgs<const T extends ReadonlyArray<OptionDefinition>>(optionDefinitions: T, options?: ParseOptions): InferCommandLineOptions<T>;
 export function commandLineArgs(optionDefinitions: OptionDefinition | ReadonlyArray<OptionDefinition>, options?: ParseOptions): CommandLineOptions;
 export function commandLineArgs(optionDefinitions: OptionDefinition | ReadonlyArray<OptionDefinition>, options: ParseOptions = {}): CommandLineOptions {
     const debugEnabled = options.debug ?? false;

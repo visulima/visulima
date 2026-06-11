@@ -236,11 +236,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                 const nextToken = tokens[i + 1];
                 // Check if next token is a value-only option token (from short option groups like -ab=value)
                 const isValueOnlyOptionToken = nextToken?.kind === "option" && !("name" in nextToken) && nextToken.value !== undefined;
-                const shouldConsumeValue
-                    = nextToken
-                        && definition
-                        && !(definition.type && isBooleanType(definition.type))
-                        && (nextToken.kind === "positional" || isValueOnlyOptionToken);
+                const shouldConsumeValue =
+                    nextToken &&
+                    definition &&
+                    !(definition.type && isBooleanType(definition.type)) &&
+                    (nextToken.kind === "positional" || isValueOnlyOptionToken);
                 const isDefaultOptionNonMultiple = definition && definition.defaultOption && !definition.multiple && !definition.lazyMultiple;
 
                 if (shouldConsumeValue && (!definition?.defaultOption || isDefaultOptionNonMultiple)) {
@@ -250,11 +250,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
                         const collectedValues: any[] = [];
 
                         while (
-                            currentIndex < tokens.length
-                            && ((tokens[currentIndex] as ArgumentToken).kind === "positional"
-                                || ((tokens[currentIndex] as ArgumentToken).kind === "option"
-                                    && !("name" in (tokens[currentIndex] as ArgumentToken))
-                                    && (tokens[currentIndex] as ArgumentToken).value !== undefined))
+                            currentIndex < tokens.length &&
+                            ((tokens[currentIndex] as ArgumentToken).kind === "positional" ||
+                                ((tokens[currentIndex] as ArgumentToken).kind === "option" &&
+                                    !("name" in (tokens[currentIndex] as ArgumentToken)) &&
+                                    (tokens[currentIndex] as ArgumentToken).value !== undefined))
                         ) {
                             collectedValues.push((tokens[currentIndex] as ArgumentToken).value);
                             consumedPositionalIndices.add((tokens[currentIndex] as ArgumentToken).index);
@@ -365,11 +365,11 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     // Shared predicate: does this token reference an option not present in any
     // definition/alias map (honouring case-insensitive lookups)?
     const isUnknownOptionToken = (token: ArgumentToken): boolean =>
-        token.kind === "option"
-        && !definitionMap.has(token.name ?? "")
-        && !aliasMap.has(token.name ?? "")
-        && (!options.caseInsensitive
-            || (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() ?? "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() ?? "")));
+        token.kind === "option" &&
+        !definitionMap.has(token.name ?? "") &&
+        !aliasMap.has(token.name ?? "") &&
+        (!options.caseInsensitive ||
+            (!caseInsensitiveNameMap?.has(token.name?.toLowerCase() ?? "") && !caseInsensitiveAliasMap?.has(token.name?.toLowerCase() ?? "")));
 
     // When stopAtFirstUnknown is set, locate the first truly unknown option once
     // and reuse the result for both the defaultOption cut-off (argv index) and the
@@ -478,7 +478,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     // Process collected values
 
     for (const [key, value] of Object.entries(values)) {
-        const finalKey = options.camelCase ? camelCaseMap?.get(key) ?? key : key;
+        const finalKey = options.camelCase ? (camelCaseMap?.get(key) ?? key) : key;
         const definition = definitionMap.get(key);
 
         if (definition?.type) {
@@ -492,7 +492,7 @@ const resolveArgs = (tokens: ArgumentToken[], definitions: OptionDefinition[], o
     // Handle default values
 
     for (const definition of definitions) {
-        const key = options.camelCase ? camelCaseMap?.get(definition.name) ?? definition.name : definition.name;
+        const key = options.camelCase ? (camelCaseMap?.get(definition.name) ?? definition.name) : definition.name;
 
         if (!(key in output) && definition.defaultValue !== undefined) {
             const isMultipleDefinition = definition.multiple ?? definition.lazyMultiple;
