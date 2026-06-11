@@ -1,4 +1,7 @@
-export { default as loadSourceMap } from "./load-source-map";
+export { SourceMapReadError } from "./errors";
+export type { AsyncRemoteMapResolver, LoadSourceMapAsyncOptions, LoadSourceMapOptions, RemoteMapResolver } from "./load-source-map";
+export { default as loadSourceMap, loadSourceMapAsync, loadSourceMapFromSource } from "./load-source-map";
+export { SourceMapParseError } from "./parse-error";
 export type {
     Bias,
     DecodedSourceMap,
