@@ -67,8 +67,6 @@ describe(withValidation, () => {
 
         await expect(withValidation(schema, innerHandler as never)({ id: 7 }, {}, async () => undefined)).resolves.toBe(7);
 
-        await expect(
-            withValidation(schema, innerHandler as never)({ id: "x" }, {}, async () => undefined),
-        ).rejects.toMatchObject({ statusCode: 422 });
+        await expect(withValidation(schema, innerHandler as never)({ id: "x" }, {}, async () => undefined)).rejects.toMatchObject({ statusCode: 422 });
     });
 });

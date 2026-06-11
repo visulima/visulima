@@ -31,8 +31,7 @@ const isZodError = (error: unknown): error is ZodErrorLike => {
     return Array.isArray(candidate.issues) && (candidate.name === undefined || candidate.name === "ZodError");
 };
 
-const formatIssues = (issues: ZodIssueLike[]): string =>
-    issues.map((issue) => `${issue.path.map(String).join("/")} - ${issue.message}`).join("\n");
+const formatIssues = (issues: ZodIssueLike[]): string => issues.map((issue) => `${issue.path.map(String).join("/")} - ${issue.message}`).join("\n");
 
 const toHttpError = (error: unknown): never => {
     if (isZodError(error)) {
@@ -51,22 +50,22 @@ const toHttpError = (error: unknown): never => {
     throw createHttpError(422, "Request validation failed", { cause: error });
 };
 
-const withZod
-    = (
+const withZod =
+    (
         // eslint-disable-next-line @typescript-eslint/no-explicit-any -- ZodObject requires `any` for generic parameter compatibility
         schema: z.ZodObject<any>,
         handler: Nextable<FunctionLike>,
-    ): (request: unknown, response: unknown, next: NextHandler) => Promise<unknown> =>
-        async (request: unknown, response: unknown, next: NextHandler): Promise<unknown> => {
-            let transformedRequest: unknown;
+    ): ((request: unknown, response: unknown, next: NextHandler) => Promise<unknown>) =>
+    async (request: unknown, response: unknown, next: NextHandler): Promise<unknown> => {
+        let transformedRequest: unknown;
 
-            try {
-                transformedRequest = await schema.parseAsync(request);
-            } catch (error: unknown) {
-                toHttpError(error);
-            }
+        try {
+            transformedRequest = await schema.parseAsync(request);
+        } catch (error: unknown) {
+            toHttpError(error);
+        }
 
-            return handler(transformedRequest, response, next);
-        };
+        return handler(transformedRequest, response, next);
+    };
 
 export default withZod;

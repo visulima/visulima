@@ -67,24 +67,24 @@ const formatIssues = (issues: ReadonlyArray<StandardSchemaV1.Issue>): string =>
  * import { z } from "zod";
  * router.post("/users", withValidation(z.object({ name: z.string() }), createUser));
  */
-const withValidation
-    = <Input, Output>(
+const withValidation =
+    <Input, Output>(
         schema: StandardSchemaV1<Input, Output>,
         handler: Nextable<FunctionLike>,
-    ): (request: unknown, response: unknown, next: NextHandler) => Promise<unknown> =>
-        async (request: unknown, response: unknown, next: NextHandler): Promise<unknown> => {
-            const result = await schema["~standard"].validate(request);
+    ): ((request: unknown, response: unknown, next: NextHandler) => Promise<unknown>) =>
+    async (request: unknown, response: unknown, next: NextHandler): Promise<unknown> => {
+        const result = await schema["~standard"].validate(request);
 
-            if (result.issues !== undefined) {
-                const httpError = createHttpError(422, formatIssues(result.issues));
+        if (result.issues !== undefined) {
+            const httpError = createHttpError(422, formatIssues(result.issues));
 
-                (httpError as typeof httpError & { issues: ReadonlyArray<StandardSchemaV1.Issue> }).issues = result.issues;
+            (httpError as typeof httpError & { issues: ReadonlyArray<StandardSchemaV1.Issue> }).issues = result.issues;
 
-                throw httpError;
-            }
+            throw httpError;
+        }
 
-            return handler(result.value, response, next);
-        };
+        return handler(result.value, response, next);
+    };
 
 export default withValidation;
 export type { StandardSchemaV1 };

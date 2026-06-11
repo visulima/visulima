@@ -13,9 +13,9 @@ export type Route<H> = {
     method: HttpMethod | "";
 } & (
     | {
-        keys: string[] | false;
-        pattern: RegExp;
-    }
+          keys: string[] | false;
+          pattern: RegExp;
+      }
     | { matchAll: true }
 );
 

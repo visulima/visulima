@@ -403,7 +403,7 @@ describe(createRouter, () => {
             end(chunk) {
                 expect(response.statusCode).toBe(500);
                 expect(chunk).toBe("Internal Server Error");
-                expect(consoleSpy.mock.calls[index], "called console.error with \"\"").toStrictEqual([""]);
+                expect(consoleSpy.mock.calls[index], 'called console.error with ""').toStrictEqual([""]);
             },
         } as ServerResponse;
 

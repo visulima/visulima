@@ -439,9 +439,12 @@ router.post("/users", createUser, (req, res) => {
 });
 
 // Or wrap a handler explicitly
-router.put("/users/:id", withZod(createUser, (req, res) => {
-    res.end("updated");
-}));
+router.put(
+    "/users/:id",
+    withZod(createUser, (req, res) => {
+        res.end("updated");
+    }),
+);
 ```
 
 > [!IMPORTANT]
@@ -459,9 +462,12 @@ const schema = v.object({ name: v.string() });
 
 const router = createNodeRouter();
 
-router.post("/users", withValidation(schema, (req, res) => {
-    res.end("ok");
-}));
+router.post(
+    "/users",
+    withValidation(schema, (req, res) => {
+        res.end("ok");
+    }),
+);
 ```
 
 ## Utilities
