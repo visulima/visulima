@@ -275,6 +275,38 @@ describe(formatBytes, () => {
 
         expect(formatBytes(value, { ...options })).toBe(`${expectedValue} ${expectedUnit}`);
     });
+
+    it("should not throw a TypeError for 0 < |bytes| < 1 and clamp the unit level", () => {
+        expect.assertions(3);
+
+        expect(formatBytes(0.5)).toBe("1 Bytes");
+        expect(formatBytes(0.5, { decimals: 1 })).toBe("0.5 Bytes");
+        expect(formatBytes(-0.25, { decimals: 2 })).toBe("-0.25 Bytes");
+    });
+
+    it("should format in bits when bits is true", () => {
+        expect.assertions(3);
+
+        // 1 byte = 8 bits
+        expect(formatBytes(1, { bits: true })).toBe("8 bit");
+        expect(formatBytes(1000, { bits: true })).toBe("8 kbit");
+        expect(formatBytes(1_000_000, { base: 10, bits: true, decimals: 1 })).toBe("8.0 Mbit");
+    });
+
+    it("should format bits with the long unit form", () => {
+        expect.assertions(1);
+
+        expect(formatBytes(1000, { bits: true, long: true })).toBe("8 Kilobits");
+    });
+
+    it("should prefix positive values with a sign when signed is true", () => {
+        expect.assertions(3);
+
+        expect(formatBytes(50.4 * 1024 * 1024, { signed: true })).toBe("+50 MB");
+        expect(formatBytes(-50.4 * 1024 * 1024, { signed: true })).toBe("-50 MB");
+        // Zero is never signed.
+        expect(formatBytes(0, { signed: true })).toBe("0 Bytes");
+    });
 });
 
 describe(parseBytes, () => {

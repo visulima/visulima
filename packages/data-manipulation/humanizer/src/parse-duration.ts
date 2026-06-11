@@ -17,14 +17,32 @@ const STANDARD_UNIT_MEASURES: DurationUnitMeasures = {
 const ESCAPE_REGEX = /[-/\\^$*+?.()|[\]{}]/g;
 
 const UNIT_REGEX_CACHE = new WeakMap<DurationUnitMeasures | Record<string, string>, RegExp>();
-const ISO_FORMAT = /^PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?$/i;
+// Full ISO 8601 duration: optional date part (Y/M/W/D) and optional time part
+// (H/M/S with fractional seconds). Either part may be empty but at least one
+// component must be present (validated after matching). The week form (P2W) is
+// mutually exclusive with the other date designators per the spec, but we accept
+// it alongside them leniently. Fractional values are allowed on every field.
+//
+// Built from a single fragment per designator to keep it readable; the pattern
+// is linear (each `\d+(?:[.,]\d+)?` requires a designator letter to repeat), so
+// it is not subject to catastrophic backtracking.
+const isoNumber = (designator: string): string => String.raw`(?:(\d+(?:[.,]\d+)?)${designator})?`;
+const ISO_FORMAT = new RegExp(
+    `^P${isoNumber("Y")}${isoNumber("M")}${isoNumber("W")}${isoNumber("D")}(?:T${isoNumber("H")}${isoNumber("M")}${isoNumber("S")})?$`,
+    "i",
+);
 const COLON_FORMAT = /^(?:(\d+):)?(?:(\d+):)?(\d+)$/;
 const NUMERIC_STRING_REGEX = /^[+-]?\d+(?:\.\d+)?$/;
 const SIGN_PREFIX_REGEX = /^[-+]/;
 
 /**
  * Parses a human-readable duration string into milliseconds using specified language units.
- * @param value The string to parse (e.g., "1h 20min", "2 days", "-3 hafta").
+ *
+ * Supported input formats: localized unit strings (`"1h 20min"`, `"2 days"`, `"-3 hafta"`),
+ * plain numbers (interpreted as `options.defaultUnit`, default `"ms"`), colon time
+ * (`"hh:mm:ss"` / `"mm:ss"`), and ISO 8601 durations including the date part, week
+ * form and fractional values (`"PT1H30M"`, `"P3DT4H"`, `"P1Y2M"`, `"P2W"`, `"PT1.5S"`).
+ * @param value The string to parse.
  * @param options Optional configuration including language and default unit.
  * @returns The duration in milliseconds, or undefined if the string cannot be parsed.
  */
@@ -53,7 +71,10 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
     let processedValue = value.replaceAll(new RegExp(String.raw`(\d)[${escapedPlaceholder}${escapedGroup}](\d)`, "g"), "$1$2");
 
     if (decimalSeparator !== ".") {
-        processedValue = processedValue.replace(escapedDecimal, ".");
+        // Replace EVERY decimal separator that sits between two digits — using a
+        // plain string pattern with `.replace` would only convert the first
+        // occurrence, silently mis-parsing inputs like "1,5 h 2,5 min".
+        processedValue = processedValue.replaceAll(new RegExp(String.raw`(\d)${escapedDecimal}(\d)`, "g"), "$1.$2");
     }
 
     if (NUMERIC_STRING_REGEX.test(value)) {
@@ -72,12 +93,36 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
 
     const isoMatch = ISO_FORMAT.exec(value);
 
-    if (isoMatch && (isoMatch[1] !== undefined || isoMatch[2] !== undefined || isoMatch[3] !== undefined)) {
-        const hours = Number.parseInt(isoMatch[1] ?? "0", 10);
-        const minutes = Number.parseInt(isoMatch[2] ?? "0", 10);
-        const seconds = Number.parseInt(isoMatch[3] ?? "0", 10);
+    if (isoMatch) {
+        // Capture-group index → unit measure. Groups:
+        // [1]=years [2]=months [3]=weeks [4]=days [5]=hours [6]=minutes [7]=seconds
+        const isoUnitMeasures: [number, number][] = [
+            [1, STANDARD_UNIT_MEASURES.y],
+            [2, STANDARD_UNIT_MEASURES.mo],
+            [3, STANDARD_UNIT_MEASURES.w],
+            [4, STANDARD_UNIT_MEASURES.d],
+            [5, STANDARD_UNIT_MEASURES.h],
+            [6, STANDARD_UNIT_MEASURES.m],
+            [7, STANDARD_UNIT_MEASURES.s],
+        ];
 
-        return hours * 3_600_000 + minutes * 60_000 + seconds * 1000;
+        let isoTotal = 0;
+        let isoHasComponent = false;
+
+        for (const [groupIndex, measure] of isoUnitMeasures) {
+            const raw = isoMatch[groupIndex];
+
+            if (raw !== undefined) {
+                isoHasComponent = true;
+                isoTotal += Number.parseFloat(raw.replace(",", ".")) * measure;
+            }
+        }
+
+        // At least one component must be present, otherwise the bare "P"/"PT"
+        // string is not a valid duration and falls through to other formats.
+        if (isoHasComponent) {
+            return isoTotal;
+        }
     }
 
     const colonMatch = COLON_FORMAT.exec(value);
@@ -126,12 +171,6 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
     // Loop through matches using exec on the *fully processed* string
     // eslint-disable-next-line no-cond-assign
     while ((match = durationRegex.exec(processedValue)) !== null) {
-        if (!unitsFound) {
-            firstMatchIndex = match.index; // Record start index of the first match
-        }
-
-        unitsFound = true;
-
         const numberString = match[1]; // Includes potential sign and leading/trailing spaces
         const unitString = match[2];
 
@@ -148,8 +187,24 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         const unitKey = currentUnitMap[unitString.toLowerCase()];
 
         if (unitKey === undefined) {
+            // A token that matched the regex but is not a real unit (e.g. a
+            // case mismatch) is left in place so the leading/trailing/inter-match
+            // noise checks below reject it.
             continue;
         }
+
+        // Only a valid, contributing match updates the bookkeeping used for the
+        // noise checks. Any non-whitespace text between the previous valid match
+        // and this one (e.g. an unconverted decimal value such as "2,5" in
+        // another locale, or garbage between units) invalidates the whole input.
+        if (!unitsFound) {
+            firstMatchIndex = match.index;
+        } else if (processedValue.slice(lastMatchEndIndex, match.index).trim().length > 0) {
+            return undefined;
+        }
+
+        unitsFound = true;
+        lastMatchEndIndex = durationRegex.lastIndex;
 
         const unitValue = STANDARD_UNIT_MEASURES[unitKey];
 
@@ -159,7 +214,6 @@ const parseDuration = (value: string, options?: ParseDurationOptions): number | 
         }
 
         totalMs += sign * parsedNumber * unitValue;
-        lastMatchEndIndex = durationRegex.lastIndex;
     }
 
     // Check for leading/trailing noise

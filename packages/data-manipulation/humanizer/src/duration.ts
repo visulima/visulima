@@ -7,7 +7,6 @@ interface InternalOptions {
     decimal?: string;
     delimiter?: string;
     digitReplacements?: DurationDigitReplacements;
-    fallbacks?: string[];
     language: DurationLanguage;
     largest?: number;
     maxDecimalPoints?: number;

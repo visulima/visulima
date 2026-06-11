@@ -1,7 +1,19 @@
 import type { DurationLanguage } from "../../types";
 
+/**
+ * Cache of language objects that have already passed validation. The same
+ * language object is re-validated thousands of times in render loops, so we
+ * skip re-validating objects we have already seen (mirrors the unit-regex
+ * `WeakMap` cache in parse-duration.ts).
+ */
+const VALIDATED_LANGUAGES = new WeakSet<DurationLanguage>();
+
 // eslint-disable-next-line sonarjs/cognitive-complexity
 const validateDurationLanguage = (language: DurationLanguage): void => {
+    if (VALIDATED_LANGUAGES.has(language)) {
+        return;
+    }
+
     const requiredProperties = ["y", "mo", "w", "d", "h", "m", "s", "ms", "future", "past"];
 
     for (const property of requiredProperties) {
@@ -47,6 +59,8 @@ const validateDurationLanguage = (language: DurationLanguage): void => {
     if (language.unitMap && Object.values(language.unitMap).some((value) => typeof value !== "string")) {
         throw new TypeError("All values in unitMap must be of type string");
     }
+
+    VALIDATED_LANGUAGES.add(language);
 };
 
 export default validateDurationLanguage;
