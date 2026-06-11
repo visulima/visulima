@@ -1,5 +1,6 @@
 import "cross-fetch/polyfill";
 
+import { http, HttpResponse } from "msw";
 import { afterAll, afterEach, beforeAll, describe, expect, it } from "vitest";
 
 import { server } from "../../__fixtures__/mock-server";
@@ -132,5 +133,24 @@ describe(httpCheck, () => {
                 method: "GET",
             },
         });
+    }, 5000);
+
+    it("should return unhealthy when the request exceeds the timeout", async () => {
+        expect.assertions(2);
+
+        server.use(
+            http.get("https://slow.example.com", async () => {
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 200);
+                });
+
+                return HttpResponse.text("ok");
+            }),
+        );
+
+        const result = await httpCheck("https://slow.example.com", { timeout: 20 })();
+
+        expect(result.health.healthy).toBe(false);
+        expect(result.meta).toStrictEqual({ host: "https://slow.example.com", method: "GET" });
     }, 5000);
 });

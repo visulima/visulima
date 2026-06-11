@@ -2,6 +2,7 @@ import type { extendedPingOptions } from "pingman";
 import ping from "pingman";
 
 import type { Checker } from "../types";
+import normalizeHost from "../utils/normalize-host";
 
 const DISPLAY_NAME = "Ping check for";
 
@@ -12,7 +13,7 @@ const pingCheck
     = (host: string, options?: extendedPingOptions): Checker =>
         async () => {
             try {
-                const response = await ping(host.replace(/^https?:\/\//, ""), options);
+                const response = await ping(normalizeHost(host), options);
 
                 if (!response.alive) {
                     return {
