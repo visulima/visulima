@@ -1,13 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-    addDarkModeSupport,
-    extractCidReferences,
-    injectPreheader,
-    inlineCss,
-    postProcessHtml,
-    rewriteCidLinks,
-} from "../../src/render";
+import { addDarkModeSupport, extractCidReferences, injectPreheader, inlineCss, postProcessHtml, rewriteCidLinks } from "../../src/render";
 
 describe("render pipeline", () => {
     describe(injectPreheader, () => {

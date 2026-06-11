@@ -1,14 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
 import { createMail } from "../../src/mail";
-import {
-    circuitBreakerMiddleware,
-    composeMiddleware,
-    dedupeMiddleware,
-    RATE_LIMIT_PRESETS,
-    rateLimitMiddleware,
-    retryMiddleware,
-} from "../../src/middleware";
+import { circuitBreakerMiddleware, composeMiddleware, dedupeMiddleware, RATE_LIMIT_PRESETS, rateLimitMiddleware, retryMiddleware } from "../../src/middleware";
 import type { Provider } from "../../src/providers/provider";
 import type { EmailOptions, EmailResult, Result } from "../../src/types";
 

@@ -16,7 +16,9 @@ import type { Middleware } from "./types";
  * })));
  * ```
  */
-const withRender = (transform: (options: EmailOptions) => MaybePromise<EmailOptions>): Middleware =>
-    async (options, next) => next(await transform(options));
+const withRender
+    = (transform: (options: EmailOptions) => MaybePromise<EmailOptions>): Middleware =>
+        async (options, next) =>
+            next(await transform(options));
 
 export default withRender;

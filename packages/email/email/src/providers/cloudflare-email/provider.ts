@@ -60,7 +60,10 @@ const cloudflareEmailProvider: ProviderFactory<CloudflareEmailConfig> = definePr
 
                 if (toRecipients.length !== 1 || emailOptions.cc !== undefined || emailOptions.bcc !== undefined) {
                     // The Workers Email binding sends one envelope recipient; reject rather than silently drop.
-                    return { error: new EmailError(PROVIDER_NAME, "Cloudflare Email supports exactly one `to` recipient and does not support cc/bcc"), success: false };
+                    return {
+                        error: new EmailError(PROVIDER_NAME, "Cloudflare Email supports exactly one `to` recipient and does not support cc/bcc"),
+                        success: false,
+                    };
                 }
 
                 const [recipient] = toRecipients;

@@ -4,6 +4,8 @@ import RequiredOptionError from "../../src/errors/required-option-error";
 import { opentelemetryProvider } from "../../src/providers/opentelemetry/index";
 import type { EmailAddress } from "../../src/types";
 
+const PROVIDER_NOT_INITIALIZED_REGEX = /Provider not initialized/;
+
 const createFakeSpan = () => {
     return {
         end: vi.fn(),
@@ -105,7 +107,7 @@ describe(opentelemetryProvider, () => {
 
             await provider.initialize();
 
-            expect(factory).toHaveBeenCalled();
+            expect(factory).toHaveBeenCalledWith({});
         });
 
         it("should throw EmailError when provider is invalid", async () => {
@@ -218,7 +220,15 @@ describe(opentelemetryProvider, () => {
 
             expect(result.success).toBe(true);
             expect(result.data?.provider).toContain("mock-provider");
-            expect(span.setAttributes).toHaveBeenCalled();
+            expect(span.setAttributes).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    "email.from": "sender@example.com",
+                    "email.has_html": true,
+                    "email.has_text": true,
+                    "email.subject": "Test",
+                    "email.to": "user@example.com",
+                }),
+            );
             expect(span.end).toHaveBeenCalled();
         });
 
@@ -277,7 +287,19 @@ describe(opentelemetryProvider, () => {
                 to: { email: "user@example.com" },
             });
 
-            expect(span.setAttributes).toHaveBeenCalled();
+            expect(span.setAttributes).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    "email.attachments.count": 1,
+                    "email.bcc": "b@example.com",
+                    "email.cc": "c1@example.com, c2@example.com",
+                    "email.from": "sender@example.com",
+                    "email.priority": "high",
+                    "email.reply_to": "r@example.com",
+                    "email.subject": "Test",
+                    "email.tags": "welcome",
+                    "email.to": "user@example.com",
+                }),
+            );
         });
 
         it("should record error state when wrapped provider returns failure", async () => {
@@ -304,7 +326,7 @@ describe(opentelemetryProvider, () => {
             });
 
             expect(result.success).toBe(false);
-            expect(span.recordException).toHaveBeenCalled();
+            expect(span.recordException).toHaveBeenCalledWith(expect.any(Error));
         });
 
         it("should record exception when sendEmail throws", async () => {
@@ -328,7 +350,7 @@ describe(opentelemetryProvider, () => {
             });
 
             expect(result.success).toBe(false);
-            expect(span.recordException).toHaveBeenCalled();
+            expect(span.recordException).toHaveBeenCalledWith(expect.any(Error));
         });
     });
 
@@ -341,7 +363,7 @@ describe(opentelemetryProvider, () => {
 
             expect(() => {
                 (provider as any).getInstance();
-            }).toThrow();
+            }).toThrow(PROVIDER_NOT_INITIALIZED_REGEX);
         });
 
         it("should return the wrapped provider after initialize", async () => {
@@ -550,7 +572,7 @@ describe(opentelemetryProvider, () => {
             });
 
             expect(result.success).toBe(false);
-            expect(span.recordException).toHaveBeenCalled();
+            expect(span.recordException).toHaveBeenCalledWith(expect.any(Error));
         });
 
         it("uses an unknown error message when a failure has no error", async () => {
@@ -589,7 +611,7 @@ describe(opentelemetryProvider, () => {
             });
 
             expect(result.success).toBe(false);
-            expect(span.recordException).toHaveBeenCalled();
+            expect(span.recordException).toHaveBeenCalledWith(expect.any(Error));
         });
 
         it("shuts down cleanly before initialization", async () => {

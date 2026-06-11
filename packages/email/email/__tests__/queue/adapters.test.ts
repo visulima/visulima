@@ -29,7 +29,8 @@ describe("queue adapters", () => {
                 deleteMessage: vi.fn(() => Promise.resolve({})),
                 getQueueAttributes: vi.fn(() => Promise.resolve({ Attributes: { ApproximateNumberOfMessages: "4" } })),
                 receiveMessage: vi.fn(() =>
-                    Promise.resolve({ Messages: [{ Attributes: { ApproximateReceiveCount: "2" }, Body: JSON.stringify(message), ReceiptHandle: "rh-1" }] })),
+                    Promise.resolve({ Messages: [{ Attributes: { ApproximateReceiveCount: "2" }, Body: JSON.stringify(message), ReceiptHandle: "rh-1" }] }),
+                ),
                 sendMessage: vi.fn(() => Promise.resolve({ MessageId: "msg-1" })),
             };
             const queue = createSqsQueue(client, { queueUrl: "https://sqs/q", visibilityTimeout: 60 });

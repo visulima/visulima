@@ -523,9 +523,9 @@ export class Mail {
      * @param options Optional parameters for sending.
      * @param options.signal Abort signal to cancel the operation.
      * @param options.concurrency Maximum number of messages to send in parallel. Defaults to `1`
-     *   (strictly serial). Values > 1 spin up a bounded worker pool and yield receipts as they
-     *   settle (so the yield order is completion order, not input order) — a large win for
-     *   latency-bound HTTP providers (Resend/SendGrid/etc.).
+     * (strictly serial). Values > 1 spin up a bounded worker pool and yield receipts as they
+     * settle (so the yield order is completion order, not input order) — a large win for
+     * latency-bound HTTP providers (Resend/SendGrid/etc.).
      * @returns An async iterable that yields receipts for each sent message.
      */
     public sendMany(
@@ -539,6 +539,44 @@ export class Mail {
         }
 
         return this.sendManyConcurrent(messages, concurrency, options?.signal);
+    }
+
+    /**
+     * Sends one message per personalization, built from a shared base message.
+     *
+     * Each {@link Personalization} overrides recipients/subject/headers on top of the base; when
+     * `options.render` is supplied, the base `subject`/`html`/`text` are treated as templates and
+     * rendered against each personalization's `data`. Results stream back as {@link Receipt}s, exactly
+     * like {@link Mail.sendMany}.
+     * @param base The shared base message (MailMessage or a {@link BatchBase}). Its `to` is optional
+     * and ignored — each personalization supplies its own recipients.
+     * @param personalizations One entry per outgoing message.
+     * @param options Optional renderer, abort signal and concurrency. See {@link SendBatchOptions}.
+     * @returns An async iterable of receipts, one per personalization.
+     * @example
+     * ```ts
+     * import { renderHandlebars } from "@visulima/email/template/handlebars";
+     *
+     * for await (const receipt of mail.sendBatch(
+     *   // No `to` needed on the base — each personalization supplies its own.
+     *   { from: { email: "a@x.com" }, subject: "Hi {{name}}", html: "<p>Hello {{name}}</p>" },
+     *   [{ to: { email: "b@x.com" }, data: { name: "Bob" } }],
+     *   { render: (tpl, data) => renderHandlebars(tpl, data) },
+     * )) { /* ... *\/ }
+     * ```
+     */
+    public sendBatch(base: BatchBase, personalizations: Personalization[], options?: SendBatchOptions): AsyncIterable<Receipt> {
+        const build = async function* (): AsyncIterable<SendableMessage> {
+            // `to` is always overridden per personalization, so a missing base `to` is fine.
+            const baseOptions = (base instanceof MailMessage ? await base.build() : base) as EmailOptions;
+
+            for (const personalization of personalizations) {
+                // eslint-disable-next-line no-await-in-loop
+                yield await buildPersonalized(baseOptions, personalization, options?.render);
+            }
+        };
+
+        return this.sendMany(build(), { concurrency: options?.concurrency, signal: options?.signal });
     }
 
     /**
@@ -610,7 +648,6 @@ export class Mail {
 
             processedCount += 1;
 
-            // eslint-disable-next-line no-await-in-loop
             const receipt = await this.sendOneToReceipt(message);
 
             if (receipt.successful) {
@@ -638,7 +675,7 @@ export class Mail {
      * @param signal Optional abort signal.
      * @yields A receipt per message, in completion order.
      */
-    // eslint-disable-next-line sonarjs/cognitive-complexity
+
     private async* sendManyConcurrent(
         messages: Iterable<SendableMessage> | AsyncIterable<SendableMessage>,
         concurrency: number,
@@ -650,8 +687,7 @@ export class Mail {
             this.logger.debug("Starting concurrent batch email send", { concurrency, provider: providerName });
         }
 
-        const iterator = (messages as AsyncIterable<SendableMessage>)[Symbol.asyncIterator]?.()
-            ?? (messages as Iterable<SendableMessage>)[Symbol.iterator]();
+        const iterator = Symbol.asyncIterator in messages ? messages[Symbol.asyncIterator]() : messages[Symbol.iterator]();
         // Each entry resolves to its receipt; we race them and remove the settled one.
         const pool = new Map<number, Promise<{ id: number; receipt: Receipt }>>();
         let nextId = 0;
@@ -661,7 +697,7 @@ export class Mail {
         const pump = async (): Promise<void> => {
             while (!exhausted && !aborted && pool.size < concurrency) {
                 // eslint-disable-next-line no-await-in-loop
-                const next = await (iterator as AsyncIterator<SendableMessage> | Iterator<SendableMessage>).next();
+                const next = await iterator.next();
 
                 if (next.done) {
                     exhausted = true;
@@ -678,7 +714,12 @@ export class Mail {
                 const id = nextId;
 
                 nextId += 1;
-                pool.set(id, this.sendOneToReceipt(message).then((receipt) => ({ id, receipt })));
+                pool.set(
+                    id,
+                    this.sendOneToReceipt(message).then((receipt) => {
+                        return { id, receipt };
+                    }),
+                );
             }
         };
 
@@ -707,44 +748,6 @@ export class Mail {
         if (this.logger) {
             this.logger.debug("Concurrent batch email send completed", { processedCount: nextId, provider: providerName });
         }
-    }
-
-    /**
-     * Sends one message per personalization, built from a shared base message.
-     *
-     * Each {@link Personalization} overrides recipients/subject/headers on top of the base; when
-     * `options.render` is supplied, the base `subject`/`html`/`text` are treated as templates and
-     * rendered against each personalization's `data`. Results stream back as {@link Receipt}s, exactly
-     * like {@link Mail.sendMany}.
-     * @param base The shared base message (MailMessage or a {@link BatchBase}). Its `to` is optional
-     *   and ignored — each personalization supplies its own recipients.
-     * @param personalizations One entry per outgoing message.
-     * @param options Optional renderer, abort signal and concurrency. See {@link SendBatchOptions}.
-     * @returns An async iterable of receipts, one per personalization.
-     * @example
-     * ```ts
-     * import { renderHandlebars } from "@visulima/email/template/handlebars";
-     *
-     * for await (const receipt of mail.sendBatch(
-     *   // No `to` needed on the base — each personalization supplies its own.
-     *   { from: { email: "a@x.com" }, subject: "Hi {{name}}", html: "<p>Hello {{name}}</p>" },
-     *   [{ to: { email: "b@x.com" }, data: { name: "Bob" } }],
-     *   { render: (tpl, data) => renderHandlebars(tpl, data) },
-     * )) { /* ... *\/ }
-     * ```
-     */
-    public sendBatch(base: BatchBase, personalizations: Personalization[], options?: SendBatchOptions): AsyncIterable<Receipt> {
-        const build = async function* (): AsyncIterable<SendableMessage> {
-            // `to` is always overridden per personalization, so a missing base `to` is fine.
-            const baseOptions = (base instanceof MailMessage ? await base.build() : base) as EmailOptions;
-
-            for (const personalization of personalizations) {
-                // eslint-disable-next-line no-await-in-loop
-                yield await buildPersonalized(baseOptions, personalization, options?.render);
-            }
-        };
-
-        return this.sendMany(build(), { concurrency: options?.concurrency, signal: options?.signal });
     }
 
     /**

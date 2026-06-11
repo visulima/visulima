@@ -23,7 +23,12 @@ const inlineCss = (html: string, options?: Record<string, unknown>): string => {
     try {
         juiceFunction = require("juice") as typeof juice;
     } catch (error) {
-        if (error instanceof Error && ((error as NodeJS.ErrnoException).code === "MODULE_NOT_FOUND" || error.message.includes("Cannot find module") || error.message.includes("Cannot find package"))) {
+        if (
+            error instanceof Error
+            && ((error as NodeJS.ErrnoException).code === "MODULE_NOT_FOUND"
+                || error.message.includes("Cannot find module")
+                || error.message.includes("Cannot find package"))
+        ) {
             throw new EmailError("render", "juice is not installed. Please install it: pnpm add juice", { cause: error });
         }
 

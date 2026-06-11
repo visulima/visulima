@@ -28,7 +28,12 @@ const options: ArcSealOptions = {
     timestamp: 1_700_000_000,
 };
 
-const tagValue = (header: string, tag: string): string | undefined => header.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${tag}=`))?.slice(tag.length + 1);
+const tagValue = (header: string, tag: string): string | undefined =>
+    header
+        .split(";")
+        .map((part) => part.trim())
+        .find((part) => part.startsWith(`${tag}=`))
+        ?.slice(tag.length + 1);
 
 describe("arc signer", () => {
     it("produces an i=1 ARC header set with the expected tags", async () => {

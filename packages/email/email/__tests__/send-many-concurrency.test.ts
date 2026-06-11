@@ -4,9 +4,10 @@ import { createMail } from "../src/mail";
 import type { Provider } from "../src/providers/provider";
 import type { EmailOptions, EmailResult, Result } from "../src/types";
 
-const delay = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const delay = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 /**
  * Provider that tracks the maximum number of concurrent in-flight sends and

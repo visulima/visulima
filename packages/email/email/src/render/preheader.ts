@@ -1,12 +1,7 @@
 // `[^<>]` (not `[^>]`) keeps this linear: an unclosed run of "<" can't trigger O(n²) backtracking.
 const BODY_OPEN = /<body[^<>]*>/i;
 
-const escapeHtml = (value: string): string =>
-    value
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll("\"", "&quot;");
+const escapeHtml = (value: string): string => value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;");
 
 /**
  * Options for {@link injectPreheader}.

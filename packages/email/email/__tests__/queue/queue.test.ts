@@ -173,10 +173,7 @@ describe("queue", () => {
 
             const clock = 0;
             const queue = new MemoryQueue({ now: () => clock });
-            const send = vi
-                .fn<() => Promise<Result<EmailResult>>>()
-                .mockResolvedValueOnce(failResult())
-                .mockResolvedValue(okResult());
+            const send = vi.fn<() => Promise<Result<EmailResult>>>().mockResolvedValueOnce(failResult()).mockResolvedValue(okResult());
             const onError = vi.fn();
 
             queue.enqueue(message);

@@ -13,7 +13,7 @@ import toBase64 from "./to-base64";
  * Options that control how the MIME message is assembled for different
  * downstream consumers.
  */
-export interface BuildMimeMessageOptions {
+interface BuildMimeMessageOptions {
     /**
      * Whether to include the `Bcc:` header in the generated message.
      *
@@ -26,7 +26,6 @@ export interface BuildMimeMessageOptions {
     includeBcc?: boolean;
 }
 
-// eslint-disable-next-line no-control-regex
 const NON_ASCII_REGEX = /[^ -]/;
 
 /**
@@ -98,7 +97,14 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T, buildOptions
     if (options.text) {
         // Non-ASCII bodies must not be labelled 7bit; encode them quoted-printable.
         if (NON_ASCII_REGEX.test(options.text)) {
-            message.push(`--${boundary}`, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: quoted-printable", "", encodeQuotedPrintable(options.text), "");
+            message.push(
+                `--${boundary}`,
+                "Content-Type: text/plain; charset=UTF-8",
+                "Content-Transfer-Encoding: quoted-printable",
+                "",
+                encodeQuotedPrintable(options.text),
+                "",
+            );
         } else {
             message.push(`--${boundary}`, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: 7bit", "", options.text, "");
         }
@@ -106,7 +112,14 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T, buildOptions
 
     if (options.html) {
         if (NON_ASCII_REGEX.test(options.html)) {
-            message.push(`--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: quoted-printable", "", encodeQuotedPrintable(options.html), "");
+            message.push(
+                `--${boundary}`,
+                "Content-Type: text/html; charset=UTF-8",
+                "Content-Transfer-Encoding: quoted-printable",
+                "",
+                encodeQuotedPrintable(options.html),
+                "",
+            );
         } else {
             message.push(`--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: 7bit", "", options.html, "");
         }
@@ -195,3 +208,4 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T, buildOptions
 };
 
 export default buildMimeMessage;
+export type { BuildMimeMessageOptions };

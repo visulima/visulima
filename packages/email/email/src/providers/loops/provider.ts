@@ -67,7 +67,10 @@ const loopsProvider: ProviderFactory<LoopsConfig> = defineProvider((config: Loop
                 const transactionalId = emailOptions.transactionalId ?? options.defaultTransactionalId;
 
                 if (!transactionalId) {
-                    return { error: new EmailError(PROVIDER_NAME, "Loops requires a `transactionalId` (on the message or as `defaultTransactionalId`)"), success: false };
+                    return {
+                        error: new EmailError(PROVIDER_NAME, "Loops requires a `transactionalId` (on the message or as `defaultTransactionalId`)"),
+                        success: false,
+                    };
                 }
 
                 const toRecipients = Array.isArray(emailOptions.to) ? emailOptions.to : [emailOptions.to];
@@ -107,7 +110,11 @@ const loopsProvider: ProviderFactory<LoopsConfig> = defineProvider((config: Loop
                     async () =>
                         makeRequest(
                             options.endpoint,
-                            { headers: { Authorization: `Bearer ${options.apiKey}`, "Content-Type": "application/json" }, method: "POST", timeout: options.timeout },
+                            {
+                                headers: { Authorization: `Bearer ${options.apiKey}`, "Content-Type": "application/json" },
+                                method: "POST",
+                                timeout: options.timeout,
+                            },
                             JSON.stringify(payload),
                         ),
                     options.retries,

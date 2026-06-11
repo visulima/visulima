@@ -36,7 +36,7 @@ const encodeLineTokens = (bytes: Uint8Array): string[] => {
         if (byte === 0x09 || byte === 0x20) {
             // Tab or space: must be encoded only when it is the last char on the line.
             tokens.push(isLast ? encodeByte(byte) : String.fromCodePoint(byte));
-        } else if (byte >= 0x21 && byte <= 0x7E && byte !== 0x3D) {
+        } else if (byte >= 0x21 && byte <= 0x7e && byte !== 0x3d) {
             // Printable ASCII except '='.
             tokens.push(String.fromCodePoint(byte));
         } else {
