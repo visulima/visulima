@@ -1483,7 +1483,7 @@ describe("fORCE_COLOR vs NO_COLOR precedence", () => {
     });
 });
 
-describe("createIsColorSupported", () => {
+describe(createIsColorSupported, () => {
     it("should default to stdout detection", () => {
         expect.assertions(1);
 
