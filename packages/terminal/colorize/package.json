@@ -145,8 +145,8 @@
     "typesVersions": {
         ">=5.0": {
             ".": [
-                "./dist/index.server.d.ts",
-                "./dist/index.browser.d.ts"
+                "./dist/index.browser.d.ts",
+                "./dist/index.server.d.ts"
             ],
             "browser": [
                 "./dist/index.browser.d.ts"

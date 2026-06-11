@@ -23,14 +23,11 @@ SOFTWARE.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/dev-toolbar artifact additionally contains code with the following licenses:
 ISC, MIT
 
 # Bundled dependencies:
-
 ## @babel/helper-string-parser
-
 License: MIT
 By: The Babel Team
 Repository: https://github.com/babel/babel.git
@@ -58,10 +55,9 @@ Repository: https://github.com/babel/babel.git
 > OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 > WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## @babel/helper-validator-identifier
-
 License: MIT
 By: The Babel Team
 Repository: https://github.com/babel/babel.git
@@ -89,10 +85,9 @@ Repository: https://github.com/babel/babel.git
 > OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 > WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## @babel/types
-
 License: MIT
 By: The Babel Team
 Repository: https://github.com/babel/babel.git
@@ -120,10 +115,9 @@ Repository: https://github.com/babel/babel.git
 > OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 > WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## clsx
-
 License: MIT
 By: Luke Edwards
 Repository: lukeed/clsx
@@ -138,10 +132,9 @@ Repository: lukeed/clsx
 >
 > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
----
+---------------------------------------
 
 ## lucide-static
-
 License: ISC
 Repository: https://github.com/lucide-icons/lucide.git
 
@@ -194,14 +187,11 @@ Repository: https://github.com/lucide-icons/lucide.git
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
-
 The published @visulima/dev-toolbar artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
-
 ## clsx
-
 License: MIT
 By: Luke Edwards
 Repository: lukeed/clsx
