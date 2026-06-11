@@ -21,7 +21,6 @@ const stackTraceViewer = async (
 ): Promise<{
     html: string;
     script: string;
-    // eslint-disable-next-line sonarjs/cognitive-complexity
 }> => {
     const uniqueKey = revisionHash(error.name + error.message + (error.stack ?? ""));
 
@@ -44,94 +43,94 @@ const stackTraceViewer = async (
     // Build every frame concurrently — each frame pays an independent disk read (getFileSource) plus
     // Shiki highlighting; awaiting them in a sequential for-loop made a 30-frame stack pay 30 serial
     // round-trips. Promise.all fans them out while the returned array preserves the original frame order.
+    // eslint-disable-next-line promise/no-promise-in-callback -- idiomatic Promise.all(map(async ...)) fan-out; the callback intentionally returns a promise per frame
     const frames = await Promise.all(
-        // eslint-disable-next-line sonarjs/cognitive-complexity
-        traces.map(async (trace, index): Promise<{ tab: { html: string; type: GroupType }; sourceCode: string }> => {
-        const defaultSource = `// Unable to load source code for ${trace.file ?? ""}:${String(trace.line ?? "")}:${String(trace.column ?? "")}`;
+        traces.map(async (trace, index): Promise<{ sourceCode: string; tab: { html: string; type: GroupType } }> => {
+            const defaultSource = `// Unable to load source code for ${trace.file ?? ""}:${String(trace.line ?? "")}:${String(trace.column ?? "")}`;
 
-        const source = trace.file ? await getFileSource(trace.file) : undefined;
-        const isClickable = Boolean(source);
-        const sourceCodeFrame = source
-            ? codeFrame(
-                source,
-                {
-                    start: {
-                        column: trace.column,
-                        line: trace.line as number,
+            const source = trace.file ? await getFileSource(trace.file) : undefined;
+            const isClickable = Boolean(source);
+            const sourceCodeFrame = source
+                ? codeFrame(
+                    source,
+                    {
+                        start: {
+                            column: trace.column,
+                            line: trace.line as number,
+                        },
                     },
-                },
-                {
-                    linesAbove: 9,
-                    linesBelow: 10,
-                    showGutter: false,
-                },
-            )
-            : defaultSource;
+                    {
+                        linesAbove: 9,
+                        linesBelow: 10,
+                        showGutter: false,
+                    },
+                )
+                : defaultSource;
 
-        const lang = findLanguageBasedOnExtension(trace.file ?? "");
+            const lang = findLanguageBasedOnExtension(trace.file ?? "");
 
-        let safeCode: string;
+            let safeCode: string;
 
-        // Skip shiki for text files - render as plain HTML
-        if (lang === "text") {
-            safeCode = `<pre class="shiki"><code>${escapeHtml(sourceCodeFrame)}</code></pre>`;
-        } else {
-            const highlighter = await getHighlighter([lang]);
+            // Skip shiki for text files - render as plain HTML
+            if (lang === "text") {
+                safeCode = `<pre class="shiki"><code>${escapeHtml(sourceCodeFrame)}</code></pre>`;
+            } else {
+                const highlighter = await getHighlighter([lang]);
 
-            const code = highlighter.codeToHtml(sourceCodeFrame, {
-                lang,
-                themes: {
-                    dark: "min-dark",
-                    light: "min-light",
-                },
-            });
+                const code = highlighter.codeToHtml(sourceCodeFrame, {
+                    lang,
+                    themes: {
+                        dark: "min-dark",
+                        light: "min-light",
+                    },
+                });
 
-            safeCode = sanitizeHtml(code);
-        }
+                safeCode = sanitizeHtml(code);
+            }
 
-        const filePath = `${trace.file ?? ""}:${String(trace.line ?? "")}:${String(trace.column ?? "")}`;
-        const absPathForEditor = (trace.file ?? "").replace(FILE_URI_PREFIX_PATTERN, "");
-        const relativeFilePath = filePath.replace(process.cwd?.() ?? "", "").replace("file:///", "");
-        const safeMethod = sanitizeHtml(trace.methodName ?? "");
-        const safeRelativePath = sanitizeHtml(relativeFilePath);
+            const filePath = `${trace.file ?? ""}:${String(trace.line ?? "")}:${String(trace.column ?? "")}`;
+            const absPathForEditor = (trace.file ?? "").replace(FILE_URI_PREFIX_PATTERN, "");
+            const relativeFilePath = filePath.replace(process.cwd?.() ?? "", "").replace("file:///", "");
+            const safeMethod = sanitizeHtml(trace.methodName ?? "");
+            const safeRelativePath = sanitizeHtml(relativeFilePath);
 
-        const tab = {
-            html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${String(index)}" data-stack-tab="#source-code-tabs-${uniqueKey}-${String(index)}" aria-controls="source-code-tabs-${uniqueKey}-${String(index)}" ${
-                isClickable ? "" : "disabled aria-disabled=\"true\""
-            } class="${cn(
-                "relative inline-flex items-center gap-x-2 text-sm whitespace-nowrap p-6 w-full text-left border-l-2 border-transparent hover:bg-[var(--ono-hover-overlay)] text-[var(--ono-text-muted)] cursor-pointer",
-                isClickable ? "cursor-pointer" : "cursor-not-allowed",
-            )}">
+            const tab = {
+                html: `<button type="button" id="source-code-tabs-item-${uniqueKey}-${String(index)}" data-stack-tab="#source-code-tabs-${uniqueKey}-${String(index)}" aria-controls="source-code-tabs-${uniqueKey}-${String(index)}" ${
+                    isClickable ? "" : "disabled aria-disabled=\"true\""
+                } class="${cn(
+                    "relative inline-flex items-center gap-x-2 text-sm whitespace-nowrap p-6 w-full text-left border-l-2 border-transparent hover:bg-[var(--ono-hover-overlay)] text-[var(--ono-text-muted)] cursor-pointer",
+                    isClickable ? "cursor-pointer" : "cursor-not-allowed",
+                )}">
     <div class="flex flex-col w-full text-left overflow-hidden min-w-0">
         <span class="font-medium text-[var(--ono-text)] truncate">${safeMethod}</span>
         <span class="text-sm text-[var(--ono-text-muted)] truncate">${safeRelativePath}</span>
     </div>
 </button>`,
-            type: trace.file ? getType(trace.file) : undefined,
-        };
+                type: trace.file ? getType(trace.file) : undefined,
+            };
 
-        let openInEditorButton = safeRelativePath;
+            let openInEditorButton = safeRelativePath;
 
-        if (options.openInEditorUrl) {
-            openInEditorButton = `<button type="button" class="underline hover:text-[var(--ono-link)]" data-open-in-editor data-url="${sanitizeUrlAttribute(options.openInEditorUrl)}" data-path="${sanitizeAttribute(
-                absPathForEditor,
-            )}" data-line="${sanitizeAttribute(trace.line ?? 1)}" data-column="${sanitizeAttribute(trace.column ?? 1)}" title="Open ${safeRelativePath} in external editor">${safeRelativePath} — Open in editor</button>`;
-        } else if (isClickable) {
-            openInEditorButton = `<button type="button" class="underline hover:text-[var(--ono-link)]" data-editor-link data-path="${sanitizeAttribute(absPathForEditor)}" data-line="${sanitizeAttribute(
-                trace.line ?? 1,
-            )}" data-column="${sanitizeAttribute(trace.column ?? 1)}" title="Open ${safeRelativePath} in editor">${safeRelativePath} — Open in editor</button>`;
-        }
+            if (options.openInEditorUrl) {
+                openInEditorButton = `<button type="button" class="underline hover:text-[var(--ono-link)]" data-open-in-editor data-url="${sanitizeUrlAttribute(options.openInEditorUrl)}" data-path="${sanitizeAttribute(
+                    absPathForEditor,
+                )}" data-line="${sanitizeAttribute(trace.line ?? 1)}" data-column="${sanitizeAttribute(trace.column ?? 1)}" title="Open ${safeRelativePath} in external editor">${safeRelativePath} — Open in editor</button>`;
+            } else if (isClickable) {
+                openInEditorButton = `<button type="button" class="underline hover:text-[var(--ono-link)]" data-editor-link data-path="${sanitizeAttribute(absPathForEditor)}" data-line="${sanitizeAttribute(
+                    trace.line ?? 1,
+                )}" data-column="${sanitizeAttribute(trace.column ?? 1)}" title="Open ${safeRelativePath} in editor">${safeRelativePath} — Open in editor</button>`;
+            }
 
-        const sourceCodeHtml = `<div id="source-code-tabs-${uniqueKey}-${String(index)}" class="${
-            index === 0 && isClickable ? "block" : "hidden"
-        }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${String(index)}" tabindex="0">
+            const sourceCodeHtml = `<div id="source-code-tabs-${uniqueKey}-${String(index)}" class="${
+                index === 0 && isClickable ? "block" : "hidden"
+            }" aria-labelledby="source-code-tabs-item-${uniqueKey}-${String(index)}" tabindex="0">
 <div class="pt-6 px-6 text-sm text-right text-[var(--ono-text)]">
     ${openInEditorButton}
 </div>
 <div class="p-6">${safeCode}</div>
 </div>`;
 
-        return { sourceCode: sourceCodeHtml, tab };
+            return { sourceCode: sourceCodeHtml, tab };
         }),
     );
 

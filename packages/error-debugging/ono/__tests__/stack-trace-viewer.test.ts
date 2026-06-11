@@ -6,37 +6,37 @@ import { beforeAll, describe, expect, it } from "vitest";
 
 import stackTraceViewer from "../src/error-inspector/components/stack-trace-viewer";
 
-let temporaryDirectory: string;
-let tsFile: string;
-let txtFile: string;
-
-beforeAll(() => {
-    temporaryDirectory = mkdtempSync(join(tmpdir(), "ono-stack-viewer-"));
-    tsFile = join(temporaryDirectory, "app.ts");
-    txtFile = join(temporaryDirectory, "notes.txt");
-
-    writeFileSync(tsFile, "export const greet = (): string => \"hi <world> & \\\"friends\\\"\";\n");
-    writeFileSync(txtFile, "plain text with <tags> & \"quotes\" 'here'\n");
-});
-
-const buildError = (): Error => {
-    const error = new Error("Boom happened");
-
-    error.name = "BoomError";
-    error.stack = [
-        "BoomError: Boom happened",
-        `    at greet (file://${tsFile}:1:14)`,
-        `    at readNotes (file://${txtFile}:1:1)`,
-        "    at require (node:internal/modules/cjs/loader:1:1)",
-        "    at libFn (/project/node_modules/some-lib/index.js:5:9)",
-        "    at webpackStuff (/project/webpack/bootstrap.js:2:2)",
-        "    at nativeThing (/some/native/binding.js:3:3)",
-    ].join("\n");
-
-    return error;
-};
-
 describe(stackTraceViewer, () => {
+    let temporaryDirectory: string;
+    let tsFile: string;
+    let txtFile: string;
+
+    beforeAll(() => {
+        temporaryDirectory = mkdtempSync(join(tmpdir(), "ono-stack-viewer-"));
+        tsFile = join(temporaryDirectory, "app.ts");
+        txtFile = join(temporaryDirectory, "notes.txt");
+
+        writeFileSync(tsFile, "export const greet = (): string => \"hi <world> & \\\"friends\\\"\";\n");
+        writeFileSync(txtFile, "plain text with <tags> & \"quotes\" 'here'\n");
+    });
+
+    const buildError = (): Error => {
+        const error = new Error("Boom happened");
+
+        error.name = "BoomError";
+        error.stack = [
+            "BoomError: Boom happened",
+            `    at greet (file://${tsFile}:1:14)`,
+            `    at readNotes (file://${txtFile}:1:1)`,
+            "    at require (node:internal/modules/cjs/loader:1:1)",
+            "    at libFn (/project/node_modules/some-lib/index.js:5:9)",
+            "    at webpackStuff (/project/webpack/bootstrap.js:2:2)",
+            "    at nativeThing (/some/native/binding.js:3:3)",
+        ].join("\n");
+
+        return error;
+    };
+
     it("renders clickable shiki frames and a plain-text frame, plus grouped frame labels", async () => {
         expect.assertions(6);
 

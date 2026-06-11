@@ -6,8 +6,6 @@ import template from "./error-inspector";
 import type { TemplateOptions as BaseTemplateOptions } from "./error-inspector/types";
 import toJSON from "./to-json";
 
-export type { OnoJson, OnoJsonError, OnoJsonFrame, ToJsonOptions } from "./to-json";
-
 // eslint-disable-next-line @stylistic/no-extra-parens
 const ensureError = (value: unknown): Error => (value instanceof Error ? value : new Error(String(value)));
 
@@ -77,3 +75,5 @@ export class Ono {
         return toJSON(error, options);
     }
 }
+
+export type { OnoJson, OnoJsonError, OnoJsonFrame, ToJsonOptions } from "./to-json";
