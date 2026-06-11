@@ -211,7 +211,10 @@ describe("subtree split (real git)", () => {
 
         expect(tracked).toStrictEqual(["extra.js", "index.js"]);
         expect(countCommits("main", output)).toBe(2);
-    });
+        // `subtree split` shells out to git several times over real history;
+        // on Windows the process spawns are slow enough to blow the default
+        // 5s timeout, so give this real-git scenario more headroom.
+    }, 30_000);
 });
 
 describe(defaultGitRunner, () => {

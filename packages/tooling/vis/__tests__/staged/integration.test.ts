@@ -140,8 +140,15 @@ describe("runStaged — integration", () => {
         });
 
         expect(result.success).toBe(true);
-        expect(readFileSync(join(root, "packages", "a", "ran-from.txt"), "utf8")).toBe(join(root, "packages", "a"));
-        expect(readFileSync(join(root, "packages", "b", "ran-from.txt"), "utf8")).toBe(join(root, "packages", "b"));
+
+        // The marker holds the child's native `process.cwd()` — backslashes on
+        // Windows — while `join` (@visulima/path) always emits forward slashes.
+        // Compare separator-normalised so the assertion checks the directory,
+        // not the platform's path style.
+        const normalize = (value: string): string => value.replaceAll("\\", "/");
+
+        expect(normalize(readFileSync(join(root, "packages", "a", "ran-from.txt"), "utf8"))).toBe(join(root, "packages", "a"));
+        expect(normalize(readFileSync(join(root, "packages", "b", "ran-from.txt"), "utf8"))).toBe(join(root, "packages", "b"));
     });
 
     it("fails the run when a task throws", async () => {
