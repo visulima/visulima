@@ -172,7 +172,7 @@ describe(useTransformMetadata, () => {
     });
 
     it("should refetch transform metadata", async () => {
-        expect.assertions(3);
+        expect.assertions(1);
 
         const mockMetadata = {
             formats: ["jpeg", "png"],
@@ -192,14 +192,23 @@ describe(useTransformMetadata, () => {
             { queryClient },
         );
 
+        // Synchronize via thrown errors (not `expect`) so the assertion count
+        // stays deterministic — an `expect` inside `waitFor` is re-run on every
+        // poll, making `expect.assertions(n)` race with the polling cadence.
         await waitFor(() => {
-            expect(result.current.isLoading).toBe(false);
+            if (result.current.isLoading) {
+                throw new Error("still loading");
+            }
         });
 
         result.current.refetch();
 
         await waitFor(() => {
-            expect(mockFetch).toHaveBeenCalledTimes(2);
+            if (mockFetch.mock.calls.length < 2) {
+                throw new Error("refetch not issued yet");
+            }
         });
+
+        expect(mockFetch).toHaveBeenCalledTimes(2);
     });
 });
