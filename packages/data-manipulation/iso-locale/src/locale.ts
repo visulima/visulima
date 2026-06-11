@@ -6,7 +6,7 @@ const ALPHA2_REGEX = /^[A-Z]{2}$/;
 const LANG_REGEX = /^[a-z]{2,3}$/;
 const SCRIPT_REGEX = /^[A-Z]{4}$/i;
 const UN_M49_REGEX = /^\d{3}$/;
-const VARIANT_REGEX = /^([\da-z]{5,8}|\d[\da-z]{3})$/i;
+const VARIANT_REGEX = /^(?:[\da-z]{5,8}|\d[\da-z]{3})$/i;
 
 /**
  * Get currency code from locale or country code.
@@ -14,6 +14,7 @@ const VARIANT_REGEX = /^([\da-z]{5,8}|\d[\da-z]{3})$/i;
  * @param locale Locale string or country code
  * @returns ISO 4217 currency code or undefined
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- locale-format branching (BCP 47 / underscore / bare) is inherent and clearer inline than split helpers
 export const getCurrency = (locale: string): string | undefined => {
     // Extract country code from locale
     let countryCode: string | undefined;
@@ -203,6 +204,7 @@ export const getBCP47Tags = (countryCode: string): string[] => {
  * @param tag BCP 47 language tag to validate
  * @returns true if format is valid, false otherwise
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- strict BCP 47 validation re-scans every subtag shape; the sequential guards are the spec and clearer inline
 export const isValidBCP47Tag = (tag: string): boolean => {
     if (!tag || tag.trim().length === 0) {
         return false;

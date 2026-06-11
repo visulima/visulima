@@ -188,15 +188,15 @@ console.log(getLanguageName("de", "fr")); // "allemand"
 Every domain is also available as a focused entrypoint, so you can import only
 the dataset you need and let bundlers tree-shake the rest:
 
-| Import | Contents |
-| ------ | -------- |
-| `@visulima/iso-locale` | Aggregate barrel re-exporting everything below |
-| `@visulima/iso-locale/countries` | ISO 3166-1 country lookups + `Alpha2Code`/`Alpha3Code` |
-| `@visulima/iso-locale/currencies` | ISO 4217 currency lookups + `CurrencyCode` |
-| `@visulima/iso-locale/locale` | BCP 47 helpers, `getCurrency`, `getLanguageName` |
-| `@visulima/iso-locale/regions` | UN M.49 region helpers |
-| `@visulima/iso-locale/timezones` | IANA timezone helpers |
-| `@visulima/iso-locale/types` | Shared TypeScript interfaces |
+| Import                            | Contents                                               |
+| --------------------------------- | ------------------------------------------------------ |
+| `@visulima/iso-locale`            | Aggregate barrel re-exporting everything below         |
+| `@visulima/iso-locale/countries`  | ISO 3166-1 country lookups + `Alpha2Code`/`Alpha3Code` |
+| `@visulima/iso-locale/currencies` | ISO 4217 currency lookups + `CurrencyCode`             |
+| `@visulima/iso-locale/locale`     | BCP 47 helpers, `getCurrency`, `getLanguageName`       |
+| `@visulima/iso-locale/regions`    | UN M.49 region helpers                                 |
+| `@visulima/iso-locale/timezones`  | IANA timezone helpers                                  |
+| `@visulima/iso-locale/types`      | Shared TypeScript interfaces                           |
 
 ```typescript
 // Only pulls in the currency dataset, not countries/regions/timezones
