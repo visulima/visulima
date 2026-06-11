@@ -116,6 +116,29 @@ describe(httpHeaderNormalizer, () => {
         });
     });
 
+    it("should apply the canonical Sec-WebSocket-* exceptions", async () => {
+        expect.assertions(1);
+
+        const headers = {
+            "sec-websocket-key": "dGhlIHNhbXBsZSBub25jZQ==",
+            "sec-websocket-protocol": "chat",
+            "sec-websocket-version": "13",
+        };
+
+        const { req, res } = createMocks({
+            headers,
+            method: "GET",
+        });
+
+        await httpHeaderNormalizer({ canonical: true })(req, res, () => {});
+
+        expect(req.headers).toStrictEqual({
+            "Sec-WebSocket-Key": "dGhlIHNhbXBsZSBub25jZQ==",
+            "Sec-WebSocket-Protocol": "chat",
+            "Sec-WebSocket-Version": "13",
+        });
+    });
+
     // multiValueHeaders
 
     it("should normalize (lowercase) all the headers and create a copy in rawMultiValueHeaders", async () => {

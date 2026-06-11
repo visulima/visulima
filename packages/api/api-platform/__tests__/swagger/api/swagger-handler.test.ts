@@ -76,6 +76,51 @@ describe("swagger/api/swagger-handler", () => {
         expect(data.info.title).toBe("Test");
     });
 
+    it("should set an ETag and respond with 304 when If-None-Match matches", async () => {
+        expect.assertions(3);
+
+        writeSwaggerFile(baseSpec);
+
+        const first = createMocks({ method: "GET" });
+
+        await swaggerHandler()(first.req, first.res);
+
+        const etag = first.res.getHeader("ETag");
+
+        expect(etag).toStrictEqual(expect.any(String));
+
+        const second = createMocks({
+            headers: { "if-none-match": etag as string },
+            method: "GET",
+        });
+
+        await swaggerHandler()(second.req, second.res);
+
+        // A fresh handler reading the same file should produce the same ETag and 304.
+        // eslint-disable-next-line no-underscore-dangle
+        expect(second.res._getStatusCode()).toBe(304);
+        // eslint-disable-next-line no-underscore-dangle
+        expect(second.res._getData()).toBe("");
+    });
+
+    it("should reuse the cached spec across requests for an unchanged file", async () => {
+        expect.assertions(2);
+
+        writeSwaggerFile(baseSpec);
+
+        const handler = swaggerHandler();
+
+        const first = createMocks({ method: "GET" });
+        const second = createMocks({ method: "GET" });
+
+        await handler(first.req, first.res);
+        await handler(second.req, second.res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        expect(first.res._getData()).toBe(second.res._getData());
+        expect(first.res.getHeader("ETag")).toBe(second.res.getHeader("ETag"));
+    });
+
     it("should respond with yaml when the accept header requests it", async () => {
         expect.assertions(2);
 

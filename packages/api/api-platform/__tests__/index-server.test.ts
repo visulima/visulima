@@ -11,11 +11,13 @@ import {
     httpHeaderNormalizerMiddleware,
     ImATeapot,
     InternalServerError,
+    jsonapiErrorHandler,
     NetworkAuthenticationRequire,
     NodeRouter,
     NotFound,
     onError,
     onNoMatch,
+    problemErrorHandler,
     rateLimiterMiddleware,
     Router,
     serialize,
@@ -40,6 +42,13 @@ describe("index-server", () => {
         expect(rateLimiterMiddleware).toBeTypeOf("function");
         expect(serializersMiddleware).toBeTypeOf("function");
         expect(swaggerHandler).toBeTypeOf("function");
+    });
+
+    it("should re-export the standalone error handlers", () => {
+        expect.assertions(2);
+
+        expect(problemErrorHandler).toBeTypeOf("function");
+        expect(jsonapiErrorHandler).toBeTypeOf("function");
     });
 
     it("should re-export serializers and zod date helpers", () => {

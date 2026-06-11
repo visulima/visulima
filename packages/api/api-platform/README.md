@@ -36,6 +36,16 @@
 
 ## Features
 
+- **Connect-style router** — an extended `createNodeRouter` (built on [`@visulima/connect`](https://www.npmjs.com/package/@visulima/connect)) with content negotiation, header normalization and error handling pre-wired.
+- **Content-negotiating serializers** — `serializersMiddleware` plus standalone `serialize`, `xmlTransformer` and `yamlTransformer` to render JSON / XML / YAML based on the `Accept` header.
+- **Standards-based error handling** — RFC 7807 (`problemErrorHandler`) and JSON:API (`jsonapiErrorHandler`) error handlers, selected automatically per `Accept` header, with typed `ErrorHandler` / `ErrorHandlers` building blocks for custom handlers.
+- **Security & ergonomics middleware** — `rateLimiterMiddleware` (brute-force protection with `keyGenerator`, `trustProxy` and IETF standard headers), `corsMiddleware`, and `httpHeaderNormalizerMiddleware`.
+- **OpenAPI / Swagger** — `swaggerHandler` (pages router / Node) and `swaggerRouteHandler` (Next.js App Router, fetch API) that assemble, cache and serve your OpenAPI document, including auto-generated CRUD paths.
+- **Swagger UI & Redoc pages** for Next.js, plus a `withOpenApi` webpack plugin.
+- **Zod helpers** — `dateIn` / `dateOut` schemas for safe ISO-date coercion in and out of your API.
+- **Re-exported `http-errors`** — every error class (`NotFound`, `BadRequest`, `TooManyRequests`, …) plus `createHttpError`, ESM/CJS safe.
+- **CLI** — list routes across Express, Koa, Hapi, Fastify and Next.js projects.
+
 ## Installation
 
 ### Npm
@@ -140,6 +150,139 @@ router.get((req, res) => {
 });
 
 export default router.nodeHandler();
+```
+
+`createNodeRouter` accepts options to configure error handling and the built-in middlewares:
+
+```ts
+import { createNodeRouter } from "@visulima/api-platform";
+
+const router = createNodeRouter({
+    // expose stack traces in error responses (default: false)
+    showTrace: process.env.NODE_ENV !== "production",
+    errorHandlers: [],
+    middlewares: {
+        "http-header-normalizer": { canonical: true },
+        serializers: { defaultContentType: "application/json; charset=utf-8" },
+    },
+});
+```
+
+### Error handling (RFC 7807 / JSON:API)
+
+The router automatically picks the error format from the request `Accept` header:
+`application/vnd.api+json` is rendered as [JSON:API](https://jsonapi.org/), everything else
+as an [RFC 7807](https://www.rfc-editor.org/rfc/rfc7807) "problem+json" document. Internal
+messages are only exposed when `http-errors` marks the error as safe to expose (4xx), so
+5xx internals (SQL errors, file paths, …) never leak to clients.
+
+You can also use the handlers directly, e.g. for a custom framework integration:
+
+```ts
+import { problemErrorHandler, jsonapiErrorHandler, NotFound } from "@visulima/api-platform";
+import type { ErrorHandler, ErrorHandlers } from "@visulima/api-platform";
+
+await problemErrorHandler(new NotFound("User not found"), req, res);
+
+// Register a custom handler for a specific content type:
+const errorHandlers: ErrorHandlers = [
+    { regex: /application\/xml/u, handler: myXmlErrorHandler satisfies ErrorHandler },
+];
+```
+
+### Serializers
+
+```ts
+import { serializersMiddleware, serialize, xmlTransformer, yamlTransformer } from "@visulima/api-platform";
+
+// As middleware (content-negotiated by the Accept header):
+router.use(
+    serializersMiddleware(
+        [
+            { regex: /application\/xml/u, serializer: xmlTransformer },
+            { regex: /application\/x-yaml/u, serializer: yamlTransformer },
+        ],
+        "application/json; charset=utf-8",
+    ),
+);
+
+// Or standalone:
+const xml = serialize({ hello: "world" }, "application/xml");
+```
+
+### Rate limiting
+
+`rateLimiterMiddleware` wraps [`rate-limiter-flexible`](https://www.npmjs.com/package/rate-limiter-flexible).
+By default it keys on `socket.remoteAddress` only — spoofable `X-Forwarded-For` / `X-Real-IP`
+headers are **ignored** so a client cannot bypass brute-force protection by forging them.
+
+```ts
+import { rateLimiterMiddleware } from "@visulima/api-platform";
+import { RateLimiterMemory } from "rate-limiter-flexible";
+
+const limiter = new RateLimiterMemory({ points: 10, duration: 60 });
+
+// Default (secure): keyed on the socket address.
+router.use(rateLimiterMiddleware(limiter));
+
+// Behind a trusted reverse proxy that overwrites the forwarding headers:
+router.use(rateLimiterMiddleware(limiter, { trustProxy: true, standardHeaders: true }));
+
+// Limit by API key / user id instead of IP:
+router.use(
+    rateLimiterMiddleware(limiter, {
+        keyGenerator: (request) => request.headers["x-api-key"] as string | undefined,
+    }),
+);
+```
+
+Options: `trustProxy` (honor `X-Forwarded-For`/`X-Real-IP`, only behind a trusted proxy),
+`keyGenerator` (custom key), and `standardHeaders` (emit IETF `RateLimit-*` headers in
+addition to the legacy `X-RateLimit-*` ones). A downstream handler throwing is propagated
+unchanged — it is **not** turned into a `429`.
+
+### CORS & header normalization
+
+```ts
+import { corsMiddleware, httpHeaderNormalizerMiddleware } from "@visulima/api-platform";
+
+router.use(httpHeaderNormalizerMiddleware({ canonical: true }));
+router.use(corsMiddleware({ origin: "https://example.com" }));
+```
+
+### Swagger / OpenAPI handler
+
+```ts
+// pages/api/swagger.ts (Next.js pages router / any Node server)
+import { swaggerHandler } from "@visulima/api-platform";
+
+export default swaggerHandler({ swaggerFilePath: "swagger/swagger.json" });
+```
+
+The assembled spec is cached on the source file's mtime and served with an `ETag`
+(conditional `If-None-Match` requests get a `304`). `Accept: application/x-yaml` returns YAML.
+
+For the **Next.js App Router**, use the fetch-API route handler:
+
+```ts
+// app/api/docs/route.ts
+import { swaggerRouteHandler } from "@visulima/api-platform/next";
+
+export const GET = swaggerRouteHandler({ swaggerFilePath: "swagger/swagger.json" });
+```
+
+### Zod date helpers
+
+```ts
+import { dateIn, dateOut } from "@visulima/api-platform";
+import * as z from "zod";
+
+const schema = z.object({
+    // parses an ISO string from the client into a Date
+    startsAt: dateIn(),
+    // serializes a Date back to an ISO string in the response
+    createdAt: dateOut(),
+});
 ```
 
 ## Supported Node.js Versions

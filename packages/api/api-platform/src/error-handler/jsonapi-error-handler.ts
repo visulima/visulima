@@ -26,7 +26,7 @@ const jsonapiErrorHandler: ErrorHandler = (error, _request, response) => {
 
         sendJson(response, serializer.serialize(error));
     } else if (error instanceof HttpError) {
-        const { message, statusCode } = error;
+        const { expose, message, statusCode } = error;
         const { title } = error as HttpError & { title?: string };
 
         sendJson(response, {
@@ -35,22 +35,27 @@ const jsonapiErrorHandler: ErrorHandler = (error, _request, response) => {
                     code: statusCode,
                     // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentional: getReasonPhrase returns "" for unknown codes; falsy fallback chain is required to skip empty strings
                     title: title || getReasonPhrase(statusCode) || defaultTitle,
-                    // eslint-disable-next-line perfectionist/sort-objects
-                    detail: message,
+                    // Only expose the raw message when http-errors marks it safe
+                    // to (4xx by default); otherwise fall back to the reason
+                    // phrase so 5xx internals don't leak to clients.
+                    // eslint-disable-next-line perfectionist/sort-objects -- detail intentionally follows title
+                    detail: expose ? message : getReasonPhrase(statusCode) || defaultTitle,
                 },
             ],
         });
     } else {
-        // Preserves prior behavior: detail is whatever .message property exists on the value (often undefined for non-Error inputs); JSON.stringify drops the key when undefined.
+        // Non-HttpError values default to a 500 with no `expose` flag, so the
+        // raw message is suppressed unless the error explicitly opts in.
         const { message } = error as { message?: string };
+        const expose = (error as { expose?: boolean }).expose === true;
 
         sendJson(response, {
             errors: [
                 {
                     code: "500",
                     title: getReasonPhrase(response.statusCode) || defaultTitle,
-                    // eslint-disable-next-line perfectionist/sort-objects
-                    detail: message,
+                    // eslint-disable-next-line perfectionist/sort-objects -- detail intentionally follows title
+                    detail: expose ? message : getReasonPhrase(response.statusCode) || defaultTitle,
                 },
             ],
         });

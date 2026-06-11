@@ -23,11 +23,8 @@ export default defineConfig({
     cjsInterop: true,
     validation: {
         dependencies: {
-            unused: {
-                exclude: ["schema-dts"],
-            },
             hoisted: {
-                exclude: ["dotenv", "schema-dts"],
+                exclude: ["dotenv"],
             },
         },
     },
