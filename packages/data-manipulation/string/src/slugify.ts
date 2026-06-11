@@ -15,9 +15,7 @@ import getLocaleReplacements from "./utils/locale-charmap";
 const mergeLocaleReplacements = (locale: string, replaceBefore: SlugifyOptions["replaceBefore"]): OptionReplaceArray => {
     const localePairs = locale ? getLocaleReplacements(locale) : [];
 
-    const userPairs: OptionReplaceArray = Array.isArray(replaceBefore)
-        ? replaceBefore
-        : Object.entries(replaceBefore ?? {});
+    const userPairs: OptionReplaceArray = Array.isArray(replaceBefore) ? replaceBefore : Object.entries(replaceBefore ?? {});
 
     return [...localePairs, ...userPairs];
 };

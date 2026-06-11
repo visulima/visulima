@@ -133,22 +133,19 @@ describe(wordWrap, () => {
         },
     );
 
-    it.each([WrapMode.BREAK_WORDS, WrapMode.PRESERVE_WORDS])(
-        "preserves the visible text of a colored span while re-coloring each line (%s)",
-        (wrapMode) => {
-            expect.assertions(1);
+    it.each([WrapMode.BREAK_WORDS, WrapMode.PRESERVE_WORDS])("preserves the visible text of a colored span while re-coloring each line (%s)", (wrapMode) => {
+        expect.assertions(1);
 
-            const result = wordWrap(red(longColoredText), { width: 40, wrapMode });
-            const visibleWords = result
-                .split("\n")
-                .map((line) => stripVTControlCharacters(line).trim())
-                .filter((line) => line !== "");
+        const result = wordWrap(red(longColoredText), { width: 40, wrapMode });
+        const visibleWords = result
+            .split("\n")
+            .map((line) => stripVTControlCharacters(line).trim())
+            .filter((line) => line !== "");
 
-            // Word-preserving modes drop only the wrapping whitespace, so re-joining the
-            // stripped lines must recover the original text verbatim.
-            expect(visibleWords.join(" ")).toBe(longColoredText);
-        },
-    );
+        // Word-preserving modes drop only the wrapping whitespace, so re-joining the
+        // stripped lines must recover the original text verbatim.
+        expect(visibleWords.join(" ")).toBe(longColoredText);
+    });
 
     it("should not prepend newline if first string is greater than width", () => {
         expect.assertions(1);

@@ -151,33 +151,47 @@ const getCachedCharWidth = (codePoint: number, config: StringTruncatedWidthConfi
     // Fast path for common character ranges (kept in sync with the uncached path)
     const charType = getCharType(codePoint);
 
-    if (charType === "latin") {
-        width = config.width.regular;
-    } else if (charType === "control") {
-        width = config.width.control;
-    } else if (charType === "wide") {
-        width = config.width.wide;
-    } else if (charType === "zero") {
-        width = 0;
-    } else {
-        // Fall back to East Asian width calculation for other characters
-        const eaw = eastAsianWidthType(codePoint);
+    switch (charType) {
+        case "control": {
+            width = config.width.control;
 
-        switch (eaw) {
-            case "ambiguous": {
-                width = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
-                break;
-            }
-            case "fullwidth": {
-                width = config.width.fullWidth;
-                break;
-            }
-            case "wide": {
-                width = config.width.wide;
-                break;
-            }
-            default: {
-                width = config.width.regular;
+            break;
+        }
+        case "latin": {
+            width = config.width.regular;
+
+            break;
+        }
+        case "wide": {
+            width = config.width.wide;
+
+            break;
+        }
+        case "zero": {
+            width = 0;
+
+            break;
+        }
+        default: {
+            // Fall back to East Asian width calculation for other characters
+            const eaw = eastAsianWidthType(codePoint);
+
+            switch (eaw) {
+                case "ambiguous": {
+                    width = config.width.ambiguousIsNarrow ? config.width.regular : config.width.wide;
+                    break;
+                }
+                case "fullwidth": {
+                    width = config.width.fullWidth;
+                    break;
+                }
+                case "wide": {
+                    width = config.width.wide;
+                    break;
+                }
+                default: {
+                    width = config.width.regular;
+                }
             }
         }
     }

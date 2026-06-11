@@ -41,16 +41,18 @@ const formatReplaceOption = (option: OptionReplaceCombined): OptionReplaceArray 
  * callback (O(entries x matches)) on every Thai-containing input. We now build:
  * - `thaiConsonantMap`: a consonant -> replacement lookup (O(1) per match), and
  * - `thaiCompiledRules`: the ordered list of rules with regexes precompiled for
- *   `"r"` entries, so the per-call work is just running the rules.
+ * `"r"` entries, so the per-call work is just running the rules.
  */
 const thaiConsonantMap = new Map<string, string>();
 
 for (const [consonant, replacement, type] of thaiReplacement) {
-    if (typeof consonant === "string" && typeof replacement === "string" && (!type || type === "c")) {
-        // First definition wins, matching the previous `find(...)` semantics.
-        if (!thaiConsonantMap.has(consonant)) {
-            thaiConsonantMap.set(consonant, replacement);
-        }
+    if (
+        typeof consonant === "string"
+        && typeof replacement === "string"
+        && (!type || type === "c") // First definition wins, matching the previous `find(...)` semantics.
+        && !thaiConsonantMap.has(consonant)
+    ) {
+        thaiConsonantMap.set(consonant, replacement);
     }
 }
 

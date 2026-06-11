@@ -31,7 +31,7 @@ describe("levenshtein", () => {
         expect(actual).toStrictEqual(expected);
     });
 
-    describe("similarity", () => {
+    describe(similarity, () => {
         it("should return 1 for identical strings", () => {
             expect.assertions(2);
 
