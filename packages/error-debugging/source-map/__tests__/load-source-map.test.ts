@@ -241,7 +241,7 @@ describe("load-source-map", () => {
     });
 });
 
-describe("loadSourceMapAsync", () => {
+describe(loadSourceMapAsync, () => {
     it("should handle external sourcemaps", async () => {
         expect.assertions(1);
 
