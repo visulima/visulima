@@ -33,19 +33,26 @@ const inspectTypedArray: InspectType<TypedArray> = (array: TypedArray, options: 
     // stylise the toString() value of them
     let output = "";
 
+    // Cap the number of rendered elements at `maxArrayLength` (mirrors util.inspect).
+    const limit = Number.isFinite(options.maxArrayLength) ? Math.min(array.length, Math.max(0, Math.floor(options.maxArrayLength))) : array.length;
+
     // eslint-disable-next-line no-plusplus
-    for (let index = 0; index < array.length; index++) {
-        const string = `${options.stylize(truncate(array[index] as number, options.truncate), "number")}${index === array.length - 1 ? "" : ", "}`;
+    for (let index = 0; index < limit; index++) {
+        const string = `${options.stylize(truncate(array[index] as number, options.truncate), "number")}${index === limit - 1 ? "" : ", "}`;
 
         // eslint-disable-next-line no-param-reassign
         options.truncate -= string.length;
 
-        if (index !== array.length - 1 && options.truncate <= 3) {
+        if (index !== limit - 1 && options.truncate <= 3) {
             output += `${TRUNCATOR}(${String(array.length - index)})`;
             break;
         }
 
         output += string;
+    }
+
+    if (limit < array.length) {
+        output += `${output ? ", " : ""}${TRUNCATOR} ${String(array.length - limit)} more`;
     }
 
     let propertyContents = "";

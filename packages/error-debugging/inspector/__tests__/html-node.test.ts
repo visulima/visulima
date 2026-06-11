@@ -16,7 +16,6 @@ import type { InternalInspect, Options } from "../src/types";
 
 const createOptions = (overrides: Partial<Options> = {}): Options => {
     return {
-        breakLength: Number.POSITIVE_INFINITY,
         customInspect: true,
         depth: 5,
         indent: undefined,
@@ -24,7 +23,6 @@ const createOptions = (overrides: Partial<Options> = {}): Options => {
         numericSeparator: true,
         quoteStyle: "single",
         showHidden: false,
-        showProxy: false,
         stylize: (s: string) => s,
         truncate: Number.POSITIVE_INFINITY,
         ...overrides,

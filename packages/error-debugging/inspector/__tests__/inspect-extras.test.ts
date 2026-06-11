@@ -4,27 +4,52 @@ import { describe, expect, it } from "vitest";
 import { inspect, registerConstructor, registerStringTag } from "../src";
 import type { Options } from "../src/types";
 
-describe("opaque base types", () => {
-    it("returns an empty string for ArrayBuffer", () => {
-        expect.assertions(1);
+describe("binary base types", () => {
+    it("renders an ArrayBuffer with its byte contents and byteLength", () => {
+        expect.assertions(2);
 
-        expect(inspect(new ArrayBuffer(8))).toBe("");
+        const buffer = new ArrayBuffer(4);
+
+        new Uint8Array(buffer).set([1, 2, 255, 16]);
+
+        expect(inspect(buffer)).toBe("ArrayBuffer { [Uint8Contents]: <01 02 ff 10>, byteLength: 4 }");
+        expect(inspect(new ArrayBuffer(0))).toBe("ArrayBuffer { byteLength: 0 }");
     });
 
-    it("returns an empty string for DataView", () => {
+    it("truncates large ArrayBuffer contents with a more-bytes marker", () => {
         expect.assertions(1);
 
-        expect(inspect(new DataView(new ArrayBuffer(8)))).toBe("");
+        const result = inspect(new ArrayBuffer(100));
+
+        expect(result).toContain("... 50 more bytes");
     });
 
-    it("returns an empty string for a Generator instance", () => {
+    it("renders a DataView with byteLength, byteOffset and buffer", () => {
         expect.assertions(1);
+
+        expect(inspect(new DataView(new ArrayBuffer(8)))).toBe(
+            "DataView { byteLength: 8, byteOffset: 0, buffer: ArrayBuffer { byteLength: 8 } }",
+        );
+    });
+
+    it("renders a generic ArrayBuffer field inside an object instead of a blank", () => {
+        expect.assertions(1);
+
+        expect(inspect({ buf: new ArrayBuffer(2) })).toBe("{ buf: ArrayBuffer { byteLength: 2 } }");
+    });
+
+    it("tags a Generator instance without draining it", () => {
+        expect.assertions(2);
 
         const generator = function* (): Generator<number> {
             yield 1;
         };
 
-        expect(inspect(generator())).toBe("");
+        const instance = generator();
+
+        expect(inspect(instance)).toBe("Object [Generator] {}");
+        // The generator must not have been consumed by inspecting it.
+        expect(instance.next().value).toBe(1);
     });
 });
 
@@ -123,6 +148,105 @@ describe("null prototype objects", () => {
         object.x = 1;
 
         expect(inspect(object)).toBe("[Object: null prototype] { x: 1 }");
+    });
+});
+
+describe("throwing getters", () => {
+    it("does not throw and renders a placeholder for a getter that throws", () => {
+        expect.assertions(2);
+
+        const value = {
+            get x() {
+                throw new Error("boom");
+            },
+        };
+
+        expect(() => inspect(value)).not.toThrow();
+        expect(inspect(value)).toBe("{ x: [Inspection threw] }");
+    });
+
+    it("still renders sibling properties when one getter throws", () => {
+        expect.assertions(1);
+
+        const value = {
+            a: 1,
+            get b() {
+                throw new Error("boom");
+            },
+            c: 3,
+        };
+
+        expect(inspect(value)).toBe("{ a: 1, b: [Inspection threw], c: 3 }");
+    });
+});
+
+describe("hostile Symbol.toStringTag values (security)", () => {
+    it("does not throw for a `valueOf` toStringTag", () => {
+        expect.assertions(2);
+
+        const value = { [Symbol.toStringTag]: "valueOf" };
+
+        expect(() => inspect(value)).not.toThrow();
+        expect(inspect(value)).toBe("[valueOf] {}");
+    });
+
+    it("does not produce `[object Undefined]` for a `toString` toStringTag", () => {
+        expect.assertions(1);
+
+        const value = { [Symbol.toStringTag]: "toString" };
+
+        expect(inspect(value)).toBe("[toString] {}");
+    });
+
+    it("allows registering an inspector for the `toString` tag", () => {
+        expect.assertions(2);
+
+        const registered = registerStringTag("toString", () => "tag-toString");
+
+        expect(registered).toBe(true);
+        expect(inspect({ [Symbol.toStringTag]: "toString" })).toBe("tag-toString");
+    });
+});
+
+describe("maxArrayLength option", () => {
+    it("limits the number of rendered array elements", () => {
+        expect.assertions(1);
+
+        expect(inspect([1, 2, 3, 4, 5, 6], { maxArrayLength: 2 })).toBe("[ 1, 2, … 4 more ]");
+    });
+
+    it("renders every element when maxArrayLength is Infinity", () => {
+        expect.assertions(1);
+
+        expect(inspect([1, 2, 3, 4, 5, 6])).toBe("[ 1, 2, 3, 4, 5, 6 ]");
+    });
+
+    it("limits typed-array elements", () => {
+        expect.assertions(1);
+
+        expect(inspect(new Uint8Array([1, 2, 3, 4]), { maxArrayLength: 2 })).toBe("Uint8Array[ 1, 2, … 2 more ]");
+    });
+});
+
+describe("showHidden option", () => {
+    it("hides non-enumerable own properties by default", () => {
+        expect.assertions(1);
+
+        const value: Record<string, unknown> = { visible: 1 };
+
+        Object.defineProperty(value, "hidden", { enumerable: false, value: 2 });
+
+        expect(inspect(value)).toBe("{ visible: 1 }");
+    });
+
+    it("renders non-enumerable own properties when showHidden is true", () => {
+        expect.assertions(1);
+
+        const value: Record<string, unknown> = { visible: 1 };
+
+        Object.defineProperty(value, "hidden", { enumerable: false, value: 2 });
+
+        expect(inspect(value, { showHidden: true })).toBe("{ visible: 1, hidden: 2 }");
     });
 });
 

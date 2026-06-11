@@ -11,12 +11,28 @@ const inspectList = (
     inspect: InternalInspect,
     inspectItem?: InspectItem,
     separator = ", ",
+    /**
+     * Optional cap on the number of elements rendered. When the list is longer,
+     * rendering stops early and an `… (N more)` marker is appended. Callers that
+     * represent ordered collections (arrays, typed arrays, sets, maps) pass
+     * `options.maxArrayLength`; property lists leave it `Infinity`.
+     */
+    maxLength = Number.POSITIVE_INFINITY,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): string => {
-    const size = list.length;
+    const fullSize = list.length;
+
+    if (fullSize === 0) {
+        return "";
+    }
+
+    // Apply the element-count cap before the character-truncation logic below so a
+    // huge but short-stringifying array (e.g. 10k zeros) is still bounded.
+    const capped = Number.isFinite(maxLength) && fullSize > maxLength;
+    const size = capped ? Math.max(0, Math.floor(maxLength)) : fullSize;
 
     if (size === 0) {
-        return "";
+        return `${TRUNCATOR}(${String(fullSize)})`;
     }
 
     // eslint-disable-next-line @typescript-eslint/naming-convention,no-underscore-dangle
@@ -27,16 +43,22 @@ const inspectList = (
     }
 
     const originalLength = options.truncate;
+    // Building the `…(N)` marker on every iteration allocates a throwaway string per
+    // element. When character-truncation is disabled (the common path via pail) the
+    // marker is never used, so skip the allocation entirely.
+    const truncationEnabled = Number.isFinite(originalLength);
 
     let output = "";
     let peek = "";
     let truncated = "";
 
     for (let index = 0; index < size; index += 1) {
-        const last = index + 1 === list.length;
-        const secondToLast = index + 2 === list.length;
+        const last = index + 1 === size;
+        const secondToLast = index + 2 === size;
 
-        truncated = `${TRUNCATOR}(${String(list.length - index)})`;
+        if (truncationEnabled) {
+            truncated = `${TRUNCATOR}(${String(size - index)})`;
+        }
 
         let value = list[index];
 
@@ -84,12 +106,18 @@ const inspectList = (
         // If the next element takes us to length -
         // but there are more after that, then we should truncate now
         if (!last && !secondToLast && nextLength + peek.length >= originalLength) {
-            truncated = `${TRUNCATOR}(${String(list.length - index - 1)})`;
+            truncated = `${TRUNCATOR}(${String(size - index - 1)})`;
 
             break;
         }
 
         truncated = "";
+    }
+
+    // If the loop rendered every element it was allowed to but the original list was
+    // capped by `maxArrayLength`, surface how many elements were elided.
+    if (capped && truncated === "") {
+        truncated = ` ${TRUNCATOR} ${String(fullSize - size)} more`;
     }
 
     return `${output}${truncated}`;
