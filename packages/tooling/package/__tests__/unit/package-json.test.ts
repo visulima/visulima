@@ -933,12 +933,20 @@ packages:
             vi.resetAllMocks();
         });
 
+        afterEach(() => {
+            // These tests stub `process` with a partial object that omits `pid`.
+            // Without restoring it here, the stub leaks into later file-writing
+            // tests whose temp-path helper reads `process.pid.toString(36)`.
+            vi.unstubAllGlobals();
+        });
+
         it("should install packages when user confirms and packages are missing", async () => {
             expect.assertions(2);
 
             mockConfirm.mockResolvedValue(true);
 
             vi.stubGlobal("process", {
+                ...process,
                 argv: [],
                 env: { CI: false },
                 stdout: { isTTY: true },
@@ -967,6 +975,7 @@ packages:
             mockConfirm.mockResolvedValue(true);
 
             vi.stubGlobal("process", {
+                ...process,
                 argv: [],
                 env: { CI: false },
                 stdout: { isTTY: true },
@@ -999,6 +1008,7 @@ packages:
             mockConfirm.mockResolvedValue(true);
 
             vi.stubGlobal("process", {
+                ...process,
                 argv: [],
                 env: { CI: false },
                 stdout: { isTTY: true },
@@ -1027,6 +1037,7 @@ packages:
             expect.assertions(2);
 
             vi.stubGlobal("process", {
+                ...process,
                 argv: [],
                 env: { CI: true },
                 stdout: { isTTY: true },
@@ -1048,6 +1059,7 @@ packages:
             expect.assertions(2);
 
             vi.stubGlobal("process", {
+                ...process,
                 argv: [],
                 env: { CI: false },
                 stdout: { isTTY: false },
@@ -1069,6 +1081,7 @@ packages:
             expect.assertions(2);
 
             vi.stubGlobal("process", {
+                ...process,
                 argv: [],
                 env: { CI: true },
                 stdout: { isTTY: true },
@@ -1091,6 +1104,7 @@ packages:
             expect.assertions(2);
 
             vi.stubGlobal("process", {
+                ...process,
                 argv: [],
                 env: { CI: true },
                 stdout: { isTTY: true },
@@ -1116,6 +1130,7 @@ packages:
             mockConfirm.mockResolvedValue(true);
 
             vi.stubGlobal("process", {
+                ...process,
                 argv: [],
                 env: { CI: false },
                 stdout: { isTTY: true },
@@ -1148,6 +1163,7 @@ packages:
             mockConfirm.mockResolvedValue(false);
 
             vi.stubGlobal("process", {
+                ...process,
                 argv: [],
                 env: { CI: false },
                 stdout: { isTTY: true },
