@@ -70,10 +70,7 @@ const readDomainsFile = (): string[] | undefined => {
             hasWarnedOnDomainsFailure = true;
 
             // eslint-disable-next-line no-console
-            console.warn(
-                "[@visulima/disposable-email-domains] Failed to load dist/domains.json; disposable email detection is disabled.",
-                error,
-            );
+            console.warn("[@visulima/disposable-email-domains] Failed to load dist/domains.json; disposable email detection is disabled.", error);
         }
 
         return undefined;
