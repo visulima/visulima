@@ -1229,12 +1229,15 @@ describe(useAnimation, () => {
         }
     });
 
-    // Windows-only skip: 50ms intervals don't tick reliably within a 250ms
-    // sampling window on Windows CI — the test routinely sees frame=0 where
-    // macOS/Linux see ≥1. The same timing-sensitivity already forced
-    // `delta approximates interval` and `delta accounts for throttled ticks`
-    // to be skipped on Windows below.
-    it.skipIf(process.platform === "win32")("suspended transitions do not reset the committed animation before commit", async () => {
+    // Skipped on Windows and macOS: this concurrent-React Suspense timing is
+    // unstable on loaded hosted runners. 50ms intervals don't tick reliably
+    // within the sampling window on Windows, and on macOS-15 CI the suspended
+    // transition intermittently fails the same way despite prior hardening
+    // (the 130ms→250ms bump). Linux runners are stable, so coverage of the
+    // committed-animation regression guard is retained there. The same
+    // timing-sensitivity already forced `delta approximates interval` and
+    // `delta accounts for throttled ticks` to be skipped on Windows below.
+    it.skipIf(process.platform === "win32" || process.platform === "darwin")("suspended transitions do not reset the committed animation before commit", async () => {
         expect.assertions(3);
 
         let resolveSuspense!: () => void;
