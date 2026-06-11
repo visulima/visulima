@@ -35,10 +35,12 @@ const loadDurationLanguage = async (code: string): Promise<DurationLanguage> => 
     }
 
     try {
-        // The specifier is validated above to a safe locale token. The
-        // vite-ignore hint keeps Vite/Vitest from trying to statically
-        // pre-bundle the fully variable path; Node and other bundlers resolve
-        // it at runtime.
+        // The specifier is validated above to a safe locale token. The language
+        // packs are emitted as separate entry chunks (`./language/*`) and resolved
+        // at runtime; the build sets `rollup.dynamicVars.warnOnError` so the
+        // dynamic-import-vars plugin leaves this runtime import untouched instead
+        // of failing the build (no `.js` source files exist to glob). The
+        // vite-ignore hint does the same for Vite/Vitest.
         // eslint-disable-next-line jsdoc/no-bad-blocks
         const module = (await import(/* @vite-ignore */ `./language/${code}.js`)) as { durationLanguage?: DurationLanguage };
 
