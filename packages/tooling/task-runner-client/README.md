@@ -74,18 +74,18 @@ if (isManaged()) {
 
 ## API
 
-| Function                          | Effect                                                                                                                        |
-| --------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `ignoreInput(path)`               | Drop reads under `path` from this run's inferred cache inputs.                                                               |
-| `ignoreOutput(path)`              | Drop writes under `path` from this run's inferred cache outputs.                                                             |
-| `trackInput(path)`                | Add `path` as a cache input even if the tracer didn't observe the read.                                                     |
-| `trackOutput(path)`               | Add `path` as a cache output even if the tracer didn't observe the write.                                                   |
-| `trackValue(key, value)`          | Add an arbitrary `key`/`value` pair to the cache key — for non-file, non-env determinism inputs.                            |
-| `disableCache(reason?)`           | Mark this run non-deterministic — the runner won't cache it. Optional `reason` surfaces in the run summary.                 |
-| `getEnv(name, { tracked? })`      | Return `process.env[name]`; with `tracked` (default `true`) register `name` as a cache dependency.                          |
-| `getEnvs(pattern, { tracked? })`  | Return every env matching the `*`-glob `pattern`; with `tracked` (default `true`) register the pattern as a cache dependency. |
-| `isManaged()`                     | `true` when running inside a runner-managed task. Gate expensive hint computation on it.                                    |
-| `getProtocolVersion()`            | The runner's advertised wire-protocol version, or `undefined` outside a runner.                                             |
+| Function                         | Effect                                                                                                                        |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| `ignoreInput(path)`              | Drop reads under `path` from this run's inferred cache inputs.                                                                |
+| `ignoreOutput(path)`             | Drop writes under `path` from this run's inferred cache outputs.                                                              |
+| `trackInput(path)`               | Add `path` as a cache input even if the tracer didn't observe the read.                                                       |
+| `trackOutput(path)`              | Add `path` as a cache output even if the tracer didn't observe the write.                                                     |
+| `trackValue(key, value)`         | Add an arbitrary `key`/`value` pair to the cache key — for non-file, non-env determinism inputs.                              |
+| `disableCache(reason?)`          | Mark this run non-deterministic — the runner won't cache it. Optional `reason` surfaces in the run summary.                   |
+| `getEnv(name, { tracked? })`     | Return `process.env[name]`; with `tracked` (default `true`) register `name` as a cache dependency.                            |
+| `getEnvs(pattern, { tracked? })` | Return every env matching the `*`-glob `pattern`; with `tracked` (default `true`) register the pattern as a cache dependency. |
+| `isManaged()`                    | `true` when running inside a runner-managed task. Gate expensive hint computation on it.                                      |
+| `getProtocolVersion()`           | The runner's advertised wire-protocol version, or `undefined` outside a runner.                                               |
 
 Also exported: `HINTS_ENV` / `PROTOCOL_ENV` (the wire-contract env-var names), `SUPPORTED_PROTOCOL_VERSION`, and the `TrackOptions` type.
 
