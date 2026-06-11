@@ -193,12 +193,10 @@ export const identifyInitiatingPackageManager = ():
     const separatorPos = pmSpec.lastIndexOf("/");
     const rawName = pmSpec.slice(0, Math.max(0, separatorPos));
 
-    const knownPackageManagers: (PackageManager | "cnpm")[] = ["npm", "pnpm", "yarn", "bun", "cnpm"];
-
-    const name: PackageManager | "cnpm" | string = rawName === "npminstall" ? "cnpm" : rawName;
+    const name: PackageManager | "cnpm" | (string & {}) = rawName === "npminstall" ? "cnpm" : rawName;
 
     return {
-        name: knownPackageManagers.includes(name as PackageManager | "cnpm") ? (name as PackageManager | "cnpm") : name,
+        name,
         version: pmSpec.slice(Math.max(0, separatorPos + 1)),
     };
 };

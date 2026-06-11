@@ -51,7 +51,7 @@ type CacheKeyOptions = {
  * @returns A composite cache key string.
  */
 const buildReadCacheKey = (filePath: string, options: CacheKeyOptions = {}): string =>
-    `${filePath}|s${options.strict ? 1 : 0}|c${options.resolveCatalogs ? 1 : 0}|j${options.json5 !== false ? 1 : 0}|y${options.yaml !== false ? 1 : 0}|w${options.ignoreWarnings ? 1 : 0}`;
+    `${filePath}|s${String(options.strict ? 1 : 0)}|c${String(options.resolveCatalogs ? 1 : 0)}|j${String(options.json5 === false ? 0 : 1)}|y${String(options.yaml === false ? 0 : 1)}|w${String(options.ignoreWarnings ? 1 : 0)}`;
 
 class PackageJsonValidationError extends Error {
     public constructor(warnings: string[]) {
