@@ -39,5 +39,4 @@ export const readJsonFile = async <T = unknown>(fs: CerebroFs, path: string): Pr
 export const writeJsonFile = async (fs: CerebroFs, path: string, value: unknown, indent = 4): Promise<void> =>
     fs.writeFile(path, `${JSON.stringify(value, undefined, indent)}\n`, "utf8");
 
-export const removeFile = async (fs: CerebroFs, path: string): Promise<void> =>
-    fs.rm(path, { force: true });
+export const removeFile = async (fs: CerebroFs, path: string): Promise<void> => fs.rm(path, { force: true });

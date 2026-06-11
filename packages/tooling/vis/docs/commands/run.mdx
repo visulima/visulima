@@ -252,12 +252,12 @@ When enabled, `quietOnSuccess` does two things:
 
 Precedence (most specific wins):
 
-| Setting                       | Scope                          | Overrides                          |
-| ----------------------------- | ------------------------------ | ---------------------------------- |
-| `options.outputStyle` (target) | A single task                  | Everything below, for that task    |
-| `--output-style` (CLI flag)   | The whole run's output         | `run.quietOnSuccess` output side   |
-| `tui.autoExit` (config)       | The TUI auto-close countdown   | `run.quietOnSuccess` countdown side |
-| `run.quietOnSuccess` (config) | Output **and** TUI auto-close  | The built-in defaults              |
+| Setting                        | Scope                         | Overrides                           |
+| ------------------------------ | ----------------------------- | ----------------------------------- |
+| `options.outputStyle` (target) | A single task                 | Everything below, for that task     |
+| `--output-style` (CLI flag)    | The whole run's output        | `run.quietOnSuccess` output side    |
+| `tui.autoExit` (config)        | The TUI auto-close countdown  | `run.quietOnSuccess` countdown side |
+| `run.quietOnSuccess` (config)  | Output **and** TUI auto-close | The built-in defaults               |
 
 So you can opt the whole repo into quiet, auto-closing runs with `quietOnSuccess: true`, then force a verbose run when debugging with `vis run build --output-style=normal` — the explicit flag wins and the TUI stays put.
 

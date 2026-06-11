@@ -17,7 +17,9 @@ import {
 } from "../../../src/util/git/subtree";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
 
-const ok = (stdout = ""): GitExec => { return { status: 0, stderr: "", stdout }; };
+const ok = (stdout = ""): GitExec => {
+    return { status: 0, stderr: "", stdout };
+};
 
 interface RecordingRunner {
     calls: { args: string[]; cwd: string }[];
@@ -50,7 +52,9 @@ describe(runGit, () => {
     it("throws with stderr detail on a non-zero exit", () => {
         expect.assertions(1);
 
-        const { runner } = makeRunner(() => { return { status: 128, stderr: "fatal: not a tree", stdout: "" }; });
+        const { runner } = makeRunner(() => {
+            return { status: 128, stderr: "fatal: not a tree", stdout: "" };
+        });
 
         expect(() => runGit(["show", "bad"], "/ws", runner)).toThrow(/exit 128[\s\S]*fatal: not a tree/u);
     });
@@ -62,15 +66,21 @@ describe(assertGitRepo, () => {
 
         const { runner } = makeRunner(() => ok("true"));
 
-        expect(() => { assertGitRepo("/ws", runner); }).not.toThrow();
+        expect(() => {
+            assertGitRepo("/ws", runner);
+        }).not.toThrow();
     });
 
     it("throws outside a work tree", () => {
         expect.assertions(1);
 
-        const { runner } = makeRunner(() => { return { status: 128, stderr: "", stdout: "" }; });
+        const { runner } = makeRunner(() => {
+            return { status: 128, stderr: "", stdout: "" };
+        });
 
-        expect(() => { assertGitRepo("/ws", runner); }).toThrow(/Not a git repository/u);
+        expect(() => {
+            assertGitRepo("/ws", runner);
+        }).toThrow(/Not a git repository/u);
     });
 });
 
@@ -81,7 +91,9 @@ describe(isWorktreeClean, () => {
         const { runner } = makeRunner(() => ok("\n"));
 
         expect(isWorktreeClean("/ws", runner)).toBe(true);
-        expect(() => { assertCleanWorktree("/ws", runner); }).not.toThrow();
+        expect(() => {
+            assertCleanWorktree("/ws", runner);
+        }).not.toThrow();
     });
 
     it("is dirty when status --porcelain reports changes", () => {
@@ -90,7 +102,9 @@ describe(isWorktreeClean, () => {
         const { runner } = makeRunner(() => ok(" M file.ts"));
 
         expect(isWorktreeClean("/ws", runner)).toBe(false);
-        expect(() => { assertCleanWorktree("/ws", runner); }).toThrow(/uncommitted changes/u);
+        expect(() => {
+            assertCleanWorktree("/ws", runner);
+        }).toThrow(/uncommitted changes/u);
     });
 });
 

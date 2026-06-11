@@ -4,15 +4,16 @@ import type { EcosystemUpdate } from "../../../src/commands/update/ecosystems";
 import { ecosystemEntryKey, UpdateStore } from "../../../src/tui/components/update/update-store";
 import type { OutdatedEntry } from "../../../src/util/catalog";
 
-const makeOutdated = (overrides: Partial<OutdatedEntry> & Pick<OutdatedEntry, "packageName">): OutdatedEntry => ({
-    catalogName: "default",
-    current: "1.0.0",
-    latest: "2.0.0",
-    packageName: overrides.packageName,
-    target: "2.0.0",
-    updateType: "minor",
-    ...overrides,
-} as OutdatedEntry);
+const makeOutdated = (overrides: Partial<OutdatedEntry> & Pick<OutdatedEntry, "packageName">): OutdatedEntry =>
+    ({
+        catalogName: "default",
+        current: "1.0.0",
+        latest: "2.0.0",
+        packageName: overrides.packageName,
+        target: "2.0.0",
+        updateType: "minor",
+        ...overrides,
+    }) as OutdatedEntry;
 
 const makeEcosystemEntry = (overrides: Partial<EcosystemUpdate> = {}): EcosystemUpdate => {
     return {

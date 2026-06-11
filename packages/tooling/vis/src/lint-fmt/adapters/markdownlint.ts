@@ -73,9 +73,7 @@ export const markdownlintAdapter: ToolAdapter = {
     },
 
     detect: (root, packageJson) => {
-        const declared = TOOL_SIGNATURES.markdownlint.packageNames
-            .map((name) => declaredVersion(packageJson, name))
-            .find((version) => version !== undefined);
+        const declared = TOOL_SIGNATURES.markdownlint.packageNames.map((name) => declaredVersion(packageJson, name)).find((version) => version !== undefined);
         const configFile = findFirstConfig(root, TOOL_SIGNATURES.markdownlint.configFiles);
 
         if (!declared && !configFile) {

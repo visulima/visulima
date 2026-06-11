@@ -221,12 +221,7 @@ export default createConfig(
         //   - clean/handler.ts   → lstatSync, unlinkSync (no lstat / unlink on CerebroFs)
         //   - hook/handler.ts    → chmodSync (no chmod on CerebroFs)
         //   - service/handler.ts → open (FileHandle stream), watch (no equivalents)
-        files: [
-            "src/commands/cache/handler.ts",
-            "src/commands/clean/handler.ts",
-            "src/commands/hook/handler.ts",
-            "src/commands/service/handler.ts",
-        ],
+        files: ["src/commands/cache/handler.ts", "src/commands/clean/handler.ts", "src/commands/hook/handler.ts", "src/commands/service/handler.ts"],
         rules: {
             "no-restricted-imports": "off",
         },

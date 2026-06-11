@@ -47,26 +47,26 @@ const pyprojectMentionsRuff = (root: string): boolean => {
     }
 };
 
-const detectRuff = (id: "ruff-check" | "ruff-fmt") => (root: string, packageJson: Record<string, unknown>): ToolPresence | undefined => {
-    const declared = TOOL_SIGNATURES.ruff.packageNames
-        .map((name) => declaredVersion(packageJson, name))
-        .find((version) => version !== undefined);
-    const configFile = findFirstConfig(root, TOOL_SIGNATURES.ruff.configFiles);
-    const pyprojectHit = configFile ? undefined : pyprojectMentionsRuff(root) ? join(root, PYPROJECT_FILE) : undefined;
-    const resolvedConfig = configFile ?? pyprojectHit;
+const detectRuff
+    = (id: "ruff-check" | "ruff-fmt") =>
+        (root: string, packageJson: Record<string, unknown>): ToolPresence | undefined => {
+            const declared = TOOL_SIGNATURES.ruff.packageNames.map((name) => declaredVersion(packageJson, name)).find((version) => version !== undefined);
+            const configFile = findFirstConfig(root, TOOL_SIGNATURES.ruff.configFiles);
+            const pyprojectHit = configFile ? undefined : pyprojectMentionsRuff(root) ? join(root, PYPROJECT_FILE) : undefined;
+            const resolvedConfig = configFile ?? pyprojectHit;
 
-    if (!declared && !resolvedConfig) {
-        return undefined;
-    }
+            if (!declared && !resolvedConfig) {
+                return undefined;
+            }
 
-    return {
-        adapter: id,
-        configFile: resolvedConfig,
-        declared: Boolean(declared),
-        declaredVersion: declared,
-        root,
-    };
-};
+            return {
+                adapter: id,
+                configFile: resolvedConfig,
+                declared: Boolean(declared),
+                declaredVersion: declared,
+                root,
+            };
+        };
 
 const isAbsolutePath = (raw: string): boolean => raw.startsWith("/") || /^[a-z]:[\\/]/i.test(raw);
 

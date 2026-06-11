@@ -1465,8 +1465,13 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // two projects expose this target with different `arguments` schemas
     // rather than validate one project's invocation against another's.
     const schemasByProject = projectsWithTarget
-        .map((projectName) => { return { project: projectName, schema: projectTargetIndex.get(projectName)?.arguments }; })
-        .filter((entry): entry is { project: string; schema: NonNullable<VisTargetConfiguration["arguments"]> } => Array.isArray(entry.schema) && entry.schema.length > 0);
+        .map((projectName) => {
+            return { project: projectName, schema: projectTargetIndex.get(projectName)?.arguments };
+        })
+        .filter(
+            (entry): entry is { project: string; schema: NonNullable<VisTargetConfiguration["arguments"]> } =>
+                Array.isArray(entry.schema) && entry.schema.length > 0,
+        );
 
     const distinctSchemas = new Map<string, string[]>();
 

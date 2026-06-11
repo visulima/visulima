@@ -53,7 +53,7 @@ describe("hadolint pinned digests", () => {
     ];
 
     it("pins a source-baked SHA-256 for every resolvable asset", () => {
-        expect.assertions(supported.length);
+        expect.assertions(6);
 
         for (const [platform, arch] of supported) {
             const asset = resolveHadolintAsset(platform, arch);

@@ -33,7 +33,9 @@ describe(resolveAffectedShas, () => {
         it("reads event.before from GITHUB_EVENT_PATH on push events", () => {
             expect.assertions(4);
 
-            const readEventPayload = vi.fn(() => { return { after: "newSha", before: "deadbeef" }; });
+            const readEventPayload = vi.fn(() => {
+                return { after: "newSha", before: "deadbeef" };
+            });
 
             const result = resolveAffectedShas(
                 makeOptions({
@@ -55,7 +57,9 @@ describe(resolveAffectedShas, () => {
                 makeOptions({
                     defaultBase: "trunk",
                     env: { GITHUB_ACTIONS: "true", GITHUB_EVENT_PATH: "/tmp/event.json", GITHUB_SHA: "newSha" },
-                    readEventPayload: () => { return { before: "0000000000000000000000000000000000000000" }; },
+                    readEventPayload: () => {
+                        return { before: "0000000000000000000000000000000000000000" };
+                    },
                 }),
             );
 

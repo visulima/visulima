@@ -115,10 +115,7 @@ describe(detectAdapters, () => {
         writeFileSync(join(workspaceRoot, "package.json"), JSON.stringify({ devDependencies: { eslint: "^9.0.0" } }));
         mkdirSync(join(workspaceRoot, "src"), { recursive: true });
 
-        const adapters = [
-            stubAdapter("eslint", "eslint", ["eslint.config.js"]),
-            stubAdapter("prettier", "prettier", [".prettierrc"]),
-        ];
+        const adapters = [stubAdapter("eslint", "eslint", ["eslint.config.js"]), stubAdapter("prettier", "prettier", [".prettierrc"])];
 
         const detected = detectAdapters(workspaceRoot, adapters);
 

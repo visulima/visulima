@@ -26,7 +26,16 @@ import { runAdaptersParallel } from "../../lint-fmt/runner";
 import { runWatchLoop } from "../../lint-fmt/watch-loop";
 import type { LintOptions } from "./index";
 
-const SOURCE_ADAPTERS = [oxlintAdapter, biomeAdapter, eslintAdapter, stylelintAdapter, ruffCheckAdapter, markdownlintAdapter, shellcheckAdapter, denoLintAdapter];
+const SOURCE_ADAPTERS = [
+    oxlintAdapter,
+    biomeAdapter,
+    eslintAdapter,
+    stylelintAdapter,
+    ruffCheckAdapter,
+    markdownlintAdapter,
+    shellcheckAdapter,
+    denoLintAdapter,
+];
 
 const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, LintOptions>): Promise<void> => {
     const root = workspaceRoot ?? process.cwd();
@@ -145,12 +154,14 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
         try {
             switch (format) {
                 case "github": {
-                    sink!.write(emitGitHub({
-                        runs: runs.map((run) => {
-                            return { findings: run.findings };
+                    sink!.write(
+                        emitGitHub({
+                            runs: runs.map((run) => {
+                                return { findings: run.findings };
+                            }),
+                            workspaceRoot: root,
                         }),
-                        workspaceRoot: root,
-                    }));
+                    );
 
                     break;
                 }
@@ -160,12 +171,14 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
                     break;
                 }
                 case "junit": {
-                    sink!.write(emitJUnit({
-                        runs: runs.map((run) => {
-                            return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
+                    sink!.write(
+                        emitJUnit({
+                            runs: runs.map((run) => {
+                                return { adapter: run.adapter.id, durationMs: run.durationMs, findings: run.findings };
+                            }),
+                            workspaceRoot: root,
                         }),
-                        workspaceRoot: root,
-                    }));
+                    );
 
                     break;
                 }
@@ -175,16 +188,18 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
                     break;
                 }
                 case "sarif": {
-                    sink!.write(emitSarif({
-                        runs: runs.map((run) => {
-                            return {
-                                adapter: run.adapter.id,
-                                findings: run.findings,
-                                presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
-                            };
+                    sink!.write(
+                        emitSarif({
+                            runs: runs.map((run) => {
+                                return {
+                                    adapter: run.adapter.id,
+                                    findings: run.findings,
+                                    presence: jobs.find((job) => job.adapter.id === run.adapter.id)?.presence,
+                                };
+                            }),
+                            workspaceRoot: root,
                         }),
-                        workspaceRoot: root,
-                    }));
+                    );
 
                     break;
                 }
@@ -212,7 +227,9 @@ const execute = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Co
             extensions,
             initialFiles: sinceFiles,
             label: "lint",
-            log: (message) => { logger.info(message); },
+            log: (message) => {
+                logger.info(message);
+            },
             runCycle,
             workspaceRoot: root,
         });
@@ -256,7 +273,9 @@ const printHuman = (findings: ReadonlyArray<Finding>, root: string, logger: Tool
     const warningCount = findings.filter((f) => f.severity === "warning").length;
 
     logger.info("");
-    logger.info(`${red(`${String(errorCount)} error${errorCount === 1 ? "" : "s"}`)}, ${yellow(`${String(warningCount)} warning${warningCount === 1 ? "" : "s"}`)}`);
+    logger.info(
+        `${red(`${String(errorCount)} error${errorCount === 1 ? "" : "s"}`)}, ${yellow(`${String(warningCount)} warning${warningCount === 1 ? "" : "s"}`)}`,
+    );
 };
 
 const printMinimal = (findings: ReadonlyArray<Finding>, root: string, sink: OutputSink): void => {

@@ -56,26 +56,7 @@ export const prettierAdapter: ToolAdapter = {
         };
     },
 
-    extensions: [
-        "cjs",
-        "css",
-        "cts",
-        "html",
-        "js",
-        "json",
-        "jsx",
-        "less",
-        "md",
-        "mdx",
-        "mjs",
-        "mts",
-        "scss",
-        "ts",
-        "tsx",
-        "vue",
-        "yaml",
-        "yml",
-    ],
+    extensions: ["cjs", "css", "cts", "html", "js", "json", "jsx", "less", "md", "mdx", "mjs", "mts", "scss", "ts", "tsx", "vue", "yaml", "yml"],
     id: "prettier",
     kind: "fmt",
 

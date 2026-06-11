@@ -57,14 +57,13 @@ describe(emitJUnit, () => {
 
         const out = emitJUnit({
             now: FIXED_NOW,
-            runs: [{
-                adapter: "eslint",
-                durationMs: 100,
-                findings: [
-                    baseFinding({ severity: "error" }),
-                    baseFinding({ line: 11, severity: "warning" }),
-                ],
-            }],
+            runs: [
+                {
+                    adapter: "eslint",
+                    durationMs: 100,
+                    findings: [baseFinding({ severity: "error" }), baseFinding({ line: 11, severity: "warning" })],
+                },
+            ],
         });
 
         expect(out).toMatch(/<testsuite name="eslint" tests="2" failures="1" errors="0" skipped="1"/);
@@ -88,11 +87,13 @@ describe(emitJUnit, () => {
 
         const out = emitJUnit({
             now: FIXED_NOW,
-            runs: [{
-                adapter: "eslint",
-                durationMs: 0,
-                findings: [baseFinding({ message: "Bad <tag> & \"value\"", ruleId: "rule&one" })],
-            }],
+            runs: [
+                {
+                    adapter: "eslint",
+                    durationMs: 0,
+                    findings: [baseFinding({ message: "Bad <tag> & \"value\"", ruleId: "rule&one" })],
+                },
+            ],
         });
 
         expect(out).toContain("&amp;");
@@ -104,15 +105,17 @@ describe(emitJUnit, () => {
 
         const out = emitJUnit({
             now: FIXED_NOW,
-            runs: [{
-                adapter: "eslint",
-                durationMs: 0,
-                findings: [
-                    baseFinding({ file: "/repo/b.ts", line: 5 }),
-                    baseFinding({ file: "/repo/a.ts", line: 12 }),
-                    baseFinding({ file: "/repo/a.ts", line: 3 }),
-                ],
-            }],
+            runs: [
+                {
+                    adapter: "eslint",
+                    durationMs: 0,
+                    findings: [
+                        baseFinding({ file: "/repo/b.ts", line: 5 }),
+                        baseFinding({ file: "/repo/a.ts", line: 12 }),
+                        baseFinding({ file: "/repo/a.ts", line: 3 }),
+                    ],
+                },
+            ],
             workspaceRoot: "/repo",
         });
 

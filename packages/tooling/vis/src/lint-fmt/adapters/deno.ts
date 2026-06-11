@@ -19,20 +19,22 @@ import { findFirstConfig } from "../detect";
  * deno isn't an npm package.
  */
 
-const detectDeno = (id: "deno-fmt" | "deno-lint") => (root: string): ToolPresence | undefined => {
-    const configFile = findFirstConfig(root, TOOL_SIGNATURES.deno.configFiles);
+const detectDeno
+    = (id: "deno-fmt" | "deno-lint") =>
+        (root: string): ToolPresence | undefined => {
+            const configFile = findFirstConfig(root, TOOL_SIGNATURES.deno.configFiles);
 
-    if (!configFile) {
-        return undefined;
-    }
+            if (!configFile) {
+                return undefined;
+            }
 
-    return {
-        adapter: id,
-        configFile,
-        declared: false,
-        root,
-    };
-};
+            return {
+                adapter: id,
+                configFile,
+                declared: false,
+                root,
+            };
+        };
 
 const isAbsolutePath = (raw: string): boolean => raw.startsWith("/") || /^[a-z]:[\\/]/i.test(raw);
 
@@ -59,12 +61,7 @@ export const denoLintAdapter: ToolAdapter = {
     bin: () => ["deno", "lint"],
 
     cacheKey: (presence, options) => {
-        const parts = [
-            "deno-lint",
-            presence.configFile ?? "no-config",
-            options.quiet ? "q" : "",
-            ...(options.extraArgs ?? []),
-        ];
+        const parts = ["deno-lint", presence.configFile ?? "no-config", options.quiet ? "q" : "", ...(options.extraArgs ?? [])];
 
         return createHash("sha256").update(parts.join("|")).digest("hex").slice(0, 16);
     },
@@ -129,12 +126,7 @@ export const denoFmtAdapter: ToolAdapter = {
     bin: () => ["deno", "fmt"],
 
     cacheKey: (presence, options) => {
-        const parts = [
-            "deno-fmt",
-            presence.configFile ?? "no-config",
-            options.quiet ? "q" : "",
-            ...(options.extraArgs ?? []),
-        ];
+        const parts = ["deno-fmt", presence.configFile ?? "no-config", options.quiet ? "q" : "", ...(options.extraArgs ?? [])];
 
         return createHash("sha256").update(parts.join("|")).digest("hex").slice(0, 16);
     },

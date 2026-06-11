@@ -35,14 +35,31 @@ const reference = (overrides: Partial<ImageReference> = {}): ImageReference => {
 };
 
 const fetchHubTags = (tags: string[]): typeof fetch =>
-    vi.fn(async () => Response.json({ next: null, results: tags.map((tag) => { return { name: tag }; }) }, { status: 200 }));
+    vi.fn(async () =>
+        Response.json(
+            {
+                next: null,
+                results: tags.map((tag) => {
+                    return { name: tag };
+                }),
+            },
+            { status: 200 },
+        ),
+    );
 
 const fetchHubTagsWithDates = (entries: { lastUpdated: string; name: string }[]): typeof fetch =>
-    vi.fn(
-        async () =>
-            Response.json({ next: null, results: entries.map((entry) => { return { last_updated: entry.lastUpdated, name: entry.name }; }) }, {
+    vi.fn(async () =>
+        Response.json(
+            {
+                next: null,
+                results: entries.map((entry) => {
+                    return { last_updated: entry.lastUpdated, name: entry.name };
+                }),
+            },
+            {
                 status: 200,
-            }),
+            },
+        ),
     );
 
 describe(checkDocker, () => {

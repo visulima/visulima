@@ -19,7 +19,17 @@ const baseOptions: EcosystemUpdateOptions = {
 };
 
 const fetchHubTags = (tags: string[]): typeof fetch =>
-    vi.fn(async () => Response.json({ next: null, results: tags.map((tag) => { return { name: tag }; }) }, { status: 200 }));
+    vi.fn(async () =>
+        Response.json(
+            {
+                next: null,
+                results: tags.map((tag) => {
+                    return { name: tag };
+                }),
+            },
+            { status: 200 },
+        ),
+    );
 
 const DIGEST_PINNED: ImageReference = {
     digest: "sha256:abcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabcabc",

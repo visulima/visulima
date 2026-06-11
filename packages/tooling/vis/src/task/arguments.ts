@@ -124,10 +124,7 @@ const captureValue = (
     return 0;
 };
 
-const coerce = (
-    argument: TaskArgument,
-    raw: string,
-): { error?: string; value?: TaskArgumentValue } => {
+const coerce = (argument: TaskArgument, raw: string): { error?: string; value?: TaskArgumentValue } => {
     const type = argument.type ?? "string";
 
     if (type === "number") {
@@ -319,7 +316,10 @@ export const parseTaskArguments = (schema: TaskArgument[], raw: string[]): Parse
  * runs collapse to `_`, so argument names should be unique after normalization
  * (`min-age` and `min_age` both map to `VIS_ARG_MIN_AGE`).
  */
-export const taskArgumentEnvName = (name: string): string => `VIS_ARG_${asKebab(name).replaceAll(/[^a-zA-Z0-9]+/gu, "_").toUpperCase()}`;
+export const taskArgumentEnvName = (name: string): string =>
+    `VIS_ARG_${asKebab(name)
+        .replaceAll(/[^a-zA-Z0-9]+/gu, "_")
+        .toUpperCase()}`;
 
 /** Build the `{ VIS_ARG_*: value }` env block from validated values. */
 export const taskArgumentEnv = (values: Record<string, TaskArgumentValue>): Record<string, string> => {

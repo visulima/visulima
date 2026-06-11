@@ -64,7 +64,9 @@ const resolveFiles = (files: string[], cwd: string): string[] => {
 };
 
 const renderFindings = (findings: HadolintFinding[], logger: Pick<Console, "error" | "info">): void => {
-    const sorted = [...findings].sort((a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.column - b.column || LEVEL_RANK[a.level] - LEVEL_RANK[b.level]);
+    const sorted = [...findings].sort(
+        (a, b) => a.file.localeCompare(b.file) || a.line - b.line || a.column - b.column || LEVEL_RANK[a.level] - LEVEL_RANK[b.level],
+    );
 
     let currentFile = "";
 

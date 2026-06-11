@@ -413,18 +413,18 @@ The migrator detects `package.json` keys, `.lintstagedrc*` files, and `lint-stag
 
 The `@visulima/vis/config` subpath export is the programmatic surface for typed config and the plugin system. It ships more than `defineConfig`:
 
-| Export                                           | Kind     | Purpose                                                                        |
-| ------------------------------------------------ | -------- | ------------------------------------------------------------------------------ |
-| `defineConfig`                                   | function | Type-checked `vis.config.ts` helper (root config).                             |
-| `defineTaskConfig`                               | function | Type-checked task-only config (`vis.task.config.ts`).                          |
-| `definePlugin`                                   | function | Author a vis plugin (hooks, fingerprint contributors, OTel, …).                |
-| `otelPlugin`                                     | function | Built-in OpenTelemetry plugin factory.                                         |
-| `loadVisConfig` / `loadVisTaskConfig`            | function | Resolve + load the config from disk programmatically.                          |
-| `findVisConfigFile` / `findVisTaskConfigFile`    | function | Locate the config file without loading it.                                      |
-| `applyDefaults`                                  | function | Merge a partial config with vis defaults.                                       |
-| `CONFIG_FILES` / `TASK_CONFIG_FILES`             | const    | The recognised config filenames, in resolution order.                          |
-| `SECURITY_DEFAULTS`                              | const    | The default audit/security policy applied when none is configured.             |
-| `VisConfig`, `VisTaskConfig`, `VisPlugin`, `VisHooks`, `OtelPluginOptions`, `FingerprintContributor` | type | Public config & plugin types. |
+| Export                                                                                               | Kind     | Purpose                                                            |
+| ---------------------------------------------------------------------------------------------------- | -------- | ------------------------------------------------------------------ |
+| `defineConfig`                                                                                       | function | Type-checked `vis.config.ts` helper (root config).                 |
+| `defineTaskConfig`                                                                                   | function | Type-checked task-only config (`vis.task.config.ts`).              |
+| `definePlugin`                                                                                       | function | Author a vis plugin (hooks, fingerprint contributors, OTel, …).    |
+| `otelPlugin`                                                                                         | function | Built-in OpenTelemetry plugin factory.                             |
+| `loadVisConfig` / `loadVisTaskConfig`                                                                | function | Resolve + load the config from disk programmatically.              |
+| `findVisConfigFile` / `findVisTaskConfigFile`                                                        | function | Locate the config file without loading it.                         |
+| `applyDefaults`                                                                                      | function | Merge a partial config with vis defaults.                          |
+| `CONFIG_FILES` / `TASK_CONFIG_FILES`                                                                 | const    | The recognised config filenames, in resolution order.              |
+| `SECURITY_DEFAULTS`                                                                                  | const    | The default audit/security policy applied when none is configured. |
+| `VisConfig`, `VisTaskConfig`, `VisPlugin`, `VisHooks`, `OtelPluginOptions`, `FingerprintContributor` | type     | Public config & plugin types.                                      |
 
 ```ts
 import { defineConfig, definePlugin, otelPlugin } from "@visulima/vis/config";

@@ -1,13 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { TaskArgument } from "../../src/task/arguments";
-import {
-    parseTaskArguments,
-    renderTaskArgumentsHelp,
-    taskArgumentEnv,
-    taskArgumentEnvName,
-    validateArgumentSchema,
-} from "../../src/task/arguments";
+import { parseTaskArguments, renderTaskArgumentsHelp, taskArgumentEnv, taskArgumentEnvName, validateArgumentSchema } from "../../src/task/arguments";
 
 describe(parseTaskArguments, () => {
     it("parses --flag=value and --flag value forms", () => {
@@ -52,9 +46,7 @@ describe(parseTaskArguments, () => {
 
         // `Number("")` is 0 and `Number("Infinity")` is finite-looking — both must fail.
         expect(parseTaskArguments(schema, ["--retries="]).errors).toStrictEqual([`--retries expects a number, got ""`]);
-        expect(parseTaskArguments(schema, ["--retries=Infinity"]).errors).toStrictEqual([
-            `--retries expects a number, got "Infinity"`,
-        ]);
+        expect(parseTaskArguments(schema, ["--retries=Infinity"]).errors).toStrictEqual([`--retries expects a number, got "Infinity"`]);
     });
 
     it("consumes a negative number as a value, not a flag", () => {
@@ -85,9 +77,7 @@ describe(parseTaskArguments, () => {
         const schema: TaskArgument[] = [{ choices: ["dev", "prod"], name: "mode", type: "enum" }];
 
         expect(parseTaskArguments(schema, ["--mode=prod"]).values).toStrictEqual({ mode: "prod" });
-        expect(parseTaskArguments(schema, ["--mode=staging"]).errors).toStrictEqual([
-            `--mode must be one of [dev, prod], got "staging"`,
-        ]);
+        expect(parseTaskArguments(schema, ["--mode=staging"]).errors).toStrictEqual([`--mode must be one of [dev, prod], got "staging"`]);
     });
 
     it("applies defaults and enforces required", () => {
@@ -139,17 +129,13 @@ describe(validateArgumentSchema, () => {
     it("flags a multi-character alias", () => {
         expect.assertions(1);
 
-        expect(validateArgumentSchema([{ alias: "rep", name: "reporter" }])).toStrictEqual([
-            `argument "reporter" alias "rep" must be a single character`,
-        ]);
+        expect(validateArgumentSchema([{ alias: "rep", name: "reporter" }])).toStrictEqual([`argument "reporter" alias "rep" must be a single character`]);
     });
 
     it("flags an enum without choices", () => {
         expect.assertions(1);
 
-        expect(validateArgumentSchema([{ name: "mode", type: "enum" }])).toStrictEqual([
-            `argument "mode" has type "enum" but declares no choices`,
-        ]);
+        expect(validateArgumentSchema([{ name: "mode", type: "enum" }])).toStrictEqual([`argument "mode" has type "enum" but declares no choices`]);
     });
 
     it("flags a default that does not match the type", () => {
