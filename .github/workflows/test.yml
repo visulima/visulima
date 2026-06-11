@@ -343,20 +343,33 @@ jobs:
               shell: "bash"
               run: "curl --fail-with-body --data-binary @codecov.yml https://codecov.io/validate"
 
+            # Import Codecov's uploader verification key from keyserver.ubuntu.com
+            # by fingerprint (806BB28AED779869 / 2703 4E7F DB85 0E0B BC2C 62FF
+            # 806B B28A ED77 9869) instead of keybase.io: Codecov renamed the
+            # `codecovsecurity` keybase account to `codecovsecops`, so the old
+            # `keybase.io/codecovsecurity/pgp_keys.asc` URL 404s — and piping a
+            # 404 body into gpg fails with "no valid OpenPGP data found". keybase
+            # is also unreliable in CI. It's the same key the Codecov docs publish.
+            # `continue-on-error` keeps a transient Codecov/keyserver hiccup from
+            # failing the Tests gate — coverage upload is reporting, not test
+            # correctness. Mirrors the `semantic-release.yml` codecov step.
             - name: "Download and verify Codecov CLI"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
+              continue-on-error: true
               shell: "bash"
               run: |
                   curl -Os https://cli.codecov.io/latest/linux/codecov
                   curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
                   curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM.sig
-                  curl https://keybase.io/codecovsecurity/pgp_keys.asc | gpg --no-default-keyring --keyring trustedkeys.gpg --import
+                  gpg --no-default-keyring --keyring trustedkeys.gpg \
+                      --keyserver hkps://keyserver.ubuntu.com --recv-keys 806BB28AED779869
                   gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
                   shasum -a 256 -c codecov.SHA256SUM
                   sudo chmod +x codecov
 
             - name: "Upload code coverage to codecov"
               if: "matrix.os == 'ubuntu-latest' && matrix.node_version == 22 && !matrix.deno_version && !matrix.bun_version"
+              continue-on-error: true
               shell: "bash"
               env:
                   CODECOV_TOKEN: "${{ secrets.CODECOV_TOKEN }}"
