@@ -136,10 +136,10 @@ describe.each([
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "readJson") {
             // eslint-disable-next-line vitest/no-conditional-expect
-            await expect(() => function_("/missing")).rejects.toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
+            await expect(() => function_("/missing")).rejects.toThrow("ENOENT: no such file or directory, open '/missing'");
         } else {
             // eslint-disable-next-line vitest/no-conditional-expect
-            expect(() => function_("/missing")).toThrow("EPERM: Operation not permitted, unable to read the non-accessible file: /missing");
+            expect(() => function_("/missing")).toThrow("ENOENT: no such file or directory, open '/missing'");
         }
     });
 });
