@@ -53,7 +53,7 @@ pnpm add @visulima/source-map
 ```ts
 import { loadSourceMap, originalPositionFor, sourceContentFor } from "@visulima/source-map";
 
-const sourceMap = loadSourceMap("your_path/src/index.js"); // returns a TraceMap
+const sourceMap = loadSourceMap("your_path/dist/index.js"); // returns a TraceMap | undefined
 
 const traced = originalPositionFor(sourceMap, { column: 13, line: 30 });
 
@@ -63,15 +63,98 @@ console.log(traced);
 //     column: 9,
 //     line: 15,
 //     name: "setState",
-//     source: "your_path/src/index.js"
+//     // For external (.map file) sources the `source` is resolved to a file:// URL,
+//     // e.g. "file:///abs/your_path/src/index.js".
+//     // For inline maps it is the path recorded in the map, e.g. "src/index.js".
+//     source: "file:///abs/your_path/src/index.js",
 // }
 
-console.log(sourceContentFor(sourceMap, traced.source)); // 'content for your_path/src/index.js'
+console.log(sourceContentFor(sourceMap, traced.source));
 ```
 
-For more information about the TraceMap see [@jridgewell/trace-mapping](https://github.com/jridgewell/trace-mapping)
+`loadSourceMap` reads a generated JavaScript file from disk, finds its
+`//# sourceMappingURL=` comment, loads the referenced map (inline `data:` or a
+sibling `.map` file) and returns a `TraceMap`.
+
+### Return / throw semantics
+
+`loadSourceMap` (and its twins) **return `undefined`** when:
+
+- the file references no sourcemap comment,
+- the reference is a non-base64 `data:` URI, or
+- the reference is a remote (`http(s):`) URL and no `remoteResolver` is supplied.
+
+They **throw** when something that should have worked fails:
+
+- `SourceMapReadError` — the JS file or its `.map` sibling could not be read. The
+  original error (including a `code` like `"ENOENT"`) is preserved on `error.cause`.
+- `SourceMapParseError` — the map was read but could not be parsed.
+
+```ts
+import { loadSourceMap, SourceMapReadError } from "@visulima/source-map";
+
+try {
+    loadSourceMap("dist/index.js");
+} catch (error) {
+    if (error instanceof SourceMapReadError && (error.cause as NodeJS.ErrnoException)?.code === "ENOENT") {
+        // the .map sibling is missing
+    }
+}
+```
+
+### Async API
+
+`loadSourceMapAsync` is the promise-based twin (uses `fs/promises`) so server-side
+stack remapping does not block the event loop per frame file:
+
+```ts
+import { loadSourceMapAsync } from "@visulima/source-map";
+
+const sourceMap = await loadSourceMapAsync("dist/index.js");
+```
+
+### In-memory input
+
+If you already hold the transformed code (e.g. inside a bundler plugin or error
+overlay), skip the disk round-trip with `loadSourceMapFromSource`:
+
+```ts
+import { loadSourceMapFromSource } from "@visulima/source-map";
+
+const sourceMap = loadSourceMapFromSource(generatedCode, "/abs/source/dir");
+```
+
+### Remote sourcemaps
+
+Remote (`http(s):`) sourceMappingURLs are skipped by default. Pass a
+`remoteResolver` (sync or, for the async API, async) to fetch them:
+
+```ts
+const sourceMap = await loadSourceMapAsync("dist/index.js", {
+    remoteResolver: async (url) => (await fetch(url)).text(),
+});
+```
+
+### Re-exported `@jridgewell/trace-mapping` surface
+
+For convenience this package re-exports the trace-mapping consumer API so you can
+pin a single Visulima version:
+
+- Functions: `allGeneratedPositionsFor`, `AnyMap`, `decodedMap`, `decodedMappings`,
+  `eachMapping`, `encodedMap`, `encodedMappings`, `generatedPositionFor`,
+  `isIgnored`, `originalPositionFor`, `presortedDecodedMap`, `sourceContentFor`,
+  `traceSegment`.
+- Types: `TraceMap`, `SourceMapInput`, `Bias`, `Needle`, `SourceNeedle`,
+  `OriginalMapping`, `GeneratedMapping`, `EachMapping`, `Mapping`,
+  `EncodedSourceMap`, `DecodedSourceMap`, `SectionedSourceMap`, `SourceMapV3`, and
+  the related `*XInput` variants.
+
+For more information about the `TraceMap` see [@jridgewell/trace-mapping](https://github.com/jridgewell/trace-mapping).
 
 ## Related
+
+- [@jridgewell/trace-mapping](https://github.com/jridgewell/trace-mapping) - the underlying source-map consumer this package wraps and re-exports.
+- [@visulima/error](https://github.com/visulima/visulima/tree/main/packages/error-debugging/error) - stack-trace remapping built on this package.
 
 ## Supported Node.js Versions
 

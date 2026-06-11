@@ -6,7 +6,9 @@ import type { TraceMap } from "@jridgewell/trace-mapping";
 import { originalPositionFor } from "@jridgewell/trace-mapping";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import loadSourceMap from "../src/load-source-map";
+import { SourceMapReadError } from "../src/errors";
+import loadSourceMap, { loadSourceMapAsync, loadSourceMapFromSource } from "../src/load-source-map";
+import { SourceMapParseError } from "../src/parse-error";
 
 const realFs = vi.hoisted(() => {
     return { readFileSync: undefined as unknown as typeof readFileSync };
@@ -134,5 +136,172 @@ describe("load-source-map", () => {
         });
 
         expect(() => loadSourceMap(path)).toThrow(`Error reading sourcemap for file "${namespacedPath}":\ndisk on fire`);
+    });
+
+    it("should resolve a sourceMappingURL given as a file: URL", () => {
+        expect.assertions(1);
+
+        const mapUrl = pathToFileURL(join(FIXTURES_DIR, "lib", "example.js.map")).href;
+        const source = `"use strict";\n//# sourceMappingURL=${mapUrl}\n`;
+
+        const result = loadSourceMapFromSource(source, FIXTURES_DIR);
+
+        const generated = { column: 13, line: 30 };
+        const expected = { column: 9, line: 15, name: "setState", source: pathToFileURL(join(FIXTURES_DIR, "src", "example.js")).href };
+
+        expect(originalPositionFor(result as TraceMap, generated)).toStrictEqual(expected);
+    });
+
+    it("should throw a SourceMapReadError that preserves the original error code on cause", () => {
+        expect.assertions(3);
+
+        const path = join(FIXTURES_DIR, "nonExistant.js");
+
+        const error = ((): unknown => {
+            try {
+                loadSourceMap(path);
+            } catch (error_: unknown) {
+                return error_;
+            }
+
+            return undefined;
+        })();
+
+        expect(error).toBeInstanceOf(SourceMapReadError);
+        expect((error as Error).cause).toBeInstanceOf(Error);
+        expect(((error as Error).cause as NodeJS.ErrnoException).code).toBe("ENOENT");
+    });
+
+    it("should throw a SourceMapParseError on invalid map content", () => {
+        expect.assertions(1);
+
+        const path = join(FIXTURES_DIR, "invalidSourcemap.js");
+
+        expect(() => loadSourceMap(path)).toThrow(SourceMapParseError);
+    });
+
+    it("should not match a sourceMappingURL that is not inside a comment", () => {
+        expect.assertions(1);
+
+        const source = "const x = 'sourceMappingURL=example.js.map';\n";
+
+        expect(loadSourceMapFromSource(source, FIXTURES_DIR)).toBeUndefined();
+    });
+
+    it("should return undefined for a remote sourceMappingURL without a resolver", () => {
+        expect.assertions(1);
+
+        const source = "//# sourceMappingURL=https://example.com/app.js.map\n";
+
+        expect(loadSourceMapFromSource(source, FIXTURES_DIR)).toBeUndefined();
+    });
+
+    it("should fetch a remote sourceMappingURL via the remoteResolver hook", () => {
+        expect.assertions(2);
+
+        const mapContent = readFileSync(join(FIXTURES_DIR, "lib", "example.js.map"), { encoding: "utf8" });
+        const source = "//# sourceMappingURL=https://example.com/example.js.map\n";
+
+        const remoteResolver = vi.fn<(url: string) => string>((url: string) => {
+            expect(url).toBe("https://example.com/example.js.map");
+
+            return mapContent;
+        });
+
+        const result = loadSourceMapFromSource(source, FIXTURES_DIR, { remoteResolver });
+
+        expect(result).toBeDefined();
+    });
+
+    it("should handle a block-comment sourceMappingURL via loadSourceMapFromSource", () => {
+        expect.assertions(1);
+
+        const source = "\"use strict\";\n/*# sourceMappingURL=lib/example.js.map */\n";
+
+        const result = loadSourceMapFromSource(source, FIXTURES_DIR);
+
+        const generated = { column: 13, line: 30 };
+        const expected = { column: 9, line: 15, name: "setState", source: pathToFileURL(join(FIXTURES_DIR, "src", "example.js")).href };
+
+        expect(originalPositionFor(result as TraceMap, generated)).toStrictEqual(expected);
+    });
+
+    it("should not stall on a pathological unterminated block comment (ReDoS guard)", () => {
+        expect.assertions(1);
+
+        // Lazy/overlapping whitespace in the old regex made this O(n^2); the linear
+        // scanner returns immediately.
+        const source = `/*# sourceMappingURL=${" ".repeat(200_000)}`;
+
+        const start = performance.now();
+        const result = loadSourceMapFromSource(source, FIXTURES_DIR);
+        const elapsed = performance.now() - start;
+
+        expect(result === undefined && elapsed < 1000).toBe(true);
+    });
+});
+
+describe("loadSourceMapAsync", () => {
+    it("should handle external sourcemaps", async () => {
+        expect.assertions(1);
+
+        const result = await loadSourceMapAsync(join(FIXTURES_DIR, "lib", "example.js"));
+
+        const generated = { column: 13, line: 30 };
+        const expected = { column: 9, line: 15, name: "setState", source: pathToFileURL(join(FIXTURES_DIR, "src", "example.js")).href };
+
+        expect(originalPositionFor(result as TraceMap, generated)).toStrictEqual(expected);
+    });
+
+    it("should handle inline sourcemaps", async () => {
+        expect.assertions(1);
+
+        const result = await loadSourceMapAsync(join(FIXTURES_DIR, "lib-inline", "example.js"));
+
+        const generated = { column: 13, line: 30 };
+        const expected = { column: 9, line: 15, name: "setState", source: "src/example.js" };
+
+        expect(originalPositionFor(result as TraceMap, generated)).toStrictEqual(expected);
+    });
+
+    it("should return undefined when no sourcemap is referenced", async () => {
+        expect.assertions(1);
+
+        const result = await loadSourceMapAsync(join(FIXTURES_DIR, "noSourcemap.js"));
+
+        expect(result).toBeUndefined();
+    });
+
+    it("should throw a SourceMapReadError when the file does not exist", async () => {
+        expect.assertions(2);
+
+        const path = join(FIXTURES_DIR, "nonExistant.js");
+
+        await expect(loadSourceMapAsync(path)).rejects.toBeInstanceOf(SourceMapReadError);
+        await expect(loadSourceMapAsync(path)).rejects.toThrow("ENOENT");
+    });
+
+    it("should support an async remoteResolver", async () => {
+        expect.assertions(1);
+
+        const mapContent = readFileSync(join(FIXTURES_DIR, "lib", "example.js.map"), { encoding: "utf8" });
+        const source = "//# sourceMappingURL=https://example.com/example.js.map\n";
+
+        const temporaryFile = join(FIXTURES_DIR, "remoteRef.tmp.js");
+
+        const { rmSync, writeFileSync } = await import("node:fs");
+
+        writeFileSync(temporaryFile, source);
+
+        try {
+            const result = await loadSourceMapAsync(temporaryFile, {
+                // eslint-disable-next-line @typescript-eslint/require-await -- exercises the async resolver branch
+                remoteResolver: async () => mapContent,
+            });
+
+            expect(result).toBeDefined();
+        } finally {
+            rmSync(temporaryFile);
+        }
     });
 });
