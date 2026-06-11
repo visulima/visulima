@@ -143,8 +143,7 @@ describe(fetchHtmlErrorHandler, () => {
         expect.assertions(4);
 
         const handler = fetchHtmlErrorHandler({
-            errorPage: ({ error, reasonPhrase, statusCode }) =>
-                `<p>${String(statusCode)} ${reasonPhrase}: ${error.message}</p>`,
+            errorPage: ({ error, reasonPhrase, statusCode }) => `<p>${String(statusCode)} ${reasonPhrase}: ${error.message}</p>`,
         });
 
         const response = await handler(new httpErrors.BadGateway("upstream offline"), new Request("https://example.com/"));

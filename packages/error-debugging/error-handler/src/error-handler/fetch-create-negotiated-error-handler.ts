@@ -69,6 +69,7 @@ const serverPreferences: { chosen: string; types: string[] }[] = [
 // client weighted highest wins, so `Accept: text/html;q=0.1, application/json`
 // returns JSON — matching the q-value-aware `@tinyhttp/accepts` node path. Ties
 // fall back to the server's preference order.
+// eslint-disable-next-line sonarjs/cognitive-complexity -- linear negotiation pass; splitting hurts readability
 const negotiateContentType = (acceptHeader: string | null): string => {
     if (!acceptHeader) {
         return "text/html";
@@ -200,12 +201,14 @@ const fetchTextHandler = adaptErrorHandlerToFetch(textErrorHandler());
  * node twin in `create-negotiated-error-handler.ts` for the rationale.
  */
 const withExpose = async (error: Error, showTrace: boolean, run: () => Promise<Response>): Promise<Response> => {
-    const hadOwnExpose = Object.prototype.hasOwnProperty.call(error, "expose");
+    const hadOwnExpose = Object.hasOwn(error, "expose");
     const previousExpose = (error as Error & { expose?: boolean }).expose;
 
     if (!showTrace) {
+        // eslint-disable-next-line no-param-reassign -- enriching the passed-in error
         (error as Error & { expose: boolean }).expose = false;
     } else if (!("expose" in error)) {
+        // eslint-disable-next-line no-param-reassign -- enriching the passed-in error
         (error as Error & { expose: boolean }).expose = true;
     }
 
@@ -213,9 +216,10 @@ const withExpose = async (error: Error, showTrace: boolean, run: () => Promise<R
         return await run();
     } finally {
         if (hadOwnExpose) {
+            // eslint-disable-next-line no-param-reassign -- restoring the passed-in error
             (error as Error & { expose?: boolean }).expose = previousExpose;
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            // eslint-disable-next-line no-param-reassign -- restoring the passed-in error
             delete (error as Error & { expose?: boolean }).expose;
         }
     }

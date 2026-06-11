@@ -5,10 +5,12 @@ import { describe, expect, it } from "vitest";
 
 import { jsonpErrorHandler } from "../../src/error-handler/jsonp-error-handler";
 
+const JSONP_BODY_REGEX = /&&\s*[\w$.]+\((.*)\);$/su;
+
 // Extract the JSON argument from the hardened JSONP envelope
 // (`/**/ typeof cb === 'function' && cb({...});`).
 const parseJsonp = (body: string): Record<string, unknown> => {
-    const match = /&&\s*[\w$.]+\((.*)\);$/su.exec(body);
+    const match = JSONP_BODY_REGEX.exec(body);
 
     if (!match) {
         throw new Error(`Unexpected JSONP body: ${body}`);

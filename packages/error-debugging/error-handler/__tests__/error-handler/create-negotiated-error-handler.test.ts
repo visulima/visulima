@@ -9,6 +9,7 @@ import createNegotiatedErrorHandler from "../../src/error-handler/create-negotia
 
 const YAML_REGEX = /application\/yaml/u;
 const EMPTY_REGEX = /^$/u;
+const JSONP_BODY_REGEX = /&&\s*[\w$.]+\((.*)\);$/su;
 
 describe("createNegotiatedErrorHandler negotiator", () => {
     it("falls back to Problem JSON if no Accept provided", async () => {
@@ -239,7 +240,7 @@ describe("createNegotiatedErrorHandler negotiator", () => {
 
         expect(body.startsWith("/**/ typeof myCb === 'function' && myCb(")).toBe(true);
 
-        const json = /&&\s*[\w$.]+\((.*)\);$/su.exec(body)?.[1] ?? "";
+        const json = JSONP_BODY_REGEX.exec(body)?.[1] ?? "";
         const parsed = JSON.parse(json) as { statusCode: number };
 
         expect(parsed.statusCode).toBe(400);

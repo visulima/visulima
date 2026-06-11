@@ -5,30 +5,10 @@ import { getReasonPhrase } from "http-status-codes";
 import type { ErrorHandler } from "./types";
 import addStatusCodeToResponse from "./utils/add-status-code-to-response";
 
-export type HtmlErrorHandlerOptions = {
-    // CSP nonce for inline styles and scripts
-    cspNonce?: string;
-    // Override HTML when the error-inspector is not displayed (usually production)
-    errorPage?:
-        | string
-        | ((parameters: {
-            error: Error;
-            reasonPhrase: string;
-            request: IncomingMessage;
-            response: ServerResponse;
-            statusCode: number;
-        }) => string | Promise<string>);
-};
-
 // Escape the five HTML-significant characters so error messages and stack
 // traces cannot break out of the page or inject markup.
 const escapeHtml = (value: string): string =>
-    value
-        .replaceAll("&", "&amp;")
-        .replaceAll("<", "&lt;")
-        .replaceAll(">", "&gt;")
-        .replaceAll("\"", "&quot;")
-        .replaceAll("'", "&#39;");
+    value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
 
 export const htmlErrorHandler
     = (options: HtmlErrorHandlerOptions = {}): ErrorHandler =>
@@ -112,3 +92,18 @@ export const htmlErrorHandler
     </body>
 </html>`);
         };
+
+export type HtmlErrorHandlerOptions = {
+    // CSP nonce for inline styles and scripts
+    cspNonce?: string;
+    // Override HTML when the error-inspector is not displayed (usually production)
+    errorPage?:
+        | string
+        | ((parameters: {
+            error: Error;
+            reasonPhrase: string;
+            request: IncomingMessage;
+            response: ServerResponse;
+            statusCode: number;
+        }) => string | Promise<string>);
+};

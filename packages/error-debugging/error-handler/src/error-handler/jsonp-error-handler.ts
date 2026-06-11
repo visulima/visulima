@@ -8,6 +8,11 @@ import setErrorHeaders from "./utils/set-error-headers";
 
 const defaultCallbackParameter = "callback";
 
+// A safe JS identifier path (e.g. `foo`, `foo.bar`) for the JSONP callback so the
+// request-controlled value cannot inject executable JavaScript. Stateless (no
+// g/y flag), so it is safe to share across invocations.
+const safeCallbackName = /^[A-Za-z_$][\w$.]*$/u;
+
 const jsonpErrorHandler
     = (options: JsonpErrorHandlerOptions = {}): ErrorHandler =>
         async (error: Error, request: IncomingMessage, response: ServerResponse): Promise<void> => {
@@ -41,7 +46,7 @@ const jsonpErrorHandler
 
             // Restrict the JSONP callback to a safe JS identifier path so the
             // request-controlled value cannot inject executable JavaScript.
-            if (callbackName.length > 64 || !/^[A-Za-z_$][\w$.]*$/u.test(callbackName)) {
+            if (callbackName.length > 64 || !safeCallbackName.test(callbackName)) {
                 callbackName = defaultCallbackParameter;
             }
 
@@ -53,9 +58,9 @@ const jsonpErrorHandler
             // The `/**/` prologue defeats Flash-based content-type confusion and
             // is what Express prepends to JSONP responses for the same reason.
             const body = JSON.stringify(payload)
-                // Escape U+2028/U+2029 which are valid JSON but break JS string literals.
-                .replace(/\u2028/gu, "\\u2028")
-                .replace(/\u2029/gu, "\\u2029");
+            // Escape U+2028/U+2029 which are valid JSON but break JS string literals.
+                .replaceAll("\u2028", String.raw`\u2028`)
+                .replaceAll("\u2029", String.raw`\u2029`);
 
             response.end(`/**/ typeof ${callbackName} === 'function' && ${callbackName}(${body});`);
         };

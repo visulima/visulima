@@ -1,9 +1,6 @@
 export { default as createNegotiatedErrorHandler } from "./error-handler/create-negotiated-error-handler";
 export { default as fetchCreateNegotiatedErrorHandler } from "./error-handler/fetch-create-negotiated-error-handler";
 export { default as fetchHtmlErrorHandler } from "./error-handler/fetch-html-error-handler";
-// Fetch helper utilities (status-code extraction + JSON Response builder).
-export { default as extractStatusCode } from "./error-handler/utils/extract-status-code";
-export { default as sendFetchJson } from "./error-handler/utils/send-fetch-json";
 export type { HtmlErrorHandlerOptions } from "./error-handler/html-error-handler";
 export { htmlErrorHandler } from "./error-handler/html-error-handler";
 export type { JsonErrorBody, JsonErrorFormatter, JsonErrorHandlerOptions } from "./error-handler/json-error-handler";
@@ -15,6 +12,9 @@ export { default as problemErrorHandler } from "./error-handler/problem-error-ha
 export type { TextErrorFormatter, TextErrorHandlerOptions } from "./error-handler/text-error-handler";
 export { textErrorHandler } from "./error-handler/text-error-handler";
 export type { ApiFormat, ErrorHandler, ErrorHandlers, FetchErrorHandler, FetchErrorHandlers } from "./error-handler/types";
+// Fetch helper utilities (status-code extraction + JSON Response builder).
+export { default as extractStatusCode } from "./error-handler/utils/extract-status-code";
+export { default as sendFetchJson } from "./error-handler/utils/send-fetch-json";
 export type { ToXmlOptions, XmlErrorBody, XmlErrorFormatter, XmlErrorHandlerOptions } from "./error-handler/xml-error-handler";
 export { xmlErrorHandler } from "./error-handler/xml-error-handler";
 export type { ErrorMiddlewareOptions } from "./handler/http/create-error-middleware";

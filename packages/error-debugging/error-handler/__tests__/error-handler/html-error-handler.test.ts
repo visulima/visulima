@@ -37,7 +37,7 @@ describe("html-error-handler", () => {
         expect(html).toContain("<pre");
     });
 
-    it("HTML-escapes the message and stack to prevent markup injection", async () => {
+    it("hTML-escapes the message and stack to prevent markup injection", async () => {
         expect.assertions(2);
 
         const { req, res } = createMocks({ method: "GET" });

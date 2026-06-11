@@ -101,9 +101,11 @@ app.get("/", () => {
 });
 
 // Must be registered last, after your routes.
-app.use(createErrorMiddleware({
-    showTrace: process.env.NODE_ENV !== "production",
-}));
+app.use(
+    createErrorMiddleware({
+        showTrace: process.env.NODE_ENV !== "production",
+    }),
+);
 
 app.listen(3000);
 ```
