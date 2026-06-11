@@ -11,7 +11,7 @@ import { alignText, getStringWidth, slice, wordWrap, WrapMode } from "@visulima/
 // eslint-disable-next-line import/no-extraneous-dependencies
 import terminalSize from "terminal-size";
 
-import type { Alignment, BorderPosition, BorderStyle, DimensionOptions, Options, Spacer } from "./types";
+import type { Alignment, BorderPosition, BorderStyle, BorderStyleName, DimensionOptions, Options, Spacer, VerticalAlignment } from "./types";
 import cliBoxes from "./vendor/cli-boxes/boxes";
 import { widestLine } from "./widest-line";
 
@@ -163,12 +163,13 @@ type ContentTextOptions = {
     height: number | undefined;
     padding: Spacer;
     textAlignment: Alignment;
+    verticalAlignment: VerticalAlignment;
     width: number;
 };
 
 const makeContentText = (
     text: string,
-    { height, padding, textAlignment, width }: ContentTextOptions,
+    { height, padding, textAlignment, verticalAlignment, width }: ContentTextOptions,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ) => {
     // eslint-disable-next-line no-param-reassign
@@ -242,7 +243,32 @@ const makeContentText = (
     if (height && lines.length > height) {
         lines = lines.slice(0, height);
     } else if (height && lines.length < height) {
-        lines = [...lines, ...Array.from<string>({ length: height - lines.length }).fill(PAD.repeat(width))];
+        const fillerCount = height - lines.length;
+        const fillerRow = PAD.repeat(width);
+
+        switch (verticalAlignment) {
+            case "bottom": {
+                lines = [...Array.from<string>({ length: fillerCount }).fill(fillerRow), ...lines];
+                break;
+            }
+
+            case "center": {
+                const top = Math.floor(fillerCount / 2);
+                const bottom = fillerCount - top;
+
+                lines = [
+                    ...Array.from<string>({ length: top }).fill(fillerRow),
+                    ...lines,
+                    ...Array.from<string>({ length: bottom }).fill(fillerRow),
+                ];
+                break;
+            }
+
+            default: {
+                lines = [...lines, ...Array.from<string>({ length: fillerCount }).fill(fillerRow)];
+                break;
+            }
+        }
     }
 
     return lines.join(NEWLINE);
@@ -258,6 +284,8 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
     const colorizeFooterText = (title: string): string => (options.footerTextColor ? options.footerTextColor(title) : title);
     // eslint-disable-next-line @stylistic/no-extra-parens
     const colorizeContent = (value: string): string => (options.textColor ? options.textColor(value) : value);
+    // eslint-disable-next-line @stylistic/no-extra-parens
+    const fillBackground = (value: string): string => (options.backgroundColor ? options.backgroundColor(value) : value);
 
     const chars = getBorderChars(options.borderStyle) as Required<BorderStyle>;
 
@@ -299,15 +327,14 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
 
     const lines = content.split(NEWLINE);
 
-    result += lines
-        .map(
-            (line) =>
-                marginLeft
-                + colorizeBorder(chars.left, "left", getStringWidth(chars.left))
-                + colorizeContent(line)
-                + colorizeBorder(chars.right, "right", getStringWidth(chars.right)),
-        )
-        .join(NEWLINE);
+    // Hoist loop-invariant work out of the per-line map: the left/right border
+    // characters and their colorized/measured forms never change between lines.
+    const leftBorderWidth = getStringWidth(chars.left);
+    const rightBorderWidth = getStringWidth(chars.right);
+    const leftBorder = marginLeft + colorizeBorder(chars.left, "left", leftBorderWidth);
+    const rightBorder = colorizeBorder(chars.right, "right", rightBorderWidth);
+
+    result += lines.map((line) => leftBorder + fillBackground(colorizeContent(line)) + rightBorder).join(NEWLINE);
 
     if (options.borderStyle !== NONE || options.footerText) {
         const bottomBorder = NEWLINE + colorizeBorder(marginLeft + chars.bottomLeft, "bottomLeft", getStringWidth(marginLeft + chars.bottomLeft));
@@ -333,20 +360,40 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
     return result;
 };
 
+// Resolve the dimensions returned by a `fullscreen` callback. Accepts both a
+// [width, height] tuple and a { columns, rows } object, and validates the shape.
+const resolveFullscreenDimensions = (result: unknown): { columns: number; rows: number } => {
+    let columns: unknown;
+    let rows: unknown;
+
+    if (Array.isArray(result)) {
+        const tuple = result as [unknown, unknown];
+
+        [columns, rows] = tuple;
+    } else if (result && typeof result === "object") {
+        ({ columns, rows } = result as { columns: unknown; rows: unknown });
+    } else {
+        throw new TypeError(`"fullscreen" callback must return a [width, height] tuple or { columns, rows } object, got ${typeof result}`);
+    }
+
+    if (typeof columns !== "number" || typeof rows !== "number" || Number.isNaN(columns) || Number.isNaN(rows)) {
+        throw new TypeError(`"fullscreen" callback returned invalid dimensions; both width and height must be numbers`);
+    }
+
+    return { columns, rows };
+};
+
 const sanitizeOptions = (options: DimensionOptions, terminal: { columns: number; rows: number }): DimensionOptions => {
     // If fullscreen is enabled, max-out unspecified width/height
     if (options.fullscreen) {
-        let newDimensions = terminal;
-
-        if (typeof options.fullscreen === "function") {
-            newDimensions = options.fullscreen(newDimensions.columns, newDimensions.rows);
-        }
+        const { columns, rows }
+            = typeof options.fullscreen === "function" ? resolveFullscreenDimensions(options.fullscreen(terminal.columns, terminal.rows)) : terminal;
 
         // eslint-disable-next-line no-param-reassign
-        options.width ??= newDimensions.columns;
+        options.width ??= columns;
 
         // eslint-disable-next-line no-param-reassign
-        options.height ??= newDimensions.rows;
+        options.height ??= rows;
     }
 
     // If width is provided, make sure it's not below 1
@@ -373,12 +420,7 @@ const formatTitle = (title: string, borderStyle: BorderStyle | string): string =
 };
 
 // eslint-disable-next-line sonarjs/cognitive-complexity
-const determineDimensions = (
-    text: string,
-    columnsWidth: number,
-    options: DimensionOptions,
-    terminal: { columns: number; rows: number },
-): DimensionOptions => {
+const determineDimensions = (text: string, columnsWidth: number, options: DimensionOptions, terminal: { columns: number; rows: number }): DimensionOptions => {
     // eslint-disable-next-line no-param-reassign
     options = sanitizeOptions(options, terminal);
 
@@ -386,8 +428,12 @@ const determineDimensions = (
     const borderWidth = getBorderWidth(options.borderStyle);
     const maxWidth = columnsWidth - options.margin.left - options.margin.right - borderWidth;
 
-    const widest
-        = widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS }))
+    // When a fixed `width` is supplied, `widest` is never used to size the box
+    // (it resolves to the user width below), so skip the expensive full-text
+    // word-wrap + per-line measurement pass entirely.
+    const widest = widthOverride
+        ? 0
+        : widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS }))
             + options.padding.left
             + options.padding.right;
 
@@ -460,23 +506,55 @@ const determineDimensions = (
     return options;
 };
 
-export const boxen = (text: string, options: Options = {}): string => {
-    if (options.borderColor !== undefined && typeof options.borderColor !== "function") {
-        throw new Error(`"borderColor" is not a valid function`);
+const describeType = (value: unknown): string => {
+    if (value === null) {
+        return "null";
     }
 
-    if (options.textColor !== undefined && typeof options.textColor !== "function") {
-        throw new Error(`"textColor" is not a valid function`);
+    return typeof value;
+};
+
+const assertFunction = (value: unknown, name: string): void => {
+    if (value !== undefined && typeof value !== "function") {
+        throw new TypeError(`"${name}" must be a function, got ${describeType(value)}`);
+    }
+};
+
+/**
+ * Render a string inside a styled, bordered box for terminal output.
+ *
+ * Supports borders, padding, margins, horizontal/vertical alignment,
+ * header/footer text, float positioning, fixed width/height, per-line text and
+ * background colors, and fullscreen sizing.
+ * @param text The text to render inside the box.
+ * @param options {@link Options} controlling border, spacing, alignment and color.
+ * @returns The rendered box as a multi-line string.
+ * @example
+ * ```js
+ * import { boxen } from "@visulima/boxen";
+ *
+ * console.log(boxen("unicorn", { padding: 1, borderStyle: "round" }));
+ * ```
+ */
+export const boxen = (text: string, options: Options = {}): string => {
+    assertFunction(options.borderColor, "borderColor");
+    assertFunction(options.textColor, "textColor");
+    assertFunction(options.backgroundColor, "backgroundColor");
+    assertFunction(options.headerTextColor, "headerTextColor");
+    assertFunction(options.footerTextColor, "footerTextColor");
+
+    if (options.fullscreen !== undefined && typeof options.fullscreen !== "boolean" && typeof options.fullscreen !== "function") {
+        throw new TypeError(`"fullscreen" must be a boolean or a function, got ${typeof options.fullscreen}`);
     }
 
     let config: DimensionOptions = {
         borderStyle: "single",
-        dimBorder: false,
         float: "left",
         footerAlignment: "right",
         headerAlignment: "left",
         textAlignment: "left",
         transformTabToSpace: 4,
+        verticalAlignment: "top",
         ...options,
     } as DimensionOptions;
 
@@ -489,7 +567,14 @@ export const boxen = (text: string, options: Options = {}): string => {
         text = text.replaceAll("\t", " ".repeat(config.transformTabToSpace));
     }
 
-    const terminal = terminalSize();
+    // Allow callers to skip the (potentially blocking, non-TTY) terminal-size
+    // probe by supplying explicit dimensions — also makes snapshots deterministic.
+    const needsTerminalProbe = options.terminalColumns === undefined || (config.fullscreen && options.terminalRows === undefined);
+    const probed = needsTerminalProbe ? terminalSize() : { columns: 0, rows: 0 };
+    const terminal = {
+        columns: options.terminalColumns ?? probed.columns,
+        rows: options.terminalRows ?? probed.rows,
+    };
     const { columns } = terminal;
 
     config = determineDimensions(text, columns, config, terminal);
@@ -497,4 +582,32 @@ export const boxen = (text: string, options: Options = {}): string => {
     return boxContent(makeContentText(text, config as ContentTextOptions), config.width as number, columns, config);
 };
 
-export type { Alignment, BaseOptions, BorderPosition, BorderStyle, DimensionOptions, Options, Spacer } from "./types";
+/**
+ * The vendored catalog of built-in border styles, keyed by {@link BorderStyleName}.
+ *
+ * Exported so consumers can derive a custom {@link BorderStyle} from a built-in
+ * one without copying box-drawing characters by hand.
+ * @example
+ * ```js
+ * import { boxen, boxes } from "@visulima/boxen";
+ *
+ * boxen("foo", { borderStyle: { ...boxes.round, top: "=" } });
+ * ```
+ */
+export const boxes: Record<BorderStyleName, Required<Omit<BorderStyle, "horizontal" | "vertical">>> = cliBoxes as Record<
+    BorderStyleName,
+    Required<Omit<BorderStyle, "horizontal" | "vertical">>
+>;
+
+export type {
+    Alignment,
+    BaseOptions,
+    BorderPosition,
+    BorderStyle,
+    BorderStyleName,
+    DimensionOptions,
+    FullscreenDimensions,
+    Options,
+    Spacer,
+    VerticalAlignment,
+} from "./types";
