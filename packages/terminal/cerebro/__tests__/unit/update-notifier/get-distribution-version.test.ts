@@ -22,12 +22,19 @@ describe("update-notifier/get-dist-version", () => {
         expect.assertions(1);
 
         const st = new Stream();
+        const requestStream = new Stream() as Stream & { destroy: () => void };
 
-        vi.mocked(get).mockImplementation((_, callback) => {
-            callback(st);
+        requestStream.destroy = vi.fn();
+
+        // The production call is `get(url, { timeout }, callback)`, so the
+        // response callback is the third argument and `get` returns the request.
+        vi.mocked(get).mockImplementation((_url, _options, callback) => {
+            (callback as (message: Stream) => void)(st);
 
             st.emit("data", "{\"latest\":\"1.0.0\"}");
             st.emit("end");
+
+            return requestStream as never;
         });
 
         const version = await getDistributionVersion("test", "latest", registryUrl);
@@ -39,12 +46,17 @@ describe("update-notifier/get-dist-version", () => {
         expect.assertions(1);
 
         const st = new Stream();
+        const requestStream = new Stream() as Stream & { destroy: () => void };
 
-        vi.mocked(get).mockImplementation((_, callback) => {
-            callback(st);
+        requestStream.destroy = vi.fn();
+
+        vi.mocked(get).mockImplementation((_url, _options, callback) => {
+            (callback as (message: Stream) => void)(st);
 
             st.emit("data", "some invalid json");
             st.emit("end");
+
+            return requestStream as never;
         });
 
         await expect(getDistributionVersion("test", "latest", registryUrl)).rejects.toThrow("Could not parse version response");
@@ -54,13 +66,18 @@ describe("update-notifier/get-dist-version", () => {
         expect.assertions(1);
 
         const st = new Stream();
+        const requestStream = new Stream() as Stream & { destroy: () => void };
 
-        vi.mocked(get).mockImplementation((_, callback) => {
-            callback(st);
+        requestStream.destroy = vi.fn();
+
+        vi.mocked(get).mockImplementation((_url, _options, callback) => {
+            (callback as (message: Stream) => void)(st);
 
             // Valid JSON but the "latest" tag is missing, exercising the missing-version reject branch.
             st.emit("data", "{\"beta\":\"2.0.0-beta.1\"}");
             st.emit("end");
+
+            return requestStream as never;
         });
 
         await expect(getDistributionVersion("test", "latest", registryUrl)).rejects.toThrow("Error getting version");
@@ -72,9 +89,9 @@ describe("update-notifier/get-dist-version", () => {
         const requestStream = new Stream();
         const responseStream = new Stream();
 
-        vi.mocked(get).mockImplementation((_, callback) => {
+        vi.mocked(get).mockImplementation((_url, _options, callback) => {
             // Do not emit a response; instead surface a transport-level error.
-            callback(responseStream);
+            (callback as (message: Stream) => void)(responseStream);
 
             queueMicrotask(() => {
                 requestStream.emit("error", new Error("socket hang up"));

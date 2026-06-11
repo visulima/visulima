@@ -7,6 +7,7 @@ import defaultOptions from "./default-options";
 import CerebroError from "./errors/cerebro-error";
 import CommandNotFoundError from "./errors/command-not-found-error";
 import ConflictingOptionsError from "./errors/conflicting-options-error";
+import UnknownOptionError from "./errors/unknown-option-error";
 import PluginManager from "./plugin-manager";
 import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, RunCommandOptions } from "./types/cli";
 import type { Command as ICommand, CommandExecute, OptionDefinition } from "./types/command";
@@ -16,7 +17,7 @@ import type { Toolbox as IToolbox } from "./types/toolbox";
 import mapOptionTypeLabel from "./util/arg-processing/map-option-type-label";
 import commandLineCommands from "./util/command-line-commands";
 import { executeCommand, loadLazyHandler, prepareToolbox, processCommandArgs } from "./util/command-processing/command-processor";
-import { validateConflictingOptions, validateDuplicateOptions, validateRequiredOptions } from "./util/command-processing/command-validation";
+import { validateChoices, validateConflictingOptions, validateDuplicateOptions, validateRequiredOptions } from "./util/command-processing/command-validation";
 import { getCommandPathKey, getFullCommandPath, parseNestedCommand } from "./util/command-processing/nested-command-parser";
 import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOptionNames } from "./util/command-processing/option-processor";
 import findAlternatives from "./util/general/find-alternatives";
@@ -65,6 +66,36 @@ const defaultFs: CerebroFs = {
     writeFile: (path, data, encoding) => writeFile(path, data, encoding),
 };
 
+/**
+ * Strict-mode guard: when `CliOptions.strictOptions` is enabled, reject unknown
+ * long options (`--typo`) that were supplied *before* a `--` passthrough
+ * separator. Tokens after `--` are intentional passthrough and always remain in
+ * `toolbox.rawUnknown`.
+ * @param command The command being executed (used for did-you-mean suggestions).
+ * @param commandArguments The raw argv slice handed to the parser.
+ * @param rawUnknown The parser's leftover (unmatched) tokens.
+ * @throws {UnknownOptionError} When an unknown long option precedes the `--` separator.
+ */
+const enforceStrictOptions = <C extends Console>(
+    command: ICommand<OptionDefinition<unknown>, C>,
+    commandArguments: ReadonlyArray<string>,
+    rawUnknown: ReadonlyArray<string>,
+): void => {
+    const separatorIndex = commandArguments.indexOf("--");
+    const passthrough = separatorIndex === -1 ? new Set<string>() : new Set(commandArguments.slice(separatorIndex + 1));
+
+    const unknownOptions = rawUnknown.filter((token) => token.startsWith("--") && token !== "--" && !passthrough.has(token));
+
+    if (unknownOptions.length === 0) {
+        return;
+    }
+
+    const knownNames = (command.options ?? []).map((option) => option.name);
+    const suggestions = unknownOptions.flatMap((token) => findAlternatives(token.slice("--".length), knownNames).map((alternative) => `--${alternative}`));
+
+    throw new UnknownOptionError(unknownOptions, suggestions);
+};
+
 export type CliOptions<T extends Console = Console> = {
     argv?: ReadonlyArray<string>;
     cwd?: string;
@@ -91,6 +122,15 @@ export type CliOptions<T extends Console = Console> = {
      */
     fs?: CerebroFs;
     logger?: T;
+
+    /**
+     * Maximum number of argv tokens accepted before {@link Cli} rejects the
+     * invocation. Defaults to a generous cap (`DEFAULT_MAX_ARGS`) that never
+     * trips real-world glob expansions; set to `Number.POSITIVE_INFINITY` to
+     * disable the guard entirely.
+     */
+    maxArguments?: number;
+
     packageName?: string;
     packageVersion?: string;
 
@@ -100,6 +140,15 @@ export type CliOptions<T extends Console = Console> = {
      * stdin is impractical.
      */
     stdin?: string;
+
+    /**
+     * When enabled, unknown long options (`--typo`) that appear before any `--`
+     * passthrough separator cause the run to fail with an `UnknownOptionError`
+     * (with did-you-mean suggestions) instead of being silently routed to
+     * `toolbox.rawUnknown`. Tokens after `--` are always preserved as
+     * passthrough. Off by default to preserve existing behavior.
+     */
+    strictOptions?: boolean;
 };
 
 export class Cli<T extends Console = Console> implements ICli<T> {
@@ -124,6 +173,19 @@ export class Cli<T extends Console = Console> implements ICli<T> {
     readonly #envOverride?: Record<string, string | undefined>;
 
     readonly #stdin: string;
+
+    readonly #maxArguments?: number;
+
+    readonly #strictOptions: boolean;
+
+    /**
+     * Per-instance verbosity level. Authoritative source of truth so two `Cli`
+     * instances (e.g. an original and its `clone`) never stomp each
+     * other's verbosity through shared process env. Mirrored into the instance's
+     * env (`CliOptions.env` override when present, otherwise the live process
+     * env) as `CEREBRO_OUTPUT_LEVEL` so plugins/external readers stay in sync.
+     */
+    #verbosityLevel: number = VERBOSITY_NORMAL;
 
     #pluginManager?: PluginManager<T>;
 
@@ -220,12 +282,44 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         if (this.#argv === undefined) {
             const rawArgv = parseRawCommand(this.#options.argv as string[]);
 
-            this.#argv = sanitizeArguments(rawArgv, false);
+            this.#argv = sanitizeArguments(rawArgv, { maxArguments: this.#maxArguments });
 
             this.#setVerbosityLevel();
         }
 
         return this.#argv;
+    }
+
+    /**
+     * Returns the env record this instance should read/write verbosity through:
+     * the `CliOptions.env` override when supplied, otherwise the live process
+     * env. Using the override (when present) keeps clones with their own env
+     * isolated instead of stomping the shared process env.
+     */
+    #getInstanceEnv(): Record<string, string | undefined> {
+        return this.#envOverride ?? getEnv();
+    }
+
+    /**
+     * Updates the per-instance verbosity level and mirrors it into the instance
+     * env so plugins/external readers (which read `CEREBRO_OUTPUT_LEVEL`) stay
+     * in sync.
+     */
+    #updateVerbosityLevel(level: number): void {
+        this.#verbosityLevel = level;
+        this.#getInstanceEnv().CEREBRO_OUTPUT_LEVEL = String(level);
+    }
+
+    /**
+     * Reads the current verbosity level for this instance. Prefers the
+     * per-instance field; falls back to the instance env (covers callers that
+     * set `CEREBRO_OUTPUT_LEVEL` directly).
+     */
+    #getVerbosityLevel(): number {
+        const fromEnv = this.#getInstanceEnv().CEREBRO_OUTPUT_LEVEL;
+        const parsed = fromEnv === undefined ? Number.NaN : Number(fromEnv);
+
+        return Number.isNaN(parsed) ? this.#verbosityLevel : parsed;
     }
 
     /**
@@ -236,31 +330,30 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             return;
         }
 
-        const env = getEnv();
         let verbositySet = false;
 
         for (const argument of this.#argv) {
             if (argument === "--quiet" || argument === "-q") {
-                env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_QUIET);
+                this.#updateVerbosityLevel(VERBOSITY_QUIET);
                 verbositySet = true;
                 break;
             }
 
             if (argument === "--verbose" || argument === "-v") {
-                env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_VERBOSE);
+                this.#updateVerbosityLevel(VERBOSITY_VERBOSE);
                 verbositySet = true;
                 break;
             }
 
             if (argument === "--debug") {
-                env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_DEBUG);
+                this.#updateVerbosityLevel(VERBOSITY_DEBUG);
                 verbositySet = true;
                 break;
             }
         }
 
         if (!verbositySet) {
-            env.CEREBRO_OUTPUT_LEVEL = Object.hasOwn(env, "DEBUG") ? String(VERBOSITY_DEBUG) : String(VERBOSITY_NORMAL);
+            this.#updateVerbosityLevel(Object.hasOwn(this.#getInstanceEnv(), "DEBUG") ? VERBOSITY_DEBUG : VERBOSITY_NORMAL);
         }
     }
 
@@ -306,7 +399,11 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         parsedArgs: CommandLineOptions;
         toolbox: IToolbox<T>;
     } {
-        this.#logger.debug(`command '${pathKey}' found, parsing command args: ${commandArguments.join(", ")}`);
+        // Gate the eager template/.join() construction on verbosity so custom
+        // loggers (which don't self-gate `debug`) don't pay the cost on every run.
+        if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
+            this.#logger.debug(`command '${pathKey}' found, parsing command args: ${commandArguments.join(", ")}`);
+        }
 
         // eslint-disable-next-line @typescript-eslint/naming-convention
         const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, this.#getAllGlobalOptions());
@@ -342,7 +439,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             const negatedOptions = command.options.filter((option) => option.name.startsWith("no-"));
 
             for (const negatedOption of negatedOptions) {
-                const nonNegatedName = negatedOption.name.replace(/^no-/, "");
+                const nonNegatedName = negatedOption.name.slice("no-".length);
                 const negatedFlag = `--${negatedOption.name}`;
                 const nonNegatedFlag = `--${nonNegatedName}`;
 
@@ -362,10 +459,13 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         }
 
         validateConflictingOptions(arguments_, toolbox.options, command);
+        validateChoices(toolbox.options, command);
 
-        const env = getEnv();
+        if (this.#strictOptions) {
+            enforceStrictOptions(command, commandArguments, toolbox.rawUnknown);
+        }
 
-        if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+        if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
             this.#logger.debug("command options parsed from options:");
             // eslint-disable-next-line unicorn/no-null
             this.#logger.debug(JSON.stringify(toolbox.options, null, 2));
@@ -416,10 +516,6 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             throw new CerebroError("CLI packageVersion option must be a string", "INVALID_INPUT", { packageVersion: this.#options.packageVersion });
         }
 
-        const env = getEnv();
-
-        env.CEREBRO_OUTPUT_LEVEL = String(VERBOSITY_NORMAL);
-
         if (typeof this.#options.logger === "object") {
             const requiredMethods = ["debug", "error", "info", "log", "warn"] as const;
             const missingMethods: string[] = [];
@@ -443,7 +539,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             this.#logger = {
                 ...console,
                 debug: (...args: unknown[]) => {
-                    if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+                    if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
                         // eslint-disable-next-line no-console
                         console.debug(...args);
                     }
@@ -489,6 +585,13 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         this.#exit = options.exit;
         this.#envOverride = options.env;
         this.#stdin = options.stdin ?? "";
+        this.#maxArguments = options.maxArguments;
+        this.#strictOptions = options.strictOptions ?? false;
+
+        // Seed the per-instance verbosity (and mirror into the instance env) now
+        // that the env override is known. Re-derived from argv flags lazily in
+        // #setVerbosityLevel once argv is parsed.
+        this.#updateVerbosityLevel(VERBOSITY_NORMAL);
 
         this.#commands = new Map<string, ICommand<OptionDefinition<unknown>, T>>();
         this.#commandPaths = new Map<string, string[]>();
@@ -692,9 +795,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             const aliases = typeof command.alias === "string" ? [command.alias] : command.alias;
 
             for (const alias of aliases) {
-                const env = getEnv();
-
-                if (env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG)) {
+                if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
                     this.#logger.debug("adding alias", alias);
                 }
 
@@ -926,13 +1027,13 @@ export class Cli<T extends Console = Console> implements ICli<T> {
         let parsedCommandPath: string[] | undefined;
         let remainingArgv: string[] = [...argv];
 
-        const execPath = getExecPath();
-        const execArgv = getExecArgv();
-        const runtimeArgv = getRuntimeArgv();
-
-        this.#logger.debug(`process.execPath: ${execPath}`);
-        this.#logger.debug(`process.execArgv: ${execArgv.join(" ")}`);
-        this.#logger.debug(`process.argv: ${runtimeArgv.join(" ")}`);
+        // Gate the runtime-process probes + eager string construction on
+        // verbosity; these are diagnostics only and otherwise run every command.
+        if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
+            this.#logger.debug(`process.execPath: ${getExecPath()}`);
+            this.#logger.debug(`process.execArgv: ${getExecArgv().join(" ")}`);
+            this.#logger.debug(`process.argv: ${getRuntimeArgv().join(" ")}`);
+        }
 
         const nestedResult = parseNestedCommand(commandPathMap, [...argv]);
 
@@ -1153,10 +1254,12 @@ export class Cli<T extends Console = Console> implements ICli<T> {
             throw new CerebroError(`Command "${command.name}" has no function to execute`, "INVALID_COMMAND", { commandName: command.name });
         }
 
-        const sanitizedArgv = sanitizeArguments(providedArgv, false);
+        const sanitizedArgv = sanitizeArguments(providedArgv, { maxArguments: this.#maxArguments });
         const commandArguments = [...sanitizedArgv];
 
-        this.#logger.debug(`running command '${commandName}' programmatically with args: ${commandArguments.join(", ")}`);
+        if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
+            this.#logger.debug(`running command '${commandName}' programmatically with args: ${commandArguments.join(", ")}`);
+        }
 
         const { commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, extraOptions, pathKey || commandName);
 

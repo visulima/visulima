@@ -5,14 +5,16 @@ import type { Plugin } from "../../types/plugin";
 import { getEnv } from "../../util/general/runtime-process";
 import type { UpdateNotifierOptions } from "./has-new-version";
 
-export type UpdateNotifierPluginOptions = Partial<Omit<UpdateNotifierOptions, "debug" | "pkg">>;
+type UpdateNotifierPluginOptions = Partial<Omit<UpdateNotifierOptions, "debug" | "pkg">>;
+
+const DEFAULT_TIMEOUT_MS = 5000;
 
 /**
  * Create an update notifier plugin that checks for package updates.
  * @param options Update notifier configuration options.
  * @returns Plugin instance.
  */
-export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}): Plugin => {
+const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}): Plugin => {
     return {
         beforeCommand: async (toolbox) => {
             const { logger, runtime } = toolbox;
@@ -35,6 +37,7 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
                     name: packageName,
                     version: packageVersion,
                 },
+                timeout: DEFAULT_TIMEOUT_MS,
                 updateCheckInterval: 1000 * 60 * 60 * 24,
                 ...options,
             };
@@ -50,8 +53,11 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
                 return;
             }
 
-            ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)("Checking for updates...");
-
+            // No more "Checking for updates..." noise on every run — that
+            // polluted scriptable stdout. The request is timeout-bounded (see
+            // get-distribution-version) so it can't hang the command, and the
+            // result box now goes to logger.log (not logger.error) so it isn't
+            // mistaken for a failure or captured by stderr-only consumers.
             try {
                 const hasNewVersion = await import("./has-new-version").then((m) => m.default);
                 const updateAvailable = await hasNewVersion(updateNotifierOptions);
@@ -62,7 +68,7 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
 
                     const template = `Update available ${dim(packageVersion)}${reset(" → ")}${green(updateAvailable)}`;
 
-                    logger.error(
+                    logger.log(
                         boxen(template, {
                             borderColor: (border: string) => yellow(border),
                             borderStyle: "round",
@@ -81,3 +87,6 @@ export const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}):
         version: "1.0.0",
     };
 };
+
+export type { UpdateNotifierPluginOptions };
+export { updateNotifierPlugin };

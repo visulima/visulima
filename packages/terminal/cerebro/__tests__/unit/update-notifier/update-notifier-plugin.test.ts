@@ -191,7 +191,7 @@ describe(updateNotifierPlugin, () => {
     });
 
     it("does NOT print a box when no new version is available", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         hasNewVersionMock.mockResolvedValue(undefined);
 
@@ -202,10 +202,11 @@ describe(updateNotifierPlugin, () => {
 
         expect(hasNewVersionMock).toHaveBeenCalledTimes(1);
         expect(toolbox.logger.error).not.toHaveBeenCalled();
+        expect(toolbox.logger.log).not.toHaveBeenCalled();
     });
 
-    it("prints a boxed message via logger.error when a new version is available", async () => {
-        expect.assertions(2);
+    it("prints a boxed message via logger.log (not logger.error) when a new version is available", async () => {
+        expect.assertions(3);
 
         hasNewVersionMock.mockResolvedValue("2.0.0");
 
@@ -214,17 +215,18 @@ describe(updateNotifierPlugin, () => {
 
         await runBefore(plugin, toolbox);
 
-        expect(toolbox.logger.error).toHaveBeenCalledTimes(1);
+        expect(toolbox.logger.log).toHaveBeenCalledTimes(1);
+        expect(toolbox.logger.error).not.toHaveBeenCalled();
 
         // Box wraps the template, but the core message components must be present.
 
-        const errorMock = toolbox.logger.error as unknown as ReturnType<typeof vi.fn>;
-        const message = getFirstCallArgument(errorMock, "logger.error") as string;
+        const logMock = toolbox.logger.log as unknown as ReturnType<typeof vi.fn>;
+        const message = getFirstCallArgument(logMock, "logger.log") as string;
 
         expect(message).toContain("2.0.0");
     });
 
-    it("invokes logger.raw (when present) instead of logger.log for the 'Checking…' line", async () => {
+    it("does not print a 'Checking for updates...' line on every run", async () => {
         expect.assertions(2);
 
         hasNewVersionMock.mockResolvedValue(undefined);
@@ -238,11 +240,11 @@ describe(updateNotifierPlugin, () => {
 
         await runBefore(plugin, toolbox);
 
-        expect(rawSpy).toHaveBeenCalledWith("Checking for updates...");
+        expect(rawSpy).not.toHaveBeenCalled();
         expect(toolbox.logger.log).not.toHaveBeenCalled();
     });
 
-    it("falls back to logger.log when logger.raw is absent", async () => {
+    it("passes a request timeout into hasNewVersion", async () => {
         expect.assertions(1);
 
         hasNewVersionMock.mockResolvedValue(undefined);
@@ -252,7 +254,7 @@ describe(updateNotifierPlugin, () => {
 
         await runBefore(plugin, toolbox);
 
-        expect(toolbox.logger.log).toHaveBeenCalledWith("Checking for updates...");
+        expect(hasNewVersionMock).toHaveBeenCalledWith(expect.objectContaining({ timeout: expect.any(Number) }));
     });
 
     it("swallows errors thrown by hasNewVersion and logs them at debug", async () => {

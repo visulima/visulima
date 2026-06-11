@@ -1,13 +1,21 @@
 import { describe, expect, it } from "vitest";
 
-import { RateLimiter, sanitizeArgument, sanitizeArguments, validateSafePath } from "../../../src/util/security";
+import { DEFAULT_MAX_ARGS, sanitizeArgument, sanitizeArguments } from "../../../src/util/security";
 
 describe("security", () => {
     describe(sanitizeArgument, () => {
-        it("should return trimmed string for valid argument", () => {
+        it("should return the argument unchanged by default (no trimming)", () => {
             expect.assertions(1);
 
             const result = sanitizeArgument("  test  ");
+
+            expect(result).toBe("  test  ");
+        });
+
+        it("should trim when the trim option is enabled", () => {
+            expect.assertions(1);
+
+            const result = sanitizeArgument("  test  ", { trim: true });
 
             expect(result).toBe("test");
         });
@@ -19,50 +27,48 @@ describe("security", () => {
             expect(() => sanitizeArgument(123 as unknown as string)).toThrow(TypeError);
         });
 
-        it("should throw Error for argument exceeding max length", () => {
-            expect.assertions(2);
+        it("should not throw for ordinary long arguments under the generous default cap", () => {
+            expect.assertions(1);
 
             const longArgument = "a".repeat(10_001);
 
-            expect(() => sanitizeArgument(longArgument)).toThrow(Error);
-            expect(() => sanitizeArgument(longArgument)).toThrow("Argument is too long");
+            expect(() => sanitizeArgument(longArgument)).not.toThrow();
         });
 
-        it("should throw Error for argument containing newline", () => {
+        it("should throw Error for argument exceeding a configured max length", () => {
             expect.assertions(2);
 
-            expect(() => sanitizeArgument("test\ninjection")).toThrow(Error);
-            expect(() => sanitizeArgument("test\ninjection")).toThrow("dangerous character");
+            const longArgument = "a".repeat(11);
+
+            expect(() => sanitizeArgument(longArgument, { maxArgumentLength: 10 })).toThrow(Error);
+            expect(() => sanitizeArgument(longArgument, { maxArgumentLength: 10 })).toThrow("Argument is too long");
         });
 
-        it("should throw Error for argument containing carriage return", () => {
+        it("should allow disabling the length cap with Infinity", () => {
             expect.assertions(1);
 
-            expect(() => sanitizeArgument("test\rinjection")).toThrow(Error);
+            const longArgument = "a".repeat(2_000_000);
+
+            expect(() => sanitizeArgument(longArgument, { maxArgumentLength: Number.POSITIVE_INFINITY })).not.toThrow();
         });
 
-        it("should throw Error for argument containing tab", () => {
+        it("should not reject dangerous characters by default", () => {
             expect.assertions(1);
 
-            expect(() => sanitizeArgument("test\tinjection")).toThrow(Error);
+            expect(() => sanitizeArgument("test;injection")).not.toThrow();
         });
 
-        it("should throw Error for argument containing dollar sign", () => {
-            expect.assertions(1);
+        it("should reject dangerous characters when opted in (boolean shorthand)", () => {
+            expect.assertions(2);
 
-            expect(() => sanitizeArgument("test$injection")).toThrow(Error);
+            expect(() => sanitizeArgument("test\ninjection", true)).toThrow(Error);
+            expect(() => sanitizeArgument("test\ninjection", true)).toThrow("dangerous character");
         });
 
-        it("should throw Error for argument containing backtick", () => {
+        it("should reject dangerous characters when opted in (options object)", () => {
             expect.assertions(1);
 
-            expect(() => sanitizeArgument("test`injection")).toThrow(Error);
-        });
-
-        it("should throw Error for argument containing semicolon", () => {
-            expect.assertions(1);
-
-            expect(() => sanitizeArgument("test;injection")).toThrow(Error);
+            expect(() => sanitizeArgument("test`injection", { checkDangerousChars: true })).toThrow(Error);
         });
 
         it("should accept valid characters", () => {
@@ -75,12 +81,12 @@ describe("security", () => {
     });
 
     describe(sanitizeArguments, () => {
-        it("should sanitize array of valid arguments", () => {
+        it("should preserve arguments verbatim by default", () => {
             expect.assertions(1);
 
             const result = sanitizeArguments(["  arg1  ", "arg2", "  arg3  "]);
 
-            expect(result).toStrictEqual(["arg1", "arg2", "arg3"]);
+            expect(result).toStrictEqual(["  arg1  ", "arg2", "  arg3  "]);
         });
 
         it("should throw TypeError for non-array input", () => {
@@ -90,19 +96,33 @@ describe("security", () => {
             expect(() => sanitizeArguments("not-array" as unknown as ReadonlyArray<string>)).toThrow(TypeError);
         });
 
-        it("should throw Error for too many arguments", () => {
-            expect.assertions(2);
-
-            const manyArgs = Array.from({ length: 101 }, (_, i) => `arg${String(i)}`);
-
-            expect(() => sanitizeArguments(manyArgs)).toThrow(Error);
-            expect(() => sanitizeArguments(manyArgs)).toThrow("Too many arguments");
-        });
-
-        it("should throw Error when any argument contains dangerous character", () => {
+        it("should not throw for a few hundred arguments (glob expansion)", () => {
             expect.assertions(1);
 
-            expect(() => sanitizeArguments(["valid", "test\ninjection", "also-valid"])).toThrow(Error);
+            const manyArgs = Array.from({ length: 500 }, (_, index) => `arg${String(index)}`);
+
+            expect(() => sanitizeArguments(manyArgs)).not.toThrow();
+        });
+
+        it("should throw Error when exceeding a configured argument count", () => {
+            expect.assertions(2);
+
+            const manyArgs = Array.from({ length: 6 }, (_, index) => `arg${String(index)}`);
+
+            expect(() => sanitizeArguments(manyArgs, { maxArguments: 5 })).toThrow(Error);
+            expect(() => sanitizeArguments(manyArgs, { maxArguments: 5 })).toThrow("Too many arguments");
+        });
+
+        it("should expose a generous default argument cap", () => {
+            expect.assertions(1);
+
+            expect(DEFAULT_MAX_ARGS).toBeGreaterThanOrEqual(10_000);
+        });
+
+        it("should propagate the dangerous-char check when opted in", () => {
+            expect.assertions(1);
+
+            expect(() => sanitizeArguments(["valid", "test\ninjection", "also-valid"], true)).toThrow(Error);
         });
 
         it("should handle empty array", () => {
@@ -111,188 +131,6 @@ describe("security", () => {
             const result = sanitizeArguments([]);
 
             expect(result).toStrictEqual([]);
-        });
-    });
-
-    describe(validateSafePath, () => {
-        it("should return trimmed path for valid relative path", () => {
-            expect.assertions(1);
-
-            const result = validateSafePath("  path/to/file  ");
-
-            expect(result).toBe("path/to/file");
-        });
-
-        it("should throw TypeError for non-string input", () => {
-            expect.assertions(2);
-
-            expect(() => validateSafePath(null as unknown as string)).toThrow(TypeError);
-            expect(() => validateSafePath(123 as unknown as string)).toThrow(TypeError);
-        });
-
-        it("should throw Error for path containing directory traversal", () => {
-            expect.assertions(2);
-
-            expect(() => validateSafePath("../etc/passwd")).toThrow(Error);
-            expect(() => validateSafePath("../etc/passwd")).toThrow("directory traversal");
-        });
-
-        it("should throw Error for path containing ..", () => {
-            expect.assertions(1);
-
-            expect(() => validateSafePath("path/../file")).toThrow(Error);
-        });
-
-        it("should throw Error for path containing ..\\", () => {
-            expect.assertions(1);
-
-            expect(() => validateSafePath(String.raw`path\..\file`)).toThrow(Error);
-        });
-
-        it("should throw Error for absolute Unix path", () => {
-            expect.assertions(2);
-
-            expect(() => validateSafePath("/etc/passwd")).toThrow(Error);
-            expect(() => validateSafePath("/etc/passwd")).toThrow("Absolute paths are not allowed");
-        });
-
-        it("should throw Error for absolute Windows path", () => {
-            expect.assertions(1);
-
-            expect(() => validateSafePath(String.raw`C:\Windows\System32`)).toThrow(Error);
-        });
-
-        it("should throw Error for path exceeding max length", () => {
-            expect.assertions(2);
-
-            const longPath = "a".repeat(1001);
-
-            expect(() => validateSafePath(longPath)).toThrow(Error);
-            expect(() => validateSafePath(longPath)).toThrow("Path is too long");
-        });
-
-        it("should accept valid relative paths", () => {
-            expect.assertions(2);
-
-            expect(validateSafePath("path/to/file")).toBe("path/to/file");
-            expect(validateSafePath("subdirectory/file.txt")).toBe("subdirectory/file.txt");
-        });
-    });
-
-    describe(RateLimiter, () => {
-        it("should allow requests within limit", () => {
-            expect.assertions(5);
-
-            const limiter = new RateLimiter(5, 1000);
-
-            expect(limiter.checkLimit("key1")).toBe(true);
-            expect(limiter.checkLimit("key1")).toBe(true);
-            expect(limiter.checkLimit("key1")).toBe(true);
-            expect(limiter.checkLimit("key1")).toBe(true);
-            expect(limiter.checkLimit("key1")).toBe(true);
-        });
-
-        it("should block requests exceeding limit", () => {
-            expect.assertions(2);
-
-            const limiter = new RateLimiter(3, 1000);
-
-            limiter.checkLimit("key1");
-            limiter.checkLimit("key1");
-            limiter.checkLimit("key1");
-
-            expect(limiter.checkLimit("key1")).toBe(false);
-            expect(limiter.checkLimit("key1")).toBe(false);
-        });
-
-        it("should track different keys independently", () => {
-            expect.assertions(2);
-
-            const limiter = new RateLimiter(2, 1000);
-
-            limiter.checkLimit("key1");
-            limiter.checkLimit("key1");
-
-            expect(limiter.checkLimit("key1")).toBe(false);
-            expect(limiter.checkLimit("key2")).toBe(true);
-        });
-
-        it("should reset after time window", async () => {
-            expect.assertions(3);
-
-            const limiter = new RateLimiter(2, 100);
-
-            limiter.checkLimit("key1");
-            limiter.checkLimit("key1");
-
-            expect(limiter.checkLimit("key1")).toBe(false);
-
-            await new Promise((resolve) => {
-                setTimeout(resolve, 150);
-            });
-
-            expect(limiter.checkLimit("key1")).toBe(true);
-            expect(limiter.checkLimit("key1")).toBe(true);
-        });
-
-        it("should allow reset of specific key", () => {
-            expect.assertions(3);
-
-            const limiter = new RateLimiter(2, 1000);
-
-            limiter.checkLimit("key1");
-            limiter.checkLimit("key1");
-
-            expect(limiter.checkLimit("key1")).toBe(false);
-
-            limiter.reset("key1");
-
-            expect(limiter.checkLimit("key1")).toBe(true);
-            expect(limiter.checkLimit("key1")).toBe(true);
-        });
-
-        it("should throw Error for invalid maxAttempts", () => {
-            expect.assertions(2);
-
-            expect(() => new RateLimiter(0, 1000)).toThrow(Error);
-            expect(() => new RateLimiter(-1, 1000)).toThrow(Error);
-        });
-
-        it("should throw Error for invalid windowMs", () => {
-            expect.assertions(2);
-
-            expect(() => new RateLimiter(5, 0)).toThrow(Error);
-            expect(() => new RateLimiter(5, -1)).toThrow(Error);
-        });
-
-        it("should use default values when not provided", () => {
-            expect.assertions(6);
-
-            const limiter = new RateLimiter();
-
-            // Default maxAttempts is 5
-            for (let i = 0; i < 5; i += 1) {
-                expect(limiter.checkLimit("key1")).toBe(true);
-            }
-
-            expect(limiter.checkLimit("key1")).toBe(false);
-        });
-
-        it("should cleanup expired entries", async () => {
-            expect.assertions(2);
-
-            const limiter = new RateLimiter(2, 50);
-
-            limiter.checkLimit("key1");
-            limiter.checkLimit("key2");
-
-            await new Promise((resolve) => {
-                setTimeout(resolve, 100);
-            });
-
-            // New check should trigger cleanup and allow new entries
-            expect(limiter.checkLimit("key3")).toBe(true);
-            expect(limiter.checkLimit("key3")).toBe(true);
         });
     });
 });

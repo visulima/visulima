@@ -1,43 +1,92 @@
 /**
- * Security utilities for preventing injection attacks and malicious inputs
+ * Security utilities for validating CLI argument inputs.
+ *
+ * The caps here exist to guard against accidental or malicious DoS-style inputs
+ * (millions of argv tokens, multi-megabyte single arguments). They are
+ * intentionally generous defaults and can be tuned — or disabled entirely — via
+ * {@link SanitizeOptions}, because legitimate invocations (e.g. a shell glob
+ * expanding to thousands of file paths: `mycli fmt src/**\/*.ts`) can far exceed
+ * any small fixed limit.
  */
 
 /**
- * Maximum allowed length for argument values to prevent DoS attacks
+ * Default maximum allowed length for a single argument value.
+ *
+ * Generous enough to never trip real-world flags/paths while still catching
+ * pathological multi-megabyte inputs.
  */
-const MAX_ARGUMENT_LENGTH = 10_000;
+const DEFAULT_MAX_ARGUMENT_LENGTH = 1_000_000;
 
 /**
- * Maximum allowed number of arguments to prevent DoS attacks
+ * Default maximum allowed number of arguments.
+ *
+ * Set high so shell-glob expansions (which routinely exceed a few hundred
+ * paths) are never rejected; the cap only protects against truly pathological
+ * argv sizes.
  */
-const MAX_ARGS = 100;
+const DEFAULT_MAX_ARGS = 100_000;
 
 /**
- * Dangerous characters that could be used for injection attacks
+ * Dangerous characters that could be used for injection attacks.
+ *
+ * Only consulted when {@link SanitizeOptions.checkDangerousChars} is enabled;
+ * cerebro never passes argv to a shell, so this is opt-in.
  */
 const DANGEROUS_CHARS = new Set(["\n", "\r", "\t", "\0", "\"", "$", "&", "'", "(", ")", ";", "<", ">", "[", "\\", "]", "`", "{", "|", "}"]);
 
-const ABSOLUTE_PATH_PATTERN = /^[A-Z]:/i;
+/**
+ * Options controlling argument sanitization.
+ */
+interface SanitizeOptions {
+    /**
+     * Reject arguments containing shell-dangerous characters.
+     * @default false
+     */
+    checkDangerousChars?: boolean;
+
+    /**
+     * Maximum allowed length for a single argument. Pass `Number.POSITIVE_INFINITY`
+     * (or any falsy-but-defined `0`) to disable the check.
+     * @default DEFAULT_MAX_ARGUMENT_LENGTH
+     */
+    maxArgumentLength?: number;
+
+    /**
+     * Maximum allowed number of arguments. Pass `Number.POSITIVE_INFINITY` to
+     * disable the check.
+     * @default DEFAULT_MAX_ARGS
+     */
+    maxArguments?: number;
+
+    /**
+     * Trim leading/trailing whitespace from each argument. Off by default so
+     * intentionally whitespace-padded values are preserved verbatim.
+     * @default false
+     */
+    trim?: boolean;
+}
 
 /**
- * Sanitizes a command argument to prevent injection attacks.
+ * Sanitizes a command argument.
  * @param argument The argument string to sanitize.
- * @returns The sanitized argument with whitespace trimmed.
+ * @param options Sanitization options (or a boolean for back-compat: `true` enables the dangerous-char check).
+ * @returns The (optionally trimmed) argument.
  * @throws {TypeError} If the argument is not a string.
  * @throws {Error} If the argument exceeds maximum length or contains dangerous characters.
  */
-export const sanitizeArgument = (argument: string, checkDangerousChars = true): string => {
+const sanitizeArgument = (argument: string, options: SanitizeOptions | boolean = {}): string => {
     if (typeof argument !== "string") {
         throw new TypeError("Argument must be a string");
     }
 
-    // Check length limit
-    if (argument.length > MAX_ARGUMENT_LENGTH) {
-        throw new Error(`Argument is too long (maximum ${String(MAX_ARGUMENT_LENGTH)} characters)`);
+    const resolved: SanitizeOptions = typeof options === "boolean" ? { checkDangerousChars: options } : options;
+    const maxArgumentLength = resolved.maxArgumentLength ?? DEFAULT_MAX_ARGUMENT_LENGTH;
+
+    if (Number.isFinite(maxArgumentLength) && maxArgumentLength > 0 && argument.length > maxArgumentLength) {
+        throw new Error(`Argument is too long (maximum ${String(maxArgumentLength)} characters)`);
     }
 
-    // Check for dangerous characters
-    if (checkDangerousChars) {
+    if (resolved.checkDangerousChars) {
         for (const char of argument) {
             if (DANGEROUS_CHARS.has(char)) {
                 throw new Error(`Argument contains dangerous character: ${char}`);
@@ -45,130 +94,31 @@ export const sanitizeArgument = (argument: string, checkDangerousChars = true): 
         }
     }
 
-    // Trim whitespace
-    return argument.trim();
+    return resolved.trim ? argument.trim() : argument;
 };
 
 /**
  * Sanitizes an array of arguments.
  * @param args The array of arguments to sanitize.
+ * @param options Sanitization options (or a boolean for back-compat: `true` enables the dangerous-char check).
  * @returns Array of sanitized arguments.
  * @throws {TypeError} If args is not an array or if any argument is not a string.
  * @throws {Error} If there are too many arguments or if any argument is invalid.
  */
-export const sanitizeArguments = (args: ReadonlyArray<string>, checkDangerousChars = true): string[] => {
+const sanitizeArguments = (args: ReadonlyArray<string>, options: SanitizeOptions | boolean = {}): string[] => {
     if (!Array.isArray(args)) {
         throw new TypeError("Arguments must be an array");
     }
 
-    if (args.length > MAX_ARGS) {
-        throw new Error(`Too many arguments (maximum ${String(MAX_ARGS)})`);
+    const resolved: SanitizeOptions = typeof options === "boolean" ? { checkDangerousChars: options } : options;
+    const maxArguments = resolved.maxArguments ?? DEFAULT_MAX_ARGS;
+
+    if (Number.isFinite(maxArguments) && maxArguments > 0 && args.length > maxArguments) {
+        throw new Error(`Too many arguments (maximum ${String(maxArguments)})`);
     }
 
-    return args.map((argument) => sanitizeArgument(argument, checkDangerousChars));
+    return args.map((argument) => sanitizeArgument(argument, resolved));
 };
 
-/**
- * Validates that a file path is safe (prevents directory traversal).
- * @param path The file path to validate.
- * @returns The validated path with whitespace trimmed.
- * @throws {TypeError} If the path is not a string.
- * @throws {Error} If the path contains traversal sequences, is absolute, or exceeds maximum length.
- */
-export const validateSafePath = (path: string): string => {
-    if (typeof path !== "string") {
-        throw new TypeError("Path must be a string");
-    }
-
-    const sanitizedPath = path.trim();
-
-    // Check for directory traversal attempts
-    const segments = sanitizedPath.split(/[/\\]/);
-
-    if (segments.includes("..")) {
-        throw new Error("Path contains directory traversal sequences");
-    }
-
-    // Check for absolute paths that could be dangerous
-    if (sanitizedPath.startsWith("/") || ABSOLUTE_PATH_PATTERN.test(sanitizedPath)) {
-        throw new Error("Absolute paths are not allowed");
-    }
-
-    // Check length
-    if (sanitizedPath.length > 1000) {
-        throw new Error("Path is too long");
-    }
-
-    return sanitizedPath;
-};
-
-/**
- * Rate limiting helper to prevent brute force attacks
- * Automatically cleans up expired entries to prevent memory leaks
- */
-export class RateLimiter {
-    private attempts = new Map<string, { count: number; resetTime: number }>();
-
-    private readonly maxAttempts: number;
-
-    private readonly windowMs: number;
-
-    /**
-     * Creates a new RateLimiter instance.
-     * @param maxAttempts Maximum number of attempts allowed within the time window (default: 5).
-     * @param windowMs Time window in milliseconds (default: 60000).
-     */
-    public constructor(maxAttempts = 5, windowMs = 60_000) {
-        if (maxAttempts <= 0 || windowMs <= 0) {
-            throw new Error("maxAttempts and windowMs must be positive numbers");
-        }
-
-        this.maxAttempts = maxAttempts;
-        this.windowMs = windowMs;
-    }
-
-    /**
-     * Checks if the key has exceeded the rate limit.
-     * @param key Unique identifier for the rate limit check.
-     * @returns true if the request is allowed, false if rate limit exceeded.
-     */
-    public checkLimit(key: string): boolean {
-        const now = Date.now();
-        const record = this.attempts.get(key);
-
-        if (!record || now > record.resetTime) {
-            this.attempts.set(key, { count: 1, resetTime: now + this.windowMs });
-            this.cleanup(now);
-
-            return true;
-        }
-
-        if (record.count >= this.maxAttempts) {
-            return false;
-        }
-
-        record.count += 1;
-
-        return true;
-    }
-
-    /**
-     * Resets the rate limit for a specific key.
-     * @param key The key to reset.
-     */
-    public reset(key: string): void {
-        this.attempts.delete(key);
-    }
-
-    /**
-     * Removes expired entries from the attempts map.
-     * @param now Current timestamp.
-     */
-    private cleanup(now: number): void {
-        for (const [key, record] of this.attempts.entries()) {
-            if (now > record.resetTime) {
-                this.attempts.delete(key);
-            }
-        }
-    }
-}
+export type { SanitizeOptions };
+export { DEFAULT_MAX_ARGS, DEFAULT_MAX_ARGUMENT_LENGTH, sanitizeArgument, sanitizeArguments };

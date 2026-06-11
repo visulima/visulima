@@ -2,6 +2,7 @@ import type { CommandLineOptions } from "@visulima/command-line-args";
 
 import CommandValidationError from "../../errors/command-validation-error";
 import ConflictingOptionsError from "../../errors/conflicting-options-error";
+import InvalidChoiceError from "../../errors/invalid-choice-error";
 import type { Command as ICommand, OptionDefinition, PossibleOptionDefinition } from "../../types/command";
 import type { Toolbox as IToolbox } from "../../types/toolbox";
 import listMissingArguments from "../data-processing/list-missing-arguments";
@@ -100,6 +101,44 @@ export const validateConflictingOptions = <OD extends OptionDefinition<unknown>,
                 conflict.name,
                 typeof conflict.conflicts === "string" ? conflict.conflicts : conflict.conflicts?.[0] ?? "unknown",
             );
+        }
+    }
+};
+
+/**
+ * Validates that any option declaring `choices` only received allowed value(s).
+ * Skips options that were not provided (their default/absence is left untouched).
+ * Compares by string equality; `multiple` options validate every member.
+ */
+export const validateChoices = <OD extends OptionDefinition<unknown>, TLogger extends Console = Console>(
+    commandArguments: IToolbox["options"],
+    command: ICommand<OD, TLogger>,
+): void => {
+    const options = command.options as (OptionDefinition<unknown> & { choices?: ReadonlyArray<string> })[] | undefined;
+
+    if (!options) {
+        return;
+    }
+
+    for (const option of options) {
+        if (!option.choices || option.choices.length === 0) {
+            continue;
+        }
+
+        const value = commandArguments[option.name];
+
+        if (value === undefined || value === null) {
+            continue;
+        }
+
+        const provided = Array.isArray(value) ? value : [value];
+
+        for (const single of provided) {
+            const asString = String(single);
+
+            if (!option.choices.includes(asString)) {
+                throw new InvalidChoiceError(option.name, asString, option.choices);
+            }
         }
     }
 };
