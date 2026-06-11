@@ -47,7 +47,7 @@ describe("rpc/functions/tailwind-config", () => {
         it("discovers css files that @import tailwindcss (double quotes)", async () => {
             expect.assertions(2);
 
-            await fs.writeFile(path.join(tmpDir, "app.css"), "@import \"tailwindcss\";\n");
+            await fs.writeFile(path.join(tmpDir, "app.css"), '@import "tailwindcss";\n');
 
             const result = await getTailwindConfig(makeServer(tmpDir));
 
@@ -83,10 +83,10 @@ describe("rpc/functions/tailwind-config", () => {
                 // eslint-disable-next-line no-await-in-loop
                 await fs.mkdir(path.join(tmpDir, directory), { recursive: true });
                 // eslint-disable-next-line no-await-in-loop
-                await fs.writeFile(path.join(tmpDir, directory, "x.css"), "@import \"tailwindcss\";\n");
+                await fs.writeFile(path.join(tmpDir, directory, "x.css"), '@import "tailwindcss";\n');
             }
 
-            await fs.writeFile(path.join(tmpDir, "real.css"), "@import \"tailwindcss\";\n");
+            await fs.writeFile(path.join(tmpDir, "real.css"), '@import "tailwindcss";\n');
 
             const result = await getTailwindConfig(makeServer(tmpDir));
 
@@ -98,7 +98,7 @@ describe("rpc/functions/tailwind-config", () => {
             expect.assertions(3);
 
             const css = [
-                "@import \"tailwindcss\";",
+                '@import "tailwindcss";',
                 "/* a comment with --not-a-var: nope; */",
                 "@theme default {",
                 "  --color-default: #000;",
@@ -125,7 +125,7 @@ describe("rpc/functions/tailwind-config", () => {
         it("keeps the first occurrence of a duplicated theme variable", async () => {
             expect.assertions(1);
 
-            const css = ["@import \"tailwindcss\";", "@theme {", "  --color-x: first;", "  --color-x: second;", "}"].join("\n");
+            const css = ['@import "tailwindcss";', "@theme {", "  --color-x: first;", "  --color-x: second;", "}"].join("\n");
 
             await fs.writeFile(path.join(tmpDir, "dup.css"), css);
 
@@ -138,7 +138,7 @@ describe("rpc/functions/tailwind-config", () => {
             expect.assertions(1);
 
             await fs.mkdir(path.join(tmpDir, "src", "styles"), { recursive: true });
-            await fs.writeFile(path.join(tmpDir, "src", "styles", "index.css"), "@import \"tailwindcss\";\n");
+            await fs.writeFile(path.join(tmpDir, "src", "styles", "index.css"), '@import "tailwindcss";\n');
 
             const result = await getTailwindConfig(makeServer(tmpDir));
 

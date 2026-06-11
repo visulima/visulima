@@ -509,9 +509,9 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
 
             // Support appendTo option like Vue DevTools
             if (
-                appendTo
-                && filename
-                && ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
+                appendTo &&
+                filename &&
+                ((typeof appendTo === "string" && filename.endsWith(appendTo)) || (appendTo instanceof RegExp && appendTo.test(filename)))
             ) {
                 return `import '${VIRTUAL_PATH_PREFIX}client/overlay.js';\n${code}`;
             }
@@ -571,7 +571,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
     // disk mtime, so an unchanged module isn't re-parsed (twice) on every HMR
     // trigger. The Babel parse + position-map build + generator pass is the most
     // expensive part of dev startup for JSX-heavy apps.
-    type GeneratedResult = NonNullable<Awaited<ReturnType<typeof import("./vite/inject-source.js")["addSourceToJsx"]>>>;
+    type GeneratedResult = NonNullable<Awaited<ReturnType<(typeof import("./vite/inject-source.js"))["addSourceToJsx"]>>>;
     type InjectSourceResult = { code: string; map: GeneratedResult["map"] | undefined } | undefined;
 
     const injectSourceCache = new Map<string, { key: string; result: InjectSourceResult }>();

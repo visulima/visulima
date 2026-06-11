@@ -338,9 +338,7 @@ describe("devToolbar()", () => {
             (main.configResolved as PluginHookFn)(buildMockResolvedConfig());
             (main.configureServer as PluginHookFn)(server);
 
-            const connectionHandler = server.ws.on.mock.calls.find(
-                (c: unknown[]) => c[0] === "connection",
-            )?.[1] as (() => void) | undefined;
+            const connectionHandler = server.ws.on.mock.calls.find((c: unknown[]) => c[0] === "connection")?.[1] as (() => void) | undefined;
 
             expect(connectionHandler).toBeDefined();
 
@@ -410,10 +408,7 @@ describe("devToolbar()", () => {
 
             (main.configResolved as PluginHookFn)(buildMockResolvedConfig());
 
-            const result = await (main.load as PluginHookFn).call(
-                { addWatchFile: vi.fn() },
-                "some/random/module.js",
-            );
+            const result = await (main.load as PluginHookFn).call({ addWatchFile: vi.fn() }, "some/random/module.js");
 
             expect(result).toBeUndefined();
         });
@@ -426,14 +421,11 @@ describe("devToolbar()", () => {
 
             (main.configResolved as PluginHookFn)(buildMockResolvedConfig());
 
-            const result = await (main.load as PluginHookFn).call(
-                { addWatchFile: vi.fn() },
-                "\0virtual:visulima-dev-toolbar-options",
-            ) as string;
+            const result = (await (main.load as PluginHookFn).call({ addWatchFile: vi.fn() }, "\0virtual:visulima-dev-toolbar-options")) as string;
 
             expect(result).toMatch(/^export default /);
-            expect(result).toContain("\"placement\"");
-            expect(result).toContain("\"position\"");
+            expect(result).toContain('"placement"');
+            expect(result).toContain('"position"');
         });
 
         it("virtual options defaults: settings and viteConfig apps enabled, others disabled", async () => {
@@ -444,10 +436,7 @@ describe("devToolbar()", () => {
 
             (main.configResolved as PluginHookFn)(buildMockResolvedConfig());
 
-            const raw = await (main.load as PluginHookFn).call(
-                { addWatchFile: vi.fn() },
-                "\0virtual:visulima-dev-toolbar-options",
-            ) as string;
+            const raw = (await (main.load as PluginHookFn).call({ addWatchFile: vi.fn() }, "\0virtual:visulima-dev-toolbar-options")) as string;
 
             const exported = JSON.parse(raw.replace(/^export default /, "").replace(/;$/, "")) as Record<string, unknown>;
             const apps = exported["apps"] as Record<string, boolean>;
@@ -466,10 +455,7 @@ describe("devToolbar()", () => {
 
             (main.configResolved as PluginHookFn)(buildMockResolvedConfig());
 
-            const raw = await (main.load as PluginHookFn).call(
-                { addWatchFile: vi.fn() },
-                "\0virtual:visulima-dev-toolbar-options",
-            ) as string;
+            const raw = (await (main.load as PluginHookFn).call({ addWatchFile: vi.fn() }, "\0virtual:visulima-dev-toolbar-options")) as string;
 
             const exported = JSON.parse(raw.replace(/^export default /, "").replace(/;$/, "")) as Record<string, unknown>;
             const apps = exported["apps"] as Record<string, boolean>;
@@ -489,10 +475,7 @@ describe("devToolbar()", () => {
 
             (main.configResolved as PluginHookFn)(buildMockResolvedConfig());
 
-            const raw = await (main.load as PluginHookFn).call(
-                { addWatchFile: vi.fn() },
-                "\0virtual:visulima-dev-toolbar-options",
-            ) as string;
+            const raw = (await (main.load as PluginHookFn).call({ addWatchFile: vi.fn() }, "\0virtual:visulima-dev-toolbar-options")) as string;
 
             const exported = JSON.parse(raw.replace(/^export default /, "").replace(/;$/, "")) as Record<string, unknown>;
 
@@ -508,10 +491,7 @@ describe("devToolbar()", () => {
 
             (main.configResolved as PluginHookFn)(buildMockResolvedConfig());
 
-            const raw = await (main.load as PluginHookFn).call(
-                { addWatchFile: vi.fn() },
-                "\0virtual:visulima-dev-toolbar-options",
-            ) as string;
+            const raw = (await (main.load as PluginHookFn).call({ addWatchFile: vi.fn() }, "\0virtual:visulima-dev-toolbar-options")) as string;
 
             const exported = JSON.parse(raw.replace(/^export default /, "").replace(/;$/, "")) as Record<string, unknown>;
 
@@ -755,10 +735,7 @@ describe("devToolbar()", () => {
 
             (findPlugin(plugins, "@visulima/dev-toolbar").configResolved as PluginHookFn)(buildMockResolvedConfig());
 
-            const result = await (injectSource.transform as PluginHookFn)(
-                "const x = 1;",
-                "/project/node_modules/react/index.jsx",
-            );
+            const result = await (injectSource.transform as PluginHookFn)("const x = 1;", "/project/node_modules/react/index.jsx");
 
             expect(result).toBeUndefined();
         });
@@ -771,10 +748,7 @@ describe("devToolbar()", () => {
 
             (findPlugin(plugins, "@visulima/dev-toolbar").configResolved as PluginHookFn)(buildMockResolvedConfig());
 
-            const result = await (injectSource.transform as PluginHookFn)(
-                "const x = 1;",
-                "/project/src/utils.ts",
-            );
+            const result = await (injectSource.transform as PluginHookFn)("const x = 1;", "/project/src/utils.ts");
 
             expect(result).toBeUndefined();
         });
@@ -787,10 +761,7 @@ describe("devToolbar()", () => {
 
             (findPlugin(plugins, "@visulima/dev-toolbar").configResolved as PluginHookFn)(buildMockResolvedConfig());
 
-            const result = await (injectSource.transform as PluginHookFn)(
-                "const x = 1;",
-                "/project/dist/App.jsx",
-            );
+            const result = await (injectSource.transform as PluginHookFn)("const x = 1;", "/project/dist/App.jsx");
 
             expect(result).toBeUndefined();
         });

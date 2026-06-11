@@ -229,20 +229,20 @@ const routes = await helpers.rpc.getRoutes();
 
 Built-in RPC functions:
 
-| Function                              | Returns                                           |
-| ------------------------------------- | ------------------------------------------------- |
-| `getViteConfig()`                     | Fully resolved Vite config (serializable subset)  |
-| `getModuleGraph()`                    | Vite's live module dependency graph               |
-| `getStaticAssets()`                   | Files under `publicDir` (capped at 5000)          |
-| `getTailwindConfig()`                 | Resolved Tailwind theme tokens                    |
-| `openInEditor(file, line?, col?)`     | Opens the file in the configured editor           |
-| `readFile(path)`                      | Text file under the project root (allowlisted)    |
-| `getAnnotations()`                    | All saved annotations                             |
-| `createAnnotation(data)`              | Creates an annotation                             |
-| `updateAnnotation(id, data)`          | Updates an annotation                             |
-| `deleteAnnotation(id)`                | Deletes an annotation + its screenshot            |
-| `saveScreenshot(id, dataUrl)`         | Stores a screenshot, returns its relative path    |
-| `getScreenshot(id)`                   | Returns a screenshot as a base64 data URL         |
+| Function                          | Returns                                          |
+| --------------------------------- | ------------------------------------------------ |
+| `getViteConfig()`                 | Fully resolved Vite config (serializable subset) |
+| `getModuleGraph()`                | Vite's live module dependency graph              |
+| `getStaticAssets()`               | Files under `publicDir` (capped at 5000)         |
+| `getTailwindConfig()`             | Resolved Tailwind theme tokens                   |
+| `openInEditor(file, line?, col?)` | Opens the file in the configured editor          |
+| `readFile(path)`                  | Text file under the project root (allowlisted)   |
+| `getAnnotations()`                | All saved annotations                            |
+| `createAnnotation(data)`          | Creates an annotation                            |
+| `updateAnnotation(id, data)`      | Updates an annotation                            |
+| `deleteAnnotation(id)`            | Deletes an annotation + its screenshot           |
+| `saveScreenshot(id, dataUrl)`     | Stores a screenshot, returns its relative path   |
+| `getScreenshot(id)`               | Returns a screenshot as a base64 data URL        |
 
 ## Security
 
