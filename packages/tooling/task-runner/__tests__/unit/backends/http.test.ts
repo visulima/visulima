@@ -746,7 +746,7 @@ describe(HttpRemoteCache, () => {
             }
         });
 
-        it("accepts an unsigned download when verifyOnDownload is false (lax mode)", async () => {
+        it("accepts an unsigned download only when verifyOnDownload is explicitly false (lax mode)", async () => {
             expect.assertions(1);
 
             const secret = "this-is-a-16+-char-secret";
@@ -780,10 +780,59 @@ describe(HttpRemoteCache, () => {
 
                 await mkdir(downloadDirectory, { recursive: true });
 
-                const cache = new HttpRemoteCache({ localCasRoot: downloadDirectory, signing: { secret }, url });
+                const cache = new HttpRemoteCache({ localCasRoot: downloadDirectory, signing: { secret, verifyOnDownload: false }, url });
                 const retrieved = await retrieveByTaskHash(cache, "lax", downloadDirectory);
 
                 expect(retrieved).toBe(true);
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("rejects an unsigned download by default when a signing secret is configured (secure default)", async () => {
+            // Regression: configuring `signing.secret` without an explicit
+            // `verifyOnDownload` must default to verifying. Otherwise a cache
+            // server / MITM can strip the X-Artifact-Signature header and have
+            // unsigned artifacts extracted into the workspace (cache poisoning).
+            expect.assertions(1);
+
+            const secret = "this-is-a-16+-char-secret";
+
+            const sourceDirectory = join(cacheDirectory, "secure-default-source");
+
+            await mkdir(sourceDirectory, { recursive: true });
+            await writeFile(join(sourceDirectory, ".commit"), "secure-default");
+
+            const archivePath = join(cacheDirectory, "secure-default.tar.gz");
+
+            await tarball(archivePath, sourceDirectory);
+
+            const archive = await readFile(archivePath);
+
+            const { server, url } = await startMockServer((request, response) => {
+                if (request.method === "GET") {
+                    // Server deliberately omits the X-Artifact-Signature header.
+                    response.writeHead(200, {
+                        "Content-Length": String(archive.length),
+                        "Content-Type": "application/octet-stream",
+                    });
+                    response.end(archive);
+                } else {
+                    response.writeHead(404);
+                    response.end();
+                }
+            });
+
+            try {
+                const downloadDirectory = join(cacheDirectory, "secure-default-dl");
+
+                await mkdir(downloadDirectory, { recursive: true });
+
+                // No `verifyOnDownload` -> defaults to true.
+                const cache = new HttpRemoteCache({ localCasRoot: downloadDirectory, signing: { secret }, url });
+                const retrieved = await retrieveByTaskHash(cache, "secure-default", downloadDirectory);
+
+                expect(retrieved).toBe(false);
             } finally {
                 await closeServer(server);
             }

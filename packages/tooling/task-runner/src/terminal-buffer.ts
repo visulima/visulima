@@ -84,11 +84,28 @@ export class TerminalBuffer {
                 continue;
             }
 
-            // Regular printable character — overwrite at cursor position
+            // Regular printable run — overwrite at cursor position.
+            //
+            // Batch the whole contiguous printable run (up to the next ESC,
+            // CR, or LF) and write it in a single line walk. Calling
+            // `#putChar` per character re-walks the line from index 0 for
+            // every glyph, which is O(line^2) for long lines (progress bars,
+            // webpack stats). One walk per run keeps it linear.
+            let runEnd = i;
+
+            while (runEnd < data.length) {
+                const c = data[runEnd]!;
+
+                if (c === "\u001B" || c === "\r" || c === "\n") {
+                    break;
+                }
+
+                runEnd++;
+            }
+
             this.#ensureRow(this.#row);
-            this.#putChar(ch);
-            this.#col++;
-            i++;
+            this.#putString(data.slice(i, runEnd));
+            i = runEnd;
         }
 
         this.#trimToMaxBytes();
@@ -183,18 +200,30 @@ export class TerminalBuffer {
         return j + 1;
     }
 
-    /** Write a visible character at the cursor position (overwrites). */
-    #putChar(ch: string): void {
+    /**
+     * Write a run of visible characters at the cursor position (overwrites),
+     * advancing the cursor. Walks the existing line at most twice for the
+     * whole run instead of once per character, keeping `write()` linear in
+     * the input length rather than quadratic in line length.
+     *
+     * Semantics are identical to writing the characters one-by-one: each
+     * visible glyph overwrites the glyph currently at its visual column, and
+     * gaps past the visible end are padded with spaces.
+     */
+    #putString(run: string): void {
+        if (run.length === 0) {
+            return;
+        }
+
         const line = this.#lines[this.#row] ?? "";
-        const visCol = this.#col;
-        // Walk the string tracking visible column to find the insert index,
-        // skipping over any embedded ANSI escape sequences.
+        const startCol = this.#col;
+        // Walk the existing line once to find the string index of the cursor
+        // column, skipping embedded ANSI escape sequences.
         let strIndex = 0;
         let vis = 0;
 
-        while (strIndex < line.length && vis < visCol) {
+        while (strIndex < line.length && vis < startCol) {
             if (line[strIndex] === "\u001B" && line[strIndex + 1] === "[") {
-                // Skip past CSI sequence
                 strIndex += 2;
 
                 while (strIndex < line.length && !((line[strIndex]! >= "A" && line[strIndex]! <= "Z") || (line[strIndex]! >= "a" && line[strIndex]! <= "z"))) {
@@ -210,19 +239,57 @@ export class TerminalBuffer {
             }
         }
 
-        // Pad with spaces if cursor is past the visible end
-        if (vis < visCol) {
-            this.#lines[this.#row] = line + " ".repeat(visCol - vis) + ch;
-        } else {
-            // Find the end of the character to overwrite (skip its ANSI sequences too)
-            let endIndex = strIndex;
+        // Pad with spaces if the cursor sits past the visible end.
+        if (vis < startCol) {
+            this.#lines[this.#row] = line + " ".repeat(startCol - vis) + run;
+            this.#col = startCol + run.length;
 
-            if (endIndex < line.length && line[endIndex] !== "\u001B") {
-                endIndex++; // skip one visible character
-            }
-
-            this.#lines[this.#row] = line.slice(0, strIndex) + ch + line.slice(endIndex);
+            return;
         }
+
+        // Continue walking from the cursor to consume `run.length` visible
+        // glyphs to overwrite, this time PRESERVING any embedded escape
+        // sequences interleaved between the overwritten glyphs (e.g. an
+        // `\u001B[31m` sitting between two characters must survive). We build the
+        // overwritten span by emitting one run-character per visible glyph and
+        // copying escape sequences through verbatim -- identical to writing the
+        // run one character at a time, but in a single pass.
+        let endIndex = strIndex;
+        let overwritten = 0;
+        let rebuilt = "";
+
+        while (endIndex < line.length && overwritten < run.length) {
+            if (line[endIndex] === "\u001B" && line[endIndex + 1] === "[") {
+                const seqStart = endIndex;
+
+                endIndex += 2;
+
+                while (endIndex < line.length && !((line[endIndex]! >= "A" && line[endIndex]! <= "Z") || (line[endIndex]! >= "a" && line[endIndex]! <= "z"))) {
+                    endIndex++;
+                }
+
+                if (endIndex < line.length) {
+                    endIndex++; // include command letter
+                }
+
+                // Copy the escape sequence through unchanged.
+                rebuilt += line.slice(seqStart, endIndex);
+            } else {
+                // Overwrite one visible glyph with the next run character.
+                rebuilt += run[overwritten]!;
+                endIndex++;
+                overwritten++;
+            }
+        }
+
+        // Any run characters that ran past the existing line's visible glyphs
+        // are appended (the line was shorter than the run).
+        if (overwritten < run.length) {
+            rebuilt += run.slice(overwritten);
+        }
+
+        this.#lines[this.#row] = line.slice(0, strIndex) + rebuilt + line.slice(endIndex);
+        this.#col = startCol + run.length;
     }
 
     /** Append a zero-width sequence (SGR) at the current cursor position. */

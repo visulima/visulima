@@ -91,6 +91,53 @@ describe(detectScriptShell, () => {
         expect(detectScriptShell()).toBe("/usr/local/bin/bash");
     });
 
+    it("should spawn npm.cmd with shell:true on win32 (CVE-2024-27980 hardening)", () => {
+        // Regression: on Windows `npm` is a `.cmd` shim and spawning it via
+        // execFileSync without `shell: true` throws since Node's
+        // CVE-2024-27980 hardening, silently degrading the documented
+        // script-shell detection. Verify the platform-specific spawn shape.
+        expect.assertions(3);
+
+        delete process.env["npm_config_script_shell"];
+        resetShellCache();
+
+        const platformSpy = vi.spyOn(process, "platform", "get").mockReturnValue("win32");
+
+        try {
+            const gitBashPath = String.raw`C:\Program Files\Git\bin\bash.exe`;
+
+            execFileSyncMock.mockReturnValueOnce(`${gitBashPath}\n`);
+
+            const result = detectScriptShell();
+
+            expect(result).toBe(gitBashPath);
+            expect(execFileSyncMock.mock.calls[0]?.[0]).toBe("npm.cmd");
+            expect(execFileSyncMock.mock.calls[0]?.[2]).toMatchObject({ shell: true });
+        } finally {
+            platformSpy.mockRestore();
+        }
+    });
+
+    it("should spawn plain npm without shell on non-win32", () => {
+        expect.assertions(2);
+
+        delete process.env["npm_config_script_shell"];
+        resetShellCache();
+
+        const platformSpy = vi.spyOn(process, "platform", "get").mockReturnValue("linux");
+
+        try {
+            execFileSyncMock.mockReturnValueOnce("/usr/bin/bash\n");
+
+            detectScriptShell();
+
+            expect(execFileSyncMock.mock.calls[0]?.[0]).toBe("npm");
+            expect(execFileSyncMock.mock.calls[0]?.[2]).toMatchObject({ shell: false });
+        } finally {
+            platformSpy.mockRestore();
+        }
+    });
+
     it("should reset cache with resetShellCache", () => {
         expect.assertions(1);
 

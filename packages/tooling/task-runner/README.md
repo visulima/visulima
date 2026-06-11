@@ -35,7 +35,7 @@
 - **Long-running process support**: Configurable stdin mode (null/pipe/inherit), bounded output buffers
 - **Two caching modes**: Nx-style explicit inputs or Vite Task-style auto-fingerprinting
 - **3-tier auto-fingerprint dispatch on Linux**: kernel-level `seccomp_unotify` (catches Alpine/musl/static-binary children), `strace` fallback, then no-op. The seccomp path uses a tiny `fspy-seccomp-helper` binary bundled with the platform binding package — sidesteps the fork-from-multithreaded hazard of installing seccomp in `pre_exec` from Node's NAPI host. See `rfc/design-fspy-seccomp-unotify.md`.
-- **Smart lockfile hashing**: Only hashes resolved versions relevant to each package (like Turborepo)
+- **Smart lockfile hashing**: Only hashes resolved versions relevant to each package (like Turborepo). Supports `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, and `bun.lock` (Bun >= 1.2)
 - **Framework env inference**: Auto-detects Next.js, Vite, CRA, Gatsby, Nuxt, and more
 - **Remote caching**: Turborepo-compatible HTTP cache protocol, plus a Bazel REAPI gRPC backend (bazel-remote, BuildBuddy, BuildBarn, EngFlow)
 - **Native Rust addon**: Parallel file hashing (xxHash), concurrent process management via tokio
@@ -249,6 +249,22 @@ const results = await defaultTaskRunner(
 
 ## API
 
+> Looking for the full reference? The [`docs/`](./docs) folder holds the long-form guides — [`docs/api.mdx`](./docs/api.mdx) (API), [`docs/configuration.mdx`](./docs/configuration.mdx) (config), [`docs/installation.mdx`](./docs/installation.mdx), plus [`docs/concepts`](./docs/concepts) and [`docs/guides`](./docs/guides). The section below is a quick overview.
+
+### Subpath exports (lighter imports)
+
+The barrel (`@visulima/task-runner`) pulls in the cache, CAS, graph, scheduler, and remote-backend code. If you only need a slice, import a subpath so the rest can be tree-shaken / never loaded at require time:
+
+| Subpath                            | What it exports                                                                                                                                  |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@visulima/task-runner/concurrent` | The lightweight concurrent runner (`runConcurrently`, command parser, flow controllers, log reporter) — a `concurrently` / vite-task replacement |
+| `@visulima/task-runner/cache`      | Local cache façade (`Cache`, size helpers) + CAS primitives (`digestFile`, blob store, v2 paths)                                                 |
+| `@visulima/task-runner/graph`      | Task-graph construction, traversal utilities, and graph visualization                                                                            |
+
+```ts
+import { runConcurrently } from "@visulima/task-runner/concurrent";
+```
+
 ### `defaultTaskRunner(tasks, options, context)`
 
 The main entry point. Runs tasks with caching, scheduling, and lifecycle support.
@@ -287,6 +303,35 @@ Run commands concurrently with process management and output streaming.
 | `maxCacheSize`         | `string`            | Max cache size (e.g., "1GB")                    |
 | `maxCacheAge`          | `number`            | Max cache entry age in ms                       |
 
+### Remote cache (`remoteCache` / `RemoteCacheOptions`)
+
+Two backends are selected by `mode`: an HTTP backend that speaks the Turborepo `/v8/artifacts` wire protocol, and a Bazel **REAPI** gRPC backend.
+
+| Field          | Type                                          | Default       | Description                                                              |
+| -------------- | --------------------------------------------- | ------------- | ----------------------------------------------------------------------- |
+| `url`          | `string`                                      | —             | Cache server base URL.                                                   |
+| `token`        | `string`                                      | —             | Bearer token sent on every request.                                     |
+| `teamId`       | `string`                                      | —             | Turborepo team/slug scoping.                                             |
+| `mode`         | `"read" \| "write" \| "readwrite"`            | `"readwrite"` | Read-only, write-only, or both.                                         |
+| `compression`  | `"gzip" \| "none"`                            | `"gzip"`      | HTTP tarball compression.                                               |
+| `timeout`      | `number`                                      | `30000`       | Per-request timeout in ms.                                              |
+| `signing`      | `{ secret; verifyOnDownload? }`               | —             | HMAC-SHA256 artifact signing (see below).                              |
+| `attestation`  | `{ verifyArtifact?; requireOnDownload?; ... }`| —             | Keyless (Sigstore-style) attestation hooks layered above signing.       |
+
+#### Signing (`signing`)
+
+When `signing.secret` is set (must be ≥ 16 chars), every upload carries an `X-Artifact-Signature` HMAC of `hash | body`, and **downloads are verified by default** (`verifyOnDownload` defaults to `true`). This is intentional: configuring a secret signals you want artifacts authenticated, so a cache server or MITM that strips the signature header cannot have unsigned artifacts extracted into your workspace (cache poisoning → arbitrary code execution in builds). Set `verifyOnDownload: false` only during a migration where some uploads aren't signed yet.
+
+#### REAPI backend requires `@grpc/grpc-js`
+
+The Bazel REAPI gRPC backend (`ReapiRemoteCache`) imports `@grpc/grpc-js` and `@grpc/proto-loader` lazily — they are **optional peer dependencies**. Install them yourself when using REAPI:
+
+```sh
+npm install @grpc/grpc-js @grpc/proto-loader
+```
+
+The HTTP backend has no such requirement.
+
 ### Exports
 
 The package exports many building blocks for custom task runners:
@@ -296,9 +341,9 @@ The package exports many building blocks for custom task runners:
 - **Flow Controllers**: `withRestart`, `createInputHandler`, `logTimings`, `formatTimingTable`, `runTeardown`
 - **Task Graph**: `createTaskGraph`, `findCycle`, `walkTaskGraph`, `makeAcyclic`
 - **Hashing**: `InProcessTaskHasher`, `IncrementalFileHasher`, `computeTaskHash`
-- **Caching**: `Cache`, `RemoteCache`, `FingerprintManager`
+- **Caching**: `Cache`, `FingerprintManager`, `createRemoteCacheBackend`, `HttpRemoteCache`, `ReapiRemoteCache`
 - **Scheduling**: `TaskScheduler`, `TaskOrchestrator`
-- **Lockfile**: `LockfileHasher`, `parseNpmLockfile`, `parsePnpmLockfile`, `parseYarnLockfile`
+- **Lockfile**: `LockfileHasher`, `parseNpmLockfile`, `parsePnpmLockfile`, `parseYarnLockfile`, `parseBunLockfile`
 - **Framework**: `detectFrameworks`, `inferFrameworkEnvPatterns`, `getFrameworkEnvVariables`
 - **Affected**: `getAffectedProjects`, `getChangedFiles`, `filterAffectedTasks`
 - **Visualization**: `toGraphvizDot`, `toGraphJson`, `toGraphHtml`, `toGraphAscii`
