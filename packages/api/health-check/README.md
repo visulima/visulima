@@ -51,13 +51,69 @@ Keeping the API health check endpoints generic allows to use them for multiple p
 ## Usage
 
 ```ts
-import { healthCheckHandler, HealthCheck as HealthCheck, nodeEnvironmentCheck } from "@visulima/health-check";
+import { HealthCheck, healthCheckHandler, nodeEnvCheck } from "@visulima/health-check";
 
-const HealthCheckService = new HealthCheck();
+const healthCheckService = new HealthCheck();
 
-HealthCheckService.addChecker("node-env", nodeEnvironmentCheck);
+// `nodeEnvCheck` is a checker factory — call it to register the checker.
+healthCheckService.addChecker("node-env", nodeEnvCheck());
 
-export default healthCheckHandler(HealthCheckService); // returns a http handler
+export default healthCheckHandler(healthCheckService); // returns an http handler
+```
+
+### Liveness vs. readiness
+
+Every checker participates in both the liveness and readiness probes by default.
+You can tag a checker so it only runs for one probe, then expose the dedicated
+handlers:
+
+```ts
+import { HealthCheck, healthLiveHandler, healthReadyHandler, httpCheck, eventLoopLagCheck } from "@visulima/health-check";
+
+const healthCheckService = new HealthCheck();
+
+// Liveness: cheap, in-process checks that answer "is the process alive?".
+healthCheckService.addChecker("event-loop", eventLoopLagCheck(), { type: "liveness" });
+
+// Readiness: downstream dependencies that answer "can we serve traffic?".
+healthCheckService.addChecker("db", httpCheck("https://db.internal/health"), { type: "readiness" });
+
+export const live = healthLiveHandler(healthCheckService); // 204 when live, 503 otherwise
+export const ready = healthReadyHandler(healthCheckService); // 204 when ready, 503 otherwise
+```
+
+You can call `healthCheckService.isLive()` / `healthCheckService.isReady()`
+directly if you do not need an HTTP handler.
+
+### Per-check timeout, caching and removal
+
+```ts
+const healthCheckService = new HealthCheck({
+    // Cache the last computed report for 5s so k8s probing every 2s does not
+    // re-fire real HTTP/DNS/ping traffic at your dependencies.
+    cacheTtl: 5000,
+    // Apply a default timeout to every checker that does not set its own.
+    defaultTimeout: 3000,
+});
+
+healthCheckService.addChecker("slow-dep", httpCheck("https://slow.example.com"), { timeout: 1000 });
+
+// Returns true if a checker existed and was removed.
+healthCheckService.removeChecker("slow-dep");
+```
+
+### Graceful shutdown
+
+```ts
+const healthCheckService = new HealthCheck();
+
+healthCheckService.onShutdown(async () => {
+    await pool.end();
+});
+
+process.on("SIGTERM", () => {
+    void healthCheckService.shutdown().then(() => process.exit(0));
+});
 ```
 
 ### API health check endpoint types
@@ -90,10 +146,10 @@ This check verifies that the node environment is set to production.
 This check is useful for ensuring that the node environment is set to production in production environments or only that the NODE_ENV is set.
 
 ```ts
-import { nodeEnvironmentCheck } from "@visulima/health-check";
+import { nodeEnvCheck } from "@visulima/health-check";
 
-nodeEnvironmentCheck(); // check if NODE_ENV is set
-nodeEnvironmentCheck("production"); // check if NODE_ENV is set to production
+nodeEnvCheck(); // check if NODE_ENV is set
+nodeEnvCheck("production"); // check if NODE_ENV is set to production
 ```
 
 #### HTTP built-in check
@@ -109,14 +165,21 @@ httpCheck("https://example.com", {
         headers: {
             "Content-Type": "application/json",
         },
-        // ... any other options you want to pass to node-fetch
+        // ... any other options you want to pass to fetch
     },
     expected: {
         status: 200,
         body: "OK",
     },
+    // Aborts the request after 5000ms by default (pass 0 to disable). Ignored
+    // when you supply your own `fetchOptions.signal`.
+    timeout: 5000,
 });
 ```
+
+> The `dnsCheck` and `pingCheck` helpers accept a bare hostname or a full URL —
+> a URL like `https://example.com:8080/path` is parsed down to `example.com`
+> before resolving/pinging.
 
 #### DNS built-in check(s)
 
@@ -144,37 +207,96 @@ pingCheck("example.com", {
 });
 ```
 
-#### Custom Checks
+#### Memory usage check
 
-The library provides Check interface that you can implement to create your own custom checks.
+Reports unhealthy when the process memory usage exceeds the configured
+thresholds. By default it flags when RSS exceeds 90% of total system memory.
 
 ```ts
-type Checker = () => Promise<HealthReportEntry>;
+import { memoryUsageCheck } from "@visulima/health-check";
+
+memoryUsageCheck(); // defaults to maxRssRatio: 0.9
+memoryUsageCheck({ maxHeapUsedBytes: 512 * 1024 * 1024, maxRssRatio: 0.8 });
+```
+
+#### Disk space check
+
+Reports unhealthy when the free disk space at a path drops below the configured
+threshold. By default it flags when less than 10% of the filesystem is free.
+
+```ts
+import { diskSpaceCheck } from "@visulima/health-check";
+
+diskSpaceCheck("/"); // defaults to minFreeRatio: 0.1
+diskSpaceCheck(process.cwd(), { minFreeBytes: 1024 * 1024 * 1024 });
+```
+
+#### Event loop lag check
+
+Measures event loop lag and reports unhealthy when it exceeds the threshold.
+Cheap and self-contained — a good fit for a `liveness` check.
+
+```ts
+import { eventLoopLagCheck } from "@visulima/health-check";
+
+eventLoopLagCheck(); // defaults to maxLagMs: 70
+eventLoopLagCheck({ maxLagMs: 100 });
+```
+
+#### Custom Checks
+
+The library provides a `Checker` interface that you can implement to create your
+own custom checks. `HealthReportEntry` is generic over the `meta` payload so your
+checkers stay type-safe.
+
+```ts
+import type { Checker, HealthReportEntry } from "@visulima/health-check";
+
+type Checker<TMeta = unknown> = () => Promise<HealthReportEntry<TMeta>>;
 
 /**
  * Shape of health report entry. Each checker must
  * return an object with similar shape.
  */
-type HealthReportEntry = {
+type HealthReportEntry<TMeta = unknown> = {
     displayName: string;
     health: {
         healthy: boolean;
         message?: string;
         timestamp: string;
     };
-    meta?: any;
+    meta?: TMeta;
 };
 ```
 
 #### Expose Health Endpoint
 
-The library provides an HTTP handler function for serving health stats in JSON format. You can register it using your favorite HTTP implementation like so:
+The library provides an HTTP handler function for serving health stats in JSON
+format. Pass your `HealthCheck` instance into `healthCheckHandler`:
 
 ```ts
-import { handleHealthCheck } from "@visulima/health-check";
+import { HealthCheck, healthCheckHandler, nodeEnvCheck } from "@visulima/health-check";
 
-export default handleHealthCheck();
+const healthCheckService = new HealthCheck();
+
+healthCheckService.addChecker("node-env", nodeEnvCheck());
+
+export default healthCheckHandler(healthCheckService);
 ```
+
+`healthCheckHandler` accepts an options object as its second argument:
+
+```ts
+healthCheckHandler(healthCheckService, {
+    appName: "my-service", // defaults to process.env.APP_NAME, then "unknown"
+    appVersion: "1.2.3", // defaults to process.env.APP_VERSION, then "unknown"
+    type: "readiness", // only run checkers tagged for this probe (optional)
+    sendHeader: true, // set the Content-Type header (default true)
+});
+```
+
+> For backwards compatibility a boolean second argument is still accepted and
+> treated as `{ sendHeader }`.
 
 ## Supported Node.js Versions
 

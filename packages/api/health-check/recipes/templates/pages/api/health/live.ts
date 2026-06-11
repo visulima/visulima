@@ -1,4 +1,6 @@
-import type { NextApiRequest, NextApiResponse } from "next";
+import { healthLiveHandler } from "@visulima/health-check";
+
+import HealthCheckService from "../../../integrations/healt-check";
 
 /**
  * @openapi
@@ -9,10 +11,9 @@ import type { NextApiRequest, NextApiResponse } from "next";
  *     description: "Returns the liveness of a microservice"
  *     operationId: "health-check-live"
  *     responses:
- *       200:
+ *       204:
  *         description: "Successful operation"
+ *       503:
+ *         description: "Service unavailable"
  */
-export default (_request: NextApiRequest, response: NextApiResponse) => {
-    response.status(200);
-    response.end();
-};
+export default healthLiveHandler(HealthCheckService);

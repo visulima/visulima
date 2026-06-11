@@ -70,7 +70,6 @@
     },
     "dependencies": {
         "cacheable-lookup": "catalog:prod",
-        "http-status-codes": "catalog:prod",
         "pingman": "catalog:prod"
     },
     "devDependencies": {

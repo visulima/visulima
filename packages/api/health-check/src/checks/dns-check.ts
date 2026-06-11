@@ -2,6 +2,7 @@ import type { EntryObject, LookupOptions, Options } from "cacheable-lookup";
 import CacheableLookup from "cacheable-lookup";
 
 import type { Checker } from "../types";
+import normalizeHost from "../utils/normalize-host";
 
 const DISPLAY_NAME = "DNS check for";
 
@@ -21,7 +22,7 @@ const dnsCheck
 
         return async () => {
             try {
-                const meta: EntryObject | EntryObject[] = await cacheable.lookupAsync(host.replace(/^https?:\/\//, ""), {
+                const meta: EntryObject | EntryObject[] = await cacheable.lookupAsync(normalizeHost(host), {
                     hints,
                     ...family === "all" ? { all: true } : { family },
                 } as LookupOptions);
