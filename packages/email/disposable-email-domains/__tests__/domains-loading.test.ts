@@ -13,7 +13,7 @@ describe("domains.json loading", () => {
     });
 
     it("falls back to an empty list when reading domains.json throws", async () => {
-        expect.assertions(2);
+        expect.assertions(3);
 
         vi.resetModules();
         vi.doMock(import("node:fs"), async (importOriginal) => {
@@ -27,12 +27,14 @@ describe("domains.json loading", () => {
             };
         });
 
-        const { isDisposableEmail } = await import("../src/index");
+        const { isDisposableEmail, isListLoaded } = await import("../src/index");
 
         // With an empty built-in list, even a known disposable domain resolves to false,
         // while custom domains still work.
         expect(isDisposableEmail("user@10minutemail.com")).toBe(false);
         expect(isDisposableEmail("user@custom.com", new Set(["custom.com"]))).toBe(true);
+        // The degraded fail-open state is observable via isListLoaded().
+        expect(isListLoaded()).toBe(false);
     });
 
     it("falls back to an empty list when domains.json is not an array", async () => {

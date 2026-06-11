@@ -42,6 +42,7 @@
             "default": "./dist/index.js"
         },
         "./domains": {
+            "types": "./dist/domains.d.ts",
             "default": "./dist/domains.json"
         },
         "./package.json": "./package.json"

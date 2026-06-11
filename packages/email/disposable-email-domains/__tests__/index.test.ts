@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { areDisposableEmails, isDisposableEmail } from "../src/index";
+import { areDisposableEmails, extractDomain, isDisposableDomain, isDisposableEmail, preload } from "../src/index";
 
 describe(isDisposableEmail, () => {
     beforeEach(() => {
@@ -65,14 +65,102 @@ describe(isDisposableEmail, () => {
             expect(isDisposableEmail("user@sub.example.com")).toBe(false);
         });
 
-        it("should match subdomains against custom parent domains is not implied", () => {
+        it("should match subdomains against custom parent domains (wildcard)", () => {
             expect.assertions(2);
 
             const customDomains = new Set(["custom-disposable.com"]);
 
-            // Custom domains only match exactly, not via the wildcard parent loop.
+            // Custom domains use the same wildcard/subdomain semantics as the built-in list.
             expect(isDisposableEmail("user@custom-disposable.com", customDomains)).toBe(true);
-            expect(isDisposableEmail("user@sub.custom-disposable.com", customDomains)).toBe(false);
+            expect(isDisposableEmail("user@sub.custom-disposable.com", customDomains)).toBe(true);
+        });
+
+        it("should accept an options object with customDomains", () => {
+            expect.assertions(2);
+
+            expect(isDisposableEmail("user@custom-disposable.com", { customDomains: new Set(["custom-disposable.com"]) })).toBe(true);
+            expect(isDisposableEmail("user@sub.custom-disposable.com", { customDomains: new Set(["custom-disposable.com"]) })).toBe(true);
+        });
+
+        it("should not flag allowlisted domains even if they are in the built-in list", () => {
+            expect.assertions(3);
+
+            const allowDomains = new Set(["10minutemail.com"]);
+
+            // Without the allowlist this is disposable.
+            expect(isDisposableEmail("user@10minutemail.com")).toBe(true);
+            // The allowlist wins over the built-in list.
+            expect(isDisposableEmail("user@10minutemail.com", { allowDomains })).toBe(false);
+            // And it applies to subdomains via the parent-domain loop.
+            expect(isDisposableEmail("user@a.b.10minutemail.com", { allowDomains })).toBe(false);
+        });
+
+        it("should let the allowlist override custom domains", () => {
+            expect.assertions(1);
+
+            expect(
+                isDisposableEmail("user@custom-disposable.com", {
+                    allowDomains: new Set(["custom-disposable.com"]),
+                    customDomains: new Set(["custom-disposable.com"]),
+                }),
+            ).toBe(false);
+        });
+    });
+
+    describe(isDisposableDomain, () => {
+        it("should check a bare domain without an email wrapper", () => {
+            expect.assertions(3);
+            expect(isDisposableDomain("10minutemail.com")).toBe(true);
+            expect(isDisposableDomain("sub.33mail.com")).toBe(true);
+            expect(isDisposableDomain("example.com")).toBe(false);
+        });
+
+        it("should return false for invalid input", () => {
+            expect.assertions(2);
+            expect(isDisposableDomain("")).toBe(false);
+            // @ts-expect-error - testing runtime guard
+            expect(isDisposableDomain(undefined)).toBe(false);
+        });
+    });
+
+    describe(extractDomain, () => {
+        it("should extract and normalize the domain", () => {
+            expect.assertions(3);
+            expect(extractDomain("User@Example.COM")).toBe("example.com");
+            expect(extractDomain("a.b+tag@sub.domain.io")).toBe("sub.domain.io");
+            expect(extractDomain("trailing@example.com.")).toBe("example.com");
+        });
+
+        it("should return undefined for invalid emails", () => {
+            expect.assertions(3);
+            expect(extractDomain("")).toBeUndefined();
+            expect(extractDomain("nope")).toBeUndefined();
+            expect(extractDomain("user@")).toBeUndefined();
+        });
+    });
+
+    describe("edge runtime support", () => {
+        it("setDomains injects a list and isListLoaded reflects it", async () => {
+            expect.assertions(3);
+
+            // Use a fresh module instance so mutating the cached Set does not leak
+            // into other tests that rely on the real built-in list.
+            vi.resetModules();
+
+            const module = await import("../src/index");
+
+            module.setDomains(["injected-disposable.test"]);
+
+            expect(module.isListLoaded()).toBe(true);
+            expect(module.isDisposableEmail("user@injected-disposable.test")).toBe(true);
+            // The built-in list is no longer consulted once injected.
+            expect(module.isDisposableEmail("user@10minutemail.com")).toBe(false);
+        });
+
+        it("preload resolves without throwing", async () => {
+            expect.assertions(1);
+
+            await expect(preload()).resolves.toBeUndefined();
         });
     });
 
