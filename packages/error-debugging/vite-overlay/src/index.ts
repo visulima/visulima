@@ -862,14 +862,5 @@ const errorOverlayPlugin = (options: VisulimaViteOverlayOptions = {}): Plugin =>
  */
 export default errorOverlayPlugin;
 
-export type {
-    BalloonConfig,
-    BalloonPosition,
-    BalloonStyle,
-    Framework,
-    OverlayConfig,
-    Solution,
-    SolutionFinder,
-    VisulimaViteOverlayOptions,
-} from "./types";
+export type { BalloonConfig, BalloonPosition, BalloonStyle, Framework, OverlayConfig, Solution, SolutionFinder, VisulimaViteOverlayOptions } from "./types";
 export { default as createViteSolutionFinder } from "./utils/create-vite-solution-finder";

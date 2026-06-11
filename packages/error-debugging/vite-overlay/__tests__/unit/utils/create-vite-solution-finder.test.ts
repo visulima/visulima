@@ -257,7 +257,7 @@ describe(createViteSolutionFinder, () => {
         expect(solution?.body).toContain("@sveltejs/vite-plugin-svelte");
     });
 
-    it("HTML-escapes the unresolved import path in the solution body when it has markup (XSS regression)", async () => {
+    it("hTML-escapes the unresolved import path in the solution body when it has markup (XSS regression)", async () => {
         expect.assertions(2);
 
         const finder = createViteSolutionFinder(temporaryRoot);
