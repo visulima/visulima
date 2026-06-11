@@ -18,7 +18,7 @@ describe(html, () => {
             const className = "test-class";
             const result = html`<div class="${className}">Hello</div>`;
 
-            expect(result).toBe("<div class=\"test-class\">Hello</div>");
+            expect(result).toBe('<div class="test-class">Hello</div>');
         });
 
         it("should escape multiple interpolated values", () => {
@@ -28,7 +28,7 @@ describe(html, () => {
             const content = "Hello World";
             const result = html`<div id="${id}">${content}</div>`;
 
-            expect(result).toBe("<div id=\"test-id\">Hello World</div>");
+            expect(result).toBe('<div id="test-id">Hello World</div>');
         });
 
         it("should escape XSS attempts in interpolated values", () => {
@@ -47,10 +47,10 @@ describe(html, () => {
             expect(result2).toBe("<div>&lt;img src=x onerror=alert(1)></div>");
 
             // Attribute injection
-            const attributeValue = "\" onclick=\"alert('xss')\"";
+            const attributeValue = '" onclick="alert(\'xss\')"';
             const result3 = html`<div class="${attributeValue}">Content</div>`;
 
-            expect(result3).toBe("<div class=\"&quot; onclick=&quot;alert(&#39;xss&#39;)&quot;\">Content</div>");
+            expect(result3).toBe('<div class="&quot; onclick=&quot;alert(&#39;xss&#39;)&quot;">Content</div>');
         });
 
         it("should escape special characters in interpolated values", () => {
@@ -61,10 +61,10 @@ describe(html, () => {
 
             expect(result1).toBe("<div>Hello &amp; World</div>");
 
-            const quoteContent = "He said \"Hello\"";
+            const quoteContent = 'He said "Hello"';
             const result2 = html`<div class="${quoteContent}">Test</div>`;
 
-            expect(result2).toBe("<div class=\"He said &quot;Hello&quot;\">Test</div>");
+            expect(result2).toBe('<div class="He said &quot;Hello&quot;">Test</div>');
         });
 
         it("should handle empty template literal", () => {
@@ -288,7 +288,7 @@ describe(html, () => {
         it("should escape HTML when escape is true", () => {
             expect.assertions(1);
 
-            const result = html("<script>alert(\"xss\")</script>", true);
+            const result = html('<script>alert("xss")</script>', true);
 
             expect(result).toBe("&lt;script>alert(&quot;xss&quot;)&lt;/script>");
         });
@@ -312,15 +312,15 @@ describe(html, () => {
         it("should handle HTML with special characters when escape is false", () => {
             expect.assertions(1);
 
-            const result = html("<div class=\"test\">Hello & World</div>", false);
+            const result = html('<div class="test">Hello & World</div>', false);
 
-            expect(result).toBe("<div class=\"test\">Hello & World</div>");
+            expect(result).toBe('<div class="test">Hello & World</div>');
         });
 
         it("should escape special characters when escape is true", () => {
             expect.assertions(1);
 
-            const result = html("<div class=\"test\">Hello & World</div>", true);
+            const result = html('<div class="test">Hello & World</div>', true);
 
             expect(result).toBe("&lt;div class=&quot;test&quot;>Hello &amp; World&lt;/div>");
         });

@@ -77,7 +77,7 @@ const CSS_WHITESPACE = new Set([" ", "\t", "\n", "\r", "\f", "\v"]);
  */
 const collapseWhitespaceOutsideStrings = (input: string): string => {
     let result = "";
-    let quote: "\"" | "'" | undefined;
+    let quote: '"' | "'" | undefined;
     let inWhitespaceRun = false;
 
     for (let index = 0; index < input.length; index += 1) {
@@ -98,7 +98,7 @@ const collapseWhitespaceOutsideStrings = (input: string): string => {
             continue;
         }
 
-        if (char === "\"" || char === "'") {
+        if (char === '"' || char === "'") {
             quote = char;
             inWhitespaceRun = false;
         } else if (CSS_WHITESPACE.has(char)) {

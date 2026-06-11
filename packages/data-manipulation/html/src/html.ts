@@ -20,8 +20,7 @@ const RAW_BRAND = "__isRawHtml" as const;
  * @param value The value to test.
  * @returns `true` when the value is a trusted raw HTML fragment.
  */
-const isRawHtml = (value: unknown): value is RawHtml =>
-    typeof value === "object" && value !== null && (value as { [RAW_BRAND]?: unknown })[RAW_BRAND] === true;
+const isRawHtml = (value: unknown): value is RawHtml => typeof value === "object" && value !== null && (value as { [RAW_BRAND]?: unknown })[RAW_BRAND] === true;
 
 /**
  * Serializes a single interpolated value for the `html` tag.
