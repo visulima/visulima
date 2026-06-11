@@ -59,10 +59,7 @@ const _createWalkEntry = (path: string): WalkEntry => {
  * ```
  */
 // eslint-disable-next-line sonarjs/cognitive-complexity
-export default function* walkSync(
-    directory: URL | string,
-    options: WalkOptions = {},
-): IterableIterator<WalkEntry> {
+export default function* walkSync(directory: URL | string, options: WalkOptions = {}): IterableIterator<WalkEntry> {
     const {
         extensions,
         followSymlinks = false,
@@ -86,15 +83,15 @@ export default function* walkSync(
 
     const mappedMatch = match
         ? match.map(
-            // eslint-disable-next-line no-confusing-arrow
-            (pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern,
-        )
+              // eslint-disable-next-line no-confusing-arrow
+              (pattern): RegExp => (typeof pattern === "string" ? globToRegExp(pattern) : pattern),
+          )
         : undefined;
     const mappedSkip = skip
         ? skip.map(
-            // eslint-disable-next-line no-confusing-arrow
-            (pattern): RegExp => typeof pattern === "string" ? globToRegExp(pattern) : pattern,
-        )
+              // eslint-disable-next-line no-confusing-arrow
+              (pattern): RegExp => (typeof pattern === "string" ? globToRegExp(pattern) : pattern),
+          )
         : undefined;
 
     const resolvedDirectory: string = resolve(toPath(directory));

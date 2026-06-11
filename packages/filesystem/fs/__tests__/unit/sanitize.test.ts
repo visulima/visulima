@@ -69,7 +69,7 @@ describe(sanitize, () => {
             // ">" -> "›" (SINGLE RIGHT-POINTING ANGLE QUOTATION MARK)
             expect(sanitize("brack<e>ts.js", { filesystem: "win32" })).toBe("brack‹e›ts.js");
             // "\"" -> "ˮ" (MODIFIER LETTER DOUBLE APOSTROPHE)
-            expect(sanitize("quote\".js", { filesystem: "win32" })).toBe("quoteˮ.js");
+            expect(sanitize('quote".js', { filesystem: "win32" })).toBe("quoteˮ.js");
             // "\\" -> "∖" (SET MINUS)
             expect(sanitize(String.raw`slash\.js`, { filesystem: "win32" })).toBe("slash∖.js");
             // "|" -> "ǀ" (LATIN LETTER DENTAL CLICK)
