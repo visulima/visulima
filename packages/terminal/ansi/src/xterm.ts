@@ -136,3 +136,101 @@ export const resetModifyOtherKeys: string = `${CSI}>4m`;
  * ```
  */
 export const queryModifyOtherKeys: string = `${CSI}?4m`;
+
+// --- Kitty keyboard protocol (progressive enhancement) ---
+// Modern terminals (kitty, ghostty, foot, WezTerm, …) expose an opt-in keyboard
+// protocol that disambiguates modifiers and reports key-release events. Flags
+// are pushed onto a per-terminal stack so a TUI can enable them on entry and
+// restore the previous state on exit.
+// See: https://sw.kovidgoyal.net/kitty/keyboard-protocol/
+
+/**
+ * Bit flags for the Kitty keyboard protocol progressive-enhancement level.
+ *
+ * Combine members with bitwise OR to request multiple enhancements at once.
+ * @see {@link https://sw.kovidgoyal.net/kitty/keyboard-protocol/#progressive-enhancement}
+ */
+export const KittyKeyboardFlag = {
+    /** Disambiguate escape codes so modifier+key combos are unambiguous. */
+    DisambiguateEscapeCodes: 1,
+    /** Report all keys as escape codes (so e.g. Enter/Tab/Backspace are reported uniformly). */
+    ReportAllKeysAsEscapeCodes: 16,
+    /** Report alternate keys (e.g. shifted layout keys and the base layout key). */
+    ReportAlternateKeys: 8,
+    /** Embed the text the key would produce in the escape code. */
+    ReportAssociatedText: 4,
+    /** Add event-type data, enabling key-release (and repeat) reporting. */
+    ReportEventTypes: 2,
+} as const;
+
+/**
+ * A Kitty keyboard protocol flag value: a bitwise OR of {@link KittyKeyboardFlag}
+ * members (range `0`-`31`).
+ */
+// eslint-disable-next-line sonarjs/redundant-type-aliases
+export type KittyKeyboardFlags = number;
+
+/**
+ * Pushes a new set of Kitty keyboard protocol flags onto the terminal's stack.
+ *
+ * Sequence: `CSI > flags u`
+ * @param flags Bitwise OR of {@link KittyKeyboardFlag} values. Defaults to {@link KittyKeyboardFlag.DisambiguateEscapeCodes}.
+ * @returns The escape sequence enabling the requested enhancement level.
+ * @example
+ * ```typescript
+ * import { pushKittyKeyboard, KittyKeyboardFlag as Flag } from "@visulima/ansi/xterm";
+ *
+ * const flags = Flag.DisambiguateEscapeCodes | Flag.ReportEventTypes;
+ *
+ * process.stdout.write(pushKittyKeyboard(flags));
+ * ```
+ * @see {@link https://sw.kovidgoyal.net/kitty/keyboard-protocol/#progressive-enhancement}
+ */
+export const pushKittyKeyboard = (flags: KittyKeyboardFlags = KittyKeyboardFlag.DisambiguateEscapeCodes): string =>
+    `${CSI}>${(Number.isInteger(flags) && flags >= 0 ? flags : 0).toString()}u`;
+
+/**
+ * Pops one or more entries from the terminal's Kitty keyboard protocol flag stack,
+ * restoring the previous enhancement level. Call this on exit to undo {@link pushKittyKeyboard}.
+ *
+ * Sequence: `CSI < number u`
+ * @param count How many stack entries to pop. Defaults to `1`.
+ * @returns The escape sequence popping the stack.
+ * @example
+ * ```typescript
+ * import { popKittyKeyboard } from "@visulima/ansi/xterm";
+ *
+ * process.stdout.write(popKittyKeyboard());
+ * ```
+ * @see {@link https://sw.kovidgoyal.net/kitty/keyboard-protocol/#progressive-enhancement}
+ */
+export const popKittyKeyboard = (count = 1): string => `${CSI}<${(Number.isInteger(count) && count > 0 ? count : 1).toString()}u`;
+
+/**
+ * Sets the Kitty keyboard protocol flags, replacing the current top-of-stack
+ * entry (mode `1`) rather than pushing a new one.
+ *
+ * Sequence: `CSI = flags ; 1 u`
+ * @param flags Bitwise OR of {@link KittyKeyboardFlag} values.
+ * @returns The escape sequence setting the flags.
+ * @see {@link https://sw.kovidgoyal.net/kitty/keyboard-protocol/#progressive-enhancement}
+ */
+export const setKittyKeyboard = (flags: KittyKeyboardFlags = KittyKeyboardFlag.DisambiguateEscapeCodes): string =>
+    `${CSI}=${(Number.isInteger(flags) && flags >= 0 ? flags : 0).toString()};1u`;
+
+/**
+ * Queries the terminal's current Kitty keyboard protocol flags.
+ *
+ * Sequence: `CSI ? u`
+ * Response: `CSI ? flags u`.
+ * @returns The query escape sequence.
+ * @example
+ * ```typescript
+ * import { queryKittyKeyboard } from "@visulima/ansi/xterm";
+ *
+ * process.stdout.write(queryKittyKeyboard);
+ * // Expect a response like: "\x1b[?1u"
+ * ```
+ * @see {@link https://sw.kovidgoyal.net/kitty/keyboard-protocol/#progressive-enhancement}
+ */
+export const queryKittyKeyboard: string = `${CSI}?u`;

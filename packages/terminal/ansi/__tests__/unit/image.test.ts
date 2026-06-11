@@ -83,4 +83,33 @@ describe("image (iTerm2 protocol)", () => {
 
         expect(image(emptyData)).toBe(expected);
     });
+
+    it("should produce identical base64 via the btoa browser fallback", async () => {
+        expect.assertions(1);
+
+        // Simulate a browser/xterm.js runtime: no Uint8Array.toBase64, but btoa exists.
+        const proto = Uint8Array.prototype as unknown as { toBase64?: () => string };
+        const originalToBase64 = proto.toBase64;
+        const originalBtoa = (globalThis as { btoa?: (input: string) => string }).btoa;
+
+        delete proto.toBase64;
+        (globalThis as { btoa?: (input: string) => string }).btoa = (input: string) => Buffer.from(input, "binary").toString("base64");
+
+        try {
+            // Re-import a fresh module instance so the runtime detection re-runs.
+            const { image: freshImage } = await import("../../src/image");
+
+            expect(freshImage(mockData)).toBe(`${OSC}1337;File=inline=1:${mockDataB64}${BEL}`);
+        } finally {
+            if (originalToBase64) {
+                proto.toBase64 = originalToBase64;
+            }
+
+            if (originalBtoa) {
+                (globalThis as { btoa?: (input: string) => string }).btoa = originalBtoa;
+            } else {
+                delete (globalThis as { btoa?: (input: string) => string }).btoa;
+            }
+        }
+    });
 });

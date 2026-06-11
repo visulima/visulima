@@ -5,6 +5,9 @@ export const beep = "\u0007";
 
 export { ALT_SCREEN_OFF, ALT_SCREEN_ON, alternativeScreenOff, alternativeScreenOn } from "./alternative-screen";
 export { clearLineAndHomeCursor, clearScreenAndHomeCursor, clearScreenFromTopLeft, resetTerminal } from "./clear";
+export type { ClipboardSelection } from "./clipboard";
+export { clearClipboard, requestClipboard, setClipboard } from "./clipboard";
+export { APC, BEL, CSI, DCS, ESC, OSC, PM, SEP, SOS, ST } from "./constants";
 export type { CursorStyle } from "./cursor"; // Enum
 export {
     CURSOR_BACKWARD_1,
@@ -230,13 +233,19 @@ export {
     xtermWindowOp,
     XTWINOPS,
 } from "./window-ops";
+export type { KittyKeyboardFlags } from "./xterm";
 export {
     keyModifierOptions,
+    KittyKeyboardFlag,
+    popKittyKeyboard,
+    pushKittyKeyboard,
     queryKeyModifierOptions,
+    queryKittyKeyboard,
     queryModifyOtherKeys,
     resetKeyModifierOptions,
     resetModifyOtherKeys,
     setKeyModifierOptions,
+    setKittyKeyboard,
     setModifyOtherKeys1,
     setModifyOtherKeys2,
     XTMODKEYS,

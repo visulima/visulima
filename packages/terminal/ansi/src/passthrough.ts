@@ -101,11 +101,10 @@ export const screenPassthrough = (sequence: string, limit: number = SCREEN_MAX_L
  * ```
  */
 export const tmuxPassthrough = (sequence: string): string => {
-    let escapedSequence = "";
-
-    for (const element of sequence) {
-        escapedSequence += element === ESC ? ESC + ESC : element;
-    }
+    // Double every ESC in a single pass; `replaceAll` is both simpler and
+    // significantly faster than char-by-char concatenation on large repaint
+    // frames passed through tmux.
+    const escapedSequence = sequence.replaceAll(ESC, ESC + ESC);
 
     return `${DCS}tmux;${escapedSequence}${ST}`;
 };

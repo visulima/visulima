@@ -82,10 +82,10 @@ import { cursorUp, cursorLeft } from "@visulima/ansi/cursor";
 // etc, as above...
 ```
 
-And for commonjs:
+`@visulima/ansi` is ESM-only. In a CommonJS module, load it with a dynamic `import()`:
 
 ```js
-const { cursorUp, cursorLeft } = require("@visulima/ansi");
+const { cursorUp, cursorLeft } = await import("@visulima/ansi");
 
 // etc, as above...
 ```
@@ -110,10 +110,10 @@ process.stdout.write(eraseLine);
 **Screen Clearing**
 
 ```javascript
-import { clearScreen, eraseDown } from "@visulima/ansi";
+import { clearScreenAndHomeCursor, eraseDown } from "@visulima/ansi";
 
-// Clear the entire screen
-process.stdout.write(clearScreen);
+// Clear the entire screen and move the cursor to the top-left
+process.stdout.write(clearScreenAndHomeCursor);
 
 // Clear from cursor to end of screen
 process.stdout.write(eraseDown);
@@ -152,6 +152,17 @@ This package exports the following functions and constants. For a detailed list 
 - `clearScreenAndHomeCursor`
 - `clearScreenFromTopLeft`
 - `resetTerminal`
+
+**Clipboard** (from `clipboard.ts`)
+
+- `setClipboard` — write text to the terminal clipboard via OSC 52 (works over SSH/tmux)
+- `requestClipboard` — request the clipboard contents
+- `clearClipboard` — clear a clipboard selection
+- `ClipboardSelection` (type)
+
+**Constants** (from `constants.ts`)
+
+- `ESC`, `CSI`, `OSC`, `BEL`, `SEP`, `DCS`, `ST`, `APC`, `SOS`, `PM` — low-level sequence primitives for composing custom escape sequences
 
 **Cursor** (from `cursor.ts`)
 
@@ -291,6 +302,14 @@ This package exports the following functions and constants. For a detailed list 
 - `screenPassthrough`
 - `tmuxPassthrough`
 
+**Progress** (from `progress.ts`)
+
+- `resetProgressBar`
+- `setProgressBar`
+- `setErrorProgressBar`
+- `setIndeterminateProgressBar`
+- `setWarningProgressBar`
+
 **Reset** (from `reset.ts`)
 
 - `RESET_INITIAL_STATE`
@@ -404,11 +423,20 @@ This package exports the following functions and constants. For a detailed list 
 
 **XTerm** (from `xterm.ts`)
 
-- `xtermBell`
-- `xtermManipulateWindow`
-- `xtermReport`
-- `xtermRequest`
-- `xtermSet`
+- `keyModifierOptions` / `XTMODKEYS`
+- `queryKeyModifierOptions` / `XTQMODKEYS`
+- `setKeyModifierOptions`
+- `resetKeyModifierOptions`
+- `setModifyOtherKeys1`
+- `setModifyOtherKeys2`
+- `resetModifyOtherKeys`
+- `queryModifyOtherKeys`
+- `pushKittyKeyboard` — push Kitty keyboard protocol flags (`CSI > flags u`)
+- `popKittyKeyboard` — pop flags off the stack (`CSI < n u`)
+- `setKittyKeyboard` — set flags in place (`CSI = flags ; 1 u`)
+- `queryKittyKeyboard` — query current flags (`CSI ? u`)
+- `KittyKeyboardFlag` — bit-flag constants
+- `KittyKeyboardFlags` (type)
 
 ## Related
 
