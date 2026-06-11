@@ -38,9 +38,9 @@ export const useGetFileMeta = (options: UseGetFileMetaOptions): UseGetFileMetaRe
 
     const query = useQuery({
         enabled: enabled && !!id,
-        queryFn: async (): Promise<FileMeta> => {
+        queryFn: async ({ signal }): Promise<FileMeta> => {
             const url = buildUrl(endpoint, `${id}/metadata`);
-            const data = await fetchJson<FileMeta>(url);
+            const data = await fetchJson<FileMeta>(url, { signal });
 
             return {
                 ...data,

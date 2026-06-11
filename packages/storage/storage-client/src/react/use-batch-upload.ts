@@ -2,11 +2,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
-import type { FileMeta, UploadResult } from "./types";
+import type { FileMeta, HeadersResolver, UploadResult, UploadRestrictions } from "./types";
 
 export interface UseBatchUploadOptions {
+    /** Maximum number of files uploaded in parallel (default: 5). */
+    concurrency?: number;
     /** Upload endpoint URL */
     endpoint: string;
+    /**
+     * Static or dynamically-resolved headers attached to every request — e.g. an
+     * `Authorization` token for an authenticated endpoint.
+     */
+    headers?: HeadersResolver;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
     /** Callback when batch fails */
@@ -17,6 +24,8 @@ export interface UseBatchUploadOptions {
     onStart?: (batchId: string) => void;
     /** Callback when batch completes successfully */
     onSuccess?: (results: UploadResult[], batchId: string) => void;
+    /** Client-side upload restrictions, validated before any network request. */
+    restrictions?: UploadRestrictions;
 }
 
 export interface UseBatchUploadReturn {
@@ -46,16 +55,19 @@ export interface UseBatchUploadReturn {
  * @returns Batch upload functions and state
  */
 export const useBatchUpload = (options: UseBatchUploadOptions): UseBatchUploadReturn => {
-    const { endpoint, metadata, onError, onProgress, onStart, onSuccess } = options;
+    const { concurrency, endpoint, headers, metadata, onError, onProgress, onStart, onSuccess, restrictions } = options;
 
     // Create uploader instance (memoized)
     const uploaderInstance = useMemo(
         () =>
             createMultipartAdapter({
+                concurrency,
                 endpoint,
+                headers,
                 metadata,
+                restrictions,
             }),
-        [endpoint, metadata],
+        [concurrency, endpoint, headers, metadata, restrictions],
     );
 
     const [items, setItems] = useState<UploadItem[]>([]);

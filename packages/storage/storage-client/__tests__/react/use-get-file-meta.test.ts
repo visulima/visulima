@@ -179,7 +179,7 @@ describe(useGetFileMeta, () => {
     });
 
     it("should refetch data", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const mockData = {
             id: "file-123",

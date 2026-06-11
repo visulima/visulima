@@ -1,7 +1,9 @@
 /* eslint-disable no-underscore-dangle -- `control._attach/_detach/_updateOffset` are the intentional @internal cross-module API of UploadControl */
-import type { FileMeta, UploadResult } from "../react/types";
 import type { FingerprintFunction } from "./fingerprint";
 import { defaultFingerprint } from "./fingerprint";
+import { resolveHeaders } from "./query-client";
+import { validateFile } from "./restrictions";
+import type { FileMeta, HeadersResolver, UploadRestrictions, UploadResult } from "./types";
 import type { UploadControl } from "./upload-control";
 import type { UrlStorage, UrlStorageEntry } from "./url-storage";
 
@@ -88,6 +90,8 @@ interface TusUploadState {
     isPaused: boolean;
     /** Current upload offset */
     offset: number;
+    /** Resolvers waiting for `resume()` — invoked when the upload is unpaused. */
+    pauseWaiters: (() => void)[];
     /** Retry count */
     retryCount: number;
     /** Upload URL from server */
@@ -109,10 +113,18 @@ export interface TusAdapterOptions {
     endpoint: string;
     /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
     fingerprint?: FingerprintFunction;
+
+    /**
+     * Static or dynamically-resolved headers attached to every request (creation,
+     * HEAD, PATCH). Use this to attach an `Authorization` token to all requests.
+     */
+    headers?: HeadersResolver;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
+    /** Client-side upload restrictions, validated before any network request. */
+    restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
     retry?: boolean;
 
@@ -159,8 +171,10 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         control,
         endpoint,
         fingerprint: fingerprintFunction = defaultFingerprint,
+        headers: headersResolver,
         maxRetries = 3,
         metadata = {},
+        restrictions,
         retry = true,
         urlStorage,
     } = options;
@@ -172,6 +186,31 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
     let errorCallback: ((error: Error) => void) | undefined;
 
     /**
+     * Merges adapter-level custom headers with the per-request TUS headers.
+     * Per-request headers win on conflict (the TUS protocol headers are required).
+     */
+    const buildHeaders = async (requestHeaders: Record<string, string>): Promise<Record<string, string>> => {
+        const resolved = await resolveHeaders(headersResolver);
+
+        return { ...resolved, ...requestHeaders };
+    };
+
+    /**
+     * Wakes every coroutine waiting on a pause. Called from `resume()` and on
+     * abort so the upload loop continues immediately instead of polling.
+     */
+    const flushPauseWaiters = (state: TusUploadState): void => {
+        const waiters = state.pauseWaiters;
+
+        // eslint-disable-next-line no-param-reassign -- Resetting shared upload state in place
+        state.pauseWaiters = [];
+
+        for (const resolve of waiters) {
+            resolve();
+        }
+    };
+
+    /**
      * Probes a previously-issued TUS upload URL. Returns the current server-side
      * offset, or `undefined` if the server reports the upload no longer exists
      * (404 / 410 / 403) so the caller can fall through to a fresh POST.
@@ -181,7 +220,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
         try {
             response = await fetch(uploadUrl, {
-                headers: { "Tus-Resumable": TUS_RESUMABLE_VERSION },
+                headers: await buildHeaders({ "Tus-Resumable": TUS_RESUMABLE_VERSION }),
                 method: "HEAD",
                 signal,
             });
@@ -250,11 +289,11 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         };
 
         const response = await fetch(endpoint, {
-            headers: {
+            headers: await buildHeaders({
                 "Tus-Resumable": TUS_RESUMABLE_VERSION,
                 "Upload-Length": file.size.toString(),
                 "Upload-Metadata": encodeMetadata(fileMetadata),
-            },
+            }),
             method: "POST",
         });
 
@@ -302,9 +341,9 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
      */
     const getUploadOffset = async (uploadUrl: string, signal?: AbortSignal): Promise<number> => {
         const response = await fetch(uploadUrl, {
-            headers: {
+            headers: await buildHeaders({
                 "Tus-Resumable": TUS_RESUMABLE_VERSION,
-            },
+            }),
             method: "HEAD",
             signal,
         });
@@ -336,12 +375,12 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
         const response = await fetch(uploadUrl, {
             body: chunk,
-            headers: {
+            headers: await buildHeaders({
                 "Content-Length": chunk.size.toString(), // Explicitly set Content-Length as required by TUS protocol
                 "Content-Type": "application/offset+octet-stream",
                 "Tus-Resumable": TUS_RESUMABLE_VERSION,
                 "Upload-Offset": startOffset.toString(),
-            },
+            }),
             method: "PATCH",
             signal,
         });
@@ -378,7 +417,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         const parsed = Number.parseInt(newOffsetHeader, 10);
 
         if (!Number.isFinite(parsed)) {
-            throw new Error("Invalid Upload-Offset header in PATCH response");
+            throw new TypeError("Invalid Upload-Offset header in PATCH response");
         }
 
         return parsed;
@@ -406,21 +445,13 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     throw new Error("Upload aborted");
                 }
 
-                // Check if paused
-                if (state.isPaused) {
+                // Check if paused. Block on a promise that resolves on resume()/abort
+                // rather than busy-polling, so resume is instantaneous.
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- aborted may flip between awaits
+                if (state.isPaused && !abortController.signal.aborted) {
                     // eslint-disable-next-line no-await-in-loop -- Sequential wait required for pause/resume
                     await new Promise<void>((resolve) => {
-                        const checkPause = (): void => {
-                            if (abortController.signal.aborted) {
-                                resolve();
-                            } else if (state.isPaused) {
-                                setTimeout(checkPause, 100);
-                            } else {
-                                resolve();
-                            }
-                        };
-
-                        checkPause();
+                        state.pauseWaiters.push(resolve);
                     });
                 }
 
@@ -480,9 +511,9 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
             // Upload complete, get final file info
             const headResponse = await fetch(uploadUrl, {
-                headers: {
+                headers: await buildHeaders({
                     "Tus-Resumable": TUS_RESUMABLE_VERSION,
-                },
+                }),
                 method: "HEAD",
                 signal: abortController.signal,
             });
@@ -539,6 +570,8 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         abort: () => {
             if (uploadState) {
                 uploadState.abortController.abort();
+                // Wake any pause-waiters so the upload loop sees the abort immediately.
+                flushPauseWaiters(uploadState);
                 // Don't clear uploadState here - let performUpload handle it in finally
             }
         },
@@ -549,6 +582,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         clear: () => {
             if (uploadState) {
                 uploadState.abortController.abort();
+                flushPauseWaiters(uploadState);
                 // Don't clear uploadState here - let performUpload handle it in finally
             }
         },
@@ -582,6 +616,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             }
 
             uploadState.isPaused = false;
+            flushPauseWaiters(uploadState);
         },
 
         /**
@@ -654,12 +689,17 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             finishCallback = internalFinishCallback;
             errorCallback = internalErrorCallback;
 
+            // Validate restrictions before any network request so consumers get a
+            // friendly error instead of a server-side 413.
+            validateFile(file, restrictions);
+
             uploadState = {
                 abortController: new AbortController(),
                 file,
                 fingerprint: undefined,
                 isPaused: false,
                 offset: 0,
+                pauseWaiters: [],
                 retryCount: 0,
                 uploadUrl: undefined,
             };
@@ -740,12 +780,16 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
                 control?._attach(
                     {
-                        abort: () => { initialState.abortController.abort(); },
+                        abort: () => {
+                            initialState.abortController.abort();
+                            flushPauseWaiters(initialState);
+                        },
                         pause: () => {
                             initialState.isPaused = true;
                         },
                         resume: () => {
                             initialState.isPaused = false;
+                            flushPauseWaiters(initialState);
 
                             return Promise.resolve();
                         },

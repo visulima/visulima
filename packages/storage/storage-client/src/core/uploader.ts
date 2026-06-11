@@ -1,4 +1,6 @@
-import type { FileMeta } from "../react/types";
+import { resolveHeaders } from "./query-client";
+import { validateFile, validateFiles } from "./restrictions";
+import type { FileMeta, HeadersResolver, UploadRestrictions } from "./types";
 
 /**
  * Upload item state
@@ -77,13 +79,32 @@ export type UploaderEventHandler<T = UploadItem | BatchState> = (item: T) => voi
  * Configuration options for the uploader.
  */
 export interface UploaderOptions {
+    /**
+     * Maximum number of concurrent uploads. Excess files queue and start as slots
+     * free up, so a large drop doesn't open hundreds of parallel requests
+     * (cf. Uppy `limit`). Defaults to 5. Use `Infinity` for the previous
+     * fire-everything-at-once behaviour.
+     */
+    concurrency?: number;
     /** Upload endpoint URL */
     endpoint: string;
-    /** Maximum number of retry attempts */
+
+    /**
+     * Static or dynamically-resolved headers attached to every upload request.
+     * Use this to attach an `Authorization` token to all requests.
+     */
+    headers?: HeadersResolver;
+    /** Maximum number of retry attempts (only used when `retry` is true). Defaults to 3. */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
-    /** Enable automatic retry on failure */
+    /** Client-side upload restrictions, validated before upload starts. */
+    restrictions?: UploadRestrictions;
+
+    /**
+     * Enable automatic retry on failure with exponential backoff. Off by default;
+     * when off, only the manual `retryItem()` / `retryBatch()` paths apply.
+     */
     retry?: boolean;
 }
 
@@ -144,7 +165,20 @@ export class Uploader {
 
     private batchIdCounter = 0;
 
-    public constructor(private readonly options: UploaderOptions) {}
+    /** FIFO queue of item IDs waiting for a concurrency slot. */
+    private queue: string[] = [];
+
+    /** Number of uploads currently in flight (counts toward the concurrency cap). */
+    private inFlight = 0;
+
+    private readonly concurrency: number;
+
+    private readonly maxRetries: number;
+
+    public constructor(private readonly options: UploaderOptions) {
+        this.concurrency = options.concurrency ?? 5;
+        this.maxRetries = options.maxRetries ?? 3;
+    }
 
     /**
      * Subscribes to uploader events.
@@ -168,6 +202,9 @@ export class Uploader {
      * Adds a file to the upload queue.
      */
     public add(file: File, batchId?: string): string {
+        // Reject files that violate the configured restrictions before queuing.
+        validateFile(file, this.options.restrictions);
+
         const id = this.generateItemId();
         const item: UploadItem = {
             batchId,
@@ -182,11 +219,10 @@ export class Uploader {
 
         this.items.set(id, item);
 
-        // Start upload immediately
-        this.uploadFile(item).catch((error) => {
-            // eslint-disable-next-line no-console -- Error logging for debugging
-            console.error(`[Uploader] Upload failed for item ${id}:`, error);
-        });
+        // Enqueue rather than firing immediately, so a large batch respects the
+        // concurrency cap instead of opening one request per file at once.
+        this.queue.push(id);
+        this.pump();
 
         return id;
     }
@@ -198,6 +234,9 @@ export class Uploader {
         if (files.length === 0) {
             return [];
         }
+
+        // Validate count + per-file restrictions up-front (throws RestrictionError).
+        validateFiles(files, this.options.restrictions);
 
         const batchId = this.generateBatchId();
         const itemIds: string[] = [];
@@ -419,6 +458,39 @@ export class Uploader {
     }
 
     /**
+     * Starts queued uploads up to the concurrency limit.
+     */
+    private pump(): void {
+        while (this.inFlight < this.concurrency && this.queue.length > 0) {
+            const id = this.queue.shift();
+
+            if (id === undefined) {
+                break;
+            }
+
+            const item = this.items.get(id);
+
+            // Skip items that were aborted/removed while queued.
+            if (item?.status !== "pending") {
+                continue;
+            }
+
+            this.inFlight += 1;
+
+            // eslint-disable-next-line promise/catch-or-return -- Fire-and-forget worker; errors are handled in .catch(), .finally() re-pumps the queue
+            this.uploadFile(item)
+                .catch((error: unknown) => {
+                    // eslint-disable-next-line no-console -- Error logging for debugging
+                    console.error(`[Uploader] Upload failed for item ${id}:`, error);
+                })
+                .finally(() => {
+                    this.inFlight -= 1;
+                    this.pump();
+                });
+        }
+    }
+
+    /**
      * Generates a unique item ID.
      */
     private generateItemId(): string {
@@ -540,7 +612,49 @@ export class Uploader {
     /**
      * Uploads a single file.
      */
-    private async uploadFile(item: UploadItem): Promise<void> {
+
+    /**
+     * Schedules an automatic retry of a failed item when `retry` is enabled and
+     * the per-item retry budget is not exhausted. Returns true when a retry was
+     * scheduled (so the caller should not surface a terminal error).
+     */
+    private maybeAutoRetry(item: UploadItem): boolean {
+        if (!this.options.retry) {
+            return false;
+        }
+
+        const currentRetries = item.retryCount ?? 0;
+
+        if (currentRetries >= this.maxRetries) {
+            return false;
+        }
+
+        /* eslint-disable no-param-reassign -- Required to reset item state for the retry attempt */
+        item.retryCount = currentRetries + 1;
+        item.status = "pending";
+        item.error = undefined;
+        item.completed = 0;
+        item.loaded = 0;
+        /* eslint-enable no-param-reassign -- Required to reset item state for the retry attempt */
+        this.items.set(item.id, item);
+
+        // Exponential backoff: 1s, 2s, 4s, ...
+        const delay = 1000 * 2 ** currentRetries;
+
+        setTimeout(() => {
+            const current = this.items.get(item.id);
+
+            // Only re-queue if still pending (not aborted/cleared meanwhile).
+            if (current?.status === "pending") {
+                this.queue.push(item.id);
+                this.pump();
+            }
+        }, delay);
+
+        return true;
+    }
+
+    private uploadFile(item: UploadItem): Promise<void> {
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             const formData = Uploader.createFormData(item.file, this.options.metadata);
@@ -620,6 +734,13 @@ export class Uploader {
                     // Handle error response
                     const error = new Error(`Upload failed: ${String(xhr.status)} ${xhr.statusText}`);
 
+                    // Auto-retry (opt-in) before reporting a terminal error.
+                    if (this.maybeAutoRetry(item)) {
+                        resolve();
+
+                        return;
+                    }
+
                     // eslint-disable-next-line no-param-reassign -- Required to update item state
                     item.status = "error";
                     // eslint-disable-next-line no-param-reassign -- Required to update item state
@@ -642,6 +763,13 @@ export class Uploader {
                 this.activeUploads.delete(item.id);
 
                 const error = new Error("Network error during upload");
+
+                // Auto-retry (opt-in) before reporting a terminal error.
+                if (this.maybeAutoRetry(item)) {
+                    resolve();
+
+                    return;
+                }
 
                 // eslint-disable-next-line no-param-reassign -- Required to update item state
                 item.status = "error";
@@ -692,7 +820,38 @@ export class Uploader {
                 xhr.setRequestHeader("X-File-Metadata", JSON.stringify(this.options.metadata));
             }
 
-            xhr.send(formData);
+            // Resolve and attach custom/auth headers, then send. ITEM_START has
+            // already been emitted synchronously above so listeners fire eagerly
+            // regardless of whether the header resolver is async.
+            resolveHeaders(this.options.headers)
+                .then((customHeaders) => {
+                    for (const [key, value] of Object.entries(customHeaders)) {
+                        xhr.setRequestHeader(key, value);
+                    }
+
+                    xhr.send(formData);
+
+                    return undefined;
+                })
+                .catch((error: unknown) => {
+                    this.activeUploads.delete(item.id);
+
+                    const resolveError = error instanceof Error ? error : new Error(String(error));
+
+                    // eslint-disable-next-line no-param-reassign -- Required to update item state
+                    item.status = "error";
+                    // eslint-disable-next-line no-param-reassign -- Required to update item state
+                    item.error = resolveError.message;
+                    this.items.set(item.id, item);
+
+                    this.emit("ITEM_ERROR", item);
+
+                    if (item.batchId) {
+                        this.updateBatchProgress(item.batchId);
+                    }
+
+                    reject(resolveError);
+                });
         });
     }
 }

@@ -1,4 +1,4 @@
-import type { FileMeta } from "../react/types";
+import type { FileMeta, HeadersResolver } from "./types";
 
 /**
  * Error response from the API
@@ -12,15 +12,80 @@ export interface ApiError {
 }
 
 /**
- * Parses error response from API.
+ * Typed error thrown by all fetch helpers. Carries the HTTP `status` and the
+ * server-provided machine-readable `code` (from `error.code`) so consumers can
+ * distinguish 404 vs 413 vs a network failure without string-matching the
+ * message.
+ * @example
+ * ```ts
+ * try {
+ *     await fetchFile(url);
+ * } catch (error) {
+ *     if (error instanceof UploadError && error.status === 404) {
+ *         // handle not-found
+ *     }
+ * }
+ * ```
  */
-export const parseApiError = async (response: Response): Promise<Error> => {
+export class UploadError extends Error {
+    /** Server-provided machine-readable error code (`error.code`), if any. */
+    public readonly code?: string;
+
+    /** HTTP status code, or 0 for a network/transport failure. */
+    public readonly status: number;
+
+    public constructor(message: string, options: { code?: string; status?: number } = {}) {
+        super(message);
+
+        this.name = "UploadError";
+        this.code = options.code;
+        this.status = options.status ?? 0;
+    }
+}
+
+/**
+ * Options shared by the fetch helpers. Lets callers forward an `AbortSignal`
+ * (e.g. TanStack Query's `signal`) and attach custom/auth headers.
+ */
+export interface RequestOptions {
+    /** Static or dynamically-resolved headers to attach (e.g. `Authorization`). */
+    headers?: HeadersResolver;
+    /** Abort signal to cancel the request on unmount/refetch. */
+    signal?: AbortSignal;
+}
+
+/**
+ * Resolves a `HeadersResolver` (static object or sync/async factory) to a plain
+ * headers object. Returns an empty object when nothing is provided.
+ */
+export const resolveHeaders = async (headers?: HeadersResolver): Promise<Record<string, string>> => {
+    if (!headers) {
+        return {};
+    }
+
+    if (typeof headers === "function") {
+        return headers();
+    }
+
+    return headers;
+};
+
+/**
+ * Parses error response from API into a typed {@link UploadError} that preserves
+ * the HTTP status and the server-provided `error.code`.
+ */
+export const parseApiError = async (response: Response): Promise<UploadError> => {
+    const { status } = response;
+
     try {
         const errorData = (await response.json()) as ApiError;
 
-        return new Error(errorData.error.message || `Request failed: ${String(response.status)} ${response.statusText}`);
+        return new UploadError(errorData.error.message || `Request failed: ${String(status)} ${response.statusText}`, {
+            code: errorData.error.code,
+            status,
+        });
     } catch {
-        return new Error(`Request failed: ${String(response.status)} ${response.statusText}`);
+        return new UploadError(`Request failed: ${String(status)} ${response.statusText}`, { status });
     }
 };
 
@@ -69,9 +134,11 @@ export const buildUrl = (baseUrl: string, path: string, params?: Record<string, 
 /**
  * Fetches file with error handling.
  */
-export const fetchFile = async (url: string): Promise<Blob> => {
+export const fetchFile = async (url: string, options: RequestOptions = {}): Promise<Blob> => {
     const response = await fetch(url, {
+        headers: await resolveHeaders(options.headers),
         method: "GET",
+        signal: options.signal,
     });
 
     if (!response.ok) {
@@ -84,9 +151,11 @@ export const fetchFile = async (url: string): Promise<Blob> => {
 /**
  * Fetches JSON with error handling.
  */
-export const fetchJson = async <T = unknown>(url: string): Promise<T> => {
+export const fetchJson = async <T = unknown>(url: string, options: RequestOptions = {}): Promise<T> => {
     const response = await fetch(url, {
+        headers: await resolveHeaders(options.headers),
         method: "GET",
+        signal: options.signal,
     });
 
     if (!response.ok) {
@@ -99,9 +168,11 @@ export const fetchJson = async <T = unknown>(url: string): Promise<T> => {
 /**
  * Fetches with HEAD method for metadata.
  */
-export const fetchHead = async (url: string): Promise<Headers> => {
+export const fetchHead = async (url: string, options: RequestOptions = {}): Promise<Headers> => {
     const response = await fetch(url, {
+        headers: await resolveHeaders(options.headers),
         method: "HEAD",
+        signal: options.signal,
     });
 
     if (!response.ok) {
@@ -114,9 +185,11 @@ export const fetchHead = async (url: string): Promise<Headers> => {
 /**
  * Deletes with error handling.
  */
-export const deleteRequest = async (url: string): Promise<void> => {
+export const deleteRequest = async (url: string, options: RequestOptions = {}): Promise<void> => {
     const response = await fetch(url, {
+        headers: await resolveHeaders(options.headers),
         method: "DELETE",
+        signal: options.signal,
     });
 
     if (!response.ok) {
@@ -131,8 +204,11 @@ export const putFile = async (
     url: string,
     file: File | Blob,
     onProgress?: (progress: number) => void,
-): Promise<{ etag?: string; location?: string; uploadExpires?: string }> =>
-    new Promise((resolve, reject) => {
+    options: { headers?: HeadersResolver } = {},
+): Promise<{ etag?: string; location?: string; uploadExpires?: string }> => {
+    const customHeaders = await resolveHeaders(options.headers);
+
+    return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
 
         xhr.upload.addEventListener("progress", (event) => {
@@ -167,8 +243,14 @@ export const putFile = async (
 
         xhr.open("PUT", url);
         xhr.setRequestHeader("Content-Type", "application/octet-stream");
+
+        for (const [key, value] of Object.entries(customHeaders)) {
+            xhr.setRequestHeader(key, value);
+        }
+
         xhr.send(file);
     });
+};
 
 /**
  * PATCH request for chunk uploads.
@@ -178,8 +260,10 @@ export const patchChunk = async (
     chunk: Blob,
     offset: number,
     checksum?: string,
+    options: RequestOptions = {},
 ): Promise<{ etag?: string; location?: string; uploadComplete?: boolean; uploadExpires?: string; uploadOffset?: number }> => {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
+        ...await resolveHeaders(options.headers),
         "Content-Type": "application/octet-stream",
         "X-Chunk-Offset": String(offset),
     };
@@ -192,6 +276,7 @@ export const patchChunk = async (
         body: chunk,
         headers,
         method: "PATCH",
+        signal: options.signal,
     });
 
     if (!response.ok) {

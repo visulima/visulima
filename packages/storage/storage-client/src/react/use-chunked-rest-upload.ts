@@ -1,12 +1,18 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import type { ChecksumAlgorithm } from "../core/checksum";
 import { createChunkedRestAdapter } from "../core/chunked-rest-adapter";
 import type { FingerprintFunction } from "../core/fingerprint";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
-import type { UploadResult } from "./types";
+import type { HeadersResolver, UploadResult, UploadRestrictions } from "./types";
 
 export interface UseChunkedRestUploadOptions {
+    /**
+     * Compute and send a per-chunk integrity checksum (`X-Chunk-Checksum`).
+     * Pass `true` for the default `SHA-256`, or an explicit algorithm.
+     */
+    checksum?: ChecksumAlgorithm | boolean;
     /** Chunk size for chunked REST uploads (default: 5MB) */
     chunkSize?: number;
     /** Unified control handle. See `UploadControl`. */
@@ -15,6 +21,11 @@ export interface UseChunkedRestUploadOptions {
     endpoint: string;
     /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
     fingerprint?: FingerprintFunction;
+    /**
+     * Static or dynamically-resolved headers attached to every request — e.g. an
+     * `Authorization` token for an authenticated endpoint.
+     */
+    headers?: HeadersResolver;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -33,6 +44,8 @@ export interface UseChunkedRestUploadOptions {
     onSuccess?: (file: UploadResult) => void;
     /** Enable automatic retry on failure */
     retry?: boolean;
+    /** Client-side upload restrictions, validated before any network request. */
+    restrictions?: UploadRestrictions;
     /** Persistent storage for resume identifiers. */
     urlStorage?: UrlStorage;
 }
@@ -68,7 +81,7 @@ export interface UseChunkedRestUploadReturn {
  * @returns Upload functions and state
  */
 export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseChunkedRestUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } =
+    const { checksum, chunkSize, control, endpoint, fingerprint, headers, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, restrictions, urlStorage } =
         options;
 
     const [progress, setProgress] = useState(0);
@@ -82,16 +95,19 @@ export const useChunkedRestUpload = (options: UseChunkedRestUploadOptions): UseC
     const adapterInstance = useMemo(
         () =>
             createChunkedRestAdapter({
+                checksum,
                 chunkSize,
                 control,
                 endpoint,
                 fingerprint,
+                headers,
                 maxRetries,
                 metadata,
+                restrictions,
                 retry,
                 urlStorage,
             }),
-        [chunkSize, control, endpoint, fingerprint, maxRetries, metadata, retry, urlStorage],
+        [checksum, chunkSize, control, endpoint, fingerprint, headers, maxRetries, metadata, restrictions, retry, urlStorage],
     );
 
     // Store callbacks in refs to avoid re-subscribing on every render

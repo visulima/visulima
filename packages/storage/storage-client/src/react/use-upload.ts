@@ -1,6 +1,6 @@
 import { useCallback, useMemo } from "react";
 
-import type { UploadMethod, UploadResult } from "./types";
+import type { HeadersResolver, UploadMethod, UploadResult, UploadRestrictions } from "./types";
 import type { UseChunkedRestUploadOptions } from "./use-chunked-rest-upload";
 import { useChunkedRestUpload } from "./use-chunked-rest-upload";
 import type { UseMultipartUploadOptions } from "./use-multipart-upload";
@@ -17,6 +17,11 @@ interface UseUploadOptions {
     endpointMultipart?: string;
     /** TUS upload endpoint URL */
     endpointTus?: string;
+    /**
+     * Static or dynamically-resolved headers attached to every request — e.g. an
+     * `Authorization` token for an authenticated endpoint.
+     */
+    headers?: HeadersResolver;
     /** Maximum number of retry attempts (TUS and chunked REST only) */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -37,6 +42,8 @@ interface UseUploadOptions {
     onSuccess?: (file: UploadResult) => void;
     /** Enable automatic retry on failure (TUS and chunked REST only) */
     retry?: boolean;
+    /** Client-side upload restrictions, validated before any network request. */
+    restrictions?: UploadRestrictions;
     /** File size threshold for auto-selecting TUS (default: 10MB) */
     tusThreshold?: number;
 }
@@ -83,6 +90,7 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         endpointChunkedRest,
         endpointMultipart,
         endpointTus,
+        headers,
         maxRetries,
         metadata,
         method,
@@ -93,6 +101,7 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         onStart,
         onSuccess,
         retry,
+        restrictions,
         tusThreshold = DEFAULT_TUS_THRESHOLD,
     } = options;
 
@@ -134,6 +143,7 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         return {
             chunkSize,
             endpoint: endpointChunkedRest,
+            headers,
             maxRetries,
             metadata,
             onError,
@@ -142,9 +152,10 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
             onResume,
             onStart,
             onSuccess,
+            restrictions,
             retry,
         };
-    }, [endpointChunkedRest, chunkSize, metadata, onStart, onSuccess, onError, onProgress, onPause, onResume, retry, maxRetries]);
+    }, [endpointChunkedRest, chunkSize, headers, metadata, onStart, onSuccess, onError, onProgress, onPause, onResume, retry, maxRetries, restrictions]);
 
     const multipartOptions: UseMultipartUploadOptions | undefined = useMemo(() => {
         if (!endpointMultipart) {
@@ -153,13 +164,15 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
 
         return {
             endpoint: endpointMultipart,
+            headers,
             metadata,
             onError,
             onProgress,
             onStart,
             onSuccess,
+            restrictions,
         };
-    }, [endpointMultipart, metadata, onStart, onSuccess, onError, onProgress]);
+    }, [endpointMultipart, headers, metadata, onStart, onSuccess, onError, onProgress, restrictions]);
 
     const tusOptions: UseTusUploadOptions | undefined = useMemo(() => {
         if (!endpointTus) {
@@ -169,6 +182,7 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
         return {
             chunkSize,
             endpoint: endpointTus,
+            headers,
             maxRetries,
             metadata,
             onError,
@@ -177,9 +191,10 @@ const useUpload = (options: UseUploadOptions): UseUploadReturn => {
             onResume,
             onStart,
             onSuccess,
+            restrictions,
             retry,
         };
-    }, [endpointTus, chunkSize, metadata, onStart, onSuccess, onError, onProgress, onPause, onResume, retry, maxRetries]);
+    }, [endpointTus, chunkSize, headers, metadata, onStart, onSuccess, onError, onProgress, onPause, onResume, retry, maxRetries, restrictions]);
 
     const chunkedRestUpload = chunkedRestOptions ? useChunkedRestUpload(chunkedRestOptions) : undefined;
     const multipartUpload = multipartOptions ? useMultipartUpload(multipartOptions) : undefined;

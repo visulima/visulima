@@ -1,13 +1,19 @@
 import type { Accessor } from "solid-js";
 import { createSignal, onCleanup, onMount } from "solid-js";
 
+import type { ChecksumAlgorithm } from "../core/checksum";
 import { createChunkedRestAdapter } from "../core/chunked-rest-adapter";
 import type { FingerprintFunction } from "../core/fingerprint";
 import type { UploadControl } from "../core/upload-control";
 import type { UrlStorage } from "../core/url-storage";
-import type { UploadResult } from "../react/types";
+import type { HeadersResolver, UploadRestrictions, UploadResult } from "../react/types";
 
 export interface CreateChunkedRestUploadOptions {
+    /**
+     * Compute and send a per-chunk integrity checksum (`X-Chunk-Checksum`).
+     * Pass `true` for the default `SHA-256`, or an explicit algorithm.
+     */
+    checksum?: ChecksumAlgorithm | boolean;
     /** Chunk size for chunked REST uploads (default: 5MB) */
     chunkSize?: number;
     /** Unified control handle. See `UploadControl`. */
@@ -16,6 +22,12 @@ export interface CreateChunkedRestUploadOptions {
     endpoint: string;
     /** Customise the resume fingerprint. */
     fingerprint?: FingerprintFunction;
+
+    /**
+     * Static or dynamically-resolved headers attached to every request — e.g. an
+     * `Authorization` token for an authenticated endpoint.
+     */
+    headers?: HeadersResolver;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
@@ -32,6 +44,8 @@ export interface CreateChunkedRestUploadOptions {
     onStart?: () => void;
     /** Callback when upload completes successfully */
     onSuccess?: (file: UploadResult) => void;
+    /** Client-side upload restrictions, validated before any network request. */
+    restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
     retry?: boolean;
     /** Persistent storage for resume identifiers. */
@@ -69,7 +83,7 @@ export interface CreateChunkedRestUploadReturn {
  * @returns Upload functions and state signals
  */
 export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions): CreateChunkedRestUploadReturn => {
-    const { chunkSize, control, endpoint, fingerprint, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, retry, urlStorage } =
+    const { checksum, chunkSize, control, endpoint, fingerprint, headers, maxRetries, metadata, onError, onPause, onProgress, onResume, onStart, onSuccess, restrictions, retry, urlStorage } =
         options;
 
     const [progress, setProgress] = createSignal(0);
@@ -81,12 +95,15 @@ export const createChunkedRestUpload = (options: CreateChunkedRestUploadOptions)
 
     // Create adapter instance
     const adapterInstance = createChunkedRestAdapter({
+        checksum,
         chunkSize,
         control,
         endpoint,
         fingerprint,
+        headers,
         maxRetries,
         metadata,
+        restrictions,
         retry,
         urlStorage,
     });

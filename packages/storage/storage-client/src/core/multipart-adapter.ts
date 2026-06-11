@@ -1,15 +1,25 @@
-import type { FileMeta, UploadResult } from "../react/types";
+import type { FileMeta, HeadersResolver, UploadRestrictions, UploadResult } from "./types";
 import type { BatchState, Uploader, UploadItem } from "./uploader";
 import { createUploader } from "./uploader";
 
 export interface MultipartAdapterOptions {
+    /** Maximum number of concurrent uploads (defaults to 5). */
+    concurrency?: number;
     /** Upload endpoint URL */
     endpoint: string;
-    /** Maximum number of retry attempts */
+
+    /**
+     * Static or dynamically-resolved headers attached to every upload request.
+     * Use this to attach an `Authorization` token to all requests.
+     */
+    headers?: HeadersResolver;
+    /** Maximum number of retry attempts (only used when `retry` is true). */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
-    /** Enable automatic retry on failure */
+    /** Client-side upload restrictions, validated before upload starts. */
+    restrictions?: UploadRestrictions;
+    /** Enable automatic retry on failure with exponential backoff (off by default). */
     retry?: boolean;
 }
 
@@ -37,9 +47,12 @@ export interface MultipartAdapter {
  */
 export const createMultipartAdapter = (options: MultipartAdapterOptions): MultipartAdapter => {
     const uploader = createUploader({
+        concurrency: options.concurrency,
         endpoint: options.endpoint,
+        headers: options.headers,
         maxRetries: options.maxRetries,
         metadata: options.metadata,
+        restrictions: options.restrictions,
         retry: options.retry,
     });
 

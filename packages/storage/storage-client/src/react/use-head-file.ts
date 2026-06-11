@@ -59,9 +59,9 @@ export const useHeadFile = (options: UseHeadFileOptions): UseHeadFileReturn => {
 
     const query = useQuery({
         enabled: enabled && !!id,
-        queryFn: async (): Promise<FileHeadMetadata> => {
+        queryFn: async ({ signal }): Promise<FileHeadMetadata> => {
             const url = buildUrl(endpoint, id);
-            const headers = await fetchHead(url);
+            const headers = await fetchHead(url, { signal });
 
             // Extract metadata from headers
             const contentLength = headers.get("Content-Length");

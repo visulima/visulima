@@ -58,8 +58,12 @@ The Visulima Storage Client is a powerful, framework-agnostic library for handli
 - **Multiple Upload Methods** - Multipart (form-based), TUS (resumable), and chunked REST uploads
 - **Auto-detection** - Automatically selects the best upload method based on file size and available endpoints
 - **Progress Tracking** - Real-time upload progress with percentage and byte-level tracking
-- **Batch Operations** - Upload multiple files simultaneously with batch progress tracking
-- **Retry Mechanism** - Built-in retry with exponential backoff for failed uploads
+- **Batch Operations** - Upload multiple files simultaneously with a configurable concurrency cap
+- **Retry Mechanism** - Built-in retry with exponential backoff for failed uploads (opt-in via `retry`)
+- **Custom Headers / Auth** - Attach static or dynamically-resolved headers (e.g. an `Authorization` token) to every upload and file-management request
+- **Upload Restrictions** - Validate `maxFileSize` / `minFileSize` / `allowedFileTypes` / `maxNumberOfFiles` client-side before any request
+- **Chunk Checksums** - Opt-in per-chunk `X-Chunk-Checksum` integrity headers (Web Crypto) for the chunked-REST adapter
+- **Typed Errors** - `UploadError` exposes the HTTP `status` and server error `code` instead of a string-only message
 - **File Management** - Get, list, delete files with full metadata support
 - **TypeScript Ready** - Full TypeScript support with comprehensive type definitions
 - **TanStack Query Integration** - Built on TanStack Query for powerful caching and state management
@@ -296,6 +300,76 @@ const { upload } = useTusUpload({
 ```
 
 See [API → Cross-process resume](https://visulima.com/docs/package/storage-client/api#cross-process-resume) for the full surface.
+
+### Custom headers / authentication
+
+Every adapter (and the underlying fetch helpers) accepts a `headers` option. Pass a static object, or a
+sync/async factory that is resolved before each request — ideal for short-lived tokens.
+
+```tsx
+import { useTusUpload } from "@visulima/storage-client/react";
+
+const { upload } = useTusUpload({
+    endpoint: "/api/upload/tus",
+    // Static, or `async () => ({ Authorization: `Bearer ${await getToken()}` })`
+    headers: () => ({ Authorization: `Bearer ${getToken()}` }),
+});
+```
+
+### Upload restrictions
+
+Validate files client-side before any network request. A violation throws a `RestrictionError`
+(with a machine-readable `reason`) instead of surfacing an opaque server 413.
+
+```tsx
+import { useBatchUpload } from "@visulima/storage-client/react";
+
+const { uploadBatch } = useBatchUpload({
+    endpoint: "/api/upload",
+    restrictions: {
+        allowedFileTypes: ["image/*", ".pdf"],
+        maxFileSize: 10 * 1024 * 1024, // 10 MB
+        maxNumberOfFiles: 20,
+    },
+});
+```
+
+### Batch concurrency
+
+Batch uploads run through a worker pool so a large drop does not open one request per file at once.
+Tune it with `concurrency` (default `5`).
+
+```tsx
+useBatchUpload({ endpoint: "/api/upload", concurrency: 3 });
+```
+
+### Per-chunk checksums
+
+The chunked-REST adapter can compute a per-chunk integrity digest and send it as `X-Chunk-Checksum`.
+Pass `checksum: true` for the default `SHA-256`, or an explicit algorithm (requires the Web Crypto API).
+
+```tsx
+import { useChunkedRestUpload } from "@visulima/storage-client/react";
+
+useChunkedRestUpload({ endpoint: "/api/upload/chunked-rest", checksum: true });
+```
+
+### Typed errors
+
+Failed requests reject with an `UploadError` that preserves the HTTP `status` and the server-provided
+error `code`, so you can branch on the failure without string-matching messages.
+
+```tsx
+import { UploadError } from "@visulima/storage-client";
+
+try {
+    await upload(file);
+} catch (error) {
+    if (error instanceof UploadError && error.status === 413) {
+        // Payload too large — surface a friendly message.
+    }
+}
+```
 
 ## Documentation
 

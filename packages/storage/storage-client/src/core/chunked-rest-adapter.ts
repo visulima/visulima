@@ -1,11 +1,33 @@
 /* eslint-disable no-underscore-dangle -- `control._attach/_detach/_updateOffset` are the intentional @internal cross-module API of UploadControl */
-import type { UploadResult } from "../react/types";
+import type { ChecksumAlgorithm } from "./checksum";
+import { computeChunkChecksum } from "./checksum";
 import type { FingerprintFunction } from "./fingerprint";
 import { defaultFingerprint } from "./fingerprint";
+import { resolveHeaders } from "./query-client";
+import { validateFile } from "./restrictions";
+import type { HeadersResolver, UploadRestrictions, UploadResult } from "./types";
 import type { UploadControl } from "./upload-control";
 import type { UrlStorage, UrlStorageEntry } from "./url-storage";
 
 const DEFAULT_CHUNK_SIZE = 5 * 1024 * 1024; // 5MB default chunk size
+
+/**
+ * Builds an RFC 5987-compliant `Content-Disposition` header value.
+ *
+ * A naive `attachment; filename="${name}"` malforms the header when the filename
+ * contains a `"` or a non-ASCII character (and `fetch` rejects CR/LF outright).
+ * This emits both a sanitised ASCII `filename` (back-compat) and a percent-encoded
+ * UTF-8 `filename*` so unicode names survive.
+ */
+const buildContentDisposition = (name: string): string => {
+    // ASCII fallback: strip non-ASCII and escape quotes/backslashes.
+
+    const asciiName = name.replaceAll(/[^\u0020-\u007E]/gu, "_").replaceAll(/["\\]/g, "_");
+    // RFC 5987 percent-encoding for the UTF-8 variant.
+    const encoded = encodeURIComponent(name);
+
+    return `attachment; filename="${asciiName}"; filename*=UTF-8''${encoded}`;
+};
 
 interface UploadState {
     abortController?: AbortController;
@@ -14,11 +36,19 @@ interface UploadState {
     fileId?: string;
     fingerprint?: string;
     paused: boolean;
+    /** Resolvers waiting for `resume()` — invoked when the upload is unpaused. */
+    pauseWaiters: (() => void)[];
     totalSize: number;
     uploadedChunks: Set<number>; // Track uploaded chunk offsets
 }
 
 export interface ChunkedRestAdapterOptions {
+    /**
+     * Compute and send a per-chunk integrity checksum (`X-Chunk-Checksum`).
+     * Pass `true` for the default `SHA-256`, or an explicit algorithm. Disabled
+     * by default; requires the Web Crypto API (browsers / Node >= 20).
+     */
+    checksum?: ChecksumAlgorithm | boolean;
     /** Chunk size in bytes (default: 5MB) */
     chunkSize?: number;
     /** Unified control handle. See `UploadControl`. */
@@ -27,10 +57,18 @@ export interface ChunkedRestAdapterOptions {
     endpoint: string;
     /** Customise the resume fingerprint. Defaults to `defaultFingerprint`. */
     fingerprint?: FingerprintFunction;
+
+    /**
+     * Static or dynamically-resolved headers attached to every request. Use this
+     * to attach an `Authorization` token to all requests.
+     */
+    headers?: HeadersResolver;
     /** Maximum number of retry attempts */
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
+    /** Client-side upload restrictions, validated before any network request. */
+    restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
     retry?: boolean;
     /** Persistent storage for resume identifiers. Opt-in. */
@@ -69,21 +107,57 @@ export interface ChunkedRestAdapter {
  */
 export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): ChunkedRestAdapter => {
     const {
+        checksum = false,
         chunkSize = DEFAULT_CHUNK_SIZE,
         control,
         endpoint,
         fingerprint: fingerprintFunction = defaultFingerprint,
+        headers: headersResolver,
         maxRetries = 3,
         metadata = {},
+        restrictions,
         retry = true,
         urlStorage,
     } = options;
 
+    let checksumAlgorithm: ChecksumAlgorithm | undefined;
+
+    if (checksum === true) {
+        checksumAlgorithm = "SHA-256";
+    } else if (checksum !== false) {
+        checksumAlgorithm = checksum;
+    }
+
     let uploadState: UploadState = {
         aborted: false,
         paused: false,
+        pauseWaiters: [],
         totalSize: 0,
         uploadedChunks: new Set(),
+    };
+
+    /**
+     * Merges adapter-level custom headers with the per-request headers.
+     * Per-request headers win on conflict.
+     */
+    const buildHeaders = async (requestHeaders: Record<string, string>): Promise<Record<string, string>> => {
+        const resolved = await resolveHeaders(headersResolver);
+
+        return { ...resolved, ...requestHeaders };
+    };
+
+    /**
+     * Wakes every coroutine waiting on a pause. Called from `resume()` and on
+     * abort so workers continue immediately instead of polling.
+     */
+    const flushPauseWaiters = (): void => {
+        const waiters = uploadState.pauseWaiters;
+
+        uploadState.pauseWaiters = [];
+
+        for (const resolve of waiters) {
+            resolve();
+        }
     };
 
     const persistUploadEntry = async (fingerprint: string, fileId: string, file: File): Promise<void> => {
@@ -203,12 +277,12 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         }
 
         if (file.name) {
-            headers["Content-Disposition"] = `attachment; filename="${file.name}"`;
+            headers["Content-Disposition"] = buildContentDisposition(file.name);
         }
 
         const response = await fetchWithRetry(endpoint, {
             body: new Uint8Array(0), // Empty body for initialization
-            headers,
+            headers: await buildHeaders(headers),
             method: "POST",
         });
 
@@ -236,7 +310,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         let response: Response;
 
         try {
-            response = await fetch(url, { method: "HEAD" });
+            response = await fetch(url, { headers: await buildHeaders({}), method: "HEAD" });
         } catch {
             return undefined;
         }
@@ -259,6 +333,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
 
         const response = await fetchWithRetry(url, {
+            headers: await buildHeaders({}),
             method: "HEAD",
         });
 
@@ -300,13 +375,24 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
 
+        const chunkHeaders: Record<string, string> = {
+            "Content-Length": String(currentChunkSize),
+            "Content-Type": "application/octet-stream",
+            "X-Chunk-Offset": String(startOffset),
+        };
+
+        // Opt-in per-chunk integrity verification.
+        if (checksumAlgorithm) {
+            const digest = await computeChunkChecksum(chunk, checksumAlgorithm);
+
+            if (digest) {
+                chunkHeaders["X-Chunk-Checksum"] = digest;
+            }
+        }
+
         const response = await fetchWithRetry(url, {
             body: chunk,
-            headers: {
-                "Content-Length": String(currentChunkSize),
-                "Content-Type": "application/octet-stream",
-                "X-Chunk-Offset": String(startOffset),
-            },
+            headers: await buildHeaders(chunkHeaders),
             method: "PATCH",
             signal,
         });
@@ -361,14 +447,12 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         const worker = async (): Promise<void> => {
             while (nextIndex < pending.length) {
-                // Skip if paused
-                // eslint-disable-next-line no-await-in-loop -- Sequential delay required for abortable delay
-                while (uploadState.paused && !uploadState.aborted) {
-                    // eslint-disable-next-line no-await-in-loop -- Sequential delay required for abortable delay
+                // If paused, block on a promise that resolves on resume()/abort
+                // rather than busy-polling, so resume is instantaneous.
+                if (uploadState.paused && !uploadState.aborted) {
+                    // eslint-disable-next-line no-await-in-loop -- Sequential wait required for pause/resume
                     await new Promise<void>((resolve) => {
-                        setTimeout(() => {
-                            resolve();
-                        }, 100);
+                        uploadState.pauseWaiters.push(resolve);
                     });
                 }
 
@@ -411,6 +495,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
 
         const response = await fetchWithRetry(url, {
+            headers: await buildHeaders({}),
             method: "GET",
         });
 
@@ -455,18 +540,22 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             uploadState.aborted = true;
             uploadState.paused = false;
             uploadState.abortController?.abort();
+            // Wake any paused workers so they observe the abort immediately.
+            flushPauseWaiters();
         },
 
         /**
          * Clears upload state.
          */
         clear: () => {
+            flushPauseWaiters();
             uploadState = {
                 abortController: undefined,
                 aborted: false,
                 file: undefined,
                 fileId: undefined,
                 paused: false,
+                pauseWaiters: [],
                 totalSize: 0,
                 uploadedChunks: new Set(),
             };
@@ -518,6 +607,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             }
 
             uploadState.paused = false;
+            // Wake any workers blocked on the pause promise (in-flight pause/resume).
+            flushPauseWaiters();
 
             // Continue upload
             const abortController = new AbortController();
@@ -599,6 +690,10 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 }
             };
 
+            // Validate restrictions before any network request so consumers get a
+            // friendly error instead of a server-side 413.
+            validateFile(file, restrictions);
+
             finishCallback = internalFinishCallback;
             errorCallback = internalErrorCallback;
 
@@ -606,6 +701,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 aborted: false,
                 file,
                 paused: false,
+                pauseWaiters: [],
                 totalSize: file.size,
                 uploadedChunks: new Set(),
             };
@@ -666,12 +762,16 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 control?._attach(
                     {
-                        abort: () => { abortController.abort(); },
+                        abort: () => {
+                            abortController.abort();
+                            flushPauseWaiters();
+                        },
                         pause: () => {
                             uploadState.paused = true;
                         },
                         resume: () => {
                             uploadState.paused = false;
+                            flushPauseWaiters();
 
                             return Promise.resolve();
                         },
@@ -687,6 +787,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             timeoutId = setTimeout(() => {
                 if (!resolved) {
                     uploadState.aborted = true;
+                    flushPauseWaiters();
                     cleanupTimeout();
                     internalErrorCallback(new Error("Upload timeout"));
                 }

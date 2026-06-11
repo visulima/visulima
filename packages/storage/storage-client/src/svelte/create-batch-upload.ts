@@ -4,15 +4,18 @@ import { get, writable } from "svelte/store";
 
 import { createMultipartAdapter } from "../core/multipart-adapter";
 import type { BatchState, UploadItem } from "../core/uploader";
-import type { FileMeta, UploadResult } from "../react/types";
+import type { FileMeta, HeadersResolver, UploadRestrictions, UploadResult } from "../react/types";
 
 export interface CreateBatchUploadOptions {
+    concurrency?: number;
     endpoint: string;
+    headers?: HeadersResolver;
     metadata?: Record<string, string>;
     onError?: (error: Error, batchId: string) => void;
     onProgress?: (progress: number, batchId: string) => void;
     onStart?: (batchId: string) => void;
     onSuccess?: (results: UploadResult[], batchId: string) => void;
+    restrictions?: UploadRestrictions;
 }
 
 export interface CreateBatchUploadReturn {
@@ -28,7 +31,7 @@ export interface CreateBatchUploadReturn {
 }
 
 export const createBatchUpload = (options: CreateBatchUploadOptions): CreateBatchUploadReturn => {
-    const { endpoint, metadata, onError, onProgress, onStart, onSuccess } = options;
+    const { concurrency, endpoint, headers, metadata, onError, onProgress, onStart, onSuccess, restrictions } = options;
 
     const items = writable<UploadItem[]>([]);
     const progress = writable(0);
@@ -38,7 +41,7 @@ export const createBatchUpload = (options: CreateBatchUploadOptions): CreateBatc
     const errorCount = writable(0);
     const currentBatchId = writable<string | undefined>();
 
-    const uploaderInstance = createMultipartAdapter({ endpoint, metadata });
+    const uploaderInstance = createMultipartAdapter({ concurrency, endpoint, headers, metadata, restrictions });
 
     onMount(() => {
         const { uploader } = uploaderInstance;
