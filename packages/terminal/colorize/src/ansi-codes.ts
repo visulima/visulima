@@ -161,7 +161,10 @@ const stderrColorLevel: ColorSupportLevel = isStderrColorSupported();
 const defaultCodes = createAnsiCodes(stdoutColorLevel);
 
 // Backwards-compatible module-level codes (resolved for the detected stdout level).
-const { baseColors, baseStyles, styleMethods } = defaultCodes;
+// Explicitly typed (not destructured) so isolated-declaration `.d.ts` emit succeeds.
+const baseColors: AnsiCodes["baseColors"] = defaultCodes.baseColors;
+const baseStyles: AnsiCodes["baseStyles"] = defaultCodes.baseStyles;
+const styleMethods: AnsiCodes["styleMethods"] = defaultCodes.styleMethods;
 
 export type { AnsiCodes, StyleMethods };
 
