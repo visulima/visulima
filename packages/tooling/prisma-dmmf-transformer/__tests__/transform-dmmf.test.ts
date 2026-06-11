@@ -574,6 +574,133 @@ describe("jSON Schema Generator", () => {
         });
     });
 
+    describe("enum list fields", () => {
+        const datamodelEnumList = /* Prisma */ `
+            datasource db {
+                provider = "postgresql"
+                url      = env("DATABASE_URL")
+            }
+
+            model User {
+                id    Int    @id @default(autoincrement())
+                roles Role[]
+            }
+
+            enum Role {
+                USER
+                ADMIN
+            }
+        `;
+
+        it("attaches enum members to array items and validates real data", async () => {
+            expect.assertions(2);
+
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelEnumList });
+            const jsonSchema = transformDMMF(dmmf);
+
+            expect((jsonSchema.definitions?.User as { properties: { roles: unknown } }).properties.roles).toStrictEqual({
+                items: { enum: ["USER", "ADMIN"], type: "string" },
+                type: "array",
+            });
+
+            const ajv = new Ajv({ allowUnionTypes: true });
+
+            addFormats(ajv);
+
+            const validate = ajv.compile(jsonSchema);
+            const valid = validate({ user: { id: 1, roles: ["ADMIN"] } });
+
+            expect(valid, ajv.errorsText(validate.errors)).toBe(true);
+        });
+    });
+
+    describe("optional enum fields", () => {
+        const datamodelOptionalEnum = /* Prisma */ `
+            datasource db {
+                provider = "postgresql"
+                url      = env("DATABASE_URL")
+            }
+
+            model User {
+                id   Int   @id @default(autoincrement())
+                role Role?
+            }
+
+            enum Role {
+                USER
+                ADMIN
+            }
+        `;
+
+        it("allows null in both the type and the enum list and validates null", async () => {
+            expect.assertions(2);
+
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelOptionalEnum });
+            const jsonSchema = transformDMMF(dmmf);
+
+            expect((jsonSchema.definitions?.User as { properties: { role: unknown } }).properties.role).toStrictEqual({
+                enum: ["USER", "ADMIN", null],
+                type: ["string", "null"],
+            });
+
+            const ajv = new Ajv({ allowUnionTypes: true });
+
+            addFormats(ajv);
+
+            const validate = ajv.compile(jsonSchema);
+            const valid = validate({ user: { id: 1, role: null } });
+
+            expect(valid, ajv.errorsText(validate.errors)).toBe(true);
+        });
+    });
+
+    describe("bigIntType option", () => {
+        const datamodelBigInt = /* Prisma */ `
+            datasource db {
+                provider = "postgresql"
+                url      = env("DATABASE_URL")
+            }
+
+            model Counter {
+                id    Int    @id @default(autoincrement())
+                count BigInt @default(34534535435353)
+            }
+        `;
+
+        it("maps BigInt to string so the string default self-validates", async () => {
+            expect.assertions(2);
+
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelBigInt });
+            const jsonSchema = transformDMMF(dmmf, { bigIntType: "string" });
+
+            expect((jsonSchema.definitions?.Counter as { properties: { count: unknown } }).properties.count).toStrictEqual({
+                default: "34534535435353",
+                type: "string",
+            });
+
+            const ajv = new Ajv({ allowUnionTypes: true });
+
+            addFormats(ajv);
+
+            const validate = ajv.compile(jsonSchema);
+            const valid = validate({ counter: { count: "34534535435353", id: 1 } });
+
+            expect(valid, ajv.errorsText(validate.errors)).toBe(true);
+        });
+    });
+
+    describe("boolean-like options", () => {
+        it("accepts native booleans for option flags", async () => {
+            expect.assertions(1);
+
+            const dmmf = await prismaInternal.getDMMF({ datamodel: datamodelPostGresQL });
+            const withString = transformDMMF(dmmf, { includeRequiredFields: "true" });
+            const withBoolean = transformDMMF(dmmf, { includeRequiredFields: true });
+
+            expect(withBoolean).toStrictEqual(withString);
+        });
+    });
+
     describe("db mongodb", () => {
         it("returns JSON schema for given models", async () => {
             expect.assertions(1);
