@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { CounterManager } from "../../src/counter-manager";
 
-describe("CounterManager", () => {
+describe(CounterManager, () => {
     let emit: ReturnType<typeof vi.fn>;
     let manager: CounterManager;
 
@@ -21,7 +21,7 @@ describe("CounterManager", () => {
             expect(emit).toHaveBeenCalledWith("log", false, false, { message: "hits: 1", prefix: "hits" });
         });
 
-        it('should default label to "default"', () => {
+        it("should default label to \"default\"", () => {
             expect.assertions(1);
 
             manager.count();
@@ -67,7 +67,7 @@ describe("CounterManager", () => {
             expect(emit).toHaveBeenCalledWith("log", false, false, { message: "c: 1", prefix: "c" });
         });
 
-        it('should default label to "default"', () => {
+        it("should default label to \"default\"", () => {
             expect.assertions(1);
 
             manager.count();
