@@ -256,6 +256,7 @@ ready(function() {
 });
 `;
 
+// eslint-disable-next-line no-secrets/no-secrets -- inlined client script, not a secret
 const copyButtonScript = `
 // Handle copy buttons — reuses the global copyToClipboard/showCopySuccess defined in copyDropdownScript
 document.addEventListener('click', function(e) {

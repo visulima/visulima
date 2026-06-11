@@ -7,6 +7,8 @@ import launchEditorMiddleware from "launch-editor-middleware";
 
 import { getProcessPlatform } from "../utils/process";
 
+const SAFE_EDITOR_NAME_REGEX = /^[\w.+-]+$/;
+
 type EditorPayload = {
     column?: number;
     editor?: string;
@@ -68,8 +70,11 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                             return;
                         }
 
+                        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- cleanup and the handlers are mutually recursive; handlers reference cleanup so it must be declared first
                         request.removeListener("data", onData);
+                        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- cleanup and the handlers are mutually recursive; handlers reference cleanup so it must be declared first
                         request.removeListener("end", onEnd);
+                        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- cleanup and the handlers are mutually recursive; handlers reference cleanup so it must be declared first
                         request.removeListener("error", onError);
                     };
 
@@ -116,7 +121,6 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
         };
     };
 
-    // eslint-disable-next-line sonarjs/cognitive-complexity
     const validateFilePath = (filePath: string | undefined, projectRoot: string, allowOutsideProject: boolean): string | undefined => {
         if (!filePath) {
             return undefined;
@@ -153,9 +157,9 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                 }
             } catch {
                 // If realpathSync fails (e.g., file doesn't exist), fall back to a normalized relative check
-                const relFallback: string = relative(normalize(projectRoot), normalize(absPath));
+                const relativeFallback: string = relative(normalize(projectRoot), normalize(absPath));
 
-                if (relFallback.startsWith("..") || isAbsolute(relFallback)) {
+                if (relativeFallback.startsWith("..") || isAbsolute(relativeFallback)) {
                     return undefined;
                 }
             }
@@ -176,7 +180,7 @@ export const createOpenInEditorMiddleware = (options: OpenInEditorOptions = {}):
                 return;
             }
 
-            const safeEditor = payload.editor && /^[\w.+-]+$/.test(payload.editor) ? payload.editor : undefined;
+            const safeEditor = payload.editor && SAFE_EDITOR_NAME_REGEX.test(payload.editor) ? payload.editor : undefined;
 
             const mw = launchEditorMiddleware(safeEditor, projectRoot);
 
