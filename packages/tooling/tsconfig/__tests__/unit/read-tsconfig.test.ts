@@ -41,6 +41,22 @@ describe("parses tsconfig", () => {
             expect(() => readTsConfig("non-existent-path")).toThrow("Cannot resolve tsconfig at path: ");
         });
 
+        it("non-existent path preserves the original error as cause", async () => {
+            expect.assertions(2);
+
+            let caught: unknown;
+
+            try {
+                readTsConfig("non-existent-path");
+            } catch (error) {
+                caught = error;
+            }
+
+            expect(caught).toBeInstanceOf(Error);
+            // The original ENOENT/read failure must be retained for diagnosis.
+            expect((caught as Error).cause).toBeDefined();
+        });
+
         it("empty file", async () => {
             expect.assertions(1);
 

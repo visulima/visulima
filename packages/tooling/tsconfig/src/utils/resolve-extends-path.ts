@@ -5,7 +5,6 @@
  * Copyright (c) Hiroki Osame &lt;hiroki.osame@gmail.com>
  */
 import { statSync } from "node:fs";
-import Module from "node:module";
 
 import { findUpSync, isAccessibleSync, readFileSync } from "@visulima/fs";
 import { isAbsolute, join, resolve } from "@visulima/path";
@@ -15,20 +14,9 @@ import { resolveExports } from "resolve-pkg-maps";
 import type { PackageJson } from "type-fest";
 
 import type { Cache } from "../types";
+import { getPnpApi } from "./pnp";
 
 const readJsonc = (jsonPath: string): unknown => parse(readFileSync(jsonPath, { buffer: false }));
-
-interface PnpApiResult {
-    resolveRequest: (request: string, issuer: string, options?: { extensions?: string[] }) => string | null;
-}
-
-const getPnpApi = (): PnpApiResult | undefined => {
-    // @ts-ignore - This is a private API
-    const { findPnpApi } = Module;
-
-    // https://yarnpkg.com/advanced/pnpapi/#requirepnpapi
-    return (findPnpApi as ((cwd: string) => PnpApiResult | undefined) | undefined)?.(process.cwd());
-};
 
 // eslint-disable-next-line sonarjs/function-return-type -- false is an intentional sentinel value distinguishing "blocked" from "not found"
 const resolveFromPackageJsonPath = (packageJsonPath: string, subpath: string, ignoreExports?: boolean, cache?: Cache<string>): string | false | undefined => {
@@ -102,7 +90,10 @@ const resolveExtendsPath = (requestedPath: string, directoryPath: string, cache?
     const packageName = orgOrName.startsWith("@") ? `${orgOrName}/${String(remaining.shift())}` : orgOrName;
     const subpath = remaining.join("/");
 
-    const pnpApi = getPnpApi();
+    // Pass the config directory as the PnP issuer so `extends` package
+    // resolution works even when the process cwd is outside the workspace
+    // that contains the tsconfig (e.g. a language tool run from elsewhere).
+    const pnpApi = getPnpApi(directoryPath);
 
     if (pnpApi) {
         const { resolveRequest: resolveWithPnp } = pnpApi;

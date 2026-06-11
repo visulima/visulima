@@ -148,8 +148,10 @@ const internalParseTsConfig = (
         const parsed = readJsonc(tsconfigPath);
 
         config = parsed ?? {};
-    } catch {
-        throw new Error(`Cannot resolve tsconfig at path: ${tsconfigPath}`);
+    } catch (error) {
+        // Preserve the original failure (ENOENT, EACCES, read error, …) so the
+        // caller can tell *why* the tsconfig could not be resolved.
+        throw new Error(`Cannot resolve tsconfig at path: ${tsconfigPath}`, { cause: error });
     }
 
     if (typeof config !== "object") {
@@ -692,9 +694,13 @@ type Options = {
      * fields are set (e.g. `module: nodenext` ⇒ `moduleResolution: nodenext`).
      *
      * When `true`, it will make the configuration compatible with the latest TypeScript version.
+     *
+     * Supported version strings map to the version gates below — `"5.3"` is
+     * intentionally absent because TypeScript 5.3 introduced no derived-default
+     * changes over 5.2, so it would be a silent no-op.
      * @default undefined
      */
-    tscCompatible?: "5.3" | "5.4" | "5.5" | "5.6" | "5.7" | "5.8" | "5.9" | "6.0" | true;
+    tscCompatible?: "5.4" | "5.5" | "5.6" | "5.7" | "5.8" | "5.9" | "6.0" | true;
 
     /**
      * Apply the *unconditional* compiler-option defaults TypeScript would
@@ -786,10 +792,6 @@ export const readTsConfig = (tsconfigPath: string, options?: Options): TsConfigJ
 
                 paths[name] = (paths[name] as string[]).map((filePath) => interpolateConfigDirectory(filePath, configDirectory) ?? filePath);
             }
-        }
-
-        if (compilerOptions.outDir) {
-            compilerOptions.outDir = compilerOptions.outDir.replace(configDirectoryPlaceholder, "");
         }
     }
 
