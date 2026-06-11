@@ -3,11 +3,9 @@ import { brotliDecompress, unzip } from "node:zlib";
 
 import { toPath } from "@visulima/path/utils";
 
-import { R_OK } from "../constants";
-import PermissionError from "../error/permission-error";
-import isAccessible from "../is-accessible";
 import type { ContentType, ReadFileOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import mapReadError from "./utils/map-read-error";
 
 type DecompressionMethod = (buffer: Buffer, callback: (error: Error | null, result: Buffer) => void) => void;
 
@@ -65,32 +63,28 @@ const readFile = async <O extends ReadFileOptions<keyof typeof decompressionMeth
     // eslint-disable-next-line no-param-reassign
     path = toPath(path);
 
-    if (!await isAccessible(path)) {
-        throw new PermissionError(`unable to read the non-accessible file: ${path}`);
-    }
-
-    if (!await isAccessible(path, R_OK)) {
-        throw new Error(`Unable to read the non-readable file: ${path}`);
-    }
-
     const { buffer, compression, encoding, flag } = options ?? {};
 
-    return await nodeReadFile(path, flag ? { flag } : {})
-        .then(
-            async (content) =>
-                await new Promise<ContentType<O>>((resolve, reject) => {
-                    (decompressionMethods[compression ?? "none"] as DecompressionMethod)(content as Buffer, (error, result) => {
-                        if (error) {
-                            reject(error);
-                        } else {
-                            resolve((buffer ? result : result.toString((encoding ?? "utf8") as BufferEncoding)) as ContentType<O>);
-                        }
-                    });
-                }),
-        )
-        .catch((error: unknown) => {
-            throw error;
+    let content: Buffer;
+
+    // Read directly and translate the thrown errno into a typed error class.
+    // This avoids extra `access()` pre-flight syscalls and the TOCTOU window
+    // they introduced.
+    try {
+        content = await nodeReadFile(path, flag ? { flag } : {});
+    } catch (error) {
+        throw mapReadError(error, path);
+    }
+
+    return await new Promise<ContentType<O>>((resolve, reject) => {
+        (decompressionMethods[compression ?? "none"] as DecompressionMethod)(content, (error, result) => {
+            if (error) {
+                reject(error);
+            } else {
+                resolve((buffer ? result : result.toString(encoding ?? "utf8")) as ContentType<O>);
+            }
         });
+    });
 };
 
 export default readFile;

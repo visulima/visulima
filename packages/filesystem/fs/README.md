@@ -66,6 +66,71 @@ pnpm add yaml
 
 ## Usage
 
+### Quickstart by subpath
+
+`@visulima/fs` ships one entry per concern. Import from the narrowest subpath you
+need so the optional parser peers (`yaml`, `smol-toml`, `jsonc-parser`, `json5`,
+`ini`) stay tree-shaken.
+
+```typescript
+// Core fs surface: walk, glob, findUp, ensure*, read/writeFile, copy, move, remove, emptyDir, isAccessible, sanitize, EOL.
+import { copy, ensureDir, findUp, readFile, walk, writeFile } from "@visulima/fs";
+
+// Typed error classes (NotFoundError, AlreadyExistsError, PermissionError, …).
+import { NotFoundError } from "@visulima/fs/error";
+
+// Parser-backed helpers — each needs its peer dependency installed.
+import { readYaml, writeYaml } from "@visulima/fs/yaml";
+import { readJsonc, writeJsonc } from "@visulima/fs/jsonc";
+
+// Glob primitives and size/eol helpers.
+import { glob } from "@visulima/fs/glob";
+import { gzipSize } from "@visulima/fs/size";
+```
+
+### Copy a file or directory
+
+```typescript
+import { copy } from "@visulima/fs";
+
+// Copy a template directory, skipping node_modules and overwriting existing files.
+await copy("templates/app", "out/app", {
+    filter: (source) => !source.includes("node_modules"),
+});
+
+// Refuse to overwrite an existing destination.
+import { AlreadyExistsError } from "@visulima/fs/error";
+
+try {
+    await copy("a.txt", "b.txt", { overwrite: false });
+} catch (error) {
+    if (error instanceof AlreadyExistsError) {
+        console.error("destination already exists");
+    }
+}
+```
+
+### Coming from `fs-extra`?
+
+| `fs-extra`                       | `@visulima/fs`                                                              |
+| -------------------------------- | -------------------------------------------------------------------------- |
+| `copy` / `copySync`              | `copy` / `copySync`                                                         |
+| `move` / `moveSync`              | `move` / `moveSync`                                                         |
+| `remove` / `removeSync`          | `remove` / `removeSync` (real `EACCES`/`EBUSY` errors propagate)            |
+| `emptyDir` / `emptyDirSync`      | `emptyDir` / `emptyDirSync`                                                 |
+| `ensureFile` / `ensureDir` / …   | `ensureFile` / `ensureDir` / `ensureLink` / `ensureSymlink` (+ `*Sync`)     |
+| `readJson` / `writeJson`         | `readJson` / `writeJson` (+ `*Sync`)                                        |
+| `pathExists`                     | `isAccessible` / `isAccessibleSync`                                         |
+
+> **`writeFile` notes:** `overwrite` defaults to `true`. With `overwrite: false`,
+> `writeFile` throws `AlreadyExistsError` if the target exists instead of
+> overwriting it. To keep a copy of the previous file before overwriting, pass
+> `{ backup: true }` — the old contents are renamed to `${path}.bak`.
+>
+> **`readFile` errors:** a missing file throws `NotFoundError` (`ENOENT`); a file
+> that cannot be read for permission reasons throws `PermissionError`
+> (`EACCES`/`EPERM`).
+
 ## walk
 
 ```typescript

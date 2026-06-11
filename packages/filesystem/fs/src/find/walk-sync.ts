@@ -61,7 +61,9 @@ const _createWalkEntry = (path: string): WalkEntry => {
 // eslint-disable-next-line sonarjs/cognitive-complexity
 export default function* walkSync(
     directory: URL | string,
-    {
+    options: WalkOptions = {},
+): IterableIterator<WalkEntry> {
+    const {
         extensions,
         followSymlinks = false,
         includeDirs: includeDirectories = true,
@@ -70,13 +72,17 @@ export default function* walkSync(
         match,
         maxDepth = Number.POSITIVE_INFINITY,
         skip,
-    }: WalkOptions = {},
-): IterableIterator<WalkEntry> {
+    } = options;
+
     assertValidFileOrDirectoryPath(directory);
 
     if (maxDepth < 0) {
         return;
     }
+
+    // Internal: tracks resolved real paths already visited to avoid infinite
+    // recursion on self-referencing symlinks when `followSymlinks` is enabled.
+    const visited = (options as { visited?: Set<string> }).visited ?? new Set<string>();
 
     const mappedMatch = match
         ? match.map(
@@ -112,9 +118,29 @@ export default function* walkSync(
         for (const entry of entries) {
             let path = join(directory, entry.name);
 
+            // Track whether the entry needs to be re-stat'd because it is a
+            // symlink we are resolving. The original dirent reports the link
+            // itself (isDirectory()/isFile() are both false), so after resolving
+            // we must inspect the real target to decide how to handle it.
+            let isDirectory = entry.isDirectory();
+            let isFile = entry.isFile();
+
             if (entry.isSymbolicLink()) {
                 if (followSymlinks) {
-                    path = realpathSync(path);
+                    const realPath = realpathSync(path);
+
+                    // Cycle detection: skip targets already visited so a symlink
+                    // pointing at an ancestor directory cannot loop forever.
+                    if (visited.has(realPath)) {
+                        continue;
+                    }
+
+                    path = realPath;
+
+                    const info = statSync(realPath);
+
+                    isDirectory = info.isDirectory();
+                    isFile = info.isFile();
                 } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                     yield createWalkEntry(entry, entry.name, normalize(path));
 
@@ -124,7 +150,11 @@ export default function* walkSync(
                 }
             }
 
-            if (entry.isDirectory()) {
+            if (isDirectory) {
+                if (followSymlinks) {
+                    visited.add(path);
+                }
+
                 yield* walkSync(path, {
                     extensions,
                     followSymlinks,
@@ -134,8 +164,9 @@ export default function* walkSync(
                     match: mappedMatch,
                     maxDepth: maxDepth - 1,
                     skip: mappedSkip,
-                });
-            } else if (entry.isFile() && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
+                    visited,
+                } as WalkOptions);
+            } else if (isFile && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                 yield createWalkEntry(entry, entry.name, normalize(path));
             }
         }

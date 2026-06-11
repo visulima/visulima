@@ -1,4 +1,4 @@
-import { rm, unlink } from "node:fs/promises";
+import { rm } from "node:fs/promises";
 
 import type { RetryOptions } from "../types";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
@@ -36,17 +36,10 @@ import buildRmOptions from "./utils/build-rm-options";
 const remove = async (path: URL | string, options: RetryOptions = {}): Promise<void> => {
     assertValidFileOrDirectoryPath(path);
 
-    try {
-        await unlink(path);
-    } catch {
-        /* empty */
-    }
-
-    try {
-        await rm(path, buildRmOptions(options));
-    } catch {
-        /* empty */
-    }
+    // A single `rm` with `force + recursive` removes both files and directories
+    // and is ENOENT-safe (a missing path is a no-op). Real errors such as
+    // `EACCES`/`EBUSY` propagate to the caller instead of being swallowed.
+    await rm(path, buildRmOptions(options));
 };
 
 export default remove;

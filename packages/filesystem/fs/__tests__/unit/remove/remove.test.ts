@@ -54,6 +54,39 @@ describe.each([
         expect(existsSync(path)).toBe(false);
     });
 
+    it("should be a no-op when the path does not exist", async () => {
+        expect.assertions(1);
+
+        const missing = join(distribution, `missing-${name}-${Date.now()}`);
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "remove") {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(function_(missing)).resolves.toBeUndefined();
+        } else {
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(() => function_(missing)).not.toThrow();
+        }
+    });
+
+    it("should remove a directory with contents", async () => {
+        expect.assertions(1);
+
+        const targetDirectory = join(distribution, `with-contents-${name}-${Date.now()}`);
+
+        mkdirSync(join(targetDirectory, "nested"), { recursive: true });
+        await writeFile(join(targetDirectory, "nested", "marker.txt"), "x");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "remove") {
+            await function_(targetDirectory);
+        } else {
+            function_(targetDirectory);
+        }
+
+        expect(existsSync(targetDirectory)).toBe(false);
+    });
+
     it.each([
         ["empty options", {}],
         ["explicit undefined retryDelay", { retryDelay: undefined }],

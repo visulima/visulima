@@ -272,6 +272,15 @@ export type ReadJsonOptions = CodeFrameOptions & {
  */
 export type WriteFileOptions = {
     /**
+     * When `true` and the target file already exists, the previous contents are
+     * preserved by renaming the existing file to `${path}.bak` before the new
+     * contents are written. This is independent of {@link WriteFileOptions.overwrite}.
+     *
+     * Default: `false`
+     */
+    backup?: boolean;
+
+    /**
      * The group and user ID used to set the file ownership. Default: `undefined`
      */
     chown?: {
@@ -295,7 +304,10 @@ export type WriteFileOptions = {
     mode?: number;
 
     /**
-     * Indicates whether the file should be overwritten if it already exists. Default: `false`
+     * Indicates whether the file should be overwritten if it already exists.
+     * When `false` and the target already exists, an `AlreadyExistsError` is thrown.
+     *
+     * Default: `true`
      */
     overwrite?: boolean;
 

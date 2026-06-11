@@ -182,7 +182,7 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
         }
     });
 
-    it("should keep a .bak copy when overwrite is false on an existing file", async () => {
+    it("should keep a .bak copy when backup is true on an existing file", async () => {
         expect.assertions(3);
 
         const path = join(distribution, "file.txt");
@@ -191,10 +191,10 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
         // eslint-disable-next-line vitest/no-conditional-in-test
         if (name === "writeFile") {
             await writeFile(path, "first", { overwrite: true });
-            await writeFile(path, "second", { overwrite: false });
+            await writeFile(path, "second", { backup: true, overwrite: true });
         } else {
             writeFileSync(path, "first", { overwrite: true });
-            writeFileSync(path, "second", { overwrite: false });
+            writeFileSync(path, "second", { backup: true, overwrite: true });
         }
 
         const fileContent = readFileSync(path, "utf8");
@@ -203,6 +203,48 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
         expect(fileContent).toBe("second");
         expect(backupContent).toBe("first");
         await expect(isAccessible(backup, F_OK)).resolves.toBe(true);
+    });
+
+    it("should throw AlreadyExistsError when overwrite is false on an existing file", async () => {
+        expect.assertions(2);
+
+        const path = join(distribution, "file.txt");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await writeFile(path, "first", { overwrite: true });
+
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(writeFile(path, "second", { overwrite: false })).rejects.toThrow("EEXIST");
+        } else {
+            writeFileSync(path, "first", { overwrite: true });
+
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(() => {
+                writeFileSync(path, "second", { overwrite: false });
+            }).toThrow("EEXIST");
+        }
+
+        // Existing content must be untouched
+        expect(readFileSync(path, "utf8")).toBe("first");
+    });
+
+    it("should not leave a temp file behind after a successful write", async () => {
+        expect.assertions(1);
+
+        const path = join(distribution, "file.txt");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await writeFile(path, "content");
+        } else {
+            writeFileSync(path, "content");
+        }
+
+        const { readdirSync } = await import("node:fs");
+        const leftovers = readdirSync(distribution).filter((entry) => entry.endsWith(".tmp"));
+
+        expect(leftovers).toStrictEqual([]);
     });
 
     it("should accept Uint8Array content", async () => {

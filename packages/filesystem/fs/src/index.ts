@@ -1,4 +1,7 @@
 export { F_OK, FIND_UP_STOP, R_OK, W_OK, X_OK } from "./constants";
+export { default as copy } from "./copy/copy";
+export { default as copySync } from "./copy/copy-sync";
+export type { CopyFilterSync, CopyOptions } from "./copy/types";
 export { default as ensureDir } from "./ensure/ensure-dir";
 export { default as ensureDirSync } from "./ensure/ensure-dir-sync";
 export { default as ensureFile } from "./ensure/ensure-file";

@@ -5,10 +5,12 @@ import { dirname } from "@visulima/path";
 import { toPath } from "@visulima/path/utils";
 
 import { F_OK } from "../constants";
+import AlreadyExistsError from "../error/already-exists-error";
 import isAccessible from "../is-accessible";
 import type { WriteFileOptions } from "../types";
 import assertValidFileContents from "../utils/assert-valid-file-contents";
 import assertValidFileOrDirectoryPath from "../utils/assert-valid-file-or-directory-path";
+import temporaryPath from "./utils/temporary-path";
 import toUint8Array from "./utils/to-uint-8-array";
 
 /**
@@ -42,6 +44,7 @@ import toUint8Array from "./utils/to-uint-8-array";
 const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): Promise<void> => {
     // eslint-disable-next-line no-param-reassign
     options = {
+        backup: false,
         encoding: "utf8",
         flag: "w",
         overwrite: true,
@@ -55,24 +58,30 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
     // eslint-disable-next-line no-param-reassign
     path = toPath(path);
 
-    const temporaryPath = `${path}.tmp`;
+    const pathExists = await isAccessible(path, F_OK);
+
+    if (pathExists && !options.overwrite) {
+        throw new AlreadyExistsError(`file already exists, open '${path}'`);
+    }
+
+    // Use an unpredictable temp path so concurrent writers don't collide and a
+    // pre-created symlink at a predictable path can't be written through.
+    const temporary = temporaryPath(path);
 
     try {
-        const pathExists = await isAccessible(path, F_OK);
-
         if (!pathExists && options.recursive) {
-            const directory = dirname(path);
-
-            if (!await isAccessible(directory, F_OK)) {
-                await mkdir(directory, { recursive: true });
-            }
+            // `mkdir` with `recursive: true` is idempotent — no error if the
+            // directory already exists — so a pre-flight access check is redundant.
+            await mkdir(dirname(path), { recursive: true });
         }
 
         let stat: Stats | undefined;
 
-        await nodeWriteFile(temporaryPath, typeof content === "string" ? Buffer.from(content, options.encoding ?? "utf8") : toUint8Array(content), { flag: options.flag });
+        // `wx` (O_CREAT | O_EXCL) refuses to follow or open an existing path,
+        // so the temp file is always freshly created by this process.
+        await nodeWriteFile(temporary, typeof content === "string" ? Buffer.from(content, options.encoding ?? "utf8") : toUint8Array(content), { flag: "wx" });
 
-        if (pathExists && !options.overwrite) {
+        if (pathExists && options.backup) {
             stat = await nodeStat(path);
 
             // eslint-disable-next-line no-param-reassign
@@ -83,21 +92,21 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
 
         if (options.chown) {
             try {
-                await chown(temporaryPath, options.chown.uid, options.chown.gid);
+                await chown(temporary, options.chown.uid, options.chown.gid);
             } catch {
                 // On linux permissionless filesystems like exfat and fat32 the entire filesystem is normally owned by root,
                 // and trying to chown it causes as permissions error.
             }
         }
 
-        await chmod(temporaryPath, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
+        await chmod(temporary, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
 
-        await rename(temporaryPath, path);
+        await rename(temporary, path);
     } catch (error: unknown) {
         throw new Error(`Failed to write file at: ${path} - ${(error as Error).message}`, { cause: error });
     } finally {
-        if (await isAccessible(temporaryPath)) {
-            await unlink(`${path}.tmp`);
+        if (await isAccessible(temporary)) {
+            await unlink(temporary);
         }
     }
 };
