@@ -4,47 +4,58 @@ import copyBlob from "./handler/copy-blob";
 import copyDataView from "./handler/copy-data-view";
 import copyDate from "./handler/copy-date";
 import copyError from "./handler/copy-error";
+import copyFile from "./handler/copy-file";
 import { copyMapLoose, copyMapStrict } from "./handler/copy-map";
 import { copyObjectLoose, copyObjectStrict } from "./handler/copy-object";
 import { copyRegExpLoose, copyRegExpStrict } from "./handler/copy-regexp";
 import { copySetLoose, copySetStrict } from "./handler/copy-set";
-import type { Options, State } from "./types";
+import type { Handlers, Options, State } from "./types";
 
 // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
 const canValueHaveProperties = (value: unknown): value is NonNullable<Function | object> =>
     (typeof value === "object" && value !== null) || typeof value === "function";
 
+const throwUncloneable = (object: { constructor: { name: string } }): never => {
+    throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
+};
+
 /**
- * handler mappings for different data types.
+ * Default (loose) handler table for the supported data types. Hoisted to module
+ * scope and frozen so that the common no-options call path does not allocate a new
+ * table on every `deepClone()` invocation.
  */
-const handlers = {
+const looseHandlers: Handlers = {
     Array: copyArrayLoose,
     ArrayBuffer: copyArrayBuffer,
     Blob: copyBlob,
     DataView: copyDataView,
     Date: copyDate,
     Error: copyError,
+    File: copyFile,
     // eslint-disable-next-line @typescript-eslint/no-unsafe-function-type
     Function: (object: Function, _state: State) => object,
     Map: copyMapLoose,
     Object: copyObjectLoose,
-    Promise: (object: Promise<unknown>) => {
-        throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
-    },
+    Promise: throwUncloneable,
     RegExp: copyRegExpLoose,
     Set: copySetLoose,
+    SharedArrayBuffer: throwUncloneable,
+    WeakMap: throwUncloneable,
+    WeakSet: throwUncloneable,
+};
 
-    SharedArrayBuffer: (object: SharedArrayBuffer, _state: State) => {
-        throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    WeakMap: (object: WeakMap<any, any>) => {
-        throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
-    },
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    WeakSet: (object: WeakSet<any>) => {
-        throw new TypeError(`${object.constructor.name} objects cannot be cloned`);
-    },
+/**
+ * Default strict handler table. Reuses the loose handlers for every type whose
+ * strict behaviour is identical and overrides only the collection/array/object/
+ * regexp copiers that differ in strict mode.
+ */
+const strictHandlers: Handlers = {
+    ...looseHandlers,
+    Array: copyArrayStrict,
+    Map: copyMapStrict,
+    Object: copyObjectStrict,
+    RegExp: copyRegExpStrict,
+    Set: copySetStrict,
 };
 
 type DeepReadwrite<T> = T extends object | [] ? { -readonly [P in keyof T]: DeepReadwrite<T[P]> } : T;
@@ -54,32 +65,19 @@ interface FakeJSDOM {
     nodeType?: unknown;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type InternalClone = (value: any, state: State) => any;
+
 /**
- * Function that creates a deep clone of an object or array.
- * @template T - The type of the original data.
- * @param originalData The original data to be cloned. It uses the generic parameter `T`.
- * @param options Optional. The cloning options. Type of this parameter is `Options`.
- * @returns The deep cloned data with its type as `DeepReadwrite&lt;T>`.
+ * Build the `clone` dispatcher for a resolved handler table. The returned function
+ * is what `State.clone` points at, so every recursive call reuses the same handler
+ * resolution (no per-recursion table lookup).
  */
-
-export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<T> => {
-    if (!canValueHaveProperties(originalData)) {
-        return originalData as DeepReadwrite<T>;
-    }
-
-    const cloner = {
-        ...handlers,
-        ...options?.strict ? { Array: copyArrayStrict, Map: copyMapStrict, Object: copyObjectStrict, RegExp: copyRegExpStrict, Set: copySetStrict } : {},
-        ...options?.handler,
-    };
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let cache: WeakMap<any, any> | null = new WeakMap();
-
+const buildClone = (cloner: Handlers): InternalClone =>
     // eslint-disable-next-line @typescript-eslint/no-explicit-any,sonarjs/cognitive-complexity
-    const clone = (value: any, state: State): any => {
+    function clone(value: any, state: State): any {
         if (!canValueHaveProperties(value)) {
-            return value as DeepReadwrite<T>;
+            return value;
         }
 
         if (state.cache.has(value)) {
@@ -99,11 +97,21 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         }
 
         if (value instanceof Date) {
-            return cloner.Date(value, state);
+            const cloned = cloner.Date(value, state);
+
+            // Cache leaf clones so duplicate references to the same Date collapse to a
+            // single clone (matching the structured-clone identity semantics).
+            state.cache.set(value, cloned);
+
+            return cloned;
         }
 
         if (value instanceof RegExp) {
-            return cloner.RegExp(value, state);
+            const cloned = cloner.RegExp(value, state);
+
+            state.cache.set(value, cloned);
+
+            return cloned;
         }
 
         if (value instanceof Map) {
@@ -120,7 +128,11 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
         }
 
         if (value instanceof ArrayBuffer) {
-            return cloner.ArrayBuffer(value, state);
+            const cloned = cloner.ArrayBuffer(value, state);
+
+            state.cache.set(value, cloned);
+
+            return cloned;
         }
 
         if (
@@ -144,16 +156,38 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
 
             const clonedBuffer = cloner.ArrayBuffer(buffer, state);
             const TypedArrayConstructor = value.constructor as new (buffer: ArrayBuffer, byteOffset?: number, length?: number) => typeof value;
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+            const cloned = new TypedArrayConstructor(clonedBuffer, value.byteOffset, value.length);
 
-            return new TypedArrayConstructor(clonedBuffer, value.byteOffset, value.length);
+            state.cache.set(value, cloned);
+
+            return cloned;
         }
 
-        if (value instanceof Blob) {
-            return cloner.Blob(value, state);
+        // `File` extends `Blob`, so it must be checked first to preserve `name` and
+        // `lastModified` rather than degrading to a plain Blob.
+        if (typeof File !== "undefined" && value instanceof File) {
+            const cloned = cloner.File(value, state);
+
+            state.cache.set(value, cloned);
+
+            return cloned;
+        }
+
+        if (typeof Blob !== "undefined" && value instanceof Blob) {
+            const cloned = cloner.Blob(value, state);
+
+            state.cache.set(value, cloned);
+
+            return cloned;
         }
 
         if (value instanceof DataView) {
-            return cloner.DataView(value, state);
+            const cloned = cloner.DataView(value, state);
+
+            state.cache.set(value, cloned);
+
+            return cloned;
         }
 
         if (value instanceof SharedArrayBuffer) {
@@ -180,17 +214,61 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
             return cloner.Object(value as Record<PropertyKey, unknown>, state);
         }
 
-        throw new TypeError(`Type of ${typeof value} cannot be cloned`, value);
+        throw new TypeError(`Type of ${typeof value} cannot be cloned`);
     };
+
+/**
+ * Resolve the handler table for the given options. The default loose/strict tables
+ * are reused as-is when no custom handlers are provided, avoiding a spread per call.
+ */
+const resolveCloner = (options?: Options): Handlers => {
+    const base = options?.strict ? strictHandlers : looseHandlers;
+
+    if (!options?.handler) {
+        return base;
+    }
+
+    return { ...base, ...options.handler };
+};
+
+const runClone = <T>(originalData: T, cloner: Handlers): DeepReadwrite<T> => {
+    if (!canValueHaveProperties(originalData)) {
+        return originalData as DeepReadwrite<T>;
+    }
+
+    const clone = buildClone(cloner);
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const cache = new WeakMap<any>();
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
     const cloned = clone(originalData, { cache, clone });
 
-    // Reset the cache to free up memory
-    // eslint-disable-next-line no-useless-assignment,unicorn/no-null
-    cache = null;
-
     return cloned as DeepReadwrite<T>;
 };
 
-export type { Options, State } from "./types";
+/**
+ * Function that creates a deep clone of an object or array.
+ * @template T - The type of the original data.
+ * @param originalData The original data to be cloned. It uses the generic parameter `T`.
+ * @param options Optional. The cloning options. Type of this parameter is `Options`.
+ * @returns The deep cloned data, typed as a deep-mutable mirror of `T`.
+ */
+export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<T> => runClone(originalData, resolveCloner(options));
+
+/**
+ * Create a pre-configured deep-clone function (à la fast-copy's `createCopier`).
+ *
+ * The handler table is resolved once, so the returned function avoids the per-call
+ * options/handler resolution overhead — useful in hot loops cloning many values
+ * with the same configuration.
+ * @param options The cloning options applied to every call of the returned function.
+ * @returns A `deepClone`-compatible function bound to the resolved options.
+ */
+export const createDeepClone = (options?: Options): <T>(originalData: T) => DeepReadwrite<T> => {
+    const cloner = resolveCloner(options);
+
+    return <T>(originalData: T): DeepReadwrite<T> => runClone(originalData, cloner);
+};
+
+export type { Handlers, Options, State } from "./types";

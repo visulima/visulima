@@ -59,10 +59,10 @@ Configuration options for the `deepClone` function.
 **Type Definition:**
 
 ```typescript
-interface Options {
+type Options = {
     strict?: boolean;
-    handler?: Partial<HandlerMap>;
-}
+    handler?: Partial<Handlers>;
+};
 ```
 
 **Properties:**
@@ -101,22 +101,23 @@ console.log(strict.hidden); // "non-enumerable"
 
 Custom handlers for specific data types.
 
-- **Type:** `Partial<HandlerMap>`
+- **Type:** `Partial<Handlers>`
 - **Default:** `undefined`
-- **Description:** Override default cloning behavior for specific types
+- **Description:** Override default cloning behavior for specific types. Every key is optional, so you only pass the handlers you want to override.
 
-**HandlerMap Definition:**
+**Handlers Definition:**
 
 ```typescript
 type InternalHandler<T> = (object: T, state: State) => T;
 
-interface HandlerMap {
+type Handlers = {
     Array: InternalHandler<unknown[]>;
     ArrayBuffer: InternalHandler<ArrayBuffer>;
     Blob: InternalHandler<Blob>;
     DataView: InternalHandler<DataView>;
     Date: InternalHandler<Date>;
     Error: InternalHandler<Error>;
+    File: InternalHandler<File>;
     Function: InternalHandler<Function>;
     Map: InternalHandler<Map<unknown, unknown>>;
     Object: InternalHandler<Record<string, unknown>>;
@@ -126,8 +127,10 @@ interface HandlerMap {
     SharedArrayBuffer: InternalHandler<SharedArrayBuffer>;
     WeakMap: InternalHandler<WeakMap<any, unknown>>;
     WeakSet: InternalHandler<WeakSet<any>>;
-}
+};
 ```
+
+> Note: typed arrays are cloned through the `ArrayBuffer` handler — there are no dedicated typed-array keys.
 
 **Example:**
 
