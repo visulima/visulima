@@ -112,15 +112,15 @@ try {
 
 ### Coming from `fs-extra`?
 
-| `fs-extra`                       | `@visulima/fs`                                                              |
-| -------------------------------- | -------------------------------------------------------------------------- |
-| `copy` / `copySync`              | `copy` / `copySync`                                                         |
-| `move` / `moveSync`              | `move` / `moveSync`                                                         |
-| `remove` / `removeSync`          | `remove` / `removeSync` (real `EACCES`/`EBUSY` errors propagate)            |
-| `emptyDir` / `emptyDirSync`      | `emptyDir` / `emptyDirSync`                                                 |
-| `ensureFile` / `ensureDir` / …   | `ensureFile` / `ensureDir` / `ensureLink` / `ensureSymlink` (+ `*Sync`)     |
-| `readJson` / `writeJson`         | `readJson` / `writeJson` (+ `*Sync`)                                        |
-| `pathExists`                     | `isAccessible` / `isAccessibleSync`                                         |
+| `fs-extra`                     | `@visulima/fs`                                                          |
+| ------------------------------ | ----------------------------------------------------------------------- |
+| `copy` / `copySync`            | `copy` / `copySync`                                                     |
+| `move` / `moveSync`            | `move` / `moveSync`                                                     |
+| `remove` / `removeSync`        | `remove` / `removeSync` (real `EACCES`/`EBUSY` errors propagate)        |
+| `emptyDir` / `emptyDirSync`    | `emptyDir` / `emptyDirSync`                                             |
+| `ensureFile` / `ensureDir` / … | `ensureFile` / `ensureDir` / `ensureLink` / `ensureSymlink` (+ `*Sync`) |
+| `readJson` / `writeJson`       | `readJson` / `writeJson` (+ `*Sync`)                                    |
+| `pathExists`                   | `isAccessible` / `isAccessibleSync`                                     |
 
 > **`writeFile` notes:** `overwrite` defaults to `true`. With `overwrite: false`,
 > `writeFile` throws `AlreadyExistsError` if the target exists instead of
