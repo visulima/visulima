@@ -30,7 +30,6 @@ const ROOT_FOLDER_RE = /^\/([A-Z]:)?$/i;
 const EXTNAME_RE = /.(\.[^./]+)$/;
 const PATH_ROOT_RE = /^[/\\]|^[a-z]:[/\\]/i;
 const TRAILING_SLASH_RE = /\/$/;
-const WIN_PLATFORM_RE = /^win/i;
 
 const cwd = () => {
     if (typeof process !== "undefined" && typeof process.cwd === "function") {
@@ -48,10 +47,14 @@ export const sep = "/";
 
 /**
  * Path delimiter constant, used to separate paths in environment variables.
+ *
+ * Forced to the POSIX `:` on every platform (including Windows) so that path
+ * behaviour is consistent across operating systems, mirroring {@link sep},
+ * which is always `/`. When you need to split a *native* Windows `PATH`
+ * environment variable (which uses `;`), do not rely on this constant — use the
+ * literal `";"` instead.
  */
-
-// eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-export const delimiter: string = WIN_PLATFORM_RE.test(globalThis.process?.platform ?? "") ? ";" : ":";
+export const delimiter = ":";
 
 /**
  * Resolves a string path, resolving '.' and '.' segments and allowing paths above the root.
@@ -334,7 +337,7 @@ export const dirname: typeof path.dirname = (path: string) => {
  * Returns a path string from an object.
  */
 export const format: typeof path.format = function (pathObject: path.FormatInputPathObject) {
-    const segments = [pathObject.root, pathObject.dir, pathObject.base ?? (pathObject.name as string) + (pathObject.ext as string)].filter(Boolean);
+    const segments = [pathObject.root, pathObject.dir, pathObject.base ?? (pathObject.name ?? "") + (pathObject.ext ?? "")].filter(Boolean);
 
     return normalizeWindowsPath(pathObject.root ? resolve(...(segments as string[])) : segments.join("/"));
 };

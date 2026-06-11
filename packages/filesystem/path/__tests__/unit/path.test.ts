@@ -26,8 +26,6 @@ import {
 } from "../../src/path";
 import { runTest } from "../helpers";
 
-const WIN_PLATFORM_RE = /^win/i;
-
 runTest("normalizeWindowsPath", normalizeWindowsPath, {
     ".\\foo\\bar": "./foo/bar",
 
@@ -138,6 +136,13 @@ runTest("format", format, [
     [{ base: "file.txt", ext: "ignored", root: "/" }, "/file.txt"],
     [{ ext: ".txt", name: "file", root: "/" }, "/file.txt"],
     [{ ext: ".txt", name: "file" }, "file.txt"],
+
+    // Missing name/ext must not leak the string "undefined" (regression for
+    // `(name as string) + (ext as string)` producing e.g. "fooundefined").
+    [{ dir: "/a", name: "foo" }, "/a/foo"],
+    [{ dir: "/a", ext: ".txt" }, "/a/.txt"],
+    [{ name: "foo" }, "foo"],
+    [{ ext: ".txt" }, ".txt"],
 
     // Windows
     [{ base: "file.txt", name: "file" }, "file.txt"],
@@ -356,10 +361,10 @@ runTest("toNamespacedPath", toNamespacedPath, {
 });
 
 describe("constants", () => {
-    it("delimiter should equal : on linux and ; on windows", () => {
+    it("delimiter should always equal ':' (POSIX) regardless of platform", () => {
         expect.assertions(1);
 
-        expect(delimiter).toBe(WIN_PLATFORM_RE.test(globalThis.process.platform) ? ";" : ":");
+        expect(delimiter).toBe(":");
     });
 
     it("sep should equal /", () => {
@@ -436,7 +441,7 @@ describe("delimiter platform resolution", () => {
         vi.resetModules();
     });
 
-    it("should use ';' on a Windows platform", async () => {
+    it("should stay ':' even when the platform reports Windows", async () => {
         expect.assertions(1);
 
         vi.resetModules();
@@ -444,10 +449,12 @@ describe("delimiter platform resolution", () => {
 
         const pathModule = await import("../../src/path");
 
-        expect(pathModule.delimiter).toBe(";");
+        // Unlike node:path, the delimiter is forced to POSIX ':' on every
+        // platform so that path behaviour is consistent cross-OS (mirrors sep).
+        expect(pathModule.delimiter).toBe(":");
     });
 
-    it("should fall back to ':' when the platform is undefined", async () => {
+    it("should stay ':' when the platform is undefined", async () => {
         expect.assertions(1);
 
         vi.resetModules();

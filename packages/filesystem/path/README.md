@@ -38,7 +38,7 @@
 
 For [historical reasons](https://docs.microsoft.com/en-us/archive/blogs/larryosterman/why-is-the-dos-path-character), windows followed MS-DOS and using backslash for separating paths rather than slash used for macOS, Linux, and other Posix operating systems. Nowadays, [Windows](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN) supports both Slash and Backslash for paths. [Node.js's built in `path` module](https://nodejs.org/api/path.html) in the default operation of the path module varies based on the operating system on which a Node.js application is running. Specifically, when running on a Windows operating system, the path module will assume that Windows-style paths are being used. **This makes inconsistent code behavior between Windows and POSIX.**
 
-Compared to popular [upath](https://github.com/anodynos/upath), pathe is providing **identical exports** of Node.js with normalization on **all operations** and written in modern **ESM/Typescript** and has **no dependency on Node.js**!
+Compared to popular [upath](https://github.com/anodynos/upath), `@visulima/path` provides **identical exports** to Node.js with normalization on **all operations**, is written in modern **ESM/TypeScript**, and has **no runtime dependencies**!
 
 ## Install
 
@@ -56,20 +56,17 @@ pnpm add @visulima/path
 
 ## Usage
 
+This package is **ESM-only** (`"type": "module"`). Import it with `import`:
+
 ```js
-// ESM / Typescript
+// ESM / TypeScript
 import { resolve } from "@visulima/path";
 // or
 import path from "@visulima/path";
-
-// CommonJS
-const { resolve } = require("@visulima/path");
-// or
-const path = require("@visulima/path");
 ```
 
 > Check https://nodejs.org/api/path.html about the exported functions.
-> Note: path.win32 and path.posix are not exported.
+> Note: `path.win32` and `path.posix` are both exported, but they are **aliased to the same POSIX implementation** — they exist only so that `import path from "@visulima/path"` works as a drop-in `node:path` shim. Do not rely on `path.win32` for Windows-style (backslash) output; every operation is normalized to POSIX.
 
 ### Extra utilities
 
@@ -77,11 +74,8 @@ const path = require("@visulima/path");
 In order to use them, you can import from `@visulima/path/utils` subpath:
 
 ```js
-// ESM / Typescript
+// ESM / TypeScript
 import { filename, normalizeAliases, resolveAlias, reverseResolveAlias, isRelative, isBinaryPath, toPath, isWindows } from "@visulima/path/utils";
-
-// CommonJS
-const { filename, normalizeAliases, resolveAlias, reverseResolveAlias, isRelative, isBinaryPath, toPath, isWindows } = require("@visulima/path/utils");
 ```
 
 ## Related
