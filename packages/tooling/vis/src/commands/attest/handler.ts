@@ -1,5 +1,4 @@
 import { createHash } from "node:crypto";
-import { readFileSync, writeFileSync } from "node:fs";
 import { basename, isAbsolute, resolve as resolvePath } from "node:path";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
@@ -139,7 +138,7 @@ const buildSlsaStatement = (subjectName: string, sha256: string, workspaceRoot: 
     };
 };
 
-export const attestEmitExecute: CommandExecute<Toolbox<Console, AttestEmitOptions>> = async ({ argument, logger, options, workspaceRoot: wsRoot }) => {
+export const attestEmitExecute: CommandExecute<Toolbox<Console, AttestEmitOptions>> = async ({ argument, fs, logger, options, workspaceRoot: wsRoot }) => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
     }
@@ -160,10 +159,10 @@ export const attestEmitExecute: CommandExecute<Toolbox<Console, AttestEmitOption
     const requireSigning = options.requireSigning ?? false;
     const format = options.format ?? "table";
 
-    let artifact: Buffer;
+    let artifact: Uint8Array;
 
     try {
-        artifact = readFileSync(subjectPath);
+        artifact = await fs.readFile(subjectPath);
     } catch {
         throw new Error(`Cannot read subject artifact at ${subjectPath}.`);
     }
@@ -200,7 +199,7 @@ export const attestEmitExecute: CommandExecute<Toolbox<Console, AttestEmitOption
 
     const outputPath = options.output ? (isAbsolute(options.output) ? options.output : resolvePath(wsRoot, options.output)) : `${subjectPath}.sigstore`;
 
-    writeFileSync(outputPath, `${JSON.stringify(bundle, undefined, 2)}\n`);
+    await fs.writeFile(outputPath, `${JSON.stringify(bundle, undefined, 2)}\n`, "utf8");
 
     if (format === "json") {
         process.stdout.write(`${JSON.stringify({ bundle: outputPath, ok: true, sha256, subject: basename(subjectPath) }, undefined, 2)}\n`);

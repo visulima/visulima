@@ -1,5 +1,3 @@
-import { readdirSync } from "node:fs";
-
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { dim, green, red, yellow } from "@visulima/colorize";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
@@ -14,7 +12,7 @@ import type { StatusOptions } from "./index";
 
 const icon = (ok: boolean): string => (ok ? green("✓") : red("✗"));
 
-const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, StatusOptions>): Promise<void> => {
+const execute = async ({ fs, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, StatusOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root.");
     }
@@ -38,9 +36,8 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     const runsDir = getVisRunsDir(wsRoot);
 
     if (isAccessibleSync(runsDir)) {
-        const files = readdirSync(runsDir)
-            .filter((f) => f.endsWith(".json"))
-            .sort();
+        const entries = await fs.readdir(runsDir);
+        const files = entries.filter((f) => f.endsWith(".json")).sort();
         let totalTasks = 0;
         let cachedTasks = 0;
 

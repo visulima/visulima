@@ -1,4 +1,5 @@
 import { mkdirSync, writeFileSync } from "node:fs";
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
@@ -29,6 +30,8 @@ const makeLogger = (): {
         },
     };
 };
+
+const testFs = { access, mkdir, readdir, readFile, rm, stat, writeFile } as never;
 
 describe("vis status", () => {
     let workspaceRoot: string;
@@ -63,6 +66,7 @@ describe("vis status", () => {
 
         await statusExecute({
             argument: [],
+            fs: testFs,
             logger,
             options: { json: true },
             runtime: {} as never,
@@ -102,6 +106,7 @@ describe("vis status", () => {
 
         await statusExecute({
             argument: [],
+            fs: testFs,
             logger,
             options: { json: true },
             runtime: {} as never,
@@ -122,6 +127,7 @@ describe("vis status", () => {
 
         await statusExecute({
             argument: [],
+            fs: testFs,
             logger,
             options: {},
             runtime: {} as never,

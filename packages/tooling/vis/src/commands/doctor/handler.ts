@@ -1,4 +1,4 @@
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
 import { findPackageManagerSync } from "@visulima/package";
 import { join, resolve } from "@visulima/path";
@@ -842,7 +842,7 @@ const printBanner = (input: BannerInputs): void => {
     pail.log("");
 };
 
-const execute = async ({ logger, options, visConfig, visConfigError, workspaceRoot: wsRoot }: Toolbox<Console, DoctorOptions>): Promise<void> => {
+const execute = async ({ fs, logger, options, visConfig, visConfigError, workspaceRoot: wsRoot }: Toolbox<Console, DoctorOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root.");
     }
@@ -1045,6 +1045,7 @@ const execute = async ({ logger, options, visConfig, visConfigError, workspaceRo
     if (options.fix && (hasOptimizationFixes || hasOrphanWarning)) {
         await runFixes({
             force: Boolean(options.fixForce),
+            fs,
             logger,
             pm,
             recoverOrphans: hasOrphanWarning,
@@ -1082,6 +1083,8 @@ interface PmLike {
 interface RunFixesOptions {
     /** Pass `true` for `--fix-force`: orphan cleanup escalates straight to SIGKILL. */
     force: boolean;
+    /** Injected filesystem adapter — threaded into the optimize codemod runner. */
+    fs: CerebroFs;
     logger: Console;
     pm: PmLike;
     /** When true, run {@link killOrphanedRunners} after the optimization fixes. */
@@ -1092,7 +1095,7 @@ interface RunFixesOptions {
 }
 
 const runFixes = async (opts: RunFixesOptions): Promise<void> => {
-    const { force, logger, pm, recoverOrphans, results, useEditorconfig, workspaceRoot } = opts;
+    const { force, fs, logger, pm, recoverOrphans, results, useEditorconfig, workspaceRoot } = opts;
 
     pail.log("");
     pail.log(heading("Applying fixes", "ok"));
@@ -1161,7 +1164,7 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
 
     for (const entry of codemodEntries) {
         try {
-            const codemodResult = await runCodemod(workspaceRoot, entry.packageName);
+            const codemodResult = await runCodemod(fs, workspaceRoot, entry.packageName);
 
             if (codemodResult.filesChanged > 0) {
                 pail.success(`${entry.packageName}: ${String(codemodResult.filesChanged)} file${codemodResult.filesChanged === 1 ? "" : "s"} updated`);

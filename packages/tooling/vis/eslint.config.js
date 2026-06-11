@@ -197,4 +197,38 @@ export default createConfig(
             "@typescript-eslint/no-unsafe-return": "off",
         },
     },
+    {
+        // Command handlers must use the injected `toolbox.fs` (CerebroFs) rather
+        // than importing `node:fs` / `node:fs/promises` directly — this keeps
+        // commands cloneable/sandboxable for MCP and test contexts. See CLAUDE.md.
+        files: ["src/commands/**/handler.ts"],
+        rules: {
+            "no-restricted-imports": [
+                "error",
+                {
+                    paths: [
+                        { message: "Use toolbox.fs (injected CerebroFs) instead — see CLAUDE.md.", name: "node:fs" },
+                        { message: "Use toolbox.fs (injected CerebroFs) instead — see CLAUDE.md.", name: "node:fs/promises" },
+                    ],
+                },
+            ],
+        },
+    },
+    {
+        // Blocked handlers: these use fs APIs with no CerebroFs equivalent, so they
+        // still import node:fs directly until the runtime surface is extended.
+        //   - cache/handler.ts   → mkdtemp, realpath (no temp-dir / realpath on CerebroFs)
+        //   - clean/handler.ts   → lstatSync, unlinkSync (no lstat / unlink on CerebroFs)
+        //   - hook/handler.ts    → chmodSync (no chmod on CerebroFs)
+        //   - service/handler.ts → open (FileHandle stream), watch (no equivalents)
+        files: [
+            "src/commands/cache/handler.ts",
+            "src/commands/clean/handler.ts",
+            "src/commands/hook/handler.ts",
+            "src/commands/service/handler.ts",
+        ],
+        rules: {
+            "no-restricted-imports": "off",
+        },
+    },
 );

@@ -1,4 +1,5 @@
 import { mkdtempSync, readFileSync, writeFileSync } from "node:fs";
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -24,9 +25,12 @@ const makeSubject = (): string => {
     return path;
 };
 
+const testFs = { access, mkdir, readdir, readFile, rm, stat, writeFile } as never;
+
 const makeToolbox = (argument: string[], options: Record<string, unknown>) =>
     ({
         argument,
+        fs: testFs,
         logger: { error: vi.fn(), info: vi.fn(), warn: vi.fn() },
         options,
         workspaceRoot: "/ws",

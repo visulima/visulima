@@ -1,10 +1,13 @@
 import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import syncExecute from "../../../src/commands/sync/handler";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
+
+const testFs = { access, mkdir, readdir, readFile, rm, stat, writeFile } as never;
 
 type ExitCode = number | string | undefined;
 
@@ -68,6 +71,7 @@ describe("vis sync codeowners", () => {
         await expect(
             syncExecute({
                 argument: [],
+                fs: testFs,
                 logger,
                 options: {},
                 runtime: {} as never,
@@ -85,6 +89,7 @@ describe("vis sync codeowners", () => {
         await expect(
             syncExecute({
                 argument: ["wat"],
+                fs: testFs,
                 logger,
                 options: {},
                 runtime: {} as never,
@@ -101,6 +106,7 @@ describe("vis sync codeowners", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: {},
             runtime: {} as never,
@@ -121,6 +127,7 @@ describe("vis sync codeowners", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: { out: ".github/CODEOWNERS" },
             runtime: {} as never,
@@ -142,6 +149,7 @@ describe("vis sync codeowners", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: { check: true },
             runtime: {} as never,
@@ -164,6 +172,7 @@ describe("vis sync codeowners", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: {},
             runtime: {} as never,
@@ -175,6 +184,7 @@ describe("vis sync codeowners", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: { check: true },
             runtime: {} as never,
@@ -199,6 +209,7 @@ describe("vis sync codeowners", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: { preserveBlock: true },
             runtime: {} as never,
@@ -224,6 +235,7 @@ describe("vis sync codeowners", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: { preserveBlock: true },
             runtime: {} as never,
@@ -238,6 +250,7 @@ describe("vis sync codeowners", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: { preserveBlock: true },
             runtime: {} as never,
@@ -263,6 +276,7 @@ describe("vis sync codeowners", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: {},
             runtime: {} as never,
@@ -312,6 +326,7 @@ describe("vis sync codeowners --write-guard", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: { writeGuard: true },
             runtime: {} as never,
@@ -336,6 +351,7 @@ describe("vis sync codeowners --write-guard", () => {
         // write-guard drift must not be clobbered back to 0.
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger: makeLogger().logger,
             options: {},
             runtime: {} as never,
@@ -349,6 +365,7 @@ describe("vis sync codeowners --write-guard", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: { check: true, writeGuard: true },
             runtime: {} as never,
@@ -372,6 +389,7 @@ describe("vis sync codeowners --write-guard", () => {
 
         await syncExecute({
             argument: ["codeowners"],
+            fs: testFs,
             logger,
             options: { writeGuard: true },
             runtime: {} as never,
@@ -437,6 +455,7 @@ describe("vis sync package-json-fields", () => {
 
         await syncExecute({
             argument: ["package-json-fields"],
+            fs: testFs,
             logger,
             options: {},
             runtime: {} as never,
@@ -459,6 +478,7 @@ describe("vis sync package-json-fields", () => {
 
         await syncExecute({
             argument: ["package-json-fields"],
+            fs: testFs,
             logger,
             options: { check: true },
             runtime: {} as never,
@@ -493,6 +513,7 @@ describe("vis sync package-json-fields", () => {
 
         await syncExecute({
             argument: ["package-json-fields"],
+            fs: testFs,
             logger,
             options: { check: true },
             runtime: {} as never,
@@ -514,6 +535,7 @@ describe("vis sync package-json-fields", () => {
 
         await syncExecute({
             argument: ["package-json-fields"],
+            fs: testFs,
             logger,
             options: { fields: ["license"] },
             runtime: {} as never,
@@ -535,6 +557,7 @@ describe("vis sync package-json-fields", () => {
 
         await syncExecute({
             argument: ["package-json-fields"],
+            fs: testFs,
             logger,
             options: { fields: ["license,author"] },
             runtime: {} as never,
@@ -557,6 +580,7 @@ describe("vis sync package-json-fields", () => {
 
         await syncExecute({
             argument: ["package-json-fields"],
+            fs: testFs,
             logger,
             options: { ignorePackageName: ["@my/legacy"] },
             runtime: {} as never,
@@ -583,6 +607,7 @@ describe("vis sync package-json-fields", () => {
 
         await syncExecute({
             argument: ["package-json-fields"],
+            fs: testFs,
             logger,
             options: { fields: ["repository"] },
             runtime: {} as never,
@@ -617,6 +642,7 @@ describe("vis sync package-json-fields", () => {
         try {
             await syncExecute({
                 argument: ["package-json-fields"],
+                fs: testFs,
                 logger,
                 options: { format: "json" },
                 runtime: {} as never,
@@ -651,6 +677,7 @@ describe("vis sync package-json-fields", () => {
 
         await syncExecute({
             argument: ["package-json-fields"],
+            fs: testFs,
             logger,
             options: { quiet: true },
             runtime: {} as never,
@@ -674,6 +701,7 @@ describe("vis sync package-json-fields", () => {
 
         await syncExecute({
             argument: ["package-json-fields"],
+            fs: testFs,
             logger,
             options: { fields: ["funding"] },
             runtime: {} as never,
