@@ -124,14 +124,14 @@ pnpm add @visulima/html
 
 `@visulima/html` exposes focused subpath exports so you only pay for what you import. The aggregate `@visulima/html` entry re-exports everything (including `sanitize-html`, which pulls in `htmlparser2`/`parse5`/`postcss`). If you only need escaping, import the lighter, browser-friendly subpaths instead:
 
-| Import                       | Contents                                                   |
-| ---------------------------- | ---------------------------------------------------------- |
-| `@visulima/html`             | Everything (escaping, `html`/`css` tags, sanitize, strip…) |
-| `@visulima/html/escape`      | `escapeHtml`, `escapeCss`, `escapeJs` (no `sanitize-html`) |
-| `@visulima/html/html`        | `html` tag + `html.raw` / `isRawHtml`                      |
-| `@visulima/html/css`         | `css` tag + `CSSProperties` / `FlexibleCSSProperties`      |
-| `@visulima/html/sanitize`    | `sanitizeHtml`                                             |
-| `@visulima/html/strip`       | `stripHtml` + types                                        |
+| Import                    | Contents                                                   |
+| ------------------------- | ---------------------------------------------------------- |
+| `@visulima/html`          | Everything (escaping, `html`/`css` tags, sanitize, strip…) |
+| `@visulima/html/escape`   | `escapeHtml`, `escapeCss`, `escapeJs` (no `sanitize-html`) |
+| `@visulima/html/html`     | `html` tag + `html.raw` / `isRawHtml`                      |
+| `@visulima/html/css`      | `css` tag + `CSSProperties` / `FlexibleCSSProperties`      |
+| `@visulima/html/sanitize` | `sanitizeHtml`                                             |
+| `@visulima/html/strip`    | `stripHtml` + types                                        |
 
 ```typescript
 // Lightweight, browser-safe — does not load sanitize-html
@@ -287,7 +287,9 @@ html`<p>${["<a>", "<b>"]}</p>`;
 
 // Build a list: wrap each nested fragment with html.raw so it is not re-escaped
 const items = ["Apples", "<script>"];
-html`<ul>${items.map((item) => html.raw(html`<li>${item}</li>`))}</ul>`;
+html`<ul>
+    ${items.map((item) => html.raw(html`<li>${item}</li>`))}
+</ul>`;
 // Result: '<ul><li>Apples</li><li>&lt;script></li></ul>'
 
 // Inline trusted, pre-sanitized HTML verbatim
