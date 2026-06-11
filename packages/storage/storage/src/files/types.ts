@@ -1,3 +1,5 @@
+import type { Readable } from "node:stream";
+
 import type { BaseStorage } from "../storage/storage";
 import type { OperationOptions } from "../storage/types";
 import type { UploadControl } from "./upload-control";
@@ -59,6 +61,20 @@ export interface MultipartOptions {
 }
 
 export interface UploadOptions {
+    /**
+     * Pre-computed content integrity checksum for end-to-end verification. Adapters that verify
+     * checksums on write (e.g. DiskStorage, TUS) reject the upload when the stored bytes don't
+     * match. Pair with {@link UploadOptions.checksumAlgorithm} to select the digest; defaults to
+     * the adapter's preferred algorithm when omitted. Ignored by adapters without checksum support.
+     */
+    checksum?: string;
+
+    /**
+     * Digest algorithm for {@link UploadOptions.checksum} (e.g. `"sha256"`, `"md5"`, `"crc32c"`).
+     * Adapter-dependent; ignored when no `checksum` is supplied.
+     */
+    checksumAlgorithm?: string;
+
     contentType?: string;
 
     /**
@@ -173,6 +189,16 @@ export interface FileObject {
 
 export interface DownloadResult extends FileObject {
     body: Buffer;
+}
+
+/**
+ * Streaming variant of {@link DownloadResult} returned by {@link Files.downloadStream}. The object
+ * body is exposed as a Node {@link NodeJS.ReadableStream} instead of a fully-buffered `Buffer`, so
+ * serving a large object never allocates the whole payload in memory. Backed by the adapter's
+ * native `getStream()`.
+ */
+export interface DownloadStreamResult extends FileObject {
+    body: Readable;
 }
 
 /**

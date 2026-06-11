@@ -162,17 +162,34 @@ abstract class BaseHandlerCore<TFile extends UploadFile> extends EventEmitter {
     /**
      * Build file URL from request and file data.
      * Platform-agnostic version that accepts URL string.
-     * @param requestUrl Request URL string
+     *
+     * When `useRelativeLocation` is `false` (the default) the absolute origin is resolved from, in
+     * order: an absolute `requestUrl` (the fetch runtimes pass `request.url`, which carries the
+     * origin), then the host/proto derived from `requestHeaders` (the Node runtimes pass the request
+     * headers, since `request.url` there is only a path). If neither yields a host the Location
+     * stays relative rather than emitting a bogus `http://localhost` origin.
+     * @param requestUrl Request URL string (absolute on fetch runtimes, path-only on Node).
      * @param file File object containing ID and content type
+     * @param requestHeaders Optional request headers used to recover host/proto on Node runtimes.
      * @returns Constructed file URL with extension based on content type
      */
-    protected buildFileUrlFromString(requestUrl: string, file: TFile): string {
+    protected buildFileUrlFromString(requestUrl: string, file: TFile, requestHeaders?: IncomingMessage["headers"]): string {
         const url = new URL(requestUrl, "http://localhost");
         const { pathname } = url;
         const query = Object.fromEntries(url.searchParams.entries());
         const relative = format({ pathname: `${pathname}/${file.id}`, query });
 
-        const baseUrl = this.storage.config.useRelativeLocation ? "" : getBaseUrl({ url: requestUrl } as IncomingMessage);
+        let baseUrl = "";
+
+        if (!this.storage.config.useRelativeLocation) {
+            // An absolute requestUrl (fetch runtimes) already carries the origin.
+            if (/^https?:\/\//iu.test(requestUrl)) {
+                baseUrl = url.origin;
+            } else if (requestHeaders) {
+                // Node runtimes: request.url is a path, so recover host/proto from the headers.
+                baseUrl = getBaseUrl({ headers: requestHeaders } as IncomingMessage);
+            }
+        }
 
         return `${baseUrl}${relative}.${mime.getExtension(file.contentType)}`;
     }

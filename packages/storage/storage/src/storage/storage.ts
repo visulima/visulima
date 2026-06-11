@@ -620,6 +620,7 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * Gets an uploaded file as a readable stream for efficient large file handling.
      * @param query File query containing the file ID to stream.
      * @param query.id File ID to stream.
+     * @param options Optional per-call signal/timeout/retries (and, on range-capable adapters, a `range`).
      * @returns Promise resolving to an object containing the stream, headers, and size.
      * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
      * @remarks
@@ -627,11 +628,11 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      * Storage implementations should override this for better streaming performance.
      * Headers include Content-Type, Content-Length, ETag, and Last-Modified.
      */
-    public async getStream({ id }: FileQuery): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+    public async getStream({ id }: FileQuery, options?: OperationOptions): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
         return this.instrumentOperation("getStream", async () => {
             // Default implementation falls back to get() and creates a stream from the buffer
             // Storage implementations can override this for better streaming performance
-            const file = await this.get({ id });
+            const file = await this.get({ id }, options);
             const stream = Readable.from(file.content);
 
             return {
@@ -1014,13 +1015,13 @@ export abstract class BaseStorage<TFile extends File = File, TFileReturn extends
      */
 
     protected async lock(key: string): Promise<string> {
-        const activeUploads = [...this.locker.keys()];
-
-        if (activeUploads.includes(key)) {
+        // Avoid materializing every lock key on the hot upload path: `has`/`size` answer both
+        // questions in O(1) without the per-acquisition array allocation `[...keys()]` incurred.
+        if (this.locker.has(key)) {
             return throwErrorCode(ERRORS.FILE_LOCKED);
         }
 
-        if (this.config.concurrency && typeof this.config.concurrency === "number" && this.config.concurrency <= activeUploads.length) {
+        if (this.config.concurrency && typeof this.config.concurrency === "number" && this.config.concurrency <= this.locker.size) {
             return throwErrorCode(ERRORS.STORAGE_BUSY);
         }
 

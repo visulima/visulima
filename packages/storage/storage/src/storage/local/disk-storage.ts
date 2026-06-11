@@ -1,5 +1,5 @@
 import { createReadStream, createWriteStream } from "node:fs";
-import { copyFile, stat, truncate } from "node:fs/promises";
+import { copyFile, open, stat, truncate } from "node:fs/promises";
 import type { Readable } from "node:stream";
 import { pipeline } from "node:stream";
 
@@ -339,12 +339,10 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
         return this.instrumentOperation("get", async () => {
             const file = await this.checkIfExpired(await this.meta.get(id));
             const { bytesWritten, contentType, expiredAt, metadata, modifiedAt, name, originalName, size } = file;
+            const filePath = this.getFilePath(name);
+            const range = options?.range;
 
-            let content: Buffer;
-
-            try {
-                content = await readFile(this.getFilePath(name), { buffer: true });
-            } catch (error: unknown) {
+            const handleReadError = async (error: unknown): Promise<never> => {
                 const errorWithCode = error as { code?: string; message?: string };
 
                 if (errorWithCode.code === "ENOENT" || errorWithCode.code === "EPERM") {
@@ -359,33 +357,80 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
 
                 await this.onError(httpError);
                 throw error;
-            }
+            };
 
-            const entityTag = etag(content);
-            const range = options?.range;
-
+            // Ranged read: only the requested slice is allocated. A 1 KB range of a 5 GB upload
+            // reads 1 KB instead of buffering the whole file just to `subarray` it afterwards.
+            // The ETag is derived cheaply from stat (size + mtime) since hashing the full content
+            // would defeat the point of streaming a small range.
             if (range) {
-                const start = Math.max(0, range.start);
-                const end = range.end === undefined ? content.length - 1 : Math.min(content.length - 1, range.end);
+                let stats;
 
-                if (start > end || start >= content.length) {
+                try {
+                    stats = await stat(filePath);
+                } catch (error: unknown) {
+                    return handleReadError(error);
+                }
+
+                const fileSize = stats.size;
+                const start = Math.max(0, range.start);
+                const end = range.end === undefined ? fileSize - 1 : Math.min(fileSize - 1, range.end);
+
+                if (start > end || start >= fileSize) {
                     return throwErrorCode(ERRORS.BAD_REQUEST, `Invalid range ${start}-${range.end ?? ""}`);
                 }
 
-                content = content.subarray(start, end + 1);
+                const length = end - start + 1;
+                const buffer = Buffer.allocUnsafe(length);
+                let handle;
+
+                try {
+                    handle = await open(filePath, "r");
+
+                    await handle.read(buffer, 0, length, start);
+                } catch (error: unknown) {
+                    return handleReadError(error);
+                } finally {
+                    await handle?.close();
+                }
+
+                // Weak, range-aware ETag: stat-based so it never re-reads the body. The range suffix
+                // keeps slices of the same object distinguishable.
+                const weakETag = `W/"${fileSize.toString(16)}-${Math.trunc(stats.mtimeMs).toString(16)}-${start}-${end}"`;
+
+                return {
+                    content: buffer,
+                    contentType,
+                    ETag: weakETag,
+                    expiredAt,
+                    id,
+                    metadata,
+                    modifiedAt,
+                    name,
+                    originalName,
+                    size: length,
+                };
+            }
+
+            let content: Buffer;
+
+            try {
+                content = await readFile(filePath, { buffer: true });
+            } catch (error: unknown) {
+                return handleReadError(error);
             }
 
             return {
                 content,
                 contentType,
-                ETag: entityTag,
+                ETag: etag(content),
                 expiredAt,
                 id,
                 metadata,
                 modifiedAt,
                 name,
                 originalName,
-                size: range ? content.length : size || bytesWritten,
+                size: size || bytesWritten,
             };
         });
     }

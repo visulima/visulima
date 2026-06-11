@@ -137,6 +137,120 @@ describe(createOAuthRefreshHandle, () => {
         expect(onRefresh).toHaveBeenCalledWith("tok-1");
     });
 
+    it("dedupes concurrent cache-miss calls into a single token exchange (single-flight)", async () => {
+        expect.assertions(4);
+
+        let resolveFetch: (value: unknown) => void = () => {};
+
+        fetchSpy.mockReturnValue(
+            new Promise((resolve) => {
+                resolveFetch = resolve;
+            }),
+        );
+
+        const handle = createOAuthRefreshHandle({
+            buildBody: () => new URLSearchParams(),
+            provider: "Test",
+            tokenUrl: "https://example/token",
+        });
+
+        const p1 = handle.getAccessToken();
+        const p2 = handle.getAccessToken();
+        const p3 = handle.getAccessToken();
+
+        // All three observe the same in-flight exchange.
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
+
+        resolveFetch({
+            json: async () => {
+                return { access_token: "tok-shared", expires_in: 3600 };
+            },
+            ok: true,
+        });
+
+        const [t1, t2, t3] = await Promise.all([p1, p2, p3]);
+
+        expect(t1).toBe("tok-shared");
+        expect(t2).toBe("tok-shared");
+        expect(t3).toBe("tok-shared");
+    });
+
+    it("calls onRefreshToken when the provider rotates the refresh_token", async () => {
+        expect.assertions(2);
+
+        fetchSpy.mockResolvedValue({
+            json: async () => {
+                return { access_token: "tok-1", expires_in: 3600, refresh_token: "rotated-refresh" };
+            },
+            ok: true,
+        });
+
+        const onRefreshToken = vi.fn();
+        const handle = createOAuthRefreshHandle({
+            buildBody: () => new URLSearchParams(),
+            onRefreshToken,
+            provider: "Box",
+            tokenUrl: "https://example/token",
+        });
+
+        await handle.getAccessToken();
+
+        expect(onRefreshToken).toHaveBeenCalledTimes(1);
+        expect(onRefreshToken).toHaveBeenCalledWith("rotated-refresh");
+    });
+
+    it("does not call onRefreshToken when no refresh_token is returned", async () => {
+        expect.assertions(1);
+
+        fetchSpy.mockResolvedValue({
+            json: async () => {
+                return { access_token: "tok-1", expires_in: 3600 };
+            },
+            ok: true,
+        });
+
+        const onRefreshToken = vi.fn();
+        const handle = createOAuthRefreshHandle({
+            buildBody: () => new URLSearchParams(),
+            onRefreshToken,
+            provider: "Test",
+            tokenUrl: "https://example/token",
+        });
+
+        await handle.getAccessToken();
+
+        expect(onRefreshToken).not.toHaveBeenCalled();
+    });
+
+    it("retries the exchange after a failed in-flight call (clears single-flight on rejection)", async () => {
+        expect.assertions(2);
+
+        fetchSpy
+            .mockResolvedValueOnce({
+                ok: false,
+                status: 500,
+                statusText: "Server Error",
+                text: async () => "boom",
+            })
+            .mockResolvedValueOnce({
+                json: async () => {
+                    return { access_token: "tok-after-retry", expires_in: 3600 };
+                },
+                ok: true,
+            });
+
+        const handle = createOAuthRefreshHandle({
+            buildBody: () => new URLSearchParams(),
+            provider: "Test",
+            tokenUrl: "https://example/token",
+        });
+
+        await expect(handle.getAccessToken()).rejects.toThrow(/token exchange failed/);
+
+        // A subsequent call must be able to start a fresh exchange.
+        await expect(handle.getAccessToken()).resolves.toBe("tok-after-retry");
+    });
+
     it("throws a provider-prefixed error on non-2xx", async () => {
         expect.assertions(1);
 

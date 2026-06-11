@@ -5,7 +5,7 @@ import { format } from "node:url";
 import createHttpError from "http-errors";
 
 import type { FileInit, UploadFile } from "../../storage/utils/file";
-import { getBaseUrl, getHeader, getIdFromRequest, getRequestStream } from "../../utils/http";
+import { getHeader, getIdFromRequest, getRequestStream } from "../../utils/http";
 import type { UploadResponse } from "../../utils/types";
 import BaseHandlerNode from "../base/base-handler-node";
 import type { Handlers, ResponseFile, UploadOptions } from "../types";
@@ -266,7 +266,14 @@ export class Tus<
 
     /**
      * Build file URL for TUS uploads (without file extension).
-     * @param requestUrl Request URL string
+     *
+     * On the Node runtime the TUS protocol chain only carries the request *path* (`requestUrl` is
+     * `request.originalUrl || request.url`), so an absolute `Location` can only be produced when that
+     * path is itself an absolute URL (e.g. an upstream proxy rewrote it). When it is just a path the
+     * `Location` is necessarily relative — the request headers are not threaded through the protocol
+     * methods. Use the fetch/hono handlers (which receive `request.url` with the origin) or set
+     * `useRelativeLocation: true` explicitly for relative URLs everywhere.
+     * @param requestUrl Request URL string (path-only on Node unless rewritten to an absolute URL).
      * @param file File object containing ID
      * @returns Constructed file URL for TUS protocol
      */
@@ -276,6 +283,14 @@ export class Tus<
         const query = Object.fromEntries(url.searchParams.entries());
         const relative = format({ pathname: `${pathname}/${file.id}`, query });
 
-        return this.storage.config.useRelativeLocation ? relative : getBaseUrl({ url: requestUrl } as NodeRequest) + relative;
+        if (this.storage.config.useRelativeLocation) {
+            return relative;
+        }
+
+        // Only an absolute requestUrl yields a real origin; a bare path can't (the previous
+        // getBaseUrl({ url }) always returned "" because no host header reaches this method).
+        const origin = /^https?:\/\//iu.test(requestUrl) ? url.origin : "";
+
+        return origin + relative;
     }
 }

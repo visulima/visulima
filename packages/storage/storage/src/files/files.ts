@@ -33,6 +33,7 @@ import type {
     DownloadOptions,
     DownloadRange,
     DownloadResult,
+    DownloadStreamResult,
     FileBody,
     FileObject,
     FilesHooks,
@@ -166,7 +167,7 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         assertNoRelativeSegments(normalized, "key");
 
         if (!this.prefix) {
-            return key;
+            return normalized;
         }
 
         return `${this.prefix}/${normalized}`;
@@ -390,6 +391,8 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
                 contentLength: size,
                 id: file.id,
                 start: 0,
+                ...(options?.checksum !== undefined && { checksum: options.checksum }),
+                ...(options?.checksumAlgorithm !== undefined && { checksumAlgorithm: options.checksumAlgorithm }),
                 ...(multipart !== undefined && { multipart }),
                 ...(reportsNatively && callback && { onProgress: callback }),
             };
@@ -544,6 +547,45 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         }
 
         return errors.length > 0 ? { downloaded, errors } : { downloaded };
+    }
+
+    /**
+     * Download a single object as a readable stream instead of a buffered {@link DownloadResult}.
+     * Backed by the adapter's native `getStream()`, this never allocates the whole payload in memory,
+     * making it the right choice for serving large objects without the `.raw` escape hatch. Object
+     * metadata (size, content-type, etag, last-modified) is fetched alongside the stream.
+     */
+    public async downloadStream(key: string, options?: OperationOptions): Promise<DownloadStreamResult> {
+        return this.withHooks("download", { key }, async () => {
+            const resolved = this.resolveKey(key);
+
+            BaseStorage.assertSafeId(resolved);
+
+            const merged = this.mergeOptions(options, { key, type: "download" });
+            const { headers, size, stream } = await this.adapter.getStream({ id: resolved }, merged);
+
+            const headerValue = (name: string): string | undefined => {
+                if (!headers) {
+                    return undefined;
+                }
+
+                const found = Object.entries(headers).find(([h]) => h.toLowerCase() === name.toLowerCase());
+
+                return found?.[1];
+            };
+
+            const contentLength = headerValue("Content-Length");
+            const resolvedSize = size ?? (contentLength === undefined ? undefined : Number(contentLength));
+
+            return {
+                body: stream,
+                contentType: headerValue("Content-Type") ?? "application/octet-stream",
+                etag: headerValue("ETag"),
+                key,
+                lastModified: headerValue("Last-Modified"),
+                size: typeof resolvedSize === "number" && Number.isFinite(resolvedSize) ? resolvedSize : undefined,
+            };
+        });
     }
 
     /**

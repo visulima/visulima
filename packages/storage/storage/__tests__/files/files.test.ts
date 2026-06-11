@@ -1,4 +1,5 @@
 /* eslint-disable max-classes-per-file -- one test file for the whole Files facade; a few small adapter stubs. */
+import { createHash } from "node:crypto";
 import { promises as fsp } from "node:fs";
 import { rm } from "node:fs/promises";
 import { join } from "node:path";
@@ -310,7 +311,6 @@ describe("files facade", () => {
             "../etc/passwd",
             "foo/../../bar",
             String.raw`..\windows\system32`,
-            "/etc/passwd",
             String.raw`C:\Windows\system32`,
             "with\0null",
         ];
@@ -408,6 +408,143 @@ describe("files facade", () => {
             await expect(facade.upload("../escape.txt", "x")).rejects.toThrow(/path segments|InvalidFileName/);
         });
     });
+
+    describe("leading-slash key normalization", () => {
+        it("strips a leading slash and treats the key as relative — with no prefix", async () => {
+            const { facade } = makeFiles(directory);
+
+            const uploaded = await facade.upload("/a.txt", "hello");
+
+            expect(uploaded.key).toBe("a.txt");
+
+            // The same object is reachable with or without the leading slash.
+            const downloaded = await facade.download("/a.txt");
+
+            expect(downloaded.body.toString("utf8")).toBe("hello");
+
+            const head = await facade.head("a.txt");
+
+            expect(head.key).toBe("a.txt");
+        });
+
+        it("strips a leading slash consistently when a prefix is configured", async () => {
+            const adapter = new DiskStorage<File>({ directory, maxUploadSize: "100MB" });
+            const facade = new Files({ adapter, prefix: "users" });
+
+            const withSlash = await facade.upload("/b.txt", "x");
+            const head = await facade.head("b.txt");
+
+            expect(withSlash.key).toBe("b.txt");
+            expect(head.key).toBe("b.txt");
+
+            // Lands under the prefix on disk regardless of the leading slash.
+            const onDisk = await fsp.readFile(join(directory, "users/b.txt"), "utf8");
+
+            expect(onDisk).toBe("x");
+        });
+    });
+
+    describe("ranged download (DiskStorage)", () => {
+        it("returns only the requested byte slice without buffering the whole file", async () => {
+            const { facade } = makeFiles(directory);
+
+            await facade.upload("ranged.txt", "0123456789", { contentType: "text/plain" });
+
+            const slice = await facade.download("ranged.txt", { range: { end: 5, start: 2 } });
+
+            // end is inclusive (HTTP semantics): bytes 2..5 => "2345"
+            expect(slice.body.toString("utf8")).toBe("2345");
+            expect(slice.size).toBe(4);
+        });
+
+        it("reads from start to EOF when end is omitted", async () => {
+            const { facade } = makeFiles(directory);
+
+            await facade.upload("ranged2.txt", "0123456789");
+
+            const slice = await facade.download("ranged2.txt", { range: { start: 7 } });
+
+            expect(slice.body.toString("utf8")).toBe("789");
+        });
+
+        it("rejects an out-of-bounds range", async () => {
+            const { facade } = makeFiles(directory);
+
+            await facade.upload("ranged3.txt", "abc");
+
+            await expect(facade.download("ranged3.txt", { range: { start: 100 } })).rejects.toThrow();
+        });
+    });
+
+    describe("downloadStream", () => {
+        it("returns a readable stream of the object body with metadata", async () => {
+            const { facade } = makeFiles(directory);
+
+            await facade.upload("big.bin", "streamed-content", { contentType: "text/plain" });
+
+            const result = await facade.downloadStream("big.bin");
+
+            expect(result.key).toBe("big.bin");
+            expect(result.body).toBeInstanceOf(Readable);
+
+            const chunks: Buffer[] = [];
+
+            for await (const chunk of result.body) {
+                chunks.push(chunk as Buffer);
+            }
+
+            expect(Buffer.concat(chunks).toString("utf8")).toBe("streamed-content");
+        });
+
+        it("normalizes a leading slash and rejects unsafe keys", async () => {
+            const { facade } = makeFiles(directory);
+
+            await facade.upload("docs/readme.md", "ok");
+
+            const result = await facade.downloadStream("/docs/readme.md");
+            const chunks: Buffer[] = [];
+
+            for await (const chunk of result.body) {
+                chunks.push(chunk as Buffer);
+            }
+
+            expect(Buffer.concat(chunks).toString("utf8")).toBe("ok");
+
+            await expect(facade.downloadStream("../etc/passwd")).rejects.toThrow(/Invalid file id|InvalidFileName|path segments/);
+        });
+    });
+
+    /* eslint-disable sonarjs/hashing -- sha1 is one of DiskStorage's supported checksum algorithms; this only validates upload-time integrity plumbing, not a security boundary. */
+    describe("upload checksum", () => {
+        it("forwards a matching checksum to the adapter and stores the object", async () => {
+            const { facade } = makeFiles(directory);
+            const body = "integrity-check";
+            const sha = createHash("sha1").update(body).digest("base64");
+
+            const uploaded = await facade.upload("checked.txt", body, {
+                checksum: sha,
+                checksumAlgorithm: "sha1",
+            });
+
+            expect(uploaded.key).toBe("checked.txt");
+
+            const downloaded = await facade.download("checked.txt");
+
+            expect(downloaded.body.toString("utf8")).toBe(body);
+        });
+
+        it("rejects the upload when the checksum does not match the body", async () => {
+            const { facade } = makeFiles(directory);
+
+            await expect(
+                facade.upload("bad.txt", "real-body", {
+                    checksum: createHash("sha1").update("different-body").digest("base64"),
+                    checksumAlgorithm: "sha1",
+                }),
+            ).rejects.toThrow();
+        });
+    });
+    /* eslint-enable sonarjs/hashing */
 
     describe("per-call OperationOptions", () => {
         // A DiskStorage subclass that records the `options` argument passed to getMeta. Lets us

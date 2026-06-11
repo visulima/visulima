@@ -380,7 +380,9 @@ abstract class BaseHandlerNode<
      * @returns Constructed file URL with extension based on content type
      */
     protected buildFileUrl(request: NodeRequest & { originalUrl?: string }, file: TFile): string {
-        return this.buildFileUrlFromString(request.originalUrl || (request.url as string), file);
+        // On Node, request.url is path-only — pass the headers so the base can recover host/proto and
+        // emit an absolute Location when useRelativeLocation is false.
+        return this.buildFileUrlFromString(request.originalUrl || (request.url as string), file, request.headers);
     }
 
     /**
