@@ -51,7 +51,7 @@ const HTML_ESCAPE_MAP: Record<string, string> = {
  * @param value The untrusted text to escape
  * @returns The HTML-escaped text
  */
-const escapeHtml = (value: string): string => value.replace(HTML_ESCAPE_RE, (char) => HTML_ESCAPE_MAP[char] ?? char);
+const escapeHtml = (value: string): string => value.replaceAll(HTML_ESCAPE_RE, (char) => HTML_ESCAPE_MAP[char] ?? char);
 
 /**
  * Gets the relative path from one directory to another, ensuring it starts with './' if needed.
@@ -248,10 +248,16 @@ const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: s
         }
     }
 
-    let finalSuggestions = `<ul>${[...new Set(suggestions)]
-        .slice(0, MAX_SUGGESTIONS)
-        .map((suggestion) => `<li>\`${suggestion}\`</li>`)
-        .join("\n")}</ul>`;
+    const uniqueSuggestions = [...new Set(suggestions)].slice(0, MAX_SUGGESTIONS);
+
+    // Return an empty string (not an empty `<ul></ul>`) when nothing matched so
+    // callers can fall through to framework-plugin hints instead of emitting an
+    // empty suggestion list.
+    if (uniqueSuggestions.length === 0) {
+        return "";
+    }
+
+    let finalSuggestions = `<ul>${uniqueSuggestions.map((suggestion) => `<li>\`${escapeHtml(suggestion)}\`</li>`).join("\n")}</ul>`;
 
     if (hasPublicFileSuggestions) {
         const publicFileName = importName;
@@ -259,7 +265,7 @@ const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: s
         const isAssetFile = [...ASSET_EXTENSIONS].some((extension) => publicFileName.includes(extension));
 
         if (isAssetFile) {
-            finalSuggestions += `Files in the \`public\` folder should be accessed via absolute URLs like \`/${publicFileName}\`.`;
+            finalSuggestions += `Files in the \`public\` folder should be accessed via absolute URLs like \`/${escapeHtml(publicFileName)}\`.`;
         }
     }
 
@@ -412,7 +418,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
 
                     if (suggestions) {
                         return {
-                            body: `The import path \`${importPath}\` could not be resolved.<br/><br/>Did you mean one of these files?<br/>${suggestions}`,
+                            body: `The import path \`${escapeHtml(importPath)}\` could not be resolved.<br/><br/>Did you mean one of these files?<br/>${suggestions}`,
                         };
                     }
 
@@ -430,6 +436,13 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
                             header: "Missing Vue Plugin",
                         };
                     }
+
+                    if (language === "svelte") {
+                        return {
+                            body: "Install and configure the Svelte plugin. Add `@sveltejs/vite-plugin-svelte` to your dependencies and include it in your Vite config.",
+                            header: "Missing Svelte Plugin",
+                        };
+                    }
                 }
             }
 
@@ -445,7 +458,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
 
                         if (suggestions) {
                             return {
-                                body: `Cannot resolve \`${importPath}\`. Did you mean one of these files?${suggestions}`,
+                                body: `Cannot resolve \`${escapeHtml(importPath)}\`. Did you mean one of these files?${suggestions}`,
                                 header: "File Not Found",
                             };
                         }
