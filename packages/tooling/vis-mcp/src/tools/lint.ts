@@ -57,7 +57,10 @@ export const registerLint = ({ server }: ToolDeps, context: ToolContext): void =
                 + "linter (oxlint, biome, eslint, stylelint, ruff, markdownlint, shellcheck, deno-lint) and returns the merged "
                 + "{ findings, runs } payload. This tool never applies fixes — invoke `vis lint --fix` directly for that.",
             inputSchema: {
-                files: z.array(z.string()).optional().describe("Restrict the run to these files (relative to the workspace root). Empty/omitted = workspace-wide."),
+                files: z
+                    .array(z.string())
+                    .optional()
+                    .describe("Restrict the run to these files (relative to the workspace root). Empty/omitted = workspace-wide."),
                 maxWarnings: z.int().nonnegative().optional().describe("Forward `--max-warnings N` to every adapter that supports it."),
                 quiet: z.boolean().optional().describe("Suppress warning-severity findings (errors still flow through)."),
                 since: z.string().optional().describe("Forward `--since <ref>` so only files changed vs `<ref>` are linted."),
@@ -65,13 +68,7 @@ export const registerLint = ({ server }: ToolDeps, context: ToolContext): void =
             },
             outputSchema: lintOutputSchema,
         },
-        async (input: {
-            files?: string[];
-            maxWarnings?: number;
-            quiet?: boolean;
-            since?: string;
-            staged?: boolean;
-        }) => {
+        async (input: { files?: string[]; maxWarnings?: number; quiet?: boolean; since?: string; staged?: boolean }) => {
             try {
                 const args = ["lint", "--format", "json"];
 
@@ -119,7 +116,9 @@ export const registerLint = ({ server }: ToolDeps, context: ToolContext): void =
                 try {
                     raw = JSON.parse(result.stdout);
                 } catch (error) {
-                    return errorResponse(new Error(`vis ${args.join(" ")} did not emit valid JSON: ${error instanceof Error ? error.message : String(error)}`, { cause: error }));
+                    return errorResponse(
+                        new Error(`vis ${args.join(" ")} did not emit valid JSON: ${error instanceof Error ? error.message : String(error)}`, { cause: error }),
+                    );
                 }
 
                 const payload = lintJsonSchema.parse(raw);

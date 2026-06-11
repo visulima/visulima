@@ -947,10 +947,7 @@ describe(registerListRuns, () => {
         const runsDir = join(workspaceRoot, ".task-runner", "runs");
 
         mkdirSync(runsDir, { recursive: true });
-        writeFileSync(
-            join(runsDir, "run-old.json"),
-            JSON.stringify({ runId: "run-old", tasks: [{ status: "success", taskId: "@scope/alpha:build" }] }),
-        );
+        writeFileSync(join(runsDir, "run-old.json"), JSON.stringify({ runId: "run-old", tasks: [{ status: "success", taskId: "@scope/alpha:build" }] }));
         writeFileSync(
             join(runsDir, "run-new.json"),
             JSON.stringify({

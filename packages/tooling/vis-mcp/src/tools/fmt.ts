@@ -57,19 +57,17 @@ export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void =>
                 + "{ findings, runs } payload — each finding represents a file that would change. This tool never writes "
                 + "to disk; invoke `vis fmt` directly to apply the formatting.",
             inputSchema: {
-                files: z.array(z.string()).optional().describe("Restrict the check to these files (relative to the workspace root). Empty/omitted = workspace-wide."),
+                files: z
+                    .array(z.string())
+                    .optional()
+                    .describe("Restrict the check to these files (relative to the workspace root). Empty/omitted = workspace-wide."),
                 quiet: z.boolean().optional().describe("Suppress per-file logs (findings still flow through)."),
                 since: z.string().optional().describe("Forward `--since <ref>` so only files changed vs `<ref>` are checked."),
                 staged: z.boolean().optional().describe("Forward `--staged` so only files in the git index are checked."),
             },
             outputSchema: fmtOutputSchema,
         },
-        async (input: {
-            files?: string[];
-            quiet?: boolean;
-            since?: string;
-            staged?: boolean;
-        }) => {
+        async (input: { files?: string[]; quiet?: boolean; since?: string; staged?: boolean }) => {
             try {
                 const args = ["fmt", "--check", "--format", "json"];
 
@@ -113,7 +111,9 @@ export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void =>
                 try {
                     raw = JSON.parse(result.stdout);
                 } catch (error) {
-                    return errorResponse(new Error(`vis ${args.join(" ")} did not emit valid JSON: ${error instanceof Error ? error.message : String(error)}`, { cause: error }));
+                    return errorResponse(
+                        new Error(`vis ${args.join(" ")} did not emit valid JSON: ${error instanceof Error ? error.message : String(error)}`, { cause: error }),
+                    );
                 }
 
                 const payload = fmtJsonSchema.parse(raw);
