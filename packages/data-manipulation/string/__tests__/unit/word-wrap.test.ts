@@ -105,6 +105,51 @@ describe(wordWrap, () => {
         expect(hasAnsi(lines[2])).toBe(false);
     });
 
+    // Regression: resetAnsiAtLineBreak was once rewritten to close *all* active SGR
+    // codes at every line end. That pre-emptive reset defeated preserveAnsi's per-line
+    // re-open pass, so a single colored span wrapped across many lines (the exact
+    // `boxen(red(longText))` case) kept its color only on the first line and left a
+    // stray reset on the last. Every wrapped line of a fully-colored input must open
+    // AND close the color independently. See word-wrap.ts:resetAnsiAtLineBreak.
+    // Derive the raw open/close escapes from colorize so the test never embeds literal
+    // control characters.
+    const [redOpen, redClose] = red("X").split("X") as [string, string];
+    const longColoredText
+        = "Lorem ipsum dolor sit amet consectetur adipiscing elit Maecenas id erat arcu Integer urna mauris sodales vel egestas eu consequat id turpis";
+
+    it.each([WrapMode.BREAK_WORDS, WrapMode.PRESERVE_WORDS, WrapMode.STRICT_WIDTH])(
+        "colors every wrapped line of a single colored span, with no plain middle lines and no bleed (%s)",
+        (wrapMode) => {
+            expect.assertions(3);
+
+            const result = wordWrap(red(longColoredText), { width: 40, wrapMode });
+            const lines = result.split("\n").filter((line) => stripVTControlCharacters(line).trim() !== "");
+
+            expect(lines.length).toBeGreaterThan(2);
+            // Every visible line must open red...
+            expect(lines.every((line) => line.includes(redOpen))).toBe(true);
+            // ...and close it, so color never bleeds into the next line / box border.
+            expect(lines.every((line) => line.includes(redClose))).toBe(true);
+        },
+    );
+
+    it.each([WrapMode.BREAK_WORDS, WrapMode.PRESERVE_WORDS])(
+        "preserves the visible text of a colored span while re-coloring each line (%s)",
+        (wrapMode) => {
+            expect.assertions(1);
+
+            const result = wordWrap(red(longColoredText), { width: 40, wrapMode });
+            const visibleWords = result
+                .split("\n")
+                .map((line) => stripVTControlCharacters(line).trim())
+                .filter((line) => line !== "");
+
+            // Word-preserving modes drop only the wrapping whitespace, so re-joining the
+            // stripped lines must recover the original text verbatim.
+            expect(visibleWords.join(" ")).toBe(longColoredText);
+        },
+    );
+
     it("should not prepend newline if first string is greater than width", () => {
         expect.assertions(1);
 
