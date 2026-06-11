@@ -35,7 +35,6 @@ describe(validateAdapterMethods, () => {
         expect(() => {
             validateAdapterMethods(
                 new PrismaAdapter({
-
                     prismaClient: PrismaClient,
                 }),
             );
