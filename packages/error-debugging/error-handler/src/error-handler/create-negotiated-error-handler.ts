@@ -25,12 +25,14 @@ const defaultTextHandler = textErrorHandler();
  * configured with different `showTrace` settings.
  */
 const withExpose = async (error: Error, showTrace: boolean, run: () => Promise<void> | void): Promise<void> => {
-    const hadOwnExpose = Object.prototype.hasOwnProperty.call(error, "expose");
+    const hadOwnExpose = Object.hasOwn(error, "expose");
     const previousExpose = (error as Error & { expose?: boolean }).expose;
 
     if (!showTrace) {
+        // eslint-disable-next-line no-param-reassign -- enriching the passed-in error
         (error as Error & { expose: boolean }).expose = false;
     } else if (!("expose" in error)) {
+        // eslint-disable-next-line no-param-reassign -- enriching the passed-in error
         (error as Error & { expose: boolean }).expose = true;
     }
 
@@ -38,9 +40,10 @@ const withExpose = async (error: Error, showTrace: boolean, run: () => Promise<v
         await run();
     } finally {
         if (hadOwnExpose) {
+            // eslint-disable-next-line no-param-reassign -- restoring the passed-in error
             (error as Error & { expose?: boolean }).expose = previousExpose;
         } else {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
+            // eslint-disable-next-line no-param-reassign -- restoring the passed-in error
             delete (error as Error & { expose?: boolean }).expose;
         }
     }

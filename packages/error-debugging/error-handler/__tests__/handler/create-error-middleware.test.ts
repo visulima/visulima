@@ -1,9 +1,11 @@
+import type { IncomingMessage, ServerResponse } from "node:http";
+
 import { createMocks } from "node-mocks-http";
 import { describe, expect, it, vi } from "vitest";
 
 import createErrorMiddleware from "../../src/handler/http/create-error-middleware";
 
-describe("createErrorMiddleware", () => {
+describe(createErrorMiddleware, () => {
     it("registers once and handles a negotiated error", async () => {
         expect.assertions(3);
 
@@ -33,7 +35,7 @@ describe("createErrorMiddleware", () => {
         // Simulate a response that already began streaming.
         Object.defineProperty(res, "headersSent", { configurable: true, value: true });
 
-        const next = vi.fn();
+        const next = vi.fn<(error?: unknown) => void>();
         const error = new Error("late");
 
         await middleware(error, req, res, next);
@@ -47,7 +49,7 @@ describe("createErrorMiddleware", () => {
     it("forwards onError logging callbacks", async () => {
         expect.assertions(1);
 
-        const onError = vi.fn();
+        const onError = vi.fn<(error: Error, request: IncomingMessage, response: ServerResponse) => void | Promise<void>>();
         const middleware = createErrorMiddleware({ onError, showTrace: false });
 
         const { req, res } = createMocks({

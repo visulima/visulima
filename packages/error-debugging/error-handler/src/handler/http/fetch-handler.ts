@@ -15,8 +15,11 @@ const fetchHandler = (
 
     // Default to exposing traces only outside production so stack traces are not
     // leaked into JSON/text/XML/JSONP response bodies by accident. Consumers can
-    // still force traces on/off explicitly via `showTrace`. `globalThis.process`
-    // may be undefined on edge runtimes, hence the optional chaining.
+    // still force traces on/off explicitly via `showTrace`. The optional chain keeps
+    // NODE_ENV a runtime read (so it works on edge runtimes where `process` is absent)
+    // and stops packem's esbuild `define` from inlining `process.env.NODE_ENV` — which
+    // would both bake in the build-time value and break the `globalThis.`-prefixed chain.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- see comment above; the `?.` is load-bearing for runtime reads and the build
     const showTrace = options.showTrace ?? globalThis.process?.env?.NODE_ENV !== "production";
 
     const negotiated = createFetchNegotiatedErrorHandler(options.extraHandlers ?? [], showTrace, defaultHtml);

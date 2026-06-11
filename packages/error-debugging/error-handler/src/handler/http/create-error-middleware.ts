@@ -32,18 +32,19 @@ type ErrorMiddleware = (error: Error, request: IncomingMessage, response: Server
  * (`response.headersSent`), it delegates to `next(error)` so the framework's
  * default handler can close the connection rather than double-writing.
  */
-const createErrorMiddleware = (options: ErrorMiddlewareOptions = {}): ErrorMiddleware =>
-    async (error: Error, request: IncomingMessage, response: ServerResponse, next?: (error?: unknown) => void): Promise<void> => {
-        if (response.headersSent) {
-            if (next) {
-                next(error);
+const createErrorMiddleware
+    = (options: ErrorMiddlewareOptions = {}): ErrorMiddleware =>
+        async (error: Error, request: IncomingMessage, response: ServerResponse, next?: (error?: unknown) => void): Promise<void> => {
+            if (response.headersSent) {
+                if (next) {
+                    next(error);
+                }
+
+                return;
             }
 
-            return;
-        }
-
-        await nodeHandler(error, options)(request, response);
-    };
+            await nodeHandler(error, options)(request, response);
+        };
 
 export type { ErrorMiddleware, ErrorMiddlewareOptions };
 export default createErrorMiddleware;

@@ -4,6 +4,8 @@ import { describe, expect, it } from "vitest";
 
 import { jsonpErrorHandler } from "../../src/error-handler/jsonp-error-handler";
 
+const JSONP_BODY_REGEX = /&&\s*[\w$.]+\((.*)\);$/su;
+
 describe("jsonp-error-handler with http-errors", () => {
     it("renders status, content-type, and JSONP body for http-error", async () => {
         expect.assertions(4);
@@ -21,7 +23,7 @@ describe("jsonp-error-handler with http-errors", () => {
 
         expect(body.startsWith("/**/ typeof myCb === 'function' && myCb(")).toBe(true);
 
-        const json = /&&\s*[\w$.]+\((.*)\);$/su.exec(body)?.[1] ?? "";
+        const json = JSONP_BODY_REGEX.exec(body)?.[1] ?? "";
         const parsed = JSON.parse(json) as { statusCode: number };
 
         expect(parsed.statusCode).toBe(400);
