@@ -1,11 +1,42 @@
 import EmailError from "../errors/email-error";
 import type { EmailOptions } from "../types";
+import { encodeMimeHeaderValue } from "./encode-mime-header";
 import formatEmailAddress from "./format-email-address";
 import formatEmailAddresses from "./format-email-addresses";
 import generateBoundary from "./generate-boundary";
 import headersToRecord from "./headers-to-record";
+import encodeQuotedPrintable from "./quoted-printable";
 import { sanitizeHeaderName, sanitizeHeaderValue } from "./sanitize-header";
 import toBase64 from "./to-base64";
+
+/**
+ * Options that control how the MIME message is assembled for different
+ * downstream consumers.
+ */
+export interface BuildMimeMessageOptions {
+    /**
+     * Whether to include the `Bcc:` header in the generated message.
+     *
+     * Defaults to `false`. Transports (SMTP, Cloudflare raw-MIME) must NOT emit
+     * the `Bcc:` header because the delivered message is what every To/Cc
+     * recipient receives — including it would disclose the blind-copy list. Bcc
+     * recipients are still delivered to via the envelope (`RCPT TO`). Only
+     * `Mail.draft()` (EML output a human inspects) sets this to `true`.
+     */
+    includeBcc?: boolean;
+}
+
+// eslint-disable-next-line no-control-regex
+const NON_ASCII_REGEX = /[^ -]/;
+
+/**
+ * Sanitizes (strips CR/LF) and, when needed, RFC 2047 encodes a header value so
+ * non-ASCII subjects/filenames produce a standards-compliant message instead of
+ * raw UTF-8 octets in the header.
+ * @param value The raw header value.
+ * @returns The CRLF-safe, optionally encoded-word value.
+ */
+const encodeHeader = (value: string): string => encodeMimeHeaderValue(sanitizeHeaderValue(value));
 
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
 const hasBuffer = globalThis.Buffer !== undefined;
@@ -28,7 +59,8 @@ const wrapBase64 = (b64: string): string => b64.replaceAll(/.{1,76}/g, "$&\r\n")
  * @returns The MIME-formatted email message as a string.
  */
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-parameters, sonarjs/cognitive-complexity
-const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<string> => {
+const buildMimeMessage = async <T extends EmailOptions>(options: T, buildOptions: BuildMimeMessageOptions = {}): Promise<string> => {
+    const { includeBcc = false } = buildOptions;
     const boundary = generateBoundary();
     const message: string[] = [`From: ${formatEmailAddress(options.from)}`, `To: ${formatEmailAddresses(options.to)}`];
 
@@ -36,7 +68,10 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
         message.push(`Cc: ${formatEmailAddresses(options.cc)}`);
     }
 
-    if (options.bcc) {
+    // Only emit Bcc for non-transport (draft/EML) output. Transports deliver to
+    // Bcc recipients via the SMTP envelope, so writing the header into the body
+    // would leak the blind-copy list to every To/Cc recipient.
+    if (includeBcc && options.bcc) {
         message.push(`Bcc: ${formatEmailAddresses(options.bcc)}`);
     }
 
@@ -44,7 +79,7 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
         message.push(`Reply-To: ${formatEmailAddress(options.replyTo)}`);
     }
 
-    message.push(`Subject: ${sanitizeHeaderValue(options.subject)}`, "MIME-Version: 1.0");
+    message.push(`Subject: ${encodeHeader(options.subject)}`, "MIME-Version: 1.0");
 
     if (options.headers) {
         // Convert ImmutableHeaders to Record<string, string> if needed
@@ -61,11 +96,20 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
     message.push(`Content-Type: multipart/mixed; boundary="${boundary}"`, "");
 
     if (options.text) {
-        message.push(`--${boundary}`, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: 7bit", "", options.text, "");
+        // Non-ASCII bodies must not be labelled 7bit; encode them quoted-printable.
+        if (NON_ASCII_REGEX.test(options.text)) {
+            message.push(`--${boundary}`, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: quoted-printable", "", encodeQuotedPrintable(options.text), "");
+        } else {
+            message.push(`--${boundary}`, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: 7bit", "", options.text, "");
+        }
     }
 
     if (options.html) {
-        message.push(`--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: 7bit", "", options.html, "");
+        if (NON_ASCII_REGEX.test(options.html)) {
+            message.push(`--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: quoted-printable", "", encodeQuotedPrintable(options.html), "");
+        } else {
+            message.push(`--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: 7bit", "", options.html, "");
+        }
     }
 
     if (options.attachments && options.attachments.length > 0) {
@@ -93,17 +137,20 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
         for (const attachment of resolvedAttachments) {
             message.push(`--${boundary}`);
 
-            const contentType = attachment.contentType ?? "application/octet-stream";
-            const sanitizedFilename = sanitizeHeaderValue(attachment.filename);
+            // Every attachment metadata field can flow from user uploads; strip
+            // CR/LF (and RFC 2047 encode the filename) so a crafted value cannot
+            // inject arbitrary headers or MIME parts.
+            const contentType = sanitizeHeaderValue(attachment.contentType ?? "application/octet-stream");
+            const sanitizedFilename = encodeHeader(attachment.filename);
 
             message.push(`Content-Type: ${contentType}; name="${sanitizedFilename}"`);
 
-            const disposition = attachment.contentDisposition ?? "attachment";
+            const disposition = sanitizeHeaderValue(attachment.contentDisposition ?? "attachment");
 
             message.push(`Content-Disposition: ${disposition}; filename="${sanitizedFilename}"`);
 
             if (attachment.cid) {
-                message.push(`Content-ID: <${attachment.cid}>`);
+                message.push(`Content-ID: <${sanitizeHeaderValue(attachment.cid)}>`);
             }
 
             if (attachment.headers) {
@@ -115,7 +162,7 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T): Promise<str
                 });
             }
 
-            const encoding = attachment.encoding ?? "base64";
+            const encoding = sanitizeHeaderValue(attachment.encoding ?? "base64");
 
             message.push(`Content-Transfer-Encoding: ${encoding}`, "");
 

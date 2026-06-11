@@ -305,6 +305,10 @@
             "types": "./dist/utils/parse-address.d.ts",
             "default": "./dist/utils/parse-address.js"
         },
+        "./utils/parse-eml": {
+            "types": "./dist/utils/parse-eml.d.ts",
+            "default": "./dist/utils/parse-eml.js"
+        },
         "./utils/result": {
             "types": "./dist/utils/result.d.ts",
             "default": "./dist/utils/result.js"

@@ -1,7 +1,9 @@
 export { type AttachmentDataOptions, type AttachmentOptions, detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers";
+export { default as DraftMailMessage } from "./draft-mail-message";
 export { default as EmailError } from "./errors/email-error";
 export { default as RequiredOptionError } from "./errors/required-option-error";
 export {
+    type BatchBase,
     type BatchRenderer,
     createMail,
     type FeatureCheckMode,
@@ -33,6 +35,7 @@ export type {
     Receipt,
     Result,
 } from "./types";
+export { default as parseEml } from "./utils/parse-eml";
 export type { OkResult } from "./utils/result";
 export { isErr, isOk, mapOk, tryAsync, unwrap, unwrapOr } from "./utils/result";
 export { default as checkFeatureSupport, type FeatureSupportResult, type FeatureViolation } from "./utils/validation/check-feature-support";
