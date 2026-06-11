@@ -98,15 +98,15 @@ const [name, definition] = getJSONSchemaProperty({ enums: [] }, {})(field);
 `boolean` or the string literals `"true"` / `"false"` (the latter for compatibility with Prisma
 generator configuration, which only delivers strings):
 
-| Key                      | Default Value  | Description                                                                                                                                                                          |
-| ------------------------ | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| keepRelationScalarFields | `false`        | By default the generated schema outputs only objects for related model records. When enabled, foreign-key scalar fields for related records are kept as well.                       |
-| schemaId                 | `undefined`    | Adds an `$id` to the generated schema. All `$ref`s are prefixed with the schema id.                                                                                                 |
-| includeRequiredFields    | `false`        | When enabled, all required scalar Prisma fields without a default value are added to the `required` array of their schema definition.                                                |
-| persistOriginalType      | `false`        | When enabled, the original Prisma type is emitted under the property key `originalType`.                                                                                            |
-| bigIntType               | `"integer"`    | Maps `BigInt` fields to a JSON Schema type. Set to `"string"` to emit `type: "string"` (the common practice for values larger than 2^53; also fixes string defaults self-validating). |
-| nullableMode             | `"json-schema"`| `"json-schema"` expresses nullability via type unions / `anyOf`. `"openapi"` emits a single `type` plus `nullable: true` for OpenAPI 3.0 compatibility.                             |
-| enrichNativeTypes        | `false`        | When enabled, derives extra constraints from Prisma attributes: `@db.VarChar(n)` → `maxLength`, `@default(uuid())` → `format: "uuid"`, `@default(cuid())` → `pattern`, `Bytes` → `contentEncoding: "base64"`. |
+| Key                      | Default Value   | Description                                                                                                                                                                                                   |
+| ------------------------ | --------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| keepRelationScalarFields | `false`         | By default the generated schema outputs only objects for related model records. When enabled, foreign-key scalar fields for related records are kept as well.                                                 |
+| schemaId                 | `undefined`     | Adds an `$id` to the generated schema. All `$ref`s are prefixed with the schema id.                                                                                                                           |
+| includeRequiredFields    | `false`         | When enabled, all required scalar Prisma fields without a default value are added to the `required` array of their schema definition.                                                                         |
+| persistOriginalType      | `false`         | When enabled, the original Prisma type is emitted under the property key `originalType`.                                                                                                                      |
+| bigIntType               | `"integer"`     | Maps `BigInt` fields to a JSON Schema type. Set to `"string"` to emit `type: "string"` (the common practice for values larger than 2^53; also fixes string defaults self-validating).                         |
+| nullableMode             | `"json-schema"` | `"json-schema"` expresses nullability via type unions / `anyOf`. `"openapi"` emits a single `type` plus `nullable: true` for OpenAPI 3.0 compatibility.                                                       |
+| enrichNativeTypes        | `false`         | When enabled, derives extra constraints from Prisma attributes: `@db.VarChar(n)` → `maxLength`, `@default(uuid())` → `format: "uuid"`, `@default(cuid())` → `pattern`, `Bytes` → `contentEncoding: "base64"`. |
 
 ## Examples
 

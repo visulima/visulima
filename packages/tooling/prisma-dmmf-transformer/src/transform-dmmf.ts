@@ -6,18 +6,18 @@ import type { ModelMetaData, TransformOptions } from "./types";
 
 const toCamelCase = (name: string): string => name.slice(0, 1).toLowerCase() + name.slice(1);
 
-const getPropertyDefinition
-    = ({ schemaId }: TransformOptions) =>
-        (model: DMMF.Model): [name: string, reference: JSONSchema7Definition] => {
-            const reference = `#/definitions/${model.name}`;
+const getPropertyDefinition =
+    ({ schemaId }: TransformOptions) =>
+    (model: DMMF.Model): [name: string, reference: JSONSchema7Definition] => {
+        const reference = `#/definitions/${model.name}`;
 
-            return [
-                toCamelCase(model.name),
-                {
-                    $ref: schemaId ? `${schemaId}${reference}` : reference,
-                },
-            ];
-        };
+        return [
+            toCamelCase(model.name),
+            {
+                $ref: schemaId ? `${schemaId}${reference}` : reference,
+            },
+        ];
+    };
 
 /**
  * Transform a Prisma DMMF document into a JSON Schema (draft-07) document.
@@ -60,7 +60,7 @@ const transformDmmf = (dmmf: DMMF.Document, transformOptions: TransformOptions =
     const properties = Object.fromEntries(modelPropertyDefinitionsMap);
 
     return {
-        ...schemaId ? { $id: schemaId } : undefined,
+        ...(schemaId ? { $id: schemaId } : undefined),
         ...initialJSON,
         definitions,
         properties,
