@@ -116,7 +116,9 @@ export interface OptionDefinition<Name extends string = string, Value = unknown>
 /**
  * Resolve a single {@link OptionDefinition} to the type of its parsed value,
  * taking `type`, `multiple`/`lazyMultiple` and `defaultValue` into account.
- * @internal
+ *
+ * Part of the public type surface: re-exported from the package entry and used by
+ * {@link InferCommandLineOptions}.
  */
 export type InferOptionValue<Definition extends OptionDefinition> = Definition extends { type: (input: string) => infer R }
     ? Definition extends { lazyMultiple: true } | { multiple: true }

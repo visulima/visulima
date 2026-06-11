@@ -128,7 +128,7 @@ export function commandLineArgs(optionDefinitions: OptionDefinition | ReadonlyAr
  * `options` is optional, matching the documented `parseArgs(definitions)` usage.
  * @see commandLineArgs
  */
-export const parseArgs = commandLineArgs;
+export const parseArgs: typeof commandLineArgs = commandLineArgs;
 
 /**
  * Default export of {@link commandLineArgs} for drop-in compatibility with the
