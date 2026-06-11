@@ -26,6 +26,15 @@ const getPrefix = (prefix: string, indentation: number | "\t", deep: number): st
     return prefix + " ".repeat(indentation * deep);
 };
 
+/**
+ * Normalize Windows backslash path separators to forward slashes.
+ *
+ * This is applied only to file paths (not the whole rendered output) so that backslashes inside
+ * error messages or code-frame source lines (e.g. a regex `\d` or a `C:\` string literal) are left
+ * untouched.
+ */
+const normalizePathSeparators = (filePath: string): string => filePath.replaceAll("\\", "/");
+
 const getRelativePath = (filePath: string, cwdPath: string) => {
     /**
      * Node.js error stack is all messed up. Some lines have file info
@@ -33,7 +42,7 @@ const getRelativePath = (filePath: string, cwdPath: string) => {
      */
     const path = filePath.replace("async file:", "file:");
 
-    return relative(cwdPath, path.startsWith("file:") ? fileURLToPath(path) : path);
+    return normalizePathSeparators(relative(cwdPath, path.startsWith("file:") ? fileURLToPath(path) : path));
 };
 
 /**
@@ -72,37 +81,80 @@ const getHint = (error: RenderableError, { color, indentation, prefix }: Options
     return color.hint(message);
 };
 
-const getMainFrame = (trace: Trace, { color, cwd: cwdPath, displayShortPath, indentation, prefix }: Options, deep = 0): string => {
-    const filePath = displayShortPath ? getRelativePath(trace.file as string, cwdPath) : trace.file;
+/**
+ * Apply the optional source-map resolver to a parsed frame.
+ *
+ * When a resolver is configured (e.g. to map compiled `*.js:line:col` positions back to the
+ * original TS/JSX source), it is given the frame's file/line/column and may return a resolved
+ * location plus, optionally, the original source content for the code frame. A thrown or undefined
+ * result leaves the frame untouched, so a broken resolver never breaks rendering.
+ */
+const resolveFrame = (trace: Trace, resolver: SourceMapResolver | undefined): { source?: string; trace: Trace } => {
+    if (!resolver || trace.file === undefined || trace.line === undefined) {
+        return { trace };
+    }
+
+    try {
+        const resolved = resolver({ column: trace.column, file: trace.file, line: trace.line });
+
+        if (!resolved) {
+            return { trace };
+        }
+
+        return {
+            source: resolved.source,
+            trace: {
+                ...trace,
+                column: resolved.column ?? trace.column,
+                file: resolved.file ?? trace.file,
+                line: resolved.line ?? trace.line,
+            },
+        };
+    } catch {
+        return { trace };
+    }
+};
+
+const getMainFrame = (trace: Trace, options: Options, deep = 0): string => {
+    const { color, cwd: cwdPath, displayShortPath, indentation, prefix } = options;
+    const { trace: frame } = resolveFrame(trace, options.sourceMap);
+
+    const filePath = displayShortPath ? getRelativePath(frame.file as string, cwdPath) : normalizePathSeparators(frame.file as string);
 
     const { fileLine, method } = color;
 
-    return `${getPrefix(prefix, indentation, deep)}at ${trace.methodName ? `${method(trace.methodName)} ` : ""}${fileLine(filePath as string)}:${fileLine(
-        trace.line?.toString() ?? "",
+    return `${getPrefix(prefix, indentation, deep)}at ${frame.methodName ? `${method(frame.methodName)} ` : ""}${fileLine(filePath as string)}:${fileLine(
+        frame.line?.toString() ?? "",
     )}`;
 };
 
-const getCode = (
-    trace: Trace,
-    { color, indentation, linesAbove, linesBelow, prefix, showGutter, showLineNumbers, tabWidth }: Options,
-    deep: number,
-): string | undefined => {
-    if (trace.file === undefined) {
+const getCode = (trace: Trace, options: Options, deep: number): string | undefined => {
+    const { color, indentation, linesAbove, linesBelow, prefix, showGutter, showLineNumbers, tabWidth } = options;
+    const { source: resolvedSource, trace: frame } = resolveFrame(trace, options.sourceMap);
+
+    if (frame.file === undefined) {
         return undefined;
     }
 
-    const filePath = trace.file.replace("file://", "");
+    let fileContent: string;
 
-    if (!existsSync(filePath)) {
-        return undefined;
+    if (resolvedSource !== undefined) {
+        // The resolver supplied the original source directly (e.g. inlined sourcesContent).
+        fileContent = resolvedSource;
+    } else {
+        const filePath = frame.file.replace("file://", "");
+
+        if (!existsSync(filePath)) {
+            return undefined;
+        }
+
+        fileContent = readFileSync(filePath, "utf8");
     }
-
-    const fileContent = readFileSync(filePath, "utf8");
 
     return codeFrame(
         fileContent,
         {
-            start: { column: trace.column, line: trace.line as number },
+            start: { column: frame.column, line: frame.line as number },
         },
         { color, linesAbove, linesBelow, prefix: getPrefix(prefix, indentation, deep), showGutter, showLineNumbers, tabWidth },
     );
@@ -231,9 +283,36 @@ const internalRenderError = (error: AggregateError | Error | VisulimaError, opti
         stack.length > 0 ? getStacktrace(stack, config) : undefined,
     ]
         .filter(Boolean)
-        .join("\n")
-        .replaceAll("\\", "/");
+        .join("\n");
 };
+
+/**
+ * The compiled position of a stack frame handed to a {@link SourceMapResolver}.
+ */
+export interface SourceMapLocation {
+    column?: number;
+    file: string;
+    line: number;
+}
+
+/**
+ * The resolved original position returned by a {@link SourceMapResolver}. Any omitted field falls
+ * back to the compiled value. `source`, when provided, is used directly as the code-frame content
+ * (e.g. from an inlined `sourcesContent`) instead of reading the resolved file from disk.
+ */
+export interface ResolvedSourceLocation {
+    column?: number;
+    file?: string;
+    line?: number;
+    source?: string;
+}
+
+/**
+ * Pluggable hook that maps a compiled `*.js:line:col` position back to its original source position
+ * (e.g. TS/JSX). Return `undefined` (or throw) to leave the frame untouched. Synchronous so it can
+ * be used by the synchronous `renderError`; resolve/inline your maps ahead of time.
+ */
+export type SourceMapResolver = (location: SourceMapLocation) => ResolvedSourceLocation | undefined;
 
 export type Options = Omit<CodeFrameOptions, "message | prefix"> & {
     color: CodeFrameOptions["color"] & {
@@ -253,6 +332,8 @@ export type Options = Omit<CodeFrameOptions, "message | prefix"> & {
     hideMessage: boolean;
     indentation: number | "\t";
     prefix: string;
+    /** Optional source-map resolver to map compiled frame positions back to original source. */
+    sourceMap?: SourceMapResolver;
 };
 
 export const renderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options> = {}): string => {

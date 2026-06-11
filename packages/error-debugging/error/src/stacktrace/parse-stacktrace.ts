@@ -1,3 +1,4 @@
+import process from "../util/process";
 import type { Trace, TraceType } from "./types";
 
 type TopFrameMeta = {
@@ -6,14 +7,33 @@ type TopFrameMeta = {
     type: "firefox" | "safari";
 };
 
+const isDebugEnabled = (): boolean => process.env?.DEBUG === "true";
+
+/**
+ * Lazily log a debug message only when `DEBUG=true`.
+ *
+ * Arguments may be passed as thunks (`() => unknown`) so that any expensive work (e.g.
+ * `JSON.stringify` of a regex match array) is only evaluated when debugging is enabled, keeping it
+ * off the hot parse path. The `process` shim is used instead of the bare global so the parser does
+ * not throw `ReferenceError: process is not defined` in unshimmed browser/edge runtimes.
+ */
 const debugLog = (message: string, ...arguments_: unknown[]): void => {
-    if (process.env.DEBUG && process.env.DEBUG === "true") {
+    if (isDebugEnabled()) {
+        const resolved = arguments_.map((argument) => (typeof argument === "function" ? (argument as () => unknown)() : argument));
+
         // eslint-disable-next-line no-console
-        console.debug(`error:parse-stacktrace: ${message}`, ...arguments_);
+        console.debug(`error:parse-stacktrace: ${message}`, ...resolved);
     }
 };
 
 const UNKNOWN_FUNCTION = "<unknown>";
+
+// Matches Node.js internal frame file paths so they can be tagged with TraceType "internal".
+// Modern Node emits `node:internal/...` (e.g. `node:internal/modules/cjs/loader`); older Node
+// emits bare `internal/...` paths (e.g. `internal/modules/cjs/loader.js`).
+const NODE_INTERNAL_FILE_REGEX = /^(?:node:internal\/|node:|internal\/)/;
+
+const isNodeInternalFile = (file: string | undefined): boolean => file !== undefined && NODE_INTERNAL_FILE_REGEX.test(file);
 
 // at <SomeFramework>
 // at <SomeFramework>:123:39
@@ -138,7 +158,7 @@ const parseNode = (line: string): Trace | undefined => {
     const nestedNode = NODE_NESTED_REGEX.exec(line);
 
     if (nestedNode) {
-        debugLog(`parse nested node error stack line: "${line}"`, `found: ${JSON.stringify(nestedNode)}`);
+        debugLog(`parse nested node error stack line: "${line}"`, () => `found: ${JSON.stringify(nestedNode)}`);
 
         const split = (nestedNode[2] as string).split(":");
 
@@ -156,7 +176,7 @@ const parseNode = (line: string): Trace | undefined => {
     const node = NODE_REGEX.exec(line);
 
     if (node) {
-        debugLog(`parse node error stack line: "${line}"`, `found: ${JSON.stringify(node)}`);
+        debugLog(`parse node error stack line: "${line}"`, () => `found: ${JSON.stringify(node)}`);
 
         const trace = {
             column: node[4] ? +node[4] : undefined,
@@ -181,7 +201,7 @@ const parseChromium = (line: string): Trace | undefined => {
     const parts = CHROMIUM_REGEX.exec(line) as (string | undefined)[] | null;
 
     if (parts) {
-        debugLog(`parse chrome error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
+        debugLog(`parse chrome error stack line: "${line}"`, () => `found: ${JSON.stringify(parts)}`);
 
         const isNative = parts[2]?.startsWith("native"); // start of line
 
@@ -261,8 +281,10 @@ const parseChromium = (line: string): Trace | undefined => {
             line: parts[3] ? +parts[3] : undefined,
             methodName,
             raw: line,
+            // Tag Node internal frames (`node:internal/...`, `node:*`, bare `internal/...`) so
+            // consumers can filter them by type. eval/native take precedence.
             // eslint-disable-next-line sonarjs/no-nested-conditional
-            type: (isEval ? "eval" : isNative ? "native" : undefined) as TraceType,
+            type: (isEval ? "eval" : isNative ? "native" : isNodeInternalFile(file) ? "internal" : undefined) as TraceType,
         };
 
         if (windowsParts) {
@@ -284,7 +306,7 @@ const parseGecko = (line: string, topFrameMeta?: TopFrameMeta): Trace | undefine
     const parts = GECKO_REGEX.exec(line);
 
     if (parts) {
-        debugLog(`parse gecko error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
+        debugLog(`parse gecko error stack line: "${line}"`, () => `found: ${JSON.stringify(parts)}`);
 
         const isEval = parts[3]?.includes(" > eval");
         const subMatch = isEval && parts[3] && GECKO_EVAL_REGEX.exec(parts[3]);
@@ -351,7 +373,7 @@ const parseFirefox = (line: string, topFrameMeta?: TopFrameMeta): Trace | undefi
     const isEval = parts ? (parts[2] as string).includes(" > eval") : false;
 
     if (!isEval && parts) {
-        debugLog(`parse firefox error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
+        debugLog(`parse firefox error stack line: "${line}"`, () => `found: ${JSON.stringify(parts)}`);
 
         return {
             column: parts[4] ? +parts[4] : topFrameMeta?.column ?? undefined,
@@ -372,7 +394,7 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
     const parts = REACT_ANDROID_NATIVE_REGEX.exec(line);
 
     if (parts) {
-        debugLog(`parse react android native error stack line: "${line}"`, `found: ${JSON.stringify(parts)}`);
+        debugLog(`parse react android native error stack line: "${line}"`, () => `found: ${JSON.stringify(parts)}`);
 
         return {
             column: parts[3] ? +parts[3] : undefined,
@@ -386,6 +408,45 @@ const parseReactAndroidNative = (line: string): Trace | undefined => {
 
     return undefined;
 };
+
+// Used by the `internals` stack-cleaning preset to recognise Node internal frames at the raw-line
+// level (before parsing). Matches both `node:internal/...`/`node:*` and bare `internal/...`.
+const NODE_INTERNAL_LINE_REGEX = /(?:^|[(@\s])(?:node:internal\/|node:|internal\/)/;
+
+// Used by the `nodeModules` preset to drop dependency frames.
+const NODE_MODULES_LINE_REGEX = /node_modules[/\\]/;
+
+/**
+ * Built-in stack-cleaning filter presets for {@link parseStacktrace}'s `filter` option.
+ *
+ * Each preset is a predicate over a raw stack line that returns `true` to KEEP the frame. They are
+ * the one-liners users coming from `clean-stack`/`youch` expect; compose them with
+ * {@link composeFilters}.
+ *
+ * @example
+ *
+ * ```ts
+ * parseStacktrace(error, { filter: composeFilters(stackFilters.internals, stackFilters.nodeModules) });
+ * ```
+ */
+const stackFilters: {
+    /** Drop Node.js internal frames (`node:internal/...`, `node:*`, bare `internal/...`). */
+    internals: (line: string) => boolean;
+    /** Drop frames that live inside a `node_modules` directory. */
+    nodeModules: (line: string) => boolean;
+} = {
+    internals: (line: string): boolean => !NODE_INTERNAL_LINE_REGEX.test(line),
+    nodeModules: (line: string): boolean => !NODE_MODULES_LINE_REGEX.test(line),
+};
+
+/**
+ * Combine multiple stack-line filters into a single predicate. A frame is kept only if EVERY filter
+ * keeps it.
+ */
+const composeFilters
+    = (...filters: ((line: string) => boolean)[]) =>
+    (line: string): boolean =>
+        filters.every((filter) => filter(line));
 
 const parseStacktrace = (error: Error, { filter, frameLimit = 50 }: Partial<{ filter?: (line: string) => boolean; frameLimit: number }> = {}): Trace[] => {
     // Some error types (e.g. Opera) use `stacktrace` instead of `stack`
@@ -474,4 +535,5 @@ const parseStacktrace = (error: Error, { filter, frameLimit = 50 }: Partial<{ fi
     }, []);
 };
 
+export { composeFilters, stackFilters };
 export default parseStacktrace;

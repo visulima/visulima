@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
-import { tmpdir } from "node:os";
+import { homedir } from "node:os";
 import { join } from "node:path";
 
 import type { LanguageModel } from "ai";
@@ -11,7 +11,6 @@ import aiPrompt from "./ai-prompt";
 import aiSolutionResponse from "./ai-solution-response";
 
 const DEFAULT_HEADER = "## Ai Generated Solution";
-const DEFAULT_ERROR_MESSAGE = "Creation of a AI solution failed.";
 
 interface CacheOptions {
     directory?: string;
@@ -45,20 +44,27 @@ const generateCacheKey = (error: Error, file: SolutionFinderFile, temperature?: 
     return createHash("sha256").update(JSON.stringify(keyData)).digest("hex");
 };
 
-// Get cache directory path
+// Get cache directory path.
+//
+// Security: the previous default of `join(tmpdir(), "visulima-error-cache")` is a world-shared
+// directory on multi-user hosts, so whichever user creates it first can read or poison the AI
+// solutions shown to everyone else. Default instead to a per-user cache directory
+// (`$XDG_CACHE_HOME` or `~/.cache`), and create it with mode 0700 so only the owner can access it.
 const getCacheDirectory = (directory?: string): string => {
     if (directory) {
         return directory;
     }
 
-    // Default to a cache directory in the system temp folder
-    return join(tmpdir(), "visulima-error-cache");
+    const xdgCacheHome = typeof process !== "undefined" ? process.env?.XDG_CACHE_HOME : undefined;
+    const base = xdgCacheHome && xdgCacheHome.length > 0 ? xdgCacheHome : join(homedir(), ".cache");
+
+    return join(base, "visulima-error-cache");
 };
 
-// Ensure cache directory exists
+// Ensure cache directory exists (owner-only permissions to avoid cross-user cache poisoning).
 const ensureCacheDirectory = (cacheDirectory: string): void => {
     if (!existsSync(cacheDirectory)) {
-        mkdirSync(cacheDirectory, { recursive: true });
+        mkdirSync(cacheDirectory, { mode: 0o700, recursive: true });
     }
 };
 
@@ -146,19 +152,17 @@ const aiFinder = (
 
                 const messageContent = result.text;
 
-                let solution: Solution;
-
-                if (messageContent) {
-                    solution = {
-                        body: aiSolutionResponse(messageContent),
-                        header: DEFAULT_HEADER,
-                    };
-                } else {
-                    solution = {
-                        body: aiSolutionResponse(DEFAULT_ERROR_MESSAGE),
-                        header: DEFAULT_HEADER,
-                    };
+                // An empty response is a soft failure: don't cache it (a transient empty answer
+                // would otherwise be served for the full TTL) and return undefined so lower-priority
+                // finders can still supply a real hint.
+                if (!messageContent) {
+                    return undefined;
                 }
+
+                const solution: Solution = {
+                    body: aiSolutionResponse(messageContent),
+                    header: DEFAULT_HEADER,
+                };
 
                 // Cache the solution if caching is enabled
                 if (cacheOptions?.enabled !== false) {
@@ -173,20 +177,10 @@ const aiFinder = (
                 // eslint-disable-next-line no-console
                 console.error(error_);
 
-                const solution = {
-                    body: aiSolutionResponse(DEFAULT_ERROR_MESSAGE),
-                    header: DEFAULT_HEADER,
-                };
-
-                // Cache the error solution as well to avoid retrying failed requests
-                if (cacheOptions?.enabled !== false) {
-                    const cacheKey = generateCacheKey(error, file, temperature);
-                    const cacheFilePath = getCacheFilePath(cacheDirectory, cacheKey);
-
-                    writeToCache(cacheFilePath, solution, ttl);
-                }
-
-                return solution;
+                // A request failure (e.g. transient network/API outage) must NOT be cached for the
+                // full TTL — that would poison the answer for hours. Return undefined so the failure
+                // is retried next time and lower-priority finders can supply a real hint.
+                return undefined;
             }
         },
         name: "AI SDK",

@@ -126,25 +126,29 @@ describe("solution/ai/ai-finder", () => {
         expect(generateSpy).toHaveBeenCalledTimes(2);
     });
 
-    it("falls back to the default error message when the model returns no text", async () => {
-        expect.assertions(1);
+    it("returns undefined without caching when the model returns no text", async () => {
+        expect.assertions(2);
 
         const finder = aiFinder(createModel(""), { cache: { directory: cacheDirectory } });
         const solution = await finder.handle(new Error("boom"), file);
 
-        expect(solution?.body).toContain("Creation of a AI solution failed.");
+        expect(solution).toBeUndefined();
+        // A soft failure must not be persisted (so it is not served for the full TTL).
+        expect(readdirSync(cacheDirectory)).toHaveLength(0);
     });
 
-    it("returns the default error message and logs when generation throws", async () => {
-        expect.assertions(2);
+    it("returns undefined and logs without caching when generation throws", async () => {
+        expect.assertions(3);
 
         const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
         const finder = aiFinder(createThrowingModel(), { cache: { directory: cacheDirectory } });
         const solution = await finder.handle(new Error("boom"), file);
 
-        expect(solution?.body).toContain("Creation of a AI solution failed.");
+        expect(solution).toBeUndefined();
         expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
+        // A transient API failure must not poison the cache.
+        expect(readdirSync(cacheDirectory)).toHaveLength(0);
     });
 
     it("uses a corrupted cache file as a cache miss and regenerates", async () => {

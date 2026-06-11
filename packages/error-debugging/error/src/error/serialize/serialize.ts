@@ -111,6 +111,37 @@ const serializeValue = (value: unknown, seen: Set<Error>, depth: number, options
         return value.toISOString();
     }
 
+    if (value instanceof RegExp) {
+        return value.toString();
+    }
+
+    // URL (and URL-like objects with an href) — preserve the string form instead of an empty object.
+    if (typeof URL !== "undefined" && value instanceof URL) {
+        return value.href;
+    }
+
+    // Map/Set fall through `isPlainObject` and would JSON.stringify to `{}`. Convert them to a
+    // structured representation so round-trips are predictable.
+    if (value instanceof Map) {
+        const entries: [unknown, unknown][] = [];
+
+        for (const [entryKey, entryValue] of value.entries()) {
+            entries.push([serializeValue(entryKey, seen, depth, options, seenObjects), serializeValue(entryValue, seen, depth, options, seenObjects)]);
+        }
+
+        return { __dataType: "Map", value: entries };
+    }
+
+    if (value instanceof Set) {
+        const values: unknown[] = [];
+
+        for (const entryValue of value.values()) {
+            values.push(serializeValue(entryValue, seen, depth, options, seenObjects));
+        }
+
+        return { __dataType: "Set", value: values };
+    }
+
     if (typeof value === "function") {
         return `[Function: ${value.name || "anonymous"}]`;
     }
