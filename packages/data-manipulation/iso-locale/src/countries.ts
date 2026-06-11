@@ -281,11 +281,7 @@ export const getCountriesByLanguage = (languageCode: string): string[] => {
     const normalized = languageCode.toLowerCase();
 
     return (allCountries as unknown as Country[])
-        .filter(
-            (country) =>
-                country.status !== "deleted"
-                && country.languages.some((lang) => lang === normalized || iso6393To6391(lang) === normalized),
-        )
+        .filter((country) => country.status !== "deleted" && country.languages.some((lang) => lang === normalized || iso6393To6391(lang) === normalized))
         .map((country) => country.alpha2);
 };
 

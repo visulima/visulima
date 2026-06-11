@@ -363,7 +363,7 @@ describe("countries", () => {
         });
     });
 
-    describe("getCountriesByLanguage", () => {
+    describe(getCountriesByLanguage, () => {
         it("should resolve countries via an ISO 639-1 code", () => {
             expect.assertions(2);
 

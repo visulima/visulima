@@ -159,7 +159,7 @@ describe("locale", () => {
         });
     });
 
-    describe("getLanguageName", () => {
+    describe(getLanguageName, () => {
         it("should localize an ISO 639-1 language code", () => {
             expect.assertions(1);
             expect(getLanguageName("de", "en")).toBe("German");
