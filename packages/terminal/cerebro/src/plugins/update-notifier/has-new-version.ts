@@ -8,12 +8,13 @@ const hasNewVersion = async ({
     distTag: distributionTag = "latest",
     pkg,
     registryUrl = "https://registry.npmjs.org/-/package/__NAME__/dist-tags",
+    timeout,
     updateCheckInterval = 1000 * 60 * 60 * 24,
 }: UpdateNotifierOptions): Promise<string | undefined> => {
     const lastUpdateCheck = getLastUpdate(pkg.name);
 
     if (alwaysRun || !lastUpdateCheck || lastUpdateCheck < Date.now() - updateCheckInterval) {
-        const latestVersion = await getDistributionVersion(pkg.name, distributionTag, registryUrl);
+        const latestVersion = await getDistributionVersion(pkg.name, distributionTag, registryUrl, timeout);
 
         saveLastUpdate(pkg.name);
 
@@ -44,6 +45,8 @@ export type UpdateNotifierOptions = {
     pkg: { name: string; version: string };
     registryUrl?: string;
     shouldNotifyInNpmScript?: boolean;
+    /** Timeout (ms) for the registry request. Defaults to 5000. */
+    timeout?: number;
     updateCheckInterval?: number;
 };
 

@@ -1,15 +1,29 @@
 // packages/cerebro/src/commands/readme-command.ts
-import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname, join, resolve } from "node:path";
 
 import GithubSlugger from "github-slugger";
 
 import type { Command as ICommand, OptionDefinition } from "../types/command";
 import type { Section } from "../types/command-line-usage";
+import type { CerebroFs } from "../types/runtime";
 import type { Toolbox as IToolbox } from "../types/toolbox";
 import commandLineUsage from "../util/command-line-usage";
-import { getArch, getCwd, getPlatform, getVersions } from "../util/general/runtime-process";
+import { getArch, getPlatform, getVersions } from "../util/general/runtime-process";
+
+/**
+ * Existence check expressed against the injectable {@link CerebroFs} adapter
+ * (which has no sync `existsSync`). Used so README generation works under MCP /
+ * sandboxed runtimes that swap `toolbox.fs`.
+ */
+const existsViaFs = async (fs: CerebroFs, path: string): Promise<boolean> => {
+    try {
+        await fs.access(path);
+
+        return true;
+    } catch {
+        return false;
+    }
+};
 
 const slugger = new GithubSlugger();
 const slugify = (text: string) => slugger.slug(text);
@@ -182,20 +196,28 @@ const generateCommands = (commands: ICommand[], cliName: string, _options: Readm
 /**
  * Writes file ensuring directory exists.
  */
-const writeFileWithDirectory = async (filePath: string, content: string): Promise<void> => {
+const writeFileWithDirectory = async (fs: CerebroFs, filePath: string, content: string): Promise<void> => {
     const directory = dirname(filePath);
+    const directoryExists = await existsViaFs(fs, directory);
 
-    if (!existsSync(directory)) {
-        await mkdir(directory, { recursive: true });
+    if (!directoryExists) {
+        await fs.mkdir(directory, { recursive: true });
     }
 
-    await writeFile(filePath, content, "utf8");
+    await fs.writeFile(filePath, content, "utf8");
 };
 
 /**
  * Generates multi-file commands documentation.
  */
-const generateMultiCommands = async (commands: ICommand[], outputDirectory: string, cliName: string, options: ReadmeOptions): Promise<string> => {
+const generateMultiCommands = async (
+    fs: CerebroFs,
+    cwd: string,
+    commands: ICommand[],
+    outputDirectory: string,
+    cliName: string,
+    options: ReadmeOptions,
+): Promise<string> => {
     // Group commands by their group property
     const groupedCommands = new Map<string, ICommand[]>();
 
@@ -228,7 +250,7 @@ const generateMultiCommands = async (commands: ICommand[], outputDirectory: stri
                 .trim()}\n`;
 
             if (!options.dryRun) {
-                await writeFileWithDirectory(resolve(getCwd(), filePath), document);
+                await writeFileWithDirectory(fs, resolve(cwd, filePath), document);
             }
         }),
     );
@@ -291,7 +313,7 @@ const replaceTag = (readme: string, tag: string, body: string): string => {
  */
 const readmeCommand: ICommand = {
     description: "Generate README documentation for CLI commands",
-    execute: async ({ logger, options, runtime }: IToolbox) => {
+    execute: async ({ fs, logger, options, process, runtime }: IToolbox) => {
         const cliName = runtime.getCliName();
         const packageName = runtime.getPackageName() ?? cliName;
         const packageVersion = runtime.getPackageVersion();
@@ -337,10 +359,10 @@ const readmeCommand: ICommand = {
         // Read existing README or create template
         let readme: string;
 
-        const readmePath = resolve(getCwd(), readmeOptions.readmePath ?? "README.md");
+        const readmePath = resolve(process.cwd, readmeOptions.readmePath ?? "README.md");
 
-        if (existsSync(readmePath)) {
-            const rawReadme = await readFile(readmePath, "utf8");
+        if (await existsViaFs(fs, readmePath)) {
+            const rawReadme = await fs.readFile(readmePath, "utf8");
 
             readme = normalizeLineEndings(rawReadme);
         } else {
@@ -357,7 +379,7 @@ const readmeCommand: ICommand = {
             readme,
             "commands",
             readmeOptions.multi
-                ? await generateMultiCommands(uniqueCommands, outputDirectory, cliName, readmeOptions)
+                ? await generateMultiCommands(fs, process.cwd, uniqueCommands, outputDirectory, cliName, readmeOptions)
                 : generateCommands(uniqueCommands, cliName, readmeOptions),
         );
         readme = replaceTag(readme, "toc", generateTableOfContents(readme));
@@ -368,7 +390,7 @@ const readmeCommand: ICommand = {
             logger.info("Dry run mode - README not written");
             logger.info(`Generated README content:\n${readme}`);
         } else {
-            await writeFileWithDirectory(readmePath, readme);
+            await writeFileWithDirectory(fs, readmePath, readme);
             logger.info(`README generated successfully at ${readmePath}`);
         }
     },

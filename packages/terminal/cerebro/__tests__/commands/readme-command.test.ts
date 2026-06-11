@@ -1,19 +1,44 @@
-import { existsSync } from "node:fs";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { join as pathJoin } from "node:path";
 
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import readmeCommand from "../../src/commands/readme-command";
 import type { Command as ICommand } from "../../src/types/command";
+import type { CerebroFs } from "../../src/types/runtime";
 import type { Toolbox } from "../../src/types/toolbox";
 
-vi.mock(import("node:fs/promises"));
-vi.mock(import("node:fs"), () => {
-    return {
-        existsSync: vi.fn(),
-    };
-});
+/**
+ * Fake {@link CerebroFs} adapter used to assert README generation goes through
+ * `toolbox.fs` (the injectable runtime) instead of touching `node:fs` directly.
+ * `existing` controls whether `access` resolves (file exists) or rejects.
+ */
+const createFsMocks = () => {
+    const state = { contents: new Map<string, string>(), existing: false };
+
+    const access = vi.fn((path: string): Promise<void> => {
+        if (!state.existing && !state.contents.has(path)) {
+            return Promise.reject(new Error(`ENOENT: ${path}`));
+        }
+
+        return Promise.resolve();
+    });
+    const mkdir = vi.fn((): Promise<undefined> => Promise.resolve(undefined));
+    const readFile = vi.fn((path: string): Promise<string> => Promise.resolve(state.contents.get(path) ?? ""));
+    const writeFile = vi.fn((path: string, data: string): Promise<void> => {
+        state.contents.set(path, data);
+
+        return Promise.resolve();
+    });
+    const stat = vi.fn((): Promise<{ isDirectory: () => boolean; isFile: () => boolean }> => Promise.resolve({ isDirectory: () => false, isFile: () => true }));
+    const rm = vi.fn((): Promise<undefined> => Promise.resolve(undefined));
+    const readdir = vi.fn((): Promise<string[]> => Promise.resolve([]));
+
+    const fs = { access, mkdir, readdir, readFile, rm, stat, writeFile } as unknown as CerebroFs;
+
+    return { access, fs, mkdir, readFile, state, writeFile };
+};
+
+let fsMocks: ReturnType<typeof createFsMocks>;
 
 vi.mock(import("github-slugger"), () => {
     // Use closure to track occurrences since method may be extracted from instance
@@ -86,7 +111,10 @@ describe("readme-command", () => {
             ],
         ]);
 
+        fsMocks = createFsMocks();
+
         mockToolbox = {
+            fs: fsMocks.fs,
             logger: {
                 debug: vi.fn(),
                 error: vi.fn(),
@@ -95,6 +123,15 @@ describe("readme-command", () => {
                 warn: vi.fn(),
             },
             options: {},
+            process: {
+                arch: "x64",
+                argv: [],
+                cwd: "/project",
+                env: {},
+                exit: vi.fn(),
+                platform: "linux",
+                stdin: "",
+            },
             runtime: {
                 getCliName: vi.fn(() => "test-cli"),
                 getCommands: vi.fn(() => mockCommands),
@@ -121,15 +158,12 @@ describe("readme-command", () => {
     it("should generate README with default options", async () => {
         expect.assertions(4);
 
-        vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(writeFile).mockResolvedValue(undefined);
-
         await readmeCommand.execute(mockToolbox);
 
         expect(mockToolbox.logger.debug).toHaveBeenCalledWith(expect.stringContaining("Processing"));
         expect(mockToolbox.logger.warn).toHaveBeenCalledWith(expect.stringContaining("README file not found"));
         expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("README generated successfully"));
-        expect(vi.mocked(writeFile)).toHaveBeenCalledWith(expect.stringContaining("README.md"), expect.any(String), "utf8");
+        expect(fsMocks.writeFile).toHaveBeenCalledWith(expect.stringContaining("README.md"), expect.any(String), "utf8");
     });
 
     it("should read existing README and replace tags", async () => {
@@ -147,21 +181,18 @@ describe("readme-command", () => {
 <!-- tocstop -->
 `;
 
-        vi.mocked(existsSync).mockReturnValue(true);
-        vi.mocked(readFile).mockResolvedValue(existingReadme);
-        vi.mocked(writeFile).mockResolvedValue(undefined);
+        fsMocks.state.existing = true;
+        fsMocks.state.contents.set("/project/README.md", existingReadme);
 
         await readmeCommand.execute(mockToolbox);
 
-        expect(vi.mocked(readFile)).toHaveBeenCalledWith(expect.stringContaining("README.md"), "utf8");
-        expect(vi.mocked(writeFile)).toHaveBeenCalledWith(expect.stringContaining("README.md"), expect.any(String), "utf8");
+        expect(fsMocks.readFile).toHaveBeenCalledWith(expect.stringContaining("README.md"), "utf8");
+        expect(fsMocks.writeFile).toHaveBeenCalledWith(expect.stringContaining("README.md"), expect.any(String), "utf8");
         expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("README generated successfully"));
     });
 
     it("should use dry-run mode without writing files", async () => {
         expect.assertions(3);
-
-        vi.mocked(existsSync).mockReturnValue(false);
 
         mockToolbox.options = { dryRun: true };
 
@@ -169,26 +200,23 @@ describe("readme-command", () => {
 
         expect(mockToolbox.logger.info).toHaveBeenCalledWith("Dry run mode - README not written");
         expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("Generated README content"));
-        expect(vi.mocked(writeFile)).not.toHaveBeenCalled();
+        expect(fsMocks.writeFile).not.toHaveBeenCalled();
     });
 
     it("should use custom readme path", async () => {
         expect.assertions(3);
 
-        vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(writeFile).mockResolvedValue(undefined);
-
         mockToolbox.options = { readmePath: "CUSTOM.md" };
 
         await readmeCommand.execute(mockToolbox);
 
-        const writeCall = vi.mocked(writeFile).mock.calls[0];
+        const writeCall = fsMocks.writeFile.mock.calls[0];
 
         expect(writeCall).toBeDefined();
 
         expect(writeCall?.[0]).toBeDefined();
 
-        const filePath = (writeCall?.[0] ?? "") as string;
+        const filePath = writeCall?.[0] ?? "";
 
         expect(filePath).toContain("CUSTOM.md");
     });
@@ -196,15 +224,11 @@ describe("readme-command", () => {
     it("should use custom output directory for multi-file mode", async () => {
         expect.assertions(2);
 
-        vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(mkdir).mockResolvedValue(undefined);
-        vi.mocked(writeFile).mockResolvedValue(undefined);
-
         mockToolbox.options = { multi: true, outputDir: "custom-docs" };
 
         await readmeCommand.execute(mockToolbox);
 
-        expect(vi.mocked(mkdir)).toHaveBeenCalledWith(expect.stringContaining("custom-docs"), { recursive: true });
+        expect(fsMocks.mkdir).toHaveBeenCalledWith(expect.stringContaining("custom-docs"), { recursive: true });
         expect(mockToolbox.logger.info).toHaveBeenCalledWith(expect.stringContaining("README generated successfully"));
     });
 
@@ -218,18 +242,15 @@ describe("readme-command", () => {
             name: "hidden",
         });
 
-        vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(writeFile).mockResolvedValue(undefined);
-
         await readmeCommand.execute(mockToolbox);
 
-        const writeCall = vi.mocked(writeFile).mock.calls[0];
+        const writeCall = fsMocks.writeFile.mock.calls[0];
 
         expect(writeCall).toBeDefined();
 
         expect(writeCall?.[1]).toBeDefined();
 
-        const content = (writeCall?.[1] ?? "") as string;
+        const content = writeCall?.[1] ?? "";
 
         expect(content).not.toContain("hidden");
         expect(content).toContain("test");
@@ -245,9 +266,6 @@ describe("readme-command", () => {
             name: "alias-test",
         });
 
-        vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(writeFile).mockResolvedValue(undefined);
-
         mockToolbox.options = { aliases: true };
 
         await readmeCommand.execute(mockToolbox);
@@ -258,36 +276,29 @@ describe("readme-command", () => {
     it("should handle commands with groups in multi-file mode", async () => {
         expect.assertions(2);
 
-        vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(mkdir).mockResolvedValue(undefined);
-        vi.mocked(writeFile).mockResolvedValue(undefined);
-
         mockToolbox.options = { multi: true };
 
         await readmeCommand.execute(mockToolbox);
 
         // Should create files for grouped commands
-        expect(vi.mocked(mkdir)).toHaveBeenCalledWith(expect.stringContaining("docs"), { recursive: true });
-        expect(vi.mocked(writeFile).mock.calls.length).toBeGreaterThan(1);
+        expect(fsMocks.mkdir).toHaveBeenCalledWith(expect.stringContaining("docs"), { recursive: true });
+        expect(fsMocks.writeFile.mock.calls.length).toBeGreaterThan(1);
     });
 
     it("should use custom version when provided", async () => {
         expect.assertions(3);
 
-        vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(writeFile).mockResolvedValue(undefined);
-
         mockToolbox.options = { version: "2.0.0" };
 
         await readmeCommand.execute(mockToolbox);
 
-        const writeCall = vi.mocked(writeFile).mock.calls[0];
+        const writeCall = fsMocks.writeFile.mock.calls[0];
 
         expect(writeCall).toBeDefined();
 
         expect(writeCall?.[1]).toBeDefined();
 
-        const content = (writeCall?.[1] ?? "") as string;
+        const content = writeCall?.[1] ?? "";
 
         expect(content).toContain("2.0.0");
     });
@@ -302,18 +313,15 @@ describe("readme-command", () => {
             name: "staging",
         });
 
-        vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(writeFile).mockResolvedValue(undefined);
-
         await readmeCommand.execute(mockToolbox);
 
-        const writeCall = vi.mocked(writeFile).mock.calls[0];
+        const writeCall = fsMocks.writeFile.mock.calls[0];
 
         expect(writeCall).toBeDefined();
 
         expect(writeCall?.[1]).toBeDefined();
 
-        const content = (writeCall?.[1] ?? "") as string;
+        const content = writeCall?.[1] ?? "";
 
         expect(content).toContain("deploy staging");
     });
@@ -321,14 +329,10 @@ describe("readme-command", () => {
     it("should create directory structure for multi-file output", async () => {
         expect.assertions(1);
 
-        vi.mocked(existsSync).mockReturnValue(false);
-        vi.mocked(mkdir).mockResolvedValue(undefined);
-        vi.mocked(writeFile).mockResolvedValue(undefined);
-
         mockToolbox.options = { multi: true, outputDir: "docs/commands" };
 
         await readmeCommand.execute(mockToolbox);
 
-        expect(vi.mocked(mkdir)).toHaveBeenCalledWith(expect.stringContaining(pathJoin("docs", "commands")), { recursive: true });
+        expect(fsMocks.mkdir).toHaveBeenCalledWith(expect.stringContaining(pathJoin("docs", "commands")), { recursive: true });
     });
 });

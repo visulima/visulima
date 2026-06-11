@@ -269,6 +269,34 @@ describe("Cli.clone", () => {
         expect(originalExit).not.toHaveBeenCalled();
     });
 
+    it("keeps verbosity isolated between two clones with their own env overrides", async () => {
+        expect.assertions(2);
+
+        const original = new Cli("test", { argv: ["show"] });
+        const levels: Record<string, string | undefined> = {};
+
+        original.addCommand({
+            execute: ({ options, process }: Toolbox) => {
+                levels[options.tag as string] = process.env.CEREBRO_OUTPUT_LEVEL;
+            },
+            name: "show",
+            options: [{ name: "tag", type: String }],
+        });
+
+        const verboseEnv: Record<string, string | undefined> = {};
+        const quietEnv: Record<string, string | undefined> = {};
+
+        const verboseClone = original.clone({ argv: ["show", "--tag", "verbose", "--verbose"], env: verboseEnv });
+        const quietClone = original.clone({ argv: ["show", "--tag", "quiet", "--quiet"], env: quietEnv });
+
+        await verboseClone.run({ shouldExitProcess: false });
+        await quietClone.run({ shouldExitProcess: false });
+
+        // Each instance writes its level into its own env override, not a shared one.
+        expect(verboseEnv.CEREBRO_OUTPUT_LEVEL).toBe("64");
+        expect(quietEnv.CEREBRO_OUTPUT_LEVEL).toBe("16");
+    });
+
     it("adding a command to the clone does not affect the original", () => {
         expect.assertions(2);
 

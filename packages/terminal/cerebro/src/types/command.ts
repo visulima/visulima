@@ -22,6 +22,18 @@ export type OptionDefinition<T> = MultiplePropertyOptions<T>
         __negated__?: true;
 
         /**
+         * Restricts the accepted values for this option to a fixed set, validated
+         * at parse time (like commander's `.choices()` / yargs `choices`). The
+         * provided value(s) are compared by string equality; for `multiple`
+         * options every provided value must be a member of the set.
+         * @example
+         * ```typescript
+         * { name: "format", type: String, choices: ["json", "yaml", "table"] }
+         * ```
+         */
+        choices?: ReadonlyArray<string>;
+
+        /**
          * A string or array of strings indicating the conflicting option(s).
          * Note: The default value for an option does not cause a conflict.
          */

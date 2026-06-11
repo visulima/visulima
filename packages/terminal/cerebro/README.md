@@ -279,6 +279,8 @@ Pass any of the new `CliOptions` to swap the runtime context. Each override defa
 | `stdin`  | `""` (empty string)          | `toolbox.process.stdin`                                   |
 | `cwd`    | Runtime cwd                  | `toolbox.process.cwd`                                     |
 | `logger` | Verbosity-aware console shim | `toolbox.logger` and `toolbox.console`                    |
+| `maxArguments`  | A very generous cap   | Upper bound on argv tokens; set `Number.POSITIVE_INFINITY` to disable entirely      |
+| `strictOptions` | `false`               | Reject unknown `--options` (before `--`) with a did-you-mean instead of swallowing  |
 
 ```ts
 const exitSpy = vi.fn();
@@ -364,6 +366,34 @@ await action({ console: fakeConsole, options: { env: "staging" } } as never);
 ```
 
 Use this when you want to unit-test a command action in isolation without going through `run()`'s full lifecycle (plugin init, exception handlers, exit). For end-to-end tests that exercise argv parsing and lifecycle hooks, prefer `cli.clone(...).run(...)` instead.
+
+## Validating option values with `choices`
+
+Restrict an option to a fixed set of values, validated at parse time (like commander's `.choices()` / yargs `choices`). For `multiple` options every provided value must be a member of the set. An invalid value throws an `InvalidChoiceError` with a hint listing the allowed values.
+
+```ts
+cli.addCommand({
+    name: "fmt",
+    options: [{ name: "format", type: String, choices: ["json", "yaml", "table"] }],
+    execute: ({ options }) => {
+        // options.format is guaranteed to be one of json | yaml | table
+    },
+});
+
+// `mycli fmt --format xml` →  Invalid value "xml" for option "format". Allowed values: json, yaml, table
+```
+
+## Strict unknown-option handling
+
+By default, unknown long options on commands that accept a positional `argument` are routed to `toolbox.rawUnknown` (the passthrough buffer) rather than rejected. Set `strictOptions: true` to fail fast on a typo'd flag — tokens after a `--` separator are always preserved as passthrough.
+
+```ts
+const cli = new Cerebro("mycli", { argv: ["build", "app", "--produciton"], strictOptions: true });
+// → throws UnknownOptionError: Found unknown option: --produciton  (Did you mean: --production?)
+
+// Tokens after `--` are still passthrough, even in strict mode:
+// `mycli build app -- --produciton`  →  toolbox.rawUnknown === ["--produciton"]
+```
 
 ## Built-in Commands
 

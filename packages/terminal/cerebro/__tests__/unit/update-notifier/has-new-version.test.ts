@@ -97,7 +97,7 @@ describe("update-notifier/has-new-version", () => {
         });
 
         expect(newVersion).toBeUndefined();
-        expect(getDistributionVersion).toHaveBeenCalledExactlyOnceWith("has-new-version", "latest", "https://registry.npmjs.org/-/package/__NAME__/dist-tags");
+        expect(getDistributionVersion).toHaveBeenCalledExactlyOnceWith("has-new-version", "latest", "https://registry.npmjs.org/-/package/__NAME__/dist-tags", undefined);
     });
 
     it("should not trigger update check if last update is too recent", async () => {
