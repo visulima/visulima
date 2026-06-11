@@ -184,13 +184,7 @@ exposes the building blocks rather than a single all-in-one function:
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import {
-    SpecBuilder,
-    parseFileMulti,
-    jsDocumentCommentsToOpenApi,
-    swaggerJsDocumentCommentsToOpenApi,
-    validate,
-} from "@visulima/jsdoc-open-api";
+import { SpecBuilder, parseFileMulti, jsDocumentCommentsToOpenApi, swaggerJsDocumentCommentsToOpenApi, validate } from "@visulima/jsdoc-open-api";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 

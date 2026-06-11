@@ -141,7 +141,7 @@ const tagsToObjects = (tags: Spec[], _verbose?: boolean) =>
                 return {
                     requestBody: {
                         content: {
-                            [parsedResponse.name.replaceAll("*\\/*", "*/*")]: {
+                            [parsedResponse.name.replaceAll(String.raw`*\/*`, "*/*")]: {
                                 schema: parsedResponse.schema,
                             },
                         },
