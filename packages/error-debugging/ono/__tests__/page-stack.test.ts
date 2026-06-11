@@ -2,6 +2,12 @@ import { describe, expect, it, vi } from "vitest";
 
 import createStackPage from "../src/error-inspector/page/stack";
 
+// The rendered page embeds this very test file's source as the error code-frame
+// (the test errors originate here), so any literal we assert `not.toContain` on
+// would appear in that frame and defeat itself. Assemble the solution-panel
+// marker at runtime so the literal `ono-solution-wrapper` never appears in source.
+const SOLUTION_PANEL_MARKER = ["ono", "solution", "wrapper"].join("-");
+
 describe("stack page", () => {
     describe(createStackPage, () => {
         it("should create a stack page for basic error", { timeout: 30_000 }, async () => {
@@ -106,7 +112,10 @@ describe("stack page", () => {
             const page = await createStackPage(error, []);
 
             expect(page.code.html).toContain("Test error");
-            expect(page.code.html).not.toContain("solution"); // Should not contain solution content
+            // No finders → no solution panel. Assert on the panel marker (assembled
+            // at runtime, see SOLUTION_PANEL_MARKER) instead of the bare word
+            // "solution", which the embedded source code-frame legitimately contains.
+            expect(page.code.html).not.toContain(SOLUTION_PANEL_MARKER);
         });
 
         it("should handle undefined solution finders", async () => {
@@ -292,7 +301,10 @@ describe("stack page", () => {
                 }),
             );
             expect(page.code.html).toContain("Test error");
-            expect(page.code.html).not.toContain("solution");
+            // A finder that resolves to `undefined` must render no solution panel.
+            // Use the runtime-assembled marker (see SOLUTION_PANEL_MARKER) so the
+            // assertion literal cannot leak into the embedded source code-frame.
+            expect(page.code.html).not.toContain(SOLUTION_PANEL_MARKER);
         });
 
         it("should handle multiple solution finders with different priorities", async () => {
