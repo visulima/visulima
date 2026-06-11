@@ -36,6 +36,18 @@
 
 ## Features
 
+- **Zero runtime dependencies** — tiny offset/limit paginator (Adonis-style).
+- **`Paginator`** — an `Array` subclass holding the current page's rows, with rich meta (`total`, `lastPage`, first/last/next/previous URLs).
+- **`CursorPaginator`** — cursor/keyset pagination for stable infinite scroll over large tables.
+- **URL helpers** — `baseUrl()`, `queryString()`, `getUrl()`, `getUrlsForRange()`, and `getUrlsForWindow()` (windowed page links with `…` ellipsis markers).
+- **Naming strategies** — emit `camelCase` (default) or `snake_case` (`per_page`, `last_page`, …) meta keys.
+- **OpenAPI schema builders** — `createPaginationSchemaObject` / `createPaginationMetaSchemaObject`, with correct nullability + `required`, and an OpenAPI 3.1 variant.
+
+> **Important:** `Paginator`/`paginate()` do **not** slice your rows. Pass in the
+> rows for the current page already sliced at the data source
+> (offset `(page - 1) * perPage`, limit `perPage`). `total` is the count of *all*
+> matching records and is what drives `lastPage` and the URLs.
+
 ## Installation
 
 ```sh
@@ -52,29 +64,102 @@ pnpm add @visulima/pagination
 
 ## Usage
 
+`paginate(page, perPage, total, rows)` returns a `Paginator` — an `Array`
+subclass that holds the **current page's rows** (it does not slice them for you).
+Call `.toJSON()` (or `JSON.stringify`) to get the `{ data, meta }` shape.
+
 ```ts
 import { paginate } from "@visulima/pagination";
 
-const items = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+const allItems = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
 
-const pagination = paginate(1, 5, items.length, items);
+const page = 1;
+const perPage = 5;
 
-console.log(pagination);
+// Slice the rows for the current page yourself (a real app would do this in SQL).
+const pageRows = allItems.slice((page - 1) * perPage, page * perPage);
+
+const pagination = paginate(page, perPage, allItems.length, pageRows);
+
+console.log(pagination.toJSON());
 // {
 //   data: [1, 2, 3, 4, 5],
 //   meta: {
-//     total: 10,
-//     perPage: 5,
-//     page: 1,
-//     lastPage: 2,
 //     firstPage: 1,
 //     firstPageUrl: "/?page=1",
+//     lastPage: 2,
 //     lastPageUrl: "/?page=2",
 //     nextPageUrl: "/?page=2",
+//     page: 1,
+//     perPage: 5,
 //     previousPageUrl: null,
+//     total: 10,
 //   }
 // }
+
+// Note: `console.log(pagination)` prints just the array rows ([1,2,3,4,5]),
+// because `Paginator` extends `Array`. Use `.toJSON()` / `JSON.stringify` for
+// the full `{ data, meta }` payload.
 ```
+
+### URLs and query strings
+
+```ts
+const p = paginate(2, 10, 200, pageRows).baseUrl("/api/items").queryString({ sort: "asc" });
+
+p.getUrl(3); // "/api/items?sort=asc&page=3"
+p.getNextPageUrl(); // "/api/items?sort=asc&page=3"
+p.getPreviousPageUrl(); // "/api/items?sort=asc&page=1"
+
+// Windowed page links with ellipsis markers (page === null => render "…").
+p.getUrlsForWindow({ eachSide: 2 });
+// [ {page:1,...}, {page:null,url:null,...}, ...window..., {page:null,url:null}, {page:20,...} ]
+```
+
+### snake_case meta (Laravel / AdonisJS style)
+
+```ts
+import { paginate, snakeCaseNamingStrategy } from "@visulima/pagination";
+
+paginate(1, 10, 100, pageRows).getMeta(snakeCaseNamingStrategy);
+// { first_page: 1, per_page: 10, last_page: 10, ... }
+```
+
+### Cursor-based pagination
+
+For stable infinite scroll / keyset pagination over large tables, use
+`CursorPaginator`:
+
+```ts
+import { CursorPaginator } from "@visulima/pagination";
+
+const rows = [{ id: 5 }, { id: 6 }]; // pre-fetched page rows
+
+const p = CursorPaginator.fromArray(2, rows, { currentCursor: "4", hasMore: true }).baseUrl("/api/items");
+
+p.getMeta();
+// {
+//   nextCursor: "6",
+//   nextPageUrl: "/api/items?cursor=6",
+//   perPage: 2,
+//   previousCursor: "5",
+//   previousPageUrl: "/api/items?cursor=5",
+// }
+```
+
+### OpenAPI schemas
+
+```ts
+import { createPaginationMetaSchemaObject, createPaginationSchemaObject } from "@visulima/pagination";
+
+const meta = createPaginationMetaSchemaObject("PaginationData"); // OpenAPI 3.0
+const meta31 = createPaginationMetaSchemaObject("PaginationData", { openApiVersion: "3.1" });
+
+const schema = createPaginationSchemaObject("UserList", { $ref: "#/components/schemas/User" });
+```
+
+`nextPageUrl`/`previousPageUrl` are emitted as nullable (they are `null` on the
+last/first page) and every field is listed in `required`.
 
 ## Supported Node.js Versions
 
