@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import html from "../../src/html";
+import html, { isRawHtml } from "../../src/html";
 
 describe(html, () => {
     describe("template tag", () => {
@@ -171,13 +171,15 @@ describe(html, () => {
             expect(result).toBe("<div>&lt;script>alert(&#39;xss&#39;)&lt;/script></div>");
         });
 
-        it("should handle array interpolation", () => {
+        it("should flatten array interpolation and join with an empty string", () => {
             expect.assertions(1);
 
             const array = [1, 2, 3];
             const result = html`<div>${array}</div>`;
 
-            expect(result).toBe("<div>1,2,3</div>");
+            // Arrays are joined with "" (no commas) and each element is escaped,
+            // enabling list composition like items.map(...).
+            expect(result).toBe("<div>123</div>");
         });
 
         it("should handle unicode characters", () => {
@@ -205,6 +207,72 @@ describe(html, () => {
             const strings = Object.assign([], { raw: [] }) as unknown as TemplateStringsArray;
 
             expect(html(strings, "Z")).toBe("Z");
+        });
+
+        it("should escape each element of a string array", () => {
+            expect.assertions(1);
+
+            const parts = ["<a>", "<b>"];
+            const result = html`<div>${parts}</div>`;
+
+            expect(result).toBe("<div>&lt;a>&lt;b></div>");
+        });
+
+        it("should compose list fragments via html.raw without double-escaping", () => {
+            expect.assertions(1);
+
+            const items = ["a", "<b>"];
+            const result = html`<ul>${items.map((item) => html.raw(html`<li>${item}</li>`))}</ul>`;
+
+            expect(result).toBe("<ul><li>a</li><li>&lt;b></li></ul>");
+        });
+
+        it("should inline a raw fragment verbatim", () => {
+            expect.assertions(1);
+
+            const trusted = html.raw("<em>trusted</em>");
+            const result = html`<p>${trusted}</p>`;
+
+            expect(result).toBe("<p><em>trusted</em></p>");
+        });
+
+        it("should still escape non-raw values placed next to raw fragments", () => {
+            expect.assertions(1);
+
+            const trusted = html.raw("<em>ok</em>");
+            const untrusted = "<script>";
+            const result = html`<p>${trusted}${untrusted}</p>`;
+
+            expect(result).toBe("<p><em>ok</em>&lt;script></p>");
+        });
+
+        it("should support nested raw fragments inside arrays", () => {
+            expect.assertions(1);
+
+            const fragments = [html.raw("<i>1</i>"), html.raw("<i>2</i>")];
+            const result = html`<div>${fragments}</div>`;
+
+            expect(result).toBe("<div><i>1</i><i>2</i></div>");
+        });
+    });
+
+    describe("html.raw and isRawHtml", () => {
+        it("should create a raw marker that isRawHtml recognizes", () => {
+            expect.assertions(2);
+
+            const raw = html.raw("<b>x</b>");
+
+            expect(isRawHtml(raw)).toBe(true);
+            expect(raw.value).toBe("<b>x</b>");
+        });
+
+        it("should return false from isRawHtml for non-raw values", () => {
+            expect.assertions(4);
+
+            expect(isRawHtml("string")).toBe(false);
+            expect(isRawHtml(null)).toBe(false);
+            expect(isRawHtml(undefined)).toBe(false);
+            expect(isRawHtml({ value: "x" })).toBe(false);
         });
     });
 

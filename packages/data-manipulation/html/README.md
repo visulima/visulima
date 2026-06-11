@@ -120,6 +120,25 @@ pnpm add @visulima/html
 
 ## Usage
 
+### Entry Points
+
+`@visulima/html` exposes focused subpath exports so you only pay for what you import. The aggregate `@visulima/html` entry re-exports everything (including `sanitize-html`, which pulls in `htmlparser2`/`parse5`/`postcss`). If you only need escaping, import the lighter, browser-friendly subpaths instead:
+
+| Import                       | Contents                                                   |
+| ---------------------------- | ---------------------------------------------------------- |
+| `@visulima/html`             | Everything (escaping, `html`/`css` tags, sanitize, strip…) |
+| `@visulima/html/escape`      | `escapeHtml`, `escapeCss`, `escapeJs` (no `sanitize-html`) |
+| `@visulima/html/html`        | `html` tag + `html.raw` / `isRawHtml`                      |
+| `@visulima/html/css`         | `css` tag + `CSSProperties` / `FlexibleCSSProperties`      |
+| `@visulima/html/sanitize`    | `sanitizeHtml`                                             |
+| `@visulima/html/strip`       | `stripHtml` + types                                        |
+
+```typescript
+// Lightweight, browser-safe — does not load sanitize-html
+import { escapeHtml, escapeCss, escapeJs } from "@visulima/html/escape";
+import { html } from "@visulima/html/html";
+```
+
 ### When to Use Escaping vs Sanitization vs Stripping
 
 Understanding when to use **escaping**, **sanitization**, or **stripping** is crucial for web security:
@@ -255,29 +274,52 @@ const safe = html`<div>${userInput}</div>`;
 // Result: '<div>&lt;script>alert("xss")&lt;/script></div>'
 ```
 
+#### Composing Fragments (arrays and `html.raw`)
+
+Interpolated **arrays** are flattened and joined with an empty string (not commas), and each element is escaped. Values wrapped with **`html.raw`** are inlined verbatim, so you can compose already-rendered fragments without double-escaping:
+
+```typescript
+import { html } from "@visulima/html";
+
+// Arrays are joined with "" and each element is escaped
+html`<p>${["<a>", "<b>"]}</p>`;
+// Result: '<p>&lt;a>&lt;b></p>'
+
+// Build a list: wrap each nested fragment with html.raw so it is not re-escaped
+const items = ["Apples", "<script>"];
+html`<ul>${items.map((item) => html.raw(html`<li>${item}</li>`))}</ul>`;
+// Result: '<ul><li>Apples</li><li>&lt;script></li></ul>'
+
+// Inline trusted, pre-sanitized HTML verbatim
+const trusted = html.raw("<em>bold</em>");
+html`<p>${trusted}</p>`;
+// Result: '<p><em>bold</em></p>'
+```
+
+> **Security Note:** `html.raw` bypasses escaping entirely. Only ever wrap HTML you fully control or have already sanitized — wrapping untrusted input reintroduces XSS. Use `isRawHtml(value)` to detect a raw marker.
+
 #### Function Usage with Escaping Control
 
 ```typescript
 import { html } from "@visulima/html";
 
-// Return HTML as-is (XSS-safe, no escaping)
-const safeHtml = html("<div></div>", false);
-// Result: '<div></div>'
-
-// Escape HTML for attributes (escapes &, <, and ")
+// Escape HTML (escapes &, <, and ")
 const escapedHtml = html('<script>alert("xss")</script>', true);
 // Result: '&lt;script>alert(&quot;xss&quot;)&lt;/script>'
 
-// Default behavior: return as-is (XSS-safe)
-const defaultHtml = html("<div>Content</div>");
-// Result: '<div>Content</div>'
+// Return HTML as-is (unsafe for untrusted input)
+const passthrough = html("<div></div>");
+// Result: '<div></div>'
 ```
+
+> **⚠️ Security caveat:** The `html(string)` function-call form is **not** escaping by default — it only escapes when you pass `true` as the second argument. This differs from the template-tag form, which always escapes interpolations. Prefer the template tag for untrusted data, and only use the function form (without `true`) for HTML you already trust.
 
 #### Use Cases
 
 - **Template Literals**: Use the template tag for HTML with automatic escaping of interpolated values
+- **Fragment Composition**: Use arrays and `html.raw` to build lists and compose partials safely
 - **Dynamic Content**: Interpolated values are automatically escaped, making it safe for user-generated content
-- **Trusted HTML**: Use the function with `false` when you need to insert trusted HTML without escaping
+- **Trusted HTML**: Use `html.raw(...)` (or the function form with no second argument) when you need to insert trusted HTML without escaping
 - **Performance**: Template tag has minimal overhead, perfect for HTML generation with automatic XSS protection
 
 ### CSS Escaping
@@ -339,6 +381,8 @@ const result = css`
     }
 `;
 ```
+
+> **Note:** The template tag collapses whitespace into single spaces to produce a one-line string, but it is quote-aware: whitespace inside single- or double-quoted values (e.g. `content: "a   b"`) is preserved verbatim.
 
 #### Function Usage with String Input
 
@@ -497,6 +541,19 @@ According to the HTML specification, a valid custom element name must:
 - Not start with certain reserved prefixes (like `html-`, `xml-`, etc.)
 
 > **Note:** Custom element names are case-sensitive and must follow the naming conventions defined in the HTML specification to ensure proper browser support.
+
+### HTML Detection
+
+The `isHtml` function checks whether a string contains HTML markup. It is a thin re-export of [`is-html`](https://github.com/sindresorhus/is-html).
+
+```typescript
+import { isHtml } from "@visulima/html";
+
+isHtml("<p>hello</p>"); // true
+isHtml("<br/>"); // true
+isHtml("just plain text"); // false
+isHtml("1 < 2 and 3 > 2"); // false
+```
 
 ### HTML Entity Encoding & Decoding
 

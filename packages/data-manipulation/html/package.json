@@ -33,7 +33,7 @@
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
-        "directory": "packages/html"
+        "directory": "packages/data-manipulation/html"
     },
     "funding": [
         {
@@ -56,6 +56,26 @@
         ".": {
             "types": "./dist/index.d.ts",
             "default": "./dist/index.js"
+        },
+        "./css": {
+            "types": "./dist/css.d.ts",
+            "default": "./dist/css.js"
+        },
+        "./escape": {
+            "types": "./dist/escape.d.ts",
+            "default": "./dist/escape.js"
+        },
+        "./html": {
+            "types": "./dist/html.d.ts",
+            "default": "./dist/html.js"
+        },
+        "./sanitize": {
+            "types": "./dist/sanitize.d.ts",
+            "default": "./dist/sanitize.js"
+        },
+        "./strip": {
+            "types": "./dist/strip.d.ts",
+            "default": "./dist/strip.js"
         },
         "./package.json": "./package.json"
     },
@@ -90,7 +110,6 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
-        "@optimize-lodash/rollup-plugin": "catalog:build",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@std/html": "jsr:@std/html@1.0.5",
         "@total-typescript/ts-reset": "catalog:dev",
@@ -100,7 +119,6 @@
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
-        "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "html-entities": "catalog:dev",
         "html-tags": "catalog:dev",

@@ -3,11 +3,49 @@ import { escapeCss } from "@std/html/unstable-escape-css";
 import type { Properties } from "csstype";
 
 /**
+ * The standard CSS properties type from `csstype`.
+ */
+type CSSProperties = Properties;
+
+/**
  * Flexible CSS properties type that allows autocomplete for property names
  * while accepting string, number, null, or undefined values.
  */
 type FlexibleCSSProperties = {
     [K in keyof Properties]?: Properties[K] | string | number | null | undefined;
+};
+
+// CSS property names recur heavily across renders (e.g. "padding", "marginTop"),
+// so memoize the camelCase -> kebab-case conversion in a module-level cache to avoid
+// repeating the regex work and per-call closure allocation on hot paths.
+const kebabCache = new Map<string, string>();
+
+/**
+ * Converts a camelCase CSS property name to kebab-case, preserving custom properties
+ * (`--foo`) and vendor-prefixed `ms`/`Ms` properties (`-ms-*`).
+ * @param key The (potentially camelCase) CSS property name.
+ * @returns The kebab-cased property name.
+ */
+const toKebab = (key: string): string => {
+    const cached = kebabCache.get(key);
+
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    let result: string;
+
+    if (key.startsWith("--")) {
+        result = key;
+    } else {
+        const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
+
+        result = kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
+    }
+
+    kebabCache.set(key, result);
+
+    return result;
 };
 
 /**
@@ -20,25 +58,73 @@ const cssObjectToString = (cssObject: FlexibleCSSProperties | Properties): strin
 
     Object.entries(cssObject).forEach(([key, value]) => {
         if (value !== undefined && value !== null) {
-            const cssKey = key.startsWith("--")
-                ? key
-                : (() => {
-                    const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
-
-                    return kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
-                })();
-
-            styles.push(`${cssKey}: ${String(value)};`);
+            styles.push(`${toKebab(key)}: ${String(value)};`);
         }
     });
 
     return styles.join(" ");
 };
 
+const CSS_WHITESPACE = new Set([" ", "\t", "\n", "\r", "\f", "\v"]);
+
+/**
+ * Collapses runs of whitespace into a single space while preserving the contents of
+ * single- and double-quoted CSS strings (e.g. `content: "a   b"`), so the one-line
+ * minifier does not mangle quoted values. Escaped quotes (`\"`, `\'`) inside strings
+ * are respected.
+ * @param input The CSS string to minify.
+ * @returns The minified one-line CSS string.
+ */
+const collapseWhitespaceOutsideStrings = (input: string): string => {
+    let result = "";
+    let quote: "\"" | "'" | undefined;
+    let inWhitespaceRun = false;
+
+    for (let index = 0; index < input.length; index += 1) {
+        const char = input[index] as string;
+
+        // Inside a quoted CSS string: emit characters verbatim, honoring backslash escapes,
+        // until the matching closing quote is reached.
+        if (quote !== undefined) {
+            result += char;
+
+            if (char === "\\" && index + 1 < input.length) {
+                index += 1;
+                result += input[index] as string;
+            } else if (char === quote) {
+                quote = undefined;
+            }
+
+            continue;
+        }
+
+        if (char === "\"" || char === "'") {
+            quote = char;
+            inWhitespaceRun = false;
+        } else if (CSS_WHITESPACE.has(char)) {
+            if (inWhitespaceRun) {
+                continue;
+            }
+
+            inWhitespaceRun = true;
+            result += " ";
+
+            continue;
+        } else {
+            inWhitespaceRun = false;
+        }
+
+        result += char;
+    }
+
+    return result.trim();
+};
+
 /**
  * Template tag function for CSS that returns a minified one-line CSS string.
  * Template strings are used as-is, but interpolated values are escaped by default.
- * All whitespace and newlines are collapsed into single spaces.
+ * Whitespace and newlines outside of quoted strings are collapsed into single spaces;
+ * whitespace inside single-/double-quoted values (e.g. `content: "a   b"`) is preserved.
  * @param strings Template literal strings
  * @param values Template literal values (escaped by default)
  * @returns A minified one-line CSS string
@@ -75,9 +161,7 @@ function css(stringsOrValue: TemplateStringsArray | string | FlexibleCSSProperti
             result += strings[i + 1] ?? "";
         }
 
-        result = result.trim().replaceAll(/\s+/g, " ");
-
-        return result;
+        return collapseWhitespaceOutsideStrings(result);
     }
 
     const value = stringsOrValue as string | FlexibleCSSProperties | Properties;
@@ -92,4 +176,5 @@ function css(stringsOrValue: TemplateStringsArray | string | FlexibleCSSProperti
     return cssString;
 }
 
+export type { CSSProperties, FlexibleCSSProperties };
 export default css;
