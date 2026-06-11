@@ -992,7 +992,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
                     // Apply global processors
 
                     for (const processor of this.processors) {
-                        meta = { ...processor.process(meta) };
+                        meta = processor.process(meta);
                     }
 
                     if ((meta as Meta<L> & { dropped?: boolean }).dropped === true) {
@@ -1014,9 +1014,10 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
 
             clearTimeout(this.lastLog.timeout);
 
-            const diffTime = this.lastLog.time && meta.date ? new Date(meta.date).getTime() - this.lastLog.time.getTime() : 0;
+            const metaDate = meta.date instanceof Date ? meta.date : new Date(meta.date);
+            const diffTime = this.lastLog.time ? metaDate.getTime() - this.lastLog.time.getTime() : 0;
 
-            this.lastLog.time = new Date(meta.date);
+            this.lastLog.time = metaDate;
 
             if (diffTime < this.throttle) {
                 try {
