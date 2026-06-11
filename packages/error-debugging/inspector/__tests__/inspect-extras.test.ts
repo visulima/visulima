@@ -187,7 +187,10 @@ describe("hostile Symbol.toStringTag values (security)", () => {
         const value = { [Symbol.toStringTag]: "valueOf" };
 
         expect(() => inspect(value)).not.toThrow();
-        expect(inspect(value)).toBe("[valueOf] {}");
+        // The hostile tag must never be invoked or smuggled in as a callable: it is
+        // rendered as the literal, labelled `Symbol(Symbol.toStringTag)` property
+        // value (the library convention, see types/symbols.test.ts), not executed.
+        expect(inspect(value)).toBe("{ [Symbol(Symbol.toStringTag)]: 'valueOf' }");
     });
 
     it("does not produce `[object Undefined]` for a `toString` toStringTag", () => {
@@ -195,7 +198,9 @@ describe("hostile Symbol.toStringTag values (security)", () => {
 
         const value = { [Symbol.toStringTag]: "toString" };
 
-        expect(inspect(value)).toBe("[toString] {}");
+        // A `toString` tag must not coerce the object into `[object Undefined]`; it
+        // is shown verbatim as the labelled toStringTag symbol property instead.
+        expect(inspect(value)).toBe("{ [Symbol(Symbol.toStringTag)]: 'toString' }");
     });
 
     it("allows registering an inspector for the `toString` tag", () => {

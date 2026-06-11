@@ -11,6 +11,7 @@ const inspectList = (
     inspect: InternalInspect,
     inspectItem?: InspectItem,
     separator = ", ",
+
     /**
      * Optional cap on the number of elements rendered. When the list is longer,
      * rendering stops early and an `… (N more)` marker is appended. Callers that
@@ -115,9 +116,11 @@ const inspectList = (
     }
 
     // If the loop rendered every element it was allowed to but the original list was
-    // capped by `maxArrayLength`, surface how many elements were elided.
+    // capped by `maxArrayLength`, surface how many elements were elided. Prefix the
+    // entry `separator` so the marker is offset from the last element exactly like a
+    // real entry (`1, 2, … 4 more`) instead of being glued on after a dropped comma.
     if (capped && truncated === "") {
-        truncated = ` ${TRUNCATOR} ${String(fullSize - size)} more`;
+        truncated = `${separator}${TRUNCATOR} ${String(fullSize - size)} more`;
     }
 
     return `${output}${truncated}`;
