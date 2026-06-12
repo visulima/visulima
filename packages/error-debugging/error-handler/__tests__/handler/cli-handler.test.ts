@@ -16,7 +16,7 @@ describe(ansiHandler, () => {
         const error = new Error("boom from ansiHandler");
         const result = await ansiHandler(error, { solutionFinders: [noopFinder] });
 
-        expect(typeof result).toBe("string");
+        expect(result).toBeTypeOf("string");
 
         expect(result).toContain("boom from ansiHandler");
     });
