@@ -555,6 +555,47 @@ sentenceCase("AJAXRequest"); // 'Ajax request'
 sentenceCase("QueryXML123String"); // 'Query xml 123 string'
 ```
 
+#### flipCase
+
+Flips the case of every character (lower → upper, upper → lower). Accepts the same `FlipOptions` (a `CaseOptions` minus `handleEmoji`) as the other case helpers, including `cache`, `locale`, `stripEmoji`, `stripAnsi`, and `handleAnsi`.
+
+```typescript
+import { flipCase } from "@visulima/string";
+
+flipCase("FooBar"); // 'fOObAR'
+flipCase("foobar"); // 'FOOBAR'
+flipCase("FOOBAR"); // 'foobar'
+flipCase("XMLHttpRequest"); // 'xmlhTTPrEQUEST'
+```
+
+#### identifyCase
+
+Detects the case style of a string. Returns one of `"camel" | "pascal" | "snake" | "upper_snake" | "kebab" | "title" | "sentence" | "lower" | "upper" | "mixed" | "unknown"`. Throws a `TypeError` for non-string input.
+
+```typescript
+import { identifyCase } from "@visulima/string";
+
+identifyCase("fooBar"); // 'camel'
+identifyCase("FooBar"); // 'pascal'
+identifyCase("foo_bar"); // 'snake'
+identifyCase("FOO_BAR"); // 'upper_snake'
+identifyCase("foo-bar"); // 'kebab'
+identifyCase("foo"); // 'lower'
+identifyCase("FOO"); // 'upper'
+identifyCase("FooBAR"); // 'mixed'
+```
+
+### Excerpt (HTML-aware truncation)
+
+`excerpt` strips HTML tags and decodes entities, then truncates the resulting plain text to a character limit. It accepts the `TruncateOptions` (minus `position`, which is fixed to `"end"`). It throws a `TypeError` if `html` is not a string or `limit` is not a number.
+
+```typescript
+import { excerpt } from "@visulima/string";
+
+excerpt("<p>Hello <strong>world</strong>!</p>", 10); // 'Hello worl…'
+excerpt("<div>This is a <em>long</em> text</div>", 20, { ellipsis: "..." }); // 'This is a long text'
+```
+
 ### String Width Calculation
 
 The package provides two functions for calculating string widths: `getStringWidth` for basic width calculation and `getStringTruncatedWidth` for width calculation with truncation support.
