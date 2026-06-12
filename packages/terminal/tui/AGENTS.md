@@ -17,7 +17,7 @@ This file provides guidance to AI coding agents when working with code in this d
 - Native bindings are eight platform-specific packages (`@visulima/tui-binding-darwin-arm64`, `…-linux-x64-gnu`, `…-win32-x64-msvc`, etc.) declared under `optionalDependencies`. The Rust source lives in `native/` and is built by `pnpm run build:native` via `@napi-rs/cli`. Do not bundle the `.node` files into the JS dist.
 - Heavy peers (`shiki`, `@shikijs/langs`/`themes`, `marked`, `diff`, `cfonts`, `react-devtools-core`, `ws`, `@visulima/tabular`) are **optional peers** — they must be lazy-imported inside the component that needs them, never at module top-level, so unused features don't drag in their dependencies.
 - Required peers: `react ^19.2.6`, `react-reconciler ^0.33.0`. New components must work against React 19 (Suspense semantics, etc.).
-- This package has `"sideEffects"` set for `./dist/components/**`, `./dist/ink/**`, `./dist/react/**`, and `./index.js` so the native binding loader is preserved through tree-shaking. New side-effectful entry points must be added to that list.
+- This package's `"sideEffects"` is scoped to just `./index.js` (the native binding loader) so it survives tree-shaking, while components, the ink barrel, and the react entry stay pure and shakeable by consuming bundlers. Only add an entry here if a module genuinely has import-time side effects; do not re-add broad `./dist/**` globs.
 
 ## Related
 
