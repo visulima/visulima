@@ -112,8 +112,8 @@ const createPaginationSchemaObject = (
     items: OpenAPIV3.ReferenceObject | OpenAPIV3.SchemaObject,
     metaReferenceOrOptions: string | CreatePaginationSchemaOptions = "#/components/schemas/PaginationData",
 ): Record<string, OpenAPIV3.SchemaObject> => {
-    const metaReference =
-        typeof metaReferenceOrOptions === "string" ? metaReferenceOrOptions : (metaReferenceOrOptions.metaReference ?? "#/components/schemas/PaginationData");
+    const metaReference
+        = typeof metaReferenceOrOptions === "string" ? metaReferenceOrOptions : metaReferenceOrOptions.metaReference ?? "#/components/schemas/PaginationData";
 
     return {
         [name]: {

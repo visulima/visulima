@@ -251,8 +251,8 @@ class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
      */
     public getUrlsForWindow(options: WindowOptions = {}): WindowedUrl[] {
         const requestedEachSide = options.eachSide;
-        const eachSide =
-            typeof requestedEachSide === "number" && Number.isFinite(requestedEachSide) && requestedEachSide >= 0 ? Math.trunc(requestedEachSide) : 2;
+        const eachSide
+            = typeof requestedEachSide === "number" && Number.isFinite(requestedEachSide) && requestedEachSide >= 0 ? Math.trunc(requestedEachSide) : 2;
         const { lastPage } = this;
 
         // Small enough to show every page without ellipsis.
