@@ -53,6 +53,36 @@ type CacheKeyOptions = {
 const buildReadCacheKey = (filePath: string, options: CacheKeyOptions = {}): string =>
     `${filePath}|s${String(options.strict ? 1 : 0)}|c${String(options.resolveCatalogs ? 1 : 0)}|j${String(options.json5 === false ? 0 : 1)}|y${String(options.yaml === false ? 0 : 1)}|w${String(options.ignoreWarnings ? 1 : 0)}`;
 
+/**
+ * Determines whether a string should be treated as raw package.json content rather than a file path.
+ *
+ * A package.json (or its parsed JSON5 equivalent) is always a JSON object, so any content string
+ * starts with `{` once leading whitespace is trimmed. File paths never do. Checking this before any
+ * `existsSync` dispatch prevents a content string that happens to collide with an existing file path
+ * from being read off disk instead of parsed in place.
+ * @param value The string passed to a parse function.
+ * @returns `true` when the string looks like inline JSON object content.
+ */
+const isJsonContent = (value: string): boolean => value.trimStart().startsWith("{");
+
+/**
+ * Removes every cache entry whose key targets the given file path from the module-level
+ * file/parse caches. Cache keys are composite (path joined with an options suffix), so all
+ * option variants for the path are evicted.
+ * @param filePath The resolved package file path to evict.
+ */
+const evictPathFromCaches = (filePath: string): void => {
+    const prefix = `${filePath}|`;
+
+    for (const cache of [PackageJsonFileCache, PackageJsonParseCache]) {
+        for (const key of cache.keys()) {
+            if (key.startsWith(prefix)) {
+                cache.delete(key);
+            }
+        }
+    }
+};
+
 class PackageJsonValidationError extends Error {
     public constructor(warnings: string[]) {
         super(`The following warnings were encountered while normalizing package data:\n- ${warnings.join("\n- ")}`);
@@ -220,18 +250,10 @@ export const findPackageJson = async (cwd?: URL | string, options: ReadOptions =
         searchPatterns.push("package.json5");
     }
 
-    let filePath: string | undefined;
-
-    // Search for files in order of preference
-
-    for (const pattern of searchPatterns) {
-        // eslint-disable-next-line no-await-in-loop -- sequential search by design; findUp types unresolvable from bundled workspace package
-        filePath = await findUp(pattern, findUpConfig);
-
-        if (filePath) {
-            break;
-        }
-    }
+    // Pass the whole pattern set to a single findUp walk so the nearest directory wins
+    // (a package.yaml in cwd beats a package.json in an ancestor), instead of running a
+    // separate full ancestor walk per pattern.
+    const filePath: string | undefined = await findUp(searchPatterns, findUpConfig);
 
     if (!filePath) {
         throw new NotFoundError(`No such file or directory, for ${searchPatterns.join(", ").replace(LAST_SEPARATOR_REGEX, " or $1")} found.`);
@@ -297,17 +319,10 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
         searchPatterns.push("package.json5");
     }
 
-    let filePath: string | undefined;
-
-    // Search for files in order of preference
-
-    for (const pattern of searchPatterns) {
-        filePath = findUpSync(pattern, findUpConfig);
-
-        if (filePath) {
-            break;
-        }
-    }
+    // Pass the whole pattern set to a single findUpSync walk so the nearest directory wins
+    // (a package.yaml in cwd beats a package.json in an ancestor), instead of running a
+    // separate full ancestor walk per pattern.
+    const filePath: string | undefined = findUpSync(searchPatterns, findUpConfig);
 
     if (!filePath) {
         throw new NotFoundError(`No such file or directory, for ${searchPatterns.join(", ").replace(LAST_SEPARATOR_REGEX, " or $1")} found.`);
@@ -358,15 +373,36 @@ export const findPackageJsonSync = (cwd?: URL | string, options: ReadOptions = {
 export const writePackageJson = async (data: PackageJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): Promise<void> => {
     const { cwd, ...writeOptions } = options;
     const directory = toPath(cwd ?? process.cwd());
+    const filePath = join(directory, "package.json");
 
-    await writeJson(join(directory, "package.json"), data, writeOptions);
+    await writeJson(filePath, data, writeOptions);
+
+    // Evict any cached reads of the written file so subsequent `cache: true` reads
+    // don't return stale data (the cache keys fold in options, so clear by path prefix).
+    evictPathFromCaches(filePath);
 };
 
 export const writePackageJsonSync = (data: PackageJson, options: WriteJsonOptions & { cwd?: URL | string } = {}): void => {
     const { cwd, ...writeOptions } = options;
     const directory = toPath(cwd ?? process.cwd());
+    const filePath = join(directory, "package.json");
 
-    writeJsonSync(join(directory, "package.json"), data, writeOptions);
+    writeJsonSync(filePath, data, writeOptions);
+
+    evictPathFromCaches(filePath);
+};
+
+/**
+ * Clears the module-level package.json file and parse caches.
+ *
+ * The caches populated by `findPackageJson[Sync]` / `parsePackageJson[Sync]` when
+ * `cache: true` (and no custom cache is supplied) never expire on their own. Call this
+ * to drop all cached reads — for example in long-running processes or tests that mutate
+ * package files out of band.
+ */
+export const clearPackageJsonCache = (): void => {
+    PackageJsonFileCache.clear();
+    PackageJsonParseCache.clear();
 };
 
 /**
@@ -407,7 +443,7 @@ export const parsePackageJsonSync = (
 
     if (isObject) {
         json = structuredClone(packageFile);
-    } else if (existsSync(packageFile as string)) {
+    } else if (!isJsonContent(packageFile as string) && existsSync(packageFile as string)) {
         filePath = packageFile as string;
 
         // Check cache for file-based parsing
@@ -491,7 +527,7 @@ export const parsePackageJson = async (
 
     if (isObject) {
         json = structuredClone(packageFile);
-    } else if (existsSync(packageFile as string)) {
+    } else if (!isJsonContent(packageFile as string) && existsSync(packageFile as string)) {
         filePath = packageFile as string;
 
         // Check cache for file-based parsing
@@ -619,6 +655,9 @@ export const ensurePackages = async (
         devDeps: true,
         peerDeps: false,
         ...options,
+        // Copy the nested confirm object so resolving a function `message` (below) does not
+        // mutate the caller's options when the same options object is reused across calls.
+        ...options.confirm ? { confirm: { ...options.confirm } } : {},
     } satisfies EnsurePackagesOptions;
 
     for (const packageName of packages) {

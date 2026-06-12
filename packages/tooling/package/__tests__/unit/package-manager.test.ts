@@ -45,6 +45,29 @@ describe("package-manager", () => {
             expect(getPackageManagerVersion("npm")).toBe("7.0.15");
             expect(getPackageManagerVersion("yarn")).toBe("1.22.10");
         });
+
+        it.each([
+            ["a relative path", "./malicious"],
+            ["an absolute path", "/usr/bin/evil"],
+            ["a windows path", String.raw`..\evil`],
+            ["an arbitrary binary", "rm"],
+            ["an empty string", ""],
+            ["a name with arguments", "npm; rm -rf /"],
+        ])("should reject %s instead of executing it", (_label, name) => {
+            expect.assertions(1);
+
+            expect(() => getPackageManagerVersion(name)).toThrow(`Unsupported package manager "${name}".`);
+        });
+
+        it("should not reject known package managers as unsupported", () => {
+            expect.assertions(4);
+
+            // The mocked execFileSync only returns versions for npm/yarn, so pnpm/bun may throw a
+            // downstream TypeError. The relevant assertion is that the allowlist guard never rejects them.
+            for (const manager of ["npm", "pnpm", "yarn", "bun"] satisfies PackageManager[]) {
+                expect(() => getPackageManagerVersion(manager)).not.toThrow(`Unsupported package manager "${manager}".`);
+            }
+        });
     });
 
     describe.each([

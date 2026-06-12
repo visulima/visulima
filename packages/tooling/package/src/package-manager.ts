@@ -3,11 +3,25 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { findUp, findUpSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
+import { parseJson } from "@visulima/fs/utils";
 import { dirname, join } from "@visulima/path";
 
-import { parsePackageJsonSync } from "./package-json";
-
 const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"];
+
+const KNOWN_PACKAGE_MANAGERS = new Set<PackageManager>(["bun", "npm", "pnpm", "yarn"]);
+
+/**
+ * Reads the `packageManager` field from a package.json file without running the full
+ * `normalize-package-data` pass. Returns `undefined` when the field is missing or not a
+ * string. Throws a `JSONError` on malformed JSON, matching the previous parse behavior.
+ * @param packageJsonFilePath Absolute path to the package.json file.
+ * @returns The raw `packageManager` string, or `undefined`.
+ */
+const readPackageManagerField = (packageJsonFilePath: string): string | undefined => {
+    const parsed = parseJson(readFileSync(packageJsonFilePath, "utf8")) as { packageManager?: unknown } | null;
+
+    return typeof parsed?.packageManager === "string" ? parsed.packageManager : undefined;
+};
 
 const packageMangerFindUpMatcher = (directory: string): string | undefined => {
     let lockFile: string | undefined;
@@ -24,12 +38,8 @@ const packageMangerFindUpMatcher = (directory: string): string | undefined => {
 
     const packageJsonFilePath = join(directory, "package.json");
 
-    if (existsSync(packageJsonFilePath)) {
-        const packageJson = parsePackageJsonSync(readFileSync(packageJsonFilePath, "utf8"));
-
-        if (packageJson.packageManager !== undefined) {
-            return packageJsonFilePath;
-        }
+    if (existsSync(packageJsonFilePath) && readPackageManagerField(packageJsonFilePath) !== undefined) {
+        return packageJsonFilePath;
     }
 
     return undefined;
@@ -41,11 +51,11 @@ const resolvePackageManagerFromFile = (foundFile: string | undefined): PackageMa
     }
 
     if (foundFile.endsWith("package.json")) {
-        const packageJson = parsePackageJsonSync(foundFile);
+        const packageManager = readPackageManagerField(foundFile);
 
-        if (packageJson.packageManager) {
+        if (packageManager) {
             const packageManagerNames = ["npm", "yarn", "pnpm", "bun"] as const;
-            const foundPackageManager = packageManagerNames.find((prefix) => (packageJson.packageManager as string).startsWith(prefix));
+            const foundPackageManager = packageManagerNames.find((prefix) => packageManager.startsWith(prefix));
 
             if (foundPackageManager) {
                 return {
@@ -167,10 +177,18 @@ export const findPackageManagerSync = (cwd?: URL | string): PackageManagerResult
 
 /**
  * Function that retrieves the version of the specified package manager.
- * @param name The name of the package manager. The type of `name` is `string`.
+ * @param name The name of the package manager. Must be one of the known managers (`npm`, `pnpm`, `yarn`, `bun`).
  * @returns The version of the package manager. The return type of the function is `string`.
+ * @throws An `Error` if `name` is not a recognized package manager. This guards against executing an
+ * arbitrary or relative-path binary derived from untrusted input.
  */
-export const getPackageManagerVersion = (name: string): string => execFileSync(name, ["--version"]).toString("utf8").trim();
+export const getPackageManagerVersion = (name: string): string => {
+    if (!KNOWN_PACKAGE_MANAGERS.has(name as PackageManager)) {
+        throw new Error(`Unsupported package manager "${name}". Expected one of: ${[...KNOWN_PACKAGE_MANAGERS].join(", ")}.`);
+    }
+
+    return execFileSync(name, ["--version"]).toString("utf8").trim();
+};
 
 /**
  * An asynchronous function that detects what package manager executes the process.
@@ -223,10 +241,9 @@ export const generateMissingPackagesInstallMessage = (
 ): string => {
     const s = missingPackages.length === 1 ? "" : "s";
 
-    // eslint-disable-next-line no-param-reassign
-    options.packageManagers ??= ["npm", "pnpm", "yarn"];
+    const packageManagers = options.packageManagers ?? ["npm", "pnpm", "yarn"];
 
-    if (options.packageManagers.length === 0) {
+    if (packageManagers.length === 0) {
         throw new Error("No package managers provided, please provide at least one package manager");
     }
 
@@ -253,7 +270,7 @@ To install the missing package${s}, please run the following command:
         return `${name}@latest`;
     };
 
-    const packageManagerCommands = options.packageManagers.map((packageManager) => {
+    const packageManagerCommands = packageManagers.map((packageManager) => {
         const missingPackagesString = missingPackages.map((element) => atLatest(element)).join(" ");
 
         switch (packageManager) {

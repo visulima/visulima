@@ -155,6 +155,41 @@ const version = await getPackageManagerVersion("pnpm");
 // => '8.15.0'
 ```
 
+> `getPackageManagerVersion` only accepts the known managers (`npm`, `pnpm`, `yarn`, `bun`) and throws on anything else, so a `packageManager`-derived value from an untrusted repo can't be executed as an arbitrary binary.
+
+#### identifyInitiatingPackageManager
+
+Detects which package manager is currently executing the process by reading the `npm_config_user_agent` environment variable. Useful inside `postinstall`/`prepare` scripts to print the right install command. Returns `undefined` when the variable is not set.
+
+```typescript
+import { identifyInitiatingPackageManager } from "@visulima/package";
+
+const pm = identifyInitiatingPackageManager();
+// => { name: 'pnpm', version: '8.15.0' } | { name: 'cnpm', ... } | undefined
+```
+
+#### generateMissingPackagesInstallMessage
+
+Builds a human-readable message instructing the user how to install missing packages with each requested package manager.
+
+```typescript
+import { generateMissingPackagesInstallMessage } from "@visulima/package";
+
+const message = generateMissingPackagesInstallMessage("my-tool", ["typescript", "@types/node"], {
+    packageManagers: ["npm", "pnpm", "yarn"], // default: ["npm", "pnpm", "yarn"]
+    preMessage: "Some optional dependencies are missing.\n",
+    postMessage: "\nSee the docs for details.",
+});
+
+console.log(message);
+// my-tool could not find the following packages
+//   typescript
+//   @types/node
+// To install the missing packages, please run the following command:
+//   npm install typescript@latest @types/node@latest --save-dev
+//   ...
+```
+
 ### Package.json Operations
 
 #### parsePackageJson
@@ -216,6 +251,14 @@ const result3 = await parsePackageJson("./package.json", { cache: myCache }); //
 
 // Objects and strings are never cached
 const result4 = await parsePackageJson({ name: "test" }, { cache: true }); // Always parsed fresh
+```
+
+The module-level cache used when `cache: true` (and no custom cache is supplied) never expires on its own. Writing through `writePackageJson[Sync]` evicts the written path automatically, but if you mutate a package file out of band (e.g. in a long-running process or test), call `clearPackageJsonCache()` to drop all cached reads:
+
+```typescript
+import { clearPackageJsonCache } from "@visulima/package";
+
+clearPackageJsonCache();
 ```
 
 **Example File Formats**:
@@ -333,6 +376,101 @@ Ensures specified packages are installed, prompting the user if needed.
 import { ensurePackages } from "@visulima/package";
 
 await ensurePackages(packageJson, ["typescript", "@types/node"], "devDependencies");
+```
+
+### Lockfile Parsing
+
+A regex-based lockfile parser (no YAML dependency) covering all four mainstream JS package managers. Each entry is normalized to `{ name, version, integrity?, dependencies?, peerDependencies?, optionalDependencies? }`, so callers can build SBOMs, dedupe reports, or any other lockfile-derived artifact from a single source of truth.
+
+Integrity support:
+
+- **npm** (`package-lock.json` v2/v3): `integrity: "sha512-…"` ✅
+- **pnpm** (`pnpm-lock.yaml`): `resolution: { integrity: "sha512-…" }` ✅
+- **yarn v1** (Classic): `integrity "sha512-…"` ✅
+- **yarn v2+** (Berry): emits `checksum: 10c0/…` (XXH64), which is not a cryptographic hash and is outside the CycloneDX 1.6 `HashAlgorithm` enum. Berry entries are still parsed (name / version / dependencies), but `integrity` is `undefined`.
+- **bun** (`bun.lock`): `[versionKey, registryUrl, metadata, integrity]` tuples ✅
+
+#### parseLockFile
+
+Walks up from `cwd`, locates the nearest supported lockfile, reads it, and returns the parsed entries alongside the lockfile type and absolute path.
+
+```typescript
+import { parseLockFile, parseLockFileSync } from "@visulima/package";
+
+const result = await parseLockFile();
+// => { entries: [{ name: 'react', version: '18.2.0', integrity: { algorithm: 'sha512', hex: '…' } }, …], path: '/path/to/pnpm-lock.yaml', type: 'pnpm' }
+
+// Synchronous version
+const resultSync = parseLockFileSync("./some/dir");
+```
+
+#### Per-package-manager parsers
+
+When you already have the lockfile contents (and know the format), call a specific parser directly. Each returns a `LockFileEntry[]`.
+
+```typescript
+import { parseNpmLockFile, parsePnpmLockFile, parseYarnLockFile, parseBunLockFile } from "@visulima/package";
+import { readFileSync } from "node:fs";
+
+const entries = parsePnpmLockFile(readFileSync("./pnpm-lock.yaml", "utf8"));
+```
+
+#### decodeSriIntegrity
+
+Decodes a Subresource Integrity string (`sha512-<base64>`) into a `{ algorithm, hex }` pair. Returns `undefined` if the string is malformed, oversized, or uses an unsupported algorithm.
+
+```typescript
+import { decodeSriIntegrity } from "@visulima/package";
+
+const integrity = decodeSriIntegrity("sha512-…");
+// => { algorithm: 'sha512', hex: '…' } | undefined
+```
+
+### pnpm Catalogs & Workspaces
+
+Helpers for reading and resolving pnpm [catalog](https://pnpm.io/catalogs) references from `pnpm-workspace.yaml`.
+
+#### readPnpmCatalogs
+
+Reads the catalog definitions for the workspace that owns `packagePath`. Returns `undefined` when the package is not part of a pnpm workspace.
+
+```typescript
+import { readPnpmCatalogs, readPnpmCatalogsSync } from "@visulima/package";
+
+const catalogs = await readPnpmCatalogs("./packages/app/package.json");
+// => { default: { react: '^18.0.0' }, named: { next: { react: '^19.0.0' } } } | undefined
+```
+
+#### isPackageInWorkspace
+
+Checks whether a package path is covered by a workspace's `packages:` globs.
+
+```typescript
+import { isPackageInWorkspace } from "@visulima/package";
+
+const inWorkspace = isPackageInWorkspace("/repo", "/repo/packages/app", ["packages/*"]);
+// => true
+```
+
+> Catalog references are also resolved automatically when you pass `resolveCatalogs: true` to `parsePackageJson[Sync]` / `findPackageJson[Sync]` (see above).
+
+### Subpath Exports
+
+Every concern ships as its own entry point. Import from the narrowest one for the best tree-shaking — the root (`@visulima/package`) re-exports everything but pulls in all modules.
+
+| Subpath                             | Contents                                                                                                                                                  |
+| ----------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `@visulima/package/monorepo`        | `findMonorepoRoot[Sync]`                                                                                                                                  |
+| `@visulima/package/package`         | `findPackageRoot[Sync]`                                                                                                                                   |
+| `@visulima/package/package-json`    | `findPackageJson[Sync]`, `parsePackageJson[Sync]`, `writePackageJson[Sync]`, `clearPackageJsonCache`, property helpers, `ensurePackages`                  |
+| `@visulima/package/package-manager` | `findPackageManager[Sync]`, `findLockFile[Sync]`, `getPackageManagerVersion`, `identifyInitiatingPackageManager`, `generateMissingPackagesInstallMessage` |
+| `@visulima/package/lockfile`        | `parseLockFile[Sync]`, `parseNpmLockFile`, `parsePnpmLockFile`, `parseYarnLockFile`, `parseBunLockFile`, `decodeSriIntegrity`                             |
+| `@visulima/package/pnpm`            | `readPnpmCatalogs[Sync]`, `resolveCatalogReference[s]`, `resolveDependenciesCatalogReferences`, `isPackageInWorkspace`                                    |
+| `@visulima/package/error`           | `PackageNotFoundError`                                                                                                                                    |
+
+```typescript
+import { parseLockFile } from "@visulima/package/lockfile";
+import { readPnpmCatalogs } from "@visulima/package/pnpm";
 ```
 
 ## Supported Node.js Versions

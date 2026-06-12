@@ -15,6 +15,7 @@ export { findMonorepoRoot, findMonorepoRootSync } from "./monorepo";
 export { findPackageRoot, findPackageRootSync } from "./package";
 export type { FindPackageJsonCache, NormalizedReadResult } from "./package-json";
 export {
+    clearPackageJsonCache,
     ensurePackages,
     findPackageJson,
     findPackageJsonSync,

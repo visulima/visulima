@@ -97,8 +97,7 @@ const MAX_SRI_LENGTH = 1024;
 // hash that doesn't match the lockfile content. Validate up front.
 const BASE64_PAYLOAD = /^[A-Z0-9+/]+={0,2}$/i;
 
-// eslint-disable-next-line sonarjs/slow-regex
-const NPM_NODE_MODULES_PATH = /.*node_modules\/((?:@[^/]+\/)?[^/]+)$/;
+const NODE_MODULES_SEGMENT = "node_modules/";
 const QUOTE_PREFIX = /^['"]/;
 const QUOTE_SUFFIX = /['"]$/;
 const PNPM_SECTION_HEADER = /^[a-z][a-zA-Z0-9]*:\s*$/m;
@@ -238,13 +237,28 @@ export const parseNpmLockFile = (content: string): LockFileEntry[] => {
             continue;
         }
 
-        const match = NPM_NODE_MODULES_PATH.exec(path); // regex match
+        // Linear equivalent of /.*node_modules\/((?:@[^/]+\/)?[^/]+)$/ — slice after the
+        // last `node_modules/` and accept only a bare `name` or `@scope/name` tail.
+        const lastIndex = path.lastIndexOf(NODE_MODULES_SEGMENT);
 
-        if (!match?.[1]) {
+        if (lastIndex === -1) {
             continue;
         }
 
-        const name = entry.name ?? match[1];
+        const tail = path.slice(lastIndex + NODE_MODULES_SEGMENT.length);
+
+        if (tail.length === 0) {
+            continue;
+        }
+
+        const segments = tail.split("/");
+        const expectedSegments = tail.startsWith("@") ? 2 : 1;
+
+        if (segments.length !== expectedSegments || segments.some((segment) => segment.length === 0)) {
+            continue;
+        }
+
+        const name = entry.name ?? tail;
 
         if (name.startsWith(".")) {
             continue;

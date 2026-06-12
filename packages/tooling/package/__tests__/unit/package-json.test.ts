@@ -382,6 +382,48 @@ describe("package-json", () => {
             ).toThrow(TypeError);
         });
 
+        it("should parse JSON content as content even when a same-named file exists on disk (async)", async () => {
+            expect.assertions(2);
+
+            // Content string that also happens to be a valid (different) filename on disk.
+            const content = JSON.stringify({ name: "from-content", version: "1.0.0" });
+            const collidingPath = join(distribution, content);
+
+            // The on-disk file holds DIFFERENT data; if dispatch read it, the result would leak it.
+            writeFileSync(collidingPath, JSON.stringify({ name: "from-disk", version: "9.9.9" }), "utf8");
+
+            const result = await parsePackageJson(content);
+
+            expect(result.name).toBe("from-content");
+            expect(result.version).toBe("1.0.0");
+        });
+
+        it("should parse JSON content as content even when a same-named file exists on disk (sync)", () => {
+            expect.assertions(2);
+
+            const content = JSON.stringify({ name: "from-content-sync", version: "2.0.0" });
+            const collidingPath = join(distribution, content);
+
+            writeFileSync(collidingPath, JSON.stringify({ name: "from-disk", version: "9.9.9" }), "utf8");
+
+            const result = parsePackageJsonSync(content);
+
+            expect(result.name).toBe("from-content-sync");
+            expect(result.version).toBe("2.0.0");
+        });
+
+        it("should still treat plain (non-JSON) strings as file paths", async () => {
+            expect.assertions(1);
+
+            const filePath = join(distribution, "package.json");
+
+            writeFileSync(filePath, JSON.stringify({ name: "from-file", version: "3.0.0" }), "utf8");
+
+            const result = await parsePackageJson(filePath);
+
+            expect(result.name).toBe("from-file");
+        });
+
         it("should handle and return a normalized package.json object for an empty package.json file", async () => {
             expect.assertions(1);
 
