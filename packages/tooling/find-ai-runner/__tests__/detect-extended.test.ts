@@ -12,6 +12,7 @@ const WHICH_CMD = IS_WINDOWS ? "where" : "which";
 
 vi.mock(import("node:child_process"), () => {
     return {
+        execFile: vi.fn<typeof import("node:child_process").execFile>(),
         execFileSync: vi.fn<typeof execFileSync>(),
         spawn: vi.fn<typeof import("node:child_process").spawn>(),
     };

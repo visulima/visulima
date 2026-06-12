@@ -73,6 +73,27 @@ interface AiDetectOptions {
     version?: boolean;
 }
 
+/**
+ * Options controlling the async, parallel detection in
+ * `detectAllProvidersAsync`.
+ *
+ * Unlike the synchronous {@link AiDetectOptions} (where version probing is on
+ * by default), the async path makes the `--version` cold-start probe **opt-in**:
+ * `list`-style callers and startup detection usually only need availability +
+ * path, so the slow per-provider probe is skipped unless explicitly requested.
+ */
+interface AiDetectAsyncOptions {
+    /**
+     * Whether to probe each detected binary for its version by spawning
+     * `&lt;cli> --version`. This adds a cold CLI start per available provider and
+     * is the slowest part of detection.
+     *
+     * Defaults to `false` — opt in by passing `{ probeVersions: true }` when you
+     * actually need version strings.
+     */
+    probeVersions?: boolean;
+}
+
 /** Options for running a prompt against an AI provider. */
 interface AiRunOptions {
     /** Working directory for the spawned CLI. Defaults to the parent process cwd. */
@@ -183,4 +204,4 @@ class AiRunError extends Error {
 }
 
 export { AiRunError };
-export type { AiBuildArgsOptions, AiDetectOptions, AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult };
+export type { AiBuildArgsOptions, AiDetectAsyncOptions, AiDetectOptions, AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult };
