@@ -1,7 +1,9 @@
+import type { Hash, Hmac } from "node:crypto";
 import { createHash, createHmac, timingSafeEqual } from "node:crypto";
 import { createReadStream, createWriteStream } from "node:fs";
 import { mkdir, rm, stat } from "node:fs/promises";
 import { tmpdir } from "node:os";
+import { PassThrough } from "node:stream";
 import { pipeline } from "node:stream/promises";
 
 import { join } from "@visulima/path";
@@ -24,26 +26,6 @@ const MIN_SECRET_LENGTH = 16;
  * the wire; only the bridge inspects it when re-extracting locally.
  */
 const BLOB_OUTPUT_PATH = "vis-entry.tar.gz";
-
-/**
- * Compute a {@link CasDigest} for a file by streaming its bytes
- * through sha256. Used to tag downloaded tarballs before they're
- * staged into the local CAS so the bridge can `fetchBlob` them by
- * the same digest the {@link ActionResult} reports.
- */
-const digestFile = async (path: string): Promise<CasDigest> => {
-    const hash = createHash("sha256");
-    let sizeBytes = 0;
-
-    for await (const chunk of createReadStream(path)) {
-        const buffer = chunk as Buffer;
-
-        hash.update(buffer);
-        sizeBytes += buffer.byteLength;
-    }
-
-    return { hash: hash.digest("hex"), sizeBytes };
-};
 
 /**
  * Computes `HMAC-SHA256(secret, hash || body)` as a hex string by
@@ -269,7 +251,27 @@ class HttpRemoteCache implements RemoteCacheBackend {
                 return null;
             }
 
-            await pipeline(response.body as unknown as NodeJS.ReadableStream, createWriteStream(stagingPath));
+            // Single-pass hydration: tap the download stream through a
+            // sha256 hasher (always) and an HMAC hasher (when signing is
+            // configured) while it writes to disk, so we never re-read the
+            // staged tarball to compute its digest or verify its signature.
+            // The HMAC is primed with `actionDigest.hash` first so it covers
+            // `hash || body`, matching `computeArtifactSignatureStream`.
+            const sha256: Hash = createHash("sha256");
+            const hmac: Hmac | undefined = this.#signingSecret && receivedSignature ? createHmac("sha256", this.#signingSecret) : undefined;
+
+            hmac?.update(actionDigest.hash);
+
+            let sizeBytes = 0;
+            const tap = new PassThrough();
+
+            tap.on("data", (chunk: Buffer) => {
+                sha256.update(chunk);
+                hmac?.update(chunk);
+                sizeBytes += chunk.byteLength;
+            });
+
+            await pipeline(response.body as unknown as NodeJS.ReadableStream, tap, createWriteStream(stagingPath));
 
             // Content-Length integrity check. Without signing
             // configured (the default), this is the only line of
@@ -284,22 +286,21 @@ class HttpRemoteCache implements RemoteCacheBackend {
 
             if (declaredLength !== null) {
                 const expectedSize = Number.parseInt(declaredLength, 10);
-                const { size: actualSize } = await stat(stagingPath);
 
-                if (Number.isFinite(expectedSize) && actualSize !== expectedSize) {
+                if (Number.isFinite(expectedSize) && sizeBytes !== expectedSize) {
                     this.#onUploadError?.(
                         actionDigest.hash,
-                        new Error(`remote cache GET ${actionDigest.hash} truncated: declared ${expectedSize} bytes, received ${actualSize}`),
+                        new Error(`remote cache GET ${actionDigest.hash} truncated: declared ${expectedSize} bytes, received ${sizeBytes}`),
                     );
 
                     return null;
                 }
             }
 
-            if (this.#signingSecret && receivedSignature) {
-                const expected = await computeArtifactSignatureStream(this.#signingSecret, actionDigest.hash, stagingPath);
+            if (hmac) {
+                const expected = hmac.digest("hex");
 
-                if (!signaturesMatch(receivedSignature, expected)) {
+                if (!signaturesMatch(receivedSignature as string, expected)) {
                     return null;
                 }
             }
@@ -326,7 +327,9 @@ class HttpRemoteCache implements RemoteCacheBackend {
                 }
             }
 
-            const blobDigest = await digestFile(stagingPath);
+            // Reuse the digest computed during the download tap above
+            // instead of re-reading the staged tarball from disk.
+            const blobDigest: CasDigest = { hash: sha256.digest("hex"), sizeBytes };
 
             await putBlobFromFile(this.#localCasRoot, blobDigest, stagingPath);
 
