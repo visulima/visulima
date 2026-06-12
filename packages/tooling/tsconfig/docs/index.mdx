@@ -26,8 +26,8 @@ import { findTsConfig, readTsConfig } from "@visulima/tsconfig";
 const result = await findTsConfig();
 console.log(result.config.compilerOptions);
 
-// Read specific tsconfig
-const config = await readTsConfig("/path/to/tsconfig.json");
+// Read specific tsconfig (synchronous — no await)
+const config = readTsConfig("/path/to/tsconfig.json");
 ```
 
 ## Use Cases
