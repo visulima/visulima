@@ -72,16 +72,18 @@ export interface BaseOptions {
 
     /**
      * Number of columns the box may occupy. When omitted, the current terminal
-     * width is probed via `terminal-size`.
+     * width is probed once via `terminal-size` and the result is cached across
+     * renders.
      *
-     * Providing this skips the (potentially blocking) terminal probe and makes
-     * rendering deterministic for snapshot tests.
+     * Providing this skips the (potentially blocking) terminal probe entirely
+     * and makes rendering deterministic for snapshot tests.
      */
     terminalColumns?: number;
 
     /**
      * Number of rows the terminal has, used only by `fullscreen`. When omitted,
-     * the current terminal height is probed via `terminal-size`.
+     * the current terminal height is probed once via `terminal-size` and the
+     * result is cached across renders.
      */
     terminalRows?: number;
 
