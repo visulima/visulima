@@ -125,10 +125,10 @@ export type InferOptionValue<Definition extends OptionDefinition> = Definition e
         ? R[]
         : R | (Definition extends { defaultValue: infer D } ? D : null)
     : Definition extends { lazyMultiple: true } | { multiple: true }
-      ? string[]
-      : Definition extends { type: BooleanConstructor }
-        ? boolean
-        : string | null;
+        ? string[]
+        : Definition extends { type: BooleanConstructor }
+            ? boolean
+            : string | null;
 
 /**
  * Infer the parsed result object from a tuple/array of {@link OptionDefinition}s.

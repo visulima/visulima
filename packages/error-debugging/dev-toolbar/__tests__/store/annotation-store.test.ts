@@ -196,7 +196,7 @@ describe("annotation-store", () => {
             await ensureStoreDir(tmpDir);
             const { annotationsFile } = resolvePaths(tmpDir);
 
-            await fs.writeFile(annotationsFile, '{"not": "an array"}', "utf8");
+            await fs.writeFile(annotationsFile, "{\"not\": \"an array\"}", "utf8");
 
             const result = await readAnnotations(tmpDir);
 

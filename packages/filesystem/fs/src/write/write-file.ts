@@ -99,7 +99,7 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
             }
         }
 
-        await chmod(temporary, stat && !options.mode ? stat.mode : (options.mode ?? 0o666));
+        await chmod(temporary, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
 
         await rename(temporary, path);
     } catch (error: unknown) {

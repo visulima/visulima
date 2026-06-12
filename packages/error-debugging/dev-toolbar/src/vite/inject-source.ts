@@ -136,12 +136,12 @@ const transformJSX = (
     // Skip fragments and structural HTML document elements — there is no useful
     // click-to-source action for <html>, <head>, or <body>.
     if (
-        nameOfElement === "Fragment" ||
-        nameOfElement === "React.Fragment" ||
-        nameOfElement === "html" ||
-        nameOfElement === "head" ||
-        nameOfElement === "body" ||
-        isIgnoredComponent(nameOfElement)
+        nameOfElement === "Fragment"
+        || nameOfElement === "React.Fragment"
+        || nameOfElement === "html"
+        || nameOfElement === "head"
+        || nameOfElement === "body"
+        || isIgnoredComponent(nameOfElement)
     ) {
         return false;
     }
@@ -184,13 +184,13 @@ const transform = (ast: ReturnType<typeof parse>, file: string, ignoreComponents
     // every JSX opening element (a large component can contain hundreds).
     const isIgnoredComponent = compileMatcher(ignoreComponents);
 
-    const visitJSX =
-        (propsName: string | undefined) =>
-        (element: NodePath<t.JSXOpeningElement>): void => {
-            if (transformJSX(element, propsName, file, isIgnoredComponent, posMap, occurrenceCounter)) {
-                didTransform = true;
-            }
-        };
+    const visitJSX
+        = (propsName: string | undefined) =>
+            (element: NodePath<t.JSXOpeningElement>): void => {
+                if (transformJSX(element, propsName, file, isIgnoredComponent, posMap, occurrenceCounter)) {
+                    didTransform = true;
+                }
+            };
 
     // Walk a function's body in isolation: JSX in this scope uses *this* function's
     // propsName; descent into nested functions stops here, and each nested function

@@ -611,7 +611,7 @@ export class MultiSpinner {
         this.#interactiveManager = interactiveManager;
 
         // Resolve the interval once from the shared frame configuration.
-        this.#interval = options.frames ? options.frames.interval : (getSpinner(options.name ?? "dots")?.interval ?? 80);
+        this.#interval = options.frames ? options.frames.interval : getSpinner(options.name ?? "dots")?.interval ?? 80;
     }
 
     /** @internal */

@@ -141,8 +141,8 @@ const wrapText = (
                 // eslint-disable-next-line no-param-reassign
                 horizontal = slice(horizontal, Math.floor(getStringWidth(horizontal) / 2));
 
-                title =
-                    colorizeBorder(slice(horizontal, 1), getStringWidth(slice(horizontal, 1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
+                title
+                    = colorizeBorder(slice(horizontal, 1), getStringWidth(slice(horizontal, 1))) + text + colorizeBorder(horizontal, getStringWidth(horizontal)); // We reduce the left part of one character to avoid the bar to go beyond its limit
             } else {
                 // eslint-disable-next-line no-param-reassign
                 horizontal = slice(horizontal, getStringWidth(horizontal) / 2);
@@ -382,8 +382,8 @@ const resolveFullscreenDimensions = (result: unknown): { columns: number; rows: 
 const sanitizeOptions = (options: DimensionOptions, terminal: { columns: number; rows: number }): DimensionOptions => {
     // If fullscreen is enabled, max-out unspecified width/height
     if (options.fullscreen) {
-        const { columns, rows } =
-            typeof options.fullscreen === "function" ? resolveFullscreenDimensions(options.fullscreen(terminal.columns, terminal.rows)) : terminal;
+        const { columns, rows }
+            = typeof options.fullscreen === "function" ? resolveFullscreenDimensions(options.fullscreen(terminal.columns, terminal.rows)) : terminal;
 
         // eslint-disable-next-line no-param-reassign
         options.width ??= columns;
@@ -429,9 +429,9 @@ const determineDimensions = (text: string, columnsWidth: number, options: Dimens
     // word-wrap + per-line measurement pass entirely.
     const widest = widthOverride
         ? 0
-        : widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS })) +
-          options.padding.left +
-          options.padding.right;
+        : widestLine(wordWrap(text, { trim: false, width: columnsWidth - borderWidth, wrapMode: WrapMode.BREAK_WORDS }))
+            + options.padding.left
+            + options.padding.right;
 
     // If title and width are provided, title adheres to fixed width
     if (options.headerText && widthOverride) {

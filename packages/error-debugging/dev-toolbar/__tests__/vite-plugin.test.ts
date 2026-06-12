@@ -424,8 +424,8 @@ describe("devToolbar()", () => {
             const result = (await (main.load as PluginHookFn).call({ addWatchFile: vi.fn() }, "\0virtual:visulima-dev-toolbar-options")) as string;
 
             expect(result).toMatch(/^export default /);
-            expect(result).toContain('"placement"');
-            expect(result).toContain('"position"');
+            expect(result).toContain("\"placement\"");
+            expect(result).toContain("\"position\"");
         });
 
         it("virtual options defaults: settings and viteConfig apps enabled, others disabled", async () => {
