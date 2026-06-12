@@ -1,4 +1,6 @@
 // @vitest-environment node
+import { resolve } from "node:path";
+
 import type { ViteDevServer } from "vite";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -24,7 +26,7 @@ describe("rpc/functions/open-in-editor", () => {
             await openInEditor(makeServer("/project"), "src/index.ts");
 
             expect(launchMock).toHaveBeenCalledTimes(1);
-            expect(launchMock).toHaveBeenCalledWith("/project/src/index.ts", undefined);
+            expect(launchMock).toHaveBeenCalledWith(resolve("/project", "src/index.ts"), undefined);
         });
 
         it("keeps an in-root absolute file path untouched", async () => {
@@ -32,7 +34,7 @@ describe("rpc/functions/open-in-editor", () => {
 
             await openInEditor(makeServer("/project"), "/project/abs/path/file.ts");
 
-            expect(launchMock).toHaveBeenCalledWith("/project/abs/path/file.ts", undefined);
+            expect(launchMock).toHaveBeenCalledWith(resolve("/project", "/project/abs/path/file.ts"), undefined);
         });
 
         it("appends line only when column is omitted", async () => {
@@ -40,7 +42,7 @@ describe("rpc/functions/open-in-editor", () => {
 
             await openInEditor(makeServer("/project"), "/project/abs/file.ts", 42);
 
-            expect(launchMock).toHaveBeenCalledWith("/project/abs/file.ts:42", undefined);
+            expect(launchMock).toHaveBeenCalledWith(`${resolve("/project", "/project/abs/file.ts")}:42`, undefined);
         });
 
         it("appends line and column when both are provided", async () => {
@@ -48,7 +50,7 @@ describe("rpc/functions/open-in-editor", () => {
 
             await openInEditor(makeServer("/project"), "/project/abs/file.ts", 42, 7);
 
-            expect(launchMock).toHaveBeenCalledWith("/project/abs/file.ts:42:7", undefined);
+            expect(launchMock).toHaveBeenCalledWith(`${resolve("/project", "/project/abs/file.ts")}:42:7`, undefined);
         });
 
         it("forwards the server-configured editor override", async () => {
@@ -56,7 +58,7 @@ describe("rpc/functions/open-in-editor", () => {
 
             await openInEditor(makeServer("/project"), "/project/abs/file.ts", 1, 1, "code");
 
-            expect(launchMock).toHaveBeenCalledWith("/project/abs/file.ts:1:1", "code");
+            expect(launchMock).toHaveBeenCalledWith(`${resolve("/project", "/project/abs/file.ts")}:1:1`, "code");
         });
 
         it("rejects a file path outside the project root", async () => {
