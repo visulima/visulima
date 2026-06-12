@@ -194,6 +194,59 @@ describe("tui/createDynamicOutputRenderer", () => {
         expect(allOutput).toContain("Successfully ran target build");
     });
 
+    it("should dump successful task output below the summary in normal mode", async () => {
+        expect.assertions(2);
+
+        const tasks = [createTask("app-a", "build")];
+        const { lifeCycle, renderIsDone } = createRenderer(tasks);
+
+        lifeCycle.startCommand!();
+        lifeCycle.startTasks!(tasks);
+        lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
+        lifeCycle.endCommand!();
+
+        writeSpy.mockClear();
+        mockUnmount();
+
+        await renderIsDone;
+
+        const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
+
+        // Successful task output survives the alternate-screen teardown,
+        // matching the non-TTY StaticOutputLifeCycle normal contract.
+        expect(allOutput).toContain("output for app-a:build");
+        expect(allOutput).toContain("Successfully ran target build");
+    });
+
+    it("should suppress the output dump in quiet mode", async () => {
+        expect.assertions(2);
+
+        const tasks = [createTask("app-a", "build")];
+        const { lifeCycle, renderIsDone } = createDynamicOutputRenderer({
+            args: { parallel: 3, targets: ["build"] },
+            outputStyle: "quiet",
+            projectNames: ["app-a"],
+            tasks,
+        });
+
+        lifeCycle.startCommand!();
+        lifeCycle.startTasks!(tasks);
+        lifeCycle.endTasks!([createResult(tasks[0]!, "success")]);
+        lifeCycle.endCommand!();
+
+        writeSpy.mockClear();
+        mockUnmount();
+
+        await renderIsDone;
+
+        const allOutput = writeSpy.mock.calls.map((c) => String(c[0])).join("");
+
+        // The summary still prints, but the task body stays in the TUI
+        // scrollback rather than being re-emitted below it.
+        expect(allOutput).toContain("Successfully ran target build");
+        expect(allOutput).not.toContain("output for app-a:build");
+    });
+
     it("should collect task output via printTaskTerminalOutput", () => {
         expect.assertions(1);
 
