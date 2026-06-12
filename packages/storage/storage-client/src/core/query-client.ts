@@ -1,4 +1,4 @@
-import type { FileMeta, HeadersResolver } from "./types";
+import type { FileMeta, HeadersResolver, OnBeforeRequest } from "./types";
 
 /**
  * Error response from the API
@@ -50,6 +50,12 @@ export class UploadError extends Error {
 export interface RequestOptions {
     /** Static or dynamically-resolved headers to attach (e.g. `Authorization`). */
     headers?: HeadersResolver;
+
+    /**
+     * Per-request hook returning extra headers, given the outgoing request
+     * context. Runs after `headers` and merges over it (e.g. to sign a request).
+     */
+    onBeforeRequest?: OnBeforeRequest;
     /** Abort signal to cancel the request on unmount/refetch. */
     signal?: AbortSignal;
 }
@@ -68,6 +74,30 @@ export const resolveHeaders = async (headers?: HeadersResolver): Promise<Record<
     }
 
     return headers;
+};
+
+/**
+ * Resolves the full header set for an outgoing request: the adapter-level
+ * `headers` resolver, then the per-request `onBeforeRequest` hook merged on top.
+ * The hook receives the already-resolved headers (and request `url` / `method`)
+ * so it can sign or augment based on what is about to be sent. Callers that need
+ * protocol-required headers to win should spread those last over the result.
+ */
+export const resolveRequestHeaders = async (
+    url: string,
+    method: string,
+    headers?: HeadersResolver,
+    onBeforeRequest?: OnBeforeRequest,
+): Promise<Record<string, string>> => {
+    const resolved = await resolveHeaders(headers);
+
+    if (!onBeforeRequest) {
+        return resolved;
+    }
+
+    const hookHeaders = await onBeforeRequest({ headers: resolved, method, url });
+
+    return { ...resolved, ...hookHeaders };
 };
 
 /**
@@ -136,7 +166,7 @@ export const buildUrl = (baseUrl: string, path: string, params?: Record<string, 
  */
 export const fetchFile = async (url: string, options: RequestOptions = {}): Promise<Blob> => {
     const response = await fetch(url, {
-        headers: await resolveHeaders(options.headers),
+        headers: await resolveRequestHeaders(url, "GET", options.headers, options.onBeforeRequest),
         method: "GET",
         signal: options.signal,
     });
@@ -153,7 +183,7 @@ export const fetchFile = async (url: string, options: RequestOptions = {}): Prom
  */
 export const fetchJson = async <T = unknown>(url: string, options: RequestOptions = {}): Promise<T> => {
     const response = await fetch(url, {
-        headers: await resolveHeaders(options.headers),
+        headers: await resolveRequestHeaders(url, "GET", options.headers, options.onBeforeRequest),
         method: "GET",
         signal: options.signal,
     });
@@ -170,7 +200,7 @@ export const fetchJson = async <T = unknown>(url: string, options: RequestOption
  */
 export const fetchHead = async (url: string, options: RequestOptions = {}): Promise<Headers> => {
     const response = await fetch(url, {
-        headers: await resolveHeaders(options.headers),
+        headers: await resolveRequestHeaders(url, "HEAD", options.headers, options.onBeforeRequest),
         method: "HEAD",
         signal: options.signal,
     });
@@ -187,7 +217,7 @@ export const fetchHead = async (url: string, options: RequestOptions = {}): Prom
  */
 export const deleteRequest = async (url: string, options: RequestOptions = {}): Promise<void> => {
     const response = await fetch(url, {
-        headers: await resolveHeaders(options.headers),
+        headers: await resolveRequestHeaders(url, "DELETE", options.headers, options.onBeforeRequest),
         method: "DELETE",
         signal: options.signal,
     });
@@ -204,9 +234,9 @@ export const putFile = async (
     url: string,
     file: File | Blob,
     onProgress?: (progress: number) => void,
-    options: { headers?: HeadersResolver } = {},
+    options: { headers?: HeadersResolver; onBeforeRequest?: OnBeforeRequest } = {},
 ): Promise<{ etag?: string; location?: string; uploadExpires?: string }> => {
-    const customHeaders = await resolveHeaders(options.headers);
+    const customHeaders = await resolveRequestHeaders(url, "PUT", options.headers, options.onBeforeRequest);
 
     return new Promise((resolve, reject) => {
         const xhr = new XMLHttpRequest();
@@ -263,7 +293,7 @@ export const patchChunk = async (
     options: RequestOptions = {},
 ): Promise<{ etag?: string; location?: string; uploadComplete?: boolean; uploadExpires?: string; uploadOffset?: number }> => {
     const headers: Record<string, string> = {
-        ...await resolveHeaders(options.headers),
+        ...await resolveRequestHeaders(url, "PATCH", options.headers, options.onBeforeRequest),
         "Content-Type": "application/octet-stream",
         "X-Chunk-Offset": String(offset),
     };

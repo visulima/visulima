@@ -1,6 +1,6 @@
-import { resolveHeaders } from "./query-client";
+import { resolveRequestHeaders } from "./query-client";
 import { validateFile, validateFiles } from "./restrictions";
-import type { FileMeta, HeadersResolver, UploadRestrictions } from "./types";
+import type { FileMeta, HeadersResolver, OnBeforeRequest, UploadRestrictions } from "./types";
 
 /**
  * Upload item state
@@ -98,6 +98,13 @@ export interface UploaderOptions {
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
+
+    /**
+     * Per-request hook returning extra headers, given the outgoing request
+     * context (`url`, `method`, already-resolved `headers`). Runs after the
+     * `headers` resolver and merges over it.
+     */
+    onBeforeRequest?: OnBeforeRequest;
     /** Client-side upload restrictions, validated before upload starts. */
     restrictions?: UploadRestrictions;
 
@@ -823,7 +830,7 @@ export class Uploader {
             // Resolve and attach custom/auth headers, then send. ITEM_START has
             // already been emitted synchronously above so listeners fire eagerly
             // regardless of whether the header resolver is async.
-            resolveHeaders(this.options.headers)
+            resolveRequestHeaders(this.options.endpoint, "POST", this.options.headers, this.options.onBeforeRequest)
                 .then((customHeaders) => {
                     for (const [key, value] of Object.entries(customHeaders)) {
                         xhr.setRequestHeader(key, value);

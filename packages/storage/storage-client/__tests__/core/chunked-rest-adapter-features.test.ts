@@ -53,6 +53,35 @@ describe("chunked-rest adapter features", () => {
         expect(headersOf(mockFetch.mock.calls[2]).Authorization).toBe("Bearer token");
     });
 
+    it("should attach onBeforeRequest hook headers, with protocol headers winning", async () => {
+        expect.assertions(3);
+
+        const file = new File(["abc"], "a.txt", { type: "text/plain" });
+
+        mockHappyPath("id-hook", file.size);
+
+        const seenMethods: string[] = [];
+
+        const adapter = createChunkedRestAdapter({
+            endpoint: "https://api.example.com/upload",
+            onBeforeRequest: ({ method }) => {
+                seenMethods.push(method);
+
+                // Attempt to override a protocol-required header — it must NOT win.
+                return { Authorization: "Bearer dynamic", "X-Chunk-Offset": "999" };
+            },
+        });
+
+        await adapter.upload(file);
+
+        // The auth header from the hook reaches the PATCH chunk request.
+        expect(headersOf(mockFetch.mock.calls[2]).Authorization).toBe("Bearer dynamic");
+        // Protocol header set by the adapter wins over the hook's attempted override.
+        expect(headersOf(mockFetch.mock.calls[2])["X-Chunk-Offset"]).toBe("0");
+        // The hook saw the real request methods.
+        expect(seenMethods).toContain("PATCH");
+    });
+
     it("should emit RFC 5987 Content-Disposition for unicode filenames", async () => {
         expect.assertions(2);
 

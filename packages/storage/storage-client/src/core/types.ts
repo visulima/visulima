@@ -90,6 +90,43 @@ export interface UploadItem {
 export type HeadersResolver = Record<string, string> | (() => Promise<Record<string, string>> | Record<string, string>);
 
 /**
+ * The outgoing request a {@link OnBeforeRequest} hook is allowed to inspect
+ * before it is sent. `headers` are the already-merged headers (adapter
+ * `headers` resolver plus any protocol-required headers) so the hook can sign
+ * or augment based on what is about to be sent.
+ */
+export interface RequestContext {
+    /** Headers already resolved for this request (protocol + adapter `headers`). */
+    headers: Record<string, string>;
+    /** HTTP method of the outgoing request (e.g. `POST`, `PATCH`, `HEAD`). */
+    method: string;
+    /** Fully-qualified URL of the outgoing request. */
+    url: string;
+}
+
+/**
+ * A per-request hook (sync or async) that returns extra HTTP headers to attach,
+ * given the outgoing {@link RequestContext}. Unlike the adapter-level
+ * `headers` resolver — which is request-agnostic — this hook receives the
+ * request `url`, `method`, and the already-resolved `headers`, so it can sign a
+ * request or mint a fresh token per call.
+ *
+ * Returned headers are merged over the adapter `headers`, but protocol-required
+ * headers (e.g. TUS `Tus-Resumable` / `Upload-Offset`) always win to preserve
+ * protocol correctness.
+ * @example
+ * ```ts
+ * createTusAdapter({
+ *     endpoint,
+ *     onBeforeRequest: ({ method, url }) => ({
+ *         Authorization: `Bearer ${signRequest(method, url)}`,
+ *     }),
+ * });
+ * ```
+ */
+export type OnBeforeRequest = (context: RequestContext) => Promise<Record<string, string>> | Record<string, string>;
+
+/**
  * Client-side upload restrictions, modelled on Uppy's `restrictions` block.
  * Validated before any network request so consumers get friendly errors instead
  * of server-side 413s.

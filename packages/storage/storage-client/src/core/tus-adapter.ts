@@ -1,9 +1,9 @@
 /* eslint-disable no-underscore-dangle -- `control._attach/_detach/_updateOffset` are the intentional @internal cross-module API of UploadControl */
 import type { FingerprintFunction } from "./fingerprint";
 import { defaultFingerprint } from "./fingerprint";
-import { resolveHeaders } from "./query-client";
+import { resolveRequestHeaders } from "./query-client";
 import { validateFile } from "./restrictions";
-import type { FileMeta, HeadersResolver, UploadRestrictions, UploadResult } from "./types";
+import type { FileMeta, HeadersResolver, OnBeforeRequest, UploadRestrictions, UploadResult } from "./types";
 import type { UploadControl } from "./upload-control";
 import type { UrlStorage, UrlStorageEntry } from "./url-storage";
 
@@ -123,6 +123,13 @@ export interface TusAdapterOptions {
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
+
+    /**
+     * Per-request hook returning extra headers, given the outgoing request
+     * context (`url`, `method`, already-resolved `headers`). Runs after the
+     * `headers` resolver and merges over it; TUS protocol headers still win.
+     */
+    onBeforeRequest?: OnBeforeRequest;
     /** Client-side upload restrictions, validated before any network request. */
     restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
@@ -174,6 +181,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         headers: headersResolver,
         maxRetries = 3,
         metadata = {},
+        onBeforeRequest,
         restrictions,
         retry = true,
         urlStorage,
@@ -186,11 +194,12 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
     let errorCallback: ((error: Error) => void) | undefined;
 
     /**
-     * Merges adapter-level custom headers with the per-request TUS headers.
-     * Per-request headers win on conflict (the TUS protocol headers are required).
+     * Merges adapter-level custom headers (and any `onBeforeRequest` hook result)
+     * with the per-request TUS headers. Per-request protocol headers win on
+     * conflict (the TUS protocol headers are required).
      */
-    const buildHeaders = async (requestHeaders: Record<string, string>): Promise<Record<string, string>> => {
-        const resolved = await resolveHeaders(headersResolver);
+    const buildHeaders = async (url: string, method: string, requestHeaders: Record<string, string>): Promise<Record<string, string>> => {
+        const resolved = await resolveRequestHeaders(url, method, headersResolver, onBeforeRequest);
 
         return { ...resolved, ...requestHeaders };
     };
@@ -220,7 +229,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
         try {
             response = await fetch(uploadUrl, {
-                headers: await buildHeaders({ "Tus-Resumable": TUS_RESUMABLE_VERSION }),
+                headers: await buildHeaders(uploadUrl, "HEAD", { "Tus-Resumable": TUS_RESUMABLE_VERSION }),
                 method: "HEAD",
                 signal,
             });
@@ -289,7 +298,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         };
 
         const response = await fetch(endpoint, {
-            headers: await buildHeaders({
+            headers: await buildHeaders(endpoint, "POST", {
                 "Tus-Resumable": TUS_RESUMABLE_VERSION,
                 "Upload-Length": file.size.toString(),
                 "Upload-Metadata": encodeMetadata(fileMetadata),
@@ -341,7 +350,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
      */
     const getUploadOffset = async (uploadUrl: string, signal?: AbortSignal): Promise<number> => {
         const response = await fetch(uploadUrl, {
-            headers: await buildHeaders({
+            headers: await buildHeaders(uploadUrl, "HEAD", {
                 "Tus-Resumable": TUS_RESUMABLE_VERSION,
             }),
             method: "HEAD",
@@ -375,7 +384,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
         const response = await fetch(uploadUrl, {
             body: chunk,
-            headers: await buildHeaders({
+            headers: await buildHeaders(uploadUrl, "PATCH", {
                 "Content-Length": chunk.size.toString(), // Explicitly set Content-Length as required by TUS protocol
                 "Content-Type": "application/offset+octet-stream",
                 "Tus-Resumable": TUS_RESUMABLE_VERSION,
@@ -511,7 +520,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
             // Upload complete, get final file info
             const headResponse = await fetch(uploadUrl, {
-                headers: await buildHeaders({
+                headers: await buildHeaders(uploadUrl, "HEAD", {
                     "Tus-Resumable": TUS_RESUMABLE_VERSION,
                 }),
                 method: "HEAD",

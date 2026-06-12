@@ -1,4 +1,4 @@
-import type { FileMeta, HeadersResolver, UploadRestrictions, UploadResult } from "./types";
+import type { FileMeta, HeadersResolver, OnBeforeRequest, UploadRestrictions, UploadResult } from "./types";
 import type { BatchState, Uploader, UploadItem } from "./uploader";
 import { createUploader } from "./uploader";
 
@@ -17,6 +17,13 @@ export interface MultipartAdapterOptions {
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
+
+    /**
+     * Per-request hook returning extra headers, given the outgoing request
+     * context (`url`, `method`, already-resolved `headers`). Runs after the
+     * `headers` resolver and merges over it.
+     */
+    onBeforeRequest?: OnBeforeRequest;
     /** Client-side upload restrictions, validated before upload starts. */
     restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure with exponential backoff (off by default). */
@@ -52,6 +59,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
         headers: options.headers,
         maxRetries: options.maxRetries,
         metadata: options.metadata,
+        onBeforeRequest: options.onBeforeRequest,
         restrictions: options.restrictions,
         retry: options.retry,
     });

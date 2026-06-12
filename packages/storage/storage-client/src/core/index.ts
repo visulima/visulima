@@ -19,6 +19,7 @@ export {
     patchChunk,
     putFile,
     resolveHeaders,
+    resolveRequestHeaders,
     UploadError,
 } from "./query-client";
 // Query utilities
@@ -28,7 +29,7 @@ export { RestrictionError, validateFile, validateFiles } from "./restrictions";
 export type { TusAdapter, TusAdapterOptions } from "./tus-adapter";
 export { createTusAdapter } from "./tus-adapter";
 // Shared framework-agnostic types
-export type { FileMeta, HeadersResolver, UploadMethod, UploadRestrictions, UploadResult } from "./types";
+export type { FileMeta, HeadersResolver, OnBeforeRequest, RequestContext, UploadMethod, UploadRestrictions, UploadResult } from "./types";
 // Resumable upload primitives
 export type { UploadControlAttachMeta, UploadControlBinding, UploadControlSnapshot } from "./upload-control";
 export { UploadControl } from "./upload-control";
