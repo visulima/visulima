@@ -307,6 +307,25 @@ describe(formatBytes, () => {
         // Zero is never signed.
         expect(formatBytes(0, { signed: true })).toBe("0 Bytes");
     });
+
+    it("should accept open BCP-47 locale tags not in the known union (e.g. de-DE)", () => {
+        expect.assertions(2);
+
+        // `de-DE` is a valid tag rejected by the old closed `IntlLocale` union.
+        // German uses "." for grouping and "," for the decimal separator.
+        expect(formatBytes(1234.5 * 1024, { decimals: 1, locale: "de-DE", unit: "KB" })).toBe("1.234,5 KB");
+        expect(formatBytes(0, { locale: "de-DE" })).toBe("0 Bytes");
+    });
+
+    it("should return consistent results across repeated calls (cached formatters/separators)", () => {
+        expect.assertions(1);
+
+        // Exercises the per-locale+options Intl.NumberFormat cache and the
+        // memoized separator lookup: repeated identical calls must stay correct.
+        const results = Array.from({ length: 5 }, () => formatBytes(50.4 * 1024 * 1024, { decimals: 2, locale: "en-US" }));
+
+        expect(new Set(results)).toStrictEqual(new Set(["50.40 MB"]));
+    });
 });
 
 describe(parseBytes, () => {
