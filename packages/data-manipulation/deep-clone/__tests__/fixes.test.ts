@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import type { DeepReadwrite } from "../src";
 import { createDeepClone, deepClone } from "../src";
 
 describe("prototype pollution safety", () => {
@@ -102,6 +103,22 @@ describe("map key cloning", () => {
         expect(clonedKey).not.toBe(key);
         expect(clonedKey).toStrictEqual(key);
         expect(cloned.get(clonedKey)).toBe("v");
+    });
+});
+
+describe("exported DeepReadwrite type", () => {
+    it("strips readonly modifiers and is part of the public API", () => {
+        expect.assertions(1);
+
+        const original = { a: 1, nested: { b: 2 } } as const;
+        // `DeepReadwrite` is exported, so consumers can name the return type and it
+        // is deeply writable.
+        const writable: DeepReadwrite<typeof original> = deepClone(original);
+
+        writable.a = 5;
+        writable.nested.b = 6;
+
+        expect(writable).toStrictEqual({ a: 5, nested: { b: 6 } });
     });
 });
 
