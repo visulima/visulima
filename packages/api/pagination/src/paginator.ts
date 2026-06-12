@@ -49,30 +49,16 @@ class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
     }
 
     /**
-     * Construct a `Paginator` from an array of rows without spreading them as
-     * call arguments. Safe for arbitrarily large row sets (no
-     * `Maximum call stack size exceeded`). Prefer this over the variadic
-     * constructor when the row count may be large.
+     * Construct a `Paginator` from an array of rows. Alias for the array-based
+     * constructor; kept for backward compatibility. Safe for arbitrarily large
+     * row sets (no `Maximum call stack size exceeded`).
      * @param totalNumber Total number of matching records.
      * @param perPage Rows per page (clamped to be at least 1).
      * @param currentPage The current page number (clamped to be at least 1).
      * @param rows The pre-sliced rows for the current page.
      */
     public static fromArray<Result = unknown>(totalNumber: number, perPage: number, currentPage: number, rows: Result[]): Paginator<Result> {
-        const paginator = new Paginator<Result>(totalNumber, perPage, currentPage);
-        const { length } = rows;
-
-        paginator.length = length;
-
-        // eslint-disable-next-line no-plusplus
-        for (let index = 0; index < length; index++) {
-            paginator[index] = rows[index] as Result;
-        }
-
-        // `isEmpty` is set in the (empty) constructor call above; refresh it.
-        (paginator as { isEmpty: boolean }).isEmpty = length === 0;
-
-        return paginator;
+        return new Paginator<Result>(totalNumber, perPage, currentPage, rows);
     }
 
     /**
@@ -106,19 +92,20 @@ class Paginator<T = unknown> extends Array<T> implements IPaginator<T> {
     private baseQuery = "";
 
     /**
-     * For large row sets prefer `Paginator.fromArray`: spreading rows as call
-     * arguments (`new Paginator(t, p, c, ...rows)`) throws
-     * `RangeError: Maximum call stack size exceeded` around ~100k rows on V8.
+     * The `rows` array is accepted as a single parameter (not spread as call
+     * arguments): spreading rows (`new Paginator(t, p, c, ...rows)`) or
+     * `this.push(...rows)` throws `RangeError: Maximum call stack size exceeded`
+     * around ~100k rows on V8. Index-writing the array avoids that entirely.
      * @param totalNumber Total number of matching records (used for `lastPage`/URL math).
      * @param perPage Rows per page (clamped to be at least 1).
      * @param currentPage The current page number (clamped to be at least 1).
-     * @param rows The pre-sliced rows for the current page. They are NOT sliced by the paginator.
+     * @param rows The pre-sliced rows for the current page. They are NOT sliced by the paginator. Defaults to an empty array.
      */
-    public constructor(totalNumber: number, perPage: number, currentPage: number, ...rows: T[]) {
+    public constructor(totalNumber: number, perPage: number, currentPage: number, rows: T[] = []) {
         super();
 
-        // Avoid `this.push(...rows)`: spreading rows as call arguments throws
-        // `RangeError: Maximum call stack size exceeded` for large datasets
+        // Avoid spreading `rows` (`super(...rows)` / `this.push(...rows)`): both
+        // throw `RangeError: Maximum call stack size exceeded` for large datasets
         // (~100k rows on V8). Index-write instead — backed by a single store.
         const { length } = rows;
 
