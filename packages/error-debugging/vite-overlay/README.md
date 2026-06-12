@@ -217,10 +217,16 @@ The balloon button can be disabled by setting `showBalloonButton: false` in the 
 
 You can extend the plugin with custom solution finders:
 
+All public option types are exported from the package, so you can type a shared config object or a custom solution finder without reaching into `@visulima/error`:
+
+```typescript
+import type { BalloonConfig, BalloonPosition, OverlayConfig, SolutionFinder, VisulimaViteOverlayOptions } from "@visulima/vite-overlay";
+```
+
 ```typescript
 import { defineConfig } from "vite";
 import errorOverlay from "@visulima/vite-overlay";
-import type { SolutionFinder } from "@visulima/error/solution";
+import type { SolutionFinder } from "@visulima/vite-overlay";
 
 const customSolutionFinder: SolutionFinder = {
     name: "custom-finder",

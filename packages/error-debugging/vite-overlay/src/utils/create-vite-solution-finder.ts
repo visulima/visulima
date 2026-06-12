@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/restrict-template-expressions, @typescript-eslint/require-await, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/prefer-nullish-coalescing */
+/* eslint-disable @typescript-eslint/restrict-template-expressions, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-call, @typescript-eslint/prefer-nullish-coalescing */
 import fs from "node:fs";
 import path from "node:path";
 
@@ -143,55 +143,104 @@ const calculateRelevanceScore = (importBaseName: string, importExtension: string
     return nameDistance <= Math.max(2, Math.floor(importBaseName.length * 0.4)) ? 5 - nameDistance : 0;
 };
 
+/** A single directory entry, reduced to the fields the walk needs (so it is cheap to cache). */
+interface CachedDirent {
+    readonly isDirectory: boolean;
+    readonly isFile: boolean;
+    readonly name: string;
+}
+
+/**
+ * Reads a directory's entries, serving from (and populating) the supplied cache.
+ *
+ * The walk is async (`fs.promises`) so it never blocks the dev-server event loop while
+ * resolving an import error, and listings are memoized per finder instance so repeated
+ * errors in a session re-use the warm cache instead of re-stat'ing the project tree.
+ * @param directory The directory to read
+ * @param cache The per-finder directory-listing cache
+ * @returns The directory's entries (empty if unreadable)
+ */
+const readDirectoryCached = async (directory: string, cache: Map<string, CachedDirent[]>): Promise<CachedDirent[]> => {
+    const cached = cache.get(directory);
+
+    if (cached !== undefined) {
+        return cached;
+    }
+
+    let entries: CachedDirent[];
+
+    try {
+        const dirents = await fs.promises.readdir(directory, { withFileTypes: true });
+
+        entries = dirents.map((dirent) => {
+            return {
+                isDirectory: dirent.isDirectory(),
+                isFile: dirent.isFile(),
+                name: dirent.name,
+            };
+        });
+    } catch {
+        // Skip directories we can't read; cache the empty result so we don't retry them.
+        entries = [];
+    }
+
+    cache.set(directory, entries);
+
+    return entries;
+};
+
 /**
  * Collects file candidates that could match a failed import by walking the directory tree.
  * @param rootDirectory The root directory to search from
  * @param importBaseName The base name of the import being attempted
  * @param importExtension The extension of the import being attempted
+ * @param cache The per-finder directory-listing cache, reused across errors
  * @returns Array of file candidates with relevance scores
  */
-const collectFileCandidates = (rootDirectory: string, importBaseName: string, importExtension: string): FileCandidate[] => {
+const collectFileCandidates = async (
+    rootDirectory: string,
+    importBaseName: string,
+    importExtension: string,
+    cache: Map<string, CachedDirent[]>,
+): Promise<FileCandidate[]> => {
     const candidates: FileCandidate[] = [];
 
-    const walk = (directory: string, depth = 0): void => {
+    const walk = async (directory: string, depth = 0): Promise<void> => {
         if (depth > MAX_SEARCH_DEPTH || candidates.length > MAX_FILES_TO_SEARCH) {
             return;
         }
 
-        try {
-            const entries = fs.readdirSync(directory, { withFileTypes: true });
+        const entries = await readDirectoryCached(directory, cache);
 
-            for (const entry of entries) {
-                if (candidates.length > MAX_FILES_TO_SEARCH) {
-                    break;
-                }
+        for (const entry of entries) {
+            if (candidates.length > MAX_FILES_TO_SEARCH) {
+                break;
+            }
 
-                const fullPath = path.join(directory, entry.name);
+            const fullPath = path.join(directory, entry.name);
 
-                if (entry.isDirectory() && !entry.name.startsWith(".") && entry.name !== "node_modules") {
-                    walk(fullPath, depth + 1);
-                } else if (entry.isFile()) {
-                    const extension = path.extname(entry.name);
-                    const baseName = path.basename(entry.name, extension);
-                    const score = calculateRelevanceScore(importBaseName, importExtension, baseName, extension);
+            if (entry.isDirectory && !entry.name.startsWith(".") && entry.name !== "node_modules") {
+                // eslint-disable-next-line no-await-in-loop
+                await walk(fullPath, depth + 1);
+            } else if (entry.isFile) {
+                const extension = path.extname(entry.name);
+                const baseName = path.basename(entry.name, extension);
+                const score = calculateRelevanceScore(importBaseName, importExtension, baseName, extension);
 
-                    if (score > 0) {
-                        candidates.push({
-                            baseName,
-                            extension,
-                            fullPath,
-                            path: fullPath,
-                            relevanceScore: score,
-                        });
-                    }
+                if (score > 0) {
+                    candidates.push({
+                        baseName,
+                        extension,
+                        fullPath,
+                        path: fullPath,
+                        relevanceScore: score,
+                    });
                 }
             }
-        } catch {
-            // Skip directories we can't read
         }
     };
 
-    walk(rootDirectory);
+    await walk(rootDirectory);
 
     return candidates;
 };
@@ -201,16 +250,17 @@ const collectFileCandidates = (rootDirectory: string, importBaseName: string, im
  * @param importPath The import path that failed
  * @param fromFile The file that attempted the import
  * @param rootDirectory The root directory to search from
+ * @param cache The per-finder directory-listing cache, reused across errors
  * @returns HTML string with file suggestions
  */
-const findSimilarFiles = (importPath: string, fromFile: string, rootDirectory: string): string => {
+const findSimilarFiles = async (importPath: string, fromFile: string, rootDirectory: string, cache: Map<string, CachedDirent[]>): Promise<string> => {
     const importName = path.basename(importPath);
     const importExtension = path.extname(importName);
     const importBaseName = path.basename(importName, importExtension);
 
     const fromDirectory = path.dirname(fromFile);
 
-    const candidates = collectFileCandidates(rootDirectory, importBaseName, importExtension);
+    const candidates = await collectFileCandidates(rootDirectory, importBaseName, importExtension, cache);
 
     const scoredFiles = candidates.map((candidate) => {
         const nameDistance = distance(importBaseName, candidate.baseName);
@@ -399,6 +449,10 @@ const ERROR_PATTERNS = [
  * @returns A solution finder object for Vite-specific error handling
  */
 const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
+    // Directory-listing cache scoped to this finder instance. The plugin builds the finder once
+    // per dev server, so the cache stays warm across errors instead of re-walking the project tree.
+    const directoryCache = new Map<string, CachedDirent[]>();
+
     return {
         // eslint-disable-next-line sonarjs/cognitive-complexity
         async handle(error, context): Promise<Solution | undefined> {
@@ -414,7 +468,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
                 const importPath = importMatch?.[1] || moduleMatch?.[1];
 
                 if (importPath && file) {
-                    const suggestions = findSimilarFiles(importPath, file, rootPath);
+                    const suggestions = await findSimilarFiles(importPath, file, rootPath, directoryCache);
 
                     if (suggestions) {
                         return {
@@ -454,7 +508,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
                     const importPath = relativeImportMatch[1];
 
                     if (importPath && file) {
-                        const suggestions = findSimilarFiles(importPath, file, rootPath);
+                        const suggestions = await findSimilarFiles(importPath, file, rootPath, directoryCache);
 
                         if (suggestions) {
                             return {

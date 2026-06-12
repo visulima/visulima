@@ -5,8 +5,6 @@ import { codeToANSI } from "@shikijs/cli";
 import { getErrorCauses, renderError } from "@visulima/error/error";
 import type { Solution, SolutionFinder } from "@visulima/error/solution";
 import { errorHintFinder, ruleBasedFinder } from "@visulima/error/solution";
-// eslint-disable-next-line import/no-extraneous-dependencies
-import { parse } from "marked";
 import type { IndexHtmlTransformResult, Plugin, PluginOption, TransformOptions, ViteDevServer, WebSocketClient } from "vite";
 
 import findLanguageBasedOnExtension from "../../../../shared/utils/find-language-based-on-extension";
@@ -25,6 +23,7 @@ import createViteSolutionFinder from "./utils/create-vite-solution-finder";
 import enhanceViteSsrError from "./utils/enhance-vite-ssr-error";
 import buildExtendedErrorData from "./utils/error-processing";
 import generateClientScript from "./utils/generate-client-script";
+import renderSafeMarkdown from "./utils/render-safe-markdown";
 import { absolutizeStackUrls, cleanErrorStack } from "./utils/stack-trace";
 
 const AT_PAREN_FRAME_RE = /at\s+[^(\s]+\s*\(([^:)]+):(\d+):(\d+)\)/;
@@ -215,8 +214,12 @@ const findSolution = async (error: ExtendedError, solutionFinders: SolutionFinde
                 continue;
             }
 
-            const parsedHeader = await parse(result.header ?? "");
-            const parsedBody = await parse(result.body ?? "");
+            // Solution finders may return raw, error-derived (attacker-influenceable) markdown.
+            // The rendered HTML is injected into the dev overlay via `innerHTML`, so it must be
+            // sanitized — `renderSafeMarkdown` strips raw HTML and unsafe-scheme links while
+            // preserving code blocks, inline code, lists, and safe links.
+            const parsedHeader = await renderSafeMarkdown(result.header ?? "");
+            const parsedBody = await renderSafeMarkdown(result.body ?? "");
 
             hint = {
                 body: parsedBody,
