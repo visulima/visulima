@@ -3,19 +3,36 @@ import type { IncomingMessage, ServerResponse } from "node:http";
 import { Accepts } from "@tinyhttp/accepts";
 
 import { jsonErrorHandler } from "./json-error-handler";
-import jsonapiErrorHandler from "./jsonapi-error-handler";
 import { jsonpErrorHandler } from "./jsonp-error-handler";
 import problemErrorHandler from "./problem-error-handler";
 import { textErrorHandler } from "./text-error-handler";
 import type { ErrorHandler, ErrorHandlers } from "./types";
-import { xmlErrorHandler } from "./xml-error-handler";
 
 // These formatters take no options, so their handler factories are pure and can
 // be instantiated once at module load rather than on every request.
 const defaultJsonpHandler = jsonpErrorHandler();
 const defaultJsonHandler = jsonErrorHandler();
-const defaultXmlHandler = xmlErrorHandler();
 const defaultTextHandler = textErrorHandler();
+
+// The JSON:API and XML formatters pull in `ts-japi` and `jstoxml` respectively.
+// They are loaded lazily — only when a request actually negotiates one of those
+// content types — so a JSON-only consumer of this handler never pays the
+// startup cost of parsing those libraries (notably on Cloudflare/Deno cold
+// starts). The resolved singleton is memoised after the first use.
+let jsonapiHandlerPromise: Promise<ErrorHandler> | undefined;
+let xmlHandlerPromise: Promise<ErrorHandler> | undefined;
+
+const loadJsonapiHandler = async (): Promise<ErrorHandler> => {
+    jsonapiHandlerPromise ??= import("./jsonapi-error-handler").then((module) => module.default);
+
+    return jsonapiHandlerPromise;
+};
+
+const loadXmlHandler = async (): Promise<ErrorHandler> => {
+    xmlHandlerPromise ??= import("./xml-error-handler").then((module) => module.xmlErrorHandler());
+
+    return xmlHandlerPromise;
+};
 
 /**
  * Apply the `expose` flag (which controls whether stack traces leak into the
@@ -91,13 +108,13 @@ const createNegotiatedErrorHandler
                         break;
                     }
                     case "application/vnd.api+json": {
-                        errorHandler = jsonapiErrorHandler;
+                        errorHandler = await loadJsonapiHandler();
 
                         break;
                     }
                     case "application/xml":
                     case "text/xml": {
-                        errorHandler = defaultXmlHandler;
+                        errorHandler = await loadXmlHandler();
 
                         break;
                     }

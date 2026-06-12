@@ -97,6 +97,36 @@ describe("httpHandler handler", () => {
         expect(Object.hasOwn(data, "trace")).toBe(false);
     });
 
+    it("omits trace by default in production (NODE_ENV=production, showTrace unset)", async () => {
+        expect.assertions(2);
+
+        const previousNodeEnv = process.env.NODE_ENV;
+
+        process.env.NODE_ENV = "production";
+
+        try {
+            const error = new Error("Secret stack");
+            // No explicit showTrace -> defaults to NODE_ENV !== "production" -> false.
+            const handler = httpHandler(error);
+
+            const { req, res } = createMocks({
+                headers: { accept: "application/problem+json" },
+                method: "GET",
+            });
+
+            await handler(req, res);
+
+            // eslint-disable-next-line no-underscore-dangle
+            const data = JSON.parse(res._getData());
+
+            expect(data.detail).toBe("Secret stack");
+            // The stack trace must not leak to clients in production by default.
+            expect(Object.hasOwn(data, "trace")).toBe(false);
+        } finally {
+            process.env.NODE_ENV = previousNodeEnv;
+        }
+    });
+
     it("returns Problem JSON when Accept is application/json", async () => {
         expect.assertions(2);
 

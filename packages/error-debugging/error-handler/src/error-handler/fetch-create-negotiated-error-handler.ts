@@ -1,12 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import { jsonErrorHandler } from "./json-error-handler";
-import jsonapiErrorHandler from "./jsonapi-error-handler";
 import { jsonpErrorHandler } from "./jsonp-error-handler";
 import problemErrorHandler from "./problem-error-handler";
 import { textErrorHandler } from "./text-error-handler";
 import type { ErrorHandler, FetchErrorHandlers } from "./types";
-import { xmlErrorHandler } from "./xml-error-handler";
 
 type HeaderValue = string | number | string[];
 
@@ -191,9 +189,28 @@ const adaptErrorHandlerToFetch
 const fetchJsonpHandler = adaptErrorHandlerToFetch(jsonpErrorHandler());
 const fetchJsonHandler = adaptErrorHandlerToFetch(jsonErrorHandler());
 const fetchProblemHandler = adaptErrorHandlerToFetch(problemErrorHandler);
-const fetchJsonapiHandler = adaptErrorHandlerToFetch(jsonapiErrorHandler);
-const fetchXmlHandler = adaptErrorHandlerToFetch(xmlErrorHandler());
 const fetchTextHandler = adaptErrorHandlerToFetch(textErrorHandler());
+
+type FetchErrorHandler = (error: Error, request: Request) => Promise<Response>;
+
+// The JSON:API and XML formatters pull in `ts-japi` and `jstoxml`. They are
+// loaded (and adapted to Fetch) lazily, only when a request actually negotiates
+// one of those content types, so JSON-only edge/worker consumers never pay the
+// startup cost of parsing those libraries. The adapted singleton is memoised.
+let fetchJsonapiHandlerPromise: Promise<FetchErrorHandler> | undefined;
+let fetchXmlHandlerPromise: Promise<FetchErrorHandler> | undefined;
+
+const loadFetchJsonapiHandler = async (): Promise<FetchErrorHandler> => {
+    fetchJsonapiHandlerPromise ??= import("./jsonapi-error-handler").then((module) => adaptErrorHandlerToFetch(module.default));
+
+    return fetchJsonapiHandlerPromise;
+};
+
+const loadFetchXmlHandler = async (): Promise<FetchErrorHandler> => {
+    fetchXmlHandlerPromise ??= import("./xml-error-handler").then((module) => adaptErrorHandlerToFetch(module.xmlErrorHandler()));
+
+    return fetchXmlHandlerPromise;
+};
 
 /**
  * Apply the `expose` flag without permanently mutating the caller's error
@@ -254,12 +271,12 @@ const createFetchNegotiatedErrorHandler
                         break;
                     }
                     case "application/vnd.api+json": {
-                        fetchErrorHandler = fetchJsonapiHandler;
+                        fetchErrorHandler = await loadFetchJsonapiHandler();
 
                         break;
                     }
                     case "application/xml": {
-                        fetchErrorHandler = fetchXmlHandler;
+                        fetchErrorHandler = await loadFetchXmlHandler();
 
                         break;
                     }

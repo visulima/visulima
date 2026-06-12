@@ -130,7 +130,7 @@ app.get("/error", () => {
 });
 
 app.onError(async (error, c) => {
-    const handler = await fetchHandler(error as Error, {
+    const handler = fetchHandler(error as Error, {
         showTrace: process.env.NODE_ENV !== "production",
     });
     return handler(c.req.raw);
@@ -150,7 +150,7 @@ export default {
         try {
             throw new Error("Boom");
         } catch (error) {
-            const handler = await fetchHandler(error as Error, {
+            const handler = fetchHandler(error as Error, {
                 showTrace: process.env.NODE_ENV !== "production",
             });
             return handler(request);
@@ -167,7 +167,7 @@ Deno.serve(async (request: Request) => {
     try {
         throw new Error("Boom");
     } catch (error) {
-        const handler = await fetchHandler(error as Error, {
+        const handler = fetchHandler(error as Error, {
             showTrace: process.env.NODE_ENV !== "production",
         });
         return handler(request);
@@ -193,7 +193,7 @@ Add custom handlers for specific content types:
 ```ts
 import httpHandler from "@visulima/error-handler/handler/http/node";
 
-const handler = await httpHandler(error, {
+const handler = httpHandler(error, {
     extraHandlers: [
         {
             regex: /application\/yaml/u,
@@ -208,9 +208,11 @@ const handler = await httpHandler(error, {
 
 ## API
 
-### httpHandler(error, options?) => Promise<(req, res) => Promise<void>>
+### httpHandler(error, options?) => (req, res) => Promise<void>
 
 Node.js HTTP handler for Express, Connect, Fastify, Koa, and similar frameworks.
+The factory is synchronous and returns the `(req, res)` request handler — do not
+`await` it.
 
 **Parameters:**
 
@@ -219,15 +221,16 @@ Node.js HTTP handler for Express, Connect, Fastify, Koa, and similar frameworks.
 
 **Options:**
 
-- `showTrace?: boolean` - Include stack trace in responses (default: `true`)
+- `showTrace?: boolean` - Include stack trace in responses (default: `process.env.NODE_ENV !== "production"`)
 - `extraHandlers?: ErrorHandlers` - Custom handlers for specific Accept headers
 - `errorPage?: string | ((params) => string | Promise<string>)` - Custom HTML error page
 - `cspNonce?: string` - Content Security Policy nonce for inline styles
 - `onError?: (error, request, response) => void | Promise<void>` - Callback for custom error logging
 
-### fetchHandler(error, options?) => Promise<(request) => Promise<Response>>
+### fetchHandler(error, options?) => (request) => Promise<Response>
 
 Fetch API handler for Cloudflare Workers, Deno, Bun, and other Fetch-based runtimes.
+Like `httpHandler`, the factory is synchronous — do not `await` it.
 
 **Parameters:**
 
@@ -279,7 +282,7 @@ const server = createServer(async (req, res) => {
     try {
         throw new Error("Test error");
     } catch (error) {
-        const handler = await httpHandler(error as Error, {
+        const handler = httpHandler(error as Error, {
             showTrace: process.env.NODE_ENV !== "production",
         });
         return handler(req, res);
@@ -292,7 +295,7 @@ const server = createServer(async (req, res) => {
 ```ts
 import httpHandler from "@visulima/error-handler/handler/http/node";
 
-const handler = await httpHandler(error, {
+const handler = httpHandler(error, {
     errorPage: ({ error, statusCode }) =>
         `<!DOCTYPE html>
         <html>
@@ -311,7 +314,7 @@ const handler = await httpHandler(error, {
 ```ts
 import httpHandler from "@visulima/error-handler/handler/http/node";
 
-const handler = await httpHandler(error, {
+const handler = httpHandler(error, {
     cspNonce: "nonce-abc123", // Will be added to <style> tags
     showTrace: process.env.NODE_ENV !== "production",
 });
@@ -322,7 +325,7 @@ const handler = await httpHandler(error, {
 ```ts
 import httpHandler from "@visulima/error-handler/handler/http/node";
 
-const handler = await httpHandler(error, {
+const handler = httpHandler(error, {
     onError: (error, request, response) => {
         // Log to your preferred logging service
         console.error(`[${new Date().toISOString()}] ${request.method} ${request.url} - ${error.message}`);

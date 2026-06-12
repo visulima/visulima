@@ -62,6 +62,38 @@ describe("jsonp-error-handler with normal Error", () => {
         expect(body.endsWith(");")).toBe(true);
     });
 
+    it("rejects an unsafe callback name and falls back to the default", async () => {
+        expect.assertions(2);
+
+        // A request-controlled callback carrying executable JS / non-identifier
+        // characters must never be echoed into the response body.
+        const { req, res } = createMocks({ method: "GET", url: "/?callback=alert(1)//" });
+
+        await jsonpErrorHandler()(new Error("boom"), req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const body = res._getData() as string;
+
+        // The malicious callback is dropped in favour of the safe default.
+        expect(body.startsWith("/**/ typeof callback === 'function' && callback(")).toBe(true);
+        expect(body).not.toContain("alert(1)");
+    });
+
+    it("rejects an over-long callback name and falls back to the default", async () => {
+        expect.assertions(1);
+
+        const longName = "a".repeat(65);
+        const { req, res } = createMocks({ method: "GET", url: `/?callback=${longName}` });
+
+        await jsonpErrorHandler()(new Error("boom"), req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const body = res._getData() as string;
+
+        // Names longer than 64 chars are rejected to bound the response surface.
+        expect(body.startsWith("/**/ typeof callback === 'function' && callback(")).toBe(true);
+    });
+
     it("falls back to the reason phrase when the error message is empty", async () => {
         expect.assertions(1);
 
