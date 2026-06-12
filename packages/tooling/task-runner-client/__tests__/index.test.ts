@@ -254,6 +254,27 @@ describe("task-runner-client", () => {
 
                 delete process.env["TRC_CLEAN"];
             });
+
+            it("neutralizes a reserved __proto__ key without polluting the prototype", () => {
+                expect.assertions(3);
+
+                // A `__proto__`-named env var must land as an own data property
+                // (via the Map + Object.fromEntries materialization), never as a
+                // setter invocation that rewrites the result's prototype.
+                // The key is held in a variable so the literal never appears in
+                // the source (eslint no-proto / no-restricted-properties).
+                const reserved = "__proto__";
+
+                process.env[reserved] = "polluted";
+
+                const result = getEnvs(reserved, { tracked: false });
+
+                expect(Object.getPrototypeOf(result)).toBe(Object.prototype);
+                expect(Object.hasOwn(result, reserved)).toBe(true);
+                expect(({} as Record<string, unknown>)["polluted"]).toBeUndefined();
+
+                delete process.env[reserved];
+            });
         });
     });
 });
