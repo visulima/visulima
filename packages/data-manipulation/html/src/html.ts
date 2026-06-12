@@ -75,18 +75,18 @@ function html(strings: TemplateStringsArray, ...values: unknown[]): string;
 /**
  * Function overload for HTML with explicit escaping control.
  *
- * Note: unlike the template-tag form, this overload returns the input **unescaped**
- * unless `shouldEscape` is `true`. Prefer the template tag for untrusted data; reach
- * for this form only when you already trust `value`.
+ * Escapes by default (attribute-safe), matching the template-tag form. Pass
+ * `shouldEscape: false` to opt out and return the input verbatim — only do this
+ * for HTML you already trust or have sanitized, since it disables XSS protection.
  * @param value The HTML string to process
- * @param shouldEscape When `true`, escapes HTML. When `false`/omitted, returns the input as-is (unsafe for untrusted input).
+ * @param shouldEscape When `true`/omitted, escapes HTML. When `false`, returns the input as-is (unsafe for untrusted input).
  * @returns The processed HTML string
+ * @example
+ * html('<script>alert("xss")</script>')
+ * // => '&lt;script>alert(&quot;xss&quot;)&lt;/script>'
  * @example
  * html('<div></div>', false)
  * // => '<div></div>'
- * @example
- * html('<script>alert("xss")</script>', true)
- * // => '&lt;script>alert(&quot;xss&quot;)&lt;/script>'
  */
 function html(value: string, shouldEscape?: boolean): string;
 
@@ -106,11 +106,12 @@ function html(stringsOrValue: TemplateStringsArray | string, ...valuesOrEscape: 
     const value = stringsOrValue as string;
     const shouldEscape = valuesOrEscape[0] as boolean | undefined;
 
-    if (shouldEscape === true) {
-        return escapeHtml(value, true);
+    // Escape by default; only an explicit `false` opts out (verbatim passthrough).
+    if (shouldEscape === false) {
+        return value;
     }
 
-    return value;
+    return escapeHtml(value, true);
 }
 
 /**
