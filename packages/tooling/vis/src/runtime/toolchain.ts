@@ -12,9 +12,13 @@
 import { execFileSync } from "node:child_process";
 import { randomBytes } from "node:crypto";
 import { renameSync, unlinkSync, writeFileSync as fsWriteFileSync } from "node:fs";
+// `delimiter` must be the platform-aware PATH separator (";" on Windows):
+// @visulima/path hardcodes ":", which would split Windows drive letters
+// (e.g. "C:/tools") and break PATH scanning. node:path gets it right.
+import { delimiter } from "node:path";
 
 import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
-import { delimiter, join, sep } from "@visulima/path";
+import { join, sep } from "@visulima/path";
 
 /**
  * Managers vis can auto-detect and delegate to. Kept as a single source
