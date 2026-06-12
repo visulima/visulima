@@ -23,6 +23,25 @@ const resolveReplacement = (modifier: InternalAnonymize, value: unknown, path: s
     return modifier.replacement;
 };
 
+// Does `modifier` target the immediate key `lowerKey` (or its dot-path `currentIdentifier`)?
+const modifierMatchesKey = (modifier: InternalAnonymize, lowerKey: string, currentIdentifier: string): boolean => {
+    if (modifier.wildcard) {
+        return wildcard(lowerKey, modifier.key) || wildcard(currentIdentifier, modifier.key);
+    }
+
+    return lowerKey === modifier.key;
+};
+
+const applyMatch = (copy: Record<string, unknown>, key: string, modifier: InternalAnonymize, currentIdentifier: string): void => {
+    if (modifier.remove) {
+        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-dynamic-delete
+        delete copy[key];
+    } else {
+        // eslint-disable-next-line no-param-reassign
+        copy[key] = resolveReplacement(modifier, copy[key], currentIdentifier);
+    }
+};
+
 const recursivelyFilterAttributes = (
     copy: Record<string, unknown>,
     examinedObjects: WeakMap<object, unknown>,
@@ -32,39 +51,68 @@ const recursivelyFilterAttributes = (
     identifier?: string,
     // eslint-disable-next-line sonarjs/cognitive-complexity
 ): void => {
+    // Single traversal: every node and every nested string is visited exactly once and is
+    // evaluated against ALL surviving rules in one pass, instead of the previous
+    // O(rules x nodes) re-walk (which recursed the whole subtree once per rule and so re-ran
+    // the expensive string-anonymizer up to one time per rule on every leaf string).
+    //
+    // Per the original semantics, a plain (non-wildcard, non-deep) key rule whose key resolves
+    // on THIS node via `hasProperty` is applied here and does NOT descend any further — it must
+    // not also redact same-named keys nested deeper. Such "consumed" rules are excluded from the
+    // rule set forwarded into child recursion. Wildcard and `deep` rules always propagate down.
+    const childRules: InternalAnonymize[] = [];
+    const directPathModifiers: InternalAnonymize[] = [];
+
     for (const modifier of rules) {
-        // Fast direct (possibly dotted) path match for plain rules: a non-wildcard, non-deep rule
-        // whose key resolves on this node is applied here and does NOT recurse, so a more specific
-        // dotted rule (e.g. "user.password") is never overridden by a broad key rule.
         if (!modifier.wildcard && !modifier.deep && hasProperty(copy, modifier.key)) {
-            if (modifier.remove) {
-                deleteProperty(copy, modifier.key);
-            } else {
-                setProperty(copy, modifier.key, resolveReplacement(modifier, getProperty(copy, modifier.key), modifier.key));
-            }
+            // Resolves on this node (a top-level key or a dotted path) — apply here, do not recurse.
+            directPathModifiers.push(modifier);
         } else {
-            const keys = Object.keys(copy);
+            childRules.push(modifier);
+        }
+    }
 
-            for (const key of keys) {
-                const lowerKey = key.toLowerCase();
-                const currentIdentifier = identifier ? `${identifier}.${lowerKey}` : lowerKey;
+    const keys = Object.keys(copy);
 
-                if (
-                    (!modifier.wildcard && lowerKey === modifier.key) ||
-                    (modifier.wildcard && (wildcard(lowerKey, modifier.key) || wildcard(currentIdentifier, modifier.key)))
-                ) {
-                    if (modifier.remove) {
-                        // eslint-disable-next-line no-param-reassign,@typescript-eslint/no-dynamic-delete
-                        delete copy[key];
-                    } else {
-                        // eslint-disable-next-line no-param-reassign
-                        copy[key] = resolveReplacement(modifier, copy[key], currentIdentifier);
-                    }
-                } else if (Object.hasOwn(copy, key)) {
-                    // eslint-disable-next-line @typescript-eslint/no-use-before-define,no-param-reassign
-                    copy[key] = recursiveFilter(copy[key], examinedObjects, saveCopy, [modifier], options, currentIdentifier);
-                }
+    for (const key of keys) {
+        if (!Object.hasOwn(copy, key)) {
+            continue;
+        }
+
+        const lowerKey = key.toLowerCase();
+        const currentIdentifier = identifier ? `${identifier}.${lowerKey}` : lowerKey;
+
+        // Last matching child rule (in array order) wins for this immediate key.
+        let matched: InternalAnonymize | undefined;
+
+        for (const modifier of childRules) {
+            if (modifierMatchesKey(modifier, lowerKey, currentIdentifier)) {
+                matched = modifier;
             }
+        }
+
+        if (matched) {
+            applyMatch(copy, key, matched, currentIdentifier);
+        } else {
+            // Recurse ONCE with the forwarded rule set, so each nested string hits the
+            // string-anonymizer a single time evaluating all deep/pattern rules together.
+            // eslint-disable-next-line @typescript-eslint/no-use-before-define,no-param-reassign
+            copy[key] = recursiveFilter(copy[key], examinedObjects, saveCopy, childRules, options, currentIdentifier);
+        }
+    }
+
+    // Apply direct (top-level or dotted) path rules after the per-key/recursion pass so a more
+    // specific dotted rule (e.g. "user.password") still wins over a broad rule applied while
+    // recursing — preserving the original "more specific dotted rule wins" behaviour.
+    for (const modifier of directPathModifiers) {
+        if (!hasProperty(copy, modifier.key)) {
+            continue;
+        }
+
+        if (modifier.remove) {
+            deleteProperty(copy, modifier.key);
+        } else {
+            setProperty(copy, modifier.key, resolveReplacement(modifier, getProperty(copy, modifier.key), modifier.key));
         }
     }
 };
@@ -303,10 +351,10 @@ const prepareModifiers = (rules: Rules, options?: RedactOptions): InternalAnonym
 
     for (const modifier of rules) {
         if (
-            options?.exclude &&
-            ((typeof modifier === "string" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "number" && options.exclude.includes(modifier)) ||
-                (typeof modifier === "object" && options.exclude.includes(modifier.key)))
+            options?.exclude
+            && ((typeof modifier === "string" && options.exclude.includes(modifier))
+                || (typeof modifier === "number" && options.exclude.includes(modifier))
+                || (typeof modifier === "object" && options.exclude.includes(modifier.key)))
         ) {
             continue;
         }
@@ -425,7 +473,7 @@ export const redact = <V>(input: V, rules: Rules, options?: RedactOptions): V =>
  * @param options Optional settings applied at compile time (`exclude`) and per call (`logger`).
  * @returns A function `(input) => redactedCopy`.
  */
-export const createRedactor = (rules: Rules, options?: RedactOptions): (<V>(input: V) => V) => {
+export const createRedactor = (rules: Rules, options?: RedactOptions): <V>(input: V) => V => {
     const preparedModifiers = prepareModifiers(rules, options);
 
     return <V>(input: V): V => runRedact(input, preparedModifiers, options);
