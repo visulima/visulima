@@ -34,6 +34,73 @@ describe("checkBannedWords options", () => {
         expect(zhOnly.hasBannedWords).toBe(true);
         expect(jaOnly.matches.every((m) => m.language === "ja")).toBe(true);
     });
+
+    it("suppresses a flagged word via the allowlist", () => {
+        expect.assertions(3);
+
+        const withList = checkBannedWords("this is fuck", { allowlist: ["fuck"] });
+        const without = checkBannedWords("this is fuck");
+
+        expect(withList.hasBannedWords).toBe(false);
+        expect(withList.matches).toStrictEqual([]);
+        expect(without.hasBannedWords).toBe(true);
+    });
+
+    it("matches the allowlist case-insensitively", () => {
+        expect.assertions(1);
+
+        const result = checkBannedWords("this is FuCk", { allowlist: ["FUCK"] });
+
+        expect(result.hasBannedWords).toBe(false);
+    });
+
+    it("flags extra terms supplied via customWords", () => {
+        expect.assertions(3);
+
+        const withCustom = checkBannedWords("please do not frobnicate", { customWords: ["frobnicate"] });
+        const without = checkBannedWords("please do not frobnicate");
+
+        expect(withCustom.hasBannedWords).toBe(true);
+        expect(without.hasBannedWords).toBe(false);
+        // the custom term is reported under the synthetic "custom" language
+        expect(withCustom.matches.some((m) => m.word === "frobnicate" && m.language === "custom")).toBe(true);
+    });
+
+    it("still flags built-in words when customWords are supplied", () => {
+        expect.assertions(1);
+
+        const result = checkBannedWords("this is fuck", { customWords: ["frobnicate"] });
+
+        expect(result.hasBannedWords).toBe(true);
+    });
+
+    it("always scans customWords even when languages is restricted", () => {
+        expect.assertions(2);
+
+        const result = checkBannedWords("please do not frobnicate", { customWords: ["frobnicate"], languages: ["en"] });
+
+        expect(result.hasBannedWords).toBe(true);
+        expect(result.matches.some((m) => m.word === "frobnicate")).toBe(true);
+    });
+
+    it("allowlist and customWords can be combined", () => {
+        expect.assertions(2);
+
+        const result = checkBannedWords("frobnicate and fuck", { allowlist: ["fuck"], customWords: ["frobnicate"] });
+
+        expect(result.matches.some((m) => m.word === "frobnicate")).toBe(true);
+        expect(result.matches.some((m) => m.word.toLowerCase() === "fuck")).toBe(false);
+    });
+
+    it("treats empty allowlist/customWords arrays as the default behaviour", () => {
+        expect.assertions(2);
+
+        const baseline = checkBannedWords("this is fuck");
+        const withEmpties = checkBannedWords("this is fuck", { allowlist: [], customWords: [] });
+
+        expect(withEmpties.hasBannedWords).toBe(baseline.hasBannedWords);
+        expect(withEmpties.matches).toStrictEqual(baseline.matches);
+    });
 });
 
 describe(censorText, () => {

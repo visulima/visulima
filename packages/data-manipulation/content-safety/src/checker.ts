@@ -108,11 +108,34 @@ export type BannedWordDictionary = Record<string, ReadonlyArray<BannedWordEntry 
 // eslint-disable-next-line import/exports-last
 export interface CheckOptions {
     /**
+     * Words (or phrases) that should never be reported even if they appear in a dictionary.
+     * @remarks
+     * Solves the "Scunthorpe problem": a domain-specific term that collides with a banned
+     * entry can be allowlisted so it is silently ignored. Matched case-insensitively.
+     *
+     * Supplying this (or {@link CheckOptions.customWords}) builds a one-off checker for the
+     * call, so prefer {@link createChecker} when the same allowlist is reused across many calls.
+     */
+    allowlist?: ReadonlyArray<string>;
+
+    /**
+     * Extra words (or phrases) to flag in addition to the built-in dictionaries.
+     * @remarks
+     * Added under a synthetic `"custom"` language and always scanned regardless of the
+     * {@link CheckOptions.languages} restriction (you opted into them explicitly). Matched
+     * case-insensitively. Supplying this builds a one-off checker for the call, so prefer
+     * {@link createChecker} when the same custom words are reused across many calls.
+     */
+    customWords?: ReadonlyArray<string>;
+
+    /**
      * Restrict matching to the given language codes (e.g. `["en", "de"]`).
      * @remarks
      * When omitted (or empty) every configured language is checked. Restricting languages
      * avoids cross-language false positives — an English-only app does not want Latin
      * transliterations from the Russian or Arabic lists matching its content.
+     *
+     * Has no effect on {@link CheckOptions.customWords}, which are always scanned.
      */
     languages?: ReadonlyArray<string>;
 }
@@ -302,12 +325,20 @@ const tokenize = (lowerNormalized: string): Token[] => {
     return tokens;
 };
 
+/**
+ * Synthetic language code under which {@link CheckOptions.customWords} are registered.
+ * Always passes the {@link CheckOptions.languages} filter so explicitly-supplied custom
+ * words are never narrowed away.
+ * @internal
+ */
+const CUSTOM_LANGUAGE = "custom";
+
 const allowedLanguages = (options?: CheckOptions): ReadonlySet<string> | undefined => {
     if (!options?.languages || options.languages.length === 0) {
         return undefined;
     }
 
-    return new Set(options.languages);
+    return new Set([...options.languages, CUSTOM_LANGUAGE]);
 };
 
 const toMatch = (meta: EntryMeta, startIndex: number, endIndex: number, word: string): BannedWordMatch => {
@@ -544,6 +575,26 @@ const getDefaultChecker = (): Checker => {
 };
 
 /**
+ * Resolves the {@link Checker} for a one-off {@link checkBannedWords}/{@link censorText} call.
+ * When no per-call `allowlist`/`customWords` are supplied the cached default checker is reused
+ * (keeping the default path byte-for-byte identical); otherwise a fresh checker is built that
+ * layers the custom words and allowlist over the built-in dictionaries.
+ * @internal
+ */
+const resolveChecker = (options?: CheckOptions): Checker => {
+    const allowlist = options?.allowlist;
+    const customWords = options?.customWords;
+
+    if ((allowlist === undefined || allowlist.length === 0) && (customWords === undefined || customWords.length === 0)) {
+        return getDefaultChecker();
+    }
+
+    const words: BannedWordDictionary = customWords && customWords.length > 0 ? { ...BANNED_WORDS, [CUSTOM_LANGUAGE]: customWords } : BANNED_WORDS;
+
+    return createChecker({ allowlist, words });
+};
+
+/**
  * Checks text for banned words across the configured languages.
  * @param text The text to check for banned words.
  * @param options Optional {@link CheckOptions} (e.g. restrict the languages checked).
@@ -561,7 +612,10 @@ const getDefaultChecker = (): Checker => {
  * For performance, CJK scripts (Chinese, Japanese, Korean) use substring matching
  * without word boundaries, while all other scripts use tokenized word-boundary matching.
  *
- * For custom dictionaries, allowlists, or `category`/`severity` metadata, use {@link createChecker}.
+ * Pass `options.allowlist` to suppress specific false positives (the Scunthorpe problem) and
+ * `options.customWords` to flag extra terms in addition to the built-in lists. Both build a
+ * one-off checker per call — for repeated use of the same custom dictionary, `category`/`severity`
+ * metadata, or a stable allowlist, prefer {@link createChecker}.
  * To mask matches in one call, use {@link censorText}.
  * @example
  * Basic usage:
@@ -579,7 +633,7 @@ const getDefaultChecker = (): Checker => {
  * ```
  * @public
  */
-export const checkBannedWords = (text: string, options?: CheckOptions): BannedWordsResult => getDefaultChecker().check(text, options);
+export const checkBannedWords = (text: string, options?: CheckOptions): BannedWordsResult => resolveChecker(options).check(text, options);
 
 /**
  * Censors banned words in the given text by masking each matched character.
@@ -598,4 +652,4 @@ export const checkBannedWords = (text: string, options?: CheckOptions): BannedWo
  * ```
  * @public
  */
-export const censorText = (text: string, options?: CensorOptions): string => getDefaultChecker().censor(text, options);
+export const censorText = (text: string, options?: CensorOptions): string => resolveChecker(options).censor(text, options);
