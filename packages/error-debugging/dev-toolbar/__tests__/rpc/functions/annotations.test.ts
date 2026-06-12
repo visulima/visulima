@@ -6,7 +6,14 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
 
 import { createAnnotation, deleteAnnotation, getAnnotations, getScreenshot, saveScreenshot, updateAnnotation } from "../../../src/rpc/functions/annotations";
-import { resolvePaths, writeAnnotations } from "../../../src/store/annotation-store";
+import {
+    MAX_ANNOTATIONS,
+    MAX_TEXT_FIELD_LENGTH,
+    MAX_THREAD_MESSAGES,
+    readAnnotations,
+    resolvePaths,
+    writeAnnotations,
+} from "../../../src/store/annotation-store";
 
 // Mock ViteDevServer
 const makeServer = (root: string) => ({ config: { root } }) as Parameters<typeof getAnnotations>[0];
@@ -348,6 +355,122 @@ describe("rpc/functions/annotations", () => {
             const result = await getScreenshot(server, "evil-id");
 
             expect(result).toBeNull();
+        });
+    });
+
+    describe("unbounded-growth guards (DoS)", () => {
+        const makeAnnotation = (id: string, overrides: Record<string, unknown> = {}) => {
+            return {
+                comment: `c-${id}`,
+                createdAt: "",
+                elementTag: "div",
+                id: `seed-${id}`,
+                intent: "fix",
+                severity: "important",
+                status: "pending",
+                updatedAt: "",
+                url: "/",
+                x: 0,
+                y: 0,
+                ...overrides,
+            };
+        };
+
+        it("rejects creating an annotation once the cap is reached", async () => {
+            expect.assertions(2);
+
+            const seeded = Array.from({ length: MAX_ANNOTATIONS }, (_, index) => makeAnnotation(String(index)));
+
+            await writeAnnotations(tmpDir, seeded as never[]);
+
+            await expect(
+                createAnnotation(server, {
+                    comment: "over the limit",
+                    elementTag: "div",
+                    intent: "fix",
+                    severity: "important",
+                    url: "/",
+                    x: 0,
+                    y: 0,
+                }),
+            ).rejects.toThrow(/Annotation limit reached/);
+
+            // No new annotation was persisted beyond the cap.
+            const all = await getAnnotations(server);
+
+            expect(all).toHaveLength(MAX_ANNOTATIONS);
+        });
+
+        it("clamps oversized free-text fields on create", async () => {
+            expect.assertions(2);
+
+            const huge = "x".repeat(MAX_TEXT_FIELD_LENGTH + 50);
+
+            const result = await createAnnotation(server, {
+                comment: huge,
+                elementTag: "div",
+                intent: "fix",
+                severity: "important",
+                url: "/",
+                x: 0,
+                y: 0,
+            });
+
+            expect(result.comment).toHaveLength(MAX_TEXT_FIELD_LENGTH);
+            expect(result.comment.startsWith("x")).toBe(true);
+        });
+
+        it("rejects appending a thread message once the cap is reached", async () => {
+            expect.assertions(1);
+
+            const thread = Array.from({ length: MAX_THREAD_MESSAGES }, (_, index) => {
+                return {
+                    content: `m-${String(index)}`,
+                    id: `t-${String(index)}`,
+                    role: "human",
+                    timestamp: "",
+                };
+            });
+
+            await writeAnnotations(tmpDir, [makeAnnotation("0", { thread })] as never[]);
+
+            await expect(
+                updateAnnotation(server, "seed-0", {
+                    threadMessage: { content: "one too many", role: "human", timestamp: "" },
+                }),
+            ).rejects.toThrow(/Thread message limit reached/);
+        });
+
+        it("clamps oversized thread message content on append", async () => {
+            expect.assertions(1);
+
+            await writeAnnotations(tmpDir, [makeAnnotation("0")] as never[]);
+
+            const huge = "y".repeat(MAX_TEXT_FIELD_LENGTH + 50);
+
+            const result = await updateAnnotation(server, "seed-0", {
+                threadMessage: { content: huge, role: "human", timestamp: "" },
+            });
+
+            expect(result?.thread?.[0]?.content).toHaveLength(MAX_TEXT_FIELD_LENGTH);
+        });
+
+        it("truncates oversized on-disk data when reading", async () => {
+            expect.assertions(2);
+
+            const oversizedThread = Array.from({ length: MAX_THREAD_MESSAGES + 10 }, () => {
+                return { content: "m", role: "human", timestamp: "" };
+            });
+
+            const seeded = Array.from({ length: MAX_ANNOTATIONS + 10 }, (_, index) =>
+                makeAnnotation(String(index), index === 0 ? { thread: oversizedThread } : {}));
+
+            await writeAnnotations(tmpDir, seeded as never[]);
+
+            const result = await readAnnotations(tmpDir);
+
+            expect(result).toHaveLength(MAX_ANNOTATIONS);
+            expect(result[0]?.thread).toHaveLength(MAX_THREAD_MESSAGES);
         });
     });
 });

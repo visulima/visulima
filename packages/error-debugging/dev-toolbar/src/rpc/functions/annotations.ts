@@ -4,9 +4,12 @@ import path from "node:path";
 import type { ViteDevServer } from "vite";
 
 import {
+    clampTextField,
     deleteScreenshotFile,
     ensureStoreDir,
     isPathInsideBase,
+    MAX_ANNOTATIONS,
+    MAX_THREAD_MESSAGES,
     readAnnotations,
     resolvePaths,
     sanitizeId,
@@ -30,28 +33,36 @@ export const createAnnotation = async (server: ViteDevServer, data: CreateAnnota
         const { root } = server.config;
         const now = new Date().toISOString();
 
-        // Explicitly pick only the fields we expect — never spread untrusted data
+        const annotations = await readAnnotations(root);
+
+        // Bound total growth from client-supplied data (DoS guard).
+        if (annotations.length >= MAX_ANNOTATIONS) {
+            throw new Error(`Annotation limit reached (${MAX_ANNOTATIONS}). Resolve or delete existing annotations before creating new ones.`);
+        }
+
+        // Explicitly pick only the fields we expect — never spread untrusted data.
+        // Free-text fields are clamped to bound per-field size.
         const annotation: Annotation = {
             accessibility: data.accessibility,
             boundingBox: data.boundingBox,
-            comment: data.comment,
-            computedStyles: data.computedStyles,
+            comment: clampTextField(data.comment),
+            computedStyles: clampTextField(data.computedStyles),
             createdAt: now,
-            cssClasses: data.cssClasses,
+            cssClasses: clampTextField(data.cssClasses),
             elementBoundingBoxes: data.elementBoundingBoxes,
-            elementLabel: data.elementLabel,
-            elementPath: data.elementPath,
+            elementLabel: clampTextField(data.elementLabel),
+            elementPath: clampTextField(data.elementPath),
             elementTag: data.elementTag,
             frameworkContext: data.frameworkContext,
-            fullPath: data.fullPath,
+            fullPath: clampTextField(data.fullPath),
             id: crypto.randomUUID(),
             intent: data.intent,
             isFixed: data.isFixed,
             isMultiSelect: data.isMultiSelect,
-            nearbyElements: data.nearbyElements,
-            nearbyText: data.nearbyText,
+            nearbyElements: clampTextField(data.nearbyElements),
+            nearbyText: clampTextField(data.nearbyText),
             screenshot: data.screenshot,
-            selectedText: data.selectedText,
+            selectedText: clampTextField(data.selectedText),
             severity: data.severity,
             source: data.source,
             status: "pending",
@@ -60,8 +71,6 @@ export const createAnnotation = async (server: ViteDevServer, data: CreateAnnota
             x: data.x,
             y: data.y,
         };
-
-        const annotations = await readAnnotations(root);
 
         annotations.push(annotation);
         await writeAnnotations(root, annotations);
@@ -86,7 +95,7 @@ export const updateAnnotation = async (server: ViteDevServer, id: string, data: 
         const now = new Date().toISOString();
 
         if (data.comment !== undefined) {
-            annotation.comment = data.comment;
+            annotation.comment = clampTextField(data.comment);
         }
 
         if (data.intent !== undefined) {
@@ -117,9 +126,15 @@ export const updateAnnotation = async (server: ViteDevServer, id: string, data: 
                 annotation.thread = [];
             }
 
-            // Override timestamp and generate ID server-side
+            // Bound thread growth from client-supplied data (DoS guard).
+            if (annotation.thread.length >= MAX_THREAD_MESSAGES) {
+                throw new Error(`Thread message limit reached (${MAX_THREAD_MESSAGES}) for this annotation.`);
+            }
+
+            // Override timestamp and generate ID server-side; clamp message text.
             annotation.thread.push({
                 ...data.threadMessage,
+                content: clampTextField(data.threadMessage.content),
                 id: crypto.randomUUID(),
                 timestamp: now,
             });
