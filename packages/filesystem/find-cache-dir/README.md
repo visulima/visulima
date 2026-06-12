@@ -105,7 +105,7 @@ separators — it is joined onto the resolved cache root as a single segment.
 
 Type: `object`
 
-The options shape is exported as `Options` (also aliased `FindCacheDirOptions`):
+The options shape is exported as `Options` (also aliased `FindCacheDirectoryOptions`):
 
 ```typescript
 import type { Options } from "@visulima/find-cache-dir";
