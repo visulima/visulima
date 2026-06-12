@@ -201,7 +201,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe('.test::before { content: "a   b"; }');
+            expect(result).toBe(".test::before { content: \"a   b\"; }");
         });
 
         it("should preserve whitespace inside single-quoted CSS strings", () => {
@@ -228,7 +228,7 @@ describe(css, () => {
                 }
             `;
 
-            expect(result).toBe('.a { color: red; } .b { content: "keep   me"; }');
+            expect(result).toBe(".a { color: red; } .b { content: \"keep   me\"; }");
         });
     });
 
