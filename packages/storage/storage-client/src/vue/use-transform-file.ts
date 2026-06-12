@@ -55,12 +55,13 @@ export const useTransformFile = (options: UseTransformFileOptions): UseTransform
 
     const query = useQuery({
         enabled: computed(() => toValue(enabled) && !!toValue(id) && !!toValue(transform)),
-        queryFn: async () => {
+        queryFn: async ({ signal }) => {
             const fileId = toValue(id);
             const transformParams = toValue(transform);
             const url = buildUrl(endpoint, fileId, transformParams);
             const response = await fetch(url, {
                 method: "GET",
+                signal,
             });
 
             if (!response.ok) {

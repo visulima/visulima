@@ -57,10 +57,11 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
             return {
                 enabled: enabledValue() && !!fileId,
-                queryFn: async () => {
+                queryFn: async ({ signal }) => {
                     const url = buildUrl(endpoint, fileId, transformParams);
                     const response = await fetch(url, {
                         method: "GET",
+                        signal,
                     });
 
                     if (!response.ok) {

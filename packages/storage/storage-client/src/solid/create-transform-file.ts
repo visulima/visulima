@@ -63,10 +63,11 @@ export const createTransformFile = (options: CreateTransformFileOptions): Create
         // eslint-disable-next-line @tanstack/query/exhaustive-deps -- endpoint is captured from outer scope; queryKey already includes it via storageQueryKeys.transform.file
         return {
             enabled: enabledValue() && !!fileId && !!transformParams,
-            queryFn: async () => {
+            queryFn: async ({ signal }) => {
                 const url = buildUrl(endpoint, fileId, transformParams);
                 const response = await fetch(url, {
                     method: "GET",
+                    signal,
                 });
 
                 if (!response.ok) {
