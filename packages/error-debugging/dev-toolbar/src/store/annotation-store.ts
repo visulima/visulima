@@ -9,6 +9,25 @@ export const ANNOTATIONS_FILE = "annotations.json";
 export const SCREENSHOTS_DIR = "screenshots";
 
 /**
+ * Upper bounds guarding against unbounded growth of annotation/thread data
+ * ingested from client-supplied (WebSocket RPC) or on-disk JSON. Without these,
+ * a malicious or buggy client could grow `annotations.json` without limit (DoS).
+ */
+/** Maximum number of annotations retained in the store. */
+export const MAX_ANNOTATIONS = 1000;
+/** Maximum number of thread messages retained per annotation. */
+export const MAX_THREAD_MESSAGES = 500;
+/** Maximum length (characters) of any free-text string field. */
+export const MAX_TEXT_FIELD_LENGTH = 100_000;
+
+/**
+ * Truncates a string field to {@link MAX_TEXT_FIELD_LENGTH} to bound per-field
+ * size. Non-string values are returned unchanged.
+ */
+export const clampTextField = <T>(value: T): T =>
+    typeof value === "string" && value.length > MAX_TEXT_FIELD_LENGTH ? (value.slice(0, MAX_TEXT_FIELD_LENGTH) as T) : value;
+
+/**
  * Resolves absolute paths for the annotation store.
  */
 export const resolvePaths = (root: string): { annotationsFile: string; base: string; screenshotsDir: string } => {
@@ -87,7 +106,15 @@ export const readAnnotations = async (root: string): Promise<Annotation[]> => {
             return [];
         }
 
-        return parsed as Annotation[];
+        // Bound on-disk data: a tampered/oversized file must not load unbounded
+        // annotations or per-annotation threads into memory.
+        return (parsed as Annotation[]).slice(0, MAX_ANNOTATIONS).map((annotation) => {
+            if (Array.isArray(annotation?.thread) && annotation.thread.length > MAX_THREAD_MESSAGES) {
+                return { ...annotation, thread: annotation.thread.slice(0, MAX_THREAD_MESSAGES) };
+            }
+
+            return annotation;
+        });
     } catch {
         return [];
     }
