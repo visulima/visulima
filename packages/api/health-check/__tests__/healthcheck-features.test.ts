@@ -58,6 +58,26 @@ describe("healthCheck features", () => {
             expect(report.slow.health.message).toContain("timed out after 20ms");
         });
 
+        it("reports unhealthy when a checker never resolves", async () => {
+            expect.assertions(3);
+
+            const healthCheck = new HealthCheck();
+
+            healthCheck.addChecker(
+                "hung",
+                // A checker that never settles — without a timeout this would
+                // hang the whole report forever.
+                async () => new Promise<never>(() => {}),
+                { timeout: 20 },
+            );
+
+            const { healthy, report } = await healthCheck.getReport();
+
+            expect(healthy).toBe(false);
+            expect(report.hung.health.healthy).toBe(false);
+            expect(report.hung.health.message).toContain("timed out after 20ms");
+        });
+
         it("applies the defaultTimeout to checkers without their own", async () => {
             expect.assertions(1);
 
