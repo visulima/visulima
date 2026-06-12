@@ -150,6 +150,29 @@ describe("interactiveManager wrapped-row bookkeeping", () => {
 
         expect(manager.lastLength).toBe(3);
     });
+
+    it("erases the visual line count on redraw, not the logical row count", () => {
+        expect.assertions(2);
+
+        const { capturedOut, manager } = createManager();
+
+        manager.hook();
+        // First write: a single 30-char row in a 10-column terminal wraps to 3 visual lines.
+        manager.update("stdout", ["x".repeat(30)]);
+
+        // The redraw must erase the 3 visual lines that are actually on screen. If the
+        // bookkeeping counted logical rows it would erase 1, leaving 2 stale lines behind.
+        const eraseSpy = vi.spyOn(InteractiveStreamHook.prototype, "erase");
+
+        manager.update("stdout", ["x".repeat(30)]);
+
+        expect(eraseSpy).toHaveBeenCalledExactlyOnceWith(3);
+        // The hook translates `count` into eraseLines(count + 1), i.e. one erase per visual
+        // line plus the current line — proving the terminal-level erase clears 3 lines.
+        expect(capturedOut.join("")).toContain("[1A[2K[1A[2K[1A[2K");
+
+        eraseSpy.mockRestore();
+    });
 });
 
 describe("interactiveManager clear / done / empty update", () => {
