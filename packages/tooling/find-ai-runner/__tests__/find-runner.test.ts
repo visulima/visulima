@@ -1,4 +1,4 @@
-import { execFileSync } from "node:child_process";
+import { execFile, execFileSync } from "node:child_process";
 import { existsSync } from "node:fs";
 import { platform } from "node:os";
 
@@ -11,6 +11,7 @@ const WHICH_CMD = IS_WINDOWS ? "where" : "which";
 
 vi.mock(import("node:child_process"), () => {
     return {
+        execFile: vi.fn<typeof execFile>(),
         execFileSync: vi.fn<typeof execFileSync>(),
         spawn: vi.fn<typeof import("node:child_process").spawn>(),
     };
@@ -23,6 +24,7 @@ vi.mock(import("node:fs"), () => {
 });
 
 const mockExecFileSync = vi.mocked(execFileSync);
+const mockExecFile = vi.mocked(execFile);
 const mockExistsSync = vi.mocked(existsSync);
 
 /** Make `which` succeed only for the given command names. */
@@ -38,6 +40,36 @@ const whichResolves = (...commands: string[]): void => {
 
         throw new Error("not found");
     });
+};
+
+/**
+ * Drive the callback-style `execFile` mock (what `promisify(execFile)` wraps)
+ * so the async detection path resolves. `which`/`where` succeeds only for the
+ * given command names; `--version` always returns a semver.
+ */
+const whichResolvesAsync = (...commands: string[]): void => {
+    // The promisified call signature is execFile(file, args, options, callback).
+    mockExecFile.mockImplementation(((file: string, arguments_: ReadonlyArray<string>, _options: unknown, callback: unknown) => {
+        const done = callback as (error: Error | null, result?: { stderr: string; stdout: string }) => void;
+
+        if (file === WHICH_CMD && commands.includes(arguments_[0] as string)) {
+            // eslint-disable-next-line unicorn/no-null -- Node callback convention
+            done(null, { stderr: "", stdout: `/usr/bin/${arguments_[0] as string}\n` });
+
+            return undefined as never;
+        }
+
+        if (arguments_[0] === "--version") {
+            // eslint-disable-next-line unicorn/no-null -- Node callback convention
+            done(null, { stderr: "", stdout: "1.0.0\n" });
+
+            return undefined as never;
+        }
+
+        done(new Error("not found"));
+
+        return undefined as never;
+    }) as unknown as typeof execFile);
 };
 
 describe(findRunner, () => {
@@ -125,18 +157,79 @@ describe(detectAllProvidersAsync, () => {
         mockExecFileSync.mockImplementation(() => {
             throw new Error("not found");
         });
+        mockExecFile.mockImplementation(((_file: string, _arguments_: ReadonlyArray<string>, _options: unknown, callback: unknown) => {
+            (callback as (error: Error | null) => void)(new Error("not found"));
+
+            return undefined as never;
+        }) as unknown as typeof execFile);
         mockExistsSync.mockReturnValue(false);
     });
 
-    it("should resolve to the same shape as the sync variant", async () => {
+    it("should resolve to the same name/order shape as the sync variant", async () => {
         expect.assertions(2);
 
+        whichResolvesAsync("claude");
         whichResolves("claude");
 
         const asyncResults = await detectAllProvidersAsync();
-        const syncResults = detectAllProviders();
+        const syncResults = detectAllProviders({ version: false });
 
         expect(asyncResults).toHaveLength(11);
         expect(asyncResults.map((p) => p.name)).toStrictEqual(syncResults.map((p) => p.name));
+    });
+
+    it("should run the per-provider detection concurrently rather than sequentially", async () => {
+        expect.assertions(2);
+
+        let inFlight = 0;
+        let maxInFlight = 0;
+
+        // Each `which` probe takes a tick; if detection were sequential, only one
+        // would ever be in flight at a time. Concurrency drives the peak above 1.
+        mockExecFile.mockImplementation(((_file: string, _arguments_: ReadonlyArray<string>, _options: unknown, callback: unknown) => {
+            const done = callback as (error: Error | null) => void;
+
+            inFlight += 1;
+            maxInFlight = Math.max(maxInFlight, inFlight);
+
+            setTimeout(() => {
+                inFlight -= 1;
+                done(new Error("not found"));
+            }, 5);
+
+            return undefined as never;
+        }) as unknown as typeof execFile);
+
+        const results = await detectAllProvidersAsync();
+
+        expect(results).toHaveLength(11);
+        // 11 providers detected in parallel => well above 1 concurrent probe.
+        expect(maxInFlight).toBeGreaterThan(1);
+    });
+
+    it("should skip the --version probe by default", async () => {
+        expect.assertions(3);
+
+        whichResolvesAsync("claude");
+
+        const results = await detectAllProvidersAsync();
+        const claude = results.find((provider) => provider.name === "claude");
+
+        expect(claude?.available).toBe(true);
+        expect(claude?.version).toBeUndefined();
+        // No `--version` call should have been made when probeVersions is off.
+        expect(mockExecFile.mock.calls.some((call) => (call[1] as string[] | undefined)?.[0] === "--version")).toBe(false);
+    });
+
+    it("should probe versions when probeVersions is true", async () => {
+        expect.assertions(2);
+
+        whichResolvesAsync("claude");
+
+        const results = await detectAllProvidersAsync({ probeVersions: true });
+        const claude = results.find((provider) => provider.name === "claude");
+
+        expect(claude?.available).toBe(true);
+        expect(claude?.version).toBe("1.0.0");
     });
 });

@@ -10,6 +10,7 @@ import { AiRunError, runProvider } from "../src/index";
 
 vi.mock(import("node:child_process"), () => {
     return {
+        execFile: vi.fn<typeof import("node:child_process").execFile>(),
         execFileSync: vi.fn<typeof import("node:child_process").execFileSync>(),
         spawn: vi.fn<typeof nodeSpawn>(),
     };

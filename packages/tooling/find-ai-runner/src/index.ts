@@ -1,8 +1,9 @@
 import type { SpawnOptions } from "node:child_process";
-import { execFileSync, spawn } from "node:child_process";
+import { execFile, execFileSync, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { promisify } from "node:util";
 
 import { DEFAULT_MAX_TOKENS, DEFAULT_RUN_TIMEOUT, DETECTION_TIMEOUT, IS_WINDOWS, PROVIDER_NAMES, VERSION_REGEX, VERSION_TIMEOUT } from "./constants";
 import amp from "./providers/amp";
@@ -16,8 +17,11 @@ import gemini from "./providers/gemini";
 import kimi from "./providers/kimi";
 import opencode from "./providers/opencode";
 import qwen from "./providers/qwen";
-import type { AiDetectOptions, AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult } from "./types";
+import type { AiDetectAsyncOptions, AiDetectOptions, AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult } from "./types";
 import { AiRunError } from "./types"; // used as a value inside runProvider
+
+/** Promisified `execFile`, used by the async/parallel detection path. */
+const execFileAsync = promisify(execFile);
 
 /** All supported AI CLI provider configurations, keyed by name. */
 const PROVIDERS: Record<AiProviderName, AiProviderConfig> = {
@@ -128,6 +132,42 @@ const detectVersion = (commandPath: string): string | undefined => {
     }
 };
 
+/** Async variant of {@link whichCommand}: resolve a command on PATH without blocking the event loop. */
+const whichCommandAsync = async (command: string): Promise<string | undefined> => {
+    try {
+        const cmd = IS_WINDOWS ? "where" : "which";
+
+        const { stdout } = await execFileAsync(cmd, [command], {
+            encoding: "utf8",
+            timeout: DETECTION_TIMEOUT,
+        });
+
+        const firstLine = stdout.trim().split("\n")[0]?.trim();
+
+        return firstLine && firstLine.length > 0 ? firstLine : undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+/** Async variant of {@link detectVersion}: run `&lt;command> --version` without blocking the event loop. */
+const detectVersionAsync = async (commandPath: string): Promise<string | undefined> => {
+    try {
+        const { stdout } = await execFileAsync(commandPath, ["--version"], {
+            encoding: "utf8",
+            // Windows `.cmd`/`.bat` shims require the shell since the CVE-2024-27980 fix.
+            shell: needsShell(commandPath),
+            timeout: VERSION_TIMEOUT,
+        });
+
+        const match = VERSION_REGEX.exec(stdout);
+
+        return match ? match[1] : undefined;
+    } catch {
+        return undefined;
+    }
+};
+
 /**
  * Detect whether a specific AI CLI provider is installed on the system.
  *
@@ -190,17 +230,72 @@ const detectProvider = (name: AiProviderName, options: AiDetectOptions = {}): Ai
 const detectAllProviders = (options: AiDetectOptions = {}): AiProviderInfo[] => PROVIDER_NAMES.map((name) => detectProvider(name, options));
 
 /**
- * Detect all supported AI CLI providers in parallel.
+ * Async variant of {@link detectProvider} that spawns its `which`/`where` and
+ * (opt-in) `--version` probes without blocking the event loop, so callers can
+ * run many provider detections concurrently.
+ * @param name The provider to detect (e.g., `"claude"`, `"gemini"`).
+ * @param probeVersion When `true`, also probe `&lt;cli> --version`. Off by default.
+ * @returns A promise resolving to provider info including availability, path, and (if probed) version.
+ */
+const detectProviderAsync = async (name: AiProviderName, probeVersion: boolean): Promise<AiProviderInfo> => {
+    const config = PROVIDERS[name];
+    const base: AiProviderInfo = { available: false, name };
+
+    const versionOf = async (path: string): Promise<string | undefined> => {
+        if (!probeVersion) {
+            return undefined;
+        }
+
+        return detectVersionAsync(path);
+    };
+
+    const envPath = process.env[config.envVariable];
+
+    if (envPath && existsSync(resolveHome(envPath))) {
+        const resolved = resolveHome(envPath);
+
+        return { ...base, available: true, detectionMethod: "envvar", path: resolved, version: await versionOf(resolved) };
+    }
+
+    const allCommands = [config.command, ...config.alternateCommands];
+
+    // Probe every candidate command concurrently, then pick the first hit in declared order.
+    const whichResults = await Promise.all(allCommands.map(async (cmd) => whichCommandAsync(cmd)));
+    const found = whichResults.find((result) => result !== undefined);
+
+    if (found) {
+        return { ...base, available: true, detectionMethod: "which", path: found, version: await versionOf(found) };
+    }
+
+    const knownPath = allCommands.flatMap((cmd) => getKnownPaths(cmd)).find((candidate) => existsSync(candidate));
+
+    if (knownPath) {
+        return { ...base, available: true, detectionMethod: "known-path", path: knownPath, version: await versionOf(knownPath) };
+    }
+
+    return base;
+};
+
+/**
+ * Detect all supported AI CLI providers concurrently (async, parallel).
  *
- * Faster than the synchronous {@link detectAllProviders} because each provider's
- * (blocking) detection runs on its own microtask turn. For the absolute fastest
- * path when you only need availability + path, pass `{ version: false }` to skip
- * the per-provider `--version` cold start.
- * @param options Detection options; set `{ version: false }` to skip the version probe.
+ * Unlike the synchronous {@link detectAllProviders} — which spawns its
+ * `which`/`where` (and per-hit `--version`) probes one provider at a time,
+ * blocking the event loop — this runs every provider's detection in parallel
+ * via `execFile`, so total latency is roughly that of the slowest single
+ * provider rather than the sum of all of them.
+ *
+ * The `--version` cold-start probe is **opt-in** here (off by default): `list`
+ * and startup-detection callers usually only need availability + path. Pass
+ * `{ probeVersions: true }` when you actually need version strings.
+ * @param options Async detection options; set `{ probeVersions: true }` to also probe versions.
  * @returns A promise resolving to provider info for all 11 supported providers (in registration order).
  */
-const detectAllProvidersAsync = (options: AiDetectOptions = {}): Promise<AiProviderInfo[]> =>
-    Promise.all(PROVIDER_NAMES.map((name) => Promise.resolve().then(() => detectProvider(name, options))));
+const detectAllProvidersAsync = async (options: AiDetectAsyncOptions = {}): Promise<AiProviderInfo[]> => {
+    const probeVersion = options.probeVersions === true;
+
+    return Promise.all(PROVIDER_NAMES.map(async (name) => detectProviderAsync(name, probeVersion)));
+};
 
 /**
  * Detect only the AI CLI providers that are installed on the system.
@@ -413,6 +508,7 @@ export { PROVIDER_NAMES } from "./constants";
 export { AiRunError } from "./types";
 export {
     type AiBuildArgsOptions,
+    type AiDetectAsyncOptions,
     type AiDetectOptions,
     type AiProviderConfig,
     type AiProviderInfo,
