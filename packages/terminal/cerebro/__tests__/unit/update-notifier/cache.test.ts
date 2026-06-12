@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from "node:fs";
+import { access, readFile } from "node:fs/promises";
 
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -6,11 +6,11 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { getLastUpdate, saveLastUpdate } from "../../../src/plugins/update-notifier/cache";
 
 // Spy-based mocks (declared at module scope so vitest hoists them) that fall through to the real
-// implementations by default; individual tests override return values via mockReturnValueOnce.
-vi.mock(import("node:fs"), async () => {
-    const actual = await vi.importActual<typeof import("node:fs")>("node:fs");
+// implementations by default; individual tests override return values via mockResolvedValueOnce.
+vi.mock(import("node:fs/promises"), async () => {
+    const actual = await vi.importActual<typeof import("node:fs/promises")>("node:fs/promises");
 
-    return { ...actual, existsSync: vi.fn(actual.existsSync), readFileSync: vi.fn(actual.readFileSync) };
+    return { ...actual, access: vi.fn(actual.access), readFile: vi.fn(actual.readFile) };
 });
 vi.mock(import("@visulima/find-cache-dir"), async () => {
     const actual = await vi.importActual<typeof import("@visulima/find-cache-dir")>("@visulima/find-cache-dir");
@@ -23,55 +23,55 @@ vi.useFakeTimers().setSystemTime(new Date("2022-01-01"));
 const fakeTime = new Date("2022-01-01").getTime();
 
 describe("update-notifier/cache", () => {
-    it("can save update then get the update details", () => {
+    it("can save update then get the update details", async () => {
         expect.assertions(1);
 
-        saveLastUpdate("test");
+        await saveLastUpdate("test");
 
-        expect(getLastUpdate("test")).toBe(fakeTime);
+        await expect(getLastUpdate("test")).resolves.toBe(fakeTime);
     });
 
-    it("prefixed module can save update then get the update details", () => {
+    it("prefixed module can save update then get the update details", async () => {
         expect.assertions(1);
 
-        saveLastUpdate("@visulima/test");
+        await saveLastUpdate("@visulima/test");
 
-        expect(getLastUpdate("@visulima/test")).toBe(fakeTime);
+        await expect(getLastUpdate("@visulima/test")).resolves.toBe(fakeTime);
     });
 
     describe("error and fallback paths", () => {
         afterEach(() => {
             vi.mocked(findCacheDirSync).mockReset();
-            vi.mocked(existsSync).mockReset();
-            vi.mocked(readFileSync).mockReset();
+            vi.mocked(access).mockReset();
+            vi.mocked(readFile).mockReset();
         });
 
-        it("throws when the cache directory cannot be resolved", () => {
+        it("throws when the cache directory cannot be resolved", async () => {
             expect.assertions(1);
 
             vi.mocked(findCacheDirSync).mockReturnValueOnce(undefined);
 
-            expect(() => getLastUpdate("missing-cache-dir")).toThrow("Could not find cache directory");
+            await expect(getLastUpdate("missing-cache-dir")).rejects.toThrow("Could not find cache directory");
         });
 
-        it("returns undefined when the cache file does not exist", () => {
+        it("returns undefined when the cache file does not exist", async () => {
             expect.assertions(1);
 
             vi.mocked(findCacheDirSync).mockReturnValue("/var/cerebro-test-cache");
-            vi.mocked(existsSync).mockReturnValueOnce(false);
+            vi.mocked(access).mockRejectedValueOnce(new Error("ENOENT"));
 
-            expect(getLastUpdate("no-file")).toBeUndefined();
+            await expect(getLastUpdate("no-file")).resolves.toBeUndefined();
         });
 
-        it("returns undefined when the cache file contains invalid JSON", () => {
+        it("returns undefined when the cache file contains invalid JSON", async () => {
             expect.assertions(1);
 
             vi.mocked(findCacheDirSync).mockReturnValue("/var/cerebro-test-cache");
-            vi.mocked(existsSync).mockReturnValueOnce(true);
-            // @ts-expect-error - readFileSync overload returns string for utf8 encoding
-            vi.mocked(readFileSync).mockReturnValueOnce("not valid json");
+            vi.mocked(access).mockResolvedValueOnce(undefined);
+            // @ts-expect-error - readFile overload returns string for utf8 encoding
+            vi.mocked(readFile).mockResolvedValueOnce("not valid json");
 
-            expect(getLastUpdate("bad-json")).toBeUndefined();
+            await expect(getLastUpdate("bad-json")).resolves.toBeUndefined();
         });
     });
 });

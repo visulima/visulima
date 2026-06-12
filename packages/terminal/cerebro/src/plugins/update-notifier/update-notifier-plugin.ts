@@ -5,7 +5,7 @@ import type { Plugin } from "../../types/plugin";
 import { getEnv } from "../../util/general/runtime-process";
 import type { UpdateNotifierOptions } from "./has-new-version";
 
-type UpdateNotifierPluginOptions = Partial<Omit<UpdateNotifierOptions, "debug" | "pkg">>;
+type UpdateNotifierPluginOptions = Partial<Omit<UpdateNotifierOptions, "debug" | "fs" | "pkg">>;
 
 const DEFAULT_TIMEOUT_MS = 5000;
 
@@ -17,7 +17,7 @@ const DEFAULT_TIMEOUT_MS = 5000;
 const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}): Plugin => {
     return {
         beforeCommand: async (toolbox) => {
-            const { logger, runtime } = toolbox;
+            const { fs, logger, runtime } = toolbox;
             const packageName = runtime.getPackageName();
             const packageVersion = runtime.getPackageVersion();
 
@@ -33,6 +33,10 @@ const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}): Plugin
                 alwaysRun: false,
                 debug: env.CEREBRO_OUTPUT_LEVEL === "256",
                 distTag: "latest",
+                // Consume the injectable filesystem adapter so the update cache
+                // works under MCP / sandboxed runtimes instead of reaching for
+                // sync `node:fs` directly.
+                fs,
                 pkg: {
                     name: packageName,
                     version: packageVersion,
