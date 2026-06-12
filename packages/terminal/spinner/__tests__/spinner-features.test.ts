@@ -152,6 +152,52 @@ describe("standalone mode", () => {
         spinner.succeed();
         vi.restoreAllMocks();
     });
+
+    it("should render frames to the stream and unref the timer with no manager on a TTY", () => {
+        expect.assertions(3);
+
+        const written: string[] = [];
+        // A TTY stream makes the standalone path animate (and start a timer) without a manager.
+        const stream = {
+            isTTY: true,
+            write: (chunk: string) => {
+                written.push(chunk);
+
+                return true;
+            },
+        } as unknown as NodeJS.WriteStream;
+
+        // eslint-disable-next-line vitest/require-mock-type-parameters
+        const unref = vi.fn();
+        const originalSetInterval = globalThis.setInterval;
+
+        // Intercept setInterval to assert .unref() is invoked on the handle.
+        vi.spyOn(globalThis, "setInterval").mockImplementation(((...arguments_: Parameters<typeof setInterval>) => {
+            const handle = originalSetInterval(...arguments_);
+
+            (handle as unknown as { unref: () => void }).unref = unref;
+
+            return handle;
+        }) as typeof setInterval);
+
+        // No second constructor argument => standalone, direct-stream rendering.
+        const spinner = new Spinner({ frames: { frames: ["A", "B"], interval: 50 }, stream });
+
+        spinner.start("Loading");
+
+        // (a) the current frame is written straight to the provided stream.
+        expect(written.join("")).toContain("A Loading");
+        // (b) the animation timer was unref'd so it can't hold the event loop open.
+        expect(unref).toHaveBeenCalled();
+
+        // Advancing the timer keeps rendering frames in place via the same stream.
+        vi.advanceTimersByTime(50);
+
+        expect(written.join("")).toContain("B Loading");
+
+        spinner.succeed("Done");
+        vi.restoreAllMocks();
+    });
 });
 
 describe("plain stop and stopAndPersist", () => {
