@@ -87,7 +87,7 @@
         "@types/node": "catalog:types",
         "@visulima/colorize": "2.0.0-alpha.13",
         "@visulima/packem": "catalog:dev",
-        "@visulima/string": "3.0.0-alpha.15",
+        "@visulima/string": "3.0.0-alpha.16",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
