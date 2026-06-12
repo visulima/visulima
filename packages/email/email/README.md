@@ -1493,6 +1493,25 @@ A unified `EmailEvent` stream (`EventBus` + `MemoryEventStore` in `@visulima/ema
 
 See [Events](https://visulima.com/docs/package/email/events/introduction) and [Testing](https://visulima.com/docs/package/email/testing/introduction).
 
+## Crypto (DKIM / S/MIME / ARC)
+
+Sign and encrypt messages with `@visulima/email/crypto`: `createDkimSigner` (DKIM-Signature header), `createSmimeSigner` / `createSmimeEncrypter` (S/MIME sign and encrypt, via the optional `pkijs` + `asn1js` peers), and `signArc` / `verifyArc` for ARC sealing on forwarded mail. Attach signers/encrypters to a `MailMessage` with `.sign(...)` / `.encrypt(...)`.
+
+```typescript
+import { MailMessage } from "@visulima/email";
+import { createDkimSigner } from "@visulima/email/crypto";
+
+const signer = createDkimSigner({
+    domainName: "example.com",
+    keySelector: "default",
+    privateKey: "file:///path/to/dkim.private.key", // or an inline PEM string
+});
+
+const message = new MailMessage().from({ email: "a@example.com" }).to({ email: "b@example.com" }).subject("Signed").html("<p>Hello</p>").sign(signer); // DKIM-Signature is added during build()
+```
+
+See [Crypto](https://visulima.com/docs/package/email/crypto/introduction).
+
 ## Related
 
 ## Supported Node.js Versions
