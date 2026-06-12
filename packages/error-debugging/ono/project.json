@@ -4,5 +4,5 @@
     "sourceRoot": "packages/error-debugging/ono/src",
     "projectType": "library",
     "tags": ["ono", "type:package", "category:error-handling"],
-    "implicitDependencies": ["error-debugging/error", "terminal/boxen"]
+    "implicitDependencies": ["error-debugging/error", "terminal/boxen", "shared-utils"]
 }

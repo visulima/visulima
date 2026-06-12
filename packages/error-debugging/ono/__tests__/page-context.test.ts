@@ -770,6 +770,36 @@ describe("context page", () => {
             expect(page?.code.html).not.toContain("abc.def");
         });
 
+        it("should mask credential-shaped keys nested deep inside the request body", async () => {
+            expect.assertions(5);
+
+            const mockRequest = {
+                headers: {
+                    "content-type": "application/json",
+                },
+                json: () =>
+                    Promise.resolve({
+                        user: {
+                            credentials: [{ apiKey: "ak_live_123", authorization: "Bearer xyz" }],
+                            name: "alice",
+                            profile: { secret: "s3cr3t" },
+                        },
+                    }),
+                method: "POST",
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            // Non-sensitive value is preserved.
+            expect(page?.code.html).toContain("alice");
+            // Every nested credential-shaped value is masked everywhere it surfaces (body panel + cURL --data + clipboard input).
+            expect(page?.code.html).not.toContain("ak_live_123");
+            expect(page?.code.html).not.toContain("Bearer xyz");
+            expect(page?.code.html).not.toContain("s3cr3t");
+            expect(page?.code.html).toContain("[masked]");
+        });
+
         it("should leave the body untouched when masking is disabled", async () => {
             expect.assertions(2);
 
