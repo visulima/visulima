@@ -36,7 +36,7 @@ describe("cLI", () => {
     beforeAll(() => {
         fakeBinDirectory = mkdtempSync(join(tmpdir(), "find-ai-runner-test-"));
         fakeBinPath = join(fakeBinDirectory, "claude");
-        writeFileSync(fakeBinPath, '#!/bin/sh\necho "claude-code 1.0.0"', { mode: 0o755 });
+        writeFileSync(fakeBinPath, "#!/bin/sh\necho \"claude-code 1.0.0\"", { mode: 0o755 });
         chmodSync(fakeBinPath, 0o755);
     });
 

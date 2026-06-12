@@ -139,17 +139,17 @@ const getJSONSchemaForPropertyReference = (field: DMMF.Field, transformOptions: 
         return {
             ...reference,
             nullable: true,
-            ...(isOptionEnabled(persistOriginalType) && {
+            ...isOptionEnabled(persistOriginalType) && {
                 originalType: field.type,
-            }),
+            },
         } as JSONSchema7;
     }
 
     return {
         anyOf: [reference, { type: "null" }],
-        ...(isOptionEnabled(persistOriginalType) && {
+        ...isOptionEnabled(persistOriginalType) && {
             originalType: field.type,
-        }),
+        },
     };
 };
 
@@ -264,18 +264,18 @@ const getPropertyDefinition = (modelMetaData: ModelMetaData, transformOptions: T
 
     return {
         type,
-        ...(isOptionEnabled(transformOptions.persistOriginalType) && {
+        ...isOptionEnabled(transformOptions.persistOriginalType) && {
             originalType: field.type,
-        }),
-        ...(isDefined(defaultValue) && { default: defaultValue }),
-        ...(isDefined(format) && { format }),
-        ...(isDefined(items) && { items }),
-        ...(isDefined(enumList) && { enum: enumList }),
+        },
+        ...isDefined(defaultValue) && { default: defaultValue },
+        ...isDefined(format) && { format },
+        ...isDefined(items) && { items },
+        ...isDefined(enumList) && { enum: enumList },
         // OpenAPI 3.0 nullability: a non-required, non-list field that is not a top-level
         // reference is marked nullable instead of using a `["...", "null"]` type union.
-        ...(transformOptions.nullableMode === "openapi" && !field.isRequired && !field.isList && { nullable: true }),
+        ...transformOptions.nullableMode === "openapi" && !field.isRequired && !field.isList && { nullable: true },
         ...enrichment,
-        ...(isDefined(description) && { description }),
+        ...isDefined(description) && { description },
     };
 };
 
@@ -293,20 +293,20 @@ const getPropertyDefinition = (modelMetaData: ModelMetaData, transformOptions: T
  * const [name, definition] = getJSONSchemaProperty({ enums: [] }, {})(field);
  * ```
  */
-const getJSONSchemaProperty =
-    (modelMetaData: ModelMetaData, transformOptions: TransformOptions) =>
-    (field: DMMF.Field): PropertyMap => {
-        const propertyMetaData: PropertyMetaData = {
-            hasDefaultValue: field.hasDefaultValue,
-            isScalar: field.kind === "scalar" || field.kind === "enum",
-            required: field.isRequired,
+const getJSONSchemaProperty
+    = (modelMetaData: ModelMetaData, transformOptions: TransformOptions) =>
+        (field: DMMF.Field): PropertyMap => {
+            const propertyMetaData: PropertyMetaData = {
+                hasDefaultValue: field.hasDefaultValue,
+                isScalar: field.kind === "scalar" || field.kind === "enum",
+                required: field.isRequired,
+            };
+
+            const property = isSingleReference(field)
+                ? getJSONSchemaForPropertyReference(field, transformOptions)
+                : getPropertyDefinition(modelMetaData, transformOptions, field);
+
+            return [field.name, property, propertyMetaData];
         };
-
-        const property = isSingleReference(field)
-            ? getJSONSchemaForPropertyReference(field, transformOptions)
-            : getPropertyDefinition(modelMetaData, transformOptions, field);
-
-        return [field.name, property, propertyMetaData];
-    };
 
 export default getJSONSchemaProperty;

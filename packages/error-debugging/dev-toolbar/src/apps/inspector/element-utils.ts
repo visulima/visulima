@@ -295,11 +295,11 @@ export const getElementLabel = (element: Element): string => {
         const normalizedHref = href?.trim().toLowerCase();
 
         if (
-            href &&
-            normalizedHref &&
-            !normalizedHref.startsWith("javascript:") &&
-            !normalizedHref.startsWith("data:") &&
-            !normalizedHref.startsWith("vbscript:")
+            href
+            && normalizedHref
+            && !normalizedHref.startsWith("javascript:")
+            && !normalizedHref.startsWith("data:")
+            && !normalizedHref.startsWith("vbscript:")
         ) {
             return text ? `link "${text}" to ${href}` : `link to ${href}`;
         }
@@ -872,10 +872,10 @@ export const getElementsInRect = (rect: DOMRect): Element[] => {
                 const elementRect = getViewportRect(element);
 
                 if (
-                    elementRect.left >= rect.x - 5 &&
-                    elementRect.top >= rect.y - 5 &&
-                    elementRect.right <= rect.x + rect.width + 5 &&
-                    elementRect.bottom <= rect.y + rect.height + 5
+                    elementRect.left >= rect.x - 5
+                    && elementRect.top >= rect.y - 5
+                    && elementRect.right <= rect.x + rect.width + 5
+                    && elementRect.bottom <= rect.y + rect.height + 5
                 ) {
                     seen.add(element);
                     elements.push(element);

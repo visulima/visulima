@@ -64,7 +64,7 @@ describe(getJSONSchemaProperty, () => {
             expect.assertions(1);
 
             expect(() => transform(createField({ isRequired: true, name: "weird", type: "Geometry" }))).toThrow(
-                'Unhandled discriminated union member: "Geometry"',
+                "Unhandled discriminated union member: \"Geometry\"",
             );
         });
     });
@@ -222,7 +222,7 @@ describe(getJSONSchemaProperty, () => {
                         type: "Geometry",
                     }),
                 ),
-            ).toThrow('Unhandled discriminated union member: "Geometry"');
+            ).toThrow("Unhandled discriminated union member: \"Geometry\"");
         });
     });
 

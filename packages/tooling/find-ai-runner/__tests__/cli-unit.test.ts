@@ -199,7 +199,7 @@ describe("cLI module", () => {
 
             await runCli(["detect", "nonexistent"]);
 
-            expect(errorOutput()).toContain('unknown provider "nonexistent"');
+            expect(errorOutput()).toContain("unknown provider \"nonexistent\"");
             expect(process.exitCode).toBe(1);
         });
     });
@@ -260,7 +260,7 @@ describe("cLI module", () => {
 
             await runCli(["run", "claude", "hello", "--mdoel", "opus"]);
 
-            expect(errorOutput()).toContain('unknown option "--mdoel"');
+            expect(errorOutput()).toContain("unknown option \"--mdoel\"");
             expect(runProvider).toHaveBeenCalledTimes(1);
         });
 
