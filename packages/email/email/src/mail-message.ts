@@ -2,7 +2,6 @@ import { basename } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import type { ICalCalendar } from "ical-generator";
-import ical from "ical-generator";
 
 import type { AttachmentDataOptions, AttachmentOptions } from "./attachment-helpers";
 import { detectMimeType, generateContentId, readFileAsBuffer } from "./attachment-helpers";
@@ -25,6 +24,20 @@ type AddressInput = EmailAddress | EmailAddress[] | string | string[];
  */
 const loadHtmlToText = async (): Promise<typeof import("./template-engines/html-to-text").default> => {
     const module = await import("./template-engines/html-to-text");
+
+    return module.default;
+};
+
+/**
+ * Lazily loads the `ical-generator` factory.
+ *
+ * `ical-generator` is only needed when a calendar event is built from a callback, which is resolved
+ * exclusively on the async `build()` path. Importing it lazily keeps it out of the eager module
+ * graph so consumers who never attach a calendar event don't pay its bundle/load cost.
+ * @returns The default-exported `ical` factory.
+ */
+const loadIcal = async (): Promise<typeof import("ical-generator").default> => {
+    const module = await import("ical-generator");
 
     return module.default;
 };
@@ -90,6 +103,10 @@ export class MailMessage {
     private logger?: Logger;
 
     private icalEventData?: CalendarEventOptions & { content?: string; href?: string; path?: string };
+
+    // Deferred calendar builder; resolved to `content` lazily during build() so `ical-generator`
+    // stays out of the eager module graph.
+    private icalEventBuilder?: { build: (calendar: ICalCalendar) => void; options?: CalendarEventOptions };
 
     /**
      * Sets the sender address.
@@ -575,12 +592,11 @@ export class MailMessage {
      */
     public icalEvent(contents: ((calendar: ICalCalendar) => void) | string, options?: CalendarEventOptions): this {
         if (typeof contents === "function") {
-            const calendar = ical();
-
-            contents(calendar);
-
-            this.icalEventData = { content: calendar.toString(), ...options };
+            // Defer serialization to build() so `ical-generator` is only loaded when actually needed.
+            this.icalEventBuilder = { build: contents, options };
+            this.icalEventData = undefined;
         } else {
+            this.icalEventBuilder = undefined;
             this.icalEventData = { content: contents, ...options };
         }
 
@@ -817,6 +833,15 @@ export class MailMessage {
 
         if (this.tagsValue.length > 0) {
             emailOptions.tags = this.tagsValue;
+        }
+
+        if (this.icalEventBuilder) {
+            const ical = await loadIcal();
+            const calendar = ical();
+
+            this.icalEventBuilder.build(calendar);
+
+            this.icalEventData = { content: calendar.toString(), ...this.icalEventBuilder.options };
         }
 
         if (this.icalEventData) {
