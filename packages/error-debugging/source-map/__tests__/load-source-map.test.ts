@@ -239,6 +239,41 @@ describe("load-source-map", () => {
 
         expect(result === undefined && elapsed < 1000).toBe(true);
     });
+
+    it("should not stall on a terminated block comment whose anchor fails after a long whitespace run (ReDoS guard)", () => {
+        expect.assertions(1);
+
+        // Worst case for the old `([^*]+?)[ \t]*\*\/[ \t]*$` pattern: the lazy value
+        // group and the trailing `[ \t]*` both match the spaces, the `*/` closes the
+        // comment, and the trailing `x` breaks the line-end anchor (`[ \t]*$`),
+        // forcing the regex engine to backtrack across every whitespace split — the
+        // exact quadratic shape the linear scanner eliminates. The anchor must be
+        // exercised here, per this repo's prior CodeQL ANSI-regex ReDoS guidance.
+        const source = `/*# sourceMappingURL=app.js.map${" ".repeat(200_000)}*/ x\n`;
+
+        const start = performance.now();
+        const result = loadSourceMapFromSource(source, FIXTURES_DIR);
+        const elapsed = performance.now() - start;
+
+        // Trailing non-whitespace after `*/` is rejected (mirrors the original
+        // `[ \t]*$`), and it must reject quickly rather than backtrack.
+        expect(result === undefined && elapsed < 1000).toBe(true);
+    });
+
+    it("should not stall on a pathological line comment with no closing newline (ReDoS guard)", () => {
+        expect.assertions(1);
+
+        // A line-comment opener followed by a huge whitespace-only value with no
+        // newline: the value is whitespace, so it is rejected, and the linear scan
+        // bounds the work to a single forward pass.
+        const source = `//# sourceMappingURL=${" ".repeat(200_000)}`;
+
+        const start = performance.now();
+        const result = loadSourceMapFromSource(source, FIXTURES_DIR);
+        const elapsed = performance.now() - start;
+
+        expect(result === undefined && elapsed < 1000).toBe(true);
+    });
 });
 
 describe(loadSourceMapAsync, () => {
