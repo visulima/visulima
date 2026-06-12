@@ -1,21 +1,40 @@
 import { bgRed, red } from "@visulima/colorize";
 import { getStringWidth } from "@visulima/string";
-import { describe, expect, it, vi } from "vitest";
+import terminalSize from "terminal-size";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { boxen, boxes } from "../../src";
+import { boxen, boxes, clearTerminalSizeCache } from "../../src";
 
 const TUPLE_ERROR = /must return a \[width, height\] tuple/;
 const NUMBER_ERROR = /both width and height must be numbers/;
 
 vi.mock(import("terminal-size"), () => {
     return {
-        default: () => {
+        default: vi.fn<() => { columns: number; rows: number }>(() => {
             return {
                 columns: 80,
                 rows: 24,
             };
-        },
+        }),
     };
+});
+
+const terminalSizeMock = vi.mocked(terminalSize);
+
+// The terminal-size probe is memoized at module scope, so its state would
+// otherwise leak across tests (and, under shared module state, across files).
+// Reset it before and after every test so each one starts from a cold probe
+// and the call-count assertions stay independent of execution order. These are
+// intentionally file-level so every describe block is covered.
+// eslint-disable-next-line vitest/require-top-level-describe
+beforeEach(() => {
+    clearTerminalSizeCache();
+    terminalSizeMock.mockClear();
+});
+
+// eslint-disable-next-line vitest/require-top-level-describe
+afterEach(() => {
+    clearTerminalSizeCache();
 });
 
 describe("validation", () => {
@@ -103,6 +122,56 @@ describe("terminalColumns / terminalRows overrides", () => {
         const box = boxen("foo", { fullscreen: true, terminalColumns: 10, terminalRows: 6 });
 
         expect(box.split("\n")).toHaveLength(6);
+    });
+
+    it("does not probe terminal-size when terminalColumns is provided", () => {
+        expect.assertions(1);
+
+        boxen("hello world", { terminalColumns: 20 });
+
+        expect(terminalSizeMock).not.toHaveBeenCalled();
+    });
+
+    it("produces deterministic output for a given terminalColumns regardless of the real terminal", () => {
+        expect.assertions(1);
+
+        const first = boxen("hello world this is a long sentence that wraps", { terminalColumns: 24 });
+        const second = boxen("hello world this is a long sentence that wraps", { terminalColumns: 24 });
+
+        expect(first).toBe(second);
+    });
+});
+
+describe("terminal-size probe caching", () => {
+    it("probes terminal-size only once across multiple renders", () => {
+        expect.assertions(1);
+
+        boxen("foo");
+        boxen("bar");
+        boxen("baz");
+
+        expect(terminalSizeMock).toHaveBeenCalledTimes(1);
+    });
+
+    it("re-probes after clearTerminalSizeCache()", () => {
+        expect.assertions(2);
+
+        boxen("foo");
+
+        expect(terminalSizeMock).toHaveBeenCalledTimes(1);
+
+        clearTerminalSizeCache();
+        boxen("bar");
+
+        expect(terminalSizeMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("does not probe at all when both terminalColumns and terminalRows are supplied", () => {
+        expect.assertions(1);
+
+        boxen("foo", { fullscreen: true, terminalColumns: 40, terminalRows: 10 });
+
+        expect(terminalSizeMock).not.toHaveBeenCalled();
     });
 });
 

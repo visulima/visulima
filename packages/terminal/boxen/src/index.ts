@@ -19,6 +19,35 @@ const NEWLINE = "\n";
 const PAD = " ";
 const NONE = "none";
 
+// Memoize the terminal-size probe. `terminalSize()` shells out to a sync
+// child process when stdout is not a TTY (CI, piped output), which is costly
+// to repeat on every `boxen()` call. The terminal dimensions effectively never
+// change within a single render pass, so cache the first lookup and reuse it.
+let probedTerminal: { columns: number; rows: number } | undefined;
+
+const probeTerminal = (): { columns: number; rows: number } => {
+    probedTerminal ??= terminalSize();
+
+    return probedTerminal;
+};
+
+/**
+ * Clear the cached terminal-size probe.
+ *
+ * `boxen()` probes the terminal width/height once via `terminal-size` and
+ * caches the result to avoid a per-render (potentially blocking) sync probe.
+ * Call this after the terminal has been resized so the next `boxen()` re-probes.
+ * @example
+ * ```js
+ * import { boxen, clearTerminalSizeCache } from "@visulima/boxen";
+ *
+ * process.stdout.on("resize", clearTerminalSizeCache);
+ * ```
+ */
+const clearTerminalSizeCache = (): void => {
+    probedTerminal = undefined;
+};
+
 const getObject = (detail: Partial<Spacer> | number | undefined): Spacer => {
     if (typeof detail === "number") {
         return {
@@ -565,8 +594,10 @@ export const boxen = (text: string, options: Options = {}): string => {
 
     // Allow callers to skip the (potentially blocking, non-TTY) terminal-size
     // probe by supplying explicit dimensions — also makes snapshots deterministic.
+    // When the probe is needed, the lookup is memoized (see `probeTerminal`) so
+    // repeated renders don't re-shell-out to a sync child process.
     const needsTerminalProbe = options.terminalColumns === undefined || (config.fullscreen && options.terminalRows === undefined);
-    const probed = needsTerminalProbe ? terminalSize() : { columns: 0, rows: 0 };
+    const probed = needsTerminalProbe ? probeTerminal() : { columns: 0, rows: 0 };
     const terminal = {
         columns: options.terminalColumns ?? probed.columns,
         rows: options.terminalRows ?? probed.rows,
@@ -594,6 +625,8 @@ export const boxes: Record<BorderStyleName, Required<Omit<BorderStyle, "horizont
     BorderStyleName,
     Required<Omit<BorderStyle, "horizontal" | "vertical">>
 >;
+
+export { clearTerminalSizeCache };
 
 export type {
     Alignment,
