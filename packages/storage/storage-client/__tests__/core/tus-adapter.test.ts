@@ -101,6 +101,59 @@ describe(createTusAdapter, () => {
         );
     });
 
+    it("should attach onBeforeRequest hook headers, with TUS protocol headers winning", async () => {
+        expect.assertions(4);
+
+        const seenMethods: string[] = [];
+
+        const adapter = createTusAdapter({
+            chunkSize: 100,
+            endpoint: "http://localhost/api/upload/tus",
+            onBeforeRequest: ({ method }) => {
+                seenMethods.push(method);
+
+                // Attempt to override a protocol-required header — it must NOT win.
+                return { Authorization: "Bearer dynamic", "Tus-Resumable": "9.9.9" };
+            },
+        });
+
+        // POST create
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({
+                Location: "http://localhost/api/upload/tus/123",
+                "Tus-Resumable": "1.0.0",
+            }),
+            ok: true,
+            status: 201,
+        });
+        // PATCH chunk
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ "Tus-Resumable": "1.0.0", "Upload-Offset": "100" }),
+            ok: true,
+            status: 204,
+        });
+        // Final HEAD
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ Location: "/files/123", "Tus-Resumable": "1.0.0", "Upload-Offset": "100" }),
+            ok: true,
+            status: 200,
+        });
+
+        const file = new File(["x".repeat(100)], "test.jpg", { type: "image/jpeg" });
+
+        await adapter.upload(file);
+
+        const postHeaders = (mockFetch.mock.calls[0] as [string, RequestInit])[1].headers as Record<string, string>;
+
+        // The auth header from the hook reaches the POST create request.
+        expect(postHeaders.Authorization).toBe("Bearer dynamic");
+        // Protocol header set by the adapter wins over the hook's attempted override.
+        expect(postHeaders["Tus-Resumable"]).toBe("1.0.0");
+        // The hook saw the real request methods.
+        expect(seenMethods).toContain("POST");
+        expect(seenMethods).toContain("PATCH");
+    });
+
     it("should handle pause and resume", async () => {
         expect.assertions(2);
 

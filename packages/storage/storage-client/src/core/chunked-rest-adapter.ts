@@ -3,9 +3,9 @@ import type { ChecksumAlgorithm } from "./checksum";
 import { computeChunkChecksum } from "./checksum";
 import type { FingerprintFunction } from "./fingerprint";
 import { defaultFingerprint } from "./fingerprint";
-import { resolveHeaders } from "./query-client";
+import { resolveRequestHeaders } from "./query-client";
 import { validateFile } from "./restrictions";
-import type { HeadersResolver, UploadRestrictions, UploadResult } from "./types";
+import type { HeadersResolver, OnBeforeRequest, UploadRestrictions, UploadResult } from "./types";
 import type { UploadControl } from "./upload-control";
 import type { UrlStorage, UrlStorageEntry } from "./url-storage";
 
@@ -67,6 +67,13 @@ export interface ChunkedRestAdapterOptions {
     maxRetries?: number;
     /** Additional metadata to include with the upload */
     metadata?: Record<string, string>;
+
+    /**
+     * Per-request hook returning extra headers, given the outgoing request
+     * context (`url`, `method`, already-resolved `headers`). Runs after the
+     * `headers` resolver and merges over it; protocol headers still win.
+     */
+    onBeforeRequest?: OnBeforeRequest;
     /** Client-side upload restrictions, validated before any network request. */
     restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
@@ -115,6 +122,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         headers: headersResolver,
         maxRetries = 3,
         metadata = {},
+        onBeforeRequest,
         restrictions,
         retry = true,
         urlStorage,
@@ -137,11 +145,11 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     };
 
     /**
-     * Merges adapter-level custom headers with the per-request headers.
-     * Per-request headers win on conflict.
+     * Merges adapter-level custom headers (and any `onBeforeRequest` hook result)
+     * with the per-request headers. Per-request protocol headers win on conflict.
      */
-    const buildHeaders = async (requestHeaders: Record<string, string>): Promise<Record<string, string>> => {
-        const resolved = await resolveHeaders(headersResolver);
+    const buildHeaders = async (url: string, method: string, requestHeaders: Record<string, string>): Promise<Record<string, string>> => {
+        const resolved = await resolveRequestHeaders(url, method, headersResolver, onBeforeRequest);
 
         return { ...resolved, ...requestHeaders };
     };
@@ -282,7 +290,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         const response = await fetchWithRetry(endpoint, {
             body: new Uint8Array(0), // Empty body for initialization
-            headers: await buildHeaders(headers),
+            headers: await buildHeaders(endpoint, "POST", headers),
             method: "POST",
         });
 
@@ -310,7 +318,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         let response: Response;
 
         try {
-            response = await fetch(url, { headers: await buildHeaders({}), method: "HEAD" });
+            response = await fetch(url, { headers: await buildHeaders(url, "HEAD", {}), method: "HEAD" });
         } catch {
             return undefined;
         }
@@ -333,7 +341,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
 
         const response = await fetchWithRetry(url, {
-            headers: await buildHeaders({}),
+            headers: await buildHeaders(url, "HEAD", {}),
             method: "HEAD",
         });
 
@@ -392,7 +400,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
         const response = await fetchWithRetry(url, {
             body: chunk,
-            headers: await buildHeaders(chunkHeaders),
+            headers: await buildHeaders(url, "PATCH", chunkHeaders),
             method: "PATCH",
             signal,
         });
@@ -495,7 +503,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         const url = endpoint.endsWith("/") ? `${endpoint}${fileId}` : `${endpoint}/${fileId}`;
 
         const response = await fetchWithRetry(url, {
-            headers: await buildHeaders({}),
+            headers: await buildHeaders(url, "GET", {}),
             method: "GET",
         });
 

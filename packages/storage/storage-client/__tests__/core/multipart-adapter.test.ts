@@ -109,6 +109,40 @@ describe(createMultipartAdapter, () => {
         await expect(adapter.upload(file)).rejects.toThrow("Network error during upload");
     });
 
+    it("should attach onBeforeRequest hook headers to the multipart request", async () => {
+        expect.assertions(3);
+
+        const recordedHeaders: [string, string][] = [];
+
+        class RecordingMockXHR extends MockXMLHttpRequest {
+            public override setRequestHeader = vi.fn((key: string, value: string) => {
+                recordedHeaders.push([key, value]);
+            });
+        }
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = RecordingMockXHR as unknown as typeof XMLHttpRequest;
+
+        const seenContexts: { method: string; url: string }[] = [];
+
+        const adapter = createMultipartAdapter({
+            endpoint: "/api/upload",
+            onBeforeRequest: ({ method, url }) => {
+                seenContexts.push({ method, url });
+
+                return { Authorization: "Bearer dynamic" };
+            },
+        });
+
+        const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
+
+        await adapter.upload(file);
+
+        expect(recordedHeaders).toContainEqual(["Authorization", "Bearer dynamic"]);
+        expect(seenContexts[0]?.url).toBe("/api/upload");
+        expect(seenContexts[0]?.method).toBe("POST");
+    });
+
     it("should abort upload", () => {
         expect.assertions(1);
 
