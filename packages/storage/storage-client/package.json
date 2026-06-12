@@ -105,10 +105,10 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@sveltejs/vite-plugin-svelte": "catalog:build",
         "@tanstack/eslint-plugin-query": "catalog:lint",
-        "@tanstack/react-query": ">=5.100.10",
-        "@tanstack/solid-query": "5.100.10",
-        "@tanstack/svelte-query": ">=6.1.29",
-        "@tanstack/vue-query": ">=5.100.10",
+        "@tanstack/react-query": ">=5.101.0",
+        "@tanstack/solid-query": "5.101.0",
+        "@tanstack/svelte-query": ">=6.1.34",
+        "@tanstack/vue-query": ">=5.101.0",
         "@testing-library/react": "catalog:test",
         "@testing-library/svelte": "catalog:test",
         "@testing-library/vue": "catalog:test",
@@ -146,7 +146,7 @@
         "svelte-preprocess": "catalog:frontend",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test",
-        "vue": ">=3.5.34",
+        "vue": ">=3.5.38",
         "vue-eslint-parser": "catalog:lint"
     },
     "peerDependencies": {
