@@ -13,6 +13,7 @@ describe(appendToShellHistory, () => {
     let originalVisNoHistory: string | undefined;
     let originalPsHistory: string | undefined;
     let originalAppData: string | undefined;
+    let originalHome: string | undefined;
 
     beforeEach(async () => {
         // eslint-disable-next-line sonarjs/pseudo-random -- temp-dir suffix in tests, not security-sensitive
@@ -25,6 +26,7 @@ describe(appendToShellHistory, () => {
         originalVisNoHistory = process.env["VIS_NO_SHELL_HISTORY"];
         originalPsHistory = process.env["VIS_PSREADLINE_HISTORY"];
         originalAppData = process.env["APPDATA"];
+        originalHome = process.env["HOME"];
         delete process.env["VIS_NO_SHELL_HISTORY"];
     });
 
@@ -59,6 +61,12 @@ describe(appendToShellHistory, () => {
             delete process.env["APPDATA"];
         } else {
             process.env["APPDATA"] = originalAppData;
+        }
+
+        if (originalHome === undefined) {
+            delete process.env["HOME"];
+        } else {
+            process.env["HOME"] = originalHome;
         }
     });
 
@@ -137,6 +145,33 @@ describe(appendToShellHistory, () => {
         // The injected `rm -rf /` must not become its own line.
         expect(content).toBe("vis run build rm -rf /\n");
         expect(content.split("\n").filter((line) => line !== "")).toHaveLength(1);
+    });
+
+    it.skipIf(process.platform === "win32")("escapes newlines and carriage returns in the fish entry so a task name cannot inject extra entries", async () => {
+        expect.assertions(3);
+
+        const fishDirectory = join(workDirectory, ".local", "share", "fish");
+
+        await mkdir(fishDirectory, { recursive: true });
+
+        const histFile = join(fishDirectory, "fish_history");
+
+        await writeFile(histFile, "");
+        process.env["SHELL"] = "/usr/bin/fish";
+        // The fish writer resolves its path via `homedir()`; on POSIX that
+        // honours `$HOME`, which lets us redirect it into the temp dir.
+        process.env["HOME"] = workDirectory;
+
+        await appendToShellHistory("vis run build\r\nmalicious");
+
+        const content = await readFile(histFile, "utf8");
+
+        // The injected command must stay inside the single `- cmd:` entry: no
+        // raw newline/carriage-return escapes the value, so only one `- cmd:`
+        // line exists and the `when:` continuation line is the only other one.
+        expect(content).toContain(String.raw`- cmd: vis run build\r\nmalicious`);
+        expect(content.split("\n").filter((line) => line.startsWith("- cmd:"))).toHaveLength(1);
+        expect(content).not.toContain("\r");
     });
 
     it.runIf(process.platform === "win32")("appends to the PowerShell PSReadLine history file on Windows", async () => {
