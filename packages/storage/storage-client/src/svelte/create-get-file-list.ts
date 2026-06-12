@@ -62,9 +62,9 @@ export const createGetFileList = (options: CreateGetFileListOptions): CreateGetF
 
         return {
             enabled: currentEnabled,
-            queryFn: async (): Promise<FileListResponse> => {
+            queryFn: async ({ signal }): Promise<FileListResponse> => {
                 const url = buildUrl(endpoint, "", { limit: currentLimit, page: currentPage });
-                const data = await fetchJson<FileListResponse | FileMeta[]>(url);
+                const data = await fetchJson<FileListResponse | FileMeta[]>(url, { signal });
 
                 // Handle both paginated and non-paginated responses
                 return Array.isArray(data)

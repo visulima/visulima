@@ -69,10 +69,11 @@ export const createGetFile = (options: CreateGetFileOptions): CreateGetFileRetur
 
         return {
             enabled: get(enabledDerived),
-            queryFn: async () => {
+            queryFn: async ({ signal }) => {
                 const url = buildUrl(endpoint, currentId, currentTransform);
                 const response = await fetch(url, {
                     method: "GET",
+                    signal,
                 });
 
                 if (!response.ok) {

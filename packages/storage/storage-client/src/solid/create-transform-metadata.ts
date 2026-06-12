@@ -42,9 +42,9 @@ export const createTransformMetadata = (options: CreateTransformMetadataOptions)
     const query = createQuery(() => {
         return {
             enabled: enabledValue(),
-            queryFn: async (): Promise<TransformMetadata> => {
+            queryFn: async ({ signal }): Promise<TransformMetadata> => {
                 const url = buildUrl(endpoint, "metadata");
-                const data = await fetchJson<TransformMetadata>(url);
+                const data = await fetchJson<TransformMetadata>(url, { signal });
 
                 return {
                     formats: data.formats,

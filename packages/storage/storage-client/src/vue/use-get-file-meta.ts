@@ -35,10 +35,10 @@ export const useGetFileMeta = (options: UseGetFileMetaOptions): UseGetFileMetaRe
 
     const query = useQuery({
         enabled: computed(() => toValue(enabled) && !!toValue(id)),
-        queryFn: async (): Promise<FileMeta> => {
+        queryFn: async ({ signal }): Promise<FileMeta> => {
             const fileId = toValue(id);
             const url = buildUrl(endpoint, `${fileId}/metadata`);
-            const data = await fetchJson<FileMeta>(url);
+            const data = await fetchJson<FileMeta>(url, { signal });
 
             return {
                 ...data,

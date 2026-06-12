@@ -63,9 +63,9 @@ export const createHeadFile = (options: CreateHeadFileOptions): CreateHeadFileRe
 
         return {
             enabled: currentEnabled && !!currentId,
-            queryFn: async (): Promise<FileHeadMetadata> => {
+            queryFn: async ({ signal }): Promise<FileHeadMetadata> => {
                 const url = buildUrl(endpoint, currentId);
-                const headers = await fetchHead(url);
+                const headers = await fetchHead(url, { signal });
 
                 // Extract metadata from headers
                 const contentLength = headers.get("Content-Length");
