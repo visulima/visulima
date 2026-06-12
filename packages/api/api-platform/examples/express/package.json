@@ -11,7 +11,7 @@
         "cors": "catalog:prod",
         "dotenv": "catalog:prod",
         "express": "catalog:backend",
-        "express-rate-limit": "^8.4.1",
+        "express-rate-limit": "^8.5.2",
         "winston": "catalog:prod"
     },
     "devDependencies": {
