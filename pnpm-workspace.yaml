@@ -160,7 +160,7 @@ catalogs:
     '@visulima/fs': 5.0.0-alpha.4
     '@visulima/humanizer': 3.0.0-alpha.6
     '@visulima/inspector': 2.0.0-alpha.4
-    '@visulima/packem': 2.0.0-alpha.87
+    '@visulima/packem': 2.0.0-alpha.88
     '@visulima/path': 3.0.0-alpha.5
     '@visulima/redact': 3.0.0-alpha.5
     '@visulima/string': 3.0.0-alpha.6
@@ -745,6 +745,7 @@ minimumReleaseAge: 1440
 minimumReleaseAgeExclude:
   - typescript
   - '@types/*'
+  - '@visulima/*'
   - '@tootallnate/once@3.0.1'
   - svelte@5.55.7
   - next@16.2.6
