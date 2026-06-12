@@ -1,5 +1,6 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
+import { clearFileSourceCache } from "../../../../shared/utils/get-file-source";
 import { Ono, renderJson } from "../src/index";
 import toJSON from "../src/to-json";
 
@@ -64,6 +65,35 @@ describe(toJSON, () => {
 
         expect(payload.solution?.header).toBe("Custom");
         expect(payload.solution?.body).toBe("do the thing");
+    });
+
+    describe("ssrf: remote stack-frame URLs", () => {
+        afterEach(() => {
+            clearFileSourceCache();
+            vi.restoreAllMocks();
+        });
+
+        it("should not issue an outbound fetch for an http(s) stack-frame path by default", async () => {
+            expect.assertions(2);
+
+            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("export const secret = 1;"));
+
+            // Forge a stack whose top frame points at an attacker-controlled remote URL.
+            // Code-frame snippet resolution must NOT fetch it (SSRF), so the snippet stays empty.
+            const error = new Error("remote frame");
+
+            error.stack = [
+                "Error: remote frame",
+                "    at handler (https://169.254.169.254/latest/meta-data:1:1)",
+                "    at run (https://attacker.example/payload.js:2:3)",
+            ].join("\n");
+
+            const payload = await toJSON(error);
+
+            expect(fetchSpy).not.toHaveBeenCalled();
+            // Frames are still parsed; only the network read is suppressed.
+            expect(Array.isArray(payload.stack[0]?.frames)).toBe(true);
+        });
     });
 
     it("should be reachable via the renderJson export and the Ono class", async () => {
