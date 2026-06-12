@@ -14,9 +14,9 @@ const multiLineValues = (values: unknown[]): boolean => {
     return false;
 };
 
-// Collect own enumerable string keys that are NOT array indices. A reverse scan
-// avoids `Object.keys(array).slice(array.length)`, which materializes the full
-// list of N index strings only to throw them away — wasteful for large arrays.
+// Collect own enumerable string keys that are NOT array indices. A single filtering
+// pass over `Object.keys(array)` avoids the extra `Object.keys(array).slice(array.length)`
+// allocation (which builds, then immediately discards, a second N-length array).
 const getNonIndexProperties = (array: unknown[]): string[] => {
     const nonIndex: string[] = [];
 
