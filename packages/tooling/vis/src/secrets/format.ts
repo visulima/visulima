@@ -3,7 +3,7 @@ import { pathToFileURL } from "node:url";
 import { cyan, dim, green, red, yellow } from "@visulima/colorize";
 import { readFileSync } from "@visulima/fs";
 import { isAbsolute, relative, resolve } from "@visulima/path";
-import type { Finding, RuleInfo } from "@visulima/secret-scanner";
+import type { Finding, GitFinding, RuleInfo } from "@visulima/secret-scanner";
 
 const CONTEXT_RADIUS = 1;
 
@@ -130,6 +130,65 @@ export const formatText = (findings: Finding[], root: string, useColor: boolean,
 
             lines.push("");
         }
+    }
+
+    return lines.join("\n").trimEnd();
+};
+
+/**
+ * Commit-grouped text output for `--history` scans. Unlike {@link formatText},
+ * the offending blobs live in git history rather than the working tree, so
+ * there is no on-disk source to render context for — each finding shows its
+ * rule, location and (unless redacting) the raw match alongside the commit it
+ * was introduced in.
+ */
+export const formatHistoryText = (findings: GitFinding[], useColor: boolean, options: { redact?: boolean } = {}): string => {
+    if (findings.length === 0) {
+        return useColor ? dim("No secrets detected in git history.") : "No secrets detected in git history.";
+    }
+
+    const color = useColor
+        ? { cyan, dim, green, red, yellow }
+        : {
+            cyan: (s: string) => s,
+            dim: (s: string) => s,
+            green: (s: string) => s,
+            red: (s: string) => s,
+            yellow: (s: string) => s,
+        };
+
+    // Group by commit, preserving first-seen (newest-first) order.
+    const byCommit = new Map<string, GitFinding[]>();
+
+    for (const f of findings) {
+        const list = byCommit.get(f.commit.sha);
+
+        if (list) {
+            list.push(f);
+        } else {
+            byCommit.set(f.commit.sha, [f]);
+        }
+    }
+
+    const lines: string[] = [];
+
+    for (const [sha, items] of byCommit) {
+        const { authorName, date, message } = items[0]!.commit;
+
+        lines.push(`${color.yellow(sha.slice(0, 10))} ${message}`);
+        lines.push(`  ${color.dim(`${authorName} · ${date}`)}`);
+
+        for (const f of items) {
+            const provenance = [f.source, f.confidence].filter(Boolean).join(", ");
+            const provenanceSuffix = provenance ? ` ${color.dim(`(${provenance})`)}` : "";
+            const matchSuffix = options.redact ? "" : ` ${color.dim(f.match)}`;
+
+            lines.push(
+                `  ${color.red("✖")} ${color.yellow(`[${f.ruleId}]`)}${provenanceSuffix} ${color.cyan(f.file)} ${color.dim(`line ${String(f.startLine)}:${String(f.startColumn)}`)}${matchSuffix}`,
+            );
+        }
+
+        lines.push("");
     }
 
     return lines.join("\n").trimEnd();
