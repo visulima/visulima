@@ -1,4 +1,4 @@
-import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { mkdtempSync, readFileSync, realpathSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join, resolve } from "node:path";
 
@@ -31,7 +31,9 @@ describe("task-runner-client", () => {
             .map((line) => JSON.parse(line) as Record<string, unknown>);
 
     beforeEach(() => {
-        directory = mkdtempSync(join(tmpdir(), "trc-"));
+        // realpathSync so the path matches process.cwd() after chdir — on
+        // macOS tmpdir() is a /var -> /private/var symlink, and cwd resolves it.
+        directory = realpathSync(mkdtempSync(join(tmpdir(), "trc-")));
         hintsFile = join(directory, "hints.ndjson");
     });
 
