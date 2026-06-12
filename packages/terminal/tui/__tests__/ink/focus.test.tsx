@@ -1,6 +1,6 @@
 import delay from "delay";
 import { useEffect } from "react";
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 import { Box, Text } from "../../src/components/index";
 import { useFocus } from "../../src/ink/hooks/use-focus";
@@ -315,12 +315,11 @@ describe("focus", () => {
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["Second ✔", "Third"].join("\n"));
     });
 
-    // CI runners race the 50ms delay between rerender/emitReadable/tab:
-    // the focus state captured at the moment of the assertion swaps with
-    // the next pending render (First ✔ vs Second ✔). Skipped on Windows
-    // and macOS where the race is reproducible; Linux runners are fast
-    // enough that the order holds.
-    it.skipIf(process.platform === "win32" || process.platform === "darwin")("toggle focus management", async () => {
+    // The focus render used to race the fixed 50ms delay — `.at(-1)` could
+    // capture an intermediate pending frame (First ✔ vs Second ✔), which flaked
+    // on every platform. Waiting for the expected frame with vi.waitUntil makes
+    // it deterministic, so it no longer needs to be skipped on Windows/macOS.
+    it("toggle focus management", async () => {
         expect.assertions(2);
 
         const stdout = createStdout();
@@ -333,14 +332,18 @@ describe("focus", () => {
         rerender(<Test autoFocus disabled />);
         await delay(50);
         emitReadable(stdin, "\t");
-        await delay(50);
+
+        // Wait for the focus render to land instead of racing a fixed delay —
+        // `.at(-1)` could otherwise catch an intermediate pending frame.
+        await vi.waitUntil(() => (stdout.write as any).mock.calls.at(-1)?.[0] === ["First ✔", "Second", "Third"].join("\n"));
 
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First ✔", "Second", "Third"].join("\n"));
 
         rerender(<Test autoFocus />);
         await delay(50);
         emitReadable(stdin, "\t");
-        await delay(50);
+
+        await vi.waitUntil(() => (stdout.write as any).mock.calls.at(-1)?.[0] === ["First", "Second ✔", "Third"].join("\n"));
 
         expect((stdout.write as any).mock.calls.at(-1)[0]).toBe(["First", "Second ✔", "Third"].join("\n"));
     });
