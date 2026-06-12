@@ -3,10 +3,31 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import type { Block } from "comment-parser";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { OpenApiObject } from "../src/exported";
 import parseFile, { parseFileMulti } from "../src/parse-file";
+
+// Wrap the real readFileSync/parse in spies so we can assert each runs once per
+// file across both dialects, while the fixture helpers keep their real behaviour.
+const readFileSyncSpy = vi.hoisted(() => vi.fn());
+const parseSpy = vi.hoisted(() => vi.fn());
+
+vi.mock(import("node:fs"), async (importOriginal) => {
+    const actual = await importOriginal<typeof import("node:fs")>();
+
+    readFileSyncSpy.mockImplementation(actual.readFileSync);
+
+    return { ...actual, readFileSync: readFileSyncSpy };
+});
+
+vi.mock(import("comment-parser"), async (importOriginal) => {
+    const actual = await importOriginal<typeof import("comment-parser")>();
+
+    parseSpy.mockImplementation(actual.parse);
+
+    return { ...actual, parse: parseSpy };
+});
 
 const noopCommentsToOpenApi = (): { loc: number; spec: OpenApiObject }[] => [];
 
@@ -142,6 +163,26 @@ describe(parseFileMulti, () => {
         // Both translators get the same parsed-comment array instance.
         expect(received[0]).toBe(received[1]);
         expect(Array.isArray(received[0])).toBe(true);
+    });
+
+    it("reads and parses a source file exactly once for both translators", () => {
+        expect.assertions(2);
+
+        const file = join(workDirectory, "ok.js");
+
+        writeFileSync(file, "/**\n * GET /\n */\n");
+
+        readFileSyncSpy.mockClear();
+        parseSpy.mockClear();
+
+        const translator = (): { loc: number; spec: OpenApiObject }[] => [];
+
+        parseFileMulti(file, [translator, translator]);
+
+        // A single readFileSync + a single comment-parser pass feed both dialects,
+        // instead of one read/parse per translator.
+        expect(readFileSyncSpy).toHaveBeenCalledTimes(1);
+        expect(parseSpy).toHaveBeenCalledTimes(1);
     });
 
     it("handles YAML files without running the comment translators", () => {
