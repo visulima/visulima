@@ -305,23 +305,23 @@ html`<p>${trusted}</p>`;
 ```typescript
 import { html } from "@visulima/html";
 
-// Escape HTML (escapes &, <, and ")
-const escapedHtml = html('<script>alert("xss")</script>', true);
+// Escapes by default (escapes &, <, and ") — safe for untrusted input
+const escapedHtml = html('<script>alert("xss")</script>');
 // Result: '&lt;script>alert(&quot;xss&quot;)&lt;/script>'
 
-// Return HTML as-is (unsafe for untrusted input)
-const passthrough = html("<div></div>");
+// Opt out explicitly for HTML you already trust / have sanitized
+const passthrough = html("<div></div>", false);
 // Result: '<div></div>'
 ```
 
-> **⚠️ Security caveat:** The `html(string)` function-call form is **not** escaping by default — it only escapes when you pass `true` as the second argument. This differs from the template-tag form, which always escapes interpolations. Prefer the template tag for untrusted data, and only use the function form (without `true`) for HTML you already trust.
+> **Security note:** The `html(string)` function-call form **escapes by default**, matching the template-tag form. Pass `false` as the second argument only for HTML you fully control or have already sanitized — that disables XSS protection. For trusted fragments inside the template tag, use `html.raw(...)` instead.
 
 #### Use Cases
 
 - **Template Literals**: Use the template tag for HTML with automatic escaping of interpolated values
 - **Fragment Composition**: Use arrays and `html.raw` to build lists and compose partials safely
 - **Dynamic Content**: Interpolated values are automatically escaped, making it safe for user-generated content
-- **Trusted HTML**: Use `html.raw(...)` (or the function form with no second argument) when you need to insert trusted HTML without escaping
+- **Trusted HTML**: Use `html.raw(...)` (or the function form with `false` as the second argument) when you need to insert trusted HTML without escaping
 - **Performance**: Template tag has minimal overhead, perfect for HTML generation with automatic XSS protection
 
 ### CSS Escaping
