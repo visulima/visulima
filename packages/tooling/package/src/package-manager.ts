@@ -6,7 +6,7 @@ import { NotFoundError } from "@visulima/fs/error";
 import { parseJson } from "@visulima/fs/utils";
 import { dirname, join } from "@visulima/path";
 
-const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lockb"];
+const lockFileNames = ["yarn.lock", "package-lock.json", "pnpm-lock.yaml", "npm-shrinkwrap.json", "bun.lock", "bun.lockb"];
 
 const KNOWN_PACKAGE_MANAGERS = new Set<PackageManager>(["bun", "npm", "pnpm", "yarn"]);
 
@@ -87,7 +87,9 @@ const resolvePackageManagerFromFile = (foundFile: string | undefined): PackageMa
         };
     }
 
-    if (foundFile.endsWith("bun.lockb")) {
+    // Both the modern text lockfile (`bun.lock`, Bun v1.1+) and the legacy
+    // binary lockfile (`bun.lockb`) identify a bun project.
+    if (foundFile.endsWith("bun.lock") || foundFile.endsWith("bun.lockb")) {
         return {
             packageManager: "bun",
             path: dirname(foundFile),

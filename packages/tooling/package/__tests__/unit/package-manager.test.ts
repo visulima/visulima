@@ -90,7 +90,7 @@ describe("package-manager", () => {
             });
         });
 
-        it("should detect bun", async () => {
+        it("should detect bun via legacy bun.lockb", async () => {
             expect.assertions(1);
 
             let result = function_(join(whichPMFixturePath, "bun"));
@@ -163,6 +163,46 @@ describe("package-manager", () => {
 
         afterEach(() => {
             rmSync(temporaryDirectory, { force: true, recursive: true });
+        });
+
+        it("should detect bun via modern bun.lock", async () => {
+            expect.assertions(1);
+
+            temporaryDirectory = mkdtempSync(join(tmpdir(), "visulima-package-"));
+
+            writeFileSync(join(temporaryDirectory, "bun.lock"), "{}");
+
+            let result = function_(temporaryDirectory);
+
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageManager") {
+                result = await result;
+            }
+
+            expect(result).toStrictEqual({
+                packageManager: "bun",
+                path: temporaryDirectory,
+            });
+        });
+
+        it("should detect bun via legacy bun.lockb", async () => {
+            expect.assertions(1);
+
+            temporaryDirectory = mkdtempSync(join(tmpdir(), "visulima-package-"));
+
+            writeFileSync(join(temporaryDirectory, "bun.lockb"), "binary-placeholder");
+
+            let result = function_(temporaryDirectory);
+
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findPackageManager") {
+                result = await result;
+            }
+
+            expect(result).toStrictEqual({
+                packageManager: "bun",
+                path: temporaryDirectory,
+            });
         });
 
         it("should throw when package.json declares an unknown packageManager", async () => {
