@@ -4,5 +4,5 @@
     "sourceRoot": "packages/error-debugging/error-handler/src",
     "projectType": "library",
     "tags": ["error-handler", "type:package", "category:error-handling"],
-    "implicitDependencies": []
+    "implicitDependencies": ["shared-utils"]
 }
