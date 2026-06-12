@@ -1,5 +1,5 @@
 import type { InteractiveManager } from "@visulima/interactive-manager";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { MultiBarInstance } from "../src/multi-progress-bar";
 import { MultiProgressBar } from "../src/multi-progress-bar";
@@ -25,8 +25,8 @@ const createManagerStub = (): {
     };
 
     const manager = {
-        erase: vi.fn(),
-        hook: vi.fn(() => {
+        erase: vi.fn<() => void>(),
+        hook: vi.fn<() => boolean>(() => {
             state.hookCalls += 1;
 
             return true;
@@ -43,14 +43,14 @@ const createManagerStub = (): {
         get outside() {
             return 0;
         },
-        resume: vi.fn(),
-        suspend: vi.fn(),
-        unhook: vi.fn(() => {
+        resume: vi.fn<() => void>(),
+        suspend: vi.fn<() => void>(),
+        unhook: vi.fn<() => boolean>(() => {
             state.unhookCalls += 1;
 
             return true;
         }),
-        update: vi.fn((stream: string, rows: string[]) => {
+        update: vi.fn<(stream: string, rows: string[]) => void>((stream: string, rows: string[]) => {
             state.updates.push({ rows: [...rows], stream });
         }),
     } as unknown as InteractiveManager;
@@ -106,6 +106,8 @@ describe("multiProgressBar", () => {
 
             // Re-render with both bars present; non-composite mode emits one row per bar.
             bar2.update(10);
+            // Flush the (throttled) frame so the assertion sees the latest render.
+            multi.stop();
 
             const last = state.updates.at(-1);
 
@@ -138,6 +140,8 @@ describe("multiProgressBar", () => {
             state.updates.length = 0;
 
             bar1.update(50);
+            // Flush the (throttled) frame so the assertion sees the latest render.
+            multi.stop();
 
             // The latest update must include both bars in rows
             const last = state.updates.at(-1);
@@ -157,6 +161,8 @@ describe("multiProgressBar", () => {
 
             bar1.update(75);
             bar2.update(25);
+            // Flush the (throttled) frame so the assertion sees the latest render.
+            multi.stop();
 
             const last = state.updates.at(-1);
 
@@ -390,6 +396,8 @@ describe("multiProgressBar", () => {
 
             multi.setBarColor(bar, colorize);
             bar.update(50);
+            // Flush the (throttled) frame so the assertion sees the latest render.
+            multi.stop();
 
             const last = state.updates.at(-1);
 
@@ -408,6 +416,8 @@ describe("multiProgressBar", () => {
             multi.setBarColor(bar, colorize);
             multi.setBarColor(bar, undefined);
             bar.update(50);
+            // Flush the (throttled) frame so the assertion sees the latest render.
+            multi.stop();
 
             const last = state.updates.at(-1);
 
@@ -427,6 +437,8 @@ describe("multiProgressBar", () => {
             // Coloring the second bar makes setBarColor iterate past the first non-match.
             multi.setBarColor(second, colorize);
             second.update(50);
+            // Flush the (throttled) frame so the assertion sees the latest render.
+            multi.stop();
 
             const last = state.updates.at(-1);
 
@@ -512,6 +524,112 @@ describe("multiProgressBar", () => {
 
             // 3 filled chars joined by "-" glue.
             expect(bar.render()).toBe("[#-#-#]");
+        });
+    });
+
+    describe("fps throttling", () => {
+        afterEach(() => {
+            vi.useRealTimers();
+        });
+
+        it("should coalesce rapid updates and only render once within a frame", () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+
+            const { manager, state } = createManagerStub();
+            const multi = new MultiProgressBar({ format: "{value}", fps: 10 }, manager);
+
+            // First create forces a frame (lastRenderTime = 0).
+            multi.create(100);
+            state.updates.length = 0;
+
+            // Advance one frame so the first update flushes, then two more in the same
+            // frame must be coalesced => exactly one render.
+            vi.setSystemTime(200);
+
+            const bar = multi.create(100);
+
+            state.updates.length = 0;
+
+            bar.update(1);
+            bar.update(2);
+            bar.update(3);
+
+            expect(state.updates).toHaveLength(1);
+        });
+
+        it("should render across separate frames", () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+
+            const { manager, state } = createManagerStub();
+            const multi = new MultiProgressBar({ format: "{value}", fps: 10 }, manager);
+            const bar = multi.create(100);
+
+            state.updates.length = 0;
+
+            vi.setSystemTime(200);
+            bar.update(1);
+            vi.setSystemTime(400);
+            bar.update(2);
+
+            expect(state.updates).toHaveLength(2);
+        });
+
+        it("should render every update when fps is 0 (disabled)", () => {
+            expect.assertions(1);
+
+            const { manager, state } = createManagerStub();
+            const multi = new MultiProgressBar({ format: "{value}", fps: 0 }, manager);
+            const bar = multi.create(100);
+
+            state.updates.length = 0;
+
+            bar.update(1);
+            bar.update(2);
+            bar.update(3);
+
+            expect(state.updates).toHaveLength(3);
+        });
+
+        it("should always render the completion frame even when throttled", () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+
+            const { manager, state } = createManagerStub();
+            const multi = new MultiProgressBar({ format: "{value}", fps: 10 }, manager);
+            const bar = multi.create(100);
+
+            state.updates.length = 0;
+
+            // Within the same frame as create() -> throttled away, but reaching total
+            // forces the final frame regardless of fps.
+            bar.update(100);
+
+            expect(state.updates.at(-1)?.rows[0]).toBe("100");
+        });
+
+        it("should always flush a final frame on stop()", () => {
+            expect.assertions(1);
+
+            vi.useFakeTimers();
+            vi.setSystemTime(0);
+
+            const { manager, state } = createManagerStub();
+            const multi = new MultiProgressBar({ format: "{value}", fps: 10 }, manager);
+            const bar = multi.create(100);
+
+            bar.update(1);
+            bar.update(42); // throttled away
+            multi.stop();
+
+            expect(state.updates.at(-1)?.rows[0]).toBe("42");
         });
     });
 

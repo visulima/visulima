@@ -26,7 +26,14 @@ export class MultiBarInstance extends ProgressBar {
 
     public override update(current: number, payload?: ProgressBarPayload): void {
         super.update(current, payload);
-        this.multiBar.renderAll();
+
+        // State is updated synchronously above; the actual terminal write is throttled
+        // to the multi-bar's configured fps to keep rapid updates from rebuilding and
+        // writing every bar's frame on every call (quadratic in bar count).
+        const state = this.getBarState();
+        const complete = state.total > 0 && state.current >= state.total;
+
+        this.multiBar.renderAll(complete);
     }
 
     public getBarState(): { char: string; current: number; total: number } {
@@ -73,6 +80,9 @@ export class MultiProgressBar {
     private composite: boolean = false;
 
     private barColors = new Map<MultiBarInstance, (text: string) => string>();
+
+    /** Timestamp (ms) of the last live render, used to throttle by `fps`. */
+    private lastRenderTime: number = 0;
 
     public constructor(options: MultiBarOptions = {}, interactiveManager?: InteractiveManager) {
         this.options = {
@@ -135,7 +145,7 @@ export class MultiProgressBar {
         if (!this.isActive && this.interactiveManager) {
             this.interactiveManager.hook();
             this.isActive = true;
-            this.renderAll();
+            this.renderAll(true);
         }
 
         return bar;
@@ -154,7 +164,7 @@ export class MultiProgressBar {
 
                     this.isActive = false;
                 } else {
-                    this.renderAll();
+                    this.renderAll(true);
                 }
 
                 return true;
@@ -166,11 +176,23 @@ export class MultiProgressBar {
 
     /**
      * Re-render every registered bar to the interactive manager.
+     *
+     * Live renders are throttled to the configured `fps`; calls that arrive faster
+     * than one frame interval are coalesced (the underlying bar state is still updated
+     * synchronously by the caller). Pass `force` to bypass the throttle — used for
+     * structural changes (create/remove), completion, and the final frame on `stop()`.
+     * @param force Render immediately, ignoring the fps throttle.
      */
-    public renderAll(): void {
+    public renderAll(force: boolean = false): void {
         if (!this.interactiveManager || !this.isActive) {
             return;
         }
+
+        if (!force && !this.shouldRender()) {
+            return;
+        }
+
+        this.lastRenderTime = Date.now();
 
         const lines: string[] = [];
 
@@ -206,14 +228,26 @@ export class MultiProgressBar {
     }
 
     public stop(): void {
-        this.isActive = false;
-
-        if (this.interactiveManager) {
+        if (this.interactiveManager && this.isActive) {
+            // Guarantee the final frame is shown even if the last update was throttled.
+            this.renderAll(true);
             this.interactiveManager.unhook(false);
         }
 
+        this.isActive = false;
         this.bars.clear();
         this.barColors.clear();
+    }
+
+    /** Whether enough time has elapsed since the last frame to render again. */
+    private shouldRender(): boolean {
+        const fps = this.options.fps ?? 10;
+
+        if (fps <= 0) {
+            return true;
+        }
+
+        return Date.now() - this.lastRenderTime >= 1000 / fps;
     }
 
     private renderComposite(bars: MultiBarInstance[]): string {
