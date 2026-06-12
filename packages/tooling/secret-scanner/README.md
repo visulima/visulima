@@ -126,6 +126,18 @@ const staged = await scanFiles(["src/app.ts", "src/db.ts"]);
 // 3) Scan an in-memory buffer
 const inline = await scanString('aws_secret = "AKIA..."', "config.env");
 
+// 3b) Scan git history (gitleaks `git` mode) — finds secrets that were
+//     committed and later removed, not just what's in the working tree.
+//     Each finding carries the originating commit (sha, author, date, message).
+import { scanGitHistory } from "@visulima/secret-scanner";
+
+const leaked = await scanGitHistory({ cwd: process.cwd(), range: "HEAD~50..HEAD" });
+for (const f of leaked) {
+    console.log(`${f.ruleId} @ ${f.commit.sha.slice(0, 8)} (${f.commit.authorEmail}): ${f.file}`);
+}
+// Bound the walk with `range`, `since`/`until`, or `maxCommits`. Omit all
+// three to scan the entire reachable history of HEAD.
+
 // 4) List every bundled rule
 const rules = await listRules();
 console.log(`${rules.length} rules loaded`);

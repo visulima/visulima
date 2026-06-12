@@ -131,29 +131,13 @@ export const scanFiles = async (files: string[], options?: ScanOptions): Promise
     return postProcess(raw, prepared, options);
 };
 
-/**
- * Scan an in-memory buffer as if it lived at `file`. Useful for editor
- * integrations and ad-hoc programmatic scans.
- *
- * **Note**: detection runs synchronously on the calling thread (the native
- * binding is sync for string input — scanning ~550 KB takes ~11 ms with the
- * full 1,047-rule set). The `async` signature exists because `postProcess`
- * may await validators. For large buffers on a latency-sensitive event loop
- * (HTTP server request handler, VSCode extension main thread), chunk the
- * input yourself or offload to a worker.
- */
-export const scanString = async (content: string, file: string, options?: ScanOptions): Promise<Finding[]> => {
-    const prepared = prepareScan(options);
-    const raw = binding.scanTextSync(content, file, prepared.nativeOptions) as Finding[];
-
-    return postProcess(raw, prepared, options);
-};
-
 export { buildBaselineSet, createBaseline, loadBaselineSet, resolveBaselineSet, writeBaseline } from "./baseline";
 export { bundledConfigPath, type GitleaksConfig } from "./config-loader";
 export { fingerprint, legacyFingerprint } from "./fingerprint";
+export { type GitCommitInfo, type GitFinding, type GitScanOptions, scanGitHistory } from "./git-scan";
 export { isLockFile, isNotAlphanumericString, isPotentialUuid, isSequentialString } from "./heuristics";
 export { type SarifLog, toSarif, type ToSarifOptions } from "./sarif";
+export { scanString } from "./scan-string";
 export { transformYamlBlockScalars } from "./transformers/yaml";
 export type { ValidatorReport } from "./transports";
 export type { Confidence, Finding, RuleInfo, ScanOptions, SkippedRule, ValidationStatus } from "./types";
