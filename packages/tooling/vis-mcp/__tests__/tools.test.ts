@@ -116,7 +116,7 @@ describe(registerListProjects, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
     });
 });
 
@@ -155,7 +155,7 @@ describe(registerDescribeProject, () => {
 
         const error = parseError(await calls[0]!.handler({ name: "@scope/alpha" }));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
     });
 });
 
@@ -222,7 +222,7 @@ describe(registerListTargets, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
     });
 });
 
@@ -360,7 +360,7 @@ describe(registerGetRunLogs, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
         expect(error.error).not.toContain("No run summary");
     });
 });
@@ -441,7 +441,7 @@ describe(registerCacheWhy, () => {
 
         const error = parseError(await calls[0]!.handler({ taskId: "@scope/alpha:build" }));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
     });
 });
 
@@ -470,7 +470,7 @@ describe(registerListTemplates, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
     });
 });
 
@@ -597,7 +597,7 @@ describe(registerCacheHash, () => {
 
         const error = parseError(await calls[0]!.handler({ taskId: "@scope/alpha:build" }));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
     });
 });
 
@@ -657,7 +657,7 @@ describe(registerAudit, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
     });
 });
 
@@ -702,7 +702,7 @@ describe(registerAdvisoryStatus, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
     });
 });
 
@@ -829,7 +829,7 @@ describe(registerLint, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
     });
 });
 
@@ -921,7 +921,7 @@ describe(registerFmt, () => {
 
         const error = parseError(await calls[0]!.handler({}));
 
-        expect(error.error).toBeTruthy();
+        expect(error.error).toStrictEqual(expect.any(String));
     });
 });
 
