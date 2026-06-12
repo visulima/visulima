@@ -117,8 +117,10 @@ const writePowerShellHistory = async (commandLine: string): Promise<void> => {
 
 const writeFishHistory = async (commandLine: string): Promise<void> => {
     const target = join(homedir(), ".local", "share", "fish", "fish_history");
-    // fish YAML-ish format; escape backslashes and newlines conservatively.
-    const escaped = commandLine.replaceAll("\\", "\\\\").replaceAll("\n", String.raw`\n`);
+    // fish YAML-ish format; escape backslashes, newlines and carriage returns
+    // conservatively so a repo-controlled task name can't break out of the
+    // single `- cmd:` entry it belongs to.
+    const escaped = commandLine.replaceAll("\\", "\\\\").replaceAll("\n", String.raw`\n`).replaceAll("\r", String.raw`\r`);
     const entry = `- cmd: ${escaped}\n  when: ${Math.floor(Date.now() / 1000)}\n`;
 
     await appendFile(target, entry);
