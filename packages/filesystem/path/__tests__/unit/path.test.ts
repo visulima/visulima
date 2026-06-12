@@ -86,6 +86,13 @@ runTest("basename", basename, [
     ["./myfile.html", ".html", "myfile"],
     ["./undefined", undefined, "undefined"],
 
+    // When the extension equals the *entire path argument*, Node returns "".
+    ["test.html", "test.html", ""],
+    // But when the basename is reached via a directory, an extension that
+    // matches the whole basename leaves it untouched instead of returning "".
+    ["/foo/test.html", "test.html", "test.html"],
+    ["a/xtest.html", "test.html", "x"],
+
     // Windows
     [String.raw`C:\temp\myfile.html`, "myfile.html"],
     [String.raw`\temp\myfile.html`, "myfile.html"],

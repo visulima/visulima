@@ -303,18 +303,20 @@ export const relative: typeof path.relative = function (from: string, to: string
         return splitTo.join("/");
     }
 
-    const fromCopy = [...splitFrom];
+    // Count the shared leading segments with a single index walk. Using an
+    // index counter plus slice(common) keeps this linear (the previous
+    // shift()-per-segment approach was O(n²) on the common-prefix length).
+    const shorter = Math.min(splitFrom.length, splitTo.length);
+    let common = 0;
 
-    for (const segment of fromCopy) {
-        if (splitTo[0] !== segment) {
-            break;
-        }
-
-        splitFrom.shift();
-        splitTo.shift();
+    while (common < shorter && splitFrom[common] === splitTo[common]) {
+        common += 1;
     }
 
-    return [...splitFrom.map(() => ".."), ...splitTo].join("/");
+    const upCount = splitFrom.length - common;
+    const segments = Array.from<string>({ length: upCount }).fill("..");
+
+    return [...segments, ...splitTo.slice(common)].join("/");
 };
 
 /**
@@ -324,13 +326,24 @@ export const relative: typeof path.relative = function (from: string, to: string
  * @returns the directory portion of the path.
  */
 export const dirname: typeof path.dirname = (path: string) => {
-    const segments = normalizeWindowsPath(path).replace(TRAILING_SLASH_RE, "").split("/").slice(0, -1);
+    const normalized = normalizeWindowsPath(path).replace(TRAILING_SLASH_RE, "");
+    const lastSlash = normalized.lastIndexOf("/");
 
-    if (segments.length === 1 && DRIVE_LETTER_RE.test(segments[0] as string)) {
-        segments[0] = `${segments[0] as string}/`;
+    // No separator: the whole input is a single segment, so there is no
+    // directory part.
+    if (lastSlash === -1) {
+        return isAbsolute(path) ? "/" : ".";
     }
 
-    return segments.join("/") || (isAbsolute(path) ? "/" : ".");
+    const parent = normalized.slice(0, lastSlash);
+
+    // A bare drive letter parent (e.g. "C:" from "C:/temp") keeps its trailing
+    // slash to mirror the previous split/join behaviour.
+    if (DRIVE_LETTER_RE.test(parent)) {
+        return `${parent}/`;
+    }
+
+    return parent || (isAbsolute(path) ? "/" : ".");
 };
 
 /**
@@ -350,13 +363,29 @@ export const format: typeof path.format = function (pathObject: path.FormatInput
  * @returns the last part of the path.
  */
 export const basename: typeof path.basename = (path: string, extension?: string): string => {
-    const lastSegment = normalizeWindowsPath(path).split("/").pop();
+    const normalized = normalizeWindowsPath(path);
+    // Index scan instead of split("/").pop() avoids allocating a segment array
+    // per call; slice from the last separator yields the trailing segment.
+    const lastSegment = normalized.slice(normalized.lastIndexOf("/") + 1);
 
-    if (extension && (lastSegment as string).endsWith(extension)) {
-        return (lastSegment as string).slice(0, -extension.length);
+    if (extension && lastSegment.endsWith(extension)) {
+        // Node returns "" only when the extension matches the *entire* original
+        // path argument (e.g. basename("test.html", "test.html") === "").
+        if (extension === normalized) {
+            return "";
+        }
+
+        const stripped = lastSegment.slice(0, -extension.length);
+
+        // When the extension would consume the whole basename (e.g.
+        // basename("a/test.html", "test.html")), Node leaves the basename
+        // untouched rather than returning "".
+        if (stripped.length > 0) {
+            return stripped;
+        }
     }
 
-    return lastSegment as string;
+    return lastSegment;
 };
 
 /**
