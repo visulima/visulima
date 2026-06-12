@@ -13,7 +13,7 @@ Fast, flexible string formatting utility inspired by Node.js's `util.format`. Fo
 
 - Familiar %s, %d, %i, %f placeholders
 - JSON serialization with %j
-- Object inspection with %o and %O
+- %o and %O as JSON aliases of %j (not util.inspect-style)
 - Automatic type conversion
 
 **CSS Styling Support**
@@ -121,4 +121,7 @@ This package works in both Node.js and browser environments:
 - **Browsers:** Compatible with ES6+ browsers
 - **Deno/Bun:** Fully compatible
 
-Note: CSS styling (%c) only works in environments with ANSI color support.
+Note: by default CSS styling (%c) is emitted only when `globalThis.window` is
+`undefined` (i.e. outside a browser-like global). This is a plain environment
+gate, not real terminal color detection; use `options.colors` to force it on or
+off.

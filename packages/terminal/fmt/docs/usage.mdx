@@ -96,19 +96,21 @@ console.log(format("Object: %j", [obj]));
 // Object: {"name":"circular","self":"[Circular]"}
 ```
 
-### Object Inspection
+### Object Serialization
 
-Use %o for basic object representation:
+`%o` and `%O` are plain aliases of `%j` — they serialize with `JSON.stringify`,
+**not** `util.inspect`. There is no inspect-style output:
 
 ```typescript
 import { format } from "@visulima/fmt";
 
 const user = { name: "Alice", age: 30 };
 console.log(format("User: %o", [user]));
-// User: {name: 'Alice', age: 30}
+// User: {"name":"Alice","age":30}
 ```
 
-Use %O for detailed object representation (includes non-enumerable properties):
+`%O` does **not** include non-enumerable properties — `JSON.stringify` drops
+them, so `%O` behaves identically to `%o` and `%j`:
 
 ```typescript
 import { format } from "@visulima/fmt";
@@ -120,10 +122,10 @@ Object.defineProperty(obj, "hidden", {
 });
 
 console.log(format("Basic: %o", [obj]));
-// Basic: {visible: 'yes'}
+// Basic: {"visible":"yes"}
 
 console.log(format("Detailed: %O", [obj]));
-// Detailed: {visible: 'yes', hidden: 'secret'}
+// Detailed: {"visible":"yes"} (hidden is NOT included)
 ```
 
 ## CSS Styling
