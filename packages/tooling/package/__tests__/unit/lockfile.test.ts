@@ -806,6 +806,39 @@ describe("parseLockFile / parseLockFileSync", () => {
         expect(result.entries).toHaveLength(1);
     });
 
+    it("should find legacy bun.lockb and infer the bun type (binary content yields no entries)", async () => {
+        expect.assertions(2);
+
+        // The legacy binary lockfile cannot be regex/JSON-parsed; we still
+        // recognise it as a bun project but surface zero entries.
+        writeFileSync(join(temporaryDirectory, "bun.lockb"), Buffer.from([0, 1, 2, 3, 4]));
+
+        const result = await parseLockFile(temporaryDirectory);
+
+        expect(result.type).toBe("bun");
+        expect(result.entries).toHaveLength(0);
+    });
+
+    it("should prefer the modern bun.lock over a stale legacy bun.lockb", () => {
+        expect.assertions(3);
+
+        writeFileSync(join(temporaryDirectory, "bun.lockb"), Buffer.from([0, 1, 2, 3, 4]));
+        writeFileSync(
+            join(temporaryDirectory, "bun.lock"),
+            `{
+  "lockfileVersion": 1,
+  "workspaces": { "": { "name": "root" } },
+  "packages": { "a": ["a@1.0.0", "", {}, "sha512-aGVsbG8="] },
+}`,
+        );
+
+        const result = parseLockFileSync(temporaryDirectory);
+
+        expect(result.type).toBe("bun");
+        expect(result.path.endsWith("bun.lock")).toBe(true);
+        expect(result.entries).toHaveLength(1);
+    });
+
     it("should find and parse the nearest yarn.lock", async () => {
         expect.assertions(2);
 

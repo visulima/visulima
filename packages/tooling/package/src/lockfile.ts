@@ -19,7 +19,9 @@
  *   CycloneDX 1.6 `HashAlgorithm` enum. Berry entries are still parsed
  *   (name / version / dependencies), but `integrity` will be `undefined`.
  * - **bun** (`bun.lock`): `[versionKey, registryUrl, metadata, integrity]`
- *   tuples, JSON with trailing commas. ✅
+ *   tuples, JSON with trailing commas. ✅ The legacy binary lockfile
+ *   (`bun.lockb`) is recognised by type inference, but its binary
+ *   contents cannot be parsed — `parseBunLockFile` yields no entries.
  *
  * The `sha{256,384,512}-&lt;base64>` SRI values are decoded once here into
  * `{ algorithm, hex }` pairs.
@@ -30,7 +32,11 @@ import { readFile } from "node:fs/promises";
 
 import { findUp, findUpSync } from "@visulima/fs";
 
-/** Lockfiles the parser recognises. Legacy binary `bun.lockb` is unsupported. */
+/**
+ * Lockfiles the parser recognises. Both the modern text `bun.lock` and the
+ * legacy binary `bun.lockb` map to the `bun` type, but only `bun.lock`
+ * content is parseable — `bun.lockb` is a binary format and yields no entries.
+ */
 export type LockFileType = "bun" | "npm" | "pnpm" | "yarn";
 
 /** SRI algorithms the parser can decode into hex. */
@@ -678,7 +684,9 @@ interface BunLockPackageTuple extends Array<unknown> {
 
 /**
  * Parses `bun.lock` (Bun v1.1+, JSON-ish with trailing commas). The
- * binary `bun.lockb` format is not supported.
+ * legacy binary `bun.lockb` format is recognised by {@link inferLockFileType}
+ * but cannot be decoded here — feeding its binary contents in returns an
+ * empty array (the `JSON.parse` fails and is swallowed).
  *
  * Attribution: format + tuple layout verified against lockparse
  * (https://github.com/43081j/lockparse, MIT).
@@ -760,8 +768,10 @@ export const parseBunLockFile = (content: string): LockFileEntry[] => {
 
 /**
  * Maps a lockfile path (or filename) to its {@link LockFileType}.
- * Returns `undefined` for unsupported shapes (`bun.lockb`,
- * `npm-shrinkwrap.json`, etc.).
+ * Returns `undefined` for unsupported shapes (`npm-shrinkwrap.json`, etc.).
+ *
+ * Both the modern text `bun.lock` and the legacy binary `bun.lockb` resolve
+ * to the `bun` type; only `bun.lock` content is parseable downstream.
  */
 const inferLockFileType = (path: string): LockFileType | undefined => {
     if (path.endsWith("pnpm-lock.yaml")) {
@@ -776,7 +786,9 @@ const inferLockFileType = (path: string): LockFileType | undefined => {
         return "yarn";
     }
 
-    if (path.endsWith("bun.lock")) {
+    // `bun.lockb` is checked first because it does not share the `bun.lock`
+    // suffix; ordering is informational only since both map to `bun`.
+    if (path.endsWith("bun.lockb") || path.endsWith("bun.lock")) {
         return "bun";
     }
 
@@ -811,7 +823,11 @@ export const parseLockFileContent = (content: string, type: LockFileType): LockF
     }
 };
 
-const LOCKFILE_CANDIDATES = ["pnpm-lock.yaml", "package-lock.json", "yarn.lock", "bun.lock"];
+// `bun.lock` (modern text) is listed before `bun.lockb` (legacy binary) so a
+// project that has migrated and still carries the stale binary lockfile picks
+// the parseable one. `findUp` returns the first candidate it finds per
+// directory, scanning this list in order.
+const LOCKFILE_CANDIDATES = ["pnpm-lock.yaml", "package-lock.json", "yarn.lock", "bun.lock", "bun.lockb"];
 
 /**
  * Walks up from `cwd`, locates the nearest supported lockfile, reads
