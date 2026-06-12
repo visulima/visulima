@@ -29,7 +29,9 @@ const currenciesByNumber: Record<string, Currency> = {};
 /**
  * All currencies array with symbols
  */
-const allCurrencies: Currency[] = (currenciesData as unknown as Currency[]).map((currency) => {
+const currenciesView: ReadonlyArray<Currency> = currenciesData;
+
+const allCurrencies: Currency[] = currenciesView.map((currency) => {
     let symbol = symbolMap[currency.code];
 
     // If symbol not found or is '?', use currency code as fallback
@@ -95,7 +97,7 @@ export const getByCountry = (countryCode: string): Currency[] => {
 export const getCountriesByCurrency = (currencyCode: string): string[] => {
     const upperCode = currencyCode.toUpperCase();
 
-    return countriesAll.filter((country) => country.currencies.includes(upperCode)).map((country) => country.alpha2);
+    return countriesAll.filter((country) => (country.currencies as ReadonlyArray<string>).includes(upperCode)).map((country) => country.alpha2);
 };
 
 /**
@@ -174,7 +176,13 @@ export const searchCurrencies = (query: string): Currency[] => {
 };
 
 /**
+ * Precise type of a single currency record, derived from the const dataset so the
+ * literal codes/numbers survive instead of being widened to `string`.
+ */
+export type CurrencyData = (typeof currenciesData)[number];
+
+/**
  * Literal union of every ISO 4217 alphabetic currency code present in the dataset.
  * Derived directly from the const dataset so it stays in sync automatically.
  */
-export type CurrencyCode = (typeof currenciesData)[number]["code"];
+export type CurrencyCode = CurrencyData["code"];

@@ -7,15 +7,15 @@ export interface Country {
     /** ISO 3166-1 alpha-3 code (3-letter) */
     alpha3: string;
     /** Country calling codes (phone prefixes) */
-    countryCallingCodes?: string[];
+    countryCallingCodes?: ReadonlyArray<string>;
     /** ISO 4217 currency codes used in this country */
-    currencies: string[];
+    currencies: ReadonlyArray<string>;
     /** Flag emoji */
     emoji?: string;
     /** International Olympic Committee code */
     ioc?: string;
     /** ISO 639 language codes */
-    languages: string[];
+    languages: ReadonlyArray<string>;
     /** English name of the country */
     name: string;
     /** ISO 3166-1 numeric code (3-digit string) */
@@ -30,8 +30,8 @@ export interface Country {
 export interface Currency {
     /** ISO 4217 alphabetic code (3-letter) */
     code: string;
-    /** Number of decimal digits (minor units) */
-    decimals: number;
+    /** Number of decimal digits (minor units); `undefined` for currencies without a defined minor unit (e.g. precious metals) */
+    decimals: number | undefined;
     /** Full currency name */
     name: string;
     /** ISO 4217 numeric code (3-digit string) */

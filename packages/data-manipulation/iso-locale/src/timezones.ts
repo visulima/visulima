@@ -1,8 +1,15 @@
 import countryTimezonesData from "./data/timezones";
 
+/**
+ * Loose view of the const timezone dataset for internal lookups that index by an
+ * arbitrary (upper-cased) country code. The precise const type is preserved on
+ * the public {@link byCountry} export and the {@link Timezone} union below.
+ */
+const countryTimezonesView: Readonly<Record<string, ReadonlyArray<string>>> = countryTimezonesData;
+
 const allTimezonesSet = new Set<string>();
 
-Object.values(countryTimezonesData).forEach((tzList) => {
+Object.values(countryTimezonesView).forEach((tzList) => {
     tzList.forEach((tz) => allTimezonesSet.add(tz));
 });
 
@@ -16,7 +23,7 @@ const getTimezoneToCountries = (): Map<string, string[]> => {
     if (!timezoneToCountries) {
         timezoneToCountries = new Map<string, string[]>();
 
-        Object.entries(countryTimezonesData).forEach(([code, timezones]) => {
+        Object.entries(countryTimezonesView).forEach(([code, timezones]) => {
             timezones.forEach((tz) => {
                 const existing = timezoneToCountries?.get(tz);
 
@@ -48,7 +55,7 @@ let sortedCountriesWithTimezones: string[] | undefined;
  * @returns Array of IANA timezone identifiers or empty array
  */
 export const getTimezonesByCountry = (countryCode: string): string[] => {
-    const timezones = countryTimezonesData[countryCode.toUpperCase()];
+    const timezones = countryTimezonesView[countryCode.toUpperCase()];
 
     return timezones ? [...timezones] : [];
 };
@@ -79,7 +86,7 @@ export const all = (): string[] => {
  * @returns Array of ISO 3166-1 alpha-2 country codes
  */
 export const getCountriesWithTimezones = (): string[] => {
-    sortedCountriesWithTimezones ??= Object.keys(countryTimezonesData).toSorted((a, b) => a.localeCompare(b));
+    sortedCountriesWithTimezones ??= Object.keys(countryTimezonesView).toSorted((a, b) => a.localeCompare(b));
 
     return [...sortedCountriesWithTimezones];
 };
@@ -105,4 +112,14 @@ export const getPrimaryTimezone = (countryCode: string): string | undefined => {
 /**
  * All timezones data indexed by country code
  */
-export const byCountry: Readonly<Record<string, ReadonlyArray<string>>> = countryTimezonesData;
+export const byCountry: typeof countryTimezonesData = countryTimezonesData;
+
+/**
+ * Literal union of every ISO 3166-1 alpha-2 country code that has timezone data.
+ */
+export type TimezoneCountryCode = keyof typeof countryTimezonesData;
+
+/**
+ * Literal union of every IANA timezone identifier present in the dataset.
+ */
+export type Timezone = (typeof countryTimezonesData)[TimezoneCountryCode][number];

@@ -1,8 +1,11 @@
 /**
  * Country to timezone mapping
  * Maps ISO 3166-1 alpha-2 country codes to IANA timezone identifiers
+ *
+ * Declared without a type annotation so the trailing `as const` captures the
+ * literal keys/values; `src/timezones.ts` derives precise unions from this.
  */
-const countryTimezones: Record<string, ReadonlyArray<string>> = {
+const countryTimezones = {
     AD: ["Europe/Andorra"],
     AE: ["Asia/Dubai"],
     AF: ["Asia/Kabul"],

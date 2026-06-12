@@ -1,5 +1,5 @@
 // Countries
-export type { Alpha2Code, Alpha3Code } from "./countries";
+export type { Alpha2Code, Alpha3Code, CountryData } from "./countries";
 export {
     alpha2ToAlpha3,
     alpha2ToNumeric,
@@ -31,7 +31,7 @@ export {
 export { all as countries } from "./countries";
 export { isValid } from "./countries";
 // Currencies
-export type { CurrencyCode } from "./currencies";
+export type { CurrencyCode, CurrencyData } from "./currencies";
 export {
     byCode,
     byNumber,
@@ -55,6 +55,7 @@ export { convert6393To6391, iso6393To6391 } from "./data/iso-639-mapping";
 export { generateBCP47Tag, getBCP47Tags, getCurrency, getLanguageName, getLocales, isValidBCP47Tag, parseBCP47Tag } from "./locale";
 
 // Regions
+export type { Continent, IntermediaryRegion, RegionCountryCode, RegionData, Subregion } from "./regions";
 export {
     getContinents,
     getCountriesInContinent,
@@ -67,6 +68,7 @@ export {
 } from "./regions";
 
 // Timezones
+export type { Timezone, TimezoneCountryCode } from "./timezones";
 export {
     getCountriesForTimezone,
     getCountriesWithTimezones,
