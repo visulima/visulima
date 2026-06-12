@@ -4,5 +4,5 @@
     "sourceRoot": "packages/error-debugging/vite-overlay/src",
     "projectType": "library",
     "tags": ["vite-overlay", "type:package", "category:error-handling"],
-    "implicitDependencies": ["terminal/boxen", "filesystem/path", "error-debugging/error"]
+    "implicitDependencies": ["terminal/boxen", "filesystem/path", "error-debugging/error", "shared-utils"]
 }

@@ -297,6 +297,43 @@ describe(isValidStackFrame, () => {
         // Length-gated, so this returns effectively instantly regardless of the regex shape.
         expect(elapsed).toBeLessThan(100);
     });
+
+    it("parses the location marker in bounded time for an adversarial in-bounds frame (linear scanner)", () => {
+        expect.assertions(2);
+
+        // The location check is a linear scan (it replaced four backtracking-prone regexes).
+        // Build an in-bounds (< MAX_STACK_LINE_LENGTH) frame whose body is the classic
+        // catastrophic-backtracking shape — many non-colon chars, no terminating colon-digit —
+        // plus the supported-extension keyword so the cheaper guards do not short-circuit first.
+        // The trailing `.js` (without a `:line`) keeps `hasLocationMarker` false, exercising the
+        // worst case where every position is examined.
+        const adversarial = `at fn (${"a".repeat(2000)}.js)`;
+
+        const start = performance.now();
+
+        let result = false;
+
+        for (let index = 0; index < 1000; index += 1) {
+            result = isValidStackFrame(adversarial);
+        }
+
+        const elapsed = performance.now() - start;
+
+        // No location marker => not a valid frame; correctness is preserved.
+        expect(result).toBe(false);
+        // 1000 iterations of a linear scan stay well under a second; a backtracking regex would not.
+        expect(elapsed).toBeLessThan(1000);
+    });
+
+    it("accepts a genuine location even when the line contains many parentheses", () => {
+        expect.assertions(2);
+
+        // Regression for the parenthesised-location linear scan: nested/extra parens before the
+        // real `(file:line:col)` must not confuse the matcher.
+        expect(isValidStackFrame("at obj.fn (cb) (/path/to/file.js:12:34)")).toBe(true);
+        // A parenthesised group without a colon-digit location is still rejected.
+        expect(isValidStackFrame("at obj.fn (cb) (just text)")).toBe(false);
+    });
 });
 
 describe(absolutizeStackUrls, () => {

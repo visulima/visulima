@@ -1,26 +1,12 @@
-import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, promises as fsPromises, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterAll, beforeAll, describe, expect, expectTypeOf, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import createViteSolutionFinder from "../../../src/utils/create-vite-solution-finder";
 
 const temporaryRoot = mkdtempSync(join(tmpdir(), "vite-solution-finder-"));
-
-beforeAll(() => {
-    mkdirSync(join(temporaryRoot, "src", "components"), { recursive: true });
-    mkdirSync(join(temporaryRoot, "public"), { recursive: true });
-    writeFileSync(join(temporaryRoot, "src", "App.tsx"), "export const App = () => null;");
-    writeFileSync(join(temporaryRoot, "src", "components", "Button.tsx"), "export const Button = () => null;");
-    writeFileSync(join(temporaryRoot, "src", "components", "Buton.tsx"), "// typo neighbour"); // for fuzzy match
-    writeFileSync(join(temporaryRoot, "src", "utils.ts"), "export const x = 1;");
-    writeFileSync(join(temporaryRoot, "public", "logo.svg"), "<svg />");
-});
-
-afterAll(() => {
-    // Cleanup is best-effort — temp dir will be reclaimed by the OS.
-});
 
 const context = (overrides: Partial<{ file: string; language: string; line: number; snippet: string }> = {}) => {
     return {
@@ -32,6 +18,20 @@ const context = (overrides: Partial<{ file: string; language: string; line: numb
 };
 
 describe(createViteSolutionFinder, () => {
+    beforeAll(() => {
+        mkdirSync(join(temporaryRoot, "src", "components"), { recursive: true });
+        mkdirSync(join(temporaryRoot, "public"), { recursive: true });
+        writeFileSync(join(temporaryRoot, "src", "App.tsx"), "export const App = () => null;");
+        writeFileSync(join(temporaryRoot, "src", "components", "Button.tsx"), "export const Button = () => null;");
+        writeFileSync(join(temporaryRoot, "src", "components", "Buton.tsx"), "// typo neighbour"); // for fuzzy match
+        writeFileSync(join(temporaryRoot, "src", "utils.ts"), "export const x = 1;");
+        writeFileSync(join(temporaryRoot, "public", "logo.svg"), "<svg />");
+    });
+
+    afterAll(() => {
+        // Cleanup is best-effort — temp dir will be reclaimed by the OS.
+    });
+
     it("returns a SolutionFinder with the expected name and priority", () => {
         expect.assertions(2);
 
@@ -74,6 +74,32 @@ describe(createViteSolutionFinder, () => {
 
         expect(solution?.header).toBe("File Not Found");
         expect(solution?.body ?? "").toContain("Did you mean");
+    });
+
+    it("caches directory listings across errors on the same finder instance", async () => {
+        expect.assertions(2);
+
+        const readdirSpy = vi.spyOn(fsPromises, "readdir");
+
+        try {
+            const finder = createViteSolutionFinder(temporaryRoot);
+            const error = new Error("Failed to resolve import \"./components/Buton\" from \"src/App.tsx\"");
+            const errorContext = context({ file: join(temporaryRoot, "src", "App.tsx"), language: "typescript" });
+
+            await finder.handle(error, errorContext);
+
+            const callsAfterFirstWalk = readdirSpy.mock.calls.length;
+
+            expect(callsAfterFirstWalk).toBeGreaterThan(0);
+
+            // A second error on the same finder must serve every directory from the cache,
+            // so no further readdir syscalls are issued.
+            await finder.handle(error, errorContext);
+
+            expect(readdirSpy).toHaveBeenCalledTimes(callsAfterFirstWalk);
+        } finally {
+            readdirSpy.mockRestore();
+        }
     });
 
     it("returns a 'Missing File Extension' hint when the import has no source file context", async () => {

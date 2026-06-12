@@ -16,14 +16,6 @@ const HTTP_URL_PATTERN = /https?:\/\/[^\s)]+/g;
 const FILE_URL_PATTERN = /file:\/\//g;
 const FS_PATH_PATTERN = /\/@fs\//g;
 
-// eslint-disable-next-line sonarjs/slow-regex
-const LOC_WITH_PARENS_COLON2_RE = /\([^)]*:\d+:\d+\)/;
-// eslint-disable-next-line sonarjs/slow-regex
-const LOC_WITH_PARENS_COLON1_RE = /\([^)]*:\d+\)/;
-// eslint-disable-next-line sonarjs/slow-regex
-const LOC_NO_PARENS_COLON2_RE = /[^(\s][^:]*:\d+:\d+/;
-// eslint-disable-next-line sonarjs/slow-regex
-const LOC_NO_PARENS_COLON1_RE = /[^(\s][^:]*:\d+/;
 const URL_LOCATION_RE = /:(\d+)(?::(\d+))?$/;
 const NEWLINE_RE = /\n/;
 
@@ -36,6 +28,104 @@ const MAX_STACK_LINE_LENGTH = 2048;
 const SUPPORTED_EXTENSIONS = new Set<SupportedExtension>([".cjs", ".js", ".jsx", ".mjs", ".svelte", ".ts", ".tsx", ".vue"]);
 
 const VALID_STACK_KEYWORDS = new Set<string>(["<anonymous>", "<unknown>", "native"]);
+
+const isDigit = (char: string): boolean => char >= "0" && char <= "9";
+
+const isLocationWhitespace = (char: string): boolean =>
+    char === " " || char === "\t" || char === "\n" || char === "\r" || char === "\f" || char === "\v";
+
+/**
+ * Returns the index just past a `:digit+(:digit+)?` location run that starts at `colonIndex`,
+ * or `colonIndex` itself when no digit run follows the colon.
+ * @param line The stack-frame line
+ * @param colonIndex The index of the leading colon
+ * @returns The index immediately after the consumed location run
+ */
+const consumeLocationRun = (line: string, colonIndex: number): number => {
+    if (!isDigit(line[colonIndex + 1] as string)) {
+        return colonIndex;
+    }
+
+    let end = colonIndex + 1;
+
+    while (end < line.length && isDigit(line[end] as string)) {
+        end += 1;
+    }
+
+    if (line[end] === ":" && isDigit(line[end + 1] as string)) {
+        end += 1;
+
+        while (end < line.length && isDigit(line[end] as string)) {
+            end += 1;
+        }
+    }
+
+    return end;
+};
+
+/**
+ * Linear-scan equivalent of the parenthesised location regexes — an open paren followed
+ * (without an intervening close paren) by a `:line` or `:line:column` run that is closed
+ * by a `)` immediately after the digits.
+ * @param line The stack-frame line
+ * @returns True when a parenthesised location marker is present
+ */
+const hasParenthesisedLocation = (line: string): boolean => {
+    let open = false;
+
+    for (let index = 0; index < line.length; index += 1) {
+        const char = line[index];
+
+        if (char === "(") {
+            open = true;
+        } else if (char === ")") {
+            open = false;
+        } else if (open && char === ":" && consumeLocationRun(line, index) > index && line[consumeLocationRun(line, index)] === ")") {
+            return true;
+        }
+    }
+
+    return false;
+};
+
+/**
+ * Linear-scan equivalent of the bare location regexes — a `:line` run preceded somewhere
+ * on the line by a character that is neither an open paren nor whitespace.
+ * @param line The stack-frame line
+ * @returns True when a bare location marker is present
+ */
+const hasBareLocation = (line: string): boolean => {
+    for (let index = 1; index < line.length; index += 1) {
+        if (line[index] !== ":" || !isDigit(line[index + 1] as string)) {
+            continue;
+        }
+
+        for (let before = index - 1; before >= 0; before -= 1) {
+            const char = line[before] as string;
+
+            if (char !== "(" && !isLocationWhitespace(char)) {
+                return true;
+            }
+        }
+    }
+
+    return false;
+};
+
+/**
+ * Detects a line/column location marker inside a stack-frame line.
+ *
+ * This replaces four backtracking-prone regexes (the parenthesised and bare
+ * `colon line / colon line colon column` shapes) that previously carried
+ * `sonarjs/slow-regex` suppressions and ran on browser-supplied
+ * (attacker-influenceable) stack strings. Following the repo precedent for the prior
+ * polynomial-ReDoS fix, the backtracking ambiguity is removed by scanning the string
+ * linearly rather than tuning the regex. The result is identical to the union of the
+ * four original regexes (verified by fuzzing).
+ * @param line The (already trimmed) stack-frame line
+ * @returns True when a line/column location marker is present
+ */
+const hasLocationMarker = (line: string): boolean => hasBareLocation(line) || hasParenthesisedLocation(line);
 
 /**
  * Parses a URL to extract the base URL and location information (line and column).
@@ -108,13 +198,7 @@ const isValidStackFrame: StackFrameValidator = (line: string): boolean => {
         return false;
     }
 
-    const hasLocationInfo
-        = LOC_WITH_PARENS_COLON2_RE.test(trimmed)
-            || LOC_WITH_PARENS_COLON1_RE.test(trimmed)
-            || LOC_NO_PARENS_COLON2_RE.test(trimmed)
-            || LOC_NO_PARENS_COLON1_RE.test(trimmed)
-            || trimmed.includes("native")
-            || trimmed.includes("<unknown>");
+    const hasLocationInfo = hasLocationMarker(trimmed) || trimmed.includes("native") || trimmed.includes("<unknown>");
 
     return hasLocationInfo;
 };
