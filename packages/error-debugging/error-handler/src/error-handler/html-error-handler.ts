@@ -4,11 +4,32 @@ import { getReasonPhrase } from "http-status-codes";
 
 import type { ErrorHandler } from "./types";
 import addStatusCodeToResponse from "./utils/add-status-code-to-response";
+import type { HtmlErrorInspectorOptions } from "./utils/render-html-error-inspector";
+import renderHtmlErrorInspector from "./utils/render-html-error-inspector";
 
-// Escape the five HTML-significant characters so error messages and stack
-// traces cannot break out of the page or inject markup.
-const escapeHtml = (value: string): string =>
-    value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll("\"", "&quot;").replaceAll("'", "&#39;");
+// Inline styles for the development inspector (stack/code-frame/solution).
+// Kept self-contained so the existing CSP-nonce flow still covers it.
+const INSPECTOR_STYLES = String.raw`
+            .vis-inspector { display: flex; flex-direction: column; gap: 1rem; }
+            .vis-card { background: #fff; border-radius: .5rem; box-shadow: 0 1px 3px 0 rgba(0,0,0,.1),0 1px 2px 0 rgba(0,0,0,.06); overflow: hidden; }
+            .vis-card-title { margin: 0; padding: .75rem 1.5rem; font-size: .8125rem; font-weight: 600; color: #1a202c; border-bottom: 1px solid #edf2f7; word-break: break-word; }
+            .vis-headline { padding: 1rem 1.5rem; }
+            .vis-error-name { display: inline-block; font-size: .75rem; font-weight: 700; text-transform: uppercase; letter-spacing: .05em; color: #e53e3e; }
+            .vis-error-message { margin: .5rem 0 0; font-size: 1rem; color: #1a202c; word-break: break-word; }
+            .vis-codeframe, .vis-solution-body { margin: 0; padding: 1rem 1.5rem; font-family: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: .8125rem; line-height: 1.6; color: #2d3748; white-space: pre; overflow-x: auto; }
+            .vis-solution-body { white-space: pre-wrap; word-break: break-word; }
+            .vis-frames { margin: 0; padding: 0; list-style: none; }
+            .vis-frame { display: flex; flex-direction: column; padding: .5rem 1.5rem; border-bottom: 1px solid #edf2f7; font-family: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace; font-size: .8125rem; }
+            .vis-frame:last-child { border-bottom: 0; }
+            .vis-frame-method { color: #1a202c; font-weight: 600; }
+            .vis-frame-loc { color: #718096; word-break: break-word; }
+            @media (prefers-color-scheme: dark) {
+                .vis-card { background: #2d3748; }
+                .vis-card-title { color: #fff; border-bottom-color: #4a5568; }
+                .vis-error-message, .vis-codeframe, .vis-solution-body, .vis-frame-method { color: #e2e8f0; }
+                .vis-frame { border-bottom-color: #4a5568; }
+                .vis-frame-loc { color: #a0aec0; }
+            }`;
 
 export const htmlErrorHandler
     = (options: HtmlErrorHandlerOptions = {}): ErrorHandler =>
@@ -21,20 +42,20 @@ export const htmlErrorHandler
             const nonceAttribute = options.cspNonce ? ` nonce="${options.cspNonce}"` : "";
 
             // The negotiator sets `expose` when stack traces are allowed
-            // (development / `showTrace: true`). When set, surface the error
-            // message and stack in the default page so a browser hit during
-            // development is not a blank "500" card. Both are HTML-escaped.
+            // (development / `showTrace: true`). When set, render the full
+            // youch/whoops-style inspector — error message, code frame for the
+            // offending source line, parsed stack trace, and a possible
+            // solution hint. All dynamic content is HTML-escaped. When `expose`
+            // is not set (production), nothing beyond the status card is
+            // emitted so no stack/source is leaked.
             const { expose } = error as Error & { expose?: boolean };
             const detailsHtml = expose
-                ? String.raw`
-                <div class="max-w-6xl mx-auto px-6 mt-8">
-                    <div class="bg-white dark:bg-gray-800 shadow sm:rounded-lg overflow-hidden">
-                        <div class="px-6 py-4 text-sm font-semibold text-gray-900 dark:text-white border-r-0 border-gray-200 dark:border-gray-700">
-                            ${escapeHtml(error.message || title)}
-                        </div>
-                        <pre class="px-6 py-4 text-sm text-gray-700 dark:text-gray-400" style="white-space:pre-wrap;word-break:break-word;margin:0;"><code>${escapeHtml(error.stack ?? "")}</code></pre>
-                    </div>
-                </div>`
+                ? await renderHtmlErrorInspector(error, {
+                    allowRemoteSources: options.allowRemoteSources,
+                    linesAbove: options.linesAbove,
+                    linesBelow: options.linesBelow,
+                    solutionFinders: options.solutionFinders,
+                })
                 : "";
 
             if (options.errorPage) {
@@ -73,10 +94,10 @@ export const htmlErrorHandler
             body {
                 font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
             }
-        </style>
+        </style>${expose ? `\n        <style${nonceAttribute}>${INSPECTOR_STYLES}\n        </style>` : ""}
     </head>
     <body class="antialiased">
-        <div class="relative flex items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
+        <div class="relative flex items-center justify-center ${expose ? "pt-8" : "min-h-screen"} bg-gray-100 dark:bg-gray-900">
             <div class="max-w-xl mx-auto sm:px-6 lg:px-8">
                 <div class="flex items-center justify-center">
                     <div class="px-6 text-lg text-gray-600 dark:text-gray-400 border-r border-gray-400 dark:border-gray-700 tracking-wider font-semibold">
@@ -93,7 +114,7 @@ export const htmlErrorHandler
 </html>`);
         };
 
-export type HtmlErrorHandlerOptions = {
+export type HtmlErrorHandlerOptions = HtmlErrorInspectorOptions & {
     // CSP nonce for inline styles and scripts
     cspNonce?: string;
     // Override HTML when the error-inspector is not displayed (usually production)
