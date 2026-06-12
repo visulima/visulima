@@ -89,7 +89,7 @@ interface FormatOptions {
 
 **Properties:**
 
-- `stringify` (`function`, optional) - Custom serializer for %j placeholder
+- `stringify` (`function`, optional) - Custom serializer for the `%j`, `%o` and `%O` placeholders (they all share one JSON code path). Defaults to a `JSON.stringify` wrapper that emits `"[Circular]"` on throw.
 
 **Example:**
 
@@ -164,17 +164,17 @@ type FormatFunction = (fmt: string, parameters: unknown[], options?: FormatOptio
 
 ### Standard Specifiers
 
-| Specifier | Description       | Example                                         |
-| --------- | ----------------- | ----------------------------------------------- |
-| `%s`      | String            | `format("%s", ["hello"])` → `"hello"`           |
-| `%d`      | Decimal number    | `format("%d", [42])` → `"42"`                   |
-| `%i`      | Integer           | `format("%i", [42.7])` → `"42"`                 |
-| `%f`      | Float             | `format("%f", [3.14])` → `"3.14"`               |
-| `%j`      | JSON              | `format("%j", [{a:1}])` → `'{"a":1}'`           |
-| `%o`      | Object            | `format("%o", [{a:1}])` → `'{a: 1}'`            |
-| `%O`      | Object (detailed) | `format("%O", [obj])` → includes non-enumerable |
-| `%c`      | CSS styling       | `format("%cText%c", ["color:red", ""])`         |
-| `%%`      | Literal %         | `format("%%", [])` → `"%"`                      |
+| Specifier | Description          | Example                                 |
+| --------- | -------------------- | --------------------------------------- |
+| `%s`      | String               | `format("%s", ["hello"])` → `"hello"`   |
+| `%d`      | Decimal number       | `format("%d", [42])` → `"42"`           |
+| `%i`      | Integer              | `format("%i", [42.7])` → `"42"`         |
+| `%f`      | Float                | `format("%f", [3.14])` → `"3.14"`       |
+| `%j`      | JSON                 | `format("%j", [{a:1}])` → `'{"a":1}'`   |
+| `%o`      | JSON (alias of `%j`) | `format("%o", [{a:1}])` → `'{"a":1}'`   |
+| `%O`      | JSON (alias of `%j`) | `format("%O", [{a:1}])` → `'{"a":1}'`   |
+| `%c`      | CSS styling          | `format("%cText%c", ["color:red", ""])` |
+| `%%`      | Literal %            | `format("%%", [])` → `"%"`              |
 
 ### %s - String
 
@@ -274,8 +274,9 @@ import { format } from "@visulima/fmt";
 console.log(format("%j", [{ a: 1 }])); // '{"a":1}'
 console.log(format("%j", [[1, 2, 3]])); // '[1,2,3]'
 console.log(format("%j", [null])); // 'null'
-console.log(format("%j", [undefined])); // undefined (no output)
-console.log(format("%j", [() => {}])); // undefined (no output)
+console.log(format("%j", [undefined])); // %j left verbatim (undefined is not consumed)
+console.log(format("%j", [() => {}])); // '[Function: <anonymous>]'
+console.log(format("%j", ["text"])); // "'text'" (strings are single-quoted)
 ```
 
 **Circular References:**
@@ -294,19 +295,22 @@ console.log(format("%j", [obj]));
 
 ### %o and %O - Object
 
-Inspect objects.
-
-**%o - Basic Inspection:**
+Both `%o` and `%O` are plain aliases of `%j`: the value is serialized with
+`JSON.stringify` (via `options.stringify`), exactly like `%j`. They are **not**
+`util.inspect`-style. There is no inspect-style formatting, and `%O` does **not**
+include non-enumerable properties — `%j`, `%o` and `%O` all share a single JSON
+code path.
 
 ```typescript
 import { format } from "@visulima/fmt";
 
 const obj = { a: 1, b: 2 };
-console.log(format("%o", [obj]));
-// {a: 1, b: 2}
+console.log(format("%o", [obj])); // '{"a":1,"b":2}'
+console.log(format("%O", [obj])); // '{"a":1,"b":2}'
 ```
 
-**%O - Detailed Inspection:**
+Non-enumerable properties are dropped by `JSON.stringify`, so `%O` behaves the
+same as `%o` and `%j`:
 
 ```typescript
 import { format } from "@visulima/fmt";
@@ -317,12 +321,13 @@ Object.defineProperty(obj, "hidden", {
     enumerable: false,
 });
 
-console.log(format("%o", [obj]));
-// {visible: 'yes'}
-
-console.log(format("%O", [obj]));
-// {visible: 'yes', hidden: 'secret'}
+console.log(format("%o", [obj])); // '{"visible":"yes"}'
+console.log(format("%O", [obj])); // '{"visible":"yes"}' (hidden is NOT included)
 ```
+
+Like `%j`, primitive special cases apply: strings are single-quoted (`'text'`),
+functions become `[Function: name]`, and an `undefined` argument leaves the
+specifier verbatim without consuming the argument.
 
 ---
 
@@ -367,7 +372,12 @@ import { format } from "@visulima/fmt";
 format("%cStyled%c Normal", ["color: red", ""]);
 ```
 
-**Note:** %c only works in terminals with ANSI color support. In non-color environments, it's ignored.
+**Note:** Whether `%c` emits ANSI is a simple environment gate, **not** real
+terminal color detection. By default styling is emitted only when
+`globalThis.window === undefined` (i.e. outside a browser-like global); it does
+**not** probe for `TTY`/`NO_COLOR`/ANSI support. Override with `options.colors`
+(`true` forces on, `false` forces off). When emitted, `%c` always produces 24-bit
+truecolor sequences with no downsampling to 256/16 colors.
 
 ---
 
@@ -463,7 +473,7 @@ const result = format("Data: %j", [data], options);
 ## Performance Tips
 
 1. **Reuse built formatters:** Call `build()` once and reuse the returned function
-2. **Avoid %O when %o suffices:** %O is slower due to non-enumerable property inspection
+2. **`%o`/`%O` are aliases of `%j`:** all three use the same `JSON.stringify` path, so there is no performance difference between them
 3. **Use typed parameters:** TypeScript helps catch formatting errors at compile time
 
 ---
