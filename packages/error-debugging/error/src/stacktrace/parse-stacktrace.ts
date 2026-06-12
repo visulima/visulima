@@ -280,7 +280,7 @@ const parseChromium = (line: string): Trace | undefined => {
             parts[2] as string,
         );
 
-        const trace = {
+        const trace: Trace = {
             column: parts[4] ? +parts[4] : undefined,
             evalOrigin,
             file,
@@ -295,7 +295,7 @@ const parseChromium = (line: string): Trace | undefined => {
 
         if (windowsParts) {
             trace.column = windowsParts.column;
-            trace.file = windowsParts.file as string;
+            trace.file = windowsParts.file;
             trace.line = windowsParts.line;
         } else {
             parseMapped(trace, `${file}:${parts[3] as string}:${parts[4] as string}`);
