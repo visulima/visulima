@@ -1,4 +1,4 @@
-import { existsSync, mkdtempSync, readdirSync, rmSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, mkdtempSync, readdirSync, rmSync, statSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -181,5 +181,45 @@ describe("solution/ai/ai-finder", () => {
         await finder.handle(new Error("boom"), file);
 
         expect(existsSync(nestedDirectory)).toBe(true);
+    });
+
+    it("creates the cache directory with owner-only (0700) permissions", async () => {
+        expect.assertions(1);
+
+        const nestedDirectory = join(cacheDirectory, "perm-check");
+
+        const finder = aiFinder(createModel(FIX_TEXT), { cache: { directory: nestedDirectory } });
+
+        await finder.handle(new Error("boom"), file);
+
+        // Lower 9 permission bits must be rwx for owner only.
+        // eslint-disable-next-line no-bitwise
+        expect(statSync(nestedDirectory).mode & 0o777).toBe(0o700);
+    });
+
+    it("refuses to follow a pre-existing symlink as the cache directory (symlink attack)", async () => {
+        expect.assertions(3);
+
+        const consoleSpy = vi.spyOn(console, "error").mockImplementation(() => {});
+
+        // Simulate an attacker who pre-creates the cache path as a symlink pointing at a directory
+        // they control. We must not read/write through it.
+        const attackerTarget = join(cacheDirectory, "attacker-controlled");
+
+        mkdirSync(attackerTarget);
+
+        const symlinkedCache = join(cacheDirectory, "symlinked-cache");
+
+        symlinkSync(attackerTarget, symlinkedCache, "dir");
+
+        const finder = aiFinder(createModel(FIX_TEXT), { cache: { directory: symlinkedCache } });
+
+        const solution = await finder.handle(new Error("boom"), file);
+
+        // The solution is still produced (rendering must not break) ...
+        expect(solution?.body).toContain("named import");
+        // ... but nothing is written through the symlink (cache poisoning avoided).
+        expect(readdirSync(attackerTarget)).toHaveLength(0);
+        expect(consoleSpy).toHaveBeenCalledWith(expect.any(Error));
     });
 });

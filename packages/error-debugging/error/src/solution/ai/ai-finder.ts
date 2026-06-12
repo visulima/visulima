@@ -1,5 +1,5 @@
 import { createHash } from "node:crypto";
-import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { existsSync, lstatSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
 
@@ -62,9 +62,26 @@ const getCacheDirectory = (directory?: string): string => {
 };
 
 // Ensure cache directory exists (owner-only permissions to avoid cross-user cache poisoning).
+//
+// Security: use `lstatSync` (which does NOT follow symlinks) to reject a pre-existing entry that is
+// a symlink or anything other than a real directory. Otherwise an attacker who pre-creates the cache
+// path as a symlink to a location they control could make us read/write through it (symlink-follow /
+// cache poisoning). Throwing here disables caching for the call (callers guard the write path) rather
+// than silently following the link.
 const ensureCacheDirectory = (cacheDirectory: string): void => {
-    if (!existsSync(cacheDirectory)) {
+    let stats;
+
+    try {
+        stats = lstatSync(cacheDirectory);
+    } catch {
+        // Does not exist yet — create it with owner-only permissions.
         mkdirSync(cacheDirectory, { mode: 0o700, recursive: true });
+
+        return;
+    }
+
+    if (stats.isSymbolicLink() || !stats.isDirectory()) {
+        throw new Error(`Refusing to use cache path '${cacheDirectory}': not a regular directory (possible symlink attack).`);
     }
 };
 
@@ -125,8 +142,11 @@ const aiFinder = (
 
             const cacheDirectory = getCacheDirectory(cacheOptions?.directory);
 
+            // Disabled if the cache directory can't be safely prepared (e.g. it is a symlink).
+            let cacheWritable = cacheOptions?.enabled !== false;
+
             // Check cache if enabled
-            if (cacheOptions?.enabled !== false) {
+            if (cacheWritable) {
                 const cacheKey = generateCacheKey(error, file, temperature);
                 const cacheFilePath = getCacheFilePath(cacheDirectory, cacheKey);
 
@@ -137,8 +157,16 @@ const aiFinder = (
                     return cachedSolution;
                 }
 
-                // Ensure cache directory exists for writing
-                ensureCacheDirectory(cacheDirectory);
+                // Ensure cache directory exists for writing. If it can't be created safely (symlink
+                // attack / not a directory) we disable caching for this call instead of failing.
+                try {
+                    ensureCacheDirectory(cacheDirectory);
+                } catch (error_) {
+                    // eslint-disable-next-line no-console
+                    console.error(error_);
+
+                    cacheWritable = false;
+                }
             }
 
             const content = aiPrompt({ applicationType: undefined, error, file });
@@ -165,7 +193,7 @@ const aiFinder = (
                 };
 
                 // Cache the solution if caching is enabled
-                if (cacheOptions?.enabled !== false) {
+                if (cacheWritable) {
                     const cacheKey = generateCacheKey(error, file, temperature);
                     const cacheFilePath = getCacheFilePath(cacheDirectory, cacheKey);
 

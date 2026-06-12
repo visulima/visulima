@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from "node:fs";
-import { relative } from "node:path";
+import { relative, resolve, sep } from "node:path";
 import { cwd } from "node:process";
 import { fileURLToPath } from "node:url";
 
@@ -128,6 +128,26 @@ const getMainFrame = (trace: Trace, options: Options, deep = 0): string => {
     )}`;
 };
 
+/**
+ * Decide whether a file referenced by a stack frame may be read from disk for a code frame.
+ *
+ * Security: `error.stack` can contain attacker-controlled absolute paths when rendering an error
+ * that was deserialized or otherwise sourced from untrusted input. Reading those paths verbatim
+ * leaks arbitrary local file contents into the rendered output (local file disclosure). By default
+ * we therefore only read files that resolve inside `options.cwd`. Set `allowAllFilePaths: true` to
+ * restore reading arbitrary absolute paths (only safe for trusted, locally-thrown errors).
+ */
+const isReadableSourcePath = (filePath: string, options: Options): boolean => {
+    if (options.allowAllFilePaths) {
+        return true;
+    }
+
+    const root = resolve(options.cwd);
+    const resolved = resolve(root, filePath);
+
+    return resolved === root || resolved.startsWith(root + sep);
+};
+
 const getCode = (trace: Trace, options: Options, deep: number): string | undefined => {
     const { color, indentation, linesAbove, linesBelow, prefix, showGutter, showLineNumbers, tabWidth } = options;
     const { source: resolvedSource, trace: frame } = resolveFrame(trace, options.sourceMap);
@@ -140,6 +160,12 @@ const getCode = (trace: Trace, options: Options, deep: number): string | undefin
 
     if (resolvedSource === undefined) {
         const filePath = frame.file.replace("file://", "");
+
+        // Refuse to read files outside the project cwd unless explicitly allowed (prevents local
+        // file disclosure when the stack came from untrusted input).
+        if (!isReadableSourcePath(filePath, options)) {
+            return undefined;
+        }
 
         if (!existsSync(filePath)) {
             return undefined;
@@ -235,6 +261,7 @@ const getStacktrace = (stack: Trace[], options: Options): string =>
 
 const internalRenderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options>, deep: number): string => {
     const config = {
+        allowAllFilePaths: false,
         cwd: cwd(),
         displayShortPath: false,
         filterStacktrace: undefined,
@@ -312,7 +339,15 @@ export interface ResolvedSourceLocation {
  */
 export type SourceMapResolver = (location: SourceMapLocation) => ResolvedSourceLocation | undefined;
 
-export type Options = Omit<CodeFrameOptions, "message | prefix"> & {
+export type Options = {
+    /**
+     * Read source files for code frames from anywhere on disk, including absolute paths outside
+     * `cwd`. Defaults to `false`, in which case only files resolving inside `cwd` are read — this
+     * prevents local file disclosure when rendering errors whose stack came from untrusted input
+     * (e.g. a deserialized error). Enable only for trusted, locally-thrown errors.
+     * @default false
+     */
+    allowAllFilePaths: boolean;
     color: CodeFrameOptions["color"] & {
         fileLine: ColorizeMethod;
         hint: ColorizeMethod;
@@ -332,7 +367,7 @@ export type Options = Omit<CodeFrameOptions, "message | prefix"> & {
     prefix: string;
     /** Optional source-map resolver to map compiled frame positions back to original source. */
     sourceMap?: SourceMapResolver;
-};
+} & Omit<CodeFrameOptions, "message | prefix">;
 
 export const renderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options> = {}): string => {
     if (options.framesMaxLimit !== undefined && options.framesMaxLimit <= 0) {
