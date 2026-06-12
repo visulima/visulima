@@ -205,6 +205,13 @@ logger.info(scrub(payload));
 logger.info(scrub(anotherPayload));
 ```
 
+> [!NOTE]
+> The traversal is a single pass: every object node and nested string is visited exactly once
+> and evaluated against all rules together, rather than re-walking the tree once per rule. The
+> compromise NLP engine is only invoked when at least one NLP-backed rule (`firstname`,
+> `lastname`, `organization`, `email`, `money`, `phonenumber`, `url`) is requested — pure
+> key/pattern redaction never pays the NLP cost.
+
 - stringAnonymize(input, rules, options)
     > It uses Natural Language Processing (NLP) and Regular Expressions (Regex) to identify and mask sensitive information in a string.
 

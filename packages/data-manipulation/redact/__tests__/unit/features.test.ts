@@ -180,6 +180,47 @@ describe("url query redaction with wildcard and pattern rules", () => {
     });
 });
 
+describe("single-traversal behaviour", () => {
+    it("evaluates every nested string against all deep rules in a single pass", () => {
+        expect.assertions(2);
+
+        let calls = 0;
+
+        const countCall = (mask: string): string => {
+            calls += 1;
+
+            return mask;
+        };
+
+        // Two deep pattern rules that each match a different leaf string. In the old
+        // O(rules x nodes) traversal the whole subtree was re-walked once per rule; in the
+        // single-traversal model each leaf string is visited exactly once, so each censor
+        // fires exactly once for its single matching leaf.
+        const result = redact({ a: { aaa: "secret-token" }, b: { bbb: "another-secret" } }, [
+            { deep: true, key: "x", pattern: String.raw`secret-token`, replacement: () => countCall("<X>") },
+            { deep: true, key: "y", pattern: String.raw`another-secret`, replacement: () => countCall("<Y>") },
+        ]);
+
+        expect(result).toStrictEqual({ a: { aaa: "<X>" }, b: { bbb: "<Y>" } });
+        expect(calls).toBe(2);
+    });
+
+    it("applies a plain key rule only where it resolves and does not descend into same-named nested keys", () => {
+        expect.assertions(1);
+
+        const input = {
+            password: "top",
+            user: { password: "nested" },
+        };
+
+        // A plain (non-deep, non-wildcard) `password` rule resolves at the root and must NOT
+        // also redact `user.password`; deep/wildcard rules are required for that.
+        const result = redact(input, ["password"]);
+
+        expect(result).toStrictEqual({ password: "<PASSWORD>", user: { password: "nested" } });
+    });
+});
+
 describe("themed rule subsets", () => {
     it("exposes credential, pii and dateTime subsets that compose into the default set", () => {
         expect.assertions(2);
