@@ -23,6 +23,17 @@ import {
 } from "../../src/runtime/toolchain";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../test-helpers";
 
+// Writes a fake package-manager binary that resolves on PATH cross-platform.
+// On Windows the PATH lookup matches a PATHEXT extension (.CMD/.EXE/…); a bare
+// extensionless name isn't treated as executable there, so also drop a .cmd shim.
+const writeFakeBin = (binDir: string, name: string): void => {
+    writeFileSync(join(binDir, name), "#!/bin/sh\n", { mode: 0o755 });
+
+    if (process.platform === "win32") {
+        writeFileSync(join(binDir, `${name}.cmd`), "@echo off\r\n");
+    }
+};
+
 describe("toolchain", () => {
     let tmpDirectory: string;
 
@@ -316,7 +327,7 @@ describe("toolchain", () => {
             const binDir = join(tmpDirectory, "bin");
 
             mkdirSync(binDir, { recursive: true });
-            writeFileSync(join(binDir, "pnpm"), "#!/bin/sh\n", { mode: 0o755 });
+            writeFakeBin(binDir, "pnpm");
             writeFileSync(join(tmpDirectory, "package.json"), JSON.stringify({ packageManager: "pnpm@10.32.1" }));
 
             const originalPath = process.env["PATH"];
@@ -900,7 +911,7 @@ describe("toolchain", () => {
             const binDir = join(tmpDirectory, "bin");
 
             mkdirSync(binDir, { recursive: true });
-            writeFileSync(join(binDir, "pnpm"), "#!/bin/sh\n", { mode: 0o755 });
+            writeFakeBin(binDir, "pnpm");
 
             const logger = collectingLogger();
             const originalPath = process.env["PATH"];
