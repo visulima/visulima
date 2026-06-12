@@ -12,6 +12,9 @@ const secrets: Command = {
         ["vis secrets --staged", "Scan only files staged for the current commit (pre-commit hooks)"],
         ["vis secrets --since main", "Scan only files changed since the `main` branch"],
         ["vis secrets --affected", "Scan only projects affected by the current branch"],
+        ["vis secrets --history", "Scan the full git history for secrets that were committed then removed"],
+        ["vis secrets --history --history-range main..HEAD", "Scan only commits on the current branch since main"],
+        ["vis secrets --history --max-commits 100 --redact", "Scan the last 100 commits, masking any secret values"],
         ["vis secrets --init", "Write an initial baseline from current findings"],
         ["vis secrets --list-rules", "Print all bundled detection rules"],
         ["vis secrets --list-validators", "Print non-HTTP validator types in the ruleset + install hints for each"],
@@ -63,6 +66,20 @@ const secrets: Command = {
         { defaultValue: false, description: "Scan only files staged for commit", name: "staged", type: Boolean },
         { description: "Scan only files changed since <ref> (e.g. main, origin/HEAD)", name: "since", type: String },
         { defaultValue: false, description: "Scan only projects affected by the current branch", name: "affected", type: Boolean },
+        {
+            defaultValue: false,
+            description:
+                "Scan the entire git history (every added/modified blob across commits) instead of the working tree. Surfaces secrets that were committed and later removed. Cannot be combined with --staged/--since/--affected.",
+            name: "history",
+            type: Boolean,
+        },
+        {
+            description:
+                "With --history, limit the walk to a rev-list range (e.g. main..HEAD, HEAD~50..HEAD, or a single ref). Defaults to all reachable history of HEAD.",
+            name: "history-range",
+            type: String,
+        },
+        { description: "With --history, cap the number of commits walked (most-recent first)", name: "max-commits", type: Number },
         {
             description:
                 "Enable an opt-in rule or tag without restricting output — additive (e.g. tag:preset:weak-passwords, tag:preset:password-manager). Repeatable.",
@@ -118,11 +135,14 @@ export type SecretsOptions = CreateOptions<{
     "exclude-from": string[] | undefined;
     "exclude-rule": string[] | undefined;
     format: string | undefined;
+    history: boolean | undefined;
+    "history-range": string | undefined;
     "include-hidden": boolean | undefined;
     "include-rule": string[] | undefined;
     init: boolean | undefined;
     "list-rules": boolean | undefined;
     "list-validators": boolean | undefined;
+    "max-commits": number | undefined;
     "max-size": number | undefined;
     "min-confidence": string | undefined;
     "no-extend-bundled": boolean | undefined;

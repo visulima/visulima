@@ -3,13 +3,13 @@ import { dim, green, yellow } from "@visulima/colorize";
 import { isAccessibleSync } from "@visulima/fs";
 import { join, relative, resolve } from "@visulima/path";
 import { redact } from "@visulima/redact";
-import type { Confidence, Finding, RuleInfo, ScanOptions } from "@visulima/secret-scanner";
-import { inspectRuleset, listRequiredValidators, listRules, scan, scanFiles } from "@visulima/secret-scanner";
+import type { Confidence, Finding, GitFinding, RuleInfo, ScanOptions } from "@visulima/secret-scanner";
+import { inspectRuleset, listRequiredValidators, listRules, scan, scanFiles, scanGitHistory } from "@visulima/secret-scanner";
 
 import { pail } from "../../io/logger";
 import { createSpinner } from "../../io/spinner";
 import { diffBaseline, toRelativeFinding, writeBaseline } from "../../secrets/baseline";
-import { formatSarif, formatText } from "../../secrets/format";
+import { formatHistoryText, formatSarif, formatText } from "../../secrets/format";
 import { filesSince, hasGit, stagedFiles } from "../../secrets/git";
 import type { SecretsOptions } from "./index";
 
@@ -29,11 +29,14 @@ export interface SecretsFlags {
     extendBundled?: boolean;
     format?: ReportFormat;
     gitignore?: boolean;
+    history?: boolean;
+    historyRange?: string;
     includeHidden?: boolean;
     includeRule?: RepeatableString;
     init?: boolean;
     listRules?: boolean;
     listValidators?: boolean;
+    maxCommits?: number;
     maxSize?: number;
     minConfidence?: string;
     onlyVerified?: boolean;
@@ -312,6 +315,71 @@ const emitFindings = (
     }
 };
 
+const runHistoryScan = async (flags: SecretsFlags, root: string, scanOptions: ScanOptions, useColor: boolean, toolVersion: string): Promise<void> => {
+    if (flags.staged || flags.since || flags.affected) {
+        throw new Error("--history scans commit history and can't be combined with --staged / --since / --affected (those scan the working tree).");
+    }
+
+    if (!hasGit(root)) {
+        throw new Error("--history requires a git working tree, and none was detected.");
+    }
+
+    const format = validateFormat(flags.format);
+    const isInteractive = !flags.quiet && format === "text";
+    const spinner = createSpinner({ verbose: isInteractive });
+
+    spinner.start("scanning git history for secrets");
+
+    let findings: GitFinding[];
+
+    try {
+        findings = await scanGitHistory({
+            ...scanOptions,
+            cwd: root,
+            maxCommits: flags.maxCommits,
+            range: flags.historyRange,
+        });
+        spinner.succeed();
+    } catch (error) {
+        spinner.failed();
+        throw new Error(`git-history secret scan failed: ${error instanceof Error ? error.message : String(error)}`, { cause: error });
+    }
+
+    const shouldRedact = scanOptions.redact === true;
+    const reportFindings = shouldRedact ? redact(findings, ["match", "secret"]) : findings;
+
+    switch (format) {
+        case "json": {
+            process.stdout.write(`${JSON.stringify(reportFindings.map((f) => toRelativeFinding(f, root)), null, 2)}\n`);
+            break;
+        }
+        case "sarif": {
+            const ruleMetadata = await listRules(scanOptions).catch(() => [] as RuleInfo[]);
+
+            process.stdout.write(`${formatSarif(reportFindings, toolVersion, root, ruleMetadata)}\n`);
+            break;
+        }
+        default: {
+            process.stdout.write(`${formatHistoryText(reportFindings, useColor, { redact: shouldRedact })}\n`);
+        }
+    }
+
+    if (findings.length > 0) {
+        if (!flags.quiet) {
+            pail.warn(`${String(findings.length)} potential secret(s) found across git history`);
+            pail.notice("Findings reference the commit that introduced them — rotate the credential and rewrite history (e.g. git filter-repo) if it is still reachable.");
+        }
+
+        process.exitCode = 1;
+
+        return;
+    }
+
+    if (!flags.quiet) {
+        pail.success("No secrets detected in git history.");
+    }
+};
+
 const execute = async ({ argument, options, visConfig, workspaceRoot }: Toolbox<Console, SecretsOptions>): Promise<void> => {
     const flags = options as unknown as SecretsFlags;
     const args = argument as string[] | undefined;
@@ -335,6 +403,12 @@ const execute = async ({ argument, options, visConfig, workspaceRoot }: Toolbox<
 
     if (flags.init) {
         await runInit(root, scanOptions, flags.dryRun ?? false);
+
+        return;
+    }
+
+    if (flags.history) {
+        await runHistoryScan(flags, root, scanOptions, useColor, toolVersion);
 
         return;
     }
