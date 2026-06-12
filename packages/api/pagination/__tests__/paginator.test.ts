@@ -6,7 +6,7 @@ describe("paginator", () => {
     it("should return the correct values for all public variables", () => {
         expect.assertions(8);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.total).toBe(100);
         expect(paginator.perPage).toBe(10);
@@ -21,7 +21,7 @@ describe("paginator", () => {
     it("should return the correct values for all method", () => {
         expect.assertions(1);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.all()).toStrictEqual([0, 1, 2, 3, 4, 5, 6, 7, 8, 9]);
     });
@@ -29,7 +29,7 @@ describe("paginator", () => {
     it("should return the correct values inside the meta object", () => {
         expect.assertions(1);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.getMeta()).toStrictEqual({
             firstPage: 1,
@@ -47,7 +47,7 @@ describe("paginator", () => {
     it("should return the correct values inside the meta object when using the baseUrl method", () => {
         expect.assertions(1);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.baseUrl("/api/v1").getMeta()).toStrictEqual({
             firstPage: 1,
@@ -66,7 +66,7 @@ describe("paginator", () => {
     it("should return the correct values inside the meta object when using the queryString method", () => {
         expect.assertions(1);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.queryString({ foo: "bar" }).getMeta()).toStrictEqual({
             firstPage: 1,
@@ -84,7 +84,7 @@ describe("paginator", () => {
     it("should return the correct values inside the meta object when using the baseUrl and queryString method", () => {
         expect.assertions(1);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.baseUrl("/api/v1").queryString({ foo: "bar" }).getMeta()).toStrictEqual({
             firstPage: 1,
@@ -102,7 +102,7 @@ describe("paginator", () => {
     it("should return the correct values for the toJSON method", () => {
         expect.assertions(1);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.toJSON()).toStrictEqual({
             data: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
@@ -123,7 +123,7 @@ describe("paginator", () => {
     it("should return a link for the given page when using the baseUrl method", () => {
         expect.assertions(3);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.getUrl(0)).toBe("/?page=1");
         expect(paginator.getUrl(-1)).toBe("/?page=1");
@@ -133,7 +133,7 @@ describe("paginator", () => {
     it("should return a link for the given page when using the getUrlsForRange method", () => {
         expect.assertions(1);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.getUrlsForRange(0, 5)).toStrictEqual([
             { isActive: false, page: 0, url: "/?page=1" },
@@ -148,7 +148,7 @@ describe("paginator", () => {
     it("should return a link for the given page when using the baseUrl and queryString method", () => {
         expect.assertions(3);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.baseUrl("/api/v1").getUrl(0)).toBe("/api/v1?page=1");
         expect(paginator.baseUrl("/api/v1").getUrl(-1)).toBe("/api/v1?page=1");
@@ -158,7 +158,7 @@ describe("paginator", () => {
     it("should return a previous link", () => {
         expect.assertions(2);
 
-        const paginator = new Paginator(100, 10, 0, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 0, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.getPreviousPageUrl()).toBeNull();
 
@@ -170,7 +170,7 @@ describe("paginator", () => {
     it("should return a next link", () => {
         expect.assertions(4);
 
-        const paginator = new Paginator(11, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(11, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.hasMorePages).toBe(true);
         expect(paginator.getNextPageUrl()).toBe("/?page=2");
@@ -223,6 +223,21 @@ describe("paginator", () => {
         expect(paginator.all()).toHaveLength(200_000);
     });
 
+    it("should not stack-overflow constructing a very large page via the constructor", () => {
+        expect.assertions(3);
+
+        // The old variadic `...rows` constructor (`new Paginator(t, p, c, ...rows)`)
+        // threw `RangeError: Maximum call stack size exceeded` around ~100k rows
+        // on V8. The array parameter avoids spreading rows as call arguments.
+        const rows = Array.from({ length: 200_000 }, (_, index) => index);
+
+        const paginator = new Paginator(200_000, 200_000, 1, rows);
+
+        expect(paginator).toHaveLength(200_000);
+        expect(paginator.all()).toHaveLength(200_000);
+        expect(paginator.isEmpty).toBe(false);
+    });
+
     it("should return a defensive copy from all()", () => {
         expect.assertions(2);
 
@@ -238,7 +253,7 @@ describe("paginator", () => {
     it("should transform meta keys with a naming strategy", () => {
         expect.assertions(1);
 
-        const paginator = new Paginator(100, 10, 1, ...Array.from({ length: 10 }).map((_, index) => index));
+        const paginator = new Paginator(100, 10, 1, Array.from({ length: 10 }, (_, index) => index));
 
         expect(paginator.getMeta(snakeCaseNamingStrategy)).toStrictEqual({
             first_page: 1,
