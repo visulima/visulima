@@ -191,4 +191,24 @@ describe(validateDurationLanguage, () => {
             validateDurationLanguage(language);
         }).toThrow(new TypeError("All values in unitMap must be of type string"));
     });
+
+    it("should cache validated language objects and skip re-validation (WeakSet)", () => {
+        expect.assertions(2);
+
+        const language = { ...baseLanguage };
+
+        // First call validates and caches the object reference.
+        expect(() => {
+            validateDurationLanguage(language);
+        }).not.toThrow();
+
+        // Mutate the same reference to an invalid shape. Because the object is
+        // already cached, the validator short-circuits and does not re-check it.
+        // @ts-expect-error - intentionally breaking the shape after caching
+        language.future = 123;
+
+        expect(() => {
+            validateDurationLanguage(language);
+        }).not.toThrow();
+    });
 });
