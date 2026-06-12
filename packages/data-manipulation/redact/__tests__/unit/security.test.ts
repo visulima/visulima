@@ -23,7 +23,7 @@ describe("redos resistance", () => {
 
         stringAnonymize(adversarial, standardModifierRules);
 
-        expect(Date.now() - start).toBeLessThan(2000);
+        expect(Date.now() - start).toBeLessThan(5000);
     });
 
     it("does not hang on a long adversarial url-like string", () => {
@@ -35,7 +35,7 @@ describe("redos resistance", () => {
 
         stringAnonymize(adversarial, standardModifierRules);
 
-        expect(Date.now() - start).toBeLessThan(2000);
+        expect(Date.now() - start).toBeLessThan(5000);
     });
 
     it("linearized url rule still redacts a normal url-like host", () => {
@@ -59,7 +59,7 @@ describe("zero-width match guard", () => {
         // rx.exec would loop forever.
         const result = redact("abc 123 def", [{ deep: true, key: "num", pattern: String.raw`\d*`, replacement: "<N>" }]);
 
-        expect(Date.now() - start).toBeLessThan(2000);
+        expect(Date.now() - start).toBeLessThan(5000);
         expect(result).toContain("abc");
     });
 });

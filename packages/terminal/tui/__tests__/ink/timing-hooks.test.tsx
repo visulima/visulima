@@ -264,7 +264,10 @@ describe(usePersistentState, () => {
         );
 
         setter?.("dark");
-        await delay(30);
+        // Persistence runs in a post-commit effect; wait for the write to land
+        // rather than racing a fixed delay (the effect can take >30ms to flush
+        // on loaded CI runners).
+        await vi.waitUntil(() => storage.read("prefs") !== undefined, { interval: 10, timeout: 1000 });
 
         expect(storage.read("prefs")).toBe(JSON.stringify("dark"));
     });
@@ -296,7 +299,9 @@ describe(usePersistentState, () => {
         );
 
         setter?.("dark");
-        await delay(30);
+        // Wait for the post-commit persistence effect to flush instead of
+        // racing a fixed delay (the effect can take >30ms on loaded CI runners).
+        await vi.waitUntil(() => writes.length > 0, { interval: 10, timeout: 1000 });
 
         // The committed value should be persisted exactly once. The initial
         // value matches storage (undefined -> fallback) so it is not re-written.

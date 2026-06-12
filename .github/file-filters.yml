@@ -10,12 +10,6 @@ package_json_lintable:
     - "**/package.json"
     - "package.json"
 
-markdown_lintable:
-    - "**/*.md"
-    - "**/*.mdx"
-    - "**/package.json"
-    - "pnpm-lock.yaml"
-
 yaml_lintable:
     - "**/*.yml"
     - "**/*.yaml"
