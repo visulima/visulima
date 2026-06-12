@@ -203,7 +203,7 @@
         "semantic-release": "catalog:cli",
         "smol-toml": "catalog:dev",
         "tempy": "catalog:dev",
-        "tinyglobby": "^0.2.16",
+        "tinyglobby": "^0.2.17",
         "type-fest": "catalog:prod",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test",
