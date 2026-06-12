@@ -8,6 +8,7 @@
  * line-based diffing. The Rust renderer produces minimal ANSI escape sequences
  * by comparing the current buffer against the previous frame cell-by-cell.
  */
+import loadNativeRootBinding from "../core/load-native-root-binding";
 import type { RendererConstructor, RendererInstance } from "../core/native-binding";
 import { bsu, esu } from "./write-synchronized";
 
@@ -32,9 +33,9 @@ const getRendererClass = (): RendererConstructor | undefined => {
     }
 
     try {
-        // Dynamic import to avoid hard dependency on native binding
-
-        const binding = require("../../index.js") as { Renderer: RendererConstructor };
+        // Load lazily so an unsupported platform degrades gracefully rather
+        // than hard-failing at import time.
+        const binding = loadNativeRootBinding(import.meta.url) as { Renderer: RendererConstructor };
 
         cachedRendererClass = binding.Renderer;
 

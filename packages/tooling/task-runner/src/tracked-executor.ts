@@ -1,6 +1,7 @@
 import type { ChildProcess } from "node:child_process";
 import { exec } from "node:child_process";
 import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { pathToFileURL } from "node:url";
 
 import { join } from "@visulima/path";
 
@@ -187,7 +188,10 @@ export class TrackedTaskExecutor {
                     {
                         ...process.env,
                         ...env,
-                        NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import ${preloadFile}`.trim(),
+                        // `--import` needs a file URL, not a bare path: on Windows
+                        // a `C:\…` path is parsed as a `c:` URL scheme and rejected,
+                        // so the preload never loads and cooperative hints are lost.
+                        NODE_OPTIONS: `${process.env["NODE_OPTIONS"] ?? ""} --import ${pathToFileURL(preloadFile).href}`.trim(),
                     },
                     cwd,
                 ),
