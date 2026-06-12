@@ -10,7 +10,7 @@
         "@jrichman/ink": "7.0.0",
         "@visulima/tui": "workspace:*",
         "diff": "catalog:prod",
-        "ink": "7.0.3",
+        "ink": "7.0.5",
         "marked": "catalog:dev",
         "react": "catalog:frontend"
     },
