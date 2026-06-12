@@ -515,12 +515,14 @@ Defined in: [packages/tsconfig/src/read-tsconfig.ts:444](https://github.com/visu
 ##### tscCompatible?
 
 ```ts
-optional tscCompatible: "5.3" | "5.4" | "5.5" | "5.6" | true;
+optional tscCompatible: "5.4" | "5.5" | "5.6" | "5.7" | "5.8" | "5.9" | "6.0" | true;
 ```
 
-Defined in: [packages/tsconfig/src/read-tsconfig.ts:452](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/read-tsconfig.ts#L452)
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:703](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/read-tsconfig.ts#L703)
 
 Make the configuration compatible with the specified TypeScript version.
+
+Controls _derived_ defaults — fields TypeScript synthesizes when other fields are set (e.g. `module: nodenext` ⇒ `moduleResolution: nodenext`).
 
 When `true`, it will make the configuration compatible with the latest TypeScript version.
 
@@ -528,6 +530,22 @@ When `true`, it will make the configuration compatible with the latest TypeScrip
 
 ```ts
 undefined;
+```
+
+##### typescriptVersion?
+
+```ts
+optional typescriptVersion: "auto" | false | string;
+```
+
+Defined in: [packages/tsconfig/src/read-tsconfig.ts:718](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/read-tsconfig.ts#L718)
+
+Apply the _unconditional_ compiler-option defaults TypeScript would synthesize for the given version. `"auto"` detects the installed TypeScript version (including Yarn PnP); a string pins an explicit version; `false` applies none. Distinct from `tscCompatible`, and both can be combined.
+
+###### Default
+
+```ts
+false;
 ```
 
 ---
