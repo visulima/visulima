@@ -58,6 +58,13 @@ const strictHandlers: Handlers = {
     Set: copySetStrict,
 };
 
+/**
+ * Deep-mutable mirror of `T`: recursively strips `readonly` modifiers so the
+ * returned clone is fully writable. This is the return type of {@link deepClone}
+ * and {@link createDeepClone}, exported (at the end of the file) because it
+ * appears in their public signatures.
+ * @template T - The type to make deeply writable.
+ */
 type DeepReadwrite<T> = T extends object | [] ? { -readonly [P in keyof T]: DeepReadwrite<T[P]> } : T;
 
 interface FakeJSDOM {
@@ -271,4 +278,5 @@ export const createDeepClone = (options?: Options): <T>(originalData: T) => Deep
     return <T>(originalData: T): DeepReadwrite<T> => runClone(originalData, cloner);
 };
 
+export type { DeepReadwrite };
 export type { Handlers, Options, State } from "./types";
