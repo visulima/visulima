@@ -77,10 +77,10 @@ blockExoticSubdeps: true
 
 catalogs:
   backend:
-    '@hono/node-server': ^2.0.2
+    '@hono/node-server': ^2.0.4
     '@hono/swagger-ui': ^0.6.1
     '@hono/zod-openapi': 1.4.0
-    '@koa/router': 15.5.0
+    '@koa/router': 15.6.0
     '@prisma/client': 6.19.2
     '@prisma/generator-helper': 6.19.2
     '@prisma/internals': 6.19.2
@@ -88,12 +88,12 @@ catalogs:
     express: ^5.2.1
     fastify: 5.8.5
     hono: 4.12.25
-    koa: 3.2.0
+    koa: 3.2.1
     prisma: 6.19.2
     swagger-ui-express: ^5.0.1
   build:
-    '@cloudflare/vite-plugin': 1.37.1
-    '@netlify/vite-plugin-tanstack-start': 1.3.13
+    '@cloudflare/vite-plugin': 1.40.2
+    '@netlify/vite-plugin-tanstack-start': 1.3.15
     '@optimize-lodash/rollup-plugin': 6.0.0
     '@preact/preset-vite': 2.10.5
     '@rolldown/plugin-babel': 0.2.3
@@ -105,48 +105,48 @@ catalogs:
     '@vitejs/plugin-react-swc': 4.3.1
     '@vitejs/plugin-vue': 6.0.7
     esbuild: 0.28.0
-    rollup: 4.60.4
+    rollup: 4.61.1
     unplugin-fonts: 2.0.0
-    vite: 8.0.13
+    vite: 8.0.16
     vite-imagetools: 10.0.0
     vite-plugin-solid: 2.11.12
     vite-plugin-svgr: 5.2.0
     vite-plugin-vue-devtools: 8.1.2
-    webpack: ^5.106.2
+    webpack: ^5.107.2
   cli:
-    semantic-release: 25.0.3
-    taze: 19.12.0
+    semantic-release: 25.0.5
+    taze: 19.14.1
   dev:
-    '@anolilab/semantic-release-pnpm': ^8.1.9
-    '@anolilab/semantic-release-preset': ^13.4.10
-    '@arethetypeswrong/cli': ^0.18.2
-    '@aws-sdk/client-s3': 3.1048.0
-    '@aws-sdk/credential-providers': 3.1048.0
-    '@aws-sdk/s3-request-presigner': 3.1048.0
-    '@aws-sdk/signature-v4-crt': 3.1048.0
-    '@aws-sdk/types': 3.973.8
+    '@anolilab/semantic-release-pnpm': ^8.1.15
+    '@anolilab/semantic-release-preset': ^13.4.16
+    '@arethetypeswrong/cli': ^0.18.3
+    '@aws-sdk/client-s3': 3.1067.0
+    '@aws-sdk/credential-providers': 3.1067.0
+    '@aws-sdk/s3-request-presigner': 3.1067.0
+    '@aws-sdk/signature-v4-crt': 3.1067.0
+    '@aws-sdk/types': 3.973.12
     '@azure/core-auth': ^1.10.1
-    '@azure/storage-blob': ^12.31.0
-    '@babel/core': 7.29.0
-    '@babel/types': ^7.29.0
-    '@bomb.sh/tab': ^0.0.15
-    '@cloudflare/workers-types': 4.20260518.1
+    '@azure/storage-blob': ^12.32.0
+    '@babel/core': 7.29.7
+    '@babel/types': ^7.29.7
+    '@bomb.sh/tab': ^0.0.16
+    '@cloudflare/workers-types': 4.20260611.1
     '@hapi/hapi': ^21.4.9
-    '@inquirer/core': 11.1.10
-    '@inquirer/type': 4.0.5
+    '@inquirer/core': 11.2.1
+    '@inquirer/type': 4.0.7
     '@jridgewell/trace-mapping': ^0.3.31
     "@lydell/node-pty": 1.2.0-beta.12
-    '@napi-rs/cli': 3.6.2
-    '@netlify/blobs': 10.7.7
-    '@nuxt/kit': 4.4.5
+    '@napi-rs/cli': 3.7.1
+    '@netlify/blobs': 10.7.9
+    '@nuxt/kit': 4.4.8
     '@opentelemetry/api': 1.9.1
-    '@pnpm/exe': 11.1.2
-    '@remix-run/headers': 0.19.0
+    '@pnpm/exe': 11.5.3
+    '@remix-run/headers': 0.21.1
     '@semantic-release/exec': ^7.1.0
-    '@shikijs/langs': ^4.0.2
-    '@shikijs/themes': ^4.0.2
+    '@shikijs/langs': ^4.2.0
+    '@shikijs/themes': ^4.2.0
     '@sveltejs/adapter-auto': ^7.0.1
-    '@sveltejs/kit': ^2.60.1
+    '@sveltejs/kit': ^2.65.0
     '@total-typescript/ts-reset': ^0.6.1
     '@tsconfig/node22': ^22.0.5
     '@vercel/blob': 2.4.0
@@ -160,14 +160,14 @@ catalogs:
     '@visulima/fs': 5.0.0-alpha.4
     '@visulima/humanizer': 3.0.0-alpha.6
     '@visulima/inspector': 2.0.0-alpha.4
-    '@visulima/packem': 2.0.0-alpha.78
+    '@visulima/packem': 2.0.0-alpha.87
     '@visulima/path': 3.0.0-alpha.5
     '@visulima/redact': 3.0.0-alpha.5
     '@visulima/string': 3.0.0-alpha.6
     '@visulima/tabular': 4.0.0-alpha.11
     '@xterm/headless': ^6.0.0
-    '@yarnpkg/pnp': 4.1.5
-    ai: 6.0.184
+    '@yarnpkg/pnp': 4.1.7
+    ai: 6.0.202
     ajv: 8.20.0
     ajv-formats: 3.0.1
     ansi-regex: ^6.2.2
@@ -175,10 +175,10 @@ catalogs:
     asn1js: ^3.0.10
     audit-ci: 7.1.0
     autoprefixer: ^10.5.0
-    aws-crt: 1.31.0
+    aws-crt: 1.32.1
     aws-sdk-client-mock: ^4.1.0
     aws4fetch: ^1.0.20
-    axe-core: ^4.11.4
+    axe-core: ^4.12.1
     babel-plugin-transform-hook-names: ^1.0.2
     benchmark: 2.1.4
     binary-extensions: ^3.1.0
@@ -190,32 +190,32 @@ catalogs:
     cli-spinners: 3.4.0
     cli-table: ^0.3.11
     cli-table3: ^0.6.5
-    commander: ^14.0.3
+    commander: ^15.0.0
     conventional-changelog-conventionalcommits: 9.3.1
     core-js: 3.49.0
     cors: ^2.8.6
     cross-env: ^10.1.0
     cross-fetch: ^4.1.0
-    cssnano: 8.0.1
+    cssnano: 8.0.2
     csstype: 3.2.3
     csv-parse: 6.2.1
-    deeks: ^3.2.0
+    deeks: ^3.2.1
     delay: 7.0.0
     detect-indent: ^7.0.2
     dot-prop: ^10.1.0
-    email-providers: 2.22.0
+    email-providers: 2.23.0
     emoji-regex-xs: 2.0.1
     etag: ^1.8.1
     fast-safe-stringify: 2.1.1
     fastest-levenshtein: 1.0.16
     filter-obj: ^6.1.0
-    gaxios: ^7.1.4
+    gaxios: ^7.1.5
     get-east-asian-width: 1.6.0
     github-slugger: 2.0.0
     globals: ^17.6.0
-    google-auth-library: 10.6.2
+    google-auth-library: 10.7.0
     handlebars: 4.7.9
-    happy-dom: 20.9.0
+    happy-dom: 20.10.2
     hast: 1.0.0
     html-entities: 2.6.0
     html-tags: ^5.1.0
@@ -231,83 +231,83 @@ catalogs:
     json-schema: 0.4.0
     json5: ^2.2.3
     jsonc-parser: ^3.3.1
-    marked: ^18.0.3
-    mediabunny: 1.45.2
-    mjml: ^5.2.1
-    mobx: ^6.15.3
+    marked: ^18.0.5
+    mediabunny: 1.46.0
+    mjml: ^5.3.0
+    mobx: ^6.16.1
     ms: ^2.1.3
     msw: 2.14.6
-    next: 16.2.6
+    next: 16.2.9
     node-fetch: ^3.3.2
     node-mocks-http: ^1.17.2
     node-pty: 1.1.0
-    nodemailer: 8.0.7
-    npm: 11.14.1
-    npm-run-all2: ^8.0.4
-    openai: 6.38.0
+    nodemailer: 8.0.11
+    npm: 11.17.0
+    npm-run-all2: ^9.0.1
+    openai: 6.42.0
     openapi-types: ^12.1.3
     pkijs: 3.4.0
-    postcss: ^8.5.14
+    postcss: ^8.5.15
     preact: ^10.29.2
     publint: ^0.3.21
     qs-esm: ^8.0.1
     quick-format-unescaped: ^4.0.4
-    rate-limiter-flexible: 11.1.0
-    redoc: ^2.5.2
+    rate-limiter-flexible: 11.2.0
+    redoc: ^2.5.3
     redos-detector: ^6.1.4
     restore-cursor: ^5.1.0
     rotating-file-stream: ^3.2.9
     safe-regex2: 5.1.1
     safe-stable-stringify: ^2.5.0
     serve: ^14.2.6
-    sharp: ^0.34.5
+    sharp: ^0.35.1
     smol-toml: ^1.6.1
-    sort-package-json: 3.6.1
+    sort-package-json: 4.0.0
     standard: ^17.1.2
     string-strip-html: ^13.5.3
-    styled-components: 6.4.1
+    styled-components: 6.4.2
     supertest: ^7.2.2
     swagger-ui-dist: 5.32.6
     table: ^6.9.0
-    tailwind-csstree: 0.3.1
+    tailwind-csstree: 0.3.3
     tempy: ^3.2.0
     terminal-size: ^4.0.1
-    tinyexec: ^1.1.2
+    tinyexec: ^1.2.4
     ts-json-schema-generator: ^2.9.0
     ts-node-dev: ^2.0.0
-    tsx: ^4.22.1
+    tsx: ^4.22.4
     tw-animate-css: 1.4.0
-    type-fest: 5.6.0
+    type-fest: 5.7.0
     typedoc: 0.28.19
-    typedoc-plugin-markdown: 4.11.0
+    typedoc-plugin-markdown: 4.12.0
     typedoc-plugin-rename-defaults: 0.7.3
     typescript-coverage-report: ^1.1.1
-    web-vitals: 5.2.0
-    webdriverio: 9.27.1
-    wrangler: 4.92.0
+    web-vitals: 5.3.0
+    webdriverio: 9.28.0
+    wrangler: 4.100.0
     yaml: 2.9.0
     yarn: ^1.22.22
     zeptomatch: ^2.1.0
   docs:
-    '@storybook/addon-a11y': 10.4.0
+    '@storybook/addon-a11y': 10.4.4
     '@storybook/addon-actions': ^9.0.8
     '@storybook/addon-console': 3.0.0
-    '@storybook/addon-docs': 10.4.0
+    '@storybook/addon-docs': 10.4.4
     '@storybook/addon-essentials': ^8.6.14
     '@storybook/addon-interactions': ^8.6.14
-    '@storybook/addon-links': 10.4.0
-    '@storybook/addon-themes': 10.4.0
-    '@storybook/builder-vite': 10.4.0
+    '@storybook/addon-links': 10.4.4
+    '@storybook/addon-themes': 10.4.4
+    '@storybook/builder-vite': 10.4.4
     '@storybook/core-server': ~8.6.14
-    '@storybook/react': 10.4.0
-    '@storybook/react-vite': 10.4.0
-    storybook: 10.4.0
+    '@storybook/react': 10.4.4
+    '@storybook/react-vite': 10.4.4
+    storybook: 10.4.4
   frontend:
-    '@babel/preset-react': ^7.28.5
+    '@babel/preset-react': ^7.29.7
     '@fuma-comment/react': 1.4.2
     '@mdx-js/react': ^3.1.1
-    '@radix-ui/react-presence': ^1.1.5
-    '@radix-ui/react-slot': ^1.2.4
+    '@radix-ui/react-presence': ^1.1.6
+    '@radix-ui/react-slot': ^1.2.5
     '@react-email/render': ^2.0.8
     '@react-three/fiber': 9.6.1
     '@solidjs/meta': ^0.29.4
@@ -317,116 +317,116 @@ catalogs:
     '@tailwindcss/node': 4.3.0
     '@tailwindcss/oxide': 4.3.0
     '@tailwindcss/postcss': 4.3.0
-    '@tanstack/react-router': 1.170.4
+    '@tanstack/react-router': 1.170.15
     '@tanstack/react-router-devtools': 1.167.0
-    '@tanstack/react-start': 1.168.6
-    '@tanstack/react-virtual': 3.13.24
+    '@tanstack/react-start': 1.168.25
+    '@tanstack/react-virtual': 3.14.2
     '@tsconfig/svelte': ^5.0.8
     '@unpic/react': 1.0.2
     '@vidstack/react': 1.12.13
     '@vue-email/render': 0.0.9
     '@vue/tsconfig': 0.9.1
     babel-plugin-react-compiler: 19.1.0-rc.3
-    fumadocs-ui: 16.8.11
-    motion: 12.38.0
-    radix-ui: ^1.4.3
-    react: 19.2.6
+    fumadocs-ui: 17.0.0
+    motion: 12.40.0
+    radix-ui: ^1.5.0
+    react: 19.2.7
     react-compiler-runtime: 19.1.0-rc.3
-    react-dom: 19.2.6
+    react-dom: 19.2.7
     react-hook-inview: 4.5.1
     react-remove-scroll: 2.7.2
-    react-router: 7.15.1
+    react-router: 7.17.0
     solid-js: 1.9.13
-    svelte: 5.55.7
-    svelte-check: ^4.4.8
-    svelte-preprocess: ^6.0.3
+    svelte: 5.56.3
+    svelte-check: ^4.6.0
+    svelte-preprocess: ^6.0.5
     swagger-ui-react: 5.32.6
     three: 0.184.0
-    vue: 3.5.34
+    vue: 3.5.38
   icons:
     '@icons-pack/react-simple-icons': 13.13.0
     '@radix-ui/react-icons': 1.3.2
-    lucide-react: 1.16.0
-    lucide-static: 1.16.0
+    lucide-react: 1.17.0
+    lucide-static: 1.17.0
     media-icons: 1.1.5
     react-icon-cloud: 4.1.7
   lint:
-    '@anolilab/eslint-config': 27.0.2
-    '@anolilab/lint-staged-config': 11.0.1
+    '@anolilab/eslint-config': 27.0.10
+    '@anolilab/lint-staged-config': 11.0.9
     '@anolilab/prettier-config': 10.0.1
-    '@eslint-react/eslint-plugin': 5.8.1
-    '@eslint/css': 1.2.0
+    '@eslint-react/eslint-plugin': 5.8.18
+    '@eslint/css': 1.3.0
     '@eslint/eslintrc': ^3.3.5
     '@eslint/js': ^10.0.1
     '@rushstack/eslint-plugin-security': ^0.14.2
     '@secretlint/secretlint-rule-preset-recommend': 13.0.2
-    '@tanstack/eslint-plugin-query': 5.100.10
+    '@tanstack/eslint-plugin-query': 5.101.0
     '@tanstack/eslint-plugin-router': 1.162.0
-    '@typescript-eslint/eslint-plugin': 8.59.3
-    '@typescript-eslint/parser': 8.59.3
-    eslint: 10.4.0
-    eslint-config-next: 16.2.6
+    '@typescript-eslint/eslint-plugin': 8.61.0
+    '@typescript-eslint/parser': 8.61.0
+    eslint: 10.4.1
+    eslint-config-next: 16.2.9
     eslint-plugin-jsx-a11y: ^6.10.2
     eslint-plugin-react: ^7.37.5
     eslint-plugin-react-compiler: 19.1.0-rc.2
     eslint-plugin-react-hooks: ^7.1.1
     eslint-plugin-react-perf: ^3.3.3
     eslint-plugin-react-refresh: 0.5.2
-    eslint-plugin-react-you-might-not-need-an-effect: 0.10.1
+    eslint-plugin-react-you-might-not-need-an-effect: 1.0.0
     eslint-plugin-solid: 0.14.5
-    eslint-plugin-storybook: 10.4.0
-    eslint-plugin-svelte: 3.17.1
+    eslint-plugin-storybook: 10.4.4
+    eslint-plugin-svelte: 3.19.0
     eslint-plugin-testing-library: 7.16.2
     eslint-plugin-validate-jsx-nesting: ^0.1.1
-    eslint-plugin-vue: 10.9.1
+    eslint-plugin-vue: 10.9.2
     eslint-plugin-you-dont-need-lodash-underscore: 6.14.0
-    eslint-plugin-zod: 4.5.1
+    eslint-plugin-zod: 4.7.0
     husky: ^9.1.7
-    lint-staged: ^17.0.5
-    prettier: 3.8.3
+    lint-staged: ^17.0.7
+    prettier: 3.8.4
     prettier-plugin-tailwindcss: 0.8.0
     secretlint: 13.0.2
-    svelte-eslint-parser: 1.6.1
-    typescript-eslint: 8.59.3
-    vue-eslint-parser: 10.4.0
-    vue-tsc: 3.2.9
+    svelte-eslint-parser: 1.8.0
+    typescript-eslint: 8.61.0
+    vue-eslint-parser: 10.4.1
+    vue-tsc: 3.3.4
   node:
     fast-glob: ^3.3.3
     nanotar: ^0.3.0
     rimraf: 6.1.3
   optional:
-    '@bomb.sh/tab': ^0.0.15
+    '@bomb.sh/tab': ^0.0.16
     cli-progress: ^3.12.0
-    commander: ^14.0.3
+    commander: ^15.0.0
   peer:
-    '@ai-sdk/anthropic': 3.0.78
-    '@ai-sdk/azure': 3.0.65
-    '@ai-sdk/google': 3.0.75
-    '@ai-sdk/mistral': 3.0.37
-    '@ai-sdk/openai': 3.0.64
-    '@bomb.sh/tab': 0.0.15
+    '@ai-sdk/anthropic': 3.0.83
+    '@ai-sdk/azure': 3.0.73
+    '@ai-sdk/google': 3.0.81
+    '@ai-sdk/mistral': 3.0.38
+    '@ai-sdk/openai': 3.0.70
+    '@bomb.sh/tab': 0.0.16
     '@hapi/hapi': 21.4.9
     '@opentelemetry/api': ^1.9.1
     '@visulima/boxen': 3.0.0-alpha.6
     '@visulima/crud': 3.0.0-alpha.6
     '@visulima/find-cache-dir': 3.0.0-alpha.4
     '@visulima/redact': 3.0.0-alpha.5
-    ai: 6.0.184
+    ai: 6.0.202
     asn1js: 3.0.10
-    axe-core: 4.11.4
+    axe-core: 4.12.1
     chalk: 5.6.2
-    commander: 14.0.3
+    commander: 15.0.0
     cors: 2.8.6
     github-slugger: 2.0.0
     handlebars: 4.7.9
     ini: ^7.0.0
     json5: ^2.2.3
     jsonc-parser: ^3.3.1
-    mjml: 5.2.1
-    next: 16.2.6
+    mjml: 5.3.0
+    next: 16.2.9
     pkijs: 3.4.0
-    rate-limiter-flexible: 11.1.0
-    redoc: 2.5.2
+    rate-limiter-flexible: 11.2.0
+    redoc: 2.5.3
     rotating-file-stream: 3.2.9
     smol-toml: ^1.6.1
     swagger-ui-dist: 5.32.6
@@ -434,39 +434,39 @@ catalogs:
   prod:
     '@alcalzone/ansi-tokenize': ^0.3.0
     '@anolilab/commitlint-config': 10.0.1
-    '@anolilab/multi-semantic-release': ^4.4.1
-    '@anolilab/textlint-config': 13.0.1
+    '@anolilab/multi-semantic-release': ^4.4.4
+    '@anolilab/textlint-config': 13.0.2
     '@antfu/install-pkg': ^1.1.0
     '@apidevtools/swagger-parser': ^12.1.0
     '@arcanis/slice-ansi': 2.0.1
     '@aws-sdk/abort-controller': ^3.374.0
-    '@aws-sdk/client-s3': 3.1048.0
-    '@aws-sdk/credential-providers': 3.1048.0
-    '@aws-sdk/s3-request-presigner': 3.1048.0
-    '@aws-sdk/types': 3.973.8
-    '@azure/storage-blob': ^12.31.0
-    '@babel/generator': ^7.29.1
-    '@babel/parser': 7.29.3
-    '@babel/traverse': ^7.29.0
+    '@aws-sdk/client-s3': 3.1067.0
+    '@aws-sdk/credential-providers': 3.1067.0
+    '@aws-sdk/s3-request-presigner': 3.1067.0
+    '@aws-sdk/types': 3.973.12
+    '@azure/storage-blob': ^12.32.0
+    '@babel/generator': ^7.29.7
+    '@babel/parser': 7.29.7
+    '@babel/traverse': ^7.29.7
     '@bomb.sh/args': ^0.3.1
-    '@commitlint/cli': ^21.0.1
-    '@commitlint/config-conventional': ^21.0.1
+    '@commitlint/cli': ^21.0.2
+    '@commitlint/config-conventional': ^21.0.2
     '@dynamicabot/signales': ^2.1.2
     '@floating-ui/dom': ^1.7.6
     '@fumadocs/mdx-remote': 1.4.10
     '@jridgewell/trace-mapping': ^0.3.31
     '@mfederczuk/deeptools': 2.1.0-rc01
-    '@oclif/core': 4.11.3
+    '@oclif/core': 4.11.4
     '@octokit/rest': ^22.0.1
     '@ogma/logger': 3.4.0
     '@qiwi/masker': ^2.0.1
-    '@remix-run/multipart-parser': 0.16.0
-    '@shikijs/cli': 4.0.2
-    '@shikijs/langs': ^4.0.2
+    '@remix-run/multipart-parser': 0.16.3
+    '@shikijs/cli': 4.2.0
+    '@shikijs/langs': ^4.2.0
     '@sindresorhus/fnv1a': 3.1.0
     '@sindresorhus/slugify': ^3.0.0
     '@sindresorhus/transliterate': 2.3.1
-    '@tanstack/router-plugin': 1.168.6
+    '@tanstack/router-plugin': 1.168.18
     '@tinyhttp/accepts': ^2.3.0
     '@ungap/structured-clone': ^1.3.1
     '@visulima/boxen': 3.0.0-alpha.6
@@ -484,12 +484,12 @@ catalogs:
     accepts: ^1.3.8
     ansi-colors: ^4.1.3
     ansi-truncate: 1.4.0
-    ansis: ^4.3.0
+    ansis: ^4.3.1
     argparse: ^2.0.1
     args: ^5.0.3
-    args-tokens: ^0.25.2
+    args-tokens: ^0.26.2
     auto-bind: ^5.0.1
-    aws-crt: 1.31.0
+    aws-crt: 1.32.1
     browserslist-config-anolilab: ^9.0.0
     bunyan: ^1.8.15
     cac: ^7.0.0
@@ -514,25 +514,25 @@ catalogs:
     colors: ^1.4.0
     colors-cli: ^1.0.33
     command-line-args: 6.0.2
-    commander: ^14.0.3
-    comment-parser: 1.4.6
+    commander: ^15.0.0
+    comment-parser: 1.4.7
     commitizen: ^4.3.1
     compression: ^1.8.1
-    compromise: ^14.15.0
+    compromise: ^14.15.1
     consola: ^3.4.2
     copy-file: ^11.1.0
     core-js: 3.49.0
     cors: 2.8.6
     cross-env: ^10.1.0
     csstype: 3.2.3
-    date-fns: ^4.1.0
+    date-fns: ^4.4.0
     debug: ^4.4.3
     deep-copy: ^1.4.2
     diary: 0.4.5
     diff: ^9.0.0
     dotenv: ^17.4.2
     empathic: 2.0.1
-    es-toolkit: ^1.46.1
+    es-toolkit: ^1.47.0
     eventemitter3: ^5.0.4
     fast-copy: ^4.0.3
     fast-redact: ^3.5.0
@@ -543,33 +543,33 @@ catalogs:
     find-up: 8.0.0
     find-up-simple: 1.0.1
     fs-extra: 11.3.5
-    fumadocs-core: 16.8.11
-    fumadocs-mdx: 15.0.6
+    fumadocs-core: 17.0.0
+    fumadocs-mdx: 15.0.12
     fumadocs-twoslash: 3.2.0
-    google-auth-library: 10.6.2
+    google-auth-library: 10.7.0
     gray-matter: ^4.0.3
-    gunshi: ^0.32.0
+    gunshi: ^0.34.0
     html-to-text: ^10.0.0
     http-errors: ^2.0.1
     http-status-codes: ^2.3.0
-    ical-generator: 10.2.0
+    ical-generator: 11.0.0
     is-in-ci: ^2.0.0
-    isomorphic-dompurify: 3.13.0
+    isomorphic-dompurify: 3.16.0
     jackspeak: ^4.2.3
     json5: ^2.2.3
     jsonc-parser: ^3.3.1
     jstoxml: ^7.1.0
     kleur: ^4.1.5
     kolorist: ^1.8.0
-    launch-editor: 2.13.2
-    launch-editor-middleware: 2.13.2
+    launch-editor: 2.14.1
+    launch-editor-middleware: 2.14.1
     lodash: 4.18.1
     lodash.clonedeep: ^4.5.0
     lodash.merge: ^4.6.2
     lodash.mergewith: ^4.6.2
     log-update: ^8.0.0
     loupe: ^3.2.1
-    lru-cache: 11.4.0
+    lru-cache: 11.5.1
     meow: ^14.1.0
     mime: ^4.1.0
     minimist: ^1.2.8
@@ -577,23 +577,23 @@ catalogs:
     nano-copy: ^0.1.1
     nanoclone: ^1.0.2
     nanoid: 5.1.11
-    next: 16.2.6
+    next: 16.2.9
     next-themes: ^0.4.6
     nitro: 3.0.260311-beta
-    nodemailer: 8.0.7
+    nodemailer: 8.0.11
     normalize-package-data: ^9.0.0
-    nuxt: ^4.4.6
-    nx: 22.7.2
+    nuxt: ^4.4.8
+    nx: 22.7.5
     object-inspect: ^1.13.4
     patch-console: ^2.0.0
     path-to-regexp: 8.4.2
     picocolors: ^1.1.1
-    pingman: ^2.1.0
+    pingman: ^2.2.0
     pino: ^10.3.1
     pkg-pr-new: ^0.0.75
     plain-object-clone: ^2.0.1
     plop: ^4.0.5
-    posthog-js: 1.373.5
+    posthog-js: 1.386.6
     preact: ^10.29.2
     ramda: ^0.32.0
     read-pkg: ^10.1.0
@@ -603,13 +603,13 @@ catalogs:
     resolve-pkg-maps: ^1.0.0
     rfdc: ^1.4.1
     roarr: ^7.21.5
-    rslog: 2.1.1
+    rslog: 2.1.3
     sanitize-filename: 1.6.4
-    sanitize-html: 2.17.4
+    sanitize-html: 2.17.5
     scheduler: ^0.27.0
     schema-dts: ^2.0.0
     scule: 1.3.0
-    sharp: ^0.34.5
+    sharp: ^0.35.1
     signal-exit: ^4.1.0
     sirv: ^3.0.2
     slice-ansi: 9.0.0
@@ -618,7 +618,7 @@ catalogs:
     stack-utils: ^2.0.6
     string-ts: 2.3.1
     string-width: 8.2.1
-    swagger-jsdoc: ^6.2.8
+    swagger-jsdoc: ^6.3.0
     tailwind-merge: 3.6.0
     terminal-size: ^4.0.1
     textlint: ^15.7.1
@@ -626,28 +626,28 @@ catalogs:
     ts-japi: ^1.12.3
     tseep: ^1.3.1
     tslog: ^4.10.2
-    type-fest: 5.6.0
+    type-fest: 5.7.0
     type-is: ^2.1.0
     unset-value: ^2.0.1
     vinxi: ^0.5.11
     walk: 2.3.15
     winston: ^3.19.0
     wrap-ansi: 10.0.0
-    ws: ^8.20.1
+    ws: ^8.21.0
     yaml: 2.9.0
     yargs: ^18.0.0
     yargs-parser: ^22.0.0
     yoga-layout: ~3.2.1
     yoga-layout-prebuilt: ^1.10.0
-    zod-to-ts: 2.0.0
+    zod-to-ts: 2.1.0
   style:
-    '@tailwindcss/typography': 0.5.19
+    '@tailwindcss/typography': 0.5.20
     tailwindcss: 4.3.0
     tailwindcss-animate: 1.0.7
   syntax:
-    shiki: ^4.0.2
+    shiki: ^4.2.0
   test:
-    '@codspeed/vitest-plugin': 5.4.0
+    '@codspeed/vitest-plugin': 5.5.0
     '@playwright/test': ^1.60.0
     '@storybook/test-runner': 0.24.4
     '@testing-library/dom': ^10.4.1
@@ -656,14 +656,14 @@ catalogs:
     '@testing-library/react': 16.3.2
     '@testing-library/svelte': 5.3.1
     '@testing-library/vue': 8.1.0
-    '@vitest/browser': 4.1.6
-    '@vitest/coverage-v8': 4.1.6
-    '@vitest/ui': 4.1.6
-    eslint-plugin-playwright: 2.10.3
+    '@vitest/browser': 4.1.8
+    '@vitest/coverage-v8': 4.1.8
+    '@vitest/ui': 4.1.8
+    eslint-plugin-playwright: 2.10.4
     next-test-api-route-handler: 5.0.5
     playwright: ^1.60.0
     test-runner: 0.11.1
-    vitest: 4.1.7
+    vitest: 4.1.8
   tsc:
     typescript: 6.0.3
   types:
@@ -686,23 +686,23 @@ catalogs:
     '@types/ini': ^4.1.1
     '@types/json-schema': 7.0.15
     '@types/jstoxml': ^5.0.0
-    '@types/koa': 3.0.2
+    '@types/koa': 3.0.3
     '@types/koa__router': ^12.0.5
     '@types/lodash.clonedeep': ^4.5.9
     '@types/lodash.merge': ^4.6.9
     '@types/lodash.mergewith': ^4.6.9
-    '@types/mdx': ^2.0.13
+    '@types/mdx': ^2.0.14
     '@types/micromatch': 4.0.10
     '@types/mime': ^4.0.0
     '@types/minimist': 1.2.5
     '@types/mjml': ^5.0.0
     '@types/ms': ^2.1.0
-    '@types/node': 25.9.1
-    '@types/nodemailer': ^8.0.0
+    '@types/node': 25.9.3
+    '@types/nodemailer': ^8.0.1
     '@types/normalize-package-data': ^2.4.4
     '@types/object-inspect': ^1.13.0
     '@types/qs': ^6.15.1
-    '@types/react': 19.2.14
+    '@types/react': 19.2.17
     '@types/react-dom': 19.2.3
     '@types/react-reconciler': ^0.33.0
     '@types/sanitize-html': 2.16.1
