@@ -3,6 +3,7 @@ import { stderr, stdout } from "node:process";
 import type { LiteralUnion } from "type-fest";
 
 import type { ExtendedRfc5424LogLevels, StreamAwareReporter } from "../../types";
+import isStderrLevel from "../../utils/is-stderr-level";
 import writeStream from "../../utils/write-stream";
 import type { AbstractJsonReporterOptions } from "./abstract-json-reporter";
 import { AbstractJsonReporter } from "./abstract-json-reporter";
@@ -62,14 +63,15 @@ class JsonReporter<L extends string = string> extends AbstractJsonReporter<L> im
     /**
      * Outputs the JSON message to the appropriate stream.
      *
-     * Routes error and warning level messages to stderr, others to stdout.
+     * Routes high-severity RFC 5424 levels (warning/error/critical/alert/emergency/trace)
+     * to stderr, others to stdout.
      * @param message The JSON-formatted log message
      * @param logLevel The log level determining which stream to use
      * @protected
      */
     // eslint-disable-next-line no-underscore-dangle
     protected override _log(message: string, logLevel: LiteralUnion<ExtendedRfc5424LogLevels, L>): void {
-        const stream = ["error", "warn"].includes(logLevel) ? this.#stderr : this.#stdout;
+        const stream = isStderrLevel<L>(logLevel) ? this.#stderr : this.#stdout;
 
         writeStream(`${message}\n`, stream);
     }

@@ -46,6 +46,25 @@ describe("jsonReporter server", () => {
         expect(mockStderr.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("test error"));
     });
 
+    it.each(["warning", "critical", "alert", "emergency", "trace"])(
+        "should route the high-severity RFC 5424 level %s to stderr",
+        (level) => {
+            expect.assertions(2);
+
+            const reporter = new JsonReporter();
+            const mockStdout = { write: vi.fn() } as unknown as NodeJS.WriteStream;
+            const mockStderr = { write: vi.fn() } as unknown as NodeJS.WriteStream;
+
+            reporter.setStdout(mockStdout);
+            reporter.setStderr(mockStderr);
+            reporter.setStringify(JSON.stringify);
+            reporter.log({ ...baseMeta, message: "severe", type: { level, name: "informational" } });
+
+            expect(mockStderr.write).toHaveBeenCalledExactlyOnceWith(expect.stringContaining("severe"));
+            expect(mockStdout.write).not.toHaveBeenCalled();
+        },
+    );
+
     it("should trim label property in log metadata", () => {
         expect.assertions(1);
 
