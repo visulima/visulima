@@ -73,7 +73,7 @@ describe("onWarn handler", () => {
         grid.addItem({ colSpan: 3, content: "too wide" });
         grid.toString();
 
-        expect(onWarn).toHaveBeenCalled();
+        expect(onWarn).toHaveBeenCalledWith(expect.stringContaining("Could not find position for item"));
         expect(consoleSpy).not.toHaveBeenCalled();
 
         consoleSpy.mockRestore();

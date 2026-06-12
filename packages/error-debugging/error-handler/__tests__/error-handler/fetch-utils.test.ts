@@ -6,7 +6,7 @@ describe("fetch-utils re-exports", () => {
     it("should re-export extractStatusCode as a callable function", () => {
         expect.assertions(2);
 
-        expect(typeof extractStatusCode).toBe("function");
+        expect(extractStatusCode).toBeTypeOf("function");
 
         const error = new Error("boom");
 
@@ -18,7 +18,7 @@ describe("fetch-utils re-exports", () => {
     it("should re-export sendFetchJson as a callable function", async () => {
         expect.assertions(3);
 
-        expect(typeof sendFetchJson).toBe("function");
+        expect(sendFetchJson).toBeTypeOf("function");
 
         const response = sendFetchJson({ ok: false }, 422);
 
