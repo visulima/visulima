@@ -1,10 +1,11 @@
-import type { Region } from "../types";
-
 /**
  * Country to region mapping based on UN geoscheme
  * Maps ISO 3166-1 alpha-2 country codes to their UN geoscheme regions
+ *
+ * Declared without a type annotation so the trailing `as const` captures the
+ * literal keys/values; consumers in `src/regions.ts` derive precise unions from this.
  */
-const countryRegions: Record<string, Region> = {
+const countryRegions = {
     AD: { continent: "Europe", subregion: "Southern Europe" },
     AE: { continent: "Asia", subregion: "Western Asia" },
     // Asia - Southern Asia

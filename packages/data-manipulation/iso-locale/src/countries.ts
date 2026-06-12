@@ -20,12 +20,18 @@ const countriesByAlpha3: Record<string, Country> = {};
 const countriesByNumeric: Record<string, Country> = {};
 
 /**
- * All countries array.
+ * All countries, viewed through the loose {@link Country} interface for internal
+ * map-building. The const dataset is structurally assignable to the readonly
+ * `Country` array (no `as unknown` cast needed) now that the interface uses
+ * readonly arrays.
+ *
+ * The public {@link all} export below re-exposes the same data with its precise
+ * literal type so consumers keep the literal unions.
  */
-const allCountries: ReadonlyArray<Country> = countriesData as unknown as ReadonlyArray<Country>;
+const allCountries: ReadonlyArray<Country> = countriesData;
 
 // Build lookup maps
-(allCountries as unknown as Country[]).forEach((country) => {
+allCountries.forEach((country) => {
     // Prefer assigned country codes over inactive ones
     const existing = countriesByAlpha2[country.alpha2];
 
@@ -193,14 +199,22 @@ export const getCallingCode = (countryCode: string | number): string | undefined
  * @param countryCode ISO 3166-1 alpha-2, alpha-3, or numeric code
  * @returns Array of calling codes or empty array
  */
-export const getCallingCodes = (countryCode: string | number): string[] => getCountry(countryCode)?.countryCallingCodes ?? [];
+export const getCallingCodes = (countryCode: string | number): string[] => {
+    const callingCodes = getCountry(countryCode)?.countryCallingCodes;
+
+    return callingCodes ? [...callingCodes] : [];
+};
 
 /**
  * Get languages for a country.
  * @param countryCode ISO 3166-1 alpha-2, alpha-3, or numeric code
  * @returns Array of ISO 639 language codes or empty array
  */
-export const getLanguages = (countryCode: string | number): string[] => getCountry(countryCode)?.languages ?? [];
+export const getLanguages = (countryCode: string | number): string[] => {
+    const languages = getCountry(countryCode)?.languages;
+
+    return languages ? [...languages] : [];
+};
 
 /**
  * Get International Olympic Committee code for a country.
@@ -217,7 +231,7 @@ export const getIOC = (countryCode: string | number): string | undefined => getC
 export const getCountryByName = (name: string): Country | undefined => {
     const normalizedName = name.trim();
 
-    return (allCountries as unknown as Country[]).find((country) => country.name.toLowerCase() === normalizedName.toLowerCase());
+    return allCountries.find((country) => country.name.toLowerCase() === normalizedName.toLowerCase());
 };
 
 /**
@@ -232,7 +246,7 @@ export const searchCountries = (query: string): Country[] => {
         return [];
     }
 
-    return (allCountries as unknown as Country[]).filter((country) => country.name.toLowerCase().includes(normalizedQuery));
+    return allCountries.filter((country) => country.name.toLowerCase().includes(normalizedQuery));
 };
 
 /**
@@ -280,21 +294,33 @@ export const getName = (countryCode: string | number, locale = "en"): string | u
 export const getCountriesByLanguage = (languageCode: string): string[] => {
     const normalized = languageCode.toLowerCase();
 
-    return (allCountries as unknown as Country[])
+    return allCountries
         .filter((country) => country.status !== "deleted" && country.languages.some((lang) => lang === normalized || iso6393To6391(lang) === normalized))
         .map((country) => country.alpha2);
 };
 
-// Export all at the end
-export const all: Country[] = allCountries as unknown as Country[];
+/**
+ * All countries as the precise const dataset.
+ *
+ * Exposed with the literal tuple type (not the widened `Country[]`) so consumers
+ * get precise unions when indexing into the data — e.g. `countries[0].alpha2`
+ * narrows to {@link Alpha2Code} rather than `string`.
+ */
+export const all: typeof countriesData = countriesData;
+
+/**
+ * Precise type of a single country record, derived from the const dataset so the
+ * literal codes/names survive instead of being widened to `string`.
+ */
+export type CountryData = (typeof countriesData)[number];
 
 /**
  * Literal union of every ISO 3166-1 alpha-2 code present in the dataset.
  * Derived directly from the const dataset so it stays in sync automatically.
  */
-export type Alpha2Code = (typeof countriesData)[number]["alpha2"];
+export type Alpha2Code = CountryData["alpha2"];
 
 /**
  * Literal union of every ISO 3166-1 alpha-3 code present in the dataset.
  */
-export type Alpha3Code = (typeof countriesData)[number]["alpha3"];
+export type Alpha3Code = CountryData["alpha3"];

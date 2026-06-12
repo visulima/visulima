@@ -2,6 +2,13 @@ import countryRegionsData from "./data/regions";
 import type { Region } from "./types";
 
 /**
+ * Loose view of the const region dataset for internal lookups that index by an
+ * arbitrary (upper-cased) country code. The precise const type is preserved on
+ * the public {@link all} export and the derived union types below.
+ */
+const countryRegionsView: Readonly<Record<string, Region>> = countryRegionsData;
+
+/**
  * Memoized continent list (the dataset is static).
  */
 let sortedContinents: string[] | undefined;
@@ -21,7 +28,7 @@ const intermediaryCache = new Map<string, string[]>();
  * @param countryCode ISO 3166-1 alpha-2 country code (e.g., "US")
  * @returns Region object or undefined
  */
-export const getRegionsForCountry = (countryCode: string): Region | undefined => countryRegionsData[countryCode.toUpperCase()];
+export const getRegionsForCountry = (countryCode: string): Region | undefined => countryRegionsView[countryCode.toUpperCase()];
 
 /**
  * Get all countries in a continental region.
@@ -29,7 +36,7 @@ export const getRegionsForCountry = (countryCode: string): Region | undefined =>
  * @returns Array of ISO 3166-1 alpha-2 country codes
  */
 export const getCountriesInContinent = (continent: string): string[] =>
-    Object.entries(countryRegionsData)
+    Object.entries(countryRegionsView)
         .filter(([, region]) => region.continent === continent)
         .map(([code]) => code);
 
@@ -39,7 +46,7 @@ export const getCountriesInContinent = (continent: string): string[] =>
  * @returns Array of ISO 3166-1 alpha-2 country codes
  */
 export const getCountriesInSubregion = (subregion: string): string[] =>
-    Object.entries(countryRegionsData)
+    Object.entries(countryRegionsView)
         .filter(([, region]) => region.subregion === subregion)
         .map(([code]) => code);
 
@@ -49,7 +56,7 @@ export const getCountriesInSubregion = (subregion: string): string[] =>
  * @returns Array of ISO 3166-1 alpha-2 country codes
  */
 export const getCountriesInIntermediary = (intermediary: string): string[] =>
-    Object.entries(countryRegionsData)
+    Object.entries(countryRegionsView)
         .filter(([, region]) => region.intermediary === intermediary)
         .map(([code]) => code);
 
@@ -61,7 +68,7 @@ export const getContinents = (): string[] => {
     if (!sortedContinents) {
         const continents = new Set<string>();
 
-        Object.values(countryRegionsData).forEach((region) => {
+        Object.values(countryRegionsView).forEach((region) => {
             continents.add(region.continent);
         });
 
@@ -83,7 +90,7 @@ export const getSubregions = (continent?: string): string[] => {
     if (!cached) {
         const subregions = new Set<string>();
 
-        Object.values(countryRegionsData).forEach((region) => {
+        Object.values(countryRegionsView).forEach((region) => {
             if (!continent || region.continent === continent) {
                 subregions.add(region.subregion);
             }
@@ -108,7 +115,7 @@ export const getIntermediaryRegions = (continent?: string): string[] => {
     if (!cached) {
         const intermediaries = new Set<string>();
 
-        Object.values(countryRegionsData).forEach((region) => {
+        Object.values(countryRegionsView).forEach((region) => {
             if (region.intermediary && (!continent || region.continent === continent)) {
                 intermediaries.add(region.intermediary);
             }
@@ -122,7 +129,33 @@ export const getIntermediaryRegions = (continent?: string): string[] => {
 };
 
 /**
- * Get all regions data
- * @returns Record of country codes to regions
+ * All region data, exposed with the precise const type so consumers get literal
+ * keys/values (e.g. `regions.US.continent` narrows to {@link Continent}) at zero
+ * runtime cost.
  */
-export const all: Readonly<Record<string, Region>> = countryRegionsData;
+export const all: typeof countryRegionsData = countryRegionsData;
+
+/**
+ * Precise per-country region record type, derived from the const dataset.
+ */
+export type RegionData = (typeof countryRegionsData)[keyof typeof countryRegionsData];
+
+/**
+ * Literal union of every ISO 3166-1 alpha-2 country code that has region data.
+ */
+export type RegionCountryCode = keyof typeof countryRegionsData;
+
+/**
+ * Literal union of every continental region present in the dataset.
+ */
+export type Continent = RegionData["continent"];
+
+/**
+ * Literal union of every geographical subregion present in the dataset.
+ */
+export type Subregion = RegionData["subregion"];
+
+/**
+ * Literal union of every intermediary region present in the dataset.
+ */
+export type IntermediaryRegion = Extract<RegionData, { intermediary: string }>["intermediary"];
