@@ -11,7 +11,6 @@ import VisTaskRunnerApp from "./components/vis-task-runner-app";
 import { formatMs } from "./pretty-time";
 import type { OutputStyle } from "./static-life-cycle";
 import { getStatusInfo } from "./status-utils";
-import { CROSS } from "./symbols";
 import type { StdinEntry } from "./types";
 
 interface DynamicOutputOptions {
@@ -26,12 +25,14 @@ interface DynamicOutputOptions {
     onRetryService?: (id: string) => Promise<void> | void;
 
     /**
-     * Mirrors the static lifecycle's `outputStyle`. Dynamic mode already
-     * buffers all output into the TUI (the user inspects logs via panel
-     * navigation, not a stdout stream), so `quiet` only affects the
-     * post-exit auto-dump of failed task output. With `quiet`, even
-     * failures stay in the TUI scrollback rather than being re-printed
-     * below the summary. Defaults to `normal`.
+     * Mirrors the static lifecycle's `outputStyle`. Dynamic mode buffers
+     * all output into the TUI (the user inspects logs via panel navigation
+     * while tasks run), so this only governs the post-exit dump below the
+     * summary, once the alternate screen is torn down. `normal` re-emits
+     * every task's output (successes then failures) so it survives the
+     * teardown — matching the non-TTY StaticOutputLifeCycle. `quiet`
+     * suppresses the dump entirely; the logs stay in the TUI scrollback.
+     * Defaults to `normal`.
      */
     outputStyle?: OutputStyle;
     projectNames: string[];
@@ -204,29 +205,50 @@ export const createDynamicOutputRenderer = (options: DynamicOutputOptions): Dyna
 
         process.stdout.write(`${summary}\n`);
 
-        // 3. Print failed task output so the user can copy/inspect errors.
-        //    `quiet` keeps the dump out of stdout — the logs are still in
-        //    the TUI's scrollback, just not re-emitted below the summary.
-        if (failedIds.length > 0 && outputStyle !== "quiet") {
-            for (const taskId of failedIds) {
-                const output = state.outputs.get(taskId);
+        // 3. Re-emit each task's output below the summary so it survives
+        //    the TUI's alternate-screen teardown. `normal` mirrors the
+        //    non-TTY StaticOutputLifeCycle contract: every task that
+        //    produced output is dumped (not just failures), since the
+        //    live panels are gone once the alternate screen is restored.
+        //    Successes are printed first and failures last, so the errors
+        //    a user came to read sit closest to the prompt for copy/paste.
+        //    `quiet` keeps the dump out of stdout — the logs remain in the
+        //    TUI's scrollback, just not re-emitted here.
+        if (outputStyle !== "quiet") {
+            const dumpRows = [...state.rows.filter((r) => r.status !== "failure"), ...state.rows.filter((r) => r.status === "failure")];
 
-                if (output?.trim()) {
-                    const header = renderToString(
-                        React.createElement(Text, null, "\n", React.createElement(Text, { bold: true, color: "red" }, `  ${CROSS}  vis run ${taskId}`)),
-                        { columns },
-                    );
-
-                    process.stdout.write(`${header}\n\n`);
-                    // Indent each output line for readability
-                    const indented = output
-                        .trim()
-                        .split("\n")
-                        .map((line) => `     ${line}`)
-                        .join("\n");
-
-                    process.stdout.write(`${indented}\n`);
+            for (const row of dumpRows) {
+                // In-flight rows (a persistent task still alive at quit, or
+                // anything not yet finished) have no final output to dump.
+                if (row.status === "running" || row.status === "pending") {
+                    continue;
                 }
+
+                const output = state.outputs.get(row.taskId);
+
+                if (!output?.trim()) {
+                    continue;
+                }
+
+                // The `running`/`pending` guard above narrows row.status to
+                // TaskStatus, but the cast documents the contract getStatusInfo
+                // expects regardless of how the guard evolves.
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+                const { color, icon } = getStatusInfo(row.status as TaskStatus);
+                const header = renderToString(
+                    React.createElement(Text, null, "\n", React.createElement(Text, { bold: true, color }, `  ${icon}  vis run ${row.taskId}`)),
+                    { columns },
+                );
+
+                process.stdout.write(`${header}\n\n`);
+                // Indent each output line for readability
+                const indented = output
+                    .trim()
+                    .split("\n")
+                    .map((line) => `     ${line}`)
+                    .join("\n");
+
+                process.stdout.write(`${indented}\n`);
             }
         }
     };
