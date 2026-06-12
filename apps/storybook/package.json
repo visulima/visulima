@@ -62,7 +62,7 @@
         "serve": "catalog:dev",
         "sort-package-json": "catalog:dev",
         "storybook": "catalog:docs",
-        "tailwind-csstree": "0.3.1",
+        "tailwind-csstree": "0.3.3",
         "tailwindcss": "catalog:style",
         "tailwindcss-animate": "catalog:style",
         "typescript": "catalog:tsc",
