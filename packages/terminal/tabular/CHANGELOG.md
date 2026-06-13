@@ -1,3 +1,25 @@
+## @visulima/tabular [4.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.13...@visulima/tabular@4.0.0-alpha.14) (2026-06-13)
+
+### Bug Fixes
+
+* **tabular:** fix sentinel collision, sanitize hrefs, add column defaults ([358f7d8](https://github.com/visulima/visulima/commit/358f7d85859b2624ce491f28da2ac92dd7c26808))
+* **tabular:** route row-height warning to onWarn ([f8af98f](https://github.com/visulima/visulima/commit/f8af98f461c09a453cc42768c273f83314bc2186))
+
+### Tests
+
+* tighten error-handler and tabular assertions ([cb72e51](https://github.com/visulima/visulima/commit/cb72e51e9d579fef5c4aef01af8622493bfe30f6))
+
+### Build System
+
+* **deps:** update tabular dependencies ([1e52eb0](https://github.com/visulima/visulima/commit/1e52eb0b5438db04931b8bbc103630fde9807878))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.14
+* **@visulima/string:** upgraded to 3.0.0-alpha.17
+
 ## @visulima/tabular [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/tabular@4.0.0-alpha.12...@visulima/tabular@4.0.0-alpha.13) (2026-06-04)
 
 ### Bug Fixes
