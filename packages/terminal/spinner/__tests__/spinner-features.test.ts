@@ -156,6 +156,15 @@ describe("standalone mode", () => {
     it("should render frames to the stream and unref the timer with no manager on a TTY", () => {
         expect.assertions(3);
 
+        // Standalone animation is gated on `isTTY && !isCi()`. The mock stream forces isTTY,
+        // but `isCi()` reads process.env (CI/CONTINUOUS_INTEGRATION/BUILD_NUMBER/RUN_ID) and is
+        // true on GitHub Actions — which would suppress the timer this test asserts on. Neutralize
+        // those vars so the TTY animation path runs deterministically regardless of host env.
+        vi.stubEnv("CI", "");
+        vi.stubEnv("CONTINUOUS_INTEGRATION", "");
+        vi.stubEnv("BUILD_NUMBER", undefined);
+        vi.stubEnv("RUN_ID", undefined);
+
         const written: string[] = [];
         // A TTY stream makes the standalone path animate (and start a timer) without a manager.
         const stream = {
@@ -196,6 +205,7 @@ describe("standalone mode", () => {
         expect(written.join("")).toContain("B Loading");
 
         spinner.succeed("Done");
+        vi.unstubAllEnvs();
         vi.restoreAllMocks();
     });
 });
