@@ -1,3 +1,22 @@
+## @visulima/progress-bar [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/progress-bar@1.0.0-alpha.3...@visulima/progress-bar@1.0.0-alpha.4) (2026-06-13)
+
+### Features
+
+* **progress-bar:** implement fps throttle, eta, per-bar options and hooks ([0a43f95](https://github.com/visulima/visulima/commit/0a43f95270b23c6441bb266cabf52e6e2dfd4960))
+
+### Performance Improvements
+
+* **progress-bar:** throttle multi-bar renders to configured fps ([0682b3e](https://github.com/visulima/visulima/commit/0682b3e97edb09519f1bd9b836b72bacdd2cfb16))
+
+### Documentation
+
+* **progress-bar:** fix CHANGELOG bullet style and README table ([1308ff6](https://github.com/visulima/visulima/commit/1308ff662d2857dfd4c30cf430529dc278b29ec0))
+
+
+### Dependencies
+
+* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.5
+
 ## @visulima/progress-bar [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/progress-bar@1.0.0-alpha.2...@visulima/progress-bar@1.0.0-alpha.3) (2026-06-04)
 
 ### Bug Fixes
