@@ -1803,6 +1803,7 @@ overrides:
 patchedDependencies:
   picomatch@4.0.4: aef213b56c068f03c692caeca8dac2cf04441d233e02db33d063437ef609a9f5
   tinyglobby@0.2.16: dd3579a67d9d131e5ddfa67e5cae3ee576e0235e36ada17ee6486cf037b67ea2
+  tinyglobby@0.2.17: 3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d
 
 importers:
 
@@ -6494,7 +6495,7 @@ importers:
         version: 3.2.0
       tinyglobby:
         specifier: ^0.2.17
-        version: 0.2.17
+        version: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
       type-fest:
         specifier: catalog:prod
         version: 5.7.0
@@ -6536,7 +6537,7 @@ importers:
         version: 16.2.0
       tinyglobby:
         specifier: ^0.2.17
-        version: 0.2.17
+        version: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
       walk:
         specifier: catalog:prod
         version: 2.3.15
@@ -6553,6 +6554,8 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-v8@4.1.8)(@vitest/ui@4.1.8)(happy-dom@20.10.2)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.0)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+
+  packages/filesystem/fs/__bench__/fixtures/a/b: {}
 
   packages/filesystem/fs/__fixtures__/find-up: {}
 
@@ -41425,7 +41428,7 @@ snapshots:
       rc9: 3.0.1
       scule: 1.3.0
       semver: 7.8.4
-      tinyglobby: 0.2.17
+      tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
       ufo: 1.6.4
       unctx: 2.5.0
       untyped: 2.0.0
@@ -55409,7 +55412,7 @@ snapshots:
       picocolors: 1.1.1
       picomatch: 4.0.4(patch_hash=aef213b56c068f03c692caeca8dac2cf04441d233e02db33d063437ef609a9f5)
       tinyexec: 1.2.4
-      tinyglobby: 0.2.17
+      tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
       unified: 11.0.5
       unist-util-remove-position: 5.0.0
       unist-util-visit: 5.1.0
@@ -61206,7 +61209,7 @@ snapshots:
       scule: 1.3.0
       semver: 7.8.4
       std-env: 4.1.0
-      tinyglobby: 0.2.17
+      tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
       ufo: 1.6.4
       ultrahtml: 1.6.0
       uncrypto: 0.1.3
@@ -66652,7 +66655,7 @@ snapshots:
       fdir: 6.5.0(picomatch@4.0.4(patch_hash=aef213b56c068f03c692caeca8dac2cf04441d233e02db33d063437ef609a9f5))
       picomatch: 4.0.4(patch_hash=aef213b56c068f03c692caeca8dac2cf04441d233e02db33d063437ef609a9f5)
 
-  tinyglobby@0.2.17:
+  tinyglobby@0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d):
     dependencies:
       fdir: 6.5.0(picomatch@4.0.4(patch_hash=aef213b56c068f03c692caeca8dac2cf04441d233e02db33d063437ef609a9f5))
       picomatch: 4.0.4(patch_hash=aef213b56c068f03c692caeca8dac2cf04441d233e02db33d063437ef609a9f5)
@@ -68162,7 +68165,7 @@ snapshots:
       picomatch: 4.0.4(patch_hash=aef213b56c068f03c692caeca8dac2cf04441d233e02db33d063437ef609a9f5)
       postcss: 8.5.15
       rolldown: 1.0.3
-      tinyglobby: 0.2.17
+      tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
     optionalDependencies:
       '@types/node': 25.9.3
       esbuild: 0.25.12
@@ -68177,7 +68180,7 @@ snapshots:
       picomatch: 4.0.4(patch_hash=aef213b56c068f03c692caeca8dac2cf04441d233e02db33d063437ef609a9f5)
       postcss: 8.5.15
       rolldown: 1.0.3
-      tinyglobby: 0.2.17
+      tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
     optionalDependencies:
       '@types/node': 25.9.3
       esbuild: 0.28.0

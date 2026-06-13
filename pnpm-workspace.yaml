@@ -922,6 +922,7 @@ overrides:
 patchedDependencies:
   picomatch@4.0.4: patches/picomatch@4.0.4.patch
   tinyglobby@0.2.16: patches/tinyglobby@0.2.16.patch
+  tinyglobby@0.2.17: patches/tinyglobby@0.2.17.patch
 
 preferWorkspacePackages: true
 
