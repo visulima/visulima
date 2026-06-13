@@ -1,3 +1,37 @@
+## @visulima/email [1.0.0-alpha.36](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.35...@visulima/email@1.0.0-alpha.36) (2026-06-13)
+
+### Bug Fixes
+
+* **email:** harden header sanitization, DSN fallback header, batch counts ([5629850](https://github.com/visulima/visulima/commit/5629850e2fe23710bc11d71820c867e5952c9a1d))
+* **email:** stop bcc disclosure and fix mime header/dsn handling ([70f0c70](https://github.com/visulima/visulima/commit/70f0c70fe441be5ba9cf15b3e94acbe7cc7af3c2))
+* **email:** unwrap juice ESM default export and align fs error expectation ([0bc2705](https://github.com/visulima/visulima/commit/0bc2705af39a0da641eb50a4e85eff0f954f267e))
+
+### Performance Improvements
+
+* **email:** lazy-load ical-generator on build ([b6b4466](https://github.com/visulima/visulima/commit/b6b4466d87ddaaed19e5726bef4583bf433403d0))
+
+### Miscellaneous Chores
+
+* **email:** clear baseline eslint violations ([1906b0b](https://github.com/visulima/visulima/commit/1906b0bed81cba8d979aa55b5e5d8518263b7b7b))
+
+### Tests
+
+* **email:** deepen middleware/queue/events tests ([be80a72](https://github.com/visulima/visulima/commit/be80a725e20661b24650f13b6b524891811b8af8))
+* **email:** restore precise toHaveBeenCalledWith assertions ([524d4bd](https://github.com/visulima/visulima/commit/524d4bd545c7440e1d26fbb201706a1a0bdc8023))
+
+### Build System
+
+* **deps:** update email dependencies ([5ce1f27](https://github.com/visulima/visulima/commit/5ce1f27ebecb9f7459db7503e4a8128b1ff8ac01))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/disposable-email-domains:** upgraded to 1.0.0-alpha.17
+* **@visulima/error:** upgraded to 6.0.0-alpha.33
+* **@visulima/fs:** upgraded to 5.0.0-alpha.32
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/email [1.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.34...@visulima/email@1.0.0-alpha.35) (2026-06-04)
 
 ### Features
