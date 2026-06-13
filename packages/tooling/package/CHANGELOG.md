@@ -1,3 +1,28 @@
+## @visulima/package [5.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.30...@visulima/package@5.0.0-alpha.31) (2026-06-13)
+
+### Features
+
+* **package:** recognise the modern bun.lock text lockfile ([8fec531](https://github.com/visulima/visulima/commit/8fec531a20c32857de93c801d4b42e0eff32c6a8))
+
+### Bug Fixes
+
+* **package:** replace unsafe type cast with String() coercions ([4c85a5e](https://github.com/visulima/visulima/commit/4c85a5e3fdeb194a0a2bbcee24b85ee23697d3ea))
+* **package:** resolve caching and ReDoS findings ([fb9e5cb](https://github.com/visulima/visulima/commit/fb9e5cb0fbb5fad2078750464845c6b223e0afc5))
+
+### Tests
+
+* **package:** stop partial process stub leaking across ensurePackages tests ([7059537](https://github.com/visulima/visulima/commit/705953754fe0a64612de06ff1140a9e744b25bfe))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.32
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/package [5.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.29...@visulima/package@5.0.0-alpha.30) (2026-06-04)
 
 
