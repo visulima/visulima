@@ -1,3 +1,28 @@
+## @visulima/interactive-manager [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/interactive-manager@1.0.0-alpha.4...@visulima/interactive-manager@1.0.0-alpha.5) (2026-06-13)
+
+### Bug Fixes
+
+* **interactive-manager:** count wrapped visual lines and add tty fallback ([d330e81](https://github.com/visulima/visulima/commit/d330e81e50323c6321cb86f941e6123928a80a13))
+
+### Documentation
+
+* **interactive-manager:** fix CHANGELOG bullet style ([b0489ab](https://github.com/visulima/visulima/commit/b0489ab03b861fc2fc81e51fca6f44adc0ef909e))
+
+### Tests
+
+* **interactive-manager:** erase visual line count ([c4fc35d](https://github.com/visulima/visulima/commit/c4fc35dc0f1ad764ce630a0838ac0d4180ce1e4c))
+
+### Build System
+
+* **deps:** update interactive-manager dependencies ([abef695](https://github.com/visulima/visulima/commit/abef69568ea23a4dd63a5a8212261e58557a8c8a))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.17
+* **@visulima/string:** upgraded to 3.0.0-alpha.17
+
 ## @visulima/interactive-manager [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/interactive-manager@1.0.0-alpha.3...@visulima/interactive-manager@1.0.0-alpha.4) (2026-06-04)
 
 ### Bug Fixes
