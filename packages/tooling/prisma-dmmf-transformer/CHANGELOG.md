@@ -1,3 +1,17 @@
+## @visulima/prisma-dmmf-transformer [3.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.15...@visulima/prisma-dmmf-transformer@3.0.0-alpha.16) (2026-06-13)
+
+### Bug Fixes
+
+* **prisma-dmmf-transformer:** fix enum-list/optional-enum schema and add options ([0e7900a](https://github.com/visulima/visulima/commit/0e7900ab236128cd0f208cd5caad1770b88bd2ef))
+
+### Miscellaneous Chores
+
+* apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
+
+### Code Refactoring
+
+* **prisma-dmmf-transformer:** reformat source and docs for prettier ([36136fd](https://github.com/visulima/visulima/commit/36136fd7edc4be9a1cb7d6c374ec8e42192a5b88))
+
 ## @visulima/prisma-dmmf-transformer [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/prisma-dmmf-transformer@3.0.0-alpha.14...@visulima/prisma-dmmf-transformer@3.0.0-alpha.15) (2026-06-04)
 
 ### Bug Fixes
