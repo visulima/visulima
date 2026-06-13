@@ -1,3 +1,28 @@
+## @visulima/vis-mcp [1.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.25...@visulima/vis-mcp@1.0.0-alpha.26) (2026-06-13)
+
+### Features
+
+* **vis-mcp:** add audit/advisory/lint/fmt/list_runs tools and structured output ([4918e4b](https://github.com/visulima/visulima/commit/4918e4bb176508065bc8a578141beb79316c530d))
+
+### Code Refactoring
+
+* **vis-mcp:** reformat source and README for prettier line-length ([5b41e65](https://github.com/visulima/visulima/commit/5b41e65dceb622cecf554b938261fb7c550a47bd))
+
+### Tests
+
+* **vis-mcp:** assert error payloads are strings ([cf18663](https://github.com/visulima/visulima/commit/cf1866327423e77b6a99d6e6e41ebc9f10995dc2))
+
+### Build System
+
+* **deps:** update vis-mcp dependencies ([5f27664](https://github.com/visulima/visulima/commit/5f2766405b74001dee44f90722e65608a71434ac))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.32
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+* **@visulima/vis:** upgraded to 1.0.0-alpha.36
+
 ## @visulima/vis-mcp [1.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.24...@visulima/vis-mcp@1.0.0-alpha.25) (2026-06-09)
 
 
