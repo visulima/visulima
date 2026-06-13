@@ -21,7 +21,12 @@ const inlineCss = (html: string, options?: Record<string, unknown>): string => {
     let juiceFunction: typeof juice;
 
     try {
-        juiceFunction = require("juice") as typeof juice;
+        // juice >=12 ships as an ESM-interop module: `require("juice")` returns
+        // `{ __esModule: true, default: <fn> }` rather than the function itself.
+        // Unwrap `.default` when present so both old and new layouts work.
+        const loaded = require("juice") as typeof juice | { default: typeof juice };
+
+        juiceFunction = (loaded as { default?: typeof juice }).default ?? (loaded as typeof juice);
     } catch (error) {
         if (
             error instanceof Error
