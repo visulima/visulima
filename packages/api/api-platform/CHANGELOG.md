@@ -1,3 +1,27 @@
+## @visulima/api-platform [4.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.30...@visulima/api-platform@4.0.0-alpha.31) (2026-06-13)
+
+### Features
+
+* **api-platform:** harden rate limiter, fix error leaks, add app router docs ([a0ca7c9](https://github.com/visulima/visulima/commit/a0ca7c9c475ec26e8a0c5a04fa99b1b91daadb30))
+
+### Tests
+
+* **api-platform:** add typed vi.fn generics and fix assertion count ([4558bb5](https://github.com/visulima/visulima/commit/4558bb5b93b0b3837aa901e87f81f09ee76300c9))
+
+### Build System
+
+* **deps:** update api-platform dependencies ([84be9de](https://github.com/visulima/visulima/commit/84be9de3e0f6b2e5a88f01115cb14ce0fb97a792))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/connect:** upgraded to 4.0.0-alpha.31
+* **@visulima/fs:** upgraded to 5.0.0-alpha.32
+* **@visulima/jsdoc-open-api:** upgraded to 3.0.0-alpha.30
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+* **@visulima/crud:** upgraded to 3.0.0-alpha.18
+
 ## @visulima/api-platform [4.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/api-platform@4.0.0-alpha.29...@visulima/api-platform@4.0.0-alpha.30) (2026-06-04)
 
 
