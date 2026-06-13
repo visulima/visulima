@@ -1,3 +1,24 @@
+## @visulima/dev-toolbar [1.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.32...@visulima/dev-toolbar@1.0.0-alpha.33) (2026-06-13)
+
+### Bug Fixes
+
+* **dev-toolbar:** bound annotation and thread growth ([c07b6f1](https://github.com/visulima/visulima/commit/c07b6f1f7994d4160977bc286acc5b5b7d68d249))
+* **dev-toolbar:** harden readFile rpc and fix dev-toolbar docs/perf ([385f279](https://github.com/visulima/visulima/commit/385f279d911d5f9df9290b33151fb62411bdd5b9))
+
+### Miscellaneous Chores
+
+* apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
+* **dev-toolbar:** apply lint-driven style cleanup across src and tests ([b1f004d](https://github.com/visulima/visulima/commit/b1f004d661a6b41184e1dab57d291045e6908f72))
+
+### Tests
+
+* **dev-toolbar:** cover vite-plugin, global API, hook events, helpers ([c402e62](https://github.com/visulima/visulima/commit/c402e625e6db180767dc2336f28faf4c1c45ce7f))
+* fix platform-specific path assertions ([a74080a](https://github.com/visulima/visulima/commit/a74080ab1adc4227af3d7d9c302547167cca7f16))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.31...@visulima/dev-toolbar@1.0.0-alpha.32) (2026-06-04)
 
 ### Bug Fixes
