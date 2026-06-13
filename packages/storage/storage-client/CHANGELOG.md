@@ -1,3 +1,23 @@
+## @visulima/storage-client [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.17...@visulima/storage-client@1.0.0-alpha.18) (2026-06-13)
+
+### Features
+
+* **storage-client:** onBeforeRequest header hook ([f70769a](https://github.com/visulima/visulima/commit/f70769a1ede6ed907f222c636613de529130aaf0))
+* **storage-client:** thread custom headers, restrictions and checksums ([a0a35a5](https://github.com/visulima/visulima/commit/a0a35a52de04f87c8e0b4438ec5cde9c9b606f1e))
+
+### Bug Fixes
+
+* **storage-client:** forward query abort signal ([d63550b](https://github.com/visulima/visulima/commit/d63550b2a11eca1224a8415033a42af8e60c8b12))
+* **storage-client:** narrow protocol cast for untrusted snapshot input ([2ae6a55](https://github.com/visulima/visulima/commit/2ae6a556c3532063ce22e067739a60f1b69fc411))
+
+### Tests
+
+* **storage-client:** de-flake refetch transform-metadata assertion count ([ed54870](https://github.com/visulima/visulima/commit/ed548704083ef1f20aaf50c0e5680441bae131b6))
+
+### Build System
+
+* **deps:** update storage-client dependencies ([ac5bb2f](https://github.com/visulima/visulima/commit/ac5bb2fc94807233f5be74ea2198827a340c8023))
+
 ## @visulima/storage-client [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/storage-client@1.0.0-alpha.16...@visulima/storage-client@1.0.0-alpha.17) (2026-06-04)
 
 ### Bug Fixes
