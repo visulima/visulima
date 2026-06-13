@@ -74,7 +74,7 @@
 
 - **`vis catalog check / update`** — pnpm + bun workspace catalog management
 - **`vis secrets`** — Rust-native secret scanning (gitleaks detection engine)
-- **`vis audit`** — OSV.dev vulnerability scanning with pluggable supply-chain providers ([Socket.dev](https://socket.dev) and [Google deps.dev](https://deps.dev), merged when both are enabled). `--explain` adds a plain-English AI explanation per finding (auto-detects an installed AI CLI, cached, no API key) in the terminal, JSON, and HTML report
+- **`vis audit`** — OSV.dev vulnerability scanning with pluggable supply-chain providers ([Socket.dev](https://socket.dev), [Google deps.dev](https://deps.dev), and [StepSecurity](https://docs.stepsecurity.io/oss-package-security/threat-center) Threat Center compromised-components, merged when more than one is enabled). `--explain` adds a plain-English AI explanation per finding (auto-detects an installed AI CLI, cached, no API key) in the terminal, JSON, and HTML report
 - **`vis docker scaffold`** — lockfile pruning for pnpm / npm / yarn classic + berry / bun, matching turbo's killer Docker-cache feature
 - **`vis hook install / migrate`** — git hooks (husky migration supported)
 - **`vis staged`** — built-in `lint-staged` replacement, no peer dependency

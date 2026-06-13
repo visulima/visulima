@@ -125,6 +125,10 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
         disabledProviders.add("deps-dev");
     }
 
+    if (isMarshallDisabled("stepSecurity")) {
+        disabledProviders.add("step-security");
+    }
+
     const minimumScore = visConfig?.security?.policies?.score?.minimum;
     const securityProviders = buildEnabledProviders(visConfig?.security, {
         disabled: disabledProviders,

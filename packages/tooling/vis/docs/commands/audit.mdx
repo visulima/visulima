@@ -5,7 +5,7 @@ description: "Audit installed packages for known vulnerabilities and supply-chai
 
 # vis audit
 
-`vis audit` scans every installed package (resolved from the lockfile) against the OSV vulnerability database and, when configured, one or more supply-chain intelligence providers — [Socket.dev](https://socket.dev) and [Google deps.dev](https://deps.dev) (the latter ships OpenSSF Scorecard signals + GHSA advisories and needs no API token).
+`vis audit` scans every installed package (resolved from the lockfile) against the OSV vulnerability database and, when configured, one or more supply-chain intelligence providers — [Socket.dev](https://socket.dev), [Google deps.dev](https://deps.dev) (ships OpenSSF Scorecard signals + GHSA advisories, no API token), and [StepSecurity](https://docs.stepsecurity.io/oss-package-security/threat-center) (Threat Center compromised-component intelligence; flags packages tied to known supply-chain incidents).
 
 It defaults to the local **offline OSV cache** populated by [`vis advisories sync`](./advisories.mdx) — no network access required at scan time. Falls back to the live OSV API when no cache is present.
 
@@ -227,8 +227,17 @@ export default defineConfig({
             // (24h project data, 7d versions + advisories).
             enabled: true,
         },
-        // When both providers are enabled, this controls which one's
-        // `score` wins on merge. Alerts from the secondary are still
+        stepSecurity: {
+            // StepSecurity Threat Center compromised components. Flags any
+            // name@version tied to a supply-chain incident (tj-actions, nx,
+            // the axios npm compromise, …) with a critical malware alert.
+            // Enterprise feature — needs a GitHub owner + API token
+            // (VIS_STEPSECURITY_OWNER / VIS_STEPSECURITY_TOKEN).
+            enabled: true,
+            owner: "my-org",
+        },
+        // When multiple providers are enabled, this controls which one's
+        // `score` wins on merge. Alerts from the secondaries are still
         // appended and deduped by `key`.
         primaryProvider: "socket",
         // Workspace-scoped acknowledged risks (shared across all policies).
