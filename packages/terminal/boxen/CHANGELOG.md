@@ -1,3 +1,32 @@
+## @visulima/boxen [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.13...@visulima/boxen@3.0.0-alpha.14) (2026-06-13)
+
+### Features
+
+* **boxen:** fix fullscreen contract and add bg/vertical-align options ([e526ac9](https://github.com/visulima/visulima/commit/e526ac9ce9cf1153d61f4c142019d3fe8df23d4a))
+
+### Performance Improvements
+
+* **boxen:** memoize terminal-size probe across renders ([0dded4e](https://github.com/visulima/visulima/commit/0dded4e18197982e9078f825c2e74a07ea90cbd4))
+
+### Miscellaneous Chores
+
+* apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
+
+### Code Refactoring
+
+* **boxen:** apply prettier operator-linebreak style ([ae05131](https://github.com/visulima/visulima/commit/ae05131f6be5f20a0e8b1081e9a124cda937ef65))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.14
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+* **@visulima/string:** upgraded to 3.0.0-alpha.17
+
 ## @visulima/boxen [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/boxen@3.0.0-alpha.12...@visulima/boxen@3.0.0-alpha.13) (2026-06-04)
 
 ### Performance Improvements
