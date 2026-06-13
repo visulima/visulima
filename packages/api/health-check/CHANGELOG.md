@@ -1,3 +1,17 @@
+## @visulima/health-check [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.11...@visulima/health-check@4.0.0-alpha.12) (2026-06-13)
+
+### Features
+
+* **health-check:** add liveness/readiness, timeouts, caching and more checks ([6602713](https://github.com/visulima/visulima/commit/660271357e2e4781333a58d45d0c9d0d9312a5dc))
+
+### Code Refactoring
+
+* **health-check:** fix dns-check return type cast and reformat ([d40dd4c](https://github.com/visulima/visulima/commit/d40dd4c9d755a6d01d5806ccce32d062bc4f4f3d))
+
+### Tests
+
+* **health-check:** cover never-resolving check timeout ([513866a](https://github.com/visulima/visulima/commit/513866a3c0c3707f29e64cee21d54aca4acedc92))
+
 ## @visulima/health-check [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.10...@visulima/health-check@4.0.0-alpha.11) (2026-06-04)
 
 ### Bug Fixes
