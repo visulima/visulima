@@ -1,3 +1,14 @@
+## @visulima/content-safety [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.10...@visulima/content-safety@1.0.0-alpha.11) (2026-06-13)
+
+### Features
+
+* **content-safety:** add options, censor, custom dictionaries; fix docs ([f2ef585](https://github.com/visulima/visulima/commit/f2ef585506d4c9da84de9b151b271e5ff8bc5a1f))
+* **content-safety:** options for checkBannedWords ([a40ab28](https://github.com/visulima/visulima/commit/a40ab28d89f38219a2ac3ec9da71717108e5a080))
+
+### Documentation
+
+* **content-safety:** document lookup-table internals ([eb746ce](https://github.com/visulima/visulima/commit/eb746ce0ca65af74012e0ac4144d3eebf06cc16a))
+
 ## @visulima/content-safety [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/content-safety@1.0.0-alpha.9...@visulima/content-safety@1.0.0-alpha.10) (2026-06-04)
 
 ### Bug Fixes
