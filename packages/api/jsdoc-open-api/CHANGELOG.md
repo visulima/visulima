@@ -1,3 +1,26 @@
+## @visulima/jsdoc-open-api [3.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.29...@visulima/jsdoc-open-api@3.0.0-alpha.30) (2026-06-13)
+
+### Features
+
+* **jsdoc-open-api:** harden merge, fix error paths, add yaml/stdout/watch output ([abd6a1a](https://github.com/visulima/visulima/commit/abd6a1ae6be8060515f8a61a1469b8ae652bf58a))
+
+### Bug Fixes
+
+* **jsdoc-open-api:** use String.raw for mime-type backslash literal ([e55977d](https://github.com/visulima/visulima/commit/e55977d804ec2cb26b077f51bd2ce9cc6677d5ac))
+
+### Tests
+
+* **jsdoc-open-api:** assert each file is parsed once ([b285496](https://github.com/visulima/visulima/commit/b28549623e984cc65a8c645a149406c546461e93))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.32
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.28...@visulima/jsdoc-open-api@3.0.0-alpha.29) (2026-06-04)
 
 
