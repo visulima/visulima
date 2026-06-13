@@ -1,3 +1,14 @@
+## @visulima/fmt [2.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.12...@visulima/fmt@2.0.0-alpha.13) (2026-06-13)
+
+### Features
+
+* **fmt:** close util.format interop gaps and fix doc drift ([09dbba5](https://github.com/visulima/visulima/commit/09dbba57c098f561999d294e473e093d6ee0cf56))
+
+### Documentation
+
+* **fmt:** correct %o/%O and %c specifier behavior ([80d5f3f](https://github.com/visulima/visulima/commit/80d5f3f6a2af666ca1c9b1bc55acce7746b8d21a))
+* **fmt:** reformat README table column widths ([e6e89cc](https://github.com/visulima/visulima/commit/e6e89cc2cae8c00b036db3f27ec9b3339481423f))
+
 ## @visulima/fmt [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/fmt@2.0.0-alpha.11...@visulima/fmt@2.0.0-alpha.12) (2026-06-04)
 
 ### Bug Fixes
