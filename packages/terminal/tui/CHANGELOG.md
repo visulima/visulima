@@ -1,3 +1,48 @@
+## @visulima/tui [1.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.23...@visulima/tui@1.0.0-alpha.24) (2026-06-13)
+
+### Bug Fixes
+
+* **tui:** guard Spinner against unknown spinner name ([94ea8fd](https://github.com/visulima/visulima/commit/94ea8fd639a6ae66799f42996f731720aa363c31))
+* **tui:** harden persistent-state and fix export/sideeffects drift ([40a0dbe](https://github.com/visulima/visulima/commit/40a0dbedc317af0e02d2e87314295c66c276991f))
+
+### Performance Improvements
+
+* **tui:** avoid per-keystroke Key allocation and double key-enumeration in prepareUpdate ([f87f6c7](https://github.com/visulima/visulima/commit/f87f6c789324b21ca49c8415b71ba95bdfc94ac2))
+
+### Documentation
+
+* **tui:** correct sideEffects guidance ([e41d2bb](https://github.com/visulima/visulima/commit/e41d2bb33807d227b94eba973dcf6fa21e01566c))
+
+### Code Refactoring
+
+* **tui:** reformat NAPI loader and src to prettier style ([38f99e5](https://github.com/visulima/visulima/commit/38f99e521be081fefb134e0ad25172fbb4de2965))
+* **tui:** unify napi root-binding loader ([84172fc](https://github.com/visulima/visulima/commit/84172fcb8675881313066fd5dc96d2d452e1d3f2))
+
+### Tests
+
+* **tui:** de-flake toggle focus management ([ceb4007](https://github.com/visulima/visulima/commit/ceb4007728f7e97894ec2a0734acc2f1f5edca78))
+* **tui:** skip flaky suspense-animation test on macos ([68e3933](https://github.com/visulima/visulima/commit/68e3933f7756a0a40427d93e09c060858a62e5e4))
+
+### Build System
+
+* **deps:** update tui dependencies ([7bd603d](https://github.com/visulima/visulima/commit/7bd603db3d0efa7f5e8d5427df34d9bdc4b747dd))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+### Continuous Integration
+
+* stabilize flaky tests and drop markdown lint ([91e110a](https://github.com/visulima/visulima/commit/91e110a30b1ef8ca16f0632253a9e4d13856d8f9))
+
+
+### Dependencies
+
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.17
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.14
+* **@visulima/error:** upgraded to 6.0.0-alpha.33
+* **@visulima/spinner:** upgraded to 1.0.0-alpha.4
+* **@visulima/string:** upgraded to 3.0.0-alpha.17
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.14
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.14
+
 ## @visulima/tui [1.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.22...@visulima/tui@1.0.0-alpha.23) (2026-06-04)
 
 
