@@ -1,3 +1,21 @@
+## @visulima/humanizer [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.13...@visulima/humanizer@3.0.0-alpha.14) (2026-06-13)
+
+### Features
+
+* **humanizer:** fix parse/format bugs and add humanizer factory, bits, iso8601 ([15a4a19](https://github.com/visulima/visulima/commit/15a4a19404e2bbd3f8fe413eac427a966604480a))
+
+### Bug Fixes
+
+* **humanizer:** keep runtime dynamic language import out of the build glob ([48693e3](https://github.com/visulima/visulima/commit/48693e326cd12e99e2debd8135aa8f4454cb0f9a))
+
+### Miscellaneous Chores
+
+* **humanizer:** exclude __bench__ dir from eslint config ([435f953](https://github.com/visulima/visulima/commit/435f953d48fc1f117aa57f90a5b5ced389c3bb63))
+
+### Tests
+
+* **humanizer:** tighten bytes and duration assertions ([0d74921](https://github.com/visulima/visulima/commit/0d74921f7750417c5e961f034723374257284372))
+
 ## @visulima/humanizer [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.12...@visulima/humanizer@3.0.0-alpha.13) (2026-06-04)
 
 ### Bug Fixes
