@@ -1,3 +1,29 @@
+## @visulima/fs [5.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.31...@visulima/fs@5.0.0-alpha.32) (2026-06-13)
+
+### Bug Fixes
+
+* **fs:** fix walk symlinks, read/write/remove semantics, add copy ([d3d0070](https://github.com/visulima/visulima/commit/d3d0070a82e50a6fb42ed49fa0179aca2c18ee26))
+
+### Miscellaneous Chores
+
+* apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
+* **fs:** apply prettier formatting across src and tests ([03409d7](https://github.com/visulima/visulima/commit/03409d783d96d0ed6358da88a72edea92a8b944b))
+
+### Tests
+
+* **fs:** expect ENOENT (not EPERM) for readJson on a missing file ([7ccb840](https://github.com/visulima/visulima/commit/7ccb8404b4144cba2ec1ddcede62845fcfe91eb4))
+
+### Build System
+
+* **deps:** update fs dependencies ([f30e540](https://github.com/visulima/visulima/commit/f30e5406813b18c48704761ea23d665a019eeab2))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+* **@visulima/error:** upgraded to 6.0.0-alpha.33
+
 ## @visulima/fs [5.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.30...@visulima/fs@5.0.0-alpha.31) (2026-06-04)
 
 ### Performance Improvements
