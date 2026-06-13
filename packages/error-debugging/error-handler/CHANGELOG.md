@@ -1,3 +1,29 @@
+## @visulima/error-handler [2.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.31...@visulima/error-handler@2.0.0-alpha.32) (2026-06-13)
+
+### Features
+
+* **error-handler:** add youch-style dev HTML error inspector ([a06ff59](https://github.com/visulima/visulima/commit/a06ff59c919cf72bc70f5a60a8b7346a3ab68d76))
+
+### Bug Fixes
+
+* **error-handler:** escape line separators in JSONP body regex ([3e9c4ab](https://github.com/visulima/visulima/commit/3e9c4ab05ba7e66c16c088a534a3303ba8b8f7e2))
+* **error-handler:** harden jsonp output and stop leaking stack traces ([4559aa8](https://github.com/visulima/visulima/commit/4559aa89bc102f5e2be13f9b61e77f9e1f42b5ca))
+* **error-handler:** harden optional-chain on NODE_ENV read for edge ([4883d90](https://github.com/visulima/visulima/commit/4883d907da3edfc93d1f4b151fe415f57dc606b4))
+
+### Performance Improvements
+
+* **error-handler:** lazy-load jsonapi and xml deps ([ecd4fa6](https://github.com/visulima/visulima/commit/ecd4fa6478ee360e4e7a4229bcb56b36f0dd4a8b))
+
+### Tests
+
+* tighten error-handler and tabular assertions ([cb72e51](https://github.com/visulima/visulima/commit/cb72e51e9d579fef5c4aef01af8622493bfe30f6))
+
+
+### Dependencies
+
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.14
+* **@visulima/error:** upgraded to 6.0.0-alpha.33
+
 ## @visulima/error-handler [2.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.30...@visulima/error-handler@2.0.0-alpha.31) (2026-06-04)
 
 
