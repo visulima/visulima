@@ -1,3 +1,17 @@
+## @visulima/deep-clone [4.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.15...@visulima/deep-clone@4.0.0-alpha.16) (2026-06-13)
+
+### Features
+
+* **deep-clone:** export DeepReadwrite type ([7b7f130](https://github.com/visulima/visulima/commit/7b7f130ddbd97a9f49893b2fdbee2b26e912a323))
+
+### Bug Fixes
+
+* **deep-clone:** harden deep-clone against proto pollution and runtime gaps ([31fb5ac](https://github.com/visulima/visulima/commit/31fb5ac492d68b31693e779218229bb1133a158f))
+
+### Tests
+
+* **deep-clone:** rework arguments clone assertion to avoid prototype leak ([355b1c1](https://github.com/visulima/visulima/commit/355b1c10ff0f0e8e00c74b5f0434a6fb50ccacc3))
+
 ## @visulima/deep-clone [4.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.14...@visulima/deep-clone@4.0.0-alpha.15) (2026-06-04)
 
 ### Bug Fixes
