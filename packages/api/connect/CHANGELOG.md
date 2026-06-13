@@ -1,3 +1,17 @@
+## @visulima/connect [4.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.30...@visulima/connect@4.0.0-alpha.31) (2026-06-13)
+
+### Bug Fixes
+
+* **connect:** fix handler/sub-router bugs, harden 404/422, add validation ([d6e00b4](https://github.com/visulima/visulima/commit/d6e00b455fe8891fb6120660010cb73acb7ee035))
+
+### Miscellaneous Chores
+
+* apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
+
+### Code Refactoring
+
+* **connect:** reformat source and test files for lint compliance ([7984302](https://github.com/visulima/visulima/commit/798430227a7f14dfebcf6be6ba72622fc9e94f07))
+
 ## @visulima/connect [4.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/connect@4.0.0-alpha.29...@visulima/connect@4.0.0-alpha.30) (2026-06-04)
 
 ### Bug Fixes
