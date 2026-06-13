@@ -1,6 +1,6 @@
 {
     "name": "@visulima/task-runner-client",
-    "version": "1.0.0-alpha.1",
+    "version": "1.0.0-alpha.2",
     "description": "Zero-dependency client for giving the @visulima/task-runner precise cache-correctness hints from inside a task",
     "keywords": [
         "cache",
