@@ -1,3 +1,25 @@
+## @visulima/object [3.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.15...@visulima/object@3.0.0-alpha.16) (2026-06-13)
+
+### Bug Fixes
+
+* **object:** fix broken types, array/escape paths and docs ([7c560b1](https://github.com/visulima/visulima/commit/7c560b175507231ba3d50a18faa372283f6fb13c))
+
+### Miscellaneous Chores
+
+* apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
+
+### Code Refactoring
+
+* **object:** apply prettier/eslint formatting cleanup ([b293527](https://github.com/visulima/visulima/commit/b293527bc95a2b260665c98f5b7206996f23ac91))
+
+### Tests
+
+* **object:** add safe-assign coverage ([0dc5c7b](https://github.com/visulima/visulima/commit/0dc5c7bb14a59595b3ec2f5f37f64842eefad26e))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
 ## @visulima/object [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/object@3.0.0-alpha.14...@visulima/object@3.0.0-alpha.15) (2026-06-04)
 
 ### Bug Fixes
