@@ -1,3 +1,24 @@
+## @visulima/error [6.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.32...@visulima/error@6.0.0-alpha.33) (2026-06-13)
+
+### Bug Fixes
+
+* **error:** harden code-frame and ai cache access ([9e33cf2](https://github.com/visulima/visulima/commit/9e33cf2dcbe89ebe9107f32d6b0cfc653c622f4e))
+* **error:** harden serialize/deserialize and ai cache, add sourcemap hook ([e5a27a0](https://github.com/visulima/visulima/commit/e5a27a057c6a290739dde000b6d304a0cd92555e))
+* **error:** type parse-stacktrace trace as Trace ([5c95d27](https://github.com/visulima/visulima/commit/5c95d27777cd9ca8aa4c836a465c7c67c41a7512))
+
+### Code Refactoring
+
+* **error:** apply lint cleanup and restore test formatting ([756f99d](https://github.com/visulima/visulima/commit/756f99d9f28cd61cde721555369d668e08f884b7))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/error [6.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.31...@visulima/error@6.0.0-alpha.32) (2026-06-04)
 
 ### Bug Fixes
