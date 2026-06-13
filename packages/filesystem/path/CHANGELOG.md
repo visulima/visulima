@@ -1,3 +1,14 @@
+## @visulima/path [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/path@3.0.0-alpha.12...@visulima/path@3.0.0-alpha.13) (2026-06-13)
+
+### Bug Fixes
+
+* **path:** fix basename ext, linearize relative ([6e3d160](https://github.com/visulima/visulima/commit/6e3d1608cb1927f98c78bdfcacf05c0124ccfe33))
+* **path:** stop format leaking "undefined" and align delimiter to posix ([d37eb39](https://github.com/visulima/visulima/commit/d37eb3986f284f05f873009e035c2e6c8bccfff1))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
 ## @visulima/path [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/path@3.0.0-alpha.11...@visulima/path@3.0.0-alpha.12) (2026-06-04)
 
 ### Bug Fixes
