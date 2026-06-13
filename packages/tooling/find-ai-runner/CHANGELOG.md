@@ -1,3 +1,21 @@
+## @visulima/find-ai-runner [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.7...@visulima/find-ai-runner@1.0.0-alpha.8) (2026-06-13)
+
+### Features
+
+* **find-ai-runner:** async parallel provider detection ([5ae7954](https://github.com/visulima/visulima/commit/5ae795494890d0ac7fd3290ee628f8561534bec5))
+
+### Bug Fixes
+
+* **find-ai-runner:** gate permission-bypass flags and harden runner ([1553bc5](https://github.com/visulima/visulima/commit/1553bc54ea65d37d31b6090d51f0347162674b07))
+
+### Miscellaneous Chores
+
+* apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
+
+### Code Refactoring
+
+* **find-ai-runner:** reformat source and docs for prettier ([1ac69ad](https://github.com/visulima/visulima/commit/1ac69ad34e802ee19f89c2a7cde4fc2f90039bd6))
+
 ## @visulima/find-ai-runner [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.6...@visulima/find-ai-runner@1.0.0-alpha.7) (2026-06-04)
 
 ### Bug Fixes

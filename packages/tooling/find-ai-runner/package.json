@@ -1,6 +1,6 @@
 {
     "name": "@visulima/find-ai-runner",
-    "version": "1.0.0-alpha.7",
+    "version": "1.0.0-alpha.8",
     "description": "Detect and invoke AI CLI tools (Claude, Gemini, Codex, Copilot, Cursor, Crush, Amp, Kimi, Qwen, OpenCode, Droid) installed on the system",
     "keywords": [
         "ai",
