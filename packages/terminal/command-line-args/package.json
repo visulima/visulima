@@ -1,6 +1,6 @@
 {
     "name": "@visulima/command-line-args",
-    "version": "2.0.0-alpha.11",
+    "version": "2.0.0-alpha.12",
     "description": "A mature, feature-complete library to parse command-line options.",
     "keywords": [
         "args",
@@ -71,7 +71,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/error": "6.0.0-alpha.32"
+        "@visulima/error": "6.0.0-alpha.33"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",

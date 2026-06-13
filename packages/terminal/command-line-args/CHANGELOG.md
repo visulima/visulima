@@ -1,3 +1,26 @@
+## @visulima/command-line-args [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.11...@visulima/command-line-args@2.0.0-alpha.12) (2026-06-13)
+
+### Features
+
+* **command-line-args:** fix proto-key bug, add negation/strictTypes/typed results ([ae1f7a6](https://github.com/visulima/visulima/commit/ae1f7a693c7a6c85c1df188cd12688387eeda2d8))
+
+### Bug Fixes
+
+* **command-line-args:** fix dts build for parseArgs and InferOptionValue ([ed9ef1f](https://github.com/visulima/visulima/commit/ed9ef1fceab78fbf9e2714115241e2e38c4b2fe6))
+
+### Miscellaneous Chores
+
+* apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
+
+### Code Refactoring
+
+* **command-line-args:** apply prettier operator-linebreak style ([123db5d](https://github.com/visulima/visulima/commit/123db5d5f3f2aa679163955af625533e270804dc))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.33
+
 ## @visulima/command-line-args [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.10...@visulima/command-line-args@2.0.0-alpha.11) (2026-06-04)
 
 ### Bug Fixes
