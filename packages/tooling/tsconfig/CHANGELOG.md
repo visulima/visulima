@@ -1,3 +1,23 @@
+## @visulima/tsconfig [3.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.30...@visulima/tsconfig@3.0.0-alpha.31) (2026-06-13)
+
+### Bug Fixes
+
+* **tsconfig:** correct docs, pnp issuer, cache invalidation ([c3e0b9d](https://github.com/visulima/visulima/commit/c3e0b9d4281ee78f70780192fdf1d51b22bb2e9a))
+
+### Documentation
+
+* **tsconfig:** fix stale API reference ([514b1b0](https://github.com/visulima/visulima/commit/514b1b0a6ae8e2533162afcc39ad541762ea92e2))
+
+### Code Refactoring
+
+* **tsconfig:** reorder type exports and add eslint-disable comments ([5b4bb2b](https://github.com/visulima/visulima/commit/5b4bb2b0f706abf6b39c46be3175c8a7981f92f5))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.32
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/tsconfig [3.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/tsconfig@3.0.0-alpha.29...@visulima/tsconfig@3.0.0-alpha.30) (2026-06-04)
 
 
