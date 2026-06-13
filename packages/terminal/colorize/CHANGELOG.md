@@ -1,3 +1,24 @@
+## @visulima/colorize [2.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.13...@visulima/colorize@2.0.0-alpha.14) (2026-06-13)
+
+### Features
+
+* **colorize:** add per-instance color level and fix exports/gradient hot path ([f38cfba](https://github.com/visulima/visulima/commit/f38cfbaf0fe0db716e125d457c195d88a67d8dad))
+
+### Bug Fixes
+
+* **colorize:** make dist-runtime test tolerant of minified function names ([6657dec](https://github.com/visulima/visulima/commit/6657decbbfd6b8fbd58b17077a679a27298906cd))
+* **colorize:** satisfy isolatedDeclarations for re-exported codes ([3756b45](https://github.com/visulima/visulima/commit/3756b454b15480479d3b48ac347bd287808a8bed))
+* **colorize:** strip ambient FORCE_COLOR from test helper env ([414d237](https://github.com/visulima/visulima/commit/414d237d0836222766e1ad6c85897a99c29aafe2))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/colorize [2.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.12...@visulima/colorize@2.0.0-alpha.13) (2026-06-04)
 
 ### Bug Fixes
