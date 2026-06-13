@@ -1,3 +1,32 @@
+## @visulima/find-cache-dir [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.11...@visulima/find-cache-dir@3.0.0-alpha.12) (2026-06-13)
+
+### Features
+
+* **find-cache-dir:** add thunk/files/global-fallback options and async create ([ee4f56d](https://github.com/visulima/visulima/commit/ee4f56d5a03ef8dfd55d331bf5d45a0187c2acc7))
+
+### Documentation
+
+* **find-cache-dir:** document alias rename ([4ac5a71](https://github.com/visulima/visulima/commit/4ac5a7146841456ba44dcb6e18134f1891ed7cb4))
+
+### Miscellaneous Chores
+
+* **find-cache-dir:** collapse overlong lines to standard formatting ([ab934d0](https://github.com/visulima/visulima/commit/ab934d0059242967eb602a7ca41d27a89316d11d))
+
+### Tests
+
+* **find-cache-dir:** async create avoids sync fs ([980bd92](https://github.com/visulima/visulima/commit/980bd9277a35a5b05cd4b005bb4abe236254e1cb))
+
+### Build System
+
+* **deps:** update find-cache-dir dependencies ([1b32c4d](https://github.com/visulima/visulima/commit/1b32c4d5d9c8ab7cb6648a6d9273e48f22eefbb8))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.32
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/find-cache-dir [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.10...@visulima/find-cache-dir@3.0.0-alpha.11) (2026-06-04)
 
 ### Bug Fixes
