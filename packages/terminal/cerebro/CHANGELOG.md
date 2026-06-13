@@ -1,3 +1,32 @@
+## @visulima/cerebro [3.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.31...@visulima/cerebro@3.0.0-alpha.32) (2026-06-13)
+
+### Features
+
+* **cerebro:** harden argv caps, add choices + strict options, bound update check ([4082ec2](https://github.com/visulima/visulima/commit/4082ec2e80eb0ced5c8843d9d3e5d6bd0f798485))
+
+### Code Refactoring
+
+* **cerebro:** async fs in update-notifier ([d8c0a27](https://github.com/visulima/visulima/commit/d8c0a272dc1195345c4b52077f58e437c27e7b8e))
+* **cerebro:** hoist regex and apply lint fixes ([46a8aac](https://github.com/visulima/visulima/commit/46a8aac8776fbc38634394b3097659e717ef01af))
+
+### Build System
+
+* **deps:** update cerebro dependencies ([2bd6590](https://github.com/visulima/visulima/commit/2bd65902460b2531c7d7e6264cbb7348273774b8))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.14
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.14
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.14
+* **@visulima/command-line-args:** upgraded to 2.0.0-alpha.12
+* **@visulima/error:** upgraded to 6.0.0-alpha.33
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.12
+* **@visulima/pail:** upgraded to 4.0.0-alpha.22
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+* **@visulima/string:** upgraded to 3.0.0-alpha.17
+
 ## @visulima/cerebro [3.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.30...@visulima/cerebro@3.0.0-alpha.31) (2026-06-04)
 
 ### Performance Improvements
