@@ -1,3 +1,28 @@
+## @visulima/crud [3.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.17...@visulima/crud@3.0.0-alpha.18) (2026-06-13)
+
+### Features
+
+* **crud:** harden crud handler and add prisma 5/6 + policy support ([fc565cf](https://github.com/visulima/visulima/commit/fc565cf4e87b871f466f3789536a1dc9402bac9f))
+
+### Bug Fixes
+
+* **crud:** return 400 on malformed query json ([01247a6](https://github.com/visulima/visulima/commit/01247a63aad83266947588bccf789df4b58370bb))
+
+### Miscellaneous Chores
+
+* **crud:** clear baseline eslint violations ([1964225](https://github.com/visulima/visulima/commit/196422505694b06ad8239bc836a34e45ad8c8ff3))
+* **crud:** reformat README tables and collapse test expect calls ([2957165](https://github.com/visulima/visulima/commit/295716512272b71b6a67b68633204cc4dd78caf9))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.14
+* **@visulima/prisma-dmmf-transformer:** upgraded to 3.0.0-alpha.16
+
 ## @visulima/crud [3.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/crud@3.0.0-alpha.16...@visulima/crud@3.0.0-alpha.17) (2026-06-04)
 
 ### Bug Fixes
