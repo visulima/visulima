@@ -1,3 +1,18 @@
+## @visulima/pagination [5.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.13...@visulima/pagination@5.0.0-alpha.14) (2026-06-13)
+
+### Features
+
+* **pagination:** fix docs, add cursor/window pagination + openapi nullability ([d33feb8](https://github.com/visulima/visulima/commit/d33feb85ad49a1336c55b5ab12a18a80c9a776b0))
+
+### Bug Fixes
+
+* **pagination:** accept rows as an array, not variadic ([f4c3940](https://github.com/visulima/visulima/commit/f4c3940a7c799b32f1639473c01e2d43426f3c0c))
+
+### Miscellaneous Chores
+
+* **pagination:** apply formatting ([52c9c3b](https://github.com/visulima/visulima/commit/52c9c3b312d9e918235e2403918539a653c53a87))
+* **pagination:** reformat long lines and normalize markdown italics ([8467425](https://github.com/visulima/visulima/commit/84674254fb5dcb2fcab600abe3f006b41bfabb88))
+
 ## @visulima/pagination [5.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.12...@visulima/pagination@5.0.0-alpha.13) (2026-06-04)
 
 ### Bug Fixes
