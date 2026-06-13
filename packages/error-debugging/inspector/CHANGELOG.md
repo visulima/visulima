@@ -1,3 +1,26 @@
+## @visulima/inspector [2.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.13...@visulima/inspector@2.0.0-alpha.14) (2026-06-13)
+
+### Features
+
+* **inspector:** harden type dispatch and render binary/opaque values ([fcd68b2](https://github.com/visulima/visulima/commit/fcd68b22192857454733cde9e9abeecce21fc4b5))
+
+### Bug Fixes
+
+* **inspector:** gate ArrayBuffer contents, fix maxArrayLength separator ([bed7a8d](https://github.com/visulima/visulima/commit/bed7a8d24e2d287b35c8cf0428eaa210b100c7d1))
+
+### Performance Improvements
+
+* **inspector:** drop extra array key allocation ([faefc84](https://github.com/visulima/visulima/commit/faefc84a48c083105516155fc898ce2c2ea519bf))
+
+### Code Refactoring
+
+* **inspector:** replace for-in with Object.keys and clean up jsdoc ([c74eebe](https://github.com/visulima/visulima/commit/c74eebebf14edef88b656eb6b3cac2433c3eea97))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.14
+
 ## @visulima/inspector [2.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.12...@visulima/inspector@2.0.0-alpha.13) (2026-06-04)
 
 ### Features
