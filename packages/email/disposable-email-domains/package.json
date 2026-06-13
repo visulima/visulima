@@ -1,6 +1,6 @@
 {
     "name": "@visulima/disposable-email-domains",
-    "version": "1.0.0-alpha.16",
+    "version": "1.0.0-alpha.17",
     "description": "A regularly updated list of disposable and temporary email domains.",
     "keywords": [
         "disposable-email",
@@ -79,7 +79,7 @@
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
-        "@visulima/tabular": "4.0.0-alpha.13",
+        "@visulima/tabular": "4.0.0-alpha.14",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",

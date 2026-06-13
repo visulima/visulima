@@ -1,3 +1,23 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.16...@visulima/disposable-email-domains@1.0.0-alpha.17) (2026-06-13)
+
+### Features
+
+* **disposable-email-domains:** add edge support, allowlist, bare-domain api to disposable check ([a3d1d95](https://github.com/visulima/visulima/commit/a3d1d9551cf857d0c11d245e7126cde73a302fd7))
+
+### Documentation
+
+* **disposable-email-domains:** refresh benchmark timings in README ([5ea04f7](https://github.com/visulima/visulima/commit/5ea04f75479bffe2bceee8d0e9f72285734dcbbf))
+* regenerate package tables ([287ded9](https://github.com/visulima/visulima/commit/287ded982f6d4bcbc3401020732302ebde170933))
+
+### Build System
+
+* **deps:** update disposable-email-domains dependencies ([77c2d3b](https://github.com/visulima/visulima/commit/77c2d3b862ab792a574c95de25effaf58d739c72))
+
+
+### Dependencies
+
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.14
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.15...@visulima/disposable-email-domains@1.0.0-alpha.16) (2026-06-04)
 
 ### Bug Fixes
