@@ -1,3 +1,18 @@
+## @visulima/bytes [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.12...@visulima/bytes@3.0.0-alpha.13) (2026-06-13)
+
+### Features
+
+* **bytes:** make string codecs cross-runtime and add hex/base64 ([9f1682c](https://github.com/visulima/visulima/commit/9f1682cc9d9f8621f7ede7d059d184c85ac55064))
+
+### Documentation
+
+* **bytes:** fix formatting in LICENSE and README ([0b7d9b9](https://github.com/visulima/visulima/commit/0b7d9b9f6e714de782bb7cdaa3f7331abe33da26))
+
+### Build System
+
+* **deps:** update bytes dependencies ([9c78c56](https://github.com/visulima/visulima/commit/9c78c56e91c8fade4ba43123926b3dcbfb80a0cd))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
 ## @visulima/bytes [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/bytes@3.0.0-alpha.11...@visulima/bytes@3.0.0-alpha.12) (2026-06-04)
 
 ### Bug Fixes
