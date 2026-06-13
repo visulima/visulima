@@ -1,3 +1,27 @@
+## @visulima/secret-scanner [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.5...@visulima/secret-scanner@1.0.0-alpha.6) (2026-06-13)
+
+### Features
+
+* **secret-scanner:** add git-history scanning via scanGitHistory() ([d5f1926](https://github.com/visulima/visulima/commit/d5f19269de0115f6719bd3a8f510b9d2955a6b3e))
+* **secret-scanner:** harden http validator and add sarif/baseline helpers ([f8927d9](https://github.com/visulima/visulima/commit/f8927d946e8b3c1a351458e18cfbfd1bcb5e02e8))
+
+### Code Refactoring
+
+* **secret-scanner:** reformat source and add eslint-disable comment ([c3ffce6](https://github.com/visulima/visulima/commit/c3ffce672750ab66c904cb1fcc3f283737574b12))
+* **tui:** unify napi root-binding loader ([84172fc](https://github.com/visulima/visulima/commit/84172fcb8675881313066fd5dc96d2d452e1d3f2))
+
+### Build System
+
+* **deps:** update secret-scanner dependencies ([fbab088](https://github.com/visulima/visulima/commit/fbab088019cc33afceb9341a9f44caa369ddf9ed))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.12
+* **@visulima/fs:** upgraded to 5.0.0-alpha.32
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/secret-scanner [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.4...@visulima/secret-scanner@1.0.0-alpha.5) (2026-06-04)
 
 ### Bug Fixes
