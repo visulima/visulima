@@ -1,3 +1,35 @@
+## @visulima/redact [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.13...@visulima/redact@3.0.0-alpha.14) (2026-06-13)
+
+### Bug Fixes
+
+* **redact:** always compile pattern modifiers to a fresh global regex ([3926805](https://github.com/visulima/visulima/commit/39268053f1b80299462deb976c36d7e775894f8c))
+* **redact:** anonymize boxed String objects instead of char-indexing them ([255b353](https://github.com/visulima/visulima/commit/255b353f183936a2397fbc4af4ee0d4559bde707))
+* **redact:** harden redact against redos and input mutation ([947feb1](https://github.com/visulima/visulima/commit/947feb109830f7d6978ba62339e62ce7786a175c))
+
+### Performance Improvements
+
+* **redact:** single-pass attribute filtering ([4de6873](https://github.com/visulima/visulima/commit/4de6873033dca12f0048cf67c838acc15e952db6))
+
+### Miscellaneous Chores
+
+* apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
+
+### Code Refactoring
+
+* **redact:** apply prettier/eslint formatting cleanup ([8331559](https://github.com/visulima/visulima/commit/833155932b9f2303507ef1c53882b34617f65c68))
+
+### Tests
+
+* **redact:** one compromise parse per string ([a372ba3](https://github.com/visulima/visulima/commit/a372ba32088de035dcf113be6533ee463603e48b))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+### Continuous Integration
+
+* stabilize flaky tests and drop markdown lint ([91e110a](https://github.com/visulima/visulima/commit/91e110a30b1ef8ca16f0632253a9e4d13856d8f9))
+
 ## @visulima/redact [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/redact@3.0.0-alpha.12...@visulima/redact@3.0.0-alpha.13) (2026-06-04)
 
 ### Bug Fixes
