@@ -1,3 +1,27 @@
+## @visulima/source-map [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.11...@visulima/source-map@3.0.0-alpha.12) (2026-06-13)
+
+### Features
+
+* **source-map:** fix file: urls, add async/in-memory loaders ([3b3a19e](https://github.com/visulima/visulima/commit/3b3a19ee8345d5423ba52c25628d2c7d8f6ed436))
+
+### Bug Fixes
+
+* **source-map:** add missing SourceMapParseError export ([43f7abf](https://github.com/visulima/visulima/commit/43f7abf628e867ca017142dca6eae68590587e5f))
+* **source-map:** import SourceMapParseError from its own module and name source file in errors ([cbebbf1](https://github.com/visulima/visulima/commit/cbebbf191b689ded2d2db4e5b0e5c96542f7bed6))
+
+### Code Refactoring
+
+* **source-map:** extract module-level regex constants and tidy docs ([fccd07e](https://github.com/visulima/visulima/commit/fccd07e3dcc1e66c8833b4e204b076ecda7f2c47))
+
+### Tests
+
+* **source-map:** extend load-source-map coverage ([33b2c27](https://github.com/visulima/visulima/commit/33b2c2780b35499a894218618fa9eda4312a5634))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/source-map [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/source-map@3.0.0-alpha.10...@visulima/source-map@3.0.0-alpha.11) (2026-06-04)
 
 ### Bug Fixes
