@@ -3,7 +3,7 @@ import { fileURLToPath } from "node:url";
 
 import { describe, expect, it } from "vitest";
 
-import { esc, execScriptSync, typeCheckFixture } from "../helpers";
+import { esc, execScriptSync, normalizeFunctionNames, typeCheckFixture } from "../helpers";
 
 describe("usage `@visulima/colorize` npm package", () => {
     it(`should work as CommonJS package`, () => {
@@ -27,7 +27,9 @@ describe("usage `@visulima/colorize` npm package", () => {
                 + "colored:  \u001B[32mgreen text\u001B[39m\n"
                 + "striped:  green text";
 
-        expect(esc(received)).toStrictEqual(esc(expected));
+        // Normalize `[Function: name]` tokens: the production build minifies `self`/`Colorize`,
+        // so this dist-runtime test verifies structure, not minifier-mangled identifiers.
+        expect(esc(normalizeFunctionNames(received))).toStrictEqual(esc(normalizeFunctionNames(expected)));
     });
 
     it(`should work as ESM package`, () => {
@@ -48,7 +50,9 @@ describe("usage `@visulima/colorize` npm package", () => {
                 + "colored:  \u001B[32mgreen text\u001B[39m\n"
                 + "striped:  green text";
 
-        expect(esc(received)).toStrictEqual(esc(expected));
+        // Normalize `[Function: name]` tokens: the production build minifies `self`/`Colorize`,
+        // so this dist-runtime test verifies structure, not minifier-mangled identifiers.
+        expect(esc(normalizeFunctionNames(received))).toStrictEqual(esc(normalizeFunctionNames(expected)));
     });
 
     it(`should expose correct types via dist/*.d.ts`, () => {
