@@ -1,3 +1,70 @@
+## @visulima/vis [1.0.0-alpha.36](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.35...@visulima/vis@1.0.0-alpha.36) (2026-06-13)
+
+### Features
+
+* **vis:** add git-history secret scanning via --history ([bf8b26c](https://github.com/visulima/visulima/commit/bf8b26c5990a7cc4f3630504f18c7cbc7c2e9372))
+* **vis:** add quiet-on-success run mode and harden spawn/history/hadolint ([9b6e3bf](https://github.com/visulima/visulima/commit/9b6e3bf7c764c0962d633bebdd6f16d2e3ae73ed))
+* **vis:** add split and import workspace commands ([#680](https://github.com/visulima/visulima/issues/680)) ([4077e1c](https://github.com/visulima/visulima/commit/4077e1c2d018c9e92f820f339967c1c583afd9b5))
+* **vis:** add toolbox-fs helper utilities ([f34f2aa](https://github.com/visulima/visulima/commit/f34f2aa7a38fec0e13b3b991a3221905d736c1da))
+
+### Bug Fixes
+
+* **vis:** dump successful task output after TUI exit ([ab51784](https://github.com/visulima/visulima/commit/ab517843910dadf543575c57466c5da01ef9401d))
+* **vis:** escape control chars in shell history ([86471d2](https://github.com/visulima/visulima/commit/86471d27d68d9790eae005e5d2dfe561efbae700))
+* **vis:** narrow secret-scanner baseline to string path in secrets handler ([9bc36e9](https://github.com/visulima/visulima/commit/9bc36e9e780a25d542417361d31403613d4c2c5a))
+* **vis:** use platform-aware PATH delimiter in toolchain detection ([0a1294f](https://github.com/visulima/visulima/commit/0a1294f3bcf9265e6908e15dfdcffb439b5f0e81))
+
+### Documentation
+
+* re-scope RFCs against what task-runner/vis already ship ([d6cf42c](https://github.com/visulima/visulima/commit/d6cf42c964b738c9872fb205b8c90b99bc7655e0))
+
+### Styles
+
+* **vis:** clear pre-existing eslint findings in run handler ([ba423ad](https://github.com/visulima/visulima/commit/ba423adad677c2a9ffb6051743e463a33cb44541))
+
+### Code Refactoring
+
+* **vis:** migrate five pilot handlers to toolbox.fs ([97ca31c](https://github.com/visulima/visulima/commit/97ca31c9afa94a69449b03a4ba848104e9bd1ea3))
+* **vis:** migrate handlers to toolbox.fs ([e545a1e](https://github.com/visulima/visulima/commit/e545a1ee56b0464b8c90dfa42b7179400af58e83))
+* **vis:** reformat source for prettier line-length rules ([3809217](https://github.com/visulima/visulima/commit/3809217337a14f42220cfb48e3f5f75fa9c72163))
+
+### Tests
+
+* **vis:** fix toolchain corepack-suppression test on Windows ([32d532c](https://github.com/visulima/visulima/commit/32d532cc191d274f920e7b7ca3d0c90b0590abc1))
+* **vis:** fix two windows-only test failures ([6fd8467](https://github.com/visulima/visulima/commit/6fd84671a63d7ae2483bdc8db05fc65c0d9e30ab))
+* **vis:** guard command-definition laziness against regressions ([25f438f](https://github.com/visulima/visulima/commit/25f438f5eda837ce63c2abacd8e5eb0561e7cabb))
+* **vis:** raise testTimeout for Windows integration suites ([88117ba](https://github.com/visulima/visulima/commit/88117baa741da21a45698489d37855872db2cfa4))
+* **vis:** split catalog.test.ts into per-area suites ([bedd877](https://github.com/visulima/visulima/commit/bedd877afa7efaf03586a8dff3037b5cb240f27f))
+
+### Build System
+
+* **deps:** update vis dependencies ([afac044](https://github.com/visulima/visulima/commit/afac044fecd71956199e0203e1e5a3d988c8a966))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/secret-scanner:** upgraded to 1.0.0-alpha.6
+* **@visulima/tabular:** upgraded to 4.0.0-alpha.14
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.23
+* **@visulima/tui:** upgraded to 1.0.0-alpha.24
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.17
+* **@visulima/cerebro:** upgraded to 3.0.0-alpha.32
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.14
+* **@visulima/error:** upgraded to 6.0.0-alpha.33
+* **@visulima/find-ai-runner:** upgraded to 1.0.0-alpha.8
+* **@visulima/find-cache-dir:** upgraded to 3.0.0-alpha.12
+* **@visulima/fs:** upgraded to 5.0.0-alpha.32
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.14
+* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.5
+* **@visulima/package:** upgraded to 5.0.0-alpha.31
+* **@visulima/pail:** upgraded to 4.0.0-alpha.22
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+* **@visulima/redact:** upgraded to 3.0.0-alpha.14
+* **@visulima/source-map:** upgraded to 3.0.0-alpha.12
+* **@visulima/spinner:** upgraded to 1.0.0-alpha.4
+* **@visulima/string:** upgraded to 3.0.0-alpha.17
+
 ## @visulima/vis [1.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.34...@visulima/vis@1.0.0-alpha.35) (2026-06-09)
 
 ### Features
