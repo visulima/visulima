@@ -1,3 +1,21 @@
+## @visulima/vite-overlay [2.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.33...@visulima/vite-overlay@2.0.0-alpha.34) (2026-06-13)
+
+### Bug Fixes
+
+* **vite-overlay:** harden xss/redos and fix suggestion ranking in overlay ([fa7d531](https://github.com/visulima/visulima/commit/fa7d531915bde1f0fe57226f4efdc1cc1fc00ec6))
+* **vite-overlay:** restore plugin-hint fallback, Svelte hint, and XSS escaping ([15a4162](https://github.com/visulima/visulima/commit/15a41624c7f9045cebbd246821fb4a5cab28b07c))
+* **vite-overlay:** sanitize markdown, cache dir walk ([5430c78](https://github.com/visulima/visulima/commit/5430c780ab97b692d8e968900ba7b2564f19944a))
+
+### Miscellaneous Chores
+
+* **vite-overlay:** apply prettier style cleanup to src and tests ([77f376b](https://github.com/visulima/visulima/commit/77f376bd9a04032af01ba53392882d2dc95e4619))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.33
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/vite-overlay [2.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/vite-overlay@2.0.0-alpha.32...@visulima/vite-overlay@2.0.0-alpha.33) (2026-06-04)
 
 ### Bug Fixes
