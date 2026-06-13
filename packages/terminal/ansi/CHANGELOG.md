@@ -1,3 +1,27 @@
+## @visulima/ansi [4.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.16...@visulima/ansi@4.0.0-alpha.17) (2026-06-13)
+
+### Features
+
+* **ansi:** add osc52 clipboard + kitty keyboard, harden strip ([793cc9e](https://github.com/visulima/visulima/commit/793cc9e848aabe4b7b637a855941eb1f40649c94))
+
+### Bug Fixes
+
+* **ansi:** strip 8-bit C1 control sequences (0x9b CSI, 0x9d OSC, …) ([ecd702d](https://github.com/visulima/visulima/commit/ecd702ded915ae4affd2a0a65583d73819d9e8b3))
+
+### Code Refactoring
+
+* **ansi:** use replaceAll and reflow single-line arrow ([2f1525c](https://github.com/visulima/visulima/commit/2f1525c9176f0e7c65148fd2ac89b8cdb68a7b7e))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.14
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/ansi [4.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.15...@visulima/ansi@4.0.0-alpha.16) (2026-06-04)
 
 ### Bug Fixes
