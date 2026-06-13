@@ -1,3 +1,14 @@
+## @visulima/iso-locale [1.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.11...@visulima/iso-locale@1.0.0-alpha.12) (2026-06-13)
+
+### Features
+
+* **iso-locale:** add typed codes, unified lookups and i18n names ([5c09bb6](https://github.com/visulima/visulima/commit/5c09bb61823c7997f034091f1cbeddc838d305a3))
+
+### Code Refactoring
+
+* **iso-locale:** apply eslint/prettier formatting cleanup ([d9875f0](https://github.com/visulima/visulima/commit/d9875f073d73d66f19ef9272b11694a80b3552be))
+* **iso-locale:** derive literal unions from datasets ([c843246](https://github.com/visulima/visulima/commit/c843246db0a9b474cb68740b90b5718f6bc09d6e))
+
 ## @visulima/iso-locale [1.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/iso-locale@1.0.0-alpha.10...@visulima/iso-locale@1.0.0-alpha.11) (2026-06-04)
 
 ### Bug Fixes
