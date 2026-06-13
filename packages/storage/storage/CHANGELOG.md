@@ -1,3 +1,38 @@
+## @visulima/storage [1.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.34...@visulima/storage@1.0.0-alpha.35) (2026-06-13)
+
+### Bug Fixes
+
+* **storage:** fix facade key normalization and add stream/checksum gaps ([6c7da29](https://github.com/visulima/visulima/commit/6c7da29b9c86b6559a997381500498fc20ca65fa))
+
+### Styles
+
+* **storage:** reorder Transform flush before transform in detect-file-type ([ac29bc8](https://github.com/visulima/visulima/commit/ac29bc81632f867b5d12a08cb974abcb67afc78c))
+
+### Miscellaneous Chores
+
+* **storage:** apply prettier formatting to migration and test ([e680d95](https://github.com/visulima/visulima/commit/e680d95b715c66c1020da2c9269285e411ff4c57))
+
+### Code Refactoring
+
+* **storage:** split files barrel into modules ([6f26246](https://github.com/visulima/visulima/commit/6f26246bd7fd4f78cc3ff3e68f8f203a00407fa3))
+
+### Tests
+
+* **storage:** refresh openapi snapshots for pagination meta schema ([42a61cf](https://github.com/visulima/visulima/commit/42a61cf9a067c76078939b801005462b4a608d86))
+
+### Build System
+
+* **deps:** update storage dependencies ([b9a9a68](https://github.com/visulima/visulima/commit/b9a9a684d01d45b7042f3bc27d7bfa71396024c5))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/pagination:** upgraded to 5.0.0-alpha.14
+* **@visulima/fs:** upgraded to 5.0.0-alpha.32
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.14
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/storage [1.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.33...@visulima/storage@1.0.0-alpha.34) (2026-06-04)
 
 ### Bug Fixes
