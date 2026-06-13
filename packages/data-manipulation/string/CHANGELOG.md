@@ -1,3 +1,31 @@
+## @visulima/string [3.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.16...@visulima/string@3.0.0-alpha.17) (2026-06-13)
+
+### Bug Fixes
+
+* **string:** fix per-config char-width cache poisoning and dx gaps ([7e8dd51](https://github.com/visulima/visulima/commit/7e8dd51b1cc0cf71a8dbd6bae0d89d2cc3fb2403))
+* **string:** revert wordWrap resetAnsiAtLineBreak to not defeat preserveAnsi ([cdd13d0](https://github.com/visulima/visulima/commit/cdd13d0bde781ab6c356a547f0584e0c87e64958))
+
+### Documentation
+
+* **string:** refresh README ([ee62624](https://github.com/visulima/visulima/commit/ee626245007ecaf012925a21e9176e687029dbe8))
+
+### Code Refactoring
+
+* **string:** apply prettier/eslint formatting cleanup ([697c076](https://github.com/visulima/visulima/commit/697c0769fa090a80631da4974ba0b0f5cee7b2d6))
+
+### Tests
+
+* **string:** add regression tests for per-line ANSI re-coloring in wordWrap ([46ac426](https://github.com/visulima/visulima/commit/46ac4263ad9ad853d224227e24f4d9877be1d2d3))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.14
+
 ## @visulima/string [3.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/string@3.0.0-alpha.15...@visulima/string@3.0.0-alpha.16) (2026-06-04)
 
 ### Performance Improvements
