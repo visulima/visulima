@@ -204,9 +204,6 @@ jobs:
 
             - name: "test and coverage"
               run: "pnpm run test:affected:coverage"
-              env:
-                  # This is needed for the colorize integration test
-                  TEST_PROD_BUILD: "true"
 
             # Inlined replacement for `anolilab/workflows/step/codecov@main`.
             # Upstream discovers projects via `pnpm nx show projects --projects "packages/*"`,

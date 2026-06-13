@@ -6,6 +6,16 @@ import { execFileSync, execSync } from "node:child_process";
  */
 const esc = (string_: string): string => string_.replaceAll("\u001B", String.raw`\x1b`);
 
+const FUNCTION_NAME_REGEX = /\[Function: \w+\]/g;
+
+/**
+ * Normalize the `[Function: name]` tokens that `util.inspect` emits so dist-runtime
+ * assertions don't depend on identifier names. The production build (`packem build
+ * --production`) minifies local names — `self` -> `S`, `Colorize` -> `A` — while the
+ * dev build keeps them readable. `[Function (anonymous)]` has no name and is left as-is.
+ */
+const normalizeFunctionNames = (string_: string): string => string_.replaceAll(FUNCTION_NAME_REGEX, "[Function]");
+
 const TRAILING_NEWLINE_REGEX = /\n$/;
 
 // Color-forcing env vars that a test runner (nx, CI) injects into the ambient
@@ -23,7 +33,7 @@ const execScriptSync = (file: string, flags: string[] = [], environment: string[
     const childEnvironment = { ...process.env };
 
     for (const key of FORCING_COLOR_ENV_KEYS) {
-        delete childEnvironment[key];
+        Reflect.deleteProperty(childEnvironment, key);
     }
 
     const environmentVariables = environment.length > 0 ? `${environment.join(" ")} ` : "";
@@ -59,4 +69,4 @@ const typeCheckFixture = (packageRoot: string, tsconfigRelative: string): { code
     }
 };
 
-export { esc, execScriptSync, typeCheckFixture };
+export { esc, execScriptSync, normalizeFunctionNames, typeCheckFixture };
