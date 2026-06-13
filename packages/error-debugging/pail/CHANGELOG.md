@@ -1,3 +1,49 @@
+## @visulima/pail [4.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.21...@visulima/pail@4.0.0-alpha.22) (2026-06-13)
+
+### Bug Fixes
+
+* **pail:** fix rfc5424 stream routing and add reporter lifecycle ([2c798f5](https://github.com/visulima/visulima/commit/2c798f5742e35a91c2b68154de346823c88678ac))
+* **pail:** route stderr levels via isStderrLevel ([c4ac8a5](https://github.com/visulima/visulima/commit/c4ac8a51858777556864c26f2d88f4f0b6109d76))
+
+### Performance Improvements
+
+* **pail:** drop per-log meta spread and date rewrap ([dbc4622](https://github.com/visulima/visulima/commit/dbc46226732f92c097664f903756cee759bc2f8d))
+
+### Miscellaneous Chores
+
+* **pail:** apply lint-driven style cleanup to src and README ([309d8d1](https://github.com/visulima/visulima/commit/309d8d127932d3f37a63b42bd170c9bf26957585))
+* **pail:** clear baseline eslint violations ([ac1802f](https://github.com/visulima/visulima/commit/ac1802fdd7a7863411dd6834d57eb585d2d1ded5))
+* **pail:** clear baseline lint in manager unit tests ([59ec66e](https://github.com/visulima/visulima/commit/59ec66e7fa474e5632dd4056cb3d38c6b1a0f46e))
+
+### Code Refactoring
+
+* **pail:** extract CounterManager from PailBrowserImpl ([9698faf](https://github.com/visulima/visulima/commit/9698faf865f5614e921b83cc480f0a1de0c12375))
+* **pail:** extract TimerManager from PailBrowserImpl ([551271b](https://github.com/visulima/visulima/commit/551271ba5814ab8d8afc3c61718dc4b32ed45f9e))
+* **pail:** route wide-event serializer through error ([3c7010a](https://github.com/visulima/visulima/commit/3c7010a89a7e752aa6319d8a3b0944a266d0e07f))
+
+### Tests
+
+* **pail:** add unit tests for TimerManager and CounterManager ([38c0580](https://github.com/visulima/visulima/commit/38c058033b5112b63db404592eefb86992622e78))
+* **pail:** expect honored replacement in redact-processor ([ef3f5fb](https://github.com/visulima/visulima/commit/ef3f5fbfbb891c3885e3a333dd58a29f89fa6747))
+* **pail:** route warning fixtures to stdout for ESM check ([116c0d0](https://github.com/visulima/visulima/commit/116c0d0471bccbb9d534a787594af369e032e30e))
+
+### Build System
+
+* **deps:** update pail dependencies ([d88731f](https://github.com/visulima/visulima/commit/d88731f39ab61facb41012f698496a6b5a6cacbe))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.14
+* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.5
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.17
+* **@visulima/error:** upgraded to 6.0.0-alpha.33
+* **@visulima/fmt:** upgraded to 2.0.0-alpha.13
+* **@visulima/inspector:** upgraded to 2.0.0-alpha.14
+* **@visulima/redact:** upgraded to 3.0.0-alpha.14
+* **@visulima/string:** upgraded to 3.0.0-alpha.17
+
 ## @visulima/pail [4.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/pail@4.0.0-alpha.20...@visulima/pail@4.0.0-alpha.21) (2026-06-04)
 
 ### Performance Improvements
