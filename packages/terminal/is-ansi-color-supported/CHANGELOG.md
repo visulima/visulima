@@ -1,3 +1,15 @@
+## @visulima/is-ansi-color-supported [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.12...@visulima/is-ansi-color-supported@3.0.0-alpha.13) (2026-06-13)
+
+### Bug Fixes
+
+* **is-ansi-color-supported:** correct release method property type ([a7b940c](https://github.com/visulima/visulima/commit/a7b940c78590c65ea141d5be671383695e85c44e))
+* **is-ansi-color-supported:** lazily resolve os.release to avoid bundler getBuiltinModule shim crash ([8c551ad](https://github.com/visulima/visulima/commit/8c551ada86b1164b143faf144602bb5602e6a784))
+* **is-ansi-color-supported:** repair windows detection and add createIsColorSupported ([b6a4706](https://github.com/visulima/visulima/commit/b6a470628045a895ecafdca004de7f374e9ee07b))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
 ## @visulima/is-ansi-color-supported [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.11...@visulima/is-ansi-color-supported@3.0.0-alpha.12) (2026-06-04)
 
 ### Bug Fixes
