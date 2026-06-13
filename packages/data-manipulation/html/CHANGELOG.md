@@ -1,3 +1,25 @@
+## @visulima/html [1.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.19...@visulima/html@1.0.0-alpha.20) (2026-06-13)
+
+### Features
+
+* **html:** add subpaths, html fragment composition, css quote-safe minify ([4e13cc9](https://github.com/visulima/visulima/commit/4e13cc90c79ed9629141d12251b5050bf29946a4))
+
+### Bug Fixes
+
+* **html:** escape by default in html overload ([3a3cbe2](https://github.com/visulima/visulima/commit/3a3cbe29f448782a64580d05d81f26b4a5632aad))
+
+### Miscellaneous Chores
+
+* **html:** apply safe eslint formatting ([f12769c](https://github.com/visulima/visulima/commit/f12769c6ae6328499d933a00dd2a91d882cdb2dd))
+
+### Tests
+
+* **html:** restore tagged-template inputs mangled by eslint --fix ([430260d](https://github.com/visulima/visulima/commit/430260def28f9dce7d84086f58e7bba2657e098a))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
 ## @visulima/html [1.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/html@1.0.0-alpha.18...@visulima/html@1.0.0-alpha.19) (2026-06-04)
 
 ### Bug Fixes
