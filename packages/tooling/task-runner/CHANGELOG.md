@@ -1,3 +1,51 @@
+## @visulima/task-runner [1.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.22...@visulima/task-runner@1.0.0-alpha.23) (2026-06-13)
+
+### Features
+
+* **task-runner:** require native addon, hard-fail on load failure ([a52dc4d](https://github.com/visulima/visulima/commit/a52dc4db71ca1f476f78b88625bb2ae7b0ddf932))
+
+### Bug Fixes
+
+* **task-runner:** align NativeTaskHashDetails binding type to camelCase implicitDeps ([7d3fd91](https://github.com/visulima/visulima/commit/7d3fd91a4347e1ddd9aa926adcd578ca5fcec7d6))
+* **task-runner:** harden remote-cache verify default and fix win32 shell detection ([3aadc80](https://github.com/visulima/visulima/commit/3aadc80d3132fa3ca19f4b844b3a88b7c0822b22))
+* **task-runner:** load native binding from package root after bundling ([b7b1d3e](https://github.com/visulima/visulima/commit/b7b1d3ee885e4f318642cfc086abcdca5d8025e8))
+* **task-runner:** pass --import a file URL not a path ([63ac515](https://github.com/visulima/visulima/commit/63ac51556e41ddb08c83a74fddf993dbf2cd32e0))
+* **task-runner:** pass implicitDeps with correct NAPI key so lockfile/dep changes invalidate cache ([d01f179](https://github.com/visulima/visulima/commit/d01f179ca4e434377b7ef20c3318ff1f66c436c5))
+* **task-runner:** strip Windows verbatim path prefix ([f03c2e0](https://github.com/visulima/visulima/commit/f03c2e0ac614a29f8b0912dc6ed7941f107ba5d9))
+
+### Performance Improvements
+
+* **task-runner:** single-pass http cache hydration ([5b93478](https://github.com/visulima/visulima/commit/5b93478dcdbcbad7c12a037e0fff06c67c3cd128))
+
+### Documentation
+
+* re-scope RFCs against what task-runner/vis already ship ([d6cf42c](https://github.com/visulima/visulima/commit/d6cf42c964b738c9872fb205b8c90b99bc7655e0))
+* **task-runner:** add design RFCs for the gap features ([18e4c96](https://github.com/visulima/visulima/commit/18e4c96619b0a4bfdbf4435ee4ef55a5b13ef055))
+
+### Code Refactoring
+
+* **task-runner:** drop dead pure-JS hashing/worktree fallbacks ([405af22](https://github.com/visulima/visulima/commit/405af2277037e2141481e49cfbb932b7fdc88ea7)), closes [this.#native](https://github.com/visulima/this./issues/native)
+* **task-runner:** reorder onDiagnostic before onFingerprint in types ([b3bba9a](https://github.com/visulima/visulima/commit/b3bba9aa996ff041cf46893d0504b024fecde65c))
+
+### Tests
+
+* **task-runner:** prove lockfile changes invalidate task hashes ([00c8494](https://github.com/visulima/visulima/commit/00c84942fe48a563fd77955c76cffa50e95ab2f3))
+* **task-runner:** warm fetch to fix http cold-start timeout ([0d3d526](https://github.com/visulima/visulima/commit/0d3d52679eac6ab2afb64cbeee1cc48b67fa34a7))
+
+### Build System
+
+* **deps:** update task-runner dependencies ([d201000](https://github.com/visulima/visulima/commit/d201000cccb5fcf481d3e8ed17be83d393eb5acc))
+
+### Continuous Integration
+
+* stabilize flaky tests and drop markdown lint ([91e110a](https://github.com/visulima/visulima/commit/91e110a30b1ef8ca16f0632253a9e4d13856d8f9))
+
+
+### Dependencies
+
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.14
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/task-runner [1.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.21...@visulima/task-runner@1.0.0-alpha.22) (2026-06-09)
 
 ### Features
