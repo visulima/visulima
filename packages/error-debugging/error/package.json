@@ -1,6 +1,6 @@
 {
     "name": "@visulima/error",
-    "version": "6.0.0-alpha.32",
+    "version": "6.0.0-alpha.33",
     "description": "Error with more than just a message, stacktrace parsing.",
     "keywords": [
         "anolilab",
@@ -124,7 +124,7 @@
         "@types/command-line-args": "catalog:types",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
-        "@visulima/path": "3.0.0-alpha.12",
+        "@visulima/path": "3.0.0-alpha.13",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "ai": "catalog:dev",
