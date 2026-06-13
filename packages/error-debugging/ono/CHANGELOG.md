@@ -1,3 +1,17 @@
+## @visulima/ono [2.0.0-alpha.36](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.35...@visulima/ono@2.0.0-alpha.36) (2026-06-13)
+
+### Bug Fixes
+
+* **ono:** annotate renderJson for isolatedDeclarations ([bf8853f](https://github.com/visulima/visulima/commit/bf8853f1ffe39485fabbe3486eac4af1dc70d5d7))
+* **ono:** fix runtime detection, request masking, add json renderer ([dcbd84b](https://github.com/visulima/visulima/commit/dcbd84b80a9153e262a645e0f6ffa2b5b0dd60c6))
+* **ono:** guard circular request bodies and mask password-shaped body keys ([42a288c](https://github.com/visulima/visulima/commit/42a288cf3c0e2f3f00a02812b4879db95e718fda))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.33
+* **@visulima/path:** upgraded to 3.0.0-alpha.13
+
 ## @visulima/ono [2.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.34...@visulima/ono@2.0.0-alpha.35) (2026-06-04)
 
 ### Bug Fixes
