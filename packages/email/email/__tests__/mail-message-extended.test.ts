@@ -11,7 +11,8 @@ import type { EmailOptions } from "../src/types";
 
 const FAILED_RENDER_TEMPLATE_REGEX = /Failed to render template/;
 const FAILED_RENDER_TEXT_TEMPLATE_REGEX = /Failed to render text template/;
-const UNREADABLE_FILE_REGEX = /unable to read the non-accessible file/;
+// @visulima/fs maps a missing file's ENOENT to a NotFoundError: "no such file or directory".
+const UNREADABLE_FILE_REGEX = /no such file or directory/;
 // eslint-disable-next-line sonarjs/publicly-writable-directories -- fixed fake path used only for icalEvent path assertions; no real filesystem write occurs
 const FAKE_ICAL_PATH = "/tmp/event.ics";
 
