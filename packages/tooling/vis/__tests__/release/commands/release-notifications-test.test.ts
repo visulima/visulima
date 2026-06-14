@@ -13,7 +13,7 @@
 
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { rm, writeFile } from "node:fs/promises";
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -81,7 +81,11 @@ const callHandler = async (cwd: string, options: Record<string, unknown>): Promi
 
     process.exitCode = 0;
 
-    await notificationsHandler({ logger, options: { action: "test", ...options }, workspaceRoot: cwd } as never);
+    // The handler reads through the injected `toolbox.fs` (CerebroFs); node:fs/promises
+    // satisfies that surface for the methods it uses.
+    const fs = { access, mkdir, readdir, readFile, rm, stat, writeFile } as never;
+
+    await notificationsHandler({ fs, logger, options: { action: "test", ...options }, workspaceRoot: cwd } as never);
 
     const exitCode = typeof process.exitCode === "number" ? process.exitCode : 0;
 

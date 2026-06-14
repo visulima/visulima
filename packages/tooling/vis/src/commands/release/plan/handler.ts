@@ -11,10 +11,9 @@
  * a full minor when shipping notable changes.
  */
 
-import { mkdir, writeFile } from "node:fs/promises";
 import { join } from "node:path";
 
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { DEFAULT_CHANGES_DIR } from "../../../release/config";
 import { formatChangeFile } from "../../../release/core/change-file";
@@ -113,6 +112,7 @@ const walkThroughInteractive = async (releases: ReadonlyArray<PlannedRelease>): 
 };
 
 const writeOverrideChangeFile = async (
+    fs: CerebroFs,
     cwd: string,
     changesDir: string,
     chosen: ReleaseWithOverride[],
@@ -131,14 +131,14 @@ const writeOverrideChangeFile = async (
     const filePath = join(cwd, changesDir, `${randomTimestampSlug("plan")}.md`);
     const payload: ChangeFileSimple = { bumps };
 
-    await mkdir(join(cwd, changesDir), { recursive: true });
-    await writeFile(filePath, formatChangeFile(payload, body));
+    await fs.mkdir(join(cwd, changesDir), { recursive: true });
+    await fs.writeFile(filePath, formatChangeFile(payload, body));
 
     return filePath;
 };
 
 const runInteractive = async (toolbox: Toolbox<Console, ReleasePlanOptions>): Promise<void> => {
-    const { logger, options, workspaceRoot } = toolbox;
+    const { fs, logger, options, workspaceRoot } = toolbox;
     const cwd = workspaceRoot ?? process.cwd();
 
     if (!process.stdout.isTTY) {
@@ -196,7 +196,7 @@ const runInteractive = async (toolbox: Toolbox<Console, ReleasePlanOptions>): Pr
         const { textPrompt } = await import("../../../release/core/prompts");
         const message = await textPrompt("Changelog body for the override change file:", "Operator-driven plan adjustment via `vis release plan -i`.");
         const changesDir = ctx.config.changesDir ?? DEFAULT_CHANGES_DIR;
-        const filePath = await writeOverrideChangeFile(cwd, changesDir, chosen, message);
+        const filePath = await writeOverrideChangeFile(fs, cwd, changesDir, chosen, message);
 
         logger.info(`Wrote ${filePath}`);
     }

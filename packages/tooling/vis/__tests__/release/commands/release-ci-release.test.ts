@@ -18,7 +18,7 @@
 
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { rm, writeFile } from "node:fs/promises";
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -29,6 +29,10 @@ import { stateFilePath } from "../../../src/release/core/state";
 const writeJson = (path: string, value: unknown): void => {
     writeFileSync(path, `${JSON.stringify(value, null, 4)}\n`);
 };
+
+// The handler reads through the injected `toolbox.fs` (CerebroFs); node:fs/promises
+// satisfies that surface for the methods it uses.
+const testFs = { access, mkdir, readdir, readFile, rm, stat, writeFile } as never;
 
 const writeVisConfigCjs = (cwd: string, releaseBlock: Record<string, unknown>): void => {
     const block = { release: { ...releaseBlock, acknowledgeUnstable: true } };
@@ -125,6 +129,7 @@ describe("vis release ci release — C7 publish idempotency", () => {
         const { default: execute } = await import("../../../src/commands/release/ci/release/handler");
 
         await execute({
+            fs: testFs,
             logger: { error: () => {}, info: () => {}, warn: () => {} },
             options: { channel: "main" },
             workspaceRoot: cwd,
@@ -150,6 +155,7 @@ describe("vis release ci release — C7 publish idempotency", () => {
         const { default: execute } = await import("../../../src/commands/release/ci/release/handler");
 
         await execute({
+            fs: testFs,
             logger: { error: () => {}, info: () => {}, warn: () => {} },
             options: { channel: "main" },
             workspaceRoot: cwd,
@@ -175,6 +181,7 @@ describe("vis release ci release — C7 publish idempotency", () => {
         const { default: execute } = await import("../../../src/commands/release/ci/release/handler");
 
         await execute({
+            fs: testFs,
             logger: { error: () => {}, info: () => {}, warn: () => {} },
             options: { channel: "alpha" },
             workspaceRoot: cwd,

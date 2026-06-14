@@ -11,7 +11,6 @@
  * Multiple commits affecting the same package max-merge their levels.
  */
 
-import { mkdir, writeFile } from "node:fs/promises";
 import { join, relative } from "node:path";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
@@ -26,7 +25,7 @@ import type { BumpLevel, ChangeFileSimple } from "../../../release/types";
 import { maxBump } from "../../../release/types";
 import type { ReleaseGenerateOptions } from "./index";
 
-const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, ReleaseGenerateOptions>): Promise<void> => {
+const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, ReleaseGenerateOptions>): Promise<void> => {
     const cwd = workspaceRoot ?? process.cwd();
     const ctx = await buildContext({ cwd, skipRegistryLookup: true });
 
@@ -206,8 +205,8 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     const slug = (options.name ?? randomAnimalSlug()).replaceAll(/[^a-z0-9-]/gi, "-");
     const filePath = join(cwd, changesDir, `${slug}.md`);
 
-    await mkdir(join(cwd, changesDir), { recursive: true });
-    await writeFile(filePath, content);
+    await fs.mkdir(join(cwd, changesDir), { recursive: true });
+    await fs.writeFile(filePath, content);
 
     logger.info(`Created ${relative(cwd, filePath)}`);
 

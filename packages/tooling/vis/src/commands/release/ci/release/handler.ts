@@ -26,9 +26,7 @@
  *     downstream workflows on the version-PR)
  */
 
-import { access } from "node:fs/promises";
-
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { DEFAULT_CHANGES_DIR } from "../../../../release/config";
 import { readChangeFiles } from "../../../../release/core/change-file-reader";
@@ -46,9 +44,9 @@ import type { ReleaseCiReleaseOptions } from "./index";
  * means the next CI re-run should resume that wave instead of starting
  * a fresh publish loop (which would replay every package).
  */
-const hasPriorStateFile = async (cwd: string, changesDir: string): Promise<boolean> => {
+const hasPriorStateFile = async (fs: CerebroFs, cwd: string, changesDir: string): Promise<boolean> => {
     try {
-        await access(stateFilePath(cwd, changesDir));
+        await fs.access(stateFilePath(cwd, changesDir));
 
         return true;
     } catch {
@@ -198,7 +196,7 @@ const applyPrMetadata = async (
     }
 };
 
-const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, ReleaseCiReleaseOptions>): Promise<void> => {
+const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, ReleaseCiReleaseOptions>): Promise<void> => {
     const cwd = workspaceRoot ?? process.cwd();
     const runner = createShellRunner();
 
@@ -268,7 +266,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         // don't replay every package and either crash on already-
         // published versions or create parallel stages.
         const changesDir = ctx.config.changesDir ?? DEFAULT_CHANGES_DIR;
-        const resumeWave = await hasPriorStateFile(cwd, changesDir);
+        const resumeWave = await hasPriorStateFile(fs, cwd, changesDir);
 
         if (resumeWave) {
             logger.info("No pending change files but `.state.json` is present — resuming the prior wave's publish.");

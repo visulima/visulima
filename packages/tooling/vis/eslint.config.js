@@ -241,11 +241,22 @@ export default createConfig(
     {
         // Blocked handlers: these use fs APIs with no CerebroFs equivalent, so they
         // still import node:fs directly until the runtime surface is extended.
-        //   - cache/handler.ts   → mkdtemp, realpath (no temp-dir / realpath on CerebroFs)
-        //   - clean/handler.ts   → lstatSync, unlinkSync (no lstat / unlink on CerebroFs)
-        //   - hook/handler.ts    → chmodSync (no chmod on CerebroFs)
-        //   - service/handler.ts → open (FileHandle stream), watch (no equivalents)
-        files: ["src/commands/cache/handler.ts", "src/commands/clean/handler.ts", "src/commands/hook/handler.ts", "src/commands/service/handler.ts"],
+        //   - cache/handler.ts          → mkdtemp, realpath (no temp-dir / realpath on CerebroFs)
+        //   - clean/handler.ts          → lstatSync, unlinkSync (no lstat / unlink on CerebroFs)
+        //   - hook/handler.ts           → chmodSync (no chmod on CerebroFs)
+        //   - service/handler.ts        → open (FileHandle stream), watch (no equivalents)
+        //   - release/add/handler.ts    → writeFile({ flag: "wx" }) (CerebroFs writeFile has no flag option)
+        //   - release/ci/plan/handler.ts→ appendFileSync (no appendFile on CerebroFs)
+        //   - release/init/handler.ts   → readdir({ withFileTypes: true }) (CerebroFs readdir returns string[])
+        files: [
+            "src/commands/cache/handler.ts",
+            "src/commands/clean/handler.ts",
+            "src/commands/hook/handler.ts",
+            "src/commands/service/handler.ts",
+            "src/commands/release/add/handler.ts",
+            "src/commands/release/ci/plan/handler.ts",
+            "src/commands/release/init/handler.ts",
+        ],
         rules: {
             "no-restricted-imports": "off",
         },

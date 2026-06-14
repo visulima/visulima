@@ -17,10 +17,9 @@
  * the dispatch succeed regardless of the synthetic version string.
  */
 
-import { readFile } from "node:fs/promises";
 import { resolve as resolvePath } from "node:path";
 
-import type { CommandExecute, Toolbox } from "@visulima/cerebro";
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import type { NotificationChannel, NotificationContext } from "../../../release/core/notifications/interface";
 import { buildContext } from "../../../release/core/orchestrator";
@@ -57,7 +56,7 @@ const arrayify = <T>(value: T | T[] | null | undefined): T[] => {
  * when possible — picking a real repo slug makes Slack/Discord previews
  * meaningful instead of placeholder noise.
  */
-const buildSyntheticContext = async (cwd: string): Promise<NotificationContext> => {
+const buildSyntheticContext = async (fs: CerebroFs, cwd: string): Promise<NotificationContext> => {
     const runner = createShellRunner();
 
     let repo: string | undefined;
@@ -76,7 +75,7 @@ const buildSyntheticContext = async (cwd: string): Promise<NotificationContext> 
     }
 
     try {
-        const rootManifest = JSON.parse(await readFile(`${cwd}/package.json`, "utf8")) as { name?: string };
+        const rootManifest = JSON.parse(await fs.readFile(`${cwd}/package.json`, "utf8")) as { name?: string };
 
         monorepoName = rootManifest.name;
     } catch {
@@ -217,9 +216,9 @@ const dispatchOne = async (channel: NotificationChannel, context: NotificationCo
     }
 };
 
-const loadCustomContext = async (path: string): Promise<NotificationContext> => {
+const loadCustomContext = async (fs: CerebroFs, path: string): Promise<NotificationContext> => {
     const absolute = resolvePath(process.cwd(), path);
-    const raw = await readFile(absolute, "utf8");
+    const raw = await fs.readFile(absolute, "utf8");
     const parsed = JSON.parse(raw) as Partial<NotificationContext>;
 
     // Light shape coercion: required fields get sensible defaults so the
@@ -234,7 +233,7 @@ const loadCustomContext = async (path: string): Promise<NotificationContext> => 
     };
 };
 
-const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, ReleaseNotificationsOptions>): Promise<void> => {
+const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, ReleaseNotificationsOptions>): Promise<void> => {
     const cwd = workspaceRoot ?? process.cwd();
     const action = parseAction(options.action);
 
@@ -293,8 +292,8 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
 
     try {
         synthetic = options.customContext
-            ? await loadCustomContext(options.customContext)
-            : await buildSyntheticContext(cwd);
+            ? await loadCustomContext(fs, options.customContext)
+            : await buildSyntheticContext(fs, cwd);
     } catch (error) {
         logger.error(`Could not load NotificationContext: ${(error as Error).message}`);
         process.exitCode = 1;
