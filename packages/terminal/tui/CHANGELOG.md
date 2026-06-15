@@ -1,3 +1,9 @@
+## @visulima/tui [1.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.24...@visulima/tui@1.0.0-alpha.25) (2026-06-15)
+
+### Bug Fixes
+
+* **tui:** clear terminal on windows fullscreen redraws ([879e83e](https://github.com/visulima/visulima/commit/879e83e45a4b195b3956cfa37f13a8914be3c527))
+
 ## @visulima/tui [1.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.23...@visulima/tui@1.0.0-alpha.24) (2026-06-13)
 
 ### Bug Fixes
