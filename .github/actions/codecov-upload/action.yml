@@ -1,0 +1,94 @@
+name: "Codecov per-package upload"
+description: >-
+  Download + signature-verify the Codecov CLI and upload per-package coverage.
+  Inlined replacement for `anolilab/workflows/step/codecov@main`, made
+  configurable so `test.yml` and `semantic-release.yml` share one definition.
+  Upstream discovers projects via `pnpm nx show projects --projects "packages/*"`,
+  which (a) returns nothing here because packages live at
+  `packages/<category>/<name>/`, and (b) leaks pnpm platform-mismatch warnings
+  (one per NAPI subpackage) into the captured array, so a warning line becomes a
+  fake "project" and codecov fails with `--fail-on-error` against a path that
+  does not exist. This action walks the filesystem instead. See
+  anolilab/workflows#397.
+
+inputs:
+  token:
+    description: "Codecov upload token (secrets.CODECOV_TOKEN)."
+    required: true
+  run-id:
+    description: "Unique run identifier appended to each upload name (-n)."
+    required: true
+  exclude-projects:
+    description: >-
+      Comma-separated project directory basenames to skip (e.g. benches/docs
+      that produce no meaningful coverage). Empty means upload everything.
+    required: false
+    default: ""
+  coverage-glob:
+    description: "Glob matching each package's coverage directory."
+    required: false
+    default: "packages/*/*/coverage"
+  codecov-yml-path:
+    description: "Path to the codecov.yml passed to the uploader."
+    required: false
+    default: "codecov.yml"
+
+runs:
+  using: "composite"
+  steps:
+    # Import Codecov's uploader verification key from keyserver.ubuntu.com by
+    # fingerprint (806BB28AED779869 / 2703 4E7F DB85 0E0B BC2C 62FF 806B B28A
+    # ED77 9869) instead of keybase.io: the old
+    # `keybase.io/codecovsecurity/pgp_keys.asc` URL now 404s (Codecov moved to
+    # the `codecovsecops` account) and keybase is unreliable in CI. It is the
+    # same key the Codecov docs publish.
+    - name: "Download and verify Codecov CLI"
+      shell: "bash"
+      run: |
+        set -euo pipefail
+        curl -Os https://cli.codecov.io/latest/linux/codecov
+        curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM
+        curl -Os https://cli.codecov.io/latest/linux/codecov.SHA256SUM.sig
+        gpg --no-default-keyring --keyring trustedkeys.gpg \
+            --keyserver hkps://keyserver.ubuntu.com --recv-keys 806BB28AED779869
+        gpgv codecov.SHA256SUM.sig codecov.SHA256SUM
+        shasum -a 256 -c codecov.SHA256SUM
+        sudo chmod +x codecov
+
+    - name: "Upload code coverage to codecov"
+      shell: "bash"
+      env:
+        CODECOV_TOKEN: "${{ inputs.token }}"
+        RUN_ID: "${{ inputs.run-id }}"
+        EXCLUDE_PROJECTS: "${{ inputs.exclude-projects }}"
+        COVERAGE_GLOB: "${{ inputs.coverage-glob }}"
+        CODECOV_YML_PATH: "${{ inputs.codecov-yml-path }}"
+      run: |
+        set -euo pipefail
+        shopt -s nullglob
+        IFS=',' read -ra excludes <<< "${EXCLUDE_PROJECTS}"
+        uploaded=0
+        skipped=0
+        for cov_dir in ${COVERAGE_GLOB}; do
+            [[ -d "${cov_dir}" ]] || continue
+            pkg_dir="$(dirname "${cov_dir}")"
+            project="$(basename "${pkg_dir}")"
+            excluded=0
+            for excl in "${excludes[@]:-}"; do
+                excl_trimmed="$(echo "${excl}" | tr -d '[:space:]')"
+                if [[ -n "${excl_trimmed}" && "${project}" == "${excl_trimmed}" ]]; then
+                    excluded=1
+                    break
+                fi
+            done
+            if (( excluded )); then
+                echo "Skipping excluded project: ${project}"
+                skipped=$((skipped + 1))
+                continue
+            fi
+            echo "Running codecov in ${pkg_dir}"
+            ./codecov --codecov-yml-path "${CODECOV_YML_PATH}" --verbose upload-process --fail-on-error \
+                --dir "${pkg_dir}" -t "${CODECOV_TOKEN}" -F "${project}" -n "${project}-${RUN_ID}" || true
+            uploaded=$((uploaded + 1))
+        done
+        echo "Codecov uploads: ${uploaded} (skipped ${skipped})"
