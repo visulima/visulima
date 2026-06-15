@@ -1,0 +1,184 @@
+---
+title: Releasing Maven artifacts
+description: "Bump Maven versions and detect already-published artifacts on Maven Central — plus the shell-path workaround for native publishing."
+---
+
+# Releasing Maven artifacts
+
+Use this when you ship a JVM artifact alongside the JS / TS packages in your monorepo and want `vis release` to drive the version bump and the publish decision.
+
+vis ships partial Maven support today: it bumps `<version>` in `pom.xml` and probes Maven Central to skip a publish that's already live. **Native publishing via the Sonatype Central Portal upload API is not yet implemented.** For now, delegate to `mvn deploy` via the generic shell-publish path. This page walks through both halves end-to-end.
+
+## What works today
+
+When a package opts into the `maven` `versionActions` (either explicitly
+or by being declared via the `pomXml({...})` preset, which defaults
+`versionActions: "maven"`), vis will:
+
+1. Read the current project version from `pom.xml`. The parser looks at
+   the first `<version>` directly under `<project>`, skipping anything
+   inside `<parent>`, `<dependencies>`, or `<build>`.
+2. Detect multi-module reactor builds (`<modules>` present) and emit a
+   warning that vis treats the package as a single artifact. For full
+   reactor handling, see the [reactor workaround](#multi-module-reactor-projects)
+   below.
+3. Fetch `https://repo1.maven.org/maven2/<groupId>/<artifactId>/maven-metadata.xml`
+   and parse `<latest>` (falling back to the last `<version>` in
+   `<versions>`). A 404 means the artifact is new; the publish proceeds.
+
+The version bump itself flows through the existing extra-files engine
+— `pomXml({ pomDir })` registers a regex that swaps the first
+`<version>...</version>` in the pom for the new value when
+`vis release version` runs.
+
+## What's not implemented
+
+Native publishing — vis running the Sonatype Central Portal upload flow directly — is not yet wired up. The flow Sonatype expects (GPG-sign every artifact, bundle into a deployment `.zip`, `POST /api/v1/publisher/upload`, poll status, trigger publish) is non-trivial and deferred until the rest of vis's JVM story catches up.
+
+Calling `vis release publish` on a Maven package today throws a `CONFIG_INVALID` error pointing at the shell-path workaround below.
+
+## The shell-path workaround
+
+Drop to the generic shell publisher and delegate to `mvn deploy`. The
+shell path runs vis's idempotency guard (`checkPublished`) before
+invoking the publish command, so re-running after a transient failure
+is safe.
+
+### 1. Configure `pom.xml` with the Central Portal publishing plugin
+
+The recommended plugin since the OSSRH sunset is
+`central-publishing-maven-plugin`:
+
+```xml
+<build>
+    <plugins>
+        <plugin>
+            <groupId>org.sonatype.central</groupId>
+            <artifactId>central-publishing-maven-plugin</artifactId>
+            <version>0.5.0</version>
+            <extensions>true</extensions>
+            <configuration>
+                <publishingServerId>central</publishingServerId>
+                <autoPublish>true</autoPublish>
+                <waitUntil>published</waitUntil>
+            </configuration>
+        </plugin>
+        <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-gpg-plugin</artifactId>
+            <version>3.2.4</version>
+            <executions>
+                <execution>
+                    <id>sign-artifacts</id>
+                    <phase>verify</phase>
+                    <goals><goal>sign</goal></goals>
+                </execution>
+            </executions>
+        </plugin>
+        <!-- maven-source-plugin + maven-javadoc-plugin emit the
+             sources + javadoc jars Maven Central requires. -->
+    </plugins>
+</build>
+```
+
+If you still publish through the legacy OSSRH staging service, use
+`nexus-staging-maven-plugin` instead. Either way, the rest of this
+guide applies.
+
+### 2. Configure credentials in `~/.m2/settings.xml`
+
+Maven Central does **not** support OIDC trusted publishing as of late
+2024 — static credentials are required. Use env-substitution to keep
+secrets out of the repo:
+
+```xml
+<settings>
+    <servers>
+        <server>
+            <id>central</id>
+            <username>${env.MAVEN_CENTRAL_USERNAME}</username>
+            <password>${env.MAVEN_CENTRAL_TOKEN}</password>
+        </server>
+    </servers>
+    <profiles>
+        <profile>
+            <id>gpg</id>
+            <activation><activeByDefault>true</activeByDefault></activation>
+            <properties>
+                <gpg.keyname>${env.GPG_KEY_ID}</gpg.keyname>
+                <gpg.passphrase>${env.GPG_PASSPHRASE}</gpg.passphrase>
+            </properties>
+        </profile>
+    </profiles>
+</settings>
+```
+
+In CI, populate `MAVEN_CENTRAL_USERNAME` / `MAVEN_CENTRAL_TOKEN` from
+the Central Portal user token (generated at
+`https://central.sonatype.com/account`) and `GPG_KEY_ID` /
+`GPG_PASSPHRASE` from the signing key you uploaded to the public
+keyserver pool.
+
+### 3. Wire the shell path in `vis.config.ts`
+
+```typescript
+import { pomXml } from "@visulima/vis/release/presets";
+
+export default {
+    release: {
+        // The trust gate — required for every shell-publish package.
+        allowCustomCommands: ["@scope/jvm-sdk"],
+        packages: {
+            "@scope/jvm-sdk": {
+                ...pomXml({ pomDir: "jvm/sdk" }),
+                // Override the maven default with the shell publisher.
+                versionActions: "shell",
+                publishCommand: "mvn -B -ntp -DskipTests deploy",
+                // Disable maven-metadata.xml lookup — the publishCommand
+                // is idempotent (Central rejects a re-publish of the same
+                // (groupId:artifactId:version)).
+                checkPublished: "",
+            },
+        },
+    },
+};
+```
+
+Run `vis release publish` from CI as usual — the shell publisher will
+interpolate `{{version}}` / `{{name}}` / `{{tag}}` / `{{registry}}` and
+invoke `mvn deploy`. Failed publishes throw `PUBLISH_FAILED` with the
+mvn stderr captured for diagnostics; the orchestrator still creates +
+pushes the git tag so subsequent runs can `--resume`.
+
+## Multi-module reactor projects
+
+When vis detects a `<modules>` section in your `pom.xml`, it warns to
+stderr but still treats the package as a single artifact for
+version-bumping + already-published detection. For real reactor
+behaviour:
+
+1. Set the root pom's `<version>` via the standard `pomXml` preset on
+   the root package.
+2. Use a custom `extraFiles` rule (or one preset per submodule) to bump
+   every child `pom.xml` to the new version — Maven doesn't propagate
+   the root version automatically when a child declares its own.
+3. Publish via `mvn -pl <module-list> -am deploy` so the reactor
+   resolves dependencies across modules.
+
+For the truly hairy case (versions diverging across submodules), vis is
+the wrong tool; reach for `mvn versions:set` driven from a custom
+`buildCommand` instead.
+
+## When the native client lands
+
+The per-package config shape stays the same — the `pomXml({...})` preset already returns `versionActions: "maven"` by default. Removing the `versionActions: "shell"` override and the `publishCommand` switches you onto the native path. The shell-path config keeps working as the generic escape hatch.
+
+## OIDC trusted publishing
+
+Maven Central does not support OIDC trusted publishing. PyPI, npm, and Crates.io all do; Sonatype has acknowledged the gap publicly but has not committed a ship date. For now, store the Central Portal token as a CI secret and rotate it as you would any long-lived publishing credential.
+
+## Cross-references
+
+- [Release guide](./release.mdx) — mental model and change files
+- [Release CI guide](./release-ci.mdx) — wiring publishes into CI
+- Source: `packages/tooling/vis/src/release/core/version-actions/maven.ts`

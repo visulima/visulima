@@ -5,9 +5,10 @@ import { describe, expect, it } from "vitest";
 
 import { schemaOutputPath, SCHEMAS } from "../../scripts/generate-schemas";
 
-const [VIS_CONFIG_SPEC, PROJECT_SPEC] = SCHEMAS;
+const [VIS_CONFIG_SPEC, PROJECT_SPEC, RELEASE_SPEC] = SCHEMAS;
 const VIS_CONFIG_SCHEMA = JSON.parse(readFileSync(schemaOutputPath(VIS_CONFIG_SPEC), "utf8"));
 const PROJECT_SCHEMA = JSON.parse(readFileSync(schemaOutputPath(PROJECT_SPEC), "utf8"));
+const RELEASE_SCHEMA = JSON.parse(readFileSync(schemaOutputPath(RELEASE_SPEC), "utf8"));
 
 const ajv = new Ajv2020({ allErrors: true, strict: false });
 
@@ -81,6 +82,38 @@ describe("published JSON schemas", () => {
 
         expect(validate(project)).toBe(true);
         expect(validate.errors ?? []).toStrictEqual([]);
+    });
+
+    it("vis-release-config.schema.json is a valid JSON Schema", () => {
+        expect.assertions(1);
+
+        expect(() => ajv.compile(RELEASE_SCHEMA)).not.toThrow();
+    });
+
+    it("vis-release-config schema accepts a representative release config", () => {
+        expect.assertions(2);
+
+        const validate = ajv.compile(RELEASE_SCHEMA);
+        const config = {
+            access: "public",
+            baseBranch: "main",
+            bumpMinorPreMajor: true,
+            changesDir: ".changes",
+            defaultManaged: true,
+            floatingMajorTag: true,
+            gitSignCommits: false,
+        };
+
+        expect(validate(config)).toBe(true);
+        expect(validate.errors ?? []).toStrictEqual([]);
+    });
+
+    it("vis-release-config schema rejects unknown top-level keys", () => {
+        expect.assertions(1);
+
+        const validate = ajv.compile(RELEASE_SCHEMA);
+
+        expect(validate({ unknownField: 1 })).toBe(false);
     });
 
     it("vis-config schema rejects unknown top-level keys", () => {

@@ -5,7 +5,9 @@ description: "Get up and running with vis in your monorepo"
 
 # Quick Start
 
-This guide walks you through the most common vis workflows.
+This guide walks you through the workflows you'll touch every day. Stops at "you can ship code with vis"; for the deeper picture, follow the links at each section's end.
+
+> 💡 **Already installed?** Skip to [Running Tasks](#running-tasks). New here? Start with [Installation](/installation).
 
 ## Running Tasks
 
@@ -121,6 +123,24 @@ Migrate from husky:
 vis hook migrate
 ```
 
+## Releasing a version
+
+Set up the release subsystem and migrate from an existing tool if you have one:
+
+```bash
+vis release init --workflows
+```
+
+Record a version bump for the change you just made:
+
+```bash
+vis release add --packages '@scope/cerebro:minor' --message 'Add tab completion'
+```
+
+Commit the resulting `.vis/release/<slug>.md` alongside your code and push. CI takes care of opening the **"Versioned release" PR**, publishing on merge, tagging, and creating GitHub / GitLab releases.
+
+See the [release guide](/guides/release) for the full walkthrough — change files, channels, snapshots, and CI setup.
+
 ## Configuration
 
 Create a `vis.json` in your workspace root for persistent configuration:
@@ -142,3 +162,10 @@ Create a `vis.json` in your workspace root for persistent configuration:
 ```
 
 See the [Configuration](/configuration) page for all available options.
+
+## Where to next
+
+- **[Release manager](/guides/release)** — ship versions, changelogs, and tags from change files
+- **[Why vis](/guides/why-vis)** — side-by-side capability matrix vs. Turbo / Nx / moon / Vite Task
+- **[Best practices](/guides/best-practices)** — team workflows, security, CI/CD patterns
+- **[Commands](/commands/run)** — full per-command reference

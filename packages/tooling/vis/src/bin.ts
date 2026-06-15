@@ -52,6 +52,7 @@ import { runMigrateInteractive } from "./commands/migrate/interactive";
 import optimizeCommand from "./commands/optimize";
 // outdated is now an alias of check
 import pmCommand from "./commands/pm";
+import releaseCommands from "./commands/release";
 import removeCommand from "./commands/remove";
 import replayCommand from "./commands/replay";
 import runCommand from "./commands/run";
@@ -277,6 +278,10 @@ for (const command of toolchainCommands) {
 }
 
 cli.addCommand(ciIgnoreCommand);
+
+for (const command of releaseCommands) {
+    cli.addCommand(command);
+}
 
 // Post-command: upgrade notice + tips
 cli.addPlugin(postCommandPlugin(upgradeCheckCallback));

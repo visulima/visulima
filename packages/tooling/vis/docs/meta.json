@@ -61,7 +61,8 @@
                 "commands/cache",
                 "commands/service",
                 "commands/hook",
-                "commands/implode"
+                "commands/implode",
+                "commands/release"
             ]
         },
         "configuration",
@@ -78,7 +79,15 @@
                 "guides/security-audit",
                 "guides/attested-cache",
                 "guides/shell-alias",
-                "guides/ai-integration"
+                "guides/ai-integration",
+                "guides/release",
+                "guides/release-ci",
+                "guides/release-staged-publishing",
+                "guides/release-notifications",
+                "guides/release-first-release-and-resolver",
+                "guides/release-plugin-authoring",
+                "guides/release-maven",
+                "guides/release-comparison"
             ]
         }
     ]

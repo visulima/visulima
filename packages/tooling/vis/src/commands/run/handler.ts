@@ -4,6 +4,7 @@ import type {
     ConcurrentCommandInput,
     LifeCycleInterface,
     LogMode,
+    OutputSpec,
     ProcessEvent,
     TargetConfiguration,
     Task,
@@ -1550,8 +1551,11 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         // root maps to `.` so the path stays a workspace-relative `./dist`
         // instead of an escaping `/dist`. Idempotent if already expanded.
         const outputsProjectRoot = project?.root && project.root.length > 0 ? project.root : ".";
-        // eslint-disable-next-line sonarjs/function-return-type -- OutputSpec union: the `{ auto: true }` sentinel passes through, strings are expanded.
-        const expandedOutputs = (visTarget.outputs ?? []).map((output) => {
+        // OutputSpec is a `string | { auto: true }` union, so the two
+        // branches legitimately return different runtime shapes — the
+        // `{ auto: true }` sentinel passes through, strings get expanded.
+        // eslint-disable-next-line sonarjs/function-return-type -- OutputSpec union; non-string sentinel passes through, strings are expanded
+        const expandedOutputs = (visTarget.outputs ?? []).map((output): OutputSpec => {
             if (typeof output !== "string") {
                 return output;
             }

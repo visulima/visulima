@@ -1,10 +1,13 @@
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { cpSync, existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { Toolbox } from "@visulima/cerebro";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { buildSchemaRefForTesting } from "../../../src/commands/init/handler";
+import initExecute from "../../../src/commands/release/init/handler";
+import type { ReleaseInitOptions } from "../../../src/commands/release/init/index";
 
 describe("init config generation", () => {
     let tmpDir: string;
@@ -229,5 +232,150 @@ describe(buildSchemaRefForTesting, () => {
         const ref = buildSchemaRefForTesting(join(root, "apps", "web", "project.json"), root, "project.schema.json");
 
         expect(ref).not.toContain("\\");
+    });
+});
+
+/**
+ * Integration tests for the semantic-release migration path. Each test
+ * copies the `semantic-release` fixture into a tmp dir, drives the init
+ * handler with a fake cerebro Toolbox, then asserts on the resulting
+ * filesystem + collected log output.
+ */
+describe("init --from-semantic-release", () => {
+    const fixtureRoot = join(__dirname, "..", "..", "..", "__fixtures__", "init", "semantic-release");
+    let tmpDir: string;
+    let logs: { level: "info" | "warn" | "error"; message: string }[];
+
+    const fakeLogger = (): Console => {
+        const sink = (level: "info" | "warn" | "error") => (...args: unknown[]) => {
+            logs.push({ level, message: args.map(String).join(" ") });
+        };
+
+        return {
+            error: sink("error"),
+            info: sink("info"),
+            log: sink("info"),
+            warn: sink("warn"),
+        } as unknown as Console;
+    };
+
+    const fakeToolbox = (overrides: Partial<ReleaseInitOptions> = {}): Toolbox<Console, ReleaseInitOptions> => {
+        // Default options match cerebro's behaviour: every kebab-case flag
+        // surfaces as a camelCase property; absent flags are `undefined`.
+        const options = {
+            apply: undefined,
+            dryRun: undefined,
+            fresh: undefined,
+            fromBumpy: undefined,
+            fromChangesets: undefined,
+            fromSemanticRelease: true,
+            packageManager: undefined,
+            workflows: undefined,
+            yes: undefined,
+            ...overrides,
+        } as unknown as ReleaseInitOptions;
+
+        return {
+            argument: [],
+            argv: [],
+            command: { name: "init" } as never,
+            commandName: "init",
+            env: {},
+            logger: fakeLogger(),
+            options,
+            projectRoot: undefined,
+            runtimeFlags: {},
+            workspaceRoot: tmpDir,
+        } as unknown as Toolbox<Console, ReleaseInitOptions>;
+    };
+
+    beforeEach(() => {
+        tmpDir = mkdtempSync(join(tmpdir(), "vis-init-semrel-"));
+        logs = [];
+        // Copy the fixture verbatim into the tmp dir so each test starts clean.
+        cpSync(fixtureRoot, tmpDir, { recursive: true });
+    });
+
+    afterEach(() => {
+        rmSync(tmpDir, { force: true, recursive: true });
+        vi.restoreAllMocks();
+    });
+
+    it("prints suggestion and makes no migration writes without --apply", async () => {
+        expect.assertions(6);
+
+        const toolbox = fakeToolbox();
+
+        await initExecute(toolbox);
+
+        const allOutput = logs.map((l) => l.message).join("\n");
+
+        // The suggestion block is still printed.
+        expect(allOutput).toContain("Suggested vis.config.ts release block");
+        expect(allOutput).toContain("\"vis-release\": { \"managed\": true }");
+
+        // No vis.config.ts is written.
+        expect(existsSync(join(tmpDir, "vis.config.ts"))).toBe(false);
+
+        // .releaserc.json files are still in place.
+        expect(existsSync(join(tmpDir, ".releaserc.json"))).toBe(true);
+        expect(existsSync(join(tmpDir, "packages", "pkg-a", ".releaserc.json"))).toBe(true);
+
+        // Package.json is untouched (no vis-release key added).
+        const pkgA = JSON.parse(readFileSync(join(tmpDir, "packages", "pkg-a", "package.json"), "utf8")) as Record<string, unknown>;
+
+        expect(pkgA["vis-release"]).toBeUndefined();
+    });
+
+    it("writes vis.config.ts, adds release.managed to packages, and deletes .releaserc.json files with --apply", async () => {
+        expect.assertions(8);
+
+        const toolbox = fakeToolbox({ apply: true });
+
+        await initExecute(toolbox);
+
+        // vis.config.ts is written and contains the release block + defineConfig import.
+        const visConfigPath = join(tmpDir, "vis.config.ts");
+
+        expect(existsSync(visConfigPath)).toBe(true);
+
+        const visConfig = readFileSync(visConfigPath, "utf8");
+
+        expect(visConfig).toContain("defineConfig");
+        expect(visConfig).toContain("release: {");
+
+        // Per-package package.json files gained `"vis-release": { "managed": true }`.
+        const pkgA = JSON.parse(readFileSync(join(tmpDir, "packages", "pkg-a", "package.json"), "utf8")) as Record<string, unknown>;
+        const pkgB = JSON.parse(readFileSync(join(tmpDir, "packages", "pkg-b", "package.json"), "utf8")) as Record<string, unknown>;
+
+        expect(pkgA["vis-release"]).toStrictEqual({ managed: true });
+        expect(pkgB["vis-release"]).toStrictEqual({ managed: true });
+
+        // .releaserc.json files are deleted.
+        expect(existsSync(join(tmpDir, ".releaserc.json"))).toBe(false);
+        expect(existsSync(join(tmpDir, "packages", "pkg-a", ".releaserc.json"))).toBe(false);
+        expect(existsSync(join(tmpDir, "packages", "pkg-b", ".releaserc.json"))).toBe(false);
+    });
+
+    it("ignores --apply when --dry-run is set (dry-run takes precedence) and logs a warning", async () => {
+        expect.assertions(5);
+
+        const toolbox = fakeToolbox({ apply: true, dryRun: true });
+
+        await initExecute(toolbox);
+
+        // Warning was logged at warn level.
+        const warnMessages = logs.filter((l) => l.level === "warn").map((l) => l.message).join("\n");
+
+        expect(warnMessages).toContain("--apply is ignored");
+        expect(warnMessages).toContain("dry-run takes precedence");
+
+        // No migration writes happened.
+        expect(existsSync(join(tmpDir, "vis.config.ts"))).toBe(false);
+        expect(existsSync(join(tmpDir, ".releaserc.json"))).toBe(true);
+
+        const pkgA = JSON.parse(readFileSync(join(tmpDir, "packages", "pkg-a", "package.json"), "utf8")) as Record<string, unknown>;
+
+        expect(pkgA["vis-release"]).toBeUndefined();
     });
 });

@@ -1,0 +1,14 @@
+{
+    "release": {
+        "defaultManaged": true,
+        "acknowledgeUnstable": true,
+        "channels": {
+            "main": { "tag": "latest", "mode": "auto-publish" }
+        },
+        "publish": {
+            "packManager": "pnpm",
+            "publishStrategy": "npm-publish-tarball",
+            "catalogResolution": "auto"
+        }
+    }
+}

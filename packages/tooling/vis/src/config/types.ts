@@ -2,6 +2,7 @@ import type { ConstraintsConfig, NamedInputs, ProjectConfiguration, TargetConfig
 
 import type { SimilarDepFamily } from "../deps/similar-deps";
 import type { FmtAdapterId, LintAdapterId } from "../lint-fmt/config-types";
+import type { VisReleaseConfig } from "../release/types";
 import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "../runtime/toolchain";
 import type { StagedConfig } from "../staged";
 import type { VisTargetConfiguration } from "../task/target-options";
@@ -989,6 +990,13 @@ export interface VisConfig {
          */
         lockfile?: boolean;
     };
+
+    /**
+     * Configuration for the `vis release` subsystem. Controls change-file
+     * authoring, version computation, channel routing, publish behavior,
+     * and CI integration. See `packages/tooling/vis/rfc/design-release-manager.md`.
+     */
+    release?: VisReleaseConfig;
 
     /**
      * Behavior of `vis run` when invoked tasks declare service dependencies
