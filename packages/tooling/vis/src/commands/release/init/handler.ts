@@ -135,13 +135,15 @@ const findReleaseRcFiles = async (cwd: string): Promise<string[]> => {
         }
 
         for (const entry of entries) {
-            if (entry.name === "node_modules" || entry.name.startsWith(".")) {
-                continue;
-            }
-
             const path = join(dir, entry.name);
 
             if (entry.isDirectory()) {
+                // Skip node_modules + dotfile dirs only — never skip the
+                // `.releaserc.*` files themselves (they start with a dot too).
+                if (entry.name === "node_modules" || entry.name.startsWith(".")) {
+                    continue;
+                }
+
                 queue.push(path);
             } else if (entry.name === ".releaserc.json" || entry.name === ".releaserc.cjs" || entry.name === ".releaserc.js") {
                 out.push(path);
