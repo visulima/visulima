@@ -10224,7 +10224,7 @@ importers:
         specifier: 1.0.0-alpha.23
         version: link:../task-runner
       '@visulima/tui':
-        specifier: 1.0.0-alpha.24
+        specifier: 1.0.0-alpha.25
         version: link:../../terminal/tui
       conventional-commits-parser:
         specifier: ^6.2.0
@@ -10553,7 +10553,7 @@ importers:
         specifier: 3.0.0-alpha.13
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.36
+        specifier: 1.0.0-alpha.37
         version: link:../vis
       zod:
         specifier: catalog:utils
