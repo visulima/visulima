@@ -7,6 +7,7 @@
  * to `DependencyGraph` and the release plan.
  */
 
+import { realpathSync } from "node:fs";
 import { resolve as resolvePath, sep as pathSep } from "node:path";
 
 import zeptomatch from "zeptomatch";
@@ -44,7 +45,22 @@ export const discoverPackages = async (
     const packages: WorkspacePackage[] = [];
     const perPackageConfig = new Map<string, PerPackageReleaseConfig>();
     const seen = new Map<string, string>();
-    const cwdResolved = options.cwd === undefined ? undefined : resolvePath(options.cwd);
+
+    // Canonicalize through symlinks so the workspace-containment check below
+    // compares like with like. On macOS `os.tmpdir()` returns `/var/folders/…`
+    // while discovery adapters hand back the realpath `/private/var/folders/…`
+    // (and similar `/tmp` → realpath cases on Linux), which made an in-workspace
+    // manifest look "outside" the workspace. realpathSync requires the path to
+    // exist, so fall back to a plain resolve for not-yet-created paths.
+    const canonicalize = (p: string): string => {
+        try {
+            return realpathSync(resolvePath(p));
+        } catch {
+            return resolvePath(p);
+        }
+    };
+
+    const cwdResolved = options.cwd === undefined ? undefined : canonicalize(options.cwd);
 
     // RFC §12.4: platform packages live under a native-addon parent's `npm/`
     // directory and are published by the parent's `native-addon` versionActions
@@ -98,7 +114,7 @@ export const discoverPackages = async (
         // the workspace, which would let downstream writes (cleanPackageJson,
         // version-bump) escape `cwd`. Catch it here.
         if (cwdResolved !== undefined) {
-            const manifestResolved = resolvePath(manifestPath);
+            const manifestResolved = canonicalize(manifestPath);
             const cwdWithSep = cwdResolved.endsWith(pathSep) ? cwdResolved : `${cwdResolved}${pathSep}`;
 
             if (manifestResolved !== cwdResolved && !manifestResolved.startsWith(cwdWithSep)) {
