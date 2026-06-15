@@ -1,3 +1,10 @@
+## @visulima/vis [1.0.0-alpha.37](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.36...@visulima/vis@1.0.0-alpha.37) (2026-06-15)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 1.0.0-alpha.25
+
 ## @visulima/vis [1.0.0-alpha.36](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.35...@visulima/vis@1.0.0-alpha.36) (2026-06-13)
 
 ### Features
