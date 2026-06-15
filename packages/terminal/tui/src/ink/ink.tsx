@@ -137,12 +137,14 @@ const stripKittyQueryResponsesAndTrailingPartial = (buffer: number[]): number[] 
 const shouldClearTerminalForFrame = ({
     isTty,
     isUnmounting,
+    isWindows,
     nextOutputHeight,
     previousOutputHeight,
     viewportRows,
 }: {
     isTty: boolean;
     isUnmounting: boolean;
+    isWindows: boolean;
     nextOutputHeight: number;
     previousOutputHeight: number;
     viewportRows: number;
@@ -153,10 +155,18 @@ const shouldClearTerminalForFrame = ({
 
     const hadPreviousFrame = previousOutputHeight > 0;
     const wasFullscreen = previousOutputHeight >= viewportRows;
+    const isFullscreen = nextOutputHeight >= viewportRows;
     const wasOverflowing = previousOutputHeight > viewportRows;
     const isOverflowing = nextOutputHeight > viewportRows;
     const isLeavingFullscreen = wasFullscreen && nextOutputHeight < viewportRows;
     const shouldClearOnUnmount = isUnmounting && wasFullscreen;
+    // Windows consoles scroll the buffer immediately when the bottom-right cell
+    // is written, whereas Unix-like terminals defer the wrap until the next
+    // character. The incremental eraseLines redraw path assumes deferred wrap,
+    // so on Windows the cursor arithmetic drifts one row per frame and stale
+    // fullscreen frames leak through. Force a full clear for any fullscreen
+    // frame on Windows. See vadimdemedes/ink#971.
+    const windowsFullscreenRedraw = isWindows && (isFullscreen || wasFullscreen);
 
     return (
         // Overflowing frames still need full clear fallback.
@@ -167,6 +177,7 @@ const shouldClearTerminalForFrame = ({
         // Preserve legacy unmount behavior for fullscreen frames: final teardown
         // render should clear once to avoid leaving a scrolled viewport state.
         || shouldClearOnUnmount
+        || windowsFullscreenRedraw
     );
 };
 
@@ -1453,9 +1464,18 @@ export default class Ink {
         const isFullscreen = isTty && outputHeight >= viewportRows;
         const outputToRender = isFullscreen ? output : `${output}\n`;
 
+        // Read process.platform at call time so the Windows fullscreen-clear path
+        // stays toggleable from tests (and matches the actual runtime platform).
+        const isWindows = process.platform === "win32";
+        // On Windows, fullscreen incremental redraws are broken (immediate scroll
+        // drifts the cursor arithmetic), so the clear cannot be skipped even in
+        // incremental mode. See vadimdemedes/ink#971.
+        const windowsFullscreenRedraw = isTty && isWindows && (isFullscreen || this.lastOutputHeight >= viewportRows);
+
         const shouldClearTerminal = shouldClearTerminalForFrame({
             isTty,
             isUnmounting: this.isUnmounting,
+            isWindows,
             nextOutputHeight: outputHeight,
             previousOutputHeight: this.lastOutputHeight,
             viewportRows,
@@ -1465,7 +1485,9 @@ export default class Ink {
             // Skip clearTerminal in incremental mode to avoid erase-then-redraw flicker.
             // Instead, fall through to the normal incremental update path below so that
             // static output is still handled and the log-update diffing takes care of it.
-            if (this.options.incrementalRendering) {
+            // Exception: Windows fullscreen redraws must perform a real clear because
+            // the incremental eraseLines path is broken there (see ink#971).
+            if (this.options.incrementalRendering && !windowsFullscreenRedraw) {
                 if (hasPrepend) {
                     this.log.clear();
                     this.options.stdout.write(prepend);
