@@ -41,6 +41,13 @@ interface DynamicOutputOptions {
     /** Registry of writable stdin entries keyed by task ID, for interactive input. */
     stdinRegistry?: Map<string, StdinEntry>;
     tasks: Task[];
+
+    /**
+     * Size of the full executed task graph (requested tasks plus their
+     * `dependsOn` dependencies). Drives the "N total" status-bar label so it
+     * matches the final summary's task count rather than the table row count.
+     */
+    totalTaskCount?: number;
 }
 
 interface DynamicOutputResult {
@@ -50,9 +57,9 @@ interface DynamicOutputResult {
 }
 
 export const createDynamicOutputRenderer = (options: DynamicOutputOptions): DynamicOutputResult => {
-    const { args, autoExit = false, onRetryService, outputStyle = "normal", projectNames, serviceDockStore, stdinRegistry, tasks } = options;
+    const { args, autoExit = false, onRetryService, outputStyle = "normal", projectNames, serviceDockStore, stdinRegistry, tasks, totalTaskCount } = options;
 
-    const store = new TaskStore(tasks);
+    const store = new TaskStore(tasks, totalTaskCount);
     const parallelSlots = typeof args.parallel === "number" ? args.parallel : 3;
     const autoExitSeconds = autoExit === true ? 3 : typeof autoExit === "number" ? autoExit : 0;
 

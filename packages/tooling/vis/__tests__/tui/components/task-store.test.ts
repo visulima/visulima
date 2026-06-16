@@ -106,3 +106,91 @@ describe("tui/TaskStore failure-render wiring", () => {
         expect(store.getSnapshot().outputs.get("app:dev")).toBe("streamed line\n");
     });
 });
+
+describe("tui/TaskStore graph-scoped counters", () => {
+    it("defaults totalTasks to the row count when no graph size is supplied", () => {
+        expect.assertions(1);
+
+        const store = new TaskStore([task("a:build"), task("b:build")]);
+
+        expect(store.getSnapshot().totalTasks).toBe(2);
+    });
+
+    it("reports the full executed-graph size as totalTasks even when fewer tasks are rendered as rows", () => {
+        expect.assertions(2);
+
+        // One requested row, but the graph also runs two dependsOn deps.
+        const store = new TaskStore([task("app:lint")], 3);
+        const snapshot = store.getSnapshot();
+
+        expect(snapshot.totalTasks).toBe(3);
+        expect(snapshot.rows).toHaveLength(1);
+    });
+
+    it("counts dependency tasks toward succeeded without adding rows", () => {
+        expect.assertions(3);
+
+        const requested = task("app:lint");
+        const dep = task("lib:build");
+        const store = new TaskStore([requested], 2);
+
+        store.startTasks([requested, dep]);
+        store.endTasks([result(requested, "success", ""), result(dep, "success", "")]);
+
+        const snapshot = store.getSnapshot();
+
+        // Both the requested task and its dep count toward the tally...
+        expect(snapshot.succeeded).toBe(2);
+        // ...but only the requested task is rendered as a row.
+        expect(snapshot.rows).toHaveLength(1);
+        // succeeded now matches totalTasks — the mismatch this fixes.
+        expect(snapshot.succeeded).toBe(snapshot.totalTasks);
+    });
+
+    it("tracks in-flight tasks via running across the whole graph", () => {
+        expect.assertions(3);
+
+        const requested = task("app:lint");
+        const dep = task("lib:build");
+        const store = new TaskStore([requested], 2);
+
+        store.startTasks([requested, dep]);
+
+        expect(store.getSnapshot().running).toBe(2);
+
+        store.endTasks([result(dep, "local-cache", "")]);
+
+        expect(store.getSnapshot().running).toBe(1);
+
+        store.endTasks([result(requested, "success", "")]);
+
+        expect(store.getSnapshot().running).toBe(0);
+    });
+
+    it("clamps running at zero when a result arrives without a matching start (cache hits)", () => {
+        expect.assertions(1);
+
+        const t = task("app:lint");
+        const store = new TaskStore([t], 1);
+
+        // No startTasks call — a cache hit can report straight through endTasks.
+        store.endTasks([result(t, "local-cache", "")]);
+
+        expect(store.getSnapshot().running).toBe(0);
+    });
+
+    it("resets running on rerun", () => {
+        expect.assertions(2);
+
+        const t = task("app:lint");
+        const store = new TaskStore([t], 1);
+
+        store.startTasks([t]);
+
+        expect(store.getSnapshot().running).toBe(1);
+
+        store.requestRerun();
+
+        expect(store.getSnapshot().running).toBe(0);
+    });
+});
