@@ -195,19 +195,6 @@ const VisTaskRunnerApp = ({
         return filtered;
     }, [state.rows, state.filterText, state.statusFilter, dockIds]);
 
-    // Count running tasks for status bar
-    const runningCount = useMemo(() => {
-        let count = 0;
-
-        for (const row of state.rows) {
-            if (row.status === "running") {
-                count += 1;
-            }
-        }
-
-        return count;
-    }, [state.rows]);
-
     // Get selected task
     const selectedRow = filteredRows[state.selectedIndex] ?? null;
     const selectedTaskId = selectedRow?.taskId ?? null;
@@ -836,6 +823,13 @@ x
 {state.succeeded}
                 </Text>
             )}
+            {state.cached > 0 && (
+                <Text dimColor>
+                    {"\u2713"}
+{" "}
+{state.cached}
+                </Text>
+            )}
             {state.failed > 0 && (
                 <Text bold color="red">
                     {"\u2717"}
@@ -843,15 +837,15 @@ x
 {state.failed}
                 </Text>
             )}
-            {runningCount > 0 && (
+            {state.running > 0 && (
                 <Text color="cyan">
                     {"\u25F7"}
 {" "}
-{runningCount}
+{state.running}
                 </Text>
             )}
             <Text dimColor>
-{state.rows.length}
+{state.totalTasks}
 {" "}
 total
             </Text>

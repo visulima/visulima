@@ -42,6 +42,14 @@ export interface TaskState {
     retryTaskId: string | null;
     /** All task rows with current status. */
     rows: TaskRowData[];
+
+    /**
+     * Number of tasks currently in flight across the whole executed graph
+     * (requested tasks plus their `dependsOn` dependencies), not just the
+     * rows shown in the table. Kept in sync via start/end so the status-bar
+     * spinner count shares the same scope as the succeeded/failed counters.
+     */
+    running: number;
     /** Currently highlighted task index in the list. */
     selectedIndex: number;
     /** Command start timestamp (Date.now). */
@@ -50,6 +58,16 @@ export interface TaskState {
     statusFilter: "all" | "failed" | "passed" | "running";
     /** Number of successfully completed tasks. */
     succeeded: number;
+
+    /**
+     * Total number of tasks that will be executed across the whole graph —
+     * the requested tasks plus every `dependsOn` dependency pulled in. This
+     * is the denominator behind the "N total" status-bar label and matches
+     * the `succeeded + cached` figure the final summary reports, unlike
+     * `rows.length`, which only counts the directly-requested tasks shown in
+     * the table.
+     */
+    totalTasks: number;
     /** Current view mode: list (full width), split (list + output), fullscreen (output only). */
     viewMode: "fullscreen" | "list" | "split";
 }
@@ -63,7 +81,13 @@ export class TaskStore {
 
     #hrtimeStarts = new Map<string, [number, number]>();
 
-    public constructor(tasks: Task[]) {
+    /**
+     * @param tasks The directly-requested tasks rendered as table rows.
+     * @param totalTasks The size of the full executed graph (requested tasks plus their `dependsOn`
+     * dependencies). Defaults to `tasks.length` when the caller can't supply the graph count, keeping
+     * the old rows-scoped behaviour.
+     */
+    public constructor(tasks: Task[], totalTasks?: number) {
         this.#state = {
             autoExitCountdown: null,
             cached: 0,
@@ -85,10 +109,12 @@ export class TaskStore {
 
                 return { persistent: Boolean(visOptions?.persistent), status: "pending" as const, taskId: t.id };
             }),
+            running: 0,
             selectedIndex: 0,
             startTime: Date.now(),
             statusFilter: "all",
             succeeded: 0,
+            totalTasks: totalTasks ?? tasks.length,
             viewMode: "list",
         };
     }
@@ -115,7 +141,9 @@ export class TaskStore {
             }
         }
 
-        this.#emit({ ...this.#state, rows });
+        // Count every started task — including `dependsOn` deps that have no
+        // row — so the spinner count spans the same graph as the counters.
+        this.#emit({ ...this.#state, rows, running: this.#state.running + started.length });
     }
 
     public endTasks(results: TaskResult[]): void {
@@ -187,7 +215,11 @@ export class TaskStore {
             }
         }
 
-        this.#emit({ ...this.#state, cached, completed, failed, outputs, retriedIds, rows, selectedIndex, succeeded });
+        // Clamp at zero: cache hits may report through endTasks without a
+        // matching startTasks, which would otherwise drive the counter negative.
+        const running = Math.max(0, this.#state.running - results.length);
+
+        this.#emit({ ...this.#state, cached, completed, failed, outputs, retriedIds, rows, running, selectedIndex, succeeded });
     }
 
     /** Maximum output stored per task (256 KB). Prevents OOM with long-running dev servers. */
@@ -389,6 +421,7 @@ export class TaskStore {
             rows: this.#state.rows.map((r) => {
                 return { persistent: r.persistent, status: "pending" as const, taskId: r.taskId };
             }),
+            running: 0,
             startTime: Date.now(),
             succeeded: 0,
             viewMode: "list",

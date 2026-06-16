@@ -2388,6 +2388,12 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         autoExit: autoExitConfig,
         projectNames: projectsWithTarget,
         tasks: [...initialTasks, ...persistentTasks],
+        // The table rows above only cover the directly-requested tasks. The
+        // executor also runs every `dependsOn` dependency in `taskGraph`, and
+        // those count toward the succeeded/failed/cached tallies. Pass the
+        // full graph size so the "N total" label shares that scope instead of
+        // under-reporting at the row count.
+        totalTaskCount: Object.keys(taskGraph.tasks).length + persistentTasks.length,
     };
 
     const retryBudgetLimit = typeof options.retryBudget === "number" ? options.retryBudget : undefined;
