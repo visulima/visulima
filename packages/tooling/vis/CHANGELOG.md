@@ -1,3 +1,9 @@
+## @visulima/vis [1.0.0-alpha.39](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.38...@visulima/vis@1.0.0-alpha.39) (2026-06-16)
+
+### Bug Fixes
+
+* **vis:** reconcile run status-line task counts ([8ebee32](https://github.com/visulima/visulima/commit/8ebee32912227176ff1f361f37b2ea856d780895))
+
 ## @visulima/vis [1.0.0-alpha.38](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.37...@visulima/vis@1.0.0-alpha.38) (2026-06-16)
 
 ### Features
