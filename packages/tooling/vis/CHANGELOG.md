@@ -1,3 +1,9 @@
+## @visulima/vis [1.0.0-alpha.38](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.37...@visulima/vis@1.0.0-alpha.38) (2026-06-16)
+
+### Features
+
+* **vis:** release manager subsystem ([#679](https://github.com/visulima/visulima/issues/679)) ([0a41889](https://github.com/visulima/visulima/commit/0a418897062a164ad7e8034eab77a7f70a3817e1)), closes [#620](https://github.com/visulima/visulima/issues/620)
+
 ## @visulima/vis [1.0.0-alpha.37](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.36...@visulima/vis@1.0.0-alpha.37) (2026-06-15)
 
 
