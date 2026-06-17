@@ -1,92 +1,17 @@
-import { createCerebro } from "@visulima/cerebro";
-import completionCommand from "@visulima/cerebro/command/completion";
-import versionCommand from "@visulima/cerebro/command/version";
+// Thin entry dispatcher. Keeps only the universal early setup that must run
+// before ANY command, then lazy-loads the right code path. Lightweight commands
+// (notably `vis x`) take a lean fast-path and never import the full CLI module
+// graph (cerebro + 60 commands + plugins) — the dominant ~180ms of cold-start.
 import enableCompileCache from "@visulima/cerebro/compile-cache";
 import { applyHeapTuning } from "@visulima/cerebro/heap-tuning";
-import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
-import { readJsonSync } from "@visulima/fs";
-import { findMonorepoRootSync } from "@visulima/package";
-import { join } from "@visulima/path";
 
-import pkg from "../package.json";
-import actionGraphCommand from "./commands/action-graph";
-import addCommand from "./commands/add";
-import advisoriesCommands from "./commands/advisories";
-import affectedCommand from "./commands/affected";
-import aiCommands from "./commands/ai";
-import analyzeCommand from "./commands/analyze";
-import approveBuildsCommand from "./commands/approve-builds";
-import attestCommands from "./commands/attest";
-import auditCommand from "./commands/audit";
-import cacheCommands from "./commands/cache";
-import checkCommand from "./commands/check";
-import ciCommand from "./commands/ci";
-import ciIgnoreCommand from "./commands/ci-ignore";
-import cleanCommand from "./commands/clean";
-import createCommand from "./commands/create";
-import dashboardCommand from "./commands/dashboard";
-import dedupeCommand from "./commands/dedupe";
-import depsCommand from "./commands/deps";
-import devcontainerCommand from "./commands/devcontainer";
-import dlxCommand from "./commands/dlx";
-import dockerCommands from "./commands/docker";
-import doctorCommand from "./commands/doctor";
-import execCommand from "./commands/exec";
-import fmtCommand from "./commands/fmt";
-import generateCommand from "./commands/generate";
-import graphCommand from "./commands/graph";
-import hookCommands from "./commands/hook";
-import ignoreCommand from "./commands/ignore";
-import implodeCommand from "./commands/implode";
-import importCommand from "./commands/import";
-import infoCommand from "./commands/info";
-import initCommand from "./commands/init";
-import inspectCommand from "./commands/inspect";
-import installCommand from "./commands/install";
-import linkCommand from "./commands/link";
-import lintCommand from "./commands/lint";
-import listCommand from "./commands/list";
-import migrateCommands from "./commands/migrate";
-import { isBareMigrateInvocation } from "./commands/migrate/detect-bare";
-import { runMigrateInteractive } from "./commands/migrate/interactive";
-import optimizeCommand from "./commands/optimize";
-// outdated is now an alias of check
-import pmCommand from "./commands/pm";
-import releaseCommands from "./commands/release";
-import removeCommand from "./commands/remove";
-import replayCommand from "./commands/replay";
-import runCommand from "./commands/run";
-import sbomCommand from "./commands/sbom";
-import secretsCommand from "./commands/secrets";
-import securityCommands from "./commands/security";
-import serviceCommands from "./commands/service";
-import sortPackageJsonCommand from "./commands/sort-package-json";
-import splitCommand from "./commands/split";
-import stagedCommand from "./commands/staged";
-import statusCommand from "./commands/status";
-import syncCommand from "./commands/sync";
-import taskWhyCommand from "./commands/task-why";
-import toolchainCommands from "./commands/toolchain";
-import unlinkCommand from "./commands/unlink";
-import updateCommand from "./commands/update";
-import upgradeCommand from "./commands/upgrade";
-import whyCommand from "./commands/why";
-import xCommand from "./commands/x";
-import { injectVersion, setTerminalTitle } from "./io/terminal";
-import configLoaderPlugin from "./plugins/config-loader";
-import postCommandPlugin from "./plugins/post-command";
-import securityEnforcementPlugin from "./plugins/security-enforcement";
-import { parseEarlyCaCert } from "./util/ca-cert";
-import { startUpgradeCheck } from "./util/upgrade-check";
+import { injectVersion } from "./io/terminal";
 
-// Apply heap memory tuning before any heavy work begins.
-// `applyHeapTuning()` re-execs Node with a bumped --max-old-space-size, which
-// costs a full extra process boot (~290ms measured — nearly half of vis's
-// cold-start). Skip it for commands that do no heavy in-process work
-// (version/help/completion and the pure child-dispatchers dlx/exec); they run
-// fine on Node's default heap. Heavy in-process commands (run, cache, audit,
-// sbom, graph, affected, …) keep the bump. Deny-list, so any unlisted or new
-// command defaults to tuned — safe by construction.
+// `applyHeapTuning()` re-execs Node with a bumped --max-old-space-size (~290ms,
+// a full extra process boot). Skip it for commands that do no heavy in-process
+// work (version/help/completion, the pure dispatchers dlx/exec, and the lean
+// file runner x); heavy commands (run, cache, audit, sbom, graph, …) keep the
+// bump. Deny-list, so any unlisted/new command defaults to tuned — safe.
 const HEAP_TUNING_SKIP = new Set(["", "--help", "--version", "-h", "-v", "completion", "dlx", "exec", "x"]);
 const firstArgument = process.argv[2] ?? "";
 
@@ -94,268 +19,33 @@ if (!HEAP_TUNING_SKIP.has(firstArgument) && !process.argv.includes("--help") && 
     applyHeapTuning();
 }
 
-// Honor --no-color before any colorized output is emitted. We can't wait
-// for cerebro's option parser because banner / error frames that fire
-// during plugin setup would already be colored by then.
+// Honor --no-color before any colorized output is emitted.
 if (process.argv.includes("--no-color")) {
     process.env["NO_COLOR"] = "1";
     process.env["FORCE_COLOR"] = "0";
 }
 
-// Honor --ca-cert before any TLS handshake fires. NODE_EXTRA_CA_CERTS is
-// read once on the first `tls.createSecureContext` call (lazy, not at
-// require time), so setting it here is enough for every subsequent
-// fetch in advisory sync / osv-bloom sync / socket.dev. A user-set
-// NODE_EXTRA_CA_CERTS takes precedence — explicit env wins over flag.
-const earlyCaCert = parseEarlyCaCert(process.argv);
-
-if (earlyCaCert !== undefined && !process.env["NODE_EXTRA_CA_CERTS"]) {
-    process.env["NODE_EXTRA_CA_CERTS"] = earlyCaCert;
-}
-
-// Inject VIS_VERSION for child processes before any commands run
+// Inject VIS_VERSION for child processes before any command runs.
 injectVersion();
 
-// Set terminal title to the project name from package.json.
-// Stash the resolved root on an env var so `config-loader.ts`
-// doesn't have to walk the directory tree a second time.
-try {
-    const rootDir = findMonorepoRootSync(process.cwd()).path;
-
-    process.env["VIS_MONOREPO_ROOT"] = rootDir;
-
-    const rootPkg = readJsonSync(join(rootDir, "package.json")) as { name?: string };
-
-    if (rootPkg.name) {
-        setTerminalTitle(rootPkg.name);
-    }
-} catch {
-    // No workspace root or package.json found — skip
-}
-
-// Start background upgrade check immediately (non-blocking)
-const upgradeCheckCallback = startUpgradeCheck(pkg.version, process.argv[2] ?? "");
-
-// Enable V8 compile cache for faster subsequent startups
+// Enable V8 compile cache for faster subsequent startups.
 enableCompileCache();
 
-const cli = createCerebro("vis", {
-    packageName: "vis",
-    packageVersion: pkg.version,
-});
+// Dispatch. `vis x` runs the target file in-process via a lean path that skips
+// constructing the full CLI; everything else loads the full CLI lazily. Wrapped
+// in an IIFE so there is no top-level await (Node 22 warns on unsettled TLA when
+// cerebro's plugin lifecycle keeps a microtask in flight as the loop empties).
+// eslint-disable-next-line unicorn/prefer-top-level-await, no-void -- the IIFE avoids Node's "unsettled top-level await" warning; void discards the promise
+void (async () => {
+    if (firstArgument === "x") {
+        const { runLeanX } = await import("./commands/x/lean");
 
-// Enhanced error handling
-const isDebug = process.argv.includes("--debug") || Boolean(process.env["DEBUG"]);
+        await runLeanX(process.argv.slice(3));
 
-cli.addPlugin(
-    errorHandlerPlugin({
-        detailed: isDebug,
-        exitOnError: false,
-    }),
-);
-
-// Global --cwd option available to all commands
-cli.addGlobalOption({
-    description: "Override workspace root directory",
-    name: "cwd",
-    type: String,
-});
-
-// Surfaced for `--help` and consumed by `resolveRuntime`. Phase 0 of the
-// cross-runtime multi-tool: detection is wired, verb routing follows in Phase 1.
-cli.addGlobalOption({
-    description: "Target JS runtime: node (default) or bun. Overrides VIS_RUNTIME and config; falls back to lockfile detection.",
-    name: "runtime",
-    type: String,
-});
-
-cli.addGlobalOption({
-    description: "Path to a vis config file (overrides discovery)",
-    name: "config",
-    type: String,
-});
-
-// Surfaced for `vis --help`; the actual env-var plumbing is applied
-// at the very top of bin.ts so it lands before any TLS handshake.
-cli.addGlobalOption({
-    description: "Path to a CA bundle (PEM) to trust for HTTPS — for corporate proxies. Equivalent to NODE_EXTRA_CA_CERTS.",
-    name: "ca-cert",
-    type: String,
-});
-
-// Plugins
-cli.addPlugin(configLoaderPlugin);
-cli.addPlugin(securityEnforcementPlugin);
-
-// Flat top-level commands must be registered before any nested commands that
-// share their leaf name (cerebro's addCommand throws DUPLICATE_COMMAND for a
-// flat command when a nested command with the same leaf name is already
-// registered). The nested-command blocks (hook/migrate/cache) therefore come
-// last, after every flat command.
-
-// Workspace commands
-cli.addCommand(runCommand);
-cli.addCommand(ciCommand);
-cli.addCommand(graphCommand);
-cli.addCommand(actionGraphCommand);
-cli.addCommand(affectedCommand);
-cli.addCommand(taskWhyCommand);
-cli.addCommand(replayCommand);
-cli.addCommand(ignoreCommand);
-cli.addCommand(updateCommand);
-cli.addCommand(checkCommand);
-cli.addCommand(depsCommand);
-cli.addCommand(analyzeCommand);
-cli.addCommand(sortPackageJsonCommand);
-cli.addCommand(stagedCommand);
-cli.addCommand(statusCommand);
-cli.addCommand(dashboardCommand);
-cli.addCommand(syncCommand);
-cli.addCommand(listCommand);
-cli.addCommand(completionCommand);
-cli.addCommand(versionCommand);
-
-// Lint & format commands
-cli.addCommand(lintCommand);
-cli.addCommand(fmtCommand);
-
-// Package management commands
-cli.addCommand(installCommand);
-cli.addCommand(addCommand);
-cli.addCommand(removeCommand);
-cli.addCommand(dedupeCommand);
-cli.addCommand(whyCommand);
-cli.addCommand(infoCommand);
-cli.addCommand(linkCommand);
-cli.addCommand(unlinkCommand);
-cli.addCommand(dlxCommand);
-cli.addCommand(execCommand);
-cli.addCommand(xCommand);
-cli.addCommand(pmCommand);
-
-// Project & environment commands
-cli.addCommand(initCommand);
-cli.addCommand(cleanCommand);
-cli.addCommand(createCommand);
-cli.addCommand(generateCommand);
-cli.addCommand(devcontainerCommand);
-cli.addCommand(upgradeCommand);
-cli.addCommand(implodeCommand);
-
-// Workspace lifecycle commands
-cli.addCommand(splitCommand);
-cli.addCommand(importCommand);
-
-// Security commands
-cli.addCommand(approveBuildsCommand);
-cli.addCommand(auditCommand);
-cli.addCommand(inspectCommand);
-cli.addCommand(doctorCommand);
-cli.addCommand(optimizeCommand);
-cli.addCommand(sbomCommand);
-cli.addCommand(secretsCommand);
-
-// Nested commands — registered last so leaf-name collisions with flat
-// top-level commands (list, install, add, run, clean) don't trip the
-// duplicate-name guard in cerebro's addCommand.
-for (const command of hookCommands) {
-    cli.addCommand(command);
-}
-
-for (const command of migrateCommands) {
-    cli.addCommand(command);
-}
-
-for (const command of cacheCommands) {
-    cli.addCommand(command);
-}
-
-for (const command of advisoriesCommands) {
-    cli.addCommand(command);
-}
-
-for (const command of aiCommands) {
-    cli.addCommand(command);
-}
-
-for (const command of serviceCommands) {
-    cli.addCommand(command);
-}
-
-for (const command of securityCommands) {
-    cli.addCommand(command);
-}
-
-for (const command of attestCommands) {
-    cli.addCommand(command);
-}
-
-for (const command of dockerCommands) {
-    cli.addCommand(command);
-}
-
-for (const command of toolchainCommands) {
-    cli.addCommand(command);
-}
-
-cli.addCommand(ciIgnoreCommand);
-
-for (const command of releaseCommands) {
-    cli.addCommand(command);
-}
-
-// Post-command: upgrade notice + tips
-cli.addPlugin(postCommandPlugin(upgradeCheckCallback));
-
-if (isBareMigrateInvocation(process.argv.slice(2))) {
-    const { loadVisConfig } = await import("./config/config");
-    const workspaceRoot = process.env["VIS_MONOREPO_ROOT"] || process.cwd();
-
-    let visConfig: Awaited<ReturnType<typeof loadVisConfig>> | undefined;
-
-    try {
-        visConfig = await loadVisConfig(workspaceRoot);
-    } catch {
-        visConfig = undefined;
+        return;
     }
 
-    try {
-        await runMigrateInteractive({
-            logger: {
-                info: (message: string) => {
-                    process.stdout.write(`${message}\n`);
-                },
-                warn: (message: string) => {
-                    process.stderr.write(`${message}\n`);
-                },
-            },
-            visConfig,
-            workspaceRoot,
-        });
-    } catch (error) {
-        process.stderr.write(`${(error as Error).message}\n`);
-        process.exitCode = 1;
-    }
-} else {
-    // Run inside an async IIFE so there's no top-level await — Node 22 logs
-    // "Detected unsettled top-level await" if cerebro's plugin lifecycle keeps
-    // a microtask in flight when the loop empties.
-    // eslint-disable-next-line unicorn/prefer-top-level-await, no-void -- void marks the IIFE promise as intentionally discarded
-    void (async () => {
-        try {
-            await cli.run({ shouldExitProcess: false });
-        } catch {
-            // errorHandlerPlugin already rendered the error
-            process.exitCode = process.exitCode || 1;
-        } finally {
-            // Force an explicit exit once the command settles. Interactive
-            // commands (the dynamic TUI run path in particular) can leave
-            // stray refs on stdin or Ink internals that prevent the event
-            // loop from draining naturally — chasing every one is fragile,
-            // so we exit deliberately with whatever exitCode the command
-            // (or errorHandlerPlugin) recorded.
-            // eslint-disable-next-line unicorn/no-process-exit -- explicit exit is the reliable termination path for TUI commands
-            process.exit(process.exitCode ?? 0);
-        }
-    })();
-}
+    const { runCli } = await import("./cli-main");
+
+    await runCli();
+})();
