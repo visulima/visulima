@@ -22,6 +22,7 @@ import { presentMarshallFindings } from "../../security/marshalls/decision-promp
 import { runMarshallPipeline } from "../../security/marshalls/pipeline";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
 import { resolveExplicitPackages } from "../../security/marshalls/resolve-explicit";
+import { syncMinimumReleaseAgeToNativeConfig } from "../../security/min-release-age";
 import { buildEnabledProviders } from "../../security/registry";
 import { scoreColor } from "../../security/socket-security";
 import { runTyposquatCheck, scanDepsForTyposquats } from "../../security/typosquats";
@@ -243,19 +244,24 @@ export const readPmNativeMinimumReleaseAge = (workspaceRoot: string, packageMana
                     const data = readYamlSync(yarnrcPath) as
                         | {
                             npmMinimalAgeGate?: number | string;
+                            npmPreapprovedPackages?: string[];
                         }
                         | undefined;
                     const raw = data?.npmMinimalAgeGate;
+                    // yarn's native exclude list — names/globs exempt from the
+                    // age gate. Read it so merges stay additive (a destructive
+                    // rewrite would drop pre-existing preapprovals).
+                    const excludes = Array.isArray(data?.npmPreapprovedPackages) ? data.npmPreapprovedPackages : undefined;
 
                     if (typeof raw === "string") {
-                        return { minutes: parseTimeStringToMinutes(raw) };
+                        return { excludes, minutes: parseTimeStringToMinutes(raw) };
                     }
 
                     if (typeof raw === "number") {
                         // Bare numeric value in .yarnrc.yml — yarn's docs use a
                         // string like "48h", but a teammate may have written a
                         // raw number. Treat it as minutes for symmetry with pnpm.
-                        return { minutes: raw };
+                        return { excludes, minutes: raw };
                     }
                 }
 
@@ -271,6 +277,97 @@ export const readPmNativeMinimumReleaseAge = (workspaceRoot: string, packageMana
     }
 
     return {};
+};
+
+/**
+ * Result of {@link addReleaseAgeExcludesForInstall}.
+ *
+ * - `added` — package names newly written to the PM's native exclude list.
+ * - `unsupported` — `true` only when a native gate is active but the package
+ *   manager has **no per-package exclude list** (npm). Lets the caller print a
+ *   targeted "npm can't do this" hint instead of silently doing nothing.
+ */
+interface ReleaseAgeExcludeResult {
+    added: string[];
+    unsupported: boolean;
+}
+
+/** Package managers whose native config exposes a per-package age-gate exclude list. */
+const PM_EXCLUDE_FIELD: Partial<Record<string, string>> = {
+    bun: "minimumReleaseAgeExcludes",
+    pnpm: "minimumReleaseAgeExclude",
+    yarn: "npmPreapprovedPackages",
+};
+
+/** Native config file each package manager stores its release-age gate in (for user-facing messages). */
+const RELEASE_AGE_CONFIG_FILE: Partial<Record<string, string>> = {
+    bun: "bunfig.toml minimumReleaseAgeExcludes",
+    npm: ".npmrc",
+    pnpm: "pnpm-workspace.yaml minimumReleaseAgeExclude",
+    yarn: ".yarnrc.yml npmPreapprovedPackages",
+};
+
+/**
+ * `--ignore-release-age` selects versions that may be younger than the package
+ * manager's own release-age gate, so the follow-up install would reject exactly
+ * the versions vis just chose. Add the just-updated package names to the PM's
+ * native exclude list — preserving the global gate for every other package — so
+ * the install proceeds.
+ *
+ * Per-PM exclude list (all written by {@link syncMinimumReleaseAgeToNativeConfig}):
+ *
+ * - **pnpm** → `pnpm-workspace.yaml` `minimumReleaseAgeExclude`
+ * - **bun** → `bunfig.toml [install]` `minimumReleaseAgeExcludes`
+ * - **yarn** (berry) → `.yarnrc.yml` `npmPreapprovedPackages`
+ * - **npm** → no per-package exclude list exists; returns `{ unsupported: true }`
+ *   when a gate is active so the caller can advise the user instead.
+ *
+ * No-op (returns `{ added: [], unsupported: false }`) when the PM has no native
+ * gate (value unset or `0`) or when every name is already excluded.
+ */
+export const addReleaseAgeExcludesForInstall = (packageManager: string, workspaceRoot: string, packageNames: string[]): ReleaseAgeExcludeResult => {
+    const native = readPmNativeMinimumReleaseAge(workspaceRoot, packageManager);
+
+    // No active gate → nothing would block the install; nothing to do.
+    if (typeof native.minutes !== "number" || native.minutes <= 0) {
+        return { added: [], unsupported: false };
+    }
+
+    if (!(packageManager in PM_EXCLUDE_FIELD)) {
+        // A gate is active but this PM (npm) has no per-package exclude list.
+        return { added: [], unsupported: true };
+    }
+
+    const existing = native.excludes ?? [];
+    const toAdd = [...new Set(packageNames)].filter((name) => !existing.includes(name));
+
+    if (toAdd.length === 0) {
+        return { added: [], unsupported: false };
+    }
+
+    syncMinimumReleaseAgeToNativeConfig(packageManager as "bun" | "pnpm" | "yarn", workspaceRoot, native.minutes, [...existing, ...toAdd]);
+
+    return { added: toAdd, unsupported: false };
+};
+
+/**
+ * Reports the outcome of {@link addReleaseAgeExcludesForInstall}: an info line
+ * naming the packages exempted, or a warning when the active gate belongs to a
+ * package manager (npm) without a per-package exclude list. No output when there
+ * was nothing to do.
+ */
+const reportReleaseAgeExcludes = (logger: Console, packageManager: string, result: ReleaseAgeExcludeResult): void => {
+    if (result.added.length > 0) {
+        logger.info(
+            `Added ${String(result.added.length)} package${result.added.length === 1 ? "" : "s"} to ${RELEASE_AGE_CONFIG_FILE[packageManager] ?? "the package manager config"} `
+            + `so --ignore-release-age versions install: ${result.added.join(", ")}`,
+        );
+    } else if (result.unsupported) {
+        logger.warn(
+            `${yellow("⚠")} npm has no per-package release-age exclude list, so vis can't exempt just the selected packages. `
+            + `Lower min-release-age in .npmrc or pass --min-release-age=0 to the install.`,
+        );
+    }
 };
 
 const buildCatalogCheckOptions = (
@@ -369,6 +466,23 @@ const applyCatalogAndInstall = async (
         }
     }
 
+    // --ignore-release-age picked versions that may be younger than the package
+    // manager's own release-age gate (pnpm/bun in catalog mode). Left as-is, the
+    // follow-up `${pm} install` would reject exactly the versions we just
+    // selected. Add the updated package names to the PM's native exclude list
+    // (preserving the global gate for everything else) so the install proceeds.
+    if (options["ignore-release-age"] === true && toApply.length > 0) {
+        reportReleaseAgeExcludes(
+            logger,
+            packageManager,
+            addReleaseAgeExcludesForInstall(
+                packageManager,
+                workspaceRoot,
+                toApply.map((entry) => entry.packageName),
+            ),
+        );
+    }
+
     if (options.install ?? true) {
         const installBin = packageManager;
         const installArgs = ["install"];
@@ -433,15 +547,21 @@ const executeCatalogUpdate = async (
     // Resolve minimumReleaseAge: vis config → PM-native config → undefined (disabled).
     // MARSHALL_DISABLE_MIN_RELEASE_AGE=1 (or MARSHALL_DISABLE_ALL=1) skips the gate
     // entirely — useful for emergency upgrades where the release-age window
-    // would otherwise block a fix.
-    const minReleaseAgeDisabled = isMarshallDisabled("minReleaseAge");
+    // would otherwise block a fix. `--ignore-release-age` is the CLI surface for
+    // the same bypass (and additionally rewrites the package manager's native
+    // exclude list at install time so the PM's own gate doesn't reject the
+    // freshly-selected versions).
+    const ignoreReleaseAge = options["ignore-release-age"] === true;
+    const minReleaseAgeDisabled = isMarshallDisabled("minReleaseAge") || ignoreReleaseAge;
     const { excludes: pmNativeExcludes, minutes: pmNativeAge } = minReleaseAgeDisabled
         ? { excludes: undefined, minutes: undefined }
         : readPmNativeMinimumReleaseAge(workspaceRoot, packageManager);
     const effectiveAge = minReleaseAgeDisabled ? undefined : (configDefaults.minimumReleaseAge ?? pmNativeAge);
     const effectiveExcludes = minReleaseAgeDisabled ? undefined : (configDefaults.minimumReleaseAgeExclude ?? pmNativeExcludes);
 
-    if (minReleaseAgeDisabled && (configDefaults.minimumReleaseAge !== undefined || pmNativeAge !== undefined)) {
+    if (ignoreReleaseAge) {
+        logger.info(`${yellow("⚠")} --ignore-release-age: selecting the latest versions regardless of minimumReleaseAge.`);
+    } else if (minReleaseAgeDisabled && (configDefaults.minimumReleaseAge !== undefined || pmNativeAge !== undefined)) {
         // Info-level: the env var is the user's explicit opt-out, so a warning on
         // every run would just be noise. A subtle reminder is enough.
         logger.info(`minimumReleaseAge gate disabled via MARSHALL_DISABLE_MIN_RELEASE_AGE.`);
@@ -859,6 +979,30 @@ const executePmWrapper = async (
     argument: string[],
     logger: Console,
 ): Promise<UpdatePathResult> => {
+    if (options["ignore-release-age"] === true) {
+        const native = readPmNativeMinimumReleaseAge(workspaceRoot, packageManager);
+        const gateActive = typeof native.minutes === "number" && native.minutes > 0;
+
+        if (gateActive && argument.length > 0) {
+            // Explicit package names → exempt exactly those from the gate so the
+            // PM's own update command isn't blocked (pnpm/bun/yarn). npm has no
+            // per-package list, so this reports `unsupported` instead. Strip any
+            // `@version` spec (e.g. `react@19`) — the exclude list keys on the
+            // bare package name, not the install spec.
+            const names = argument.map((a) => parsePackageArgument(a).name);
+
+            reportReleaseAgeExcludes(logger, packageManager, addReleaseAgeExcludesForInstall(packageManager, workspaceRoot, names));
+        } else if (gateActive) {
+            // No package names → vis can't know which packages the PM will change,
+            // so it can't surgically exempt them in pm-wrapper mode.
+            logger.warn(
+                `${yellow("⚠")} --ignore-release-age without package names can't pre-exempt packages in pm-wrapper mode `
+                + `(vis doesn't know which will change). Pass explicit package names, use catalog mode, or lower the gate in `
+                + `${RELEASE_AGE_CONFIG_FILE[packageManager] ?? "your package manager config"}.`,
+            );
+        }
+    }
+
     const updateOptions: UpdateCommandOptions = {
         dev: options.dev as boolean,
         filters: toFilterArray(options.filter as FilterOption),
