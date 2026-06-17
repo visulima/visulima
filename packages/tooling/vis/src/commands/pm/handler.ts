@@ -1,8 +1,9 @@
 import type { Toolbox } from "@visulima/cerebro";
 
 import { resolveInstaller, runPmSubcommand } from "../../pm/pm-runner";
+import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
 
-const execute = async ({ argument, logger, visConfig, workspaceRoot: wsRoot }: Toolbox): Promise<void> => {
+const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox): Promise<void> => {
     const args = argument;
 
     if (!args || args.length === 0) {
@@ -13,7 +14,12 @@ const execute = async ({ argument, logger, visConfig, workspaceRoot: wsRoot }: T
 
     const [subcommand, ...rest] = args;
     const cwd = wsRoot ?? process.cwd();
-    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
+    const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
+    const pm = resolveInstaller(cwd, {
+        backend: runtimeInstallerBackend(runtime),
+        configBackend: visConfig?.install?.backend,
+        configCorepack: visConfig?.install?.corepack,
+    });
 
     const code = runPmSubcommand(pm, subcommand as string, rest, cwd, logger);
 

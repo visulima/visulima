@@ -1,6 +1,7 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { resolveInstaller, runInfo } from "../../pm/pm-runner";
+import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
 import type { InfoOptions } from "./index";
 
 const execute = async ({ argument, logger, options, process: proc, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, InfoOptions>): Promise<void> => {
@@ -11,7 +12,12 @@ const execute = async ({ argument, logger, options, process: proc, visConfig, wo
     const [pkg, ...fields] = argument;
 
     const cwd = wsRoot ?? proc.cwd;
-    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
+    const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
+    const pm = resolveInstaller(cwd, {
+        backend: runtimeInstallerBackend(runtime),
+        configBackend: visConfig?.install?.backend,
+        configCorepack: visConfig?.install?.corepack,
+    });
 
     const code = runInfo(
         pm,

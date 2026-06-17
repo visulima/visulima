@@ -1,13 +1,19 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { resolveInstaller, runOutdated } from "../../pm/pm-runner";
+import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
 import { toStringArray } from "../../util/utils";
 import type { OutdatedOptions } from "./index";
 
 const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, OutdatedOptions>): Promise<void> => {
     const packages = argument || [];
     const cwd = wsRoot ?? process.cwd();
-    const pm = resolveInstaller(cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
+    const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
+    const pm = resolveInstaller(cwd, {
+        backend: runtimeInstallerBackend(runtime),
+        configBackend: visConfig?.install?.backend,
+        configCorepack: visConfig?.install?.corepack,
+    });
 
     const code = runOutdated(
         pm,
