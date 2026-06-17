@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 import { pathToFileURL } from "node:url";
 
 import type { RuntimeId } from "../../runtime/adapters/types";
+import { loadEnvFile } from "../../task/target-options";
 
 /**
  * Shared core for `vis x` — run a single file under a resolved runtime. Used by
@@ -31,6 +32,15 @@ const runUnderNode = async (file: string, scriptArguments: string[], cwd: string
     const { createJiti } = await import("jiti");
 
     const jiti = createJiti(cwd);
+
+    // Auto-load the .env cascade from cwd (matches nub's file-runner and Bun's
+    // own behaviour). Real environment variables win over .env values — the
+    // dotenv convention — so this never clobbers an explicitly-set var.
+    for (const [key, value] of Object.entries(loadEnvFile(cwd, true))) {
+        if (process.env[key] === undefined) {
+            process.env[key] = value;
+        }
+    }
 
     // The script must observe its own argv (argv[0]=node, argv[1]=file, then its
     // args), not vis's. Restored afterwards so a caught error still reports cleanly.
