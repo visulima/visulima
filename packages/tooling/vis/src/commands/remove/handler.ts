@@ -1,6 +1,7 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { resolveInstaller, runRemove } from "../../pm/pm-runner";
+import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
 import { toStringArray } from "../../util/utils";
 import type { RemoveOptions } from "./index";
 
@@ -12,7 +13,12 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     }
 
     const cwd = process.cwd();
-    const pm = resolveInstaller(wsRoot ?? cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
+    const runtime = resolveCommandRuntime({ logger, options, visConfig }, wsRoot ?? cwd);
+    const pm = resolveInstaller(wsRoot ?? cwd, {
+        backend: runtimeInstallerBackend(runtime),
+        configBackend: visConfig?.install?.backend,
+        configCorepack: visConfig?.install?.corepack,
+    });
 
     const code = runRemove(
         pm,

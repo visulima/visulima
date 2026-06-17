@@ -9,6 +9,7 @@ import { join } from "@visulima/path";
 import { discoverWorkspace } from "../../config/workspace";
 import { pail } from "../../io/logger";
 import { resolveInstaller, runAdd, runInstall } from "../../pm/pm-runner";
+import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
 import { presentMarshallFindings } from "../../security/marshalls/decision-prompt";
 import { runMarshallPipeline } from "../../security/marshalls/pipeline";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
@@ -518,7 +519,12 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
 
     // Default to current directory; workspace root used only for PM detection
     const cwd = process.cwd();
-    const pm = resolveInstaller(wsRoot ?? cwd, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
+    const runtime = resolveCommandRuntime({ logger, options, visConfig }, wsRoot ?? cwd);
+    const pm = resolveInstaller(wsRoot ?? cwd, {
+        backend: runtimeInstallerBackend(runtime),
+        configBackend: visConfig?.install?.backend,
+        configCorepack: visConfig?.install?.corepack,
+    });
 
     // Secure-by-default: lifecycle scripts are off unless the user opts in
     // with --run-scripts. Mirrors pnpm v10's universal block-then-allowlist
