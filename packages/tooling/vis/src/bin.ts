@@ -79,8 +79,19 @@ import { parseEarlyCaCert } from "./util/ca-cert";
 import { startUpgradeCheck } from "./util/upgrade-check";
 
 // Apply heap memory tuning before any heavy work begins.
-// May re-spawn the process with tuned V8 flags and never return.
-applyHeapTuning();
+// `applyHeapTuning()` re-execs Node with a bumped --max-old-space-size, which
+// costs a full extra process boot (~290ms measured — nearly half of vis's
+// cold-start). Skip it for commands that do no heavy in-process work
+// (version/help/completion and the pure child-dispatchers dlx/exec); they run
+// fine on Node's default heap. Heavy in-process commands (run, cache, audit,
+// sbom, graph, affected, …) keep the bump. Deny-list, so any unlisted or new
+// command defaults to tuned — safe by construction.
+const HEAP_TUNING_SKIP = new Set(["", "--help", "--version", "-h", "-v", "completion", "dlx", "exec"]);
+const firstArgument = process.argv[2] ?? "";
+
+if (!HEAP_TUNING_SKIP.has(firstArgument) && !process.argv.includes("--help") && !process.argv.includes("-h")) {
+    applyHeapTuning();
+}
 
 // Honor --no-color before any colorized output is emitted. We can't wait
 // for cerebro's option parser because banner / error frames that fire

@@ -1,6 +1,5 @@
 import { createCerebro } from "@visulima/cerebro";
 import enableCompileCache from "@visulima/cerebro/compile-cache";
-import { applyHeapTuning } from "@visulima/cerebro/heap-tuning";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 
 import pkg from "../package.json";
@@ -13,7 +12,9 @@ import dlxCommand from "./commands/dlx";
 // check, or the 40+ commands the main `vis` binary registers. Only the
 // dlx command and the error handler are wired in.
 
-applyHeapTuning();
+// No heap tuning here: `visx`/`vx` only resolves and spawns a package binary
+// (a child process). It does no heavy in-process work, so the ~290ms Node
+// re-exec that `applyHeapTuning()` costs would be pure overhead.
 
 if (process.argv.includes("--no-color")) {
     process.env["NO_COLOR"] = "1";
