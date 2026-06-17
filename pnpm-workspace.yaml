@@ -19,6 +19,7 @@ packages:
   - "!packages/tooling/vis/__fixtures__/sherif-lint/**"
   - "!packages/tooling/vis/__fixtures__/init/**"
   - "!packages/tooling/vis/__tests__/release/fixtures/**"
+  - "!packages/tooling/vis/__bench__/cli/fixtures/**"
 
 allowBuilds:
   '@firebase/util': false

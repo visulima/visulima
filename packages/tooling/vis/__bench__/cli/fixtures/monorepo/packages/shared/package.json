@@ -1,0 +1,8 @@
+{
+  "name": "@vis-bench/shared",
+  "version": "1.0.0",
+  "dependencies": {
+    "date-fns": "3.6.0",
+    "lodash": "4.17.21"
+  }
+}
