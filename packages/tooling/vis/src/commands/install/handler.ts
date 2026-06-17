@@ -5,6 +5,7 @@ import { dirname, join, parse as parsePath } from "@visulima/path";
 import { pail } from "../../io/logger";
 import type { InstallBackend } from "../../pm/pm-runner";
 import { detectLockfileDrift, detectPm, resolveInstaller, runInstallCaptured } from "../../pm/pm-runner";
+import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
 import { scanDepsForTyposquats } from "../../security/typosquats";
 import { hasPeerDependencyWarnings, PEER_HINT } from "../../util/peer-warnings";
 import { toStringArray } from "../../util/utils";
@@ -108,15 +109,21 @@ const execute = async (toolbox: Toolbox<Console, InstallOptions>): Promise<void>
     const flagBackend = flagBackendRaw as InstallBackend | undefined;
     const noAube = (options as Record<string, unknown>).aube === false;
 
+    // Runtime selection (--runtime / VIS_RUNTIME / config). A resolved `bun`
+    // runtime pins the bun backend, but an explicit `--installer` flag still
+    // wins (flagBackend ?? runtimeBackend). Surfaces the deferred-runtime notice.
+    const runtimeBackend = runtimeInstallerBackend(resolveCommandRuntime({ logger, options, visConfig }, cwd));
+
     // `--no-aube` is the user's explicit escape hatch: ignore CLI flag,
-    // env, and config; go straight to lockfile detection. Otherwise,
-    // run the full precedence chain (flag → env → config → auto).
+    // env, and config; go straight to lockfile detection (unless a runtime
+    // pins the backend). Otherwise, run the full precedence chain
+    // (flag → runtime → env → config → auto).
     let pm;
 
     try {
         pm = noAube
-            ? detectPm(cwd)
-            : resolveInstaller(cwd, { backend: flagBackend, configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
+            ? (runtimeBackend === undefined ? detectPm(cwd) : resolveInstaller(cwd, { backend: runtimeBackend }))
+            : resolveInstaller(cwd, { backend: flagBackend ?? runtimeBackend, configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
     } catch (error: unknown) {
         pail.error(error instanceof Error ? error.message : String(error));
         process.exitCode = 1;
