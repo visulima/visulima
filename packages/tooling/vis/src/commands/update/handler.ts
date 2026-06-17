@@ -18,6 +18,7 @@ import type { VisConfig } from "../../config/workspace";
 import type { UpdateCommandOptions } from "../../pm/package-manager";
 import { resolveUpdateCommand } from "../../pm/package-manager";
 import { resolveInstaller } from "../../pm/pm-runner";
+import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
 import { presentMarshallFindings } from "../../security/marshalls/decision-prompt";
 import { runMarshallPipeline } from "../../security/marshalls/pipeline";
 import { isMarshallDisabled } from "../../security/marshalls/registry";
@@ -1498,7 +1499,11 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
     } else {
         // Non-catalog updates honor `install.backend` so users who opted
         // into aube get `aube update` instead of the lockfile-detected PM.
-        const installer = resolveInstaller(workspaceRoot, { configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
+        const installer = resolveInstaller(workspaceRoot, {
+            backend: runtimeInstallerBackend(resolveCommandRuntime({ logger, options, visConfig }, workspaceRoot)),
+            configBackend: visConfig?.install?.backend,
+            configCorepack: visConfig?.install?.corepack,
+        });
         const installerVersion = installer.name === "aube" ? "" : getPackageManagerVersion(installer.name);
 
         catalogResult = await executePmWrapper(workspaceRoot, installer.name, installerVersion, options, argument, logger);
