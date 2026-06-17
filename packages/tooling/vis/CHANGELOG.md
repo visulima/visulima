@@ -1,3 +1,9 @@
+## @visulima/vis [1.0.0-alpha.40](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.39...@visulima/vis@1.0.0-alpha.40) (2026-06-17)
+
+### Features
+
+* **vis:** added --ignore-release-age ([1767805](https://github.com/visulima/visulima/commit/1767805cb2a46c135a33429edf764f6760737ffc))
+
 ## @visulima/vis [1.0.0-alpha.39](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.38...@visulima/vis@1.0.0-alpha.39) (2026-06-16)
 
 ### Bug Fixes
