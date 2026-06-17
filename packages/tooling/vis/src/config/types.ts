@@ -3,6 +3,7 @@ import type { ConstraintsConfig, NamedInputs, ProjectConfiguration, TargetConfig
 import type { SimilarDepFamily } from "../deps/similar-deps";
 import type { FmtAdapterId, LintAdapterId } from "../lint-fmt/config-types";
 import type { VisReleaseConfig } from "../release/types";
+import type { RuntimeId } from "../runtime/adapters/types";
 import type { ToolchainConfig as InternalToolchainConfig, VersionManagerName } from "../runtime/toolchain";
 import type { StagedConfig } from "../staged";
 import type { VisTargetConfiguration } from "../task/target-options";
@@ -1057,6 +1058,14 @@ export interface VisConfig {
          */
         services?: "auto" | "ephemeral" | "off" | "persistent";
     };
+
+    /**
+     * Target JS runtime for this workspace/project — `"node"` (default) or
+     * `"bun"`. Overridden by the `--runtime` flag and the `VIS_RUNTIME` env
+     * var; falls back to lockfile detection when unset. Part of the
+     * cross-runtime multi-tool (see `rfc/design-runtime-multitool.md`).
+     */
+    runtime?: RuntimeId;
 
     /**
      * Cascading scoped-task blocks. Each block may narrow its tasks to a

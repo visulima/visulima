@@ -149,6 +149,14 @@ cli.addGlobalOption({
     type: String,
 });
 
+// Surfaced for `--help` and consumed by `resolveRuntime`. Phase 0 of the
+// cross-runtime multi-tool: detection is wired, verb routing follows in Phase 1.
+cli.addGlobalOption({
+    description: "Target JS runtime: node (default) or bun. Overrides VIS_RUNTIME and config; falls back to lockfile detection.",
+    name: "runtime",
+    type: String,
+});
+
 cli.addGlobalOption({
     description: "Path to a vis config file (overrides discovery)",
     name: "config",
