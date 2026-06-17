@@ -33,6 +33,13 @@ const update: Command = {
             type: Boolean,
         },
         {
+            defaultValue: false,
+            description:
+                "Ignore the minimumReleaseAge gate and select the truly latest version even if freshly published. The selected packages are added to the package manager's native age-gate exclude list (pnpm minimumReleaseAgeExclude, bun minimumReleaseAgeExcludes, yarn npmPreapprovedPackages) so the follow-up install isn't blocked; npm has no per-package exclude. Combine with --latest to also cross the semver range.",
+            name: "ignore-release-age",
+            type: Boolean,
+        },
+        {
             alias: "t",
             conflicts: "latest",
             description: "Update target: latest, minor, or patch (default: latest, catalog mode)",
@@ -273,6 +280,7 @@ export type UpdateOptions = CreateOptions<{
     format: string | undefined;
     "gitlab-token": string | undefined;
     global: boolean | undefined;
+    "ignore-release-age": boolean | undefined;
     include: string[] | undefined;
     "include-branches": boolean | undefined;
     "include-internal": boolean | undefined;
