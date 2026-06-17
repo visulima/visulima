@@ -41,6 +41,7 @@ import { maybePromptViteClientOverride } from "../../preflight/vite-client-overr
 import { FailureLogLifeCycle } from "../../report/failure-log";
 import { analyzeFlakiness, formatFlakinessTable } from "../../report/flakiness";
 import { compareDuration, formatTimingSummary, loadRunSummaries } from "../../report/run-report";
+import { resolveCommandRuntime } from "../../runtime/command-runtime";
 import { runToolchainPreflight } from "../../runtime/toolchain";
 import { runReadiness } from "../../services/readiness";
 import { deleteEntry, readAllEntries } from "../../services/registry";
@@ -1225,6 +1226,15 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     }
 
     const workspaceRoot = wsRoot;
+
+    // Validate the selected runtime (--runtime / VIS_RUNTIME / config). `run`
+    // orchestrates tool binaries (tsc, vite, eslint, …) that are runtime-agnostic,
+    // so it deliberately does NOT change task execution based on the runtime — and
+    // must not inject it into the task env, which would rotate every task's cache
+    // hash. We only validate (an explicit `--runtime deno` errors) and surface the
+    // deferred-runtime notice, matching the PM verbs. Runtime-specific *execution*
+    // lives in `vis x` (file runner) and the PM verbs, not in task orchestration.
+    resolveCommandRuntime({ logger, options, visConfig }, workspaceRoot);
 
     // Vis used to write its run state under `.task-runner/` and the cache
     // under `.task-runner-cache/`. After the cutover to `.vis/` those paths
