@@ -71,6 +71,7 @@ import unlinkCommand from "./commands/unlink";
 import updateCommand from "./commands/update";
 import upgradeCommand from "./commands/upgrade";
 import whyCommand from "./commands/why";
+import xCommand from "./commands/x";
 import { injectVersion, setTerminalTitle } from "./io/terminal";
 import configLoaderPlugin from "./plugins/config-loader";
 import postCommandPlugin from "./plugins/post-command";
@@ -86,7 +87,7 @@ import { startUpgradeCheck } from "./util/upgrade-check";
 // fine on Node's default heap. Heavy in-process commands (run, cache, audit,
 // sbom, graph, affected, …) keep the bump. Deny-list, so any unlisted or new
 // command defaults to tuned — safe by construction.
-const HEAP_TUNING_SKIP = new Set(["", "--help", "--version", "-h", "-v", "completion", "dlx", "exec"]);
+const HEAP_TUNING_SKIP = new Set(["", "--help", "--version", "-h", "-v", "completion", "dlx", "exec", "x"]);
 const firstArgument = process.argv[2] ?? "";
 
 if (!HEAP_TUNING_SKIP.has(firstArgument) && !process.argv.includes("--help") && !process.argv.includes("-h")) {
@@ -229,6 +230,7 @@ cli.addCommand(linkCommand);
 cli.addCommand(unlinkCommand);
 cli.addCommand(dlxCommand);
 cli.addCommand(execCommand);
+cli.addCommand(xCommand);
 cli.addCommand(pmCommand);
 
 // Project & environment commands
