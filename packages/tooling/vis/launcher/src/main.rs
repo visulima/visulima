@@ -19,6 +19,7 @@ mod pm;
 mod shim;
 
 use std::env;
+use std::fs;
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 
@@ -187,6 +188,41 @@ fn run_shim(invoked: shim::ShimName, args: &[String]) -> ! {
     }
 }
 
+/// Path for `--localstorage-file` (persistent localStorage). Honors
+/// `VIS_LOCALSTORAGE_FILE`, else `<cwd>/.vis/localstorage`.
+fn localstorage_file(cwd: &Path) -> String {
+    env::var("VIS_LOCALSTORAGE_FILE").unwrap_or_else(|_| cwd.join(".vis").join("localstorage").to_string_lossy().into_owned())
+}
+
+/// Version-gated unflag flags for the current `VIS_UNFLAG` (empty when unset).
+/// Ensures the localStorage backing file's parent dir exists when that flag is
+/// emitted — Node errors on `--localstorage-file` in a missing directory.
+fn unflag_flags(version: NodeVersion, cwd: &Path) -> Vec<String> {
+    let Ok(spec) = env::var("VIS_UNFLAG") else {
+        return Vec::new();
+    };
+
+    let localstorage = localstorage_file(cwd);
+    let computed = flags::unflag_args(&spec, version, &localstorage);
+
+    if computed.iter().any(|flag| flag.starts_with("--localstorage-file")) {
+        if let Some(parent) = Path::new(&localstorage).parent() {
+            let _ = fs::create_dir_all(parent);
+        }
+    }
+
+    computed
+}
+
+/// Append a token to a space-separated `NODE_OPTIONS` string.
+fn push_node_option(options: &mut String, token: &str) {
+    if !options.is_empty() {
+        options.push(' ');
+    }
+
+    options.push_str(token);
+}
+
 /// Native fast path for `exec`/`dlx` (and `visx` = dlx): detect the PM and spawn
 /// it directly, no Node CLI. `tokens` is everything after the verb. Returns
 /// without running (falls through to the JS CLI) when the invocation is flag-led
@@ -310,24 +346,38 @@ fn main() {
                 }
                 Some(XRuntime::Node) => {
                     let node_bin = node_bin();
-                    let version = node_version::detect(&node_bin);
 
-                    if version.map(NodeVersion::has_register_hooks).unwrap_or(false) {
-                        // node [unflags] --import <preload> <file> [args]: the preload
-                        // registers the oxc loader + autoloads .env, then Node runs
-                        // <file> as its own entry (process.argv = [node, file, …]).
+                    if let Some(version) = node_version::detect(&node_bin).filter(|v| v.has_register_hooks()) {
+                        // The preload registers the oxc loader + autoloads .env, then
+                        // Node runs <file> as its own entry (argv = [node, file, …]).
                         let preload = dist_dir().join("runtime").join("preload.js");
+                        let unflags = unflag_flags(version, &cwd);
                         let mut node = Command::new(node_bin);
 
-                        // Opt-in unflag layer: version-gated experimental flags for
-                        // the user script (no-op unless VIS_UNFLAG is set).
-                        if let (Ok(spec), Some(v)) = (env::var("VIS_UNFLAG"), version) {
-                            node.args(flags::unflag_args(&spec, v));
+                        if env::var_os("VIS_AUGMENT_SUBPROCESS").is_some() {
+                            // Subprocess augmentation (opt-in): carry the loader +
+                            // unflag flags via NODE_OPTIONS so every nested `node`
+                            // the script spawns is augmented too — not just the
+                            // entry. NODE_OPTIONS applies to the entry as well, so we
+                            // do NOT also pass CLI --import (that would double-apply).
+                            let mut options = env::var("NODE_OPTIONS").unwrap_or_default();
+
+                            push_node_option(&mut options, &format!("--import \"{}\"", preload.display()));
+
+                            for flag in &unflags {
+                                push_node_option(&mut options, flag);
+                            }
+
+                            node.env("NODE_OPTIONS", options);
+                            node.args(&rest);
+                        } else {
+                            // Default: augment the entry only, via CLI args.
+                            node.args(&unflags);
+                            node.arg("--import");
+                            node.arg(&preload);
+                            node.args(&rest);
                         }
 
-                        node.arg("--import");
-                        node.arg(&preload);
-                        node.args(&rest);
                         run(node, "node");
                     }
                     // Node < 22.15 (or version unknown): fall through to the JS CLI,
