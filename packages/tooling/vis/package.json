@@ -272,7 +272,15 @@
         "@visulima/vis-binding-linux-x64-gnu": "workspace:*",
         "@visulima/vis-binding-linux-x64-musl": "workspace:*",
         "@visulima/vis-binding-win32-arm64-msvc": "workspace:*",
-        "@visulima/vis-binding-win32-x64-msvc": "workspace:*"
+        "@visulima/vis-binding-win32-x64-msvc": "workspace:*",
+        "@visulima/vis-launcher-darwin-arm64": "workspace:*",
+        "@visulima/vis-launcher-darwin-x64": "workspace:*",
+        "@visulima/vis-launcher-linux-arm64-gnu": "workspace:*",
+        "@visulima/vis-launcher-linux-arm64-musl": "workspace:*",
+        "@visulima/vis-launcher-linux-x64-gnu": "workspace:*",
+        "@visulima/vis-launcher-linux-x64-musl": "workspace:*",
+        "@visulima/vis-launcher-win32-arm64-msvc": "workspace:*",
+        "@visulima/vis-launcher-win32-x64-msvc": "workspace:*"
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"

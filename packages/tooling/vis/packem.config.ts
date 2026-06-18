@@ -89,6 +89,16 @@ export default defineConfig({
                     "@visulima/vis-binding-linux-x64-musl",
                     "@visulima/vis-binding-win32-arm64-msvc",
                     "@visulima/vis-binding-win32-x64-msvc",
+                    // Launcher platform packages — optional native binary, resolved at
+                    // runtime by the bin-shim / `vis shim`, never imported in JS.
+                    "@visulima/vis-launcher-darwin-arm64",
+                    "@visulima/vis-launcher-darwin-x64",
+                    "@visulima/vis-launcher-linux-arm64-gnu",
+                    "@visulima/vis-launcher-linux-arm64-musl",
+                    "@visulima/vis-launcher-linux-x64-gnu",
+                    "@visulima/vis-launcher-linux-x64-musl",
+                    "@visulima/vis-launcher-win32-arm64-msvc",
+                    "@visulima/vis-launcher-win32-x64-msvc",
                 ],
             },
             hoisted: {

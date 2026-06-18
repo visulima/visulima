@@ -226,7 +226,7 @@ jobs:
                   GIT_AUTHOR_EMAIL: "github-actions[bot]@users.noreply.github.com"
                   GIT_COMMITTER_NAME: "github-actions-shell"
                   GIT_COMMITTER_EMAIL: "github-actions[bot]@users.noreply.github.com"
-              run: "pnpm exec multi-semantic-release --ignore-packages='packages/tooling/task-runner/npm/**,packages/terminal/tui/npm/**,packages/tooling/vis/npm/**,packages/tooling/secret-scanner/npm/**'"
+              run: "pnpm exec multi-semantic-release --ignore-packages='packages/tooling/task-runner/npm/**,packages/terminal/tui/npm/**,packages/tooling/vis/npm/**,packages/tooling/vis/launcher/npm/**,packages/tooling/secret-scanner/npm/**'"
 
             # multi-semantic-release pushes per-package `chore(release)` commits that
             # bump each package.json (and any cross-package dependency ranges), but
