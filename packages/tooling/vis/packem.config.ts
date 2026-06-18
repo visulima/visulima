@@ -7,8 +7,18 @@ import transformer from "@visulima/packem/transformer/esbuild";
 // eslint-disable-next-line import/no-unused-modules
 export default defineConfig({
     runtime: "node",
-    externals: [/^@visulima\/vis(\/|$)/],
+    // `react-devtools-core` (+ its `ws` peer) is the reconciler's devtools backend,
+    // lazily required only when DevTools attach — which never happens in a CLI. Keep
+    // it external so it isn't bundled (~284 KB), still resolvable from node_modules
+    // if the lazy require ever fires.
+    externals: [/^@visulima\/vis(\/|$)/, "react-devtools-core", "ws"],
     rollup: {
+        // NOTE: forcing the React/ink/yoga renderer out of cli-main.js (it's hoisted
+        // there as the common chunk of the TUI handler chunks, so non-UI commands
+        // carry it) would need rollup `output.manualChunks` — which packem does not
+        // surface to user config. Left as a known size item; revisit if packem adds
+        // chunk control. The runtime cost is already avoided on the lean paths
+        // (vis x/exec/dlx/--version never load cli-main.js).
         resolveExternals: {
             // Force-bundle the entire React renderer stack into vis so that vis's own
             // components, @visulima/tui (which declares react/react-reconciler as peers),
