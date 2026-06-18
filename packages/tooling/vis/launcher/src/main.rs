@@ -189,10 +189,29 @@ fn run_shim(invoked: shim::ShimName, args: &[String]) -> ! {
     }
 }
 
+/// The project root for `cwd`: the nearest ancestor with a `package.json` (or a
+/// Yarn PnP `.pnp.cjs`), else `cwd`. Anchors per-project state so it's stable
+/// regardless of which subdirectory a command runs from.
+fn project_root(cwd: &Path) -> PathBuf {
+    let mut dir = cwd;
+
+    loop {
+        if dir.join("package.json").is_file() || dir.join(".pnp.cjs").is_file() {
+            return dir.to_path_buf();
+        }
+
+        match dir.parent() {
+            Some(parent) if parent != dir => dir = parent,
+            _ => return cwd.to_path_buf(),
+        }
+    }
+}
+
 /// Path for `--localstorage-file` (persistent localStorage). Honors
-/// `VIS_LOCALSTORAGE_FILE`, else `<cwd>/.vis/localstorage`.
+/// `VIS_LOCALSTORAGE_FILE`, else `<project-root>/.vis/localstorage` — anchored to
+/// the project root (not cwd) so `localStorage` is the same store from any subdir.
 fn localstorage_file(cwd: &Path) -> String {
-    env::var("VIS_LOCALSTORAGE_FILE").unwrap_or_else(|_| cwd.join(".vis").join("localstorage").to_string_lossy().into_owned())
+    env::var("VIS_LOCALSTORAGE_FILE").unwrap_or_else(|_| project_root(cwd).join(".vis").join("localstorage").to_string_lossy().into_owned())
 }
 
 /// Version-gated unflag flags for the current `VIS_UNFLAG` (empty when unset).

@@ -4,11 +4,11 @@
 // opt-in and project-local by design: it never edits global shell profiles and
 // never shims `node` (node routing is ephemeral + run-scoped, a separate concern).
 //
-// NOTE: symlinkSync is used from node:fs directly — `toolbox.fs` (CerebroFs)
-// exposes only a small async subset and has no symlink op. Everything else goes
-// through the toolbox per the repo convention.
-// eslint-disable-next-line no-restricted-imports -- CerebroFs has no symlink op; symlinkSync is required and there is no toolbox equivalent (documented in the header note)
-import { symlinkSync } from "node:fs";
+// NOTE: link/copy/symlink ops come from node:fs directly — `toolbox.fs`
+// (CerebroFs) exposes only a small async subset and has no link op. Everything
+// else goes through the toolbox per the repo convention.
+// eslint-disable-next-line no-restricted-imports -- CerebroFs has no symlink/hardlink op; these are required and have no toolbox equivalent (documented in the header note)
+import { copyFileSync, existsSync, linkSync, symlinkSync } from "node:fs";
 import { createRequire } from "node:module";
 
 import type { Toolbox } from "@visulima/cerebro";
@@ -17,6 +17,31 @@ import { join } from "@visulima/path";
 // The PM binaries the shim dir intercepts — MUST match launcher/src/shim.rs's
 // `ShimName`. `node` and `vis` are deliberately NOT shimmed.
 const SHIM_NAMES = ["npm", "npx", "pnpm", "pnpx", "yarn", "yarnpkg"] as const;
+
+const isWindows = process.platform === "win32";
+
+/**
+ * Create one shim that, when invoked, runs the launcher with argv0 = the shim name
+ * (that's what the agreement check keys on). On Unix that's a symlink; on Windows,
+ * where unprivileged symlinks fail and a `.cmd` wrapper wouldn't preserve argv0, we
+ * hardlink the launcher to `&lt;name>.exe` (falling back to a copy across volumes) so
+ * the invoked filename IS the PM name.
+ */
+const createShim = (launcher: string, shimDirectory: string, name: string): string => {
+    const linkPath = join(shimDirectory, isWindows ? `${name}.exe` : name);
+
+    if (isWindows) {
+        try {
+            linkSync(launcher, linkPath);
+        } catch {
+            copyFileSync(launcher, linkPath);
+        }
+    } else {
+        symlinkSync(launcher, linkPath);
+    }
+
+    return linkPath;
+};
 
 /** The platform package suffix for `@visulima/vis-launcher-&lt;target>`. */
 const platformTarget = (platform: string, arch: string): string | undefined => {
@@ -87,11 +112,11 @@ export const shimInstallExecute = async (toolbox: Toolbox): Promise<void> => {
     await toolbox.fs.mkdir(shimDirectory, { recursive: true });
 
     for (const name of SHIM_NAMES) {
-        const linkPath = join(shimDirectory, name);
-
-        // Replace any existing entry so re-running install repoints stale links.
-        await toolbox.fs.rm(linkPath, { force: true });
-        symlinkSync(launcher, linkPath);
+        // Replace any existing entry (both extensions) so re-running install
+        // repoints stale links.
+        await toolbox.fs.rm(join(shimDirectory, name), { force: true });
+        await toolbox.fs.rm(join(shimDirectory, `${name}.exe`), { force: true });
+        createShim(launcher, shimDirectory, name);
     }
 
     toolbox.console.log(`Installed ${String(SHIM_NAMES.length)} PM shims in ${shimDirectory}`);
@@ -124,8 +149,17 @@ export const shimStatusExecute = async (toolbox: Toolbox): Promise<void> => {
         return;
     }
 
-    const onPath = (toolbox.process.env["PATH"] ?? "").split(":").includes(shimDirectory);
+    // existsSync follows symlinks, so a dangling link (launcher moved/removed) is
+    // reported false — surface it rather than claim the guard is healthy.
+    const dangling = SHIM_NAMES.filter((name) => !existsSync(join(shimDirectory, isWindows ? `${name}.exe` : name)));
+
+    const onPath = (toolbox.process.env["PATH"] ?? "").split(/[:;]/).includes(shimDirectory);
 
     toolbox.console.log(`PM shims: installed in ${shimDirectory}`);
+
+    if (dangling.length > 0) {
+        toolbox.console.log(`WARNING: ${dangling.length} shim(s) point at a missing launcher (${dangling.join(", ")}). Re-run \`vis shim install\`.`);
+    }
+
     toolbox.console.log(onPath ? "PATH: active (shim dir is on PATH)." : "PATH: NOT on PATH — the guard is inactive until you add it.");
 };
