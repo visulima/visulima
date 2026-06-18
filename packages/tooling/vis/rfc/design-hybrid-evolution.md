@@ -97,24 +97,51 @@ untouched. Scope is strictly `vis x` user code; vis's own runtime is never polyf
 - Risk: low–medium. Polyfills can subtly differ from native; hence feature-detect +
   opt-in (`--polyfill` / config), never silent for all scripts.
 
-### (c) PATH shim that hijacks `node` — POWERFUL, INVASIVE, needs a decision
+### (c) Shim layer — two mechanisms, NOT a global `node` hijack
 
-Install a `node` shim early on `PATH` (`~/.vis/shims/node`) so **every** `node`
-invocation on the machine routes through vis, applying the unflag/polyfill/version
-layers everywhere — not just under `vis`. This is the most powerful augmentation
-(it makes vis the runtime's front-door globally) and the most dangerous:
+An earlier framing of this was "a PATH shim that hijacks every `node` on the
+machine." Studying how `nubjs/nub` actually does it (the only shipped prior art)
+corrected that: nub does **not** persistently hijack `node`. It splits the problem
+into two mechanisms with very different scopes, and vis should follow the same split.
 
-- It intercepts unrelated tools' `node` calls (editors, other CLIs, CI). A bug or a
-  wrong flag there breaks software that has nothing to do with vis.
-- It's a global, persistent mutation of the user's environment.
-- Security/trust: a shim on PATH that wraps the runtime is exactly the shape of
-  things security tooling flags.
+**(c.1) Persistent PM shims — opt-in, the `vis shim install` model.** nub's
+persistent shims cover only the **package-manager binaries** (`npm npx pnpm pnpx
+yarn yarnpkg`) — **never `node`**. The design, worth reusing:
 
-**Recommendation:** if built at all, make it **explicit and opt-in only**
-(`vis shim install` / `vis shim uninstall`), never automatic, project-local
-(`.vis/shims` prepended only inside a vis project) before considering global, with a
-loud status line and a trivial uninstall. This is a genuine product decision, not an
-implementation detail — see the decisions below.
+- A shim dir (`~/.nub/shims`, hardlinks to the one binary) activated by a
+  shell-profile PATH block; install/remove are explicit verbs. Shims live on the
+  _install_ surface, never the cache (clearing a cache must not break PATH).
+- **argv0 dispatch**: invoked as `pnpm`, the binary reads its own argv0 and applies
+  a **strict agreement check** — refuse if the invoked PM ≠ the repo's pinned PM —
+  with two escape hatches that keep it usable: **transparent verbs**
+  (`init create dlx exec` always pass) and a **nesting check** via
+  `npm_config_user_agent`/`npm_execpath` (typed-at-a-shell = hard refuse; invoked by
+  a running PM's lifecycle script = silent fall-through). The nesting signal is an
+  `npm_*` var the ecosystem owns — brand-safe, not a private sentinel.
+- **Recursion guard**: the PATH fall-through that finds the real PM skips the shim
+  dir, so the shim never re-invokes itself.
+
+**(c.2) Ephemeral per-run `node` routing — NOT persistent, NOT global.** nub routes
+`node` through itself only for the duration of a `nub run`/exec, via a temp dir
+`nub-node-shim-<pid>` (a `node` symlink → the binary) prepended to the _child
+subtree's_ PATH and torn down on exit (with a reaper for killed runs; published
+atomically for concurrent workspace spawns; `which_node` skips the shim dir to avoid
+recursing). This is what actually delivers the augmentation layer to scripts a run
+launches — scoped to that process tree, never touching unrelated `node` calls.
+
+**Recommendation for vis (matches the chosen "project-local, opt-in"):**
+
+- Persistent shims → **PM binaries only**, opt-in via `vis shim install` /
+  `vis shim uninstall`, activated by a project-local `.vis/shims` PATH entry (never
+  automatic, never global). Reuse nub's argv0 + strict-agreement + transparent-verbs
+    - `npm_config_user_agent` nesting + shim-dir-skip recursion guard.
+- `node` routing → **ephemeral, scoped to `vis run`/`vis x`** (a per-pid temp dir on
+  the child's PATH), the safe way to feed scripts the unflag/polyfill layers. **No
+  persistent or global `node` shim.**
+
+This is strictly safer than the original "global node hijack" framing and is the
+shape a security review will accept: durable interception is PM-only and opt-in;
+runtime interception is disposable and run-scoped.
 
 ## Part 3 — Sequencing
 
