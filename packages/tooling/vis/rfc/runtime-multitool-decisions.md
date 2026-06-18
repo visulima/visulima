@@ -130,6 +130,19 @@ so feature-detected polyfills (`Temporal`, `URLPattern`, opt-in via `VIS_POLYFIL
 the user's project) work with or without the launcher. `vis x` is NOT routed through the launcher
 for speed — it's routed so the augmentation layer has one consistent entry.
 
+## Runtime quality improvements (2026-06-18) — source maps in, transpile cache out
+
+- **Source maps: DONE.** `transform_ts` (oxc codegen) now emits an inline base64 source
+  map; `ts-loader` flips `process.setSourceMapsEnabled(true)` once. `vis x`/config stack
+  traces now cite the original `.ts` position (verified: `file.ts:1:38`, not transpiled).
+- **V8 compile cache on the `x` preload: DONE.** The launcher `--import preload` path
+  bypasses `bin.ts` (which enables it for the JS CLI), so `preload.ts` enables it directly.
+- **Transpile disk cache: REJECTED (measured).** Built a content-hashed `~/.vis/cache/transpile`
+  layer, then measured it: `vis x big.ts` (1200 lines) was 132.9 ms cold vs 131.0 ms warm —
+  noise. oxc is fast enough that caching its output saves nothing at the Node-boot-bound `vis x`
+  level, and a content-keyed cache adds a real stale-output footgun (transform changes without a
+  version bump → wrong code). Reverted; kept the loader simple. Same honesty bar as x-preload.
+
 ## Thermos review (2026-06-18) — fixes + accepted findings
 
 A two-pass adversarial review (branch-risk + code-quality) ran against `alpha..HEAD`. Fixed:
