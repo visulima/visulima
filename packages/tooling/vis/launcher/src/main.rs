@@ -11,6 +11,7 @@
 //! Resolution (PoC): Node = `$VIS_NODE` or `node`; dist = `$VIS_DIST_DIR` or a
 //! dev fallback next to the binary. The published bin-shim sets `$VIS_DIST_DIR`.
 
+mod flags;
 mod heap;
 mod node_version;
 mod pm;
@@ -18,6 +19,8 @@ mod pm;
 use std::env;
 use std::path::PathBuf;
 use std::process::{exit, Command};
+
+use node_version::NodeVersion;
 
 fn dist_dir() -> PathBuf {
     if let Ok(dir) = env::var("VIS_DIST_DIR") {
@@ -159,14 +162,20 @@ fn main() {
                 }
                 Some(XRuntime::Node) => {
                     let node_bin = node_bin();
-                    let supports_hooks = node_version::detect(&node_bin).map(|v| v.has_register_hooks()).unwrap_or(false);
+                    let version = node_version::detect(&node_bin);
 
-                    if supports_hooks {
-                        // node --import <preload> <file> [args]: the preload
+                    if version.map(NodeVersion::has_register_hooks).unwrap_or(false) {
+                        // node [unflags] --import <preload> <file> [args]: the preload
                         // registers the oxc loader + autoloads .env, then Node runs
                         // <file> as its own entry (process.argv = [node, file, …]).
                         let preload = dist_dir().join("runtime").join("preload.js");
                         let mut node = Command::new(node_bin);
+
+                        // Opt-in unflag layer: version-gated experimental flags for
+                        // the user script (no-op unless VIS_UNFLAG is set).
+                        if let (Ok(spec), Some(v)) = (env::var("VIS_UNFLAG"), version) {
+                            node.args(flags::unflag_args(&spec, v));
+                        }
 
                         node.arg("--import");
                         node.arg(&preload);

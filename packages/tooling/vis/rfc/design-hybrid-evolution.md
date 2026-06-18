@@ -120,16 +120,21 @@ implementation detail — see the decisions below.
 
 Independent of the big decisions, these are safe to proceed on:
 
-1. ✅ Native `exec`/`dlx`, native heap flags (done).
-2. `x`-preload path (launcher RFC item 4) — unblocks the polyfill layer too.
-3. Unflag layer (2a) — generalize the existing flag-injection with a version matrix.
-4. Packaging + bin flip (launcher RFC items 6–7) — **the gate to any of this reaching users.**
+1. ✅ Native `exec`/`dlx`, native heap flags.
+2. ✅ `x`-preload path (`preload.ts` + launcher gate on Node >= 22.15). At the Node-boot floor
+   (≈ the lean JS path, not faster) — built as the polyfill/unflag entry point, not for speed.
+3. ✅ Unflag layer (2a) — `flags.rs`, opt-in `VIS_UNFLAG`, version-gated (`sourcemaps`/`sqlite`/
+   `webstorage`), injected on the `x` Node spawn. Default `vis x` unchanged.
+4. ✅ Polyfill layer (2b) — `polyfills.ts`, opt-in `VIS_POLYFILL`, feature-detected, resolved from
+   the user's project; wired into BOTH the preload and the in-process `vis x` path.
+5. Packaging + bin flip (launcher RFC items 6–7) — **the gate to any of this reaching users.**
 
-Gated on a decision:
+Decisions taken (2026-06-18):
 
-5. Polyfill layer (2b) — opt-in, rides on (2).
-6. PATH shim (2c) — only if/when the user opts into the product direction.
-7. `run`/install nativization — only if measurement justifies it (it currently doesn't).
+6. PATH shim (2c) — **explicit opt-in, project-local** (`vis shim install`/`uninstall`, `.vis/shims`
+   inside a vis project; never automatic/global). To build.
+7. `run`/install — **Rust resolve + JS security gate**: launcher resolves fast, shells back to the JS
+   security stack for the gate; no Rust reimplementation of vis's security product. To build.
 
 ## Open decisions (need the user)
 
