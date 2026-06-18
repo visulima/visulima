@@ -120,3 +120,52 @@ What moved each number:
 
 `vis x` is competitive with tsx; `vis run`/`vis exec` remain above their pnpm/npm peers because of
 Node's boot floor + cerebro framework init (only a Rust launcher would close that — out of scope).
+
+---
+
+## Rust launcher + native tier — measured (2026-06-18, Apple M-series, Node 24.15, warm)
+
+nub couldn't be built here for a direct head-to-head (its vendored `aube` git submodule isn't
+fetchable in this sandbox), so the comparison is structural: each vis path is categorised as
+**native (Rust-only — the nub-class tier)** or **Node-boot-bound**, with the Node-boot floor measured
+as the reference that sets the gap.
+
+**Node boot floor (this sandbox): `node -e ""` = ~117–131 ms** (≈100 ms is process-spawn latency,
+~25 ms CPU). On a fast machine this floor is ~26 ms — that difference is the _machine_, not the tool.
+
+### Native tier — Rust-only, no Node spawn (this IS nub-class)
+
+| command                        | launcher (Rust) | old JS path | speedup |
+| ------------------------------ | --------------- | ----------- | ------- |
+| `vis --version`                | **2.3 ms**      | 246 ms      | ~108×   |
+| `vis exec`/`dlx` dispatch \*   | **5.2 ms**      | 168 ms      | ~33×    |
+| PM-shim agreement → real PM \* | **5.5 ms**      | n/a         | —       |
+| PM-shim refuse (mismatch)      | **~2 ms**       | n/a         | —       |
+
+\* dispatch isolated with an instant fake `pnpm` (the PM's own work is identical on both sides).
+
+### Node-bound tier — must spawn Node (bound by the boot floor; nub is too, for user JS)
+
+| command          | launcher preload | JS lean | node floor |
+| ---------------- | ---------------- | ------- | ---------- |
+| `vis x hello.ts` | **130 ms**       | 132 ms  | 117 ms     |
+
+`vis x` sits ~13 ms above the bare floor (oxc transpile + preload); the launcher path and the JS lean
+path are statistically equal — there's no JS-CLI overhead left to strip.
+
+### How far from nub
+
+- **Static/dispatch commands** (`--version`, `exec`, `dlx`, PM-shim): vis's launcher is **2–5.5 ms**,
+  which is nub's own Rust-startup class. **No meaningful gap.**
+- **Running a user file** (`vis x`): both vis and nub are bound by the _same_ Node boot floor — the
+  delta is the machine's node-spawn cost, not vis-vs-nub. On nub's ~26 ms-boot machine, `vis x` would
+  land at ~26 ms + ~13 ms too. **No tool gap.**
+- **`install`/PM verbs**: the one _intentional_ gap. nub resolves + gates installs entirely in Rust;
+  vis keeps the security gate (advisories, OSV, secret-scan, lockfile policy) in JS — that gate is
+  vis's product, and reimplementing it in Rust is the drift hazard we explicitly refuse. So
+  `vis install` pays Node boot + the JS gate where nub pays neither. This is a deliberate
+  architecture line, not a perf deficiency.
+
+**Bottom line:** vis's native tier is at nub's speed class; the file-runner is at the shared Node
+floor; only install/PM is intentionally slower (JS security gate). The remaining unconditional win
+that isn't yet shipped is reaching users — gated on launcher packaging (CI).
