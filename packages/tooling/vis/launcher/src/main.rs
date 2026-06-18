@@ -16,6 +16,7 @@ mod flags;
 mod heap;
 mod node_version;
 mod pm;
+mod pnp;
 mod shim;
 
 use std::env;
@@ -352,15 +353,27 @@ fn main() {
                         // Node runs <file> as its own entry (argv = [node, file, …]).
                         let preload = dist_dir().join("runtime").join("preload.js");
                         let unflags = unflag_flags(version, &cwd);
+                        // Yarn PnP: load the .pnp.cjs runtime (and ESM loader) BEFORE
+                        // our preload so the script's bare imports resolve — only
+                        // when a .pnp.cjs is present (i.e. a Yarn PnP tree).
+                        let pnp = pnp::detect(&cwd);
                         let mut node = Command::new(node_bin);
 
                         if env::var_os("VIS_AUGMENT_SUBPROCESS").is_some() {
-                            // Subprocess augmentation (opt-in): carry the loader +
-                            // unflag flags via NODE_OPTIONS so every nested `node`
-                            // the script spawns is augmented too — not just the
+                            // Subprocess augmentation (opt-in): carry the PnP runtime,
+                            // loader + unflag flags via NODE_OPTIONS so every nested
+                            // `node` the script spawns is augmented too — not just the
                             // entry. NODE_OPTIONS applies to the entry as well, so we
                             // do NOT also pass CLI --import (that would double-apply).
                             let mut options = env::var("NODE_OPTIONS").unwrap_or_default();
+
+                            if let Some(context) = &pnp {
+                                push_node_option(&mut options, &format!("--require=\"{}\"", context.pnp_cjs.display()));
+
+                                if let Some(loader) = &context.esm_loader {
+                                    push_node_option(&mut options, &format!("--import \"{}\"", loader.display()));
+                                }
+                            }
 
                             push_node_option(&mut options, &format!("--import \"{}\"", preload.display()));
 
@@ -373,6 +386,15 @@ fn main() {
                         } else {
                             // Default: augment the entry only, via CLI args.
                             node.args(&unflags);
+
+                            if let Some(context) = &pnp {
+                                node.arg("--require").arg(&context.pnp_cjs);
+
+                                if let Some(loader) = &context.esm_loader {
+                                    node.arg("--import").arg(loader);
+                                }
+                            }
+
                             node.arg("--import");
                             node.arg(&preload);
                             node.args(&rest);
