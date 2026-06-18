@@ -63,6 +63,7 @@ import sbomCommand from "./commands/sbom";
 import secretsCommand from "./commands/secrets";
 import securityCommands from "./commands/security";
 import serviceCommands from "./commands/service";
+import shimCommands from "./commands/shim";
 import sortPackageJsonCommand from "./commands/sort-package-json";
 import splitCommand from "./commands/split";
 import stagedCommand from "./commands/staged";
@@ -272,6 +273,10 @@ export const runCli = async (): Promise<void> => {
     }
 
     for (const command of toolchainCommands) {
+        cli.addCommand(command);
+    }
+
+    for (const command of shimCommands) {
         cli.addCommand(command);
     }
 
