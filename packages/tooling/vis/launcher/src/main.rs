@@ -187,8 +187,63 @@ fn run_shim(invoked: shim::ShimName, args: &[String]) -> ! {
     }
 }
 
+/// Native fast path for `exec`/`dlx` (and `visx` = dlx): detect the PM and spawn
+/// it directly, no Node CLI. `tokens` is everything after the verb. Returns
+/// without running (falls through to the JS CLI) when the invocation is flag-led
+/// or empty — a leading flag is a vis-specific option (`--offline`, `--package`,
+/// `-h`, …) the JS resolver must expand, and an empty target needs the JS usage
+/// error. On the fast path it runs the PM and never returns.
+fn try_pm_fastpath(verb: &str, tokens: &[String]) {
+    let (runtime, rest) = split_runtime(tokens);
+
+    if rest.first().is_none_or(|first| first.starts_with('-')) {
+        return; // flag-led or empty → caller delegates to JS
+    }
+
+    let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let manager = if runtime.as_deref() == Some("bun") {
+        pm::Pm::Bun
+    } else {
+        pm::detect(&cwd)
+    };
+
+    let args = if verb == "exec" {
+        pm::exec_args(manager, &rest)
+    } else {
+        pm::dlx_args(manager, &rest)
+    };
+
+    let mut spawn = Command::new(pm::binary(manager));
+
+    spawn.args(&args);
+    run(spawn, pm::binary(manager));
+}
+
 fn main() {
     let argv: Vec<String> = env::args().collect();
+
+    // visx / vx: the npx-style dlx-only entry. Invoked under that name (its own bin,
+    // not `vis`), the whole invocation is `dlx <args>`. Native dlx dispatch (ungated,
+    // same as `vis dlx`); flag-led/empty falls through to the lean JS `binx.js`.
+    let program_stem = argv.first().map(Path::new).and_then(|p| p.file_stem()).and_then(|s| s.to_str());
+
+    if matches!(program_stem, Some("visx" | "vx")) {
+        let first = argv.get(1).map(String::as_str).unwrap_or("");
+
+        if first == "--version" || first == "-v" || first == "-V" {
+            println!("{}", env!("VIS_LAUNCHER_VERSION"));
+            exit(0);
+        }
+
+        try_pm_fastpath("dlx", &argv[1..]);
+
+        // Fall through: delegate to the lean dlx-only JS entry.
+        let mut node = Command::new(node_bin());
+
+        node.arg(dist_dir().join("binx.js"));
+        node.args(&argv[1..]);
+        run(node, "node");
+    }
 
     // PM-shim dispatch: when invoked as npm/pnpm/yarn/npx/pnpx/yarnpkg (via the
     // opt-in `.vis/shims/<pm>` symlinks, NOT as `vis`), run the agreement flow
@@ -222,28 +277,7 @@ fn main() {
     // through to the JS CLI below. An empty target also delegates (JS owns the
     // usage error, single source).
     if command == "exec" || command == "dlx" {
-        let (runtime, rest) = split_runtime(&argv[2..]);
-        let fast_pathable = rest.first().is_some_and(|first| !first.starts_with('-'));
-
-        if fast_pathable {
-            let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-            let manager = if runtime.as_deref() == Some("bun") {
-                pm::Pm::Bun
-            } else {
-                pm::detect(&cwd)
-            };
-
-            let args = if command == "exec" {
-                pm::exec_args(manager, &rest)
-            } else {
-                pm::dlx_args(manager, &rest)
-            };
-
-            let mut spawn = Command::new(pm::binary(manager));
-
-            spawn.args(&args);
-            run(spawn, pm::binary(manager));
-        }
+        try_pm_fastpath(command, &argv[2..]);
         // Flag-led or empty: fall through to `node dist/bin.js <command> …`.
     }
 
