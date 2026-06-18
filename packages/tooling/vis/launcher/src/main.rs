@@ -11,6 +11,7 @@
 //! Resolution (PoC): Node = `$VIS_NODE` or `node`; dist = `$VIS_DIST_DIR` or a
 //! dev fallback next to the binary. The published bin-shim sets `$VIS_DIST_DIR`.
 
+mod heap;
 mod pm;
 
 use std::env;
@@ -108,14 +109,22 @@ fn main() {
         run(spawn, pm::binary(manager));
     }
 
-    // Everything else: spawn Node on the JS CLI; heap flags handled here so the JS
-    // side skips its re-exec (it honours VIS_HEAP_TUNED).
+    // Everything else: spawn Node on the JS CLI. When RAM is detectable we apply
+    // the heap flags here (mirroring cerebro) and set VIS_HEAP_TUNED so the JS side
+    // skips its re-exec — heap tuned once, no second boot. When RAM is undetectable
+    // (e.g. Windows for now) we leave VIS_HEAP_TUNED unset so the JS side tunes
+    // itself: correct, just one extra boot.
     let dist = dist_dir();
     let mut node = Command::new(node_bin());
 
+    if let Some((old_space, semi_space)) = heap::flags() {
+        node.arg(format!("--max-old-space-size={old_space}"));
+        node.arg(format!("--max-semi-space-size={semi_space}"));
+        node.env("VIS_HEAP_TUNED", "1");
+    }
+
     node.arg(dist.join("bin.js"));
     node.args(&argv[1..]);
-    node.env("VIS_HEAP_TUNED", "1");
 
     run(node, "node");
 }

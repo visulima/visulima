@@ -45,9 +45,11 @@ instead of booting the vis JS dispatcher first). The unconditional wins are:
 - everything else → `node [--max-old-space-size=N --max-semi-space-size=M] <dist>/bin.js <args>`
   with `VIS_HEAP_TUNED=1`. The JS side (`bin.ts`) already honours that env and skips
   `applyHeapTuning()` — so the heap bump is applied once, by Rust, with **no re-exec**.
-- Heap sizes (planned): compute from total RAM in Rust (sysctl/sysconf), matching cerebro's
-  75%-of-RAM heuristic. The PoC sets `VIS_HEAP_TUNED` without sizes (Node default) — sizing is the
-  one functional gap before this can replace the JS heap tuning.
+- Heap sizes (done, `heap.rs`): computed from total RAM via Unix `sysconf` (`_SC_PHYS_PAGES *
+_SC_PAGE_SIZE`), old=75%·RAM, semi via the same tier table as `heap-tuning.ts`. Verified on a 36 GiB
+  host → `--max-old-space-size=27648 --max-semi-space-size=112`, matching `sysctl hw.memsize`. When RAM
+  is undetectable (Windows for now), the launcher omits the flags and `VIS_HEAP_TUNED`, so the JS side
+  tunes itself (correct, one extra boot). Native Windows RAM (`GlobalMemoryStatusEx`) is a follow-on.
 
 ### Packaging (the real integration work — mirrors `task-runner`)
 
@@ -68,7 +70,7 @@ instead of booting the vis JS dispatcher first). The unconditional wins are:
 
 1. ✅ PoC binary: version-in-Rust + Node passthrough + `VIS_HEAP_TUNED`.
 2. ✅ Native `exec`/`dlx`: PM detection (`pm.rs`) + direct spawn, no Node CLI. `--runtime bun`.
-3. Heap sizing in Rust (RAM detection) — closes the functional gap so the launcher fully owns heap tuning.
+3. ✅ Heap sizing in Rust (`heap.rs`, Unix `sysconf`): old=75%·RAM, semi=tiered — mirrors `heap-tuning.ts`. Windows falls back to JS tuning until `GlobalMemoryStatusEx` is wired.
 4. `x`-preload path (nub-style direct file spawn) + the 22.14 delegation tier.
 5. Static `--help`/`completion` in Rust.
 6. Packaging: per-platform packages + JS bin-shim + fallback; CI matrix.

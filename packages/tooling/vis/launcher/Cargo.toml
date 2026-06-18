@@ -14,6 +14,12 @@ path = "src/main.rs"
 
 [dependencies]
 
+# Unix-only: total physical RAM via sysconf, for native heap-flag computation
+# (see src/heap.rs). Tiny crate, no transitive deps. Windows falls back to JS
+# heap tuning until GlobalMemoryStatusEx is wired.
+[target.'cfg(unix)'.dependencies]
+libc = "0.2"
+
 [profile.release]
 opt-level = 3
 lto = true
