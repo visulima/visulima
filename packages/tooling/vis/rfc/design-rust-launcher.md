@@ -11,8 +11,17 @@ A PoC (`launcher/`) is built and measured (Apple M-series, this sandbox):
 | Path                             | Before (Node entry) | With launcher       | Note                                                |
 | -------------------------------- | ------------------- | ------------------- | --------------------------------------------------- |
 | `vis --version`                  | 247 ms              | **2.4 ms**          | answered in Rust, no Node spawn (~100×)             |
+| `vis exec` / `dlx` (dispatch)    | 171 ms              | **8.1 ms**          | PM detected + spawned in Rust, no Node CLI (~21×)   |
 | delegated command (`run --help`) | 260 ms              | 266 ms              | +~5 ms Rust spawn overhead (~2%)                    |
-| `vis x` / `run` / `exec`         | —                   | **Node-boot-bound** | must spawn Node; launcher can't beat the boot floor |
+| `vis x` / `run`                  | —                   | **Node-boot-bound** | must spawn Node; launcher can't beat the boot floor |
+
+`exec`/`dlx` dispatch measured with an instant fake `pnpm` (isolates dispatch from
+the PM's own work). On a real machine the launcher strips ~163 ms of Node boot +
+`cli-exec` module load off every `vis exec`/`vis dlx` — the PM work itself is
+unchanged. This is the first **native command** slice: the launcher resolves the
+PM (lockfile walk, `launcher/src/pm.rs`) and spawns it directly, because
+`securityEnforcementPlugin` gates only install/PM verbs, not these pure
+child-dispatchers. `--runtime bun` forces `bun x`.
 
 **The honest limit:** any command that runs JS/a tool (`x`, `run`, `exec`, `dlx`,
 install) must spawn Node, and Node's boot is the floor. nub is fast there only
@@ -57,12 +66,13 @@ instead of booting the vis JS dispatcher first). The unconditional wins are:
 
 ## Sequencing
 
-1. ✅ PoC binary: version-in-Rust + Node passthrough + `VIS_HEAP_TUNED` (this commit).
-2. Heap sizing in Rust (RAM detection) — closes the functional gap so the launcher fully owns heap tuning.
-3. `x`-preload path (nub-style direct file spawn) + the 22.14 delegation tier.
-4. Static `--help`/`completion` in Rust.
-5. Packaging: per-platform packages + JS bin-shim + fallback; CI matrix.
-6. Flip the vis `bin` to the shim; keep `dist/bin.js` as the fallback.
+1. ✅ PoC binary: version-in-Rust + Node passthrough + `VIS_HEAP_TUNED`.
+2. ✅ Native `exec`/`dlx`: PM detection (`pm.rs`) + direct spawn, no Node CLI. `--runtime bun`.
+3. Heap sizing in Rust (RAM detection) — closes the functional gap so the launcher fully owns heap tuning.
+4. `x`-preload path (nub-style direct file spawn) + the 22.14 delegation tier.
+5. Static `--help`/`completion` in Rust.
+6. Packaging: per-platform packages + JS bin-shim + fallback; CI matrix.
+7. Flip the vis `bin` to the shim; keep `dist/bin.js` as the fallback.
 
 ## Risks
 
