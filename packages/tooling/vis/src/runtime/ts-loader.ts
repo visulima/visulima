@@ -31,6 +31,7 @@ interface RegisterHooksModule {
 
 let hookRegistered = false;
 let freshCounter = 0;
+let warnedNoRegisterHooks = false;
 
 const stripQuery = (url: string): string => {
     const index = url.indexOf("?");
@@ -195,6 +196,18 @@ export const importTs = async (absolutePath: string): Promise<Record<string, unk
     }
 
     // Node 22.14 fallback: transpile the entry to a sibling temp file and import it.
+    // Limitation: only the ENTRY is transpiled — its local `.ts` imports resolve
+    // through Node, which can't load them (opaque ERR_MODULE_NOT_FOUND/parse error).
+    // Warn once so the failure points at the cause, not the symptom. 22.14 is the
+    // supported floor; 22.15+ takes the graph-wide hook path above.
+    if (!warnedNoRegisterHooks) {
+        warnedNoRegisterHooks = true;
+        process.stderr.write(
+            "vis: Node < 22.15 has no module.registerHooks — only the entry file is transpiled; "
+            + "local TypeScript imports won't load. Upgrade to Node >= 22.15 for full support.\n",
+        );
+    }
+
     const { code } = transformTs(absolutePath, readFileSync(absolutePath, "utf8"));
     const temporaryPath = join(dirname(absolutePath), `.vis-ts-${String(freshCounter)}-${String(process.pid)}.mjs`);
 

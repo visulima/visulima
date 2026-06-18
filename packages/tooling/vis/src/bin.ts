@@ -37,6 +37,10 @@ enableCompileCache();
 // constructing the full CLI; everything else loads the full CLI lazily. Wrapped
 // in an IIFE so there is no top-level await (Node 22 warns on unsettled TLA when
 // cerebro's plugin lifecycle keeps a microtask in flight as the loop empties).
+//
+// Note: `--ca-cert` is applied by `runCli` (the full CLI) only — the lean
+// `x`/`exec`/`dlx` paths don't sync advisories or hit the registry with vis's own
+// client, so a custom CA bundle has nothing to apply to on those paths.
 // eslint-disable-next-line unicorn/prefer-top-level-await, no-void -- the IIFE avoids Node's "unsettled top-level await" warning; void discards the promise
 void (async () => {
     if (firstArgument === "x") {

@@ -13,6 +13,7 @@ import { createCerebro } from "@visulima/cerebro";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 
 import pkg from "../package.json";
+import { runAndExit } from "./cli-run";
 import dlxCommand from "./commands/dlx";
 import execCommand from "./commands/exec";
 
@@ -41,13 +42,5 @@ export const runExecCli = async (): Promise<void> => {
     cli.addCommand(execCommand);
     cli.addCommand(dlxCommand);
 
-    try {
-        await cli.run({ shouldExitProcess: false });
-    } catch {
-        // errorHandlerPlugin already rendered the error
-        process.exitCode = process.exitCode || 1;
-    } finally {
-        // eslint-disable-next-line unicorn/no-process-exit -- explicit exit mirrors bin.ts / binx.ts
-        process.exit(process.exitCode ?? 0);
-    }
+    await runAndExit(cli);
 };

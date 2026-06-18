@@ -39,7 +39,11 @@ const parseSpec = (spec: string): PolyfillName[] => {
  */
 const importFromCwd = async (packageName: string, cwd: string): Promise<Record<string, unknown> | undefined> => {
     try {
-        // createRequire anchored in the cwd resolves the user project's node_modules.
+        // Anchor module resolution in the user's project so `resolve` walks THEIR
+        // node_modules, not vis's. createRequire only uses its argument as a
+        // resolution base path — the file need not (and does not) exist; the
+        // `__vis_polyfill_resolver__.js` name is a deliberate non-existent anchor
+        // sitting in `cwd`, equivalent to "resolve as if from a file in cwd".
         const requireFromCwd = createRequire(join(cwd, "__vis_polyfill_resolver__.js"));
         const resolved = requireFromCwd.resolve(packageName);
 

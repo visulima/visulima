@@ -12,6 +12,7 @@ import { findMonorepoRootSync } from "@visulima/package";
 import { join } from "@visulima/path";
 
 import pkg from "../package.json";
+import { runAndExit } from "./cli-run";
 import actionGraphCommand from "./commands/action-graph";
 import addCommand from "./commands/add";
 import advisoriesCommands from "./commands/advisories";
@@ -316,16 +317,5 @@ export const runCli = async (): Promise<void> => {
         return;
     }
 
-    try {
-        await cli.run({ shouldExitProcess: false });
-    } catch {
-        // errorHandlerPlugin already rendered the error
-        process.exitCode = process.exitCode || 1;
-    } finally {
-        // Force an explicit exit once the command settles. Interactive commands
-        // (the dynamic TUI run path) can leave stray refs that prevent the event
-        // loop from draining; exit deliberately with the recorded exitCode.
-        // eslint-disable-next-line unicorn/no-process-exit -- explicit exit is the reliable termination path for TUI commands
-        process.exit(process.exitCode ?? 0);
-    }
+    await runAndExit(cli);
 };

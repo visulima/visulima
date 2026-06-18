@@ -47,6 +47,14 @@ export const parseLeanXArgs = (argv: string[]): LeanXArgs => {
         scriptArguments.push(token);
     }
 
+    // A single `--` separating the file from its args is consumed, so the script
+    // sees its real args (not a literal "--"). Matches the registered handler,
+    // where cerebro's parser already eats the separator. `vis x f.ts -- --watch`
+    // → the script gets `["--watch"]` on both paths.
+    if (scriptArguments[0] === "--") {
+        scriptArguments.shift();
+    }
+
     return { file, runtimeFlag, scriptArguments };
 };
 

@@ -276,7 +276,7 @@ const resolveExtendsSpecifier = (specifier: string, parentFile: string, chain: R
 };
 
 /**
- * Load a single config file via jiti and return its raw export. Wraps
+ * Load a single config file via the oxc TS loader and return its raw export. Wraps
  * any throw in `VisConfigLoadError` so a syntax error surfaces with the
  * source path instead of bubbling up as a workspace.ts failure.
  */
@@ -545,7 +545,7 @@ const writeVisTaskCache = (cachePath: string, hash: string, config: VisTaskConfi
  * Load the per-package `vis.task.ts` overlay for a project, if any.
  *
  * Returns `undefined` when no overlay file exists. Otherwise compiles
- * the file via jiti and caches the result under
+ * the file via the oxc TS loader and caches the result under
  * `node_modules/.cache/vis/task-configs/&lt;project>.json`, keyed by the
  * file's content hash. Editing one project's overlay does not invalidate
  * the root config cache.

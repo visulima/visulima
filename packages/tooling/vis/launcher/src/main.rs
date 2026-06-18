@@ -153,7 +153,14 @@ fn main() {
     // intentionally skipped here too). Only Node >= 22.15 (registerHooks) takes the
     // preload path; bun runs natively; anything else delegates to the JS CLI.
     if command == "x" {
-        let (runtime_flag, rest) = split_runtime(&argv[2..]);
+        let (runtime_flag, mut rest) = split_runtime(&argv[2..]);
+
+        // Consume a single `--` separating the file from its args, matching the
+        // JS lean parser (`parseLeanXArgs`) so both paths hand the script the same
+        // argv. `rest[0]` is the file; a `--` at `rest[1]` is the separator.
+        if rest.get(1).map(String::as_str) == Some("--") {
+            rest.remove(1);
+        }
 
         if !rest.is_empty() {
             let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));

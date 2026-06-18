@@ -38,6 +38,25 @@ describe(parseLeanXArgs, () => {
         });
     });
 
+    it("consumes a single `--` separator between the file and its args", () => {
+        expect.hasAssertions();
+
+        // Matches the registered handler (cerebro eats the separator): the script
+        // sees its real args, not a literal "--".
+        expect(parseLeanXArgs(["script.ts", "--", "--watch"])).toStrictEqual({
+            file: "script.ts",
+            runtimeFlag: undefined,
+            scriptArguments: ["--watch"],
+        });
+
+        // Only the FIRST `--` is the separator; a later one is a real script arg.
+        expect(parseLeanXArgs(["script.ts", "--", "a", "--", "b"])).toStrictEqual({
+            file: "script.ts",
+            runtimeFlag: undefined,
+            scriptArguments: ["a", "--", "b"],
+        });
+    });
+
     it("reads --runtime <id> before the file", () => {
         expect.hasAssertions();
 

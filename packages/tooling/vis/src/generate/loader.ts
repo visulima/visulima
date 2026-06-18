@@ -3,8 +3,8 @@
  *
  * Native templates live as `.ts`/`.js`/`.mjs` modules under
  * `&lt;workspace>/.vis/templates/&lt;name>.&lt;ext>` and export a `Template` as
- * their default export. We use jiti so TypeScript and ESM/CJS
- * interop both work without a separate build step.
+ * their default export. We use the oxc TS loader (`importTs`) so TypeScript and
+ * ESM/CJS interop both work without a separate build step.
  */
 
 import { importTs } from "../runtime/ts-loader";
@@ -34,8 +34,8 @@ const validateTemplateExport = (path: string, value: unknown): Template => {
 
 /**
  * Load a native template module from disk and return its default export.
- * The directory containing the file is used as jiti's working dir so
- * relative imports inside the template resolve as the author expects.
+ * `importTs` resolves relative imports inside the template against the file's own
+ * location, so they resolve as the author expects.
  */
 export const loadNativeTemplate = async (path: string): Promise<Template> => {
     const namespace = await importTs(path);
