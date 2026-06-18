@@ -83,8 +83,29 @@ Re-run after the lean-dispatcher + heap-skip + oxc-loader work (same machine/met
 | Scenario                            | Baseline (06-17) | Now (06-18)  | Δ        | nearest peer                |
 | ----------------------------------- | ---------------- | ------------ | -------- | --------------------------- |
 | `vis run` (workspace task dispatch) | 620.8 ms         | **417.7 ms** | **−33%** | npm-ws 181, pnpm-r 294      |
-| `vis exec` (local bin dispatch)     | 855.6 ms         | **534.6 ms** | **−38%** | npm exec 230, pnpm exec 280 |
+| `vis exec` (local bin dispatch)     | 855.6 ms         | **451.1 ms** | **−47%** | npm exec 230, pnpm exec 280 |
 | `vis x hello.ts` (file run)         | 431 ms           | **139.3 ms** | **−68%** | Node floor ~117 ms          |
+| `visx --version` (lean dlx entry)   | —                | **120.7 ms** | —        | Node floor ~129 ms          |
+
+`vis exec` took a second drop (534→451 ms) from routing exec/dlx through a lean entry (no 60-command
+CLI); the remaining ~250 ms CPU is loading `pm-runner`, not framework boot. `visx` sits at the Node
+floor — it's already the lean entry and can't go faster on Node.
+
+### Why vis can't match nub's absolute numbers (and what would)
+
+nub is a single **Rust binary** (~9–44 ms); vis is a **Node CLI**, so every command pays Node's boot
+floor + module loading. Two honest facts from the CPU breakdown:
+
+- `vis x`/`visx` are **Node-floor-bound** and nub-competitive _in compute_ (`vis x` is ~38 ms CPU; the
+  rest is Node boot + this sandbox's ~100 ms process-spawn latency — `node -e ""` is 129 ms wall but
+  only ~31 ms CPU here). On a normal machine the wall numbers are far lower.
+- `vis run`/`vis exec` carry real, avoidable CPU (graph build; `pm-runner` load) — trimmed as far as
+  the Node-CLI architecture allows.
+
+The only way to reach nub's absolute speed is to stop paying Node's boot for dispatch: a **thin Rust
+launcher** shipped as the `vis` bin (spawns node with a preload, like nub), and a **native local-first
+bin resolver** (RFC Phase 4) so exec/dlx bypass `pm-runner`. Both are large architectural changes,
+out of scope here; everything achievable _within_ the Node-CLI shape is done.
 
 What moved each number:
 
