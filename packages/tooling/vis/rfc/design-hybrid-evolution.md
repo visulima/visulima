@@ -156,10 +156,14 @@ Independent of the big decisions, these are safe to proceed on:
    the user's project; wired into BOTH the preload and the in-process `vis x` path.
 5. Packaging + bin flip (launcher RFC items 6–7) — **the gate to any of this reaching users.**
 
-Decisions taken (2026-06-18):
-
-6. PATH shim (2c) — **explicit opt-in, project-local** (`vis shim install`/`uninstall`, `.vis/shims`
-   inside a vis project; never automatic/global). To build.
+6. PATH shim (2c.1, PM-persistent) — **explicit opt-in, project-local**. Built:
+    - launcher argv0 dispatch core (`shim.rs`): agreement check, transparent verbs, nesting via
+      `npm_config_user_agent`, same-file recursion guard. Unit-tested + e2e-verified.
+    - `vis shim install`/`uninstall`/`status` (`commands/shim/`): manages `.vis/shims` symlinks to the
+      launcher, prints PATH-activation guidance (no global profile edits). Lifecycle e2e-verified.
+    - Remaining: ephemeral per-run `node` routing (2c.2); Windows symlink/`.cmd` shims; auto-PATH via
+      direnv hook; reads the project pin from the `packageManager` field (today: lockfile detection).
+      Gated on launcher packaging (the symlinks need the shipped binary; `VIS_LAUNCHER_PATH` for dev).
 7. `run`/install — **Rust resolve + JS security gate**: launcher resolves fast, shells back to the JS
    security stack for the gate; no Rust reimplementation of vis's security product. To build.
 
