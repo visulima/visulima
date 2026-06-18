@@ -9,7 +9,7 @@
 use std::path::Path;
 
 /// Package managers the launcher's fast path understands.
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Pm {
     Bun,
     Npm,
@@ -30,7 +30,9 @@ impl Pm {
 
 /// Walk up from `cwd` looking for a lockfile. Mirrors pm-runner's table; defaults
 /// to npm when none is found (matches `detectPm`'s conservative fallback).
-pub fn detect(cwd: &Path) -> Pm {
+/// Detect the PM from the nearest lockfile, or `None` if none is found — the shim
+/// agreement check needs to tell "no pin" (no opinion) apart from "npm".
+pub fn detect_opt(cwd: &Path) -> Option<Pm> {
     // (filename, pm) in priority order — MUST match pm-runner.ts's
     // `findNonAubeLockfile` table (src/pm/pm-runner.ts) exactly, so the native
     // fast path and the JS path pick the same PM in a repo that carries more than
@@ -50,15 +52,21 @@ pub fn detect(cwd: &Path) -> Pm {
     loop {
         for (file, pm) in LOCKFILES {
             if dir.join(file).is_file() {
-                return *pm;
+                return Some(*pm);
             }
         }
 
         match dir.parent() {
             Some(parent) if parent != dir => dir = parent,
-            _ => return Pm::Npm,
+            _ => return None,
         }
     }
+}
+
+/// Detect the PM for the exec/dlx fast path, defaulting to npm when no lockfile is
+/// found (matches `detectPm`'s conservative fallback).
+pub fn detect(cwd: &Path) -> Pm {
+    detect_opt(cwd).unwrap_or(Pm::Npm)
 }
 
 /// Build the argv (after the pm binary) to run a locally-installed bin: the

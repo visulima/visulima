@@ -16,9 +16,10 @@ mod flags;
 mod heap;
 mod node_version;
 mod pm;
+mod shim;
 
 use std::env;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 
 use node_version::NodeVersion;
@@ -114,8 +115,94 @@ fn resolve_x_runtime(flag: Option<&str>, cwd: &std::path::Path) -> Option<XRunti
     }
 }
 
+/// Find the real PM binary on PATH, skipping any entry that resolves to our own
+/// binary — the recursion guard. The shim symlinks (`.vis/shims/<pm>`) all point
+/// at the launcher, so canonicalizing a candidate and comparing it to our
+/// `current_exe` skips every shim regardless of how argv0 was spelled.
+fn find_real_pm(name: &str) -> Option<PathBuf> {
+    let self_exe = env::current_exe().ok().and_then(|p| p.canonicalize().ok());
+    let paths = env::var_os("PATH")?;
+
+    // Names to try in each dir: bare on unix; `.cmd`/`.exe` shims on windows.
+    #[cfg(windows)]
+    let candidates: Vec<String> = vec![format!("{name}.cmd"), format!("{name}.exe"), name.to_owned()];
+    #[cfg(not(windows))]
+    let candidates: Vec<String> = vec![name.to_owned()];
+
+    for dir in env::split_paths(&paths) {
+        for candidate_name in &candidates {
+            let candidate = dir.join(candidate_name);
+
+            if !candidate.is_file() {
+                continue;
+            }
+
+            // Recursion guard: skip if this is (a symlink to) our own binary.
+            if let (Some(self_canon), Ok(candidate_canon)) = (&self_exe, candidate.canonicalize()) {
+                if &candidate_canon == self_canon {
+                    continue;
+                }
+            }
+
+            return Some(candidate);
+        }
+    }
+
+    None
+}
+
+/// Run the PM-shim flow: decide based on the project's pin + invocation context,
+/// then either exec the real PM or refuse with guidance. Never returns.
+fn run_shim(invoked: shim::ShimName, args: &[String]) -> ! {
+    let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+    let pinned = pm::detect_opt(&cwd);
+    // nub matches the FIRST token verbatim — a flag before the verb is not treated
+    // as the verb, so strictness errs toward refusing.
+    let first_verb = args.first().map(String::as_str);
+    let nesting = shim::Nesting::from_env(|key| env::var(key).ok());
+
+    match shim::decide(invoked, pinned, first_verb, nesting) {
+        shim::ShimDecision::Refuse { invoked, pinned } => {
+            eprintln!(
+                "vis: this project uses {pin}, but `{got}` was run. Use `{pin}` instead, or run \
+                 `vis shim uninstall` to disable the PM guard.",
+                pin = pm::binary(pinned),
+                got = invoked.as_str(),
+            );
+            exit(1);
+        }
+        shim::ShimDecision::Dispatch => match find_real_pm(invoked.as_str()) {
+            Some(real) => {
+                let mut command = Command::new(real);
+
+                command.args(args);
+                run(command, invoked.as_str());
+            }
+            None => {
+                eprintln!("vis: `{}` was not found on PATH (outside the shim dir).", invoked.as_str());
+                exit(1);
+            }
+        },
+    }
+}
+
 fn main() {
     let argv: Vec<String> = env::args().collect();
+
+    // PM-shim dispatch: when invoked as npm/pnpm/yarn/npx/pnpx/yarnpkg (via the
+    // opt-in `.vis/shims/<pm>` symlinks, NOT as `vis`), run the agreement flow
+    // instead of the normal CLI. argv0's file stem is the invoked name.
+    let shim_invoked = argv
+        .first()
+        .map(Path::new)
+        .and_then(|path| path.file_stem())
+        .and_then(|stem| stem.to_str())
+        .and_then(shim::ShimName::parse);
+
+    if let Some(invoked) = shim_invoked {
+        run_shim(invoked, &argv[1..]);
+    }
+
     let command = argv.get(1).map(String::as_str).unwrap_or("");
 
     // Static fast path: version in Rust, no Node.
