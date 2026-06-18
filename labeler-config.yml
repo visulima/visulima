@@ -85,6 +85,30 @@
 "package: jsdoc-open-api":
     - changed-files:
           - any-glob-to-any-file: "packages/api/jsdoc-open-api/**/*"
+"package: launcher/darwin-arm64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/launcher/npm/darwin-arm64/**/*"
+"package: launcher/darwin-x64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/launcher/npm/darwin-x64/**/*"
+"package: launcher/linux-arm64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/launcher/npm/linux-arm64-gnu/**/*"
+"package: launcher/linux-arm64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/launcher/npm/linux-arm64-musl/**/*"
+"package: launcher/linux-x64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/launcher/npm/linux-x64-gnu/**/*"
+"package: launcher/linux-x64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/launcher/npm/linux-x64-musl/**/*"
+"package: launcher/win32-arm64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/launcher/npm/win32-arm64-msvc/**/*"
+"package: launcher/win32-x64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/launcher/npm/win32-x64-msvc/**/*"
 "package: nuxt":
     - changed-files:
           - any-glob-to-any-file: "packages/storage/storage/src/adapter/nuxt/**/*"
