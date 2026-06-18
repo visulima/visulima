@@ -50,14 +50,32 @@ const getNpmTag = (version) => {
     return "latest";
 };
 
-const getPlatformDirs = async (cwd) => {
-    const npmDir = join(cwd, "npm");
+// Platform packages live under `./npm/<platform>/` (the napi binding addons) and
+// `./launcher/npm/<platform>/` (the Rust launcher binaries). Both are published the
+// same way (set version → pnpm publish); only the host index.js version-check patch
+// (below) is napi-specific and stays scoped to the binding host.
+const PLATFORM_PACKAGE_BASES = ["npm", join("launcher", "npm")];
 
-    if (!existsSync(npmDir)) {
-        return [];
+const getPlatformPackagePaths = async (cwd) => {
+    const paths = [];
+
+    for (const base of PLATFORM_PACKAGE_BASES) {
+        const baseDir = join(cwd, base);
+
+        if (!existsSync(baseDir)) {
+            continue;
+        }
+
+        const entries = await readdir(baseDir, { withFileTypes: true });
+
+        for (const entry of entries) {
+            if (entry.isDirectory() && existsSync(join(baseDir, entry.name, "package.json"))) {
+                paths.push(join(baseDir, entry.name));
+            }
+        }
     }
 
-    return (await readdir(npmDir, { withFileTypes: true })).filter((entry) => entry.isDirectory()).map((entry) => entry.name);
+    return paths;
 };
 
 const getGithubActionsIdToken = async (env, logger) => {
@@ -143,9 +161,9 @@ export const patchVersionCheck = (content, version) => {
 
 export const verifyConditions = async (_pluginConfig, context) => {
     const { cwd, env, logger } = context;
-    const platformDirs = await getPlatformDirs(cwd);
+    const platformPaths = await getPlatformPackagePaths(cwd);
 
-    if (platformDirs.length === 0) {
+    if (platformPaths.length === 0) {
         logger.log("No native addon packages found; nothing to do.");
 
         return;
@@ -160,22 +178,21 @@ export const verifyConditions = async (_pluginConfig, context) => {
         );
     }
 
-    logger.log(`Verified auth for ${platformDirs.length} native addon package(s) — OIDC: ${hasOidc}, NPM_TOKEN: ${hasNpmToken}`);
+    logger.log(`Verified auth for ${platformPaths.length} native package(s) — OIDC: ${hasOidc}, NPM_TOKEN: ${hasNpmToken}`);
 };
 
 export const prepare = async (_pluginConfig, context) => {
     const { cwd, env, logger, nextRelease } = context;
-    const platformDirs = await getPlatformDirs(cwd);
+    const platformPaths = await getPlatformPackagePaths(cwd);
 
-    if (platformDirs.length === 0) {
+    if (platformPaths.length === 0) {
         return;
     }
 
     const { version } = nextRelease;
     const npmTag = getNpmTag(version);
-    const npmDir = join(cwd, "npm");
 
-    logger.log(`Publishing ${platformDirs.length} native addon package(s) at version ${version} with tag ${npmTag}`);
+    logger.log(`Publishing ${platformPaths.length} native package(s) at version ${version} with tag ${npmTag}`);
 
     const indexPath = join(cwd, "index.js");
 
@@ -198,8 +215,7 @@ export const prepare = async (_pluginConfig, context) => {
     const authTempDir = mkdtempSync(join(tmpdir(), "semantic-release-native-addons-"));
 
     try {
-        for (const dir of platformDirs) {
-            const platformPath = join(npmDir, dir);
+        for (const platformPath of platformPaths) {
             const pkgPath = join(platformPath, "package.json");
             let pkg;
             let originalVersion;
@@ -211,11 +227,27 @@ export const prepare = async (_pluginConfig, context) => {
                 continue;
             }
 
+            // A binary platform package (files: ["bin/"], e.g. the launcher) with no
+            // staged binary would publish empty — skip it until the CI step that
+            // downloads the built binary into <pkg>/bin/ is wired. Binding addons
+            // (files: the .node name) are unaffected by this guard.
+            if (Array.isArray(pkg.files) && pkg.files.includes("bin/")) {
+                const binDir = join(platformPath, "bin");
+                const staged = existsSync(binDir) && (await readdir(binDir)).length > 0;
+
+                if (!staged) {
+                    logger.warn(`Skipping ${pkg.name}: no binary staged in bin/ (build artifact not present).`);
+
+                    continue;
+                }
+            }
+
             pkg.version = version;
             writeFileSync(pkgPath, JSON.stringify(pkg, null, 4) + "\n");
 
             const auth = await resolveAuthToken(pkg.name, idToken, env, logger);
-            const npmrcPath = join(authTempDir, `${dir}.npmrc`);
+            // Keyed by package name so npm/<t> and launcher/npm/<t> never collide.
+            const npmrcPath = join(authTempDir, `${pkg.name.replace(/[^a-z0-9]+/giu, "_")}.npmrc`);
 
             writeNpmrc(npmrcPath, auth.token);
 
