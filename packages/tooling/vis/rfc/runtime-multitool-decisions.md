@@ -130,6 +130,30 @@ so feature-detected polyfills (`Temporal`, `URLPattern`, opt-in via `VIS_POLYFIL
 the user's project) work with or without the launcher. `vis x` is NOT routed through the launcher
 for speed — it's routed so the augmentation layer has one consistent entry.
 
+## Thermos review (2026-06-18) — fixes + accepted findings
+
+A two-pass adversarial review (branch-risk + code-quality) ran against `alpha..HEAD`. Fixed:
+**npm `dlx`** now emits `exec --yes --package=<pkg> -- <bin>` (was interactive + wrong bin for
+version-specced/scoped packages); **`pm.rs` lockfile order** aligned to `pm-runner.ts` (multi-lockfile
+repos picked differently); **launcher respects a user `NODE_OPTIONS` heap flag** (was overriding it);
+**node-version cache keyed by resolved path + mtime** (mtime-alone could return a stale version across
+binaries with the same mtime, mis-gating `x`/unflag); **flag-led/empty `exec`/`dlx` delegate to the
+JS CLI** (vis-specific flags like `--offline` were forwarded raw to the PM); **single `--` consumed**
+in `vis x` on both paths; **22.14 TS-loader** warns once that local imports won't transpile; shared
+`prepareScriptRuntime` (.env + polyfills) and `runAndExit` helpers replace three copies; stale `jiti`
+comments swept to the oxc loader.
+
+**Accepted, not "fixed" (documented why):**
+
+- _Heap heuristic in two languages_ (`heap-tuning.ts` + `heap.rs`): kept — a cross-language CI guard
+  is heavy; instead a bidirectional sync note + the Rust unit test pin the values. Re-evaluate if the
+  heuristic starts changing often.
+- _Launcher heap-tunes commands bin.ts skips_ (`--help`/completion): kept one code path. The flag is a
+  ceiling V8 never reserves, so a no-allocation command is unaffected; mirroring the skip-list in Rust
+  would add a drift point for zero real benefit.
+- _Signal-killed children exit 1, not 128+N; in-process `vis x` shares vis's process_: pre-existing /
+  intentional (matches the prior `spawnSync` behaviour and nub's in-process model). Changelog-worthy.
+
 ## Feature-parity status vs nub
 
 Done: file runner (`vis x`), script runner (`vis run`), package runner (`vis dlx`/`exec`/`visx`),

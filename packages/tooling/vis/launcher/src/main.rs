@@ -216,6 +216,12 @@ fn main() {
     // overridden — matching cerebro's `applyHeapTuning`, which no-ops when the flag
     // is already present. We then skip our flags AND VIS_HEAP_TUNED so the JS side
     // runs its (also-respecting) tuning: it sees the user's flag and no-ops too.
+    //
+    // bin.ts skips heap tuning for light commands (--help/completion/bare vis); the
+    // launcher tunes them anyway here. That's intentional, not a divergence to fix:
+    // duplicating bin.ts's skip-list in Rust would add a drift point, and the flag
+    // is a heap *ceiling* V8 never reserves — a command that allocates nothing is
+    // unaffected. So we keep one code path rather than mirror the skip-list.
     let dist = dist_dir();
     let mut node = Command::new(node_bin());
 

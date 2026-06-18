@@ -79,6 +79,12 @@ interface HeapTuningOptions {
     maxOldSpacePercent?: number;
 }
 
+// SYNC NOTE: this heuristic (old = floor(RAM * percent), semi = the tier table
+// below) is mirrored in Rust at packages/tooling/vis/launcher/src/heap.rs, which
+// applies the same flags natively when the vis launcher fronts Node. If you change
+// the formula or the tiers here, update that file too (its unit test pins the
+// expected values, so a drift surfaces there).
+
 /** Compute `--max-old-space-size` in MiB from a percentage of total system RAM. */
 const getDefaultMaxOldSpaceSize = (percent: number): number => Math.floor((totalmem() / 1024 / 1024) * percent);
 
