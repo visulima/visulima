@@ -3,6 +3,35 @@
 Branch: `feat/runtime-multitool`. Goal: nub feature-parity with the best achievable speed.
 Each entry records a choice made without asking and why.
 
+## ⚑ Rust launcher DROPPED — features re-homed to the JS CLI (2026-06-19)
+
+The Rust launcher (native binary + 8 platform packages + cross-build CI + publish
+wiring) was removed. Rationale (decided with the user): its measured wins were
+narrow (instant `--version`, native `exec`/`dlx` dispatch, no heap re-exec) while
+the costs were high — three toolchains, 16 platform packages, a permanent Rust↔JS
+drift surface, and unvalidatable cross-build packaging. Single-executable (Bun
+`--compile` / Node SEA) was evaluated and rejected: SEA conflicts with vis's
+lazily-`import()`ed chunked-ESM (the thing that makes the lean paths fast) and the
+napi addon; bun wasn't available. So vis ships as the JS CLI + the oxc napi addon.
+
+**All four launcher-only features were re-homed to JS so nothing was lost:**
+
+- **Unflag** (`VIS_UNFLAG`) + **Yarn PnP** — node _start_ flags, so `commands/x/run-file.ts`
+  RE-EXECS node with them (the cerebro heap-tuning pattern) then runs in-process.
+  `src/runtime/unflag.ts` (ported from `flags.rs`), `src/runtime/pnp.ts` (from `pnp.rs`).
+- **Subprocess augmentation** (`VIS_AUGMENT_SUBPROCESS`) — `NODE_OPTIONS=--import preload`
+    - unflag flags for nested `node`; `src/runtime/preload.ts` is the `--import` module.
+- **PM shim** (`vis shim`) — `.vis/shims/<pm>` are now wrapper scripts that call the lean
+  `vis __pm-shim <pm>` path; `src/commands/shim/dispatch.ts` ports the agreement check
+  (`shim.rs` decide + nesting via `npm_config_user_agent` + PATH find skipping the shim dir).
+- **Polyfills** (`VIS_POLYFILL`) + **source maps** were already in-process/native — unchanged.
+
+Trade-off accepted: the re-homed paths pay the Node-boot cost the launcher avoided
+(re-exec for augmented `vis x`; a Node boot per shimmed PM call). Functionality is
+identical; only the native speed advantage is gone. Verified e2e in JS:
+`VIS_UNFLAG=eventsource vis x` flips `EventSource` on, PnP `--require` injects, the
+shim dispatches/refuses/falls-through correctly, source-map traces cite the `.ts`.
+
 ## Speed of `vis x` — the real bottleneck (measured)
 
 `vis x hello.ts` = **431 ms**, decomposed: vis launcher boot (full `bin.ts`) **~295 ms** +

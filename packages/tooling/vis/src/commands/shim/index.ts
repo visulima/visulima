@@ -3,14 +3,15 @@ import type { Command } from "@visulima/cerebro";
 /**
  * `vis shim` — manage the opt-in, project-local PM shim dir (`.vis/shims`). When
  * the shim dir is on PATH, package-manager invocations (`npm`/`pnpm`/`yarn`/…)
- * route through the native launcher's agreement check, which refuses a PM that
- * doesn't match the project's pinned one (transparent verbs + nested calls pass).
- * Opt-in, project-local, never edits global profiles, never shims `node`.
+ * route through small wrapper scripts that call `vis __pm-shim &lt;pm>` — vis's
+ * agreement check refuses a PM that doesn't match the project's pinned one
+ * (transparent verbs + nested calls pass). Opt-in, project-local, never edits
+ * global profiles, never shims `node`.
  */
 const shimInstall: Command = {
     commandPath: ["shim"],
     description: "Install project-local PM shims (.vis/shims) that enforce the project's package manager",
-    examples: [["vis shim install", "Symlink npm/pnpm/yarn/… in .vis/shims to the launcher"]],
+    examples: [["vis shim install", "Write npm/pnpm/yarn/… wrapper scripts in .vis/shims"]],
     group: "Runtime",
     loader: () =>
         import("./handler").then((m) => {

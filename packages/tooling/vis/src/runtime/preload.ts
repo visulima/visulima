@@ -1,13 +1,14 @@
 /**
- * `vis x` preload — the module the Rust launcher passes via `node --import` so a
- * directly-spawned Node runs the user's file as its own entry, skipping the vis JS
- * dispatcher (`bin.js` → lean runner) entirely. nub's file-runner works the same
- * way: register a TS loader in a preload, then let Node run the entry.
+ * `vis x` subprocess-augmentation preload — injected via `NODE_OPTIONS=--import
+ * &lt;this>` when `VIS_AUGMENT_SUBPROCESS` is set, so every nested `node` the user's
+ * script spawns gets the same setup: the oxc `registerHooks` TS loader, the `.env`
+ * cascade, and opt-in polyfills. Without `VIS_AUGMENT_SUBPROCESS` it isn't used —
+ * the direct `vis x` entry runs in-process (`commands/x/run-file.ts`) instead.
  *
- * Runs fully before the entry is loaded, so by the time `node … &lt;file>` resolves
- * the entry the oxc `registerHooks` loader is active and `.env` is in place. Only
- * used on Node >= 22.15 (the launcher gates on the version — the 22.14.x floor has
- * no `registerHooks`, so the launcher delegates `x` to `node dist/bin.js x` there).
+ * Runs fully before the host module loads, so by the time a nested `node &lt;file>`
+ * resolves its entry the loader is active and `.env`/polyfills are in place. On the
+ * 22.14.x floor (no `registerHooks`) `registerTsHooks` no-ops; nested `.ts` entries
+ * then need Node 22.15+.
  *
  * Side-effecting by design (an `--import` module); it exports nothing.
  */
@@ -16,13 +17,11 @@ import enableCompileCache from "@visulima/cerebro/compile-cache";
 import { prepareScriptRuntime } from "./augment";
 import { registerTsHooks } from "./ts-loader";
 
-// Enable V8 compile cache. The launcher's `--import preload` path bypasses bin.ts
-// (which does this for the JS CLI), so without this the preload + loader modules
-// recompile on every `vis x`. Cheap, and compounds with the transpile cache.
+// Enable V8 compile cache so nested Node processes don't recompile the loader.
 enableCompileCache();
 
-// Register the oxc TS load/resolve hooks for the whole import graph — the entry
-// and its relative `.ts`/`.tsx` imports transpile on load.
+// Register the oxc TS load/resolve hooks for the whole import graph — nested
+// entries and their relative `.ts`/`.tsx` imports transpile on load.
 registerTsHooks();
 
 // Shared setup: `.env` cascade + opt-in polyfills (same as the in-process path).

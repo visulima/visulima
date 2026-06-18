@@ -12,15 +12,10 @@ import { injectVersion } from "./io/terminal";
 // work (version/help/completion, the pure dispatchers dlx/exec, and the lean
 // file runner x); heavy commands (run, cache, audit, sbom, graph, …) keep the
 // bump. Deny-list, so any unlisted/new command defaults to tuned — safe.
-// SYNC NOTE: mirrored in the Rust launcher (launcher/src/main.rs, HEAP_TUNING_SKIP)
-// so `vis --help` etc. skip tuning identically with or without the native binary.
-// Change both together.
 const HEAP_TUNING_SKIP = new Set(["", "--help", "--version", "-h", "-v", "completion", "dlx", "exec", "x"]);
 const firstArgument = process.argv[2] ?? "";
 
-// VIS_HEAP_TUNED is set by the Rust launcher, which applies the heap flags on
-// the Node spawn itself — so the JS side must not re-exec.
-if (process.env["VIS_HEAP_TUNED"] === undefined && !HEAP_TUNING_SKIP.has(firstArgument) && !process.argv.includes("--help") && !process.argv.includes("-h")) {
+if (!HEAP_TUNING_SKIP.has(firstArgument) && !process.argv.includes("--help") && !process.argv.includes("-h")) {
     applyHeapTuning();
 }
 
@@ -46,6 +41,16 @@ enableCompileCache();
 // client, so a custom CA bundle has nothing to apply to on those paths.
 // eslint-disable-next-line unicorn/prefer-top-level-await, no-void -- the IIFE avoids Node's "unsettled top-level await" warning; void discards the promise
 void (async () => {
+    // PM-shim dispatch: the `.vis/shims/<pm>` wrappers call `vis __pm-shim <pm>
+    // [args]`. Pure agreement-check + exec — take the lean path (no full CLI).
+    if (firstArgument === "__pm-shim") {
+        const { dispatchShim } = await import("./commands/shim/dispatch");
+
+        dispatchShim(process.argv[3] ?? "", process.argv.slice(4));
+
+        return;
+    }
+
     if (firstArgument === "x") {
         const { runLeanX } = await import("./commands/x/lean");
 
