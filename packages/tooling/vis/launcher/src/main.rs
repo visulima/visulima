@@ -1,9 +1,10 @@
 //! vis Rust launcher (PoC) — the hybrid CLI's native front-end.
 //!
 //! Fast commands are handled in Rust with no Node boot and no napi addon:
-//!   - `--version` → baked version string.
-//!   - `exec` / `dlx` → detect the package manager and spawn it directly
-//!     (`securityEnforcementPlugin` gates only install/PM verbs, not these).
+//! - `--version` → baked version string.
+//! - `exec` / `dlx` → detect the package manager and spawn it directly
+//!   (`securityEnforcementPlugin` gates only install/PM verbs, not these).
+//!
 //! Everything else spawns Node on the bundled JS CLI (`dist/bin.js`), setting
 //! `VIS_HEAP_TUNED` so the JS side skips its heap re-exec. This mirrors how nub's
 //! Rust binary fronts Node — fast paths native, heavy/orchestration delegated.
