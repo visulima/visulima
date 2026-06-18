@@ -72,7 +72,30 @@ hyperfine `-i` because pnpm v10 exits 1 on `ERR_PNPM_IGNORED_BUILDS` _after_ res
 
 ## Not yet benchmarked (need features first)
 
-- **TS/JSX file execution, multi-file import graph, transpile cache** — need `vis x` (RFC Phase 2).
 - **PM-shim, warm-gvs** — aube-specific (global virtual store); vis delegates, N/A.
 - **Install cold leg, monorepo + t3 fixtures** — harness supports them (`run-install.sh` w/o `--warm-only`,
   `--fixture monorepo|t3`); not run in this first pass.
+
+## Post-optimization results (2026-06-18)
+
+Re-run after the lean-dispatcher + heap-skip + oxc-loader work (same machine/methodology).
+
+| Scenario                            | Baseline (06-17) | Now (06-18)  | Δ        | nearest peer                |
+| ----------------------------------- | ---------------- | ------------ | -------- | --------------------------- |
+| `vis run` (workspace task dispatch) | 620.8 ms         | **417.7 ms** | **−33%** | npm-ws 181, pnpm-r 294      |
+| `vis exec` (local bin dispatch)     | 855.6 ms         | **534.6 ms** | **−38%** | npm exec 230, pnpm exec 280 |
+| `vis x hello.ts` (file run)         | 431 ms           | **139.3 ms** | **−68%** | Node floor ~117 ms          |
+
+What moved each number:
+
+1. **`vis run` −33%** — the lean `bin.ts` dispatcher. The old entry statically imported all 60 commands
+   _before_ the heap re-exec, so the parent process loaded the full command graph and the re-exec'd
+   child loaded it again. Now the graph loads only in the child (via `cli-main`), so the pre-re-exec
+   parent is thin — every heap-tuning command (run, cache, audit, …) benefits, not just `vis x`.
+2. **`vis exec` −38%** — added to the heap-tuning skip-list, so it no longer pays the ~290 ms Node
+   re-exec (a pure child dispatcher never needs the bumped heap).
+3. **`vis x` −68%** — lean entry (skips the 60-command/plugin/config boot) + in-process execution via
+   the native oxc loader (no second Node spawn). Now Node-floor-bound (~117 ms + ~22 ms loader).
+
+`vis x` is competitive with tsx; `vis run`/`vis exec` remain above their pnpm/npm peers because of
+Node's boot floor + cerebro framework init (only a Rust launcher would close that — out of scope).
