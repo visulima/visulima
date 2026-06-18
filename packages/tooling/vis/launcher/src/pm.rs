@@ -6,6 +6,7 @@
 //! Node CLI or the napi addon. It detects the PM by walking up for a lockfile
 //! (mirroring the JS `pm-runner` table) and builds that PM's exec/dlx argv.
 
+use std::fs;
 use std::path::Path;
 
 /// Package managers the launcher's fast path understands.
@@ -67,6 +68,60 @@ pub fn detect_opt(cwd: &Path) -> Option<Pm> {
 /// found (matches `detectPm`'s conservative fallback).
 pub fn detect(cwd: &Path) -> Pm {
     detect_opt(cwd).unwrap_or(Pm::Npm)
+}
+
+/// Map a `packageManager` field name (the part before `@`) to a Pm. Returns None
+/// for bun (not a PM-shim target) or anything unrecognised.
+fn pm_from_name(name: &str) -> Option<Pm> {
+    match name {
+        "npm" => Some(Pm::Npm),
+        "pnpm" => Some(Pm::Pnpm),
+        "yarn" => Some(Pm::Yarn),
+        _ => None,
+    }
+}
+
+/// Extract the `packageManager` value's PM name from a package.json's text. The
+/// field is `"packageManager": "<name>@<version>"` (corepack standard); we read the
+/// name before `@`. A minimal hand-parse (no serde dep): find the key, the next
+/// `:`, then the quoted value. Robust enough — package.json has no comments and the
+/// field is top-level.
+fn parse_package_manager_field(text: &str) -> Option<Pm> {
+    let after_key = text.split_once("\"packageManager\"")?.1;
+    let after_colon = after_key.split_once(':')?.1;
+    let open = after_colon.find('"')?;
+    let value = &after_colon[open + 1..];
+    let close = value.find('"')?;
+    let spec = &value[..close];
+    let name = spec.split('@').next().unwrap_or(spec);
+
+    pm_from_name(name.trim())
+}
+
+/// The project's pinned PM from the nearest `package.json` `packageManager` field
+/// (corepack standard) — the authoritative pin, present even before a lockfile.
+/// Returns None when no package.json declares it.
+pub fn pinned_from_package_manager(cwd: &Path) -> Option<Pm> {
+    let mut dir = cwd;
+
+    loop {
+        if let Ok(text) = fs::read_to_string(dir.join("package.json")) {
+            if let Some(pm) = parse_package_manager_field(&text) {
+                return Some(pm);
+            }
+        }
+
+        match dir.parent() {
+            Some(parent) if parent != dir => dir = parent,
+            _ => return None,
+        }
+    }
+}
+
+/// The project's pinned PM for the shim agreement check: the `packageManager` field
+/// (authoritative) if present, else lockfile detection. None = no pin (no opinion).
+pub fn pinned(cwd: &Path) -> Option<Pm> {
+    pinned_from_package_manager(cwd).or_else(|| detect_opt(cwd))
 }
 
 /// Build the argv (after the pm binary) to run a locally-installed bin: the
@@ -139,10 +194,21 @@ fn prepend(verb: &str, rest: &[String]) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{dlx_args, npm_dlx_bin, Pm};
+    use super::{dlx_args, npm_dlx_bin, parse_package_manager_field, Pm};
 
     fn v(items: &[&str]) -> Vec<String> {
         items.iter().map(|s| (*s).to_owned()).collect()
+    }
+
+    #[test]
+    fn parses_package_manager_field() {
+        assert_eq!(parse_package_manager_field(r#"{"packageManager": "pnpm@9.0.0"}"#), Some(Pm::Pnpm));
+        // sha suffix (corepack) + no space after colon.
+        assert_eq!(parse_package_manager_field(r#"{"packageManager":"yarn@4.1.0+sha512.abc"}"#), Some(Pm::Yarn));
+        assert_eq!(parse_package_manager_field(r#"{"name":"x","packageManager":"npm@10.2.0"}"#), Some(Pm::Npm));
+        // bun + unknown are not PM-shim targets.
+        assert_eq!(parse_package_manager_field(r#"{"packageManager":"bun@1.1.0"}"#), None);
+        assert_eq!(parse_package_manager_field(r#"{"name":"x"}"#), None);
     }
 
     #[test]

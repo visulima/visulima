@@ -161,9 +161,11 @@ Independent of the big decisions, these are safe to proceed on:
       `npm_config_user_agent`, same-file recursion guard. Unit-tested + e2e-verified.
     - `vis shim install`/`uninstall`/`status` (`commands/shim/`): manages `.vis/shims` symlinks to the
       launcher, prints PATH-activation guidance (no global profile edits). Lifecycle e2e-verified.
-    - Remaining: ephemeral per-run `node` routing (2c.2); Windows symlink/`.cmd` shims; auto-PATH via
-      direnv hook; reads the project pin from the `packageManager` field (today: lockfile detection).
-      Gated on launcher packaging (the symlinks need the shipped binary; `VIS_LAUNCHER_PATH` for dev).
+    - Pin source: the `packageManager` field (corepack standard, authoritative — works before a
+      lockfile) with lockfile detection as fallback (`pm::pinned`). Unit-tested + e2e-verified.
+    - Remaining: ephemeral per-run `node` routing (2c.2) — LOW priority for vis (no version manager;
+      child flag-injection is better via NODE_OPTIONS than a node shim); Windows symlink/`.cmd` shims;
+      auto-PATH via a direnv hook. Gated on launcher packaging (`VIS_LAUNCHER_PATH` for dev).
 7. `run`/install — **Rust resolve + JS security gate**: launcher resolves fast, shells back to the JS
    security stack for the gate; no Rust reimplementation of vis's security product. To build.
 

@@ -155,7 +155,8 @@ fn find_real_pm(name: &str) -> Option<PathBuf> {
 /// then either exec the real PM or refuse with guidance. Never returns.
 fn run_shim(invoked: shim::ShimName, args: &[String]) -> ! {
     let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-    let pinned = pm::detect_opt(&cwd);
+    // Pin from the packageManager field (authoritative) then lockfile.
+    let pinned = pm::pinned(&cwd);
     // nub matches the FIRST token verbatim — a flag before the verb is not treated
     // as the verb, so strictness errs toward refusing.
     let first_verb = args.first().map(String::as_str);
