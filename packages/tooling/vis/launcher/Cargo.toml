@@ -1,0 +1,22 @@
+# vis Rust launcher (PoC) — a thin binary that fronts the Node CLI, the way nub's
+# Rust binary fronts Node. It answers static commands (--version) instantly in
+# Rust and spawns Node for everything else, setting heap flags natively so the JS
+# side never re-execs. See rfc/design-rust-launcher.md for the full design.
+[package]
+name = "vis-launcher"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[[bin]]
+name = "vis"
+path = "src/main.rs"
+
+[dependencies]
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+strip = "symbols"
+panic = "abort"

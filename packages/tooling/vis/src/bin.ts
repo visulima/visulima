@@ -15,7 +15,9 @@ import { injectVersion } from "./io/terminal";
 const HEAP_TUNING_SKIP = new Set(["", "--help", "--version", "-h", "-v", "completion", "dlx", "exec", "x"]);
 const firstArgument = process.argv[2] ?? "";
 
-if (!HEAP_TUNING_SKIP.has(firstArgument) && !process.argv.includes("--help") && !process.argv.includes("-h")) {
+// VIS_HEAP_TUNED is set by the Rust launcher, which applies the heap flags on
+// the Node spawn itself — so the JS side must not re-exec.
+if (process.env["VIS_HEAP_TUNED"] === undefined && !HEAP_TUNING_SKIP.has(firstArgument) && !process.argv.includes("--help") && !process.argv.includes("-h")) {
     applyHeapTuning();
 }
 
