@@ -49,11 +49,24 @@ on-disk transpile cache**, so oxc adds _no new capability_. Against that ~10 ms 
 the oxc crate tree in `vis-native` (multi-minute builds), a `registerHooks` loader with version
 tiers, source-map + cache plumbing, and ongoing maintenance.
 
-**Decision: do not add oxc now.** The Node boot floor (~117 ms) is the real anchor and is only
-beatable by a thin Rust launcher (a much larger effort, out of scope). The user's goal — nub feature
-parity + best speed — is met by the lean+jiti path (`vis x` is competitive with tsx). oxc remains a
-clean, well-scoped follow-up _if_ a future need appears (e.g. very large cold multi-file graphs, or
-dropping the jiti dependency); nub's mechanism is documented above for that case.
+**Decision (revised below).** Initially deferred: for `vis x` alone, oxc saved only ~10 ms. But the
+goal then shifted to **dropping jiti entirely** — at which point the calculus flips (see next entry).
+
+## Native oxc transform — DONE (the goal became "drop jiti")
+
+When the task became "get rid of jiti," oxc stopped being a ~10 ms `vis x` micro-opt and became the
+way to **remove a dependency used in 3 places** (config, generators, `vis x`). Chose the **Rust path**
+(oxc in `vis-native`) over the `oxc-transform` npm package: vis already ships `vis-native` (8 platform
+packages via CI), so the npm route would ship a _second_ redundant native-binary set — the Rust path
+adds no new dependency. Implemented `transform_ts` in `vis-native` + a `module.registerHooks`
+load+resolve loader (`src/runtime/ts-loader.ts`) with extension/index probing and the `.js`→`.ts`
+swap to match jiti's resolver; `?v=` query cache-bust; temp-file fallback for the 22.14.x sliver
+(no `registerHooks`). jiti removed from dependencies. `vis x` ≈ 141 ms (was 131 ms on jiti — a ~10 ms
+trade to drop the dep and own the transpiler).
+
+Test note: vitest's module runner doesn't honor Node's `registerHooks`, so the generator fixture was
+made self-contained (type-only import); the real-Node behaviour (extensionless + dir-index
+resolution) is verified via `vis x`.
 
 ## `vis x` .env autoload
 
@@ -75,6 +88,7 @@ provisioning can be tested.** Not claimed as done.
 
 Done: file runner (`vis x`), script runner (`vis run`), package runner (`vis dlx`/`exec`/`visx`),
 package manager (`vis install/add/...`), meta-manager (`vis pm`), watch (`vis run --watch`),
-runtime selection across all PM verbs + `vis x`. Speed: `vis x` 431→131 ms, cold-start −290 ms.
+runtime selection across all PM verbs + `vis x`. Speed: `vis x` 431→~141 ms, cold-start −290 ms.
+Dependency: **jiti removed** — TS loading now runs on vis's own native oxc addon.
 Deferred: native runtime version manager (above); Deno adapter; runtime polyfills (out of scope —
 vis is a launcher, not a runtime).
