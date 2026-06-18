@@ -11,8 +11,15 @@
  *
  * Side-effecting by design (an `--import` module); it exports nothing.
  */
+import enableCompileCache from "@visulima/cerebro/compile-cache";
+
 import { prepareScriptRuntime } from "./augment";
 import { registerTsHooks } from "./ts-loader";
+
+// Enable V8 compile cache. The launcher's `--import preload` path bypasses bin.ts
+// (which does this for the JS CLI), so without this the preload + loader modules
+// recompile on every `vis x`. Cheap, and compounds with the transpile cache.
+enableCompileCache();
 
 // Register the oxc TS load/resolve hooks for the whole import graph — the entry
 // and its relative `.ts`/`.tsx` imports transpile on load.

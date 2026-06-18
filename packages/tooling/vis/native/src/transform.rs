@@ -9,7 +9,7 @@ use std::path::Path;
 
 use napi_derive::napi;
 use oxc_allocator::Allocator;
-use oxc_codegen::Codegen;
+use oxc_codegen::{Codegen, CodegenOptions, CodegenReturn};
 use oxc_parser::Parser;
 use oxc_semantic::SemanticBuilder;
 use oxc_span::SourceType;
@@ -46,7 +46,22 @@ pub fn transform_ts(filename: String, source: String) -> napi::Result<TransformR
 
     Transformer::new(&allocator, path, &options).build_with_scoping(scoping, &mut program);
 
-    let code = Codegen::new().build(&program).code;
+    // Emit a source map so stack traces from `vis x`/config point at the original
+    // TS source, not the transpiled output. Inlined as a base64 data URL so it
+    // travels with the code through both loader tiers (registerHooks + temp file);
+    // the runtime enables `process.setSourceMapsEnabled(true)` to consume it.
+    let CodegenReturn { mut code, map, .. } = Codegen::new()
+        .with_options(CodegenOptions {
+            source_map_path: Some(path.to_path_buf()),
+            ..Default::default()
+        })
+        .build(&program);
+
+    if let Some(map) = map {
+        code.push_str("\n//# sourceMappingURL=");
+        code.push_str(&map.to_data_url());
+        code.push('\n');
+    }
 
     Ok(TransformResult { code })
 }

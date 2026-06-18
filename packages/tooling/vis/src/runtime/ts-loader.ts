@@ -32,6 +32,21 @@ interface RegisterHooksModule {
 let hookRegistered = false;
 let freshCounter = 0;
 let warnedNoRegisterHooks = false;
+let sourceMapsEnabled = false;
+
+/**
+ * Turn on V8 source-map support once, so stack traces map to the original TS (the
+ * transform emits inline source maps). Idempotent; safe on the supported floor.
+ */
+const enableSourceMapsOnce = (): void => {
+    if (sourceMapsEnabled) {
+        return;
+    }
+
+    sourceMapsEnabled = true;
+    // eslint-disable-next-line n/no-unsupported-features/node-builtins -- runtime-guarded optional call; present since Node 16.6
+    (process as { setSourceMapsEnabled?: (value: boolean) => void }).setSourceMapsEnabled?.(true);
+};
 
 const stripQuery = (url: string): string => {
     const index = url.indexOf("?");
@@ -117,6 +132,8 @@ const probe = (path: string): string | undefined => {
  * whether a graph-wide hook is active.
  */
 const ensureRegisterHooks = (): boolean => {
+    enableSourceMapsOnce();
+
     // Feature-detected on purpose: present on Node 22.15+/24, absent on the
     // 22.14.x floor (which takes the temp-file fallback in importTs).
     // eslint-disable-next-line n/no-unsupported-features/node-builtins -- runtime feature-detect with a fallback
