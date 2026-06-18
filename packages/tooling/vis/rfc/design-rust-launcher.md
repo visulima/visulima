@@ -79,6 +79,50 @@ _SC_PAGE_SIZE`), old=75%·RAM, semi via the same tier table as `heap-tuning.ts`.
   `vis-native` addon). **This + publish must run in CI; it cannot be exercised in the dev sandbox, so
   the production `bin` is NOT flipped here.**
 
+#### Concrete spec for the CI work (mirror the `npm/<target>` binding packages)
+
+The napi addon already ships 8 platform packages under `packages/tooling/vis/npm/<target>/`. The
+launcher mirrors that exactly, one level down under `launcher/npm/<target>/` (picked up by the
+`packages/**` workspace glob). For each of the 8 targets — `darwin-{arm64,x64}`,
+`linux-{arm64,x64}-{gnu,musl}`, `win32-{arm64,x64}-msvc`:
+
+- `launcher/npm/<target>/package.json` — like the binding template but exposing the executable:
+    ```jsonc
+    {
+        "name": "@visulima/vis-launcher-<target>",
+        "version": "0.0.1",
+        "license": "MIT",
+        "files": ["bin/"],
+        "os": ["<darwin|linux|win32>"],
+        "cpu": ["<arm64|x64>"],
+        // musl targets also need:  "libc": ["musl"]   (gnu: "libc": ["glibc"])
+        "publishConfig": { "access": "public", "provenance": true },
+    }
+    ```
+    The binary lives at `bin/vis` (`bin/vis.exe` on win32) — matching what `bin-shim.mjs` resolves
+    (`<pkg>/bin/<vis|vis.exe>`). The binary itself is gitignored (CI drops it in), exactly like the
+    `*.node` files. Add `launcher/npm/*/bin/` to `.gitignore`.
+- vis `package.json` `optionalDependencies`: add `"@visulima/vis-launcher-<target>": "workspace:*"`
+  for all 8 (sit them beside the existing `@visulima/vis-binding-<target>` entries).
+- `build-native.yml`: add a job that, per target, runs `cargo build --release --target <rust-triple>`
+  in `launcher/` (cross via `cross` or the platform runner, same matrix as the addon), then copies
+  `launcher/target/<triple>/release/vis[.exe]` → `launcher/npm/<target>/bin/`. Rust triples:
+  `aarch64-apple-darwin`, `x86_64-apple-darwin`, `aarch64-unknown-linux-gnu`,
+  `x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-musl`, `x86_64-unknown-linux-musl`,
+  `aarch64-pc-windows-msvc`, `x86_64-pc-windows-msvc`.
+- Publish: the launcher platform packages join the addon's `--ignore-packages` carve-out from
+  `multi-semantic-release` (they version with the binary build, not via commit analysis), same as the
+  binding packages.
+
+#### The `bin` flip (after binaries publish)
+
+vis's `bin` (`vis`/`v`) becomes a JS file that the postinstall replaces with a link to the native
+binary when one resolved (native-binary-as-bin → zero Node boot), leaving `bin-shim.mjs`'s logic as
+the content when no binary is available (fallback → `node dist/bin.js`). `visx`/`vx` stay on
+`dist/binx.js` (no launcher path needed there). Until the flip, `vis` keeps pointing at
+`dist/bin.js` — everything built so far is reachable by running the `launcher/target/release/vis`
+binary directly with `VIS_DIST_DIR` set (how the dev/e2e tests exercise it).
+
 ### Why `--help`/`completion` stay on Node (not static Rust)
 
 Only `--version` is staticised in Rust — it's a single string baked from `package.json` (one source
