@@ -26,7 +26,7 @@ const flatten = (tree: CreationDirectory, prefix = ""): Record<string, CreationF
 };
 
 describe(loadNativeTemplate, () => {
-    it("should load a native template module via jiti", async () => {
+    it("should load a native template module via the oxc loader", async () => {
         expect.assertions(1);
 
         const template = await loadNativeTemplate(FIXTURE);

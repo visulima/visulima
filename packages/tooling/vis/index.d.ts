@@ -7,43 +7,43 @@
  * the bitset.
  */
 export declare class OsvBloomHandle {
-    /**
-     * `n` field from the filter header — entry count the upstream
-     * builder inserted. Exposed for `vis advisories bloom status`.
-     */
-    get entriesInserted(): number;
-    /**
-     * `m` field — bit count. Returned as a decimal string so the full
-     * u64 round-trips without JS-Number precision loss; today's filter
-     * is ~3.1M bits but the wire format reserves 64-bit headroom.
-     */
-    get bitCountString(): string;
-    /** `k` field — hash-function count per probe. */
-    get hashCount(): number;
-    /**
-     * `built_at_unix_seconds` — UNIX seconds the upstream builder
-     * recorded, as a decimal string. JS reconstructs via
-     * `new Date(Number(s) * 1000)`. Use this in status output rather
-     * than the local fetch time.
-     */
-    get builtAtUnixSecondsString(): string;
-    /**
-     * `format_version` — currently 1. Surfaced so JS can flag a
-     * version-mismatch warning without re-decoding.
-     */
-    get formatVersion(): number;
+  /**
+   * `n` field from the filter header — entry count the upstream
+   * builder inserted. Exposed for `vis advisories bloom status`.
+   */
+  get entriesInserted(): number
+  /**
+   * `m` field — bit count. Returned as a decimal string so the full
+   * u64 round-trips without JS-Number precision loss; today's filter
+   * is ~3.1M bits but the wire format reserves 64-bit headroom.
+   */
+  get bitCountString(): string
+  /** `k` field — hash-function count per probe. */
+  get hashCount(): number
+  /**
+   * `built_at_unix_seconds` — UNIX seconds the upstream builder
+   * recorded, as a decimal string. JS reconstructs via
+   * `new Date(Number(s) * 1000)`. Use this in status output rather
+   * than the local fetch time.
+   */
+  get builtAtUnixSecondsString(): string
+  /**
+   * `format_version` — currently 1. Surfaced so JS can flag a
+   * version-mismatch warning without re-decoding.
+   */
+  get formatVersion(): number
 }
 
 export interface AddOptions {
-    packages: Array<string>;
-    saveDev: boolean;
-    exact: boolean;
-    peer: boolean;
-    optional: boolean;
-    global: boolean;
-    workspace: boolean;
-    workspaceRoot: boolean;
-    filter: Array<string>;
+  packages: Array<string>
+  saveDev: boolean
+  exact: boolean
+  peer: boolean
+  optional: boolean
+  global: boolean
+  workspace: boolean
+  workspaceRoot: boolean
+  filter: Array<string>
 }
 
 /**
@@ -51,57 +51,57 @@ export interface AddOptions {
  * zip → JSON → INSERT pipeline can take seconds; we run it on a libuv worker
  * so the main JS thread is free.
  */
-export declare function advisoriesIngest(options: AdvisoryIngestOptions, onProgress: (current: number, total: number) => void): Promise<AdvisoryIngestResult>;
+export declare function advisoriesIngest(options: AdvisoryIngestOptions, onProgress: (current: number, total: number) => void): Promise<AdvisoryIngestResult>
 
 /**
  * Synchronous query path. Returns one `AdvisoryQueryResult` per input,
  * preserving order, so callers can zip back to their lockfile rows by index.
  */
-export declare function advisoriesQuery(dbPath: string, queries: Array<AdvisoryQuery>): Array<AdvisoryQueryResult>;
+export declare function advisoriesQuery(dbPath: string, queries: Array<AdvisoryQuery>): Array<AdvisoryQueryResult>
 
-export declare function advisoriesStatus(dbPath: string): AdvisoryDbStatus;
+export declare function advisoriesStatus(dbPath: string): AdvisoryDbStatus
 
 export interface AdvisoryDbStatus {
-    exists: boolean;
-    ecosystems: Array<AdvisoryEcosystemStatus>;
-    sizeBytes: number;
-    schemaVersion: number;
+  exists: boolean
+  ecosystems: Array<AdvisoryEcosystemStatus>
+  sizeBytes: number
+  schemaVersion: number
 }
 
 export interface AdvisoryEcosystemStatus {
-    name: string;
-    advisoryCount: number;
-    lastSyncIso: string;
-    manifestEtag?: string;
+  name: string
+  advisoryCount: number
+  lastSyncIso: string
+  manifestEtag?: string
 }
 
 export interface AdvisoryIngestOptions {
-    /** Path to a previously-downloaded OSV dump zip on disk. */
-    zipPath: string;
-    dbPath: string;
-    ecosystem: string;
-    /**
-     * HTTP ETag header to write into the `manifest_etag` meta row for this
-     * ecosystem. `null` when the server didn't send one.
-     */
-    manifestEtag?: string;
+  /** Path to a previously-downloaded OSV dump zip on disk. */
+  zipPath: string
+  dbPath: string
+  ecosystem: string
+  /**
+   * HTTP ETag header to write into the `manifest_etag` meta row for this
+   * ecosystem. `null` when the server didn't send one.
+   */
+  manifestEtag?: string
 }
 
 export interface AdvisoryIngestResult {
-    advisoriesIngested: number;
-    durationMs: number;
+  advisoriesIngested: number
+  durationMs: number
 }
 
 export interface AdvisoryQuery {
-    ecosystem: string;
-    name: string;
-    version: string;
+  ecosystem: string
+  name: string
+  version: string
 }
 
 export interface AdvisoryQueryResult {
-    name: string;
-    version: string;
-    vulnerabilities: Array<NativeVulnerabilityJs>;
+  name: string
+  version: string
+  vulnerabilities: Array<NativeVulnerabilityJs>
 }
 
 /**
@@ -110,15 +110,15 @@ export interface AdvisoryQueryResult {
  * migrated `.pre-commit-config.yaml` files — anything outside this set
  * (and outside the vis-specific overlay) is surfaced as a warning.
  */
-export declare function allKnownTags(): Array<string>;
+export declare function allKnownTags(): Array<string>
 
 export interface CleanResult {
-    /** Directories that were removed */
-    removed: Array<string>;
-    /** Directories that failed to remove (with error messages) */
-    errors: Array<string>;
-    /** Lockfiles that were removed (when --lockfile flag used) */
-    lockfilesRemoved: Array<string>;
+  /** Directories that were removed */
+  removed: Array<string>
+  /** Directories that failed to remove (with error messages) */
+  errors: Array<string>
+  /** Lockfiles that were removed (when --lockfile flag used) */
+  lockfilesRemoved: Array<string>
 }
 
 /**
@@ -129,21 +129,21 @@ export interface CleanResult {
  *
  * When `remove_lockfile` is true, also removes lockfiles from the root.
  */
-export declare function cleanWorkspace(root: string, removeLockfile: boolean): CleanResult;
+export declare function cleanWorkspace(root: string, removeLockfile: boolean): CleanResult
 
 export interface DetectedPackageManager {
-    /** The package manager name: "pnpm", "npm", "yarn", "bun", or "deno" */
-    name: string;
-    /** The version string from packageManager field, or None if unknown */
-    version?: string;
-    /**
-     * Build metadata (sha256 hash) appended to packageManager field by
-     * corepack. `parts[1].split('+').next()` strips it from `version`;
-     * this field preserves it for callers that want to verify the pin.
-     */
-    buildMeta?: string;
-    /** Whether this is a monorepo/workspace */
-    isWorkspace: boolean;
+  /** The package manager name: "pnpm", "npm", "yarn", "bun", or "deno" */
+  name: string
+  /** The version string from packageManager field, or None if unknown */
+  version?: string
+  /**
+   * Build metadata (sha256 hash) appended to packageManager field by
+   * corepack. `parts[1].split('+').next()` strips it from `version`;
+   * this field preserves it for callers that want to verify the pin.
+   */
+  buildMeta?: string
+  /** Whether this is a monorepo/workspace */
+  isWorkspace: boolean
 }
 
 /**
@@ -156,7 +156,7 @@ export interface DetectedPackageManager {
  *
  * Returns `napi::Result` so any I/O errors surface as JS exceptions.
  */
-export declare function detectPackageManager(cwd: string, opts?: DetectPackageManagerOptions | undefined | null): DetectedPackageManager;
+export declare function detectPackageManager(cwd: string, opts?: DetectPackageManagerOptions | undefined | null): DetectedPackageManager
 
 /**
  * Options controlling which detection sources to consult.
@@ -167,40 +167,40 @@ export declare function detectPackageManager(cwd: string, opts?: DetectPackageMa
  * `{}` enables every source.
  */
 export interface DetectPackageManagerOptions {
-    /** Skip reading the `packageManager` field in package.json. */
-    ignorePackageJson?: boolean;
-    /** Skip lockfile walk (pnpm-lock.yaml, yarn.lock, …). */
-    ignoreLockFile?: boolean;
-    /**
-     * Skip the `npm_config_user_agent` env-var fallback. Set by every
-     * PM when running scripts; lets a tool spawned from `pnpm run x`
-     * know it's pnpm even without a lockfile.
-     */
-    ignoreArgv?: boolean;
+  /** Skip reading the `packageManager` field in package.json. */
+  ignorePackageJson?: boolean
+  /** Skip lockfile walk (pnpm-lock.yaml, yarn.lock, …). */
+  ignoreLockFile?: boolean
+  /**
+   * Skip the `npm_config_user_agent` env-var fallback. Set by every
+   * PM when running scripts; lets a tool spawned from `pnpm run x`
+   * know it's pnpm even without a lockfile.
+   */
+  ignoreArgv?: boolean
 }
 
 export interface DlxOptions {
-    package: string;
-    args: Array<string>;
-    additionalPackages: Array<string>;
-    shellMode: boolean;
-    silent: boolean;
+  package: string
+  args: Array<string>
+  additionalPackages: Array<string>
+  shellMode: boolean
+  silent: boolean
 }
 
 export interface EditorconfigDefaults {
-    indent?: string;
-    lineEnding?: string;
+  indent?: string
+  lineEnding?: string
 }
 
 export interface ExecOptions {
-    command: string;
-    args: Array<string>;
-    shellMode: boolean;
-    recursive: boolean;
-    workspaceRoot: boolean;
-    parallel: boolean;
-    reverse: boolean;
-    filter: Array<string>;
+  command: string
+  args: Array<string>
+  shellMode: boolean
+  recursive: boolean
+  workspaceRoot: boolean
+  parallel: boolean
+  reverse: boolean
+  filter: Array<string>
 }
 
 /**
@@ -211,33 +211,33 @@ export interface ExecOptions {
  * Returns `napi::Result<ExecResult>` -- throws a JS error for disallowed
  * binaries or spawn failures, returns ExecResult with exit code otherwise.
  */
-export declare function execPmCommand(bin: string, args: Array<string>, cwd: string): ExecResult;
+export declare function execPmCommand(bin: string, args: Array<string>, cwd: string): ExecResult
 
 /**
  * Executes a package manager command with inherited stdio (interactive).
  * Returns exit code. Throws JS error for disallowed binaries or spawn failures.
  */
-export declare function execPmCommandInteractive(bin: string, args: Array<string>, cwd: string): number;
+export declare function execPmCommandInteractive(bin: string, args: Array<string>, cwd: string): number
 
 export interface ExecResult {
-    code: number;
-    stdout: string;
-    stderr: string;
+  code: number
+  stdout: string
+  stderr: string
 }
 
 export interface InstallOptions {
-    frozenLockfile: boolean;
-    prod: boolean;
-    dev: boolean;
-    noOptional: boolean;
-    force: boolean;
-    ignoreScripts: boolean;
-    lockfileOnly: boolean;
-    offline: boolean;
-    silent: boolean;
-    recursive: boolean;
-    workspaceRoot: boolean;
-    filter: Array<string>;
+  frozenLockfile: boolean
+  prod: boolean
+  dev: boolean
+  noOptional: boolean
+  force: boolean
+  ignoreScripts: boolean
+  lockfileOnly: boolean
+  offline: boolean
+  silent: boolean
+  recursive: boolean
+  workspaceRoot: boolean
+  filter: Array<string>
 }
 
 /**
@@ -255,39 +255,41 @@ export interface InstallOptions {
  *       `advisories_status`. Backed by bundled SQLite (rusqlite) + zip.
  *   5 — added osv-bloom prefilter: `osv_bloom_decode`, `osv_bloom_probe`,
  *       `osv_bloom_probe_batch`. Backed by `blake3` keyed-hash double-hashing.
+ *   6 — added `transform_ts`: oxc-based TS/JSX → JS transpile for the runtime
+ *       loader (config / generators / `vis x`), replacing the `jiti` dependency.
  */
-export const NATIVE_BINDING_VERSION: number;
+export const NATIVE_BINDING_VERSION: number
 
 export interface NativeSortPackageJsonOptions {
-    /** Enable formatted output with newlines (default: true) */
-    pretty?: boolean;
-    /** Alphabetize script commands (default: false) */
-    sortScripts?: boolean;
+  /** Enable formatted output with newlines (default: true) */
+  pretty?: boolean
+  /** Alphabetize script commands (default: false) */
+  sortScripts?: boolean
 }
 
 export interface NativeVulnerabilityJs {
-    id: string;
-    aliases: Array<string>;
-    /** Normalized severity: "CRITICAL" | "HIGH" | "MODERATE" | "LOW" | "UNKNOWN". */
-    severity: string;
-    summary: string;
-    fixedVersions: Array<string>;
-    cvssScore?: number;
+  id: string
+  aliases: Array<string>
+  /** Normalized severity: "CRITICAL" | "HIGH" | "MODERATE" | "LOW" | "UNKNOWN". */
+  severity: string
+  summary: string
+  fixedVersions: Array<string>
+  cvssScore?: number
 }
 
 export interface OsvBloomBatchHit {
-    /**
-     * Index into the input batch array. Lets JS reconstruct which
-     * lockfile row triggered the hit without re-walking the inputs.
-     */
-    index: number;
-    name: string;
-    version: string;
+  /**
+   * Index into the input batch array. Lets JS reconstruct which
+   * lockfile row triggered the hit without re-walking the inputs.
+   */
+  index: number
+  name: string
+  version: string
 }
 
 export interface OsvBloomBatchQuery {
-    name: string;
-    version: string;
+  name: string
+  version: string
 }
 
 /**
@@ -295,7 +297,7 @@ export interface OsvBloomBatchQuery {
  * Returns an opaque handle; reuse it for every probe call until the
  * JS-side cache invalidates.
  */
-export declare function osvBloomDecode(bytes: Buffer): OsvBloomHandle;
+export declare function osvBloomDecode(bytes: Buffer): OsvBloomHandle
 
 /**
  * Probe a single `(name, version)` pair. Returns `true` when the pair
@@ -307,7 +309,7 @@ export declare function osvBloomDecode(bytes: Buffer): OsvBloomHandle;
  * unbounded ranges still match. Unparseable versions probe only the
  * wildcard bucket.
  */
-export declare function osvBloomProbe(handle: OsvBloomHandle, name: string, version: string): boolean;
+export declare function osvBloomProbe(handle: OsvBloomHandle, name: string, version: string): boolean
 
 /**
  * Batch variant. Returns only the hits, with their original index — the
@@ -315,20 +317,20 @@ export declare function osvBloomProbe(handle: OsvBloomHandle, name: string, vers
  * (`Vec<bool>` of length N) would dominate the cost. Order of returned
  * hits matches input order.
  */
-export declare function osvBloomProbeBatch(handle: OsvBloomHandle, queries: Array<OsvBloomBatchQuery>): Array<OsvBloomBatchHit>;
+export declare function osvBloomProbeBatch(handle: OsvBloomHandle, queries: Array<OsvBloomBatchQuery>): Array<OsvBloomBatchHit>
 
 export interface OutdatedOptions {
-    packages: Array<string>;
-    long: boolean;
-    format: string;
-    recursive: boolean;
-    filter: Array<string>;
-    workspaceRoot: boolean;
-    prod: boolean;
-    dev: boolean;
-    noOptional: boolean;
-    compatible: boolean;
-    global: boolean;
+  packages: Array<string>
+  long: boolean
+  format: string
+  recursive: boolean
+  filter: Array<string>
+  workspaceRoot: boolean
+  prod: boolean
+  dev: boolean
+  noOptional: boolean
+  compatible: boolean
+  global: boolean
 }
 
 /**
@@ -338,33 +340,33 @@ export interface OutdatedOptions {
  * pre-commit's behavior of treating "no shebang" as "no interpreter
  * tags" rather than as an error.
  */
-export declare function parseShebang(path: string): Array<string>;
+export declare function parseShebang(path: string): Array<string>
 
 export interface ProgressPayload {
-    current: number;
-    total: number;
+  current: number
+  total: number
 }
 
 export interface RemoveOptions {
-    packages: Array<string>;
-    saveDev: boolean;
-    global: boolean;
-    recursive: boolean;
-    workspaceRoot: boolean;
-    filter: Array<string>;
+  packages: Array<string>
+  saveDev: boolean
+  global: boolean
+  recursive: boolean
+  workspaceRoot: boolean
+  filter: Array<string>
 }
 
-export declare function resolveAdd(pm: string, version: string, opts: AddOptions): ResolvedCommand;
+export declare function resolveAdd(pm: string, version: string, opts: AddOptions): ResolvedCommand
 
 export interface ResolvedCommand {
-    bin: string;
-    args: Array<string>;
-    warnings: Array<string>;
+  bin: string
+  args: Array<string>
+  warnings: Array<string>
 }
 
-export declare function resolveDedupe(pm: string, version: string, check: boolean): ResolvedCommand;
+export declare function resolveDedupe(pm: string, version: string, check: boolean): ResolvedCommand
 
-export declare function resolveDlx(pm: string, version: string, opts: DlxOptions): ResolvedCommand;
+export declare function resolveDlx(pm: string, version: string, opts: DlxOptions): ResolvedCommand
 
 /**
  * Resolves `.editorconfig` defaults for `file_path` using the spec-compliant
@@ -374,27 +376,27 @@ export declare function resolveDlx(pm: string, version: string, opts: DlxOptions
  * configured. Parse / IO failures collapse to an empty result so callers can
  * fall back to content sniffing without try/catch noise.
  */
-export declare function resolveEditorconfigDefaults(filePath: string): EditorconfigDefaults;
+export declare function resolveEditorconfigDefaults(filePath: string): EditorconfigDefaults
 
-export declare function resolveExec(pm: string, version: string, opts: ExecOptions): ResolvedCommand;
+export declare function resolveExec(pm: string, version: string, opts: ExecOptions): ResolvedCommand
 
-export declare function resolveInstall(pm: string, version: string, opts: InstallOptions): ResolvedCommand;
+export declare function resolveInstall(pm: string, version: string, opts: InstallOptions): ResolvedCommand
 
-export declare function resolveLink(pm: string, version: string, target?: string | undefined | null): ResolvedCommand;
+export declare function resolveLink(pm: string, version: string, target?: string | undefined | null): ResolvedCommand
 
-export declare function resolveOutdated(pm: string, version: string, opts: OutdatedOptions): ResolvedCommand;
+export declare function resolveOutdated(pm: string, version: string, opts: OutdatedOptions): ResolvedCommand
 
-export declare function resolvePmCommand(pm: string, version: string, subcommand: string, extraArgs: Array<string>): ResolvedCommand;
+export declare function resolvePmCommand(pm: string, version: string, subcommand: string, extraArgs: Array<string>): ResolvedCommand
 
-export declare function resolveRemove(pm: string, version: string, opts: RemoveOptions): ResolvedCommand;
+export declare function resolveRemove(pm: string, version: string, opts: RemoveOptions): ResolvedCommand
 
-export declare function resolveUnlink(pm: string, version: string, packages: Array<string>, recursive: boolean): ResolvedCommand;
+export declare function resolveUnlink(pm: string, version: string, packages: Array<string>, recursive: boolean): ResolvedCommand
 
-export declare function resolveWhy(pm: string, version: string, opts: WhyOptions): ResolvedCommand;
+export declare function resolveWhy(pm: string, version: string, opts: WhyOptions): ResolvedCommand
 
-export declare function sortPackageJsonString(contents: string): string;
+export declare function sortPackageJsonString(contents: string): string
 
-export declare function sortPackageJsonStringWithOptions(contents: string, options: NativeSortPackageJsonOptions): string;
+export declare function sortPackageJsonStringWithOptions(contents: string, options: NativeSortPackageJsonOptions): string
 
 /**
  * Classifies a single file path using `prek-identify`. Returns the set of
@@ -403,7 +405,7 @@ export declare function sortPackageJsonStringWithOptions(contents: string, optio
  * don't need try/catch — the vis hook runtime treats "unclassified" and
  * "no tags" identically.
  */
-export declare function tagsFromPath(path: string): Array<string>;
+export declare function tagsFromPath(path: string): Array<string>
 
 /**
  * Batch variant of [`tags_from_path`]. Returns one tag list per input
@@ -412,25 +414,37 @@ export declare function tagsFromPath(path: string): Array<string>;
  * (the same behavior pre-commit applies when stat-ing a deleted staged
  * file mid-run).
  */
-export declare function tagsFromPaths(paths: Array<string>): Array<Array<string>>;
+export declare function tagsFromPaths(paths: Array<string>): Array<Array<string>>
+
+export interface TransformResult {
+  /** Transpiled JavaScript source. */
+  code: string
+}
+
+/**
+ * Transpile a TS/TSX/JS/JSX source string to JavaScript. `filename` selects the
+ * source dialect by extension (`.ts`/`.tsx`/`.mts`/`.cts`/`.js`/...). Returns the
+ * emitted JS; throws on a fatal parse failure.
+ */
+export declare function transformTs(filename: string, source: string): TransformResult
 
 /**
  * Finds the full path to a binary using `which`-style lookup.
  * Returns None if not found.
  */
-export declare function whichBin(name: string): string | null;
+export declare function whichBin(name: string): string | null
 
 export interface WhyOptions {
-    packages: Array<string>;
-    json: boolean;
-    long: boolean;
-    parseable: boolean;
-    recursive: boolean;
-    dev: boolean;
-    prod: boolean;
-    noOptional: boolean;
-    global: boolean;
-    /** Depth limit. Uses Option<i32> directly (napi supports it). */
-    depth?: number;
-    filter: Array<string>;
+  packages: Array<string>
+  json: boolean
+  long: boolean
+  parseable: boolean
+  recursive: boolean
+  dev: boolean
+  prod: boolean
+  noOptional: boolean
+  global: boolean
+  /** Depth limit. Uses Option<i32> directly (napi supports it). */
+  depth?: number
+  filter: Array<string>
 }

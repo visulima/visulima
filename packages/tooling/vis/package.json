@@ -145,7 +145,6 @@
         "graphology-layout-forceatlas2": "0.10.1",
         "graphology-types": "0.24.8",
         "hono": "catalog:backend",
-        "jiti": "catalog:dev",
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^2.0.1",
         "react": "catalog:frontend",

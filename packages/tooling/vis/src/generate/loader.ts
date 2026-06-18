@@ -7,9 +7,7 @@
  * interop both work without a separate build step.
  */
 
-import { dirname } from "@visulima/path";
-import { createJiti } from "jiti";
-
+import { importTs } from "../runtime/ts-loader";
 import type { Template } from "./types";
 
 /**
@@ -40,8 +38,8 @@ const validateTemplateExport = (path: string, value: unknown): Template => {
  * relative imports inside the template resolve as the author expects.
  */
 export const loadNativeTemplate = async (path: string): Promise<Template> => {
-    const jiti = createJiti(dirname(path), { fsCache: false, moduleCache: false });
-    const loaded = (await jiti.import(path, { default: true, try: true })) ?? null;
+    const namespace = await importTs(path);
+    const loaded = namespace["default"] ?? null;
 
     return validateTemplateExport(path, loaded);
 };

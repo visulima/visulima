@@ -1,13 +1,13 @@
 import { createHash } from "node:crypto";
-import { copyFileSync, readdirSync, readFileSync as fsReadFileSync, unlinkSync } from "node:fs";
+import { readdirSync, readFileSync as fsReadFileSync } from "node:fs";
 import { createRequire } from "node:module";
 
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 import { ensureDirSync, isAccessibleSync, readJsonSync, writeJsonSync } from "@visulima/fs";
 import { dirname, isAbsolute, join } from "@visulima/path";
-import { createJiti } from "jiti";
 
 import { VisConfigCycleError, VisConfigLoadError, VisConfigNotFoundError } from "../errors";
+import { importTs } from "../runtime/ts-loader";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import { assertNoDeprecatedConfigKeys, assertNoDeprecatedTaskKeys } from "./deprecation";
 import type { VisConfig, VisTaskConfig } from "./types";
@@ -280,31 +280,17 @@ const resolveExtendsSpecifier = (specifier: string, parentFile: string, chain: R
  * any throw in `VisConfigLoadError` so a syntax error surfaces with the
  * source path instead of bubbling up as a workspace.ts failure.
  */
-const loadRawConfig = async (jiti: ReturnType<typeof createJiti>, configPath: string, chain: ReadonlyArray<string>): Promise<VisConfig> => {
-    const hash = hashFileContents(configPath);
-    const extension = configPath.slice(configPath.lastIndexOf("."));
-    // Copy to a unique temp file to bypass jiti's internal module cache
-    // (jiti caches by file path and ignores moduleCache: false for ESM).
-    // The temp file lives next to the original config so Node's module
-    // resolution chain still reaches the workspace's node_modules — required
-    // when pnpm hoists `@visulima/vis/config` to the workspace root and
-    // /tmp can't see it.
-    const temporaryConfigPath = join(dirname(configPath), `.vis-config-tmp-${hash}${extension}`);
-
-    copyFileSync(configPath, temporaryConfigPath);
-
+const loadRawConfig = async (configPath: string, chain: ReadonlyArray<string>): Promise<VisConfig> => {
     let loaded: unknown;
 
     try {
-        loaded = (await jiti.import(temporaryConfigPath, { default: true, try: true })) ?? {};
+        // `importTs` transpiles TS via vis-native (oxc) and cache-busts each call,
+        // so a re-read always sees fresh module state (no stale config).
+        const namespace = await importTs(configPath);
+
+        loaded = namespace["default"] ?? {};
     } catch (error) {
         throw new VisConfigLoadError(configPath, chain, error);
-    } finally {
-        try {
-            unlinkSync(temporaryConfigPath);
-        } catch {
-            // Non-critical cleanup
-        }
     }
 
     try {
@@ -400,7 +386,6 @@ const mergeVisConfigs = (parent: VisConfig, child: VisConfig): VisConfig => {
  * caller folds this into a single merged `VisConfig`.
  */
 const resolveConfigChain = async (
-    jiti: ReturnType<typeof createJiti>,
     configPath: string,
     chain: ReadonlyArray<string>,
     inFlight: Set<string>,
@@ -418,7 +403,7 @@ const resolveConfigChain = async (
     inFlight.add(configPath);
 
     try {
-        const raw = await loadRawConfig(jiti, configPath, chain);
+        const raw = await loadRawConfig(configPath, chain);
 
         assertNoDeprecatedConfigKeys(configPath, chain, raw);
 
@@ -427,7 +412,7 @@ const resolveConfigChain = async (
         for (const specifier of extendsList) {
             const resolved = resolveExtendsSpecifier(specifier, configPath, chain);
 
-            await resolveConfigChain(jiti, resolved, [...chain, configPath], inFlight, loaded, order);
+            await resolveConfigChain(resolved, [...chain, configPath], inFlight, loaded, order);
         }
 
         loaded.set(configPath, raw);
@@ -473,12 +458,11 @@ const loadVisConfig = async (workspaceRoot: string, options?: { explicitConfigPa
         return applyDefaults({});
     }
 
-    const jiti = createJiti(workspaceRoot, { fsCache: false, moduleCache: false });
     const inFlight = new Set<string>();
     const loaded = new Map<string, VisConfig>();
     const order: string[] = [];
 
-    await resolveConfigChain(jiti, rootConfigPath, [], inFlight, loaded, order);
+    await resolveConfigChain(rootConfigPath, [], inFlight, loaded, order);
 
     const chainHash = hashConfigChain(order);
     const cachePath = getConfigCachePath(workspaceRoot);
@@ -590,10 +574,9 @@ const loadVisTaskConfig = async (workspaceRoot: string, projectDirectory: string
         }
     }
 
-    const jiti = createJiti(projectDirectory, { fsCache: false, moduleCache: false });
     // loadRawConfig validates against VisConfig-shaped keys; vis.task.ts
     // has its own (smaller) deprecation set, so re-run a task-specific check.
-    const raw = await loadRawConfig(jiti, taskConfigPath, []);
+    const raw = await loadRawConfig(taskConfigPath, []);
 
     assertNoDeprecatedTaskKeys(taskConfigPath, [], raw);
 

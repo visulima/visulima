@@ -12,6 +12,12 @@ blake3 = "1"
 ec4rs = "1"
 napi = { version = "3", features = [ "async" ] }
 napi-derive = "3"
+oxc_allocator = "=0.136.0"
+oxc_codegen = "=0.136.0"
+oxc_parser = "=0.136.0"
+oxc_semantic = "=0.136.0"
+oxc_span = "=0.136.0"
+oxc_transformer = "=0.136.0"
 pep440_rs = "0.7"
 prek-identify = "0.3.13"
 rusqlite = { version = "0.32", features = [

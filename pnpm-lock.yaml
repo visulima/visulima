@@ -10278,9 +10278,6 @@ importers:
       hono:
         specifier: catalog:backend
         version: 4.12.25
-      jiti:
-        specifier: catalog:dev
-        version: 2.7.0
       module-replacements:
         specifier: ^2.11.0
         version: 2.11.0

@@ -1,5 +1,4 @@
 import { spawnSync } from "node:child_process";
-import { pathToFileURL } from "node:url";
 
 import type { RuntimeId } from "../../runtime/adapters/types";
 import { loadEnvFile } from "../../task/target-options";
@@ -27,11 +26,9 @@ const runUnderBun = (file: string, scriptArguments: string[], cwd: string): numb
     return result.status ?? (result.signal === null ? 0 : 1);
 };
 
-/** Run `file` in-process under Node via jiti (transpiles TS/JSX, transpile-cached). */
+/** Run `file` in-process under Node, transpiling TS/JSX via vis-native's oxc loader. */
 const runUnderNode = async (file: string, scriptArguments: string[], cwd: string): Promise<number> => {
-    const { createJiti } = await import("jiti");
-
-    const jiti = createJiti(cwd);
+    const { importTs } = await import("../../runtime/ts-loader");
 
     // Auto-load the .env cascade from cwd (matches nub's file-runner and Bun's
     // own behaviour). Real environment variables win over .env values — the
@@ -49,7 +46,7 @@ const runUnderNode = async (file: string, scriptArguments: string[], cwd: string
     process.argv = [process.execPath, file, ...scriptArguments];
 
     try {
-        await jiti.import(pathToFileURL(file).href);
+        await importTs(file);
     } finally {
         process.argv = savedArgv;
     }
