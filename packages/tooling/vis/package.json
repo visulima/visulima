@@ -55,6 +55,10 @@
             "types": "./index.d.ts",
             "default": "./index.js"
         },
+        "./runtime/preload": {
+            "types": "./dist/runtime/preload.d.ts",
+            "default": "./dist/runtime/preload.js"
+        },
         "./release": {
             "types": "./dist/release/index.d.ts",
             "default": "./dist/release/index.js"

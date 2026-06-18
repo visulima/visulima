@@ -174,6 +174,14 @@ const ensureRegisterHooks = (): boolean => {
 };
 
 /**
+ * Register the oxc TS load/resolve hooks for the rest of this process, returning
+ * whether a graph-wide hook is active (false on the 22.14.x floor). Used by the
+ * launcher's `x` preload (`preload.ts`) so a directly-spawned Node transpiles the
+ * entry + its imports without going through {@link importTs}.
+ */
+export const registerTsHooks = (): boolean => ensureRegisterHooks();
+
+/**
  * Import a `.ts`/`.js` file at `absolutePath`, transpiling TS via oxc. Each call
  * loads a fresh module instance (config can be re-read without stale state).
  */

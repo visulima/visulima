@@ -84,6 +84,52 @@ delegating `vis toolchain` as the working path and capture the native `vis runti
 ls/which` design in `rfc/design-runtime-multitool.md` (Phase 3) for implementation where network
 provisioning can be tested.** Not claimed as done.
 
+## Rust launcher — native command tier (hybrid CLI)
+
+The Node-boot floor (~117 ms here, ~26 ms on a fast machine) is the wall the JS CLI can't beat.
+nub clears it by being a Rust binary that only spawns Node for user code. vis now has the same
+front-end (`launcher/`): static/resolve-then-spawn commands handled in Rust, heavy orchestration
+delegated to `node dist/bin.js`. Landed + measured: `--version` 2.4 ms (no Node), `exec`/`dlx`
+native PM-detect+spawn (8.1 ms dispatch vs 171 ms via the JS CLI — `securityEnforcementPlugin`
+gates only install/PM verbs, not these pure child-dispatchers), and native V8 heap flags
+(`heap.rs`, Unix `sysconf` → 75%·RAM old-space + tiered semi-space, mirroring `heap-tuning.ts`) so
+the JS side never re-execs (~290 ms saved). Windows RAM falls back to JS tuning until
+`GlobalMemoryStatusEx` is wired. No arg-parser crate: the launcher does token-recognition and
+forwards the rest verbatim — cerebro stays the single source of truth for parsing (a second parser
+would drift). See `design-rust-launcher.md` + `design-hybrid-evolution.md`.
+
+## Product decisions (asked, 2026-06-18)
+
+- **PATH shim: explicit opt-in, project-local.** A `node` hijack is powerful but invasive; build it
+  only as `vis shim install`/`uninstall`, prepending `.vis/shims` inside a vis project — never
+  automatic, never global (yet), loud status + trivial uninstall. Rationale: the useful 90% without
+  the machine-wide blast radius of intercepting every unrelated tool's `node`.
+- **install/run: Rust resolve + JS security gate.** The launcher does the fast resolution natively
+  but shells back to the JS security stack (advisories, OSV bloom, secret scan) for the gate — we do
+  NOT reimplement vis's security product in Rust (that's the drift hazard line). A hybrid-within-the-
+  hybrid: native speed where it's safe, JS where the product lives.
+- **Build all four safe-track slices:** x-preload, polyfill layer, unflag layer, packaging + bin flip.
+  Executed in dependency order (x-preload → polyfill → unflag → packaging), each committed + verified.
+
+## `x`-preload path — built, but it's at the Node floor (honest measurement)
+
+The launcher can run `vis x file.ts` via `node --import preload.js <file>` (the preload
+registers the oxc loader + autoloads `.env`, then Node runs the file as its own entry —
+proven: `registerHooks` intercepts the main entry, `process.argv` is already `[node, file, …]`).
+Measured here: **128 ms vs the lean JS path's 129 ms — statistically equal.** Both are
+Node-boot-bound; the decision log already established `vis x` sits at the floor. The preload's
+only edge is skipping `bin.js`'s small module graph (compile-cache/heap-tuning/injectVersion),
+invisible under this sandbox's ~100 ms spawn latency, maybe ~10 ms on a fast machine.
+
+So the preload's real value is **infrastructure for the polyfill layer**, not speed. Two
+consequences: (1) a Node-version cache (`node_version.rs`, mtime-keyed on the resolved absolute
+node path — the bare `"node"` string can't be `stat`'d) gates the preload to >= 22.15 and serves
+the unflag matrix, and without it the per-call `node --version` probe made `x` _slower_ (239 ms);
+(2) the polyfill layer is wired into **both** the preload AND the in-process `runUnderNode` path,
+so feature-detected polyfills (`Temporal`, `URLPattern`, opt-in via `VIS_POLYFILL`, resolved from
+the user's project) work with or without the launcher. `vis x` is NOT routed through the launcher
+for speed — it's routed so the augmentation layer has one consistent entry.
+
 ## Feature-parity status vs nub
 
 Done: file runner (`vis x`), script runner (`vis run`), package runner (`vis dlx`/`exec`/`visx`),

@@ -12,6 +12,7 @@
 //! dev fallback next to the binary. The published bin-shim sets `$VIS_DIST_DIR`.
 
 mod heap;
+mod node_version;
 mod pm;
 
 use std::env;
@@ -70,6 +71,33 @@ fn split_runtime(tokens: &[String]) -> (Option<String>, Vec<String>) {
     (runtime, tokens[index..].to_vec())
 }
 
+/// Runtimes the launcher's `x` fast path handles natively. Anything else (deno,
+/// unknown) returns None so the JS CLI resolves and errors.
+enum XRuntime {
+    Node,
+    Bun,
+}
+
+/// Resolve the `vis x` runtime with the lean path's precedence: explicit
+/// `--runtime`, then `VIS_RUNTIME`, then a bun lockfile (→ bun), else node.
+fn resolve_x_runtime(flag: Option<&str>, cwd: &std::path::Path) -> Option<XRuntime> {
+    let explicit = flag.map(str::to_owned).or_else(|| env::var("VIS_RUNTIME").ok());
+
+    match explicit.as_deref() {
+        Some("node") => return Some(XRuntime::Node),
+        Some("bun") => return Some(XRuntime::Bun),
+        Some(_) => return None, // deno/unknown → delegate to JS for resolution/errors
+        None => {}
+    }
+
+    // No explicit choice: a bun lockfile implies the bun runtime, otherwise node.
+    if matches!(pm::detect(cwd), pm::Pm::Bun) {
+        Some(XRuntime::Bun)
+    } else {
+        Some(XRuntime::Node)
+    }
+}
+
 fn main() {
     let argv: Vec<String> = env::args().collect();
     let command = argv.get(1).map(String::as_str).unwrap_or("");
@@ -107,6 +135,52 @@ fn main() {
 
         spawn.args(&args);
         run(spawn, pm::binary(manager));
+    }
+
+    // Native fast path: `x <file> [args]` runs the file directly under the
+    // resolved runtime — no vis JS dispatcher. Mirrors the lean path's runtime
+    // precedence (flag → VIS_RUNTIME → lockfile → node; the vis-config pin is
+    // intentionally skipped here too). Only Node >= 22.15 (registerHooks) takes the
+    // preload path; bun runs natively; anything else delegates to the JS CLI.
+    if command == "x" {
+        let (runtime_flag, rest) = split_runtime(&argv[2..]);
+
+        if !rest.is_empty() {
+            let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+
+            match resolve_x_runtime(runtime_flag.as_deref(), &cwd) {
+                Some(XRuntime::Bun) => {
+                    // bun transpiles TS/JSX natively and autoloads .env itself.
+                    let mut bun = Command::new("bun");
+
+                    bun.arg("run");
+                    bun.args(&rest);
+                    run(bun, "bun");
+                }
+                Some(XRuntime::Node) => {
+                    let node_bin = node_bin();
+                    let supports_hooks = node_version::detect(&node_bin).map(|v| v.has_register_hooks()).unwrap_or(false);
+
+                    if supports_hooks {
+                        // node --import <preload> <file> [args]: the preload
+                        // registers the oxc loader + autoloads .env, then Node runs
+                        // <file> as its own entry (process.argv = [node, file, …]).
+                        let preload = dist_dir().join("runtime").join("preload.js");
+                        let mut node = Command::new(node_bin);
+
+                        node.arg("--import");
+                        node.arg(&preload);
+                        node.args(&rest);
+                        run(node, "node");
+                    }
+                    // Node < 22.15 (or version unknown): fall through to the JS CLI,
+                    // whose in-process path has the 22.14 temp-file fallback.
+                }
+                // Unknown/other runtime: let the JS CLI resolve + error cleanly.
+                None => {}
+            }
+        }
+        // Empty/fallthrough: delegate to `node dist/bin.js x …` below.
     }
 
     // Everything else: spawn Node on the JS CLI. When RAM is detectable we apply

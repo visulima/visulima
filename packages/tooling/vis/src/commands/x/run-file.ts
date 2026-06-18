@@ -39,6 +39,15 @@ const runUnderNode = async (file: string, scriptArguments: string[], cwd: string
         }
     }
 
+    // Optional runtime augmentation: feature-detected polyfills (Temporal,
+    // URLPattern) for the user script, when VIS_POLYFILL is set. Mirrors the
+    // launcher preload path so polyfills work with or without the Rust launcher.
+    if (process.env["VIS_POLYFILL"] !== undefined) {
+        const { installPolyfills } = await import("../../runtime/polyfills");
+
+        await installPolyfills(process.env["VIS_POLYFILL"], cwd);
+    }
+
     // The script must observe its own argv (argv[0]=node, argv[1]=file, then its
     // args), not vis's. Restored afterwards so a caught error still reports cleanly.
     const savedArgv = process.argv;
