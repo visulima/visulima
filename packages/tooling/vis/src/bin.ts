@@ -12,6 +12,9 @@ import { injectVersion } from "./io/terminal";
 // work (version/help/completion, the pure dispatchers dlx/exec, and the lean
 // file runner x); heavy commands (run, cache, audit, sbom, graph, …) keep the
 // bump. Deny-list, so any unlisted/new command defaults to tuned — safe.
+// SYNC NOTE: mirrored in the Rust launcher (launcher/src/main.rs, HEAP_TUNING_SKIP)
+// so `vis --help` etc. skip tuning identically with or without the native binary.
+// Change both together.
 const HEAP_TUNING_SKIP = new Set(["", "--help", "--version", "-h", "-v", "completion", "dlx", "exec", "x"]);
 const firstArgument = process.argv[2] ?? "";
 

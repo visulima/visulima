@@ -143,14 +143,16 @@ in `vis x` on both paths; **22.14 TS-loader** warns once that local imports won'
 `prepareScriptRuntime` (.env + polyfills) and `runAndExit` helpers replace three copies; stale `jiti`
 comments swept to the oxc loader.
 
+Also fixed (initially accepted, then fixed on request): **launcher heap skip-list** now mirrors
+bin.ts's `HEAP_TUNING_SKIP` (`heap_tuning_skipped` + bidirectional sync notes + Rust tests), so
+`vis --help`/`completion` skip tuning identically with or without the native binary — no behavioural
+divergence. The drift risk is contained by the sync notes on both sides plus unit tests.
+
 **Accepted, not "fixed" (documented why):**
 
 - _Heap heuristic in two languages_ (`heap-tuning.ts` + `heap.rs`): kept — a cross-language CI guard
   is heavy; instead a bidirectional sync note + the Rust unit test pin the values. Re-evaluate if the
   heuristic starts changing often.
-- _Launcher heap-tunes commands bin.ts skips_ (`--help`/completion): kept one code path. The flag is a
-  ceiling V8 never reserves, so a no-allocation command is unaffected; mirroring the skip-list in Rust
-  would add a drift point for zero real benefit.
 - _Signal-killed children exit 1, not 128+N; in-process `vis x` shares vis's process_: pre-existing /
   intentional (matches the prior `spawnSync` behaviour and nub's in-process model). Changelog-worthy.
 

@@ -75,6 +75,18 @@ fn split_runtime(tokens: &[String]) -> (Option<String>, Vec<String>) {
     (runtime, tokens[index..].to_vec())
 }
 
+/// Commands that skip V8 heap tuning — MUST stay in lockstep with bin.ts's
+/// `HEAP_TUNING_SKIP` (light commands that do no heavy in-process work). If you
+/// change one, change the other; `heap_tuning_skipped` mirrors bin.ts's full
+/// condition (the set plus an explicit `--help`/`-h` anywhere).
+const HEAP_TUNING_SKIP: &[&str] = &["", "--help", "--version", "-h", "-v", "completion", "dlx", "exec", "x"];
+
+/// Whether the delegated Node spawn should skip heap tuning, matching bin.ts:
+/// the first command is in the skip set, or `--help`/`-h` appears anywhere.
+fn heap_tuning_skipped(command: &str, argv: &[String]) -> bool {
+    HEAP_TUNING_SKIP.contains(&command) || argv.iter().any(|argument| argument == "--help" || argument == "-h")
+}
+
 /// Runtimes the launcher's `x` fast path handles natively. Anything else (deno,
 /// unknown) returns None so the JS CLI resolves and errors.
 enum XRuntime {
@@ -217,17 +229,19 @@ fn main() {
     // is already present. We then skip our flags AND VIS_HEAP_TUNED so the JS side
     // runs its (also-respecting) tuning: it sees the user's flag and no-ops too.
     //
-    // bin.ts skips heap tuning for light commands (--help/completion/bare vis); the
-    // launcher tunes them anyway here. That's intentional, not a divergence to fix:
-    // duplicating bin.ts's skip-list in Rust would add a drift point, and the flag
-    // is a heap *ceiling* V8 never reserves — a command that allocates nothing is
-    // unaffected. So we keep one code path rather than mirror the skip-list.
+    // Light commands skip heap tuning entirely, exactly as bin.ts does — so
+    // `vis --help` behaves the same with or without the launcher. When we skip, we
+    // also leave VIS_HEAP_TUNED unset, so the JS side runs its own (identically
+    // skipping) check and no tuning happens either way. A user-set
+    // `--max-old-space-size` (via NODE_OPTIONS) is likewise respected, not
+    // overridden (matching cerebro's applyHeapTuning, which no-ops when present).
     let dist = dist_dir();
     let mut node = Command::new(node_bin());
 
     let user_set_heap = env::var("NODE_OPTIONS").is_ok_and(|opts| opts.contains("--max-old-space-size"));
+    let skip_heap = heap_tuning_skipped(command, &argv);
 
-    if let (false, Some((old_space, semi_space))) = (user_set_heap, heap::flags()) {
+    if let (false, false, Some((old_space, semi_space))) = (skip_heap, user_set_heap, heap::flags()) {
         node.arg(format!("--max-old-space-size={old_space}"));
         node.arg(format!("--max-semi-space-size={semi_space}"));
         node.env("VIS_HEAP_TUNED", "1");
@@ -237,4 +251,30 @@ fn main() {
     node.args(&argv[1..]);
 
     run(node, "node");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::heap_tuning_skipped;
+
+    fn v(items: &[&str]) -> Vec<String> {
+        items.iter().map(|s| (*s).to_owned()).collect()
+    }
+
+    #[test]
+    fn skips_light_commands_like_bin_ts() {
+        assert!(heap_tuning_skipped("", &v(&[])));
+        assert!(heap_tuning_skipped("completion", &v(&["completion"])));
+        assert!(heap_tuning_skipped("--help", &v(&["--help"])));
+        // --help/-h anywhere in argv skips, matching bin.ts.
+        assert!(heap_tuning_skipped("run", &v(&["run", "--help"])));
+        assert!(heap_tuning_skipped("audit", &v(&["audit", "-h"])));
+    }
+
+    #[test]
+    fn tunes_heavy_commands() {
+        assert!(!heap_tuning_skipped("run", &v(&["run", "build"])));
+        assert!(!heap_tuning_skipped("audit", &v(&["audit"])));
+        assert!(!heap_tuning_skipped("sbom", &v(&["sbom"])));
+    }
 }
