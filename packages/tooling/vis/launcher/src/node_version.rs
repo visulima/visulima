@@ -92,15 +92,21 @@ fn cache_path() -> Option<PathBuf> {
     Some(path)
 }
 
-/// Cache line format: `<mtime> <major.minor.patch>` (single line). Returns the
-/// cached version only if the stored mtime still matches `node_bin`'s.
+/// Cache line format: `<resolved-path>\t<mtime>\t<major.minor.patch>`. The cache is
+/// a single slot, so it MUST be keyed by both the resolved binary path AND its
+/// mtime: keying on mtime alone would return a stale version when `VIS_NODE`/`PATH`
+/// switches between two Node binaries that happen to share an mtime (version
+/// managers preserve upstream tarball mtimes, so a collision across majors is real)
+/// — and that wrong version gates the `x` preload path and the unflag layer.
 fn read_cache(node_bin: &str) -> Option<NodeVersion> {
+    let current_path = resolve_bin(node_bin);
     let current_mtime = node_mtime(node_bin)?;
     let contents = fs::read_to_string(cache_path()?).ok()?;
-    let mut parts = contents.split_whitespace();
+    let mut parts = contents.split('\t');
+    let stored_path = parts.next()?;
     let stored_mtime: u64 = parts.next()?.parse().ok()?;
 
-    if stored_mtime != current_mtime {
+    if stored_path != current_path.to_string_lossy() || stored_mtime != current_mtime {
         return None;
     }
 
@@ -113,7 +119,14 @@ fn write_cache(node_bin: &str, version: NodeVersion) {
             let _ = fs::create_dir_all(dir);
         }
 
-        let line = format!("{} {}.{}.{}", mtime, version.major, version.minor, version.patch);
+        let line = format!(
+            "{}\t{}\t{}.{}.{}",
+            resolve_bin(node_bin).to_string_lossy(),
+            mtime,
+            version.major,
+            version.minor,
+            version.patch
+        );
         let _ = fs::write(path, line);
     }
 }

@@ -114,31 +114,37 @@ fn main() {
 
     // Native fast path: exec / dlx → detect the PM and spawn it directly. No Node
     // CLI boot, no napi. `--runtime bun` forces bun (bunx / bun x).
+    //
+    // Only the clean `<bin> [args]` shape is fast-pathed. A leading flag means a
+    // vis-specific option (`--offline`, `--silent`, `--shell`, `--package`, `-h`,
+    // …) that the JS resolver expands into PM-specific flags — the launcher's
+    // simple mapping would forward it raw to the PM and diverge — so it falls
+    // through to the JS CLI below. An empty target also delegates (JS owns the
+    // usage error, single source).
     if command == "exec" || command == "dlx" {
         let (runtime, rest) = split_runtime(&argv[2..]);
+        let fast_pathable = rest.first().is_some_and(|first| !first.starts_with('-'));
 
-        if rest.is_empty() {
-            eprintln!("vis: no {command} target. Usage: vis {command} <name> [args...]");
-            exit(1);
+        if fast_pathable {
+            let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+            let manager = if runtime.as_deref() == Some("bun") {
+                pm::Pm::Bun
+            } else {
+                pm::detect(&cwd)
+            };
+
+            let args = if command == "exec" {
+                pm::exec_args(manager, &rest)
+            } else {
+                pm::dlx_args(manager, &rest)
+            };
+
+            let mut spawn = Command::new(pm::binary(manager));
+
+            spawn.args(&args);
+            run(spawn, pm::binary(manager));
         }
-
-        let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
-        let manager = if runtime.as_deref() == Some("bun") {
-            pm::Pm::Bun
-        } else {
-            pm::detect(&cwd)
-        };
-
-        let args = if command == "exec" {
-            pm::exec_args(manager, &rest)
-        } else {
-            pm::dlx_args(manager, &rest)
-        };
-
-        let mut spawn = Command::new(pm::binary(manager));
-
-        spawn.args(&args);
-        run(spawn, pm::binary(manager));
+        // Flag-led or empty: fall through to `node dist/bin.js <command> …`.
     }
 
     // Native fast path: `x <file> [args]` runs the file directly under the
@@ -198,10 +204,17 @@ fn main() {
     // skips its re-exec — heap tuned once, no second boot. When RAM is undetectable
     // (e.g. Windows for now) we leave VIS_HEAP_TUNED unset so the JS side tunes
     // itself: correct, just one extra boot.
+    //
+    // A user-set `--max-old-space-size` (via NODE_OPTIONS) is RESPECTED, not
+    // overridden — matching cerebro's `applyHeapTuning`, which no-ops when the flag
+    // is already present. We then skip our flags AND VIS_HEAP_TUNED so the JS side
+    // runs its (also-respecting) tuning: it sees the user's flag and no-ops too.
     let dist = dist_dir();
     let mut node = Command::new(node_bin());
 
-    if let Some((old_space, semi_space)) = heap::flags() {
+    let user_set_heap = env::var("NODE_OPTIONS").is_ok_and(|opts| opts.contains("--max-old-space-size"));
+
+    if let (false, Some((old_space, semi_space))) = (user_set_heap, heap::flags()) {
         node.arg(format!("--max-old-space-size={old_space}"));
         node.arg(format!("--max-semi-space-size={semi_space}"));
         node.env("VIS_HEAP_TUNED", "1");
