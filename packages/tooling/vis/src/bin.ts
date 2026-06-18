@@ -45,6 +45,16 @@ void (async () => {
         return;
     }
 
+    // exec / dlx are pure child-dispatchers — take the lean entry (no 60-command
+    // CLI, no config/security/post plugins, which don't apply to them).
+    if (firstArgument === "exec" || firstArgument === "dlx") {
+        const { runExecCli } = await import("./cli-exec");
+
+        await runExecCli();
+
+        return;
+    }
+
     const { runCli } = await import("./cli-main");
 
     await runCli();
