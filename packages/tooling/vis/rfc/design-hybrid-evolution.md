@@ -83,6 +83,27 @@ flags. This is exactly what the heap-flag injection already does, generalized.
   version). Curated into a small static table shipped with vis — **not** scraped at runtime.
 - Scope: vis's own Node spawns + `vis x` user scripts. Opt-out via env.
 - Risk: low. Flags are additive and version-gated; a wrong flag fails loudly at spawn.
+- **Built** (`flags.rs`, opt-in `VIS_UNFLAG`): `sourcemaps`, `sqlite`, `webstorage`
+  (sessionStorage), `localstorage` (adds `--experimental-webstorage` + a computed
+  `--localstorage-file`, parent dir created), `eventsource`. `WebSocket`/`URLPattern`/
+  `fetch` are already native on the 22.14 floor, so no rule is needed for them.
+
+#### Subprocess augmentation — built, opt-in (`VIS_AUGMENT_SUBPROCESS`)
+
+By default the augmentation reaches only the `vis x` entry. With
+`VIS_AUGMENT_SUBPROCESS=1` the launcher carries the loader + unflag flags (+ PnP
+runtime) via `NODE_OPTIONS` so **every nested `node` the script spawns** is augmented
+too — nub's subprocess-augmentation, achieved with `NODE_OPTIONS` rather than a node
+PATH-shim (vis has no version manager, so the shim's only unique value — version
+pinning — doesn't apply; `NODE_OPTIONS` covers the loader/flag propagation). Opt-in
+because injecting the loader into every child has a per-spawn cost and is invasive.
+
+#### Yarn PnP — built, gated on `.pnp.cjs` (`pnp.rs`)
+
+Only when a `.pnp.cjs` is found walking up from cwd (a Yarn PnP tree — only Yarn
+generates it), `vis x` injects `--require <.pnp.cjs>` + the `.pnp.loader.mjs` ESM
+loader **before** our preload so the script's bare imports resolve through PnP.
+Propagates in subprocess-augment mode too. No-op outside a PnP tree.
 
 ### (b) Polyfill layer (for `vis x` user scripts) — SAFE, opt-in
 
@@ -96,6 +117,10 @@ untouched. Scope is strictly `vis x` user code; vis's own runtime is never polyf
   registers the oxc loader, autoloads `.env`, then conditionally installs polyfills.
 - Risk: low–medium. Polyfills can subtly differ from native; hence feature-detect +
   opt-in (`--polyfill` / config), never silent for all scripts.
+- **Built** (`polyfills.ts`, opt-in `VIS_POLYFILL`): `Temporal`, `URLPattern`,
+  resolved from the user's project, feature-detected. On the 22.14 floor most of
+  nub's other "globals" (`WebSocket`, `EventSource`, web storage) are native or
+  flag-gated rather than polyfilled, so they live in the unflag matrix (a), not here.
 
 ### (c) Shim layer — two mechanisms, NOT a global `node` hijack
 
