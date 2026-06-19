@@ -42,4 +42,12 @@ describe(shouldReprompt, () => {
 
         expect(shouldReprompt(entry(["alert-a", "alert-b"]), ["alert-a"])).toBe(false);
     });
+
+    it("tolerates a malformed alertKeys without throwing", () => {
+        expect.assertions(1);
+
+        const malformed = { alertKeys: undefined, seenAt: 1 } as unknown as DlxSeenEntry;
+
+        expect(shouldReprompt(malformed, ["alert-a"])).toBe(true);
+    });
 });

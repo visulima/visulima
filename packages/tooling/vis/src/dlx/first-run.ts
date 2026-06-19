@@ -11,8 +11,7 @@
  * is passed, or when the package was already approved with no new alerts.
  */
 
-import isInCi from "is-in-ci";
-
+import { isInteractive } from "../util/interactive";
 import { promptYesNo } from "../util/prompt";
 import { getSeenEntry, markSeen, readDlxSeen, shouldReprompt } from "./first-run-state";
 import type { PackageInfo } from "./package-info";
@@ -62,6 +61,24 @@ export const parsePackageSpec = (argument: string): { name: string; spec?: strin
     return separator <= 0 ? { name: argument } : { name: argument.slice(0, separator), spec: argument.slice(separator + 1) };
 };
 
+/**
+ * Whether `pkg` is a plain registry spec (`name`, `name@version`, `@scope/x@tag`).
+ * The gate only understands registry packages — git URLs, tarball/file paths,
+ * and `npm:`/`github:` aliases are parsed differently by the underlying runner,
+ * so we skip the panel for them rather than describe the wrong thing.
+ */
+export const isRegistrySpec = (pkg: string): boolean => {
+    if (pkg === "" || pkg.startsWith(".") || pkg.startsWith("/") || pkg.startsWith("~")) {
+        return false;
+    }
+
+    // A protocol/alias prefix (git+https:, file:, npm:, github:, https:, workspace:) — anything with a
+    // colon before the optional scoped "@" — is not a bare registry name.
+    const withoutScope = pkg.startsWith("@") ? pkg.slice(1) : pkg;
+
+    return !withoutScope.includes(":");
+};
+
 /** Overall wall-clock budget for enrichment before we proceed regardless. */
 const GATHER_BUDGET_MS = 6000;
 
@@ -72,15 +89,12 @@ const defaultWrite = (chunk: string): void => {
 export const maybeGateFirstRun = async (options: FirstRunGateOptions): Promise<FirstRunGateResult> => {
     const { forceInfo = false, noInfo = false, offline = false, pkg, socketToken, workspaceRoot, yes = false } = options;
 
-    if (noInfo) {
+    if (noInfo || !isRegistrySpec(pkg)) {
         return { proceed: true };
     }
 
     const now = options.now ?? Date.now();
-    const isCi = options.isCi ?? isInCi;
-    const isTty = options.isTty ?? Boolean(process.stdin.isTTY);
-    const interactive = isTty && !isCi;
-    const autoYes = yes || !interactive;
+    const autoYes = yes || !isInteractive({ isCi: options.isCi, isTty: options.isTty });
     const write = options.output ?? defaultWrite;
 
     // Fast path: nothing to prompt for and no reason to force the panel — skip

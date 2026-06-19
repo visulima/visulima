@@ -9,44 +9,35 @@
 import { stripVTControlCharacters } from "node:util";
 
 import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
+import { formatBytes } from "@visulima/humanizer";
 import { getStringWidth } from "@visulima/string";
 
+import type { PackageAlert } from "../security/socket-security";
 import type { PackageInfo } from "./package-info";
 
 /** Visible column width, ignoring ANSI colour escapes. */
 const visibleWidth = (text: string): number => getStringWidth(stripVTControlCharacters(text));
 
-const SEVERITY_TINT: Record<string, (text: string) => string> = {
+const SEVERITY_TINT: Record<PackageAlert["severity"], (text: string) => string> = {
     critical: red,
     high: red,
     low: dim,
     medium: yellow,
 };
 
-export const formatBytes = (bytes: number | undefined): string | undefined => {
+/** Humanise a byte count for the panel, or `undefined` when the size is unknown. */
+const formatSize = (bytes: number | undefined): string | undefined => {
     if (bytes === undefined || bytes < 0) {
         return undefined;
     }
 
-    if (bytes < 1024) {
-        return `${String(bytes)} B`;
-    }
-
-    const kb = bytes / 1024;
-
-    if (kb < 1024) {
-        return `${kb < 10 ? kb.toFixed(1) : String(Math.round(kb))} KB`;
-    }
-
-    const mb = kb / 1024;
-
-    return `${mb < 10 ? mb.toFixed(1) : String(Math.round(mb))} MB`;
+    return formatBytes(bytes, { decimals: 1, space: true });
 };
 
 const formatSizeRow = (info: PackageInfo): string | undefined => {
     const { fileCount, tarballBytes, unpackedBytes } = info.size;
-    const unpacked = formatBytes(unpackedBytes);
-    const tarball = formatBytes(tarballBytes);
+    const unpacked = formatSize(unpackedBytes);
+    const tarball = formatSize(tarballBytes);
 
     if (unpacked && tarball) {
         const files = fileCount ? `, ${String(fileCount)} files` : "";
@@ -75,19 +66,20 @@ const formatScoreRow = (info: PackageInfo): string => {
     const tint = score === undefined ? dim : score >= 70 ? green : score >= 40 ? yellow : red;
     const scoreText = score === undefined ? "n/a" : `${String(score)}/100`;
 
-    const counts = new Map<string, number>();
+    const counts = new Map<PackageAlert["severity"], number>();
 
     for (const alert of alerts) {
         counts.set(alert.severity, (counts.get(alert.severity) ?? 0) + 1);
     }
 
     const alertParts: string[] = [];
+    const severities: PackageAlert["severity"][] = ["critical", "high", "medium", "low"];
 
-    for (const severity of ["critical", "high", "medium", "low"]) {
+    for (const severity of severities) {
         const count = counts.get(severity);
 
         if (count) {
-            alertParts.push((SEVERITY_TINT[severity] ?? dim)(`${String(count)} ${severity}`));
+            alertParts.push(SEVERITY_TINT[severity](`${String(count)} ${severity}`));
         }
     }
 

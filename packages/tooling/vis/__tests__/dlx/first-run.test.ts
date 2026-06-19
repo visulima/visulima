@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-import { maybeGateFirstRun, parsePackageSpec } from "../../src/dlx/first-run";
+import { isRegistrySpec, maybeGateFirstRun, parsePackageSpec } from "../../src/dlx/first-run";
 import { markSeen } from "../../src/dlx/first-run-state";
 import type { PackageInfo } from "../../src/dlx/package-info";
 import { gatherPackageInfo } from "../../src/dlx/package-info";
@@ -41,6 +41,40 @@ describe(parsePackageSpec, () => {
         expect.assertions(1);
 
         expect(parsePackageSpec(argument)).toStrictEqual(expected);
+    });
+});
+
+describe(isRegistrySpec, () => {
+    it.each([
+        ["create-vite", true],
+        ["typescript@5.5.4", true],
+        ["@scope/pkg@1.2.3", true],
+        ["", false],
+        ["./local/dir", false],
+        ["/abs/path", false],
+        ["git+https://github.com/x/y.git", false],
+        ["file:../foo", false],
+        ["npm:left-pad@1.0.0", false],
+        ["github:user/repo", false],
+    ])("classifies %s", (pkg, expected) => {
+        expect.assertions(1);
+
+        expect(isRegistrySpec(pkg)).toBe(expected);
+    });
+
+    it("skips the gate for a non-registry spec without gathering info", async () => {
+        expect.assertions(2);
+
+        const result = await maybeGateFirstRun({
+            isCi: false,
+            isTty: true,
+            output: () => {},
+            pkg: "git+https://github.com/x/y.git",
+            readline: async () => "n",
+        });
+
+        expect(result).toStrictEqual({ proceed: true });
+        expect(mockedGather).not.toHaveBeenCalled();
     });
 });
 

@@ -4,21 +4,7 @@ import { getStringWidth } from "@visulima/string";
 import { describe, expect, it } from "vitest";
 
 import type { PackageInfo } from "../../src/dlx/package-info";
-import { formatBytes, renderFirstRunPanel } from "../../src/dlx/render-panel";
-
-describe(formatBytes, () => {
-    it.each([
-        [undefined, undefined],
-        [-1, undefined],
-        [512, "512 B"],
-        [2048, "2.0 KB"],
-        [1_234_567, "1.2 MB"],
-    ])("formats %s", (input, expected) => {
-        expect.assertions(1);
-
-        expect(formatBytes(input)).toBe(expected);
-    });
-});
+import { renderFirstRunPanel } from "../../src/dlx/render-panel";
 
 describe(renderFirstRunPanel, () => {
     const info: PackageInfo = {
