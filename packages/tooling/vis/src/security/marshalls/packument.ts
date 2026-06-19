@@ -40,10 +40,14 @@ export interface PackumentMaintainer {
 export interface PackumentDist {
     /** sigstore-style provenance bundle. We only check presence (item 4). */
     attestations?: { provenance?: unknown };
+    /** Number of files in the published tarball (npm registry `dist.fileCount`). */
+    fileCount?: number;
     integrity?: string;
     /** ECDSA P-256 signatures from npm's signing keys (item 3). */
     signatures?: { keyid: string; sig: string }[];
     tarball?: string;
+    /** Unpacked install footprint in bytes (npm registry `dist.unpackedSize`). */
+    unpackedSize?: number;
 }
 
 export interface PackumentVersionEntry {
@@ -86,8 +90,10 @@ interface PackumentCacheEntry {
  * would otherwise be served for up to its TTL with the new field missing —
  * e.g. a pre-`scripts` entry silently blinding the s1ngularity marshall.
  * v2: added per-version `scripts` retention.
+ * v3: added per-version `dist.unpackedSize` / `dist.fileCount` retention
+ *     (dlx first-run install-footprint panel).
  */
-const PACKUMENT_CACHE_VERSION = 2;
+const PACKUMENT_CACHE_VERSION = 3;
 
 export interface GetPackumentOptions {
     authToken?: string;
@@ -192,6 +198,14 @@ const stripPackument = (raw: Record<string, unknown>): Packument => {
 
             if (typeof dist.tarball === "string") {
                 trimmedDist.tarball = dist.tarball;
+            }
+
+            if (typeof dist.unpackedSize === "number") {
+                trimmedDist.unpackedSize = dist.unpackedSize;
+            }
+
+            if (typeof dist.fileCount === "number") {
+                trimmedDist.fileCount = dist.fileCount;
             }
 
             stripped.dist = trimmedDist;
