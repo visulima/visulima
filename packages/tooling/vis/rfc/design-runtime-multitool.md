@@ -120,7 +120,7 @@ The `RuntimeAdapter` interface above reserves the seams (`permissions?`, `script
 
 ### Phase 3 — Native runtime version manager `vis runtime` — NEW (folds in old `vis node` plan)
 
-```
+```sh
 vis runtime install <node|bun>@<version|lts>   # download + SHA-256 verify + atomic extract
 vis runtime ls [--remote]
 vis runtime use <id>@<version>                   # PATH shim ~/.vis/shims
