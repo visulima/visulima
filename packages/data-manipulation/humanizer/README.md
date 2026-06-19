@@ -1076,7 +1076,8 @@ parseDuration("-10", { defaultUnit: "d" });
 | Mongolian            | `mn`      |
 | Malay                | `ms`      |
 | Marathi              | `mr`      |
-| Norwegian            | `no`      |
+| Norwegian Bokmål     | `no`      |
+| Norwegian Nynorsk    | `nn`      |
 | Polish               | `pl`      |
 | Portuguese           | `pt`      |
 | Romanian             | `ro`      |
