@@ -183,7 +183,9 @@ describe("solution/ai/ai-finder", () => {
         expect(existsSync(nestedDirectory)).toBe(true);
     });
 
-    it("creates the cache directory with owner-only (0700) permissions", async () => {
+    // Windows does not implement POSIX permission bits; mkdir's mode argument is ignored
+    // and statSync reports a synthesized mode (0o666) regardless of the requested 0o700.
+    it.skipIf(process.platform === "win32")("creates the cache directory with owner-only (0700) permissions", async () => {
         expect.assertions(1);
 
         const nestedDirectory = join(cacheDirectory, "perm-check");
