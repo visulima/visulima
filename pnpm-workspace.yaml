@@ -862,8 +862,19 @@ overrides:
   flatted@<3.4.0: '>=3.4.0'
   flatted@<=3.4.1: '>=3.4.2'
   follow-redirects@<=1.15.11: ^1.15.12
+  # google-auth-library / gcp-metadata pull in gaxios ^7.1.4, which resolves to a
+  # second 7.1.4 copy alongside the catalog's 7.1.5 — the two emit structurally
+  # identical but nominally distinct GaxiosResponse/GaxiosOptions types, breaking
+  # @visulima/storage's GCS/Drive type checks. All ranges accept 7.1.5, so dedupe.
+  gaxios@<7.1.5: ^7.1.5
   glob@>=10.2.0 <10.5.0: '>=10.5.0'
   glob@>=11.0.0 <11.1.0: '>=11.1.0'
+  # @googleapis/drive's transitive googleapis-common pins google-auth-library
+  # ^10.1.0 → 10.6.2, a second copy alongside the catalog's 10.7.0. The two emit
+  # nominally distinct OAuth2Client types (private `redirectUri`), breaking
+  # @visulima/storage's google-drive auth type check. 10.7.0 satisfies ^10.1.0.
+  # Scoped to the 10.x line so @google-cloud/storage's ^9.6.3 stays on 9.x.
+  google-auth-library@>=10.0.0 <10.7.0: 10.7.0
   h3-v2: npm:h3@2.0.1-rc.18
   h3@<1.15.9: '>=1.15.9'
   handlebars@>=4.0.0 <4.7.9: '>=4.7.9'
