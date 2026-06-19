@@ -1,3 +1,9 @@
+## @visulima/dev-toolbar [1.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.34...@visulima/dev-toolbar@1.0.0-alpha.35) (2026-06-19)
+
+### Bug Fixes
+
+* **dev-toolbar:** resolve import/no-named-as-default eslint error ([#686](https://github.com/visulima/visulima/issues/686)) ([87964f5](https://github.com/visulima/visulima/commit/87964f587e9b13fff0ea8b7ea8f058e847d7c015))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.33...@visulima/dev-toolbar@1.0.0-alpha.34) (2026-06-19)
 
 ## @visulima/dev-toolbar [1.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.32...@visulima/dev-toolbar@1.0.0-alpha.33) (2026-06-13)
