@@ -163,7 +163,6 @@ function Transition({ children, distance = 4, duration = 240, onExit, preset = "
 
     // Restart animation whenever `show` flips. The `animationKey` state forces
     // the interval-owning effect to re-fire without depending on `progress`.
-    // eslint-disable-next-line react-x/no-unused-state -- animationKey is read inside the interval-owning effect via closure
     const [animationKey, setAnimationKey] = useState(0);
 
     useEffect(() => {

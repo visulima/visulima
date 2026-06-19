@@ -85,6 +85,7 @@ export default function Stepper({ accentColor = "blue", activeIndex = 0, errorCo
                     const color = status === "error" ? errorColor : status === "pending" ? undefined : accentColor;
 
                     return (
+                        // eslint-disable-next-line react-x/no-array-index-key -- steps expose an optional stable `key`; index is the documented fallback for keyless entries
                         <Box flexDirection="column" key={step.key ?? index}>
                             <Box>
                                 <Text color={color} dimColor={status === "pending"}>
@@ -125,6 +126,7 @@ export default function Stepper({ accentColor = "blue", activeIndex = 0, errorCo
                 const isLast = index === steps.length - 1;
 
                 return (
+                    // eslint-disable-next-line react-x/no-array-index-key -- steps expose an optional stable `key`; index is the documented fallback for keyless entries
                     <Fragment key={step.key ?? index}>
                         <Box>
                             <Text color={color} dimColor={status === "pending"}>
