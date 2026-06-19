@@ -47,7 +47,7 @@ jobs:
             - name: "Git checkout"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
               env:
@@ -62,7 +62,7 @@ jobs:
 
             - name: "Git checkout (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
               env:
@@ -109,7 +109,7 @@ jobs:
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
                   # Number of commits to fetch. 0 indicates all history for all branches and tags.
@@ -127,7 +127,7 @@ jobs:
 
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
                   fetch-depth: 0
@@ -142,7 +142,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/node@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -180,7 +180,7 @@ jobs:
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
                   # Number of commits to fetch. 0 indicates all history for all branches and tags.
@@ -198,7 +198,7 @@ jobs:
 
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
                   fetch-depth: 0
@@ -213,7 +213,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/node@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -245,7 +245,7 @@ jobs:
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
               env:
@@ -260,7 +260,7 @@ jobs:
 
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
               env:
@@ -269,7 +269,7 @@ jobs:
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
             - name: "Setup resources and environment"
-              uses: "anolilab/workflows/step/node@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -308,7 +308,7 @@ jobs:
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
               env:
@@ -323,7 +323,7 @@ jobs:
 
             - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
               env:
@@ -354,7 +354,7 @@ jobs:
             - name: "Git checkout"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
               env:
@@ -369,7 +369,7 @@ jobs:
 
             - name: "Git checkout (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
               env:
@@ -417,7 +417,7 @@ jobs:
             - name: "Git checkout"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
 
@@ -428,12 +428,12 @@ jobs:
 
             - name: "Git checkout (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
 
             - name: "Install Rust toolchain"
-              uses: "oxc-project/setup-rust@23f38cfb0c04af97a055f76acee94d5be71c7c82" # v1.0.16
+              uses: "oxc-project/setup-rust@3d6fb132fbe7cdcb66bf8ec193911c2945369d12" # v1.0.17
               with:
                   components: "rustfmt"
                   restore-cache: false

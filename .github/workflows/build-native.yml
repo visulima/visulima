@@ -49,7 +49,7 @@ jobs:
             - name: "Git checkout"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
                   # Full history so dorny/paths-filter resolves the main...alpha
@@ -65,7 +65,7 @@ jobs:
 
             - name: "Git checkout (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
                   fetch-depth: 0
@@ -146,7 +146,7 @@ jobs:
             - name: "Git checkout"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
 
@@ -157,7 +157,7 @@ jobs:
 
             - name: "Git checkout (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   persist-credentials: false
 
@@ -220,7 +220,7 @@ jobs:
             - name: "Setup resources and environment"
               if: "steps.need-build.outputs.any == 'true' || (matrix.settings.testable && needs.files-changed.outputs.any-changed == 'true')"
               id: "setup"
-              uses: "anolilab/workflows/step/node@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
               with:
                   node-version: "22"
                   cache-prefix: "build-native"
@@ -230,7 +230,7 @@ jobs:
 
             - name: "Install Rust toolchain"
               if: "steps.need-build.outputs.any == 'true'"
-              uses: "anolilab/workflows/step/rust@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
+              uses: "anolilab/workflows/step/rust@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
               with:
                   cache-key: "build-native"
                   save-cache: "${{ github.ref_name == 'main' }}"

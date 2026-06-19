@@ -100,7 +100,7 @@ jobs:
             - name: "Git checkout"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
@@ -117,7 +117,7 @@ jobs:
 
             - name: "Git checkout (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
@@ -131,7 +131,7 @@ jobs:
               uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
 
             - name: "Setup resources and environment"
-              uses: "anolilab/workflows/step/node@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -186,7 +186,7 @@ jobs:
             - name: "Git checkout"
               id: "checkout"
               continue-on-error: true
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
@@ -201,7 +201,7 @@ jobs:
 
             - name: "Git checkout (retry)"
               if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
@@ -210,7 +210,7 @@ jobs:
                   persist-credentials: false
 
             - name: "Setup resources and environment"
-              uses: "anolilab/workflows/step/node@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -295,7 +295,7 @@ jobs:
             - name: "Run benchmark"
               env:
                   BENCH_PROJECT: "${{ matrix.project }}"
-              uses: "CodSpeedHQ/action@3194d9a39c4d46684cb44bf7207fc56626aad8fd" # v4.15.1
+              uses: "CodSpeedHQ/action@63f3e98b61959fe67f146a3ff022e4136fe9bb9c" # v4.17.6
               with:
                   mode: "simulation"
                   run: "pnpm exec nx run \"$BENCH_PROJECT\":test:bench"
