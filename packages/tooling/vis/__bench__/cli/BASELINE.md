@@ -169,3 +169,27 @@ path are statistically equal — there's no JS-CLI overhead left to strip.
 **Bottom line:** vis's native tier is at nub's speed class; the file-runner is at the shared Node
 floor; only install/PM is intentionally slower (JS security gate). The remaining unconditional win
 that isn't yet shipped is reaching users — gated on launcher packaging (CI).
+
+---
+
+## JS-only architecture — launcher DROPPED (2026-06-19, Apple M-series, Node 24.15, prod build)
+
+The Rust launcher was removed; features re-homed to the JS CLI. These are the real
+paths now (no native dispatch). **Node boot floor: `node -e ""` ≈ 122 ms.**
+
+| path                          | now (JS) | launcher era | note                                            |
+| ----------------------------- | -------- | ------------ | ----------------------------------------------- |
+| `vis --version`               | 229 ms   | 2.4 ms       | full `cli-main` + version (no native shortcut)  |
+| `vis x hello.ts`              | 129 ms   | ~128 ms      | unchanged — always Node-floor-bound, in-process |
+| `vis x` + `VIS_UNFLAG`        | 250 ms   | ~130 ms      | re-exec (2nd Node boot) to apply start flags    |
+| `vis exec noop`               | 394 ms   | 8.1 ms\*     | cerebro boot + PM resolve (napi addon) + spawn  |
+| `pnpm` via shim (`__pm-shim`) | 254 ms   | 5.5 ms       | Node boot + JS dispatch + spawn real PM         |
+
+\* launcher number was Rust dispatch with an instant fake PM (no Node).
+
+**Reading it:** the launcher's _native-tier_ wins are gone — that was the explicit
+trade for dropping the Rust binary + 16 platform packages. `vis x` is unchanged
+(it was always at the Node floor). The augmented paths now pay a Node boot the
+launcher avoided (`VIS_UNFLAG` re-exec ≈ floor×2; the PM shim boots Node per call).
+The heaviest path is `vis exec`/PM-resolve (cerebro construction + the napi addon
+load + spawn) — the main remaining JS-side cold-start optimization target.
