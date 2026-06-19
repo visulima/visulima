@@ -48,6 +48,7 @@ import { durationLanguage as mn } from "../../../src/language/mn";
 import { durationLanguage as mr } from "../../../src/language/mr";
 import { durationLanguage as ms } from "../../../src/language/ms";
 import { durationLanguage as nl } from "../../../src/language/nl";
+import { durationLanguage as nn } from "../../../src/language/nn";
 import { durationLanguage as no } from "../../../src/language/no";
 import { durationLanguage as pl } from "../../../src/language/pl";
 import { durationLanguage as pt } from "../../../src/language/pt";
@@ -116,6 +117,7 @@ const importedLanguages = {
     mr,
     ms,
     nl,
+    nn,
     no,
     pl,
     pt,
@@ -184,7 +186,7 @@ describe("localized duration", () => {
     });
 
     it("humanizes all languages correctly with the top-level function", () => {
-        expect.assertions(3393);
+        expect.assertions(3427);
 
         for (const [language, pairs] of languages) {
             for (const [milliseconds, expectedResult] of pairs) {
