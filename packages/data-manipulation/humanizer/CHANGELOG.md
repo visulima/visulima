@@ -1,3 +1,9 @@
+## @visulima/humanizer [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.14...@visulima/humanizer@3.0.0-alpha.15) (2026-06-19)
+
+### Features
+
+* **humanizer:** add Norwegian Nynorsk (nn) duration language ([#684](https://github.com/visulima/visulima/issues/684)) ([4d0c07d](https://github.com/visulima/visulima/commit/4d0c07dbb1d9dc17efb8585e93bc24deaf83eb68)), closes [EvanHahn/HumanizeDuration.js#236](https://github.com/EvanHahn/HumanizeDuration.js/issues/236)
+
 ## @visulima/humanizer [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.13...@visulima/humanizer@3.0.0-alpha.14) (2026-06-13)
 
 ### Features
