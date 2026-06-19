@@ -1,4 +1,4 @@
-import generate from "@babel/generator";
+import _generate from "@babel/generator";
 import { parse } from "@babel/parser";
 import type { NodePath } from "@babel/traverse";
 import _traverse from "@babel/traverse";
@@ -12,7 +12,7 @@ import matcher, { compileMatcher } from "./matcher";
 
 const trav: typeof _traverse = (_traverse as any).default ?? _traverse;
 
-const gen: typeof generate = (generate as any).default ?? generate;
+const gen: typeof _generate = (_generate as any).default ?? _generate;
 
 export const SOURCE_ATTR = "data-vdt-source";
 
