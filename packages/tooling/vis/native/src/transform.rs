@@ -33,9 +33,7 @@ pub fn transform_ts(filename: String, source: String) -> napi::Result<TransformR
     let parser_return = Parser::new(&allocator, &source, source_type).parse();
 
     if parser_return.panicked {
-        return Err(napi::Error::from_reason(format!(
-            "vis-native: failed to parse {filename}"
-        )));
+        return Err(napi::Error::from_reason(format!("vis-native: failed to parse {filename}")));
     }
 
     let mut program = parser_return.program;
@@ -51,10 +49,7 @@ pub fn transform_ts(filename: String, source: String) -> napi::Result<TransformR
     // travels with the code through both loader tiers (registerHooks + temp file);
     // the runtime enables `process.setSourceMapsEnabled(true)` to consume it.
     let CodegenReturn { mut code, map, .. } = Codegen::new()
-        .with_options(CodegenOptions {
-            source_map_path: Some(path.to_path_buf()),
-            ..Default::default()
-        })
+        .with_options(CodegenOptions { source_map_path: Some(path.to_path_buf()), ..Default::default() })
         .build(&program);
 
     if let Some(map) = map {
