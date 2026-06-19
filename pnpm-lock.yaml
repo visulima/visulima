@@ -2368,7 +2368,7 @@ importers:
         specifier: 5.0.0-alpha.32
         version: link:../../filesystem/fs
       '@visulima/jsdoc-open-api':
-        specifier: 3.0.0-alpha.32
+        specifier: 3.0.0-alpha.33
         version: link:../jsdoc-open-api
       '@visulima/path':
         specifier: 3.0.0-alpha.13
