@@ -337,7 +337,7 @@ catalogs:
     '@vue-email/render': 0.0.9
     '@vue/tsconfig': 0.9.1
     babel-plugin-react-compiler: 19.1.0-rc.3
-    fumadocs-ui: 17.0.0
+    fumadocs-ui: 16.10.4
     motion: 12.40.0
     radix-ui: ^1.6.0
     react: 19.2.7
@@ -553,7 +553,7 @@ catalogs:
     find-up: 8.0.0
     find-up-simple: 1.0.1
     fs-extra: 11.3.5
-    fumadocs-core: 17.0.0
+    fumadocs-core: 16.10.4
     fumadocs-mdx: 15.0.12
     fumadocs-twoslash: 3.2.0
     google-auth-library: 10.7.0

@@ -115,6 +115,11 @@ function discoverPackages() {
             // Features from metadata (empty array if not curated yet)
             const features = meta.features || [];
 
+            // Only point to the docs site when the package actually ships a docs/ dir;
+            // otherwise fall back to the package detail page, which always exists. A docs
+            // link to a package without docs 404s and fails the prerender crawl.
+            const docsPath = existsSync(join(pkgPath, "docs")) ? `/docs/packages/${slug}` : `/packages/${slug}`;
+
             packages.push({
                 slug,
                 npmName,
@@ -122,7 +127,7 @@ function discoverPackages() {
                 description,
                 category,
                 accentColor: categoryColors[category] || "sky-sapphire",
-                docsPath: `/docs/packages/${slug}`,
+                docsPath,
                 features,
             });
         }
