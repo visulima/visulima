@@ -1,3 +1,5 @@
+## @visulima/dev-toolbar [1.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.33...@visulima/dev-toolbar@1.0.0-alpha.34) (2026-06-19)
+
 ## @visulima/dev-toolbar [1.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.32...@visulima/dev-toolbar@1.0.0-alpha.33) (2026-06-13)
 
 ### Bug Fixes
