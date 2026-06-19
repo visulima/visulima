@@ -1,3 +1,14 @@
+## @visulima/tui [1.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.25...@visulima/tui@1.0.0-alpha.26) (2026-06-19)
+
+### Bug Fixes
+
+* **tui:** clear eslint errors in components ([#685](https://github.com/visulima/visulima/issues/685)) ([ebdb47f](https://github.com/visulima/visulima/commit/ebdb47fb22c8584b5908b89b7fbbfa3fb499786b))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.34
+
 ## @visulima/tui [1.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.24...@visulima/tui@1.0.0-alpha.25) (2026-06-15)
 
 ### Bug Fixes
