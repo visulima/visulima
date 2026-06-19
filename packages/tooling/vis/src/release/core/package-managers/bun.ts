@@ -13,7 +13,7 @@
  */
 
 import { readdir, readFile, rename } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { basename, isAbsolute, join } from "node:path";
 
 import zeptomatch from "zeptomatch";
 
@@ -66,7 +66,10 @@ export class BunAdapter extends PackageManagerAdapter {
         if (filenameMatch?.[1]) {
             const tarballName = filenameMatch[1];
 
-            producedTarball = tarballName.startsWith("/") ? tarballName : join(dest, tarballName);
+            // `isAbsolute` (not `startsWith("/")`) so a Windows absolute path
+            // like `C:\…\pkg.tgz` parsed from bun's stdout isn't re-joined onto
+            // `dest`, which would produce a doubled `dest\C:\…` path.
+            producedTarball = isAbsolute(tarballName) ? tarballName : join(dest, tarballName);
         } else {
             // Fallback: derive from package.json
             const pkgJson = JSON.parse(
