@@ -235,7 +235,9 @@ describe("shellPublishActions: interpolation", () => {
 
         const cmd = calls[0]!.args[calls[0]!.args.length - 1] as string;
 
-        expect(cmd).toMatch(/'@scope\/pkg'/);
+        // The action quotes for the shell it will actually spawn: `sh -c` on
+        // POSIX (single quotes) and `cmd /c` on Windows (double quotes).
+        expect(cmd).toMatch(process.platform === "win32" ? /"@scope\/pkg"/ : /'@scope\/pkg'/);
     });
 });
 

@@ -50,13 +50,25 @@ export const discoverPackages = async (
     // compares like with like. On macOS `os.tmpdir()` returns `/var/folders/…`
     // while discovery adapters hand back the realpath `/private/var/folders/…`
     // (and similar `/tmp` → realpath cases on Linux), which made an in-workspace
-    // manifest look "outside" the workspace. realpathSync requires the path to
-    // exist, so fall back to a plain resolve for not-yet-created paths.
+    // manifest look "outside" the workspace.
+    //
+    // On Windows the same mismatch appears as 8.3 short names: `os.tmpdir()`
+    // yields `C:\Users\RUNNER~1\…` while glob discovery hands back the long
+    // form `C:\Users\runneradmin\…`. Plain `realpathSync` resolves symlinks but
+    // does NOT expand short names — `realpathSync.native` (libuv's realpath)
+    // does, so prefer it and fall back to the JS implementation, then to a
+    // plain resolve for not-yet-created paths.
     const canonicalize = (p: string): string => {
+        const resolved = resolvePath(p);
+
         try {
-            return realpathSync(resolvePath(p));
+            return realpathSync.native(resolved);
         } catch {
-            return resolvePath(p);
+            try {
+                return realpathSync(resolved);
+            } catch {
+                return resolved;
+            }
         }
     };
 

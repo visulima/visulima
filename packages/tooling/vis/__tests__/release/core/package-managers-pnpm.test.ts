@@ -66,7 +66,7 @@ describe("pnpmAdapter — pack", () => {
 
         const result = await new PnpmAdapter(runner).pack({ cwd, destination: "/dst" });
 
-        expect(result.tarball).toBe("/dst/pkg-1.0.0.tgz");
+        expect(result.tarball).toBe(join("/dst", "pkg-1.0.0.tgz"));
     });
 
     it("throws PUBLISH_FAILED on non-zero exit", async () => {
