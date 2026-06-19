@@ -11,6 +11,7 @@ import type { Packument } from "../security/marshalls/packument";
 import { getPackument, resolveVersionRange } from "../security/marshalls/packument";
 import type { PackageAlert, PackageReportData } from "../security/socket-security";
 import { calculateOverallScore, DEFAULT_LOW_SCORE_THRESHOLD, fetchSocketReports } from "../security/socket-security";
+import { sanitizeTerminalText } from "../util/sanitize-terminal";
 import type { ChangelogResult } from "./changelog";
 import { fetchChangelog } from "./changelog";
 
@@ -79,17 +80,30 @@ const derivePermissions = (versionEntry: Packument["versions"][string] | undefin
     const lifecycleScripts = LIFECYCLE_HOOKS.filter((hook) => Boolean(versionEntry?.scripts?.[hook]));
 
     const bin = versionEntry?.bin;
-    const bins = typeof bin === "string" ? ["(default)"] : Object.keys(bin ?? {});
+    // Bin names come from the publisher-controlled manifest — sanitize before display.
+    const bins = typeof bin === "string" ? ["(default)"] : Object.keys(bin ?? {}).map((name) => sanitizeTerminalText(name));
 
     const capabilities = [...new Set(alerts.map((alert) => CAPABILITY_LABELS[alert.type]).filter((label): label is string => label !== undefined))];
 
     return { bins, capabilities, lifecycleScripts };
 };
 
-/** Resolve the report for the single package we requested, regardless of map key encoding. */
-const firstReport = (reports: Map<string, PackageReportData>): PackageReportData | undefined => {
+/**
+ * Resolve the report for the exact package we requested. Prefer the
+ * `name@version` key; fall back to any entry whose `name`/`version` match so a
+ * differently-keyed map can't attach a sibling package's score/alerts.
+ */
+const reportFor = (reports: Map<string, PackageReportData>, name: string, version: string): PackageReportData | undefined => {
+    const exact = reports.get(`${name}@${version}`);
+
+    if (exact) {
+        return exact;
+    }
+
     for (const value of reports.values()) {
-        return value;
+        if (value.name === name && value.version === version) {
+            return value;
+        }
     }
 
     return undefined;
@@ -141,7 +155,7 @@ export const gatherPackageInfo = async (options: GatherPackageInfoOptions): Prom
         try {
             const reports = await fetchSocketReports([{ name, version }], { apiToken: socketToken, minimumScore: DEFAULT_LOW_SCORE_THRESHOLD });
 
-            return firstReport(reports);
+            return reportFor(reports, name, version);
         } catch {
             return undefined;
         }

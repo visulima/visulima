@@ -13,9 +13,11 @@
 
 import isInCi from "is-in-ci";
 
+import { promptYesNo } from "../util/prompt";
 import { getSeenEntry, markSeen, readDlxSeen, shouldReprompt } from "./first-run-state";
+import type { PackageInfo } from "./package-info";
 import { gatherPackageInfo } from "./package-info";
-import { promptProceed, renderFirstRunPanel } from "./render-panel";
+import { renderFirstRunPanel } from "./render-panel";
 
 export interface FirstRunGateOptions {
     /** Force the panel even when the package was already approved. */
@@ -94,7 +96,7 @@ export const maybeGateFirstRun = async (options: FirstRunGateOptions): Promise<F
         controller.abort();
     }, GATHER_BUDGET_MS);
 
-    let info;
+    let info: PackageInfo | undefined;
 
     try {
         info = await gatherPackageInfo({ name, now, offline, signal: controller.signal, socketToken, spec, workspaceRoot });
@@ -126,7 +128,7 @@ export const maybeGateFirstRun = async (options: FirstRunGateOptions): Promise<F
         return { proceed: true };
     }
 
-    const proceed = await promptProceed(options.readline);
+    const proceed = await promptYesNo("? Ok to proceed? (y/N) ", options.readline);
 
     if (proceed) {
         markSeen(info.name, info.version, info.security.highSeverityKeys, now);

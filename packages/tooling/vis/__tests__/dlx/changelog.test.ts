@@ -57,6 +57,17 @@ describe(extractVersionSection, () => {
 
         expect(extractVersionSection(markdown, "9.9.9")).toBeUndefined();
     });
+
+    it("matches the version as a whole token, not a substring", () => {
+        expect.assertions(2);
+
+        const md = ["## 15.2.0", "- newer", "## 5.2.0", "- target", "## 5.2.10", "- other"].join("\n");
+
+        // "5.2.0" must not match the "15.2.0" heading that appears first.
+        expect(extractVersionSection(md, "5.2.0")).toStrictEqual(["- target"]);
+        // "5.2.1" must not match "5.2.10".
+        expect(extractVersionSection(md, "5.2.1")).toBeUndefined();
+    });
 });
 
 describe(summarizeChangelog, () => {

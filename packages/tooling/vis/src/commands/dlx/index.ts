@@ -28,14 +28,20 @@ const dlx: Command = {
             name: "offline",
             type: Boolean,
         },
-        { alias: "y", defaultValue: false, description: "Skip the first-run info panel and confirmation prompt", name: "yes", type: Boolean },
+        {
+            alias: "y",
+            defaultValue: false,
+            description: "Skip the first-run info panel and confirmation prompt (also via VIS_DLX_YES — note this auto-approves every package)",
+            name: "yes",
+            type: Boolean,
+        },
         {
             defaultValue: false,
             description: "Always show the first-run info panel (size, security score, permissions, changelog), even for an approved package",
             name: "info",
             type: Boolean,
         },
-        { defaultValue: false, description: "Disable the first-run info panel entirely", name: "no-info", type: Boolean },
+        { defaultValue: false, description: "Disable the first-run info panel entirely (also via VIS_DLX_NO_INFO)", name: "no-info", type: Boolean },
     ],
 };
 

@@ -6,7 +6,6 @@
  * colours and wide characters don't break alignment.
  */
 
-import { createInterface } from "node:readline";
 import { stripVTControlCharacters } from "node:util";
 
 import { bold, cyan, dim, green, red, yellow } from "@visulima/colorize";
@@ -173,25 +172,4 @@ export const renderFirstRunPanel = (info: PackageInfo): string[] => {
     const bottom = `└─${"─".repeat(innerWidth)}─┘`;
 
     return [top, ...content.map((line) => `│ ${pad(line)} │`), bottom];
-};
-
-const defaultReadline = async (question: string): Promise<string> => {
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
-
-    try {
-        return await new Promise<string>((resolve) => {
-            rl.question(question, (answer) => {
-                resolve(answer.trim().toLowerCase());
-            });
-        });
-    } finally {
-        rl.close();
-    }
-};
-
-/** Prompt `Ok to proceed? (y/N)`; defaults to No on empty/EOF input. */
-export const promptProceed = async (readline: (question: string) => Promise<string> = defaultReadline): Promise<boolean> => {
-    const answer = await readline("? Ok to proceed? (y/N) ");
-
-    return answer === "y" || answer === "yes";
 };
