@@ -395,6 +395,7 @@ export const ControlledScrollView = ({
                             return (
                                 <MeasurableItem
                                     index={index}
+                                    // eslint-disable-next-line react-x/no-array-index-key -- virtualized opaque children have no stable identity beyond position; index is the correct key
                                     key={isValidElement(child) ? child.key ?? index : index}
                                     measureKey={itemMeasureKeys[index]}
                                     onMeasure={handleItemMeasure}

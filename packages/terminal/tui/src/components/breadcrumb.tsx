@@ -42,7 +42,7 @@ export default function Breadcrumb({ currentColor = "blue", items, separator = "
                 const isLast = index === items.length - 1;
 
                 return (
-                    <Fragment key={item.key ?? `${index}:${item.label}`}>
+                    <Fragment key={item.key ?? item.label}>
                         {index > 0
                             ? (
 <Text dimColor>

@@ -50,6 +50,7 @@ export default function DefinitionList({ columnGap = 2, items, layout = "inline"
         return (
             <Box flexDirection="column" gap={1}>
                 {items.map((item, index) => (
+                    // eslint-disable-next-line react-x/no-array-index-key -- items expose an optional stable `key`; index is the documented fallback for keyless entries
                     <Box flexDirection="column" key={item.key ?? index}>
                         <Text bold color={termColor}>
                             {item.term}
@@ -64,6 +65,7 @@ export default function DefinitionList({ columnGap = 2, items, layout = "inline"
     return (
         <Box flexDirection="column">
             {items.map((item, index) => (
+                // eslint-disable-next-line react-x/no-array-index-key -- items expose an optional stable `key`; index is the documented fallback for keyless entries
                 <Box gap={columnGap} key={item.key ?? index}>
                     <Box flexShrink={0} width={termWidth}>
                         <Text color={termColor}>{item.term}</Text>

@@ -1,4 +1,4 @@
-/* eslint-disable react-you-might-not-need-an-effect/no-derived-state, react-you-might-not-need-an-effect/no-event-handler */
+/* eslint-disable react-you-might-not-need-an-effect/no-event-handler */
 import type React from "react";
 import type { Ref } from "react";
 import { useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";

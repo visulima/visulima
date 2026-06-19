@@ -1,4 +1,4 @@
-/* eslint-disable no-useless-assignment, react-x/no-array-index-key, react-x/set-state-in-effect, react-you-might-not-need-an-effect/no-derived-state, react/function-component-definition, unicorn/prefer-single-call */
+/* eslint-disable no-useless-assignment, react-x/no-array-index-key, react-x/set-state-in-effect, react/function-component-definition, unicorn/prefer-single-call */
 
 /**
  * Multi-line text input component for Ink.

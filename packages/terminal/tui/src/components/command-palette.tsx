@@ -179,7 +179,6 @@ export default function CommandPalette({
 
         if (focusedIndexRef.current > maxIndex) {
             focusedIndexRef.current = maxIndex;
-            // eslint-disable-next-line react-you-might-not-need-an-effect/no-derived-state -- focusedIndex is also driven by keystrokes via ref; cannot be derived during render
             setFocusedIndex(maxIndex);
         }
     }, [filtered]);
