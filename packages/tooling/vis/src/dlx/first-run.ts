@@ -1,0 +1,136 @@
+/**
+ * First-run info gate for `visx` / `vx` / `vis dlx`.
+ *
+ * The first time a package is executed (or whenever its resolved version
+ * changes, or a new high/critical security alert appears), show an info panel
+ * — install footprint, security score + alerts, declared permissions, and a
+ * changelog — and ask the user to confirm before downloading and running it.
+ *
+ * The gate is deliberately invisible on the fast path: it does no network work
+ * and never blocks when output is non-interactive (CI, piped), when `--yes`
+ * is passed, or when the package was already approved with no new alerts.
+ */
+
+import isInCi from "is-in-ci";
+
+import { getSeenEntry, markSeen, readDlxSeen, shouldReprompt } from "./first-run-state";
+import { gatherPackageInfo } from "./package-info";
+import { promptProceed, renderFirstRunPanel } from "./render-panel";
+
+export interface FirstRunGateOptions {
+    /** Force the panel even when the package was already approved. */
+    forceInfo?: boolean;
+    /** Test seam: pretend we are (not) running in CI. */
+    isCi?: boolean;
+    /** Test seam: pretend stdin is (not) a TTY. */
+    isTty?: boolean;
+    /** Skip the gate entirely (no panel). */
+    noInfo?: boolean;
+    now?: number;
+    /** Offline mode — gather from cache only, skip network enrichment. */
+    offline?: boolean;
+    /** Where to write the panel. Defaults to stdout. */
+    output?: (chunk: string) => void;
+    /** The raw package argument as typed: `pkg`, `pkg@version`, `@scope/pkg@tag`. */
+    pkg: string;
+    /** Test seam for the y/N prompt. */
+    readline?: (question: string) => Promise<string>;
+    /** Socket.dev API token, when configured. */
+    socketToken?: string;
+    workspaceRoot?: string;
+    /** Auto-approve without prompting (e.g. `--yes`). */
+    yes?: boolean;
+}
+
+export interface FirstRunGateResult {
+    /** False only when the user explicitly declined the prompt. */
+    proceed: boolean;
+}
+
+/** Split a package argument into its name and version spec. */
+export const parsePackageSpec = (argument: string): { name: string; spec?: string } => {
+    if (argument.startsWith("@")) {
+        const separator = argument.indexOf("@", 1);
+
+        return separator === -1 ? { name: argument } : { name: argument.slice(0, separator), spec: argument.slice(separator + 1) };
+    }
+
+    const separator = argument.indexOf("@");
+
+    return separator <= 0 ? { name: argument } : { name: argument.slice(0, separator), spec: argument.slice(separator + 1) };
+};
+
+/** Overall wall-clock budget for enrichment before we proceed regardless. */
+const GATHER_BUDGET_MS = 6000;
+
+const defaultWrite = (chunk: string): void => {
+    process.stdout.write(chunk);
+};
+
+export const maybeGateFirstRun = async (options: FirstRunGateOptions): Promise<FirstRunGateResult> => {
+    const { forceInfo = false, noInfo = false, offline = false, pkg, socketToken, workspaceRoot, yes = false } = options;
+
+    if (noInfo) {
+        return { proceed: true };
+    }
+
+    const now = options.now ?? Date.now();
+    const isCi = options.isCi ?? isInCi;
+    const isTty = options.isTty ?? Boolean(process.stdin.isTTY);
+    const interactive = isTty && !isCi;
+    const autoYes = yes || !interactive;
+    const write = options.output ?? defaultWrite;
+
+    // Fast path: nothing to prompt for and no reason to force the panel — skip
+    // all network work so scripted/CI `visx` stays as quick as raw npx.
+    if (autoYes && !forceInfo) {
+        return { proceed: true };
+    }
+
+    const { name, spec } = parsePackageSpec(pkg);
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => {
+        controller.abort();
+    }, GATHER_BUDGET_MS);
+
+    let info;
+
+    try {
+        info = await gatherPackageInfo({ name, now, offline, signal: controller.signal, socketToken, spec, workspaceRoot });
+    } catch {
+        info = undefined;
+    } finally {
+        clearTimeout(timeout);
+    }
+
+    // Could not resolve the package — don't block; let the real runner report it.
+    if (!info) {
+        return { proceed: true };
+    }
+
+    const seen = getSeenEntry(readDlxSeen(), info.name, info.version);
+
+    if (!forceInfo && !shouldReprompt(seen, info.security.highSeverityKeys)) {
+        return { proceed: true };
+    }
+
+    for (const line of renderFirstRunPanel(info)) {
+        write(`${line}\n`);
+    }
+
+    if (autoYes) {
+        // forced panel under --yes / non-interactive: record approval, proceed.
+        markSeen(info.name, info.version, info.security.highSeverityKeys, now);
+
+        return { proceed: true };
+    }
+
+    const proceed = await promptProceed(options.readline);
+
+    if (proceed) {
+        markSeen(info.name, info.version, info.security.highSeverityKeys, now);
+    }
+
+    return { proceed };
+};
