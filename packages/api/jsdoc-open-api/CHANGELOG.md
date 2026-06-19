@@ -1,3 +1,5 @@
+## @visulima/jsdoc-open-api [3.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.31...@visulima/jsdoc-open-api@3.0.0-alpha.32) (2026-06-19)
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.30...@visulima/jsdoc-open-api@3.0.0-alpha.31) (2026-06-19)
 
 ## @visulima/jsdoc-open-api [3.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.29...@visulima/jsdoc-open-api@3.0.0-alpha.30) (2026-06-13)
