@@ -23,6 +23,8 @@
  * the field path varies, so it can't live here without coupling.
  */
 
+import { isTruthyEnv } from "../../util/env";
+
 /** Every gate vis knows about. Stable identifiers — do not rename without a migration. */
 export type MarshallName
     = | "archivedRepo"
@@ -91,21 +93,6 @@ export const envVarFor = (name: MarshallName): string => {
     const snake = name.replaceAll(/([A-Z])/g, "_$1").toUpperCase();
 
     return `MARSHALL_DISABLE_${snake}`;
-};
-
-/**
- * Truthy-only semantics — `MARSHALL_DISABLE_X=0` / `=false` / `=""` keep
- * the marshall **enabled**. Matches the `MARSHALL_DISABLE_X=1` idiom used
- * across the ecosystem so users don't get surprises.
- */
-const isTruthyEnv = (value: string | undefined): boolean => {
-    if (value === undefined || value === "") {
-        return false;
-    }
-
-    const lower = value.toLowerCase();
-
-    return lower !== "0" && lower !== "false" && lower !== "no";
 };
 
 /**

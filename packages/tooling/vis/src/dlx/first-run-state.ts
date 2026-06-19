@@ -79,7 +79,7 @@ export const shouldReprompt = (entry: DlxSeenEntry | undefined, currentAlertKeys
         return true;
     }
 
-    const known = new Set(entry.alertKeys);
+    const known = new Set(Array.isArray(entry.alertKeys) ? entry.alertKeys : []);
 
     return currentAlertKeys.some((alertKey) => !known.has(alertKey));
 };

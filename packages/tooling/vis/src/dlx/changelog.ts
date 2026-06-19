@@ -14,6 +14,7 @@
  */
 
 import type { Packument } from "../security/marshalls/packument";
+import { sanitizeTerminalText } from "../util/sanitize-terminal";
 
 /** Common changelog filenames, in priority order. */
 const CHANGELOG_FILENAMES = ["CHANGELOG.md", "CHANGELOG", "changelog.md", "CHANGES.md", "HISTORY.md"] as const;
@@ -89,13 +90,16 @@ export const parseGitHubRepo = (
 export const extractVersionSection = (markdown: string, version: string): string[] | undefined => {
     const lines = markdown.split(/\r?\n/);
     const headingRe = /^(#{1,4})\s+(.*)$/;
+    // Match the version as a whole token so `5.2.0` doesn't match `15.2.0` / `5.2.10`.
+    const escaped = version.replaceAll(/[$()*+.?[\\\]^{|}]/g, String.raw`\$&`);
+    const versionRe = new RegExp(String.raw`(?<![\w.])${escaped}(?![\w.])`);
     let startIndex = -1;
     let startLevel = 0;
 
     for (const [index, line] of lines.entries()) {
         const match = headingRe.exec(line);
 
-        if (match && (match[2] as string).includes(version)) {
+        if (match && versionRe.test(match[2] as string)) {
             startIndex = index;
             startLevel = (match[1] as string).length;
             break;
@@ -127,12 +131,7 @@ export const summarizeChangelog = (raw: string[], maxLines = 4): string[] => {
         .map((line) => line.trim())
         .filter((line) => line.length > 0)
         // Drop sub-headings like "### Bug Fixes" — keep the actual entries.
-        .map((line) =>
-            line
-                .replace(/^#{1,6}\s+/, "")
-                .replace(/^[*-]\s+/, "- ")
-                .trim(),
-        )
+        .map((line) => sanitizeTerminalText(line.replace(/^#{1,6}\s+/, "").replace(/^[*-]\s+/, "- ")).trim())
         .filter((line) => line.length > 0 && !/^\[.*\]:/.test(line));
 
     return cleaned.slice(0, maxLines);
@@ -175,11 +174,12 @@ const buildNpmDiff = (packument: Packument, version: string, now: number): Chang
     const lines = [age ? `${packument.name}@${version} — published ${age}` : `${packument.name}@${version}`];
 
     // List the few preceding releases with their ages.
+    const targetTime = Date.parse(times[version] ?? "");
     const ordered = Object.entries(times)
         .filter(([key]) => key !== "created" && key !== "modified" && key !== version)
         .sort((a, b) => Date.parse(b[1]) - Date.parse(a[1]));
 
-    const previous = ordered.filter(([, iso]) => Date.parse(iso) < Date.parse(times[version] ?? "")).slice(0, 3);
+    const previous = ordered.filter(([, iso]) => Date.parse(iso) < targetTime).slice(0, 3);
 
     for (const [previousVersion, iso] of previous) {
         lines.push(`- ${previousVersion} (${relativeAge(iso, now)})`);
