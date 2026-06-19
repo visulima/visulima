@@ -17,6 +17,13 @@ const PUBLIC_ASSETS_DIR = path.join(__dirname, "..", "public", "assets");
 const KNOWN_ROUTES = new Set(["brand", "changelog", "code-of-conduct", "docs", "imprint", "packages", "privacy"]);
 const KNOWN_ROUTES_PATTERN = [...KNOWN_ROUTES].join("|");
 
+/** True when a doc page exists at `base` — either `base.{md,mdx}` or `base/index.{md,mdx}`. */
+const docExists = (base) =>
+    existsSync(base + ".mdx") ||
+    existsSync(base + ".md") ||
+    existsSync(path.join(base, "index.mdx")) ||
+    existsSync(path.join(base, "index.md"));
+
 /**
  * External repos whose docs/ folder should be fetched and merged into the packages docs.
  * Branch is determined by the current git branch: alpha → alpha, otherwise main.
@@ -294,11 +301,6 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
             // paths sidestep that. A leading `index` segment collapses to the directory route;
             // a clearly-relative link to a non-existent page is dropped to plain text.
             const fileDir = path.dirname(fullPath);
-            const docExists = (absolute) =>
-                existsSync(absolute + ".mdx") ||
-                existsSync(absolute + ".md") ||
-                existsSync(path.join(absolute, "index.mdx")) ||
-                existsSync(path.join(absolute, "index.md"));
 
             content = content.replace(/(^|[^!])(\[[^\]]*\])\(([^)]+)\)/g, (match, before, label, target) => {
                 // Skip absolute paths, pure anchors, and scheme links (http:, mailto:, etc.).
@@ -346,13 +348,7 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
                 const resolved = path.join(contentRoot, cleanPath);
 
                 // Check if the target exists as a file or directory with index
-                const exists =
-                    existsSync(resolved + ".mdx") ||
-                    existsSync(resolved + ".md") ||
-                    existsSync(path.join(resolved, "index.mdx")) ||
-                    existsSync(path.join(resolved, "index.md"));
-
-                if (!exists) {
+                if (!docExists(resolved)) {
                     changed = true;
                     return label; // Convert to plain text
                 }
@@ -377,13 +373,7 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
                 const cleanPath = docPath.replace(/#.*$/, "").replace(/\/$/, "");
                 const resolved = path.join(contentRoot, cleanPath);
 
-                const exists =
-                    existsSync(resolved + ".mdx") ||
-                    existsSync(resolved + ".md") ||
-                    existsSync(path.join(resolved, "index.mdx")) ||
-                    existsSync(path.join(resolved, "index.md"));
-
-                if (!exists) {
+                if (!docExists(resolved)) {
                     changed = true;
                     return ""; // Remove broken href
                 }
@@ -448,12 +438,7 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
                     const cleanPath = linkPath.replace(/#.*$/, "").replace(/\/$/, "");
                     const resolved = path.join(pkgRoot, cleanPath);
 
-                    if (
-                        existsSync(resolved + ".mdx") ||
-                        existsSync(resolved + ".md") ||
-                        existsSync(path.join(resolved, "index.mdx")) ||
-                        existsSync(path.join(resolved, "index.md"))
-                    ) {
+                    if (docExists(resolved)) {
                         return `${prefix}/docs/packages/${pkgName}/${linkPath})`;
                     }
                     return match;
@@ -467,12 +452,7 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
                     const cleanPath = linkPath.replace(/#.*$/, "").replace(/\/$/, "");
                     const resolved = path.join(pkgRoot, cleanPath);
 
-                    if (
-                        existsSync(resolved + ".mdx") ||
-                        existsSync(resolved + ".md") ||
-                        existsSync(path.join(resolved, "index.mdx")) ||
-                        existsSync(path.join(resolved, "index.md"))
-                    ) {
+                    if (docExists(resolved)) {
                         return `href="/docs/packages/${pkgName}/${linkPath}"`;
                     }
                     return match;
