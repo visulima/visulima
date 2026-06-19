@@ -1127,6 +1127,44 @@ If you would like to help take a look at the [list of issues](https://github.com
 - [Daniel Bannert](https://github.com/prisis)
 - [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
 
+### Acknowledgements
+
+The `duration` and `parseDuration` functionality is based on a modified version of [HumanizeDuration.js](https://github.com/EvanHahn/HumanizeDuration.js), lovingly made by [Evan Hahn](https://evanhahn.com/) with help from:
+
+- [Martin Prins](https://github.com/magarcia) for language support
+- [Filipi Siqueira](https://github.com/filipi777) for Portuguese support
+- [Peter Rekdal Sunde](https://github.com/peters) for Norwegian support
+- [Arvind Frøiland](https://github.com/arvindfroi) for Norwegian Nynorsk support
+- [Michał Janiec](https://github.com/mjjaniec) for Polish support
+- [Eileen Li](https://github.com/eileen3) for Chinese support
+- [Tommy Brunn](https://github.com/Nevon) for Swedish support
+- [Giovanni Pellerano](https://github.com/evilaliv3) for Italian support
+- [Rahma Sghaier](https://twitter.com/sghaierrahma) for Arabic support
+- [Evgenios Kastanias](https://github.com/evgenios) for Greek support
+- [Oleksii Mylotskyi](https://github.com/spalax) for Ukrainian support
+- [Patrik Simek](https://github.com/patriksimek) for Czech support
+- [Toni Helminen](https://github.com/tonihelminen) for Finnish support
+- [Vidmantas Drasutis](https://github.com/Drasius2) for Lithuanian support
+- [Manh Tuan](https://github.com/J2TeaM) for Vietnamese support
+- [Leonard Lee](https://github.com/sheeeng) for Indonesian & Malay support
+- [Jesse Jackson](https://github.com/jsejcksn) for documentation help
+- [Óli Tómas Freysson](https://github.com/olitomas) for Icelandic support
+- [Saeed Ganji](https://github.com/shahabganji) for Farsi/Persian support
+- [Caner Elci](https://github.com/canerelci) for Bulgarian support
+- [Matej Kolesár](https://github.com/rasel-sk) for Slovak support
+- [Abdul Jalil](https://github.com/abduljalilm94) for Urdu support
+- [Wasuwat Limsuparhat](https://github.com/rappad) for Thai support
+- Malikoun for Lao support
+- [Villu Orav](https://github.com/villu164) for Estonian support
+- [Harijs Deksnis](https://github.com/arcanous) for Latvian support
+- [Nirmala Thapa(Subit)](https://github.com/nirmalathapa) for Faroese support
+- [Fahad Kassim](https://github.com/fadsel) for Swahili support
+- [Prayag Roy Choudhury](https://github.com/BeardyGod) for updating Mocha
+- [Aryan Rawlani](https://github.com/aryanrawlani28) for Hindi support
+- [Kristijan Jesenski](https://github.com/kjesenski) for Slovenian support
+- [Michal Karzel](https://github.com/Misioka) for improving Arabic support
+- [Mikias Menjeta](https://github.com/OMikiasO) for Amharic support
+
 ## Made with ❤️ at Anolilab
 
 This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
