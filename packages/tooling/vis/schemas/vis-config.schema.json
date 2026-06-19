@@ -870,6 +870,10 @@
             "additionalProperties": false,
             "description": "Behavior of `vis run` when invoked tasks declare service dependencies that aren't running in the workspace registry. CLI `--services=&lt;mode>` overrides this block."
         },
+        "runtime": {
+            "$ref": "#/$defs/RuntimeId",
+            "description": "Target JS runtime for this workspace/project — `\"node\"` (default) or `\"bun\"`. Overridden by the `--runtime` flag and the `VIS_RUNTIME` env var; falls back to lockfile detection when unset. Part of the cross-runtime multi-tool (see `rfc/design-runtime-multitool.md`)."
+        },
         "scopedTasks": {
             "type": "array",
             "items": {
@@ -5308,6 +5312,14 @@
                 }
             },
             "additionalProperties": false
+        },
+        "RuntimeId": {
+            "type": "string",
+            "enum": [
+                "bun",
+                "node"
+            ],
+            "description": "JS runtimes vis can target today. `\"deno\"` is deferred."
         },
         "ScopedTasksBlock": {
             "type": "object",
