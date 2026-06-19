@@ -1,6 +1,6 @@
 {
     "name": "@visulima/email",
-    "version": "1.0.0-alpha.38",
+    "version": "1.0.0-alpha.39",
     "description": "A comprehensive email library with multi-provider support, crypto utilities, and template engines",
     "keywords": [
         "ahasend",
