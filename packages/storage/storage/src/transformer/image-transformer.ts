@@ -1,6 +1,5 @@
 import { Readable } from "node:stream";
 
-import type { Sharp } from "sharp";
 import sharp from "sharp";
 
 import type { BaseStorage } from "../storage/storage";
@@ -40,6 +39,10 @@ import type {
     TransformResult,
 } from "./types";
 import { getFormatFromContentType, isValidMediaType } from "./utils";
+
+// sharp ships as a CommonJS `export =` namespace, so `Sharp` is `sharp.Sharp`,
+// not a named export — alias it off the default import.
+type Sharp = sharp.Sharp;
 
 /**
  * Image transformer that uses storage backends to retrieve and transform images.
