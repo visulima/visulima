@@ -337,7 +337,7 @@ catalogs:
     '@vue-email/render': 0.0.9
     '@vue/tsconfig': 0.9.1
     babel-plugin-react-compiler: 19.1.0-rc.3
-    fumadocs-ui: 17.0.0
+    fumadocs-ui: 16.10.4
     motion: 12.40.0
     radix-ui: ^1.6.0
     react: 19.2.7
@@ -553,7 +553,7 @@ catalogs:
     find-up: 8.0.0
     find-up-simple: 1.0.1
     fs-extra: 11.3.5
-    fumadocs-core: 17.0.0
+    fumadocs-core: 16.10.4
     fumadocs-mdx: 15.0.12
     fumadocs-twoslash: 3.2.0
     google-auth-library: 10.7.0
@@ -778,6 +778,32 @@ minimumReleaseAgeExclude:
   - react-router@7.13.2
   - react-router@7.15.0
   - react-router@7.14.0
+  - tmp@0.2.7
+  - ws@8.21.0
+  - ws@7.5.11
+  - protobufjs@8.5.1
+  - protobufjs@7.6.3
+  - form-data@4.0.6
+  - form-data@2.5.6
+  - tar@7.5.16
+  - vite@7.3.5
+  - vite@8.0.16
+  - launch-editor@2.14.1
+  - js-yaml@4.1.2
+  - '@babel/core@7.29.1'
+  - protobufjs@8.4.1
+  - protobufjs@7.6.1
+  - dompurify@3.4.7
+  - dompurify@3.4.6
+  - protobufjs@8.4.3
+  - dompurify@3.4.9
+  - dompurify@3.4.8
+  - markdown-it@14.1.2
+  - '@opentelemetry/core@2.8.0'
+  - undici@8.5.0
+  - undici@7.28.0
+  - nodemailer@9.0.1
+  - dompurify@3.4.11
 
 overrides:
   '@anthropic-ai/sdk@>=0.79.0 <0.91.1': ^0.91.1

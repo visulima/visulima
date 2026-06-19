@@ -55,6 +55,10 @@
             "types": "./index.d.ts",
             "default": "./index.js"
         },
+        "./runtime/preload": {
+            "types": "./dist/runtime/preload.d.ts",
+            "default": "./dist/runtime/preload.js"
+        },
         "./release": {
             "types": "./dist/release/index.d.ts",
             "default": "./dist/release/index.js"
@@ -131,29 +135,16 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@floating-ui/core": "1.7.5",
-        "@floating-ui/dom": "1.7.6",
-        "@hono/node-server": "catalog:backend",
         "@visulima/error": "6.0.0-alpha.33",
         "@visulima/secret-scanner": "1.0.0-alpha.6",
         "@visulima/source-map": "3.0.0-alpha.12",
         "@visulima/tabular": "4.0.0-alpha.14",
         "@visulima/task-runner": "1.0.0-alpha.23",
         "@visulima/tui": "1.0.0-alpha.25",
-        "conventional-commits-parser": "^6.4.0",
-        "graphology": "0.26.0",
-        "graphology-layout-forceatlas2": "0.10.1",
-        "graphology-types": "0.24.8",
-        "hono": "catalog:backend",
-        "jiti": "catalog:dev",
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^2.0.1",
         "react": "catalog:frontend",
-        "react-reconciler": ">=0.33.0",
-        "sigma": "3.0.3",
-        "smol-toml": "catalog:prod",
-        "tinyexec": "catalog:dev",
-        "undici": "catalog:prod"
+        "react-reconciler": ">=0.33.0"
     },
     "devDependencies": {
         "@anolilab/eslint-config": "catalog:lint",
@@ -211,6 +202,7 @@
         "ajv": "catalog:dev",
         "ajv-formats": "catalog:dev",
         "conventional-changelog-conventionalcommits": "catalog:dev",
+        "conventional-commits-parser": "^6.2.0",
         "cssnano": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
@@ -240,10 +232,13 @@
         "semver": "^7.8.4",
         "sigma": "3.0.3",
         "sigstore": "^5.0.0",
+        "smol-toml": "catalog:prod",
         "tailwind-csstree": "catalog:dev",
         "tailwindcss": "catalog:style",
+        "tinyexec": "catalog:dev",
         "ts-json-schema-generator": "catalog:dev",
         "typescript": "catalog:tsc",
+        "undici": "catalog:prod",
         "validate-npm-package-name": "^8.0.0",
         "vitest": "catalog:test",
         "yaml": "catalog:prod",

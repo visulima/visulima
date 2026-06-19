@@ -1,6 +1,10 @@
-import { createTemplate } from "../../../../src/generate";
+// Self-contained native-template fixture: a `type`-only import (erased at
+// transpile, so no runtime cross-module resolution) keeps this loadable in any
+// environment. `createTemplate` is an identity helper, so the literal below is
+// equivalent for exercising loadNativeTemplate's load → validate → produce path.
+import type { Template } from "../../../../src/generate/types";
 
-export default createTemplate({
+const template: Template = {
     about: { description: "Scaffold a fixture package", name: "package" },
     options: {
         category: { default: "tooling", type: "enum", values: ["api", "fs", "tooling"] },
@@ -19,4 +23,6 @@ export default createTemplate({
             suggestions: ["Run pnpm install"],
         };
     },
-});
+};
+
+export default template;

@@ -31,7 +31,7 @@ const TEMPLATE_YML = "template.yml";
  * Suffix blocklist applied after the language extension is stripped.
  * Folks drop shared types, sourcemaps, and colocated tests into
  * `.vis/templates/`; those must NOT be mis-identified as templates
- * (importing a `.d.ts` or `.test.ts` via jiti would throw with a
+ * (importing a `.d.ts` or `.test.ts` via the oxc TS loader would throw with a
  * confusing message).
  *
  * Each entry is the suffix BEFORE the language extension, e.g.

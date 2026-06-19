@@ -30,7 +30,7 @@ import { findCacheDirSync } from "@visulima/find-cache-dir";
 import type { OsvBloomBatchHit, OsvBloomBatchQuery, OsvBloomHandle } from "#native";
 import { NATIVE_BINDING_VERSION, osvBloomDecode, osvBloomProbe, osvBloomProbeBatch } from "#native";
 
-const EXPECTED_BINDING_VERSION = 5;
+const EXPECTED_BINDING_VERSION = 6;
 
 if (NATIVE_BINDING_VERSION !== EXPECTED_BINDING_VERSION) {
     throw new Error(

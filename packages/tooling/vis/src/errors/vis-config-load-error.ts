@@ -1,7 +1,7 @@
 import { VisConfigError } from "./vis-config-error";
 
 /**
- * Wraps any throw raised by jiti while compiling a `vis.config.ts` /
+ * Wraps any throw raised by the oxc TS loader while compiling a `vis.config.ts` /
  * `vis.task.ts`. Without this wrapper a user's syntax error surfaces as
  * "TypeError in workspace.ts" — which sends them debugging the wrong file.
  */

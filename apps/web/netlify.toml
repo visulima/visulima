@@ -8,6 +8,13 @@
 
 [build.environment]
   NODE_VERSION = "22"
+  # Disable Netlify's heuristic "likely secret" smart detection. The monorepo
+  # ships @visulima/secret-scanner, whose detection ruleset, test fixtures, and
+  # suppression docs deliberately contain example credentials (ghp_…, AIza…).
+  # Those example values are also aggregated into the generated llms-full.txt,
+  # so a path-based omit list can't reliably cover them. The explicit secrets
+  # scan (real configured env-var values) stays on and reports 0 leaks.
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
 
 # Security headers
 [[headers]]

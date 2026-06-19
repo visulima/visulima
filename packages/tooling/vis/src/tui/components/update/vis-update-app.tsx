@@ -314,7 +314,7 @@ const VisUpdateApp = ({
                 // Toggle check
                 if (input === " " || key.return) {
                     if (selectedEntry) {
-                        store.toggleCheck(selectedEntry.packageName);
+                        store.toggleCheck(selectedEntry);
                     }
 
                     return;
@@ -730,7 +730,7 @@ major update
                 <Box gap={1} key={e.packageName}>
                     <Text>
 {" "}
-{e.packageName}
+{e.displayName ?? e.packageName}
                     </Text>
                     <Text dimColor>
                         {e.currentRange}

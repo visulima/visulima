@@ -589,7 +589,7 @@ if (!nativeBinding) {
   throw new Error(`Failed to load native binding`)
 }
 
-const { OsvBloomHandle, advisoriesIngest, advisoriesQuery, advisoriesStatus, allKnownTags, cleanWorkspace, detectPackageManager, execPmCommand, execPmCommandInteractive, NATIVE_BINDING_VERSION, osvBloomDecode, osvBloomProbe, osvBloomProbeBatch, parseShebang, resolveAdd, resolveDedupe, resolveDlx, resolveEditorconfigDefaults, resolveExec, resolveInstall, resolveLink, resolveOutdated, resolvePmCommand, resolveRemove, resolveUnlink, resolveWhy, sortPackageJsonString, sortPackageJsonStringWithOptions, tagsFromPath, tagsFromPaths, whichBin } = nativeBinding
+const { OsvBloomHandle, advisoriesIngest, advisoriesQuery, advisoriesStatus, allKnownTags, cleanWorkspace, detectPackageManager, execPmCommand, execPmCommandInteractive, NATIVE_BINDING_VERSION, osvBloomDecode, osvBloomProbe, osvBloomProbeBatch, parseShebang, resolveAdd, resolveDedupe, resolveDlx, resolveEditorconfigDefaults, resolveExec, resolveInstall, resolveLink, resolveOutdated, resolvePmCommand, resolveRemove, resolveUnlink, resolveWhy, sortPackageJsonString, sortPackageJsonStringWithOptions, tagsFromPath, tagsFromPaths, transformTs, whichBin } = nativeBinding
 export { OsvBloomHandle }
 export { advisoriesIngest }
 export { advisoriesQuery }
@@ -620,4 +620,5 @@ export { sortPackageJsonString }
 export { sortPackageJsonStringWithOptions }
 export { tagsFromPath }
 export { tagsFromPaths }
+export { transformTs }
 export { whichBin }
