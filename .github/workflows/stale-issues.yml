@@ -9,6 +9,6 @@ permissions:
 
 jobs:
     stale-issues:
-        uses: "anolilab/workflows/.github/workflows/stale-issues.yml@3c54b71af67bdd990513c4a17fa2fde078db7b74" # main
+        uses: "anolilab/workflows/.github/workflows/stale-issues.yml@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
         with:
             target-repo: "visulima/visulima"
