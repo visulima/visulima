@@ -15,6 +15,8 @@
  * `~/.vis/state/`, best-effort reads/writes that never throw.
  */
 
+import { renameSync } from "node:fs";
+
 import { ensureDirSync, isAccessibleSync, readJsonSync, writeFileSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
@@ -37,30 +39,51 @@ export interface DlxSeenState {
     version: 1;
 }
 
-const EMPTY_STATE: DlxSeenState = { packages: {}, version: 1 };
-
 const keyFor = (name: string, version: string): string => `${name}@${version}`;
+
+const isValidEntry = (value: unknown): value is DlxSeenEntry => {
+    if (typeof value !== "object" || value === null) {
+        return false;
+    }
+
+    const entry = value as DlxSeenEntry;
+
+    return Array.isArray(entry.alertKeys) && entry.alertKeys.every((key) => typeof key === "string") && typeof entry.seenAt === "number";
+};
 
 export const readDlxSeen = (): DlxSeenState => {
     try {
         if (isAccessibleSync(STATE_FILE)) {
             const parsed = readJsonSync(STATE_FILE) as unknown as Partial<DlxSeenState>;
 
-            if (parsed && typeof parsed === "object" && parsed.packages && parsed.version === 1) {
-                return parsed as DlxSeenState;
+            if (parsed && typeof parsed === "object" && parsed.packages && typeof parsed.packages === "object" && parsed.version === 1) {
+                // Drop malformed entries rather than trusting the on-disk shape.
+                const packages: Record<string, DlxSeenEntry> = {};
+
+                for (const [key, entry] of Object.entries(parsed.packages)) {
+                    if (isValidEntry(entry)) {
+                        packages[key] = entry;
+                    }
+                }
+
+                return { packages, version: 1 };
             }
         }
     } catch {
         // Corrupt/unreadable state — treat as empty.
     }
 
-    return { ...EMPTY_STATE, packages: {} };
+    return { packages: {}, version: 1 };
 };
 
 const writeDlxSeen = (state: DlxSeenState): void => {
     try {
         ensureDirSync(getVisStateDir());
-        writeFileSync(STATE_FILE, JSON.stringify(state));
+        // Write-then-rename so a concurrent reader never sees a half-written file.
+        const temporary = `${STATE_FILE}.${String(process.pid)}.tmp`;
+
+        writeFileSync(temporary, JSON.stringify(state));
+        renameSync(temporary, STATE_FILE);
     } catch {
         // Non-critical — failing to persist just means we re-prompt next time.
     }
