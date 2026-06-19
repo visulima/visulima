@@ -28,7 +28,7 @@ import { buildEnabledProviders } from "../../security/registry";
 import { scoreColor } from "../../security/socket-security";
 import { runTyposquatCheck, scanDepsForTyposquats } from "../../security/typosquats";
 import CheckProgressApp from "../../tui/components/check-progress-app";
-import { UpdateStore } from "../../tui/components/update/update-store";
+import { ecosystemEntryKey, UpdateStore } from "../../tui/components/update/update-store";
 import VisUpdateApp from "../../tui/components/update/vis-update-app";
 import type { CatalogCheckOptions, NpmrcConfig, OutdatedEntry, UpdateTarget } from "../../util/catalog";
 import {
@@ -51,7 +51,7 @@ import {
 import { hasPeerDependencyWarnings, PEER_HINT } from "../../util/peer-warnings";
 import { spawnTee } from "../../util/spawn-tee";
 import { parsePackageArgument } from "../../util/utils";
-import type { EcosystemCheckResult, EcosystemId, EcosystemUpdateOptions } from "./ecosystems/index";
+import type { EcosystemCheckResult, EcosystemId, EcosystemUpdate, EcosystemUpdateOptions, EcosystemUpdateType } from "./ecosystems/index";
 import { applyEcosystemUpdates, checkEcosystems } from "./ecosystems/index";
 import { promptEcosystemSelection } from "./ecosystems/prompt";
 import { formatEcosystemJson, formatEcosystemReport } from "./ecosystems/report";
@@ -514,10 +514,62 @@ const applyCatalogAndInstall = async (
 interface UpdatePathResult {
     readonly applied: boolean;
     readonly canceled: boolean;
+
+    /**
+     * `true` when the interactive TUI already scanned + offered ecosystem
+     * (Actions/Docker/GitLab) updates, so the caller must NOT run the
+     * separate post-pass `runEcosystemUpdate` (which would re-scan and print
+     * a duplicate text report). Only the TTY+table path sets this.
+     */
+    readonly ecosystemHandled?: boolean;
     readonly jsonEmitted: boolean;
 }
 
 const RESULT_NOTHING: UpdatePathResult = { applied: false, canceled: false, jsonEmitted: false };
+
+/** Display group (synthetic "catalog") for each adapted ecosystem entry. */
+const ECOSYSTEM_GROUP: Record<EcosystemId, string> = {
+    actions: "GitHub Actions",
+    docker: "Docker",
+    gitlab: "GitLab CI",
+};
+
+/**
+ * Collapse the richer ecosystem update classification onto the npm
+ * `OutdatedEntry` tri-state. `digest` / `pin` / `unknown` are treated as
+ * patch-level so they land under the "All"/"Patch" filter tabs rather than
+ * being hidden.
+ */
+const ECOSYSTEM_UPDATE_TYPE: Record<EcosystemUpdateType, "major" | "minor" | "patch"> = {
+    digest: "patch",
+    major: "major",
+    minor: "minor",
+    patch: "patch",
+    pin: "patch",
+    unknown: "patch",
+};
+
+/**
+ * Adapt a non-npm {@link EcosystemUpdate} into an {@link OutdatedEntry} so it
+ * renders + selects in the same TUI as catalog packages. `packageName` is the
+ * stable, unique `file:line` key (the check-set keys on it; the same action
+ * recurs across files), and `displayName` carries the human ref name. The
+ * applier rewrites by `replacement` (already SHA-pinned when `style: "sha"`),
+ * so the adapter only needs to round-trip the entry via the side-map.
+ */
+const adaptEcosystemUpdate = (update: EcosystemUpdate): OutdatedEntry => {
+    return {
+        catalogName: ECOSYSTEM_GROUP[update.ecosystem],
+        currentRange: update.currentVersion ?? update.currentRef,
+        detailUrl: update.url,
+        displayName: update.name,
+        kind: "ecosystem",
+        newRange: update.newVersion ?? update.newRef,
+        packageName: ecosystemEntryKey(update),
+        targetVersion: update.newVersion ?? update.newRef,
+        updateType: ECOSYSTEM_UPDATE_TYPE[update.updateType] ?? "patch",
+    };
+};
 
 const executeCatalogUpdate = async (
     workspaceRoot: string,
@@ -785,7 +837,38 @@ const executeCatalogUpdate = async (
 
     // Interactive TUI mode: TTY + table format
     if (isTTY && format === "table") {
-        const store = new UpdateStore(outdated, aiResult ?? null);
+        // Scan non-npm ecosystem references (GitHub Actions / Docker / GitLab
+        // CI) up front so they render + select inside the same TUI as catalog
+        // packages. Best-effort: a scan failure must not block the npm flow.
+        // Skipped when the user targeted specific packages (argument.length>0)
+        // or disabled every ecosystem. Adapted entries round-trip back to their
+        // originals via `ecosystemOriginals` for the apply step.
+        const ecosystemOriginals = new Map<string, EcosystemUpdate>();
+        const ecosystemAdapted: OutdatedEntry[] = [];
+        let ecosystemScanned = false;
+
+        if (argument.length === 0) {
+            const ecosystemOptions = buildEcosystemOptions(options, visConfig);
+
+            if (ecosystemOptions.disabled.size < 3) {
+                try {
+                    const ecoResult = await checkEcosystems({ options: ecosystemOptions, workspaceRoot });
+
+                    ecosystemScanned = ecoResult.scanned > 0;
+
+                    for (const update of ecoResult.updates) {
+                        const adapted = adaptEcosystemUpdate(update);
+
+                        ecosystemOriginals.set(adapted.packageName, update);
+                        ecosystemAdapted.push(adapted);
+                    }
+                } catch (error) {
+                    logger.warn(`${yellow("⚠")} Ecosystem update scan failed: ${(error as Error).message}`);
+                }
+            }
+        }
+
+        const store = new UpdateStore([...outdated, ...ecosystemAdapted], aiResult ?? null);
 
         // Fetch changelog URLs if requested
         let changelogUrls: Map<string, string> | undefined;
@@ -903,20 +986,43 @@ const executeCatalogUpdate = async (
 
         // If user selected entries to apply (exitResult is the checked entries array)
         const toApply = Array.isArray(exitResult) ? (exitResult as OutdatedEntry[]) : [];
+        // Partition the selection: adapted ecosystem entries go to the
+        // ecosystem applier (which rewrites the workflow / Dockerfile / GitLab
+        // CI files by their already-resolved, SHA-pinned `replacement`); the
+        // rest are npm catalog packages handled by the catalog installer.
+        const npmToApply = toApply.filter((entry) => entry.kind !== "ecosystem");
+        const ecosystemToApply = toApply
+            .filter((entry) => entry.kind === "ecosystem")
+            .map((entry) => ecosystemOriginals.get(entry.packageName))
+            .filter((update): update is EcosystemUpdate => update !== undefined);
 
-        if (toApply.length > 0 && !isDryRun) {
-            logger.info(`\nApplying ${String(toApply.length)} updates...\n`);
+        if (!isDryRun && toApply.length > 0) {
+            if (npmToApply.length > 0) {
+                logger.info(`\nApplying ${String(npmToApply.length)} catalog update${npmToApply.length === 1 ? "" : "s"}...\n`);
 
-            const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
+                const mergedOptions = { ...options, install: options.install ?? configDefaults.install };
 
-            await applyCatalogAndInstall(workspaceRoot, packageManager, toApply, mergedOptions, logger, npmrcConfig, visConfig.editorconfig ?? true);
+                await applyCatalogAndInstall(workspaceRoot, packageManager, npmToApply, mergedOptions, logger, npmrcConfig, visConfig.editorconfig ?? true);
+            }
 
-            return { applied: true, canceled: false, jsonEmitted: false };
+            if (ecosystemToApply.length > 0) {
+                const { applied, skipped } = applyEcosystemUpdates(ecosystemToApply);
+
+                if (applied.length > 0) {
+                    logger.info(`${String(applied.length)} ecosystem reference${applied.length === 1 ? "" : "s"} updated.`);
+                }
+
+                for (const item of skipped) {
+                    logger.warn(`${yellow("⚠")} Skipped ${item.update.name} (${item.update.file}): ${item.reason}`);
+                }
+            }
+
+            return { applied: true, canceled: false, ecosystemHandled: ecosystemScanned, jsonEmitted: false };
         }
 
         // Empty toApply means the user dismissed the TUI without selecting
         // anything — that's a deliberate cancellation, not a no-op.
-        return { applied: false, canceled: toApply.length === 0, jsonEmitted: false };
+        return { applied: false, canceled: toApply.length === 0, ecosystemHandled: ecosystemScanned, jsonEmitted: false };
     }
 
     // Static output mode (non-TTY, CI, json, minimal)
@@ -1519,7 +1625,11 @@ const execute = async ({ argument: rawArgument, logger, options, visConfig, work
     // We also pass the catalog/PM result so `runEcosystemUpdate` can
     // refuse to apply when the npm stage failed, was canceled in the
     // TUI, or already produced a JSON document on stdout.
-    if (argument.length === 0) {
+    // When the interactive TUI already scanned + offered ecosystem updates
+    // (catalogResult.ecosystemHandled), skip the post-pass — it would re-scan
+    // and print a duplicate text report. Non-TTY / json / minimal paths leave
+    // it unset, so they still get the standalone ecosystem flow here.
+    if (argument.length === 0 && catalogResult.ecosystemHandled !== true) {
         await runEcosystemUpdate(workspaceRoot, options, visConfig ?? {}, logger, catalogResult);
     }
 };
