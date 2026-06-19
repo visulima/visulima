@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import type { Plugin, ResolvedConfig, UserConfig } from "vite";
+import type { Plugin, ResolvedConfig, Rolldown, UserConfig } from "vite";
 import { normalizePath } from "vite";
 
 import type { ReadFileOptions } from "./rpc/server";
@@ -571,8 +571,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
     // disk mtime, so an unchanged module isn't re-parsed (twice) on every HMR
     // trigger. The Babel parse + position-map build + generator pass is the most
     // expensive part of dev startup for JSX-heavy apps.
-    type GeneratedResult = NonNullable<Awaited<ReturnType<(typeof import("./vite/inject-source.js"))["addSourceToJsx"]>>>;
-    type InjectSourceResult = { code: string; map: GeneratedResult["map"] | undefined } | undefined;
+    type InjectSourceResult = { code: string; map: Rolldown.SourceMapInput | undefined } | undefined;
 
     const injectSourceCache = new Map<string, { key: string; result: InjectSourceResult }>();
 
@@ -639,7 +638,13 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
             const { addSourceToJsx } = await import("./vite/inject-source.js");
             const generated = addSourceToJsx(code, id, options.injectSource?.ignore, originalCode);
 
-            const result = generated ? { code: generated.code ?? code, map: generated.map ?? undefined } : undefined;
+            // Babel's `EncodedSourceMap` is structurally a valid source map but types
+            // its `sources`/`names` arrays as `readonly`, which is nominally incompatible
+            // with Vite's mutable `ExistingRawSourceMap`. The map is consumed read-only
+            // downstream, so the cast is safe.
+            const result = generated
+                ? { code: generated.code ?? code, map: (generated.map ?? undefined) as Rolldown.SourceMapInput | undefined }
+                : undefined;
 
             if (cacheKey !== undefined) {
                 injectSourceCache.set(id, { key: cacheKey, result });
