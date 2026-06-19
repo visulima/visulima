@@ -1,3 +1,17 @@
+## @visulima/vis [1.0.0-alpha.42](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.41...@visulima/vis@1.0.0-alpha.42) (2026-06-19)
+
+### Features
+
+* **vis:** runtime multi-tool ([#683](https://github.com/visulima/visulima/issues/683)) ([ee84daa](https://github.com/visulima/visulima/commit/ee84daa56434bfb487abccd27e9e2661c0492132))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.34
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.24
+* **@visulima/tui:** upgraded to 1.0.0-alpha.26
+* **@visulima/humanizer:** upgraded to 3.0.0-alpha.15
+
 ## @visulima/vis [1.0.0-alpha.41](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.40...@visulima/vis@1.0.0-alpha.41) (2026-06-19)
 
 ### Features
