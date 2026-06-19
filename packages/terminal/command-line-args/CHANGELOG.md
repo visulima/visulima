@@ -1,3 +1,10 @@
+## @visulima/command-line-args [2.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.12...@visulima/command-line-args@2.0.0-alpha.13) (2026-06-19)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.34
+
 ## @visulima/command-line-args [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.11...@visulima/command-line-args@2.0.0-alpha.12) (2026-06-13)
 
 ### Features
