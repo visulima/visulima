@@ -1,3 +1,30 @@
+## @visulima/vis [1.0.0-alpha.41](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.40...@visulima/vis@1.0.0-alpha.41) (2026-06-19)
+
+### Features
+
+* **vis:** add runtime detection abstraction (phase 0) ([8dca5b2](https://github.com/visulima/visulima/commit/8dca5b235e3f7427937f60e8ec13ab90e4c698af)), closes [#native](https://github.com/visulima/visulima/issues/native)
+* **vis:** add vis x file runner (phase 2) ([213fadf](https://github.com/visulima/visulima/commit/213fadf99f2de8126749c317ae3f002f174f39cc))
+* **vis:** route dlx/exec through the runtime resolver (phase 1) ([5186df4](https://github.com/visulima/visulima/commit/5186df43a850bc8b0642608643095faa8b1ebc6f))
+* **vis:** route install/add/remove/dedupe through runtime resolver (phase 1) ([8aaa3e1](https://github.com/visulima/visulima/commit/8aaa3e1d8f9ac73debfd6fc81808b570a25a1337))
+* **vis:** route remaining pm verbs through runtime resolver (phase 1) ([e18a44f](https://github.com/visulima/visulima/commit/e18a44f975ce6b744c5e6a9237e056de8a5f230e))
+* **vis:** validate runtime selection in run (phase 1) ([efaa952](https://github.com/visulima/visulima/commit/efaa95251519ad4ed3db77ed42421fd85756dbb2))
+
+### Bug Fixes
+
+* **vis:** regenerate vis-config schema for the runtime field ([1de4ef0](https://github.com/visulima/visulima/commit/1de4ef0f50b6620f981b081b6ff746306b948a76))
+
+### Performance Improvements
+
+* **vis:** skip heap-tuning re-exec for light commands (~290ms) ([885aebe](https://github.com/visulima/visulima/commit/885aebe0993210727f82918cb0474e14a8414ae6))
+
+### Documentation
+
+* **vis:** correct cold-start profile with measured findings ([d02a8c1](https://github.com/visulima/visulima/commit/d02a8c1f2212ce61a5ecf9f396976f1031996557))
+
+### Tests
+
+* **vis:** add cli benchmark harness + codspeed wiring ([c3b1a79](https://github.com/visulima/visulima/commit/c3b1a79cc1814276e95b946d2d227f56942a48cf))
+
 ## @visulima/vis [1.0.0-alpha.40](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.39...@visulima/vis@1.0.0-alpha.40) (2026-06-17)
 
 ### Features
