@@ -22,6 +22,10 @@ export default defineConfig({
                 dark: "github-dark",
                 light: "github-light",
             },
+            // `tera` has no Shiki grammar; alias it to `jinja` and preload that grammar.
+            // Lazy loading only auto-loads bundled language ids, not alias keys, so without
+            // an explicit preload the alias target never loads and Shiki throws "tera not found".
+            langs: ["jinja"],
             langAlias: {
                 tera: "jinja",
             },

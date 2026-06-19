@@ -5,13 +5,11 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
  * runtime, no build step. Phase 2 of the cross-runtime multi-tool (see
  * `rfc/design-runtime-multitool.md`).
  *
- * Architecture mirrors nub's `nub &lt;file>` (MIT) — a thin runtime router that
- * delegates transpile+run to the runtime itself rather than shipping a custom
- * loader: Bun runs TS/JSX natively (`bun run`), and Node uses its own
- * type-transform (`--experimental-transform-types`, which covers the full TS
- * surface — enums, decorators, parameter properties), falling back to `jiti`
- * on Node versions without native TS. A native oxc loader (nub's deeper
- * mechanism) is a possible later optimization, not a v1 requirement.
+ * Architecture mirrors nub's `nub &lt;file>` (MIT) — a thin runtime router. Bun runs
+ * TS/JSX natively (`bun run`); Node runs the file in-process through vis-native's
+ * oxc `registerHooks` loader (`runtime/ts-loader.ts`), which transpiles the full TS
+ * surface + JSX with no second Node boot. On the 22.14.x floor (no `registerHooks`)
+ * the loader falls back to transpiling the entry to a temp `.mjs`.
  */
 const x: Command = {
     argument: {

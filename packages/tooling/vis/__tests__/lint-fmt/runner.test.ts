@@ -148,24 +148,50 @@ describe("lint-fmt runner", () => {
             expect.assertions(1);
 
             const sleepy = writeScript("slow.cjs", { delayMs: 300 });
+            const makeJobs = (): AdapterJob[] =>
+                Array.from({ length: 4 }, (_, index) => {
+                    return {
+                        adapter: stubAdapter(`stub-${index}`, sleepy),
+                        files: ["."],
+                        presence: stubPresence(),
+                    };
+                });
 
-            const jobs: AdapterJob[] = Array.from({ length: 4 }, (_, index) => {
-                return {
-                    adapter: stubAdapter(`stub-${index}`, sleepy),
-                    files: ["."],
-                    presence: stubPresence(),
-                };
-            });
+            // Measure a forced-serial baseline (VIS_LINT_FMT_SERIAL=1) and the
+            // parallel run, then assert a *relative* speedup. An absolute
+            // wall-clock ceiling flakes on loaded CI/dev machines (process
+            // spawn cost + CPU contention scale both runs); a ratio stays
+            // meaningful because both halves absorb the same jitter.
+            const previous = process.env.VIS_LINT_FMT_SERIAL;
 
-            const start = Date.now();
+            process.env.VIS_LINT_FMT_SERIAL = "1";
 
-            await runAdaptersParallel(jobs, {}, "check", 4);
+            let serialDuration: number;
 
-            const parallelDuration = Date.now() - start;
+            try {
+                const serialStart = Date.now();
 
-            // Sequential would be 4 × 300ms = ~1200ms. Allow 700ms ceiling for
-            // CI jitter while still proving real parallelism.
-            expect(parallelDuration).toBeLessThan(700);
+                await runAdaptersParallel(makeJobs(), {}, "check", 4);
+
+                serialDuration = Date.now() - serialStart;
+            } finally {
+                if (previous === undefined) {
+                    delete process.env.VIS_LINT_FMT_SERIAL;
+                } else {
+                    process.env.VIS_LINT_FMT_SERIAL = previous;
+                }
+            }
+
+            const parallelStart = Date.now();
+
+            await runAdaptersParallel(makeJobs(), {}, "check", 4);
+
+            const parallelDuration = Date.now() - parallelStart;
+
+            // 4 × 300ms jobs: serial ≈ 1200ms+, parallel ≈ one job + overhead.
+            // Require a clear speedup (parallel under 70% of serial) without
+            // pinning an absolute budget.
+            expect(parallelDuration).toBeLessThan(serialDuration * 0.7);
         });
     });
 

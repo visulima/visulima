@@ -3,6 +3,7 @@ import enableCompileCache from "@visulima/cerebro/compile-cache";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 
 import pkg from "../package.json";
+import { runAndExit } from "./cli-run";
 import dlxCommand from "./commands/dlx";
 
 // `visx` / `vx` is the npx-style entry point for vis: `visx <pkg> [args]`
@@ -54,15 +55,5 @@ cli.addPlugin(
 
 cli.addCommand(dlxCommand);
 
-// eslint-disable-next-line unicorn/prefer-top-level-await, no-void -- void marks the IIFE promise as intentionally discarded
-void (async () => {
-    try {
-        await cli.run({ shouldExitProcess: false });
-    } catch {
-        // errorHandlerPlugin already rendered the error
-        process.exitCode = process.exitCode || 1;
-    } finally {
-        // eslint-disable-next-line unicorn/no-process-exit -- explicit exit mirrors bin.ts; keeps interactive cleanup deterministic
-        process.exit(process.exitCode ?? 0);
-    }
-})();
+// eslint-disable-next-line no-void -- void marks the IIFE promise as intentionally discarded
+void runAndExit(cli);

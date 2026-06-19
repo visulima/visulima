@@ -71,7 +71,7 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
             {/* Package name title — fixed */}
             <Box flexShrink={0} paddingTop={1} paddingX={2}>
                 <Text bold color="white">
-                    {entry.packageName}
+                    {entry.displayName ?? entry.packageName}
                 </Text>
             </Box>
 
@@ -106,9 +106,9 @@ const PackageDetailPanel = ({ changelogUrl, entry, focused, recommendation, scro
                 </Box>
                 <Box>
                     <Box width={12}>
-                        <Text dimColor>Catalog:</Text>
+                        <Text dimColor>{entry.kind === "ecosystem" ? "Source:" : "Catalog:"}</Text>
                     </Box>
-                    <Text>{entry.catalogName}</Text>
+                    <Text color={entry.kind === "ecosystem" ? "cyan" : undefined}>{entry.catalogName}</Text>
                 </Box>
 
                 {/* Accepted risk notice */}
@@ -330,15 +330,23 @@ alert
                         LINKS
                     </Text>
                     <Box flexDirection="column" marginTop={1} paddingLeft={2}>
-                        <Text color="cyan" underline>
-                            https://npmx.dev/
-                            {entry.packageName}
-                        </Text>
+                        {entry.kind === "ecosystem"
+                            ? (
+                                <Text color="cyan" underline>
+                                    {entry.detailUrl ?? entry.displayName ?? entry.packageName}
+                                </Text>
+                            )
+                            : (
+                                <Text color="cyan" underline>
+                                    https://npmx.dev/
+                                    {entry.packageName}
+                                </Text>
+                            )}
                     </Box>
                 </Box>
 
-                {/* Update guidance when no AI analysis */}
-                {!recommendation && (
+                {/* Update guidance when no AI analysis (npm packages only) */}
+                {!recommendation && entry.kind !== "ecosystem" && (
                     <Box flexDirection="column" marginTop={1}>
                         <Text dimColor>{"\u2500\u2500 "}</Text>
                         <Text bold color="white">

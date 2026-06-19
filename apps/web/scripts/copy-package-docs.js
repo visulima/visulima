@@ -145,9 +145,13 @@ async function sanitizeMdx(filePath) {
             } // code block - don't modify
             // Escape non-HTML angle brackets
             let result = part.replace(safeTagRegex, "\\<");
-            // Strip .mdx/.md extensions from markdown links (they break URL routing)
-            result = result.replace(/(\[[^\]]*\]\([^)]*?)\.mdx(\))/g, "$1$2");
-            result = result.replace(/(\[[^\]]*\]\([^)]*?)\.md(\))/g, "$1$2");
+            // Strip .mdx/.md extensions from markdown link targets (they break URL routing).
+            // Match on the link target `](...)` only — a label containing inline code is
+            // split into its own part by codeBlockRegex above, orphaning it from the URL,
+            // so a regex anchored on `[label]` would miss those links and leak `.mdx` into
+            // the rendered href (which the prerender crawler then fetches and 404s on).
+            result = result.replace(/(\]\([^)\s]*?)\.mdx(#[^)]*)?(\))/g, "$1$2$3");
+            result = result.replace(/(\]\([^)\s]*?)\.md(#[^)]*)?(\))/g, "$1$2$3");
             return result;
         })
         .join("");
@@ -281,6 +285,59 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
         } else if (entry.name.endsWith(".mdx") || entry.name.endsWith(".md")) {
             let content = await fs.readFile(fullPath, "utf-8");
             let changed = false;
+
+            // Resolve relative markdown links (./, ../, or bare) to absolute /docs/... paths.
+            // This runs in the final pass, after every package is copied, so cross-package
+            // existence checks (e.g. ../vis/index from secret-scanner) are reliable. The
+            // prerender crawler uses naive browser resolution where an index page URL has no
+            // trailing slash, so `../` from an index page over-pops a level and 404s — absolute
+            // paths sidestep that. A leading `index` segment collapses to the directory route;
+            // a clearly-relative link to a non-existent page is dropped to plain text.
+            const fileDir = path.dirname(fullPath);
+            const docExists = (absolute) =>
+                existsSync(absolute + ".mdx") ||
+                existsSync(absolute + ".md") ||
+                existsSync(path.join(absolute, "index.mdx")) ||
+                existsSync(path.join(absolute, "index.md"));
+
+            content = content.replace(/(^|[^!])(\[[^\]]*\])\(([^)]+)\)/g, (match, before, label, target) => {
+                // Skip absolute paths, pure anchors, and scheme links (http:, mailto:, etc.).
+                if (/^(\/|#|[a-z][a-z0-9+.-]*:)/i.test(target)) {
+                    return match;
+                }
+
+                const pathPart = target.replace(/#.*$/, "");
+                const anchor = target.slice(pathPart.length);
+
+                if (!pathPart) {
+                    return match; // pure anchor
+                }
+
+                const absolute = path.resolve(fileDir, pathPart);
+                const relToContent = path.relative(contentRoot, absolute);
+
+                // Outside the docs tree (e.g. ../../some-asset) — leave untouched.
+                if (relToContent.startsWith("..") || path.isAbsolute(relToContent)) {
+                    return match;
+                }
+
+                if (docExists(absolute)) {
+                    const urlPath = relToContent.split(path.sep).join("/").replace(/\/index$/, "");
+                    changed = true;
+
+                    return `${before}${label}(/docs/${urlPath}${anchor})`;
+                }
+
+                // A clearly-relative link (./ or ../) to a non-existent page is broken — the
+                // prerender crawler would 404 on it. Drop it to plain text, keeping the label.
+                if (/^\.\.?\//.test(pathPart)) {
+                    changed = true;
+
+                    return `${before}${label.slice(1, -1)}`;
+                }
+
+                return match;
+            });
 
             // Fix broken markdown-style /docs/ links
             const updated = content.replace(/\[([^\]]*)\]\(\/docs\/(.*?)\)/g, (match, label, docPath) => {
@@ -421,15 +478,6 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
                     return match;
                 },
             );
-
-            // Convert relative ./path links to absolute /docs/packages/{pkgName}/... paths
-            const fileDir = path.dirname(fullPath);
-            content = content.replace(/(\[.*?\]\()\.\/([^)]+)\)/g, (match, prefix, relPath) => {
-                // Compute the absolute docs path from the file's directory
-                const relToRoot = path.relative(pkgRoot, fileDir);
-                const absPath = relToRoot ? `${relToRoot}/${relPath}` : relPath;
-                return `${prefix}/docs/packages/${pkgName}/${absPath})`;
-            });
 
             if (content !== original) {
                 await fs.writeFile(fullPath, content);

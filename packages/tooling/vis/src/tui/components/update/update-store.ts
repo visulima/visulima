@@ -64,6 +64,16 @@ const sortEntries = (entries: OutdatedEntry[], mode: SortMode): OutdatedEntry[] 
  */
 export const ecosystemEntryKey = (entry: EcosystemUpdate): string => `${entry.ecosystem}|${entry.file}:${String(entry.line)}|${entry.name}`;
 
+/**
+ * Stable, collision-free identity for a catalog entry. Keying the check-set on
+ * `packageName` alone conflated one package pinned at different versions across
+ * catalogs (for instance `nodemailer` in both the `dev` and `prod` catalogs),
+ * so toggling one row toggled both. Combining `catalogName` with the package
+ * name keeps each catalog's row independently selectable. A tab cannot appear
+ * in a catalog or package name, so it is a safe separator.
+ */
+export const entryKey = (entry: OutdatedEntry): string => `${entry.catalogName}\t${entry.packageName}`;
+
 export interface UpdateState {
     /** AI analysis result (null if not requested). */
     aiResult: AiAnalysisResult | null;
@@ -166,7 +176,7 @@ export class UpdateStore {
             allChecked: true,
             applyProgress: null,
             checkedEcosystemKeys: new Set(ecosystemEntries.map((entry) => ecosystemEntryKey(entry))),
-            checkedEntries: new Set(entries.map((e) => e.packageName)),
+            checkedEntries: new Set(entries.map((e) => entryKey(e))),
             ecosystemEntries,
             entries,
             error: null,
@@ -237,7 +247,7 @@ export class UpdateStore {
 
     /** Get the list of checked entries (for apply). */
     public getCheckedEntries(): OutdatedEntry[] {
-        return this.#allEntries.filter((e) => this.#state.checkedEntries.has(e.packageName));
+        return this.#allEntries.filter((e) => this.#state.checkedEntries.has(entryKey(e)));
     }
 
     /** Get the list of checked ecosystem entries (for apply). */
@@ -328,13 +338,19 @@ export class UpdateStore {
         }
     }
 
-    public toggleCheck(packageName: string): void {
+    /**
+     * Toggle a single entry's checked state. Keyed by {@link entryKey} (not the
+     * bare package name) so the same package pinned at different versions in
+     * different catalogs toggles independently.
+     */
+    public toggleCheck(entry: OutdatedEntry): void {
+        const key = entryKey(entry);
         const checked = new Set(this.#state.checkedEntries);
 
-        if (checked.has(packageName)) {
-            checked.delete(packageName);
+        if (checked.has(key)) {
+            checked.delete(key);
         } else {
-            checked.add(packageName);
+            checked.add(key);
         }
 
         this.#emit({
@@ -348,7 +364,7 @@ export class UpdateStore {
         this.#emit({
             ...this.#state,
             allChecked: true,
-            checkedEntries: new Set(this.#allEntries.map((e) => e.packageName)),
+            checkedEntries: new Set(this.#allEntries.map((e) => entryKey(e))),
         });
     }
 

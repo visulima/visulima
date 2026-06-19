@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { EcosystemUpdate } from "../../../src/commands/update/ecosystems";
-import { ecosystemEntryKey, UpdateStore } from "../../../src/tui/components/update/update-store";
+import { ecosystemEntryKey, entryKey, UpdateStore } from "../../../src/tui/components/update/update-store";
 import type { OutdatedEntry } from "../../../src/util/catalog";
 
 const makeOutdated = (overrides: Partial<OutdatedEntry> & Pick<OutdatedEntry, "packageName">): OutdatedEntry =>
@@ -86,6 +86,31 @@ describe("updateStore (ecosystem plumbing)", () => {
 
         expect(ecosystemEntryKey(a)).not.toBe(ecosystemEntryKey(b));
         expect(ecosystemEntryKey(a)).toContain("actions/checkout");
+    });
+});
+
+describe("updateStore (per-catalog check identity)", () => {
+    it("toggles the same package in different catalogs independently", () => {
+        expect.assertions(4);
+
+        // Same name (`nodemailer`), two catalogs at different versions — the
+        // exact shape that used to toggle both rows at once when the check-set
+        // keyed on packageName alone.
+        const dev = makeOutdated({ catalogName: "dev", currentRange: "8.0.11", packageName: "nodemailer" });
+        const prod = makeOutdated({ catalogName: "prod", currentRange: "8.0.11", packageName: "nodemailer" });
+        const store = new UpdateStore([dev, prod]);
+
+        // Both start checked (seeded in the constructor).
+        expect(store.getCheckedEntries()).toHaveLength(2);
+
+        // Unchecking the dev row must leave the prod row checked.
+        store.toggleCheck(dev);
+
+        const checked = store.getCheckedEntries();
+
+        expect(checked).toHaveLength(1);
+        expect(checked[0]?.catalogName).toBe("prod");
+        expect(entryKey(dev)).not.toBe(entryKey(prod));
     });
 });
 

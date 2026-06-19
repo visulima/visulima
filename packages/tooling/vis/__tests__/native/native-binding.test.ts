@@ -32,8 +32,9 @@ describe("native addon integration", () => {
             expect.assertions(1);
 
             // If this fails, bump NATIVE_BINDING_VERSION in native/src/lib.rs
-            // together with this test.
-            expect(NATIVE_BINDING_VERSION).toBe(5);
+            // together with this test. v6 added `transform_ts` (oxc TS/JSX
+            // transpile for the runtime loader, replacing jiti).
+            expect(NATIVE_BINDING_VERSION).toBe(6);
         });
     });
 

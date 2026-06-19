@@ -8,6 +8,7 @@ import { scoreColor } from "../../../security/socket-security";
 import type { OutdatedEntry } from "../../../util/catalog";
 import { useMeasuredHeight } from "../../use-measured-height";
 import type { FilterType } from "./update-store";
+import { entryKey } from "./update-store";
 
 const UPDATE_TYPE_COLORS: Record<string, string> = {
     major: "red",
@@ -57,7 +58,7 @@ const PackageRow = ({ checked, entry, isSelected }: PackageRowProps): React.JSX.
                 )}
             <Box flexGrow={1}>
                 <Text bold={isSelected} inverse={isSelected} wrap="truncate">
-                    {entry.packageName}
+                    {entry.displayName ?? entry.packageName}
                     {isAcknowledged ? " [ack]" : ""}
                 </Text>
             </Box>
@@ -89,16 +90,18 @@ const PackageRow = ({ checked, entry, isSelected }: PackageRowProps): React.JSX.
 
 interface CatalogHeaderProps {
     count: number;
+    /** Non-npm group (GitHub Actions / Docker / GitLab CI) \u2014 rendered distinctly. */
+    ecosystem?: boolean;
     name: string;
 }
 
-const CatalogHeader = ({ count, name }: CatalogHeaderProps): React.JSX.Element => (
+const CatalogHeader = ({ count, ecosystem = false, name }: CatalogHeaderProps): React.JSX.Element => (
     <Box flexShrink={0} height={1} marginTop={1}>
-        <Text dimColor>
-{"\u25BC"}
+        <Text color={ecosystem ? "cyan" : undefined} dimColor={!ecosystem}>
+            {ecosystem ? "\u25C8" : "\u25BC"}
 {" "}
         </Text>
-        <Text bold color="white">
+        <Text bold color={ecosystem ? "cyan" : "white"}>
             {name.toUpperCase()}
         </Text>
         <Text dimColor>
@@ -107,6 +110,12 @@ const CatalogHeader = ({ count, name }: CatalogHeaderProps): React.JSX.Element =
 {count}
 )
         </Text>
+        {ecosystem && (
+            <Text color="cyan" dimColor>
+{"  "}
+ci/cd refs
+            </Text>
+        )}
     </Box>
 );
 
@@ -200,10 +209,12 @@ const PackageListPanel = ({
     }
 
     const summaryText = summaryParts.length > 0 ? ` (${summaryParts.join(", ")})` : "";
+    const ecosystemCount = entries.filter((e) => e.kind === "ecosystem").length;
+    const packageCount = entries.length - ecosystemCount;
     let checkedCount = 0;
 
     for (const e of entries) {
-        if (checkedEntries.has(e.packageName)) {
+        if (checkedEntries.has(entryKey(e))) {
             checkedCount++;
         }
     }
@@ -213,17 +224,24 @@ const PackageListPanel = ({
     let flatIndex = 0;
 
     for (const [catalogName, catalogEntries] of groupedByCatalog) {
-        rows.push(<CatalogHeader count={catalogEntries.length} key={`hdr-${catalogName}`} name={catalogName} />);
+        rows.push(
+            <CatalogHeader
+                count={catalogEntries.length}
+                ecosystem={catalogEntries[0]?.kind === "ecosystem"}
+                key={`hdr-${catalogName}`}
+                name={catalogName}
+            />,
+        );
 
         for (const entry of catalogEntries) {
             const currentFlatIndex = flatIndex;
 
             rows.push(
                 <PackageRow
-                    checked={checkedEntries.has(entry.packageName)}
+                    checked={checkedEntries.has(entryKey(entry))}
                     entry={entry}
                     isSelected={currentFlatIndex === selectedIndex}
-                    key={entry.packageName}
+                    key={entryKey(entry)}
                 />,
             );
             flatIndex++;
@@ -247,13 +265,23 @@ const PackageListPanel = ({
                     {" VIS "}
                 </Text>
                 <Text wrap="truncate">
-                    {totalEntries}
+                    {ecosystemCount > 0 ? packageCount : totalEntries}
                     {totalChecked > 0 ? `/${totalChecked}` : ""}
 {" "}
-outdated
+                    {ecosystemCount > 0 ? "pkgs" : "outdated"}
 {summaryText}
                     {totalCatalogEntries > totalChecked ? ` · ${totalCatalogEntries - totalChecked} dupes` : ""}
                 </Text>
+                {ecosystemCount > 0 && (
+                    <Text color="cyan">
+{" "}
+◈
+{" "}
+{ecosystemCount}
+{" "}
+ci/cd
+                    </Text>
+                )}
                 {!isDryRun && checkedCount > 0 && (
 <Text dimColor>
 {" "}

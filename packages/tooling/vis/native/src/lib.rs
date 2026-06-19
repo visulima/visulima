@@ -11,6 +11,7 @@ mod pm_detect;
 mod pm_exec;
 mod pm_resolve;
 mod sort_package_json;
+mod transform;
 
 pub use advisories_napi::*;
 pub use editorconfig::*;
@@ -21,6 +22,7 @@ pub use pm_detect::*;
 pub use pm_exec::*;
 pub use pm_resolve::*;
 pub use sort_package_json::*;
+pub use transform::*;
 
 /// ABI compatibility version. Bump this whenever any `#[napi]` function
 /// signature changes so the TypeScript loader can reject stale `.node`
@@ -36,5 +38,7 @@ pub use sort_package_json::*;
 ///       `advisories_status`. Backed by bundled SQLite (rusqlite) + zip.
 ///   5 — added osv-bloom prefilter: `osv_bloom_decode`, `osv_bloom_probe`,
 ///       `osv_bloom_probe_batch`. Backed by `blake3` keyed-hash double-hashing.
+///   6 — added `transform_ts`: oxc-based TS/JSX → JS transpile for the runtime
+///       loader (config / generators / `vis x`), replacing the `jiti` dependency.
 #[napi]
-pub const NATIVE_BINDING_VERSION: u32 = 5;
+pub const NATIVE_BINDING_VERSION: u32 = 6;

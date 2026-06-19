@@ -68,6 +68,29 @@ interface OutdatedEntry {
     acceptedRisk?: AcceptedRisk;
     catalogName: string;
     currentRange: string;
+
+    /**
+     * URL shown in the detail panel's LINKS section. When set (used by
+     * adapted non-npm ecosystem entries) it replaces the default npmx.dev
+     * link, which is meaningless for a workflow/Dockerfile reference.
+     */
+    detailUrl?: string;
+
+    /**
+     * Human-readable label rendered in place of `packageName` in the list /
+     * detail / confirm UI. `packageName` stays the stable, unique key (the
+     * check-set is keyed by it); adapted ecosystem entries use a `file:line`
+     * key as `packageName` and the bare ref name (e.g. `actions/checkout`)
+     * here.
+     */
+    displayName?: string;
+
+    /**
+     * `"ecosystem"` marks an adapted non-npm reference (GitHub Actions /
+     * Docker / GitLab CI) so the detail panel can skip npm-only sections and
+     * the apply path can route it to the ecosystem applier.
+     */
+    kind?: "ecosystem";
     newRange: string;
     packageName: string;
     socketReport?: SocketReport;
