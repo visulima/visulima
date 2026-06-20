@@ -1,0 +1,64 @@
+---
+title: Sending
+description: Send single, multi-channel and batched notifications
+---
+
+# Sending notifications
+
+## Multi-channel send
+
+Each channel present in the message is delivered in parallel; you receive one receipt per channel.
+
+```typescript
+const receipts = await notify.send({
+    sms: { to: "+15555550100", text: "Your code is 123" },
+    chat: { text: "🚀 Deploy finished" },
+    push: { to: ["device-token"], title: "Deploy", body: "Finished" },
+});
+
+for (const receipt of receipts) {
+    if (receipt.successful) {
+        console.log(`${receipt.channel}: ${receipt.messageId}`);
+    } else {
+        console.error(`${receipt.channel} failed:`, receipt.errorMessages);
+    }
+}
+```
+
+## Single channel
+
+```typescript
+const receipt = await notify.sendToChannel("sms", { to: "+15555550100", text: "Hi" });
+```
+
+## Batch with bounded concurrency
+
+```typescript
+const messages = users.map((user) => ({ sms: { to: user.phone, text: `Hi ${user.name}` } }));
+
+for await (const receipts of notify.sendMany(messages, { concurrency: 10 })) {
+    // receipts for one message
+}
+```
+
+## Fluent message builder
+
+`createNotificationMessage()` (or `new NotificationMessageBuilder()`) is a thin, chainable convenience for assembling a
+multi-channel message — `.build()` returns the same plain object `send()` accepts.
+
+```typescript
+import { createNotificationMessage } from "@visulima/notification";
+
+const message = createNotificationMessage()
+    .sms({ to: "+15555550100", text: "Your code is 123" })
+    .push({ to: ["device-token"], title: "Code", body: "123" })
+    .idempotencyKey("login-otp-42")
+    .build();
+
+await notify.send(message);
+```
+
+## Lifecycle
+
+`initialize()` is called lazily and once per provider before its first send. Call `notify.initialize()` to eagerly
+initialise all providers, and `notify.shutdown()` to release provider resources.

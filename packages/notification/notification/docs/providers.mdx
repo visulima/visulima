@@ -1,0 +1,118 @@
+---
+title: Providers
+description: Configure SMS, push, chat, in-app, webhook and email providers
+---
+
+# Providers
+
+Import providers from their own subpath so unused ones are tree-shaken.
+
+## SMS
+
+```typescript
+import { twilioProvider } from "@visulima/notification/providers/twilio";
+import { vonageProvider } from "@visulima/notification/providers/vonage";
+import { plivoProvider } from "@visulima/notification/providers/plivo";
+import { messageBirdProvider } from "@visulima/notification/providers/messagebird";
+import { telnyxProvider } from "@visulima/notification/providers/telnyx";
+
+twilioProvider({ accountSid: "AC…", authToken: "…", from: "+1…" });
+vonageProvider({ apiKey: "…", apiSecret: "…", from: "App" });
+plivoProvider({ authId: "…", authToken: "…", from: "+1…" });
+messageBirdProvider({ accessKey: "…", from: "App" });
+telnyxProvider({ apiKey: "…", from: "+1…" });
+
+// AWS SNS — edge-safe (Web Crypto SigV4, no node:crypto)
+import { snsProvider } from "@visulima/notification/providers/sns";
+
+snsProvider({ accessKeyId: "AKIA…", secretAccessKey: "…", region: "us-east-1" });
+```
+
+## Push
+
+```typescript
+import { fcmProvider } from "@visulima/notification/providers/fcm";
+import { expoProvider } from "@visulima/notification/providers/expo";
+import { webPushProvider } from "@visulima/notification/providers/web-push";
+import { apnsProvider } from "@visulima/notification/providers/apns";
+
+// Bring your own OAuth token provider (keeps the provider edge-safe).
+fcmProvider({ projectId: "my-app", getAccessToken: async () => getGoogleAccessToken() });
+expoProvider({ accessToken: "…" }); // accessToken optional
+
+// web-push — edge-safe (Web Crypto VAPID + RFC 8291 aes128gcm). `to` is the PushSubscription.
+webPushProvider({ vapidPublicKey: "…", vapidPrivateKey: "…", vapidSubject: "mailto:you@app.com" });
+
+// APNs — NODE-ONLY (needs node:http2). Not Cloudflare-safe.
+apnsProvider({ teamId: "…", keyId: "…", signingKey: "-----BEGIN PRIVATE KEY-----…", bundleId: "com.app", production: true });
+```
+
+## Chat
+
+```typescript
+import { slackProvider } from "@visulima/notification/providers/slack";
+import { discordProvider } from "@visulima/notification/providers/discord";
+import { msTeamsProvider } from "@visulima/notification/providers/msteams";
+import { telegramProvider } from "@visulima/notification/providers/telegram";
+
+slackProvider({ token: "xoxb-…", defaultChannel: "C123" }); // or { webhookUrl }
+discordProvider({ webhookUrl: "https://discord.com/api/webhooks/…" });
+msTeamsProvider({ webhookUrl: "https://outlook.office.com/webhook/…" });
+telegramProvider({ botToken: "123:ABC", defaultChatId: 123456 });
+```
+
+## In-app
+
+```typescript
+import { inAppProvider, MemoryInAppStore } from "@visulima/notification/channels/inapp";
+
+const inapp = inAppProvider({ store: new MemoryInAppStore() });
+const store = inapp.getInstance();
+
+await store.list("user-1", { unreadOnly: true });
+await store.unreadCount("user-1");
+await store.markRead("notification-id");
+await store.markAllRead("user-1");
+```
+
+## Webhook
+
+```typescript
+import { webhookProvider } from "@visulima/notification/providers/webhook";
+
+webhookProvider({ url: "https://example.com/hook", headers: { Authorization: "Bearer …" } });
+```
+
+## Email
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { emailChannel } from "@visulima/notification/channels/email";
+
+const mail = createMail(resendProvider({ apiKey: "re_…" }));
+const email = emailChannel(mail);
+```
+
+## Mock (testing)
+
+```typescript
+import { mockProvider } from "@visulima/notification/providers/mock";
+
+const provider = mockProvider({ channel: "sms" });
+// provider.getInstance().sent — recorded payloads
+// mockProvider({ failWith: "boom" }) — deterministic failures
+```
+
+## OpenTelemetry wrapper
+
+Wrap any provider to emit a span per send (edge-safe; `@opentelemetry/api` is an optional peer):
+
+```typescript
+import { otelProvider } from "@visulima/notification/providers/opentelemetry";
+import { trace } from "@opentelemetry/api";
+
+const sms = otelProvider(twilioProvider({ … }), { tracer: trace.getTracer("notification") });
+```
+
+See also the [`telemetryMiddleware`](/docs/packages/notification/middleware) for facade-level spans + metrics.

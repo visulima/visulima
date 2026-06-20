@@ -1,0 +1,55 @@
+---
+title: Middleware
+description: Retry, rate-limit, circuit-breaker, dedupe and logging
+---
+
+# Middleware
+
+Middleware wraps every send. The first registered middleware is the outermost wrapper (runs first on the way in, last on
+the way out).
+
+```typescript
+import { retryMiddleware, rateLimitMiddleware, circuitBreakerMiddleware, dedupeMiddleware, loggingMiddleware } from "@visulima/notification/middleware";
+
+notify
+    .use(loggingMiddleware())
+    .use(retryMiddleware({ retries: 3, baseDelay: 250 }))
+    .use(rateLimitMiddleware({ rate: 100, interval: 1000 }))
+    .use(circuitBreakerMiddleware({ threshold: 5, resetTimeout: 30_000 }))
+    .use(dedupeMiddleware({ ttl: 60_000 }));
+```
+
+## Built-ins
+
+| Middleware                 | Purpose                                                                   |
+| -------------------------- | ------------------------------------------------------------------------- |
+| `retryMiddleware`          | Retry failed sends with exponential backoff + jitter. `shouldRetry` hook. |
+| `rateLimitMiddleware`      | Token-bucket throttle (`rate` per `interval`).                            |
+| `circuitBreakerMiddleware` | Open the circuit after N consecutive failures; trial after cool-off.      |
+| `dedupeMiddleware`         | Suppress duplicate sends within a TTL, keyed by `idempotencyKey`.         |
+| `loggingMiddleware`        | Log each attempt and outcome.                                             |
+| `suppressionMiddleware`    | Short-circuit sends to suppressed recipients (unsubscribe / bounce list). |
+| `telemetryMiddleware`      | Emit an OpenTelemetry span + counter/histogram per send (optional peer).  |
+
+```typescript
+import { suppressionMiddleware, telemetryMiddleware } from "@visulima/notification/middleware";
+
+notify.use(suppressionMiddleware({ isSuppressed: (recipient, channel) => suppressionList.has(recipient) })).use(telemetryMiddleware({ tracer })); // edge-safe; no-op without a tracer/meter
+```
+
+## Writing middleware
+
+```typescript
+import type { Middleware } from "@visulima/notification";
+
+const stamp: Middleware = async (context, next) => {
+    context.payload.metadata = { ...context.payload.metadata, sentAt: Date.now() };
+
+    return next(context);
+};
+
+notify.use(stamp);
+```
+
+The `context` carries `{ channel, provider, payload }`. Return the `Result` from `next(context)` (or short-circuit with
+your own).
