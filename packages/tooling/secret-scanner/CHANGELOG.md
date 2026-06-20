@@ -1,3 +1,9 @@
+## @visulima/secret-scanner [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.6...@visulima/secret-scanner@1.0.0-alpha.7) (2026-06-20)
+
+### Bug Fixes
+
+* **vis,secret-scanner:** windows absolute-path handling ([b1a3d67](https://github.com/visulima/visulima/commit/b1a3d673b3fe4f918c44b1cd33b62bf15d3687fc))
+
 ## @visulima/secret-scanner [1.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.5...@visulima/secret-scanner@1.0.0-alpha.6) (2026-06-13)
 
 ### Features

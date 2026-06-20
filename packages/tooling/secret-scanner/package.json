@@ -1,6 +1,6 @@
 {
     "name": "@visulima/secret-scanner",
-    "version": "1.0.0-alpha.6",
+    "version": "1.0.0-alpha.7",
     "description": "Fast secret and credential scanner — a Rust port of gitleaks detection, exposed via NAPI",
     "keywords": [
         "credentials",
