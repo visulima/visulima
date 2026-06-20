@@ -235,8 +235,9 @@ describe("shellPublishActions: interpolation", () => {
 
         const cmd = calls[0]!.args[calls[0]!.args.length - 1] as string;
 
-        // The action quotes for the shell it will actually spawn: `sh -c` on
-        // POSIX (single quotes) and `cmd /c` on Windows (double quotes).
+        // shellQuote adapts to the platform shell: POSIX single-quotes on
+        // unix, double-quotes under cmd on Windows. Either way the value is
+        // quoted as one inert argument.
         expect(cmd).toMatch(process.platform === "win32" ? /"@scope\/pkg"/ : /'@scope\/pkg'/);
     });
 });

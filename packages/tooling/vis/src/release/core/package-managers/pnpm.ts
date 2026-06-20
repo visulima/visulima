@@ -57,8 +57,6 @@ export class PnpmAdapter extends PackageManagerAdapter {
         }
 
         const dest = options.destination ?? options.cwd;
-        // `isAbsolute` (not `startsWith("/")`) so a Windows absolute path from
-        // pnpm's JSON output isn't re-joined onto `dest`.
         let tarball = isAbsolute(filename) ? filename : join(dest, filename);
 
         if (options.filename) {
