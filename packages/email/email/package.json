@@ -42,11 +42,14 @@
         "mandrill",
         "mjml",
         "mock",
+        "netcore",
         "nodemailer",
         "opentelemetry",
+        "outlook365",
         "plunk",
         "postal",
         "postmark",
+        "sparkpost",
         "react-email",
         "resend",
         "roundrobin",
@@ -300,6 +303,18 @@
         "./providers/loops": {
             "types": "./dist/providers/loops/index.d.ts",
             "default": "./dist/providers/loops/index.js"
+        },
+        "./providers/sparkpost": {
+            "types": "./dist/providers/sparkpost/index.d.ts",
+            "default": "./dist/providers/sparkpost/index.js"
+        },
+        "./providers/netcore": {
+            "types": "./dist/providers/netcore/index.d.ts",
+            "default": "./dist/providers/netcore/index.js"
+        },
+        "./providers/outlook365": {
+            "types": "./dist/providers/outlook365/index.d.ts",
+            "default": "./dist/providers/outlook365/index.js"
         },
         "./utils/parse-address": {
             "types": "./dist/utils/parse-address.d.ts",

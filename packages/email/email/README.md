@@ -912,6 +912,70 @@ const sendGridOptions: SendGridEmailOptions = {
 await mail.send(sendGridOptions);
 ```
 
+### SparkPost Provider
+
+SparkPost is a high-volume email delivery service. Universal runtime (Fetch API).
+
+```typescript
+import { createMail, sparkpostProvider } from "@visulima/email/providers/sparkpost";
+
+const mail = createMail(
+    sparkpostProvider({
+        apiKey: "your-sparkpost-api-key",
+        endpoint: "https://api.sparkpost.com/api/v1", // or https://api.eu.sparkpost.com/api/v1 (EU)
+    }),
+);
+
+await mail.send({
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Welcome",
+    html: "<h1>Welcome!</h1>",
+    // SparkPost-specific: campaignId, templateId, trackOpens, trackClicks
+});
+```
+
+### Netcore Provider
+
+Netcore (formerly Pepipost) transactional email via the Email API v5.1. Universal runtime (Fetch API).
+
+```typescript
+import { createMail, netcoreProvider } from "@visulima/email/providers/netcore";
+
+const mail = createMail(netcoreProvider({ apiKey: "your-netcore-api-key" }));
+
+await mail.send({
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Welcome",
+    html: "<h1>Welcome!</h1>",
+    // Netcore-specific: templateId, templateData
+});
+```
+
+### Outlook365 Provider
+
+Sends through Microsoft Graph `sendMail`. Universal runtime (Fetch API). Bring your own OAuth2 token (`Mail.Send` scope)
+via `accessToken` or `getAccessToken` — no auth SDK is bundled.
+
+```typescript
+import { createMail, outlook365Provider } from "@visulima/email/providers/outlook365";
+
+const mail = createMail(
+    outlook365Provider({
+        getAccessToken: async () => getGraphAccessToken(),
+        userId: "sender@contoso.com", // or "me" (default)
+    }),
+);
+
+await mail.send({
+    from: { email: "sender@contoso.com" },
+    to: { email: "user@example.com" },
+    subject: "Welcome",
+    html: "<h1>Welcome!</h1>",
+});
+```
+
 ### Plunk Provider
 
 Plunk is a modern email platform built on top of AWS SES, offering transactional emails, automations, and broadcasts.
@@ -1069,6 +1133,9 @@ const result = await mail.send(message);
 - **Round Robin** - Load balancing across multiple providers
 - **OpenTelemetry** - OpenTelemetry instrumentation wrapper for observability
 - **SendGrid** - Cloud-based email service for transactional and marketing emails
+- **SparkPost** - SparkPost Transmissions API
+- **Netcore** - Netcore (Pepipost) Email API
+- **Outlook365** - Microsoft Graph (Outlook365) `sendMail`
 - **SMTP** - Standard SMTP protocol
 - **Zeptomail** - Zeptomail email service
 
@@ -1099,6 +1166,9 @@ These providers work in **Node.js**, **Deno**, **Bun**, and **Cloudflare Workers
 - ✅ **Mailomat** - Uses Fetch API
 - ✅ **Sweego** - Uses Fetch API
 - ✅ **SendGrid** - Uses Fetch API
+- ✅ **SparkPost** - Uses Fetch API
+- ✅ **Netcore** - Uses Fetch API
+- ✅ **Outlook365** - Uses Fetch API (Microsoft Graph; bring your own OAuth2 token)
 - ✅ **Plunk** - Uses Fetch API
 - ✅ **Mock** - In-memory provider, works everywhere
 - ✅ **Failover** - Runtime depends on wrapped providers (works if all wrapped providers support the runtime)
