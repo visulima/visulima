@@ -15,9 +15,17 @@ export interface InteractiveOptions {
     isTty?: boolean;
 }
 
+/**
+ * Decide whether the process can safely block on an interactive prompt.
+ * @param options Overrides for the CI and TTY checks. Defaults to the
+ * `is-in-ci` module and a TTY on both `stdin` and `stdout`.
+ * @returns `true` when both standard streams are TTYs and we are not in CI.
+ */
 export const isInteractive = (options: InteractiveOptions = {}): boolean => {
     const isCi = options.isCi ?? isInCi;
-    const isTty = options.isTty ?? Boolean(process.stdin.isTTY);
+    // Require a writable TTY too — a redirected stdout would otherwise let a
+    // prompt block while its question is written to a non-interactive sink.
+    const isTty = options.isTty ?? Boolean(process.stdin.isTTY && process.stdout.isTTY);
 
     return isTty && !isCi;
 };

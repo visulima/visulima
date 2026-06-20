@@ -13,4 +13,9 @@ import { stripVTControlCharacters } from "node:util";
 // eslint-disable-next-line no-control-regex -- intentionally matching C0 controls + DEL to strip them.
 const CONTROL_CHARS = /[\u0000-\u0008\u000B-\u001F\u007F]/g;
 
+/**
+ * Strip ANSI/VT escape sequences and bare control characters from untrusted text.
+ * @param text Remote, attacker-influenceable text destined for the terminal.
+ * @returns The text with escapes and C0/DEL controls removed and tabs spaced.
+ */
 export const sanitizeTerminalText = (text: string): string => stripVTControlCharacters(text).replaceAll("\t", " ").replaceAll(CONTROL_CHARS, "");

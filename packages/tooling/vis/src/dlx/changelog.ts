@@ -33,6 +33,13 @@ export interface ChangelogResult {
 }
 
 const fetchText = async (url: string, signal: AbortSignal | undefined, headers?: Record<string, string>): Promise<string | undefined> => {
+    // An already-aborted signal never fires its `abort` event, so bail out
+    // before arming the timeout — otherwise looped callers would each wait the
+    // full budget on a signal whose listener will never run.
+    if (signal?.aborted) {
+        return undefined;
+    }
+
     const controller = new AbortController();
     const timeout = setTimeout(() => {
         controller.abort();

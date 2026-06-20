@@ -51,6 +51,10 @@ const isValidEntry = (value: unknown): value is DlxSeenEntry => {
     return Array.isArray(entry.alertKeys) && entry.alertKeys.every((key) => typeof key === "string") && typeof entry.seenAt === "number";
 };
 
+/**
+ * Read the on-disk "seen packages" store, dropping any malformed entries.
+ * @returns The parsed state, or an empty store on miss / corrupt / unreadable.
+ */
 export const readDlxSeen = (): DlxSeenState => {
     try {
         if (isAccessibleSync(STATE_FILE)) {
@@ -89,6 +93,13 @@ const writeDlxSeen = (state: DlxSeenState): void => {
     }
 };
 
+/**
+ * Look up the approval entry for `name@version`, if any.
+ * @param state The seen-packages store to read from.
+ * @param name The package name.
+ * @param version The resolved package version.
+ * @returns The matching entry, or `undefined` when the version was never approved.
+ */
 export const getSeenEntry = (state: DlxSeenState, name: string, version: string): DlxSeenEntry | undefined => state.packages[keyFor(name, version)];
 
 /**
@@ -96,6 +107,9 @@ export const getSeenEntry = (state: DlxSeenState, name: string, version: string)
  * approved before. Returns `true` (re-prompt) when the version was never
  * approved, or when a high/critical alert key is present now that wasn't part
  * of the recorded approval.
+ * @param entry The recorded approval, or `undefined` if never approved.
+ * @param currentAlertKeys High/critical alert keys observed on this run.
+ * @returns `true` when the gate should re-prompt.
  */
 export const shouldReprompt = (entry: DlxSeenEntry | undefined, currentAlertKeys: ReadonlyArray<string>): boolean => {
     if (!entry) {
@@ -107,7 +121,13 @@ export const shouldReprompt = (entry: DlxSeenEntry | undefined, currentAlertKeys
     return currentAlertKeys.some((alertKey) => !known.has(alertKey));
 };
 
-/** Record an approval for `name@version` with the alert fingerprint at approval time. */
+/**
+ * Record an approval for `name@version` with the alert fingerprint at approval time.
+ * @param name The approved package name.
+ * @param version The approved, resolved package version.
+ * @param alertKeys High/critical alert keys present at approval time.
+ * @param now Approval timestamp (epoch ms).
+ */
 export const markSeen = (name: string, version: string, alertKeys: ReadonlyArray<string>, now: number): void => {
     const state = readDlxSeen();
 

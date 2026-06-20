@@ -40,7 +40,7 @@ const formatSizeRow = (info: PackageInfo): string | undefined => {
     const tarball = formatSize(tarballBytes);
 
     if (unpacked && tarball) {
-        const files = fileCount ? `, ${String(fileCount)} files` : "";
+        const files = fileCount === undefined ? "" : `, ${String(fileCount)} files`;
 
         return `${unpacked} unpacked (${tarball} tarball${files})`;
     }
