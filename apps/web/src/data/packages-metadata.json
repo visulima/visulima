@@ -185,5 +185,9 @@
     "find-ai-runner": {
         "displayName": "Find AI Runner",
         "features": ["AI runner discovery", "Multiple provider support", "Configuration detection", "CLI integration"]
+    },
+    "workflow": {
+        "displayName": "Workflow",
+        "features": ["Code-first durable workflows", "Resumable steps & replay", "Delays & external-event waits", "Edge-ready (fetch + Web Crypto)", "Pluggable store contract", "Standard Schema payloads"]
     }
 }
