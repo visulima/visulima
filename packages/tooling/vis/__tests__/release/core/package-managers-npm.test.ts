@@ -58,7 +58,7 @@ describe("npmAdapter — pack", () => {
         const result = await new NpmAdapter(runner).pack({ cwd, destination: "/out" });
 
         expect(seenArgs).toBeDefined();
-        expect(result.tarball).toBe("/out/pkg-1.0.0.tgz");
+        expect(result.tarball).toBe(join("/out", "pkg-1.0.0.tgz"));
     });
 
     it("throws PUBLISH_FAILED when npm pack exits non-zero", async () => {

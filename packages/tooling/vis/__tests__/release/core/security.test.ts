@@ -59,15 +59,15 @@ describe("isCustomCommandAllowed: trust gate", () => {
 
 describe("interpolateCommand: token substitution", () => {
     it("substitutes {{name}} and {{version}} via sq()", () => {
-        expect(interpolateCommand("publish-bin {{name}} {{version}}", { name: "@scope/a", version: "1.0.0" })).toBe("publish-bin '@scope/a' '1.0.0'");
+        expect(interpolateCommand("publish-bin {{name}} {{version}}", { name: "@scope/a", version: "1.0.0" }, false)).toBe("publish-bin '@scope/a' '1.0.0'");
     });
 
     it("escapes injected single quotes inside tokens", () => {
-        expect(interpolateCommand("echo {{name}}", { name: "evil'name", version: "1.0.0" })).toBe(String.raw`echo 'evil'\''name'`);
+        expect(interpolateCommand("echo {{name}}", { name: "evil'name", version: "1.0.0" }, false)).toBe(String.raw`echo 'evil'\''name'`);
     });
 
     it("renders shell metacharacters inert in substituted tokens", () => {
-        expect(interpolateCommand("echo {{version}}", { name: "x", version: "$(touch /tmp/pwn)" })).toBe("echo '$(touch /tmp/pwn)'");
+        expect(interpolateCommand("echo {{version}}", { name: "x", version: "$(touch /tmp/pwn)" }, false)).toBe("echo '$(touch /tmp/pwn)'");
     });
 });
 
