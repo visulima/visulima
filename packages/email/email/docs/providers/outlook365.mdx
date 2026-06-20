@@ -1,0 +1,76 @@
+---
+title: Outlook365
+description: Send emails through Microsoft Graph (Outlook365) with @visulima/email
+---
+
+# Outlook365 Provider
+
+The Outlook365 provider sends emails through the [Microsoft Graph `sendMail` endpoint](https://learn.microsoft.com/en-us/graph/api/user-sendmail).
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers) — uses the Fetch API.
+
+Authentication is delegated: you supply a static `accessToken` or an async `getAccessToken` (e.g. backed by
+`@azure/msal-node`). The provider never bundles an auth SDK, so it stays dependency-light and runtime-agnostic.
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { outlook365Provider } from "@visulima/email/providers/outlook365";
+
+const mail = createMail(
+    outlook365Provider({
+        // Bring your own OAuth2 token with the `Mail.Send` scope.
+        getAccessToken: async () => getGraphAccessToken(),
+        userId: "sender@contoso.com", // or "me" (default) to use the token's own mailbox
+    }),
+);
+```
+
+## Configuration
+
+The `Outlook365Config` interface extends `BaseConfig`. One of `accessToken` / `getAccessToken` is required.
+
+| Option            | Type                         | Required | Default                            | Description                                                  |
+| ----------------- | ---------------------------- | -------- | ---------------------------------- | ------------------------------------------------------------ |
+| `accessToken`     | `string`                     | Cond.    | -                                  | Static OAuth2 token with the `Mail.Send` scope               |
+| `getAccessToken`  | `() => MaybePromise<string>` | Cond.    | -                                  | Returns a fresh OAuth2 token (preferred for expiring tokens) |
+| `userId`          | `string`                     | No       | `me`                               | Mailbox to send as (user id / UPN)                           |
+| `saveToSentItems` | `boolean`                    | No       | `true`                             | Keep a copy in the Sent Items folder                         |
+| `endpoint`        | `string`                     | No       | `https://graph.microsoft.com/v1.0` | Custom Graph endpoint                                        |
+| `debug`           | `boolean`                    | No       | `false`                            | Enable debug logging                                         |
+| `logger`          | `Console`                    | No       | -                                  | Custom logger instance                                       |
+| `retries`         | `number`                     | No       | `3`                                | Number of retry attempts                                     |
+| `timeout`         | `number`                     | No       | `30000`                            | Request timeout in milliseconds                              |
+
+## Basic Usage
+
+```typescript
+const result = await mail.send({
+    from: { email: "sender@contoso.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello from Outlook365",
+    html: "<h1>Welcome!</h1>",
+});
+```
+
+> **Note:** Microsoft Graph always sends as the authenticated user / `userId`, so the `from` address is effectively
+> the mailbox the token is scoped to. Graph's `sendMail` returns `202 Accepted` with an empty body, so a message id is
+> synthesised in the result.
+
+## Provider-Specific Email Options
+
+The `Outlook365EmailOptions` interface extends `EmailOptions` with:
+
+| Option       | Type                          | Description        |
+| ------------ | ----------------------------- | ------------------ |
+| `importance` | `"high" \| "low" \| "normal"` | Message importance |
+
+## Supported Features
+
+- ✅ Attachments
+- ✅ Custom headers
+- ✅ HTML & text bodies
+- ✅ Reply-To
+- ❌ Batch sending
+- ❌ Tagging / templates / tracking (use Graph directly for those)

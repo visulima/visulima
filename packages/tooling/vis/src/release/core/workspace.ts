@@ -52,12 +52,11 @@ export const discoverPackages = async (
     // (and similar `/tmp` → realpath cases on Linux), which made an in-workspace
     // manifest look "outside" the workspace.
     //
-    // On Windows the same mismatch appears as 8.3 short names: `os.tmpdir()`
-    // yields `C:\Users\RUNNER~1\…` while glob discovery hands back the long
-    // form `C:\Users\runneradmin\…`. Plain `realpathSync` resolves symlinks but
-    // does NOT expand short names — `realpathSync.native` (libuv's realpath)
-    // does, so prefer it and fall back to the JS implementation, then to a
-    // plain resolve for not-yet-created paths.
+    // `realpathSync.native` additionally expands Windows 8.3 short names
+    // (`RUNNER~1` → `runneradmin`) and normalizes drive-letter case, which the
+    // JS `realpathSync` does not — without it a short-form cwd never matched a
+    // long-form manifest path on `windows-latest`. Both require the path to
+    // exist, so fall back through plain `realpathSync` and then a bare resolve.
     const canonicalize = (p: string): string => {
         const resolved = resolvePath(p);
 
@@ -129,7 +128,12 @@ export const discoverPackages = async (
             const manifestResolved = canonicalize(manifestPath);
             const cwdWithSep = cwdResolved.endsWith(pathSep) ? cwdResolved : `${cwdResolved}${pathSep}`;
 
-            if (manifestResolved !== cwdResolved && !manifestResolved.startsWith(cwdWithSep)) {
+            // NTFS is case-insensitive; compare case-folded on Windows so a
+            // residual drive-letter / casing difference never reads as "outside".
+            const fold = (value: string): string => (pathSep === "\\" ? value.toLowerCase() : value);
+            const manifestFolded = fold(manifestResolved);
+
+            if (manifestFolded !== fold(cwdResolved) && !manifestFolded.startsWith(fold(cwdWithSep))) {
                 throw new VisReleaseError({
                     code: "CONFIG_INVALID",
                     message: `Package manifest is outside the workspace: ${manifestPath} (workspace: ${cwdResolved}).`,

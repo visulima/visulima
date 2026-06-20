@@ -1,0 +1,78 @@
+---
+title: Installation
+description: Install and set up @visulima/notification in your project
+---
+
+# Installation
+
+`@visulima/notification` is available on npm.
+
+```bash
+npm install @visulima/notification
+```
+
+```bash
+yarn add @visulima/notification
+```
+
+```bash
+pnpm add @visulima/notification
+```
+
+## Requirements
+
+- **Node.js**: 22.14+ or 24.10+ (for Node-only providers/runtimes). The core and native providers also run on edge
+  runtimes (Cloudflare Workers, Vercel Edge), Deno and Bun.
+- **TypeScript**: Optional but recommended for full type safety.
+
+## Runtime support
+
+Most providers use only `fetch` + Web Crypto (`globalThis.crypto.subtle`), so they run on **every** runtime including
+**Cloudflare Workers**, Vercel Edge, Deno and Bun. Providers that need OAuth2 tokens (FCM push, Outlook365 via the email
+channel) take a `getAccessToken` callback, so you supply the token without bundling a Node-only auth SDK. Even AWS SNS
+and web-push are edge-safe — their SigV4 / VAPID signing is implemented with Web Crypto, not `node:crypto`.
+
+A small number of providers/adapters are **Node-only** because the underlying protocol or SDK requires Node built-ins:
+**APNs** (`node:http2` — APNs mandates HTTP/2) and the **BullMQ / pg-boss / SQS** queue adapters (Redis / Postgres / AWS
+SDK). Import these only from a Node runtime; the rest of the package stays edge-deployable.
+
+### Providers
+
+| Provider(s)                                               | Node | Deno | Bun  | Cloudflare Workers / Edge |
+| --------------------------------------------------------- | ---- | ---- | ---- | ------------------------- |
+| **SMS** twilio, vonage, plivo, messagebird, telnyx        | ✅   | ✅   | ✅   | ✅                        |
+| **SMS** sns (Web Crypto SigV4)                            | ✅   | ✅   | ✅   | ✅                        |
+| **Push** fcm, expo, web-push (Web Crypto VAPID)           | ✅   | ✅   | ✅   | ✅                        |
+| **Push** apns                                             | ✅   | ❌   | ❌   | ❌ (needs `node:http2`)   |
+| **Chat** slack, discord, msteams, telegram                | ✅   | ✅   | ✅   | ✅                        |
+| webhook, inapp, mock, failover, roundrobin, opentelemetry | ✅   | ✅   | ✅   | ✅                        |
+| email (via `@visulima/email`)                             | ✅   | ✅\* | ✅\* | ✅\*                      |
+
+\* The email channel's runtime support depends on the wrapped `@visulima/email` provider (e.g. SMTP is Node-only; Resend/SendGrid/etc. are edge-safe).
+
+### Infrastructure modules
+
+| Module                                                                             | Node | Cloudflare Workers / Edge   |
+| ---------------------------------------------------------------------------------- | ---- | --------------------------- |
+| middleware (retry/rate-limit/circuit-breaker/dedupe/logging/suppression/telemetry) | ✅   | ✅                          |
+| routing, preferences, events                                                       | ✅   | ✅                          |
+| webhooks (signature verifiers — Web Crypto)                                        | ✅   | ✅                          |
+| template engines (string/handlebars/liquid)                                        | ✅   | ✅                          |
+| queue: memory, unstorage (KV)                                                      | ✅   | ✅                          |
+| queue: bullmq, pg-boss, sqs                                                        | ✅   | ❌ (Redis/Postgres/AWS SDK) |
+
+## Optional peer dependencies
+
+Install only what your chosen providers/modules need:
+
+- `@visulima/email` — the email channel.
+- `unstorage` — the `UnstorageQueue` and `UnstorageInAppStore` (Cloudflare KV, Redis, filesystem, …).
+- `@opentelemetry/api` — the OpenTelemetry wrapper provider + telemetry middleware.
+- `handlebars` / `liquidjs` — the `./template/handlebars` / `./template/liquid` renderers.
+- `bullmq` / `pg-boss` / `@aws-sdk/client-sqs` — the matching durable queue adapters (Node-only).
+
+All are declared as **optional** peers — nothing is pulled in unless you import the subpath that uses it.
+
+## Next steps
+
+- [Getting Started](/docs/packages/notification/getting-started/introduction)
