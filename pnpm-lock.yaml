@@ -2370,7 +2370,7 @@ importers:
         specifier: 5.0.0-alpha.32
         version: link:../../filesystem/fs
       '@visulima/jsdoc-open-api':
-        specifier: 3.0.0-alpha.34
+        specifier: 3.0.0-alpha.35
         version: link:../jsdoc-open-api
       '@visulima/path':
         specifier: 3.0.0-alpha.13
@@ -6744,7 +6744,7 @@ importers:
         specifier: catalog:types
         version: 25.9.3
       '@visulima/email':
-        specifier: workspace:*
+        specifier: 1.0.0-alpha.41
         version: link:../../email/email
       '@visulima/error':
         specifier: 6.0.0-alpha.34
@@ -10333,8 +10333,8 @@ importers:
         specifier: 6.0.0-alpha.34
         version: link:../../error-debugging/error
       '@visulima/secret-scanner':
-        specifier: 1.0.0-alpha.6
-        version: 1.0.0-alpha.6(@aws-sdk/client-sts@3.1067.0)(@azure/storage-blob@12.32.0)(@grpc/grpc-js@1.14.4)(google-auth-library@10.7.0)(mongodb@7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7))(mysql2@3.22.5(@types/node@25.9.3))(pg@8.21.0)
+        specifier: 1.0.0-alpha.7
+        version: link:../secret-scanner
       '@visulima/source-map':
         specifier: 3.0.0-alpha.12
         version: link:../../error-debugging/source-map
@@ -10683,7 +10683,7 @@ importers:
         specifier: 3.0.0-alpha.13
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.42
+        specifier: 1.0.0-alpha.43
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -20305,85 +20305,6 @@ packages:
       typescript:
         optional: true
       vue-tsc:
-        optional: true
-
-  '@visulima/secret-scanner-binding-darwin-arm64@1.0.0-alpha.6':
-    resolution: {integrity: sha512-Gp5wcM3ovZXp0bly9jjCqTODgifVenyhDtmw5MiJC9zSJjcnsljtEhzMEUarL1ZYp3yqmvb1IVsUF13otrRCwA==}
-    engines: {node: ^22.14.0 || >=24.10.0}
-    cpu: [arm64]
-    os: [darwin]
-
-  '@visulima/secret-scanner-binding-darwin-x64@1.0.0-alpha.6':
-    resolution: {integrity: sha512-tgH2YAxHgYhIYcCLSVW5+31XBEd7BxVq7rczBlv9JsoDleA77Xhs69Fkz7wDORbtVuS1h6YoPsdMJM6JdcHfww==}
-    engines: {node: ^22.14.0 || >=24.10.0}
-    cpu: [x64]
-    os: [darwin]
-
-  '@visulima/secret-scanner-binding-linux-arm64-gnu@1.0.0-alpha.6':
-    resolution: {integrity: sha512-mIs7INkKyVgTiKElSoeyF8OGsrA/NPvYM+hSod5Vcb36rttq+xXbUbn1cPQYfOm5WMoh45TfNKjSi+4NtOBccg==}
-    engines: {node: ^22.14.0 || >=24.10.0}
-    cpu: [arm64]
-    os: [linux]
-    libc: [glibc]
-
-  '@visulima/secret-scanner-binding-linux-arm64-musl@1.0.0-alpha.6':
-    resolution: {integrity: sha512-3AfpZEkuTXCqF0R/c7MNOeHDE+j71yvrr8u/YLFiNI/a5eZLRmLqEY/VUyqnQqHefuTG9q8TB1eM8sXiZBloPQ==}
-    engines: {node: ^22.14.0 || >=24.10.0}
-    cpu: [arm64]
-    os: [linux]
-    libc: [musl]
-
-  '@visulima/secret-scanner-binding-linux-x64-gnu@1.0.0-alpha.6':
-    resolution: {integrity: sha512-PQEfkQs6iwo3bEIVb3sLM+o/isVpvyoN/MdFbzgoWh9P1+TxZacjDUiZwIJKr4SVGJFodgO26N4k0oERMRhLtQ==}
-    engines: {node: ^22.14.0 || >=24.10.0}
-    cpu: [x64]
-    os: [linux]
-    libc: [glibc]
-
-  '@visulima/secret-scanner-binding-linux-x64-musl@1.0.0-alpha.6':
-    resolution: {integrity: sha512-XegXBntdg0xjKOsoQT21IoF+ticvSj/HyxNB1VT8lD72do9tQEUuA0L2Kd/dW4E9ZftDs3gQWoMCjWJ/9Sb+5w==}
-    engines: {node: ^22.14.0 || >=24.10.0}
-    cpu: [x64]
-    os: [linux]
-    libc: [musl]
-
-  '@visulima/secret-scanner-binding-win32-arm64-msvc@1.0.0-alpha.6':
-    resolution: {integrity: sha512-PlLryJBAMbUX/jj+55y4MLjO0ENp2Qf/eZNSSBque1aWOuAFCukeB1/sPFWBIqHJo6Ge7JAPwpr+J0xRtWGNUQ==}
-    engines: {node: ^22.14.0 || >=24.10.0}
-    cpu: [arm64]
-    os: [win32]
-
-  '@visulima/secret-scanner-binding-win32-x64-msvc@1.0.0-alpha.6':
-    resolution: {integrity: sha512-7TfjmYnVwglo4fTlsDHr43bVlTK9z+cRLBFDhH94E6K/IautRk+HTyVpdkJENU3AptH//ONp+PApVumADl2e0w==}
-    engines: {node: ^22.14.0 || >=24.10.0}
-    cpu: [x64]
-    os: [win32]
-
-  '@visulima/secret-scanner@1.0.0-alpha.6':
-    resolution: {integrity: sha512-tfcHMKG9QZR8J7V+/STLQn6YZS/oiXS6jkNyZil+8KeQohIwmu779BB/tYDSEmftd5LBpA3scylJE/NINnbeLQ==}
-    engines: {node: ^22.14.0 || >=24.10.0}
-    peerDependencies:
-      '@aws-sdk/client-sts': '*'
-      '@azure/storage-blob': '*'
-      '@grpc/grpc-js': '>=1.14.4'
-      google-auth-library: 10.7.0
-      mongodb: '*'
-      mysql2: '*'
-      pg: '*'
-    peerDependenciesMeta:
-      '@aws-sdk/client-sts':
-        optional: true
-      '@azure/storage-blob':
-        optional: true
-      '@grpc/grpc-js':
-        optional: true
-      google-auth-library:
-        optional: true
-      mongodb:
-        optional: true
-      mysql2:
-        optional: true
-      pg:
         optional: true
 
   '@visulima/string@3.0.0-alpha.13':
@@ -46185,50 +46106,6 @@ snapshots:
       - json5
       - smol-toml
       - yaml
-
-  '@visulima/secret-scanner-binding-darwin-arm64@1.0.0-alpha.6':
-    optional: true
-
-  '@visulima/secret-scanner-binding-darwin-x64@1.0.0-alpha.6':
-    optional: true
-
-  '@visulima/secret-scanner-binding-linux-arm64-gnu@1.0.0-alpha.6':
-    optional: true
-
-  '@visulima/secret-scanner-binding-linux-arm64-musl@1.0.0-alpha.6':
-    optional: true
-
-  '@visulima/secret-scanner-binding-linux-x64-gnu@1.0.0-alpha.6':
-    optional: true
-
-  '@visulima/secret-scanner-binding-linux-x64-musl@1.0.0-alpha.6':
-    optional: true
-
-  '@visulima/secret-scanner-binding-win32-arm64-msvc@1.0.0-alpha.6':
-    optional: true
-
-  '@visulima/secret-scanner-binding-win32-x64-msvc@1.0.0-alpha.6':
-    optional: true
-
-  '@visulima/secret-scanner@1.0.0-alpha.6(@aws-sdk/client-sts@3.1067.0)(@azure/storage-blob@12.32.0)(@grpc/grpc-js@1.14.4)(google-auth-library@10.7.0)(mongodb@7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7))(mysql2@3.22.5(@types/node@25.9.3))(pg@8.21.0)':
-    dependencies:
-      ignore: 7.0.5
-    optionalDependencies:
-      '@aws-sdk/client-sts': 3.1067.0
-      '@azure/storage-blob': 12.32.0
-      '@grpc/grpc-js': 1.14.4
-      '@visulima/secret-scanner-binding-darwin-arm64': 1.0.0-alpha.6
-      '@visulima/secret-scanner-binding-darwin-x64': 1.0.0-alpha.6
-      '@visulima/secret-scanner-binding-linux-arm64-gnu': 1.0.0-alpha.6
-      '@visulima/secret-scanner-binding-linux-arm64-musl': 1.0.0-alpha.6
-      '@visulima/secret-scanner-binding-linux-x64-gnu': 1.0.0-alpha.6
-      '@visulima/secret-scanner-binding-linux-x64-musl': 1.0.0-alpha.6
-      '@visulima/secret-scanner-binding-win32-arm64-msvc': 1.0.0-alpha.6
-      '@visulima/secret-scanner-binding-win32-x64-msvc': 1.0.0-alpha.6
-      google-auth-library: 10.7.0
-      mongodb: 7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7)
-      mysql2: 3.22.5(@types/node@25.9.3)
-      pg: 8.21.0
 
   '@visulima/string@3.0.0-alpha.13': {}
 
