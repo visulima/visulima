@@ -758,7 +758,7 @@ describe("pythonVersionActions: resolveUvLockPath", () => {
             { dir: "/repo/py/sdk", name: "@scope/sdk" } as never,
         );
 
-        expect(result).toBe("/repo/py/sdk/uv.lock");
+        expect(result).toBe(join("/repo/py/sdk", "uv.lock"));
     });
 
     it("honours perPackageConfig.uvLockPath (relative to pkg.dir)", () => {
@@ -769,7 +769,7 @@ describe("pythonVersionActions: resolveUvLockPath", () => {
             { uvLockPath: "../uv.lock" },
         );
 
-        expect(result).toBe("/repo/py/uv.lock");
+        expect(result).toBe(join("/repo/py/sdk", "../uv.lock"));
     });
 });
 
