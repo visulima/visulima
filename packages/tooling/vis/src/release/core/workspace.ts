@@ -50,13 +50,24 @@ export const discoverPackages = async (
     // compares like with like. On macOS `os.tmpdir()` returns `/var/folders/…`
     // while discovery adapters hand back the realpath `/private/var/folders/…`
     // (and similar `/tmp` → realpath cases on Linux), which made an in-workspace
-    // manifest look "outside" the workspace. realpathSync requires the path to
-    // exist, so fall back to a plain resolve for not-yet-created paths.
+    // manifest look "outside" the workspace.
+    //
+    // `realpathSync.native` additionally expands Windows 8.3 short names
+    // (`RUNNER~1` → `runneradmin`) and normalizes drive-letter case, which the
+    // JS `realpathSync` does not — without it a short-form cwd never matched a
+    // long-form manifest path on `windows-latest`. Both require the path to
+    // exist, so fall back through plain `realpathSync` and then a bare resolve.
     const canonicalize = (p: string): string => {
+        const resolved = resolvePath(p);
+
         try {
-            return realpathSync(resolvePath(p));
+            return realpathSync.native(resolved);
         } catch {
-            return resolvePath(p);
+            try {
+                return realpathSync(resolved);
+            } catch {
+                return resolved;
+            }
         }
     };
 
@@ -117,7 +128,12 @@ export const discoverPackages = async (
             const manifestResolved = canonicalize(manifestPath);
             const cwdWithSep = cwdResolved.endsWith(pathSep) ? cwdResolved : `${cwdResolved}${pathSep}`;
 
-            if (manifestResolved !== cwdResolved && !manifestResolved.startsWith(cwdWithSep)) {
+            // NTFS is case-insensitive; compare case-folded on Windows so a
+            // residual drive-letter / casing difference never reads as "outside".
+            const fold = (value: string): string => (pathSep === "\\" ? value.toLowerCase() : value);
+            const manifestFolded = fold(manifestResolved);
+
+            if (manifestFolded !== fold(cwdResolved) && !manifestFolded.startsWith(fold(cwdWithSep))) {
                 throw new VisReleaseError({
                     code: "CONFIG_INVALID",
                     message: `Package manifest is outside the workspace: ${manifestPath} (workspace: ${cwdResolved}).`,
