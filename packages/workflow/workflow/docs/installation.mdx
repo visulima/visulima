@@ -1,0 +1,43 @@
+---
+title: Installation
+description: Install @visulima/workflow and learn which parts run on which runtimes
+---
+
+# Installation
+
+```sh
+npm install @visulima/workflow
+```
+
+```sh
+yarn add @visulima/workflow
+```
+
+```sh
+pnpm add @visulima/workflow
+```
+
+## Dependencies
+
+The engine ships with a small, fixed dependency set:
+
+- [`xstate`](https://stately.ai/docs) — models the run lifecycle and produces the persisted snapshot.
+- [`croner`](https://github.com/hexagon/croner) — cron/interval math for delays (zero-dependency, edge-safe).
+- [`@standard-schema/spec`](https://standardschema.dev) — the types-only payload-validation contract.
+
+[`unstorage`](https://unstorage.unjs.io) is an **optional** peer, needed only if you use the `UnstorageStore`.
+
+## Runtime support
+
+The engine core and the in-memory / unstorage stores are `fetch` + Web Crypto only — no `node:*` — so they run on:
+
+| Runtime            | Core + MemoryStore / UnstorageStore | Notes                                          |
+| ------------------ | ----------------------------------- | ---------------------------------------------- |
+| Node.js            | ✅                                  | `^22.14.0 \|\| >=24.10.0`                      |
+| Cloudflare Workers | ✅                                  | back the store with KV / D1 / a Durable Object |
+| Vercel Edge        | ✅                                  | back the store with a KV/SQL driver            |
+| Deno               | ✅                                  |                                                |
+| Bun                | ✅                                  |                                                |
+
+Node-only durability (Postgres, Redis) lives entirely behind your own
+[`WorkflowStore`](/docs/packages/workflow/stores) adapter — the engine itself stays edge-pure.
