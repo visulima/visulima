@@ -382,7 +382,10 @@ describe("package-json", () => {
             ).toThrow(TypeError);
         });
 
-        it("should parse JSON content as content even when a same-named file exists on disk (async)", async () => {
+        // The collision these tests exercise requires a file whose name is literally a
+        // JSON string. On Windows `"` (and `:`) are illegal in filenames, so such a file
+        // can never exist — the scenario is impossible there and the setup would ENOENT.
+        it.skipIf(process.platform === "win32")("should parse JSON content as content even when a same-named file exists on disk (async)", async () => {
             expect.assertions(2);
 
             // Content string that also happens to be a valid (different) filename on disk.
@@ -398,7 +401,7 @@ describe("package-json", () => {
             expect(result.version).toBe("1.0.0");
         });
 
-        it("should parse JSON content as content even when a same-named file exists on disk (sync)", () => {
+        it.skipIf(process.platform === "win32")("should parse JSON content as content even when a same-named file exists on disk (sync)", () => {
             expect.assertions(2);
 
             const content = JSON.stringify({ name: "from-content-sync", version: "2.0.0" });
