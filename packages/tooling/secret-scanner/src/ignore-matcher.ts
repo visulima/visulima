@@ -64,31 +64,34 @@ export const filterIgnoredFiles = (files: string[], matcher: IgnoreMatcher | und
     }
 
     // On macOS, process.cwd() resolves symlinks (/private/var/…) while
-    // mkdtemp & path.resolve keep the un-resolved form (/var/…). Use
-    // realpathSync on the cwd so relative() produces a clean relative path
-    // instead of one starting with "../".
-    let resolvedCwd: string;
+    // mkdtemp & path.resolve keep the un-resolved form (/var/…). On Windows the
+    // JS realpathSync also leaves 8.3 short names (RUNNER~1) and drive-letter
+    // case unnormalized, so canonicalize through realpathSync.native — that way
+    // relative() compares like with like instead of emitting an absolute path
+    // (different-drive/-case) that would make matcher.ignores() throw.
+    const canonicalize = (p: string): string => {
+        try {
+            return realpathSync.native(p);
+        } catch {
+            try {
+                return realpathSync(p);
+            } catch {
+                return p;
+            }
+        }
+    };
 
-    try {
-        resolvedCwd = realpathSync(cwd);
-    } catch {
-        resolvedCwd = cwd;
-    }
+    const resolvedCwd = canonicalize(cwd);
 
     return files.filter((file) => {
         const absolute = isAbsolute(file) ? file : resolve(resolvedCwd, file);
-
-        let realAbsolute: string;
-
-        try {
-            realAbsolute = realpathSync(absolute);
-        } catch {
-            realAbsolute = absolute;
-        }
-
+        const realAbsolute = canonicalize(absolute);
         const relativePath = relative(resolvedCwd, realAbsolute);
 
-        if (relativePath === "" || relativePath.startsWith("..")) {
+        // Outside cwd (── "", "..", or an absolute path when on a different
+        // drive) → not subject to cwd-relative ignore patterns. The absolute
+        // guard is load-bearing: `ignore` throws on a non-relative path.
+        if (relativePath === "" || relativePath.startsWith("..") || isAbsolute(relativePath)) {
             return true;
         }
 

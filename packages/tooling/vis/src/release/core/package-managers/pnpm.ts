@@ -9,7 +9,7 @@
  * pipeline level if `publishStrategy: "native"` is configured.
  */
 
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 
 import { VisReleaseError } from "../../errors";
 import type {
@@ -57,7 +57,7 @@ export class PnpmAdapter extends PackageManagerAdapter {
         }
 
         const dest = options.destination ?? options.cwd;
-        let tarball = filename.startsWith("/") ? filename : join(dest, filename);
+        let tarball = isAbsolute(filename) ? filename : join(dest, filename);
 
         if (options.filename) {
             const fs = await import("node:fs/promises");
