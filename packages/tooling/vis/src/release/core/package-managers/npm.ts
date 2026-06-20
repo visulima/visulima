@@ -8,7 +8,7 @@
  *   - npm publish is the lowest-common-denominator that works with foreign tarballs
  */
 
-import { join } from "node:path";
+import { isAbsolute, join } from "node:path";
 
 import { VisReleaseError } from "../../errors";
 import type {
@@ -87,7 +87,9 @@ export class NpmAdapter extends PackageManagerAdapter {
         }
 
         const dest = options.destination ?? options.cwd;
-        let tarball = join(dest, filename);
+        // `isAbsolute` guard so an absolute path (e.g. a Windows `C:\…`) emitted
+        // by npm isn't re-joined onto `dest`.
+        let tarball = isAbsolute(filename) ? filename : join(dest, filename);
 
         if (options.filename) {
             const fs = await import("node:fs/promises");

@@ -53,11 +53,11 @@ Every package is **standalone**. Install one, install ten, mix them with whateve
 
 Already using one of these? Swap it out without changing your code:
 
-| You're using       | Try                                                                       | What you get                                                          |
-| ------------------ | ------------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `node:path`        | [`@visulima/path`](packages/filesystem/path/README.md)                    | Same API, normalized paths, smaller and faster.                       |
-| [`chalk`](https://github.com/chalk/chalk) | [`@visulima/colorize`](packages/terminal/colorize/README.md) | Chalk-compatible API, up to **3× faster**, with nested templates.     |
-| [`ink`](https://github.com/vadimdemedes/ink) | [`@visulima/tui`](packages/terminal/tui/README.md)         | Ink-compatible React API, backed by a native Rust diff engine.        |
+| You're using                                 | Try                                                          | What you get                                                      |
+| -------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
+| `node:path`                                  | [`@visulima/path`](packages/filesystem/path/README.md)       | Same API, normalized paths, smaller and faster.                   |
+| [`chalk`](https://github.com/chalk/chalk)    | [`@visulima/colorize`](packages/terminal/colorize/README.md) | Chalk-compatible API, up to **3× faster**, with nested templates. |
+| [`ink`](https://github.com/vadimdemedes/ink) | [`@visulima/tui`](packages/terminal/tui/README.md)           | Ink-compatible React API, backed by a native Rust diff engine.    |
 
 ## Powered by native Rust
 
@@ -152,6 +152,12 @@ Packages are grouped into eight categories. Jump to the section you need:
 | [@visulima/find-cache-dir](packages/filesystem/find-cache-dir/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ffind-cache-dir?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ffind-cache-dir) | Finds the common standard cache directory |
 | [@visulima/fs](packages/filesystem/fs/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Ffs?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Ffs) | Human friendly file system utilities for Node.js |
 | [@visulima/path](packages/filesystem/path/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fpath?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fpath) | Drop-in replacement of the Node.js path module. |
+
+### Notification
+
+| Package | Version | Description |
+| ---------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [@visulima/notification](packages/notification/notification/README.md) | [![npm](https://img.shields.io/npm/v/%40visulima%2Fnotification?style=flat-square&labelColor=292a44&color=663399&label=v)](https://www.npmjs.com/package/%40visulima%2Fnotification) | A reusable, ESM-only, edge-ready multi-channel notification library with SMS, push, chat, in-app and webhook providers |
 
 ### Storage
 

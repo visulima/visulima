@@ -1,0 +1,40 @@
+---
+title: Templates
+description: Render notification bodies with pluggable template engines
+---
+
+# Templates
+
+Render chat/push/SMS bodies from templates. Each engine lives on its own subpath so you only pull in the one you use.
+All are edge-safe (pure JS — they run on Cloudflare Workers).
+
+## Zero-dependency string renderer
+
+```typescript
+import { renderString } from "@visulima/notification/template/string";
+
+renderString("Hi {{ user.name }}, your code is {{ code }}", { code: "123", user: { name: "Ada" } });
+// "Hi Ada, your code is 123"
+```
+
+Supports flat and nested `{{ a.b.c }}` placeholders; missing values render as empty strings.
+
+## Handlebars / Liquid
+
+`handlebars` and `liquidjs` are **optional peers** — install the one you need.
+
+```typescript
+import { renderHandlebars } from "@visulima/notification/template/handlebars";
+import { renderLiquid } from "@visulima/notification/template/liquid";
+
+await renderHandlebars("<h1>Hello {{name}}!</h1>", { name: "John" });
+await renderLiquid("Hello {{ name }}!", { name: "John" });
+```
+
+## Using a renderer in a send
+
+A renderer is just `(template, data?) => string | Promise<string>`. Render, then send:
+
+```typescript
+await notify.sendToChannel("chat", { text: await renderHandlebars(template, data), to: "C123" });
+```

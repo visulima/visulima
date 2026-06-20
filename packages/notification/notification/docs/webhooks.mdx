@@ -1,0 +1,34 @@
+---
+title: Webhooks
+description: Verify and normalise inbound provider delivery-status webhooks
+---
+
+# Webhooks
+
+Verify the signature of inbound provider webhooks and normalise them to the `NotificationEvent` shape. All verifiers use
+Web Crypto (`globalThis.crypto.subtle`), so they run on Cloudflare Workers and other edge runtimes.
+
+```typescript
+import { twilioVerifier, slackVerifier, standardWebhookVerifier, snsVerifier } from "@visulima/notification/webhooks";
+
+// Slack (v0 signing): HMAC-SHA256 of `v0:{timestamp}:{body}` with a 5-minute replay window
+const ok = await slackVerifier.verify(rawBody, request.headers, signingSecret);
+
+if (ok) {
+    const event = slackVerifier.parse(rawBody); // -> NotificationEvent | undefined
+}
+```
+
+## Available verifiers
+
+| Verifier                  | Scheme                                                              |
+| ------------------------- | ------------------------------------------------------------------- |
+| `twilioVerifier`          | `X-Twilio-Signature` — base64 HMAC-SHA1 of URL + sorted params.     |
+| `slackVerifier`           | v0 signing — hex HMAC-SHA256 of `v0:{ts}:{body}` + replay window.   |
+| `standardWebhookVerifier` | [Standard Webhooks](https://www.standardwebhooks.com/) HMAC-SHA256. |
+| `snsVerifier`             | SNS envelope + subscription-confirmation handling.                  |
+
+Each exposes `verify(payload, headers, secret) => Promise<boolean>` and `parse(body) => NotificationEvent | undefined`.
+
+> SNS full RSA certificate-chain verification is a documented TODO; the verifier handles envelope/type parsing and
+> subscription confirmation today.

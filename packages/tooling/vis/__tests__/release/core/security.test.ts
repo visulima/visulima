@@ -58,6 +58,10 @@ describe("isCustomCommandAllowed: trust gate", () => {
 });
 
 describe("interpolateCommand: token substitution", () => {
+    // Pin isWindows=false: these assert the POSIX (sq) quoting branch. Without
+    // it, the default reads process.platform and produces cmd-style double
+    // quotes on a Windows host, which is the platform-correct behaviour but not
+    // what this block exercises.
     it("substitutes {{name}} and {{version}} via sq()", () => {
         expect(interpolateCommand("publish-bin {{name}} {{version}}", { name: "@scope/a", version: "1.0.0" }, false)).toBe("publish-bin '@scope/a' '1.0.0'");
     });
