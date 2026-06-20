@@ -1,3 +1,13 @@
+## @visulima/email [1.0.0-alpha.40](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.39...@visulima/email@1.0.0-alpha.40) (2026-06-20)
+
+### Features
+
+* **email:** add sparkpost, netcore and outlook365 providers ([b8efc45](https://github.com/visulima/visulima/commit/b8efc45e273dffa246a4badc1711f01682ea7af5))
+
+### Tests
+
+* **email:** fix ical file-url path assertion on windows ([3673d90](https://github.com/visulima/visulima/commit/3673d901f522430bea634f6c93bd286577fa144f))
+
 ## @visulima/email [1.0.0-alpha.39](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.38...@visulima/email@1.0.0-alpha.39) (2026-06-19)
 
 ## @visulima/email [1.0.0-alpha.38](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.37...@visulima/email@1.0.0-alpha.38) (2026-06-19)
