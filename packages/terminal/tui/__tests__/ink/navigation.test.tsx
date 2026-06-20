@@ -33,6 +33,16 @@ const setup = async (jsx: React.JSX.Element) => {
     return { getOutput, stdin };
 };
 
+// Emit a keypress only once ink has attached its stdin "readable" listener —
+// i.e. a component has focused and `useInput`/raw mode is active (see
+// app.tsx `attachReadableListener`). Emitting before then drops the key, which
+// made input assertions flake on loaded runners (a fixed settle delay is not
+// enough). Waiting on the listener is deterministic regardless of machine load.
+const press = async (stdin: NodeJS.WriteStream, data: string): Promise<void> => {
+    await waitFor(() => stdin.listenerCount("readable") > 0);
+    emitReadable(stdin, data);
+};
+
 afterEach(async () => {
     currentUnmount?.();
     currentUnmount = undefined;
@@ -64,7 +74,7 @@ describe(Menu, () => {
         const onSelect = vi.fn();
         const { stdin } = await setup(<Menu autoFocus items={items} onSelect={onSelect} />);
 
-        emitReadable(stdin, "\r");
+        await press(stdin, "\r");
         await waitFor(() => onSelect.mock.calls.length > 0);
 
         expect(onSelect).toHaveBeenCalledWith("new");
@@ -74,7 +84,7 @@ describe(Menu, () => {
         expect.assertions(1);
 
         const onSelect = vi.fn();
-        const { getOutput, stdin } = await setup(
+        const { stdin } = await setup(
             <Menu
                 autoFocus
                 items={[
@@ -86,14 +96,9 @@ describe(Menu, () => {
             />,
         );
 
-        emitReadable(stdin, "j");
-
-        // Wait until focus visibly lands on "C" (skipping disabled "B") before
-        // pressing Enter. A fixed delay races React's re-render on loaded
-        // Windows CI, where Enter would otherwise select the still-focused "A".
-        await waitFor(() => getOutput().replace(/\[[0-9;]*m/g, "").includes("▸ C"));
-
-        emitReadable(stdin, "\r");
+        await press(stdin, "j");
+        await delay(50);
+        await press(stdin, "\r");
         await waitFor(() => onSelect.mock.calls.length > 0);
 
         // Jumped from 'A' over disabled 'B' to 'C'
@@ -171,7 +176,7 @@ describe(CommandPalette, () => {
 
         const { getOutput, stdin } = await setup(<CommandPalette commands={commands} onSelect={vi.fn()} />);
 
-        emitReadable(stdin, "for");
+        await press(stdin, "for");
         await waitFor(() => getOutput().includes("Format document") && !getOutput().includes("File: New"));
 
         const output = getOutput();
@@ -186,7 +191,7 @@ describe(CommandPalette, () => {
         const onSelect = vi.fn();
         const { stdin } = await setup(<CommandPalette commands={commands} onSelect={onSelect} />);
 
-        emitReadable(stdin, "\r");
+        await press(stdin, "\r");
         await waitFor(() => onSelect.mock.calls.length > 0);
 
         // The initial focused command is the first entry with an empty query.
@@ -199,7 +204,7 @@ describe(CommandPalette, () => {
         const onCancel = vi.fn();
         const { stdin } = await setup(<CommandPalette commands={commands} onCancel={onCancel} onSelect={vi.fn()} />);
 
-        emitReadable(stdin, "\u001B");
+        await press(stdin, "\u001B");
         await waitFor(() => onCancel.mock.calls.length > 0);
 
         expect(onCancel).toHaveBeenCalledTimes(1);
@@ -231,7 +236,7 @@ describe(ContentSwitcher, () => {
         const onChange = vi.fn();
         const { getOutput, stdin } = await setup(<ContentSwitcher autoFocus onChange={onChange} options={options} />);
 
-        emitReadable(stdin, "\u001B[C");
+        await press(stdin, "\u001B[C");
         await waitFor(() => onChange.mock.calls.length > 0);
 
         expect(onChange).toHaveBeenCalledWith("two");

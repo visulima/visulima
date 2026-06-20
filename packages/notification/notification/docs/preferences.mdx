@@ -1,0 +1,50 @@
+---
+title: Preferences
+description: Per-subscriber, per-channel opt-in/out with critical override
+---
+
+# Preferences
+
+Honour per-subscriber, per-channel opt-outs. Critical notifications bypass them.
+
+```typescript
+import { MemoryPreferenceStore, preferencesGate } from "@visulima/notification/preferences";
+import { route } from "@visulima/notification/routing";
+
+const prefs = new MemoryPreferenceStore();
+prefs.set("user-1", { channels: { sms: false, push: true } });
+
+// Channels default to allowed; only explicit `false` opts out.
+prefs.isAllowed("user-1", "sms"); // false
+prefs.isAllowed("user-1", "email"); // true (not set)
+prefs.isAllowed("user-1", "sms", { critical: true }); // true (bypass)
+```
+
+## Using the gate
+
+`preferencesGate` turns a store into a `route(...)` gate. By default it resolves the subscriber id from each payload's
+`to` field.
+
+```typescript
+await route(notify, message, { gate: preferencesGate(prefs) });
+
+// Critical: ignore opt-outs (security alerts, etc.)
+await route(notify, message, { gate: preferencesGate(prefs, { critical: true }) });
+
+// Custom subscriber resolution
+await route(notify, message, { gate: preferencesGate(prefs, { subscriberId: (p) => p.metadata?.userId }) });
+```
+
+## Custom store
+
+Implement `PreferenceStore` to back preferences with your database:
+
+```typescript
+import type { PreferenceStore } from "@visulima/notification/preferences";
+
+const store: PreferenceStore = {
+    get: async (id) => db.getPrefs(id),
+    set: async (id, prefs) => db.savePrefs(id, prefs),
+    isAllowed: async (id, channel, { critical } = {}) => critical || (await db.getPrefs(id)).channels[channel] !== false,
+};
+```

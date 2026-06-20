@@ -1,0 +1,53 @@
+---
+title: Introduction
+description: Core concepts of @visulima/notification
+---
+
+# Getting Started
+
+## Concepts
+
+- **Channel** — a logical delivery medium: `sms`, `push`, `chat`, `inapp`, `webhook`, `email`.
+- **Provider** — a concrete integration for a channel (e.g. `twilio` for `sms`). A provider declares its `id`, `channel`,
+  capability `features`, and a `send` method.
+- **Facade** — `createNotification({ <channel>: <provider> })` returns a `Notification` that dispatches messages to the
+  matching provider per channel.
+- **Message** — an object with a payload per channel: `{ sms: {...}, chat: {...} }`.
+- **Receipt** — the discriminated result of a send: `{ successful: true, messageId, … }` or
+  `{ successful: false, errorMessages, … }`.
+
+## Creating a facade
+
+```typescript
+import { createNotification } from "@visulima/notification";
+import { twilioProvider } from "@visulima/notification/providers/twilio";
+
+const notify = createNotification({
+    sms: twilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }),
+});
+```
+
+## The provider contract
+
+Every provider is built with `defineProvider`:
+
+```typescript
+import { defineProvider } from "@visulima/notification";
+import type { SmsPayload } from "@visulima/notification";
+
+export const myProvider = defineProvider<{ apiKey: string }, SmsPayload>((config) => ({
+    id: "my-provider",
+    channel: "sms",
+    features: { batchSending: false, media: false },
+    initialize: () => {},
+    isAvailable: () => Boolean(config?.apiKey),
+    send: async (payload) => ({
+        success: true,
+        data: { channel: "sms", messageId: "…", provider: "my-provider", sent: true, timestamp: new Date() },
+    }),
+}));
+```
+
+## Next steps
+
+- [Sending notifications](/docs/packages/notification/getting-started/sending)
