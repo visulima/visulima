@@ -74,7 +74,7 @@ describe(Menu, () => {
         expect.assertions(1);
 
         const onSelect = vi.fn();
-        const { stdin } = await setup(
+        const { getOutput, stdin } = await setup(
             <Menu
                 autoFocus
                 items={[
@@ -87,7 +87,12 @@ describe(Menu, () => {
         );
 
         emitReadable(stdin, "j");
-        await delay(50);
+
+        // Wait until focus visibly lands on "C" (skipping disabled "B") before
+        // pressing Enter. A fixed delay races React's re-render on loaded
+        // Windows CI, where Enter would otherwise select the still-focused "A".
+        await waitFor(() => getOutput().replace(/\[[0-9;]*m/g, "").includes("▸ C"));
+
         emitReadable(stdin, "\r");
         await waitFor(() => onSelect.mock.calls.length > 0);
 
