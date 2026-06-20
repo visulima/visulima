@@ -8,10 +8,10 @@ import { describe, expect, it, vi } from "vitest";
 // the containment check compares like with like.
 vi.mock(import("node:fs"), async (importOriginal) => {
     const actual = await importOriginal<typeof import("node:fs")>();
-    const SHORT = "/Users/RUNNER~1/Temp/ws";
-    const LONG = "/Users/runneradmin/Temp/ws";
-    const expand = (p: string): string => (p === SHORT ? LONG : p);
-    // Plain realpathSync does NOT expand 8.3; only .native does.
+    // Expand the 8.3 token wherever it appears so the mock is separator- and
+    // drive-agnostic (on Windows `resolve` turns the POSIX literals below into
+    // `C:\Users\RUNNER~1\...`). Only `.native` expands; plain realpathSync does not.
+    const expand = (p: string): string => p.replace("RUNNER~1", "runneradmin");
     const realpathSync = Object.assign((p: string): string => p, { native: expand });
 
     return { ...actual, realpathSync };
