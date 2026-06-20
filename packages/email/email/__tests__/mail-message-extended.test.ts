@@ -2,7 +2,7 @@ import { Buffer } from "node:buffer";
 import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
@@ -259,7 +259,10 @@ describe("mailMessage - extended fluent builder", () => {
 
             const built = await message.build();
 
-            expect(built.icalEvent?.path).toBe(FAKE_ICAL_PATH);
+            // icalEventFromFile resolves a URL via fileURLToPath, which yields a
+            // platform-native path (e.g. "D:\\tmp\\event.ics" on Windows) — so
+            // compare against the same conversion rather than the POSIX literal.
+            expect(built.icalEvent?.path).toBe(fileURLToPath(url));
         });
 
         it("should attach from URL", async () => {
