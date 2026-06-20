@@ -1,6 +1,6 @@
 {
     "name": "@visulima/jsdoc-open-api",
-    "version": "3.0.0-alpha.34",
+    "version": "3.0.0-alpha.35",
     "description": "Generates swagger doc based on JSDoc.",
     "keywords": [
         "api",
