@@ -66,9 +66,6 @@ export class BunAdapter extends PackageManagerAdapter {
         if (filenameMatch?.[1]) {
             const tarballName = filenameMatch[1];
 
-            // `isAbsolute` (not `startsWith("/")`) so a Windows absolute path
-            // like `C:\…\pkg.tgz` parsed from bun's stdout isn't re-joined onto
-            // `dest`, which would produce a doubled `dest\C:\…` path.
             producedTarball = isAbsolute(tarballName) ? tarballName : join(dest, tarballName);
         } else {
             // Fallback: derive from package.json
