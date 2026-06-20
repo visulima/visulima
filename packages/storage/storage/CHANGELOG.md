@@ -1,3 +1,9 @@
+## @visulima/storage [1.0.0-alpha.36](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.35...@visulima/storage@1.0.0-alpha.36) (2026-06-20)
+
+### Bug Fixes
+
+* **storage:** resolve google dependency type skew breaking lint:types ([eea95f4](https://github.com/visulima/visulima/commit/eea95f4cafd2e329b0583c2267be81a1c4b74f08))
+
 ## @visulima/storage [1.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/storage@1.0.0-alpha.34...@visulima/storage@1.0.0-alpha.35) (2026-06-13)
 
 ### Bug Fixes
