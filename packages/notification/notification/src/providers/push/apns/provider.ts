@@ -3,13 +3,12 @@ import { createPrivateKey, sign } from "node:crypto";
 import type { ClientHttp2Session } from "node:http2";
 import { connect } from "node:http2";
 
-import NotificationError from "../../../errors/notification-error";
 import RequiredOptionError from "../../../errors/required-option-error";
 import type { NotificationResult, PushPayload, RecipientResult, Result } from "../../../types";
 import type { ProviderFactory } from "../../provider";
 import { defineProvider } from "../../provider";
 import { toRecipientList } from "../../utils/credentials";
-import generateMessageId from "../../utils/id";
+import { aggregateRecipientResults } from "../../utils/sms";
 import type { ApnsConfig } from "./types";
 
 const PRODUCTION_HOST = "https://api.push.apple.com";
@@ -105,7 +104,9 @@ const apnsProvider: ProviderFactory<ApnsConfig, PushPayload> = defineProvider<Ap
     const getSession = (): ClientHttp2Session => {
         if (!session || session.closed || session.destroyed) {
             session = connect(host);
-            session.on("error", () => {});
+            session.on("error", (error: Error) => {
+                options.logger?.warn(`[@visulima/notification] [apns] HTTP/2 session error: ${error.message}`);
+            });
         }
 
         return session;
@@ -189,7 +190,9 @@ const apnsProvider: ProviderFactory<ApnsConfig, PushPayload> = defineProvider<Ap
                 aps.badge = payload.badge;
             }
 
-            const body = JSON.stringify({ aps, ...payload.data });
+            // Spread `payload.data` first so the constructed `aps` always wins over any
+            // caller-supplied `data.aps`.
+            const body = JSON.stringify({ ...payload.data, aps });
 
             const results: RecipientResult[] = [];
 
@@ -198,23 +201,7 @@ const apnsProvider: ProviderFactory<ApnsConfig, PushPayload> = defineProvider<Ap
                 results.push(await sendOne(token, body));
             }
 
-            const sent = results.filter((result) => result.status === "sent");
-
-            if (sent.length === 0) {
-                return { error: new NotificationError("apns", results[0]?.error ?? "All tokens failed"), success: false };
-            }
-
-            return {
-                data: {
-                    channel: "push",
-                    messageId: sent[0]?.messageId ?? generateMessageId("apns"),
-                    provider: "apns",
-                    recipients: results,
-                    sent: true,
-                    timestamp: new Date(),
-                },
-                success: true,
-            };
+            return aggregateRecipientResults("push", "apns", results);
         },
         shutdown: () => {
             if (session && !session.closed) {

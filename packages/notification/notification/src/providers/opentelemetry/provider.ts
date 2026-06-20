@@ -33,8 +33,6 @@ export const otelProvider = <PayloadT extends BaseNotificationPayload>(
 
     return {
         ...inner,
-        channel: inner.channel,
-        id: inner.id,
         send: async (payload: PayloadT): Promise<Result<NotificationResult>> => {
             if (!tracer) {
                 return inner.send(payload);

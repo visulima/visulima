@@ -1,88 +1,38 @@
 /**
  * Edge-safe cryptographic helpers backing the webhook signature verifiers.
  *
- * All primitives use the Web Crypto API (`globalThis.crypto.subtle`) and the
- * standard `TextEncoder` / `btoa` globals — no `node:crypto`, no `Buffer`. This keeps
- * the verifiers runnable on Cloudflare Workers, Deno and other edge runtimes.
+ * These are thin wrappers over the shared {@link ../providers/utils/webcrypto Web Crypto}
+ * layer (`globalThis.crypto.subtle`, `TextEncoder`, `btoa`) — no `node:crypto`, no
+ * `Buffer` — so the verifiers stay runnable on Cloudflare Workers, Deno and other edge
+ * runtimes.
  */
 
-// `CryptoKey` / `SubtleCrypto` are flagged as experimental for the configured Node range
-// but are stable on every edge runtime and in Node >= 20 `globalThis.crypto`. The
-// node-builtins rule is disabled the same way `src/providers/utils/id.ts` does.
-// eslint-disable-next-line n/no-unsupported-features/node-builtins
-type SubtleKey = CryptoKey;
-
-// eslint-disable-next-line n/no-unsupported-features/node-builtins
-const { subtle } = (globalThis as { crypto: { subtle: SubtleCrypto } }).crypto;
-
-const encoder = new TextEncoder();
+import { hmac, toBase64, toHex } from "../providers/utils/webcrypto";
 
 /**
- * Converts a byte array to a lowercase hex string.
- * @param bytes The bytes to encode.
- * @returns The hex-encoded string.
+ * Default replay window in seconds (5 minutes). Signed timestamps outside this window
+ * are rejected by the Slack and Standard Webhooks verifiers.
  */
-const toHex = (bytes: Uint8Array): string => {
-    let out = "";
-
-    for (const byte of bytes) {
-        out += byte.toString(16).padStart(2, "0");
-    }
-
-    return out;
-};
-
-/**
- * Converts a byte array to a standard base64 string without `node:Buffer`.
- * @param bytes The bytes to encode.
- * @returns The base64-encoded string.
- */
-const toBase64 = (bytes: Uint8Array): string => {
-    let binary = "";
-
-    for (const byte of bytes) {
-        binary += String.fromCodePoint(byte);
-    }
-
-    return btoa(binary);
-};
-
-/**
- * Imports a UTF-8 secret as an HMAC key for the given hash.
- * @param secret The shared secret.
- * @param hash The hash algorithm (e.g. `"SHA-256"`).
- * @returns The imported key.
- */
-const importHmacKey = async (secret: string, hash: string): Promise<SubtleKey> =>
-    subtle.importKey("raw", encoder.encode(secret), { hash, name: "HMAC" }, false, ["sign"]);
+export const REPLAY_WINDOW_SECONDS: number = 60 * 5;
 
 /**
  * Computes an HMAC over `message` and returns the lowercase hex digest.
- * @param secret The shared secret.
+ * @param key The shared secret (UTF-8 string) or raw key bytes.
  * @param message The message to sign.
- * @param hash The hash algorithm (e.g. `"SHA-256"`, `"SHA-1"`).
+ * @param hash The hash algorithm (`"SHA-1"` or `"SHA-256"`).
  * @returns The hex-encoded HMAC.
  */
-export const hmacHex = async (secret: string, message: string, hash: string): Promise<string> => {
-    const key = await importHmacKey(secret, hash);
-    const signature = await subtle.sign("HMAC", key, encoder.encode(message));
-
-    return toHex(new Uint8Array(signature));
-};
+export const hmacHex = async (key: string | Uint8Array, message: string, hash: "SHA-1" | "SHA-256"): Promise<string> => toHex(await hmac(key, message, hash));
 
 /**
  * Computes an HMAC over `message` and returns the base64 digest.
- * @param secret The shared secret.
+ * @param key The shared secret (UTF-8 string) or raw key bytes.
  * @param message The message to sign.
- * @param hash The hash algorithm (e.g. `"SHA-256"`, `"SHA-1"`).
+ * @param hash The hash algorithm (`"SHA-1"` or `"SHA-256"`).
  * @returns The base64-encoded HMAC.
  */
-export const hmacBase64 = async (secret: string, message: string, hash: string): Promise<string> => {
-    const key = await importHmacKey(secret, hash);
-    const signature = await subtle.sign("HMAC", key, encoder.encode(message));
-
-    return toBase64(new Uint8Array(signature));
-};
+export const hmacBase64 = async (key: string | Uint8Array, message: string, hash: "SHA-1" | "SHA-256"): Promise<string> =>
+    toBase64(await hmac(key, message, hash));
 
 /**
  * Constant-time string comparison to avoid leaking match position via timing.
@@ -106,4 +56,26 @@ export const timingSafeEqual = (a: string, b: string): boolean => {
     }
 
     return mismatch === 0;
+};
+
+/**
+ * Checks a signed Unix-seconds timestamp header against a replay window.
+ * @param timestampHeader The raw timestamp header value (Unix seconds), or `undefined`.
+ * @param windowSeconds The maximum allowed clock skew in seconds.
+ * @returns `true` when the timestamp is present, numeric and within the window.
+ */
+export const isWithinReplayWindow = (timestampHeader: string | undefined, windowSeconds: number): boolean => {
+    if (timestampHeader === undefined) {
+        return false;
+    }
+
+    const timestampSeconds = Number.parseInt(timestampHeader, 10);
+
+    if (Number.isNaN(timestampSeconds)) {
+        return false;
+    }
+
+    const nowSeconds = Math.floor(Date.now() / 1000);
+
+    return Math.abs(nowSeconds - timestampSeconds) <= windowSeconds;
 };

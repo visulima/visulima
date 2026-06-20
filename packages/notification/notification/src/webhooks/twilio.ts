@@ -90,6 +90,10 @@ export const twilioWebhook: WebhookVerifier = {
         };
     },
     verify: async (payload: string, headers: WebhookHeaders, secret: string): Promise<boolean> => {
+        if (secret.trim() === "") {
+            return false;
+        }
+
         const provided = getHeader(headers, SIGNATURE_HEADER);
         const url = getHeader(headers, "x-twilio-signature-url");
 

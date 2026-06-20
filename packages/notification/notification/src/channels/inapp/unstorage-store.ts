@@ -11,6 +11,9 @@ import type { InAppStore, ListOptions, StoredNotification } from "./store";
  * Each notification is stored under `prefix:item:id`, and a per-subscriber index list is kept under
  * `prefix:index:subscriberId` so `list`/`unreadCount`/`markAllRead` avoid scanning every key.
  *
+ * The per-subscriber index is eventually-consistent: the item and index keys are written
+ * non-atomically, so a concurrent reader may briefly observe one without the other.
+ *
  * Edge-safe: works on Cloudflare KV (and other edge runtimes) via the matching unstorage driver.
  */
 export class UnstorageInAppStore implements InAppStore {
@@ -60,10 +63,7 @@ export class UnstorageInAppStore implements InAppStore {
     public async markAllRead(subscriberId: string): Promise<void> {
         const ids = await this.#index(subscriberId);
 
-        for (const id of ids) {
-            // eslint-disable-next-line no-await-in-loop
-            await this.markRead(id);
-        }
+        await Promise.all(ids.map(async (id) => this.markRead(id)));
     }
 
     public async unreadCount(subscriberId: string): Promise<number> {
@@ -96,18 +96,9 @@ export class UnstorageInAppStore implements InAppStore {
 
     async #items(subscriberId: string): Promise<StoredNotification[]> {
         const ids = await this.#index(subscriberId);
-        const items: StoredNotification[] = [];
+        const loaded = await Promise.all(ids.map(async (id) => (await this.#storage.getItem(this.#itemKey(id))) as StoredNotification | null));
 
-        for (const id of ids) {
-            // eslint-disable-next-line no-await-in-loop
-            const item = (await this.#storage.getItem(this.#itemKey(id))) as StoredNotification | null;
-
-            if (item) {
-                items.push(item);
-            }
-        }
-
-        return items;
+        return loaded.filter((item): item is StoredNotification => item !== null);
     }
 
     async #pushIndex(subscriberId: string, id: string): Promise<void> {
