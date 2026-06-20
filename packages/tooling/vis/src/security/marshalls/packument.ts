@@ -98,6 +98,8 @@ const PACKUMENT_CACHE_VERSION = 3;
 export interface GetPackumentOptions {
     authToken?: string;
     cacheTtlMs?: number;
+    /** Cache-only mode: never hit the network — return undefined on a cache miss. */
+    offline?: boolean;
     registryUrl?: string;
     signal?: AbortSignal;
     /** Workspace root used to resolve `.npmrc` for registry overrides + auth. */
@@ -200,11 +202,11 @@ const stripPackument = (raw: Record<string, unknown>): Packument => {
                 trimmedDist.tarball = dist.tarball;
             }
 
-            if (typeof dist.unpackedSize === "number") {
+            if (typeof dist.unpackedSize === "number" && Number.isFinite(dist.unpackedSize) && dist.unpackedSize >= 0) {
                 trimmedDist.unpackedSize = dist.unpackedSize;
             }
 
-            if (typeof dist.fileCount === "number") {
+            if (typeof dist.fileCount === "number" && Number.isInteger(dist.fileCount) && dist.fileCount >= 0) {
                 trimmedDist.fileCount = dist.fileCount;
             }
 
@@ -310,6 +312,11 @@ export const getPackument = async (name: string, options: GetPackumentOptions = 
 
     if (cached !== undefined) {
         return cached;
+    }
+
+    // Cache-only mode: a miss must not fall through to a network fetch.
+    if (options.offline) {
+        return undefined;
     }
 
     const registry = await resolveRegistry(name, options);

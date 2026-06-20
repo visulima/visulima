@@ -133,7 +133,7 @@ export const gatherPackageInfo = async (options: GatherPackageInfoOptions): Prom
     let packument: Packument | undefined;
 
     try {
-        packument = await getPackument(name, { signal, workspaceRoot });
+        packument = await getPackument(name, { offline, signal, workspaceRoot });
     } catch {
         packument = undefined;
     }
@@ -166,10 +166,9 @@ export const gatherPackageInfo = async (options: GatherPackageInfoOptions): Prom
     const [report, changelog] = await Promise.all([fetchSecurity(), changelogPromise]);
 
     const alerts = report?.alerts ?? [];
-    const highSeverityKeys = alerts
-        .filter((alert) => alert.severity === "critical" || alert.severity === "high")
-        .map((alert) => alert.key)
-        .sort();
+    const highSeverityKeys = [
+        ...new Set(alerts.filter((alert) => alert.severity === "critical" || alert.severity === "high").map((alert) => alert.key)),
+    ].sort();
 
     const score = report ? Math.round((report.score.overall ?? calculateOverallScore(report.score)) * 100) : undefined;
 

@@ -26,9 +26,13 @@ const execute = async ({ argument, logger, options, visConfig, workspaceRoot: ws
     const gateTargets = options.shellMode ? additionalPackages : [pkg as string, ...additionalPackages];
 
     for (const target of gateTargets) {
+        // An explicit `--info` flag wins over `--no-info` / `VIS_DLX_NO_INFO`.
+        const forceInfo = options.info || false;
+        const noInfo = forceInfo ? false : options.noInfo || isTruthyEnv(process.env.VIS_DLX_NO_INFO);
+
         const gate = await maybeGateFirstRun({
-            forceInfo: options.info || false,
-            noInfo: options.noInfo || isTruthyEnv(process.env.VIS_DLX_NO_INFO),
+            forceInfo,
+            noInfo,
             offline: options.offline || false,
             pkg: target,
             socketToken: visConfig?.security?.socket?.apiToken ?? process.env.VIS_SOCKET_TOKEN,

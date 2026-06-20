@@ -48,7 +48,11 @@ export interface FirstRunGateResult {
     proceed: boolean;
 }
 
-/** Split a package argument into its name and version spec. */
+/**
+ * Split a package argument into its name and version spec.
+ * @param argument A package argument such as `react`, `react@18`, or `@scope/x@tag`.
+ * @returns The parsed `name` and optional version `spec`.
+ */
 export const parsePackageSpec = (argument: string): { name: string; spec?: string } => {
     if (argument.startsWith("@")) {
         const separator = argument.indexOf("@", 1);
@@ -66,6 +70,8 @@ export const parsePackageSpec = (argument: string): { name: string; spec?: strin
  * The gate only understands registry packages — git URLs, tarball/file paths,
  * and `npm:`/`github:` aliases are parsed differently by the underlying runner,
  * so we skip the panel for them rather than describe the wrong thing.
+ * @param pkg The raw package argument passed to `dlx`.
+ * @returns `true` when `pkg` is a bare registry spec the gate can describe.
  */
 export const isRegistrySpec = (pkg: string): boolean => {
     if (pkg === "" || pkg.startsWith(".") || pkg.startsWith("/") || pkg.startsWith("~")) {
@@ -86,6 +92,13 @@ const defaultWrite = (chunk: string): void => {
     process.stdout.write(chunk);
 };
 
+/**
+ * Show the first-run info panel for an unseen registry package and gate on the
+ * user's approval. Self-skips on the fast path (CI / non-TTY / `--yes` /
+ * `--no-info` / non-registry spec / already-approved).
+ * @param options Gate inputs (target package, flags, tokens, workspace root).
+ * @returns `{ proceed }` — `false` only when the user explicitly declined.
+ */
 export const maybeGateFirstRun = async (options: FirstRunGateOptions): Promise<FirstRunGateResult> => {
     const { forceInfo = false, noInfo = false, offline = false, pkg, socketToken, workspaceRoot, yes = false } = options;
 
@@ -105,18 +118,24 @@ export const maybeGateFirstRun = async (options: FirstRunGateOptions): Promise<F
 
     const { name, spec } = parsePackageSpec(pkg);
 
+    // Enforce the budget as a hard wall-clock cap: not all enrichment work
+    // (e.g. some Socket paths) is wired to the abort signal, so race the gather
+    // against the timeout rather than only signalling it.
     const controller = new AbortController();
-    const timeout = setTimeout(() => {
-        controller.abort();
-    }, GATHER_BUDGET_MS);
+    let timeout: ReturnType<typeof setTimeout> | undefined;
+    const budget = new Promise<PackageInfo | undefined>((resolve) => {
+        timeout = setTimeout(() => {
+            controller.abort();
+            resolve(undefined);
+        }, GATHER_BUDGET_MS);
+    });
 
-    let info: PackageInfo | undefined;
+    const info = await Promise.race([
+        gatherPackageInfo({ name, now, offline, signal: controller.signal, socketToken, spec, workspaceRoot }).catch(() => undefined),
+        budget,
+    ]);
 
-    try {
-        info = await gatherPackageInfo({ name, now, offline, signal: controller.signal, socketToken, spec, workspaceRoot });
-    } catch {
-        info = undefined;
-    } finally {
+    if (timeout) {
         clearTimeout(timeout);
     }
 
