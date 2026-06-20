@@ -1,3 +1,9 @@
+## @visulima/dev-toolbar [1.0.0-alpha.37](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.36...@visulima/dev-toolbar@1.0.0-alpha.37) (2026-06-20)
+
+### Bug Fixes
+
+* **dev-toolbar:** bump @babel/parser to v8 and fix vite 8 source-map type ([eb8a111](https://github.com/visulima/visulima/commit/eb8a1110eb9a5ae6acedc55d970d10e896a16950))
+
 ## @visulima/dev-toolbar [1.0.0-alpha.36](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.35...@visulima/dev-toolbar@1.0.0-alpha.36) (2026-06-19)
 
 ## @visulima/dev-toolbar [1.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.34...@visulima/dev-toolbar@1.0.0-alpha.35) (2026-06-19)
