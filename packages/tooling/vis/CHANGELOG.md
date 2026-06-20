@@ -1,3 +1,30 @@
+## @visulima/vis [1.0.0-alpha.43](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.42...@visulima/vis@1.0.0-alpha.43) (2026-06-20)
+
+### Features
+
+* **vis:** first-run info gate for visx/dlx ([53dd31e](https://github.com/visulima/visulima/commit/53dd31e39659d1281d8e94e174475e209bcb8b11))
+
+### Bug Fixes
+
+* **vis,secret-scanner:** windows absolute-path handling ([b1a3d67](https://github.com/visulima/visulima/commit/b1a3d673b3fe4f918c44b1cd33b62bf15d3687fc))
+* **vis:** address dlx first-run gate review comments ([6b833d1](https://github.com/visulima/visulima/commit/6b833d105f0827a3a41140e646d3b548509ccd2d))
+* **vis:** align native binding version check with package version ([4075bae](https://github.com/visulima/visulima/commit/4075bae7c37a4e34fc1416cba7bad1436e3f8090))
+* **vis:** expand windows 8.3 short names in workspace containment ([dbfe9b1](https://github.com/visulima/visulima/commit/dbfe9b152154b1f7526d7e0cbfd48cd0d94e6cc0))
+* **vis:** fix Windows-only release test failures ([158a6a3](https://github.com/visulima/visulima/commit/158a6a39a69d3a59bba9503c1fbcde19048378fc))
+* **vis:** harden dlx first-run gate per review ([a370a57](https://github.com/visulima/visulima/commit/a370a579c4df1f6852bd9591701ce85ff674401c))
+
+### Code Refactoring
+
+* **vis:** humanizer formatBytes + remaining dlx gate review nits ([7e1495b](https://github.com/visulima/visulima/commit/7e1495b9ca962d2e4b4adbabf2f150830a1d3bda))
+
+### Tests
+
+* **vis:** cover dlx gatherPackageInfo ([f998e0b](https://github.com/visulima/visulima/commit/f998e0b3bb66042aac60eff312e948ab6604b837))
+* **vis:** make 8.3 containment mock separator-agnostic ([c2cf820](https://github.com/visulima/visulima/commit/c2cf8208e43ad38f526b16f0546e5c45fddc94d6))
+* **vis:** make release path/shell-quote assertions OS-aware ([8280b28](https://github.com/visulima/visulima/commit/8280b288ccf63fe7181ace194c22390501d5e7b1))
+* **vis:** skip flaky windows-only release/staged suites with TODO ([c568088](https://github.com/visulima/visulima/commit/c5680882df82341ce2cca220972a09e1b030f2de))
+* **vis:** skip windows-deadlock release/commands suites ([1d48a62](https://github.com/visulima/visulima/commit/1d48a6272228629d95ec9620c6b7d0860a184cd3))
+
 ## @visulima/vis [1.0.0-alpha.42](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.41...@visulima/vis@1.0.0-alpha.42) (2026-06-19)
 
 ### Features
