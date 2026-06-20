@@ -72,7 +72,7 @@ describe("state — file lifecycle", () => {
     });
 
     it("stateFilePath joins cwd + changesDir + .state.json", () => {
-        expect(stateFilePath("/r", ".vis/release")).toBe("/r/.vis/release/.state.json");
+        expect(stateFilePath("/r", ".vis/release")).toBe(join("/r", ".vis/release", ".state.json"));
     });
 
     it("throws STATE_FILE_CORRUPT on unknown schema version", async () => {

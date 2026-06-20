@@ -13,7 +13,7 @@
  */
 
 import { readdir, readFile, rename } from "node:fs/promises";
-import { basename, join } from "node:path";
+import { basename, isAbsolute, join } from "node:path";
 
 import zeptomatch from "zeptomatch";
 
@@ -66,7 +66,7 @@ export class BunAdapter extends PackageManagerAdapter {
         if (filenameMatch?.[1]) {
             const tarballName = filenameMatch[1];
 
-            producedTarball = tarballName.startsWith("/") ? tarballName : join(dest, tarballName);
+            producedTarball = isAbsolute(tarballName) ? tarballName : join(dest, tarballName);
         } else {
             // Fallback: derive from package.json
             const pkgJson = JSON.parse(

@@ -30,10 +30,10 @@
  * ```
  */
 
-import { createInterface } from "node:readline";
-
 import isInCi from "is-in-ci";
 
+import { isTruthyEnv } from "../../util/env";
+import { defaultReadline, promptYesNo } from "../../util/prompt";
 import type { MarshallFinding, MarshallFindings } from "./findings";
 import { formatMarshallFindingsAsTable } from "./findings";
 
@@ -62,41 +62,11 @@ export type MarshallDecisionResult = { proceed: false; reason: MarshallDecisionR
 
 const DEFAULT_COUNTDOWN_SECONDS = 15;
 
-const isTruthyEnv = (value: string | undefined): boolean => {
-    if (value === undefined) {
-        return false;
-    }
-
-    const normalized = value.trim().toLowerCase();
-
-    return normalized !== "" && normalized !== "0" && normalized !== "false" && normalized !== "no";
-};
-
 /** Dumb / unknown TERMs mis-render `\r`-based animations — fall back to a single static line. */
 const shouldAnimateCountdown = (env: NodeJS.ProcessEnv): boolean => {
     const term = (env.TERM ?? "").toLowerCase();
 
     return term !== "dumb" && term !== "unknown" && term !== "";
-};
-
-const defaultReadline = async (question: string): Promise<string> => {
-    const rl = createInterface({ input: process.stdin, output: process.stdout });
-
-    try {
-        return await new Promise<string>((resolve) => {
-            rl.question(question, (answer) => {
-                resolve(answer.trim().toLowerCase());
-            });
-        });
-    } finally {
-        rl.close();
-    }
-};
-
-const promptYesNo = async (question: string, readline: (question: string) => Promise<string>): Promise<boolean> => {
-    const answer = await readline(question);
-
-    return answer === "y" || answer === "yes";
 };
 
 /**
