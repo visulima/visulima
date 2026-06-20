@@ -48,6 +48,27 @@ const deriveSigningKey = async (secretKey: string, dateStamp: string, region: st
 };
 
 /**
+ * Builds the SigV4 canonical URI from an endpoint URL: each path segment is URI-encoded
+ * per SigV4 (RFC 3986), defaulting to `"/"` when the path is empty.
+ * @param url The absolute endpoint URL.
+ * @returns The canonical URI path.
+ */
+const canonicalUri = (url: string): string => {
+    const { pathname } = new URL(url);
+
+    if (pathname === "" || pathname === "/") {
+        return "/";
+    }
+
+    return pathname
+        .split("/")
+        .map((segment) =>
+            encodeURIComponent(segment).replaceAll("*", "%2A").replaceAll("'", "%27").replaceAll("(", "%28").replaceAll(")", "%29").replaceAll("!", "%21"),
+        )
+        .join("/");
+};
+
+/**
  * Builds a SigV4-signed POST request for the SNS `Publish` action. The body is the
  * form-encoded action parameters; auth lives entirely in headers.
  * @param config The provider credentials and region.
@@ -82,7 +103,7 @@ const signRequest = async (config: SnsConfig, region: string, host: string, url:
     const signedHeaders = signedHeaderNames.join(";");
     const canonicalHeaders = signedHeaderNames.map((name) => `${name}:${lowerHeaders[name] ?? ""}\n`).join("");
 
-    const canonicalRequest = ["POST", "/", "", canonicalHeaders, signedHeaders, payloadHash].join("\n");
+    const canonicalRequest = ["POST", canonicalUri(url), "", canonicalHeaders, signedHeaders, payloadHash].join("\n");
     const scope = `${dateStamp}/${region}/${SERVICE}/aws4_request`;
     const stringToSign = ["AWS4-HMAC-SHA256", amzDate, scope, toHex(await sha256(utf8(canonicalRequest)))].join("\n");
 

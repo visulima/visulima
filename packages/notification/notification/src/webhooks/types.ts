@@ -29,6 +29,26 @@ export interface WebhookVerifier {
 }
 
 /**
+ * Safely parses a JSON body into a plain object, returning `undefined` on malformed
+ * input or non-object JSON (arrays, primitives, `null`).
+ * @param body The request body.
+ * @returns The parsed object, or `undefined`.
+ */
+export const tryParseObject = (body: string): Record<string, unknown> | undefined => {
+    try {
+        const parsed: unknown = JSON.parse(body);
+
+        if (typeof parsed === "object" && parsed !== null && !Array.isArray(parsed)) {
+            return parsed as Record<string, unknown>;
+        }
+
+        return undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+/**
  * Reads a header value case-insensitively, coercing array values to their first entry.
  * @param headers The inbound headers.
  * @param name The header name to read.

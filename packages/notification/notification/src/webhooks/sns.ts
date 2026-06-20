@@ -1,5 +1,6 @@
 import type { NotificationEvent } from "../types";
 import type { WebhookVerifier } from "./types";
+import { tryParseObject } from "./types";
 
 /**
  * SNS message envelope (the relevant subset).
@@ -17,59 +18,25 @@ interface SnsMessage {
 }
 
 /**
- * Matches a valid Amazon SNS signing-cert hostname, e.g. `sns.us-east-1.amazonaws.com`.
- */
-const SNS_HOST_PATTERN = /^sns\.[\w-]+\.amazonaws\.com$/;
-
-/**
  * Safely parses an SNS message envelope.
  * @param body The request body.
  * @returns The parsed envelope, or `undefined`.
  */
-const parseEnvelope = (body: string): SnsMessage | undefined => {
-    try {
-        const parsed: unknown = JSON.parse(body);
-
-        if (typeof parsed === "object" && parsed !== null) {
-            // The cast narrows the parsed JSON to the known SNS envelope shape.
-            // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-            return parsed as SnsMessage;
-        }
-
-        return undefined;
-    } catch {
-        return undefined;
-    }
-};
-
-/**
- * Validates that a signing-cert URL is an HTTPS Amazon SNS host. This is a structural
- * defence against spoofed `SigningCertURL` values, not a substitute for full
- * verification.
- * @param url The `SigningCertURL` from the envelope.
- * @returns `true` when the URL is a plausible AWS SNS cert URL.
- */
-const isAmazonCertUrl = (url: string): boolean => {
-    try {
-        const parsed = new URL(url);
-
-        return parsed.protocol === "https:" && SNS_HOST_PATTERN.test(parsed.hostname) && parsed.pathname.endsWith(".pem");
-    } catch {
-        return false;
-    }
-};
+const parseEnvelope = (body: string): SnsMessage | undefined => tryParseObject(body);
 
 /**
  * Verifier + parser for AWS SNS HTTP/S subscription deliveries.
  *
- * NOTE: full RSA signature verification requires fetching and validating the X.509
- * certificate at `SigningCertURL` and checking the canonical string-to-sign — that
- * cert-chain step is a documented TODO. This implementation performs the
- * structural checks that are safe and edge-friendly: it requires a well-formed
- * envelope, a `Signature`, and a `SigningCertURL` hosted on an `sns.*.amazonaws.com`
- * HTTPS endpoint. Callers handling `SubscriptionConfirmation` should additionally
- * confirm the subscription by requesting the `SubscribeURL` exposed in the parsed
- * event metadata. Edge-safe — performs no `node:*` work.
+ * NOTE: signature verification is NOT yet implemented. Real verification requires
+ * fetching the X.509 certificate at `SigningCertURL`, validating its cert chain back to
+ * an Amazon root, and checking the RSA-SHA1/RSA-SHA256 signature over the canonical
+ * string-to-sign (SignatureVersion 1 and 2). Until that lands, {@link snsWebhook.verify}
+ * fails closed and always returns `false` — accepting a payload purely on its structure
+ * (a `Signature` field plus an `sns.*.amazonaws.com` `SigningCertURL`) is an auth bypass,
+ * since both are attacker-controllable. `parse` remains available for callers that have
+ * verified the message out-of-band. Callers handling `SubscriptionConfirmation` should
+ * confirm the subscription by requesting the `SubscribeURL` from the parsed metadata.
+ * Edge-safe — performs no `node:*` work.
  *
  * TODO: implement RSA-SHA1/RSA-SHA256 verification of the canonical string-to-sign
  * against the fetched signing certificate (SignatureVersion 1 and 2).
@@ -98,16 +65,11 @@ export const snsWebhook: WebhookVerifier = {
             type: "delivered",
         };
     },
-    verify: (payload: string): Promise<boolean> => {
-        const envelope = parseEnvelope(payload);
-
-        if (envelope?.Signature === undefined || envelope.SigningCertURL === undefined) {
-            return Promise.resolve(false);
-        }
-
-        // Structural check only — see the verifier-level TODO for full cert-chain verification.
-        return Promise.resolve(isAmazonCertUrl(envelope.SigningCertURL));
-    },
+    verify: (): Promise<boolean> =>
+        // Fail closed: cert-chain + RSA signature verification is not implemented (see the
+        // verifier-level NOTE/TODO). Returning anything other than `false` would be an auth
+        // bypass, so always reject.
+        Promise.resolve(false),
 };
 
 export default snsWebhook;

@@ -1,4 +1,3 @@
-import NotificationError from "../../../errors/notification-error";
 import RequiredOptionError from "../../../errors/required-option-error";
 import type { NotificationResult, PushPayload, RecipientResult, Result } from "../../../types";
 import type { ProviderFactory } from "../../provider";
@@ -6,14 +5,12 @@ import { defineProvider } from "../../provider";
 import { toRecipientList } from "../../utils/credentials";
 import { makeRequest } from "../../utils/http";
 import generateMessageId from "../../utils/id";
+import { aggregateRecipientResults } from "../../utils/sms";
 import type { Bytes } from "../../utils/webcrypto";
-import { concatBytes, fromBase64Url, hkdfSha256, randomBytes, toBase64Url, uintToBytes, utf8 } from "../../utils/webcrypto";
+import { concatBytes, fromBase64Url, hkdfSha256, randomBytes, subtle, toBase64Url, uintToBytes, utf8 } from "../../utils/webcrypto";
 import type { PushSubscriptionLike, WebPushConfig } from "./types";
 
 const DEFAULT_TTL = 2_419_200;
-
-// eslint-disable-next-line n/no-unsupported-features/node-builtins
-const subtle = (): SubtleCrypto => globalThis.crypto.subtle;
 
 /**
  * Parses the `to` target into a structured push subscription, accepting either an
@@ -200,23 +197,7 @@ const webPushProvider: ProviderFactory<WebPushConfig, PushPayload> = defineProvi
                 recipientResults.push(await sendOne(to, payload, signingKey));
             }
 
-            const sent = recipientResults.filter((result) => result.status === "sent");
-
-            if (sent.length === 0) {
-                return { error: new NotificationError("web-push", recipientResults[0]?.error ?? "All subscriptions failed"), success: false };
-            }
-
-            return {
-                data: {
-                    channel: "push",
-                    messageId: sent[0]?.messageId ?? generateMessageId("web-push"),
-                    provider: "web-push",
-                    recipients: recipientResults,
-                    sent: true,
-                    timestamp: new Date(),
-                },
-                success: true,
-            };
+            return aggregateRecipientResults("push", "web-push", recipientResults);
         },
         validateCredentials: () => Boolean(options.vapidPublicKey && options.vapidPrivateKey && options.vapidSubject),
     };

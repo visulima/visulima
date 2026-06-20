@@ -18,8 +18,30 @@ type Bytes = Uint8Array<ArrayBuffer>;
  */
 const alloc = (length: number): Bytes => new Uint8Array(new ArrayBuffer(length));
 
+/**
+ * Normalises any `Uint8Array` into an `ArrayBuffer`-backed {@link Bytes} view, copying when
+ * the source is backed by a `SharedArrayBuffer` (which Web Crypto's `BufferSource` rejects).
+ * @param source The input bytes.
+ * @returns An `ArrayBuffer`-backed view over the same byte values.
+ */
+const toBytes = (source: Uint8Array): Bytes => {
+    if (source.buffer instanceof ArrayBuffer) {
+        return source as Bytes;
+    }
+
+    const copy = alloc(source.length);
+
+    copy.set(source);
+
+    return copy;
+};
+
+/**
+ * Returns the Web Crypto `SubtleCrypto` accessor from the global scope.
+ * @returns The `globalThis.crypto.subtle` instance.
+ */
 // eslint-disable-next-line n/no-unsupported-features/node-builtins
-const subtle = (): SubtleCrypto => globalThis.crypto.subtle;
+export const subtle = (): SubtleCrypto => globalThis.crypto.subtle;
 
 export type { Bytes };
 
@@ -176,6 +198,26 @@ export const sha256 = async (data: Bytes): Promise<Bytes> => {
 export const hmacSha256 = async (key: Bytes, data: Bytes): Promise<Bytes> => {
     const cryptoKey = await subtle().importKey("raw", key, { hash: "SHA-256", name: "HMAC" }, false, ["sign"]);
     const signature = await subtle().sign("HMAC", cryptoKey, data);
+
+    return new Uint8Array(signature);
+};
+
+/**
+ * Computes an HMAC over `message` with `key` for the given hash algorithm.
+ *
+ * Accepts either a string key (imported as UTF-8 bytes) or raw key bytes, and either a
+ * string message (UTF-8 encoded) or raw bytes — covering both the text-secret webhook
+ * verifiers and the byte-keyed Standard Webhooks scheme.
+ * @param key The HMAC key, as a UTF-8 string or raw bytes.
+ * @param message The message to sign, as a UTF-8 string or raw bytes.
+ * @param hash The hash algorithm (`"SHA-1"` or `"SHA-256"`).
+ * @returns The raw MAC bytes.
+ */
+export const hmac = async (key: string | Uint8Array, message: string | Uint8Array, hash: "SHA-1" | "SHA-256"): Promise<Bytes> => {
+    const keyBytes = typeof key === "string" ? utf8(key) : toBytes(key);
+    const messageBytes = typeof message === "string" ? utf8(message) : toBytes(message);
+    const cryptoKey = await subtle().importKey("raw", keyBytes, { hash, name: "HMAC" }, false, ["sign"]);
+    const signature = await subtle().sign("HMAC", cryptoKey, messageBytes);
 
     return new Uint8Array(signature);
 };

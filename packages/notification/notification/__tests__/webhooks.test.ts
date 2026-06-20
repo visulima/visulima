@@ -90,10 +90,50 @@ describe("standardWebhook", () => {
         await expect(standardWebhook.verify(body, headers, secret)).resolves.toBe(true);
         await expect(standardWebhook.verify(body, { ...headers, "webhook-signature": "v1,deadbeef" }, secret)).resolves.toBe(false);
     });
+
+    it("decodes a whsec_ base64 key to raw bytes and verifies against it", async () => {
+        expect.assertions(2);
+
+        // Per the Standard Webhooks spec the part after `whsec_` is base64-encoded raw key
+        // BYTES; the HMAC must be keyed with the decoded bytes, not the base64 string.
+        const keyBytes = new Uint8Array([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16]);
+        let binary = "";
+
+        for (const byte of keyBytes) {
+            binary += String.fromCodePoint(byte);
+        }
+
+        const base64Key = btoa(binary);
+        const secret = `whsec_${base64Key}`;
+
+        const id = "msg_2";
+        const timestamp = String(Math.floor(Date.now() / 1000));
+        const body = JSON.stringify({ id, type: "delivered" });
+
+        const cryptoKey = await globalThis.crypto.subtle.importKey("raw", keyBytes, { hash: "SHA-256", name: "HMAC" }, false, ["sign"]);
+        const mac = await globalThis.crypto.subtle.sign("HMAC", cryptoKey, encoder.encode(`${id}.${timestamp}.${body}`));
+        const signature = toBase64(mac);
+
+        const headers = { "webhook-id": id, "webhook-signature": `v1,${signature}`, "webhook-timestamp": timestamp };
+
+        await expect(standardWebhook.verify(body, headers, secret)).resolves.toBe(true);
+        await expect(standardWebhook.verify(`${body} `, headers, secret)).resolves.toBe(false);
+    });
+
+    it("rejects an empty secret (an empty HMAC key is forgeable)", async () => {
+        expect.assertions(1);
+
+        const id = "msg_3";
+        const timestamp = String(Math.floor(Date.now() / 1000));
+        const body = "{}";
+        const headers = { "webhook-id": id, "webhook-signature": "v1,anything", "webhook-timestamp": timestamp };
+
+        await expect(standardWebhook.verify(body, headers, "   ")).resolves.toBe(false);
+    });
 });
 
 describe("snsWebhook", () => {
-    it("accepts an amazon cert URL and rejects a spoofed one", async () => {
+    it("fails closed: verify always returns false pending cert-chain verification", async () => {
         expect.assertions(3);
 
         const valid = JSON.stringify({
@@ -103,14 +143,13 @@ describe("snsWebhook", () => {
             SigningCertURL: "https://sns.us-east-1.amazonaws.com/cert.pem",
             Type: "Notification",
         });
-        const spoofed = JSON.stringify({
-            MessageId: "id-2",
-            Signature: "abc",
-            SigningCertURL: "https://evil.example.com/cert.pem",
-            Type: "Notification",
-        });
 
-        await expect(snsWebhook.verify(valid, {}, "")).resolves.toBe(true);
+        // Intentionally fail-closed: real RSA cert-chain verification is not yet implemented,
+        // so verify() must never accept a payload on structure alone (that would be an auth bypass).
+        await expect(snsWebhook.verify(valid, {}, "")).resolves.toBe(false);
+
+        const spoofed = JSON.stringify({ MessageId: "id-2", Signature: "abc", SigningCertURL: "https://evil.example.com/cert.pem", Type: "Notification" });
+
         await expect(snsWebhook.verify(spoofed, {}, "")).resolves.toBe(false);
 
         const event = snsWebhook.parse(valid);
