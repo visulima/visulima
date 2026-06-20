@@ -85,6 +85,9 @@
 "package: jsdoc-open-api":
     - changed-files:
           - any-glob-to-any-file: "packages/api/jsdoc-open-api/**/*"
+"package: notification":
+    - changed-files:
+          - any-glob-to-any-file: "packages/notification/notification/**/*"
 "package: nuxt":
     - changed-files:
           - any-glob-to-any-file: "packages/storage/storage/src/adapter/nuxt/**/*"

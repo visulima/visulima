@@ -162,6 +162,10 @@
         "displayName": "Email",
         "features": ["Multiple providers", "Template engines & i18n", "Inbound parsing & webhooks", "Deliverability tooling", "Middleware pipeline", "Queue & batch sending"]
     },
+    "notification": {
+        "displayName": "Notification",
+        "features": ["SMS, push, chat, in-app", "Edge-ready fetch providers", "Failover & routing", "Preferences & gating", "Middleware pipeline", "Queue & worker"]
+    },
     "storage": {
         "displayName": "Storage",
         "features": ["S3, Azure, GCS backends", "Image scaling and rotation", "Local filesystem support", "Simplified upload API"]

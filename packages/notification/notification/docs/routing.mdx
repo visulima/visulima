@@ -1,0 +1,49 @@
+---
+title: Routing
+description: Channel fallback, broadcast, provider failover and round-robin
+---
+
+# Routing
+
+There are two independent axes of routing.
+
+## Provider-within-channel
+
+Wrap several same-channel providers:
+
+```typescript
+import { failoverProvider } from "@visulima/notification/providers/failover";
+import { roundRobinProvider } from "@visulima/notification/providers/roundrobin";
+
+const sms = failoverProvider([twilioProvider({ … }), vonageProvider({ … })]); // try in order
+const balanced = roundRobinProvider([plivoProvider({ … }), telnyxProvider({ … })]); // rotate (falls over by default)
+
+const notify = createNotification({ sms });
+```
+
+## Channel-sequence routing
+
+`route(...)` delivers across channels with a priority order and an optional gate.
+
+```typescript
+import { route } from "@visulima/notification/routing";
+
+// best-of (default): try sms, then push, then email — stop at the first success
+await route(notify, message, { order: ["sms", "push", "email"], mode: "best-of" });
+
+// all: broadcast to every present channel in parallel
+await route(notify, message, { mode: "all" });
+```
+
+### Gating
+
+A gate runs before each channel and skips it when it returns false. Use it for preferences, capability checks or
+send-windows.
+
+```typescript
+await route(notify, message, {
+    gate: (channel, payload) => channel !== "sms" || isWithinQuietHours() === false,
+});
+```
+
+See [Preferences](/docs/packages/notification/preferences) for a ready-made preference gate.

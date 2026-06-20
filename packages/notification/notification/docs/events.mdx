@@ -1,0 +1,34 @@
+---
+title: Events
+description: Lifecycle event bus and timeline store
+---
+
+# Events
+
+Subscribe to lifecycle events and build a per-message timeline.
+
+```typescript
+import { NotificationEventBus, MemoryEventStore } from "@visulima/notification/events";
+
+const bus = new NotificationEventBus();
+const store = new MemoryEventStore();
+
+bus.on("sent", (event) => console.log("sent", event.messageId));
+bus.on("failed", (event) => console.error("failed", event.messageId));
+bus.on("*", (event) => store.append(event)); // wildcard: every event
+
+bus.emit({ type: "sent", messageId: "m1", channel: "sms", provider: "twilio", timestamp: new Date() });
+
+await store.timeline("m1"); // ordered events for message m1
+```
+
+## Event types
+
+`queued`, `sent`, `delivered`, `failed`, `bounced`, `read`, `clicked`, `interacted`.
+
+Provider webhooks can be normalised into these events via a provider's optional `parseEventBody(body, headers)` method,
+then fed to the bus and store.
+
+## Custom store
+
+Implement `EventStore` (`append` / `timeline`) to persist events in your database.
