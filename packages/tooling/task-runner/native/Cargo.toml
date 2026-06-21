@@ -4,12 +4,17 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 
+# `rlib` is added alongside `cdylib` so the in-crate criterion benches
+# (native/benches/) can link the pure graph/hash logic. The napi build
+# (`napi build`) still consumes the `cdylib` for the `.node` artifact; the
+# extra `rlib` has no effect on the shipped addon.
 [lib]
-crate-type = ["cdylib"]
+crate-type = ["cdylib", "rlib"]
 
 [dependencies]
 napi = { version = "3", features = ["async"] }
 napi-derive = "3"
+rustc-hash = "2"
 xxhash-rust = { version = "0.8", features = ["xxh3"] }
 walkdir = "2"
 rayon = "1"
@@ -52,6 +57,21 @@ windows-sys = { version = "0.61", features = [
 
 [build-dependencies]
 napi-build = "2"
+
+[dev-dependencies]
+criterion = { version = "0.5", default-features = false, features = ["cargo_bench_support"] }
+
+# Native micro-benchmarks (criterion). Mirrors the cache-hash + workspace/topo
+# suite from nubjs/nub#17, but measures OUR Rust hot paths directly — the layer
+# the hyperfine/vitest harness in packages/tooling/vis/__bench__ cannot isolate
+# because the Node-boot floor swamps it. Run with `cargo bench`.
+[[bench]]
+name = "graph"
+harness = false
+
+[[bench]]
+name = "file_hasher"
+harness = false
 
 [profile.release]
 lto = true
