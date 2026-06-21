@@ -4,8 +4,12 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 
+# `rlib` is added alongside `cdylib` so the in-crate criterion benches
+# (native/benches/) can link the pure transpile/sort logic. `napi build` still
+# consumes the `cdylib` for the `.node` artifact; the extra `rlib` does not
+# affect the shipped addon.
 [lib]
-crate-type = [ "cdylib" ]
+crate-type = [ "cdylib", "rlib" ]
 
 [dependencies]
 blake3 = "1"
@@ -33,6 +37,17 @@ zip = { version = "2", default-features = false, features = [ "deflate" ] }
 
 [build-dependencies]
 napi-build = "2"
+
+[dev-dependencies]
+criterion = { version = "0.5", default-features = false, features = [ "cargo_bench_support" ] }
+
+# Native micro-benchmarks (criterion). nubjs/nub#17 documented a "transpile
+# benchmark gap"; this closes ours by measuring the oxc TS→JS hot path
+# (`vis x` / config / generator loading) directly, free of the Node-boot floor
+# the hyperfine/vitest harness is bound by. Run with `cargo bench`.
+[[bench]]
+name = "transform"
+harness = false
 
 [profile.release]
 lto = true

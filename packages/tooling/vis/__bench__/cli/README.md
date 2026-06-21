@@ -65,6 +65,32 @@ These are the numbers to chase. vis will not match Rust dispatch today — recor
 
 **PM shim overhead:** nub adds **+4.9 ms** over `node pnpm.cjs -v`; corepack adds +14.0 ms. This is the bar for `vis install`'s wrapper overhead — vis delegates to the PM, so its overhead-over-raw-PM is the comparable metric.
 
+## Native micro-benchmarks (`cargo bench`)
+
+The hyperfine harness here measures **process wall-clock** and the vitest harness
+measures **in-process JS**; neither can isolate the Rust hot paths inside the
+native addons — the Node-boot floor swamps them (see `BASELINE.md` §findings).
+[`nubjs/nub#17`](https://github.com/nubjs/nub/pull/17) solved the same problem
+with a [criterion](https://github.com/bheisler/criterion.rs) harness (`cargo bench
+-p nub-core`); we mirror it:
+
+```sh
+pnpm --filter @visulima/task-runner run bench:native   # graph + file-hasher
+pnpm --filter @visulima/vis          run bench:native   # oxc transpile
+```
+
+- `task-runner/native/benches/graph.rs` — `topological_sort`, `find_all_cycles`,
+  `get_transitive_deps` on a synthetic layered DAG (200 / 600 nodes), the
+  counterpart to nub's `workspace/topological_chunks`.
+- `task-runner/native/benches/file_hasher.rs` — xxh3-128 throughput, the
+  counterpart to nub's `cache-hash` bench.
+- `vis/native/benches/transform.rs` — oxc TS→JS transpile, closing the
+  "transpile benchmark gap" nub documented.
+
+Also migrated from that PR: `graph.rs` now hashes its adjacency/in-degree maps
+with `rustc-hash`'s `FxHashMap` (nub's `workspace/filter.rs` change) — trusted
+in-process IDs don't need SipHash's DoS resistance.
+
 ## Fixtures
 
 Install fixtures mirror nub's: `simple` (~435 pkgs), `monorepo` (~407 pkgs / 4 workspaces), `t3` (Next/tRPC/Drizzle — Bun's create-t3-app bench), `large` (~1168 pkgs). Generate lockfiles with `bash __bench__/cli/gen-fixtures.sh` after editing a fixture's `package.json`. Each tool installs from its own lockfile family (`pnpm-lock.yaml`, `bun.lock`, `package-lock.json`); foreign lockfiles are pruned per-tool so no tool reads a stale lock.
