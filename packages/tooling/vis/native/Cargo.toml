@@ -9,7 +9,10 @@ license = "MIT"
 # consumes the `cdylib` for the `.node` artifact; the extra `rlib` does not
 # affect the shipped addon.
 [lib]
-crate-type = [ "cdylib", "rlib" ]
+crate-type = [
+  "cdylib",
+  "rlib"
+]
 
 [dependencies]
 blake3 = "1"
