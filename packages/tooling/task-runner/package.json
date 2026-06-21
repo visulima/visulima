@@ -62,6 +62,7 @@
         "LICENSE.md"
     ],
     "scripts": {
+        "bench:native": "cargo bench --manifest-path native/Cargo.toml",
         "build": "packem build --development",
         "build:native": "napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
         "build:native:debug": "napi build --platform --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
