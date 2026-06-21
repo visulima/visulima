@@ -309,7 +309,7 @@ const classifySpecifier = (context: ClassifyContext): void => {
         const resolved = resolve(fileDirectory, specifier);
         const insideRelative = relative(projectRootAbsolute, resolved);
 
-        if (insideRelative.startsWith("..") || insideRelative.startsWith("../")) {
+        if (insideRelative === ".." || insideRelative.startsWith("../")) {
             violations.push({
                 dependencyProject: specifier,
                 message: `File "${relativeToWorkspace}" imports "${specifier}", which resolves outside the package directory of "${projectName}". Relative imports must stay within the package; depend on the other package explicitly instead.`,
