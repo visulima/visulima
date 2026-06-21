@@ -1,6 +1,15 @@
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
-use std::collections::{HashMap, HashSet, VecDeque};
+use std::collections::VecDeque;
+
+// Graph IDs are short, trusted, in-process strings (task names), not
+// attacker-controlled network input — the DoS resistance of SipHash buys us
+// nothing here and costs throughput on the hot adjacency/in-degree maps. Swap
+// in rustc-hash's Fx hasher (the rustc/turbo/swc default) for these. Migrated
+// from nubjs/nub#17 (`workspace/filter.rs`, `pm/registry.rs`). Aliased to the
+// std names so the call sites below read unchanged; only `::new()` becomes
+// `::default()` (a custom-hasher map has no `::new`).
+use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 /// Represents a task graph for native graph operations.
 #[napi(object)]
@@ -24,9 +33,9 @@ pub struct CycleResult {
 #[napi(catch_unwind)]
 pub fn find_cycle(graph: NativeTaskGraph) -> CycleResult {
     let adjacency = build_adjacency(&graph);
-    let mut visited = HashSet::new();
-    let mut in_stack = HashSet::new();
-    let mut parent: HashMap<String, String> = HashMap::new();
+    let mut visited = HashSet::default();
+    let mut in_stack = HashSet::default();
+    let mut parent: HashMap<String, String> = HashMap::default();
 
     for task_id in &graph.task_ids {
         if visited.contains(task_id.as_str()) {
@@ -88,8 +97,8 @@ pub fn find_cycle(graph: NativeTaskGraph) -> CycleResult {
 pub fn find_all_cycles(graph: NativeTaskGraph) -> Vec<Vec<String>> {
     let adjacency = build_adjacency(&graph);
     let mut cycles: Vec<Vec<String>> = Vec::new();
-    let mut visited: HashSet<String> = HashSet::new();
-    let mut in_stack: HashSet<String> = HashSet::new();
+    let mut visited: HashSet<String> = HashSet::default();
+    let mut in_stack: HashSet<String> = HashSet::default();
     let mut path: Vec<String> = Vec::new();
     let mut work: Vec<(String, usize)> = Vec::new();
 
@@ -142,7 +151,7 @@ pub fn find_all_cycles(graph: NativeTaskGraph) -> Vec<Vec<String>> {
 #[napi(catch_unwind)]
 pub fn topological_sort(graph: NativeTaskGraph) -> Result<Vec<String>> {
     let adjacency = build_adjacency(&graph);
-    let mut in_degree: HashMap<String, usize> = HashMap::new();
+    let mut in_degree: HashMap<String, usize> = HashMap::default();
 
     for task_id in &graph.task_ids {
         in_degree.entry(task_id.clone()).or_insert(0);
@@ -192,8 +201,8 @@ pub fn topological_sort(graph: NativeTaskGraph) -> Result<Vec<String>> {
 #[napi(catch_unwind)]
 pub fn find_back_edges(graph: NativeTaskGraph) -> Vec<Vec<String>> {
     let adjacency = build_adjacency(&graph);
-    let mut visited: HashSet<String> = HashSet::new();
-    let mut in_stack: HashSet<String> = HashSet::new();
+    let mut visited: HashSet<String> = HashSet::default();
+    let mut in_stack: HashSet<String> = HashSet::default();
     let mut back_edges: Vec<Vec<String>> = Vec::new();
     let mut work: Vec<(String, usize)> = Vec::new();
 
@@ -239,7 +248,7 @@ pub fn find_back_edges(graph: NativeTaskGraph) -> Vec<Vec<String>> {
 pub fn get_transitive_deps(graph: NativeTaskGraph, task_id: String) -> Vec<String> {
     let adjacency = build_adjacency(&graph);
     let mut result: Vec<String> = Vec::new();
-    let mut visited = HashSet::new();
+    let mut visited = HashSet::default();
     let mut queue = VecDeque::new();
     queue.push_back(task_id.clone());
 
@@ -269,7 +278,7 @@ pub fn get_transitive_deps(graph: NativeTaskGraph, task_id: String) -> Vec<Strin
 #[napi(catch_unwind)]
 pub fn get_dependent_tasks(graph: NativeTaskGraph, task_id: String) -> Vec<String> {
     // Build reverse adjacency
-    let mut reverse_adj: HashMap<String, Vec<String>> = HashMap::new();
+    let mut reverse_adj: HashMap<String, Vec<String>> = HashMap::default();
     for id in &graph.task_ids {
         reverse_adj.entry(id.clone()).or_default();
     }
@@ -280,7 +289,7 @@ pub fn get_dependent_tasks(graph: NativeTaskGraph, task_id: String) -> Vec<Strin
     }
 
     let mut result: Vec<String> = Vec::new();
-    let mut visited = HashSet::new();
+    let mut visited = HashSet::default();
     let mut queue = VecDeque::new();
     queue.push_back(task_id.clone());
 
@@ -308,7 +317,7 @@ pub fn get_dependent_tasks(graph: NativeTaskGraph, task_id: String) -> Vec<Strin
 
 /// Builds an adjacency list from the graph edges.
 fn build_adjacency(graph: &NativeTaskGraph) -> HashMap<String, Vec<String>> {
-    let mut adjacency: HashMap<String, Vec<String>> = HashMap::new();
+    let mut adjacency: HashMap<String, Vec<String>> = HashMap::default();
 
     for task_id in &graph.task_ids {
         adjacency.entry(task_id.clone()).or_default();
