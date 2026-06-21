@@ -113,6 +113,34 @@ For debugging hook issues:
 VIS_GIT_HOOKS=2 git commit -m "debug hooks"
 ```
 
+## Skipping hooks in CI
+
+Automated commits in CI — release bots bumping versions, merge commits, changelog updates — shouldn't re-run your local hooks. The same checks (commitlint, secret scanning, lint-staged) usually run as dedicated CI jobs already, so firing them again on a generated commit just trips the pipeline (a release commit failing `commitlint` is the classic case).
+
+Set `skipInCI` in `.vis/hooks/config.json` to skip **all** hooks whenever a non-empty `CI` environment variable is present (every major CI provider sets it):
+
+```json
+{
+    "version": 1,
+    "skipInCI": true,
+    "stages": {}
+}
+```
+
+```bash
+vis hook install   # regenerate the dispatcher so the guard takes effect
+```
+
+`vis hook install` bakes the guard into the generated `_/` dispatcher, so it fires **before the hook body runs** — even for a hook that calls a tool directly (e.g. a raw `commitlint` `commit-msg`) instead of going through `vis hook run`. Because it lives in the dispatcher, **re-run `vis hook install` after changing `skipInCI`** to regenerate it.
+
+Need hooks to run in one specific CI job (say, a lint job that _wants_ commitlint)? Force them back on for that job only:
+
+```bash
+VIS_GIT_HOOKS=1 git commit -m "feat: …"   # overrides skipInCI
+```
+
+This is the portable, repo-tracked equivalent of setting `core.hooksPath=/dev/null` in a single job — `skipInCI` is the default for CI, `VIS_GIT_HOOKS=1` is the per-job exception, and both travel with the repo.
+
 ## Common Hook Recipes
 
 ### Lint Staged Files
