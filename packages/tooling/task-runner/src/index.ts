@@ -60,6 +60,9 @@ export { detectFrameworks, getFrameworkEnvVariables, inferFrameworkEnvPatterns }
 // Graph visualization
 export type { GraphFormat, GraphJson, GraphVisualizerOptions } from "./graph-visualizer";
 export { projectGraphToDot, toGraphAscii, toGraphHtml, toGraphJson, toGraphvizDot } from "./graph-visualizer";
+// Import-level boundaries (undeclared deps / deep imports / out-of-package imports)
+export type { BoundariesConfig, CheckImportBoundariesOptions, ImportBoundaryViolation } from "./import-boundaries";
+export { checkImportBoundaries } from "./import-boundaries";
 // Incremental file hashing (mtime-based, daemon-compatible)
 export type { FileSnapshot, IncrementalHasherOptions } from "./incremental-hasher";
 export { IncrementalFileHasher } from "./incremental-hasher";

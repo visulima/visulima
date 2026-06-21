@@ -37,14 +37,14 @@ Persist per-task p50/p95 durations (we already write run summaries — `run-summ
 
 ### Artifact movement = existing cache
 
-No new transport. An agent that completes a task `cache.put`s its outputs (signed — see `design-signed-cache-provenance.md`, which becomes _mandatory_ here: distributed = untrusted agents = must verify). A downstream agent `cache.get`s its deps' outputs before running. Cache miss on a dep = coordinator schedules that dep first.
+No new transport. An agent that completes a task `cache.put`s its outputs — **signed and attested already**: `RemoteCacheSigning` (HMAC) + `RemoteCacheAttestation` (keyless Sigstore) ship today, and REAPI rides on CAS content-addressing, so the "distributed = untrusted agents = must verify" requirement is already satisfied. A downstream agent `cache.get`s its deps' outputs before running. Cache miss on a dep = coordinator schedules that dep first.
 
 ## Integration
 
 - New `src/distributed/` (coordinator + agent), built on `task-scheduler.ts` (reused as the coordinator's ready-frontier engine) + `backends/` (artifact transport).
 - `vis run --coordinator` / `vis agent --connect <url>` CLI entrypoints.
 - `run-summary.ts` → durable duration store for the assignment model.
-- **Hard dependency on signed cache** — ship that first.
+- Cache-trust prerequisite (signed + attested artifacts) **already ships** (`RemoteCacheSigning` / `RemoteCacheAttestation`) — no blocker.
 
 ## Risks / open questions
 
@@ -56,4 +56,4 @@ No new transport. An agent that completes a task `cache.put`s its outputs (signe
 
 ## Effort
 
-High (multi-week). Genuine distributed-systems work. **The headline differentiator if executed well, the biggest footgun if rushed.** Sequence: signed cache → this coordinator (v1: critical-path + retry) → atomizer (which feeds it fine-grained tasks). RFC-grade; needs its own design review before any code.
+High (multi-week). Genuine distributed-systems work. **The headline differentiator if executed well, the biggest footgun if rushed.** The cache-trust layer it needs (signing + attestation) already ships, so the sequence is: this coordinator (v1: critical-path + retry) → atomizer (which feeds it fine-grained tasks). RFC-grade; needs its own design review before any code.
