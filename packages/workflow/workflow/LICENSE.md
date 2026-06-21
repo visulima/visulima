@@ -24,7 +24,7 @@ SOFTWARE.
 
 # Licenses of bundled dependencies
 
-The published @visulima/notification artifact additionally contains code with the following licenses:
+The published @visulima/workflow artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
@@ -112,7 +112,7 @@ Repository: git+https://github.com/visulima/visulima.git
 
 # Licenses of bundled types
 
-The published @visulima/notification artifact additionally contains code with the following licenses:
+The published @visulima/workflow artifact additionally contains code with the following licenses:
 Apache-2.0, MIT
 
 # Bundled types:

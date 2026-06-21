@@ -94,6 +94,11 @@ const wakeAtOf = (pending: PendingSuspension | undefined): number | undefined =>
 const createRuntime = (options: RuntimeOptions = {}): WorkflowRuntime => {
     const store: WorkflowStore = options.store ?? new MemoryStore();
     const leaseTtlMs = options.leaseTtlMs ?? 30_000;
+
+    if (!Number.isFinite(leaseTtlMs) || leaseTtlMs <= 0) {
+        throw new WorkflowError("invalid-option", `leaseTtlMs must be a positive, finite number. Received: ${String(leaseTtlMs)}.`);
+    }
+
     const registry = new Map<string, AnyWorkflowDefinition>();
 
     for (const workflow of options.workflows ?? []) {
@@ -337,6 +342,10 @@ const createRuntime = (options: RuntimeOptions = {}): WorkflowRuntime => {
         withRunLock(runId, () => withLease(runId, () => signalRun(runId, event, payload)));
 
     const sweep = async (now: number = Date.now(), limit = 100): Promise<RunResult[]> => {
+        if (!Number.isInteger(limit) || limit <= 0) {
+            throw new WorkflowError("invalid-option", `sweep limit must be a positive integer. Received: ${String(limit)}.`);
+        }
+
         const due = await store.due(now, limit);
         const results: RunResult[] = [];
 
@@ -355,6 +364,7 @@ const createRuntime = (options: RuntimeOptions = {}): WorkflowRuntime => {
             registry.set(definition.id, definition);
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment -- parsePayload returns `any` from the type-erased registry; the public trigger() signature re-types it
         const payload = await definition.parsePayload(input);
         const runId = generateRunId(definition.id);
         const actor = createActor(runMachine, { input: { definitionId: definition.id, history: [], payload } });

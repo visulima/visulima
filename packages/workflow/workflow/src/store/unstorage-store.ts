@@ -24,9 +24,13 @@ interface Lease {
  * durable, edge-friendly persistence over any unstorage driver (Cloudflare KV,
  * D1, Redis, filesystem, memory…).
  *
- * A small due-index document tracks wake-at times so `due` does not scan
- * every run. Operations are not transactional; for high-contention multi-writer
- * setups prefer a store with atomic guarantees.
+ * A single due-index document tracks wake-at times so `due` does not scan every
+ * run. That index is rewritten with a read-modify-write, which is NOT atomic on a
+ * plain KV driver: concurrent `save`s from multiple instances can clobber each
+ * other and drop an entry, so a sleep could be missed (a missed wake-up, not a
+ * double-run). For multi-writer / multi-instance deployments use a store with
+ * atomic guarantees — `SqlStore` or `RedisStore` (whose due index is a Redis
+ * sorted set). This store is best for single-writer or single-instance use.
  */
 class UnstorageStore implements WorkflowStore {
     readonly #storage: UnstorageLike;

@@ -86,7 +86,8 @@ class RedisStore implements WorkflowStore {
     public async acquire(runId: string, token: string, ttlMs: number): Promise<boolean> {
         const result = await this.#redis.eval(ACQUIRE_SCRIPT, 1, this.#leasePrefix + runId, token, ttlMs);
 
-        return result === 1;
+        // Lua returns the integer 1, but drivers vary (number, "1", Buffer); coerce defensively.
+        return Number(result) === 1;
     }
 
     public async release(runId: string, token: string): Promise<void> {

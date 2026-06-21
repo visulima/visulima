@@ -42,6 +42,17 @@ const result = await runtime.trigger(order, { orderId: "o_1" });
 `trigger` returns as soon as the run first **suspends** (or completes). The default store is in-memory; pass your own
 via `createRuntime({ store })` for durability — see [Stores](/docs/packages/workflow/stores).
 
+You can also register workflows **after** the runtime is created with `register()` — useful for dynamic or
+lazily-loaded workflows, and required so a worker can resume runs of a workflow it didn't define at startup:
+
+```typescript
+const runtime = createRuntime();
+
+runtime.register(order);
+
+await runtime.trigger("order-fulfilment", { orderId: "o_1" }); // trigger by id once registered
+```
+
 ## 3. Resume due runs
 
 Sleeps and timeouts are advanced by **sweeping**. Call `sweep()` from a cron job, a Cloudflare alarm, or any timer; it
