@@ -1,3 +1,5 @@
+## @visulima/dev-toolbar [1.0.0-alpha.40](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.39...@visulima/dev-toolbar@1.0.0-alpha.40) (2026-06-21)
+
 ## @visulima/dev-toolbar [1.0.0-alpha.39](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.38...@visulima/dev-toolbar@1.0.0-alpha.39) (2026-06-21)
 
 ## @visulima/dev-toolbar [1.0.0-alpha.38](https://github.com/visulima/visulima/compare/@visulima/dev-toolbar@1.0.0-alpha.37...@visulima/dev-toolbar@1.0.0-alpha.38) (2026-06-20)
