@@ -112,6 +112,7 @@
     ],
     "scripts": {
         "bench": "vitest bench __bench__",
+        "bench:native": "cargo bench --manifest-path native/Cargo.toml",
         "build": "pnpm --filter @visulima/vis-dashboard run build && packem build --development",
         "build:native": "napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
         "build:native:debug": "napi build --platform --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
