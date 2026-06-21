@@ -1647,6 +1647,22 @@ export const ensureToolchain = async (
             const { expected } = tool;
 
             if (invocation.bin === "nvm" && invocation.args.length === 0) {
+                // nvm can't be activated for us from a child process — it's a
+                // shell function, not a binary. But the version already on
+                // PATH (the Node running vis, typically) often satisfies the
+                // pin anyway, which is the common case on CI where the right
+                // toolchain is pre-activated. Don't emit a warning that reads
+                // like an error and noises up every task; record success and
+                // move on. Only warn when the active runtime genuinely can't
+                // satisfy the requirement.
+                const active = queryToolVersion(expected.tool);
+
+                if (active !== undefined && satisfies(active, expected.version)) {
+                    logger.info(`toolchain: ${expected.tool} ${active} already satisfies ${expected.version}; skipping nvm shell activation`);
+                    attempted.push(expected);
+                    continue;
+                }
+
                 logger.warn(
                     `toolchain: nvm requires a shell-side activation for ${expected.tool} ${expected.version}. Run \`nvm install\` / \`nvm use\` manually.`,
                 );
