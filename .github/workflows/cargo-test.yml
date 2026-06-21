@@ -218,6 +218,100 @@ jobs:
                       ${{ matrix.package.dir }}/target
                   key: "${{ steps.cargo-cache.outputs.cache-primary-key }}"
 
+    # Native criterion benches tracked on CodSpeed. Separate from the JS
+    # benches in codspeed.yml (those run `nx ...:test:bench` under the CodSpeed
+    # vitest plugin); these compile the crate's criterion benches via
+    # `cargo codspeed`. The bench sources depend on `codspeed-criterion-compat`
+    # (a drop-in for criterion) so the same files run instrumented here and as
+    # plain `cargo bench` locally. Not part of the required-check aggregation
+    # below, so a CodSpeed upload hiccup can't block merge.
+    benchmark-native:
+        name: "Bench native (${{ matrix.package.name }})"
+        needs: "files-changed"
+        if: |
+            github.event_name == 'workflow_dispatch' ||
+            needs.files-changed.outputs.task-runner == 'true' ||
+            needs.files-changed.outputs.vis == 'true'
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 30
+        # Scope the CodSpeed OIDC token to an environment so the same secrets /
+        # reviewer rules as the JS bench job (codspeed.yml) apply to uploads.
+        environment: "benchmarks"
+        permissions:
+            contents: "read"
+            id-token: "write" # OIDC auth with CodSpeed
+        strategy:
+            fail-fast: false
+            matrix:
+                package:
+                    - name: "task-runner"
+                      dir: "packages/tooling/task-runner/native"
+                      changed: "${{ needs.files-changed.outputs.task-runner }}"
+                    - name: "vis"
+                      dir: "packages/tooling/vis/native"
+                      changed: "${{ needs.files-changed.outputs.vis }}"
+                exclude:
+                    - package:
+                          changed: "false"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+              with:
+                  persist-credentials: false
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout (retry)"
+              if: "steps.checkout.outcome == 'failure'"
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+              with:
+                  persist-credentials: false
+
+            - name: "Install Rust stable toolchain"
+              uses: "dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9" # v1
+              with:
+                  toolchain: "stable"
+
+            - name: "Restore Cargo cache"
+              id: "cargo-cache"
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      ${{ matrix.package.dir }}/target
+                  key: "cargo-bench-${{ matrix.package.name }}-${{ hashFiles(format('{0}/Cargo.lock', matrix.package.dir)) }}"
+                  restore-keys: |
+                      cargo-bench-${{ matrix.package.name }}-
+                      cargo-test-${{ matrix.package.name }}-
+
+            # `cargo codspeed` builds + runs the criterion benches with CodSpeed
+            # instrumentation. Pinned to the 4.x line to match the
+            # `codspeed-criterion-compat` dev-dep and CodSpeedHQ/action@v4.
+            - name: "Install cargo-codspeed"
+              run: "cargo install cargo-codspeed --locked --version '^4'"
+
+            - name: "Build benches (instrumented)"
+              working-directory: "${{ matrix.package.dir }}"
+              run: "cargo codspeed build"
+
+            - name: "Run benchmarks"
+              uses: "CodSpeedHQ/action@63f3e98b61959fe67f146a3ff022e4136fe9bb9c" # v4.17.6
+              with:
+                  mode: "instrumentation"
+                  working-directory: "${{ matrix.package.dir }}"
+                  run: "cargo codspeed run"
+
     cargo-test-required-check:
         name: "Cargo Test Status"
         needs: ["files-changed", "test"]
