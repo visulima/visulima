@@ -42,7 +42,12 @@ zip = { version = "2", default-features = false, features = [ "deflate" ] }
 napi-build = "2"
 
 [dev-dependencies]
-criterion = { version = "0.5", default-features = false, features = [ "cargo_bench_support" ] }
+# `codspeed-criterion-compat` is a drop-in for criterion: same API (imported as
+# `criterion` via the package rename), so the bench sources are unchanged. Plain
+# `cargo bench` falls back to vanilla criterion locally; under `cargo codspeed`
+# (the CodSpeed CI path in .github/workflows/codspeed.yml) it emits instrumented
+# measurements. Pinned to the 4.x line to match `CodSpeedHQ/action@v4`.
+criterion = { package = "codspeed-criterion-compat", version = "4", default-features = false, features = [ "cargo_bench_support" ] }
 
 # Native micro-benchmarks (criterion). nubjs/nub#17 documented a "transpile
 # benchmark gap"; this closes ours by measuring the oxc TS→JS hot path
