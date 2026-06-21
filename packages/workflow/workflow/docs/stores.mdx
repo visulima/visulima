@@ -1,0 +1,104 @@
+---
+title: Stores
+description: The WorkflowStore contract and the built-in adapters
+---
+
+# Stores
+
+Durability is delegated to a small `WorkflowStore` contract; the engine stays storage-agnostic. Two stores ship in the
+box, and you can implement the contract over Redis, Postgres, a Durable Object, or anything else.
+
+## Built-in stores
+
+### MemoryStore (default)
+
+In-process, ideal for tests and single-instance apps. Used automatically when you don't pass a `store`.
+
+```typescript
+import { createRuntime, MemoryStore } from "@visulima/workflow";
+
+const runtime = createRuntime({ store: new MemoryStore() });
+```
+
+### UnstorageStore
+
+Durable, edge-friendly persistence over any [unstorage](https://unstorage.unjs.io) driver (Cloudflare KV, D1, Redis,
+filesystem, memory…).
+
+```typescript
+import { createRuntime, UnstorageStore } from "@visulima/workflow";
+import { createStorage } from "unstorage";
+import cloudflareKVBindingDriver from "unstorage/drivers/cloudflare-kv-binding";
+
+const runtime = createRuntime({
+    store: new UnstorageStore(createStorage({ driver: cloudflareKVBindingDriver({ binding: env.RUNS }) })),
+});
+```
+
+A small due-index document tracks wake-at times so `sweep` does not scan every run. Operations are not transactional; its
+optional lease is **best-effort** on non-atomic drivers (see [Concurrency](/docs/packages/workflow/concurrency)).
+
+### SqlStore (PostgreSQL / MySQL)
+
+Durable persistence in a SQL database, with a **genuinely-atomic** cross-process lease (a single conditional `UPDATE`),
+so it is safe for many runtime instances against one database. Driver-agnostic: adapt any client (node-postgres,
+postgres.js, mysql2, pglite…) to the structural `SqlClient` — a single `query(sql, params) => { rows, rowCount }`.
+
+```typescript
+import { createRuntime, SqlStore } from "@visulima/workflow";
+import { Pool } from "pg";
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const store = new SqlStore(
+    { query: (sql, parameters) => pool.query(sql, parameters as unknown[]) }, // pg returns { rows, rowCount }
+    { dialect: "postgres" },
+);
+
+await store.init(); // create the table (also runs lazily on first use)
+const runtime = createRuntime({ store });
+```
+
+For MySQL pass `{ dialect: "mysql" }` and connect with the `FOUND_ROWS` client flag (so the lease's affected-rows check
+counts matched, not changed, rows). Run state is stored as JSON text, so no JSON column type is required.
+
+### RedisStore
+
+Durable persistence in Redis, with an **atomic** Lua `acquire`/`release` lease and a sorted-set wake index — safe across
+instances. [ioredis](https://github.com/redis/ioredis) satisfies the structural `RedisLike` directly.
+
+```typescript
+import { createRuntime, RedisStore } from "@visulima/workflow";
+import Redis from "ioredis";
+
+const store = new RedisStore(new Redis(process.env.REDIS_URL));
+const runtime = createRuntime({ store });
+```
+
+## The contract
+
+```typescript
+interface WorkflowStore {
+    save(run: StoredRun): Promise<void>;
+    load(runId: string): Promise<StoredRun | undefined>;
+    delete(runId: string): Promise<void>;
+    due(now: number, limit: number): Promise<string[]>; // runs whose wakeAt has passed
+
+    // Optional cross-process lease (omit to rely on in-process locking only):
+    acquire?(runId: string, token: string, ttlMs: number): Promise<boolean>;
+    release?(runId: string, token: string): Promise<void>;
+}
+```
+
+- `due(now, limit)` is the poll the `sweep` entrypoint uses. The contract is deliberately poll-based so it works on plain
+  KV/SQL, but it is shaped so a **push-based** adapter (e.g. Durable Object alarms) can implement `due` as a no-op and
+  schedule wake-ups inside `save`.
+- `acquire` / `release` are the optional cross-process lease. Implement them with an atomic primitive (Redis `SET NX`, a
+  SQL row lock, a Durable Object) for race-free exclusion across instances. See
+  [Concurrency & exactly-once](/docs/packages/workflow/concurrency).
+
+## Writing your own
+
+A minimal store needs only the four required methods. `StoredRun` carries the JSON-serialisable snapshot plus
+denormalised `status`, `wakeAt` and `eventName` so you can implement `due` and signal-routing without parsing the
+snapshot. Keep `save` ordering-safe: if your backend isn't transactional, persist the wake index **before** the run so a
+crash yields at worst a harmless spurious wake (which `resume` re-validates and ignores) rather than a lost wake-up.

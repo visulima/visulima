@@ -1,0 +1,58 @@
+---
+title: Steps
+description: The ctx contract — step, sleep and waitForEvent
+---
+
+# Steps: the `ctx` contract
+
+Every durable operation goes through the run context (`ctx`) so the engine can record, skip and resume it
+deterministically.
+
+| Method                              | What it does                                                                                                 |
+| ----------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| `ctx.step(id, fn)`                  | Runs `fn` **exactly once**; records the result. On replay the recorded value is returned without re-running. |
+| `ctx.sleep(id, duration)`           | Durably pauses until the duration elapses.                                                                   |
+| `ctx.waitForEvent(id, name, opts?)` | Durably suspends until a matching `runtime.signal(...)` arrives, or the optional `timeout` elapses.          |
+| `ctx.payload`                       | The validated trigger payload (typed via your Standard Schema).                                              |
+| `ctx.runId`                         | The id of the current run.                                                                                   |
+
+> **The one rule:** anything that must happen exactly once **must** be wrapped in `ctx.step`. Code outside
+> `step` / `sleep` / `waitForEvent` re-executes on every replay, by design.
+
+## `ctx.step(id, fn)`
+
+```typescript
+const userId = await ctx.step("create-user", () => db.users.insert(ctx.payload));
+```
+
+Each `id` must be stable and unique within the workflow. The recorded output must be JSON-serialisable, because it is
+persisted in the run's history and read back on replay.
+
+## `ctx.sleep(id, duration)`
+
+`duration` is one of:
+
+- a number of milliseconds — `ctx.sleep("a", 5000)`
+- a structured amount — `ctx.sleep("a", { amount: 2, unit: "hours" })`
+  (`unit`: `ms` / `milliseconds`, `seconds`, `minutes`, `hours`, `days`, `weeks`)
+- a cron expression — `ctx.sleep("a", { cron: "0 9 * * *", tz: "Europe/Berlin" })`
+
+A cron sleep resolves to the **next occurrence from the moment the run suspends** (not from when it was triggered).
+
+## `ctx.waitForEvent(id, name, opts?)`
+
+```typescript
+const payload = await ctx.waitForEvent<MyEvent>("await-approval", "approval", {
+    timeout: { amount: 1, unit: "days" },
+});
+```
+
+The run suspends until `runtime.signal(runId, "approval", payload)` is called. The call returns the signalled payload, or
+`undefined` if the optional `timeout` elapses first. A wait **without** a timeout is only ever advanced by `signal` — it
+is never swept.
+
+## Failures
+
+If the `run` function (or a step's `fn`) throws, the run transitions to `failed` and the serialised error is available
+on the result and via `getRun`. Failures are terminal; there is no automatic retry — wrap a step in your own
+retry/back-off if you need one, keeping it inside a single `ctx.step` so the whole retry is recorded as one unit.

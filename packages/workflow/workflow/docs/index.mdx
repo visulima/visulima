@@ -1,0 +1,69 @@
+---
+title: Introduction
+description: Get started with @visulima/workflow, a reusable, edge-ready durable workflow engine
+---
+
+# Workflow
+
+**Reusable, ESM-only, edge-ready durable execution**
+
+`@visulima/workflow` lets you write a long-running process as a plain async function and makes it **resumable**: it
+survives process restarts, hour-long delays and waits for external events, replaying deterministically from an
+append-only history. It is the generic engine that powers higher-level features such as
+[`@visulima/notification`](/docs/packages/notification)'s workflow steps, but it has no notification dependency and is
+useful on its own.
+
+## Why @visulima/workflow?
+
+- **Infra-free** - No dashboard, no SaaS account, no separate server process. Bring any store you already run.
+- **Edge-ready** - The engine core and the in-memory / unstorage stores are `fetch` + Web Crypto only, with zero Node
+  built-ins, so they run unmodified on Cloudflare Workers, Vercel Edge, Deno and Bun.
+- **Code-first** - Workflows are ordinary async functions; durability comes from `ctx.step` / `ctx.sleep` /
+  `ctx.waitForEvent`, not a YAML DSL or a visual editor.
+- **Type-safe** - Payloads are validated and typed via any [Standard Schema](https://standardschema.dev) validator
+  (Zod, Valibot, ArkType).
+- **Pluggable durability** - A small `WorkflowStore` contract; an in-memory and an
+  [unstorage](https://unstorage.unjs.io) store ship in the box, and you can back runs with Redis, Postgres or a Durable
+  Object.
+
+## How it works
+
+You define a workflow and drive it through a runtime:
+
+```typescript
+import { createRuntime, defineWorkflow } from "@visulima/workflow";
+import { z } from "zod";
+
+const onSignup = defineWorkflow({
+    id: "welcome",
+    payload: z.object({ userId: z.string(), email: z.string() }),
+    run: async (ctx) => {
+        await ctx.step("send-welcome", () => sendEmail(ctx.payload.email, "Welcome!"));
+        await ctx.sleep("wait-a-day", { amount: 1, unit: "days" });
+
+        const activated = await ctx.step("check-activation", () => isActivated(ctx.payload.userId));
+
+        if (!activated) {
+            await ctx.step("send-nudge", () => sendEmail(ctx.payload.email, "Need a hand?"));
+        }
+    },
+});
+
+const runtime = createRuntime({ workflows: [onSignup] });
+
+const { runId, status } = await runtime.trigger(onSignup, { userId: "u_1", email: "a@b.com" });
+// status === "suspended" — the run is sleeping for a day.
+```
+
+The engine re-runs the workflow body from the top on every activation; already-completed steps short-circuit to their
+recorded result, and the first unsatisfied `sleep`/`waitForEvent` suspends the run. See
+[Durability & replay](/docs/packages/workflow/durability) for the model.
+
+## Next steps
+
+- [Installation](/docs/packages/workflow/installation)
+- [Getting started](/docs/packages/workflow/getting-started)
+- [Steps: the `ctx` contract](/docs/packages/workflow/steps)
+- [Durability & replay](/docs/packages/workflow/durability)
+- [Stores](/docs/packages/workflow/stores)
+- [Concurrency & exactly-once](/docs/packages/workflow/concurrency)

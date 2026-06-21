@@ -256,6 +256,9 @@
 "package: vite-overlay":
     - changed-files:
           - any-glob-to-any-file: "packages/error-debugging/vite-overlay/**/*"
+"package: workflow":
+    - changed-files:
+          - any-glob-to-any-file: "packages/workflow/workflow/**/*"
 "documentation":
     - changed-files:
           - any-glob-to-any-file: "docs/**/*"
