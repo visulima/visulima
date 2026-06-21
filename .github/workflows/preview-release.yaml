@@ -156,6 +156,15 @@ jobs:
                   find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \;
                   cd packages/tooling/vis && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
 
+                  # vis: place the CLI front-end binary into its platform packages
+                  # (napi artifacts only distributes .node files). install -m 0755
+                  # restores the exec bit that the artifact round-trip drops.
+                  find artifacts -path "*/bindings-vis-*/npm/*/vis-native-cli*" -print0 2>/dev/null | while IFS= read -r -d "" f; do
+                      binding="$(basename "$(dirname "$f")")"
+                      mkdir -p "packages/tooling/vis/npm/$binding"
+                      install -m 0755 "$f" "packages/tooling/vis/npm/$binding/$(basename "$f")" 2>/dev/null || true
+                  done
+
                   rm -rf artifacts/
 
             - name: "Build"

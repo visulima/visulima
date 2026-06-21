@@ -301,6 +301,15 @@ jobs:
                       done
                   done
 
+                  # Restore the vis CLI front-end binary into its binding-package
+                  # dirs so the CLI front-end integration test resolves it instead
+                  # of skipping. Both vis-native-cli (unix) and .exe (Windows) match.
+                  find artifacts -path "*/bindings-vis-*/npm/*/vis-native-cli*" -print0 2>/dev/null | while IFS= read -r -d "" f; do
+                      binding="$(basename "$(dirname "$f")")"
+                      mkdir -p "packages/tooling/vis/npm/$binding"
+                      install -m 0755 "$f" "packages/tooling/vis/npm/$binding/$(basename "$f")" 2>/dev/null || true
+                  done
+
                   rm -rf artifacts/
 
             # The codecov step below consumes the changed-files list; nx
@@ -555,6 +564,15 @@ jobs:
                           mkdir -p "packages/tooling/task-runner/npm/$binding"
                           install -m 0755 "$f" "packages/tooling/task-runner/npm/$binding/$sidecar" 2>/dev/null || true
                       done
+                  done
+
+                  # Restore the vis CLI front-end binary into its binding-package
+                  # dirs so the CLI front-end integration test resolves it instead
+                  # of skipping. Both vis-native-cli (unix) and .exe (Windows) match.
+                  find artifacts -path "*/bindings-vis-*/npm/*/vis-native-cli*" -print0 2>/dev/null | while IFS= read -r -d "" f; do
+                      binding="$(basename "$(dirname "$f")")"
+                      mkdir -p "packages/tooling/vis/npm/$binding"
+                      install -m 0755 "$f" "packages/tooling/vis/npm/$binding/$(basename "$f")" 2>/dev/null || true
                   done
 
                   rm -rf artifacts/

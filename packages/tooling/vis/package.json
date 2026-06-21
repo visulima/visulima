@@ -93,13 +93,14 @@
         "./package.json": "./package.json"
     },
     "bin": {
-        "v": "./dist/bin.js",
-        "vis": "./dist/bin.js",
+        "v": "./bin/vis.mjs",
+        "vis": "./bin/vis.mjs",
         "visx": "./dist/binx.js",
         "vx": "./dist/binx.js"
     },
     "files": [
         "dist/**",
+        "bin/**",
         "dashboard/dist/**",
         "schemas/**",
         "skills/**",
@@ -115,6 +116,8 @@
         "bench:native": "cargo bench --manifest-path native/Cargo.toml",
         "build": "pnpm --filter @visulima/vis-dashboard run build && packem build --development",
         "build:native": "napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
+        "build:native:cli": "cargo build --release -p vis-cli --manifest-path native/Cargo.toml && node scripts/copy-cli-binary.mjs release",
+        "build:native:cli:debug": "cargo build -p vis-cli --manifest-path native/Cargo.toml && node scripts/copy-cli-binary.mjs debug",
         "build:native:debug": "napi build --platform --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
         "build:prod": "pnpm --filter @visulima/vis-dashboard run build && packem build --production",
         "check:schemas-drift": "node scripts/generate-schemas.ts && git diff --exit-code -- schemas",

@@ -15,7 +15,8 @@
     },
     "main": "vis-native.linux-arm64-musl.node",
     "files": [
-        "vis-native.linux-arm64-musl.node"
+        "vis-native.linux-arm64-musl.node",
+        "vis-native-cli"
     ],
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
