@@ -17,7 +17,9 @@
 //!
 //!   Source: https://github.com/nubjs/nub/pull/17
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
+use std::hint::black_box;
+
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion};
 use task_runner_native::{find_all_cycles, get_transitive_deps, topological_sort, NativeTaskGraph};
 
 /// Builds a synthetic layered DAG: `layers` layers of `width` nodes each, every

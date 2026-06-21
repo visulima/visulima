@@ -16,7 +16,9 @@
 //!
 //!   Source: https://github.com/nubjs/nub/pull/17
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use std::hint::black_box;
+
+use criterion::{criterion_group, criterion_main, BatchSize, BenchmarkId, Criterion, Throughput};
 use vis_native::transform_ts;
 
 /// A representative TS module: type annotations to strip, an enum + namespace to
@@ -56,7 +58,13 @@ fn bench_transform_ts(c: &mut Criterion) {
         let source = ts_source(repeat);
         group.throughput(Throughput::Bytes(source.len() as u64));
         group.bench_with_input(BenchmarkId::from_parameter(source.len()), &source, |b, s| {
-            b.iter(|| black_box(transform_ts(black_box("module.ts".to_string()), black_box(s.clone())).unwrap()));
+            // Clone the source + filename in untimed setup so the throughput
+            // metric reflects only transform_ts, not the per-iteration alloc.
+            b.iter_batched(
+                || ("module.ts".to_string(), s.clone()),
+                |(filename, source)| black_box(transform_ts(filename, source).unwrap()),
+                BatchSize::SmallInput,
+            );
         });
     }
     group.finish();
