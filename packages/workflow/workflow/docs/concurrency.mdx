@@ -1,0 +1,90 @@
+---
+title: Concurrency & exactly-once
+description: What the in-process lock and the store lease guarantee — and what they don't
+---
+
+# Concurrency & exactly-once
+
+`ctx.step` runs a side effect **exactly once per run — as long as activations of that run don't overlap**. This page
+explains what enforces that, the difference between _mutual exclusion_ and _exactly-once_, and how to close the
+remaining gap.
+
+## Three levels of protection
+
+### 1. In-process serialisation (always on)
+
+Within a single process, the runtime serialises overlapping `resume` / `signal` / `sweep` calls for the same run with a
+per-run mutex. Two `sweep` ticks that overlap, or a `sweep` racing an inbound `signal`, can't both drive the same run at
+once. This needs no configuration and no store support.
+
+### 2. Cross-process lease (opt-in via the store)
+
+The in-process mutex does **not** span processes. If you run several runtime instances against one shared store
+(multiple workers, multiple regions), two of them can each `load` the same pre-resume state and both drive it.
+
+To extend exclusion across instances, implement the optional `acquire` / `release` on your
+[store](/docs/packages/workflow/stores). The runtime calls `acquire` before driving a run and `release` after; if the
+lease is held elsewhere it returns the run's current state instead of driving it.
+
+```typescript
+const runtime = createRuntime({ store, leaseTtlMs: 30_000 }); // default 30s
+```
+
+`leaseTtlMs` must exceed the longest expected single activation. `MemoryStore` implements the lease exactly;
+`UnstorageStore` implements it **best-effort** — its read-check-write is not atomic, so two callers racing on a non-CAS
+driver can both win.
+
+For race-free cross-process exclusion you need a store backed by an **atomic primitive**:
+
+- **Redis** — `SET key token NX PX ttl`.
+- **SQL (Postgres/MySQL)** — a row lock (`SELECT … FOR UPDATE`) or advisory lock.
+- **Durable Object** — execution inside a DO is already serialised, so `acquire` is a plain in-object check (and the
+  cleanest correct implementation).
+
+## Mutual exclusion is not crash-proof exactly-once
+
+A lease gives **mutual exclusion**: no two activations run _concurrently_. It does **not** give crash-proof
+exactly-once. Consider one process that:
+
+1. acquires the lease,
+2. runs a `ctx.step` side effect (sends an email),
+3. **crashes before persisting the step record.**
+
+The lease eventually expires, another worker acquires it, replays the run, finds no record for that step, and runs it
+again — the email is sent twice. This is fundamental: a lock cannot make a side effect and its durable record commit
+atomically when the effect lives in a different system from the store.
+
+```
+acquire ── step.fn() runs (email sent) ── ✗ crash ── lease expires ── re-acquire ── step.fn() runs again
+                                          ↑ record never persisted, so replay re-runs it
+```
+
+So the precise guarantees are:
+
+| Mechanism                         | Guarantee                                         |
+| --------------------------------- | ------------------------------------------------- |
+| In-process mutex                  | No concurrent double-exec within one process      |
+| Store lease (`acquire`/`release`) | No concurrent double-exec across processes        |
+| Idempotent effects                | The only path to true exactly-once across crashes |
+
+## Closing the crash window
+
+Make the effect itself idempotent, keyed on the stable, replay-deterministic id `runId:stepId`:
+
+```typescript
+run: async (ctx) => {
+    await ctx.step("charge", () =>
+        // the same idempotency key on replay → the provider dedupes the retry
+        stripe.charges.create({ amount, currency }, { idempotencyKey: `${ctx.runId}:charge` }),
+    );
+};
+```
+
+With idempotent effects you get end-to-end exactly-once even across crashes; without them, treat delivery as
+**at-least-once** and design the downstream to tolerate a retry.
+
+## Why not optimistic concurrency (CAS on save)?
+
+Compare-and-swap on the persisted record prevents the _history_ from diverging, but the losing activation has **already
+executed** the side effect before its save is rejected — so CAS alone yields at-least-once effects. To prevent the
+_execution_ (not just the write) you must take the lock **before** driving, which is why the lease is pessimistic.

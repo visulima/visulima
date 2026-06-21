@@ -1,0 +1,8 @@
+{
+    "name": "workflow/workflow",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/workflow/workflow/src",
+    "projectType": "library",
+    "tags": ["workflow", "type:package", "category:dev-tools"],
+    "implicitDependencies": []
+}
