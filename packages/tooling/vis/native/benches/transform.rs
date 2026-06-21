@@ -6,6 +6,15 @@
 //! through the Node-boot floor. This measures the transpile itself.
 //!
 //! Run: `cargo bench -p vis-native --bench transform`
+//!
+//! Closing this transpile-benchmark gap is adapted from nub, under the following
+//! license:
+//!
+//!   MIT License
+//!
+//!   Copyright (c) 2026 nub contributors
+//!
+//!   Source: https://github.com/nubjs/nub/pull/17
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use vis_native::transform_ts;
