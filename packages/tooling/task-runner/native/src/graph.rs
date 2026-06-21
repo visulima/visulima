@@ -5,10 +5,18 @@ use std::collections::VecDeque;
 // Graph IDs are short, trusted, in-process strings (task names), not
 // attacker-controlled network input — the DoS resistance of SipHash buys us
 // nothing here and costs throughput on the hot adjacency/in-degree maps. Swap
-// in rustc-hash's Fx hasher (the rustc/turbo/swc default) for these. Migrated
-// from nubjs/nub#17 (`workspace/filter.rs`, `pm/registry.rs`). Aliased to the
-// std names so the call sites below read unchanged; only `::new()` becomes
+// in rustc-hash's Fx hasher (the rustc/turbo/swc default) for these. Aliased to
+// the std names so the call sites below read unchanged; only `::new()` becomes
 // `::default()` (a custom-hasher map has no `::new`).
+//
+// The FxHashMap/FxHashSet swap is adapted from nub (`workspace/filter.rs` +
+// `pm/registry.rs`), under the following license:
+//
+//   MIT License
+//
+//   Copyright (c) 2026 nub contributors
+//
+//   Source: https://github.com/nubjs/nub/pull/17
 use rustc_hash::{FxHashMap as HashMap, FxHashSet as HashSet};
 
 /// Represents a task graph for native graph operations.

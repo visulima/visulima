@@ -6,6 +6,15 @@
 //! to the hasher is a measured decision, not a guess.
 //!
 //! Run: `cargo bench -p task-runner-native --bench file_hasher`
+//!
+//! The bench structure (content-hash throughput sweep) is adapted from nub's
+//! `cache-hash` criterion bench, under the following license:
+//!
+//!   MIT License
+//!
+//!   Copyright (c) 2026 nub contributors
+//!
+//!   Source: https://github.com/nubjs/nub/pull/17
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use task_runner_native::hash_bytes;

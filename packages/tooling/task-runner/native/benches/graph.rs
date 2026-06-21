@@ -7,6 +7,15 @@
 //! `packages/tooling/vis/__bench__` is bound by.
 //!
 //! Run: `cargo bench -p task-runner-native --bench graph`
+//!
+//! The bench structure (synthetic DAG + topological-sort/cycle sweep) is adapted
+//! from nub, under the following license:
+//!
+//!   MIT License
+//!
+//!   Copyright (c) 2026 nub contributors
+//!
+//!   Source: https://github.com/nubjs/nub/pull/17
 
 use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion};
 use task_runner_native::{find_all_cycles, get_transitive_deps, topological_sort, NativeTaskGraph};
