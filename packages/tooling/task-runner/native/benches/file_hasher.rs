@@ -16,7 +16,9 @@
 //!
 //!   Source: https://github.com/nubjs/nub/pull/17
 
-use criterion::{black_box, criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
+use std::hint::black_box;
+
+use criterion::{criterion_group, criterion_main, BenchmarkId, Criterion, Throughput};
 use task_runner_native::hash_bytes;
 
 fn bench_hash_bytes(c: &mut Criterion) {
