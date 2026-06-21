@@ -46,6 +46,13 @@ const SIGNAL_NUMBERS: Record<string, number> = {
 
 const signalNumberFor = (signal: string): number | undefined => SIGNAL_NUMBERS[signal];
 
+// How long to wait after a child's `exit` for its stdio pipes to drain before
+// finishing anyway. A well-behaved child closes its pipes immediately, so the
+// normal `close` path wins this race; the grace only matters when a leaked
+// descendant holds the pipes open, where waiting forever (the old behaviour)
+// hangs the whole run. Matches `tracked-executor.ts`.
+const STDIO_DRAIN_GRACE_MS = 2000;
+
 /**
  * Merge env vars for a child process, preserving an explicit caller-supplied
  * `FORCE_COLOR` from `config.env` rather than clobbering it. Order of
@@ -293,7 +300,21 @@ const spawnCommand = (
         onEvent({ index, kind: "error", message: error.message });
     });
 
-    child.on("close", (code, signal) => {
+    let settled = false;
+
+    // Resolve the command exactly once, whether we get here via `close`
+    // (every stdio writer drained) or the `exit` fallback below. `viaExit`
+    // means the process exited but `close` never fired — a descendant still
+    // holds the inherited stdout/stderr pipes — so we reap the group and drop
+    // the pipe handles ourselves, otherwise the orphan keeps the parent event
+    // loop alive long after the task is done (the bug that hangs `vis run`).
+    const finish = (code: number | null, signal: NodeJS.Signals | null, viaExit: boolean): void => {
+        if (settled) {
+            return;
+        }
+
+        settled = true;
+
         if (stdoutFlushTimer) {
             clearTimeout(stdoutFlushTimer);
             stdoutFlushTimer = undefined;
@@ -306,6 +327,22 @@ const spawnCommand = (
 
         flushStdoutBuffer();
         flushStderrBuffer();
+
+        if (viaExit) {
+            // `close` never came: SIGKILL the whole process group to reap the
+            // lingering descendant, then tear down the pipes so no read handle
+            // survives to keep the loop alive.
+            if (child.pid) {
+                try {
+                    killTree(child.pid, "SIGKILL");
+                } catch {
+                    // Already gone — nothing to reap.
+                }
+            }
+
+            child.stdout?.destroy();
+            child.stderr?.destroy();
+        }
 
         const elapsed = process.hrtime(startTime);
         const durationMs = elapsed[0] * 1000 + elapsed[1] / 1_000_000;
@@ -335,6 +372,22 @@ const spawnCommand = (
         });
 
         onComplete(closeEvent);
+    };
+
+    // Normal completion: every stdio writer closed → finish now.
+    child.on("close", (code, signal) => {
+        finish(code, signal, false);
+    });
+
+    // The process exited but `close` may never arrive when a detached
+    // descendant (a leaked vitest pool worker, an esbuild service, …) still
+    // holds the inherited pipes open. Give the pipes a short grace to drain
+    // on their own, then finish regardless. The timer is unref'd so it never
+    // keeps the loop alive on its own.
+    child.on("exit", (code, signal) => {
+        setTimeout(() => {
+            finish(code, signal, true);
+        }, STDIO_DRAIN_GRACE_MS).unref();
     });
 
     return { child, index, startTime };

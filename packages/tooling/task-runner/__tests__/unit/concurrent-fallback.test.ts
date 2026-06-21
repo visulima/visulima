@@ -125,6 +125,35 @@ describe(runConcurrentFallback, () => {
         expect(elapsed).toBeLessThan(5000);
     });
 
+    // Regression: a task whose direct process exits but leaves a detached
+    // descendant holding the inherited stdout/stderr pipe must NOT block the
+    // run. Node's `close` only fires once every pipe writer is gone, so the
+    // old close-only path hung until the orphan died (which hangs `vis run`
+    // when a vitest pool worker is leaked). We now finish on `exit` after a
+    // short drain grace and tear the pipes down ourselves.
+    it.skipIf(process.platform === "win32" || isBun)(
+        "should not hang when a detached descendant keeps the pipes open",
+        async () => {
+            expect.assertions(3);
+
+            // node exits 0 immediately; the detached `sleep` inherits its stdio
+            // (our pipe) and would otherwise hold `close` open for 30s.
+            const leakCommand = "node -e \"const c=require('child_process').spawn('sleep',['30'],{stdio:'inherit',detached:true});c.unref();process.exit(0);\"";
+
+            const start = Date.now();
+            const result = await runConcurrentFallback([makeConfig(leakCommand, "leaker")], {});
+            const elapsed = Date.now() - start;
+
+            expect(result.closeEvents[0]!.exitCode).toBe(0);
+            // The direct process exited 0, so the run succeeds...
+            expect(result.success).toBe(true);
+            // ...and resolves within the ~2s drain grace rather than the 30s the
+            // orphaned `sleep` would otherwise impose.
+            expect(elapsed).toBeLessThan(10_000);
+        },
+        20_000,
+    );
+
     it("should capture stderr output", async () => {
         expect.assertions(1);
 
