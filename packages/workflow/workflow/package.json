@@ -57,6 +57,14 @@
             "types": "./dist/store/unstorage-store.d.ts",
             "default": "./dist/store/unstorage-store.js"
         },
+        "./store/sql": {
+            "types": "./dist/store/sql-store.d.ts",
+            "default": "./dist/store/sql-store.js"
+        },
+        "./store/redis": {
+            "types": "./dist/store/redis-store.d.ts",
+            "default": "./dist/store/redis-store.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
@@ -92,6 +100,7 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
+        "@electric-sql/pglite": "0.3.16",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
@@ -101,6 +110,8 @@
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
+        "mysql-memory-server": "1.14.1",
+        "mysql2": "^3.22.5",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",

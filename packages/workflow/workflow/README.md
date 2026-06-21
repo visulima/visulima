@@ -155,8 +155,28 @@ await runtime.signal(runId, "review-decision", { approved: true });
 
 ## Bring your own store
 
-Durability is a small contract. `MemoryStore` (default) and `UnstorageStore` ship in the box; implement
-`WorkflowStore` to back runs with Postgres, Redis, a Durable Object, or anything else.
+Durability is a small contract. Four stores ship in the box — `MemoryStore` (default), `UnstorageStore`
+(Cloudflare KV/D1/Redis/fs), `SqlStore` (PostgreSQL/MySQL, atomic lease) and `RedisStore` (atomic Lua lease) — or
+implement `WorkflowStore` yourself to back runs with anything else.
+
+```typescript
+// SQL (atomic cross-process lease) — driver-agnostic via a structural client:
+import { createRuntime, SqlStore } from "@visulima/workflow";
+import { Pool } from "pg";
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const runtime = createRuntime({
+    store: new SqlStore({ query: (sql, p) => pool.query(sql, p as unknown[]) }, { dialect: "postgres" }),
+});
+```
+
+```typescript
+// Redis (atomic Lua lease) — ioredis satisfies the structural client directly:
+import { createRuntime, RedisStore } from "@visulima/workflow";
+import Redis from "ioredis";
+
+const runtime = createRuntime({ store: new RedisStore(new Redis(process.env.REDIS_URL)) });
+```
 
 ```typescript
 import { createRuntime, UnstorageStore } from "@visulima/workflow";

@@ -32,7 +32,7 @@ export default createConfig(
         },
     },
     {
-        files: ["**/*.test.ts"],
+        files: ["**/*.test.ts", "__tests__/**/*.ts"],
         rules: {
             "@typescript-eslint/no-explicit-any": "off",
             "@typescript-eslint/no-extraneous-class": "off",
@@ -49,7 +49,12 @@ export default createConfig(
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
             "vitest/no-conditional-in-test": "off",
+            "vitest/no-disabled-tests": "off",
+            "vitest/prefer-expect-assertions": "off",
+            "vitest/prefer-lowercase-title": "off",
+            "vitest/require-hook": "off",
             "vitest/require-mock-type-parameters": "off",
+            "vitest/require-top-level-describe": "off",
         },
     },
 );

@@ -38,6 +38,42 @@ const runtime = createRuntime({
 A small due-index document tracks wake-at times so `sweep` does not scan every run. Operations are not transactional; its
 optional lease is **best-effort** on non-atomic drivers (see [Concurrency](/docs/packages/workflow/concurrency)).
 
+### SqlStore (PostgreSQL / MySQL)
+
+Durable persistence in a SQL database, with a **genuinely-atomic** cross-process lease (a single conditional `UPDATE`),
+so it is safe for many runtime instances against one database. Driver-agnostic: adapt any client (node-postgres,
+postgres.js, mysql2, pglite…) to the structural `SqlClient` — a single `query(sql, params) => { rows, rowCount }`.
+
+```typescript
+import { createRuntime, SqlStore } from "@visulima/workflow";
+import { Pool } from "pg";
+
+const pool = new Pool({ connectionString: process.env.DATABASE_URL });
+const store = new SqlStore(
+    { query: (sql, parameters) => pool.query(sql, parameters as unknown[]) }, // pg returns { rows, rowCount }
+    { dialect: "postgres" },
+);
+
+await store.init(); // create the table (also runs lazily on first use)
+const runtime = createRuntime({ store });
+```
+
+For MySQL pass `{ dialect: "mysql" }` and connect with the `FOUND_ROWS` client flag (so the lease's affected-rows check
+counts matched, not changed, rows). Run state is stored as JSON text, so no JSON column type is required.
+
+### RedisStore
+
+Durable persistence in Redis, with an **atomic** Lua `acquire`/`release` lease and a sorted-set wake index — safe across
+instances. [ioredis](https://github.com/redis/ioredis) satisfies the structural `RedisLike` directly.
+
+```typescript
+import { createRuntime, RedisStore } from "@visulima/workflow";
+import Redis from "ioredis";
+
+const store = new RedisStore(new Redis(process.env.REDIS_URL));
+const runtime = createRuntime({ store });
+```
+
 ## The contract
 
 ```typescript
