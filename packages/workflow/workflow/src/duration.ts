@@ -22,6 +22,10 @@ const UNIT_MS: Record<DurationUnit, number> = {
  */
 const resolveWakeAt = (duration: Duration, from: number = Date.now()): number => {
     if (typeof duration === "number") {
+        if (!Number.isFinite(duration)) {
+            throw new WorkflowError("invalid-duration", `Duration must be a finite number of milliseconds. Received: ${String(duration)}.`);
+        }
+
         return from + Math.max(0, duration);
     }
 
@@ -33,6 +37,10 @@ const resolveWakeAt = (duration: Duration, from: number = Date.now()): number =>
         }
 
         return next.getTime();
+    }
+
+    if (!Number.isFinite(duration.amount)) {
+        throw new WorkflowError("invalid-duration", `Duration amount must be a finite number. Received: ${String(duration.amount)}.`);
     }
 
     const factor = UNIT_MS[duration.unit];

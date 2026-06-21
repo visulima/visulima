@@ -19,7 +19,7 @@ const formatPathSegment = (segment: PropertyKey | { key: PropertyKey }): string 
 const formatIssue = (issue: StandardSchemaV1.Issue): string => {
     const path = issue.path?.map((segment) => formatPathSegment(segment)).join(".") ?? "";
 
-    return `${path}: ${issue.message}`.trim();
+    return path.length > 0 ? `${path}: ${issue.message}` : issue.message;
 };
 
 const validateStandard = async <PayloadT>(schema: StandardSchemaV1<unknown, PayloadT>, input: unknown): Promise<PayloadT> => {

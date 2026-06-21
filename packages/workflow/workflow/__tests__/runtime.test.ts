@@ -9,6 +9,9 @@ import createRuntime from "../src/runtime";
 import MemoryStore from "../src/store/memory-store";
 import UnstorageStore from "../src/store/unstorage-store";
 
+// "validation failed: " must be followed by a non-colon, non-space char (no leading colon for root errors).
+const ROOT_ERROR_PATTERN = /failed: [^\s:]/;
+
 describe(createRuntime, () => {
     it("runs a step-only workflow to completion", async () => {
         expect.assertions(3);
@@ -215,6 +218,35 @@ describe(createRuntime, () => {
         const runtime = createRuntime();
 
         await expect(runtime.trigger("nope", {})).rejects.toThrow("No workflow registered");
+    });
+
+    it("rejects a non-positive leaseTtlMs", () => {
+        expect.assertions(2);
+
+        expect(() => createRuntime({ leaseTtlMs: 0 })).toThrow("leaseTtlMs");
+        expect(() => createRuntime({ leaseTtlMs: Number.NaN })).toThrow("leaseTtlMs");
+    });
+
+    it("rejects a non-positive sweep limit", async () => {
+        expect.assertions(2);
+
+        const runtime = createRuntime();
+
+        await expect(runtime.sweep(Date.now(), 0)).rejects.toThrow("sweep limit");
+        await expect(runtime.sweep(Date.now(), 1.5)).rejects.toThrow("sweep limit");
+    });
+
+    it("formats a root-level payload error without a leading colon", async () => {
+        expect.assertions(1);
+
+        const runtime = createRuntime();
+        const workflow = defineWorkflow({
+            id: "root-error",
+            payload: z.number(),
+            run: () => undefined,
+        });
+
+        await expect(runtime.trigger(workflow, "not-a-number")).rejects.toThrow(ROOT_ERROR_PATTERN);
     });
 
     it("resumes a registered-by-id workflow after restart (new runtime, shared store)", async () => {

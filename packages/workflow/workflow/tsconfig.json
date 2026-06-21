@@ -3,7 +3,7 @@
     "extends": "../../../tsconfig.base.json",
     "compilerOptions": {
         "moduleResolution": "bundler",
-        "types": ["node"]
+        "types": []
     },
     "include": ["src/**/*", "*.d.ts"]
 }

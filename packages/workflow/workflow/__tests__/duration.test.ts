@@ -46,4 +46,16 @@ describe(resolveWakeAt, () => {
         // 31st of February never happens.
         expect(() => resolveWakeAt({ cron: "0 0 31 2 *" }, base)).toThrow(WorkflowError);
     });
+
+    it.each([Number.NaN, Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY])("throws for non-finite millisecond duration %s", (value) => {
+        expect.assertions(1);
+
+        expect(() => resolveWakeAt(value, base)).toThrow(WorkflowError);
+    });
+
+    it("throws for a non-finite structured amount", () => {
+        expect.assertions(1);
+
+        expect(() => resolveWakeAt({ amount: Number.NaN, unit: "minutes" }, base)).toThrow(WorkflowError);
+    });
 });

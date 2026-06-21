@@ -26,6 +26,12 @@ interface MysqlHarness {
 let harness: MysqlHarness | undefined;
 
 beforeAll(async () => {
+    // mysql-memory-server downloads/spawns mysqld, which is slow and unreliable on
+    // Windows CI runners — skip there and let the pglite suite cover the SQL store.
+    if (process.platform === "win32") {
+        return;
+    }
+
     try {
         const database = await createDB({ version: "8.0.x" });
         const connection = await mysql.createConnection({
