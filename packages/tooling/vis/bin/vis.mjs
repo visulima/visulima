@@ -32,11 +32,10 @@ const fallbackEntry = process.env.VIS_FALLBACK_ENTRY ?? join(packageRoot, "dist"
 // in-process path below, unchanged. NOTE: `-v` is cerebro's verbose flag (not
 // version), so it is deliberately absent.
 //
-// `exec` is implemented natively (main.rs/exec.rs) and unit-tested, but is NOT
-// routed here yet: its flag handling vs cerebro's `stopAtFirstUnknown` parsing
-// needs verification against a real build before we can claim parity. Until
-// then it falls through to the Node lean path, unchanged.
-const NATIVE_COMMANDS = new Set(["--version", "-V", "__native-info", "__pm-shim"]);
+// `exec` parity was verified empirically against cerebro: tool flags after the
+// command are forwarded to the tool on both the native path and the Node handler
+// (src/commands/exec/handler.ts), which was fixed to stop dropping them.
+const NATIVE_COMMANDS = new Set(["--version", "-V", "__native-info", "__pm-shim", "exec"]);
 
 const command = process.argv[2] ?? "";
 

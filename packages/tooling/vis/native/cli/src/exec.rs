@@ -179,10 +179,9 @@ mod tests {
 
     #[test]
     fn tokens_after_the_command_are_forwarded_verbatim() {
-        // NOTE: the native parser forwards post-command tokens (including
-        // flag-like ones) to the command. Parity with cerebro's
-        // `stopAtFirstUnknown` is unverified — which is why `exec` is not yet
-        // routed natively (see bin/vis.mjs NATIVE_COMMANDS).
+        // Tool flags after the command are forwarded to the tool. This matches
+        // the fixed Node handler (verified empirically against cerebro), which
+        // now forwards rawUnknown instead of dropping it.
         let parsed = parse(&args(&["eslint", "--fix", "src"])).unwrap();
 
         assert_eq!(parsed.opts.command, "eslint");

@@ -5,14 +5,26 @@ import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/co
 import { toStringArray } from "../../util/utils";
 import type { ExecOptions } from "./index";
 
-const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ExecOptions>): Promise<void> => {
-    const args = argument;
+const execute = async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, ExecOptions>): Promise<void> => {
+    const positionals = argument;
 
-    if (!args || args.length === 0) {
+    if (!positionals || positionals.length === 0) {
         throw new Error("No command specified. Usage: vis exec <command> [args...]");
     }
 
-    const [command, ...rest] = args;
+    const [command, ...positionalRest] = positionals;
+
+    // cerebro's `stopAtFirstUnknown` parse routes tool flags after the command
+    // into `rawUnknown` (which the handler historically ignored, silently
+    // dropping them). Forward them so `vis exec <tool> --flag` reaches the tool.
+    // When an explicit `--` separator is used, cerebro already put the
+    // post-separator tokens into `argument`, and `rawUnknown` merely repeats them
+    // (led by the literal `--`), so it is ignored in that case. Tip: use
+    // `--filter=<pat>` (not `-F <pat>`) so the multi-value filter doesn't greedily
+    // swallow the command.
+    const unknown = rawUnknown ?? [];
+    const rest = unknown[0] === "--" ? positionalRest : [...positionalRest, ...unknown];
+
     const cwd = wsRoot ?? process.cwd();
     const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
     const pm = resolveInstaller(cwd, {

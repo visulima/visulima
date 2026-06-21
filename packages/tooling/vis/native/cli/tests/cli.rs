@@ -82,11 +82,10 @@ fn exec_resolves_and_runs_via_detected_pm() {
 
     let path = format!("{}:{}", bindir.display(), std::env::var("PATH").unwrap_or_default());
 
-    // Unambiguous invocation (no post-command flags) so the assertion validates
-    // detect -> resolve_exec -> spawn wiring, not the parser's contested
-    // post-command behavior (covered by exec::parse unit tests).
+    // Tool flags after the command are forwarded to the tool (verified to match
+    // the fixed Node handler). resolve_exec maps pnpm -> `exec <command> <args>`.
     let output = binary()
-        .args(["exec", "eslint"])
+        .args(["exec", "eslint", "--fix"])
         .current_dir(&project)
         .env("PATH", path)
         .env_remove("npm_config_user_agent")
@@ -97,7 +96,7 @@ fn exec_resolves_and_runs_via_detected_pm() {
     std::fs::remove_dir_all(&base).ok();
 
     assert!(output.status.success(), "exec failed: {:?}", output);
-    assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "PNPM:exec eslint");
+    assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "PNPM:exec eslint --fix");
 }
 
 #[test]
