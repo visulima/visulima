@@ -178,23 +178,71 @@ describe(logCommandOutputCI, () => {
         expect(joined).toContain("##[endgroup]");
     });
 
-    it("falls back to raw separator for failed tasks even when grouping is on", () => {
-        expect.assertions(5);
+    it("keeps the failure output visible across every grouping mode", () => {
+        expect.assertions(4);
 
         for (const mode of ["github", "gitlab", "buildkite", "azure"] as const) {
             writes.length = 0;
             logCommandOutputCI("app:test", "failure", "boom", mode);
 
-            const joined = writes.join("");
-
-            expect(joined).toContain("boom");
+            expect(writes.join("")).toContain("boom");
         }
+    });
 
-        // Sanity check on the github branch — no group markup leaks.
-        writes.length = 0;
+    it("still wraps a failed task in a GitHub ::group:: (groups are clickable)", () => {
+        expect.assertions(2);
+
         logCommandOutputCI("app:test", "failure", "boom", "github");
 
-        expect(writes.join("")).not.toContain("::group::");
+        const joined = writes.join("");
+
+        expect(joined).toContain("::group::");
+        expect(joined).toContain("::endgroup::");
+    });
+
+    it("emits an expanded GitLab section for a failed task (no [collapsed=true])", () => {
+        expect.assertions(2);
+
+        logCommandOutputCI("app:test", "failure", "boom", "gitlab");
+
+        const joined = writes.join("");
+
+        // The section is still emitted so the log stays one-group-per-task,
+        // but without the collapse flag so the failure is open by default.
+        expect(joined).toContain("section_start:");
+        expect(joined).not.toContain("[collapsed=true]");
+    });
+
+    it("collapses a successful GitLab section with [collapsed=true]", () => {
+        expect.assertions(1);
+
+        logCommandOutputCI("app:test", "success", "hello", "gitlab");
+
+        expect(writes.join("")).toContain("[collapsed=true]");
+    });
+
+    it("opens a failed Buildkite section with the expanded `+++` heading", () => {
+        expect.assertions(2);
+
+        logCommandOutputCI("app:test", "failure", "boom", "buildkite");
+
+        const joined = writes.join("");
+
+        // `+++` forces the section open; the collapsed `--- ` heading must
+        // not be used for a failure.
+        expect(joined).toContain("+++ ");
+        expect(joined).not.toContain("--- ");
+    });
+
+    it("still wraps a failed Azure task in ##[group] (collapsed-only directive)", () => {
+        expect.assertions(2);
+
+        logCommandOutputCI("app:test", "failure", "boom", "azure");
+
+        const joined = writes.join("");
+
+        expect(joined).toContain("##[group]");
+        expect(joined).toContain("##[endgroup]");
     });
 
     it("skips output entirely when the command produced no text", () => {

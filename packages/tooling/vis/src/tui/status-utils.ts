@@ -159,10 +159,13 @@ export const logCommandOutputCI = (taskId: string, status: TaskStatus, output: s
     const EOL = "\n";
     const grouping = resolveCiGroupingMode(mode);
 
-    // Failed tasks shouldn't be hidden behind a collapsed group —
-    // the user came here to read the failure. Fall through to the
-    // raw-separator rendering even when grouping is on.
-    if (grouping === "github" && status !== "failure") {
+    // GitHub log groups are always collapsible (and collapsed by default) —
+    // there is no "expanded group" directive — so we wrap *every* task,
+    // failures included, in a `::group::`. Leaving a failure ungrouped would
+    // break the one-group-per-task structure and dump raw separators into an
+    // otherwise tidy log; the failed task's group sits at the tail of the log
+    // and is a single click away.
+    if (grouping === "github") {
         process.stdout.write(`::group::${getStatusIcon(status)} ${taskId}${EOL}`);
         process.stdout.write(trimmed + EOL);
         process.stdout.write(`::endgroup::${EOL}`);
@@ -170,17 +173,22 @@ export const logCommandOutputCI = (taskId: string, status: TaskStatus, output: s
         return;
     }
 
-    if (grouping === "gitlab" && status !== "failure") {
+    if (grouping === "gitlab") {
         // Each directive carries its own timestamp so the GitLab UI can
         // compute the section's runtime; reusing one timestamp would lie
         // about how long output spent inside the block.
         const startTs = Math.floor(Date.now() / 1000);
         const key = toGitLabSectionKey(taskId);
+        // Successful sections collapse to keep the log compact; a failed
+        // task's section is left expanded (omit `[collapsed=true]`) so the
+        // error is visible without expanding it. Unlike GitHub, GitLab *can*
+        // render a grouped-but-expanded section, so failures stay grouped.
+        const collapsed = status === "failure" ? "" : "[collapsed=true]";
         // ANSI CSI "Erase In Line" — GitLab strips the cursor-positioning
         // bytes from the rendered log so the directive itself stays hidden.
         const eraseLine = "[0K";
 
-        process.stdout.write(`${eraseLine}section_start:${String(startTs)}:${key}[collapsed=true]\r${eraseLine}${getStatusIcon(status)} ${taskId}${EOL}`);
+        process.stdout.write(`${eraseLine}section_start:${String(startTs)}:${key}${collapsed}\r${eraseLine}${getStatusIcon(status)} ${taskId}${EOL}`);
         process.stdout.write(trimmed + EOL);
 
         const endTs = Math.floor(Date.now() / 1000);
@@ -190,19 +198,23 @@ export const logCommandOutputCI = (taskId: string, status: TaskStatus, output: s
         return;
     }
 
-    if (grouping === "buildkite" && status !== "failure") {
+    if (grouping === "buildkite") {
         // Buildkite has no explicit "end group" directive — the next
-        // `---` / `+++` / `~~~` line implicitly closes the previous
-        // block. The trailing raw separator below acts as a no-op
-        // delimiter so subsequent unrelated output isn't accidentally
-        // folded into this task's collapsed group.
-        process.stdout.write(`--- ${getStatusIcon(status)} ${taskId}${EOL}`);
+        // `---` / `+++` / `~~~` line implicitly closes the previous block.
+        // `---` folds the section; `+++` forces it open, so — like GitLab —
+        // a failed task is expanded by default while successes stay folded.
+        const heading = status === "failure" ? "+++" : "---";
+
+        process.stdout.write(`${heading} ${getStatusIcon(status)} ${taskId}${EOL}`);
         process.stdout.write(trimmed + EOL);
 
         return;
     }
 
-    if (grouping === "azure" && status !== "failure") {
+    if (grouping === "azure") {
+        // Azure Pipelines only offers a collapsed `##[group]` — there is no
+        // expanded-group directive — so, like GitHub, a failed task is
+        // grouped collapsed and sits one click from the error.
         process.stdout.write(`##[group]${getStatusIcon(status)} ${taskId}${EOL}`);
         process.stdout.write(trimmed + EOL);
         process.stdout.write(`##[endgroup]${EOL}`);
