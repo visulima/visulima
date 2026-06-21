@@ -149,7 +149,10 @@ fn make_relative(path: &str, workspace_root: &str) -> String {
 
 /// Core hashing function using xxh3-128.
 /// Produces a 32-character hex string (128-bit hash).
-fn hash_bytes(data: &[u8]) -> String {
+///
+/// `pub` so the criterion bench (`native/benches/file_hasher.rs`) can measure
+/// raw hashing throughput without going through the filesystem.
+pub fn hash_bytes(data: &[u8]) -> String {
     let h = xxh3_128(data);
     hex::encode(h.to_be_bytes())
 }
