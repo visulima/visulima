@@ -153,6 +153,16 @@ const ensureRegisterHooks = (): boolean => {
 
             if (clean.startsWith("file:") && TS_RE.test(clean)) {
                 const filename = fileURLToPath(clean);
+                // Transpile fresh on every load — there is no transpile-layer cache
+                // here. The only cache in this path is Node's V8 compile cache
+                // (`module.enableCompileCache`, enabled in bin/binx/preload), which
+                // keys on the SOURCE V8 compiles — i.e. this post-transpile `code`,
+                // plus the V8 version — not the original `.ts`. So when the oxc addon
+                // changes its output, the compiled source changes and the cache
+                // self-invalidates; identical output reuses the entry safely.
+                // Do NOT add a `.ts`-source-keyed transpile cache without folding the
+                // addon's own version/hash into the key, or it will serve stale JS
+                // after an oxc upgrade.
                 const { code } = transformTs(filename, readFileSync(filename, "utf8"));
 
                 return { format: formatFor(filename), shortCircuit: true, source: code };
