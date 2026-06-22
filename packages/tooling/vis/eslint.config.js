@@ -276,15 +276,21 @@ export default createConfig(
             // intentional in these integration-style suites.
             "vitest/no-conditional-in-test": "off",
             // Asserting a mock was called (without pinning every argument) is
-            // sufficient for these orchestration tests.
+            // sufficient for these orchestration tests. NOTE: the rule's autofix
+            // rewrites `toHaveBeenCalled()` → `toHaveBeenCalledWith()`, which asserts a
+            // *zero-argument* call and breaks every spy invoked with args — don't enable.
             "vitest/prefer-called-with": "off",
-            // These integration-style release tests assert via mock call
-            // expectations and error catches rather than a leading
-            // `expect.assertions(n)`; the count would be noise to maintain.
+            // ~1180 sites assert via mock expectations / error catches, not a leading
+            // `expect.assertions(n)`. Not autofixable (no count to infer); enabling means
+            // hand-annotating every test for no behavioural gain.
             "vitest/prefer-expect-assertions": "off",
-            // `toBe`/`toEqual` are deliberate here (referential or loose shape
-            // checks); `toStrictEqual` would over-constrain fixture comparisons.
+            // The autofix rewrites `toBeTruthy()` → `toBe(true)`, wrong wherever the value
+            // is truthy-but-not-`true` (e.g. a string `error.hint`); these tests assert
+            // truthiness, not identity.
             "vitest/prefer-strict-boolean-matchers": "off",
+            // `toBe`/`toEqual` are deliberate (referential or loose shape checks);
+            // `toStrictEqual` would over-constrain fixture comparisons. ~224 sites and the
+            // fixer is suggestion-only (not applied by `--fix`), so it'd be manual churn.
             "vitest/prefer-strict-equal": "off",
             // Top-level `it`/setup without a wrapping `describe` is fine for
             // these single-subject release command suites.
