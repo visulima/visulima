@@ -278,8 +278,6 @@ export default createConfig(
             // Top-level `it`/setup without a wrapping `describe` is fine for
             // these single-subject release command suites.
             "vitest/require-hook": "off",
-            "vitest/require-to-throw-message": "off",
-            "vitest/require-top-level-describe": "off",
         },
     },
 );

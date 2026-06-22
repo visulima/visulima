@@ -129,7 +129,7 @@ describe("native-addon: temp-dir cleanup on failure (RFC §19.4)", () => {
 
         const actions = new NativeAddonVersionActions();
 
-        await expect(actions.publish(ctx)).rejects.toThrow();
+        await expect(actions.publish(ctx)).rejects.toThrow(/Failed to publish platform package/);
 
         const leaked = listTempVisDirs().filter((d) => !baseline.has(d));
 

@@ -45,7 +45,7 @@ describe("state — process-level lock (RFC §19.1)", () => {
 
         const fs = await import("node:fs/promises");
 
-        await expect(fs.access(lockFilePath(cwd, changesDir))).rejects.toThrow();
+        await expect(fs.access(lockFilePath(cwd, changesDir))).rejects.toThrow(/ENOENT/);
     });
 
     it("releaseLock is a no-op when no lock exists", async () => {

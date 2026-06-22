@@ -299,7 +299,7 @@ describe.skipIf(isWindows)("orchestrator: applyContext lifecycle hooks", () => {
 
         const fs = await import("node:fs/promises");
 
-        await expect(fs.access(sentinel("SHOULD_NOT_RUN"))).rejects.toThrow();
+        await expect(fs.access(sentinel("SHOULD_NOT_RUN"))).rejects.toThrow(/ENOENT/);
     });
 
     it("aborts when preVersionCommand fails", async () => {

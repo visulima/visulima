@@ -22,85 +22,87 @@ const mkCtx = (): OrchestratorContext => {
 let stdoutChunks: string[] = [];
 let originalWrite: typeof process.stdout.write;
 
-beforeEach(() => {
-    stdoutChunks = [];
-    originalWrite = process.stdout.write.bind(process.stdout);
-    process.stdout.write = ((chunk: string | Uint8Array) => {
-        stdoutChunks.push(typeof chunk === "string" ? chunk : chunk.toString());
+describe("release print-config", () => {
+    beforeEach(() => {
+        stdoutChunks = [];
+        originalWrite = process.stdout.write.bind(process.stdout);
+        process.stdout.write = ((chunk: string | Uint8Array) => {
+            stdoutChunks.push(typeof chunk === "string" ? chunk : chunk.toString());
 
-        return true;
-    });
-});
-
-afterEach(() => {
-    process.stdout.write = originalWrite;
-});
-
-const noopLogger = { error: () => {}, info: () => {}, warn: () => {} } as unknown as Parameters<typeof printConfigIfRequested>[2];
-
-describe(printConfigIfRequested, () => {
-    it("returns false when --print-config is not set", () => {
-        expect.hasAssertions();
-        expect(printConfigIfRequested({}, mkCtx(), noopLogger)).toBe(false);
-        expect(stdoutChunks.join("")).toBe("");
+            return true;
+        });
     });
 
-    it("returns false on empty string", () => {
-        expect.hasAssertions();
-        expect(printConfigIfRequested({ printConfig: "" }, mkCtx(), noopLogger)).toBe(false);
+    afterEach(() => {
+        process.stdout.write = originalWrite;
     });
 
-    it("prints user-facing config + returns true on truthy value", () => {
-        expect.hasAssertions();
+    const noopLogger = { error: () => {}, info: () => {}, warn: () => {} } as unknown as Parameters<typeof printConfigIfRequested>[2];
 
-        const result = printConfigIfRequested({ printConfig: "true" }, mkCtx(), noopLogger);
+    describe(printConfigIfRequested, () => {
+        it("returns false when --print-config is not set", () => {
+            expect.hasAssertions();
+            expect(printConfigIfRequested({}, mkCtx(), noopLogger)).toBe(false);
+            expect(stdoutChunks.join("")).toBe("");
+        });
 
-        expect(result).toBe(true);
+        it("returns false on empty string", () => {
+            expect.hasAssertions();
+            expect(printConfigIfRequested({ printConfig: "" }, mkCtx(), noopLogger)).toBe(false);
+        });
 
-        const out = JSON.parse(stdoutChunks.join(""));
+        it("prints user-facing config + returns true on truthy value", () => {
+            expect.hasAssertions();
 
-        expect(out.baseBranch).toBe("main");
-        expect(out.channels.main.tag).toBe("latest");
-        expect(out["__resolved__"]).toBeUndefined();
-    });
+            const result = printConfigIfRequested({ printConfig: "true" }, mkCtx(), noopLogger);
 
-    it("prints runtime-resolved fields with =debug", () => {
-        expect.hasAssertions();
+            expect(result).toBe(true);
 
-        const result = printConfigIfRequested({ printConfig: "debug" }, mkCtx(), noopLogger);
+            const out = JSON.parse(stdoutChunks.join(""));
 
-        expect(result).toBe(true);
+            expect(out.baseBranch).toBe("main");
+            expect(out.channels.main.tag).toBe("latest");
+            expect(out["__resolved__"]).toBeUndefined();
+        });
 
-        const out = JSON.parse(stdoutChunks.join(""));
+        it("prints runtime-resolved fields with =debug", () => {
+            expect.hasAssertions();
 
-        expect(out["__resolved__"]).toBeDefined();
-        expect(out["__resolved__"].cwd).toBe("/r");
-        expect(out["__resolved__"].packageManager).toBe("pnpm");
-        expect(out["__resolved__"].channel.tag).toBe("latest");
-    });
+            const result = printConfigIfRequested({ printConfig: "debug" }, mkCtx(), noopLogger);
 
-    it("redacts gitUser.email but preserves name (RFC §19.4)", () => {
-        expect.hasAssertions();
+            expect(result).toBe(true);
 
-        const ctx = mkCtx();
+            const out = JSON.parse(stdoutChunks.join(""));
 
-        ctx.config.gitUser = { email: "bot@example.com", name: "release-bot" };
+            expect(out["__resolved__"]).toBeDefined();
+            expect(out["__resolved__"].cwd).toBe("/r");
+            expect(out["__resolved__"].packageManager).toBe("pnpm");
+            expect(out["__resolved__"].channel.tag).toBe("latest");
+        });
 
-        printConfigIfRequested({ printConfig: "true" }, ctx, noopLogger);
+        it("redacts gitUser.email but preserves name (RFC §19.4)", () => {
+            expect.hasAssertions();
 
-        const out = JSON.parse(stdoutChunks.join(""));
+            const ctx = mkCtx();
 
-        expect(out.gitUser.name).toBe("release-bot");
-        expect(out.gitUser.email).toBe("[REDACTED]");
-    });
+            ctx.config.gitUser = { email: "bot@example.com", name: "release-bot" };
 
-    it("leaves gitUser undefined when not configured", () => {
-        expect.hasAssertions();
+            printConfigIfRequested({ printConfig: "true" }, ctx, noopLogger);
 
-        printConfigIfRequested({ printConfig: "true" }, mkCtx(), noopLogger);
+            const out = JSON.parse(stdoutChunks.join(""));
 
-        const out = JSON.parse(stdoutChunks.join(""));
+            expect(out.gitUser.name).toBe("release-bot");
+            expect(out.gitUser.email).toBe("[REDACTED]");
+        });
 
-        expect(out.gitUser).toBeUndefined();
+        it("leaves gitUser undefined when not configured", () => {
+            expect.hasAssertions();
+
+            printConfigIfRequested({ printConfig: "true" }, mkCtx(), noopLogger);
+
+            const out = JSON.parse(stdoutChunks.join(""));
+
+            expect(out.gitUser).toBeUndefined();
+        });
     });
 });
