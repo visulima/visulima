@@ -61,6 +61,10 @@
             "types": "./dist/store/sql-store.d.ts",
             "default": "./dist/store/sql-store.js"
         },
+        "./store/durable-object": {
+            "types": "./dist/store/durable-object-store.d.ts",
+            "default": "./dist/store/durable-object-store.js"
+        },
         "./store/redis": {
             "types": "./dist/store/redis-store.d.ts",
             "default": "./dist/store/redis-store.js"
