@@ -133,7 +133,7 @@ describe("vis release ci release — C7 publish idempotency", () => {
             logger: { error: () => {}, info: () => {}, warn: () => {} },
             options: { channel: "main" },
             workspaceRoot: cwd,
-        } as never);
+        });
 
         expect(publishOptionsCaptured).toHaveLength(1);
         expect(publishOptionsCaptured[0]).toMatchObject({ resume: false });
@@ -159,7 +159,7 @@ describe("vis release ci release — C7 publish idempotency", () => {
             logger: { error: () => {}, info: () => {}, warn: () => {} },
             options: { channel: "main" },
             workspaceRoot: cwd,
-        } as never);
+        });
 
         expect(publishOptionsCaptured).toHaveLength(1);
         expect(publishOptionsCaptured[0]).toMatchObject({ resume: true });
@@ -185,7 +185,7 @@ describe("vis release ci release — C7 publish idempotency", () => {
             logger: { error: () => {}, info: () => {}, warn: () => {} },
             options: { channel: "alpha" },
             workspaceRoot: cwd,
-        } as never);
+        });
 
         expect(publishOptionsCaptured).toHaveLength(1);
         expect(publishOptionsCaptured[0]).toMatchObject({ resume: true, tag: "alpha" });

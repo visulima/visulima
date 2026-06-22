@@ -134,11 +134,7 @@ export default createConfig(
         // The remote clients also co-locate small private helpers next to
         // the public method that uses them — easier to read than enforcing
         // strict public-first ordering across a ~600-line class.
-        files: [
-            "src/release/core/package-managers/**/*.ts",
-            "src/release/core/remote/**/*.ts",
-            "src/release/core/version-actions/**/*.ts",
-        ],
+        files: ["src/release/core/package-managers/**/*.ts", "src/release/core/remote/**/*.ts", "src/release/core/version-actions/**/*.ts"],
         rules: {
             "@typescript-eslint/member-ordering": "off",
             "class-methods-use-this": "off",
@@ -276,7 +272,25 @@ export default createConfig(
             // The try/catch + `expect` on the caught error is the idiomatic way
             // to assert on a specific error type/code/message here.
             "vitest/no-conditional-expect": "off",
+            // Branching over fixture/platform variants inside a test is
+            // intentional in these integration-style suites.
+            "vitest/no-conditional-in-test": "off",
+            // Asserting a mock was called (without pinning every argument) is
+            // sufficient for these orchestration tests.
+            "vitest/prefer-called-with": "off",
+            // These integration-style release tests assert via mock call
+            // expectations and error catches rather than a leading
+            // `expect.assertions(n)`; the count would be noise to maintain.
+            "vitest/prefer-expect-assertions": "off",
+            // `toBe`/`toEqual` are deliberate here (referential or loose shape
+            // checks); `toStrictEqual` would over-constrain fixture comparisons.
+            "vitest/prefer-strict-boolean-matchers": "off",
+            "vitest/prefer-strict-equal": "off",
+            // Top-level `it`/setup without a wrapping `describe` is fine for
+            // these single-subject release command suites.
+            "vitest/require-hook": "off",
             "vitest/require-to-throw-message": "off",
+            "vitest/require-top-level-describe": "off",
         },
     },
 );

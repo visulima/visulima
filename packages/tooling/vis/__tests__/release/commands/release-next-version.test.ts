@@ -92,7 +92,7 @@ const callHandler = async (cwd: string, options: Record<string, unknown>): Promi
     };
 
     return captureStdout(async () => {
-        await nextVersionHandler({ logger, options, workspaceRoot: cwd } as never);
+        await nextVersionHandler({ logger, options, workspaceRoot: cwd });
     });
 };
 
@@ -182,7 +182,7 @@ describe("vis release next-version", () => {
                     logger,
                     options: { package: "@scope/does-not-exist" },
                     workspaceRoot: cwd,
-                } as never);
+                });
             });
 
             expect(process.exitCode).toBe(1);
@@ -219,7 +219,7 @@ describe("vis release next-version", () => {
                     logger,
                     options: { package: "@scope/b" },
                     workspaceRoot: cwd,
-                } as never);
+                });
             });
 
             expect(process.exitCode).toBe(1);

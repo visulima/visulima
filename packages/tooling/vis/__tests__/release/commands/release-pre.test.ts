@@ -79,7 +79,7 @@ const callHandler = async (cwd: string, options: Record<string, unknown>): Promi
         warn: (message: string) => warns.push(message),
     };
 
-    await preHandler({ logger, options, workspaceRoot: cwd } as never);
+    await preHandler({ logger, options, workspaceRoot: cwd });
 
     return { errors, infos, warns };
 };

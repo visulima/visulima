@@ -85,7 +85,7 @@ const callHandler = async (cwd: string, options: Record<string, unknown>): Promi
     // satisfies that surface for the methods it uses.
     const fs = { access, mkdir, readdir, readFile, rm, stat, writeFile } as never;
 
-    await notificationsHandler({ fs, logger, options: { action: "test", ...options }, workspaceRoot: cwd } as never);
+    await notificationsHandler({ fs, logger, options: { action: "test", ...options }, workspaceRoot: cwd });
 
     const exitCode = typeof process.exitCode === "number" ? process.exitCode : 0;
 
