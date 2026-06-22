@@ -16,11 +16,16 @@ import { describe, expect, it } from "vitest";
 
 // The parsePassthroughOverrides helper isn't exported — exercise it
 // transitively by reproducing its shape inline.
-const parsePassthroughOverrides = (extraArguments: string[]): { overrides: Record<string, string>; remaining: string[] } => {
+const parsePassthroughOverrides = (
+    extraArguments: string[],
+    onWarning?: (message: string) => void,
+): { overrides: Record<string, string>; remaining: string[] } => {
     const overrides: Record<string, string> = {};
     const remaining: string[] = [];
 
-    for (const argument of extraArguments) {
+    for (let index = 0; index < extraArguments.length; index++) {
+        const argument = extraArguments[index]!;
+
         if (!argument.startsWith("--")) {
             remaining.push(argument);
             continue;
@@ -35,6 +40,14 @@ const parsePassthroughOverrides = (extraArguments: string[]): { overrides: Recor
                 overrides[key.slice(3)] = "false";
             } else {
                 overrides[key] = "true";
+
+                const next = extraArguments[index + 1];
+
+                if (next !== undefined && !next.startsWith("-")) {
+                    onWarning?.(
+                        `\`--${key} ${next}\` was read as boolean \`--${key}=true\` and \`${next}\` was ignored. For a string value use \`--${key}=${next}\`.`,
+                    );
+                }
             }
 
             continue;
@@ -75,6 +88,31 @@ describe("`--` passthrough parsing", () => {
             overrides: { flag: "true" },
             remaining: ["positional", "another"],
         });
+    });
+
+    it("warns on the `--name value` space form without changing the parse", () => {
+        expect.assertions(3);
+
+        const warnings: string[] = [];
+        const result = parsePassthroughOverrides(["--name", "listMessages"], (message) => warnings.push(message));
+
+        // Parse result is unchanged: bare flag stays `true`, the value
+        // token stays a (dropped) positional. The warning is what's new.
+        expect(result.overrides).toStrictEqual({ name: "true" });
+        expect(result.remaining).toStrictEqual(["listMessages"]);
+        expect(warnings).toStrictEqual([
+            "`--name listMessages` was read as boolean `--name=true` and `listMessages` was ignored. For a string value use `--name=listMessages`.",
+        ]);
+    });
+
+    it("does not warn for `--no-flag` or flags followed by another flag", () => {
+        expect.assertions(1);
+
+        const warnings: string[] = [];
+
+        parsePassthroughOverrides(["--no-install", "--verbose", "--force"], (message) => warnings.push(message));
+
+        expect(warnings).toStrictEqual([]);
     });
 
     it("handles values containing `=`", () => {

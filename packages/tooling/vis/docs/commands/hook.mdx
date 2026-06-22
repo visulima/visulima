@@ -127,6 +127,7 @@ All user-supplied values (regex patterns, filenames, hook args) travel via `proc
 | Variable               | Description                                                                                  |
 | ---------------------- | -------------------------------------------------------------------------------------------- |
 | `VIS_GIT_HOOKS=0`      | Disable git hooks                                                                            |
+| `VIS_GIT_HOOKS=1`      | Force hooks to run even when `skipInCI` would skip them under CI (per-job override)          |
 | `VIS_GIT_HOOKS=2`      | Enable debug output for hooks                                                                |
 | `VIS_HOOK_ALL_FILES=1` | Tells the bundled runner to discover files via `git ls-files` instead of `git diff --cached` |
 | `VIS_HOOK_FROM_REF=…`  | Paired with `VIS_HOOK_TO_REF`, runs the hook against files changed between the two refs      |

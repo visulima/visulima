@@ -108,11 +108,16 @@ const printList = (templates: DiscoveredTemplate[]): void => {
     }
 };
 
-const parsePassthroughOverrides = (extraArguments: string[]): { overrides: Record<string, string>; remaining: string[] } => {
+const parsePassthroughOverrides = (
+    extraArguments: string[],
+    onWarning?: (message: string) => void,
+): { overrides: Record<string, string>; remaining: string[] } => {
     const overrides: Record<string, string> = {};
     const remaining: string[] = [];
 
-    for (const argument of extraArguments) {
+    for (let index = 0; index < extraArguments.length; index++) {
+        const argument = extraArguments[index]!;
+
         if (!argument.startsWith("--")) {
             remaining.push(argument);
             continue;
@@ -128,6 +133,21 @@ const parsePassthroughOverrides = (extraArguments: string[]): { overrides: Recor
                 overrides[key.slice(3)] = "false";
             } else {
                 overrides[key] = "true";
+
+                // Catch the recurring `--name value` (space-form) footgun.
+                // We can't tell a boolean flag from a string option here —
+                // template variable types aren't loaded yet — so a bare
+                // token right after `--name` is taken as a positional and
+                // silently dropped while `name` becomes `"true"`. That
+                // silent misparse is exactly the trap; warn and point at
+                // the unambiguous `--name=value` form instead.
+                const next = extraArguments[index + 1];
+
+                if (next !== undefined && !next.startsWith("-")) {
+                    onWarning?.(
+                        `\`--${key} ${next}\` was read as boolean \`--${key}=true\` and \`${next}\` was ignored. For a string value use \`--${key}=${next}\`.`,
+                    );
+                }
             }
 
             continue;
@@ -286,7 +306,9 @@ const execute = async ({ argument, options, rawUnknown, visConfig, workspaceRoot
     const legacyDashIndex = args.indexOf("--");
     const legacyExtras = legacyDashIndex === -1 ? [] : args.slice(legacyDashIndex + 1);
     const ownArgs = legacyDashIndex === -1 ? args : args.slice(0, legacyDashIndex);
-    const { overrides } = parsePassthroughOverrides([...legacyExtras, ...passthrough]);
+    const { overrides } = parsePassthroughOverrides([...legacyExtras, ...passthrough], (message: string) => {
+        pail.warn(message);
+    });
 
     let template: Template | undefined;
     let templateName: string | undefined;
