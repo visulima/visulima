@@ -5,6 +5,7 @@ import { dirname } from "node:path";
 import { ensureDirSync } from "@visulima/fs";
 import { join } from "@visulima/path";
 
+import { loadHookConfig } from "./config";
 import type { InstallResult } from "./constants";
 import { DEFAULT_HOOKS_DIRECTORY, HOOKS, LEGACY_HOOKS_DIRECTORY } from "./constants";
 
@@ -51,11 +52,23 @@ const nestedDirname = (depth: number): string => {
 
 /**
  * Generates the shell script that dispatches to user-defined hooks.
+ *
+ * `options.skipInCI` (from `config.json`) bakes a CI kill-switch into the
+ * dispatcher: under any non-empty CI environment variable, every hook exits
+ * 0 before its body runs. It sits after the `VIS_GIT_HOOKS=0` guard (so 0
+ * still disables everything) and is bypassed when `VIS_GIT_HOOKS` equals 1
+ * (so a single CI job can force hooks back on). Mirrors where husky places
+ * its own dispatcher skip-guard, but is driven by config and regenerated on
+ * `vis hook install` rather than hand-written per repo.
  */
-const hookScript = (directory: string): string => {
+const hookScript = (directory: string, options: { skipInCI?: boolean } = {}): string => {
     const segments = directory.split("/").filter((s) => s !== "" && s !== ".").length;
     const depth = segments + 2;
     const rootExpression = nestedDirname(depth);
+
+    // Built as a plain string (not part of the template literal below) so the
+    // `${CI-}` / `${VIS_GIT_HOOKS-}` shell expansions reach the output verbatim.
+    const ciGuard = options.skipInCI ? "{ [ -n \"${CI-}\" ] && [ \"${VIS_GIT_HOOKS-}\" != \"1\" ]; } && exit 0\n" : "";
 
     return `#!/usr/bin/env sh
 { [ "$VIS_GIT_HOOKS" = "2" ]; } && set -x
@@ -65,7 +78,7 @@ s=$(dirname "$(dirname "$0")")/$n
 [ ! -f "$s" ] && exit 0
 
 { [ "\${VIS_GIT_HOOKS-}" = "0" ]; } && exit 0
-
+${ciGuard}
 d=${rootExpression}
 export PATH="$d/node_modules/.bin:$PATH"
 sh -e "$s" "$@"
@@ -124,9 +137,21 @@ const installHooks = (directory: string = DEFAULT_HOOKS_DIRECTORY): InstallResul
         return { isError: true, message: String(stderr) };
     }
 
+    // Read `skipInCI` from config.json (created by migrate / hand-authored)
+    // so the dispatcher we write below carries the CI kill-switch. A
+    // malformed config shouldn't block install — `vis hook run` / `vis hook
+    // validate` surface that error loudly — so fall back to no guard.
+    const skipInCI = ((): boolean => {
+        try {
+            return loadHookConfig(process.cwd(), directory)?.skipInCI ?? false;
+        } catch {
+            return false;
+        }
+    })();
+
     ensureDirSync(internal());
     writeFileSync(internal(".gitignore"), "*");
-    writeFileSync(internal("h"), hookScript(directory), { mode: 0o755 });
+    writeFileSync(internal("h"), hookScript(directory, { skipInCI }), { mode: 0o755 });
 
     for (const hook of HOOKS) {
         writeFileSync(internal(hook), `#!/usr/bin/env sh\n. "$(dirname "$0")/h"`, { mode: 0o755 });

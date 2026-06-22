@@ -768,6 +768,15 @@ interface ExecutorDependencies {
      * `options.strictEnv`, then `vis.config.ts strictEnv`, then `false`.
      */
     strictEnv?: boolean;
+
+    /**
+     * Effective parallelism for this run (the resolved `--parallel` value).
+     * Surfaced to every child task as `VIS_TASK_SLOTS` so nested worker
+     * pools (e.g. Vitest's `maxWorkers`) can size themselves against the
+     * concurrency vis already grants them and avoid CPU oversubscription —
+     * `5 × cores` worker processes when 5 projects each spawn a full pool.
+     */
+    taskSlots: number;
     workspaceRoot: string;
 }
 
@@ -826,6 +835,7 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
             serviceEventBridge: bridge,
             stdinRegistry,
             strictEnv: workspaceStrictEnv,
+            taskSlots,
             workspaceRoot,
         } = deps;
 
@@ -870,6 +880,10 @@ const createConcurrentExecutor = (deps: ExecutorDependencies) => {
 
         const mergedEnv: Record<string, string> = {
             INIT_CWD: initCwd,
+            // Effective parallelism vis grants this run, so child tasks can
+            // size their own worker pools instead of assuming the whole
+            // machine (which oversubscribes when N projects run at once).
+            VIS_TASK_SLOTS: String(taskSlots),
             ...envFileVars,
             // Externally-registered service env merges below the
             // task's explicit env so users can override service-
@@ -1620,6 +1634,11 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         }
     }
 
+    // User-requested task ids (post-partition), so the dependency-hydration
+    // pass below can tell a `dependsOn`-added task apart from one the user
+    // asked for directly and only warn about missing commands on the former.
+    const requestedTaskIds = new Set([...initialTasks, ...persistentTasks].map((task) => task.id));
+
     // Include persistent tasks in the graph so their `dependsOn` chain
     // (especially service deps like `web:serve → api:db`) is walked by
     // `applyServiceRegistry`. Without this, persistent tasks are split
@@ -1655,6 +1674,18 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         const visTarget = projectOptions.get(projectName)?.[targetName];
 
         if (!visTarget) {
+            // A `dependsOn`-added dependency that resolves to a target with
+            // no configuration anywhere (e.g. `dependsOn: ["codegen"]` but
+            // the project has no `codegen` script/target). task-runner keeps
+            // it in the graph and the executor runs it as a silent 0-exit
+            // no-op, so the missing prerequisite vanishes instead of erroring
+            // — the trap that makes such gaps CI-only and hard to find. Warn
+            // so the misconfiguration is visible. Tasks the user invoked
+            // directly always carry config, so this only fires for deps.
+            if (!requestedTaskIds.has(taskId)) {
+                logger.warn(`${targetName} required via dependsOn but no command is configured for ${projectName} — skipping (no-op).`);
+            }
+
             continue;
         }
 
@@ -2515,6 +2546,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                 serviceEventBridge: serviceEventBridge ?? undefined,
                 stdinRegistry,
                 strictEnv: resolvedStrictEnv,
+                taskSlots: resolvedParallel,
                 workspaceRoot,
             });
 
@@ -2714,6 +2746,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                 serviceEnvByTaskId,
                 serviceEventBridge: serviceEventBridge ?? undefined,
                 strictEnv: resolvedStrictEnv,
+                taskSlots: resolvedParallel,
                 workspaceRoot,
             });
 

@@ -15,7 +15,7 @@ const hooksDirectoryOption = {
 const sharedHookEnv = [
     {
         defaultValue: undefined,
-        description: "Set to 0 to disable git hooks, set to 2 for debug output",
+        description: "Set to 0 to disable git hooks, 1 to force-enable them under CI (override skipInCI), 2 for debug output",
         name: "VIS_GIT_HOOKS",
         type: String,
     },
