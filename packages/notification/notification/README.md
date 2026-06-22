@@ -56,6 +56,23 @@ pnpm add @visulima/notification
 
 ## Usage
 
+> **Every provider is `fetch`-based** — no per-provider SDK to install, and it runs on Node, Cloudflare Workers, Vercel
+> Edge, Deno and Bun. Optional peers are only needed by specific subpaths (e.g. `liquidjs` for `./template/liquid`,
+> `@visulima/workflow` for `./workflow`) — see the [install table](https://visulima.com/docs/packages/notification/installation#optional-peer-dependencies).
+> Beyond sending, the package ships [workflows](https://visulima.com/docs/packages/notification/workflow),
+> [digest](https://visulima.com/docs/packages/notification/digest),
+> [layouts](https://visulima.com/docs/packages/notification/layouts) and
+> [i18n](https://visulima.com/docs/packages/notification/i18n).
+
+### Quick send (one channel, no setup)
+
+```typescript
+import { send } from "@visulima/notification";
+import { twilioProvider } from "@visulima/notification/providers/twilio";
+
+await send("sms", twilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }), { to: "+15555550100", text: "Your code is 123" });
+```
+
 ### Multi-channel send
 
 ```typescript

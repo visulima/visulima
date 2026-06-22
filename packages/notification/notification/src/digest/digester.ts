@@ -30,8 +30,15 @@ const resolveWakeAt = async (window: Duration, from: number): Promise<number> =>
     }
 
     if ("cron" in window) {
-        const { Cron } = await import("croner");
-        const next = new Cron(window.cron, window.tz ? { timezone: window.tz } : {}).nextRun(new Date(from));
+        let croner: typeof import("croner");
+
+        try {
+            croner = await import("croner");
+        } catch (error) {
+            throw new NotificationError("digest", "croner is not installed (required for cron windows). Please install it: pnpm add croner", { cause: error });
+        }
+
+        const next = new croner.Cron(window.cron, window.tz ? { timezone: window.tz } : {}).nextRun(new Date(from));
 
         if (next === null) {
             throw new NotificationError("digest", `Cron expression "${window.cron}" has no future occurrence.`);

@@ -233,3 +233,25 @@ export class Notification {
  * @returns A configured notification facade.
  */
 export const createNotification = (providers: NotificationProviders): Notification => new Notification(providers);
+
+/**
+ * One-shot send through a single provider — the quickest path for a single-channel
+ * send without wiring a {@link Notification} facade. For multiple channels,
+ * middleware, routing or reuse, use {@link createNotification}.
+ * @param channel The channel to deliver on.
+ * @param provider The provider to deliver through.
+ * @param payload The channel-specific payload.
+ * @returns The send {@link Receipt}.
+ * @example
+ * ```ts
+ * import { send } from "@visulima/notification";
+ * import { twilioProvider } from "@visulima/notification/providers/twilio";
+ *
+ * await send("sms", twilioProvider({ accountSid, authToken, from }), { to: "+15555550100", text: "Hi" });
+ * ```
+ */
+export const send = async <ChannelT extends ChannelType>(
+    channel: ChannelT,
+    provider: Provider<unknown, ChannelPayloadMap[ChannelT]>,
+    payload: ChannelPayloadMap[ChannelT],
+): Promise<Receipt> => new Notification({ [channel]: provider }).sendToChannel(channel, payload);
