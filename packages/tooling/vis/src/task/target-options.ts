@@ -213,14 +213,35 @@ const expandEnvValue = (value: string, scope: Record<string, string>): string =>
         const next = value[index + 1];
 
         if (next === "{") {
-            const close = value.indexOf("}", index + 2);
+            // Find the MATCHING close brace, tracking depth so a nested `${...}`
+            // in a `:-default` (e.g. `${A:-${B}}`) closes on the outer `}`, not
+            // the inner one.
+            let depth = 1;
+            let scan = index + 2;
 
-            if (close === -1) {
+            while (scan < value.length) {
+                const current = value[scan];
+
+                if (current === "}") {
+                    depth -= 1;
+
+                    if (depth === 0) {
+                        break;
+                    }
+                } else if (current === "{" && value[scan - 1] === "$") {
+                    depth += 1;
+                }
+
+                scan += 1;
+            }
+
+            if (depth !== 0) {
                 // Unterminated `${` — emit verbatim and stop scanning specials.
                 result += value.slice(index);
                 break;
             }
 
+            const close = scan;
             const expression = value.slice(index + 2, close);
             const separator = expression.indexOf(":-");
 

@@ -11,8 +11,9 @@
  * Two flavours live here:
  *
  * - **Inline shims** — tiny, dependency-free implementations written directly in
- *   this file (`reportError`, `RegExp.escape`, `Promise.try`, `Float16Array`,
- *   `Error.isError`, `navigator.locks`). No core-js, no package resolution.
+ *   this file (`reportError`, `RegExp.escape`, `Promise.try`, the `Float16`
+ *   companions `Math.f16round` + `DataView` get/setFloat16, `Error.isError`,
+ *   `navigator.locks`). No core-js, no package resolution.
  * - **Package-backed shims** — heavyweight APIs (`Temporal`, `URLPattern`) whose
  *   polyfill packages are NOT vis dependencies: they're resolved from the *user's*
  *   project (the cwd where `vis x` runs), where a script needing them would declare
@@ -216,109 +217,115 @@ const installPromiseTry = (): void => {
     };
 };
 
+// IEEE-754 binary16 codec, round-to-nearest-even, shared by Math.f16round and the
+// DataView half-float companions.
+/* eslint-disable no-bitwise -- IEEE-754 half-precision encode/decode is inherently bit-level. */
+const toFloat16Bits = (value: number): number => {
+    const floatView = new Float32Array(1);
+    const intView = new Uint32Array(floatView.buffer);
+
+    floatView[0] = value;
+
+    const bits = intView[0] as number;
+    const sign = (bits >>> 16) & 0x80_00;
+    const exponentBits = (bits >>> 23) & 0xff;
+    const mantissa = bits & 0x7f_ff_ff;
+
+    // Input Inf / NaN: preserve a quiet NaN, else Infinity.
+    if (exponentBits === 0xff) {
+        return mantissa === 0 ? sign | 0x7c_00 : sign | 0x7e_00;
+    }
+
+    // Re-bias the float32 exponent for half precision.
+    const exponent = exponentBits - 127 + 15;
+
+    // Finite overflow rounds to Infinity (NOT NaN).
+    if (exponent >= 0x1f) {
+        return sign | 0x7c_00;
+    }
+
+    if (exponent <= 0) {
+        // Too small even for a subnormal → signed zero.
+        if (exponent < -10) {
+            return sign;
+        }
+
+        // Subnormal: restore the implicit leading 1 then shift into the 10-bit
+        // field, rounding to nearest, ties to even.
+        const full = mantissa | 0x80_00_00;
+        const shift = 14 - exponent;
+        let result = full >> shift;
+        const remainder = full & ((1 << shift) - 1);
+        const halfway = 1 << (shift - 1);
+
+        if (remainder > halfway || (remainder === halfway && (result & 1) === 1)) {
+            result += 1;
+        }
+
+        return sign | result;
+    }
+
+    // Normal: round the 23-bit mantissa down to 10 bits, ties to even. A rounding
+    // carry can ripple into the exponent (and overflow to Infinity) — which is
+    // the correct result.
+    let result = (exponent << 10) | (mantissa >> 13);
+    const remainder = mantissa & 0x1f_ff;
+
+    if (remainder > 0x10_00 || (remainder === 0x10_00 && (result & 1) === 1)) {
+        result += 1;
+    }
+
+    return sign | result;
+};
+
+const fromFloat16Bits = (bits: number): number => {
+    const sign = bits & 0x80_00 ? -1 : 1;
+    const exponent = (bits >> 10) & 0x1f;
+    const mantissa = bits & 0x3_ff;
+
+    if (exponent === 0) {
+        return sign * mantissa * 2 ** -24;
+    }
+
+    if (exponent === 0x1f) {
+        return mantissa ? Number.NaN : sign * Number.POSITIVE_INFINITY;
+    }
+
+    return sign * (1 + mantissa / 1024) * 2 ** (exponent - 15);
+};
+/* eslint-enable no-bitwise */
+
 /**
- * `Float16Array` — typed array of IEEE-754 half-precision floats, plus the
- * `Math.f16round` / `DataView` half-float companions where missing. Native on
- * Node 24+; shim below that band. We can only emulate the storage view (a Uint16
- * array with float16↔float64 conversion on element access) — close enough for the
- * common "read/write half floats" use, without pulling core-js.
+ * Half-float (`Float16`) companions — `Math.f16round` and `DataView`'s
+ * `getFloat16` / `setFloat16`. Native on Node 24+; shimmed below that band.
+ *
+ * We intentionally do NOT shim the `Float16Array` *typed array* global: a faithful
+ * TypedArray (decoded iteration, `.set`/`.subarray`/`.map`, `Array.from`) can't be
+ * emulated without re-implementing the whole TypedArray surface, and a partial
+ * facade silently returns raw uint16 bits for those operations. Code that needs a
+ * real `Float16Array` should run on Node 24+. The round + DataView codecs below
+ * are exact, so they're safe to ship.
  */
-const installFloat16Array = (): void => {
-    if (typeof (globalThis as Record<string, unknown>)["Float16Array"] === "function") {
-        return;
+const installFloat16 = (): void => {
+    const math = Math as unknown as Record<string, unknown>;
+
+    if (typeof math["f16round"] !== "function") {
+        math["f16round"] = (value: number): number => fromFloat16Bits(toFloat16Bits(value));
     }
 
-    // float16 round: convert a float64 to the nearest representable float16, then
-    // back to float64 (round-trips through the 16-bit encoding).
-    /* eslint-disable no-bitwise -- IEEE-754 half-precision encode/decode is inherently bit-level. */
-    const toFloat16Bits = (value: number): number => {
-        const floatView = new Float32Array(1);
-        const intView = new Uint32Array(floatView.buffer);
+    const dataView = DataView.prototype as unknown as Record<string, unknown>;
 
-        floatView[0] = value;
-
-        const bits = intView[0] as number;
-        const sign = (bits >>> 16) & 0x80_00;
-        const exponent = ((bits >>> 23) & 0xff) - 127 + 15;
-        const mantissa = bits & 0x7f_ff_ff;
-
-        if (exponent <= 0) {
-            if (exponent < -10) {
-                return sign;
-            }
-
-            const subnormal = (mantissa | 0x80_00_00) >> (1 - exponent);
-
-            return sign | (subnormal >> 13);
-        }
-
-        if (exponent >= 0x1f) {
-            return sign | 0x7c_00 | (mantissa === 0 ? 0 : 0x2_00);
-        }
-
-        return sign | (exponent << 10) | (mantissa >> 13);
-    };
-
-    const fromFloat16Bits = (bits: number): number => {
-        const sign = bits & 0x80_00 ? -1 : 1;
-        const exponent = (bits >> 10) & 0x1f;
-        const mantissa = bits & 0x3_ff;
-
-        if (exponent === 0) {
-            return sign * mantissa * 2 ** -24;
-        }
-
-        if (exponent === 0x1f) {
-            return mantissa ? Number.NaN : sign * Number.POSITIVE_INFINITY;
-        }
-
-        return sign * (1 + mantissa / 1024) * 2 ** (exponent - 15);
-    };
-    /* eslint-enable no-bitwise */
-
-    const f16round = (value: number): number => fromFloat16Bits(toFloat16Bits(value));
-
-    if (typeof (Math as unknown as Record<string, unknown>)["f16round"] !== "function") {
-        (Math as unknown as Record<string, unknown>)["f16round"] = f16round;
+    if (typeof dataView["getFloat16"] !== "function") {
+        dataView["getFloat16"] = function getFloat16(this: DataView, byteOffset: number, littleEndian?: boolean): number {
+            return fromFloat16Bits(this.getUint16(byteOffset, littleEndian));
+        };
     }
 
-    // A TypedArray-shaped view whose constructor returns a Proxy over a backing
-    // Uint16Array — the class form is the cleanest way to expose `Symbol.species`.
-    // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- the constructor returns a Proxy (the public surface); members live on that.
-    class Float16ArrayShim {
-        static get [Symbol.species](): typeof Float16ArrayShim {
-            return Float16ArrayShim;
-        }
-
-        constructor(...arguments_: unknown[]) {
-            const storage = new Uint16Array(...(arguments_ as [number]));
-
-            // Back the view with a Uint16Array but trap element access so reads/writes
-            // go through the half-float codecs. A Proxy keeps `length`, iteration, and
-            // index access working without re-implementing the whole TypedArray surface.
-            // eslint-disable-next-line no-constructor-return -- intentional: the Proxy IS the constructed view.
-            return new Proxy(storage, {
-                get(target, property, receiver): unknown {
-                    if (typeof property === "string" && /^\d+$/u.test(property)) {
-                        return fromFloat16Bits(target[Number(property)] as number);
-                    }
-
-                    return Reflect.get(target, property, receiver);
-                },
-                set(target, property, value, receiver): boolean {
-                    if (typeof property === "string" && /^\d+$/u.test(property)) {
-                        target[Number(property)] = toFloat16Bits(Number(value));
-
-                        return true;
-                    }
-
-                    return Reflect.set(target, property, value, receiver);
-                },
-            });
-        }
+    if (typeof dataView["setFloat16"] !== "function") {
+        dataView["setFloat16"] = function setFloat16(this: DataView, byteOffset: number, value: number, littleEndian?: boolean): void {
+            this.setUint16(byteOffset, toFloat16Bits(value), littleEndian);
+        };
     }
-
-    (globalThis as Record<string, unknown>)["Float16Array"] = Float16ArrayShim;
 };
 
 /**
@@ -351,11 +358,35 @@ const installNavigatorLocks = (): void => {
     }
 
     // In-process lock queues keyed by name. Each request waits for the tail of its
-    // queue to settle, then runs the callback while holding the lock.
+    // queue to settle, then runs the callback while holding the lock. `heldNames`
+    // backs `ifAvailable` (is the lock currently granted?).
+    //
+    // Scope limits (single-process parity shim): `mode: "shared"` is serialized as
+    // exclusive (no concurrent readers), `steal` is unsupported, and `query()` is
+    // not implemented. `ifAvailable` and `signal` ARE honored so the common
+    // non-blocking / cancellable patterns don't silently misbehave.
     const queues = new Map<string, Promise<unknown>>();
+    const heldNames = new Set<string>();
+
+    const abortError = (signal: AbortSignal): unknown =>
+        signal.reason
+        ?? (typeof DOMException === "function" ? new DOMException("The lock request is aborted", "AbortError") : Object.assign(new Error("The lock request is aborted"), { name: "AbortError" }));
 
     const request = async (name: string, optionsOrCallback: unknown, maybeCallback?: unknown): Promise<unknown> => {
-        const callback = (typeof optionsOrCallback === "function" ? optionsOrCallback : maybeCallback) as (lock: { mode: string; name: string }) => unknown;
+        const hasOptions = typeof optionsOrCallback !== "function";
+        const options = (hasOptions ? (optionsOrCallback as { ifAvailable?: boolean; mode?: string; signal?: AbortSignal }) : {}) ?? {};
+        const callback = (hasOptions ? maybeCallback : optionsOrCallback) as (lock: { mode: string; name: string } | null) => unknown;
+        const mode = options.mode === "shared" ? "shared" : "exclusive";
+
+        if (options.signal?.aborted) {
+            throw abortError(options.signal);
+        }
+
+        // Non-blocking: if the lock is already held, grant `null` immediately
+        // instead of queueing (per the Web Locks `ifAvailable` contract).
+        if (options.ifAvailable === true && heldNames.has(name)) {
+            return callback(null);
+        }
 
         const previous = queues.get(name) ?? Promise.resolve();
 
@@ -372,9 +403,20 @@ const installNavigatorLocks = (): void => {
 
         await previous.catch(() => undefined);
 
+        // Aborted while waiting in the queue: release our slot so the chain
+        // continues, then reject.
+        if (options.signal?.aborted) {
+            release();
+
+            throw abortError(options.signal);
+        }
+
+        heldNames.add(name);
+
         try {
-            return await callback({ mode: "exclusive", name });
+            return await callback({ mode, name });
         } finally {
+            heldNames.delete(name);
             release();
         }
     };
@@ -393,7 +435,7 @@ const installNavigatorLocks = (): void => {
 
 const INLINE_INSTALLERS: Record<string, () => void> = {
     "error-iserror": installErrorIsError,
-    float16array: installFloat16Array,
+    float16array: installFloat16,
     "navigator-locks": installNavigatorLocks,
     "promise-try": installPromiseTry,
     "regexp-escape": installRegExpEscape,

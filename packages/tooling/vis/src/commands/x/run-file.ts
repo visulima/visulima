@@ -45,7 +45,32 @@ export interface RunFileOptions {
  * can run it), since the point of `--node` is "do nothing vis-specific".
  */
 const runUnderPlainNode = (file: string, scriptArguments: string[], cwd: string): number => {
-    const result = spawnSync(process.execPath, [file, ...scriptArguments], { cwd, stdio: "inherit" });
+    // Strip vis's OWN augmentation from the child env so a nested `vis x --node`
+    // is unaugmented even when launched from a parent that set
+    // VIS_AUGMENT_SUBPROCESS (which injects `--import <preload>` into NODE_OPTIONS).
+    // A user's own ambient NODE_OPTIONS is preserved — "plain node" honours it.
+    const environment = { ...process.env };
+    const visPreload = join(dirname(process.argv[1] as string), "runtime", "preload.js");
+
+    if (environment["NODE_OPTIONS"]) {
+        const stripped = environment["NODE_OPTIONS"]
+            .replace(`--import ${JSON.stringify(visPreload)}`, "")
+            .replace(`--import ${visPreload}`, "")
+            .replaceAll(/\s+/gu, " ")
+            .trim();
+
+        if (stripped === "") {
+            delete environment["NODE_OPTIONS"];
+        } else {
+            environment["NODE_OPTIONS"] = stripped;
+        }
+    }
+
+    delete environment["VIS_AUGMENT_SUBPROCESS"];
+    delete environment["VIS_UNFLAG"];
+    delete environment["VIS_POLYFILL"];
+
+    const result = spawnSync(process.execPath, [file, ...scriptArguments], { cwd, env: environment, stdio: "inherit" });
 
     if (result.error) {
         throw result.error;

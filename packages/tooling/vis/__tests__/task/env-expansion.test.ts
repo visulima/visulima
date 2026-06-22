@@ -75,6 +75,18 @@ describe("env `${VAR}` expansion", () => {
         expect(env.ADDR).toBe("set");
     });
 
+    it("resolves a braced-nested default `${A:-${B}}` on the outer brace", () => {
+        expect.assertions(1);
+
+        // The inner `${OTHER}` must not close the outer `${MISSING:- ...}`; depth
+        // tracking finds the matching outer `}`.
+        writeFileSync(join(tmpDir, ".env"), "OTHER=fromB\nVALUE=${MISSING:-${OTHER}}");
+
+        const env = loadEnvFile(tmpDir, ".env");
+
+        expect(env.VALUE).toBe("fromB");
+    });
+
     it("reads from process.env when the cascade has no match", () => {
         expect.assertions(1);
 

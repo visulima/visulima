@@ -66,14 +66,83 @@ const parseDataFile = (filename: string): unknown => {
 };
 
 /**
+ * Serialize a parsed data value into a JS expression for the generated module.
+ * Unlike `JSON.stringify`, this preserves the values data parsers legitimately
+ * produce that JSON cannot represent: non-finite numbers (`.inf`/`.nan` in
+ * YAML/TOML → `Infinity`/`NaN`, not `null`), `Date` (TOML datetimes → a real
+ * `Date`, not an ISO string), `BigInt`, and `undefined` (empty YAML).
+ */
+const serializeForModule = (value: unknown): string => {
+    if (value === undefined) {
+        return "undefined";
+    }
+
+    if (value === null) {
+        return "null";
+    }
+
+    if (typeof value === "number") {
+        if (Number.isNaN(value)) {
+            return "NaN";
+        }
+
+        if (value === Number.POSITIVE_INFINITY) {
+            return "Infinity";
+        }
+
+        if (value === Number.NEGATIVE_INFINITY) {
+            return "-Infinity";
+        }
+
+        return String(value);
+    }
+
+    if (typeof value === "bigint") {
+        return `${value}n`;
+    }
+
+    if (typeof value === "boolean") {
+        return String(value);
+    }
+
+    if (typeof value === "string") {
+        return JSON.stringify(value);
+    }
+
+    if (value instanceof Date) {
+        return `new Date(${JSON.stringify(value.toISOString())})`;
+    }
+
+    if (Array.isArray(value)) {
+        return `[${value.map((item) => serializeForModule(item)).join(",")}]`;
+    }
+
+    if (typeof value === "object") {
+        const entries = Object.entries(value as Record<string, unknown>).map(([key, item]) => `${JSON.stringify(key)}:${serializeForModule(item)}`);
+
+        return `{${entries.join(",")}}`;
+    }
+
+    // Functions/symbols can't come from these parsers; emit null defensively.
+    return "null";
+};
+
+/**
  * Minimal tsconfig `compilerOptions.baseUrl` + `paths` resolver.
  *
- * `@visulima/tsconfig` (the monorepo's dedicated reader, which also honours
- * `extends` and JSONC) is the ideal tool here, but it is not part of vis's
- * runtime dependency graph, so we hand-roll a focused reader using the JSONC
- * parser that is already available via `@visulima/fs`. We resolve a single
- * level of `extends` by walking the chain and merging `compilerOptions`
- * (nearest wins for `paths`/`baseUrl`).
+ * NOTE: `@visulima/tsconfig` (`findTsConfigSync`) is the canonical reader and
+ * handles the full `extends` surface (array reverse-merge, package `extends` via
+ * `exports`) more faithfully than this does. Migrating to it is the right
+ * follow-up; it's deferred only because the loader's tests are gated to a Node
+ * with `module.registerHooks` (22.15+), so the swap can't be runtime-verified in
+ * all CI environments. Adding it is `@visulima/tsconfig: workspace:*` (its deps
+ * are already on vis's graph).
+ *
+ * This hand-rolled reader covers the common case: it walks up to the nearest
+ * tsconfig, follows a single string `extends` (and, for an `extends` ARRAY, the
+ * last entry — the highest-precedence one — only) merging `compilerOptions`
+ * nearest-wins, and resolves `paths`/`baseUrl`. Multi-entry `extends` arrays and
+ * package `extends` are best-effort.
  */
 interface TsConfigShape {
     compilerOptions?: {
@@ -448,7 +517,7 @@ const ensureRegisterHooks = (): boolean => {
                 return {
                     format: "module",
                     shortCircuit: true,
-                    source: `export default ${JSON.stringify(value)};\n`,
+                    source: `export default ${serializeForModule(value)};\n`,
                 };
             }
 

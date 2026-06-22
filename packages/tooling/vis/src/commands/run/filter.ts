@@ -277,7 +277,18 @@ const defaultChangedProjectsForRef
                 return [];
             }
 
-            const changedFiles = await getChangedFiles(workspaceRoot, reference, "HEAD");
+            let changedFiles: string[];
+
+            try {
+                changedFiles = await getChangedFiles(workspaceRoot, reference, "HEAD");
+            } catch (error) {
+            // getChangedFiles validates the ref and shells out to git; surface a
+            // friendly message for a bad `--filter "[ref]"` instead of a raw error.
+                const detail = error instanceof Error ? error.message : String(error);
+
+                throw new Error(`vis run --filter: invalid changed-since ref "${reference}" (${detail})`, { cause: error });
+            }
+
             const matched = new Set<string>();
 
             for (const [name, node] of Object.entries(projectGraph.nodes)) {

@@ -191,47 +191,66 @@ describe("inline shims", () => {
         });
     });
 
-    describe("float16Array", () => {
-        it("installs Float16Array + Math.f16round when absent and round-trips half floats", async () => {
+    describe("float16", () => {
+        it("installs Math.f16round + DataView companions with a correct, rounding codec", async () => {
             expect.hasAssertions();
 
-            await withTargetAbsent(globalRecord, "Float16Array", async () => {
-                await withTargetAbsent(Math as unknown as Record<string, unknown>, "f16round", async () => {
-                    await installPolyfills("float16array");
+            const math = Math as unknown as Record<string, unknown>;
+            const view = DataView.prototype as unknown as Record<string, unknown>;
 
-                    expect(globalRecord["Float16Array"]).toBeTypeOf("function");
+            await withTargetAbsent(math, "f16round", async () => {
+                await withTargetAbsent(view, "getFloat16", async () => {
+                    await withTargetAbsent(view, "setFloat16", async () => {
+                        await installPolyfills("float16array");
 
-                    const f16round = (Math as unknown as Record<string, (value: number) => number>)["f16round"];
+                        const f16round = math["f16round"] as (value: number) => number;
 
-                    // 1 is exactly representable; 0.5 and 2 too.
-                    expect(f16round(1)).toBe(1);
-                    expect(f16round(0.5)).toBe(0.5);
+                        expect(f16round).toBeTypeOf("function");
+                        // Exactly representable.
+                        expect(f16round(1)).toBe(1);
+                        expect(f16round(0.5)).toBe(0.5);
+                        // Finite overflow rounds to ±Infinity (regression: used to be NaN).
+                        expect(f16round(70_000)).toBe(Number.POSITIVE_INFINITY);
+                        expect(f16round(-70_000)).toBe(Number.NEGATIVE_INFINITY);
+                        // NaN/Infinity preserved.
+                        expect(Number.isNaN(f16round(Number.NaN))).toBe(true);
+                        expect(f16round(Number.POSITIVE_INFINITY)).toBe(Number.POSITIVE_INFINITY);
+                        // Round-to-nearest-even (regression: used to truncate to 1).
+                        expect(f16round(1.0006)).toBe(1.000_976_562_5);
 
-                    const Float16 = globalRecord["Float16Array"] as new (length: number) => Record<number, number>;
-                    const array = new Float16(2);
+                        // DataView half-float round-trip.
+                        const buffer = new DataView(new ArrayBuffer(2));
+                        const setFloat16 = view["setFloat16"] as (this: DataView, offset: number, value: number, littleEndian?: boolean) => void;
+                        const getFloat16 = view["getFloat16"] as (this: DataView, offset: number, littleEndian?: boolean) => number;
 
-                    array[0] = 1;
-                    array[1] = 0.5;
+                        setFloat16.call(buffer, 0, 1.5, true);
 
-                    expect(array[0]).toBe(1);
-                    expect(array[1]).toBe(0.5);
+                        expect(getFloat16.call(buffer, 0, true)).toBe(1.5);
+                    });
                 });
             });
         });
 
-        it("does not overwrite a present Float16Array", async () => {
+        it("does not overwrite a present Math.f16round", async () => {
             expect.hasAssertions();
 
-            const sentinel = function Float16Sentinel(): void {};
+            const math = Math as unknown as Record<string, unknown>;
+            const sentinel = (value: number): number => value;
+            const had = "f16round" in math;
+            const previous = math["f16round"];
 
-            globalRecord["Float16Array"] = sentinel;
+            math["f16round"] = sentinel;
 
             try {
                 await installPolyfills("float16array");
 
-                expect(globalRecord["Float16Array"]).toBe(sentinel);
+                expect(math["f16round"]).toBe(sentinel);
             } finally {
-                delete globalRecord["Float16Array"];
+                if (had) {
+                    math["f16round"] = previous;
+                } else {
+                    delete math["f16round"];
+                }
             }
         });
     });
@@ -285,7 +304,7 @@ describe("inline shims", () => {
             try {
                 await installPolyfills("navigator-locks");
 
-                const { locks } = (globalRecord["navigator"] as { locks: { request: (name: string, callback: () => unknown) => Promise<unknown> } });
+                const { locks } = globalRecord["navigator"] as { locks: { request: (name: string, callback: () => unknown) => Promise<unknown> } };
 
                 expect(locks.request).toBeTypeOf("function");
 
