@@ -388,7 +388,7 @@ describe("release-plan: combined scenarios", () => {
 
         const plan = assembleReleasePlan([cf(`---\na: minor\nb: minor\nc: minor\n---\n`)], graph, {});
 
-        expect(plan.releases.map((r) => r.name)).toEqual(["a", "b", "c"]);
+        expect(plan.releases.map((r) => r.name)).toStrictEqual(["a", "b", "c"]);
     });
 });
 
@@ -471,7 +471,7 @@ describe("release-plan: catalog change cascade", () => {
             ],
         });
 
-        expect(plan.releases.map((r) => r.name)).toEqual(["present"]);
+        expect(plan.releases.map((r) => r.name)).toStrictEqual(["present"]);
     });
 
     it("composes with explicit bumps — CATALOG_CHANGED appears alongside other reasons when both fire", () => {
@@ -495,7 +495,7 @@ describe("release-plan: catalog change cascade", () => {
         const release = findRelease(plan, "consumer");
 
         expect(release?.type).toBe("minor");
-        expect(release?.reasons.sort()).toEqual(["CATALOG_CHANGED", "EXPLICIT"]);
+        expect(release?.reasons.sort()).toStrictEqual(["CATALOG_CHANGED", "EXPLICIT"]);
     });
 
     it("cascades through Phase A — out-of-range dependents of a catalog-bumped consumer get pulled in too", () => {
@@ -525,7 +525,7 @@ describe("release-plan: catalog change cascade", () => {
 
         const plan = assembleReleasePlan([], graph, {}, {});
 
-        expect(plan.releases).toEqual([]);
+        expect(plan.releases).toStrictEqual([]);
     });
 
     // F13: every CATALOG_CHANGED entry must record a `source` so the

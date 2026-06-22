@@ -22,7 +22,7 @@ describe("change-file: parseChangeFile (simple shape)", () => {
             throw new Error("expected simple shape");
         }
 
-        expect(result.payload.bumps).toEqual({ "@scope/pkg-a": "minor" });
+        expect(result.payload.bumps).toStrictEqual({ "@scope/pkg-a": "minor" });
         expect(result.body).toBe("Added a feature.");
         expect(result.meta).toBeUndefined();
     });
@@ -37,7 +37,7 @@ describe("change-file: parseChangeFile (simple shape)", () => {
             throw new Error("expected simple shape");
         }
 
-        expect(result.payload.bumps).toEqual({
+        expect(result.payload.bumps).toStrictEqual({
             "@scope/pkg-a": "minor",
             "@scope/pkg-b": "patch",
             "pkg-c": "major",
@@ -70,7 +70,7 @@ describe("change-file: parseChangeFile (nested shape)", () => {
 
         expect(result.payload.package).toBe("@scope/core");
         expect(result.payload.bump).toBe("minor");
-        expect(result.payload.cascade).toEqual({
+        expect(result.payload.cascade).toStrictEqual({
             "@scope/plugin-*": "patch",
             "@scope/react": "minor",
         });
@@ -156,7 +156,7 @@ describe("change-file: inline metadata extraction", () => {
             "f.md",
         );
 
-        expect(result.meta).toEqual({ author: "@prisis", commit: "abc1234", pr: 42 });
+        expect(result.meta).toStrictEqual({ author: "@prisis", commit: "abc1234", pr: 42 });
         expect(result.body).toBe("The actual changelog body.");
     });
 
@@ -190,7 +190,7 @@ describe("change-file: inline metadata extraction", () => {
             "f.md",
         );
 
-        expect(result.meta).toEqual({ pr: 1 });
+        expect(result.meta).toStrictEqual({ pr: 1 });
         expect(result.body).toBe("actual body line\nauthor: @foo\nmore body");
     });
 });
@@ -204,7 +204,7 @@ describe("change-file: formatChangeFile (round-trip)", () => {
             throw new Error("expected simple shape");
         }
 
-        expect(parsed.payload.bumps).toEqual({ "@scope/pkg-a": "minor", "pkg-b": "patch" });
+        expect(parsed.payload.bumps).toStrictEqual({ "@scope/pkg-a": "minor", "pkg-b": "patch" });
         expect(parsed.body).toBe("Body text.");
     });
 
@@ -221,7 +221,7 @@ describe("change-file: formatChangeFile (round-trip)", () => {
 
         expect(parsed.payload.package).toBe("@scope/core");
         expect(parsed.payload.bump).toBe("minor");
-        expect(parsed.payload.cascade).toEqual({ "@scope/plugin-*": "patch" });
+        expect(parsed.payload.cascade).toStrictEqual({ "@scope/plugin-*": "patch" });
     });
 
     it("emits empty body cleanly when body is empty", () => {
@@ -272,7 +272,7 @@ describe("change-file: findChangeFilesFor", () => {
 
         const result = findChangeFilesFor("pkg-a", files);
 
-        expect(result.map((f) => f.id)).toEqual(["1", "3"]);
+        expect(result.map((f) => f.id)).toStrictEqual(["1", "3"]);
     });
 
     it("finds files mentioning a given package (nested shape)", () => {
@@ -283,6 +283,6 @@ describe("change-file: findChangeFilesFor", () => {
 
         const result = findChangeFilesFor("pkg-a", files);
 
-        expect(result.map((f) => f.id)).toEqual(["1"]);
+        expect(result.map((f) => f.id)).toStrictEqual(["1"]);
     });
 });

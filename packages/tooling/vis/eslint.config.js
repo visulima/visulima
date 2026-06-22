@@ -279,10 +279,6 @@ export default createConfig(
             // `expect.assertions(n)`. Not autofixable (no count to infer); enabling means
             // hand-annotating every test for no behavioural gain.
             "vitest/prefer-expect-assertions": "off",
-            // `toBe`/`toEqual` are deliberate (referential or loose shape checks);
-            // `toStrictEqual` would over-constrain fixture comparisons. ~224 sites and the
-            // fixer is suggestion-only (not applied by `--fix`), so it'd be manual churn.
-            "vitest/prefer-strict-equal": "off",
             // Top-level `it`/setup without a wrapping `describe` is fine for
             // these single-subject release command suites.
             "vitest/require-hook": "off",

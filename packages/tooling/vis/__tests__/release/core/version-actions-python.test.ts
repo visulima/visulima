@@ -266,8 +266,8 @@ describe("pythonVersionActions: resolveBuildEnv", () => {
     it("prefers uv when backend is 'uv' regardless of PATH detection", () => {
         const env = resolveBuildEnv("uv", false);
 
-        expect(env.buildCommand).toEqual({ args: ["build"], binary: "uv" });
-        expect(env.publishCommand).toEqual({ args: ["publish"], binary: "uv" });
+        expect(env.buildCommand).toStrictEqual({ args: ["build"], binary: "uv" });
+        expect(env.publishCommand).toStrictEqual({ args: ["publish"], binary: "uv" });
     });
 
     it("prefers uv when backend is 'unknown' AND uv is on PATH", () => {
@@ -280,8 +280,8 @@ describe("pythonVersionActions: resolveBuildEnv", () => {
     it("uses python -m build + twine upload for hatch", () => {
         const env = resolveBuildEnv("hatch", false);
 
-        expect(env.buildCommand).toEqual({ args: ["-m", "build"], binary: "python" });
-        expect(env.publishCommand).toEqual({ args: ["upload", "dist/*"], binary: "twine" });
+        expect(env.buildCommand).toStrictEqual({ args: ["-m", "build"], binary: "python" });
+        expect(env.publishCommand).toStrictEqual({ args: ["upload", "dist/*"], binary: "twine" });
     });
 
     it("uses python -m build for poetry / pdm / setuptools (PEP 517 universal)", () => {
@@ -289,7 +289,7 @@ describe("pythonVersionActions: resolveBuildEnv", () => {
             const env = resolveBuildEnv(backend, false);
 
             expect(env.buildCommand.binary).toBe("python");
-            expect(env.buildCommand.args).toEqual(["-m", "build"]);
+            expect(env.buildCommand.args).toStrictEqual(["-m", "build"]);
             expect(env.publishCommand.binary).toBe("twine");
         }
     });

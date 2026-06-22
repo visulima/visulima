@@ -83,7 +83,7 @@ describe("yarnAdapter — installLockfileOnly", () => {
 
         await adapter.installLockfileOnly({ cwd: "/r" });
 
-        expect(seenArgs).toEqual(["install", "--mode", "update-lockfile"]);
+        expect(seenArgs).toStrictEqual(["install", "--mode", "update-lockfile"]);
     });
 
     it("throws on failure", async () => {
@@ -159,7 +159,7 @@ describe("yarnAdapter — listWorkspacePackages (NDJSON)", () => {
             return { exitCode: 1, stderr: "", stdout: "" };
         });
 
-        await expect(new YarnAdapter(runner).listWorkspacePackages("/r")).resolves.toEqual([]);
+        await expect(new YarnAdapter(runner).listWorkspacePackages("/r")).resolves.toStrictEqual([]);
     });
 });
 

@@ -182,6 +182,6 @@ describe("applyReleasePlan — produces structured AppliedPlan", () => {
 
         const applied = await applyReleasePlan(plan, graph);
 
-        expect(applied.deletions).toEqual([".vis/release/abc.md"]);
+        expect(applied.deletions).toStrictEqual([".vis/release/abc.md"]);
     });
 });

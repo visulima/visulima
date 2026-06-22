@@ -24,9 +24,9 @@ describe("dep-graph: build inverted index", () => {
         const b = makePkg("b");
         const graph = new DependencyGraph([a, b]);
 
-        expect(graph.getDependents("b")).toEqual([{ kind: "dependencies", name: "a", range: "^1.0.0" }]);
-        expect(graph.getDependents("a")).toEqual([]);
-        expect(graph.getDependencies("a")).toEqual([{ kind: "dependencies", name: "b", range: "^1.0.0" }]);
+        expect(graph.getDependents("b")).toStrictEqual([{ kind: "dependencies", name: "a", range: "^1.0.0" }]);
+        expect(graph.getDependents("a")).toStrictEqual([]);
+        expect(graph.getDependencies("a")).toStrictEqual([{ kind: "dependencies", name: "b", range: "^1.0.0" }]);
     });
 
     it("indexes peerDependencies, devDependencies, and optionalDependencies separately", () => {

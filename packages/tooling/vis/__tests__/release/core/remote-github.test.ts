@@ -152,7 +152,7 @@ describe("githubRemoteClient.upsertIssue", () => {
             title: "[release-failed] v1.0",
         });
 
-        expect(result).toEqual({ created: false, number: 9, url: "https://x/9" });
+        expect(result).toStrictEqual({ created: false, number: 9, url: "https://x/9" });
 
         const editArgs = calls[1]!.args;
 
@@ -256,7 +256,7 @@ describe("githubRemoteClient.listRecentReleases", () => {
         });
 
         expect(releases).toHaveLength(3);
-        expect(releases[0]).toEqual({
+        expect(releases[0]).toStrictEqual({
             name: "@scope/pkg v1.4.2",
             tag: "@scope/pkg@1.4.2",
             url: "https://github.com/o/r/releases/tag/%40scope%2Fpkg%401.4.2",
@@ -289,7 +289,7 @@ describe("githubRemoteClient.listRecentReleases", () => {
             tagPrefix: "@scope/pkg@",
         });
 
-        expect(releases.map((r) => r.tag)).toEqual(["@scope/pkg@1.4.2", "@scope/pkg@1.4.1"]);
+        expect(releases.map((r) => r.tag)).toStrictEqual(["@scope/pkg@1.4.2", "@scope/pkg@1.4.1"]);
     });
 
     it("returns [] on non-zero exit or malformed JSON", async () => {
@@ -301,7 +301,7 @@ describe("githubRemoteClient.listRecentReleases", () => {
             repo: "owner/name",
         });
 
-        expect(empty).toEqual([]);
+        expect(empty).toStrictEqual([]);
 
         const empty2 = await new GithubRemoteClient().listRecentReleases(runner, {
             cwd: "/cwd",
@@ -309,7 +309,7 @@ describe("githubRemoteClient.listRecentReleases", () => {
             repo: "owner/name",
         });
 
-        expect(empty2).toEqual([]);
+        expect(empty2).toStrictEqual([]);
     });
 });
 

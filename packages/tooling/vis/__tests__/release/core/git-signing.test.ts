@@ -59,7 +59,7 @@ describe(createTag, () => {
         const tagCall = calls.find((c) => c.command === "git" && c.args[0] === "tag");
 
         expect(tagCall).toBeDefined();
-        expect(tagCall!.args).toEqual(["tag", "-s", "-a", "pkg@1.0.0", "-m", "Release pkg@1.0.0"]);
+        expect(tagCall!.args).toStrictEqual(["tag", "-s", "-a", "pkg@1.0.0", "-m", "Release pkg@1.0.0"]);
     });
 
     it("passes -u <key> when signing.mode is `gpg` with an explicit key", async () => {
@@ -82,7 +82,7 @@ describe(createTag, () => {
         const tagCall = calls.find((c) => c.command === "git" && c.args[0] === "tag");
 
         expect(tagCall).toBeDefined();
-        expect(tagCall!.args).toEqual(["tag", "-u", "ABCD1234", "-a", "pkg@1.0.0", "-m", "msg"]);
+        expect(tagCall!.args).toStrictEqual(["tag", "-u", "ABCD1234", "-a", "pkg@1.0.0", "-m", "msg"]);
     });
 
     it("passes -s when signing.mode is `ssh` (relies on git config gpg.format=ssh)", async () => {
@@ -109,7 +109,7 @@ describe(createTag, () => {
         // `user.signingkey`. The doctor surfaces missing config at
         // preflight; the create path stays simple.
         expect(tagCall).toBeDefined();
-        expect(tagCall!.args).toEqual(["tag", "-s", "-a", "pkg@1.0.0", "-m", "msg"]);
+        expect(tagCall!.args).toStrictEqual(["tag", "-s", "-a", "pkg@1.0.0", "-m", "msg"]);
     });
 
     it("falls back to GPG with a warning when signing.mode is `sigstore` and gitsign is missing", async () => {

@@ -202,7 +202,7 @@ describe.skipIf(isWindows)("orchestrator: project filter (the bug from audit #1)
 
         // The audit-bug previously made this filter accept everything.
         // Confirm only the requested packages remain.
-        expect(ctx.plan.releases.map((r) => r.name).sort()).toEqual(["@scope/a", "@scope/b"]);
+        expect(ctx.plan.releases.map((r) => r.name).sort()).toStrictEqual(["@scope/a", "@scope/b"]);
     });
 
     it("--filter glob with wildcard works", async () => {
@@ -499,7 +499,7 @@ describe.skipIf(isWindows)(extractInternalAuthors, () => {
             { internalAuthors: ["renovate[bot]", "dependabot"] },
         ]);
 
-        expect(result).toEqual(["renovate[bot]", "dependabot"]);
+        expect(result).toStrictEqual(["renovate[bot]", "dependabot"]);
     });
 
     it("filters out non-string entries defensively (e.g. operator passed a number)", () => {
@@ -508,6 +508,6 @@ describe.skipIf(isWindows)(extractInternalAuthors, () => {
             { internalAuthors: ["renovate", 42, null, "dependabot"] as unknown as string[] },
         ]);
 
-        expect(result).toEqual(["renovate", "dependabot"]);
+        expect(result).toStrictEqual(["renovate", "dependabot"]);
     });
 });

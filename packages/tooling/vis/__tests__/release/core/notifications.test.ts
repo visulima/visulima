@@ -78,7 +78,7 @@ describe(dispatchNotifications, () => {
         const result = await dispatchNotifications({}, buildContext());
 
         expect(fetchSpy).not.toHaveBeenCalled();
-        expect(result.succeeded).toEqual([]);
+        expect(result.succeeded).toStrictEqual([]);
     });
 
     it("skips when published[] is empty (no-op wave)", async () => {
@@ -88,7 +88,7 @@ describe(dispatchNotifications, () => {
         );
 
         expect(fetchSpy).not.toHaveBeenCalled();
-        expect(result.succeeded).toEqual([]);
+        expect(result.succeeded).toStrictEqual([]);
     });
 
     it("skips prerelease waves by default", async () => {
@@ -103,7 +103,7 @@ describe(dispatchNotifications, () => {
         );
 
         expect(fetchSpy).not.toHaveBeenCalled();
-        expect(result.succeeded).toEqual([]);
+        expect(result.succeeded).toStrictEqual([]);
     });
 
     it("honours skipPrerelease: false", async () => {
@@ -115,7 +115,7 @@ describe(dispatchNotifications, () => {
         );
 
         expect(fetchSpy).toHaveBeenCalledTimes(1);
-        expect(result.succeeded).toEqual(["slack"]);
+        expect(result.succeeded).toStrictEqual(["slack"]);
     });
 
     it("dispatches to multiple channels in parallel", async () => {
@@ -129,7 +129,7 @@ describe(dispatchNotifications, () => {
         );
 
         expect(fetchSpy).toHaveBeenCalledTimes(3);
-        expect(result.succeeded.toSorted()).toEqual(["discord", "slack", "webhook"]);
+        expect(result.succeeded.toSorted()).toStrictEqual(["discord", "slack", "webhook"]);
     });
 
     it("supports array form for multiple instances of the same channel", async () => {
@@ -171,7 +171,7 @@ describe(dispatchNotifications, () => {
             { warn: (m) => warnings.push(m) },
         );
 
-        expect(result.succeeded).toEqual(["discord"]);
+        expect(result.succeeded).toStrictEqual(["discord"]);
         expect(result.failed).toHaveLength(1);
         expect(result.failed[0]!.id).toBe("slack");
         expect(result.failed[0]!.error).toContain("429");
@@ -188,8 +188,8 @@ describe(dispatchNotifications, () => {
         );
 
         expect(fetchSpy).not.toHaveBeenCalled();
-        expect(result.succeeded).toEqual([]);
-        expect(result.failed).toEqual([]);
+        expect(result.succeeded).toStrictEqual([]);
+        expect(result.failed).toStrictEqual([]);
     });
 
     it("does NOT leak the webhook URL into failed[].error on fetch rejection (C-2)", async () => {

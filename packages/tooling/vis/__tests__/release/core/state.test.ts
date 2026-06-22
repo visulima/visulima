@@ -51,9 +51,9 @@ describe("state — file lifecycle", () => {
         expect(read?.version).toBe(1);
         expect(read?.channel).toBe("alpha");
         expect(read?.plan).toHaveLength(2);
-        expect(read?.applied).toEqual([]);
-        expect(read?.published).toEqual([]);
-        expect(read?.tagged).toEqual([]);
+        expect(read?.applied).toStrictEqual([]);
+        expect(read?.published).toStrictEqual([]);
+        expect(read?.tagged).toStrictEqual([]);
         expect(read?.pushed).toBe(false);
     });
 

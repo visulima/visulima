@@ -23,7 +23,7 @@ describe("presets: jsr", () => {
     it("maps allowSlowTypes → --allow-slow-types and merges publishArgs", () => {
         const config = jsr({ allowSlowTypes: true, publishArgs: ["--no-provenance"] });
 
-        expect(config.jsrPublishArgs).toEqual(["--allow-slow-types", "--no-provenance"]);
+        expect(config.jsrPublishArgs).toStrictEqual(["--allow-slow-types", "--no-provenance"]);
     });
 
     it("points jsrConfigPath at a custom manifest", () => {
@@ -112,7 +112,7 @@ describe("presets: pyproject", () => {
     it("threads uvWorkspace through when set (release-please #2560)", () => {
         const config = pyproject({ uvWorkspace: { root: ".." } });
 
-        expect(config.uvWorkspace).toEqual({ root: ".." });
+        expect(config.uvWorkspace).toStrictEqual({ root: ".." });
     });
 
     it("omits uvLockPath / uvWorkspace fields when not requested (default config stays minimal)", () => {
@@ -175,7 +175,7 @@ describe("presets: pomXml", () => {
 
 describe("presets: goMod", () => {
     it("emits zero rules by default (Go uses git tags, not manifest versions)", () => {
-        expect(goMod().extraFiles).toEqual([]);
+        expect(goMod().extraFiles).toStrictEqual([]);
     });
 
     it("passes through extra rules when provided", () => {

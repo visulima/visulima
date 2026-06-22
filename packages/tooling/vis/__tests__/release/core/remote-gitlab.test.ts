@@ -108,7 +108,7 @@ describe("gitlabRemoteClient.upsertStickyComment", () => {
             repo: "group/sub/proj",
         });
 
-        expect(result).toEqual({ created: true, id: 99 });
+        expect(result).toStrictEqual({ created: true, id: 99 });
         // Project path is URL-encoded.
         expect(calls[0]?.args).toContain("projects/group%2Fsub%2Fproj/merge_requests/5/notes");
         // POST when no match.
@@ -130,7 +130,7 @@ describe("gitlabRemoteClient.upsertStickyComment", () => {
             repo: "group/proj",
         });
 
-        expect(result).toEqual({ created: false, id: 7 });
+        expect(result).toStrictEqual({ created: false, id: 7 });
         expect(calls[1]?.args[1]).toBe("-X");
         expect(calls[1]?.args[2]).toBe("PUT");
         expect(calls[1]?.args[3]).toContain("/notes/7");
@@ -314,7 +314,7 @@ describe("gitlabRemoteClient.upsertIssue", () => {
             title: "[release-failed] v1.0",
         });
 
-        expect(result).toEqual({ created: false, number: 11, url: "https://x" });
+        expect(result).toStrictEqual({ created: false, number: 11, url: "https://x" });
         expect(calls[1]?.args).toContain("add_labels=release-bot");
     });
 

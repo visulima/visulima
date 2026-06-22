@@ -86,7 +86,7 @@ describe("bunAdapter — pack", () => {
         // bun pm pack supports --destination from the pinned minVersion (1.1.36)
         // but NOT --filename (added later). The adapter renames post-pack
         // when a filename override is requested.
-        expect(seenArgs).toEqual(["pm", "pack", "--destination", "/dst"]);
+        expect(seenArgs).toStrictEqual(["pm", "pack", "--destination", "/dst"]);
     });
 
     it("renames the tarball post-pack when filename is requested", async () => {
@@ -177,7 +177,7 @@ describe("bunAdapter — listWorkspacePackages (no first-class CLI)", () => {
 
         const list = await new BunAdapter(new MockRunner()).listWorkspacePackages(cwd);
 
-        expect(list.map((p) => p.name).sort()).toEqual(["a", "b"]);
+        expect(list.map((p) => p.name).sort()).toStrictEqual(["a", "b"]);
 
         const bEntry = list.find((p) => p.name === "b");
 
@@ -222,11 +222,11 @@ describe("bunAdapter — listWorkspacePackages (no first-class CLI)", () => {
     it("returns empty array when workspaces field is missing", async () => {
         writeFileSync(join(cwd, "package.json"), JSON.stringify({ name: "root" }));
 
-        await expect(new BunAdapter(new MockRunner()).listWorkspacePackages(cwd)).resolves.toEqual([]);
+        await expect(new BunAdapter(new MockRunner()).listWorkspacePackages(cwd)).resolves.toStrictEqual([]);
     });
 
     it("returns empty array when package.json is missing", async () => {
-        await expect(new BunAdapter(new MockRunner()).listWorkspacePackages(cwd)).resolves.toEqual([]);
+        await expect(new BunAdapter(new MockRunner()).listWorkspacePackages(cwd)).resolves.toStrictEqual([]);
     });
 });
 

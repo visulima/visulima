@@ -23,8 +23,8 @@ describe(readChangeFiles, () => {
     it("returns empty (with no warning) when changes dir doesn't exist", async () => {
         const result = await readChangeFiles({ changesDir: ".vis/release", cwd });
 
-        expect(result.files).toEqual([]);
-        expect(result.warnings).toEqual([]);
+        expect(result.files).toStrictEqual([]);
+        expect(result.warnings).toStrictEqual([]);
     });
 
     it("reads + parses every .md file in the changes dir", async () => {
@@ -35,7 +35,7 @@ describe(readChangeFiles, () => {
         const result = await readChangeFiles({ changesDir: ".vis/release", cwd });
 
         expect(result.files).toHaveLength(2);
-        expect(result.files.map((f) => f.id).sort()).toEqual(["first", "second"]);
+        expect(result.files.map((f) => f.id).sort()).toStrictEqual(["first", "second"]);
     });
 
     it("skips README.md", async () => {

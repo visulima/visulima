@@ -40,17 +40,17 @@ describe(cleanPackageJsonForPublish, () => {
         expect(result.name).toBe("@scope/pkg");
         expect(result.version).toBe("1.0.0");
         expect(result.description).toBe("A package");
-        expect(result.dependencies).toEqual({ lodash: "^4.0.0" });
-        expect(result.engines).toEqual({ node: ">=22" });
-        expect(result.publishConfig).toEqual({ access: "public" });
+        expect(result.dependencies).toStrictEqual({ lodash: "^4.0.0" });
+        expect(result.engines).toStrictEqual({ node: ">=22" });
+        expect(result.publishConfig).toStrictEqual({ access: "public" });
     });
 
     it("ships unmodified when cfg is false", () => {
         const result = cleanPackageJsonForPublish(fullManifest, false);
 
-        expect(result.scripts).toEqual({ build: "tsc" });
-        expect(result.devDependencies).toEqual({ vitest: "^2.0.0" });
-        expect(result.nx).toEqual({ tags: ["lib"] });
+        expect(result.scripts).toStrictEqual({ build: "tsc" });
+        expect(result.devDependencies).toStrictEqual({ vitest: "^2.0.0" });
+        expect(result.nx).toStrictEqual({ tags: ["lib"] });
     });
 
     it("extends defaults via cfg.strip", () => {
@@ -63,7 +63,7 @@ describe(cleanPackageJsonForPublish, () => {
     it("preserves a default-stripped field when added to cfg.keep", () => {
         const result = cleanPackageJsonForPublish(fullManifest, { keep: ["scripts"] });
 
-        expect(result.scripts).toEqual({ build: "tsc" });
+        expect(result.scripts).toStrictEqual({ build: "tsc" });
         expect(result.devDependencies).toBeUndefined();
     });
 

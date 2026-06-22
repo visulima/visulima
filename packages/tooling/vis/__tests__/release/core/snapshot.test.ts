@@ -124,7 +124,7 @@ describe(runSnapshot, () => {
 
         const result = await runSnapshot({ context: ctx, dryRun: true, runner, tag: "x" });
 
-        expect(result.published.map((p) => p.name)).toEqual(["@scope/public"]);
+        expect(result.published.map((p) => p.name)).toStrictEqual(["@scope/public"]);
     });
 
     it("--filter narrows the target set", async () => {
@@ -141,6 +141,6 @@ describe(runSnapshot, () => {
 
         const result = await runSnapshot({ context: ctx, dryRun: true, filter: "@scope/*", runner, tag: "x" });
 
-        expect(result.published.map((p) => p.name).sort()).toEqual(["@scope/a", "@scope/b"]);
+        expect(result.published.map((p) => p.name).sort()).toStrictEqual(["@scope/a", "@scope/b"]);
     });
 });

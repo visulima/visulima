@@ -131,6 +131,6 @@ describe("native-addon: temp-dir cleanup on failure (RFC §19.4)", () => {
 
         const leaked = listTempVisDirs().filter((d) => !baseline.has(d));
 
-        expect(leaked).toEqual([]);
+        expect(leaked).toStrictEqual([]);
     });
 });

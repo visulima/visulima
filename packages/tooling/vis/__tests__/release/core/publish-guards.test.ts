@@ -82,7 +82,7 @@ describe(runExportsExist, () => {
         const result = await runExportsExist(pkgDir, manifest);
 
         expect(result.passed).toBe(false);
-        expect(result.findings.map((f) => f.id).sort()).toEqual([
+        expect(result.findings.map((f) => f.id).sort()).toStrictEqual([
             "exportsExist:bin:./dist/cli.js",
             "exportsExist:main:./dist/index.js",
             "exportsExist:types:./dist/index.d.ts",
@@ -272,7 +272,7 @@ describe(extractPackFilesFromRaw, () => {
             },
         ];
 
-        expect(extractPackFilesFromRaw(raw)).toEqual(["package.json", "dist/index.js"]);
+        expect(extractPackFilesFromRaw(raw)).toStrictEqual(["package.json", "dist/index.js"]);
     });
 
     it("reads pnpm pack --json shape (object)", () => {
@@ -281,7 +281,7 @@ describe(extractPackFilesFromRaw, () => {
             files: [{ path: "package.json" }, { path: "dist/index.js" }],
         };
 
-        expect(extractPackFilesFromRaw(raw)).toEqual(["package.json", "dist/index.js"]);
+        expect(extractPackFilesFromRaw(raw)).toStrictEqual(["package.json", "dist/index.js"]);
     });
 
     it("returns undefined for plain stdout strings (yarn, bun)", () => {
@@ -301,7 +301,7 @@ describe(extractPackFilesFromRaw, () => {
     it("skips file entries without a string path", () => {
         const raw = { files: [{ path: "ok.js" }, { size: 10 }, { path: 42 }] };
 
-        expect(extractPackFilesFromRaw(raw)).toEqual(["ok.js"]);
+        expect(extractPackFilesFromRaw(raw)).toStrictEqual(["ok.js"]);
     });
 });
 

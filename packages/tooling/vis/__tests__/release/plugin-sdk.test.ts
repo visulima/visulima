@@ -52,7 +52,7 @@ describe(defineNotificationChannel, () => {
             skipped: [],
         });
 
-        expect(captured).toEqual([{ name: "@scope/pkg" }]);
+        expect(captured).toStrictEqual([{ name: "@scope/pkg" }]);
     });
 });
 

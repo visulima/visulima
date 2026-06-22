@@ -113,7 +113,7 @@ describe(parseBotPrTitle, () => {
     it("parses Dependabot 'build(deps): bump <pkg> from X to Y'", () => {
         const parsed = parseBotPrTitle("build(deps): bump lodash from 4.17.20 to 4.17.21");
 
-        expect(parsed).toEqual({
+        expect(parsed).toStrictEqual({
             dep: "lodash",
             fromVersion: "4.17.20",
             toVersion: "4.17.21",
@@ -130,7 +130,7 @@ describe(parseBotPrTitle, () => {
     it("parses Dependabot with 'in /path' suffix", () => {
         const parsed = parseBotPrTitle("chore(deps): bump @types/node from 20.10.0 to 20.11.0 in /examples");
 
-        expect(parsed).toEqual({
+        expect(parsed).toStrictEqual({
             dep: "@types/node",
             fromVersion: "20.10.0",
             toVersion: "20.11.0",

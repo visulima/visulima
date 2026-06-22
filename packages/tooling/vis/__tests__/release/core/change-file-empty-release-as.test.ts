@@ -16,7 +16,7 @@ describe("change-file: empty frontmatter", () => {
     it("parses a fully-empty frontmatter as an empty-bumps payload", () => {
         const file = parseChangeFile("---\n{}\n---\nbody\n", "/repo/.vis/release/x.md");
 
-        expect(file.payload).toEqual({ bumps: {} });
+        expect(file.payload).toStrictEqual({ bumps: {} });
         expect(file.body).toBe("body");
     });
 
@@ -25,7 +25,7 @@ describe("change-file: empty frontmatter", () => {
         // YAML parses this as null; the reader must coerce to {}.
         const file = parseChangeFile("---\n\n---\nbody\n", "/repo/.vis/release/x.md");
 
-        expect(file.payload).toEqual({ bumps: {} });
+        expect(file.payload).toStrictEqual({ bumps: {} });
     });
 
     it("round-trips via formatChangeFile → parseChangeFile with no bumps", () => {
@@ -37,7 +37,7 @@ describe("change-file: empty frontmatter", () => {
 
         const parsed = parseChangeFile(serialised, "/x.md");
 
-        expect(parsed.payload).toEqual({ bumps: {} });
+        expect(parsed.payload).toStrictEqual({ bumps: {} });
     });
 });
 

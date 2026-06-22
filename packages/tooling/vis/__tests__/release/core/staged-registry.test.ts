@@ -35,7 +35,7 @@ describe("staged-registry: read/write round-trip", () => {
         const registry = await readStagedRegistry(cwd, CHANGES_DIR);
 
         expect(registry.version).toBe(1);
-        expect(registry.pending).toEqual([]);
+        expect(registry.pending).toStrictEqual([]);
         expect(registry.updatedAt).toBeTypeOf("string");
     });
 
@@ -272,7 +272,7 @@ describe("staged-registry: pure helpers", () => {
 
             const next = upsertPendingStages(registry, [entry]);
 
-            expect(next.pending).toEqual([entry]);
+            expect(next.pending).toStrictEqual([entry]);
         });
 
         it("replaces an existing entry by id, preserving the rest", () => {
@@ -285,7 +285,7 @@ describe("staged-registry: pure helpers", () => {
 
             expect(next.pending).toHaveLength(2);
             expect(next.pending.find((entry) => entry.id === "stage-a")?.reason).toBe("rejected");
-            expect(next.pending.find((entry) => entry.id === "stage-b")).toEqual(b);
+            expect(next.pending.find((entry) => entry.id === "stage-b")).toStrictEqual(b);
         });
 
         it("dedupes within a single upsert call", () => {
@@ -329,7 +329,7 @@ describe("staged-registry: pure helpers", () => {
             const registry: StagedRegistryFile = { pending: [a, b, c], updatedAt: "now", version: 1 };
             const next = removePendingStages(registry, ["a", "c"]);
 
-            expect(next.pending).toEqual([b]);
+            expect(next.pending).toStrictEqual([b]);
         });
 
         it("treats the empty list of ids as a no-op even when registry has entries", () => {
@@ -347,7 +347,7 @@ describe("staged-registry: pure helpers", () => {
         it("returns an empty list when the registry is empty", () => {
             const registry: StagedRegistryFile = { pending: [], updatedAt: "now", version: 1 };
 
-            expect(findConflictingPendingStages(registry, ["@scope/pkg"])).toEqual([]);
+            expect(findConflictingPendingStages(registry, ["@scope/pkg"])).toStrictEqual([]);
         });
 
         it("returns an empty list when no package matches", () => {
@@ -357,7 +357,7 @@ describe("staged-registry: pure helpers", () => {
                 version: 1,
             };
 
-            expect(findConflictingPendingStages(registry, ["@scope/b"])).toEqual([]);
+            expect(findConflictingPendingStages(registry, ["@scope/b"])).toStrictEqual([]);
         });
 
         it("returns entries whose package name matches, regardless of version", () => {
@@ -370,7 +370,7 @@ describe("staged-registry: pure helpers", () => {
             const registry: StagedRegistryFile = { pending: [blocked, allowed], updatedAt: "now", version: 1 };
             const conflicts = findConflictingPendingStages(registry, ["@scope/a"]);
 
-            expect(conflicts).toEqual([blocked]);
+            expect(conflicts).toStrictEqual([blocked]);
         });
 
         it("matches multiple packages in one call", () => {
@@ -381,7 +381,7 @@ describe("staged-registry: pure helpers", () => {
             const registry: StagedRegistryFile = { pending: [a, b, c], updatedAt: "now", version: 1 };
             const conflicts = findConflictingPendingStages(registry, ["@scope/a", "@scope/c"]);
 
-            expect(conflicts.map((entry) => entry.id)).toEqual(["stage-a", "stage-c"]);
+            expect(conflicts.map((entry) => entry.id)).toStrictEqual(["stage-a", "stage-c"]);
         });
     });
 });
@@ -415,8 +415,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
 
         const read = await readStagedRegistry(cwd, CHANGES_DIR);
 
-        expect(read.recentlyNotified).toEqual(registry.recentlyNotified);
-        expect(read.recentlyWalked).toEqual(registry.recentlyWalked);
+        expect(read.recentlyNotified).toStrictEqual(registry.recentlyNotified);
+        expect(read.recentlyWalked).toStrictEqual(registry.recentlyWalked);
     });
 
     it("preserves the file when pending is empty but recentlyNotified has entries", async () => {
@@ -525,8 +525,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
 
     describe(pruneOldEntries, () => {
         it("returns an empty array when input is undefined or empty", () => {
-            expect(pruneOldEntries(undefined)).toEqual([]);
-            expect(pruneOldEntries([])).toEqual([]);
+            expect(pruneOldEntries(undefined)).toStrictEqual([]);
+            expect(pruneOldEntries([])).toStrictEqual([]);
         });
 
         it("drops entries older than 30 days", () => {
@@ -542,7 +542,7 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
                 now,
             );
 
-            expect(result).toEqual([{ at: fresh, key: "fresh" }]);
+            expect(result).toStrictEqual([{ at: fresh, key: "fresh" }]);
         });
 
         it("caps the result to 100 entries even when all are within the 30-day window", () => {
@@ -569,7 +569,7 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
                 now,
             );
 
-            expect(result.map((entry) => entry.key)).toEqual(["good"]);
+            expect(result.map((entry) => entry.key)).toStrictEqual(["good"]);
         });
     });
 
@@ -583,7 +583,7 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
 
             const next = recordRecentlyNotified(registry, ["@scope/a@1.0.0"], "2026-05-22T14:00:00.000Z");
 
-            expect(next.recentlyNotified).toEqual([{ at: "2026-05-22T14:00:00.000Z", key: "@scope/a@1.0.0" }]);
+            expect(next.recentlyNotified).toStrictEqual([{ at: "2026-05-22T14:00:00.000Z", key: "@scope/a@1.0.0" }]);
             expect(next.updatedAt).toBe("2026-05-22T14:00:00.000Z");
         });
 

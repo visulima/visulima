@@ -123,7 +123,7 @@ describe("npmAdapter — listWorkspacePackages", () => {
             return { exitCode: 1, stderr: "", stdout: "" };
         });
 
-        await expect(new NpmAdapter(runner).listWorkspacePackages("/r")).resolves.toEqual([]);
+        await expect(new NpmAdapter(runner).listWorkspacePackages("/r")).resolves.toStrictEqual([]);
     });
 
     it("returns empty array when JSON is malformed", async () => {
@@ -133,7 +133,7 @@ describe("npmAdapter — listWorkspacePackages", () => {
             return { exitCode: 0, stderr: "", stdout: "not json" };
         });
 
-        await expect(new NpmAdapter(runner).listWorkspacePackages("/r")).resolves.toEqual([]);
+        await expect(new NpmAdapter(runner).listWorkspacePackages("/r")).resolves.toStrictEqual([]);
     });
 
     it("parses package entries with all fields", async () => {
@@ -153,8 +153,8 @@ describe("npmAdapter — listWorkspacePackages", () => {
         const list = await new NpmAdapter(runner).listWorkspacePackages("/r");
 
         expect(list).toHaveLength(2);
-        expect(list[0]).toEqual({ name: "@s/a", path: "/r/packages/a", private: false, version: "1.0.0" });
-        expect(list[1]).toEqual({ name: "b", path: "/r/packages/b", private: true, version: "2.0.0" });
+        expect(list[0]).toStrictEqual({ name: "@s/a", path: "/r/packages/a", private: false, version: "1.0.0" });
+        expect(list[1]).toStrictEqual({ name: "b", path: "/r/packages/b", private: true, version: "2.0.0" });
     });
 
     it("filters out entries without a name", async () => {
@@ -215,7 +215,7 @@ describe("npmAdapter — publish", () => {
             tarball: "/tmp/pkg.tgz",
         });
 
-        expect(seenArgs).toEqual([
+        expect(seenArgs).toStrictEqual([
             "publish",
             "/tmp/pkg.tgz",
             "--tag",
@@ -331,7 +331,7 @@ describe("publishNative — per-pm command construction (publishStrategy: native
 
         expect(result.published).toBe(true);
         expect(seen.command).toBe("npm");
-        expect(seen.args).toEqual(["publish", "--tag", "next", "--access", "public", "--provenance"]);
+        expect(seen.args).toStrictEqual(["publish", "--tag", "next", "--access", "public", "--provenance"]);
         expect(seen.cwd).toBe("/repo/pkg");
     });
 
@@ -341,7 +341,7 @@ describe("publishNative — per-pm command construction (publishStrategy: native
         await new PnpmAdapter(adapterRunner).publishNative({ cwd: "/repo/pkg", tag: "latest" });
 
         expect(seen.command).toBe("pnpm");
-        expect(seen.args).toEqual(["publish", "--no-git-checks", "--tag", "latest"]);
+        expect(seen.args).toStrictEqual(["publish", "--no-git-checks", "--tag", "latest"]);
     });
 
     it("yarn: runs `yarn npm publish` (no --otp/--registry flags)", async () => {
@@ -350,7 +350,7 @@ describe("publishNative — per-pm command construction (publishStrategy: native
         await new YarnAdapter(adapterRunner).publishNative({ access: "restricted", cwd: "/repo/pkg", otp: "123456", registry: "https://r.example.com" });
 
         expect(seen.command).toBe("yarn");
-        expect(seen.args).toEqual(["npm", "publish", "--access", "restricted"]);
+        expect(seen.args).toStrictEqual(["npm", "publish", "--access", "restricted"]);
     });
 
     it("bun: runs `bun publish` (no --provenance/--otp)", async () => {
@@ -359,7 +359,7 @@ describe("publishNative — per-pm command construction (publishStrategy: native
         await new BunAdapter(adapterRunner).publishNative({ cwd: "/repo/pkg", otp: "123456", provenance: true, tag: "beta" });
 
         expect(seen.command).toBe("bun");
-        expect(seen.args).toEqual(["publish", "--tag", "beta"]);
+        expect(seen.args).toStrictEqual(["publish", "--tag", "beta"]);
     });
 
     it("maps EPUBLISHCONFLICT to alreadyPublished", async () => {

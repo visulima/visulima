@@ -133,7 +133,7 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
         // Three POSTs — one per channel kind.
         expect(fetchSpy).toHaveBeenCalledTimes(3);
         expect(result.exitCode).toBe(0);
-        expect(result.errors).toEqual([]);
+        expect(result.errors).toStrictEqual([]);
         // Per-channel "OK" lines.
         expect(result.infos.filter((m) => m.includes("OK"))).toHaveLength(3);
     });

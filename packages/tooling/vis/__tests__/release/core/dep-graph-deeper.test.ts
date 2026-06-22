@@ -31,7 +31,7 @@ describe("dependencyGraph — multi-kind indexing", () => {
         const dependents = graph.getDependents("a");
 
         expect(dependents).toHaveLength(2);
-        expect(dependents.map((d) => d.kind).sort()).toEqual(["dependencies", "devDependencies"]);
+        expect(dependents.map((d) => d.kind).sort()).toStrictEqual(["dependencies", "devDependencies"]);
     });
 
     it("topo-sort with diamond dep graph", () => {

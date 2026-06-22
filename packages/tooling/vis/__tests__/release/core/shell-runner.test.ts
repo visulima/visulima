@@ -8,7 +8,7 @@ describe("mockRunner — handler matching", () => {
 
         const result = await runner.run("git", ["status"], { cwd: "/tmp" });
 
-        expect(result).toEqual({ exitCode: 0, stderr: "", stdout: "" });
+        expect(result).toStrictEqual({ exitCode: 0, stderr: "", stdout: "" });
     });
 
     it("matches an exact (command, argsPrefix) handler", async () => {
@@ -44,7 +44,7 @@ describe("mockRunner — handler matching", () => {
 
         const result = await runner.run("git", ["log"], { cwd: "/tmp" });
 
-        expect(result).toEqual({ exitCode: 0, stderr: "", stdout: "" });
+        expect(result).toStrictEqual({ exitCode: 0, stderr: "", stdout: "" });
     });
 
     it("does NOT match a different command", async () => {
@@ -56,7 +56,7 @@ describe("mockRunner — handler matching", () => {
 
         const result = await runner.run("npm", ["status"], { cwd: "/tmp" });
 
-        expect(result).toEqual({ exitCode: 0, stderr: "", stdout: "" });
+        expect(result).toStrictEqual({ exitCode: 0, stderr: "", stdout: "" });
     });
 
     it("uses first registered handler when multiple match", async () => {

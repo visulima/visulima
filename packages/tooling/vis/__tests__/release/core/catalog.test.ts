@@ -7,27 +7,27 @@ describe(parseCatalogs, () => {
     it("returns empty for undefined input", () => {
         const result = parseCatalogs(undefined);
 
-        expect(result).toEqual({ default: {}, named: {} });
+        expect(result).toStrictEqual({ default: {}, named: {} });
     });
 
     it("returns empty for empty string", () => {
-        expect(parseCatalogs("")).toEqual({ default: {}, named: {} });
+        expect(parseCatalogs("")).toStrictEqual({ default: {}, named: {} });
     });
 
     it("parses default catalog", () => {
         const yaml = `catalog:\n  react: ^18.3.1\n  zod: ^3.22.0\n`;
         const result = parseCatalogs(yaml);
 
-        expect(result.default).toEqual({ react: "^18.3.1", zod: "^3.22.0" });
-        expect(result.named).toEqual({});
+        expect(result.default).toStrictEqual({ react: "^18.3.1", zod: "^3.22.0" });
+        expect(result.named).toStrictEqual({});
     });
 
     it("parses named catalogs", () => {
         const yaml = `catalogs:\n  dev:\n    eslint: ^9.0.0\n  test:\n    vitest: ^2.0.0\n`;
         const result = parseCatalogs(yaml);
 
-        expect(result.default).toEqual({});
-        expect(result.named).toEqual({
+        expect(result.default).toStrictEqual({});
+        expect(result.named).toStrictEqual({
             dev: { eslint: "^9.0.0" },
             test: { vitest: "^2.0.0" },
         });

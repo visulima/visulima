@@ -143,11 +143,11 @@ const noopFormatter = async () => "";
 
 describe(extractReferences, () => {
     it("picks up bare `#123` references", () => {
-        expect(extractReferences("Closes #123 and #456.")).toEqual([123, 456]);
+        expect(extractReferences("Closes #123 and #456.")).toStrictEqual([123, 456]);
     });
 
     it("picks up `gh-123` (case-insensitive) references", () => {
-        expect(extractReferences("Resolves gh-7 and GH-12 and Gh-9.")).toEqual([7, 9, 12]);
+        expect(extractReferences("Resolves gh-7 and GH-12 and Gh-9.")).toStrictEqual([7, 9, 12]);
     });
 
     it("picks up forge URLs (/pull/N, /issues/N, /-/merge_requests/N) when no repo gate is supplied", () => {
@@ -156,19 +156,19 @@ describe(extractReferences, () => {
             https://gitlab.com/x/y/-/merge_requests/77
             and https://github.com/x/y/issues/100 for context.`;
 
-        expect(extractReferences(body)).toEqual([45, 77, 100]);
+        expect(extractReferences(body)).toStrictEqual([45, 77, 100]);
     });
 
     it("deduplicates references appearing multiple times", () => {
-        expect(extractReferences("#42 and #42 again, and gh-42 too")).toEqual([42]);
+        expect(extractReferences("#42 and #42 again, and gh-42 too")).toStrictEqual([42]);
     });
 
     it("does not match colour hex codes like #ff00ff", () => {
-        expect(extractReferences("color: #ff00ff;")).toEqual([]);
+        expect(extractReferences("color: #ff00ff;")).toStrictEqual([]);
     });
 
     it("ignores numbers without a # prefix", () => {
-        expect(extractReferences("version 123.456 is shipped")).toEqual([]);
+        expect(extractReferences("version 123.456 is shipped")).toStrictEqual([]);
     });
 
     // ── M-9 regression: URL refs pointing at a different repo must be
@@ -178,19 +178,19 @@ describe(extractReferences, () => {
             // `#42` in a competitor's URL must not get applied locally.
             expect(
                 extractReferences("See https://github.com/competitor/repo/pull/42 for context", "owner/repo"),
-            ).toEqual([]);
+            ).toStrictEqual([]);
         });
 
         it("keeps URL refs that match the local repo", () => {
             expect(
                 extractReferences("See https://github.com/owner/repo/pull/42 for context", "owner/repo"),
-            ).toEqual([42]);
+            ).toStrictEqual([42]);
         });
 
         it("keeps GitLab URLs (`-/merge_requests/N`) that match the local repo", () => {
             expect(
                 extractReferences("See https://gitlab.com/owner/repo/-/merge_requests/77", "owner/repo"),
-            ).toEqual([77]);
+            ).toStrictEqual([77]);
         });
 
         it("keeps bare `#123` refs even when a cross-repo URL is present", () => {
@@ -198,26 +198,26 @@ describe(extractReferences, () => {
             // at competitor/repo is dropped, but `#7` is kept.
             const body = "Closes #7. See https://github.com/competitor/repo/pull/42 for prior art.";
 
-            expect(extractReferences(body, "owner/repo")).toEqual([7]);
+            expect(extractReferences(body, "owner/repo")).toStrictEqual([7]);
         });
 
         it("keeps bare `gh-123` refs even when a cross-repo URL is present", () => {
             const body = "Resolves gh-9. Compare https://github.com/competitor/repo/issues/100.";
 
-            expect(extractReferences(body, "owner/repo")).toEqual([9]);
+            expect(extractReferences(body, "owner/repo")).toStrictEqual([9]);
         });
 
         it("treats the repo comparison as case-insensitive (GitHub repo slugs are too)", () => {
             expect(
                 extractReferences("See https://github.com/Owner/Repo/pull/42", "owner/repo"),
-            ).toEqual([42]);
+            ).toStrictEqual([42]);
         });
 
         it("drops a URL whose path partially overlaps but doesn't match exactly", () => {
             // `owner/repo-other` must not match `owner/repo`.
             expect(
                 extractReferences("See https://github.com/owner/repo-other/pull/42", "owner/repo"),
-            ).toEqual([]);
+            ).toStrictEqual([]);
         });
     });
 });
@@ -236,7 +236,7 @@ describe(walkSuccessfulRelease, () => {
         });
 
         expect(commentCalls).toHaveLength(2);
-        expect(commentCalls.map((c) => c.issueNumber).sort()).toEqual([100, 200]);
+        expect(commentCalls.map((c) => c.issueNumber).sort()).toStrictEqual([100, 200]);
         expect(commentCalls[0]!.body).toContain(SUCCESS_WALK_MARKER);
     });
 
@@ -262,7 +262,7 @@ describe(walkSuccessfulRelease, () => {
         // two packages' change-file bodies.
         const refs = commentCalls.map((c) => c.issueNumber).sort();
 
-        expect(refs).toEqual([42, 43]);
+        expect(refs).toStrictEqual([42, 43]);
     });
 
     it("adds the configured labels via client.addLabels", async () => {
@@ -278,7 +278,7 @@ describe(walkSuccessfulRelease, () => {
             repo: "owner/repo",
         });
 
-        expect(addLabelsCalls).toEqual([{ issueNumber: 1, labels: ["released", "shipped"] }]);
+        expect(addLabelsCalls).toStrictEqual([{ issueNumber: 1, labels: ["released", "shipped"] }]);
     });
 
     it("uses default `[\"released\"]` labels when not configured", async () => {
@@ -292,8 +292,8 @@ describe(walkSuccessfulRelease, () => {
             repo: "owner/repo",
         });
 
-        expect(addLabelsCalls[0]!.labels).toEqual(DEFAULT_SUCCESS_WALK_LABELS);
-        expect(DEFAULT_SUCCESS_WALK_LABELS).toEqual(["released"]);
+        expect(addLabelsCalls[0]!.labels).toStrictEqual(DEFAULT_SUCCESS_WALK_LABELS);
+        expect(DEFAULT_SUCCESS_WALK_LABELS).toStrictEqual(["released"]);
     });
 
     it("skips the walk entirely on prerelease channels by default", async () => {
@@ -350,7 +350,7 @@ describe(walkSuccessfulRelease, () => {
 
         // #100 attempted, #200 succeeded
         expect(commentCalls).toHaveLength(2);
-        expect(out.commented).toEqual([200]);
+        expect(out.commented).toStrictEqual([200]);
         expect(out.warnings.some((w) => w.includes("#100"))).toBe(true);
     });
 
@@ -485,7 +485,7 @@ describe(walkSuccessfulRelease, () => {
         });
 
         expect(addLabelsCalls).toHaveLength(2);
-        expect(out.labeled).toEqual([2]);
+        expect(out.labeled).toStrictEqual([2]);
         expect(out.warnings.some((w) => w.includes("#1"))).toBe(true);
     });
 
@@ -505,9 +505,9 @@ describe(walkSuccessfulRelease, () => {
                 repo: "owner/repo",
             });
 
-            expect(commentCalls).toEqual([]);
-            expect(addLabelsCalls).toEqual([]);
-            expect(out).toEqual({ commented: [], labeled: [], warnings: [] });
+            expect(commentCalls).toStrictEqual([]);
+            expect(addLabelsCalls).toStrictEqual([]);
+            expect(out).toStrictEqual({ commented: [], labeled: [], warnings: [] });
         });
 
         it("walks when `config.successWalk` is an empty object (opt-in with defaults)", async () => {
@@ -612,9 +612,9 @@ describe(walkSuccessfulRelease, () => {
 
             // First call failed, second succeeded.
             expect(attempts).toBe(2);
-            expect(out.commented).toEqual([1]);
+            expect(out.commented).toStrictEqual([1]);
             // No warning was recorded — the retry was successful.
-            expect(out.warnings).toEqual([]);
+            expect(out.warnings).toStrictEqual([]);
         });
 
         it("gives up after one 429 retry and records a warning", async () => {
@@ -642,7 +642,7 @@ describe(walkSuccessfulRelease, () => {
                 repo: "owner/repo",
             });
 
-            expect(out.commented).toEqual([]);
+            expect(out.commented).toStrictEqual([]);
             expect(out.warnings.some((w) => w.includes("#1") && /429|rate/i.test(w))).toBe(true);
         });
 
@@ -695,8 +695,8 @@ describe(walkSuccessfulRelease, () => {
                 repo: "owner/repo",
             });
 
-            expect(commentCalls).toEqual([]);
-            expect(addLabelsCalls).toEqual([]);
+            expect(commentCalls).toStrictEqual([]);
+            expect(addLabelsCalls).toStrictEqual([]);
         });
 
         it("comments on a same-repo URL ref and skips a same-body cross-repo URL", async () => {
@@ -713,7 +713,7 @@ describe(walkSuccessfulRelease, () => {
                 repo: "owner/repo",
             });
 
-            expect(commentCalls.map((c) => c.issueNumber).sort()).toEqual([10]);
+            expect(commentCalls.map((c) => c.issueNumber).sort()).toStrictEqual([10]);
         });
     });
 });
@@ -743,7 +743,7 @@ describe(pLimit, () => {
         expect(peak).toBeLessThanOrEqual(3);
         // Sanity-check that *some* parallelism happened.
         expect(peak).toBeGreaterThan(1);
-        expect(results).toEqual(Array.from({ length: 20 }, (_, i) => i));
+        expect(results).toStrictEqual(Array.from({ length: 20 }, (_, i) => i));
     });
 
     it("propagates rejections without crashing the limiter", async () => {
@@ -759,9 +759,9 @@ describe(pLimit, () => {
 
         const settled = await Promise.allSettled(tasks);
 
-        expect(settled[0]).toEqual({ status: "fulfilled", value: 1 });
+        expect(settled[0]).toStrictEqual({ status: "fulfilled", value: 1 });
         expect(settled[1]!.status).toBe("rejected");
-        expect(settled[2]).toEqual({ status: "fulfilled", value: 3 });
+        expect(settled[2]).toStrictEqual({ status: "fulfilled", value: 3 });
     });
 });
 

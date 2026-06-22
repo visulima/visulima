@@ -135,7 +135,7 @@ describe("vis release next-version", () => {
         const stdout = await callHandler(cwd, { json: true });
         const parsed = JSON.parse(stdout);
 
-        expect(parsed).toEqual({
+        expect(parsed).toStrictEqual({
             "@scope/a": { from: "1.0.0", to: "1.1.0" },
             "@scope/b": { from: "2.5.0", to: "2.5.1" },
         });

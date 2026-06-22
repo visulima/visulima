@@ -226,7 +226,7 @@ describe("cargoVersionActions: readCargoToml (parse helper)", () => {
         const path = writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "2.5.1"\n`);
         const result = await __testing.readCargoToml(path);
 
-        expect(result).toEqual({ name: "my-crate", version: "2.5.1" });
+        expect(result).toStrictEqual({ name: "my-crate", version: "2.5.1" });
     });
 
     it("resolves version.workspace = true via [workspace.package]", async () => {
@@ -237,7 +237,7 @@ describe("cargoVersionActions: readCargoToml (parse helper)", () => {
 
         const result = await __testing.readCargoToml(path);
 
-        expect(result).toEqual({ name: "member", version: "3.0.0" });
+        expect(result).toStrictEqual({ name: "member", version: "3.0.0" });
     });
 
     it("throws CONFIG_INVALID when [package] is absent (workspace root pointed at directly)", async () => {
@@ -341,7 +341,7 @@ describe("cargoVersionActions: publish — happy path", () => {
         expect(result.alreadyPublished).not.toBe(true);
         expect(calls).toHaveLength(1);
         expect(calls[0]!.command).toBe("cargo");
-        expect(calls[0]!.args).toEqual(["publish", "--allow-dirty"]);
+        expect(calls[0]!.args).toStrictEqual(["publish", "--allow-dirty"]);
     });
 
     it("never passes --trusted-publishing (M-7: not a real cargo flag)", async () => {
@@ -365,7 +365,7 @@ describe("cargoVersionActions: publish — happy path", () => {
 
         expect(result.published).toBe(true);
         expect(result.output).toContain("trusted publishing");
-        expect(calls[0]!.args).toEqual(["publish", "--allow-dirty"]);
+        expect(calls[0]!.args).toStrictEqual(["publish", "--allow-dirty"]);
         // Explicitly assert the bogus flag is gone.
         expect(calls[0]!.args).not.toContain("--trusted-publishing");
     });
@@ -505,7 +505,7 @@ describe("cargoVersionActions: publish — pre-publish secret scan", () => {
 
         // Only the file-list call ran — the actual publish was aborted.
         expect(calls).toHaveLength(1);
-        expect(calls[0]!.args).toEqual(["package", "--list", "--allow-dirty"]);
+        expect(calls[0]!.args).toStrictEqual(["package", "--list", "--allow-dirty"]);
     });
 });
 
@@ -550,6 +550,6 @@ describe("cargoVersionActions: publish — alternative registry", () => {
             runner,
         }));
 
-        expect(calls[0]!.args).toEqual(["publish", "--allow-dirty", "--registry", "internal"]);
+        expect(calls[0]!.args).toStrictEqual(["publish", "--allow-dirty", "--registry", "internal"]);
     });
 });

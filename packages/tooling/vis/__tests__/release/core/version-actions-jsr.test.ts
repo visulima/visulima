@@ -241,7 +241,7 @@ describe("jsrVersionActions: parseJsrManifest", () => {
         const path = writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "2.5.1" });
         const result = await __testing.parseJsrManifest(path);
 
-        expect(result).toEqual({ name: "@acme/sdk", version: "2.5.1" });
+        expect(result).toStrictEqual({ name: "@acme/sdk", version: "2.5.1" });
     });
 
     it("parses a deno.json manifest (same shape as jsr.json for the fields we read)", async () => {
@@ -254,7 +254,7 @@ describe("jsrVersionActions: parseJsrManifest", () => {
 
         const result = await __testing.parseJsrManifest(path);
 
-        expect(result).toEqual({ name: "@acme/deno-pkg", version: "0.3.0" });
+        expect(result).toStrictEqual({ name: "@acme/deno-pkg", version: "0.3.0" });
     });
 
     it("throws CONFIG_INVALID when name has no @scope/ prefix (JSR refuses unscoped publishes)", async () => {
@@ -370,7 +370,7 @@ describe("jsrVersionActions: publish — happy path", () => {
         expect(result.alreadyPublished).not.toBe(true);
         expect(calls).toHaveLength(1);
         expect(calls[0]!.command).toBe("npx");
-        expect(calls[0]!.args).toEqual(["jsr", "publish", "--allow-dirty"]);
+        expect(calls[0]!.args).toStrictEqual(["jsr", "publish", "--allow-dirty"]);
     });
 
     it("flags OIDC trusted-publishing in the output when ACTIONS_ID_TOKEN_REQUEST_URL is set", async () => {
@@ -388,7 +388,7 @@ describe("jsrVersionActions: publish — happy path", () => {
 
         expect(result.published).toBe(true);
         expect(result.output).toContain("trusted publishing");
-        expect(calls[0]!.args).toEqual(["jsr", "publish", "--allow-dirty"]);
+        expect(calls[0]!.args).toStrictEqual(["jsr", "publish", "--allow-dirty"]);
     });
 
     it("forwards jsrPublishArgs (e.g. --allow-slow-types) after the built-in flags", async () => {
@@ -404,7 +404,7 @@ describe("jsrVersionActions: publish — happy path", () => {
             runner,
         }));
 
-        expect(calls[0]!.args).toEqual(["jsr", "publish", "--allow-dirty", "--allow-slow-types"]);
+        expect(calls[0]!.args).toStrictEqual(["jsr", "publish", "--allow-dirty", "--allow-slow-types"]);
     });
 
     it("passes --config when jsrConfigPath points at a non-default file (e.g. deno.json)", async () => {
@@ -421,7 +421,7 @@ describe("jsrVersionActions: publish — happy path", () => {
             runner,
         }));
 
-        expect(calls[0]!.args).toEqual(["jsr", "publish", "--allow-dirty", "--config", "deno.json"]);
+        expect(calls[0]!.args).toStrictEqual(["jsr", "publish", "--allow-dirty", "--config", "deno.json"]);
     });
 });
 

@@ -6,7 +6,7 @@ describe("channels: resolveChannel (literal match)", () => {
     it("matches a literal branch name", () => {
         const result = resolveChannel("main", { main: { tag: "latest" } });
 
-        expect(result).toEqual({ branch: "main", mode: "auto-publish", prerelease: undefined, range: undefined, tag: "latest" });
+        expect(result).toStrictEqual({ branch: "main", mode: "auto-publish", prerelease: undefined, range: undefined, tag: "latest" });
     });
 
     it("includes prerelease + mode when configured", () => {

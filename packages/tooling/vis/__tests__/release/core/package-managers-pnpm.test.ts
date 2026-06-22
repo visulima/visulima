@@ -119,7 +119,7 @@ describe("pnpmAdapter — listWorkspacePackages", () => {
             return { exitCode: 1, stderr: "", stdout: "" };
         });
 
-        await expect(new PnpmAdapter(runner).listWorkspacePackages("/r")).resolves.toEqual([]);
+        await expect(new PnpmAdapter(runner).listWorkspacePackages("/r")).resolves.toStrictEqual([]);
     });
 
     it("returns empty array when JSON is malformed", async () => {
@@ -129,7 +129,7 @@ describe("pnpmAdapter — listWorkspacePackages", () => {
             return { exitCode: 0, stderr: "", stdout: "not json" };
         });
 
-        await expect(new PnpmAdapter(runner).listWorkspacePackages("/r")).resolves.toEqual([]);
+        await expect(new PnpmAdapter(runner).listWorkspacePackages("/r")).resolves.toStrictEqual([]);
     });
 
     it("filters out entries without a name", async () => {

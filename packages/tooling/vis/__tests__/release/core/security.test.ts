@@ -81,7 +81,7 @@ describe("resolveCustomCommands: trust-gated", () => {
     it("returns empty when gate denies", () => {
         const result = resolveCustomCommands("@scope/a", perPkg, {});
 
-        expect(result).toEqual({});
+        expect(result).toStrictEqual({});
     });
 
     it("returns commands when gate allows", () => {

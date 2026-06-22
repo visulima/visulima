@@ -112,7 +112,7 @@ describe("validateContainerConfig (N-4)", () => {
         );
 
         expect(result.containerImage).toBe("ghcr.io/scope/foo");
-        expect(result.containerPlatforms).toEqual(["linux/amd64"]);
+        expect(result.containerPlatforms).toStrictEqual(["linux/amd64"]);
     });
 
     it("throws CONFIG_INVALID when containerImage is missing entirely", () => {
@@ -157,25 +157,25 @@ describe(parseImageRef, () => {
     it("splits GHCR refs (registry contains a dot)", () => {
         const result = parseImageRef("ghcr.io/scope/foo");
 
-        expect(result).toEqual({ registry: "ghcr.io", repository: "scope/foo" });
+        expect(result).toStrictEqual({ registry: "ghcr.io", repository: "scope/foo" });
     });
 
     it("recognises localhost as a registry", () => {
         const result = parseImageRef("localhost:5000/foo");
 
-        expect(result).toEqual({ registry: "localhost:5000", repository: "foo" });
+        expect(result).toStrictEqual({ registry: "localhost:5000", repository: "foo" });
     });
 
     it("defaults the registry to docker.io and adds library/ for single-segment images", () => {
         const result = parseImageRef("nginx");
 
-        expect(result).toEqual({ registry: "docker.io", repository: "library/nginx" });
+        expect(result).toStrictEqual({ registry: "docker.io", repository: "library/nginx" });
     });
 
     it("treats two-segment images without a hostname as docker.io", () => {
         const result = parseImageRef("myorg/myimage");
 
-        expect(result).toEqual({ registry: "docker.io", repository: "myorg/myimage" });
+        expect(result).toStrictEqual({ registry: "docker.io", repository: "myorg/myimage" });
     });
 });
 
@@ -207,7 +207,7 @@ describe(buildBuildxCommand, () => {
         const { command } = buildBuildxCommand(minPkg, { containerImage: "ghcr.io/scope/app" });
 
         expect(command[0]).toBe("docker");
-        expect(command.slice(1, 3)).toEqual(["buildx", "build"]);
+        expect(command.slice(1, 3)).toStrictEqual(["buildx", "build"]);
         expect(command).toContain("--platform");
         expect(command[command.indexOf("--platform") + 1]).toBe("linux/amd64,linux/arm64");
         expect(command).toContain("ghcr.io/scope/app:1.1.0");
@@ -422,7 +422,7 @@ describe("containerActions.publish", () => {
         expect(result.output).toContain("cosign");
         expect(calls).toHaveLength(2);
         expect(calls[1]!.command).toBe("cosign");
-        expect(calls[1]!.args).toEqual(["sign", "--yes", "ghcr.io/scope/app:1.1.0"]);
+        expect(calls[1]!.args).toStrictEqual(["sign", "--yes", "ghcr.io/scope/app:1.1.0"]);
     });
 
     it("throws PUBLISH_FAILED when docker buildx exits non-zero with auth hints", async () => {

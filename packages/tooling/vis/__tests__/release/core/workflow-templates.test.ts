@@ -7,7 +7,7 @@ describe("generateWorkflowFiles — GitHub", () => {
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "pnpm", provider: "github" });
 
         expect(files).toHaveLength(3);
-        expect(files.map((f) => f.path).sort()).toEqual([
+        expect(files.map((f) => f.path).sort()).toStrictEqual([
             ".github/workflows/vis-release-check.yml",
             ".github/workflows/vis-release-snapshot.yml",
             ".github/workflows/vis-release.yml",

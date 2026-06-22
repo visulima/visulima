@@ -643,7 +643,7 @@ describe("parsePomCoordinates regex sharing (B-4)", () => {
         const results = Array.from({ length: 100 }, () => parsePomCoordinates(xml));
 
         for (const result of results) {
-            expect(result).toEqual({
+            expect(result).toStrictEqual({
                 artifactId: "c",
                 groupId: "a.b",
                 hasModules: false,

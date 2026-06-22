@@ -52,7 +52,7 @@ catalog:
 
         const result = parseCatalogs(yaml);
 
-        expect(result.get("")).toEqual({ react: "^18.2.0", typescript: "^5.5.0" });
+        expect(result.get("")).toStrictEqual({ react: "^18.2.0", typescript: "^5.5.0" });
     });
 
     it("parses named `catalogs.<name>` blocks into their own keys", () => {
@@ -66,8 +66,8 @@ catalogs:
 
         const result = parseCatalogs(yaml);
 
-        expect(result.get("dev")).toEqual({ vitest: "^2.0.0" });
-        expect(result.get("prod")).toEqual({ react: "^18.3.0" });
+        expect(result.get("dev")).toStrictEqual({ vitest: "^2.0.0" });
+        expect(result.get("prod")).toStrictEqual({ react: "^18.3.0" });
     });
 
     it("co-exists with non-catalog top-level keys without polluting the output", () => {
@@ -82,8 +82,8 @@ catalog:
 
         const result = parseCatalogs(yaml);
 
-        expect([...result.keys()]).toEqual([""]);
-        expect(result.get("")).toEqual({ react: "^18.2.0" });
+        expect([...result.keys()]).toStrictEqual([""]);
+        expect(result.get("")).toStrictEqual({ react: "^18.2.0" });
     });
 });
 
@@ -95,7 +95,7 @@ describe("catalog-detector: extractCatalogRefs", () => {
 
         const refs = extractCatalogRefs(pkg);
 
-        expect(refs).toEqual([
+        expect(refs).toStrictEqual([
             { catalog: "", dep: "react", kind: "dependencies", packageName: "@scope/a" },
         ]);
     });
@@ -105,7 +105,7 @@ describe("catalog-detector: extractCatalogRefs", () => {
             devDependencies: { vitest: "catalog:dev" },
         });
 
-        expect(extractCatalogRefs(pkg)).toEqual([
+        expect(extractCatalogRefs(pkg)).toStrictEqual([
             { catalog: "dev", dep: "vitest", kind: "devDependencies", packageName: "@scope/b" },
         ]);
     });
@@ -119,7 +119,7 @@ describe("catalog-detector: extractCatalogRefs", () => {
         const refs = extractCatalogRefs(pkg);
 
         expect(refs).toHaveLength(2);
-        expect(refs.map((r) => r.kind).sort()).toEqual(["dependencies", "peerDependencies"]);
+        expect(refs.map((r) => r.kind).sort()).toStrictEqual(["dependencies", "peerDependencies"]);
     });
 
     it("ignores ranges that don't start with `catalog:`", () => {
@@ -127,7 +127,7 @@ describe("catalog-detector: extractCatalogRefs", () => {
             dependencies: { bar: "workspace:*", baz: "github:user/repo", foo: "^1.0.0" },
         });
 
-        expect(extractCatalogRefs(pkg)).toEqual([]);
+        expect(extractCatalogRefs(pkg)).toStrictEqual([]);
     });
 });
 
@@ -151,11 +151,11 @@ catalogs:
 
         const defaultBlock = index.get("");
 
-        expect(defaultBlock?.get("react")?.map((c) => c.packageName).sort()).toEqual(["@scope/a", "@scope/b"]);
+        expect(defaultBlock?.get("react")?.map((c) => c.packageName).sort()).toStrictEqual(["@scope/a", "@scope/b"]);
 
         const devBlock = index.get("dev");
 
-        expect(devBlock?.get("vitest")?.map((c) => c.packageName)).toEqual(["@scope/c"]);
+        expect(devBlock?.get("vitest")?.map((c) => c.packageName)).toStrictEqual(["@scope/c"]);
     });
 
     it("seeds an empty inner map for every catalog block present even when no consumer references it", () => {
@@ -205,7 +205,7 @@ catalog:
   react: ^18.2.0
 `);
 
-        expect(detectCatalogChanges(prev, next)).toEqual([]);
+        expect(detectCatalogChanges(prev, next)).toStrictEqual([]);
     });
 
     it("detects a version bump (both sides present, version differs)", () => {
@@ -221,7 +221,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toEqual([
+        expect(changes).toStrictEqual([
             { catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0" },
         ]);
     });
@@ -240,7 +240,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toEqual([
+        expect(changes).toStrictEqual([
             { catalog: "", dep: "zod", newVersion: "^3.23.0", oldVersion: undefined },
         ]);
     });
@@ -259,7 +259,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toEqual([
+        expect(changes).toStrictEqual([
             { catalog: "", dep: "legacy", newVersion: undefined, oldVersion: "^1.0.0" },
         ]);
     });
@@ -279,7 +279,7 @@ catalogs:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toEqual([
+        expect(changes).toStrictEqual([
             { catalog: "dev", dep: "vitest", newVersion: "^2.1.0", oldVersion: "^2.0.0" },
         ]);
     });
@@ -308,7 +308,7 @@ catalogs:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes.map((c) => `${c.catalog}/${c.dep}`)).toEqual(["/react", "/zod", "dev/vitest"]);
+        expect(changes.map((c) => `${c.catalog}/${c.dep}`)).toStrictEqual(["/react", "/zod", "dev/vitest"]);
     });
 
     // F25: when neither snapshot carries any catalog block (the most
@@ -325,7 +325,7 @@ catalogs:
 
         expect(prev.size).toBe(0);
         expect(next.size).toBe(0);
-        expect(detectCatalogChanges(prev, next)).toEqual([]);
+        expect(detectCatalogChanges(prev, next)).toStrictEqual([]);
     });
 
     it("does NOT bail when only `prev` is empty (additions still surface)", () => {
@@ -340,7 +340,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toEqual([
+        expect(changes).toStrictEqual([
             { catalog: "", dep: "react", newVersion: "^18.2.0", oldVersion: undefined },
         ]);
     });
@@ -356,7 +356,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toEqual([
+        expect(changes).toStrictEqual([
             { catalog: "", dep: "react", newVersion: undefined, oldVersion: "^18.2.0" },
         ]);
     });
@@ -378,7 +378,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toEqual([
+        expect(changes).toStrictEqual([
             { catalog: "legacy", dep: "bar", newVersion: undefined, oldVersion: "^2.0.0" },
             { catalog: "legacy", dep: "foo", newVersion: undefined, oldVersion: "^1.0.0" },
         ]);

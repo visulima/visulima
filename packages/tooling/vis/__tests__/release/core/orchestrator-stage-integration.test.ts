@@ -199,7 +199,7 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
         // Registry was drained — file is deleted when pending is empty.
         const registry = await readStagedRegistry(cwd, ".vis/release");
 
-        expect(registry.pending).toEqual([]);
+        expect(registry.pending).toStrictEqual([]);
     });
 
     it("passes resumeStageId to the action when staged.json already holds an entry for the planned (name, version)", async () => {
@@ -271,7 +271,7 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
 
         const registry = await readStagedRegistry(cwd, ".vis/release");
 
-        expect(registry.pending).toEqual([]);
+        expect(registry.pending).toStrictEqual([]);
     });
 });
 
@@ -430,7 +430,7 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
         const result = await publishContext(ctx, { publishActionsOverride: actions });
 
         // Publish itself succeeded.
-        expect(result.published.map((p) => p.name)).toEqual(["@scope/a"]);
+        expect(result.published.map((p) => p.name)).toStrictEqual(["@scope/a"]);
 
         // No `successWalk:` warning surfaced (the gate skipped the walk
         // before any remote-client call could fail). Compare with the
@@ -438,7 +438,7 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
         // either "successWalk" or "post-release walk".
         const walkWarnings = ctx.plan.warnings.filter((w) => w.toLowerCase().includes("walk"));
 
-        expect(walkWarnings).toEqual([]);
+        expect(walkWarnings).toStrictEqual([]);
     });
 });
 
@@ -529,6 +529,6 @@ describe.skipIf(isWindows)("orchestrator: publish loop does not orphan dependent
 
         // The dependent's publish was never even attempted (short-circuited
         // before the action call), so the stub only saw @scope/a.
-        expect(actions.calls.map((c) => c.pkg)).toEqual(["@scope/a"]);
+        expect(actions.calls.map((c) => c.pkg)).toStrictEqual(["@scope/a"]);
     });
 });

@@ -123,7 +123,7 @@ describe("pre-mode: buildEnterFile", () => {
 
         expect(file.tag).toBe("rc");
         expect(file.mode).toBe("pre");
-        expect(file.initialVersions).toEqual({ "@a/one": "0.5.0", "@a/two": "1.0.0" });
+        expect(file.initialVersions).toStrictEqual({ "@a/one": "0.5.0", "@a/two": "1.0.0" });
         expect(file.version).toBe(1);
         expect(Date.parse(file.enteredAt)).not.toBeNaN();
     });

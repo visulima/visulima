@@ -24,12 +24,12 @@ describe("defaults — DEFAULT_CONFIG", () => {
         expect(DEFAULT_CONFIG.changesDir).toBe(".vis/release");
         expect(DEFAULT_CONFIG.access).toBe("public");
         expect(DEFAULT_CONFIG.changelog).toBe("default");
-        expect(DEFAULT_CONFIG.changedFilePatterns).toEqual(["**"]);
+        expect(DEFAULT_CONFIG.changedFilePatterns).toStrictEqual(["**"]);
         expect(DEFAULT_CONFIG.updateInternalDependencies).toBe("out-of-range");
-        expect(DEFAULT_CONFIG.fixed).toEqual([]);
-        expect(DEFAULT_CONFIG.linked).toEqual([]);
-        expect(DEFAULT_CONFIG.ignore).toEqual([]);
-        expect(DEFAULT_CONFIG.include).toEqual([]);
+        expect(DEFAULT_CONFIG.fixed).toStrictEqual([]);
+        expect(DEFAULT_CONFIG.linked).toStrictEqual([]);
+        expect(DEFAULT_CONFIG.ignore).toStrictEqual([]);
+        expect(DEFAULT_CONFIG.include).toStrictEqual([]);
         expect(DEFAULT_CONFIG.allowCustomCommands).toBe(false);
         expect(DEFAULT_CONFIG.defaultManaged).toBe(false);
     });
@@ -37,10 +37,10 @@ describe("defaults — DEFAULT_CONFIG", () => {
 
 describe("defaults — DEFAULT_DEPENDENCY_BUMP_RULES", () => {
     it("propagates patch on dependencies, match on peers, ignores devDeps", () => {
-        expect(DEFAULT_DEPENDENCY_BUMP_RULES.dependencies).toEqual({ bumpAs: "patch", trigger: "patch" });
-        expect(DEFAULT_DEPENDENCY_BUMP_RULES.peerDependencies).toEqual({ bumpAs: "match", trigger: "major" });
+        expect(DEFAULT_DEPENDENCY_BUMP_RULES.dependencies).toStrictEqual({ bumpAs: "patch", trigger: "patch" });
+        expect(DEFAULT_DEPENDENCY_BUMP_RULES.peerDependencies).toStrictEqual({ bumpAs: "match", trigger: "major" });
         expect(DEFAULT_DEPENDENCY_BUMP_RULES.devDependencies).toBe(false);
-        expect(DEFAULT_DEPENDENCY_BUMP_RULES.optionalDependencies).toEqual({ bumpAs: "patch", trigger: "minor" });
+        expect(DEFAULT_DEPENDENCY_BUMP_RULES.optionalDependencies).toStrictEqual({ bumpAs: "patch", trigger: "minor" });
     });
 });
 
@@ -61,15 +61,15 @@ describe("defaults — DEFAULT_CLEAN_STRIP / DEFAULT_CLEAN_KEEP", () => {
 
 describe(resolveCleanStripList, () => {
     it("returns [] for false (do not strip)", () => {
-        expect(resolveCleanStripList(false)).toEqual([]);
+        expect(resolveCleanStripList(false)).toStrictEqual([]);
     });
 
     it("returns defaults for true", () => {
-        expect(resolveCleanStripList(true)).toEqual([...DEFAULT_CLEAN_STRIP]);
+        expect(resolveCleanStripList(true)).toStrictEqual([...DEFAULT_CLEAN_STRIP]);
     });
 
     it("returns defaults for undefined", () => {
-        expect(resolveCleanStripList(undefined)).toEqual([...DEFAULT_CLEAN_STRIP]);
+        expect(resolveCleanStripList(undefined)).toStrictEqual([...DEFAULT_CLEAN_STRIP]);
     });
 
     it("merges user strip list with defaults", () => {
@@ -104,6 +104,6 @@ describe(resolveCleanStripList, () => {
     it("ignores keep entries that aren't in defaults — has no error", () => {
         const list = resolveCleanStripList({ keep: ["nonexistent-field"] });
 
-        expect(list).toEqual([...DEFAULT_CLEAN_STRIP]);
+        expect(list).toStrictEqual([...DEFAULT_CLEAN_STRIP]);
     });
 });

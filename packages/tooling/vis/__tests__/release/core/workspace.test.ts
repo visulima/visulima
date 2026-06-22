@@ -19,7 +19,7 @@ describe("workspace: discoverPackages", () => {
 
         const result = await discoverPackages(reader, { defaultManaged: true });
 
-        expect(result.packages.map((p) => p.name).sort()).toEqual(["a", "b", "c"]);
+        expect(result.packages.map((p) => p.name).sort()).toStrictEqual(["a", "b", "c"]);
     });
 
     it("excludes native-addon platform packages under <parent>/npm/ (RFC §12.4)", async () => {
@@ -55,7 +55,7 @@ describe("workspace: discoverPackages", () => {
 
         const result = await discoverPackages(reader, { defaultManaged: true });
 
-        expect(result.packages.map((p) => p.name)).toEqual(["@scope/native"]);
+        expect(result.packages.map((p) => p.name)).toStrictEqual(["@scope/native"]);
     });
 
     it("rejects duplicate package names", async () => {
@@ -84,7 +84,7 @@ describe("workspace: discoverPackages", () => {
 
         const result = await discoverPackages(reader, { defaultManaged: true, ignore: ["@scope/internal-*"] });
 
-        expect(result.packages.map((p) => p.name).sort()).toEqual(["@scope/a", "@scope/c"]);
+        expect(result.packages.map((p) => p.name).sort()).toStrictEqual(["@scope/a", "@scope/c"]);
     });
 
     it("respects per-package managed: false override", async () => {
@@ -97,7 +97,7 @@ describe("workspace: discoverPackages", () => {
 
         const result = await discoverPackages(reader, { defaultManaged: true });
 
-        expect(result.packages.map((p) => p.name)).toEqual(["a"]);
+        expect(result.packages.map((p) => p.name)).toStrictEqual(["a"]);
     });
 
     it("respects per-package managed: true override even when defaultManaged is false", async () => {
@@ -110,7 +110,7 @@ describe("workspace: discoverPackages", () => {
 
         const result = await discoverPackages(reader, { defaultManaged: false });
 
-        expect(result.packages.map((p) => p.name)).toEqual(["b"]);
+        expect(result.packages.map((p) => p.name)).toStrictEqual(["b"]);
     });
 
     it("skips private packages by default", async () => {
@@ -123,7 +123,7 @@ describe("workspace: discoverPackages", () => {
 
         const result = await discoverPackages(reader, { defaultManaged: true });
 
-        expect(result.packages.map((p) => p.name)).toEqual(["a"]);
+        expect(result.packages.map((p) => p.name)).toStrictEqual(["a"]);
     });
 
     it("includes private packages when privatePackages.version is true", async () => {
@@ -136,7 +136,7 @@ describe("workspace: discoverPackages", () => {
 
         const result = await discoverPackages(reader, { defaultManaged: true, privatePackages: { tag: false, version: true } });
 
-        expect(result.packages.map((p) => p.name).sort()).toEqual(["a", "internal"]);
+        expect(result.packages.map((p) => p.name).sort()).toStrictEqual(["a", "internal"]);
     });
 
     it("rejects package names with shell metacharacters (RFC §19.4)", async () => {

@@ -87,7 +87,7 @@ describe(createOrUpdateFloatingTag, () => {
         expect(tagCall).toBeDefined();
         // `-f` forces retarget when the tag already exists (the whole
         // point of a floating major-version tag).
-        expect(tagCall!.args).toEqual(["tag", "-f", "v1"]);
+        expect(tagCall!.args).toStrictEqual(["tag", "-f", "v1"]);
 
         expect(pushCall).toBeDefined();
         expect(pushCall!.args).toContain("--force");
@@ -121,6 +121,6 @@ describe(createOrUpdateFloatingTag, () => {
 
         const tagCall = calls.find((c) => c.command === "git" && c.args[0] === "tag");
 
-        expect(tagCall!.args).toEqual(["tag", "-f", "-s", "v1"]);
+        expect(tagCall!.args).toStrictEqual(["tag", "-f", "-s", "v1"]);
     });
 });
