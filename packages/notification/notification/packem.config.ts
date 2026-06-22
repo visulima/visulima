@@ -17,4 +17,12 @@ export default defineConfig({
         },
     },
     transformer,
+    cjsInterop: true,
+    validation: {
+        dependencies: {
+            hoisted: {
+                exclude: ["@standard-schema/spec"],
+            },
+        },
+    },
 }) as BuildConfig;
