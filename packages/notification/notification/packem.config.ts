@@ -5,6 +5,9 @@ import transformer from "@visulima/packem/transformer/esbuild";
 // eslint-disable-next-line import/no-unused-modules
 export default defineConfig({
     runtime: "node",
+    // Type-only namespace reached transitively via @visulima/workflow's published types;
+    // keep it external so packem does not inline it (and trip failOnWarn).
+    externals: ["@standard-schema/spec"],
     rollup: {
         dts: {
             oxc: true,

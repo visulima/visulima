@@ -8,6 +8,11 @@ description: Render notification bodies with pluggable template engines
 Render chat/push/SMS bodies from templates. Each engine lives on its own subpath so you only pull in the one you use.
 All are edge-safe (pure JS — they run on Cloudflare Workers).
 
+> **You don't need a template framework.** Templating is engine-agnostic: the extension point is a single function type,
+> `TemplateRenderer`, not a framework. Use the zero-dep `renderString`, plug in Handlebars/Liquid, or wrap **any** engine
+> in a ~5-line adapter (see [Custom renderer](#custom-renderer-any-engine)). The package never bundles a framework — keep
+> the default for the edge, opt into a heavier engine only where you need its logic.
+
 ## Zero-dependency string renderer
 
 ```typescript
@@ -29,6 +34,50 @@ import { renderLiquid } from "@visulima/notification/template/liquid";
 
 await renderHandlebars("<h1>Hello {{name}}!</h1>", { name: "John" });
 await renderLiquid("Hello {{ name }}!", { name: "John" });
+```
+
+## The `TemplateRenderer` contract
+
+Every renderer matches one type — this is the whole extension surface:
+
+```typescript
+import type { TemplateRenderer } from "@visulima/notification/template/string";
+
+type TemplateRenderer = (template: unknown, data?: Record<string, unknown>, options?: Record<string, unknown>) => string | Promise<string>;
+```
+
+`renderString`, `renderHandlebars` and `renderLiquid` are simply implementations of it. Richer features — conditionals,
+loops, partials/includes, helpers — come from the **engine you choose**; the package delegates rather than reimplementing
+them.
+
+## Custom renderer (any engine)
+
+To use Eta, Mustache, Nunjucks, EJS, MJML — anything — wrap it in the contract. No package change, no framework lock-in:
+
+```typescript
+import type { TemplateRenderer } from "@visulima/notification/template/string";
+import { Eta } from "eta";
+
+const eta = new Eta();
+const renderEta: TemplateRenderer = (template, data) => eta.renderString(template as string, data ?? {});
+
+await notify.sendToChannel("chat", { text: await renderEta("Hi <%= it.name %>", { name: "Ada" }), to: "C123" });
+```
+
+For rich HTML **email**, prefer the email side (`@visulima/email` ships Liquid + jsx-email) and feed the rendered HTML
+into the notification email channel.
+
+## Composing with layouts & i18n
+
+A `TemplateRenderer` is what [layouts](/docs/packages/notification/layouts) and the rendered output of
+[i18n](/docs/packages/notification/i18n) plug into — so "extending template usage" is composition over the same seam, not
+a new framework. Pass your renderer to `defineLayout`, and feed `translate(...)` output as data:
+
+```typescript
+import { defineLayout } from "@visulima/notification/layouts";
+
+const layout = defineLayout({ render: renderEta, template: "<main><%~ it.content %></main>" });
+const html = await layout.render("<p>Welcome!</p>", { unsubscribeUrl });
 ```
 
 ## Using a renderer in a send

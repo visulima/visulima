@@ -63,15 +63,25 @@ SDK). Import these only from a Node runtime; the rest of the package stays edge-
 
 ## Optional peer dependencies
 
-Install only what your chosen providers/modules need:
+**Every provider is `fetch`-based — no per-provider SDK to install.** Optional peers are only needed by specific
+**subpaths**; import the subpath → install the peer. Nothing is pulled in otherwise (all are declared `optional`), and if
+a peer is missing you get an actionable error (e.g. _"liquidjs is not installed. Please install it: pnpm add liquidjs"_).
 
-- `@visulima/email` — the email channel.
-- `unstorage` — the `UnstorageQueue` and `UnstorageInAppStore` (Cloudflare KV, Redis, filesystem, …).
-- `@opentelemetry/api` — the OpenTelemetry wrapper provider + telemetry middleware.
-- `handlebars` / `liquidjs` — the `./template/handlebars` / `./template/liquid` renderers.
-- `bullmq` / `pg-boss` / `@aws-sdk/client-sqs` — the matching durable queue adapters (Node-only).
+| Subpath you import                                                           | Install               |
+| ---------------------------------------------------------------------------- | --------------------- |
+| `@visulima/notification/channels/email`                                      | `@visulima/email`     |
+| `@visulima/notification/template/handlebars`                                 | `handlebars`          |
+| `@visulima/notification/template/liquid`                                     | `liquidjs`            |
+| `@visulima/notification/queue/unstorage`, `channels/inapp` (unstorage store) | `unstorage`           |
+| `@visulima/notification/queue/bullmq` _(Node-only)_                          | `bullmq`              |
+| `@visulima/notification/queue/pg-boss` _(Node-only)_                         | `pg-boss`             |
+| `@visulima/notification/queue/sqs` _(Node-only)_                             | `@aws-sdk/client-sqs` |
+| `@visulima/notification/providers/opentelemetry`, `middleware` (telemetry)   | `@opentelemetry/api`  |
+| `@visulima/notification/workflow`                                            | `@visulima/workflow`  |
+| `@visulima/notification/digest` (cron windows only)                          | `croner`              |
+| `@visulima/notification/i18n`                                                | `intl-messageformat`  |
 
-All are declared as **optional** peers — nothing is pulled in unless you import the subpath that uses it.
+The plain `./template/string` renderer, `MemoryQueue`, and time-based `./digest` windows need **no** peer.
 
 ## Next steps
 

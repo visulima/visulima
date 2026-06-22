@@ -48,6 +48,7 @@ export default createConfig(
             "sonarjs/no-nested-functions": "off",
             "unicorn/no-null": "off",
             "vitest/no-conditional-in-test": "off",
+            "vitest/require-hook": "off",
             "vitest/require-mock-type-parameters": "off",
         },
     },

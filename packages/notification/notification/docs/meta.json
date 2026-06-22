@@ -12,6 +12,10 @@
         "queue",
         "events",
         "webhooks",
-        "templates"
+        "templates",
+        "workflow",
+        "digest",
+        "layouts",
+        "i18n"
     ]
 }
