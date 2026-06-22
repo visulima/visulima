@@ -86,6 +86,8 @@ describe.skipIf(isWindows)("orchestrator: buildContext loads vis.config.ts relea
     });
 
     it("merges file-level config with defaults", async () => {
+        expect.hasAssertions();
+
         writeVisConfig(cwd, { baseBranch: "develop", changesDir: ".vis/release" });
 
         const ctx = await buildContext({ cwd });
@@ -97,6 +99,8 @@ describe.skipIf(isWindows)("orchestrator: buildContext loads vis.config.ts relea
     });
 
     it("inline options.config wins over file config", async () => {
+        expect.hasAssertions();
+
         writeVisConfig(cwd, { baseBranch: "develop" });
 
         const ctx = await buildContext({
@@ -108,6 +112,8 @@ describe.skipIf(isWindows)("orchestrator: buildContext loads vis.config.ts relea
     });
 
     it("falls back to defaults when no config file is present", async () => {
+        expect.hasAssertions();
+
         const ctx = await buildContext({ cwd });
 
         expect(ctx.config.baseBranch).toBe("main");
@@ -117,6 +123,8 @@ describe.skipIf(isWindows)("orchestrator: buildContext loads vis.config.ts relea
 
     it("emits unstable warning when not acknowledged", async () => {
         // No vis.config.json → defaults → no acknowledgeUnstable
+        expect.hasAssertions();
+
         const stderrChunks: string[] = [];
         const orig = process.stderr.write.bind(process.stderr);
 
@@ -136,6 +144,8 @@ describe.skipIf(isWindows)("orchestrator: buildContext loads vis.config.ts relea
     });
 
     it("suppresses unstable warning when acknowledged in config", async () => {
+        expect.hasAssertions();
+
         writeVisConfig(cwd, {});
 
         const stderrChunks: string[] = [];
@@ -157,6 +167,8 @@ describe.skipIf(isWindows)("orchestrator: buildContext loads vis.config.ts relea
     });
 
     it("suppresses unstable warning when env var is set", async () => {
+        expect.hasAssertions();
+
         process.env["VIS_RELEASE_SUPPRESS_UNSTABLE"] = "1";
         const stderrChunks: string[] = [];
         const orig = process.stderr.write.bind(process.stderr);
@@ -198,20 +210,26 @@ describe.skipIf(isWindows)("orchestrator: project filter (the bug from audit #1)
     });
 
     it("--filter glob narrows the plan", async () => {
+        expect.hasAssertions();
+
         const ctx = await buildContext({ cwd, projects: ["@scope/a", "@scope/b"] });
 
         // The audit-bug previously made this filter accept everything.
         // Confirm only the requested packages remain.
-        expect(ctx.plan.releases.map((r) => r.name).sort()).toEqual(["@scope/a", "@scope/b"]);
+        expect(ctx.plan.releases.map((r) => r.name).sort()).toStrictEqual(["@scope/a", "@scope/b"]);
     });
 
     it("--filter glob with wildcard works", async () => {
+        expect.hasAssertions();
+
         const ctx = await buildContext({ cwd, projects: ["@scope/*"] });
 
         expect(ctx.plan.releases).toHaveLength(3);
     });
 
     it("returns empty plan when filter matches nothing", async () => {
+        expect.hasAssertions();
+
         const ctx = await buildContext({ cwd, projects: ["@other/*"] });
 
         expect(ctx.plan.releases).toHaveLength(0);
@@ -234,6 +252,8 @@ describe.skipIf(isWindows)("orchestrator: applyContext lifecycle hooks", () => {
     });
 
     it("runs preVersionCommand before applying", async () => {
+        expect.hasAssertions();
+
         writeVisConfig(cwd, {
             defaultManaged: true,
             preVersionCommand: `mkdir -p ${sentinel("PRE_RAN")}`,
@@ -249,6 +269,8 @@ describe.skipIf(isWindows)("orchestrator: applyContext lifecycle hooks", () => {
     });
 
     it("runs postVersionCommand after applying", async () => {
+        expect.hasAssertions();
+
         writeVisConfig(cwd, {
             defaultManaged: true,
             postVersionCommand: `mkdir -p ${sentinel("POST_RAN")}`,
@@ -264,6 +286,8 @@ describe.skipIf(isWindows)("orchestrator: applyContext lifecycle hooks", () => {
     });
 
     it("skips hooks in dry-run mode", async () => {
+        expect.hasAssertions();
+
         writeVisConfig(cwd, {
             defaultManaged: true,
             preVersionCommand: `mkdir -p ${sentinel("SHOULD_NOT_RUN")}`,
@@ -275,10 +299,12 @@ describe.skipIf(isWindows)("orchestrator: applyContext lifecycle hooks", () => {
 
         const fs = await import("node:fs/promises");
 
-        await expect(fs.access(sentinel("SHOULD_NOT_RUN"))).rejects.toThrow();
+        await expect(fs.access(sentinel("SHOULD_NOT_RUN"))).rejects.toThrow(/ENOENT/);
     });
 
     it("aborts when preVersionCommand fails", async () => {
+        expect.hasAssertions();
+
         writeVisConfig(cwd, {
             defaultManaged: true,
             preVersionCommand: "exit 1",
@@ -311,6 +337,8 @@ describe.skipIf(isWindows)("orchestrator: publishContext in-flight version-PR ch
     it("refuses to publish when a version-PR is open and channel mode is version-pr", async () => {
         // Force the active channel to be `main` (version-pr mode) by setting
         // the branch via the override.
+        expect.hasAssertions();
+
         const ctx = await buildContext({ channel: "main", cwd });
 
         // We can't easily mock the global runner used inside publishContext
@@ -323,6 +351,8 @@ describe.skipIf(isWindows)("orchestrator: publishContext in-flight version-PR ch
     });
 
     it("does NOT block publish in auto-publish mode even with open PRs", async () => {
+        expect.hasAssertions();
+
         const cwd2 = setupFixture([{ name: "@scope/a", version: "1.0.0" }]);
 
         writeVisConfig(cwd2, {
@@ -343,6 +373,8 @@ describe.skipIf(isWindows)("orchestrator: publishContext in-flight version-PR ch
 
 describe.skipIf(isWindows)("orchestrator: composeRelatedReleasesBlock (addReleases)", () => {
     it("renders bullet list with name + url for each release", () => {
+        expect.hasAssertions();
+
         const block = composeRelatedReleasesBlock([
             { name: "@scope/pkg v1.4.2", tag: "@scope/pkg@1.4.2", url: "https://github.com/o/r/releases/tag/x" },
             { name: "@scope/pkg v1.4.1", tag: "@scope/pkg@1.4.1", url: "https://github.com/o/r/releases/tag/y" },
@@ -354,10 +386,13 @@ describe.skipIf(isWindows)("orchestrator: composeRelatedReleasesBlock (addReleas
     });
 
     it("returns empty string when there are no previous releases", () => {
+        expect.hasAssertions();
         expect(composeRelatedReleasesBlock([])).toBe("");
     });
 
     it("addReleases: 'top' vs 'bottom' positioning (composition test)", () => {
+        expect.hasAssertions();
+
         const recent = [{ name: "v1.0.0", tag: "v1.0.0", url: "https://x/y/releases/tag/v1.0.0" }];
         const block = composeRelatedReleasesBlock(recent);
         const body = "Release of @scope/pkg@1.1.0.";
@@ -382,23 +417,30 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
     };
 
     it("returns body unchanged when no template is supplied", () => {
+        expect.hasAssertions();
         expect(applyReleaseNoteTemplate("body", undefined, tokens)).toBe("body");
         expect(applyReleaseNoteTemplate("body", {}, tokens)).toBe("body");
     });
 
     it("prepends the header above the body, separated by a blank line", () => {
+        expect.hasAssertions();
+
         const rendered = applyReleaseNoteTemplate("BODY", { header: "See [migration guide](#)." }, tokens);
 
         expect(rendered).toBe("See [migration guide](#).\n\nBODY");
     });
 
     it("appends the footer below the body, separated by a blank line", () => {
+        expect.hasAssertions();
+
         const rendered = applyReleaseNoteTemplate("BODY", { footer: "Sponsored by acme." }, tokens);
 
         expect(rendered).toBe("BODY\n\nSponsored by acme.");
     });
 
     it("interpolates {name}, {version}, {previousVersion}, {date}, {repo} tokens", () => {
+        expect.hasAssertions();
+
         const rendered = applyReleaseNoteTemplate(
             "BODY",
             {
@@ -413,6 +455,8 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
     });
 
     it("places header above body and footer below body (full composition)", () => {
+        expect.hasAssertions();
+
         const rendered = applyReleaseNoteTemplate(
             "BODY",
             { footer: "FOOTER", header: "HEADER" },
@@ -424,6 +468,8 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
 
     // release-please #292 parity — `{contributors}` token.
     it("interpolates {contributors} inside header and footer", () => {
+        expect.hasAssertions();
+
         const rendered = applyReleaseNoteTemplate(
             "BODY",
             {
@@ -437,6 +483,8 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
     });
 
     it("renders {contributors} as empty when no authors were collected", () => {
+        expect.hasAssertions();
+
         const rendered = applyReleaseNoteTemplate(
             "BODY",
             { header: "Thanks: {contributors}done" },
@@ -450,6 +498,8 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
     // to "" used to leave a stray leading "\n\n" because the
     // empty-template guard was evaluated pre-interpolation.
     it("drops the header entirely when it interpolates to empty (audit V1)", () => {
+        expect.hasAssertions();
+
         const rendered = applyReleaseNoteTemplate(
             "BODY",
             { footer: "{contributors}", header: "{contributors}" },
@@ -463,6 +513,8 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
     // used to leave `## Contributors\n\n\n\nBODY`; trailing whitespace
     // should be stripped after interpolation.
     it("strips trailing whitespace from header after interpolation (audit S-2)", () => {
+        expect.hasAssertions();
+
         const rendered = applyReleaseNoteTemplate(
             "BODY",
             { header: "## Contributors\n\n{contributors}" },
@@ -478,36 +530,43 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
 // too (not just the `CHANGELOG.md` body).
 describe.skipIf(isWindows)(extractInternalAuthors, () => {
     it("returns undefined when changelog is not configured or not a tuple", () => {
+        expect.hasAssertions();
         expect(extractInternalAuthors(undefined)).toBeUndefined();
         expect(extractInternalAuthors(false)).toBeUndefined();
         expect(extractInternalAuthors("github")).toBeUndefined();
     });
 
     it("returns undefined for non-github formatters", () => {
+        expect.hasAssertions();
         expect(extractInternalAuthors(["default", { internalAuthors: ["bot"] }])).toBeUndefined();
         expect(extractInternalAuthors(["keep-a-changelog", { internalAuthors: ["bot"] }])).toBeUndefined();
     });
 
     it("returns undefined when github formatter has no internalAuthors option", () => {
+        expect.hasAssertions();
         expect(extractInternalAuthors(["github", {}])).toBeUndefined();
         expect(extractInternalAuthors(["github", { somethingElse: true }])).toBeUndefined();
     });
 
     it("extracts the internalAuthors array from a github-formatter tuple", () => {
+        expect.hasAssertions();
+
         const result = extractInternalAuthors([
             "github",
             { internalAuthors: ["renovate[bot]", "dependabot"] },
         ]);
 
-        expect(result).toEqual(["renovate[bot]", "dependabot"]);
+        expect(result).toStrictEqual(["renovate[bot]", "dependabot"]);
     });
 
     it("filters out non-string entries defensively (e.g. operator passed a number)", () => {
+        expect.hasAssertions();
+
         const result = extractInternalAuthors([
             "github",
             { internalAuthors: ["renovate", 42, null, "dependabot"] as unknown as string[] },
         ]);
 
-        expect(result).toEqual(["renovate", "dependabot"]);
+        expect(result).toStrictEqual(["renovate", "dependabot"]);
     });
 });

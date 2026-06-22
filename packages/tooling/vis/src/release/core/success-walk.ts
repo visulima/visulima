@@ -517,6 +517,7 @@ export const walkSuccessfulRelease = async (
     }
 
     const channelTag = context.channel?.tag ?? "";
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- pLimit's type parameter is the task return type; these tasks resolve to void.
     const limit = pLimit<void>(4);
 
     const tasks = refs.map((ref) => limit(async () => {

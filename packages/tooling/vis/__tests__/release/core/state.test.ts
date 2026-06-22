@@ -37,12 +37,16 @@ describe("state — file lifecycle", () => {
     });
 
     it("returns undefined when no state file exists", async () => {
+        expect.hasAssertions();
+
         const state = await readState(cwd, changesDir);
 
         expect(state).toBeUndefined();
     });
 
     it("write → read round-trip preserves shape", async () => {
+        expect.hasAssertions();
+
         const state = newState("alpha", [mkRelease("a", "1.1.0"), mkRelease("b", "2.1.0")]);
 
         await writeState(cwd, changesDir, state);
@@ -51,13 +55,15 @@ describe("state — file lifecycle", () => {
         expect(read?.version).toBe(1);
         expect(read?.channel).toBe("alpha");
         expect(read?.plan).toHaveLength(2);
-        expect(read?.applied).toEqual([]);
-        expect(read?.published).toEqual([]);
-        expect(read?.tagged).toEqual([]);
+        expect(read?.applied).toStrictEqual([]);
+        expect(read?.published).toStrictEqual([]);
+        expect(read?.tagged).toStrictEqual([]);
         expect(read?.pushed).toBe(false);
     });
 
     it("clearState removes the file", async () => {
+        expect.hasAssertions();
+
         await writeState(cwd, changesDir, newState(undefined, [mkRelease("a", "1.1.0")]));
 
         await expect(readState(cwd, changesDir)).resolves.toBeDefined();
@@ -68,14 +74,18 @@ describe("state — file lifecycle", () => {
     });
 
     it("clearState is a no-op when file is absent", async () => {
+        expect.hasAssertions();
         await expect(clearState(cwd, changesDir)).resolves.toBeUndefined();
     });
 
     it("stateFilePath joins cwd + changesDir + .state.json", () => {
+        expect.hasAssertions();
         expect(stateFilePath("/r", ".vis/release")).toBe(join("/r", ".vis/release", ".state.json"));
     });
 
     it("throws STATE_FILE_CORRUPT on unknown schema version", async () => {
+        expect.hasAssertions();
+
         const fs = await import("node:fs/promises");
 
         await fs.mkdir(join(cwd, changesDir), { recursive: true });
@@ -87,6 +97,8 @@ describe("state — file lifecycle", () => {
 
 describe("state — filterPlanByState", () => {
     it("filters out already-published packages", () => {
+        expect.hasAssertions();
+
         const plan = [mkRelease("a", "1.1.0"), mkRelease("b", "2.1.0"), mkRelease("c", "3.1.0")];
         const state: StateFile = {
             applied: ["a@1.1.0", "b@2.1.0", "c@3.1.0"],
@@ -105,6 +117,8 @@ describe("state — filterPlanByState", () => {
     });
 
     it("returns full plan when nothing is published", () => {
+        expect.hasAssertions();
+
         const plan = [mkRelease("a", "1.1.0"), mkRelease("b", "2.1.0")];
         const state: StateFile = {
             applied: [],

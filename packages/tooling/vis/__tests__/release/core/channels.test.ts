@@ -4,12 +4,16 @@ import { resolveChannel } from "../../../src/release/core/channels";
 
 describe("channels: resolveChannel (literal match)", () => {
     it("matches a literal branch name", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("main", { main: { tag: "latest" } });
 
-        expect(result).toEqual({ branch: "main", mode: "auto-publish", prerelease: undefined, range: undefined, tag: "latest" });
+        expect(result).toStrictEqual({ branch: "main", mode: "auto-publish", prerelease: undefined, range: undefined, tag: "latest" });
     });
 
     it("includes prerelease + mode when configured", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("alpha", {
             alpha: { mode: "auto-publish", prerelease: "alpha", tag: "alpha" },
         });
@@ -19,12 +23,15 @@ describe("channels: resolveChannel (literal match)", () => {
     });
 
     it("returns undefined for unknown branch", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("feature/foo", { main: { tag: "latest" } });
 
         expect(result).toBeUndefined();
     });
 
     it("returns undefined when no channels configured", () => {
+        expect.hasAssertions();
         expect(resolveChannel("main", undefined)).toBeUndefined();
         expect(resolveChannel("main", {})).toBeUndefined();
     });
@@ -32,6 +39,8 @@ describe("channels: resolveChannel (literal match)", () => {
 
 describe("channels: resolveChannel (glob match)", () => {
     it("matches a glob pattern (maintenance branches)", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("1.x", {
             "[0-9]*.x": { range: "match", tag: "branch-name" },
         });
@@ -42,6 +51,8 @@ describe("channels: resolveChannel (glob match)", () => {
     });
 
     it("matches dotted maintenance pattern (1.2.x)", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("1.2.x", {
             "[0-9]*.x": { tag: "branch-name" },
         });
@@ -51,6 +62,8 @@ describe("channels: resolveChannel (glob match)", () => {
 
     it("does not match non-glob patterns as globs", () => {
         // 'release' is plain text, no glob meta; must not be glob-matched.
+        expect.hasAssertions();
+
         const result = resolveChannel("release", { other: { tag: "latest" } });
 
         expect(result).toBeUndefined();
@@ -59,6 +72,8 @@ describe("channels: resolveChannel (glob match)", () => {
 
 describe("channels: resolveChannel (precedence)", () => {
     it("literal wins over glob when both could match", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("alpha", {
             alpha: { tag: "alpha-literal" },
             "alpha*": { tag: "alpha-glob" },
@@ -70,6 +85,8 @@ describe("channels: resolveChannel (precedence)", () => {
     it("first-listed glob wins among glob matches", () => {
         // Order is the system under test — keep insertion order, not alphabetical.
         /* eslint-disable perfectionist/sort-objects */
+        expect.hasAssertions();
+
         const result = resolveChannel("alpha-1", {
             "alpha*": { tag: "first" },
             "*-1": { tag: "second" },
@@ -82,6 +99,8 @@ describe("channels: resolveChannel (precedence)", () => {
 
 describe("channels: tag = 'branch-name' sanitisation", () => {
     it("uses the branch name as the dist-tag", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("1.x", {
             "[0-9]*.x": { tag: "branch-name" },
         });
@@ -90,6 +109,8 @@ describe("channels: tag = 'branch-name' sanitisation", () => {
     });
 
     it("sanitises slashes / spaces from branch names", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("feature/Foo Bar", {
             "feature/*": { tag: "branch-name" },
         });
@@ -98,6 +119,8 @@ describe("channels: tag = 'branch-name' sanitisation", () => {
     });
 
     it("falls back to 'branch' when sanitised name is empty", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("---", {
             "*": { tag: "branch-name" },
         });
@@ -108,12 +131,16 @@ describe("channels: tag = 'branch-name' sanitisation", () => {
 
 describe("channels: mode default", () => {
     it("defaults to auto-publish when mode is not set", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("main", { main: { tag: "latest" } });
 
         expect(result?.mode).toBe("auto-publish");
     });
 
     it("respects explicit version-pr mode", () => {
+        expect.hasAssertions();
+
         const result = resolveChannel("main", { main: { mode: "version-pr", tag: "latest" } });
 
         expect(result?.mode).toBe("version-pr");

@@ -31,6 +31,8 @@ const mkPkg = (name: string): WorkspacePackage => {
 
 describe("orchestrator groupPreVersionCommands — glob expansion regression", () => {
     it("a fixed group with glob members is correctly detected as touched when any member is in the plan", () => {
+        expect.hasAssertions();
+
         const packages = [mkPkg("@scope/a"), mkPkg("@scope/b"), mkPkg("@scope/c"), mkPkg("@other/x")];
         const graph = new DependencyGraph(packages);
 
@@ -54,6 +56,8 @@ describe("orchestrator groupPreVersionCommands — glob expansion regression", (
     });
 
     it("mixed literal + glob group members all expand correctly", () => {
+        expect.hasAssertions();
+
         const packages = [mkPkg("core"), mkPkg("plugin-foo"), mkPkg("plugin-bar"), mkPkg("unrelated")];
         const graph = new DependencyGraph(packages);
 

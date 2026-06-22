@@ -26,6 +26,8 @@ describe("npmAdapter — pack", () => {
     });
 
     it("returns the tarball path on success", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["pack", "--json"], () => {
@@ -42,6 +44,8 @@ describe("npmAdapter — pack", () => {
     });
 
     it("passes --pack-destination when destination is set", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let seenArgs: ReadonlyArray<string> | undefined;
 
@@ -62,6 +66,8 @@ describe("npmAdapter — pack", () => {
     });
 
     it("throws PUBLISH_FAILED when npm pack exits non-zero", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["pack"], () => {
@@ -72,6 +78,8 @@ describe("npmAdapter — pack", () => {
     });
 
     it("throws PUBLISH_FAILED when output is missing filename", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["pack"], () => {
@@ -84,6 +92,8 @@ describe("npmAdapter — pack", () => {
 
 describe("npmAdapter — installLockfileOnly", () => {
     it("uses --package-lock-only flag", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let called = false;
 
@@ -99,6 +109,8 @@ describe("npmAdapter — installLockfileOnly", () => {
     });
 
     it("throws CONFIG_INVALID when install fails", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["install", "--package-lock-only"], () => {
@@ -117,26 +129,32 @@ describe("npmAdapter — installLockfileOnly", () => {
 
 describe("npmAdapter — listWorkspacePackages", () => {
     it("returns empty array on non-zero exit", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["query", ".workspace", "--json"], () => {
             return { exitCode: 1, stderr: "", stdout: "" };
         });
 
-        await expect(new NpmAdapter(runner).listWorkspacePackages("/r")).resolves.toEqual([]);
+        await expect(new NpmAdapter(runner).listWorkspacePackages("/r")).resolves.toStrictEqual([]);
     });
 
     it("returns empty array when JSON is malformed", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["query", ".workspace", "--json"], () => {
             return { exitCode: 0, stderr: "", stdout: "not json" };
         });
 
-        await expect(new NpmAdapter(runner).listWorkspacePackages("/r")).resolves.toEqual([]);
+        await expect(new NpmAdapter(runner).listWorkspacePackages("/r")).resolves.toStrictEqual([]);
     });
 
     it("parses package entries with all fields", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["query", ".workspace", "--json"], () => {
@@ -153,11 +171,13 @@ describe("npmAdapter — listWorkspacePackages", () => {
         const list = await new NpmAdapter(runner).listWorkspacePackages("/r");
 
         expect(list).toHaveLength(2);
-        expect(list[0]).toEqual({ name: "@s/a", path: "/r/packages/a", private: false, version: "1.0.0" });
-        expect(list[1]).toEqual({ name: "b", path: "/r/packages/b", private: true, version: "2.0.0" });
+        expect(list[0]).toStrictEqual({ name: "@s/a", path: "/r/packages/a", private: false, version: "1.0.0" });
+        expect(list[1]).toStrictEqual({ name: "b", path: "/r/packages/b", private: true, version: "2.0.0" });
     });
 
     it("filters out entries without a name", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["query", ".workspace", "--json"], () => {
@@ -177,6 +197,8 @@ describe("npmAdapter — listWorkspacePackages", () => {
 
 describe("npmAdapter — publish", () => {
     it("returns published: true on success", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["publish", "/tmp/pkg.tgz"], () => {
@@ -190,6 +212,8 @@ describe("npmAdapter — publish", () => {
     });
 
     it("appends optional tag/access/registry/otp/provenance flags", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let seenArgs: ReadonlyArray<string> | undefined;
 
@@ -215,7 +239,7 @@ describe("npmAdapter — publish", () => {
             tarball: "/tmp/pkg.tgz",
         });
 
-        expect(seenArgs).toEqual([
+        expect(seenArgs).toStrictEqual([
             "publish",
             "/tmp/pkg.tgz",
             "--tag",
@@ -232,6 +256,8 @@ describe("npmAdapter — publish", () => {
     });
 
     it("detects alreadyPublished via EPUBLISHCONFLICT in stderr", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["publish"], () => {
@@ -249,6 +275,8 @@ describe("npmAdapter — publish", () => {
     });
 
     it("detects alreadyPublished via 409 forbidden", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["publish"], () => {
@@ -265,6 +293,8 @@ describe("npmAdapter — publish", () => {
     });
 
     it("throws PUBLISH_FAILED on non-conflict errors", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["publish"], () => {
@@ -283,6 +313,8 @@ describe("npmAdapter — publish", () => {
 
 describe("npmAdapter — detectVersion", () => {
     it("returns trimmed stdout on success", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["--version"], () => {
@@ -293,6 +325,8 @@ describe("npmAdapter — detectVersion", () => {
     });
 
     it("returns undefined on failure", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("npm", ["--version"], () => {
@@ -320,6 +354,8 @@ describe("publishNative — per-pm command construction (publishStrategy: native
     };
 
     it("npm: runs `npm publish` in the package dir with flags", async () => {
+        expect.hasAssertions();
+
         const { adapterRunner, seen } = capture();
 
         const result = await new NpmAdapter(adapterRunner).publishNative({
@@ -331,38 +367,46 @@ describe("publishNative — per-pm command construction (publishStrategy: native
 
         expect(result.published).toBe(true);
         expect(seen.command).toBe("npm");
-        expect(seen.args).toEqual(["publish", "--tag", "next", "--access", "public", "--provenance"]);
+        expect(seen.args).toStrictEqual(["publish", "--tag", "next", "--access", "public", "--provenance"]);
         expect(seen.cwd).toBe("/repo/pkg");
     });
 
     it("pnpm: runs `pnpm publish --no-git-checks` in the package dir", async () => {
+        expect.hasAssertions();
+
         const { adapterRunner, seen } = capture();
 
         await new PnpmAdapter(adapterRunner).publishNative({ cwd: "/repo/pkg", tag: "latest" });
 
         expect(seen.command).toBe("pnpm");
-        expect(seen.args).toEqual(["publish", "--no-git-checks", "--tag", "latest"]);
+        expect(seen.args).toStrictEqual(["publish", "--no-git-checks", "--tag", "latest"]);
     });
 
     it("yarn: runs `yarn npm publish` (no --otp/--registry flags)", async () => {
+        expect.hasAssertions();
+
         const { adapterRunner, seen } = capture();
 
         await new YarnAdapter(adapterRunner).publishNative({ access: "restricted", cwd: "/repo/pkg", otp: "123456", registry: "https://r.example.com" });
 
         expect(seen.command).toBe("yarn");
-        expect(seen.args).toEqual(["npm", "publish", "--access", "restricted"]);
+        expect(seen.args).toStrictEqual(["npm", "publish", "--access", "restricted"]);
     });
 
     it("bun: runs `bun publish` (no --provenance/--otp)", async () => {
+        expect.hasAssertions();
+
         const { adapterRunner, seen } = capture();
 
         await new BunAdapter(adapterRunner).publishNative({ cwd: "/repo/pkg", otp: "123456", provenance: true, tag: "beta" });
 
         expect(seen.command).toBe("bun");
-        expect(seen.args).toEqual(["publish", "--tag", "beta"]);
+        expect(seen.args).toStrictEqual(["publish", "--tag", "beta"]);
     });
 
     it("maps EPUBLISHCONFLICT to alreadyPublished", async () => {
+        expect.hasAssertions();
+
         const conflictRunner: CommandRunner = {
             run: async () => {
                 return { exitCode: 1, stderr: "npm error code EPUBLISHCONFLICT", stdout: "" };

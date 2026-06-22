@@ -32,6 +32,8 @@ const mkPkg = (name: string, version: string, isPrivate: boolean): WorkspacePack
 
 describe(PrivateVersionActions, () => {
     it("readPublishedVersion always returns undefined", async () => {
+        expect.hasAssertions();
+
         const actions = new PrivateVersionActions();
         const pm = new NpmAdapter(new MockRunner());
 
@@ -44,6 +46,8 @@ describe(PrivateVersionActions, () => {
     });
 
     it("publish returns published: false with diagnostic output", async () => {
+        expect.hasAssertions();
+
         const actions = new PrivateVersionActions();
         const pm = new NpmAdapter(new MockRunner());
 
@@ -61,6 +65,7 @@ describe(PrivateVersionActions, () => {
     });
 
     it("has stable id `private`", () => {
+        expect.hasAssertions();
         expect(new PrivateVersionActions().id).toBe("private");
     });
 });

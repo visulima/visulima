@@ -111,9 +111,11 @@ const makeToolbox = (cwd: string, options: { "from-bot-pr"?: boolean; message?: 
 
 describe(parseBotPrTitle, () => {
     it("parses Dependabot 'build(deps): bump <pkg> from X to Y'", () => {
+        expect.hasAssertions();
+
         const parsed = parseBotPrTitle("build(deps): bump lodash from 4.17.20 to 4.17.21");
 
-        expect(parsed).toEqual({
+        expect(parsed).toStrictEqual({
             dep: "lodash",
             fromVersion: "4.17.20",
             toVersion: "4.17.21",
@@ -121,6 +123,8 @@ describe(parseBotPrTitle, () => {
     });
 
     it("parses bare Dependabot 'Bump <pkg> from X to Y'", () => {
+        expect.hasAssertions();
+
         const parsed = parseBotPrTitle("Bump axios from 1.4.0 to 1.5.0");
 
         expect(parsed?.dep).toBe("axios");
@@ -128,9 +132,11 @@ describe(parseBotPrTitle, () => {
     });
 
     it("parses Dependabot with 'in /path' suffix", () => {
+        expect.hasAssertions();
+
         const parsed = parseBotPrTitle("chore(deps): bump @types/node from 20.10.0 to 20.11.0 in /examples");
 
-        expect(parsed).toEqual({
+        expect(parsed).toStrictEqual({
             dep: "@types/node",
             fromVersion: "20.10.0",
             toVersion: "20.11.0",
@@ -138,6 +144,8 @@ describe(parseBotPrTitle, () => {
     });
 
     it("parses Renovate 'Update dependency <pkg> to <version>'", () => {
+        expect.hasAssertions();
+
         const parsed = parseBotPrTitle("Update dependency lodash to v4.17.21");
 
         expect(parsed?.dep).toBe("lodash");
@@ -146,6 +154,8 @@ describe(parseBotPrTitle, () => {
     });
 
     it("parses Renovate with conventional-commit prefix", () => {
+        expect.hasAssertions();
+
         const parsed = parseBotPrTitle("chore(deps): update dependency typescript to 5.4.0");
 
         expect(parsed?.dep).toBe("typescript");
@@ -156,6 +166,8 @@ describe(parseBotPrTitle, () => {
         // Renovate occasionally appends "[skip-ci]" / "[security]" / scope
         // tags / emoji to the title; the dep + target version must still be
         // extracted cleanly. Regression test for F8.
+        expect.hasAssertions();
+
         const skipCi = parseBotPrTitle("Update module foo to 1.2.3 [skip-ci]");
 
         expect(skipCi?.dep).toBe("foo");
@@ -168,6 +180,7 @@ describe(parseBotPrTitle, () => {
     });
 
     it("returns undefined for an unrecognised title", () => {
+        expect.hasAssertions();
         expect(parseBotPrTitle("feat: add tab completion")).toBeUndefined();
         expect(parseBotPrTitle("Merge pull request #123 from foo/bar")).toBeUndefined();
         expect(parseBotPrTitle("")).toBeUndefined();
@@ -222,6 +235,8 @@ describe.skipIf(isWindows)("vis release add --from-bot-pr (handler integration)"
     });
 
     it("authors a patch-bump change file from a Dependabot PR title", async () => {
+        expect.hasAssertions();
+
         ghRun = ghPrView({ author: "dependabot[bot]", title: "build(deps): bump lodash from 4.17.20 to 4.17.21" });
 
         const { toolbox } = makeToolbox(cwd, { "from-bot-pr": true });
@@ -241,6 +256,8 @@ describe.skipIf(isWindows)("vis release add --from-bot-pr (handler integration)"
     });
 
     it("authors a patch-bump change file from a Renovate PR title", async () => {
+        expect.hasAssertions();
+
         ghRun = ghPrView({ author: "renovate[bot]", title: "Update dependency lodash to v4.18.0" });
 
         const { toolbox } = makeToolbox(cwd, { "from-bot-pr": true });
@@ -258,6 +275,8 @@ describe.skipIf(isWindows)("vis release add --from-bot-pr (handler integration)"
     });
 
     it("exits gracefully when the PR title is not a bot pattern (no change file written)", async () => {
+        expect.hasAssertions();
+
         ghRun = ghPrView({ author: "human-user", title: "feat: add a new awesome feature" });
 
         const { logs, toolbox } = makeToolbox(cwd, { "from-bot-pr": true });
@@ -278,6 +297,8 @@ describe.skipIf(isWindows)("vis release add --from-bot-pr (handler integration)"
         // Drop the PR_NUMBER env so the fallback path through `gh pr view`
         // is exercised. The injected runner returns exit code 1 to simulate
         // "gh not authenticated / no PR for this branch".
+        expect.hasAssertions();
+
         delete process.env.PR_NUMBER;
         delete process.env.GITHUB_REF;
 
