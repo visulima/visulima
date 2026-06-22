@@ -16,11 +16,259 @@ import { readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import nodeModule from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { dirname, join } from "@visulima/path";
+import { readJson5Sync } from "@visulima/fs/json5";
+import { readJsoncSync } from "@visulima/fs/jsonc";
+import { readTomlSync } from "@visulima/fs/toml";
+import { readYamlSync } from "@visulima/fs/yaml";
+import { dirname, join, resolve as resolvePath } from "@visulima/path";
+import { configDirectoryPlaceholder, findTsConfigSync, implicitBaseUrlSymbol } from "@visulima/tsconfig";
 
 import { transformTs } from "#native";
 
 const TS_RE = /\.[cm]?tsx?$/;
+
+/**
+ * Data-file extensions the load hook parses into an ESM module whose `default`
+ * export is the parsed value. `.txt` yields the raw file contents as a string.
+ * Order matters only for the resolve-hook probe (longer/more-specific first is
+ * not required since these are matched by exact suffix).
+ */
+const DATA_EXT_CANDIDATES = [".yaml", ".yml", ".toml", ".jsonc", ".json5", ".txt"];
+
+const DATA_EXT_RE = /\.(?:ya?ml|toml|jsonc|json5|txt)$/;
+
+/**
+ * Parse a recognised data file into a JS value. `.txt` returns the raw string;
+ * the structured formats reuse `@visulima/fs` parsers (which wrap `yaml`,
+ * `smol-toml`, `jsonc-parser`, and `json5` — all already on the dependency
+ * graph), so no new runtime dependency is introduced.
+ */
+const parseDataFile = (filename: string): unknown => {
+    if (filename.endsWith(".yaml") || filename.endsWith(".yml")) {
+        return readYamlSync(filename);
+    }
+
+    if (filename.endsWith(".toml")) {
+        return readTomlSync(filename);
+    }
+
+    if (filename.endsWith(".jsonc")) {
+        // Tolerate trailing commas the way tsconfig/editor JSONC does.
+        return readJsoncSync(filename, { allowTrailingComma: true });
+    }
+
+    if (filename.endsWith(".json5")) {
+        return readJson5Sync(filename);
+    }
+
+    // `.txt` — raw contents, no parsing.
+    return readFileSync(filename, "utf8");
+};
+
+/**
+ * Serialize a parsed data value into a JS expression for the generated module.
+ * Unlike `JSON.stringify`, this preserves the values data parsers legitimately
+ * produce that JSON cannot represent: non-finite numbers (`.inf`/`.nan` in
+ * YAML/TOML → `Infinity`/`NaN`, not `null`), `Date` (TOML datetimes → a real
+ * `Date`, not an ISO string), `BigInt`, and `undefined` (empty YAML).
+ */
+const serializeForModule = (value: unknown): string => {
+    if (value === undefined) {
+        return "undefined";
+    }
+
+    if (value === null) {
+        return "null";
+    }
+
+    if (typeof value === "number") {
+        if (Number.isNaN(value)) {
+            return "NaN";
+        }
+
+        if (value === Number.POSITIVE_INFINITY) {
+            return "Infinity";
+        }
+
+        if (value === Number.NEGATIVE_INFINITY) {
+            return "-Infinity";
+        }
+
+        return String(value);
+    }
+
+    if (typeof value === "bigint") {
+        return `${value}n`;
+    }
+
+    if (typeof value === "boolean") {
+        return String(value);
+    }
+
+    if (typeof value === "string") {
+        return JSON.stringify(value);
+    }
+
+    if (value instanceof Date) {
+        return `new Date(${JSON.stringify(value.toISOString())})`;
+    }
+
+    if (Array.isArray(value)) {
+        return `[${value.map((item) => serializeForModule(item)).join(",")}]`;
+    }
+
+    if (typeof value === "object") {
+        const entries = Object.entries(value as Record<string, unknown>).map(([key, item]) => `${JSON.stringify(key)}:${serializeForModule(item)}`);
+
+        return `{${entries.join(",")}}`;
+    }
+
+    // Functions/symbols can't come from these parsers; emit null defensively.
+    return "null";
+};
+
+/**
+ * tsconfig `compilerOptions.baseUrl` + `paths` resolver, backed by the canonical
+ * `@visulima/tsconfig` reader (`findTsConfigSync`) — which handles the full
+ * `extends` surface (array reverse-merge, package `extends` via `exports`,
+ * JSONC + trailing commas, `${configDir}` placeholders). We read the resolved
+ * `paths` and derive the base directory targets resolve against; the matcher in
+ * {@link resolveTsConfigPaths} consumes this shape.
+ */
+interface ResolvedTsConfigPaths {
+    /** Whether a `baseUrl` was set (enables bare baseUrl-rooted resolution). */
+    hasBaseUrl: boolean;
+    paths: Record<string, string[]>;
+    /** Absolute directory that `paths` targets are resolved against. */
+    pathsBase: string;
+}
+
+const tsconfigCache = new Map<string, ResolvedTsConfigPaths | undefined>();
+
+/** Substitute a leading `${configDir}` placeholder with the config's directory. */
+const expandConfigDir = (value: string, configDirectory: string): string => {
+    if (value.startsWith(configDirectoryPlaceholder)) {
+        return join(configDirectory, value.slice(configDirectoryPlaceholder.length));
+    }
+
+    return value;
+};
+
+/**
+ * Find the nearest tsconfig from `startDirectory` (via `findTsConfigSync`) and
+ * return its effective `baseUrl`/`paths` plus the directory targets resolve
+ * against. Returns undefined when no tsconfig is found or it declares no `paths`.
+ */
+const loadTsConfigPaths = (startDirectory: string): ResolvedTsConfigPaths | undefined => {
+    if (tsconfigCache.has(startDirectory)) {
+        return tsconfigCache.get(startDirectory);
+    }
+
+    let result: ResolvedTsConfigPaths | undefined;
+
+    try {
+        // `findTsConfigSync` throws (NotFoundError) when there is no tsconfig.
+        const { config, path: tsconfigPath } = findTsConfigSync(startDirectory, { cache: false });
+        const configDirectory = dirname(tsconfigPath);
+        const options = config.compilerOptions;
+        // `paths` may be absent while `baseUrl` is set — that still enables
+        // baseUrl-rooted bare resolution, so default to {} rather than bailing.
+        const paths = options?.paths ?? {};
+
+        if (options !== undefined) {
+            // eslint-disable-next-line sonarjs/deprecation -- baseUrl is deprecated in TS 5+ but still supported for back-compat.
+            const { baseUrl } = options;
+
+            let pathsBase: string;
+            let hasBaseUrl = false;
+
+            if (baseUrl === undefined) {
+                // TS 5+ `paths` without `baseUrl`: the reader attaches the dir of the
+                // config that declared `paths` via `implicitBaseUrlSymbol`.
+                const implicit = (options as Record<symbol, unknown>)[implicitBaseUrlSymbol];
+
+                pathsBase = typeof implicit === "string" ? implicit : configDirectory;
+            } else {
+                // `@visulima/tsconfig` keeps the top config's baseUrl relative and
+                // relativizes inherited ones to the consuming config's dir.
+                hasBaseUrl = true;
+                pathsBase = resolvePath(configDirectory, expandConfigDir(baseUrl, configDirectory));
+            }
+
+            result = { hasBaseUrl, paths, pathsBase };
+        }
+    } catch {
+        // No tsconfig found, or it couldn't be read — no aliases to resolve.
+        result = undefined;
+    }
+
+    tsconfigCache.set(startDirectory, result);
+
+    return result;
+};
+
+/**
+ * Resolve a bare specifier against tsconfig `baseUrl` + `paths`. Returns an
+ * absolute filesystem path (post-probe) or undefined when no alias matches.
+ */
+export const resolveTsConfigPaths = (specifier: string, parentDirectory: string): string | undefined => {
+    const config = loadTsConfigPaths(parentDirectory);
+
+    if (config === undefined) {
+        return undefined;
+    }
+
+    const { hasBaseUrl, pathsBase } = config;
+
+    const probeBoth = (candidate: string): string | undefined => probe(candidate) ?? probeData(candidate);
+
+    // 1. Explicit `paths` aliases (wildcard + exact).
+    for (const [pattern, targets] of Object.entries(config.paths)) {
+        const starIndex = pattern.indexOf("*");
+
+        if (starIndex === -1) {
+            if (pattern === specifier) {
+                for (const target of targets) {
+                    const resolved = probeBoth(resolvePath(pathsBase, target));
+
+                    if (resolved !== undefined) {
+                        return resolved;
+                    }
+                }
+            }
+
+            continue;
+        }
+
+        const prefix = pattern.slice(0, starIndex);
+        const suffix = pattern.slice(starIndex + 1);
+
+        if (specifier.startsWith(prefix) && specifier.endsWith(suffix) && specifier.length >= prefix.length + suffix.length) {
+            const matched = specifier.slice(prefix.length, specifier.length - suffix.length);
+
+            for (const target of targets) {
+                const filled = target.replace("*", matched);
+                const resolved = probeBoth(resolvePath(pathsBase, filled));
+
+                if (resolved !== undefined) {
+                    return resolved;
+                }
+            }
+        }
+    }
+
+    // 2. baseUrl-rooted bare resolution (when a baseUrl is set, TS resolves
+    //    non-relative specifiers against it before node_modules).
+    if (hasBaseUrl) {
+        const resolved = probeBoth(resolvePath(pathsBase, specifier));
+
+        if (resolved !== undefined) {
+            return resolved;
+        }
+    }
+
+    return undefined;
+};
 
 interface RegisterHooksModule {
     registerHooks?: (hooks: {
@@ -128,6 +376,25 @@ const probe = (path: string): string | undefined => {
 };
 
 /**
+ * Probe data-file extensions (.yaml/.yml/.toml/.jsonc/.json5/.txt) for an
+ * extensionless or partially-specified import. Runs after {@link probe} so
+ * code modules always win when both exist.
+ */
+const probeData = (path: string): string | undefined => {
+    if (isFile(path) && DATA_EXT_RE.test(path)) {
+        return path;
+    }
+
+    for (const ext of DATA_EXT_CANDIDATES) {
+        if (isFile(path + ext)) {
+            return path + ext;
+        }
+    }
+
+    return undefined;
+};
+
+/**
  * Register the sync load hook once, if `module.registerHooks` exists. Returns
  * whether a graph-wide hook is active.
  */
@@ -158,6 +425,20 @@ const ensureRegisterHooks = (): boolean => {
                 return { format: formatFor(filename), shortCircuit: true, source: code };
             }
 
+            // Data files (.yaml/.yml/.toml/.jsonc/.json5/.txt) become an ESM module
+            // whose default export is the parsed value (raw string for .txt). Built-in
+            // `.json` is left to Node's native JSON module support.
+            if (clean.startsWith("file:") && DATA_EXT_RE.test(clean)) {
+                const filename = fileURLToPath(clean);
+                const value = parseDataFile(filename);
+
+                return {
+                    format: "module",
+                    shortCircuit: true,
+                    source: `export default ${serializeForModule(value)};\n`,
+                };
+            }
+
             return nextLoad(url, context);
         },
         // Extension/index probing + .js→.ts swap for relative specifiers, matching
@@ -174,10 +455,39 @@ const ensureRegisterHooks = (): boolean => {
                 }
 
                 if (target?.protocol === "file:") {
-                    const resolvedPath = probe(fileURLToPath(target));
+                    const targetPath = fileURLToPath(target);
+                    const resolvedPath = probe(targetPath) ?? probeData(targetPath);
 
                     if (resolvedPath !== undefined) {
                         return { shortCircuit: true, url: pathToFileURL(resolvedPath).href };
+                    }
+                }
+            }
+
+            // tsconfig `baseUrl`/`paths` aliases for bare specifiers that aren't
+            // node: builtins. node_modules packages still fall through to Node's
+            // resolver because the alias probe only returns on a real on-disk hit.
+            if (
+                context.parentURL !== undefined
+                && !specifier.startsWith(".")
+                && !specifier.startsWith("/")
+                && !specifier.startsWith("#")
+                && !specifier.startsWith("node:")
+                && !nodeModule.isBuiltin?.(specifier)
+            ) {
+                let parentDirectory: string | undefined;
+
+                try {
+                    parentDirectory = dirname(fileURLToPath(context.parentURL));
+                } catch {
+                    parentDirectory = undefined;
+                }
+
+                if (parentDirectory !== undefined) {
+                    const aliased = resolveTsConfigPaths(specifier, parentDirectory);
+
+                    if (aliased !== undefined) {
+                        return { shortCircuit: true, url: pathToFileURL(aliased).href };
                     }
                 }
             }

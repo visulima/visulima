@@ -1,0 +1,22 @@
+# The native `vis` CLI front-end — the Rust migration's startup + dispatch shell.
+#
+# A deliberately lean crate: it depends only on `vis-core` (pure pm logic), never
+# on the `vis-native` addon, so `cargo build -p vis-cli` stays fast and free of
+# the addon's heavy, toolchain-sensitive deps (oxc, rusqlite, …). Shared logic
+# ported off Node lives in `vis-core`.
+#
+# Profiles ([profile.release] etc.) are inherited from the workspace root
+# (../Cargo.toml).
+[package]
+name = "vis-cli"
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+publish = false
+
+[[bin]]
+name = "vis"
+path = "src/main.rs"
+
+[dependencies]
+vis-core = { path = "../core" }

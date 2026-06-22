@@ -157,10 +157,130 @@ export const loadEnvFile = (projectRoot: string, envFile: boolean | string | str
     const merged: Record<string, string> = {};
 
     for (const file of files) {
-        Object.assign(merged, loadSingleEnvFile(projectRoot, file));
+        // Later files in the cascade can interpolate values defined by earlier
+        // ones, so pass the accumulated map down as the lookup scope.
+        Object.assign(merged, loadSingleEnvFile(projectRoot, file, merged));
     }
 
     return merged;
+};
+
+/**
+ * Expand `${VAR}` / `$VAR` references in a dotenv value (dotenv-expand
+ * semantics). Lookup order: the already-loaded cascade `scope` wins, then
+ * `process.env`. Supports:
+ *
+ * - `${VAR}` / `$VAR` — substitute, or empty string when unset.
+ * - `${VAR:-default}` — substitute, falling back to `default` when `VAR`
+ *   is unset or empty (the default may itself reference other vars).
+ * - `\$` — a literal `$` (the backslash is consumed).
+ *
+ * Callers must NOT pass single-quoted values here — those are literal.
+ */
+const expandEnvValue = (value: string, scope: Record<string, string>): string => {
+    const lookup = (name: string): string => {
+        const fromScope = scope[name];
+
+        if (fromScope !== undefined) {
+            return fromScope;
+        }
+
+        const fromProcess = process.env[name];
+
+        return fromProcess ?? "";
+    };
+
+    let result = "";
+
+    for (let index = 0; index < value.length; index += 1) {
+        const char = value[index] as string;
+
+        // `\$` → literal `$`. Any other `\x` is left untouched (dotenv keeps
+        // the backslash for non-`$` escapes).
+        if (char === "\\" && value[index + 1] === "$") {
+            result += "$";
+            index += 1;
+
+            continue;
+        }
+
+        if (char !== "$") {
+            result += char;
+
+            continue;
+        }
+
+        const next = value[index + 1];
+
+        if (next === "{") {
+            // Find the MATCHING close brace, tracking depth so a nested `${...}`
+            // in a `:-default` (e.g. `${A:-${B}}`) closes on the outer `}`, not
+            // the inner one.
+            let depth = 1;
+            let scan = index + 2;
+
+            while (scan < value.length) {
+                const current = value[scan];
+
+                if (current === "}") {
+                    depth -= 1;
+
+                    if (depth === 0) {
+                        break;
+                    }
+                } else if (current === "{" && value[scan - 1] === "$") {
+                    depth += 1;
+                }
+
+                scan += 1;
+            }
+
+            if (depth !== 0) {
+                // Unterminated `${` — emit verbatim and stop scanning specials.
+                result += value.slice(index);
+                break;
+            }
+
+            const close = scan;
+            const expression = value.slice(index + 2, close);
+            const separator = expression.indexOf(":-");
+
+            if (separator === -1) {
+                result += lookup(expression);
+            } else {
+                const name = expression.slice(0, separator);
+                const fallback = expression.slice(separator + 2);
+                const resolved = scope[name] ?? process.env[name];
+
+                result += resolved !== undefined && resolved !== "" ? resolved : expandEnvValue(fallback, scope);
+            }
+
+            // eslint-disable-next-line sonarjs/updated-loop-counter -- manual scanner: jump past the consumed `${...}` span.
+            index = close;
+
+            continue;
+        }
+
+        // Bare `$VAR` — a name is `[A-Za-z_][A-Za-z0-9_]*`. A lone `$` (no
+        // valid name follows) is kept literally.
+        if (next !== undefined && /[A-Z_]/i.test(next)) {
+            let end = index + 1;
+
+            while (end < value.length && /\w/.test(value[end] as string)) {
+                end += 1;
+            }
+
+            result += lookup(value.slice(index + 1, end));
+            // eslint-disable-next-line sonarjs/updated-loop-counter -- manual scanner: jump past the consumed bare `$VAR`.
+            index = end - 1;
+
+            continue;
+        }
+
+        result += char;
+    }
+
+    return result;
 };
 
 /**
@@ -187,7 +307,7 @@ const resolveEnvCascade = (nodeEnv: string | undefined): string[] => {
     return files;
 };
 
-const loadSingleEnvFile = (projectRoot: string, envFile: string): Record<string, string> => {
+const loadSingleEnvFile = (projectRoot: string, envFile: string, scope: Record<string, string> = {}): Record<string, string> => {
     // `startsWith("/")` only recognised POSIX absolute paths — a Windows
     // absolute path like `C:\foo\.env` would fall through and get joined
     // onto `projectRoot`, breaking the absolute-path branch on Windows.
@@ -228,8 +348,16 @@ const loadSingleEnvFile = (projectRoot: string, envFile: string): Record<string,
 
         let value = line.slice(equalsIndex + 1).trim();
 
-        if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
+        // Single-quoted values are LITERAL — no `${VAR}` expansion (dotenv-expand
+        // semantics). Double-quoted and unquoted values are interpolated.
+        const singleQuoted = value.length >= 2 && value.startsWith("'") && value.endsWith("'");
+
+        if ((value.startsWith("\"") && value.endsWith("\"")) || singleQuoted) {
             value = value.slice(1, -1);
+        }
+
+        if (!singleQuoted) {
+            value = expandEnvValue(value, { ...scope, ...env });
         }
 
         env[key] = value;

@@ -6,6 +6,19 @@ const toStringArray = (value: unknown): string[] => {
     return Array.isArray(value) ? (value as string[]) : [value as string];
 };
 
+/**
+ * Merge the cerebro `argument` positionals with the `rawUnknown` tail that
+ * cerebro split off after the command (unknown flags + extra packages), so the
+ * Node PM handlers forward exactly what the native binary does. A single leading
+ * `--` in the unknown tail is the explicit "pass the rest through" separator, in
+ * which case only the parsed `argument` list is used.
+ */
+const mergeForwardedPackages = (argument: ReadonlyArray<string> | undefined, rawUnknown: ReadonlyArray<string> | undefined): string[] => {
+    const unknown = rawUnknown ?? [];
+
+    return unknown[0] === "--" ? [...(argument ?? [])] : [...(argument ?? []), ...unknown];
+};
+
 const errorMessage = (error: unknown): string => {
     if (error instanceof Error) {
         return error.message;
@@ -88,4 +101,4 @@ const parsePackageArgument = (argument: string): { name: string; versionSpec: st
     return { name: match[1] ?? argument, versionSpec: match[2] };
 };
 
-export { errorMessage, normalizeWorkspacePath, parsePackageArgument, sanitizeGitRefComponent, toStringArray };
+export { errorMessage, mergeForwardedPackages, normalizeWorkspacePath, parsePackageArgument, sanitizeGitRefComponent, toStringArray };

@@ -3,16 +3,23 @@ import type { Toolbox } from "@visulima/cerebro";
 import { resolveInstaller, runPmSubcommand } from "../../pm/pm-runner";
 import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
 
-const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox): Promise<void> => {
-    const args = argument;
+const execute = async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox): Promise<void> => {
+    const positionals = argument;
 
-    if (!args || args.length === 0) {
+    if (!positionals || positionals.length === 0) {
         throw new Error(
             "No subcommand specified. Available: cache, publish, audit, list, view, config, whoami, login, logout, pack, owner, dist-tag, search, fund, ping, token, deprecate, rebuild, prune, plugin",
         );
     }
 
-    const [subcommand, ...rest] = args;
+    const [subcommand, ...positionalRest] = positionals;
+
+    // `pm` defines no options, so flags (e.g. `pm publish --dry-run`,
+    // `pm list --depth 0`) land in rawUnknown and were historically dropped.
+    // Forward them to the PM subcommand (honoring an explicit `--` separator).
+    const unknown = rawUnknown ?? [];
+    const rest = unknown[0] === "--" ? positionalRest : [...positionalRest, ...unknown];
+
     const cwd = wsRoot ?? process.cwd();
     const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
     const pm = resolveInstaller(cwd, {

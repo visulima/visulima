@@ -184,8 +184,13 @@ jobs:
               id: "cache-vis"
               uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
               with:
-                  path: "packages/tooling/vis/*.node"
-                  key: "native-vis-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/vis/native/Cargo.toml', 'packages/tooling/vis/native/Cargo.lock', 'packages/tooling/vis/native/build.rs', 'packages/tooling/vis/native/src/**') }}"
+                  # Both the napi addon (*.node) and the vis CLI front-end binary
+                  # (dropped into the matching binding package) are cached.
+                  path: |
+                      packages/tooling/vis/*.node
+                      packages/tooling/vis/npm/*/vis-native-cli
+                      packages/tooling/vis/npm/*/vis-native-cli.exe
+                  key: "native-vis-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/vis/native/Cargo.toml', 'packages/tooling/vis/native/Cargo.lock', 'packages/tooling/vis/native/build.rs', 'packages/tooling/vis/native/src/**', 'packages/tooling/vis/native/cli/**') }}"
 
             - name: "Restore secret-scanner native build cache"
               id: "cache-secret-scanner"
@@ -256,17 +261,20 @@ jobs:
             # builds on every Linux target, so install zig here too.
             # Idempotent — re-running setup-zig when it already ran
             # for musl is a no-op.
-            - name: "Install Zig for fspy-seccomp-helper (all Linux)"
-              if: "contains(matrix.settings.target, 'linux') && steps.cache-task-runner.outputs.cache-hit != 'true'"
+            # Also gated on the vis cache: the vis CLI binary cross-compiles all
+            # Linux triples (musl + aarch64) via cargo-zigbuild below, so zig must
+            # be present whenever vis needs building too. setup-zig is idempotent.
+            - name: "Install Zig (all Linux sidecar binaries)"
+              if: "contains(matrix.settings.target, 'linux') && (steps.cache-task-runner.outputs.cache-hit != 'true' || steps.cache-vis.outputs.cache-hit != 'true')"
               uses: "mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29" # v2.2.1
               with:
                   version: "0.14.1"
 
-            # cargo-zigbuild for the fspy-seccomp-helper build step.
+            # cargo-zigbuild for the fspy-seccomp-helper and vis-cli build steps.
             # Prebuilt via taiki-e/install-action (~5s; building via
             # `cargo install` would add multiple minutes per CI run).
             - name: "Install cargo-zigbuild (Linux only)"
-              if: "contains(matrix.settings.target, 'linux') && steps.cache-task-runner.outputs.cache-hit != 'true'"
+              if: "contains(matrix.settings.target, 'linux') && (steps.cache-task-runner.outputs.cache-hit != 'true' || steps.cache-vis.outputs.cache-hit != 'true')"
               uses: "taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538" # v2
               with:
                   tool: "cargo-zigbuild"
@@ -375,6 +383,46 @@ jobs:
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
               working-directory: "packages/tooling/vis"
 
+            # Build the vis CLI front-end binary (the Rust startup + dispatch
+            # shell) for this target and drop it into the matching binding package
+            # so its `files` array publishes it. `-p vis-cli` compiles ONLY the
+            # lean CLI crate — never the napi addon or its oxc/rusqlite deps.
+            # Linux triples cross via cargo-zigbuild (handles musl + aarch64 with
+            # no extra sysroot); macOS/Windows build the host-or-cross Apple/MSVC
+            # triple natively, mirroring the fspy sidecar builds above.
+            - name: "Build vis-cli native binary"
+              if: "steps.cache-vis.outputs.cache-hit != 'true'"
+              shell: "bash"
+              working-directory: "packages/tooling/vis"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
+              run: |
+                  rustup target add "$TARGET"
+                  case "$TARGET" in
+                    *linux*) cargo zigbuild --manifest-path native/Cargo.toml -p vis-cli --release --target "$TARGET" ;;
+                    *)       cargo build    --manifest-path native/Cargo.toml -p vis-cli --release --target "$TARGET" ;;
+                  esac
+                  case "$TARGET" in
+                    x86_64-apple-darwin)         binding="darwin-x64";       exe="vis";     dest="vis-native-cli" ;;
+                    aarch64-apple-darwin)        binding="darwin-arm64";     exe="vis";     dest="vis-native-cli" ;;
+                    x86_64-unknown-linux-gnu)    binding="linux-x64-gnu";    exe="vis";     dest="vis-native-cli" ;;
+                    x86_64-unknown-linux-musl)   binding="linux-x64-musl";   exe="vis";     dest="vis-native-cli" ;;
+                    aarch64-unknown-linux-gnu)   binding="linux-arm64-gnu";  exe="vis";     dest="vis-native-cli" ;;
+                    aarch64-unknown-linux-musl)  binding="linux-arm64-musl"; exe="vis";     dest="vis-native-cli" ;;
+                    x86_64-pc-windows-msvc)      binding="win32-x64-msvc";   exe="vis.exe"; dest="vis-native-cli.exe" ;;
+                    aarch64-pc-windows-msvc)     binding="win32-arm64-msvc"; exe="vis.exe"; dest="vis-native-cli.exe" ;;
+                    *)                           binding="" ;;
+                  esac
+                  if [ -z "$binding" ]; then
+                      echo "no binding package mapping for target '$TARGET'" >&2
+                      exit 1
+                  fi
+                  cp "native/target/$TARGET/release/$exe" "npm/$binding/$dest"
+                  case "$TARGET" in
+                    *windows*) : ;;
+                    *) chmod 0755 "npm/$binding/$dest" ;;
+                  esac
+
             - name: "Build secret-scanner native"
               if: "steps.cache-secret-scanner.outputs.cache-hit != 'true'"
               run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
@@ -403,7 +451,10 @@ jobs:
               if: "github.event_name == 'push' && steps.cache-vis.outputs.cache-hit != 'true'"
               uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
               with:
-                  path: "packages/tooling/vis/*.node"
+                  path: |
+                      packages/tooling/vis/*.node
+                      packages/tooling/vis/npm/*/vis-native-cli
+                      packages/tooling/vis/npm/*/vis-native-cli.exe
                   key: "${{ steps.cache-vis.outputs.cache-primary-key }}"
 
             - name: "Save secret-scanner native build cache"
@@ -436,7 +487,10 @@ jobs:
               uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
               with:
                   name: "bindings-vis-${{ matrix.settings.target }}"
-                  path: "packages/tooling/vis/*.node"
+                  path: |
+                      packages/tooling/vis/*.node
+                      packages/tooling/vis/npm/*/vis-native-cli
+                      packages/tooling/vis/npm/*/vis-native-cli.exe
                   if-no-files-found: "error"
 
             - name: "Upload secret-scanner artifact"

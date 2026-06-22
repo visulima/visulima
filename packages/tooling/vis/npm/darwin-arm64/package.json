@@ -15,7 +15,8 @@
     },
     "main": "vis-native.darwin-arm64.node",
     "files": [
-        "vis-native.darwin-arm64.node"
+        "vis-native.darwin-arm64.node",
+        "vis-native-cli"
     ],
     "engines": {
         "node": "^22.14.0 || >=24.10.0"

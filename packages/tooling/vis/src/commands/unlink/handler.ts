@@ -2,10 +2,11 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { resolveInstaller, runUnlink } from "../../pm/pm-runner";
 import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
+import { mergeForwardedPackages } from "../../util/utils";
 import type { UnlinkOptions } from "./index";
 
-const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, UnlinkOptions>): Promise<void> => {
-    const packages = argument || [];
+const execute = async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, UnlinkOptions>): Promise<void> => {
+    const packages = mergeForwardedPackages(argument, rawUnknown);
     const cwd = wsRoot ?? process.cwd();
     const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
     const pm = resolveInstaller(cwd, {

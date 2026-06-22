@@ -27,6 +27,58 @@ import { unflagArgs } from "../../runtime/unflag";
 
 const REEXEC_SENTINEL = "VIS_X_REEXEC";
 
+/** Options for {@link runFile}. */
+export interface RunFileOptions {
+    /**
+     * `--node` escape hatch: run the target on plain Node with ZERO vis
+     * augmentation (no TS load hook, no `--import` preload, no flag injection,
+     * no `.env` loading, no polyfills), exactly like `node &lt;file> &lt;args>`.
+     */
+    node?: boolean;
+}
+
+/**
+ * Run `file` on plain Node with no augmentation whatsoever — the `--node`
+ * escape hatch. Spawns the current Node binary directly (stdio inherited,
+ * exit code forwarded); no TS loader, preload, flag injection, `.env`, or
+ * polyfills. A `.ts` file is handed to Node as-is (Node decides whether it
+ * can run it), since the point of `--node` is "do nothing vis-specific".
+ */
+const runUnderPlainNode = (file: string, scriptArguments: string[], cwd: string): number => {
+    // Strip vis's OWN augmentation from the child env so a nested `vis x --node`
+    // is unaugmented even when launched from a parent that set
+    // VIS_AUGMENT_SUBPROCESS (which injects `--import <preload>` into NODE_OPTIONS).
+    // A user's own ambient NODE_OPTIONS is preserved — "plain node" honours it.
+    const environment = { ...process.env };
+    const visPreload = join(dirname(process.argv[1] as string), "runtime", "preload.js");
+
+    if (environment["NODE_OPTIONS"]) {
+        const stripped = environment["NODE_OPTIONS"]
+            .replace(`--import ${JSON.stringify(visPreload)}`, "")
+            .replace(`--import ${visPreload}`, "")
+            .replaceAll(/\s+/gu, " ")
+            .trim();
+
+        if (stripped === "") {
+            delete environment["NODE_OPTIONS"];
+        } else {
+            environment["NODE_OPTIONS"] = stripped;
+        }
+    }
+
+    delete environment["VIS_AUGMENT_SUBPROCESS"];
+    delete environment["VIS_UNFLAG"];
+    delete environment["VIS_POLYFILL"];
+
+    const result = spawnSync(process.execPath, [file, ...scriptArguments], { cwd, env: environment, stdio: "inherit" });
+
+    if (result.error) {
+        throw result.error;
+    }
+
+    return result.status ?? (result.signal === null ? 0 : 1);
+};
+
 /** `--localstorage-file` path: `&lt;project-root>/.vis/localstorage` (nearest package.json). */
 const localstorageFile = (cwd: string): string => {
     let directory = cwd;
@@ -126,5 +178,11 @@ const runUnderNode = async (file: string, scriptArguments: string[], cwd: string
     return typeof process.exitCode === "number" ? process.exitCode : 0;
 };
 
-export const runFile = async (file: string, scriptArguments: string[], runtime: RuntimeId, cwd: string): Promise<number> =>
-    (runtime === "bun" ? runUnderBun(file, scriptArguments, cwd) : runUnderNode(file, scriptArguments, cwd));
+export const runFile = async (file: string, scriptArguments: string[], runtime: RuntimeId, cwd: string, options: RunFileOptions = {}): Promise<number> => {
+    // `--node` short-circuits everything: plain Node, no augmentation.
+    if (options.node) {
+        return runUnderPlainNode(file, scriptArguments, cwd);
+    }
+
+    return runtime === "bun" ? runUnderBun(file, scriptArguments, cwd) : runUnderNode(file, scriptArguments, cwd);
+};

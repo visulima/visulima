@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@lib/*": ["lib/*"],
+      "@data/config": ["lib/config.yaml"]
+    }
+  }
+}
