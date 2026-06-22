@@ -108,6 +108,30 @@ describe(hookScript, () => {
 
         expect(script).toContain("VIS_GIT_HOOKS");
     });
+
+    it("should not bake a CI skip guard by default", () => {
+        expect.assertions(2);
+
+        const script = hookScript(".vis/hooks");
+
+        expect(script).not.toContain("${CI-}");
+        // The blank line between the disable-guard and the `d=` assignment
+        // is preserved when no CI guard is injected.
+        expect(script).toContain("{ [ \"${VIS_GIT_HOOKS-}\" = \"0\" ]; } && exit 0\n\nd=");
+    });
+
+    it("should bake a CI skip guard when skipInCI is set", () => {
+        expect.assertions(3);
+
+        const script = hookScript(".vis/hooks", { skipInCI: true });
+
+        // Skips under any non-empty $CI, unless VIS_GIT_HOOKS=1 forces it on.
+        expect(script).toContain("{ [ -n \"${CI-}\" ] && [ \"${VIS_GIT_HOOKS-}\" != \"1\" ]; } && exit 0");
+        // Ordered AFTER the VIS_GIT_HOOKS=0 kill switch so 0 still wins.
+        expect(script.indexOf("= \"0\" ]; } && exit 0")).toBeLessThan(script.indexOf("[ -n \"${CI-}\" ]"));
+        // ...and before the hook body actually runs.
+        expect(script.indexOf("[ -n \"${CI-}\" ]")).toBeLessThan(script.indexOf("sh -e \"$s\""));
+    });
 });
 
 describe(installHooks, () => {
@@ -130,6 +154,30 @@ describe(installHooks, () => {
 
             // User hook scripts are NOT created
             expect(existsSync(join(root, ".vis/hooks", "pre-commit"))).toBe(false);
+        } finally {
+            cleanup();
+        }
+    });
+
+    it.skipIf(process.platform === "win32")("should bake the CI skip guard into the dispatcher when config.json sets skipInCI", () => {
+        expect.assertions(2);
+
+        const { cleanup, root } = createTemporaryGitRepo();
+
+        try {
+            mkdirSync(join(root, ".vis/hooks"), { recursive: true });
+            writeFileSync(join(root, ".vis/hooks", "config.json"), JSON.stringify({ skipInCI: true, stages: {}, version: 1 }));
+
+            installHooks(".vis/hooks");
+            const dispatcher = readFileSync(join(root, ".vis/hooks", "_", "h"), "utf8");
+
+            expect(dispatcher).toContain("{ [ -n \"${CI-}\" ] && [ \"${VIS_GIT_HOOKS-}\" != \"1\" ]; } && exit 0");
+
+            // Without the opt-in the guard stays out (default config).
+            writeFileSync(join(root, ".vis/hooks", "config.json"), JSON.stringify({ stages: {}, version: 1 }));
+            installHooks(".vis/hooks");
+
+            expect(readFileSync(join(root, ".vis/hooks", "_", "h"), "utf8")).not.toContain("${CI-}");
         } finally {
             cleanup();
         }

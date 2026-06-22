@@ -62,6 +62,21 @@ export interface HookEntry {
 export interface HookConfig {
     /** Stop on first hook failure. Mirrors prek `fail_fast`. */
     failFast?: boolean;
+
+    /**
+     * Skip **all** git hooks when running under CI (any non-empty `$CI`,
+     * which every major CI provider sets). `vis hook install` bakes this
+     * into the generated `_/` dispatcher, so it fires before the hook body
+     * — even for hooks that invoke a tool directly (e.g. a raw `commitlint`
+     * commit-msg) instead of going through `vis hook run`. The same checks
+     * normally run as dedicated CI jobs, so automated commits (release
+     * bots, merges) don't re-trigger them and trip on a generated commit
+     * message. Force hooks back on for a specific job with `VIS_GIT_HOOKS=1`.
+     *
+     * Changing this value requires re-running `vis hook install` to
+     * regenerate the dispatcher.
+     */
+    skipInCI?: boolean;
     /** stage name → ordered hook list. */
     stages: Record<string, HookEntry[]>;
     /** Schema version; bump for breaking changes. */
@@ -89,7 +104,7 @@ const ENTRY_KEYS = new Set<string>([
     "verbose",
 ]);
 
-const CONFIG_KEYS = new Set<string>(["failFast", "stages", "version"]);
+const CONFIG_KEYS = new Set<string>(["failFast", "skipInCI", "stages", "version"]);
 
 const FILTER_KEYS = ["args", "exclude", "excludeTypes", "files", "passFilenames", "types", "typesOr"] as const;
 
@@ -271,6 +286,12 @@ const parseConfig = (raw: unknown, warnings: ParseWarning[]): HookConfig => {
 
     if (failFast !== undefined) {
         config.failFast = failFast;
+    }
+
+    const skipInCI = asBoolean(raw["skipInCI"]);
+
+    if (skipInCI !== undefined) {
+        config.skipInCI = skipInCI;
     }
 
     for (const key of Object.keys(raw)) {

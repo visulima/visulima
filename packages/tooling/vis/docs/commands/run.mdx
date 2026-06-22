@@ -45,7 +45,7 @@ vis run dev --services=persistent --stop-services         # Boot service deps + 
 | Option               | Alias | Default        | Description                                                                                                                                                                                                                                                                                                         |
 | -------------------- | ----- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `--projects`         | `-p`  | all            | Comma-separated list of projects to run                                                                                                                                                                                                                                                                             |
-| `--parallel`         |       | `3`            | Maximum number of parallel tasks (also reads `VIS_RUN_CONCURRENCY_LIMIT`)                                                                                                                                                                                                                                           |
+| `--parallel`         |       | `3`            | Maximum number of parallel tasks (also reads `VIS_RUN_CONCURRENCY_LIMIT`). The resolved value is exported to every task as `VIS_TASK_SLOTS` — see [Environment variables in child tasks](#environment-variables-in-child-tasks).                                                                                    |
 | `--preflight`        |       | enabled        | Detect lockfile / `node_modules` drift before running. Warns in TTY, fails in CI. `--no-preflight` opts out per run; workspace-wide via `preflight.lockfile: false` in `vis.config.ts`.                                                                                                                             |
 | `--skip-toolchain`   |       | `false`        | Skip the toolchain pre-flight (no auto-install for any pinned tool: node / pnpm / yarn / npm / bun / deno / go / python / ruby / rust)                                                                                                                                                                              |
 | `--cache`            |       | `true`         | Enable caching (`--no-cache` to disable)                                                                                                                                                                                                                                                                            |
@@ -272,6 +272,30 @@ So you can opt the whole repo into quiet, auto-closing runs with `quietOnSuccess
 ```
 
 Auto-cascade (`true`) loads in Next.js order: `.env` → `.env.{NODE_ENV}` → `.env.local` → `.env.{NODE_ENV}.local`. `.env.local` is skipped when `NODE_ENV=test` to avoid leaking CI secrets into tests.
+
+### Environment variables in child tasks
+
+Beyond your own `env` / `envFile`, vis injects a few variables into every spawned task:
+
+| Variable         | Value                                                                                                                 |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `INIT_CWD`       | The directory you invoked `vis` from (before workspace discovery changed cwd), matching the pnpm/npm/yarn convention. |
+| `VIS_TASK_SLOTS` | The effective parallelism for this run — the resolved `--parallel` value (default `3`).                               |
+
+`VIS_TASK_SLOTS` exists to avoid **nested oversubscription**. `vis run` already executes up to `VIS_TASK_SLOTS` projects at once; if each task then spawns its own worker pool sized to the full CPU count (Vitest's default `maxWorkers`, v8 coverage, jest, etc.), you get `slots × cores` processes fighting for the same cores — fast tasks blow past their timeouts and the whole run slows down. Size the inner pool against the slots vis grants you instead:
+
+```ts
+// vitest.config.ts
+import os from "node:os";
+import { defineConfig } from "vitest/config";
+
+const slots = Number(process.env.VIS_TASK_SLOTS) || 1;
+const maxWorkers = Math.max(1, Math.floor(os.availableParallelism() / slots));
+
+export default defineConfig({
+    test: { maxWorkers, minWorkers: 1 },
+});
+```
 
 ### Task conditions
 
@@ -503,6 +527,18 @@ export default defineConfig({
     },
 });
 ```
+
+### Execution model: vis runs the configured command
+
+`vis run <project>:<target>` executes the **command configured for that target** — the `command` in `vis.config.ts` / `vis.task.ts`, or the matching `package.json` script discovered for the project. There is no separate built-in ESLint/lint "inference" layer: `vis run :lint:eslint` runs whatever `lint:eslint` is wired to, so editing that script _does_ change what runs. Prerequisites (codegen, type generation, building a dependency) belong in `dependsOn`, not in vis-specific magic.
+
+A corollary: if a target's `dependsOn` names a target that has **no command** anywhere (e.g. `dependsOn: ["codegen"]` but the project has no `codegen` script), the dependency is a no-op — it can't run something that doesn't exist. vis now warns when this happens:
+
+```
+codegen required via dependsOn but no command is configured for @acme/app — skipping (no-op).
+```
+
+instead of silently succeeding, so a missing prerequisite surfaces locally rather than only in CI once a downstream task fails.
 
 ## Flakiness Report
 
