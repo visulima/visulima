@@ -35,7 +35,7 @@ const fallbackEntry = process.env.VIS_FALLBACK_ENTRY ?? join(packageRoot, "dist"
 // `exec` parity was verified empirically against cerebro: tool flags after the
 // command are forwarded to the tool on both the native path and the Node handler
 // (src/commands/exec/handler.ts), which was fixed to stop dropping them.
-const NATIVE_COMMANDS = new Set(["--version", "-V", "__native-info", "__pm-shim", "exec", "pm"]);
+const NATIVE_COMMANDS = new Set(["--version", "-V", "__native-info", "__pm-shim", "exec", "pm", "x"]);
 
 const command = process.argv[2] ?? "";
 

@@ -144,6 +144,50 @@ fn pm_passthrough_resolves_and_forwards_flags() {
     assert_eq!(publish, "PNPM:publish --dry-run");
 }
 
+#[cfg(unix)]
+#[test]
+fn x_spawns_node_with_the_preload_import() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let base = std::env::temp_dir().join(format!("vis-x-{}", std::process::id()));
+    let project = base.join("project");
+    let bindir = base.join("bin");
+    std::fs::create_dir_all(&project).unwrap();
+    std::fs::create_dir_all(&bindir).unwrap();
+    std::fs::write(project.join("app.ts"), "export {};\n").unwrap();
+
+    // Stub "node" that echoes its argv so we can assert the constructed command.
+    let stub_node = bindir.join("node");
+    std::fs::write(&stub_node, "#!/bin/sh\necho \"NODE:$*\"\n").unwrap();
+    std::fs::set_permissions(&stub_node, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+    let fallback = base.join("dist").join("bin.js");
+    std::fs::create_dir_all(fallback.parent().unwrap()).unwrap();
+
+    let output = binary()
+        .args(["x", "app.ts", "--flag"])
+        .current_dir(&project)
+        .env("VIS_NODE", &stub_node)
+        .env("VIS_FALLBACK_ENTRY", &fallback)
+        .env_remove("VIS_RUNTIME")
+        .env_remove("VIS_UNFLAG")
+        .env_remove("VIS_AUGMENT_SUBPROCESS")
+        .env_remove("npm_config_user_agent")
+        .output()
+        .expect("run binary");
+
+    let preload = base.join("dist").join("runtime").join("preload.js");
+    let stdout = String::from_utf8_lossy(&output.stdout);
+
+    std::fs::remove_dir_all(&base).ok();
+
+    assert!(output.status.success(), "x failed: {:?}", output);
+    // node --import <dist/runtime/preload.js> <abs app.ts> --flag
+    assert!(stdout.contains(&format!("--import {}", preload.display())), "stdout: {stdout}");
+    assert!(stdout.contains(&project.join("app.ts").display().to_string()), "stdout: {stdout}");
+    assert!(stdout.contains("--flag"), "stdout: {stdout}");
+}
+
 #[test]
 fn delegate_without_fallback_entry_exits_ex_software() {
     let output = binary().arg("run").env_remove("VIS_FALLBACK_ENTRY").output().expect("run binary");
