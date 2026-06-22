@@ -155,9 +155,10 @@ await runtime.signal(runId, "review-decision", { approved: true });
 
 ## Bring your own store
 
-Durability is a small contract. Four stores ship in the box — `MemoryStore` (default), `UnstorageStore`
-(Cloudflare KV/D1/Redis/fs), `SqlStore` (PostgreSQL/MySQL, atomic lease) and `RedisStore` (atomic Lua lease) — or
-implement `WorkflowStore` yourself to back runs with anything else.
+Durability is a small contract. Five stores ship in the box — `MemoryStore` (default), `UnstorageStore`
+(Cloudflare KV/D1/Redis/fs), `SqlStore` (PostgreSQL/MySQL, atomic lease), `RedisStore` (atomic Lua lease) and
+`DurableObjectStore` (Cloudflare DO — race-free lease + self-scheduling alarms, no cron) — or implement `WorkflowStore`
+yourself to back runs with anything else.
 
 ```typescript
 // SQL (atomic cross-process lease) — driver-agnostic via a structural client:
