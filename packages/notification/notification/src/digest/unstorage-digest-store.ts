@@ -6,22 +6,26 @@ import type { DigestEvent, DigestStore, DigestWindow } from "./types";
  */
 interface UnstorageLike {
     getItem: <T = unknown>(key: string) => Promise<T | null>;
+    getKeys: (base?: string) => Promise<string[]>;
     removeItem: (key: string) => Promise<void>;
     setItem: (key: string, value: unknown) => Promise<void>;
 }
 
 // Window keys live under a dedicated `w:` sub-namespace so no application-supplied
-// digest key can collide with the metadata index document (a key of "index" would
-// otherwise map to the same storage key as INDEX_KEY).
+// digest key can collide with any other key this store might use.
 const WINDOW_PREFIX = "digest:w:";
-const INDEX_KEY = "digest:index";
 
 /**
  * {@link DigestStore} backed by [unstorage](https://unstorage.unjs.io), for durable,
- * edge-friendly digest windows over any unstorage driver. A small index document
- * tracks wake-at times so `due` does not scan every window. Operations are
- * not transactional; for high-contention multi-writer setups prefer a store with
- * atomic guarantees.
+ * edge-friendly digest windows over any unstorage driver.
+ *
+ * Each window is a single self-contained document keyed by `digest:w:` plus the
+ * digest key; there is no shared index, so concurrent `add`s for different keys cannot
+ * lose-update each other. `due` scans the window documents under the prefix — fine for the
+ * transient, bounded set of open windows. Individual reads/writes are still not
+ * transactional, so concurrent writers on the *same* key (or a sweep racing an
+ * `add` for that key) can drop an event or double-flush; for that level of
+ * contention prefer a store with atomic guarantees, or sweep from one instance.
  */
 class UnstorageDigestStore<PayloadT> implements DigestStore<PayloadT> {
     readonly #storage: UnstorageLike;
@@ -32,55 +36,38 @@ class UnstorageDigestStore<PayloadT> implements DigestStore<PayloadT> {
 
     public async append(key: string, event: DigestEvent<PayloadT>, wakeAt: number): Promise<boolean> {
         const found = await this.#storage.getItem<DigestWindow<PayloadT>>(WINDOW_PREFIX + key);
-        const existing = found ?? undefined;
 
-        if (existing !== undefined) {
-            existing.events.push(event);
-            await this.#storage.setItem(WINDOW_PREFIX + key, existing);
+        if (found !== null) {
+            found.events.push(event);
+            await this.#storage.setItem(WINDOW_PREFIX + key, found);
 
             return false;
         }
 
-        const index = await this.#readIndex();
-
-        index[key] = wakeAt;
-        await this.#storage.setItem(INDEX_KEY, index);
         await this.#storage.setItem(WINDOW_PREFIX + key, { events: [event], key, wakeAt } satisfies DigestWindow<PayloadT>);
 
         return true;
     }
 
-    public async drain(key: string): Promise<DigestWindow<PayloadT> | undefined> {
+    public async read(key: string): Promise<DigestWindow<PayloadT> | undefined> {
         const found = await this.#storage.getItem<DigestWindow<PayloadT>>(WINDOW_PREFIX + key);
-        const window = found ?? undefined;
 
+        return found ?? undefined;
+    }
+
+    public async remove(key: string): Promise<void> {
         await this.#storage.removeItem(WINDOW_PREFIX + key);
-
-        const index = await this.#readIndex();
-
-        if (key in index) {
-            // eslint-disable-next-line @typescript-eslint/no-dynamic-delete -- removing a window from the wake index by its dynamic key
-            delete index[key];
-            await this.#storage.setItem(INDEX_KEY, index);
-        }
-
-        return window;
     }
 
     public async due(now: number, limit: number): Promise<string[]> {
-        const index = await this.#readIndex();
+        const storageKeys = await this.#storage.getKeys(WINDOW_PREFIX);
+        const windows = await Promise.all(storageKeys.map(async (storageKey) => this.#storage.getItem<DigestWindow<PayloadT>>(storageKey)));
 
-        return Object.entries(index)
-            .filter(([, wakeAt]) => wakeAt <= now)
-            .toSorted((a, b) => a[1] - b[1])
+        return windows
+            .filter((window): window is DigestWindow<PayloadT> => window !== null && window.wakeAt <= now)
+            .toSorted((a, b) => a.wakeAt - b.wakeAt)
             .slice(0, limit)
-            .map(([key]) => key);
-    }
-
-    async #readIndex(): Promise<Record<string, number>> {
-        const index = await this.#storage.getItem<Record<string, number>>(INDEX_KEY);
-
-        return index ?? {};
+            .map((window) => window.key);
     }
 }
 

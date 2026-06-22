@@ -75,5 +75,14 @@ Each channel step takes `(id, resolve, options?)`. `resolve` returns the channel
 `options.skip` conditionally skips the send. Because sends go through the engine's `step`, they are recorded and **not
 re-sent on replay**.
 
+> **Delivery failures don't throw by default.** The facade returns a `FailureReceipt` (it doesn't throw), so a failed
+> send is recorded as a completed step and **not retried** — check `receipt.successful`, or pass
+> `{ throwOnFailure: true }` to turn a failure into a thrown error that fails the run and re-runs the step on the next
+> resume/sweep:
+>
+> ```ts
+> await step.email("critical", () => payload, { throwOnFailure: true });
+> ```
+
 > **Replay safety:** only work inside `step.*` runs exactly once. Bare side effects in the `run` body re-execute on every
 > replay — see the [workflow durability docs](/docs/packages/workflow/durability).

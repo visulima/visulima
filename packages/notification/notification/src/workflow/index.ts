@@ -1,9 +1,10 @@
 export type {
     ChannelStep,
+    ChannelStepOptions,
     NotificationStep,
     NotificationWorkflowConfig,
     NotificationWorkflowRun,
-    StepContext,
     StepResolver,
+    StepResolverContext,
 } from "./create-notification-workflow";
 export { default as createNotificationWorkflow } from "./create-notification-workflow";

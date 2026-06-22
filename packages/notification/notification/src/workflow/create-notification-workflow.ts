@@ -1,27 +1,45 @@
 import type { Duration, MaybePromise, WorkflowConfig, WorkflowDefinition, WorkflowRun } from "@visulima/workflow";
 import { defineWorkflow } from "@visulima/workflow";
 
+import NotificationError from "../errors/notification-error";
 import type { ChannelPayloadMap, Notification } from "../notification";
 import type { ChannelType, Receipt } from "../types";
 
 /** The context handed to a step resolver / skip predicate. */
-interface StepContext<PayloadT> {
+interface StepResolverContext<PayloadT> {
     /** The validated trigger payload of the run. */
     payload: PayloadT;
 }
 
 /** Resolves the payload sent by a channel step (or decides to skip it). */
-type StepResolver<PayloadT, ResultT> = (context: StepContext<PayloadT>) => MaybePromise<ResultT>;
+type StepResolver<PayloadT, ResultT> = (context: StepResolverContext<PayloadT>) => MaybePromise<ResultT>;
+
+/** Per-step options for a channel step. */
+interface ChannelStepOptions<PayloadT> {
+    /** Skip the send when this returns `true`; the step records `undefined`. */
+    skip?: (context: StepResolverContext<PayloadT>) => MaybePromise<boolean>;
+
+    /**
+     * Treat a `FailureReceipt` as a thrown error so the run fails and the step
+     * re-runs on the next resume/sweep. Defaults to `false`.
+     */
+    throwOnFailure?: boolean;
+}
 
 /**
  * A durable channel step. Resolves a channel payload and delivers it through the
  * bound {@link Notification} facade exactly once; the receipt is recorded and
  * returned on replay without re-sending. Returns `undefined` when `skip` matches.
+ *
+ * IMPORTANT: a delivery failure surfaces as a `FailureReceipt` (the facade does not
+ * throw), so by default a failed send is **recorded as a completed step and not
+ * retried** — inspect `receipt.successful`, or pass `throwOnFailure: true` to turn
+ * a failure into a thrown error that re-runs the step on the next activation.
  */
 type ChannelStep<ChannelT extends ChannelType, PayloadT> = (
     id: string,
     resolve: StepResolver<PayloadT, ChannelPayloadMap[ChannelT]>,
-    options?: { skip?: (context: StepContext<PayloadT>) => MaybePromise<boolean> },
+    options?: ChannelStepOptions<PayloadT>,
 ) => Promise<Receipt | undefined>;
 
 /**
@@ -79,7 +97,7 @@ const createNotificationWorkflow = <PayloadT = unknown, OutputT = unknown>(
             channel: ChannelT,
             id: string,
             resolve: StepResolver<PayloadT, ChannelPayloadMap[ChannelT]>,
-            options?: { skip?: (stepContext: StepContext<PayloadT>) => MaybePromise<boolean> },
+            options?: ChannelStepOptions<PayloadT>,
         ): Promise<Receipt | undefined> =>
             context.step(id, async (): Promise<Receipt | undefined> => {
                 const skipped = options?.skip ? await options.skip({ payload: context.payload }) : false;
@@ -89,8 +107,14 @@ const createNotificationWorkflow = <PayloadT = unknown, OutputT = unknown>(
                 }
 
                 const payload = await resolve({ payload: context.payload });
+                const receipt = await notification.sendToChannel(channel, payload);
 
-                return notification.sendToChannel(channel, payload);
+                if (options?.throwOnFailure && !receipt.successful) {
+                    // Surface the failure as a throw so the engine fails the run and re-runs this step.
+                    throw new NotificationError(channel, receipt.errorMessages.join("; "));
+                }
+
+                return receipt;
             });
 
         const step: NotificationStep<PayloadT> = {
@@ -110,5 +134,5 @@ const createNotificationWorkflow = <PayloadT = unknown, OutputT = unknown>(
     return defineWorkflow<PayloadT, OutputT>({ id: config.id, payload: config.payload, run, tags: config.tags });
 };
 
-export type { ChannelStep, NotificationStep, NotificationWorkflowConfig, NotificationWorkflowRun, StepContext, StepResolver };
+export type { ChannelStep, ChannelStepOptions, NotificationStep, NotificationWorkflowConfig, NotificationWorkflowRun, StepResolver, StepResolverContext };
 export default createNotificationWorkflow;

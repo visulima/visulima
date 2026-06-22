@@ -5,6 +5,8 @@ import createDigester from "../src/digest/digester";
 import type { DigestEvent, DigestStore } from "../src/digest/types";
 import UnstorageDigestStore from "../src/digest/unstorage-digest-store";
 
+const FINITE_PATTERN = /finite/i;
+
 interface Liked {
     postId: string;
     subscriberId: string;
@@ -28,12 +30,100 @@ const runDigesterContract = (name: string, makeStore: () => DigestStore<Liked> |
             const first = await digester.add({ postId: "p1", subscriberId: "u1" });
             const second = await digester.add({ postId: "p1", subscriberId: "u1" });
 
-            expect(first.opened).toBe(true);
-            expect(second.opened).toBe(false);
+            expect(first).toBe(true);
+            expect(second).toBe(false);
 
             await digester.sweep(Date.now() + 2000);
 
             expect(flushes).toStrictEqual([{ count: 2, key: "u1:p1" }]);
+        });
+
+        it("opens a fresh window after a previous one is flushed", async () => {
+            expect.assertions(3);
+
+            let flushes = 0;
+            const digester = createDigester<Liked>({
+                key: (event) => event.subscriberId,
+                onFlush: () => {
+                    flushes += 1;
+                },
+                store: makeStore(),
+                window: 1000,
+            });
+
+            await digester.add({ postId: "p", subscriberId: "u1" });
+            await digester.sweep(Date.now() + 2000);
+
+            // A new event for the same key after the flush opens a brand-new window.
+            const reopened = await digester.add({ postId: "p", subscriberId: "u1" });
+
+            expect(reopened).toBe(true);
+
+            const flushedAgain = await digester.sweep(Date.now() + 4000);
+
+            expect(flushedAgain).toBe(1);
+            expect(flushes).toBe(2);
+        });
+
+        it("retries a window whose onFlush throws (at-least-once)", async () => {
+            expect.assertions(2);
+
+            let attempts = 0;
+            const digester = createDigester<Liked>({
+                key: (event) => event.subscriberId,
+                onFlush: () => {
+                    attempts += 1;
+
+                    if (attempts === 1) {
+                        throw new Error("transient");
+                    }
+                },
+                store: makeStore(),
+                window: 1000,
+            });
+
+            await digester.add({ postId: "p", subscriberId: "u1" });
+
+            // First sweep: onFlush throws, so the window is NOT removed.
+            await expect(digester.sweep(Date.now() + 2000)).rejects.toThrow("transient");
+
+            // Second sweep: the window is still there and flushes successfully.
+            const flushed = await digester.sweep(Date.now() + 2000);
+
+            expect(flushed).toBe(1);
+        });
+
+        it("caps a sweep at `limit` and carries the rest to the next sweep", async () => {
+            expect.assertions(2);
+
+            const digester = createDigester<Liked>({
+                key: (event) => event.subscriberId,
+                onFlush: () => undefined,
+                store: makeStore(),
+                window: 1000,
+            });
+
+            await digester.add({ postId: "p", subscriberId: "u1" });
+            await digester.add({ postId: "p", subscriberId: "u2" });
+            await digester.add({ postId: "p", subscriberId: "u3" });
+
+            const now = Date.now() + 2000;
+
+            await expect(digester.sweep(now, 2)).resolves.toBe(2);
+            await expect(digester.sweep(now, 2)).resolves.toBe(1);
+        });
+
+        it("rejects a non-positive sweep limit", async () => {
+            expect.assertions(1);
+
+            const digester = createDigester<Liked>({
+                key: (event) => event.subscriberId,
+                onFlush: () => undefined,
+                store: makeStore(),
+                window: 1000,
+            });
+
+            await expect(digester.sweep(Date.now(), 0)).rejects.toThrow("limit");
         });
 
         it("keeps separate windows per key and only flushes due ones", async () => {
@@ -107,7 +197,45 @@ describe("createDigester windows", () => {
         // The next "Jan 1st midnight" is in the future, so a now-sweep flushes nothing.
         await digester.sweep(Date.now());
 
-        expect(result.opened).toBe(true);
+        expect(result).toBe(true);
         expect(flushes).toBe(0);
+    });
+
+    it("supports a per-event window function", async () => {
+        expect.assertions(2);
+
+        let flushed = 0;
+        const digester = createDigester<Liked>({
+            key: (event) => event.subscriberId,
+            onFlush: () => {
+                flushed += 1;
+            },
+            window: (event) => {
+                const ms = event.postId === "fast" ? 100 : 10_000;
+
+                return ms;
+            },
+        });
+
+        await digester.add({ postId: "fast", subscriberId: "u1" });
+        await digester.add({ postId: "slow", subscriberId: "u2" });
+
+        // Only the short (100ms) window is due at +1s; the 10s one is not.
+        const count = await digester.sweep(Date.now() + 1000);
+
+        expect(count).toBe(1);
+        expect(flushed).toBe(1);
+    });
+
+    it("rejects a non-finite window", async () => {
+        expect.assertions(1);
+
+        const digester = createDigester<Liked>({
+            key: (event) => event.subscriberId,
+            onFlush: () => undefined,
+            window: Number.NaN,
+        });
+
+        await expect(digester.add({ postId: "p", subscriberId: "u1" })).rejects.toThrow(FINITE_PATTERN);
     });
 });

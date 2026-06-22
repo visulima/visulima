@@ -89,4 +89,43 @@ describe(createNotificationWorkflow, () => {
         expect(result.output).toBe("ok");
         expect(sent("sms")).toHaveLength(1);
     });
+
+    it("records a failed send as completed by default (failure does not throw)", async () => {
+        expect.assertions(1);
+
+        const notification = createNotification({ sms: mockProvider({ channel: "sms", failWith: "provider down", id: "sms-mock" }) });
+        const workflow = createNotificationWorkflow<{ to: string }>(notification, {
+            id: "best-effort",
+            run: async ({ payload, step }) => {
+                const message = { text: "hi", to: payload.to };
+
+                await step.sms("notify", () => message);
+            },
+        });
+
+        const runtime = createRuntime({ workflows: [workflow] });
+        const result = await runtime.trigger(workflow, { to: "+15555550100" });
+
+        expect(result.status).toBe("completed");
+    });
+
+    it("fails the run when a send fails and throwOnFailure is set", async () => {
+        expect.assertions(2);
+
+        const notification = createNotification({ sms: mockProvider({ channel: "sms", failWith: "provider down", id: "sms-mock" }) });
+        const workflow = createNotificationWorkflow<{ to: string }>(notification, {
+            id: "must-deliver",
+            run: async ({ payload, step }) => {
+                const message = { text: "hi", to: payload.to };
+
+                await step.sms("critical", () => message, { throwOnFailure: true });
+            },
+        });
+
+        const runtime = createRuntime({ workflows: [workflow] });
+        const result = await runtime.trigger(workflow, { to: "+15555550100" });
+
+        expect(result.status).toBe("failed");
+        expect(result.error?.message).toContain("provider down");
+    });
 });

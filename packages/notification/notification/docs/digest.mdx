@@ -38,14 +38,20 @@ await digester.add({ subscriberId: "u1", postId: "p1" }); // folds into the open
 await digester.sweep();
 ```
 
-`add` returns `{ key, opened }` (`opened: true` when it started a new window). `sweep(now?, limit?)` flushes every window
-whose wake-at has passed and returns how many it flushed.
+`add` returns a boolean — `true` when it opened a new window for the key. `sweep(now?, limit?)` flushes every window
+whose wake-at has passed (capped at `limit`, the rest carry to the next sweep) and returns how many it flushed; it
+rejects a non-positive `limit`.
+
+Flushing is **at-least-once**: a window is removed only after its `onFlush` resolves, so a throwing `onFlush` is retried
+on the next sweep (and may run again if the subsequent removal fails) — make `onFlush` idempotent.
 
 ## Windows
 
 `window` is a [`Duration`](/docs/packages/workflow/steps): a number of milliseconds, a structured `{ amount, unit }`, or
-a `{ cron }` expression (e.g. `{ cron: "0 9 * * *" }` for "every day at 9am"). Pass a function `(event) => Duration` to
-vary the window per event. A window's close time is fixed by its **first** event — later events do not extend it.
+a `{ cron }` expression. Pass a function `(event) => Duration` to vary the window per event. A window's close time is
+fixed by its **first** event and later events do not extend it — including for cron: a `{ cron: "0 9 * * *" }` window
+closes at the next 9am **after the first event of each burst**, not on an absolute daily schedule. Non-finite windows
+(`NaN`/`Infinity`) and an impossible cron are rejected at `add` time.
 
 ## Stores
 
@@ -64,7 +70,8 @@ const digester = createDigester({
 });
 ```
 
-The unstorage store keeps a small wake-index document; its writes are not transactional, so for high-contention
+Each window is a self-contained document (no shared index), so concurrent `add`s for different keys can't lose-update
+each other; writes are still not transactional, so for high-contention
 multi-writer setups prefer a store with atomic guarantees.
 
 ## Digest vs. workflow `step.digest`

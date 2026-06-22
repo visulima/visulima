@@ -21,12 +21,14 @@ class MemoryDigestStore<PayloadT> implements DigestStore<PayloadT> {
         return Promise.resolve(false);
     }
 
-    public drain(key: string): Promise<DigestWindow<PayloadT> | undefined> {
-        const window = this.#windows.get(key);
+    public read(key: string): Promise<DigestWindow<PayloadT> | undefined> {
+        return Promise.resolve(this.#windows.get(key));
+    }
 
+    public remove(key: string): Promise<void> {
         this.#windows.delete(key);
 
-        return Promise.resolve(window);
+        return Promise.resolve();
     }
 
     public due(now: number, limit: number): Promise<string[]> {
