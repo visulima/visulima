@@ -89,6 +89,28 @@ describe("vis shim", () => {
         }
     });
 
+    it("install prefers the native binary when VIS_NATIVE_BIN resolves", async () => {
+        expect.hasAssertions();
+
+        const fakeBinary = join(workspace, "vis-native-cli");
+
+        await fs.writeFile(fakeBinary, "#!/bin/sh\n");
+
+        process.env["VIS_NATIVE_BIN"] = fakeBinary;
+
+        try {
+            await shimInstallExecute(makeToolbox(workspace).toolbox as never);
+
+            const file = join(workspace, ".vis", "shims", process.platform === "win32" ? "npm.cmd" : "npm");
+            const content = readFileSync(file, "utf8");
+
+            expect(content).toContain(fakeBinary);
+            expect(content).toContain("__pm-shim npm");
+        } finally {
+            delete process.env["VIS_NATIVE_BIN"];
+        }
+    });
+
     it("status reports not-installed, then installed; uninstall removes the dir", async () => {
         expect.hasAssertions();
 

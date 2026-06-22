@@ -19,6 +19,14 @@ interface UnflagRule {
     flag: string;
     /** Selector key for the comma-list spec. */
     key: string;
+
+    /**
+     * Inclusive upper bound: the last [major, minor] at which the flag is still
+     * needed. Omit for flags that remain experimental on every newer Node. Used for
+     * features that flip on by default at some version, after which passing the
+     * `--experimental-*` flag is at best a no-op and at worst rejected.
+     */
+    max?: [number, number];
     /** Minimum Node version at which the flag exists, as [major, minor]. */
     min: [number, number];
 }
@@ -33,6 +41,13 @@ const RULES: UnflagRule[] = [
     { flag: "--experimental-webstorage", key: "webstorage", min: [22, 4] },
     // EventSource (server-sent events) client — experimental flag since 22.3.
     { flag: "--experimental-eventsource", key: "eventsource", min: [22, 3] },
+    // Global WebSocket client — flag introduced in 20.10, on by default since 22.0.
+    // Only inject on the 20.10–21.x band; 22+ has it unconditionally and the flag is
+    // gone, so passing it there would error.
+    { flag: "--experimental-websocket", key: "websocket", max: [21, 999], min: [20, 10] },
+    // vm.Module / vm.SourceTextModule (ESM in the vm module) — experimental flag,
+    // still required on every supported Node (never default-on), so no upper bound.
+    { flag: "--experimental-vm-modules", key: "vm-modules", min: [22, 0] },
 ];
 
 const LOCALSTORAGE_MIN: [number, number] = [22, 4];
@@ -44,8 +59,13 @@ const parseNodeVersion = (version: string): [number, number] => {
     return [major ?? 0, minor ?? 0];
 };
 
-const satisfies = (version: [number, number], min: [number, number]): boolean =>
-    version[0] > min[0] || (version[0] === min[0] && version[1] >= min[1]);
+const satisfies = (version: [number, number], min: [number, number]): boolean => version[0] > min[0] || (version[0] === min[0] && version[1] >= min[1]);
+
+/** `version &lt;= max` (inclusive), with the same [major, minor] ordering as `satisfies`. */
+const atMost = (version: [number, number], max: [number, number]): boolean => version[0] < max[0] || (version[0] === max[0] && version[1] <= max[1]);
+
+/** A rule applies when the running Node is at or above `min` and at or below `max` (if set). */
+const inBand = (version: [number, number], rule: UnflagRule): boolean => satisfies(version, rule.min) && (rule.max === undefined || atMost(version, rule.max));
 
 const wantsAll = (spec: string): boolean => {
     const trimmed = spec.trim().toLowerCase();
@@ -53,8 +73,7 @@ const wantsAll = (spec: string): boolean => {
     return trimmed === "" || trimmed === "all" || trimmed === "1" || trimmed === "true";
 };
 
-const selects = (spec: string, key: string): boolean =>
-    wantsAll(spec) || spec.split(",").some((part) => part.trim().toLowerCase() === key);
+const selects = (spec: string, key: string): boolean => wantsAll(spec) || spec.split(",").some((part) => part.trim().toLowerCase() === key);
 
 /**
  * The Node flags to inject for a `VIS_UNFLAG` spec on the given Node version.
@@ -66,7 +85,7 @@ export const unflagArgs = (spec: string, nodeVersion: string, localstorageFile: 
     const flags: string[] = [];
 
     for (const rule of RULES) {
-        if (selects(spec, rule.key) && satisfies(version, rule.min)) {
+        if (selects(spec, rule.key) && inBand(version, rule)) {
             flags.push(rule.flag);
         }
     }

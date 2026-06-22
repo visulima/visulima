@@ -1,6 +1,27 @@
 import { describe, expect, it } from "vitest";
 
-import { normalizeWorkspacePath, sanitizeGitRefComponent } from "../../src/util/utils";
+import { mergeForwardedPackages, normalizeWorkspacePath, sanitizeGitRefComponent } from "../../src/util/utils";
+
+describe(mergeForwardedPackages, () => {
+    it("appends the unknown tail (extra packages + unknown flags) to the arguments", () => {
+        expect.assertions(1);
+
+        expect(mergeForwardedPackages(["lodash"], ["react", "--unknown"])).toStrictEqual(["lodash", "react", "--unknown"]);
+    });
+
+    it("uses only the arguments when the unknown tail starts with a `--` separator", () => {
+        expect.assertions(1);
+
+        expect(mergeForwardedPackages(["lodash"], ["--", "extra"])).toStrictEqual(["lodash"]);
+    });
+
+    it("handles undefined inputs", () => {
+        expect.assertions(2);
+
+        expect(mergeForwardedPackages(undefined, undefined)).toStrictEqual([]);
+        expect(mergeForwardedPackages(undefined, ["react"])).toStrictEqual(["react"]);
+    });
+});
 
 describe(normalizeWorkspacePath, () => {
     it("strips a leading ./ and trailing slashes", () => {

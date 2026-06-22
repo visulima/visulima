@@ -1,0 +1,5 @@
+{
+  // a comment
+  "name": "vis-jsonc",
+  "port": 1234, // trailing
+}

@@ -14,6 +14,11 @@ const run: Command = {
         ["vis run ~:test", "Run test on the project closest to the current directory"],
         ["vis run \"#frontend:build\"", "Run build on projects tagged 'frontend'"],
         ["vis run :build --query \"language=typescript\"", "Filter by project metadata"],
+        ["vis run build --filter \"@org/web\"", "Run build on a single package (pnpm filter)"],
+        ["vis run build --filter \"...@org/web\"", "Run build on @org/web and everything that depends on it"],
+        ["vis run build -F \"@org/web...\"", "Run build on @org/web and its dependencies"],
+        ["vis run build -F \"...[origin/main]\"", "Run build on packages changed since origin/main + their dependents"],
+        ["vis run build -F \"./packages/*\"", "Run build on packages matched by a path glob"],
         ["vis run test --affected", "Run test only on git-changed projects"],
         ["vis run build --fail-fast", "Stop on first failure"],
         ["vis run build --dry-run", "Show execution plan without running"],
@@ -27,6 +32,14 @@ const run: Command = {
             alias: "p",
             description: "Comma-separated list of projects to run",
             name: "projects",
+            type: String,
+        },
+        {
+            alias: "F",
+            description:
+                "pnpm-style package selector (repeatable). Supports name globs (@org/*), graph modifiers (...pkg dependents, pkg... dependencies, ...^pkg / pkg^... exclude self), changed-since ([main], ...[origin/main]), and path globs (./packages/*, {glob}).",
+            multiple: true,
+            name: "filter",
             type: String,
         },
         {
@@ -235,6 +248,7 @@ export type RunOptions = CreateOptions<{
     "dry-run": boolean | undefined;
     "fail-fast": boolean | undefined;
     "fail-on-retry": boolean | undefined;
+    filter: string[] | undefined;
     flaky: boolean | undefined;
     "hash-mode": string | undefined;
     "last-details": boolean | undefined;

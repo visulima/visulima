@@ -15,7 +15,8 @@
     },
     "main": "vis-native.linux-x64-gnu.node",
     "files": [
-        "vis-native.linux-x64-gnu.node"
+        "vis-native.linux-x64-gnu.node",
+        "vis-native-cli"
     ],
     "engines": {
         "node": "^22.14.0 || >=24.10.0"

@@ -2,13 +2,13 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { resolveInstaller, runRemove } from "../../pm/pm-runner";
 import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
-import { toStringArray } from "../../util/utils";
+import { mergeForwardedPackages, toStringArray } from "../../util/utils";
 import type { RemoveOptions } from "./index";
 
-const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RemoveOptions>): Promise<void> => {
-    const packages = argument;
+const execute = async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RemoveOptions>): Promise<void> => {
+    const packages = mergeForwardedPackages(argument, rawUnknown);
 
-    if (!packages || packages.length === 0) {
+    if (packages.length === 0) {
         throw new Error("No packages specified. Usage: vis remove <packages...>");
     }
 

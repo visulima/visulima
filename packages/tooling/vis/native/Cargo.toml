@@ -4,6 +4,15 @@ version = "0.1.0"
 edition = "2021"
 license = "MIT"
 
+# The native addon, the `vis` CLI binary, and the shared `core` crate live in
+# this directory as a workspace. They are split so building the CLI
+# (`cargo build -p vis-cli`) does NOT compile the addon's heavy, toolchain-
+# sensitive deps (oxc, rusqlite, …) — a same-crate `[[bin]]` would, because Cargo
+# always builds a package's library when building one of its binaries. Shared
+# logic ported off Node lives in the `core` crate, which the CLI depends on.
+[workspace]
+members = [ "cli", "core" ]
+
 # `rlib` is added alongside `cdylib` so the in-crate criterion benches
 # (native/benches/) can link the pure transpile/sort logic. `napi build` still
 # consumes the `cdylib` for the `.node` artifact; the extra `rlib` does not

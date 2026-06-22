@@ -74,6 +74,11 @@ export default defineConfig({
                     "@bomb.sh/tab",
                     "react-reconciler",
                     "smol-toml",
+                    // Dynamically imported (lazy command/error paths), so packem's
+                    // static analysis can't see the usage — false positives.
+                    "@visulima/source-map",
+                    "module-replacements",
+                    "module-replacements-codemods",
                     // sigma and graphology-types are read at runtime — sigma's UMD bundle is
                     // sliced from node_modules via require.resolve() for the graph HTML
                     // report, graphology-types is a peer of the graph runtime.
@@ -95,6 +100,11 @@ export default defineConfig({
                 exclude: [
                     "@antfu/install-pkg",
                     "json5",
+                    // Transitive deps of @visulima/tsconfig (the tsconfig `paths`
+                    // reader in the runtime TS loader); resolved at runtime, allowlist
+                    // silences packem's shamefully-hoisted warning.
+                    "jsonc-parser",
+                    "resolve-pkg-maps",
                     "normalize-package-data",
                     "@visulima/is-ansi-color-supported",
                     "compromise",
