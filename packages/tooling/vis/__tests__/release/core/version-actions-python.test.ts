@@ -442,7 +442,7 @@ describe("pythonVersionActions: PyPI User-Agent header (B-3)", () => {
 
         await fetchPyPiVersion("any-pkg");
 
-        expect(fetchSpy).toHaveBeenCalled();
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
 
         const init = fetchSpy.mock.calls[0]![1];
         const headers = init?.headers as Record<string, string> | undefined;

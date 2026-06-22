@@ -275,19 +275,10 @@ export default createConfig(
             // Branching over fixture/platform variants inside a test is
             // intentional in these integration-style suites.
             "vitest/no-conditional-in-test": "off",
-            // Asserting a mock was called (without pinning every argument) is
-            // sufficient for these orchestration tests. NOTE: the rule's autofix
-            // rewrites `toHaveBeenCalled()` → `toHaveBeenCalledWith()`, which asserts a
-            // *zero-argument* call and breaks every spy invoked with args — don't enable.
-            "vitest/prefer-called-with": "off",
             // ~1180 sites assert via mock expectations / error catches, not a leading
             // `expect.assertions(n)`. Not autofixable (no count to infer); enabling means
             // hand-annotating every test for no behavioural gain.
             "vitest/prefer-expect-assertions": "off",
-            // The autofix rewrites `toBeTruthy()` → `toBe(true)`, wrong wherever the value
-            // is truthy-but-not-`true` (e.g. a string `error.hint`); these tests assert
-            // truthiness, not identity.
-            "vitest/prefer-strict-boolean-matchers": "off",
             // `toBe`/`toEqual` are deliberate (referential or loose shape checks);
             // `toStrictEqual` would over-constrain fixture comparisons. ~224 sites and the
             // fixer is suggestion-only (not applied by `--fix`), so it'd be manual churn.

@@ -333,7 +333,7 @@ describe("mavenVersionActions.readPublishedVersion", () => {
             pm: { runner: {} as CommandRunner } as never,
         });
 
-        expect(fetchSpy).toHaveBeenCalled();
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
 
         const init = fetchSpy.mock.calls[0]![1] as RequestInit | undefined;
         const headers = init?.headers as Record<string, string> | undefined;

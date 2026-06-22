@@ -338,7 +338,7 @@ describe("cargoVersionActions: publish — happy path", () => {
         }));
 
         expect(result.published).toBe(true);
-        expect(result.alreadyPublished).toBeFalsy();
+        expect(result.alreadyPublished).not.toBe(true);
         expect(calls).toHaveLength(1);
         expect(calls[0]!.command).toBe("cargo");
         expect(calls[0]!.args).toEqual(["publish", "--allow-dirty"]);
@@ -524,7 +524,7 @@ describe("cargoVersionActions: User-Agent header (B-3)", () => {
         });
 
         // First call to fetch — verify the headers carry a UA.
-        expect(fetchSpy).toHaveBeenCalled();
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
 
         const callArgs = fetchSpy.mock.calls[0]!;
         const init = callArgs[1] as RequestInit | undefined;

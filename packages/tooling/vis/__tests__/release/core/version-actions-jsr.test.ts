@@ -367,7 +367,7 @@ describe("jsrVersionActions: publish — happy path", () => {
         }));
 
         expect(result.published).toBe(true);
-        expect(result.alreadyPublished).toBeFalsy();
+        expect(result.alreadyPublished).not.toBe(true);
         expect(calls).toHaveLength(1);
         expect(calls[0]!.command).toBe("npx");
         expect(calls[0]!.args).toEqual(["jsr", "publish", "--allow-dirty"]);

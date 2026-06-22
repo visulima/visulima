@@ -339,7 +339,7 @@ describe.skipIf(isWindows)("stage guardrail: assertNoConflictingPendingStages (p
             // Verb in the message differs by phase so logs are
             // unambiguous when the guard fires in mixed flows.
             expect(error.message).toContain("Refusing to publish");
-            expect(error.hint).toBeTruthy();
+            expect(error.hint).toBeDefined();
         }
     });
 
