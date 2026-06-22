@@ -13,6 +13,7 @@ describe(parseLeanXArgs, () => {
 
         expect(parseLeanXArgs(["script.ts"])).toStrictEqual({
             file: "script.ts",
+            node: false,
             runtimeFlag: undefined,
             scriptArguments: [],
         });
@@ -23,6 +24,7 @@ describe(parseLeanXArgs, () => {
 
         expect(parseLeanXArgs(["script.ts", "a", "b"])).toStrictEqual({
             file: "script.ts",
+            node: false,
             runtimeFlag: undefined,
             scriptArguments: ["a", "b"],
         });
@@ -33,6 +35,7 @@ describe(parseLeanXArgs, () => {
 
         expect(parseLeanXArgs(["script.ts", "--watch", "--runtime", "bun"])).toStrictEqual({
             file: "script.ts",
+            node: false,
             runtimeFlag: undefined,
             scriptArguments: ["--watch", "--runtime", "bun"],
         });
@@ -45,6 +48,7 @@ describe(parseLeanXArgs, () => {
         // sees its real args, not a literal "--".
         expect(parseLeanXArgs(["script.ts", "--", "--watch"])).toStrictEqual({
             file: "script.ts",
+            node: false,
             runtimeFlag: undefined,
             scriptArguments: ["--watch"],
         });
@@ -52,6 +56,7 @@ describe(parseLeanXArgs, () => {
         // Only the FIRST `--` is the separator; a later one is a real script arg.
         expect(parseLeanXArgs(["script.ts", "--", "a", "--", "b"])).toStrictEqual({
             file: "script.ts",
+            node: false,
             runtimeFlag: undefined,
             scriptArguments: ["a", "--", "b"],
         });
@@ -62,6 +67,7 @@ describe(parseLeanXArgs, () => {
 
         expect(parseLeanXArgs(["--runtime", "bun", "script.ts", "x"])).toStrictEqual({
             file: "script.ts",
+            node: false,
             runtimeFlag: "bun",
             scriptArguments: ["x"],
         });
@@ -72,6 +78,7 @@ describe(parseLeanXArgs, () => {
 
         expect(parseLeanXArgs(["--runtime=node", "script.ts"])).toStrictEqual({
             file: "script.ts",
+            node: false,
             runtimeFlag: "node",
             scriptArguments: [],
         });
@@ -82,6 +89,7 @@ describe(parseLeanXArgs, () => {
 
         expect(parseLeanXArgs(["--runtime", "bun"])).toStrictEqual({
             file: undefined,
+            node: false,
             runtimeFlag: "bun",
             scriptArguments: [],
         });
@@ -92,6 +100,7 @@ describe(parseLeanXArgs, () => {
 
         expect(parseLeanXArgs([])).toStrictEqual({
             file: undefined,
+            node: false,
             runtimeFlag: undefined,
             scriptArguments: [],
         });

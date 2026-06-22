@@ -12,15 +12,276 @@
  *     the entry's local `.ts` imports aren't transpiled on 22.14 — recommend
  *     22.15+ for that; config/`vis x` entries themselves work everywhere.
  */
-import { readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import nodeModule from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
-import { dirname, join } from "@visulima/path";
+import { readJson5Sync } from "@visulima/fs/json5";
+import { readJsoncSync } from "@visulima/fs/jsonc";
+import { readTomlSync } from "@visulima/fs/toml";
+import { stripJsonComments } from "@visulima/fs/utils";
+import { readYamlSync } from "@visulima/fs/yaml";
+import { dirname, isAbsolute, join, resolve as resolvePath } from "@visulima/path";
 
 import { transformTs } from "#native";
 
 const TS_RE = /\.[cm]?tsx?$/;
+
+/**
+ * Data-file extensions the load hook parses into an ESM module whose `default`
+ * export is the parsed value. `.txt` yields the raw file contents as a string.
+ * Order matters only for the resolve-hook probe (longer/more-specific first is
+ * not required since these are matched by exact suffix).
+ */
+const DATA_EXT_CANDIDATES = [".yaml", ".yml", ".toml", ".jsonc", ".json5", ".txt"];
+
+const DATA_EXT_RE = /\.(?:ya?ml|toml|jsonc|json5|txt)$/;
+
+/**
+ * Parse a recognised data file into a JS value. `.txt` returns the raw string;
+ * the structured formats reuse `@visulima/fs` parsers (which wrap `yaml`,
+ * `smol-toml`, `jsonc-parser`, and `json5` — all already on the dependency
+ * graph), so no new runtime dependency is introduced.
+ */
+const parseDataFile = (filename: string): unknown => {
+    if (filename.endsWith(".yaml") || filename.endsWith(".yml")) {
+        return readYamlSync(filename);
+    }
+
+    if (filename.endsWith(".toml")) {
+        return readTomlSync(filename);
+    }
+
+    if (filename.endsWith(".jsonc")) {
+        // Tolerate trailing commas the way tsconfig/editor JSONC does.
+        return readJsoncSync(filename, { allowTrailingComma: true });
+    }
+
+    if (filename.endsWith(".json5")) {
+        return readJson5Sync(filename);
+    }
+
+    // `.txt` — raw contents, no parsing.
+    return readFileSync(filename, "utf8");
+};
+
+/**
+ * Minimal tsconfig `compilerOptions.baseUrl` + `paths` resolver.
+ *
+ * `@visulima/tsconfig` (the monorepo's dedicated reader, which also honours
+ * `extends` and JSONC) is the ideal tool here, but it is not part of vis's
+ * runtime dependency graph, so we hand-roll a focused reader using the JSONC
+ * parser that is already available via `@visulima/fs`. We resolve a single
+ * level of `extends` by walking the chain and merging `compilerOptions`
+ * (nearest wins for `paths`/`baseUrl`).
+ */
+interface TsConfigShape {
+    compilerOptions?: {
+        baseUrl?: string;
+        paths?: Record<string, string[]>;
+    };
+    extends?: string | string[];
+}
+
+interface ResolvedTsConfigPaths {
+    /** Whether a `baseUrl` was set (enables bare baseUrl-rooted resolution). */
+    hasBaseUrl: boolean;
+    paths: Record<string, string[]>;
+    /** Absolute directory that `paths` targets are resolved against. */
+    pathsBase: string;
+}
+
+const tsconfigCache = new Map<string, ResolvedTsConfigPaths | undefined>();
+
+const readRawTsConfig = (tsconfigPath: string): TsConfigShape | undefined => {
+    try {
+        const stripped = stripJsonComments(readFileSync(tsconfigPath, "utf8"), { whitespace: false });
+        // Tolerate trailing commas the way tsconfig parsers do; `stripJsonComments`
+        // only removes comments, so drop dangling commas before `}`/`]`.
+        const withoutTrailingCommas = stripped.replaceAll(/,(\s*[\]}])/g, "$1");
+
+        return JSON.parse(withoutTrailingCommas) as TsConfigShape;
+    } catch {
+        return undefined;
+    }
+};
+
+/**
+ * Find the nearest `tsconfig.json` walking up from `startDirectory`, resolve its
+ * `extends` chain (relative + local node_modules best-effort), and return the
+ * effective `baseUrl`/`paths` plus the directory `baseUrl` is relative to.
+ */
+const loadTsConfigPaths = (startDirectory: string): ResolvedTsConfigPaths | undefined => {
+    if (tsconfigCache.has(startDirectory)) {
+        return tsconfigCache.get(startDirectory);
+    }
+
+    let directory = startDirectory;
+    let tsconfigPath: string | undefined;
+
+    // Walk up to the filesystem root looking for a tsconfig.json.
+
+    while (true) {
+        const candidate = join(directory, "tsconfig.json");
+
+        if (existsSync(candidate)) {
+            tsconfigPath = candidate;
+
+            break;
+        }
+
+        const parent = dirname(directory);
+
+        if (parent === directory) {
+            break;
+        }
+
+        directory = parent;
+    }
+
+    if (tsconfigPath === undefined) {
+        tsconfigCache.set(startDirectory, undefined);
+
+        return undefined;
+    }
+
+    // Merge the extends chain: start from the furthest ancestor, let nearer
+    // configs override. We collect configs root-first.
+    const chain: { config: TsConfigShape; directory: string }[] = [];
+    const seen = new Set<string>();
+    let current: string | undefined = tsconfigPath;
+
+    while (current !== undefined && !seen.has(current)) {
+        seen.add(current);
+
+        const config = readRawTsConfig(current);
+
+        if (config === undefined) {
+            break;
+        }
+
+        chain.unshift({ config, directory: dirname(current) });
+
+        const extendsField = config.extends;
+        const firstExtend = Array.isArray(extendsField) ? extendsField[extendsField.length - 1] : extendsField;
+
+        if (typeof firstExtend !== "string") {
+            break;
+        }
+
+        if (firstExtend.startsWith(".") || isAbsolute(firstExtend)) {
+            let resolved = resolvePath(dirname(current), firstExtend);
+
+            if (!resolved.endsWith(".json")) {
+                resolved = `${resolved}.json`;
+            }
+
+            current = existsSync(resolved) ? resolved : undefined;
+        } else {
+            // Bare package extends — best-effort lookup under local node_modules.
+            const packageCandidate = join(dirname(current), "node_modules", firstExtend);
+            const withJson = packageCandidate.endsWith(".json") ? packageCandidate : `${packageCandidate}.json`;
+
+            current = existsSync(withJson) ? withJson : undefined;
+        }
+    }
+
+    // Absolute directory `baseUrl` points at (when any config sets it); nearest wins.
+    let baseUrlDirectory: string | undefined;
+    // Directory the most-recent `paths` block was declared in (its fallback base).
+    let pathsDeclarationDirectory: string | undefined;
+    let paths: Record<string, string[]> = {};
+
+    for (const { config, directory: configDirectory } of chain) {
+        const options = config.compilerOptions;
+
+        if (options?.baseUrl !== undefined) {
+            baseUrlDirectory = resolvePath(configDirectory, options.baseUrl);
+        }
+
+        if (options?.paths !== undefined) {
+            paths = options.paths;
+            pathsDeclarationDirectory = configDirectory;
+        }
+    }
+
+    // TS resolves `paths` relative to `baseUrl` when set; otherwise (TS 5+ allows
+    // `paths` without `baseUrl`) relative to the config that declared `paths`.
+    const pathsBase = baseUrlDirectory ?? pathsDeclarationDirectory ?? dirname(tsconfigPath);
+
+    const result: ResolvedTsConfigPaths = {
+        hasBaseUrl: baseUrlDirectory !== undefined,
+        paths,
+        pathsBase,
+    };
+
+    tsconfigCache.set(startDirectory, result);
+
+    return result;
+};
+
+/**
+ * Resolve a bare specifier against tsconfig `baseUrl` + `paths`. Returns an
+ * absolute filesystem path (post-probe) or undefined when no alias matches.
+ */
+const resolveTsConfigPaths = (specifier: string, parentDirectory: string): string | undefined => {
+    const config = loadTsConfigPaths(parentDirectory);
+
+    if (config === undefined) {
+        return undefined;
+    }
+
+    const { hasBaseUrl, pathsBase } = config;
+
+    const probeBoth = (candidate: string): string | undefined => probe(candidate) ?? probeData(candidate);
+
+    // 1. Explicit `paths` aliases (wildcard + exact).
+    for (const [pattern, targets] of Object.entries(config.paths)) {
+        const starIndex = pattern.indexOf("*");
+
+        if (starIndex === -1) {
+            if (pattern === specifier) {
+                for (const target of targets) {
+                    const resolved = probeBoth(resolvePath(pathsBase, target));
+
+                    if (resolved !== undefined) {
+                        return resolved;
+                    }
+                }
+            }
+
+            continue;
+        }
+
+        const prefix = pattern.slice(0, starIndex);
+        const suffix = pattern.slice(starIndex + 1);
+
+        if (specifier.startsWith(prefix) && specifier.endsWith(suffix) && specifier.length >= prefix.length + suffix.length) {
+            const matched = specifier.slice(prefix.length, specifier.length - suffix.length);
+
+            for (const target of targets) {
+                const filled = target.replace("*", matched);
+                const resolved = probeBoth(resolvePath(pathsBase, filled));
+
+                if (resolved !== undefined) {
+                    return resolved;
+                }
+            }
+        }
+    }
+
+    // 2. baseUrl-rooted bare resolution (when a baseUrl is set, TS resolves
+    //    non-relative specifiers against it before node_modules).
+    if (hasBaseUrl) {
+        const resolved = probeBoth(resolvePath(pathsBase, specifier));
+
+        if (resolved !== undefined) {
+            return resolved;
+        }
+    }
+
+    return undefined;
+};
 
 interface RegisterHooksModule {
     registerHooks?: (hooks: {
@@ -128,6 +389,25 @@ const probe = (path: string): string | undefined => {
 };
 
 /**
+ * Probe data-file extensions (.yaml/.yml/.toml/.jsonc/.json5/.txt) for an
+ * extensionless or partially-specified import. Runs after {@link probe} so
+ * code modules always win when both exist.
+ */
+const probeData = (path: string): string | undefined => {
+    if (isFile(path) && DATA_EXT_RE.test(path)) {
+        return path;
+    }
+
+    for (const ext of DATA_EXT_CANDIDATES) {
+        if (isFile(path + ext)) {
+            return path + ext;
+        }
+    }
+
+    return undefined;
+};
+
+/**
  * Register the sync load hook once, if `module.registerHooks` exists. Returns
  * whether a graph-wide hook is active.
  */
@@ -158,6 +438,20 @@ const ensureRegisterHooks = (): boolean => {
                 return { format: formatFor(filename), shortCircuit: true, source: code };
             }
 
+            // Data files (.yaml/.yml/.toml/.jsonc/.json5/.txt) become an ESM module
+            // whose default export is the parsed value (raw string for .txt). Built-in
+            // `.json` is left to Node's native JSON module support.
+            if (clean.startsWith("file:") && DATA_EXT_RE.test(clean)) {
+                const filename = fileURLToPath(clean);
+                const value = parseDataFile(filename);
+
+                return {
+                    format: "module",
+                    shortCircuit: true,
+                    source: `export default ${JSON.stringify(value)};\n`,
+                };
+            }
+
             return nextLoad(url, context);
         },
         // Extension/index probing + .js→.ts swap for relative specifiers, matching
@@ -174,10 +468,39 @@ const ensureRegisterHooks = (): boolean => {
                 }
 
                 if (target?.protocol === "file:") {
-                    const resolvedPath = probe(fileURLToPath(target));
+                    const targetPath = fileURLToPath(target);
+                    const resolvedPath = probe(targetPath) ?? probeData(targetPath);
 
                     if (resolvedPath !== undefined) {
                         return { shortCircuit: true, url: pathToFileURL(resolvedPath).href };
+                    }
+                }
+            }
+
+            // tsconfig `baseUrl`/`paths` aliases for bare specifiers that aren't
+            // node: builtins. node_modules packages still fall through to Node's
+            // resolver because the alias probe only returns on a real on-disk hit.
+            if (
+                context.parentURL !== undefined
+                && !specifier.startsWith(".")
+                && !specifier.startsWith("/")
+                && !specifier.startsWith("#")
+                && !specifier.startsWith("node:")
+                && !nodeModule.isBuiltin?.(specifier)
+            ) {
+                let parentDirectory: string | undefined;
+
+                try {
+                    parentDirectory = dirname(fileURLToPath(context.parentURL));
+                } catch {
+                    parentDirectory = undefined;
+                }
+
+                if (parentDirectory !== undefined) {
+                    const aliased = resolveTsConfigPaths(specifier, parentDirectory);
+
+                    if (aliased !== undefined) {
+                        return { shortCircuit: true, url: pathToFileURL(aliased).href };
                     }
                 }
             }

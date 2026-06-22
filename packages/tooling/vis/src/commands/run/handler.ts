@@ -75,6 +75,7 @@ import { applyProjectFilter } from "../../watch/watch-filter";
 import type { KeybindHandle } from "../../watch/watch-keybinds";
 import { installKeybinds, writeHelp } from "../../watch/watch-keybinds";
 import { applyServiceRegistry } from "./apply-service-registry";
+import { applyFilterStrings } from "./filter";
 import type { RunOptions } from "./index";
 import type { ServiceBridgeEntry } from "./service-event-bridge";
 import { ServiceEventBridge } from "./service-event-bridge";
@@ -1358,6 +1359,35 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
         if (projectNames.length === 0) {
             throw new Error(`No matching projects found for: ${String(options.projects)}`);
+        }
+    }
+
+    // Apply pnpm-style `--filter`/`-F` selectors. They compose with the
+    // selector + `--projects` set above (intersection) so a filter never
+    // pulls in projects the selector already excluded. Multiple `--filter`
+    // flags are unioned, matching pnpm.
+    if (options.filter && options.filter.length > 0) {
+        const packageNameByProject = new Map<string, string | undefined>();
+
+        for (const [name, pkg] of packageJsons) {
+            packageNameByProject.set(name, pkg.name);
+        }
+
+        const filtered = await applyFilterStrings(options.filter, {
+            defaultBase: visConfig?.defaultBase,
+            packageNameByProject,
+            projectGraph,
+            workspaceRoot,
+        });
+
+        const filteredSet = new Set(filtered);
+
+        projectNames = projectNames.filter((name) => filteredSet.has(name));
+
+        if (projectNames.length === 0) {
+            logger.info(`Filter ${options.filter.map((f: string) => `"${f}"`).join(", ")} matched no projects.`);
+
+            return;
         }
     }
 

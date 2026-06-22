@@ -6,6 +6,14 @@ import { runFile } from "./run-file";
 export interface LeanXArgs {
     /** The file to run, or undefined if none was given. */
     file: string | undefined;
+
+    /**
+     * `--node` escape hatch — when present (only valid BEFORE the file), the
+     * target runs on the resolved Node with ZERO vis augmentation (no TS hook,
+     * no `--import` preload, no flag injection, no `.env` loading, no polyfills),
+     * exactly like `node &lt;file> &lt;args>`.
+     */
+    node: boolean;
     /** `--runtime &lt;id>` / `--runtime=&lt;id>` value, if present before the file. */
     runtimeFlag: string | undefined;
     /** Everything after the file — forwarded verbatim to the script. */
@@ -13,12 +21,13 @@ export interface LeanXArgs {
 }
 
 /**
- * Parse `vis x` tokens (everything after `vis x`). Recognises `--runtime` only
- * BEFORE the file; the first non-`--runtime` token is the file, and everything
- * after it (flags included) belongs to the script. Pure — unit-tested.
+ * Parse `vis x` tokens (everything after `vis x`). Recognises `--runtime` and
+ * `--node` only BEFORE the file; the first other token is the file, and
+ * everything after it (flags included) belongs to the script. Pure — unit-tested.
  */
 export const parseLeanXArgs = (argv: string[]): LeanXArgs => {
     let runtimeFlag: string | undefined;
+    let node = false;
     let file: string | undefined;
     const scriptArguments: string[] = [];
 
@@ -26,6 +35,12 @@ export const parseLeanXArgs = (argv: string[]): LeanXArgs => {
         const token = argv[index] as string;
 
         if (file === undefined) {
+            if (token === "--node") {
+                node = true;
+
+                continue;
+            }
+
             if (token === "--runtime") {
                 runtimeFlag = argv[index + 1];
                 index += 1;
@@ -55,7 +70,7 @@ export const parseLeanXArgs = (argv: string[]): LeanXArgs => {
         scriptArguments.shift();
     }
 
-    return { file, runtimeFlag, scriptArguments };
+    return { file, node, runtimeFlag, scriptArguments };
 };
 
 /**
@@ -68,7 +83,7 @@ export const parseLeanXArgs = (argv: string[]): LeanXArgs => {
  * @param argv `process.argv.slice(3)` — tokens after `vis x`.
  */
 export const runLeanX = async (argv: string[]): Promise<void> => {
-    const { file, runtimeFlag, scriptArguments } = parseLeanXArgs(argv);
+    const { file, node, runtimeFlag, scriptArguments } = parseLeanXArgs(argv);
 
     if (file === undefined) {
         process.stderr.write("No file specified. Usage: vis x <file> [args...]\n");
@@ -79,6 +94,17 @@ export const runLeanX = async (argv: string[]): Promise<void> => {
 
     const cwd = process.cwd();
     const absoluteFile = isAbsolute(file) ? file : resolve(cwd, file);
+
+    // `--node`: plain `node <file> <args>`, no runtime resolution, no augmentation.
+    if (node) {
+        const code = await runFile(absoluteFile, scriptArguments, "node", cwd, { node: true });
+
+        if (code !== 0) {
+            process.exitCode = code;
+        }
+
+        return;
+    }
 
     let runtime;
 
