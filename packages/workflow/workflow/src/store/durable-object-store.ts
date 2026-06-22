@@ -92,6 +92,8 @@ class DurableObjectStore implements WorkflowStore {
         if (run !== undefined && isWakeable(run)) {
             await this.#storage.delete(wakeKey(run.wakeAt as number, runId));
         }
+
+        await this.#reschedule();
     }
 
     public async due(now: number, limit: number): Promise<string[]> {
@@ -145,8 +147,12 @@ class DurableObjectStore implements WorkflowStore {
 
         const current = this.#storage.getAlarm === undefined ? undefined : await this.#storage.getAlarm();
 
-        // Only move the alarm earlier; firing early is harmless (sweep no-ops and re-arms).
-        if (typeof current !== "number" || next < current) {
+        // Keep the alarm aligned with the actual earliest pending wake. It must be
+        // able to move in BOTH directions: earlier when a sooner run is saved, and
+        // later when the earliest run is deleted — otherwise a stale alarm fires
+        // once, finds nothing due (so sweep never re-arms via save), and the
+        // remaining later wake-ups are orphaned.
+        if (current !== next) {
             await this.#storage.setAlarm(next);
         }
     }

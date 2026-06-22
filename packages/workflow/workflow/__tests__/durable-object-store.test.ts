@@ -35,6 +35,25 @@ describe("DurableObjectStore alarm scheduling", () => {
 
         await expect(storage.getAlarm()).resolves.toBeNull();
     });
+
+    it("re-arms the alarm to the next pending wake when the earliest run is deleted", async () => {
+        expect.assertions(2);
+
+        const storage = new FakeDurableObjectStorage();
+        const store = new DurableObjectStore(storage);
+
+        await store.save({ definitionId: "w", runId: "early", snapshot: {}, status: "suspended", updatedAt: 0, wakeAt: 1000 });
+        await store.save({ definitionId: "w", runId: "late", snapshot: {}, status: "suspended", updatedAt: 0, wakeAt: 5000 });
+
+        await expect(storage.getAlarm()).resolves.toBe(1000);
+
+        // Deleting the earliest-waking run must move the alarm forward to the next
+        // pending wake; otherwise the stale 1000ms alarm fires, finds nothing due,
+        // and never re-arms — orphaning the 5000ms wake.
+        await store.delete("early");
+
+        await expect(storage.getAlarm()).resolves.toBe(5000);
+    });
 });
 
 describe("DurableObjectStore with a runtime (alarm-driven sweep)", () => {
