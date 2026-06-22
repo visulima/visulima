@@ -120,6 +120,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("happy path — all channels succeed and exit code is 0", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 discord: { webhook: "https://discord.com/api/webhooks/123/abc" },
@@ -139,6 +141,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("one channel fails → exit code is non-zero", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 slack: { webhook: "https://hooks.slack.com/services/T/B/123" },
@@ -160,6 +164,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("--channel=slack filters to only the slack channel", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 discord: { webhook: "https://discord.com/api/webhooks/123/abc" },
@@ -180,6 +186,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("--channel=slack:eng filters to the id'd slack channel only", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 slack: [
@@ -198,6 +206,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("--custom-context reads JSON from disk and forwards it to channels", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 webhook: { url: "https://example.com/hook" },
@@ -234,6 +244,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("no notifications configured → graceful exit with hint, exit code 0", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({});
 
         const result = await callHandler(cwd, {});
@@ -244,6 +256,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("--channel filter matching nothing → exit non-zero with hint", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 slack: { webhook: "https://hooks.slack.com/services/T/B/123" },
@@ -258,6 +272,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("--json emits machine-readable output", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 webhook: { url: "https://example.com/hook" },

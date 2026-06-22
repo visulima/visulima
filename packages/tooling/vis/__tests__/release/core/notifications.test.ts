@@ -31,6 +31,8 @@ const buildContext = (overrides: Partial<NotificationContext> = {}): Notificatio
 
 describe(expandNotificationTemplate, () => {
     it("substitutes every documented token", () => {
+        expect.hasAssertions();
+
         const out = expandNotificationTemplate(
             "Released {count} ({packages}) on {channel} via {repo} on {date} — first {firstName}@{firstVersion}",
             buildContext(),
@@ -45,6 +47,8 @@ describe(expandNotificationTemplate, () => {
     });
 
     it("substitutes empty for unset optional fields", () => {
+        expect.hasAssertions();
+
         const out = expandNotificationTemplate("[{repo}][{channel}]", buildContext({ channel: undefined, repo: undefined }));
 
         expect(out).toBe("[][]");
@@ -54,6 +58,7 @@ describe(expandNotificationTemplate, () => {
         // A misconfigured user passing a number / boolean / object as
         // `title` previously threw TypeError on .replaceAll. The guard
         // collapses it to a String() coercion so the channel still works.
+        expect.hasAssertions();
         expect(expandNotificationTemplate(42 as unknown as string, buildContext())).toBe("42");
         expect(expandNotificationTemplate(true as unknown as string, buildContext())).toBe("true");
         expect(expandNotificationTemplate(null as unknown as string, buildContext())).toBe("");
@@ -75,6 +80,8 @@ describe(dispatchNotifications, () => {
     });
 
     it("skips entirely when no channels are configured", async () => {
+        expect.hasAssertions();
+
         const result = await dispatchNotifications({}, buildContext());
 
         expect(fetchSpy).not.toHaveBeenCalled();
@@ -82,6 +89,8 @@ describe(dispatchNotifications, () => {
     });
 
     it("skips when published[] is empty (no-op wave)", async () => {
+        expect.hasAssertions();
+
         const result = await dispatchNotifications(
             { slack: { webhook: "https://hooks.slack.com/services/T/B/X" } },
             buildContext({ published: [] }),
@@ -92,6 +101,8 @@ describe(dispatchNotifications, () => {
     });
 
     it("skips prerelease waves by default", async () => {
+        expect.hasAssertions();
+
         const result = await dispatchNotifications(
             { slack: { webhook: "https://hooks.slack.com/services/T/B/X" } },
             buildContext({
@@ -107,6 +118,8 @@ describe(dispatchNotifications, () => {
     });
 
     it("honours skipPrerelease: false", async () => {
+        expect.hasAssertions();
+
         const result = await dispatchNotifications(
             { skipPrerelease: false, slack: { webhook: "https://hooks.slack.com/services/T/B/X" } },
             buildContext({
@@ -119,6 +132,8 @@ describe(dispatchNotifications, () => {
     });
 
     it("dispatches to multiple channels in parallel", async () => {
+        expect.hasAssertions();
+
         const result = await dispatchNotifications(
             {
                 discord: { webhook: "https://discord.com/api/webhooks/123/abc" },
@@ -133,6 +148,8 @@ describe(dispatchNotifications, () => {
     });
 
     it("supports array form for multiple instances of the same channel", async () => {
+        expect.hasAssertions();
+
         await dispatchNotifications(
             {
                 slack: [
@@ -147,6 +164,8 @@ describe(dispatchNotifications, () => {
     });
 
     it("isolates per-channel failures — one bad webhook doesn't take down the others", async () => {
+        expect.hasAssertions();
+
         fetchSpy.mockReset();
         // First call (slack) fails; second (discord) succeeds.
         let invocation = 0;
@@ -181,6 +200,8 @@ describe(dispatchNotifications, () => {
     it("tolerates null channel configs without throwing (N-1)", async () => {
         // A templating tool that resolves an env var to null shouldn't
         // crash the constructor. arrayify(null) returns [].
+        expect.hasAssertions();
+
         const result = await dispatchNotifications(
 
             { discord: null as any, slack: null as any, webhook: null as any },
@@ -195,6 +216,8 @@ describe(dispatchNotifications, () => {
     it("does NOT leak the webhook URL into failed[].error on fetch rejection (C-2)", async () => {
         // Simulate what Node does when a webhook host is unreachable:
         // the URL ends up embedded in the rejection message.
+        expect.hasAssertions();
+
         const secretUrl = "https://hooks.slack.com/services/T0/B0/SECRETTOKEN";
 
         fetchSpy.mockReset();
@@ -223,6 +246,8 @@ describe(dispatchNotifications, () => {
         // Same as above but covers the response.ok === false branch in
         // webhook.ts where we previously embedded `${this.config.url}`
         // directly into the thrown message.
+        expect.hasAssertions();
+
         const secretUrl = "https://hooks.slack.com/services/T0/B0/SECRETTOKEN";
 
         fetchSpy.mockReset();
@@ -260,6 +285,8 @@ describe(SlackNotificationChannel, () => {
     });
 
     it("renders the default title when none is configured", async () => {
+        expect.hasAssertions();
+
         await new SlackNotificationChannel({ webhook: "https://hooks.slack.com/x" }).send(buildContext());
 
         const body = JSON.parse(capturedBody!);
@@ -269,6 +296,8 @@ describe(SlackNotificationChannel, () => {
     });
 
     it("interpolates the configured title template", async () => {
+        expect.hasAssertions();
+
         await new SlackNotificationChannel({
             title: "{count} new on {channel}",
             webhook: "https://hooks.slack.com/x",
@@ -280,6 +309,8 @@ describe(SlackNotificationChannel, () => {
     });
 
     it("includes a Skipped block when there are skipped entries (default)", async () => {
+        expect.hasAssertions();
+
         await new SlackNotificationChannel({ webhook: "https://hooks.slack.com/x" }).send(
             buildContext({ skipped: [{ name: "@scope/c", reason: "stage-rejected" }] }),
         );
@@ -290,6 +321,8 @@ describe(SlackNotificationChannel, () => {
     });
 
     it("omits the Skipped block when includeSkipped: false", async () => {
+        expect.hasAssertions();
+
         await new SlackNotificationChannel({
             includeSkipped: false,
             webhook: "https://hooks.slack.com/x",
@@ -301,6 +334,8 @@ describe(SlackNotificationChannel, () => {
     });
 
     it("throws on non-2xx responses", async () => {
+        expect.hasAssertions();
+
         fetchSpy.mockResolvedValue(new Response("invalid_token", { status: 403 }));
 
         await expect(
@@ -309,6 +344,8 @@ describe(SlackNotificationChannel, () => {
     });
 
     it("appends an id suffix when configured (for multi-channel disambiguation)", () => {
+        expect.hasAssertions();
+
         const channel = new SlackNotificationChannel({
             id: "releases",
             webhook: "https://hooks.slack.com/x",
@@ -318,6 +355,8 @@ describe(SlackNotificationChannel, () => {
     });
 
     it("falls back to plain timestamp when completedAt is not parseable (M-5)", async () => {
+        expect.hasAssertions();
+
         await new SlackNotificationChannel({ webhook: "https://hooks.slack.com/x" }).send(
             buildContext({ completedAt: "definitely-not-a-date" }),
         );
@@ -350,6 +389,8 @@ describe(DiscordNotificationChannel, () => {
     });
 
     it("emits a single embed with package list as the description", async () => {
+        expect.hasAssertions();
+
         await new DiscordNotificationChannel({ webhook: "https://discord.com/x" }).send(buildContext());
 
         const body = JSON.parse(capturedBody!);
@@ -360,6 +401,8 @@ describe(DiscordNotificationChannel, () => {
     });
 
     it("truncates the description on very large waves", async () => {
+        expect.hasAssertions();
+
         const big = Array.from({ length: 200 }, (_, i) => {
             return {
                 name: `@scope/pkg-${i}`,
@@ -381,6 +424,8 @@ describe(DiscordNotificationChannel, () => {
     });
 
     it("includes channel + repo fields", async () => {
+        expect.hasAssertions();
+
         await new DiscordNotificationChannel({ webhook: "https://discord.com/x" }).send(buildContext());
 
         const body = JSON.parse(capturedBody!);
@@ -410,6 +455,8 @@ describe(WebhookNotificationChannel, () => {
     });
 
     it("sends the safe-by-default subset of NotificationContext when no body template is set", async () => {
+        expect.hasAssertions();
+
         await new WebhookNotificationChannel({ url: "https://example.com/hook" }).send(buildContext());
 
         const body = JSON.parse(capturedInit!.body as string);
@@ -426,6 +473,8 @@ describe(WebhookNotificationChannel, () => {
         // fragments that may carry secrets escaping the upstream redactor.
         // The default body must NOT include these — operators wanting
         // them must opt in with an explicit `body` template.
+        expect.hasAssertions();
+
         const secretReason = "publish failed: token=ghp_LEAKEDSECRET123 invalid";
 
         await new WebhookNotificationChannel({ url: "https://example.com/hook" }).send(
@@ -450,6 +499,8 @@ describe(WebhookNotificationChannel, () => {
         // Counterpoint to M-10: operators who explicitly opt in by
         // authoring a body template are consciously choosing to forward
         // free text. The dispatcher respects that.
+        expect.hasAssertions();
+
         await new WebhookNotificationChannel({
             body: { reasonCount: "{count}", text: "see logs" },
             url: "https://example.com/hook",
@@ -461,6 +512,8 @@ describe(WebhookNotificationChannel, () => {
     });
 
     it("interpolates string leaves in a body template; preserves structure", async () => {
+        expect.hasAssertions();
+
         await new WebhookNotificationChannel({
             body: {
                 meta: { count: "{count}" }, // string `"{count}"` becomes `"2"` (not a number)
@@ -478,6 +531,8 @@ describe(WebhookNotificationChannel, () => {
     });
 
     it("uses configured method + headers", async () => {
+        expect.hasAssertions();
+
         await new WebhookNotificationChannel({
             headers: { "X-Auth": "Bearer abc" },
             method: "PUT",
@@ -489,6 +544,8 @@ describe(WebhookNotificationChannel, () => {
     });
 
     it("interpolates header values", async () => {
+        expect.hasAssertions();
+
         await new WebhookNotificationChannel({
             headers: { "X-Release": "{firstName}@{firstVersion}" },
             url: "https://example.com/hook",

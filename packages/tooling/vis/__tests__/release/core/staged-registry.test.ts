@@ -32,6 +32,8 @@ describe("staged-registry: read/write round-trip", () => {
     });
 
     it("returns an empty registry when staged.json is absent", async () => {
+        expect.hasAssertions();
+
         const registry = await readStagedRegistry(cwd, CHANGES_DIR);
 
         expect(registry.version).toBe(1);
@@ -40,6 +42,8 @@ describe("staged-registry: read/write round-trip", () => {
     });
 
     it("writes the file when there's at least one pending entry", async () => {
+        expect.hasAssertions();
+
         const entry: PendingStage = {
             id: "stage-xyz",
             name: "@scope/pkg",
@@ -67,6 +71,8 @@ describe("staged-registry: read/write round-trip", () => {
 
     it("deletes the file when the registry becomes empty", async () => {
         // Seed a non-empty file first.
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, CHANGES_DIR, {
             pending: [{
                 id: "stage-xyz",
@@ -92,6 +98,8 @@ describe("staged-registry: read/write round-trip", () => {
     });
 
     it("does not touch the worktree when an empty registry was already empty on disk", async () => {
+        expect.hasAssertions();
+
         const result = await writeStagedRegistry(cwd, CHANGES_DIR, {
             pending: [],
             updatedAt: "now",
@@ -103,6 +111,8 @@ describe("staged-registry: read/write round-trip", () => {
     });
 
     it("reports `changed: false` when the registry is identical to disk", async () => {
+        expect.hasAssertions();
+
         const registry: StagedRegistryFile = {
             pending: [{
                 id: "stage-xyz",
@@ -127,6 +137,8 @@ describe("staged-registry: read/write round-trip", () => {
         // pendingSetsEqual, a second write with the same pending set but
         // a fresh `updatedAt` would falsely report `changed: true` and
         // trigger a noise commit every wave.
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, CHANGES_DIR, {
             pending: [{
                 id: "stage-xyz",
@@ -156,6 +168,8 @@ describe("staged-registry: read/write round-trip", () => {
     });
 
     it("reports `changed: true` when the pending set changes (id swap)", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, CHANGES_DIR, {
             pending: [{
                 id: "stage-a",
@@ -184,6 +198,8 @@ describe("staged-registry: read/write round-trip", () => {
     });
 
     it("reports `changed: true` when the same entry's reason flips (timeout → rejected)", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, CHANGES_DIR, {
             pending: [{
                 id: "stage-xyz",
@@ -212,6 +228,8 @@ describe("staged-registry: read/write round-trip", () => {
     });
 
     it("throws STATE_FILE_CORRUPT when staged.json is malformed JSON", async () => {
+        expect.hasAssertions();
+
         const path = stagedRegistryPath(cwd, CHANGES_DIR);
         const { mkdir } = await import("node:fs/promises");
 
@@ -224,6 +242,8 @@ describe("staged-registry: read/write round-trip", () => {
     });
 
     it("throws STATE_FILE_CORRUPT for unknown schema versions", async () => {
+        expect.hasAssertions();
+
         const path = stagedRegistryPath(cwd, CHANGES_DIR);
         const { mkdir } = await import("node:fs/promises");
 
@@ -236,6 +256,8 @@ describe("staged-registry: read/write round-trip", () => {
     });
 
     it("throws STATE_FILE_CORRUPT when `pending` is not an array", async () => {
+        expect.hasAssertions();
+
         const path = stagedRegistryPath(cwd, CHANGES_DIR);
         const { mkdir } = await import("node:fs/promises");
 
@@ -261,12 +283,16 @@ describe("staged-registry: pure helpers", () => {
 
     describe(upsertPendingStages, () => {
         it("returns the input registry unchanged when next[] is empty", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = { pending: [], updatedAt: "now", version: 1 };
 
             expect(upsertPendingStages(registry, [])).toBe(registry);
         });
 
         it("adds new entries", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = { pending: [], updatedAt: "now", version: 1 };
             const entry = buildEntry({ id: "stage-xyz" });
 
@@ -276,6 +302,8 @@ describe("staged-registry: pure helpers", () => {
         });
 
         it("replaces an existing entry by id, preserving the rest", () => {
+            expect.hasAssertions();
+
             const a = buildEntry({ id: "stage-a", reason: "timeout" });
             const b = buildEntry({ id: "stage-b", name: "@scope/other" });
             const updated = buildEntry({ id: "stage-a", reason: "rejected" });
@@ -289,6 +317,8 @@ describe("staged-registry: pure helpers", () => {
         });
 
         it("dedupes within a single upsert call", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = { pending: [], updatedAt: "now", version: 1 };
             const first = buildEntry({ id: "stage-a", version: "1.0.0" });
             const second = buildEntry({ id: "stage-a", version: "1.0.1" });
@@ -302,6 +332,8 @@ describe("staged-registry: pure helpers", () => {
 
     describe(removePendingStages, () => {
         it("returns the input when ids[] is empty", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = {
                 pending: [buildEntry({ id: "x" })],
                 updatedAt: "now",
@@ -312,6 +344,8 @@ describe("staged-registry: pure helpers", () => {
         });
 
         it("returns the input when nothing matches", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = {
                 pending: [buildEntry({ id: "x" })],
                 updatedAt: "now",
@@ -322,6 +356,8 @@ describe("staged-registry: pure helpers", () => {
         });
 
         it("drops only matching ids", () => {
+            expect.hasAssertions();
+
             const a = buildEntry({ id: "a" });
             const b = buildEntry({ id: "b" });
             const c = buildEntry({ id: "c" });
@@ -333,6 +369,8 @@ describe("staged-registry: pure helpers", () => {
         });
 
         it("treats the empty list of ids as a no-op even when registry has entries", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = {
                 pending: [buildEntry({ id: "x" })],
                 updatedAt: "now",
@@ -345,12 +383,16 @@ describe("staged-registry: pure helpers", () => {
 
     describe(findConflictingPendingStages, () => {
         it("returns an empty list when the registry is empty", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = { pending: [], updatedAt: "now", version: 1 };
 
             expect(findConflictingPendingStages(registry, ["@scope/pkg"])).toStrictEqual([]);
         });
 
         it("returns an empty list when no package matches", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = {
                 pending: [buildEntry({ name: "@scope/a" })],
                 updatedAt: "now",
@@ -364,6 +406,8 @@ describe("staged-registry: pure helpers", () => {
             // Important behaviour: the guard blocks on *package*, not
             // (package, version). A pending pkg@1.2.0 blocks both a
             // re-publish of 1.2.0 AND a re-version to 1.2.1.
+            expect.hasAssertions();
+
             const blocked = buildEntry({ id: "stage-old", name: "@scope/a", version: "1.0.0" });
             const allowed = buildEntry({ id: "stage-other", name: "@scope/b", version: "2.0.0" });
 
@@ -374,6 +418,8 @@ describe("staged-registry: pure helpers", () => {
         });
 
         it("matches multiple packages in one call", () => {
+            expect.hasAssertions();
+
             const a = buildEntry({ id: "stage-a", name: "@scope/a" });
             const b = buildEntry({ id: "stage-b", name: "@scope/b" });
             const c = buildEntry({ id: "stage-c", name: "@scope/c" });
@@ -398,6 +444,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
     });
 
     it("round-trips recentlyNotified + recentlyWalked through write + read", async () => {
+        expect.hasAssertions();
+
         const registry: StagedRegistryFile = {
             pending: [],
             recentlyNotified: [{ at: new Date().toISOString(), key: "@scope/a@1.0.0" }],
@@ -421,6 +469,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
 
     it("preserves the file when pending is empty but recentlyNotified has entries", async () => {
         // Seed a registry with ONLY recentlyNotified.
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, CHANGES_DIR, {
             pending: [],
             recentlyNotified: [{ at: new Date().toISOString(), key: "@scope/a@1.0.0" }],
@@ -436,6 +486,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
 
     it("deletes the file ONLY when pending + recentlyNotified + recentlyWalked are all empty", async () => {
         // Seed with recents present.
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, CHANGES_DIR, {
             pending: [],
             recentlyNotified: [{ at: new Date().toISOString(), key: "@scope/a@1.0.0" }],
@@ -456,6 +508,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
     });
 
     it("prunes entries older than 30 days on write", async () => {
+        expect.hasAssertions();
+
         const now = Date.now();
         const old = new Date(now - 31 * 24 * 60 * 60 * 1000).toISOString();
         const fresh = new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString();
@@ -478,6 +532,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
     });
 
     it("caps recentlyNotified at 100 entries (keeping the most recent)", async () => {
+        expect.hasAssertions();
+
         const now = Date.now();
         const entries = Array.from({ length: 150 }, (_, idx) => {
             return {
@@ -506,6 +562,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
     });
 
     it("does not produce a noise write when only the in-memory updatedAt changed", async () => {
+        expect.hasAssertions();
+
         const initial: StagedRegistryFile = {
             pending: [],
             recentlyNotified: [{ at: "2026-05-22T14:00:00.000Z", key: "@scope/a@1.0.0" }],
@@ -525,11 +583,14 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
 
     describe(pruneOldEntries, () => {
         it("returns an empty array when input is undefined or empty", () => {
+            expect.hasAssertions();
             expect(pruneOldEntries(undefined)).toStrictEqual([]);
             expect(pruneOldEntries([])).toStrictEqual([]);
         });
 
         it("drops entries older than 30 days", () => {
+            expect.hasAssertions();
+
             const now = Date.now();
             const old = new Date(now - 31 * 24 * 60 * 60 * 1000).toISOString();
             const fresh = new Date(now - 1 * 24 * 60 * 60 * 1000).toISOString();
@@ -546,6 +607,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
         });
 
         it("caps the result to 100 entries even when all are within the 30-day window", () => {
+            expect.hasAssertions();
+
             const now = Date.now();
             const entries = Array.from({ length: 150 }, (_, idx) => {
                 return {
@@ -560,6 +623,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
         });
 
         it("treats bad-timestamp entries as expired (defensive)", () => {
+            expect.hasAssertions();
+
             const now = Date.now();
             const result = pruneOldEntries(
                 [
@@ -575,6 +640,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
 
     describe("recordRecentlyNotified / recordRecentlyWalked", () => {
         it("appends new keys with the supplied timestamp", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = {
                 pending: [],
                 updatedAt: "old",
@@ -588,6 +655,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
         });
 
         it("dedupes against existing entries (same wave, same key)", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = {
                 pending: [],
                 recentlyNotified: [{ at: "earlier", key: "@scope/a@1.0.0" }],
@@ -606,6 +675,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
         });
 
         it("returns the input unchanged when keys[] is empty", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = { pending: [], updatedAt: "old", version: 1 };
 
             expect(recordRecentlyNotified(registry, [])).toBe(registry);
@@ -613,6 +684,8 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
         });
 
         it("returns the input unchanged when nothing new to add", () => {
+            expect.hasAssertions();
+
             const registry: StagedRegistryFile = {
                 pending: [],
                 recentlyWalked: [{ at: "earlier", key: "@scope/a@1.0.0" }],

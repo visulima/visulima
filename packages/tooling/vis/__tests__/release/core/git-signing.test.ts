@@ -39,6 +39,8 @@ describe(createTag, () => {
     });
 
     it("passes -s when signing.mode is `gpg` without an explicit key", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         const calls: InvocationLog[] = [];
 
@@ -63,6 +65,8 @@ describe(createTag, () => {
     });
 
     it("passes -u <key> when signing.mode is `gpg` with an explicit key", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         const calls: InvocationLog[] = [];
 
@@ -86,6 +90,8 @@ describe(createTag, () => {
     });
 
     it("passes -s when signing.mode is `ssh` (relies on git config gpg.format=ssh)", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         const calls: InvocationLog[] = [];
 
@@ -113,6 +119,8 @@ describe(createTag, () => {
     });
 
     it("falls back to GPG with a warning when signing.mode is `sigstore` and gitsign is missing", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         const calls: InvocationLog[] = [];
 

@@ -157,6 +157,7 @@ afterEach(() => {
 
 describe("jsrVersionActions: identity", () => {
     it("has stable id `jsr`", () => {
+        expect.hasAssertions();
         expect(new JsrVersionActions().id).toBe("jsr");
     });
 });
@@ -166,6 +167,8 @@ describe("jsrVersionActions: readPublishedVersion", () => {
         // Manifest must be present so the actions can resolve the JSR
         // package name (it's not the JS package.json name — JSR uses
         // its own scoped identifier in jsr.json).
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.0" });
         const fetchSpy = stubFetch({ body: { latest: "1.2.3", versions: { "1.0.0": {}, "1.2.3": {} } } });
 
@@ -184,6 +187,8 @@ describe("jsrVersionActions: readPublishedVersion", () => {
     });
 
     it("returns undefined on 404 (package never published)", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/fresh", version: "0.1.0" });
         stubFetch({ ok: false, status: 404 });
 
@@ -196,6 +201,8 @@ describe("jsrVersionActions: readPublishedVersion", () => {
     });
 
     it("returns undefined when fetch throws (network unreachable)", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.0" });
         stubFetch({ throws: true });
 
@@ -209,6 +216,8 @@ describe("jsrVersionActions: readPublishedVersion", () => {
 
     it("returns undefined when manifest is unreadable (preserves publish-anyway path)", async () => {
         // No jsr.json at the workspace.
+        expect.hasAssertions();
+
         stubFetch({ body: { latest: "1.0.0" } });
 
         const result = await new JsrVersionActions().readPublishedVersion({
@@ -220,6 +229,8 @@ describe("jsrVersionActions: readPublishedVersion", () => {
     });
 
     it("stamps a vis-release User-Agent on jsr.io metadata requests (B-3 parity)", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.0" });
         const fetchSpy = stubFetch({ body: { latest: "1.0.0" } });
 
@@ -238,6 +249,8 @@ describe("jsrVersionActions: readPublishedVersion", () => {
 
 describe("jsrVersionActions: parseJsrManifest", () => {
     it("parses a valid @scope/name + version", async () => {
+        expect.hasAssertions();
+
         const path = writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "2.5.1" });
         const result = await __testing.parseJsrManifest(path);
 
@@ -245,6 +258,8 @@ describe("jsrVersionActions: parseJsrManifest", () => {
     });
 
     it("parses a deno.json manifest (same shape as jsr.json for the fields we read)", async () => {
+        expect.hasAssertions();
+
         const path = writeJsrManifest(workspace, "deno.json", {
             exports: "./mod.ts",
             name: "@acme/deno-pkg",
@@ -258,6 +273,8 @@ describe("jsrVersionActions: parseJsrManifest", () => {
     });
 
     it("throws CONFIG_INVALID when name has no @scope/ prefix (JSR refuses unscoped publishes)", async () => {
+        expect.hasAssertions();
+
         const path = writeJsrManifest(workspace, "jsr.json", { name: "no-scope", version: "1.0.0" });
 
         await expect(__testing.parseJsrManifest(path)).rejects.toMatchObject({
@@ -268,6 +285,8 @@ describe("jsrVersionActions: parseJsrManifest", () => {
     });
 
     it("throws CONFIG_INVALID when name is missing entirely", async () => {
+        expect.hasAssertions();
+
         const path = writeJsrManifest(workspace, "jsr.json", { version: "1.0.0" });
 
         await expect(__testing.parseJsrManifest(path)).rejects.toMatchObject({
@@ -277,6 +296,8 @@ describe("jsrVersionActions: parseJsrManifest", () => {
     });
 
     it("throws CONFIG_INVALID when version is missing", async () => {
+        expect.hasAssertions();
+
         const path = writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk" });
 
         await expect(__testing.parseJsrManifest(path)).rejects.toMatchObject({
@@ -286,12 +307,15 @@ describe("jsrVersionActions: parseJsrManifest", () => {
     });
 
     it("throws CONFIG_INVALID when the file is missing entirely", async () => {
+        expect.hasAssertions();
         await expect(__testing.parseJsrManifest(join(workspace, "no-such-file.json"))).rejects.toMatchObject({
             code: "CONFIG_INVALID",
         });
     });
 
     it("throws CONFIG_INVALID on malformed JSON", async () => {
+        expect.hasAssertions();
+
         const path = join(workspace, "jsr.json");
 
         writeFileSync(path, "{ not valid json ");
@@ -305,6 +329,7 @@ describe("jsrVersionActions: parseJsrManifest", () => {
 
 describe("jsrVersionActions: shouldUseTrustedPublishing", () => {
     it("returns true with OIDC env + no static token", () => {
+        expect.hasAssertions();
         expect(__testing.shouldUseTrustedPublishing({
             ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
         })).toBe(true);
@@ -314,6 +339,7 @@ describe("jsrVersionActions: shouldUseTrustedPublishing", () => {
         // Aligned with cargo / python: OIDC env presence means the
         // operator wired up trusted publishing; a leftover static token
         // shouldn't silently downgrade.
+        expect.hasAssertions();
         expect(__testing.shouldUseTrustedPublishing({
             ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
             JSR_API_KEY: "jsr_abc123",
@@ -321,6 +347,7 @@ describe("jsrVersionActions: shouldUseTrustedPublishing", () => {
     });
 
     it("returns false when preferStaticToken: true AND a static token is set (escape hatch)", () => {
+        expect.hasAssertions();
         expect(__testing.shouldUseTrustedPublishing(
             {
                 ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
@@ -331,12 +358,15 @@ describe("jsrVersionActions: shouldUseTrustedPublishing", () => {
     });
 
     it("returns false without OIDC env (developer machine, no key)", () => {
+        expect.hasAssertions();
         expect(__testing.shouldUseTrustedPublishing({})).toBe(false);
     });
 });
 
 describe("jsrVersionActions: publish — dryRun", () => {
     it("returns published: true without invoking npx or fetch", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.1" });
         const { calls, runner } = buildRunner([]);
         const fetchSpy = stubFetch({ body: {} });
@@ -356,6 +386,8 @@ describe("jsrVersionActions: publish — dryRun", () => {
 
 describe("jsrVersionActions: publish — happy path", () => {
     it("invokes `npx jsr publish --allow-dirty` when jsr.io has an older version", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.1" });
         process.env["JSR_API_KEY"] = "jsr_dummy_static_token";
         stubFetch({ body: { latest: "1.0.0" } });
@@ -374,6 +406,8 @@ describe("jsrVersionActions: publish — happy path", () => {
     });
 
     it("flags OIDC trusted-publishing in the output when ACTIONS_ID_TOKEN_REQUEST_URL is set", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.1" });
         process.env["ACTIONS_ID_TOKEN_REQUEST_URL"] = "https://token.actions.githubusercontent.com";
         process.env["ACTIONS_ID_TOKEN_REQUEST_TOKEN"] = "ghs_dummy";
@@ -392,6 +426,8 @@ describe("jsrVersionActions: publish — happy path", () => {
     });
 
     it("forwards jsrPublishArgs (e.g. --allow-slow-types) after the built-in flags", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.1" });
         process.env["JSR_API_KEY"] = "jsr_dummy";
         stubFetch({ body: { latest: "1.0.0" } });
@@ -408,6 +444,8 @@ describe("jsrVersionActions: publish — happy path", () => {
     });
 
     it("passes --config when jsrConfigPath points at a non-default file (e.g. deno.json)", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "deno.json", { name: "@acme/deno-pkg", version: "1.0.1" });
         process.env["JSR_API_KEY"] = "jsr_dummy";
         stubFetch({ body: { latest: "1.0.0" } });
@@ -427,6 +465,8 @@ describe("jsrVersionActions: publish — happy path", () => {
 
 describe("jsrVersionActions: publish — idempotency", () => {
     it("short-circuits with alreadyPublished when jsr.io latest === new version", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.1" });
         process.env["JSR_API_KEY"] = "jsr_dummy";
         stubFetch({ body: { latest: "1.0.1" } });
@@ -446,6 +486,8 @@ describe("jsrVersionActions: publish — idempotency", () => {
 
 describe("jsrVersionActions: publish — failure modes", () => {
     it("throws AUTH_MISSING when neither JSR_API_KEY nor OIDC is available", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.1" });
         stubFetch({ body: { latest: "1.0.0" } });
 
@@ -459,6 +501,8 @@ describe("jsrVersionActions: publish — failure modes", () => {
         // The manifest gets past the read step (extra-files would
         // already have bumped it to newVersion in a real run); the
         // publish path re-validates and surfaces the scoped-name rule.
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "unscoped", version: "1.0.1" });
         process.env["JSR_API_KEY"] = "jsr_dummy";
         stubFetch({ body: { latest: "1.0.0" } });
@@ -472,6 +516,8 @@ describe("jsrVersionActions: publish — failure modes", () => {
     it("throws CONFIG_INVALID when manifest version differs from planned release version", async () => {
         // Simulates a misconfigured extra-files rule that didn't bump
         // the manifest — we want to publish 1.0.1 but disk says 1.0.0.
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.0" });
         process.env["JSR_API_KEY"] = "jsr_dummy";
         stubFetch({ body: { latest: "0.9.0" } });
@@ -484,6 +530,8 @@ describe("jsrVersionActions: publish — failure modes", () => {
     });
 
     it("throws PUBLISH_FAILED when jsr publish exits non-zero", async () => {
+        expect.hasAssertions();
+
         writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.1" });
         process.env["JSR_API_KEY"] = "jsr_dummy";
         stubFetch({ body: { latest: "1.0.0" } });
@@ -499,6 +547,8 @@ describe("jsrVersionActions: publish — failure modes", () => {
 
 describe("jsr() preset integration", () => {
     it("returns a PerPackageReleaseConfig with versionActions: 'jsr' and matching jsrConfigPath", () => {
+        expect.hasAssertions();
+
         const cfg = jsr();
 
         expect(cfg.versionActions).toBe("jsr");
@@ -509,6 +559,8 @@ describe("jsr() preset integration", () => {
     });
 
     it("supports `manifestPath: 'deno.json'` for Deno-flavoured packages", () => {
+        expect.hasAssertions();
+
         const cfg = jsr({ manifestPath: "deno.json" });
 
         expect(cfg.versionActions).toBe("jsr");
@@ -517,6 +569,8 @@ describe("jsr() preset integration", () => {
     });
 
     it("emits a second extra-files rule against deno.json when `deno: true` is passed", () => {
+        expect.hasAssertions();
+
         const cfg = jsr({ deno: true });
 
         expect(cfg.extraFiles).toHaveLength(2);
@@ -528,6 +582,8 @@ describe("jsr() preset integration", () => {
         // Edge case: operator passed both flags. The manifestPath
         // already targets deno.json, so there's no second file to
         // rewrite — the preset must not emit a duplicate rule.
+        expect.hasAssertions();
+
         const cfg = jsr({ deno: true, manifestPath: "deno.json" });
 
         expect(cfg.extraFiles).toHaveLength(1);
@@ -535,6 +591,8 @@ describe("jsr() preset integration", () => {
     });
 
     it("merges operator-supplied extraFiles after the manifest rule", () => {
+        expect.hasAssertions();
+
         const cfg = jsr({
             extraFiles: [{ path: "src/version.ts", search: "VERSION = \"[^\"]+\"" }],
         });

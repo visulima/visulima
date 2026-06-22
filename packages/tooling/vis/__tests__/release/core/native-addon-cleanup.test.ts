@@ -92,6 +92,8 @@ describe("native-addon: temp-dir cleanup on failure (RFC §19.4)", () => {
     });
 
     it("removes every mkdtemp dir even when publish throws", async () => {
+        expect.hasAssertions();
+
         const pkg: WorkspacePackage = {
             dir: workspace,
             manifest: {

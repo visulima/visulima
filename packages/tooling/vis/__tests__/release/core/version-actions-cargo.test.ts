@@ -154,12 +154,15 @@ afterEach(() => {
 
 describe("cargoVersionActions: identity", () => {
     it("has stable id `cargo`", () => {
+        expect.hasAssertions();
         expect(new CargoVersionActions().id).toBe("cargo");
     });
 });
 
 describe("cargoVersionActions: readPublishedVersion", () => {
     it("returns crates.io max_stable_version on a 200 happy path", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.0"\n`);
         stubFetch({ body: { crate: { max_stable_version: "1.2.3", max_version: "2.0.0-beta.1" } } });
 
@@ -173,6 +176,8 @@ describe("cargoVersionActions: readPublishedVersion", () => {
     });
 
     it("falls back to max_version when max_stable_version is absent", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "0.1.0"\n`);
         stubFetch({ body: { crate: { max_version: "0.5.0" } } });
 
@@ -185,6 +190,8 @@ describe("cargoVersionActions: readPublishedVersion", () => {
     });
 
     it("returns undefined on 404 (crate doesn't exist yet)", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "fresh-crate"\nversion = "0.1.0"\n`);
         stubFetch({ ok: false, status: 404 });
 
@@ -197,6 +204,8 @@ describe("cargoVersionActions: readPublishedVersion", () => {
     });
 
     it("returns undefined when fetch throws (network unreachable)", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.0"\n`);
         stubFetch({ throws: true });
 
@@ -210,6 +219,8 @@ describe("cargoVersionActions: readPublishedVersion", () => {
 
     it("returns undefined when Cargo.toml cannot be read (preserves publish-anyway path)", async () => {
         // No Cargo.toml at the workspace.
+        expect.hasAssertions();
+
         stubFetch({ body: { crate: { max_version: "1.2.3" } } });
 
         const result = await new CargoVersionActions().readPublishedVersion({
@@ -223,6 +234,8 @@ describe("cargoVersionActions: readPublishedVersion", () => {
 
 describe("cargoVersionActions: readCargoToml (parse helper)", () => {
     it("parses [package].version directly", async () => {
+        expect.hasAssertions();
+
         const path = writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "2.5.1"\n`);
         const result = await __testing.readCargoToml(path);
 
@@ -230,6 +243,8 @@ describe("cargoVersionActions: readCargoToml (parse helper)", () => {
     });
 
     it("resolves version.workspace = true via [workspace.package]", async () => {
+        expect.hasAssertions();
+
         const path = writeCargoToml(
             workspace,
             `[package]\nname = "member"\nversion.workspace = true\n\n[workspace.package]\nversion = "3.0.0"\n`,
@@ -241,6 +256,8 @@ describe("cargoVersionActions: readCargoToml (parse helper)", () => {
     });
 
     it("throws CONFIG_INVALID when [package] is absent (workspace root pointed at directly)", async () => {
+        expect.hasAssertions();
+
         const path = writeCargoToml(workspace, `[workspace]\nmembers = ["crate-a", "crate-b"]\n`);
 
         await expect(__testing.readCargoToml(path)).rejects.toMatchObject({
@@ -250,6 +267,8 @@ describe("cargoVersionActions: readCargoToml (parse helper)", () => {
     });
 
     it("throws CONFIG_INVALID when [package].version is missing", async () => {
+        expect.hasAssertions();
+
         const path = writeCargoToml(workspace, `[package]\nname = "my-crate"\n`);
 
         await expect(__testing.readCargoToml(path)).rejects.toMatchObject({
@@ -258,6 +277,7 @@ describe("cargoVersionActions: readCargoToml (parse helper)", () => {
     });
 
     it("throws CONFIG_INVALID when the file is missing entirely", async () => {
+        expect.hasAssertions();
         await expect(__testing.readCargoToml(join(workspace, "no-such-file.toml"))).rejects.toMatchObject({
             code: "CONFIG_INVALID",
         });
@@ -266,6 +286,7 @@ describe("cargoVersionActions: readCargoToml (parse helper)", () => {
 
 describe("cargoVersionActions: shouldUseTrustedPublishing (M-3)", () => {
     it("returns true with OIDC env + no static token", () => {
+        expect.hasAssertions();
         expect(__testing.shouldUseTrustedPublishing({
             ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
         })).toBe(true);
@@ -275,6 +296,7 @@ describe("cargoVersionActions: shouldUseTrustedPublishing (M-3)", () => {
         // M-3: OIDC precedence aligned with python.ts. A leftover
         // static token in the env shouldn't silently downgrade the
         // operator's choice when the OIDC env signal is present.
+        expect.hasAssertions();
         expect(__testing.shouldUseTrustedPublishing({
             ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
             CARGO_REGISTRY_TOKEN: "cio_abc123",
@@ -284,6 +306,7 @@ describe("cargoVersionActions: shouldUseTrustedPublishing (M-3)", () => {
     it("returns false when preferStaticToken: true AND a static token is set (escape hatch)", () => {
         // M-3 escape hatch: explicit operator opt-in flips the
         // precedence so static wins even with OIDC env present.
+        expect.hasAssertions();
         expect(__testing.shouldUseTrustedPublishing(
             {
                 ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
@@ -295,6 +318,7 @@ describe("cargoVersionActions: shouldUseTrustedPublishing (M-3)", () => {
 
     it("returns true with preferStaticToken: true but no static token (degenerate — falls back to OIDC)", () => {
         // Escape hatch only matters when both signals are present.
+        expect.hasAssertions();
         expect(__testing.shouldUseTrustedPublishing(
             { ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com" },
             { publish: { preferStaticToken: true } },
@@ -302,12 +326,15 @@ describe("cargoVersionActions: shouldUseTrustedPublishing (M-3)", () => {
     });
 
     it("returns false without OIDC env (developer machine, no token)", () => {
+        expect.hasAssertions();
         expect(__testing.shouldUseTrustedPublishing({})).toBe(false);
     });
 });
 
 describe("cargoVersionActions: publish — dryRun", () => {
     it("returns published: true without invoking cargo or fetch", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.1"\n`);
         const { calls, runner } = buildRunner([]);
         const fetchSpy = stubFetch({ body: {} });
@@ -327,6 +354,8 @@ describe("cargoVersionActions: publish — dryRun", () => {
 
 describe("cargoVersionActions: publish — happy path", () => {
     it("invokes `cargo publish --allow-dirty` when crates.io has an older version", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.1"\n`);
         process.env["CARGO_REGISTRY_TOKEN"] = "cio_dummy_static_token";
         stubFetch({ body: { crate: { max_version: "1.0.0" } } });
@@ -350,6 +379,8 @@ describe("cargoVersionActions: publish — happy path", () => {
         // `cargo publish --trusted-publishing` flag (as of cargo
         // 1.85 / late 2025). vis must let cargo's own auth resolution
         // pick up OIDC without adding a bogus CLI arg.
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.1"\n`);
         process.env["ACTIONS_ID_TOKEN_REQUEST_URL"] = "https://token.actions.githubusercontent.com";
         process.env["ACTIONS_ID_TOKEN_REQUEST_TOKEN"] = "ghs_dummy";
@@ -374,6 +405,8 @@ describe("cargoVersionActions: publish — happy path", () => {
         // M-3 alignment with python.ts: OIDC wins by default. A
         // leftover CARGO_REGISTRY_TOKEN in the env shouldn't silently
         // downgrade an operator who configured trusted publishing.
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.1"\n`);
         process.env["ACTIONS_ID_TOKEN_REQUEST_URL"] = "https://token.actions.githubusercontent.com";
         process.env["CARGO_REGISTRY_TOKEN"] = "cio_stale_token_from_last_year";
@@ -393,6 +426,8 @@ describe("cargoVersionActions: publish — happy path", () => {
     });
 
     it("preferStaticToken: true flips precedence — static wins when both signals are present (M-3 escape hatch)", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.1"\n`);
         process.env["ACTIONS_ID_TOKEN_REQUEST_URL"] = "https://token.actions.githubusercontent.com";
         process.env["CARGO_REGISTRY_TOKEN"] = "cio_token_operator_chose";
@@ -414,6 +449,8 @@ describe("cargoVersionActions: publish — happy path", () => {
 
 describe("cargoVersionActions: publish — idempotency", () => {
     it("short-circuits with alreadyPublished when crates.io max_version === new version", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.1"\n`);
         process.env["CARGO_REGISTRY_TOKEN"] = "cio_dummy";
         stubFetch({ body: { crate: { max_version: "1.0.1" } } });
@@ -434,6 +471,8 @@ describe("cargoVersionActions: publish — idempotency", () => {
 
 describe("cargoVersionActions: publish — failure modes", () => {
     it("throws AUTH_MISSING when neither CARGO_REGISTRY_TOKEN nor OIDC is available", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.1"\n`);
         // No env set in beforeEach.
         stubFetch({ body: { crate: { max_version: "1.0.0" } } });
@@ -445,6 +484,8 @@ describe("cargoVersionActions: publish — failure modes", () => {
     });
 
     it("throws PUBLISH_FAILED when cargo publish exits non-zero", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.1"\n`);
         process.env["CARGO_REGISTRY_TOKEN"] = "cio_dummy";
         stubFetch({ body: { crate: { max_version: "1.0.0" } } });
@@ -462,6 +503,8 @@ describe("cargoVersionActions: publish — failure modes", () => {
         // we publish 1.0.1 but disk says 1.0.0. Catching it pre-publish
         // saves a misleading "already published" or "not yet uploaded"
         // confusion downstream.
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.0"\n`);
         process.env["CARGO_REGISTRY_TOKEN"] = "cio_dummy";
         stubFetch({ body: { crate: { max_version: "0.9.0" } } });
@@ -477,6 +520,8 @@ describe("cargoVersionActions: publish — failure modes", () => {
 describe("cargoVersionActions: publish — pre-publish secret scan", () => {
     it("throws PUBLISH_FAILED when packSecretScan finds a leaked secret", async () => {
         // Layout: a .crate file that would carry an env file.
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.1"\n`);
         writeFileSync(join(workspace, "Cargo.lock"), "");
         writeFileSync(
@@ -514,6 +559,8 @@ describe("cargoVersionActions: User-Agent header (B-3)", () => {
         // B-3: crates.io's policy asks for a contact UA. vis routes
         // all registry probes through `safeFetchVersionMetadata`,
         // which auto-injects the header.
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.0"\n`);
 
         const fetchSpy = stubFetch({ body: { crate: { max_version: "1.0.0" } } });
@@ -538,6 +585,8 @@ describe("cargoVersionActions: User-Agent header (B-3)", () => {
 
 describe("cargoVersionActions: publish — alternative registry", () => {
     it("passes --registry when context.registry is set to a non-crates.io URL", async () => {
+        expect.hasAssertions();
+
         writeCargoToml(workspace, `[package]\nname = "my-crate"\nversion = "1.0.1"\n`);
         process.env["CARGO_REGISTRY_TOKEN"] = "cio_dummy";
         stubFetch({ body: { crate: { max_version: "1.0.0" } } });

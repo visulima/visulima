@@ -29,6 +29,8 @@ const findRelease = (plan: ReturnType<typeof assembleReleasePlan>, name: string)
 
 describe("release-plan: phase A — out-of-range fix", () => {
     it("propagates patch to dependent when explicit minor bump breaks range", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a", { version: "1.0.0" });
         const b = mkPkg("b", { dependencies: { a: "~1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -45,6 +47,8 @@ describe("release-plan: phase A — out-of-range fix", () => {
     });
 
     it("does NOT propagate when range still satisfies new version", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b", { dependencies: { a: "^1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -56,6 +60,8 @@ describe("release-plan: phase A — out-of-range fix", () => {
     });
 
     it("peer deps inherit source bump level (no major escalation)", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b", { peerDependencies: { a: "~1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -69,6 +75,8 @@ describe("release-plan: phase A — out-of-range fix", () => {
     });
 
     it("ignores devDependencies", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b", { devDependencies: { a: "~1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -79,6 +87,8 @@ describe("release-plan: phase A — out-of-range fix", () => {
     });
 
     it("treats workspace:* and catalog: as always satisfied (no out-of-range trigger)", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b", { dependencies: { a: "workspace:*" } });
         const c = mkPkg("c", { dependencies: { a: "catalog:" } });
@@ -92,6 +102,8 @@ describe("release-plan: phase A — out-of-range fix", () => {
     });
 
     it("warns on ^0.x peer dep producing non-patch propagation", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a", { version: "0.5.0" });
         const b = mkPkg("b", { peerDependencies: { a: "^0.5.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -104,6 +116,8 @@ describe("release-plan: phase A — out-of-range fix", () => {
     // Devdep-cascade opt-in (changesets #944): default off, true cascades
     // every source, an allow-list narrows to specific source packages.
     it("cascades devDependency consumers as patch when bumpDevDependencies is true", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b", { devDependencies: { a: "~1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -122,6 +136,8 @@ describe("release-plan: phase A — out-of-range fix", () => {
     });
 
     it("narrows devDependency cascade to the bumpDevDependencies allow-list", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const c = mkPkg("c");
         const b = mkPkg("b", { devDependencies: { a: "~1.0.0", c: "~1.0.0" } });
@@ -143,6 +159,8 @@ describe("release-plan: phase A — out-of-range fix", () => {
     });
 
     it("still ignores devDependencies when bumpDevDependencies is omitted", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b", { devDependencies: { a: "~1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -157,6 +175,8 @@ describe("release-plan: phase A — out-of-range fix", () => {
 
 describe("release-plan: phase B — fixed groups", () => {
     it("max-bumps every member of a fixed group", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b");
         const c = mkPkg("c");
@@ -172,6 +192,8 @@ describe("release-plan: phase B — fixed groups", () => {
     });
 
     it("expands glob patterns within fixed groups", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("@scope/core");
         const b = mkPkg("@scope/plugin-foo");
         const c = mkPkg("@scope/plugin-bar");
@@ -187,6 +209,8 @@ describe("release-plan: phase B — fixed groups", () => {
 
 describe("release-plan: phase B — linked groups", () => {
     it("max-bumps only already-planned members (no pull-in of new packages)", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b");
         const c = mkPkg("c");
@@ -206,6 +230,8 @@ describe("release-plan: phase B — linked groups", () => {
 
 describe("release-plan: phase C1 — bump-file cascade", () => {
     it("cascades to globbed packages from nested change file", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("@scope/core");
         const b = mkPkg("@scope/plugin-foo");
         const c = mkPkg("@scope/plugin-bar");
@@ -222,6 +248,8 @@ describe("release-plan: phase C1 — bump-file cascade", () => {
     });
 
     it("runs cascade even in out-of-range mode", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b"); // not depending on a — pure cascade
         const graph = new DependencyGraph([a, b]);
@@ -235,6 +263,8 @@ describe("release-plan: phase C1 — bump-file cascade", () => {
 
 describe("release-plan: phase C2 — cascadeTo from per-pkg config", () => {
     it("triggers cascadeTo when source bump meets trigger", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b");
         const graph = new DependencyGraph([a, b]);
@@ -255,6 +285,8 @@ describe("release-plan: phase C2 — cascadeTo from per-pkg config", () => {
     });
 
     it("does not trigger cascadeTo when source bump is below trigger", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b");
         const graph = new DependencyGraph([a, b]);
@@ -274,6 +306,8 @@ describe("release-plan: phase C2 — cascadeTo from per-pkg config", () => {
     });
 
     it("supports bumpAs: 'match' to inherit source level", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b");
         const graph = new DependencyGraph([a, b]);
@@ -295,6 +329,8 @@ describe("release-plan: phase C2 — cascadeTo from per-pkg config", () => {
 
 describe("release-plan: phase C3 — dep-graph rules (gated by mode)", () => {
     it("does NOT run dep-graph rules in out-of-range mode", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b", { dependencies: { a: "^1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -310,6 +346,8 @@ describe("release-plan: phase C3 — dep-graph rules (gated by mode)", () => {
     });
 
     it("runs dep-graph rules in patch mode (default rule: deps:patch:patch)", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b", { dependencies: { a: "^1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -325,6 +363,8 @@ describe("release-plan: phase C3 — dep-graph rules (gated by mode)", () => {
     });
 
     it("respects minor-mode threshold — patch source does not trigger", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b", { dependencies: { a: "^1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -344,6 +384,8 @@ describe("release-plan: phase C3 — dep-graph rules (gated by mode)", () => {
 
 describe("release-plan: combined scenarios", () => {
     it("max-merges multiple change files for the same package", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const graph = new DependencyGraph([a]);
 
@@ -360,6 +402,8 @@ describe("release-plan: combined scenarios", () => {
     });
 
     it("`none` entries are recorded but produce no release", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const b = mkPkg("b");
         const graph = new DependencyGraph([a, b]);
@@ -371,6 +415,8 @@ describe("release-plan: combined scenarios", () => {
     });
 
     it("warns about non-workspace package references", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const graph = new DependencyGraph([a]);
 
@@ -381,6 +427,8 @@ describe("release-plan: combined scenarios", () => {
     });
 
     it("returns deterministic alphabetical ordering", () => {
+        expect.hasAssertions();
+
         const c = mkPkg("c");
         const a = mkPkg("a");
         const b = mkPkg("b");
@@ -396,6 +444,8 @@ describe("release-plan: combined scenarios", () => {
 
 describe("release-plan: channel-aware version computation", () => {
     it("opens prerelease line when prerelease option is set", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a", { version: "1.2.3" });
         const graph = new DependencyGraph([a]);
 
@@ -405,6 +455,8 @@ describe("release-plan: channel-aware version computation", () => {
     });
 
     it("computes plain semver when no prerelease option is set", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a", { version: "1.2.3" });
         const graph = new DependencyGraph([a]);
 
@@ -414,6 +466,8 @@ describe("release-plan: channel-aware version computation", () => {
     });
 
     it("computes prerelease versions for cascaded dep bumps too", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a", { version: "1.0.0" });
         const b = mkPkg("b", { dependencies: { a: "~1.0.0" }, version: "2.0.0" });
         const graph = new DependencyGraph([a, b]);
@@ -433,6 +487,8 @@ describe("release-plan: catalog change cascade", () => {
         // dep moved → these consumer packages need a patch bump". The
         // plan assembler just upserts them and lets the rest of the
         // pipeline do its thing.
+        expect.hasAssertions();
+
         const consumer = mkPkg("consumer", { dependencies: { react: "catalog:" } });
         const graph = new DependencyGraph([consumer]);
 
@@ -461,6 +517,8 @@ describe("release-plan: catalog change cascade", () => {
         // from the workspace dep-graph (e.g. via `release.ignore`)
         // should be silently skipped — operators who filtered the
         // package out don't want it back.
+        expect.hasAssertions();
+
         const present = mkPkg("present", { dependencies: { react: "catalog:" } });
         const graph = new DependencyGraph([present]);
 
@@ -478,6 +536,8 @@ describe("release-plan: catalog change cascade", () => {
         // A consumer with both an explicit bump from a change file AND
         // a catalog cascade should have both reasons attributed. The
         // bump level is the max of the two (minor > patch).
+        expect.hasAssertions();
+
         const consumer = mkPkg("consumer", { dependencies: { react: "catalog:" } });
         const graph = new DependencyGraph([consumer]);
 
@@ -503,6 +563,8 @@ describe("release-plan: catalog change cascade", () => {
         // range. When the catalog cascade bumps a (patch), Phase A
         // notices b's range no longer satisfies the new version and
         // pulls b into the plan as a dependency bump.
+        expect.hasAssertions();
+
         const a = mkPkg("a", { dependencies: { react: "catalog:" }, version: "1.0.0" });
         const b = mkPkg("b", { dependencies: { a: "1.0.0" }, version: "1.0.0" });
         const graph = new DependencyGraph([a, b]);
@@ -520,6 +582,8 @@ describe("release-plan: catalog change cascade", () => {
     });
 
     it("no-ops when catalogConsumers is empty / undefined (backwards compat)", () => {
+        expect.hasAssertions();
+
         const a = mkPkg("a");
         const graph = new DependencyGraph([a]);
 
@@ -533,6 +597,8 @@ describe("release-plan: catalog change cascade", () => {
     // the formatter walks an empty `sources` array and emits a blank
     // dependency-bump line.
     it("records a synthetic catalog source on each CATALOG_CHANGED entry", () => {
+        expect.hasAssertions();
+
         const consumer = mkPkg("consumer", { dependencies: { lodash: "catalog:" } });
         const graph = new DependencyGraph([consumer]);
 
@@ -558,6 +624,8 @@ describe("release-plan: catalog change cascade", () => {
     });
 
     it("records the named-catalog source verbatim (catalog:dev/vitest)", () => {
+        expect.hasAssertions();
+
         const consumer = mkPkg("consumer", { devDependencies: { vitest: "catalog:dev" } });
         const graph = new DependencyGraph([consumer]);
 
@@ -580,6 +648,8 @@ describe("release-plan: catalog change cascade", () => {
     });
 
     it("falls back to empty string when the catalog entry was removed (newVersion undefined)", () => {
+        expect.hasAssertions();
+
         const consumer = mkPkg("consumer", { dependencies: { legacy: "catalog:" } });
         const graph = new DependencyGraph([consumer]);
 
@@ -609,6 +679,8 @@ describe("release-plan: bumpDevDependencies fanout warning (F12)", () => {
         // 11 devdep consumers of the same source — one above the
         // threshold. The warning calls out the source name so operators
         // can decide whether to narrow to the array form.
+        expect.hasAssertions();
+
         const source = mkPkg("source");
         const consumers = Array.from({ length: 11 }, (_, i) => mkPkg(`consumer-${i}`, { devDependencies: { source: "1.0.0" } }));
         const graph = new DependencyGraph([source, ...consumers]);
@@ -629,6 +701,8 @@ describe("release-plan: bumpDevDependencies fanout warning (F12)", () => {
     });
 
     it("does NOT warn when the fanout sits at-or-below the threshold", () => {
+        expect.hasAssertions();
+
         const source = mkPkg("source");
         // 10 consumers — at the threshold, not above it.
         const consumers = Array.from({ length: 10 }, (_, i) => mkPkg(`consumer-${i}`, { devDependencies: { source: "1.0.0" } }));
@@ -646,6 +720,8 @@ describe("release-plan: bumpDevDependencies fanout warning (F12)", () => {
     it("does NOT warn when `bumpDevDependencies` is an array (operator already opted into narrow scope)", () => {
         // Same wide fanout, but the operator explicitly listed the
         // source — no nudge needed because the cascade is intentional.
+        expect.hasAssertions();
+
         const source = mkPkg("source");
         const consumers = Array.from({ length: 20 }, (_, i) => mkPkg(`consumer-${i}`, { devDependencies: { source: "1.0.0" } }));
         const graph = new DependencyGraph([source, ...consumers]);
@@ -663,6 +739,8 @@ describe("release-plan: bumpDevDependencies fanout warning (F12)", () => {
         // 12 consumers — well above the threshold. The warning text
         // reflects the FINAL fanout (12), not whatever count happened to
         // trip the threshold mid-loop.
+        expect.hasAssertions();
+
         const source = mkPkg("source");
         const consumers = Array.from({ length: 12 }, (_, i) => mkPkg(`consumer-${i}`, { devDependencies: { source: "1.0.0" } }));
         const graph = new DependencyGraph([source, ...consumers]);

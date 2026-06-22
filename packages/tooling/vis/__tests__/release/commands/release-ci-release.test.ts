@@ -119,6 +119,8 @@ describe("vis release ci release — C7 publish idempotency", () => {
     });
 
     it("version-pr mode with no pending files and no .state.json → publish without resume", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture("main");
 
         // Configure main as version-pr channel — no pending files → assume merge.
@@ -140,6 +142,8 @@ describe("vis release ci release — C7 publish idempotency", () => {
     });
 
     it("version-pr mode with no pending files and .state.json present → publish with resume", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture("main");
 
         writeVisConfigCjs(cwd, {
@@ -166,6 +170,8 @@ describe("vis release ci release — C7 publish idempotency", () => {
     });
 
     it("auto-publish mode → applyContext then publishContext with resume:true", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture("alpha");
 
         writeVisConfigCjs(cwd, {

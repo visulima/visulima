@@ -22,6 +22,8 @@ describe("yarnAdapter — pack", () => {
     });
 
     it("expands %s/%v placeholders using package.json name and version", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["pack", "--out"], () => {
@@ -35,6 +37,8 @@ describe("yarnAdapter — pack", () => {
     });
 
     it("honours a custom filename template", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["pack", "--out"], () => {
@@ -47,6 +51,8 @@ describe("yarnAdapter — pack", () => {
     });
 
     it("writes to the destination directory when provided", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["pack", "--out"], () => {
@@ -59,6 +65,8 @@ describe("yarnAdapter — pack", () => {
     });
 
     it("throws PUBLISH_FAILED on non-zero exit", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["pack"], () => {
@@ -71,6 +79,8 @@ describe("yarnAdapter — pack", () => {
 
 describe("yarnAdapter — installLockfileOnly", () => {
     it("uses `yarn install --mode update-lockfile`", async () => {
+        expect.hasAssertions();
+
         let seenArgs: ReadonlyArray<string> | undefined;
 
         const adapter = new YarnAdapter({
@@ -87,6 +97,8 @@ describe("yarnAdapter — installLockfileOnly", () => {
     });
 
     it("throws on failure", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["install"], () => {
@@ -101,6 +113,8 @@ describe("yarnAdapter — installLockfileOnly", () => {
 
 describe("yarnAdapter — listWorkspacePackages (NDJSON)", () => {
     it("parses newline-delimited JSON entries", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["workspaces", "list", "--json"], () => {
@@ -119,6 +133,8 @@ describe("yarnAdapter — listWorkspacePackages (NDJSON)", () => {
     });
 
     it("skips malformed NDJSON lines", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["workspaces", "list", "--json"], () => {
@@ -136,6 +152,8 @@ describe("yarnAdapter — listWorkspacePackages (NDJSON)", () => {
     });
 
     it("skips entries with empty name", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["workspaces", "list", "--json"], () => {
@@ -153,6 +171,8 @@ describe("yarnAdapter — listWorkspacePackages (NDJSON)", () => {
     });
 
     it("returns empty list on non-zero exit", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["workspaces", "list", "--json"], () => {
@@ -165,6 +185,8 @@ describe("yarnAdapter — listWorkspacePackages (NDJSON)", () => {
 
 describe("yarnAdapter — publish delegates to npm", () => {
     it("invokes npm publish even though we're on yarn", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let invokedNpm = false;
 
@@ -183,6 +205,8 @@ describe("yarnAdapter — publish delegates to npm", () => {
 
 describe("yarnAdapter — detectVersion", () => {
     it("returns trimmed version", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["--version"], () => {
@@ -193,6 +217,8 @@ describe("yarnAdapter — detectVersion", () => {
     });
 
     it("returns undefined when CLI is absent", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("yarn", ["--version"], () => {

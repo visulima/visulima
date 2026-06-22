@@ -6,6 +6,8 @@ const SLUG_RE = /^[a-z]+-[a-z]+$/;
 
 describe(randomAnimalSlug, () => {
     it("emits two hyphen-joined alpha words", () => {
+        expect.hasAssertions();
+
         for (let i = 0; i < 50; i += 1) {
             const slug = randomAnimalSlug();
 
@@ -14,6 +16,8 @@ describe(randomAnimalSlug, () => {
     });
 
     it("varies across calls (probabilistic)", () => {
+        expect.hasAssertions();
+
         const slugs = new Set<string>();
 
         for (let i = 0; i < 100; i += 1) {
@@ -28,12 +32,16 @@ describe(randomAnimalSlug, () => {
 
 describe(randomTimestampSlug, () => {
     it("starts with the supplied prefix", () => {
+        expect.hasAssertions();
+
         const slug = randomTimestampSlug("plan");
 
         expect(slug.startsWith("plan-")).toBe(true);
     });
 
     it("includes a base36 timestamp + 4-char hex tail", () => {
+        expect.hasAssertions();
+
         const slug = randomTimestampSlug("override");
         const match = /^override-[a-z0-9]+-[a-z0-9]{4}$/.exec(slug);
 
@@ -41,6 +49,8 @@ describe(randomTimestampSlug, () => {
     });
 
     it("produces unique outputs for back-to-back calls", () => {
+        expect.hasAssertions();
+
         const a = randomTimestampSlug("p");
         const b = randomTimestampSlug("p");
 

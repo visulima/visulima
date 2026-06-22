@@ -40,15 +40,19 @@ const noopLogger = { error: () => {}, info: () => {}, warn: () => {} } as unknow
 
 describe(printConfigIfRequested, () => {
     it("returns false when --print-config is not set", () => {
+        expect.hasAssertions();
         expect(printConfigIfRequested({}, mkCtx(), noopLogger)).toBe(false);
         expect(stdoutChunks.join("")).toBe("");
     });
 
     it("returns false on empty string", () => {
+        expect.hasAssertions();
         expect(printConfigIfRequested({ printConfig: "" }, mkCtx(), noopLogger)).toBe(false);
     });
 
     it("prints user-facing config + returns true on truthy value", () => {
+        expect.hasAssertions();
+
         const result = printConfigIfRequested({ printConfig: "true" }, mkCtx(), noopLogger);
 
         expect(result).toBe(true);
@@ -61,6 +65,8 @@ describe(printConfigIfRequested, () => {
     });
 
     it("prints runtime-resolved fields with =debug", () => {
+        expect.hasAssertions();
+
         const result = printConfigIfRequested({ printConfig: "debug" }, mkCtx(), noopLogger);
 
         expect(result).toBe(true);
@@ -74,6 +80,8 @@ describe(printConfigIfRequested, () => {
     });
 
     it("redacts gitUser.email but preserves name (RFC §19.4)", () => {
+        expect.hasAssertions();
+
         const ctx = mkCtx();
 
         ctx.config.gitUser = { email: "bot@example.com", name: "release-bot" };
@@ -87,6 +95,8 @@ describe(printConfigIfRequested, () => {
     });
 
     it("leaves gitUser undefined when not configured", () => {
+        expect.hasAssertions();
+
         printConfigIfRequested({ printConfig: "true" }, mkCtx(), noopLogger);
 
         const out = JSON.parse(stdoutChunks.join(""));

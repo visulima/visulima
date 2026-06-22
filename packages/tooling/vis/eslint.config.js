@@ -275,10 +275,6 @@ export default createConfig(
             // Branching over fixture/platform variants inside a test is
             // intentional in these integration-style suites.
             "vitest/no-conditional-in-test": "off",
-            // ~1180 sites assert via mock expectations / error catches, not a leading
-            // `expect.assertions(n)`. Not autofixable (no count to infer); enabling means
-            // hand-annotating every test for no behavioural gain.
-            "vitest/prefer-expect-assertions": "off",
             // Top-level `it`/setup without a wrapping `describe` is fine for
             // these single-subject release command suites.
             "vitest/require-hook": "off",

@@ -39,11 +39,14 @@ const mkPkg = (name: string, deps: Partial<Record<"dependencies" | "devDependenc
 
 describe("catalog-detector: parseCatalogs", () => {
     it("parses an empty / undefined YAML into an empty Map", () => {
+        expect.hasAssertions();
         expect(parseCatalogs(undefined).size).toBe(0);
         expect(parseCatalogs("").size).toBe(0);
     });
 
     it("parses the default `catalog:` block into the empty-string key", () => {
+        expect.hasAssertions();
+
         const yaml = `
 catalog:
   react: ^18.2.0
@@ -56,6 +59,8 @@ catalog:
     });
 
     it("parses named `catalogs.<name>` blocks into their own keys", () => {
+        expect.hasAssertions();
+
         const yaml = `
 catalogs:
   dev:
@@ -73,6 +78,8 @@ catalogs:
     it("co-exists with non-catalog top-level keys without polluting the output", () => {
         // pnpm-workspace.yaml typically carries `packages:` and other
         // unrelated blocks. parseCatalogs must ignore them.
+        expect.hasAssertions();
+
         const yaml = `
 packages:
   - "packages/*"
@@ -89,6 +96,8 @@ catalog:
 
 describe("catalog-detector: extractCatalogRefs", () => {
     it("extracts a single `catalog:` ref from dependencies", () => {
+        expect.hasAssertions();
+
         const pkg = mkPkg("@scope/a", {
             dependencies: { "non-catalog": "^1.0.0", react: "catalog:" },
         });
@@ -101,6 +110,8 @@ describe("catalog-detector: extractCatalogRefs", () => {
     });
 
     it("extracts `catalog:<name>` refs and includes the catalog name", () => {
+        expect.hasAssertions();
+
         const pkg = mkPkg("@scope/b", {
             devDependencies: { vitest: "catalog:dev" },
         });
@@ -111,6 +122,8 @@ describe("catalog-detector: extractCatalogRefs", () => {
     });
 
     it("returns one entry per (dep, kind) pair when the same dep appears in multiple blocks", () => {
+        expect.hasAssertions();
+
         const pkg = mkPkg("@scope/c", {
             dependencies: { react: "catalog:" },
             peerDependencies: { react: "catalog:" },
@@ -123,6 +136,8 @@ describe("catalog-detector: extractCatalogRefs", () => {
     });
 
     it("ignores ranges that don't start with `catalog:`", () => {
+        expect.hasAssertions();
+
         const pkg = mkPkg("@scope/d", {
             dependencies: { bar: "workspace:*", baz: "github:user/repo", foo: "^1.0.0" },
         });
@@ -133,6 +148,8 @@ describe("catalog-detector: extractCatalogRefs", () => {
 
 describe("catalog-detector: findCatalogConsumers", () => {
     it("builds a reverse index of catalog → dep → consumers", () => {
+        expect.hasAssertions();
+
         const catalogs = parseCatalogs(`
 catalog:
   react: ^18.2.0
@@ -162,6 +179,8 @@ catalogs:
         // Catalog block exists in YAML but no package depends on it.
         // The outer key should still be present so callers don't
         // special-case "first dep into a previously-untouched catalog".
+        expect.hasAssertions();
+
         const catalogs = parseCatalogs(`
 catalogs:
   experimental:
@@ -178,6 +197,8 @@ catalogs:
         // `catalog:typo` is a misconfiguration — the dependent package
         // is genuinely broken, but the detector shouldn't invent the
         // typo'd catalog name in the output.
+        expect.hasAssertions();
+
         const catalogs = parseCatalogs(`
 catalog:
   react: ^18.2.0
@@ -195,6 +216,8 @@ catalog:
 
 describe("catalog-detector: detectCatalogChanges", () => {
     it("returns an empty array when both snapshots are identical", () => {
+        expect.hasAssertions();
+
         const prev = parseCatalogs(`
 catalog:
   react: ^18.2.0
@@ -209,6 +232,8 @@ catalog:
     });
 
     it("detects a version bump (both sides present, version differs)", () => {
+        expect.hasAssertions();
+
         const prev = parseCatalogs(`
 catalog:
   react: ^18.2.0
@@ -227,6 +252,8 @@ catalog:
     });
 
     it("detects additions (entry in next only, oldVersion undefined)", () => {
+        expect.hasAssertions();
+
         const prev = parseCatalogs(`
 catalog:
   react: ^18.2.0
@@ -246,6 +273,8 @@ catalog:
     });
 
     it("detects removals (entry in prev only, newVersion undefined)", () => {
+        expect.hasAssertions();
+
         const prev = parseCatalogs(`
 catalog:
   react: ^18.2.0
@@ -265,6 +294,8 @@ catalog:
     });
 
     it("detects changes inside named catalogs (catalog name preserved)", () => {
+        expect.hasAssertions();
+
         const prev = parseCatalogs(`
 catalogs:
   dev:
@@ -289,6 +320,8 @@ catalogs:
         // catalog deps are sorted alphabetically. Verified explicitly
         // so a future change in YAML parser iteration doesn't silently
         // shift the public output ordering.
+        expect.hasAssertions();
+
         const prev = parseCatalogs(`
 catalog:
   react: ^18.2.0
@@ -320,6 +353,8 @@ catalogs:
         // primarily a perf bail (the regular code path would also
         // produce []), so we assert the contract: empty input → empty
         // output, no exceptions, no false-positives.
+        expect.hasAssertions();
+
         const prev = parseCatalogs(undefined);
         const next = parseCatalogs("");
 
@@ -332,6 +367,8 @@ catalogs:
         // Adding a catalog block in `next` while `prev` was empty
         // (greenfield repo getting its first catalog) must still
         // produce the additions, not a silent no-op.
+        expect.hasAssertions();
+
         const prev = parseCatalogs(undefined);
         const next = parseCatalogs(`
 catalog:
@@ -348,6 +385,8 @@ catalog:
     it("does NOT bail when only `next` is empty (removals still surface)", () => {
         // Deleting the catalog block entirely — every dep must
         // surface as a removal.
+        expect.hasAssertions();
+
         const prev = parseCatalogs(`
 catalog:
   react: ^18.2.0
@@ -362,6 +401,8 @@ catalog:
     });
 
     it("treats an entirely-removed catalog as N removals", () => {
+        expect.hasAssertions();
+
         const prev = parseCatalogs(`
 catalog:
   react: ^18.2.0

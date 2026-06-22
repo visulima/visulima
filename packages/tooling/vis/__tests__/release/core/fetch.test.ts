@@ -17,6 +17,8 @@ describe("safeFetchVersionMetadata — httpProxy → undici ProxyAgent", () => {
     });
 
     it("attaches a `dispatcher` to the fetch init when httpProxy is set", async () => {
+        expect.hasAssertions();
+
         const fetchImpl = vi.fn(async () => new Response("ok", { status: 200 }));
 
         await safeFetchVersionMetadata("https://registry.example/foo", {
@@ -34,6 +36,8 @@ describe("safeFetchVersionMetadata — httpProxy → undici ProxyAgent", () => {
     });
 
     it("omits `dispatcher` when httpProxy is not set", async () => {
+        expect.hasAssertions();
+
         const fetchImpl = vi.fn(async () => new Response("ok", { status: 200 }));
 
         await safeFetchVersionMetadata("https://registry.example/foo", {
@@ -46,6 +50,8 @@ describe("safeFetchVersionMetadata — httpProxy → undici ProxyAgent", () => {
     });
 
     it("reuses a single ProxyAgent across consecutive requests to the same proxy", async () => {
+        expect.hasAssertions();
+
         const fetchImpl = vi.fn(async () => new Response("ok", { status: 200 }));
 
         await safeFetchVersionMetadata("https://a.example", {

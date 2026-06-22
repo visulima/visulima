@@ -143,14 +143,18 @@ const noopFormatter = async () => "";
 
 describe(extractReferences, () => {
     it("picks up bare `#123` references", () => {
+        expect.hasAssertions();
         expect(extractReferences("Closes #123 and #456.")).toStrictEqual([123, 456]);
     });
 
     it("picks up `gh-123` (case-insensitive) references", () => {
+        expect.hasAssertions();
         expect(extractReferences("Resolves gh-7 and GH-12 and Gh-9.")).toStrictEqual([7, 9, 12]);
     });
 
     it("picks up forge URLs (/pull/N, /issues/N, /-/merge_requests/N) when no repo gate is supplied", () => {
+        expect.hasAssertions();
+
         const body = `
             See https://github.com/x/y/pull/45 and
             https://gitlab.com/x/y/-/merge_requests/77
@@ -160,14 +164,17 @@ describe(extractReferences, () => {
     });
 
     it("deduplicates references appearing multiple times", () => {
+        expect.hasAssertions();
         expect(extractReferences("#42 and #42 again, and gh-42 too")).toStrictEqual([42]);
     });
 
     it("does not match colour hex codes like #ff00ff", () => {
+        expect.hasAssertions();
         expect(extractReferences("color: #ff00ff;")).toStrictEqual([]);
     });
 
     it("ignores numbers without a # prefix", () => {
+        expect.hasAssertions();
         expect(extractReferences("version 123.456 is shipped")).toStrictEqual([]);
     });
 
@@ -176,18 +183,21 @@ describe(extractReferences, () => {
     describe("m-9 — cross-repo URL guard", () => {
         it("drops URL refs pointing at a different repo", () => {
             // `#42` in a competitor's URL must not get applied locally.
+            expect.hasAssertions();
             expect(
                 extractReferences("See https://github.com/competitor/repo/pull/42 for context", "owner/repo"),
             ).toStrictEqual([]);
         });
 
         it("keeps URL refs that match the local repo", () => {
+            expect.hasAssertions();
             expect(
                 extractReferences("See https://github.com/owner/repo/pull/42 for context", "owner/repo"),
             ).toStrictEqual([42]);
         });
 
         it("keeps GitLab URLs (`-/merge_requests/N`) that match the local repo", () => {
+            expect.hasAssertions();
             expect(
                 extractReferences("See https://gitlab.com/owner/repo/-/merge_requests/77", "owner/repo"),
             ).toStrictEqual([77]);
@@ -196,18 +206,23 @@ describe(extractReferences, () => {
         it("keeps bare `#123` refs even when a cross-repo URL is present", () => {
             // Bare refs always apply locally by convention. The URL pointing
             // at competitor/repo is dropped, but `#7` is kept.
+            expect.hasAssertions();
+
             const body = "Closes #7. See https://github.com/competitor/repo/pull/42 for prior art.";
 
             expect(extractReferences(body, "owner/repo")).toStrictEqual([7]);
         });
 
         it("keeps bare `gh-123` refs even when a cross-repo URL is present", () => {
+            expect.hasAssertions();
+
             const body = "Resolves gh-9. Compare https://github.com/competitor/repo/issues/100.";
 
             expect(extractReferences(body, "owner/repo")).toStrictEqual([9]);
         });
 
         it("treats the repo comparison as case-insensitive (GitHub repo slugs are too)", () => {
+            expect.hasAssertions();
             expect(
                 extractReferences("See https://github.com/Owner/Repo/pull/42", "owner/repo"),
             ).toStrictEqual([42]);
@@ -215,6 +230,7 @@ describe(extractReferences, () => {
 
         it("drops a URL whose path partially overlaps but doesn't match exactly", () => {
             // `owner/repo-other` must not match `owner/repo`.
+            expect.hasAssertions();
             expect(
                 extractReferences("See https://github.com/owner/repo-other/pull/42", "owner/repo"),
             ).toStrictEqual([]);
@@ -224,6 +240,8 @@ describe(extractReferences, () => {
 
 describe(walkSuccessfulRelease, () => {
     it("extracts PR refs from a changelog body and posts a sticky comment per ref", async () => {
+        expect.hasAssertions();
+
         const { client, commentCalls } = buildMockClient();
         const release = mkRelease("@scope/pkg", "1.2.0", ["Closes #100 and #200."]);
         const context = mkContext({}, [release]);
@@ -241,6 +259,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("dedupes references across multiple packages in the wave", async () => {
+        expect.hasAssertions();
+
         const { client, commentCalls } = buildMockClient();
         const releases = [
             mkRelease("@scope/a", "1.0.0", ["See #42."]),
@@ -266,6 +286,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("adds the configured labels via client.addLabels", async () => {
+        expect.hasAssertions();
+
         const { addLabelsCalls, client } = buildMockClient();
         const context = mkContext({
             config: { successWalk: { labels: ["released", "shipped"] } },
@@ -282,6 +304,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("uses default `[\"released\"]` labels when not configured", async () => {
+        expect.hasAssertions();
+
         const { addLabelsCalls, client } = buildMockClient();
         const context = mkContext({}, [mkRelease("@scope/pkg", "1.0.0", ["#5"])]);
         const result = mkResult([{ name: "@scope/pkg", version: "1.0.0" }]);
@@ -297,6 +321,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("skips the walk entirely on prerelease channels by default", async () => {
+        expect.hasAssertions();
+
         const { client, commentCalls } = buildMockClient();
         const context = mkContext(
             { channel: { mode: "auto-publish", prerelease: "beta", tag: "beta" } },
@@ -314,6 +340,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("honours `skipPrerelease: false` to walk prerelease channels", async () => {
+        expect.hasAssertions();
+
         const { client, commentCalls } = buildMockClient();
         const context = mkContext(
             {
@@ -335,6 +363,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("soft-fails a single bad ref without aborting the rest", async () => {
+        expect.hasAssertions();
+
         const { client, commentCalls } = buildMockClient({
             upsertCommentFail: (n) => n === 100,
         });
@@ -355,6 +385,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("renders `{version}` / `{name}` / `{tag}` in the comment template", async () => {
+        expect.hasAssertions();
+
         const { client, commentCalls } = buildMockClient();
         const context = mkContext(
             {
@@ -383,6 +415,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("substitutes `{url}` when a release URL was recorded by createRemoteReleases", async () => {
+        expect.hasAssertions();
+
         const { client, commentCalls } = buildMockClient();
         const context = mkContext(
             { config: { successWalk: { commentBody: "url={url}" } } },
@@ -402,6 +436,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("returns early (no walk) when `enabled: false`", async () => {
+        expect.hasAssertions();
+
         const { client, commentCalls } = buildMockClient();
         const context = mkContext(
             { config: { successWalk: { enabled: false } } },
@@ -419,6 +455,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("returns early when `repo` is undefined (no remote detected)", async () => {
+        expect.hasAssertions();
+
         const { client, commentCalls } = buildMockClient();
         const context = mkContext({}, [mkRelease("@scope/pkg", "1.0.0", ["#1"])]);
         const result = mkResult([{ name: "@scope/pkg", version: "1.0.0" }]);
@@ -433,6 +471,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("skips the label call when configured `labels: []`", async () => {
+        expect.hasAssertions();
+
         const { addLabelsCalls, client, commentCalls } = buildMockClient();
         const context = mkContext(
             { config: { successWalk: { labels: [] } } },
@@ -451,6 +491,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("uses the default comment template when none is configured", async () => {
+        expect.hasAssertions();
+
         const { client, commentCalls } = buildMockClient();
         const context = mkContext({}, [mkRelease("@scope/pkg", "9.9.9", ["Closes #11."])]);
         const result = mkResult([
@@ -471,6 +513,8 @@ describe(walkSuccessfulRelease, () => {
     });
 
     it("soft-fails a single bad label call without aborting the rest", async () => {
+        expect.hasAssertions();
+
         const { addLabelsCalls, client } = buildMockClient({
             addLabelsFail: (n) => n === 1,
         });
@@ -494,6 +538,8 @@ describe(walkSuccessfulRelease, () => {
     //    third-party PRs referenced in changelog bodies. ─────────────────
     describe("c-1 — default OFF when `successWalk` is undefined", () => {
         it("is a no-op when `config.successWalk` is `undefined`", async () => {
+            expect.hasAssertions();
+
             const { addLabelsCalls, client, commentCalls } = buildMockClient();
             // Override the helper default (`{}`) back to explicit "not set".
             const context = mkContext({ config: {} }, [mkRelease("@scope/pkg", "1.0.0", ["Closes #1 and #2."])]);
@@ -512,6 +558,8 @@ describe(walkSuccessfulRelease, () => {
 
         it("walks when `config.successWalk` is an empty object (opt-in with defaults)", async () => {
             // Sanity-check the other half of the gate: `{}` opts in.
+            expect.hasAssertions();
+
             const { client, commentCalls } = buildMockClient();
             const context = mkContext({ config: { successWalk: {} } }, [mkRelease("@scope/pkg", "1.0.0", ["Closes #1."])]);
             const result = mkResult([{ name: "@scope/pkg", version: "1.0.0" }]);
@@ -529,6 +577,8 @@ describe(walkSuccessfulRelease, () => {
     // ── M-8 regression: concurrency cap + 429 retry. ──────────────────
     describe("m-8 — concurrency limit + 429 retry", () => {
         it("caps in-flight upsert calls at 4 even when 20 refs are processed", async () => {
+            expect.hasAssertions();
+
             let active = 0;
             let peak = 0;
 
@@ -575,6 +625,8 @@ describe(walkSuccessfulRelease, () => {
         });
 
         it("retries a 429-failed upsert once after the Retry-After delay", async () => {
+            expect.hasAssertions();
+
             let attempts = 0;
 
             const flakyClient: RemoteReleaseClient = {
@@ -618,6 +670,8 @@ describe(walkSuccessfulRelease, () => {
         });
 
         it("gives up after one 429 retry and records a warning", async () => {
+            expect.hasAssertions();
+
             const persistentClient: RemoteReleaseClient = {
                 addLabels: async () => true,
                 closeIssue: async () => true,
@@ -647,6 +701,8 @@ describe(walkSuccessfulRelease, () => {
         });
 
         it("does NOT retry non-429 errors (preserves soft-fail behaviour)", async () => {
+            expect.hasAssertions();
+
             let attempts = 0;
             const grumpyClient: RemoteReleaseClient = {
                 addLabels: async () => true,
@@ -684,6 +740,8 @@ describe(walkSuccessfulRelease, () => {
     //    bodies must not produce comment / label calls. ─────────────────
     describe("m-9 — cross-repo URL refs are dropped during the walk", () => {
         it("does not comment on a #N from a competitor's URL", async () => {
+            expect.hasAssertions();
+
             const { addLabelsCalls, client, commentCalls } = buildMockClient();
             const body = "Closes https://github.com/competitor/repo/pull/42.";
             const context = mkContext({}, [mkRelease("@scope/pkg", "1.0.0", [body])]);
@@ -700,6 +758,8 @@ describe(walkSuccessfulRelease, () => {
         });
 
         it("comments on a same-repo URL ref and skips a same-body cross-repo URL", async () => {
+            expect.hasAssertions();
+
             const { client, commentCalls } = buildMockClient();
             const body = ""
                 + "Same-repo: https://github.com/owner/repo/pull/10. "
@@ -722,6 +782,8 @@ describe(walkSuccessfulRelease, () => {
 //    but useful to validate in isolation so regressions surface fast. ──
 describe(pLimit, () => {
     it("never runs more than `n` tasks in flight", async () => {
+        expect.hasAssertions();
+
         let active = 0;
         let peak = 0;
         const limit = pLimit<number>(3);
@@ -747,6 +809,8 @@ describe(pLimit, () => {
     });
 
     it("propagates rejections without crashing the limiter", async () => {
+        expect.hasAssertions();
+
         const limit = pLimit<number>(2);
 
         const tasks = [
@@ -767,6 +831,8 @@ describe(pLimit, () => {
 
 describe(withRateLimitRetry, () => {
     it("returns the value on first success without sleeping", async () => {
+        expect.hasAssertions();
+
         const before = Date.now();
         const value = await withRateLimitRetry(async () => "ok");
 
@@ -776,6 +842,8 @@ describe(withRateLimitRetry, () => {
     });
 
     it("retries once on a 429-tagged error and returns the second result", async () => {
+        expect.hasAssertions();
+
         let attempts = 0;
         const value = await withRateLimitRetry(async () => {
             attempts += 1;
@@ -792,6 +860,8 @@ describe(withRateLimitRetry, () => {
     });
 
     it("does not retry non-429 errors", async () => {
+        expect.hasAssertions();
+
         let attempts = 0;
 
         await expect(
@@ -806,6 +876,8 @@ describe(withRateLimitRetry, () => {
     });
 
     it("only retries once — a second 429 propagates", async () => {
+        expect.hasAssertions();
+
         let attempts = 0;
 
         await expect(

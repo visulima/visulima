@@ -16,6 +16,8 @@ const pkg = (name: string, deps: Record<string, string> = {}): WorkspacePackage 
 
 describe("dependencyGraph — multi-kind indexing", () => {
     it("returns disjoint dependent lists across dep kinds", () => {
+        expect.hasAssertions();
+
         const a = pkg("a");
         const b: WorkspacePackage = {
             ...pkg("b"),
@@ -37,6 +39,8 @@ describe("dependencyGraph — multi-kind indexing", () => {
     it("topo-sort with diamond dep graph", () => {
         // d → b → a
         // d → c → a
+        expect.hasAssertions();
+
         const a = pkg("a");
         const b = pkg("b", { a: "^1.0.0" });
         const c = pkg("c", { a: "^1.0.0" });
@@ -52,6 +56,8 @@ describe("dependencyGraph — multi-kind indexing", () => {
     });
 
     it("size + isInternal + getPackage are consistent", () => {
+        expect.hasAssertions();
+
         const graph = new DependencyGraph([pkg("a"), pkg("b")]);
 
         expect(graph.size).toBe(2);

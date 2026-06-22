@@ -18,6 +18,8 @@ describe(cleanPackageJsonForPublish, () => {
     };
 
     it("strips default fields when cfg is true", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest, true);
 
         expect(result.scripts).toBeUndefined();
@@ -28,6 +30,8 @@ describe(cleanPackageJsonForPublish, () => {
     });
 
     it("strips defaults when cfg is undefined", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest);
 
         expect(result.scripts).toBeUndefined();
@@ -35,6 +39,8 @@ describe(cleanPackageJsonForPublish, () => {
     });
 
     it("preserves runtime-relevant fields", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest);
 
         expect(result.name).toBe("@scope/pkg");
@@ -46,6 +52,8 @@ describe(cleanPackageJsonForPublish, () => {
     });
 
     it("ships unmodified when cfg is false", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest, false);
 
         expect(result.scripts).toStrictEqual({ build: "tsc" });
@@ -54,6 +62,8 @@ describe(cleanPackageJsonForPublish, () => {
     });
 
     it("extends defaults via cfg.strip", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest, { strip: ["description"] });
 
         expect(result.description).toBeUndefined();
@@ -61,6 +71,8 @@ describe(cleanPackageJsonForPublish, () => {
     });
 
     it("preserves a default-stripped field when added to cfg.keep", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest, { keep: ["scripts"] });
 
         expect(result.scripts).toStrictEqual({ build: "tsc" });
@@ -68,6 +80,8 @@ describe(cleanPackageJsonForPublish, () => {
     });
 
     it("does not mutate input", () => {
+        expect.hasAssertions();
+
         const original = JSON.stringify(fullManifest);
 
         cleanPackageJsonForPublish(fullManifest, true);

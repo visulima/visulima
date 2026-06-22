@@ -22,6 +22,8 @@ describe("bunAdapter — pack", () => {
     });
 
     it("parses the tarball filename from bun pm pack stdout", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("bun", ["pm", "pack"], () => {
@@ -38,6 +40,8 @@ describe("bunAdapter — pack", () => {
     });
 
     it("treats absolute filenames in stdout as-is", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("bun", ["pm", "pack"], () => {
@@ -54,6 +58,8 @@ describe("bunAdapter — pack", () => {
     });
 
     it("falls back to deriving the tarball name from package.json when stdout has no filename", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("bun", ["pm", "pack"], () => {
@@ -71,6 +77,8 @@ describe("bunAdapter — pack", () => {
     });
 
     it("forwards --destination to bun pm pack", async () => {
+        expect.hasAssertions();
+
         let seenArgs: ReadonlyArray<string> | undefined;
 
         const adapter = new BunAdapter({
@@ -90,6 +98,8 @@ describe("bunAdapter — pack", () => {
     });
 
     it("renames the tarball post-pack when filename is requested", async () => {
+        expect.hasAssertions();
+
         const dest = mkdtempSync(join(tmpdir(), "vis-bun-pack-dest-"));
         const tarballPath = join(dest, "s-pkg-1.2.3.tgz");
 
@@ -114,6 +124,8 @@ describe("bunAdapter — pack", () => {
     });
 
     it("throws PUBLISH_FAILED on non-zero exit", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("bun", ["pm", "pack"], () => {
@@ -126,6 +138,8 @@ describe("bunAdapter — pack", () => {
 
 describe("bunAdapter — installLockfileOnly", () => {
     it("invokes bun install --lockfile-only", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let called = false;
 
@@ -141,6 +155,8 @@ describe("bunAdapter — installLockfileOnly", () => {
     });
 
     it("throws on failure", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("bun", ["install"], () => {
@@ -167,6 +183,8 @@ describe("bunAdapter — listWorkspacePackages (no first-class CLI)", () => {
     });
 
     it("discovers packages under workspaces[] globs", async () => {
+        expect.hasAssertions();
+
         writeFileSync(join(cwd, "package.json"), JSON.stringify({ name: "root", workspaces: ["packages/*"] }));
 
         mkdirSync(join(cwd, "packages", "a"), { recursive: true });
@@ -185,6 +203,8 @@ describe("bunAdapter — listWorkspacePackages (no first-class CLI)", () => {
     });
 
     it("supports the workspaces.packages object form", async () => {
+        expect.hasAssertions();
+
         writeFileSync(join(cwd, "package.json"), JSON.stringify({
             name: "root",
             workspaces: { packages: ["pkg-*"] },
@@ -200,6 +220,8 @@ describe("bunAdapter — listWorkspacePackages (no first-class CLI)", () => {
     });
 
     it("skips node_modules + dotfiles during traversal", async () => {
+        expect.hasAssertions();
+
         writeFileSync(join(cwd, "package.json"), JSON.stringify({ name: "root", workspaces: ["**/package"] }));
 
         mkdirSync(join(cwd, "node_modules", "thing", "package"), { recursive: true });
@@ -212,26 +234,32 @@ describe("bunAdapter — listWorkspacePackages (no first-class CLI)", () => {
         writeFileSync(join(cwd, ".cache", "package", "package.json"), JSON.stringify({ name: "hidden", version: "0.0.0" }));
 
         const list = await new BunAdapter(new MockRunner()).listWorkspacePackages(cwd);
+        const names = list.map((entry) => entry.name);
 
-        for (const entry of list) {
-            expect(entry.name).not.toBe("should-not-see");
-            expect(entry.name).not.toBe("hidden");
-        }
+        // Both candidate packages live under node_modules / a dotdir, so neither
+        // should be discovered (asserted unconditionally — the list may be empty).
+        expect(names).not.toContain("should-not-see");
+        expect(names).not.toContain("hidden");
     });
 
     it("returns empty array when workspaces field is missing", async () => {
+        expect.hasAssertions();
+
         writeFileSync(join(cwd, "package.json"), JSON.stringify({ name: "root" }));
 
         await expect(new BunAdapter(new MockRunner()).listWorkspacePackages(cwd)).resolves.toStrictEqual([]);
     });
 
     it("returns empty array when package.json is missing", async () => {
+        expect.hasAssertions();
         await expect(new BunAdapter(new MockRunner()).listWorkspacePackages(cwd)).resolves.toStrictEqual([]);
     });
 });
 
 describe("bunAdapter — publish delegates to npm", () => {
     it("invokes npm publish (bun lacks OIDC + provenance)", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let npmInvoked = false;
 
@@ -250,6 +278,8 @@ describe("bunAdapter — publish delegates to npm", () => {
 
 describe("bunAdapter — detectVersion", () => {
     it("returns trimmed version", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("bun", ["--version"], () => {
@@ -260,6 +290,8 @@ describe("bunAdapter — detectVersion", () => {
     });
 
     it("returns undefined when CLI is absent", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("bun", ["--version"], () => {

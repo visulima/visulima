@@ -29,6 +29,8 @@ import {
 
 describe(defineNotificationChannel, () => {
     it("returns the input unchanged (identity)", () => {
+        expect.hasAssertions();
+
         const channel: NotificationChannel = {
             id: "teams",
             send: async () => undefined,
@@ -38,6 +40,8 @@ describe(defineNotificationChannel, () => {
     });
 
     it("preserves the `id` + `send` shape at runtime", async () => {
+        expect.hasAssertions();
+
         let captured: { name: string }[] = [];
         const channel = defineNotificationChannel({
             id: "test",
@@ -58,6 +62,8 @@ describe(defineNotificationChannel, () => {
 
 describe(defineVersionActions, () => {
     it("returns the same VersionActions instance (identity)", () => {
+        expect.hasAssertions();
+
         class FakeActions extends VersionActions {
             public readonly id = "fake" as const;
 
@@ -78,12 +84,16 @@ describe(defineVersionActions, () => {
 
 describe(defineChangelogFormatter, () => {
     it("returns the same function (identity)", () => {
+        expect.hasAssertions();
+
         const formatter: ChangelogFormatter = (context) => `# ${context.release.name}`;
 
         expect(defineChangelogFormatter(formatter)).toBe(formatter);
     });
 
     it("rendered output passes through verbatim", async () => {
+        expect.hasAssertions();
+
         const formatter = defineChangelogFormatter(async (context) => `release ${context.release.newVersion}`);
 
         const out = await formatter({
@@ -111,6 +121,8 @@ describe(defineChangelogFormatter, () => {
 describe("plugin-sdk — type-level guards (smoke tests)", () => {
     it("rejects channel missing `id` at compile-time", () => {
         // @ts-expect-error — `id` is required on NotificationChannel.
+        expect.hasAssertions();
+
         const invalid = defineNotificationChannel({ send: async () => undefined });
 
         // The runtime identity still returns whatever was passed; the
@@ -120,6 +132,8 @@ describe("plugin-sdk — type-level guards (smoke tests)", () => {
 
     it("rejects formatter with the wrong return type at compile-time", () => {
         // @ts-expect-error — formatter must return string | Promise<string>.
+        expect.hasAssertions();
+
         const invalid = defineChangelogFormatter(() => 42);
 
         expect(invalid).toBeDefined();

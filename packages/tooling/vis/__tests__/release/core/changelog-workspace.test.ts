@@ -27,20 +27,25 @@ const stubFormatter: ChangelogFormatter = (ctx: ChangelogContext): string => `Bo
 
 describe(workspaceChangelogPath, () => {
     it("defaults to CHANGELOG.md at workspace root", () => {
+        expect.hasAssertions();
         expect(workspaceChangelogPath("/r")).toBe("/r/CHANGELOG.md");
     });
 
     it("respects custom file option", () => {
+        expect.hasAssertions();
         expect(workspaceChangelogPath("/r", { file: "RELEASES.md" })).toBe("/r/RELEASES.md");
     });
 
     it("preserves absolute paths", () => {
+        expect.hasAssertions();
         expect(workspaceChangelogPath("/r", { file: "/elsewhere/log.md" })).toBe("/elsewhere/log.md");
     });
 });
 
 describe(renderWorkspaceChangelog, () => {
     it("emits a heading + per-release sections", async () => {
+        expect.hasAssertions();
+
         const releases = [mkRelease("@scope/a", "1.1.0"), mkRelease("@scope/b", "2.1.0")];
         const out = await renderWorkspaceChangelog(releases, "2026-05-02", stubFormatter);
 
@@ -52,6 +57,8 @@ describe(renderWorkspaceChangelog, () => {
     });
 
     it("supports {date} and {count} tokens in custom waveHeading", async () => {
+        expect.hasAssertions();
+
         const releases = [mkRelease("a", "1.1.0")];
         const out = await renderWorkspaceChangelog(releases, "2026-05-02", stubFormatter, {
             waveHeading: "## My release on {date} — {count} bumps",
@@ -61,6 +68,8 @@ describe(renderWorkspaceChangelog, () => {
     });
 
     it("emits placeholder when a per-release formatter returns empty", async () => {
+        expect.hasAssertions();
+
         const emptyFormatter: ChangelogFormatter = () => "";
         const releases = [mkRelease("a", "1.1.0")];
         const out = await renderWorkspaceChangelog(releases, "2026-05-02", emptyFormatter);
@@ -69,6 +78,8 @@ describe(renderWorkspaceChangelog, () => {
     });
 
     it("forwards the github-release target so per-release formatter strips its version heading", async () => {
+        expect.hasAssertions();
+
         let captured: ChangelogContext | undefined;
         const captureFormatter: ChangelogFormatter = (ctx) => {
             captured = ctx;
@@ -103,6 +114,8 @@ describe(resolveGroupChangelogRouting, () => {
     ];
 
     it("returns an empty map when no group opts into shared mode", () => {
+        expect.hasAssertions();
+
         const config: VisReleaseConfig = {
             fixed: [["@scope/a", "@scope/b"]],
         };
@@ -113,6 +126,8 @@ describe(resolveGroupChangelogRouting, () => {
     });
 
     it("routes shared fixed-group members to a single default path", () => {
+        expect.hasAssertions();
+
         const config: VisReleaseConfig = {
             fixed: [
                 {
@@ -130,6 +145,8 @@ describe(resolveGroupChangelogRouting, () => {
     });
 
     it("honours an explicit `path` override (relative)", () => {
+        expect.hasAssertions();
+
         const config: VisReleaseConfig = {
             fixed: [
                 {
@@ -146,6 +163,8 @@ describe(resolveGroupChangelogRouting, () => {
     });
 
     it("honours an explicit `path` override (absolute)", () => {
+        expect.hasAssertions();
+
         const config: VisReleaseConfig = {
             linked: [
                 {
@@ -162,6 +181,8 @@ describe(resolveGroupChangelogRouting, () => {
     });
 
     it("keeps backward compat: a bare string[] group is per-package (no routing)", () => {
+        expect.hasAssertions();
+
         const config: VisReleaseConfig = {
             fixed: [["@scope/a", "@scope/b"]],
             linked: [["@scope/c"]],

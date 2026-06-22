@@ -49,6 +49,8 @@ describe(runExportsExist, () => {
     });
 
     it("passes when every leaf exists", async () => {
+        expect.hasAssertions();
+
         mkdirSync(join(pkgDir, "dist"), { recursive: true });
         writeFileSync(join(pkgDir, "dist", "index.js"), "");
         writeFileSync(join(pkgDir, "dist", "index.d.ts"), "");
@@ -71,6 +73,8 @@ describe(runExportsExist, () => {
     });
 
     it("flags missing main / types / bin", async () => {
+        expect.hasAssertions();
+
         const manifest: PackageManifest = {
             bin: "./dist/cli.js",
             main: "./dist/index.js",
@@ -90,6 +94,8 @@ describe(runExportsExist, () => {
     });
 
     it("checks wildcard prefix dirs", async () => {
+        expect.hasAssertions();
+
         const manifest: PackageManifest = {
             exports: { "./feat/*": "./dist/feat/*.js" },
             name: "x",
@@ -108,6 +114,8 @@ describe(runExportsExist, () => {
     });
 
     it("ignores bare specifiers", async () => {
+        expect.hasAssertions();
+
         const manifest: PackageManifest = {
             exports: { ".": "react" },
             name: "x",
@@ -120,6 +128,8 @@ describe(runExportsExist, () => {
     });
 
     it("rejects manifest exports that traverse outside the package dir (RFC §19.4)", async () => {
+        expect.hasAssertions();
+
         const manifest: PackageManifest = {
             bin: { evil: "./../../usr/bin/env" },
             main: "./../../etc/passwd",
@@ -150,12 +160,16 @@ describe(runLifecycleScripts, () => {
     };
 
     it("returns passed when no lifecycle scripts present", () => {
+        expect.hasAssertions();
+
         const result = runLifecycleScripts(manifest({ build: "tsc" }), "strict");
 
         expect(result.passed).toBe(true);
     });
 
     it("strict mode flags any unauthorized lifecycle script", () => {
+        expect.hasAssertions();
+
         const result = runLifecycleScripts(manifest({ postinstall: "node bad.js" }), "strict");
 
         expect(result.passed).toBe(false);
@@ -164,6 +178,8 @@ describe(runLifecycleScripts, () => {
     });
 
     it("allow-list bypasses on exact-match", () => {
+        expect.hasAssertions();
+
         const result = runLifecycleScripts(
             manifest({ postinstall: "node-gyp rebuild" }),
             { allow: { postinstall: "node-gyp rebuild" }, mode: "strict" },
@@ -173,6 +189,8 @@ describe(runLifecycleScripts, () => {
     });
 
     it("allow-list rejects on partial match", () => {
+        expect.hasAssertions();
+
         const result = runLifecycleScripts(
             manifest({ postinstall: "node-gyp rebuild --debug" }),
             { allow: { postinstall: "node-gyp rebuild" }, mode: "strict" },
@@ -182,6 +200,8 @@ describe(runLifecycleScripts, () => {
     });
 
     it("off mode short-circuits to passed", () => {
+        expect.hasAssertions();
+
         const result = runLifecycleScripts(manifest({ postinstall: "rm -rf /" }), "off");
 
         expect(result.passed).toBe(true);
@@ -201,6 +221,8 @@ describe(runRuntimeAudit, () => {
     });
 
     it("passes when no runtime advisories", async () => {
+        expect.hasAssertions();
+
         const runner = stubRunner([
             {
                 args: ["audit", "--omit=dev", "--json"],
@@ -214,6 +236,8 @@ describe(runRuntimeAudit, () => {
     });
 
     it("fails when count >= configured severity", async () => {
+        expect.hasAssertions();
+
         const runner = stubRunner([
             {
                 args: ["audit", "--omit=dev", "--json"],
@@ -228,6 +252,8 @@ describe(runRuntimeAudit, () => {
     });
 
     it("ignores severities below the threshold", async () => {
+        expect.hasAssertions();
+
         const runner = stubRunner([
             {
                 args: ["audit", "--omit=dev", "--json"],
@@ -241,6 +267,8 @@ describe(runRuntimeAudit, () => {
     });
 
     it("short-circuits when setting is off", async () => {
+        expect.hasAssertions();
+
         const runner = stubRunner([]);
 
         const result = await runRuntimeAudit(pkgDir, runner, "off");
@@ -249,6 +277,8 @@ describe(runRuntimeAudit, () => {
     });
 
     it("returns parse-failure finding when output isn't JSON", async () => {
+        expect.hasAssertions();
+
         const runner = stubRunner([
             { args: ["audit", "--omit=dev", "--json"], exitCode: 0, stdout: "not json" },
         ]);
@@ -262,6 +292,8 @@ describe(runRuntimeAudit, () => {
 
 describe(extractPackFilesFromRaw, () => {
     it("reads npm pack --json shape (array)", () => {
+        expect.hasAssertions();
+
         const raw = [
             {
                 filename: "pkg-1.0.0.tgz",
@@ -276,6 +308,8 @@ describe(extractPackFilesFromRaw, () => {
     });
 
     it("reads pnpm pack --json shape (object)", () => {
+        expect.hasAssertions();
+
         const raw = {
             filename: "pkg-1.0.0.tgz",
             files: [{ path: "package.json" }, { path: "dist/index.js" }],
@@ -285,20 +319,25 @@ describe(extractPackFilesFromRaw, () => {
     });
 
     it("returns undefined for plain stdout strings (yarn, bun)", () => {
+        expect.hasAssertions();
         expect(extractPackFilesFromRaw("➤ YN0036: │ Calling the \"prepack\" lifecycle script")).toBeUndefined();
     });
 
     it("returns undefined for null / non-objects", () => {
+        expect.hasAssertions();
         expect(extractPackFilesFromRaw(null)).toBeUndefined();
         expect(extractPackFilesFromRaw(42)).toBeUndefined();
     });
 
     it("returns undefined when the files key is missing or wrong type", () => {
+        expect.hasAssertions();
         expect(extractPackFilesFromRaw({ filename: "x.tgz" })).toBeUndefined();
         expect(extractPackFilesFromRaw({ files: "not an array" })).toBeUndefined();
     });
 
     it("skips file entries without a string path", () => {
+        expect.hasAssertions();
+
         const raw = { files: [{ path: "ok.js" }, { size: 10 }, { path: 42 }] };
 
         expect(extractPackFilesFromRaw(raw)).toStrictEqual(["ok.js"]);
@@ -317,6 +356,8 @@ describe(hashTarball, () => {
     });
 
     it("computes deterministic SHA256 + SHA512 hashes", async () => {
+        expect.hasAssertions();
+
         const tarball = join(dir, "pkg-1.0.0.tgz");
 
         writeFileSync(tarball, "stable test content");
@@ -346,6 +387,8 @@ describe("runPublishGuards orchestration", () => {
     });
 
     it("runs only the gates that are enabled", async () => {
+        expect.hasAssertions();
+
         const runner = stubRunner([]);
         const manifest: PackageManifest = { main: "./dist/index.js", name: "x", version: "1.0.0" };
 
@@ -362,6 +405,8 @@ describe("runPublishGuards orchestration", () => {
     });
 
     it("classifies lifecycle warnings vs strict blockers", async () => {
+        expect.hasAssertions();
+
         const runner = stubRunner([]);
         const manifest: PackageManifest = {
             name: "x",
@@ -393,6 +438,8 @@ describe("runPublishGuards orchestration", () => {
     });
 
     it("returns empty report when config is undefined", async () => {
+        expect.hasAssertions();
+
         const runner = stubRunner([]);
         const manifest: PackageManifest = { name: "x", version: "1.0.0" };
 

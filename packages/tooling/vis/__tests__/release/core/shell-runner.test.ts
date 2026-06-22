@@ -4,6 +4,8 @@ import { createMockRunner, createShellRunner, MockRunner } from "../../../src/re
 
 describe("mockRunner — handler matching", () => {
     it("returns the default empty success result when no handler matches", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         const result = await runner.run("git", ["status"], { cwd: "/tmp" });
@@ -12,6 +14,8 @@ describe("mockRunner — handler matching", () => {
     });
 
     it("matches an exact (command, argsPrefix) handler", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["status"], () => {
@@ -24,6 +28,8 @@ describe("mockRunner — handler matching", () => {
     });
 
     it("matches when argsPrefix is a prefix of actual args", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["log"], () => {
@@ -36,6 +42,8 @@ describe("mockRunner — handler matching", () => {
     });
 
     it("does NOT match when actual args is shorter than argsPrefix", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["log", "--oneline"], () => {
@@ -48,6 +56,8 @@ describe("mockRunner — handler matching", () => {
     });
 
     it("does NOT match a different command", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["status"], () => {
@@ -60,6 +70,8 @@ describe("mockRunner — handler matching", () => {
     });
 
     it("uses first registered handler when multiple match", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["log"], () => {
@@ -75,6 +87,8 @@ describe("mockRunner — handler matching", () => {
     });
 
     it("passes cwd to the responder", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let seenCwd: string | undefined;
 
@@ -90,6 +104,8 @@ describe("mockRunner — handler matching", () => {
     });
 
     it("supports a non-zero exitCode from the handler", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["push"], () => {
@@ -103,6 +119,8 @@ describe("mockRunner — handler matching", () => {
     });
 
     it("createMockRunner returns a MockRunner instance", () => {
+        expect.hasAssertions();
+
         const runner = createMockRunner();
 
         expect(runner).toBeInstanceOf(MockRunner);
@@ -111,6 +129,8 @@ describe("mockRunner — handler matching", () => {
 
 describe("createShellRunner — token redaction in stdout/stderr", () => {
     it("redacts npm/gh/Bearer tokens from captured stdout", async () => {
+        expect.hasAssertions();
+
         const runner = createShellRunner();
 
         // `node -e` is reliably available since vitest runs under node.
@@ -124,6 +144,8 @@ describe("createShellRunner — token redaction in stdout/stderr", () => {
     });
 
     it("returns exitCode -1 with redacted error message when the binary is missing", async () => {
+        expect.hasAssertions();
+
         const runner = createShellRunner();
         const result = await runner.run("vis-this-binary-does-not-exist-xyz", [], { cwd: process.cwd(), silent: true });
 
@@ -133,6 +155,8 @@ describe("createShellRunner — token redaction in stdout/stderr", () => {
     });
 
     it("propagates non-zero exit codes", async () => {
+        expect.hasAssertions();
+
         const runner = createShellRunner();
         const result = await runner.run(process.execPath, ["-e", "process.exit(7)"], { cwd: process.cwd(), silent: true });
 

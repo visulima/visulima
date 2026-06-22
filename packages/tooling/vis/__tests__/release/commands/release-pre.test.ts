@@ -100,6 +100,8 @@ describe("vis release pre exit — C6 channel-conflict refusal", () => {
     it("refuses with CONFIG_INVALID when active channel pins its own prerelease", async () => {
         // git branch "alpha" → channel { alpha: { prerelease: "alpha" } }
         // → ctx.channel.prerelease === "alpha".
+        expect.hasAssertions();
+
         cwd = setupFixture("alpha");
 
         await writePreMode(cwd, ".vis/release", buildEnterFile("rc", [
@@ -128,6 +130,8 @@ describe("vis release pre exit — C6 channel-conflict refusal", () => {
     });
 
     it("error carries a hint pointing operator at the resolution", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture("beta");
 
         await writePreMode(cwd, ".vis/release", buildEnterFile("rc", []));
@@ -152,6 +156,8 @@ describe("vis release pre exit — C6 channel-conflict refusal", () => {
     });
 
     it("allows pre exit on a channel without its own prerelease", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture("main");
 
         await writePreMode(cwd, ".vis/release", buildEnterFile("rc", [
@@ -177,6 +183,8 @@ describe("vis release pre exit — C6 channel-conflict refusal", () => {
     it("allows pre exit when on a branch with no matching channel", async () => {
         // Branch "feature-random" matches no channel → ctx.channel is
         // undefined → no conflict possible → exit proceeds.
+        expect.hasAssertions();
+
         cwd = setupFixture("feature-random");
 
         await writePreMode(cwd, ".vis/release", buildEnterFile("rc", []));

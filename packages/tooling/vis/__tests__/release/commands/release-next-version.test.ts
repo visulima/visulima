@@ -112,6 +112,8 @@ describe("vis release next-version", () => {
     });
 
     it("prints `<name> <old> -> <new>` for every package in the plan", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture(SIMPLE_CHANGE);
 
         const stdout = await callHandler(cwd, {});
@@ -121,6 +123,8 @@ describe("vis release next-version", () => {
     });
 
     it("filters to a single package when --package is set", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture(SIMPLE_CHANGE);
 
         const stdout = await callHandler(cwd, { package: "@scope/a" });
@@ -130,6 +134,8 @@ describe("vis release next-version", () => {
     });
 
     it("emits a `{ name: { from, to } }` map with --json", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture(SIMPLE_CHANGE);
 
         const stdout = await callHandler(cwd, { json: true });
@@ -143,6 +149,8 @@ describe("vis release next-version", () => {
 
     it("exits 0 with no output when the plan is empty", async () => {
         // No change file in the fixture → plan is empty.
+        expect.hasAssertions();
+
         cwd = setupFixture();
 
         const stdout = await callHandler(cwd, {});
@@ -154,6 +162,8 @@ describe("vis release next-version", () => {
     });
 
     it("emits `{}` with --json on an empty plan", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture();
 
         const stdout = await callHandler(cwd, { json: true });
@@ -164,6 +174,8 @@ describe("vis release next-version", () => {
     // F11: --package filter-miss must exit non-zero so CI scripts can
     // distinguish "no bump needed" from "wrong / missing package name".
     it("exits non-zero with an explanatory error when --package matches nothing in the plan (unknown name)", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture(SIMPLE_CHANGE);
 
         const originalExitCode = process.exitCode;
@@ -199,6 +211,8 @@ describe("vis release next-version", () => {
     it("exits non-zero when --package names a workspace package with no pending change", async () => {
         // Change file only bumps @scope/a; @scope/b is in the workspace
         // but has no pending release.
+        expect.hasAssertions();
+
         const changeOnlyA = "---\n\"@scope/a\": minor\n---\n\nOnly a.\n";
 
         cwd = setupFixture(changeOnlyA);
@@ -235,6 +249,8 @@ describe("vis release next-version", () => {
     // F21: --first-release should flow through buildContext so a
     // greenfield-mode preview works on workspaces with no tags yet.
     it("accepts --first-release without crashing on a greenfield workspace", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture(SIMPLE_CHANGE);
 
         // The fixture has no release tags — exercising firstRelease=true

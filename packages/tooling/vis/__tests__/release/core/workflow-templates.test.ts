@@ -4,6 +4,8 @@ import { generateWorkflowFiles } from "../../../src/release/core/workflow-templa
 
 describe("generateWorkflowFiles — GitHub", () => {
     it("emits 3 files (release + check + snapshot) by default", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "pnpm", provider: "github" });
 
         expect(files).toHaveLength(3);
@@ -15,6 +17,8 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("uses configured branches in the on.push trigger", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, {
             branches: ["main", "alpha", "beta"],
             packageManager: "pnpm",
@@ -30,6 +34,8 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("derives branches from config.channels when not overridden", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({
             channels: { alpha: { prerelease: "alpha", tag: "alpha" }, main: { tag: "latest" } },
         }, { packageManager: "pnpm", provider: "github" });
@@ -41,6 +47,8 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("falls back to ['main'] when no channels are configured and no branches override", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { packageManager: "pnpm", provider: "github" });
         const release = files.find((f) => f.path === ".github/workflows/vis-release.yml")!;
 
@@ -48,6 +56,8 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("emits id-token: write when useOidc is true (default)", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "pnpm", provider: "github", useOidc: true });
         const release = files.find((f) => f.path === ".github/workflows/vis-release.yml")!;
 
@@ -56,6 +66,8 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("emits NPM_TOKEN env when useOidc is false", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "pnpm", provider: "github", useOidc: false });
         const release = files.find((f) => f.path === ".github/workflows/vis-release.yml")!;
 
@@ -64,6 +76,8 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("includes pnpm/action-setup for pnpm projects", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "pnpm", provider: "github" });
         const release = files.find((f) => f.path === ".github/workflows/vis-release.yml")!;
 
@@ -71,6 +85,8 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("includes oven-sh/setup-bun for bun projects", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "bun", provider: "github" });
         const release = files.find((f) => f.path === ".github/workflows/vis-release.yml")!;
 
@@ -78,6 +94,8 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("uses npm-specific install + exec commands for npm projects", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "npm", provider: "github" });
         const release = files.find((f) => f.path === ".github/workflows/vis-release.yml")!;
 
@@ -87,6 +105,8 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("uses yarn-specific install + exec commands for yarn projects", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "yarn", provider: "github" });
         const release = files.find((f) => f.path === ".github/workflows/vis-release.yml")!;
 
@@ -97,6 +117,8 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("uses bun-specific install + exec commands for bun projects", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "bun", provider: "github" });
         const release = files.find((f) => f.path === ".github/workflows/vis-release.yml")!;
 
@@ -105,12 +127,16 @@ describe("generateWorkflowFiles — GitHub", () => {
     });
 
     it("respects includeSnapshot: false", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], includeSnapshot: false, packageManager: "pnpm", provider: "github" });
 
         expect(files.find((f) => f.path === ".github/workflows/vis-release-snapshot.yml")).toBeUndefined();
     });
 
     it("respects includeCheck: false", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], includeCheck: false, packageManager: "pnpm", provider: "github" });
 
         expect(files.find((f) => f.path === ".github/workflows/vis-release-check.yml")).toBeUndefined();
@@ -119,6 +145,8 @@ describe("generateWorkflowFiles — GitHub", () => {
 
 describe("generateWorkflowFiles — GitLab", () => {
     it("emits a single .gitlab-ci.yml at repo root", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "pnpm", provider: "gitlab" });
 
         expect(files).toHaveLength(1);
@@ -126,6 +154,8 @@ describe("generateWorkflowFiles — GitLab", () => {
     });
 
     it("uses GitLab merge_request_event for check + snapshot stages", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "pnpm", provider: "gitlab" });
 
         expect(files[0]?.content).toContain("merge_request_event");
@@ -134,6 +164,8 @@ describe("generateWorkflowFiles — GitLab", () => {
     });
 
     it("uses GitLab branch rules for release stage", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main", "alpha"], packageManager: "pnpm", provider: "gitlab" });
 
         expect(files[0]?.content).toContain("$CI_COMMIT_BRANCH == \"main\"");
@@ -141,6 +173,8 @@ describe("generateWorkflowFiles — GitLab", () => {
     });
 
     it("documents the GitLab token variables in the generated comment header", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "pnpm", provider: "gitlab" });
 
         expect(files[0]?.content).toContain("VIS_GH_TOKEN");
@@ -148,6 +182,8 @@ describe("generateWorkflowFiles — GitLab", () => {
     });
 
     it("emits corepack-based yarn bootstrap for yarn projects", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "yarn", provider: "gitlab" });
 
         expect(files[0]?.content).toContain("corepack enable");
@@ -156,6 +192,8 @@ describe("generateWorkflowFiles — GitLab", () => {
     });
 
     it("emits npm install -g pnpm for pnpm projects", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "pnpm", provider: "gitlab" });
 
         expect(files[0]?.content).toContain("npm install -g pnpm");
@@ -163,6 +201,8 @@ describe("generateWorkflowFiles — GitLab", () => {
     });
 
     it("emits npm install -g bun for bun projects", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "bun", provider: "gitlab" });
 
         expect(files[0]?.content).toContain("npm install -g bun");
@@ -170,6 +210,8 @@ describe("generateWorkflowFiles — GitLab", () => {
     });
 
     it("omits the bootstrap line entirely for npm projects", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({}, { branches: ["main"], packageManager: "npm", provider: "gitlab" });
 
         // No package-manager bootstrap needed — node:22 image already ships npm.
@@ -182,18 +224,24 @@ describe("generateWorkflowFiles — GitLab", () => {
 
 describe("generateWorkflowFiles — provider auto-detection from config", () => {
     it("uses config.provider when set to github", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({ provider: "github" }, { branches: ["main"], packageManager: "pnpm" });
 
         expect(files[0]?.path).toContain(".github/workflows/");
     });
 
     it("uses config.provider when set to gitlab", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({ provider: "gitlab" }, { branches: ["main"], packageManager: "pnpm" });
 
         expect(files[0]?.path).toBe(".gitlab-ci.yml");
     });
 
     it("defaults to github when config.provider is auto", () => {
+        expect.hasAssertions();
+
         const files = generateWorkflowFiles({ provider: "auto" }, { branches: ["main"], packageManager: "pnpm" });
 
         expect(files[0]?.path).toContain(".github/workflows/");

@@ -118,10 +118,13 @@ afterEach(() => {
 
 describe("pythonVersionActions: identity", () => {
     it("has stable id `python`", () => {
+        expect.hasAssertions();
         expect(new PythonVersionActions().id).toBe("python");
     });
 
     it("dry-run returns published: true without invoking anything", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let invoked = false;
         const wrapped: CommandRunner = {
@@ -145,6 +148,8 @@ describe("pythonVersionActions: identity", () => {
 
 describe("pythonVersionActions: readPublishedVersion", () => {
     it("parses .info.version from PyPI JSON on 200", async () => {
+        expect.hasAssertions();
+
         vi.spyOn(globalThis, "fetch").mockResolvedValue(
             stubPypiResponse({ info: { version: "2.3.4" } }),
         );
@@ -180,6 +185,8 @@ version = "1.0.0"
     });
 
     it("returns undefined on 404 (package not on PyPI yet)", async () => {
+        expect.hasAssertions();
+
         vi.spyOn(globalThis, "fetch").mockResolvedValue(stubPypiResponse({}, 404));
 
         const result = await fetchPyPiVersion("brand-new-pkg");
@@ -188,6 +195,8 @@ version = "1.0.0"
     });
 
     it("returns undefined on network failure", async () => {
+        expect.hasAssertions();
+
         vi.spyOn(globalThis, "fetch").mockRejectedValue(new Error("ECONNREFUSED"));
 
         const result = await fetchPyPiVersion("any-pkg");
@@ -196,6 +205,8 @@ version = "1.0.0"
     });
 
     it("returns undefined on malformed JSON / missing info.version", async () => {
+        expect.hasAssertions();
+
         vi.spyOn(globalThis, "fetch").mockResolvedValue(stubPypiResponse({ /* no info */ }));
 
         const result = await fetchPyPiVersion("partial-pkg");
@@ -208,6 +219,8 @@ version = "1.0.0"
 
 describe("pythonVersionActions: dynamic versioning refusal", () => {
     it("throws CONFIG_INVALID when pyproject declares dynamic = [\"version\"]", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-dyn-"));
 
         writePyProject(tmp, `
@@ -234,26 +247,32 @@ dynamic = ["version"]
 
 describe("pythonVersionActions: detectBackend", () => {
     it("detects hatchling.build → hatch", () => {
+        expect.hasAssertions();
         expect(detectBackend({ "build-system": { "build-backend": "hatchling.build" } })).toBe("hatch");
     });
 
     it("detects poetry.core.masonry.api → poetry", () => {
+        expect.hasAssertions();
         expect(detectBackend({ "build-system": { "build-backend": "poetry.core.masonry.api" } })).toBe("poetry");
     });
 
     it("detects pdm.backend → pdm", () => {
+        expect.hasAssertions();
         expect(detectBackend({ "build-system": { "build-backend": "pdm.backend" } })).toBe("pdm");
     });
 
     it("detects setuptools.build_meta → setuptools", () => {
+        expect.hasAssertions();
         expect(detectBackend({ "build-system": { "build-backend": "setuptools.build_meta" } })).toBe("setuptools");
     });
 
     it("detects uv_build → uv", () => {
+        expect.hasAssertions();
         expect(detectBackend({ "build-system": { "build-backend": "uv_build" } })).toBe("uv");
     });
 
     it("returns 'unknown' for unrecognized / missing backend", () => {
+        expect.hasAssertions();
         expect(detectBackend({ "build-system": { "build-backend": "weird.thing" } })).toBe("unknown");
         expect(detectBackend({ "build-system": {} })).toBe("unknown");
         expect(detectBackend(undefined)).toBe("unknown");
@@ -264,6 +283,8 @@ describe("pythonVersionActions: detectBackend", () => {
 
 describe("pythonVersionActions: resolveBuildEnv", () => {
     it("prefers uv when backend is 'uv' regardless of PATH detection", () => {
+        expect.hasAssertions();
+
         const env = resolveBuildEnv("uv", false);
 
         expect(env.buildCommand).toStrictEqual({ args: ["build"], binary: "uv" });
@@ -271,6 +292,8 @@ describe("pythonVersionActions: resolveBuildEnv", () => {
     });
 
     it("prefers uv when backend is 'unknown' AND uv is on PATH", () => {
+        expect.hasAssertions();
+
         const env = resolveBuildEnv("unknown", true);
 
         expect(env.buildCommand.binary).toBe("uv");
@@ -278,6 +301,8 @@ describe("pythonVersionActions: resolveBuildEnv", () => {
     });
 
     it("uses python -m build + twine upload for hatch", () => {
+        expect.hasAssertions();
+
         const env = resolveBuildEnv("hatch", false);
 
         expect(env.buildCommand).toStrictEqual({ args: ["-m", "build"], binary: "python" });
@@ -285,6 +310,8 @@ describe("pythonVersionActions: resolveBuildEnv", () => {
     });
 
     it("uses python -m build for poetry / pdm / setuptools (PEP 517 universal)", () => {
+        expect.hasAssertions();
+
         for (const backend of ["poetry", "pdm", "setuptools"] as const) {
             const env = resolveBuildEnv(backend, false);
 
@@ -299,10 +326,12 @@ describe("pythonVersionActions: resolveBuildEnv", () => {
 
 describe("pythonVersionActions: detectAuthMode (M-3)", () => {
     it("returns 'token' when only TWINE_PASSWORD is set", () => {
+        expect.hasAssertions();
         expect(detectAuthMode({ TWINE_PASSWORD: "pypi-token" })).toBe("token");
     });
 
     it("returns 'oidc' when only ACTIONS_ID_TOKEN_REQUEST_URL is set", () => {
+        expect.hasAssertions();
         expect(detectAuthMode({ ACTIONS_ID_TOKEN_REQUEST_URL: "https://x" })).toBe("oidc");
     });
 
@@ -311,6 +340,7 @@ describe("pythonVersionActions: detectAuthMode (M-3)", () => {
         // trusted publishing; a leftover TWINE_PASSWORD shouldn't
         // silently downgrade. (Previous behaviour was the inverse —
         // that was the bug.)
+        expect.hasAssertions();
         expect(detectAuthMode({
             ACTIONS_ID_TOKEN_REQUEST_URL: "https://x",
             TWINE_PASSWORD: "tok",
@@ -320,6 +350,7 @@ describe("pythonVersionActions: detectAuthMode (M-3)", () => {
     it("returns 'token' when preferStaticToken: true AND both signals are present (escape hatch)", () => {
         // M-3 escape hatch for operators migrating off OIDC or
         // running a shadow publish.
+        expect.hasAssertions();
         expect(detectAuthMode(
             { ACTIONS_ID_TOKEN_REQUEST_URL: "https://x", TWINE_PASSWORD: "tok" },
             { publish: { preferStaticToken: true } },
@@ -329,6 +360,7 @@ describe("pythonVersionActions: detectAuthMode (M-3)", () => {
     it("returns 'oidc' when preferStaticToken: true but no static token is present", () => {
         // Escape hatch only fires when there's actually a static
         // token to fall back to.
+        expect.hasAssertions();
         expect(detectAuthMode(
             { ACTIONS_ID_TOKEN_REQUEST_URL: "https://x" },
             { publish: { preferStaticToken: true } },
@@ -336,6 +368,7 @@ describe("pythonVersionActions: detectAuthMode (M-3)", () => {
     });
 
     it("returns 'missing' when neither is set", () => {
+        expect.hasAssertions();
         expect(detectAuthMode({})).toBe("missing");
     });
 });
@@ -344,6 +377,8 @@ describe("pythonVersionActions: detectAuthMode (M-3)", () => {
 
 describe("pythonVersionActions: publish via twine (no uv)", () => {
     it("invokes python -m build then twine upload dist/*", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-twine-"));
 
         writePyProject(tmp, `
@@ -381,6 +416,8 @@ build-backend = "hatchling.build"
 
 describe("pythonVersionActions: publish via uv", () => {
     it("invokes uv build + uv publish when uv is on PATH", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-uv-"));
 
         writePyProject(tmp, `
@@ -436,6 +473,8 @@ describe("pythonVersionActions: PyPI User-Agent header (B-3)", () => {
     it("stamps a vis-release User-Agent on PyPI metadata requests", async () => {
         // PyPI explicitly asks for a contact UA; vis routes the
         // JSON-API probe through `safeFetchVersionMetadata`.
+        expect.hasAssertions();
+
         const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
             stubPypiResponse({ info: { version: "1.0.0" } }),
         );
@@ -457,6 +496,8 @@ describe("pythonVersionActions: PyPI User-Agent header (B-3)", () => {
 
 describe("pythonVersionActions: OIDC trusted publishing", () => {
     it("proceeds when ACTIONS_ID_TOKEN_REQUEST_URL is set even with no TWINE_PASSWORD", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-oidc-"));
 
         writePyProject(tmp, `
@@ -503,6 +544,8 @@ version = "1.0.1"
     });
 
     it("injects TWINE_USERNAME=__token__ for the static-token flow when not already set", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-tok-"));
 
         writePyProject(tmp, `
@@ -549,6 +592,8 @@ version = "1.0.1"
 describe("pythonVersionActions: M-3 OIDC precedence in publish()", () => {
     it("uses OIDC (no TWINE_USERNAME injection) when both env vars are present", async () => {
         // M-3: OIDC wins by default even with TWINE_PASSWORD set.
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-m3-oidc-"));
 
         writePyProject(tmp, `
@@ -597,6 +642,8 @@ version = "1.0.1"
     });
 
     it("preferStaticToken: true flips precedence — TWINE_USERNAME=__token__ is injected (M-3 escape hatch)", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-m3-escape-"));
 
         writePyProject(tmp, `
@@ -650,6 +697,8 @@ version = "1.0.1"
 
 describe("pythonVersionActions: AUTH_MISSING", () => {
     it("throws AUTH_MISSING when neither TWINE_PASSWORD nor OIDC env is set", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-noauth-"));
 
         writePyProject(tmp, `
@@ -676,6 +725,8 @@ version = "1.0.1"
 
 describe("pythonVersionActions: build failure", () => {
     it("throws PUBLISH_FAILED when python -m build exits non-zero", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-buildfail-"));
 
         writePyProject(tmp, `
@@ -712,6 +763,8 @@ version = "1.0.1"
 
 describe("pythonVersionActions: already-published short-circuit", () => {
     it("returns alreadyPublished without invoking build/twine when PyPI reports the new version", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-already-"));
 
         writePyProject(tmp, `
@@ -754,6 +807,8 @@ version = "1.0.1"
 
 describe("pythonVersionActions: resolveUvLockPath", () => {
     it("returns <pkg.dir>/uv.lock when no per-package override is set", () => {
+        expect.hasAssertions();
+
         const result = resolveUvLockPath(
             { dir: "/repo/py/sdk", name: "@scope/sdk" } as never,
         );
@@ -764,6 +819,8 @@ describe("pythonVersionActions: resolveUvLockPath", () => {
     it("honours perPackageConfig.uvLockPath (relative to pkg.dir)", () => {
         // Operators point this at `../uv.lock` when uv manages the
         // lockfile at the workspace root rather than per-package.
+        expect.hasAssertions();
+
         const result = resolveUvLockPath(
             { dir: "/repo/py/sdk", name: "@scope/sdk" } as never,
             { uvLockPath: "../uv.lock" },
@@ -775,6 +832,8 @@ describe("pythonVersionActions: resolveUvLockPath", () => {
 
 describe("pythonVersionActions: checkUvWorkspaceMembership", () => {
     it("returns 'no-root-pyproject' when the root has no pyproject.toml", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-uv-empty-"));
 
         const result = await checkUvWorkspaceMembership(tmp, "py/sdk");
@@ -783,6 +842,8 @@ describe("pythonVersionActions: checkUvWorkspaceMembership", () => {
     });
 
     it("returns 'no-workspace' when the root pyproject has no [tool.uv.workspace] block", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-uv-no-ws-"));
 
         writePyProject(tmp, `
@@ -797,6 +858,8 @@ version = "0.0.0"
     });
 
     it("returns 'member' when the relative path matches a literal members entry", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-uv-literal-"));
 
         writePyProject(tmp, `
@@ -814,6 +877,8 @@ members = ["py/sdk", "py/cli"]
     });
 
     it("returns 'member' for a glob entry (`py/*`)", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-uv-glob-"));
 
         writePyProject(tmp, `
@@ -831,6 +896,8 @@ members = ["py/*"]
     });
 
     it("returns 'member' for a recursive glob entry (`py/**`)", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-uv-recursive-"));
 
         writePyProject(tmp, `
@@ -848,6 +915,8 @@ members = ["py/**"]
     });
 
     it("returns 'missing' when the path doesn't match any member entry", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-uv-missing-"));
 
         writePyProject(tmp, `
@@ -868,6 +937,8 @@ members = ["py/sdk"]
         // Regression guard: a non-recursive glob shouldn't accept
         // arbitrarily-deep paths. Operators on a deep tree should
         // use `py/**` instead.
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-uv-nonrecursive-"));
 
         writePyProject(tmp, `
@@ -887,6 +958,8 @@ members = ["py/*"]
 
 describe("pythonVersionActions: pyproject version drift", () => {
     it("throws BUMP_FILE_INVALID when the on-disk version differs from planned", async () => {
+        expect.hasAssertions();
+
         const tmp = mkdtempSync(join(tmpdir(), "vis-py-drift-"));
 
         // On-disk pyproject has 0.9.0 but plan says 1.0.1 — preset

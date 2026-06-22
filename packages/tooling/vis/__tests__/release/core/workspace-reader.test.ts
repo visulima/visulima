@@ -50,6 +50,8 @@ describe(createVisWorkspaceReader, () => {
     });
 
     it("enumerates every workspace project that has a package.json", async () => {
+        expect.hasAssertions();
+
         const reader = createVisWorkspaceReader({ cwd });
         const result = await reader.listPackages();
 
@@ -57,6 +59,8 @@ describe(createVisWorkspaceReader, () => {
     });
 
     it("filters by project.json tag", async () => {
+        expect.hasAssertions();
+
         const reader = createVisWorkspaceReader({ cwd, tag: "type:package" });
         const result = await reader.listPackages();
 
@@ -64,6 +68,8 @@ describe(createVisWorkspaceReader, () => {
     });
 
     it("filters by projectType", async () => {
+        expect.hasAssertions();
+
         const reader = createVisWorkspaceReader({ cwd, projectType: "application" });
         const result = await reader.listPackages();
 
@@ -71,6 +77,8 @@ describe(createVisWorkspaceReader, () => {
     });
 
     it("composes tag + projectType filters", async () => {
+        expect.hasAssertions();
+
         const reader = createVisWorkspaceReader({ cwd, projectType: "library", tag: "category:internal" });
         const result = await reader.listPackages();
 
@@ -78,6 +86,8 @@ describe(createVisWorkspaceReader, () => {
     });
 
     it("returns absolute manifestPath usable by downstream consumers", async () => {
+        expect.hasAssertions();
+
         const reader = createVisWorkspaceReader({ cwd, tag: "type:package" });
         const result = await reader.listPackages();
         const a = result.find((r) => r.manifest.name === "@scope/a");

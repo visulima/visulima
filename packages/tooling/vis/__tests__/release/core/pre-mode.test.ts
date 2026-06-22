@@ -27,10 +27,13 @@ describe("pre-mode: file I/O round-trip", () => {
     });
 
     it("returns undefined when pre.json is absent", async () => {
+        expect.hasAssertions();
         await expect(readPreMode(cwd, CHANGES_DIR)).resolves.toBeUndefined();
     });
 
     it("writes a file readable by readPreMode", async () => {
+        expect.hasAssertions();
+
         const file = buildEnterFile("alpha", [
             { name: "@scope/a", version: "1.2.0" },
             { name: "@scope/b", version: "0.5.0" },
@@ -49,6 +52,8 @@ describe("pre-mode: file I/O round-trip", () => {
     });
 
     it("deletePreMode returns true when a file was removed", async () => {
+        expect.hasAssertions();
+
         const file = buildEnterFile("alpha", []);
 
         await writePreMode(cwd, CHANGES_DIR, file);
@@ -58,6 +63,7 @@ describe("pre-mode: file I/O round-trip", () => {
     });
 
     it("deletePreMode returns false when there's nothing to delete", async () => {
+        expect.hasAssertions();
         await expect(deletePreMode(cwd, CHANGES_DIR)).resolves.toBe(false);
     });
 });
@@ -75,6 +81,8 @@ describe("pre-mode: corrupt file errors", () => {
     });
 
     it("throws STATE_FILE_CORRUPT on malformed JSON", async () => {
+        expect.hasAssertions();
+
         await writeFile(preModeFilePath(cwd, CHANGES_DIR), "{ malformed");
 
         await expect(readPreMode(cwd, CHANGES_DIR)).rejects.toMatchObject({
@@ -83,6 +91,8 @@ describe("pre-mode: corrupt file errors", () => {
     });
 
     it("throws on unknown schema version", async () => {
+        expect.hasAssertions();
+
         await writeFile(
             preModeFilePath(cwd, CHANGES_DIR),
             JSON.stringify({ initialVersions: {}, mode: "pre", tag: "alpha", version: 99 }),
@@ -92,6 +102,8 @@ describe("pre-mode: corrupt file errors", () => {
     });
 
     it("throws on invalid mode value", async () => {
+        expect.hasAssertions();
+
         await writeFile(
             preModeFilePath(cwd, CHANGES_DIR),
             JSON.stringify({ initialVersions: {}, mode: "bogus", tag: "alpha", version: 1 }),
@@ -103,6 +115,8 @@ describe("pre-mode: corrupt file errors", () => {
     });
 
     it("throws on missing tag", async () => {
+        expect.hasAssertions();
+
         await writeFile(
             preModeFilePath(cwd, CHANGES_DIR),
             JSON.stringify({ initialVersions: {}, mode: "pre", version: 1 }),
@@ -116,6 +130,8 @@ describe("pre-mode: corrupt file errors", () => {
 
 describe("pre-mode: buildEnterFile", () => {
     it("snapshots every package's current version", () => {
+        expect.hasAssertions();
+
         const file = buildEnterFile("rc", [
             { name: "@a/one", version: "0.5.0" },
             { name: "@a/two", version: "1.0.0" },

@@ -39,6 +39,8 @@ const buildRunner = (responses: { exitCode?: number; stdout?: string }[]): Runne
 
 describe("githubRemoteClient.createRelease — structured assets", () => {
     it("renames asset display via <path>#label syntax", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ stdout: "https://github.com/.../release" }]);
 
         await new GithubRemoteClient().createRelease(runner, {
@@ -60,6 +62,8 @@ describe("githubRemoteClient.createRelease — structured assets", () => {
     });
 
     it("inlines link-only assets as a body section since GH Releases don't model link assets", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ stdout: "" }]);
 
         await new GithubRemoteClient().createRelease(runner, {
@@ -82,6 +86,8 @@ describe("githubRemoteClient.createRelease — structured assets", () => {
     });
 
     it("threads discussionCategory into the gh CLI", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ stdout: "" }]);
 
         await new GithubRemoteClient().createRelease(runner, {
@@ -100,6 +106,8 @@ describe("githubRemoteClient.createRelease — structured assets", () => {
 
 describe("githubRemoteClient.addLabels", () => {
     it("pOSTs labels via the issues/labels API", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ stdout: "" }]);
 
         const ok = await new GithubRemoteClient().addLabels(runner, {
@@ -121,6 +129,8 @@ describe("githubRemoteClient.addLabels", () => {
     });
 
     it("returns true without invoking the runner when labels is empty", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([]);
 
         const ok = await new GithubRemoteClient().addLabels(runner, {
@@ -137,6 +147,8 @@ describe("githubRemoteClient.addLabels", () => {
 
 describe("githubRemoteClient.upsertIssue", () => {
     it("edits the existing issue when one matches the title-marker", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([
             { stdout: JSON.stringify([{ number: 9, title: "[release-failed] v1.0", url: "https://x/9" }]) },
             { stdout: "" },
@@ -163,6 +175,8 @@ describe("githubRemoteClient.upsertIssue", () => {
     });
 
     it("creates a new issue when none match", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([
             { stdout: "[]" },
             { stdout: "https://github.com/owner/name/issues/42" },
@@ -184,6 +198,8 @@ describe("githubRemoteClient.upsertIssue", () => {
 
 describe("githubRemoteClient — enterprise host + proxy env wiring", () => {
     it("sets GH_HOST on the subprocess env when host is configured", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ stdout: "" }]);
 
         await new GithubRemoteClient({ host: "github.acme.com" }).createRelease(runner, {
@@ -199,6 +215,8 @@ describe("githubRemoteClient — enterprise host + proxy env wiring", () => {
     });
 
     it("sets HTTPS_PROXY + HTTP_PROXY when httpProxy is configured", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ stdout: "" }]);
 
         await new GithubRemoteClient({ httpProxy: "http://proxy.acme.com:8080" }).addLabels(runner, {
@@ -213,6 +231,8 @@ describe("githubRemoteClient — enterprise host + proxy env wiring", () => {
     });
 
     it("threads both host and proxy together when both are set", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ stdout: "" }]);
 
         await new GithubRemoteClient({ host: "github.acme.com", httpProxy: "http://proxy.acme.com:8080" }).addLabels(runner, {
@@ -227,6 +247,8 @@ describe("githubRemoteClient — enterprise host + proxy env wiring", () => {
     });
 
     it("omits env entirely when no host/proxy is configured", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ stdout: "" }]);
 
         await new GithubRemoteClient().addLabels(runner, {
@@ -242,6 +264,8 @@ describe("githubRemoteClient — enterprise host + proxy env wiring", () => {
 
 describe("githubRemoteClient.listRecentReleases", () => {
     it("returns parsed releases with the limit applied", async () => {
+        expect.hasAssertions();
+
         const stdout = JSON.stringify([
             { name: "@scope/pkg v1.4.2", tagName: "@scope/pkg@1.4.2", url: "https://github.com/o/r/releases/tag/%40scope%2Fpkg%401.4.2" },
             { name: "@scope/pkg v1.4.1", tagName: "@scope/pkg@1.4.1", url: "https://github.com/o/r/releases/tag/%40scope%2Fpkg%401.4.1" },
@@ -273,6 +297,8 @@ describe("githubRemoteClient.listRecentReleases", () => {
     });
 
     it("filters by tagPrefix and excludeTag — only matching tags survive", async () => {
+        expect.hasAssertions();
+
         const stdout = JSON.stringify([
             { name: "@scope/pkg v1.5.0 (current)", tagName: "@scope/pkg@1.5.0", url: "https://github.com/o/r/releases/tag/%40scope%2Fpkg%401.5.0" },
             { name: "@scope/other v2.0.0", tagName: "@scope/other@2.0.0", url: "https://github.com/o/r/releases/tag/%40scope%2Fother%402.0.0" },
@@ -293,6 +319,8 @@ describe("githubRemoteClient.listRecentReleases", () => {
     });
 
     it("returns [] on non-zero exit or malformed JSON", async () => {
+        expect.hasAssertions();
+
         const { runner } = buildRunner([{ exitCode: 1 }, { stdout: "not-json" }]);
 
         const empty = await new GithubRemoteClient().listRecentReleases(runner, {
@@ -315,6 +343,8 @@ describe("githubRemoteClient.listRecentReleases", () => {
 
 describe("githubRemoteClient.closeIssue", () => {
     it("posts the closing comment then closes", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ stdout: "" }, { stdout: "" }]);
 
         const ok = await new GithubRemoteClient().closeIssue(runner, {
@@ -330,6 +360,8 @@ describe("githubRemoteClient.closeIssue", () => {
     });
 
     it("skips the comment call when closingComment is omitted", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ stdout: "" }]);
 
         const ok = await new GithubRemoteClient().closeIssue(runner, {

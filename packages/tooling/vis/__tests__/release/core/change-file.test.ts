@@ -10,6 +10,8 @@ import { VisReleaseError } from "../../../src/release/errors";
 
 describe("change-file: parseChangeFile (simple shape)", () => {
     it("parses a single-package simple change file", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(
             `---\n"@scope/pkg-a": minor\n---\nAdded a feature.\n`,
             ".vis/release/abc123.md",
@@ -28,6 +30,8 @@ describe("change-file: parseChangeFile (simple shape)", () => {
     });
 
     it("parses a multi-package simple change file", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(
             `---\n"@scope/pkg-a": minor\n"@scope/pkg-b": patch\npkg-c: major\n---\nMulti-package changelog body.\n`,
             "f.md",
@@ -45,12 +49,16 @@ describe("change-file: parseChangeFile (simple shape)", () => {
     });
 
     it("accepts an empty body", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(`---\npkg-a: patch\n---\n`, "f.md");
 
         expect(result.body).toBe("");
     });
 
     it("derives id from filename without extension", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(`---\npkg-a: patch\n---\n`, "/some/long/path/to/witty-frog.md");
 
         expect(result.id).toBe("witty-frog");
@@ -59,6 +67,8 @@ describe("change-file: parseChangeFile (simple shape)", () => {
 
 describe("change-file: parseChangeFile (nested shape)", () => {
     it("parses a nested change file with cascade", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(
             `---\n"@scope/core":\n  bump: minor\n  cascade:\n    "@scope/plugin-*": patch\n    "@scope/react": minor\n---\nBody.\n`,
             "f.md",
@@ -77,6 +87,8 @@ describe("change-file: parseChangeFile (nested shape)", () => {
     });
 
     it("parses a nested change file without cascade", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(
             `---\npkg-a:\n  bump: major\n---\nBody.\n`,
             "f.md",
@@ -92,6 +104,7 @@ describe("change-file: parseChangeFile (nested shape)", () => {
     });
 
     it("rejects mixed simple+nested entries (multiple top-level)", () => {
+        expect.hasAssertions();
         expect(() => parseChangeFile(
             `---\npkg-a:\n  bump: minor\npkg-b: patch\n---\n`,
             "f.md",
@@ -101,10 +114,12 @@ describe("change-file: parseChangeFile (nested shape)", () => {
 
 describe("change-file: parseChangeFile (validation)", () => {
     it("rejects missing frontmatter", () => {
+        expect.hasAssertions();
         expect(() => parseChangeFile("Just a body, no frontmatter.", "f.md")).toThrow(/missing YAML frontmatter/);
     });
 
     it("rejects invalid bump level", () => {
+        expect.hasAssertions();
         expect(() => parseChangeFile(`---\npkg-a: huge\n---\n`, "f.md")).toThrow(/Invalid bump level/);
     });
 
@@ -113,28 +128,36 @@ describe("change-file: parseChangeFile (validation)", () => {
         // the PR was considered for release but should not bump anything
         // (docs-only changes, CI gates requiring a change file). It parses to
         // empty bumps rather than throwing.
+        expect.hasAssertions();
+
         const parsed = parseChangeFile(`---\n\n---\n`, "f.md");
 
         expect(parsed.payload.bumps).toStrictEqual({});
     });
 
     it("rejects array frontmatter", () => {
+        expect.hasAssertions();
         expect(() => parseChangeFile(`---\n- pkg-a: minor\n---\n`, "f.md")).toThrow(/must be a YAML object/);
     });
 
     it("rejects invalid package name (leading hyphen)", () => {
+        expect.hasAssertions();
         expect(() => parseChangeFile(`---\n"-bad-pkg": minor\n---\n`, "f.md")).toThrow(/Invalid package name/);
     });
 
     it("rejects invalid package name (control char)", () => {
+        expect.hasAssertions();
         expect(() => parseChangeFile(`---\n"bad pkg": minor\n---\n`, "f.md")).toThrow(/Invalid package name/);
     });
 
     it("rejects invalid YAML in frontmatter", () => {
+        expect.hasAssertions();
         expect(() => parseChangeFile(`---\n: : :\n---\n`, "f.md")).toThrow(/YAML parse failed|Invalid/);
     });
 
     it("attaches file path to thrown error", () => {
+        expect.hasAssertions();
+
         let caught: unknown;
 
         try {
@@ -151,6 +174,8 @@ describe("change-file: parseChangeFile (validation)", () => {
 
 describe("change-file: inline metadata extraction", () => {
     it("extracts pr / commit / author from body header", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(
             `---\npkg-a: minor\n---\npr: 42\ncommit: abc1234\nauthor: @prisis\n\nThe actual changelog body.\n`,
             "f.md",
@@ -161,6 +186,8 @@ describe("change-file: inline metadata extraction", () => {
     });
 
     it("auto-prepends @ to author handles", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(
             `---\npkg-a: minor\n---\nauthor: someone\nBody.\n`,
             "f.md",
@@ -170,12 +197,16 @@ describe("change-file: inline metadata extraction", () => {
     });
 
     it("returns no meta when none present", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(`---\npkg-a: minor\n---\nJust body.\n`, "f.md");
 
         expect(result.meta).toBeUndefined();
     });
 
     it("ignores invalid pr numbers", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(
             `---\npkg-a: minor\n---\npr: not-a-number\nBody.\n`,
             "f.md",
@@ -185,6 +216,8 @@ describe("change-file: inline metadata extraction", () => {
     });
 
     it("stops scanning meta at the first non-meta non-blank line", () => {
+        expect.hasAssertions();
+
         const result = parseChangeFile(
             `---\npkg-a: minor\n---\npr: 1\nactual body line\nauthor: @foo\nmore body\n`,
             "f.md",
@@ -197,6 +230,8 @@ describe("change-file: inline metadata extraction", () => {
 
 describe("change-file: formatChangeFile (round-trip)", () => {
     it("formats then re-parses a simple file", () => {
+        expect.hasAssertions();
+
         const formatted = formatChangeFile({ bumps: { "@scope/pkg-a": "minor", "pkg-b": "patch" } }, "Body text.");
         const parsed = parseChangeFile(formatted, "x.md");
 
@@ -209,6 +244,8 @@ describe("change-file: formatChangeFile (round-trip)", () => {
     });
 
     it("formats then re-parses a nested file with cascade", () => {
+        expect.hasAssertions();
+
         const formatted = formatChangeFile(
             { bump: "minor", cascade: { "@scope/plugin-*": "patch" }, package: "@scope/core" },
             "Body.",
@@ -225,6 +262,8 @@ describe("change-file: formatChangeFile (round-trip)", () => {
     });
 
     it("emits empty body cleanly when body is empty", () => {
+        expect.hasAssertions();
+
         const formatted = formatChangeFile({ bumps: { "pkg-a": "patch" } }, "");
 
         expect(formatted).toBe(`---\npkg-a: patch\n---\n`);
@@ -233,6 +272,8 @@ describe("change-file: formatChangeFile (round-trip)", () => {
 
 describe("change-file: collectExplicitBumps", () => {
     it("max-merges multiple files mentioning the same package", () => {
+        expect.hasAssertions();
+
         const files = [
             parseChangeFile(`---\npkg-a: patch\n---\nA.\n`, "1.md"),
             parseChangeFile(`---\npkg-a: minor\n---\nB.\n`, "2.md"),
@@ -245,6 +286,8 @@ describe("change-file: collectExplicitBumps", () => {
     });
 
     it("collects bumps from nested-shape files", () => {
+        expect.hasAssertions();
+
         const files = [parseChangeFile(`---\npkg-a:\n  bump: major\n---\n`, "1.md")];
 
         const result = collectExplicitBumps(files);
@@ -253,6 +296,8 @@ describe("change-file: collectExplicitBumps", () => {
     });
 
     it("preserves none entries (recorded but no direct bump)", () => {
+        expect.hasAssertions();
+
         const files = [parseChangeFile(`---\npkg-a: none\npkg-b: patch\n---\n`, "1.md")];
 
         const result = collectExplicitBumps(files);
@@ -264,6 +309,8 @@ describe("change-file: collectExplicitBumps", () => {
 
 describe("change-file: findChangeFilesFor", () => {
     it("finds files mentioning a given package (simple shape)", () => {
+        expect.hasAssertions();
+
         const files = [
             parseChangeFile(`---\npkg-a: minor\npkg-b: patch\n---\nA.\n`, "1.md"),
             parseChangeFile(`---\npkg-c: patch\n---\nB.\n`, "2.md"),
@@ -276,6 +323,8 @@ describe("change-file: findChangeFilesFor", () => {
     });
 
     it("finds files mentioning a given package (nested shape)", () => {
+        expect.hasAssertions();
+
         const files = [
             parseChangeFile(`---\npkg-a:\n  bump: minor\n---\nA.\n`, "1.md"),
             parseChangeFile(`---\npkg-b:\n  bump: patch\n---\nB.\n`, "2.md"),
