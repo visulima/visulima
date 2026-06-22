@@ -67,10 +67,9 @@ fn main() {
         // delegating in-process/re-exec edge cases to Node. Pass the FULL argv so
         // the delegation path can replay it.
         "x" => x::run(&args),
-        // pm translate-and-exec family: detect PM, map flags, exec.
-        "remove" | "dedupe" | "link" | "unlink" | "outdated" | "why" => {
-            pm_family::run(first, if args.len() > 1 { &args[1..] } else { &[] })
-        }
+        // pm translate-and-exec family: detect PM, map flags, exec. Pass the FULL
+        // argv so the config-delegation path can replay it.
+        "remove" | "dedupe" | "link" | "unlink" | "outdated" | "why" => pm_family::run(first, &args),
         // Native command routing is added here as commands are ported off Node.
         // Every unmatched invocation is delegated unchanged to the Node CLI.
         _ => delegate(&args),

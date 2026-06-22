@@ -1,6 +1,9 @@
 //! Package-manager command resolution. De-napi'd copy of the relevant slice of
-//! the addon's `pm_resolve.rs` (keep in sync). Each `resolve_*` maps a vis verb +
-//! the detected PM/version + options to the concrete `{bin, args}` to spawn.
+//! the addon's `native/src/pm_resolve.rs` — ⚠️ KEEP IN SYNC: any fix to a
+//! `resolve_*` body, flag mapping, warning, or PM version branch must be mirrored
+//! in BOTH files (the addon needs a newer toolchain than this stable-Rust crate,
+//! so they can't yet share one crate). Each `resolve_*` maps a vis verb + the
+//! detected PM/version + options to the concrete `{bin, args}` to spawn.
 
 /// The resolved command to spawn, plus any non-fatal warnings to surface.
 #[derive(Clone, Debug, PartialEq, Eq)]

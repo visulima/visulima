@@ -1,3 +1,12 @@
+//! Package-manager command resolution for the NAPI addon.
+//!
+//! ⚠️  KEEP IN SYNC: a de-napi'd copy of the shared `resolve_*` functions lives in
+//! `native/core/src/resolve.rs` (used by the standalone `vis-cli` binary, which
+//! can't link this addon). Any fix to a `resolve_*` body, flag mapping, warning,
+//! or PM version branch here MUST be mirrored there (and vice-versa). The two
+//! can't yet share one crate: `vis-core` builds on stable Rust, while this addon
+//! needs a newer toolchain (oxc), so the duplication is deliberate.
+
 use napi::bindgen_prelude::*;
 use napi_derive::napi;
 

@@ -171,9 +171,11 @@ const loadTsConfigPaths = (startDirectory: string): ResolvedTsConfigPaths | unde
         const { config, path: tsconfigPath } = findTsConfigSync(startDirectory, { cache: false });
         const configDirectory = dirname(tsconfigPath);
         const options = config.compilerOptions;
-        const paths = options?.paths;
+        // `paths` may be absent while `baseUrl` is set — that still enables
+        // baseUrl-rooted bare resolution, so default to {} rather than bailing.
+        const paths = options?.paths ?? {};
 
-        if (options !== undefined && paths !== undefined) {
+        if (options !== undefined) {
             // eslint-disable-next-line sonarjs/deprecation -- baseUrl is deprecated in TS 5+ but still supported for back-compat.
             const { baseUrl } = options;
 

@@ -2,13 +2,11 @@ import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { resolveInstaller, runRemove } from "../../pm/pm-runner";
 import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
-import { toStringArray } from "../../util/utils";
+import { mergeForwardedPackages, toStringArray } from "../../util/utils";
 import type { RemoveOptions } from "./index";
 
 const execute = async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RemoveOptions>): Promise<void> => {
-    // Forward unknown flags to the PM (parity with the native path; honor a `--`).
-    const unknown = rawUnknown ?? [];
-    const packages = unknown[0] === "--" ? (argument ?? []) : [...(argument ?? []), ...unknown];
+    const packages = mergeForwardedPackages(argument, rawUnknown);
 
     if (packages.length === 0) {
         throw new Error("No packages specified. Usage: vis remove <packages...>");

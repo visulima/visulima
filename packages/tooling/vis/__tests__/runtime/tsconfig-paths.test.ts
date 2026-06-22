@@ -37,6 +37,16 @@ describe("resolveTsConfigPaths (canonical @visulima/tsconfig reader)", () => {
         expect(posix(resolved)).toMatch(/paths-extends\/src\/util\.ts$/u);
     });
 
+    it("resolves a bare specifier against baseUrl when the tsconfig has no `paths`", () => {
+        expect.assertions(1);
+
+        // Regression: a baseUrl-only tsconfig must still enable baseUrl-rooted
+        // resolution (the `paths !== undefined` guard previously dropped it).
+        const resolved = resolveTsConfigPaths("lib/thing", join(fixtures, "baseurl-only", "src"));
+
+        expect(posix(resolved)).toMatch(/baseurl-only\/lib\/thing\.ts$/u);
+    });
+
     it("returns undefined for a non-aliased bare specifier (lets node_modules fall through)", () => {
         expect.assertions(1);
 

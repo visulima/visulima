@@ -7,7 +7,7 @@
 //! forwarded to the PM in order (the Node handlers were fixed to match).
 
 use std::env;
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 
 use vis_core::detect::detect_package_manager;
@@ -23,12 +23,48 @@ fn finish(verb: &str, resolved: ResolvedCommand, cwd: &Path) -> ! {
     }
 
     match Command::new(&resolved.bin).args(&resolved.args).current_dir(cwd).status() {
-        Ok(status) => exit(crate::forward_code(status)),
+        Ok(status) => {
+            let mut code = crate::forward_code(status);
+
+            // `outdated`/`why` exit 1 from npm/pnpm when results are FOUND — a
+            // non-error case the Node handlers suppress. Match that so the native
+            // path doesn't break `&&` chains / CI on the common case.
+            if (verb == "outdated" || verb == "why") && code == 1 {
+                code = 0;
+            }
+
+            exit(code);
+        }
         Err(error) => {
             eprintln!("vis {verb}: failed to run '{}': {error}", resolved.bin);
             exit(127);
         }
     }
+}
+
+/// Walk up from `cwd` looking for a `vis.config.*` file.
+fn has_vis_config(cwd: &Path) -> bool {
+    const NAMES: [&str; 7] = [
+        "vis.config.ts",
+        "vis.config.mts",
+        "vis.config.cts",
+        "vis.config.js",
+        "vis.config.mjs",
+        "vis.config.cjs",
+        "vis.config.json",
+    ];
+
+    let mut current = Some(cwd.to_path_buf());
+
+    while let Some(directory) = current {
+        if NAMES.iter().any(|name| directory.join(name).exists()) {
+            return true;
+        }
+
+        current = directory.parent().map(Path::to_path_buf).filter(|parent| parent != &directory);
+    }
+
+    false
 }
 
 /// A token is a "known" flag if it matches one of `bools` (a switch) or `values`
@@ -90,9 +126,22 @@ fn first(parsed: &Parsed, name: &str) -> Option<String> {
     parsed.values.iter().find(|(key, _)| key == name).map(|(_, value)| value.clone())
 }
 
-/// Entry point. `verb` is the command name, `args` is everything after it.
-pub fn run(verb: &str, args: &[String]) -> ! {
-    let cwd = env::current_dir().unwrap_or_else(|_| Path::new(".").to_path_buf());
+/// Entry point. `verb` is the command name, `full_args` is the FULL invocation
+/// (including the leading verb) so the config-delegation path can replay it.
+pub fn run(verb: &str, full_args: &[String]) -> ! {
+    let cwd = env::current_dir().unwrap_or_else(|_| PathBuf::from("."));
+
+    // vis.config can pin `install.backend` (e.g. aube) / `runtime`, which the
+    // native PM detector doesn't read. For these PM commands — especially the
+    // mutating ones (remove/dedupe/link/unlink) — running the wrong PM is
+    // consequential, so when a vis.config is present we delegate to Node to honor
+    // the pinned backend. (exec/x make the opposite, documented cold-start
+    // trade-off; the pm family is marginal-value, so correctness wins here.)
+    if has_vis_config(&cwd) {
+        crate::delegate(full_args);
+    }
+
+    let args = if full_args.len() > 1 { &full_args[1..] } else { &[] };
     let detected = detect_package_manager(&cwd.to_string_lossy(), None);
     let pm = detected.name;
     let version = detected.version.unwrap_or_default();
@@ -127,7 +176,9 @@ pub fn run(verb: &str, args: &[String]) -> ! {
             resolve_dedupe(&pm, &version, check)
         }
         "link" => {
-            // `link` takes a single optional target (first positional).
+            // `link` takes a single optional path target (first positional);
+            // unlike the other verbs it deliberately does NOT forward stray flags
+            // (pnpm/npm `link` accept only the target), matching the Node handler.
             let target = args.iter().find(|token| !token.starts_with('-')).cloned();
 
             resolve_link(&pm, &version, target)

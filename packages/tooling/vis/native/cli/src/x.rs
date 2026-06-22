@@ -19,8 +19,6 @@ use std::env;
 use std::path::{Path, PathBuf};
 use std::process::{exit, Command};
 
-use vis_core::detect::detect_package_manager;
-
 enum Runtime {
     Bun,
     Node,
@@ -77,29 +75,54 @@ fn parse(args: &[String]) -> Parsed {
     Parsed { file, node, runtime_flag, script_args }
 }
 
-/// Resolve node vs bun: explicit `--runtime`/`VIS_RUNTIME` wins, else a bun
-/// lockfile (`bun.lock`/`bun.lockb`, via the PM detector) selects bun, else node.
-fn resolve_runtime(flag: Option<&str>, cwd: &str) -> Runtime {
+/// Walk up from `cwd` looking for `name`; true if found at any ancestor.
+fn found_walking_up(cwd: &Path, name: &str) -> bool {
+    let mut current = Some(cwd.to_path_buf());
+
+    while let Some(directory) = current {
+        if directory.join(name).exists() {
+            return true;
+        }
+
+        current = directory.parent().map(Path::to_path_buf).filter(|parent| parent != &directory);
+    }
+
+    false
+}
+
+/// Resolve node vs bun. Mirrors the Node lean path (`resolve-runtime.ts`):
+/// explicit `--runtime`/`VIS_RUNTIME` must be `node` or `bun` (anything else is a
+/// hard error — NOT silently node); otherwise a LOCKFILE-ONLY walk (`bun.lock` /
+/// `bun.lockb` -> bun, else node). NOTE: deliberately NOT the heavier PM detector
+/// — the lean path ignores the `packageManager` field / config files / user agent.
+fn resolve_runtime(flag: Option<&str>, cwd: &Path) -> Result<Runtime, String> {
     let explicit = flag.map(str::to_owned).or_else(|| env::var("VIS_RUNTIME").ok());
 
     if let Some(runtime) = explicit.as_deref() {
-        return if runtime == "bun" { Runtime::Bun } else { Runtime::Node };
+        if !runtime.is_empty() {
+            return match runtime {
+                "node" => Ok(Runtime::Node),
+                "bun" => Ok(Runtime::Bun),
+                other => Err(format!("unsupported runtime '{other}'. Use 'node' or 'bun'.")),
+            };
+        }
     }
 
-    if detect_package_manager(cwd, None).name == "bun" {
-        Runtime::Bun
+    if found_walking_up(cwd, "bun.lock") || found_walking_up(cwd, "bun.lockb") {
+        Ok(Runtime::Bun)
     } else {
-        Runtime::Node
+        Ok(Runtime::Node)
     }
 }
 
 /// True when the runner needs the Node in-process / re-exec path (start flags or
-/// loader propagation), which the native child-spawn can't provide.
+/// loader propagation), which the native child-spawn can't provide. Yarn PnP is
+/// detected by walking up for `.pnp.cjs` (it sits at the project root, not cwd).
 fn needs_node_path(node_flag: bool, cwd: &Path) -> bool {
     node_flag
         || env::var_os("VIS_UNFLAG").is_some()
         || env::var_os("VIS_AUGMENT_SUBPROCESS").is_some()
-        || cwd.join(".pnp.cjs").exists()
+        || found_walking_up(cwd, ".pnp.cjs")
 }
 
 /// The TS/.env/polyfill preload, derived from the JS fallback entry
@@ -143,12 +166,33 @@ pub fn run(args: &[String]) -> ! {
 
     let absolute = if Path::new(&file).is_absolute() { file } else { cwd.join(&file).to_string_lossy().into_owned() };
 
-    match resolve_runtime(parsed.runtime_flag.as_deref(), &cwd.to_string_lossy()) {
+    let runtime = match resolve_runtime(parsed.runtime_flag.as_deref(), &cwd) {
+        Ok(runtime) => runtime,
+        Err(message) => {
+            eprintln!("vis x: {message}");
+            exit(1);
+        }
+    };
+
+    match runtime {
         Runtime::Bun => {
             let mut command = Command::new("bun");
 
             command.arg("run").arg(&absolute).args(&parsed.script_args).current_dir(&cwd);
-            spawn_and_exit(command);
+
+            match command.status() {
+                Ok(status) => exit(crate::forward_code(status)),
+                Err(error) if error.kind() == std::io::ErrorKind::NotFound => {
+                    eprintln!(
+                        "vis x: runtime is bun but the `bun` binary is not on PATH. Install it from https://bun.sh."
+                    );
+                    exit(127);
+                }
+                Err(error) => {
+                    eprintln!("vis x: failed to launch bun: {error}");
+                    exit(127);
+                }
+            }
         }
         Runtime::Node => {
             let preload = match preload_path() {
