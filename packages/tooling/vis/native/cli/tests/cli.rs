@@ -99,6 +99,51 @@ fn exec_resolves_and_runs_via_detected_pm() {
     assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "PNPM:exec eslint --fix");
 }
 
+#[cfg(unix)]
+#[test]
+fn pm_passthrough_resolves_and_forwards_flags() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let base = std::env::temp_dir().join(format!("vis-pm-{}", std::process::id()));
+    let project = base.join("project");
+    let bindir = base.join("bin");
+    std::fs::create_dir_all(&project).unwrap();
+    std::fs::create_dir_all(&bindir).unwrap();
+    std::fs::write(project.join("pnpm-lock.yaml"), "lockfileVersion: 9\n").unwrap();
+
+    let stub = bindir.join("pnpm");
+    std::fs::write(&stub, "#!/bin/sh\necho \"PNPM:$*\"\n").unwrap();
+    std::fs::set_permissions(&stub, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+    let path = format!("{}:{}", bindir.display(), std::env::var("PATH").unwrap_or_default());
+
+    let run = |sub: &[&str]| {
+        String::from_utf8_lossy(
+            &binary()
+                .arg("pm")
+                .args(sub)
+                .current_dir(&project)
+                .env("PATH", &path)
+                .env_remove("npm_config_user_agent")
+                .env_remove("VIS_RUNTIME")
+                .output()
+                .expect("run binary")
+                .stdout,
+        )
+        .trim()
+        .to_owned()
+    };
+
+    // `cache dir` -> pnpm store path; flags after the subcommand forwarded.
+    let cache = run(&["cache", "dir"]);
+    let publish = run(&["publish", "--dry-run"]);
+
+    std::fs::remove_dir_all(&base).ok();
+
+    assert_eq!(cache, "PNPM:store path");
+    assert_eq!(publish, "PNPM:publish --dry-run");
+}
+
 #[test]
 fn delegate_without_fallback_entry_exits_ex_software() {
     let output = binary().arg("run").env_remove("VIS_FALLBACK_ENTRY").output().expect("run binary");

@@ -25,6 +25,7 @@ use std::env;
 use std::process::{exit, Command, ExitStatus};
 
 mod exec;
+mod pm;
 mod pm_shim;
 
 /// Internal, additive diagnostic command. Used to validate the
@@ -58,6 +59,8 @@ fn main() {
         // `vis exec <command>` — run a local bin via the project PM. Matches the
         // Node lean exec path (runtime/lockfile detection, no config load).
         "exec" => exec::run(if args.len() > 1 { &args[1..] } else { &[] }),
+        // `vis pm <subcommand>` — package-manager utility passthrough.
+        "pm" => pm::run(if args.len() > 1 { &args[1..] } else { &[] }),
         // Native command routing is added here as commands are ported off Node.
         // Every unmatched invocation is delegated unchanged to the Node CLI.
         _ => delegate(&args),

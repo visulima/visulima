@@ -144,9 +144,232 @@ pub fn resolve_exec(pm: &str, version: &str, opts: ExecOptions) -> Result<Resolv
     Ok(ResolvedCommand { bin, args, warnings })
 }
 
+/// Resolve `vis pm <subcommand> [args]` to the PM-specific invocation. Faithful
+/// copy of the addon's `resolve_pm_command` (per-PM mapping for cache/list/pack/
+/// view + npm-only verbs, with a default pass-through).
+pub fn resolve_pm_command(
+    pm: &str,
+    version: &str,
+    subcommand: &str,
+    extra_args: Vec<String>,
+) -> Result<ResolvedCommand, String> {
+    validate_pm(pm)?;
+
+    let mut args = Vec::new();
+    let mut warnings = Vec::new();
+
+    // Commands that always delegate to npm.
+    let npm_only = ["deprecate", "fund", "ping", "search", "token"];
+
+    if npm_only.contains(&subcommand) {
+        if pm != "npm" {
+            warnings.push(format!("'{subcommand}' is not natively supported by {pm}. Delegating to npm."));
+        }
+
+        args.push(subcommand.to_owned());
+        args.extend(extra_args);
+
+        return Ok(ResolvedCommand { args, bin: "npm".into(), warnings });
+    }
+
+    if subcommand == "cache" {
+        match pm {
+            "pnpm" => {
+                match extra_args.first().map(String::as_str) {
+                    Some("dir") => {
+                        args.push("store".into());
+                        args.push("path".into());
+                    }
+                    Some("clean") => {
+                        args.push("store".into());
+                        args.push("prune".into());
+                        args.extend(extra_args.into_iter().skip(1));
+                    }
+                    _ => {
+                        args.push("store".into());
+                        args.extend(extra_args);
+                    }
+                }
+
+                return Ok(ResolvedCommand { args, bin: "pnpm".into(), warnings });
+            }
+            "bun" => {
+                args.push("pm".into());
+                args.push("cache".into());
+                args.extend(extra_args);
+
+                return Ok(ResolvedCommand { args, bin: "bun".into(), warnings });
+            }
+            "deno" => {
+                match extra_args.first().map(String::as_str) {
+                    Some("dir") => {
+                        args.push("info".into());
+                        warnings
+                            .push("deno has no `cache dir`; printing `deno info` (DENO_DIR is in the output).".into());
+                    }
+                    Some("clean") => {
+                        warnings.push(
+                            "deno has no `cache clean`. Remove DENO_DIR (default: ~/.cache/deno) manually.".into(),
+                        );
+                        args.push("--help".into());
+                    }
+                    _ => {
+                        args.push("cache".into());
+                        args.extend(extra_args);
+                    }
+                }
+
+                return Ok(ResolvedCommand { args, bin: "deno".into(), warnings });
+            }
+            _ => {
+                args.push("cache".into());
+                args.extend(extra_args);
+
+                return Ok(ResolvedCommand { args, bin: pm.to_owned(), warnings });
+            }
+        }
+    }
+
+    if subcommand == "list" || subcommand == "ls" {
+        match pm {
+            "bun" => {
+                args.push("pm".into());
+                args.push("ls".into());
+                args.extend(extra_args);
+
+                return Ok(ResolvedCommand { args, bin: "bun".into(), warnings });
+            }
+            "deno" => {
+                warnings.push("deno has no `list`; falling back to `deno info`.".into());
+                args.push("info".into());
+                args.extend(extra_args);
+
+                return Ok(ResolvedCommand { args, bin: "deno".into(), warnings });
+            }
+            _ => {
+                args.push("list".into());
+                args.extend(extra_args);
+
+                return Ok(ResolvedCommand { args, bin: pm.to_owned(), warnings });
+            }
+        }
+    }
+
+    if subcommand == "pack" {
+        match pm {
+            "bun" => {
+                args.push("pm".into());
+                args.push("pack".into());
+                args.extend(extra_args);
+
+                return Ok(ResolvedCommand { args, bin: "bun".into(), warnings });
+            }
+            "deno" => {
+                warnings.push(
+                    "deno does not support `pack`. Use `deno publish --dry-run` to preview a JSR publish.".into(),
+                );
+                args.push("publish".into());
+                args.push("--dry-run".into());
+
+                return Ok(ResolvedCommand { args, bin: "deno".into(), warnings });
+            }
+            _ => {
+                args.push("pack".into());
+                args.extend(extra_args);
+
+                return Ok(ResolvedCommand { args, bin: pm.to_owned(), warnings });
+            }
+        }
+    }
+
+    if subcommand == "view" || subcommand == "info" {
+        match pm {
+            "yarn" => {
+                if version.starts_with("1.") {
+                    args.push("info".into());
+                } else {
+                    args.push("npm".into());
+                    args.push("info".into());
+                }
+
+                args.extend(extra_args);
+            }
+            "bun" => {
+                args.push("pm".into());
+                args.push("view".into());
+                args.extend(extra_args);
+            }
+            "deno" => {
+                args.push("info".into());
+
+                for arg in &extra_args {
+                    if arg.starts_with("npm:")
+                        || arg.starts_with("jsr:")
+                        || arg.starts_with("https://")
+                        || arg.starts_with("http://")
+                        || arg.starts_with("file:")
+                        || arg.starts_with('-')
+                    {
+                        args.push(arg.clone());
+                    } else {
+                        args.push(format!("npm:{arg}"));
+                    }
+                }
+            }
+            _ => {
+                args.push("view".into());
+                args.extend(extra_args);
+            }
+        }
+
+        return Ok(ResolvedCommand { args, bin: pm.to_owned(), warnings });
+    }
+
+    if subcommand == "prune" && (pm == "yarn" || pm == "bun" || pm == "deno") {
+        warnings.push(format!("{pm} does not support 'prune'. It prunes automatically on install."));
+    }
+
+    if subcommand == "rebuild" && (pm == "yarn" || pm == "bun" || pm == "deno") {
+        warnings.push(format!("{pm} does not support 'rebuild'."));
+    }
+
+    args.push(subcommand.to_owned());
+    args.extend(extra_args);
+
+    Ok(ResolvedCommand { args, bin: pm.to_owned(), warnings })
+}
+
 #[cfg(test)]
 mod tests {
-    use super::{resolve_exec, ExecOptions};
+    use super::{resolve_exec, resolve_pm_command, ExecOptions};
+
+    fn argv(list: &[&str]) -> Vec<String> {
+        list.iter().map(|item| (*item).to_owned()).collect()
+    }
+
+    #[test]
+    fn pm_cache_dir_maps_to_pnpm_store_path() {
+        let resolved = resolve_pm_command("pnpm", "9.0.0", "cache", argv(&["dir"])).unwrap();
+
+        assert_eq!(resolved.bin, "pnpm");
+        assert_eq!(resolved.args, ["store", "path"]);
+    }
+
+    #[test]
+    fn pm_passthrough_forwards_flags() {
+        let resolved = resolve_pm_command("pnpm", "9.0.0", "publish", argv(&["--dry-run"])).unwrap();
+
+        assert_eq!(resolved.bin, "pnpm");
+        assert_eq!(resolved.args, ["publish", "--dry-run"]);
+    }
+
+    #[test]
+    fn pm_npm_only_verb_delegates_to_npm() {
+        let resolved = resolve_pm_command("pnpm", "9.0.0", "ping", argv(&[])).unwrap();
+
+        assert_eq!(resolved.bin, "npm");
+        assert!(!resolved.warnings.is_empty());
+    }
 
     fn exec(command: &str) -> ExecOptions {
         ExecOptions { command: command.to_owned(), ..Default::default() }
