@@ -87,6 +87,8 @@ jobs:
                         - 'packages/terminal/tui/native/Cargo.lock'
                       vis:
                         - 'packages/tooling/vis/native/src/**'
+                        - 'packages/tooling/vis/native/cli/**'
+                        - 'packages/tooling/vis/native/core/**'
                         - 'packages/tooling/vis/native/Cargo.toml'
                         - 'packages/tooling/vis/native/Cargo.lock'
 
@@ -113,6 +115,8 @@ jobs:
                         - 'packages/terminal/tui/native/Cargo.lock'
                       vis:
                         - 'packages/tooling/vis/native/src/**'
+                        - 'packages/tooling/vis/native/cli/**'
+                        - 'packages/tooling/vis/native/core/**'
                         - 'packages/tooling/vis/native/Cargo.toml'
                         - 'packages/tooling/vis/native/Cargo.lock'
 
@@ -188,6 +192,17 @@ jobs:
             - name: "Run cargo test"
               working-directory: "${{ matrix.package.dir }}"
               run: "cargo test --verbose"
+
+            # vis-cli + vis-core are workspace members alongside the addon; the
+            # `cargo test` above only covers the root addon package. `-p` selects
+            # just these lean crates (no oxc), so this runs on any toolchain.
+            - name: "Run cargo test + clippy (vis-cli + vis-core)"
+              if: "matrix.package.name == 'vis'"
+              shell: "bash"
+              working-directory: "packages/tooling/vis/native"
+              run: |
+                  cargo test -p vis-cli -p vis-core --verbose
+                  cargo clippy -p vis-cli -p vis-core --all-targets -- -D warnings
 
             # fspy_seccomp is a path-dep of task-runner-native (not a
             # workspace member), so `cargo test` above doesn't reach
