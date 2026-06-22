@@ -19,7 +19,7 @@
  */
 import { spawnSync } from "node:child_process";
 import nodeModule from "node:module";
-import { fileURLToPath } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { dirname, join } from "@visulima/path";
 import { describe, expect, it } from "vitest";
@@ -49,7 +49,9 @@ const describeHooked = hasRegisterHooks && supportsTypeStripping ? describe : de
 const runInLoader = (body: string): unknown => {
     const script = [
         `import { pathToFileURL } from "node:url";`,
-        `import * as loader from ${JSON.stringify(join(packageRoot, "src", "runtime", "ts-loader.ts"))};`,
+        // Absolute paths must be file:// URLs as ESM specifiers — on Windows a bare
+        // `d:\...` path is rejected as protocol 'd:' (ERR_UNSUPPORTED_ESM_URL_SCHEME).
+        `import * as loader from ${JSON.stringify(pathToFileURL(join(packageRoot, "src", "runtime", "ts-loader.ts")).href)};`,
         `const fixtures = ${JSON.stringify(fixtures)};`,
         `loader.registerTsHooks();`,
         `const importData = async (relative) => (await import(pathToFileURL(fixtures + "/" + relative).href)).default;`,
