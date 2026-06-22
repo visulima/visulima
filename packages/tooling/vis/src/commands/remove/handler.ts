@@ -5,10 +5,12 @@ import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/co
 import { toStringArray } from "../../util/utils";
 import type { RemoveOptions } from "./index";
 
-const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RemoveOptions>): Promise<void> => {
-    const packages = argument;
+const execute = async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RemoveOptions>): Promise<void> => {
+    // Forward unknown flags to the PM (parity with the native path; honor a `--`).
+    const unknown = rawUnknown ?? [];
+    const packages = unknown[0] === "--" ? (argument ?? []) : [...(argument ?? []), ...unknown];
 
-    if (!packages || packages.length === 0) {
+    if (packages.length === 0) {
         throw new Error("No packages specified. Usage: vis remove <packages...>");
     }
 

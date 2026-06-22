@@ -5,8 +5,10 @@ import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/co
 import { toStringArray } from "../../util/utils";
 import type { OutdatedOptions } from "./index";
 
-const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, OutdatedOptions>): Promise<void> => {
-    const packages = argument || [];
+const execute = async ({ argument, logger, options, rawUnknown, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, OutdatedOptions>): Promise<void> => {
+    // Forward unknown flags to the PM (parity with the native path; honor a `--`).
+    const unknown = rawUnknown ?? [];
+    const packages = unknown[0] === "--" ? (argument ?? []) : [...(argument ?? []), ...unknown];
     const cwd = wsRoot ?? process.cwd();
     const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
     const pm = resolveInstaller(cwd, {

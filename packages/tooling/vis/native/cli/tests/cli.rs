@@ -188,6 +188,39 @@ fn x_spawns_node_with_the_preload_import() {
     assert!(stdout.contains("--flag"), "stdout: {stdout}");
 }
 
+#[cfg(unix)]
+#[test]
+fn pm_family_remove_resolves_and_forwards() {
+    use std::os::unix::fs::PermissionsExt;
+
+    let base = std::env::temp_dir().join(format!("vis-rm-{}", std::process::id()));
+    let project = base.join("project");
+    let bindir = base.join("bin");
+    std::fs::create_dir_all(&project).unwrap();
+    std::fs::create_dir_all(&bindir).unwrap();
+    std::fs::write(project.join("pnpm-lock.yaml"), "lockfileVersion: 9\n").unwrap();
+
+    let stub = bindir.join("pnpm");
+    std::fs::write(&stub, "#!/bin/sh\necho \"PNPM:$*\"\n").unwrap();
+    std::fs::set_permissions(&stub, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+    let path = format!("{}:{}", bindir.display(), std::env::var("PATH").unwrap_or_default());
+
+    let output = binary()
+        .args(["remove", "-D", "lodash", "--unknown-flag"])
+        .current_dir(&project)
+        .env("PATH", path)
+        .env_remove("npm_config_user_agent")
+        .output()
+        .expect("run binary");
+
+    std::fs::remove_dir_all(&base).ok();
+
+    assert!(output.status.success(), "remove failed: {:?}", output);
+    // -D maps to pnpm `remove -D`; lodash + the unknown flag are forwarded.
+    assert_eq!(String::from_utf8_lossy(&output.stdout).trim(), "PNPM:remove -D lodash --unknown-flag");
+}
+
 #[test]
 fn delegate_without_fallback_entry_exits_ex_software() {
     let output = binary().arg("run").env_remove("VIS_FALLBACK_ENTRY").output().expect("run binary");
