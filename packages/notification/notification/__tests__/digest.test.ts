@@ -60,6 +60,29 @@ const runDigesterContract = (name: string, makeStore: () => DigestStore<Liked> |
             expect(flushedCount).toBe(2);
             expect(flushed.toSorted((a, b) => a.localeCompare(b))).toStrictEqual(["u1:p1", "u2:p2"]);
         });
+
+        it("isolates a user key named like the metadata key from the wake index", async () => {
+            expect.assertions(2);
+
+            const flushed: string[] = [];
+            const digester = createDigester<Liked>({
+                // A key of "index" would collide with a naive shared namespace.
+                key: (event) => event.subscriberId,
+                onFlush: (_events, key) => {
+                    flushed.push(key);
+                },
+                store: makeStore(),
+                window: 1000,
+            });
+
+            await digester.add({ postId: "p", subscriberId: "index" });
+            await digester.add({ postId: "p", subscriberId: "other" });
+
+            const flushedCount = await digester.sweep(Date.now() + 2000);
+
+            expect(flushedCount).toBe(2);
+            expect(flushed.toSorted((a, b) => a.localeCompare(b))).toStrictEqual(["index", "other"]);
+        });
     });
 };
 

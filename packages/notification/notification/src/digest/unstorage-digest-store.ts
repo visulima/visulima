@@ -10,7 +10,10 @@ interface UnstorageLike {
     setItem: (key: string, value: unknown) => Promise<void>;
 }
 
-const WINDOW_PREFIX = "digest:";
+// Window keys live under a dedicated `w:` sub-namespace so no application-supplied
+// digest key can collide with the metadata index document (a key of "index" would
+// otherwise map to the same storage key as INDEX_KEY).
+const WINDOW_PREFIX = "digest:w:";
 const INDEX_KEY = "digest:index";
 
 /**
