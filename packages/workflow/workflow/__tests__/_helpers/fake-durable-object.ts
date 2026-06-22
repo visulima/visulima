@@ -52,6 +52,12 @@ class FakeDurableObjectStorage implements DurableObjectStorageLike {
 
         return Promise.resolve();
     }
+
+    public deleteAlarm(): Promise<void> {
+        this.#alarm = null;
+
+        return Promise.resolve();
+    }
 }
 
 export default FakeDurableObjectStorage;

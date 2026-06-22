@@ -3,12 +3,14 @@ import type { StoredRun, WorkflowStore } from "./types";
 /**
  * The subset of [`DurableObjectStorage`](https://developers.cloudflare.com/durable-objects/api/storage-api/)
  * this store touches. Declared structurally so it needs no `@cloudflare/workers-types`
- * dependency and can be unit-tested with a plain object. `getAlarm`/`setAlarm` are
- * optional: when present, the store schedules a wake-up alarm so `sweep` is driven
- * by the runtime instead of an external cron (the push model).
+ * dependency and can be unit-tested with a plain object. `getAlarm`/`setAlarm`/
+ * `deleteAlarm` are optional: when present, the store schedules a wake-up alarm so
+ * `sweep` is driven by the runtime instead of an external cron (the push model),
+ * and clears it once no wakes remain.
  */
 interface DurableObjectStorageLike {
     delete: (key: string) => Promise<boolean>;
+    deleteAlarm?: () => Promise<void>;
     get: <T = unknown>(key: string) => Promise<T | undefined>;
     getAlarm?: () => Promise<number | null>;
     list: <T = unknown>(options?: { limit?: number; prefix?: string }) => Promise<Map<string, T>>;
@@ -25,7 +27,13 @@ const RUN_PREFIX = "run:";
 const LEASE_PREFIX = "lease:";
 const WAKE_PREFIX = "wake:";
 
-/** Fixed-width so `storage.list` (UTF-8 key order) yields wake keys ascending by time. */
+/**
+ * Fixed-width zero-padding so `storage.list` (UTF-8 key order) yields wake keys
+ * ascending by time. 16 digits holds every epoch-millisecond wake-at (13 digits
+ * today, room until ~year 318000) AND `Number.MAX_SAFE_INTEGER` (16 digits), which
+ * the store contract probes. Wake-at values with **more than 16 digits would break
+ * key ordering** — keep wake-at in epoch-ms (the runtime's `resolveWakeAt` does).
+ */
 const WAKE_WIDTH = 16;
 
 const wakeKey = (wakeAt: number, runId: string): string => `${WAKE_PREFIX}${String(wakeAt).padStart(WAKE_WIDTH, "0")}:${runId}`;
@@ -97,12 +105,14 @@ class DurableObjectStore implements WorkflowStore {
     }
 
     public async due(now: number, limit: number): Promise<string[]> {
-        const entries = await this.#storage.list<string>({ prefix: WAKE_PREFIX });
+        // `list` returns keys ascending by wake-at (earliest first), so capping at
+        // `limit` in the query yields the soonest-due runs without materialising the
+        // whole wake-index — matching the SQL/Redis stores' bounded reads.
+        const entries = await this.#storage.list<string>({ limit, prefix: WAKE_PREFIX });
         const due: string[] = [];
 
-        // `list` returns keys ascending by wake-at, so the earliest are first.
         for (const [key, runId] of entries) {
-            if (wakeAtOf(key) > now || due.length >= limit) {
+            if (wakeAtOf(key) > now) {
                 break;
             }
 
@@ -112,6 +122,11 @@ class DurableObjectStore implements WorkflowStore {
         return due;
     }
 
+    // Lease keys carry an `expiresAt` checked on acquire, so a stale lease is always
+    // reclaimable; unlike Redis' native TTL the DO has no auto-expiry, so a key for a
+    // run that crashes between acquire and release lingers until the run is re-driven
+    // or `delete`d. Harmless (the DO's serial execution already guarantees exclusion),
+    // just a slow accrual of dead keys in pathological crash loops.
     public async acquire(runId: string, token: string, ttlMs: number): Promise<boolean> {
         const now = Date.now();
         const existing = await this.#storage.get<Lease>(LEASE_PREFIX + runId);
@@ -140,12 +155,16 @@ class DurableObjectStore implements WorkflowStore {
         }
 
         const next = await this.#nextWakeAt();
+        const current = this.#storage.getAlarm === undefined ? undefined : await this.#storage.getAlarm();
 
         if (next === undefined) {
+            // No pending wakes: clear any leftover alarm so the DO doesn't wake spuriously.
+            if (typeof current === "number" && this.#storage.deleteAlarm !== undefined) {
+                await this.#storage.deleteAlarm();
+            }
+
             return;
         }
-
-        const current = this.#storage.getAlarm === undefined ? undefined : await this.#storage.getAlarm();
 
         // Keep the alarm aligned with the actual earliest pending wake. It must be
         // able to move in BOTH directions: earlier when a sooner run is saved, and
