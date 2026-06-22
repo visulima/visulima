@@ -23,6 +23,8 @@ const mk = (hash: string, subject: string, body = "", files: string[] = []): Com
 
 describe(detectRevert, () => {
     it("flags conventional `revert: <subject>` headers", () => {
+        expect.hasAssertions();
+
         const parsed = parseCommit("revert: feat(api): add retry", "");
         const result = detectRevert("revert: feat(api): add retry", "", parsed);
 
@@ -31,6 +33,8 @@ describe(detectRevert, () => {
     });
 
     it("flags default git `Revert \"<subject>\"` headers", () => {
+        expect.hasAssertions();
+
         const parsed = parseCommit("Revert \"feat(api): add retry\"", "");
         const result = detectRevert("Revert \"feat(api): add retry\"", "", parsed);
 
@@ -39,6 +43,8 @@ describe(detectRevert, () => {
     });
 
     it("extracts the SHA trailer from the body when present", () => {
+        expect.hasAssertions();
+
         const parsed = parseCommit("Revert \"feat: foo\"", "This reverts commit abc1234.");
         const result = detectRevert("Revert \"feat: foo\"", "This reverts commit abc1234.", parsed);
 
@@ -46,6 +52,8 @@ describe(detectRevert, () => {
     });
 
     it("returns isRevert=false for a normal feat commit", () => {
+        expect.hasAssertions();
+
         const parsed = parseCommit("feat: ship retry", "");
         const result = detectRevert("feat: ship retry", "", parsed);
 
@@ -59,6 +67,8 @@ describe(annotateAndResolveReverts, () => {
     // caller can surface cross-cutting observability findings. Re-
     // assert the shape to lock the contract down.
     it("returns { commits, warnings } and the commits array carries the annotated records", () => {
+        expect.hasAssertions();
+
         const result = annotateAndResolveReverts([mk("a1", "feat: x")]);
 
         expect(Array.isArray(result.commits)).toBe(true);
@@ -70,6 +80,8 @@ describe(annotateAndResolveReverts, () => {
         // git log lists newest first. Order:
         //   c2 (Revert "feat: retry")   ← newest
         //   c1 (feat: retry)            ← older
+        expect.hasAssertions();
+
         const commits = [
             mk("c2", "Revert \"feat: retry\""),
             mk("c1", "feat: retry"),
@@ -85,6 +97,8 @@ describe(annotateAndResolveReverts, () => {
     });
 
     it("cancels via the `This reverts commit <sha>` body trailer", () => {
+        expect.hasAssertions();
+
         const commits = [
             mk("def4567", "revert: something different", "Bla bla\n\nThis reverts commit abc1234."),
             mk("abc1234", "feat(foo): land thing"),
@@ -102,6 +116,8 @@ describe(annotateAndResolveReverts, () => {
         //   c3 Revert "Revert "feat: retry""   ← newest (re-applies)
         //   c2 Revert "feat: retry"            ← cancels
         //   c1 feat: retry
+        expect.hasAssertions();
+
         const commits = [
             // git wraps the reverted subject in quotes WITHOUT escaping inner
             // quotes, so a revert-of-revert reads: Revert "Revert "feat: retry""
@@ -139,6 +155,8 @@ describe(annotateAndResolveReverts, () => {
     // (avoids the subject-string escaping pitfalls that bite when
     // double-revert subjects encode each other).
     it("toggles the original across a 4-deep revert chain (revert of revert of revert)", () => {
+        expect.hasAssertions();
+
         const commits = [
             mk("c4", "Revert \"feat: retry\"", "Layer 4\n\nThis reverts commit c3."),
             mk("c3", "Revert \"feat: retry\"", "Layer 3\n\nThis reverts commit c2."),
@@ -170,6 +188,8 @@ describe(annotateAndResolveReverts, () => {
         // 40-char hashes are what git emits in `git log %H`. The body
         // trailer carries an 11-char abbrev (mimicking a repo with
         // core.abbrev=11).
+        expect.hasAssertions();
+
         const fullSha = "abc1234567890123456789012345678901234567";
         const eleven = fullSha.slice(0, 11);
         const commits = [
@@ -190,6 +210,8 @@ describe(annotateAndResolveReverts, () => {
     // otherwise the case-sensitive `startsWith` linear fallback would
     // silently miss the target.
     it("matches when the `This reverts commit` trailer SHA is uppercase", () => {
+        expect.hasAssertions();
+
         const commits = [
             mk("def4567", "Revert \"feat: y\"", "This reverts commit ABC1234."),
             mk("abc1234567890123456789012345678901234567", "feat: y"),
@@ -211,6 +233,8 @@ describe(annotateAndResolveReverts, () => {
     // full SHA → should resolve to the later commit, not the earlier
     // one that claimed the short slot first.
     it("does not mis-resolve when two commits share a 7-char SHA prefix", () => {
+        expect.hasAssertions();
+
         const earlySha = "abc1234aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa";
         const lateSha = "abc1234bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb";
         // Newest first (git log order):
@@ -235,6 +259,8 @@ describe(annotateAndResolveReverts, () => {
     });
 
     it("treats a revert of an already-released commit as a no-op", () => {
+        expect.hasAssertions();
+
         const commits = [
             mk("c2", "Revert \"feat: shipped already\""),
         ];
@@ -253,6 +279,8 @@ describe(annotateAndResolveReverts, () => {
     });
 
     it("respects releasedShas: when revert target IS in the window but already shipped, keep the revert active", () => {
+        expect.hasAssertions();
+
         const commits = [
             mk("c2", "Revert \"feat: shipped already\"", "This reverts commit shipped1."),
             mk("shipped1", "feat: shipped already"),
@@ -274,6 +302,8 @@ describe(annotateAndResolveReverts, () => {
 
 describe("annotateAndResolveReverts: F19 no-type-ratio warning", () => {
     it("emits a warning when > 50% of active commits have no conventional-commits prefix", () => {
+        expect.hasAssertions();
+
         const commits = [
             mk("h1", "Just a thing"),
             mk("h2", "another untyped commit"),
@@ -290,6 +320,8 @@ describe("annotateAndResolveReverts: F19 no-type-ratio warning", () => {
     });
 
     it("does NOT emit the warning when the no-type ratio is at or below 50%", () => {
+        expect.hasAssertions();
+
         const commits = [
             mk("h1", "feat: typed one"),
             mk("h2", "fix: typed two"),
@@ -307,6 +339,8 @@ describe("annotateAndResolveReverts: F19 no-type-ratio warning", () => {
         // Pure revert pair: revert resolves cleanly so c1 becomes
         // cancelled. The remaining "active" set is empty → ratio is
         // 0/0 → no warning.
+        expect.hasAssertions();
+
         const commits = [
             mk("c2", "Revert \"feat: x\"", "This reverts commit c1."),
             mk("c1", "feat: x"),
@@ -318,6 +352,8 @@ describe("annotateAndResolveReverts: F19 no-type-ratio warning", () => {
     });
 
     it("uses a sensible default range label when none is passed", () => {
+        expect.hasAssertions();
+
         const commits = [mk("h1", "no type here either")];
         const { warnings } = annotateAndResolveReverts(commits);
 
@@ -331,6 +367,8 @@ describe("annotateAndResolveReverts: F19 no-type-ratio warning", () => {
     // emits by default: `Merge pull request`, `Merge branch`,
     // `Merge remote-tracking branch`, `Merge tag`.
     it("excludes merge commits from the no-type ratio", () => {
+        expect.hasAssertions();
+
         const commits = [
             mk("m1", "Merge pull request #123 from foo/bar"),
             mk("m2", "Merge branch 'main' into feature"),
@@ -365,6 +403,8 @@ describe("annotateAndResolveReverts: F17 revert-chain depth cap", () => {
         // older layer, and the OLDEST layer's trailer references
         // ITSELF — that closes the loop the resolver would otherwise
         // walk forever.
+        expect.hasAssertions();
+
         const layers = 70;
         const commits: CommitRecord[] = [];
 
@@ -393,12 +433,16 @@ describe("annotateAndResolveReverts: F17 revert-chain depth cap", () => {
 
 describe("parseCommit: gitmoji / shortcode prefix strip", () => {
     it("strips a leading Unicode emoji before parsing", () => {
+        expect.hasAssertions();
+
         const parsed = parseCommit("🚀 feat: add tab completion", "");
 
         expect(parsed.type).toBe("feat");
     });
 
     it("strips a leading :shortcode: prefix before parsing", () => {
+        expect.hasAssertions();
+
         const parsed = parseCommit(":rocket: feat(cli): add tab completion", "");
 
         expect(parsed.type).toBe("feat");
@@ -406,6 +450,8 @@ describe("parseCommit: gitmoji / shortcode prefix strip", () => {
     });
 
     it("parses a bare conventional commit unchanged when no emoji prefix is present", () => {
+        expect.hasAssertions();
+
         const parsed = parseCommit("feat(api): add retry logic", "");
 
         expect(parsed.type).toBe("feat");

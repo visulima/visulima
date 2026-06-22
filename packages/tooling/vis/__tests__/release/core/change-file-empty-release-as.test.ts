@@ -14,21 +14,27 @@ import { formatChangeFile, parseChangeFile } from "../../../src/release/core/cha
 
 describe("change-file: empty frontmatter", () => {
     it("parses a fully-empty frontmatter as an empty-bumps payload", () => {
+        expect.hasAssertions();
+
         const file = parseChangeFile("---\n{}\n---\nbody\n", "/repo/.vis/release/x.md");
 
-        expect(file.payload).toEqual({ bumps: {} });
+        expect(file.payload).toStrictEqual({ bumps: {} });
         expect(file.body).toBe("body");
     });
 
     it("parses a literal-null frontmatter as an empty-bumps payload", () => {
         // Authored as `---\n\n---` (only whitespace between delimiters).
         // YAML parses this as null; the reader must coerce to {}.
+        expect.hasAssertions();
+
         const file = parseChangeFile("---\n\n---\nbody\n", "/repo/.vis/release/x.md");
 
-        expect(file.payload).toEqual({ bumps: {} });
+        expect(file.payload).toStrictEqual({ bumps: {} });
     });
 
     it("round-trips via formatChangeFile → parseChangeFile with no bumps", () => {
+        expect.hasAssertions();
+
         const serialised = formatChangeFile({ bumps: {} }, "body");
 
         // Must contain explicit `{}` so the YAML parser produces an
@@ -37,12 +43,14 @@ describe("change-file: empty frontmatter", () => {
 
         const parsed = parseChangeFile(serialised, "/x.md");
 
-        expect(parsed.payload).toEqual({ bumps: {} });
+        expect(parsed.payload).toStrictEqual({ bumps: {} });
     });
 });
 
 describe("change-file: releaseAs override (nested frontmatter)", () => {
     it("parses a valid semver string in releaseAs", () => {
+        expect.hasAssertions();
+
         const file = parseChangeFile(
             "---\n\"@scope/pkg\":\n  bump: minor\n  releaseAs: 2.0.0\n---\nbody\n",
             "/x.md",
@@ -57,6 +65,8 @@ describe("change-file: releaseAs override (nested frontmatter)", () => {
     });
 
     it("accepts semver with prerelease + build metadata", () => {
+        expect.hasAssertions();
+
         const file = parseChangeFile(
             "---\n\"@scope/pkg\":\n  bump: patch\n  releaseAs: 2.0.0-rc.1\n---\nbody\n",
             "/x.md",
@@ -70,6 +80,7 @@ describe("change-file: releaseAs override (nested frontmatter)", () => {
     });
 
     it("rejects non-semver strings with BUMP_FILE_INVALID", () => {
+        expect.hasAssertions();
         expect(() =>
             parseChangeFile(
                 "---\n\"@scope/pkg\":\n  bump: minor\n  releaseAs: not-a-version\n---\nbody\n",
@@ -79,6 +90,7 @@ describe("change-file: releaseAs override (nested frontmatter)", () => {
     });
 
     it("rejects non-string releaseAs values", () => {
+        expect.hasAssertions();
         expect(() =>
             parseChangeFile(
                 "---\n\"@scope/pkg\":\n  bump: minor\n  releaseAs: 200\n---\nbody\n",
@@ -88,6 +100,8 @@ describe("change-file: releaseAs override (nested frontmatter)", () => {
     });
 
     it("round-trips via formatChangeFile → parseChangeFile with releaseAs", () => {
+        expect.hasAssertions();
+
         const serialised = formatChangeFile(
             { bump: "minor", package: "@scope/pkg", releaseAs: "2.0.0" },
             "body",

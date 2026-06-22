@@ -32,6 +32,8 @@ const mkCtx = (overrides: Partial<ChangelogContext> = {}): ChangelogContext => {
 
 describe("keep-a-changelog formatter", () => {
     it("renders the version+date header per Keep-a-Changelog spec", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
 
         const result = await fmt(mkCtx());
@@ -40,6 +42,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("strips version heading for github-release target", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
 
         const result = await fmt(mkCtx({ target: "github-release" }));
@@ -48,6 +52,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("buckets `feat:` lines into Added", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
         const result = await fmt(mkCtx({
             changeFiles: [{ body: "feat: shiny new thing", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
@@ -57,6 +63,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("buckets `fix:` lines into Fixed", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
         const result = await fmt(mkCtx({
             changeFiles: [{ body: "fix: a flaky bug", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "patch" } } }],
@@ -67,6 +75,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("respects explicit `[Section]` prefix overrides", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
         const result = await fmt(mkCtx({
             changeFiles: [{ body: "[Security] Patched a CVE\n[Deprecated] old API", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
@@ -79,6 +89,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("falls back to bump-type heuristic when no prefix found", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
         const result = await fmt(mkCtx({
             changeFiles: [{ body: "did stuff", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
@@ -90,6 +102,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("emits BREAKING CHANGES section for major bumps", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
         const result = await fmt(mkCtx({
             changeFiles: [{ body: "feat!: removed old api", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "major" } } }],
@@ -101,6 +115,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("emits BREAKING CHANGES when body contains BREAKING CHANGE", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
         const result = await fmt(mkCtx({
             changeFiles: [{ body: "feat: added thing\n\nBREAKING CHANGE: caller must update config", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "major" } } }],
@@ -111,6 +127,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("appends a comparison-link footer when repo is provided", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter({ repo: "owner/repo" });
         const result = await fmt(mkCtx());
 
@@ -118,6 +136,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("supports compareUrlPrefix override (e.g. self-hosted GitLab)", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter({ compareUrlPrefix: "https://gitlab.example/group/proj" });
         const result = await fmt(mkCtx());
 
@@ -125,6 +145,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("omits link footer when neither repo nor compareUrlPrefix provided", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
         const result = await fmt(mkCtx());
 
@@ -132,6 +154,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("emits cascade lines under Changed", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
         const result = await fmt(mkCtx({
             release: mkRelease({
@@ -145,6 +169,8 @@ describe("keep-a-changelog formatter", () => {
     });
 
     it("ignores empty sections", async () => {
+        expect.hasAssertions();
+
         const fmt = createKeepAChangelogFormatter();
         const result = await fmt(mkCtx({
             changeFiles: [{ body: "feat: only an addition", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],

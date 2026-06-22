@@ -19,6 +19,8 @@ const mockRunnerWithRemote = (url: string): MockRunner => {
 
 describe(detectRemoteProvider, () => {
     it("respects explicit github config", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         const result = await detectRemoteProvider("/r", runner, "github", {});
 
@@ -26,6 +28,8 @@ describe(detectRemoteProvider, () => {
     });
 
     it("respects explicit gitlab config", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         const result = await detectRemoteProvider("/r", runner, "gitlab", {});
 
@@ -33,6 +37,8 @@ describe(detectRemoteProvider, () => {
     });
 
     it("treats `auto` as falling through to detection", async () => {
+        expect.hasAssertions();
+
         const runner = mockRunnerWithRemote("https://github.com/owner/repo.git");
         const result = await detectRemoteProvider("/r", runner, "auto", {});
 
@@ -40,6 +46,8 @@ describe(detectRemoteProvider, () => {
     });
 
     it("detects github from GITHUB_ACTIONS env", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         const result = await detectRemoteProvider("/r", runner, undefined, { GITHUB_ACTIONS: "true" });
 
@@ -47,6 +55,8 @@ describe(detectRemoteProvider, () => {
     });
 
     it("detects gitlab from GITLAB_CI env", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         const result = await detectRemoteProvider("/r", runner, undefined, { GITLAB_CI: "true" });
 
@@ -54,6 +64,8 @@ describe(detectRemoteProvider, () => {
     });
 
     it("falls back to git remote URL when env signal is absent", async () => {
+        expect.hasAssertions();
+
         const runner = mockRunnerWithRemote("git@gitlab.com:owner/repo.git");
         const result = await detectRemoteProvider("/r", runner, undefined, {});
 
@@ -61,6 +73,8 @@ describe(detectRemoteProvider, () => {
     });
 
     it("falls back to github when nothing matches (incl. bitbucket — explicitly unsupported)", async () => {
+        expect.hasAssertions();
+
         const runner = mockRunnerWithRemote("git@bitbucket.org:owner/repo.git");
         const result = await detectRemoteProvider("/r", runner, undefined, {});
 
@@ -68,6 +82,8 @@ describe(detectRemoteProvider, () => {
     });
 
     it("falls back to github when remote URL is unrecognised", async () => {
+        expect.hasAssertions();
+
         const runner = mockRunnerWithRemote("git@example.com:owner/repo.git");
         const result = await detectRemoteProvider("/r", runner, undefined, {});
 
@@ -77,14 +93,18 @@ describe(detectRemoteProvider, () => {
 
 describe(createRemoteClient, () => {
     it("returns the github client by id", () => {
+        expect.hasAssertions();
         expect(createRemoteClient("github").id).toBe("github");
     });
 
     it("returns the gitlab client by id", () => {
+        expect.hasAssertions();
         expect(createRemoteClient("gitlab").id).toBe("gitlab");
     });
 
     it("gitlab adapter shells out to glab for sticky-comment upsert", async () => {
+        expect.hasAssertions();
+
         const gitlab = createRemoteClient("gitlab");
         const runner = new MockRunner();
 
@@ -98,6 +118,7 @@ describe(createRemoteClient, () => {
     });
 
     it("gitlab adapter detects MR id from CI_MERGE_REQUEST_IID", () => {
+        expect.hasAssertions();
         expect(createRemoteClient("gitlab").detectPullRequestNumber({ CI_MERGE_REQUEST_IID: "42" })).toBe(42);
     });
 });

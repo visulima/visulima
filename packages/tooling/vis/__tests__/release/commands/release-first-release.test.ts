@@ -102,6 +102,8 @@ describe("first-release flag — version", () => {
     });
 
     it("version --first-release succeeds on a fresh repo with no tags", async () => {
+        expect.hasAssertions();
+
         const ctx = await buildContext({ cwd, firstRelease: true });
 
         // The resolver should be forced to disk — no `git tag` fallback
@@ -129,6 +131,8 @@ describe("first-release flag — version", () => {
 
     it("publish --first-release succeeds (structural: no remote tag check leaks through)", async () => {
         // Apply first so there's something to publish.
+        expect.hasAssertions();
+
         const ctxV = await buildContext({ cwd, firstRelease: true });
 
         await applyContext(ctxV, { dryRun: false });
@@ -168,6 +172,8 @@ describe("first-release flag — fallback behaviour without the flag", () => {
     });
 
     it("wITHOUT --first-release on the same fresh fixture, the git-tag resolver falls back to manifest with a warning", async () => {
+        expect.hasAssertions();
+
         const ctx = await buildContext({ cwd, firstRelease: false });
 
         expect(ctx.firstRelease).toBe(false);
@@ -208,6 +214,8 @@ describe("first-release flag — idempotency", () => {
 
     it("running version --first-release twice on the same wave doesn't double-bump", async () => {
         // Run 1: change files present → 0.0.1 → 0.1.0.
+        expect.hasAssertions();
+
         const ctx1 = await buildContext({ cwd, firstRelease: true });
 
         expect(ctx1.plan.releases).toHaveLength(1);

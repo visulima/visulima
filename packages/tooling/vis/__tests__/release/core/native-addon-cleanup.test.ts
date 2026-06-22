@@ -92,6 +92,8 @@ describe("native-addon: temp-dir cleanup on failure (RFC §19.4)", () => {
     });
 
     it("removes every mkdtemp dir even when publish throws", async () => {
+        expect.hasAssertions();
+
         const pkg: WorkspacePackage = {
             dir: workspace,
             manifest: {
@@ -127,10 +129,10 @@ describe("native-addon: temp-dir cleanup on failure (RFC §19.4)", () => {
 
         const actions = new NativeAddonVersionActions();
 
-        await expect(actions.publish(ctx)).rejects.toThrow();
+        await expect(actions.publish(ctx)).rejects.toThrow(/Failed to publish platform package/);
 
         const leaked = listTempVisDirs().filter((d) => !baseline.has(d));
 
-        expect(leaked).toEqual([]);
+        expect(leaked).toStrictEqual([]);
     });
 });

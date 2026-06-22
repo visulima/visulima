@@ -18,6 +18,8 @@ describe(cleanPackageJsonForPublish, () => {
     };
 
     it("strips default fields when cfg is true", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest, true);
 
         expect(result.scripts).toBeUndefined();
@@ -28,6 +30,8 @@ describe(cleanPackageJsonForPublish, () => {
     });
 
     it("strips defaults when cfg is undefined", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest);
 
         expect(result.scripts).toBeUndefined();
@@ -35,25 +39,31 @@ describe(cleanPackageJsonForPublish, () => {
     });
 
     it("preserves runtime-relevant fields", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest);
 
         expect(result.name).toBe("@scope/pkg");
         expect(result.version).toBe("1.0.0");
         expect(result.description).toBe("A package");
-        expect(result.dependencies).toEqual({ lodash: "^4.0.0" });
-        expect(result.engines).toEqual({ node: ">=22" });
-        expect(result.publishConfig).toEqual({ access: "public" });
+        expect(result.dependencies).toStrictEqual({ lodash: "^4.0.0" });
+        expect(result.engines).toStrictEqual({ node: ">=22" });
+        expect(result.publishConfig).toStrictEqual({ access: "public" });
     });
 
     it("ships unmodified when cfg is false", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest, false);
 
-        expect(result.scripts).toEqual({ build: "tsc" });
-        expect(result.devDependencies).toEqual({ vitest: "^2.0.0" });
-        expect(result.nx).toEqual({ tags: ["lib"] });
+        expect(result.scripts).toStrictEqual({ build: "tsc" });
+        expect(result.devDependencies).toStrictEqual({ vitest: "^2.0.0" });
+        expect(result.nx).toStrictEqual({ tags: ["lib"] });
     });
 
     it("extends defaults via cfg.strip", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest, { strip: ["description"] });
 
         expect(result.description).toBeUndefined();
@@ -61,13 +71,17 @@ describe(cleanPackageJsonForPublish, () => {
     });
 
     it("preserves a default-stripped field when added to cfg.keep", () => {
+        expect.hasAssertions();
+
         const result = cleanPackageJsonForPublish(fullManifest, { keep: ["scripts"] });
 
-        expect(result.scripts).toEqual({ build: "tsc" });
+        expect(result.scripts).toStrictEqual({ build: "tsc" });
         expect(result.devDependencies).toBeUndefined();
     });
 
     it("does not mutate input", () => {
+        expect.hasAssertions();
+
         const original = JSON.stringify(fullManifest);
 
         cleanPackageJsonForPublish(fullManifest, true);

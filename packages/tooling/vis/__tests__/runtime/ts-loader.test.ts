@@ -1,3 +1,5 @@
+/* eslint-disable vitest/require-hook, vitest/require-top-level-describe -- single-subject loader suite: setup and `it` cases run at the top level without a wrapping describe. */
+
 /**
  * Tests for the runtime data-file imports and tsconfig `paths` resolution wired
  * into the `module.registerHooks` load/resolve hooks (see `src/runtime/ts-loader.ts`).

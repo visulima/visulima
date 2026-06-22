@@ -54,6 +54,8 @@ const repoMockRunner = (repo = "owner/repo"): MockRunner => {
 
 describe("github formatter", () => {
     it("renders header + sub date for changelog target", async () => {
+        expect.hasAssertions();
+
         const runner = repoMockRunner();
         const fmt = createGithubFormatter({ repo: "owner/repo", runner });
         const result = await fmt(mkCtx());
@@ -63,6 +65,8 @@ describe("github formatter", () => {
     });
 
     it("strips heading for github-release target", async () => {
+        expect.hasAssertions();
+
         const runner = repoMockRunner();
         const fmt = createGithubFormatter({ repo: "owner/repo", runner });
         const result = await fmt(mkCtx({ target: "github-release" }));
@@ -71,6 +75,8 @@ describe("github formatter", () => {
     });
 
     it("links #N references using the configured repo slug", async () => {
+        expect.hasAssertions();
+
         const runner = repoMockRunner();
         const fmt = createGithubFormatter({ repo: "owner/repo", runner });
 
@@ -87,6 +93,8 @@ describe("github formatter", () => {
     });
 
     it("appends pr / commit refs from inline meta", async () => {
+        expect.hasAssertions();
+
         const runner = repoMockRunner();
         const fmt = createGithubFormatter({ repo: "owner/repo", runner });
 
@@ -109,6 +117,8 @@ describe("github formatter", () => {
     });
 
     it("emits 'Thanks @user!' when an author is present", async () => {
+        expect.hasAssertions();
+
         const runner = repoMockRunner();
         const fmt = createGithubFormatter({ repo: "owner/repo", runner });
 
@@ -130,6 +140,8 @@ describe("github formatter", () => {
     });
 
     it("suppresses thanks for internalAuthors", async () => {
+        expect.hasAssertions();
+
         const runner = repoMockRunner();
         const fmt = createGithubFormatter({
             internalAuthors: ["maintainer"],
@@ -155,6 +167,8 @@ describe("github formatter", () => {
     });
 
     it("disables thanks when thankContributors is false", async () => {
+        expect.hasAssertions();
+
         const runner = repoMockRunner();
         const fmt = createGithubFormatter({
             repo: "owner/repo",
@@ -181,6 +195,8 @@ describe("github formatter", () => {
 
     it("falls back to plain text when no repo can be resolved", async () => {
         // Runner has no git remote handler — detection returns undefined.
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         const fmt = createGithubFormatter({ runner });
 

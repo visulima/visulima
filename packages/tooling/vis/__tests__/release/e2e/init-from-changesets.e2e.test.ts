@@ -33,6 +33,8 @@ describe.skipIf(!visBuilt())("e2e: vis release init --from-changesets", () => {
     });
 
     it("auto-detects changesets and migrates the change file", () => {
+        expect.hasAssertions();
+
         const { exitCode, stdout } = result.runVisRelease(["init", "--from-changesets"]);
 
         expect(exitCode).toBe(0);
@@ -41,6 +43,8 @@ describe.skipIf(!visBuilt())("e2e: vis release init --from-changesets", () => {
     });
 
     it("aborts when changesets pre-release mode is active", async () => {
+        expect.hasAssertions();
+
         const fs = await import("node:fs/promises");
 
         await fs.writeFile(

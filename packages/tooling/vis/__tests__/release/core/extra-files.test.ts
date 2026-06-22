@@ -16,6 +16,8 @@ import { VisReleaseError } from "../../../src/release/errors";
 
 describe("extra-files: compileRule", () => {
     it("compiles a valid pattern with default `g` flag", () => {
+        expect.hasAssertions();
+
         const re = compileRule({ path: "x", search: String.raw`v\d+\.\d+\.\d+` }, "test");
 
         expect(re.flags).toBe("g");
@@ -23,6 +25,8 @@ describe("extra-files: compileRule", () => {
     });
 
     it("honours explicit flags", () => {
+        expect.hasAssertions();
+
         const re = compileRule({ flags: "gmi", path: "x", search: "version" }, "test");
 
         // RegExp.prototype.flags always reports flags in canonical order
@@ -31,6 +35,7 @@ describe("extra-files: compileRule", () => {
     });
 
     it("throws CONFIG_INVALID on syntactically invalid regex", () => {
+        expect.hasAssertions();
         expect(() => compileRule({ path: "x", search: "(unbalanced" }, "test")).toThrow(VisReleaseError);
     });
 });
@@ -48,6 +53,8 @@ describe("extra-files: applyExtraFilesForRelease", () => {
     });
 
     it("substitutes the bare match when no `replace` template is given", async () => {
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "README.md"), "Stable release: v1.0.0 (was v0.9.0).\n");
 
         const result = await applyExtraFilesForRelease(
@@ -64,6 +71,8 @@ describe("extra-files: applyExtraFilesForRelease", () => {
     });
 
     it("expands `{version}` token in the replace template", async () => {
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "src.ts"), "export const VERSION = \"0.9.0\";\n");
 
         const result = await applyExtraFilesForRelease(
@@ -79,6 +88,8 @@ describe("extra-files: applyExtraFilesForRelease", () => {
     });
 
     it("supports regex backreferences in the replace template", async () => {
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "config.toml"), "name = \"pkg\"\nversion = \"0.9.0\"\n");
 
         const result = await applyExtraFilesForRelease(
@@ -99,6 +110,8 @@ describe("extra-files: applyExtraFilesForRelease", () => {
     });
 
     it("resolves per-package rules relative to the package directory", async () => {
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "packages", "a", "VERSION.txt"), "0.9.0\n");
 
         const result = await applyExtraFilesForRelease(
@@ -115,6 +128,8 @@ describe("extra-files: applyExtraFilesForRelease", () => {
     });
 
     it("warns (does not throw) on missing files", async () => {
+        expect.hasAssertions();
+
         const result = await applyExtraFilesForRelease(
             cwd,
             join(cwd, "packages", "a"),
@@ -129,6 +144,8 @@ describe("extra-files: applyExtraFilesForRelease", () => {
     });
 
     it("warns on stale rules (regex matched nothing)", async () => {
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "stable.md"), "no version here\n");
 
         const result = await applyExtraFilesForRelease(
@@ -149,6 +166,8 @@ describe("extra-files: applyExtraFilesForRelease", () => {
         // substitutes the matched version with the version literal, so when
         // the file is already at that literal the content is identical and no
         // write is emitted.
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "README.md"), "1.0.0\n");
 
         const result = await applyExtraFilesForRelease(
@@ -164,6 +183,8 @@ describe("extra-files: applyExtraFilesForRelease", () => {
     });
 
     it("composes multiple rules against the same file in one read", async () => {
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "README.md"), "[![v0.9.0](badge.svg)](url)\nversion: 0.9.0\n");
 
         const result = await applyExtraFilesForRelease(
@@ -187,6 +208,8 @@ describe("extra-files: applyExtraFilesForRelease", () => {
     });
 
     it("expands `{packageName}` as an alias for `{name}` (release-please parity)", async () => {
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "id.txt"), "old-name\n");
 
         const result = await applyExtraFilesForRelease(
@@ -202,6 +225,8 @@ describe("extra-files: applyExtraFilesForRelease", () => {
     });
 
     it("handles absolute paths as-is", async () => {
+        expect.hasAssertions();
+
         const absolute = join(cwd, "ABS.md");
 
         await writeFile(absolute, "v0.0.1\n");
@@ -238,6 +263,8 @@ describe("extra-files: annotation-comment mode", () => {
     });
 
     it("replaces the semver on the same line when the marker is inline", async () => {
+        expect.hasAssertions();
+
         await writeFile(
             join(cwd, "src.ts"),
             "export const VERSION = \"0.1.0\"; // x-release-please-version\nexport const OTHER = \"1.0.0\";\n",
@@ -259,6 +286,8 @@ describe("extra-files: annotation-comment mode", () => {
     });
 
     it("replaces the semver on the next line when the marker sits on its own line (Dockerfile style)", async () => {
+        expect.hasAssertions();
+
         await writeFile(
             join(cwd, "Dockerfile"),
             "FROM node:18-alpine\n# x-release-please-version\nENV APP_VERSION=\"0.1.0\"\n",
@@ -281,6 +310,8 @@ describe("extra-files: annotation-comment mode", () => {
     });
 
     it("honours a custom marker via `marker:` option", async () => {
+        expect.hasAssertions();
+
         await writeFile(
             join(cwd, "CUSTOM.txt"),
             "foo = \"0.1.0\" // x-release-vis-version\n",
@@ -299,6 +330,8 @@ describe("extra-files: annotation-comment mode", () => {
     });
 
     it("treats legacy rules without `type` as regex (backwards compat)", async () => {
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "README.md"), "v0.9.0\n");
 
         const result = await applyExtraFilesForRelease(
@@ -317,6 +350,8 @@ describe("extra-files: annotation-comment mode", () => {
     });
 
     it("warns (does not throw) when the marker is not found in the file", async () => {
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "plain.txt"), "no markers here\nversion 1.2.3\n");
 
         const result = await applyExtraFilesForRelease(
@@ -336,6 +371,8 @@ describe("extra-files: annotation-comment mode", () => {
     });
 
     it("warns when the marker is present but no semver is on the marked line", async () => {
+        expect.hasAssertions();
+
         await writeFile(
             join(cwd, "weird.ts"),
             "const NOT_A_VERSION = \"hello\"; // x-release-please-version\n",
@@ -356,6 +393,8 @@ describe("extra-files: annotation-comment mode", () => {
     });
 
     it("rewrites multiple occurrences of the marker in one pass", async () => {
+        expect.hasAssertions();
+
         await writeFile(
             join(cwd, "multi.ts"),
             "export const A = \"0.1.0\"; // x-release-please-version\n"
@@ -376,6 +415,8 @@ describe("extra-files: annotation-comment mode", () => {
     });
 
     it("supports an explicit `type: \"regex\"` discriminator (mirror of the legacy default)", async () => {
+        expect.hasAssertions();
+
         await writeFile(join(cwd, "explicit.md"), "v0.0.1\n");
 
         const result = await applyExtraFilesForRelease(
@@ -415,6 +456,8 @@ describe("extra-files: annotation-comment mode — anchor (M-6)", () => {
         // A Dockerfile with TWO semver-shaped substrings on the marked
         // line: the base image tag (1.21.0) and APP_VERSION (0.1.0).
         // Without an anchor, the first one would be incorrectly replaced.
+        expect.hasAssertions();
+
         await writeFile(
             join(cwd, "Dockerfile"),
 
@@ -447,6 +490,8 @@ describe("extra-files: annotation-comment mode — anchor (M-6)", () => {
         // mitigate. This test pins that legacy behaviour so a future
         // accidental change to the default semver-search bound is
         // caught.
+        expect.hasAssertions();
+
         await writeFile(
             join(cwd, "Dockerfile"),
 
@@ -470,6 +515,8 @@ describe("extra-files: annotation-comment mode — anchor (M-6)", () => {
     it("with `anchor` set on a preceding-line marker, the anchor applies to the FOLLOWING line", async () => {
         // Dockerfile-style: own-line marker followed by a line with two
         // semvers. The anchor scopes the replacement on the next line.
+        expect.hasAssertions();
+
         await writeFile(
             join(cwd, "Dockerfile"),
 
@@ -500,6 +547,8 @@ describe("extra-files: annotation-comment mode — anchor (M-6)", () => {
         // sits in a comment and the anchor scopes the rewrite to a
         // specific `"version":` substring — the kind of file where
         // anchorless annotation rules are the documented footgun.
+        expect.hasAssertions();
+
         await writeFile(
             join(cwd, "manifest.json"),
 

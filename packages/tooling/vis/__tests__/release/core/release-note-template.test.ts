@@ -11,6 +11,8 @@ import { collectContributors, expandReleaseNoteTemplate } from "../../../src/rel
 
 describe(expandReleaseNoteTemplate, () => {
     it("interpolates every supported token in a single pass", () => {
+        expect.hasAssertions();
+
         const template = "Release {name} v{version} on {date} ({repo}) — was {previousVersion}";
 
         const result = expandReleaseNoteTemplate(template, {
@@ -28,6 +30,8 @@ describe(expandReleaseNoteTemplate, () => {
         // Only `name` and `version` supplied — `previousVersion`, `date`,
         // and `repo` should render empty (NOT leave their `{token}` text
         // visible in the output).
+        expect.hasAssertions();
+
         const template = "Release {name} v{version} prev={previousVersion} date={date} repo={repo}";
 
         const result = expandReleaseNoteTemplate(template, {
@@ -39,6 +43,8 @@ describe(expandReleaseNoteTemplate, () => {
     });
 
     it("returns a template with no tokens unchanged", () => {
+        expect.hasAssertions();
+
         const template = "Just a plain header — no interpolation tokens here.";
 
         const result = expandReleaseNoteTemplate(template, {
@@ -53,6 +59,7 @@ describe(expandReleaseNoteTemplate, () => {
     });
 
     it("returns the empty string for an empty template", () => {
+        expect.hasAssertions();
         expect(
             expandReleaseNoteTemplate("", {
                 date: "2026-01-01",
@@ -69,6 +76,8 @@ describe(expandReleaseNoteTemplate, () => {
     // be interpolated by the partial match `{version}`. Single-pass
     // regex with full-name alternation guarantees that.
     it("f20: leaves malformed `{previousVer` (no closing brace) untouched", () => {
+        expect.hasAssertions();
+
         const template = "Header {previousVer with {version} inline";
 
         const result = expandReleaseNoteTemplate(template, {
@@ -82,6 +91,8 @@ describe(expandReleaseNoteTemplate, () => {
     });
 
     it("f20: leaves unknown tokens (e.g. `{author}`) untouched", () => {
+        expect.hasAssertions();
+
         const template = "Released by {author} as {name} v{version}";
 
         const result = expandReleaseNoteTemplate(template, {
@@ -97,6 +108,8 @@ describe(expandReleaseNoteTemplate, () => {
         // mis-handle if ordering changed: a name value containing
         // literal `{version}` text. Single-pass replace ignores the
         // already-substituted value.
+        expect.hasAssertions();
+
         const template = "{name} v{version}";
 
         const result = expandReleaseNoteTemplate(template, {
@@ -108,6 +121,8 @@ describe(expandReleaseNoteTemplate, () => {
     });
 
     it("substitutes the same token multiple times within one template", () => {
+        expect.hasAssertions();
+
         const template = "{name}: {name}@{version} — see https://npm.im/{name}";
 
         const result = expandReleaseNoteTemplate(template, {
@@ -120,6 +135,8 @@ describe(expandReleaseNoteTemplate, () => {
 
     // release-please #292 parity — the new `{contributors}` token.
     it("substitutes the {contributors} token verbatim", () => {
+        expect.hasAssertions();
+
         const template = "## Thanks\n\n{contributors}\n";
 
         const result = expandReleaseNoteTemplate(template, {
@@ -130,6 +147,8 @@ describe(expandReleaseNoteTemplate, () => {
     });
 
     it("renders {contributors} as empty when not supplied", () => {
+        expect.hasAssertions();
+
         const template = "Header\n{contributors}Footer";
 
         const result = expandReleaseNoteTemplate(template, {
@@ -145,11 +164,14 @@ describe(expandReleaseNoteTemplate, () => {
 
 describe(collectContributors, () => {
     it("returns the empty string when no change files declare an author", () => {
+        expect.hasAssertions();
         expect(collectContributors([])).toBe("");
         expect(collectContributors([{}, { meta: {} }, { meta: { author: "" } }])).toBe("");
     });
 
     it("renders a bullet list with one author per line, in input order", () => {
+        expect.hasAssertions();
+
         const result = collectContributors([
             { meta: { author: "@alice" } },
             { meta: { author: "@bob" } },
@@ -159,6 +181,8 @@ describe(collectContributors, () => {
     });
 
     it("de-duplicates authors case-insensitively across multiple change files", () => {
+        expect.hasAssertions();
+
         const result = collectContributors([
             { meta: { author: "@alice" } },
             { meta: { author: "@Alice" } }, // duplicate (case-insensitive)
@@ -170,6 +194,8 @@ describe(collectContributors, () => {
     });
 
     it("trims surrounding whitespace and ignores blank author fields", () => {
+        expect.hasAssertions();
+
         const result = collectContributors([
             { meta: { author: "  @alice  " } },
             { meta: { author: "   " } }, // blank → skip
@@ -180,6 +206,8 @@ describe(collectContributors, () => {
     });
 
     it("tolerates missing `meta` and missing `author` keys", () => {
+        expect.hasAssertions();
+
         const result = collectContributors([
             { meta: { author: "@alice" } },
             {},
@@ -192,6 +220,8 @@ describe(collectContributors, () => {
 
     // Audit V9: comma-separated handles on a single `author:` line.
     it("splits a comma-separated `author:` line into one bullet per handle", () => {
+        expect.hasAssertions();
+
         const result = collectContributors([
             { meta: { author: "@alice, @bob,@carol" } },
         ]);
@@ -202,6 +232,8 @@ describe(collectContributors, () => {
     // Audit V2: a bare `@` (handle missing) must not render as a stray
     // `- @` bullet.
     it("rejects a bare `@` with no handle attached", () => {
+        expect.hasAssertions();
+
         const result = collectContributors([
             { meta: { author: "@" } },
             { meta: { author: "@   " } },
@@ -215,6 +247,8 @@ describe(collectContributors, () => {
     // escape so a malicious or accidental frontmatter value can't
     // inject HTML / break out of the bullet syntax.
     it("escapes markdown / HTML in author handles (audit V5)", () => {
+        expect.hasAssertions();
+
         const result = collectContributors([
             { meta: { author: "@alice<img src=x>" } },
             { meta: { author: "@bob & friends" } },
@@ -226,6 +260,8 @@ describe(collectContributors, () => {
 
     // Audit V2 + dedup across `@`-prefixed and bare forms.
     it("treats `@alice` and `alice` as the same handle for dedup", () => {
+        expect.hasAssertions();
+
         const result = collectContributors([
             { meta: { author: "@alice" } },
             { meta: { author: "alice" } }, // duplicate (bare form)
@@ -239,6 +275,8 @@ describe(collectContributors, () => {
     // option so {contributors} and CHANGELOG.md agree on which bots
     // to hide.
     it("suppresses handles listed in `internalAuthors` (case-insensitive, with or without `@`)", () => {
+        expect.hasAssertions();
+
         const result = collectContributors(
             [
                 { meta: { author: "@alice" } },

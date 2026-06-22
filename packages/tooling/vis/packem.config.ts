@@ -49,10 +49,16 @@ export default defineConfig({
         // The release changelog loader uses a runtime-resolved `import(url)` to
         // load a user-supplied formatter module. The default
         // @rollup/plugin-dynamic-import-vars rejects that pattern as
-        // statically un-analyzable, so we downgrade its errors to warnings —
-        // the variable import survives untransformed and is handled by Node
-        // at runtime.
+        // statically un-analyzable. `warnOnError` downgrades the throw to a
+        // warning, but packem's `failOnWarn` then turns that warning fatal —
+        // so we also `exclude` every module whose `import(variable)` is a
+        // deliberate runtime-resolved import (a user-supplied changelog
+        // formatter, the runtime TS/ESM module loaders, and the project-local
+        // prettier resolution). The plugin skips them entirely, the import
+        // stays a native dynamic import handled by Node at runtime, and no
+        // warning is emitted to trip `failOnWarn`.
         dynamicVars: {
+            exclude: ["**/release/core/changelog/dynamic-import.ts", "**/release/core/orchestrator.ts", "**/runtime/polyfills.ts", "**/runtime/ts-loader.ts"],
             warnOnError: true,
         },
         license: {

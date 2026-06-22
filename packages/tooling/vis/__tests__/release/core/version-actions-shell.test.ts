@@ -94,6 +94,8 @@ const ctx = (overrides: {
 
 describe("shellPublishActions: trust-gate refusal", () => {
     it("throws CONFIG_INVALID when allowCustomCommands is missing", async () => {
+        expect.hasAssertions();
+
         const actions = new ShellPublishActions();
 
         await expect(actions.publish(ctx({
@@ -102,6 +104,8 @@ describe("shellPublishActions: trust-gate refusal", () => {
     });
 
     it("throws when package is not in the allow-list", async () => {
+        expect.hasAssertions();
+
         const actions = new ShellPublishActions();
 
         await expect(actions.publish(ctx({
@@ -111,6 +115,8 @@ describe("shellPublishActions: trust-gate refusal", () => {
     });
 
     it("throws when allowed but no publishCommand", async () => {
+        expect.hasAssertions();
+
         const actions = new ShellPublishActions();
 
         await expect(actions.publish(ctx({
@@ -121,6 +127,8 @@ describe("shellPublishActions: trust-gate refusal", () => {
 
 describe("shellPublishActions: dryRun", () => {
     it("returns published: true without invoking anything", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([]);
         const actions = new ShellPublishActions();
 
@@ -140,6 +148,8 @@ describe("shellPublishActions: dryRun", () => {
 describe("shellPublishActions: idempotency via checkPublished", () => {
     it("returns alreadyPublished: true when checkPublished reports the new version", async () => {
         // First runner call: checkPublished → stdout matches new version.
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([
             { exitCode: 0, stdout: "1.0.1\n" },
         ]);
@@ -160,6 +170,8 @@ describe("shellPublishActions: idempotency via checkPublished", () => {
     });
 
     it("proceeds with publishCommand when checkPublished reports an older version", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([
             { exitCode: 0, stdout: "1.0.0\n" }, // check
             { exitCode: 0, stdout: "" }, // publishCommand
@@ -179,6 +191,8 @@ describe("shellPublishActions: idempotency via checkPublished", () => {
     });
 
     it("ignores checkPublished failure (non-zero exit) and proceeds with publish", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([
             { exitCode: 1, stderr: "registry unreachable" }, // check fails
             { exitCode: 0, stdout: "" }, // publishCommand
@@ -199,6 +213,8 @@ describe("shellPublishActions: idempotency via checkPublished", () => {
 
 describe("shellPublishActions: interpolation", () => {
     it("substitutes {{name}}/{{version}}/{{tag}}/{{registry}} in the publishCommand", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ exitCode: 0, stdout: "" }]);
         const actions = new ShellPublishActions();
 
@@ -220,6 +236,8 @@ describe("shellPublishActions: interpolation", () => {
     });
 
     it("shell-quotes the substituted values (no injection)", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ exitCode: 0, stdout: "" }]);
         const actions = new ShellPublishActions();
 
@@ -244,6 +262,8 @@ describe("shellPublishActions: interpolation", () => {
 
 describe("shellPublishActions: buildCommand + sequential publishCommand", () => {
     it("runs buildCommand before publishCommand and stops at first non-zero exit", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([
             { exitCode: 0, stdout: "" }, // buildCommand
             { exitCode: 0, stdout: "" }, // publishCommand[0]
@@ -263,6 +283,8 @@ describe("shellPublishActions: buildCommand + sequential publishCommand", () => 
     });
 
     it("does NOT run publishCommand if buildCommand fails", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([
             { exitCode: 1, stderr: "compile error" }, // buildCommand fails
         ]);

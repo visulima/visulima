@@ -4,6 +4,8 @@ import { VisReleaseError, visReleaseError } from "../../src/release/errors";
 
 describe(VisReleaseError, () => {
     it("preserves the code on the constructed instance", () => {
+        expect.hasAssertions();
+
         const error = new VisReleaseError({ code: "CONFIG_INVALID", message: "bad" });
 
         expect(error.code).toBe("CONFIG_INVALID");
@@ -12,6 +14,8 @@ describe(VisReleaseError, () => {
     });
 
     it("is an instance of Error", () => {
+        expect.hasAssertions();
+
         const error = new VisReleaseError({ code: "CONFIG_INVALID", message: "x" });
 
         expect(error).toBeInstanceOf(Error);
@@ -19,6 +23,8 @@ describe(VisReleaseError, () => {
     });
 
     it("attaches hint/docsUrl/packageName/file/line when provided", () => {
+        expect.hasAssertions();
+
         const error = new VisReleaseError({
             code: "BUMP_FILE_INVALID",
             docsUrl: "https://example.com",
@@ -37,6 +43,8 @@ describe(VisReleaseError, () => {
     });
 
     it("leaves optional fields undefined when not passed", () => {
+        expect.hasAssertions();
+
         const error = new VisReleaseError({ code: "PUBLISH_FAILED", message: "x" });
 
         expect(error.hint).toBeUndefined();
@@ -47,6 +55,8 @@ describe(VisReleaseError, () => {
     });
 
     it("preserves `cause` for stack-trace continuity", () => {
+        expect.hasAssertions();
+
         const inner = new Error("inner");
         const error = new VisReleaseError({ cause: inner, code: "PUBLISH_FAILED", message: "outer" });
 
@@ -54,6 +64,8 @@ describe(VisReleaseError, () => {
     });
 
     it("is catchable as a plain Error", () => {
+        expect.hasAssertions();
+
         const fn = (): never => {
             throw new VisReleaseError({ code: "TAG_COLLISION", message: "boom" });
         };
@@ -73,6 +85,8 @@ describe(VisReleaseError, () => {
 
 describe("visReleaseError factory", () => {
     it("produces a VisReleaseError with identical shape to `new`", () => {
+        expect.hasAssertions();
+
         const a = visReleaseError({ code: "CONFIG_INVALID", hint: "fix it", message: "x" });
         const b = new VisReleaseError({ code: "CONFIG_INVALID", hint: "fix it", message: "x" });
 

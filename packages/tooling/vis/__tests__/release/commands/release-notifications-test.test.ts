@@ -85,7 +85,7 @@ const callHandler = async (cwd: string, options: Record<string, unknown>): Promi
     // satisfies that surface for the methods it uses.
     const fs = { access, mkdir, readdir, readFile, rm, stat, writeFile } as never;
 
-    await notificationsHandler({ fs, logger, options: { action: "test", ...options }, workspaceRoot: cwd } as never);
+    await notificationsHandler({ fs, logger, options: { action: "test", ...options }, workspaceRoot: cwd });
 
     const exitCode = typeof process.exitCode === "number" ? process.exitCode : 0;
 
@@ -120,6 +120,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("happy path — all channels succeed and exit code is 0", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 discord: { webhook: "https://discord.com/api/webhooks/123/abc" },
@@ -133,12 +135,14 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
         // Three POSTs — one per channel kind.
         expect(fetchSpy).toHaveBeenCalledTimes(3);
         expect(result.exitCode).toBe(0);
-        expect(result.errors).toEqual([]);
+        expect(result.errors).toStrictEqual([]);
         // Per-channel "OK" lines.
         expect(result.infos.filter((m) => m.includes("OK"))).toHaveLength(3);
     });
 
     it("one channel fails → exit code is non-zero", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 slack: { webhook: "https://hooks.slack.com/services/T/B/123" },
@@ -160,6 +164,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("--channel=slack filters to only the slack channel", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 discord: { webhook: "https://discord.com/api/webhooks/123/abc" },
@@ -180,6 +186,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("--channel=slack:eng filters to the id'd slack channel only", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 slack: [
@@ -198,6 +206,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("--custom-context reads JSON from disk and forwards it to channels", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 webhook: { url: "https://example.com/hook" },
@@ -234,6 +244,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("no notifications configured → graceful exit with hint, exit code 0", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({});
 
         const result = await callHandler(cwd, {});
@@ -244,6 +256,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("--channel filter matching nothing → exit non-zero with hint", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 slack: { webhook: "https://hooks.slack.com/services/T/B/123" },
@@ -258,6 +272,8 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
     });
 
     it("--json emits machine-readable output", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             notifications: {
                 webhook: { url: "https://example.com/hook" },

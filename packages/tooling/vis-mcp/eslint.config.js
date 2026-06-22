@@ -62,6 +62,9 @@ export default createConfig(
             "sonarjs/no-alphabetical-sort": "off",
             "unicorn/no-array-sort": "off",
             "unicorn/prevent-abbreviations": "off",
+            // try/catch + `expect` on the caught error is the idiomatic assertion
+            // style here; a message arg to toThrow() would be redundant.
+            "vitest/require-to-throw-message": "off",
             "vitest/require-top-level-describe": "off",
         },
     },

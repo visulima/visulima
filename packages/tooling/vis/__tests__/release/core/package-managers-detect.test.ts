@@ -29,6 +29,8 @@ describe("detectPackageManager — Corepack packageManager field", () => {
     });
 
     it("detects pnpm from packageManager field", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x", packageManager: "pnpm@10.0.0" });
         const result = await detectPackageManager(cwd, new MockRunner());
 
@@ -36,6 +38,8 @@ describe("detectPackageManager — Corepack packageManager field", () => {
     });
 
     it("detects yarn from packageManager field", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x", packageManager: "yarn@4.5.0" });
         const result = await detectPackageManager(cwd, new MockRunner());
 
@@ -43,6 +47,8 @@ describe("detectPackageManager — Corepack packageManager field", () => {
     });
 
     it("detects bun from packageManager field", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x", packageManager: "bun@1.1.36" });
         const result = await detectPackageManager(cwd, new MockRunner());
 
@@ -50,6 +56,8 @@ describe("detectPackageManager — Corepack packageManager field", () => {
     });
 
     it("detects npm from packageManager field", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x", packageManager: "npm@11.0.0" });
         const result = await detectPackageManager(cwd, new MockRunner());
 
@@ -57,6 +65,8 @@ describe("detectPackageManager — Corepack packageManager field", () => {
     });
 
     it("handles packageManager value without `@` suffix", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x", packageManager: "pnpm" });
         const result = await detectPackageManager(cwd, new MockRunner());
 
@@ -64,6 +74,8 @@ describe("detectPackageManager — Corepack packageManager field", () => {
     });
 
     it("corepack hint wins over lockfile presence", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x", packageManager: "yarn@4.5.0" });
         writeLockfile(cwd, "pnpm-lock.yaml");
 
@@ -73,6 +85,8 @@ describe("detectPackageManager — Corepack packageManager field", () => {
     });
 
     it("falls through to lockfile when packageManager value is unrecognised", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x", packageManager: "deno@1.0.0" });
         writeLockfile(cwd, "pnpm-lock.yaml");
 
@@ -96,6 +110,8 @@ describe("detectPackageManager — lockfile resolution", () => {
     });
 
     it("detects bun via bun.lock", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x" });
         writeLockfile(cwd, "bun.lock");
 
@@ -103,6 +119,8 @@ describe("detectPackageManager — lockfile resolution", () => {
     });
 
     it("detects bun via bun.lockb", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x" });
         writeLockfile(cwd, "bun.lockb");
 
@@ -110,6 +128,8 @@ describe("detectPackageManager — lockfile resolution", () => {
     });
 
     it("detects pnpm via pnpm-lock.yaml", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x" });
         writeLockfile(cwd, "pnpm-lock.yaml");
 
@@ -117,6 +137,8 @@ describe("detectPackageManager — lockfile resolution", () => {
     });
 
     it("detects yarn via yarn.lock", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x" });
         writeLockfile(cwd, "yarn.lock");
 
@@ -124,16 +146,21 @@ describe("detectPackageManager — lockfile resolution", () => {
     });
 
     it("falls back to npm when no lockfile is present", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x" });
 
         await expect(detectPackageManager(cwd, new MockRunner())).resolves.toBe("npm");
     });
 
     it("falls back to npm when package.json is missing", async () => {
+        expect.hasAssertions();
         await expect(detectPackageManager(cwd, new MockRunner())).resolves.toBe("npm");
     });
 
     it("bun lockfile wins over pnpm + yarn lockfiles", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x" });
         writeLockfile(cwd, "bun.lock");
         writeLockfile(cwd, "pnpm-lock.yaml");
@@ -143,6 +170,8 @@ describe("detectPackageManager — lockfile resolution", () => {
     });
 
     it("pnpm lockfile wins over yarn lockfile", async () => {
+        expect.hasAssertions();
+
         writePkg(cwd, { name: "x" });
         writeLockfile(cwd, "pnpm-lock.yaml");
         writeLockfile(cwd, "yarn.lock");
@@ -153,24 +182,32 @@ describe("detectPackageManager — lockfile resolution", () => {
 
 describe(createAdapter, () => {
     it("returns NpmAdapter for npm", () => {
+        expect.hasAssertions();
+
         const adapter = createAdapter("npm", new MockRunner());
 
         expect(adapter.id).toBe("npm");
     });
 
     it("returns PnpmAdapter for pnpm", () => {
+        expect.hasAssertions();
+
         const adapter = createAdapter("pnpm", new MockRunner());
 
         expect(adapter.id).toBe("pnpm");
     });
 
     it("returns YarnAdapter for yarn", () => {
+        expect.hasAssertions();
+
         const adapter = createAdapter("yarn", new MockRunner());
 
         expect(adapter.id).toBe("yarn");
     });
 
     it("returns BunAdapter for bun", () => {
+        expect.hasAssertions();
+
         const adapter = createAdapter("bun", new MockRunner());
 
         expect(adapter.id).toBe("bun");

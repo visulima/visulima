@@ -11,14 +11,17 @@ import { bumpVersion } from "../../../src/release/core/semver";
 
 describe("bumpVersion: bumpMinorPreMajor", () => {
     it("demotes a major bump to minor when current.major === 0", () => {
+        expect.hasAssertions();
         expect(bumpVersion({ bump: "major", bumpMinorPreMajor: true, current: "0.5.2" })).toBe("0.6.0");
     });
 
     it("leaves minor bumps alone unless `bumpPatchForMinorPreMajor` is also set", () => {
+        expect.hasAssertions();
         expect(bumpVersion({ bump: "minor", bumpMinorPreMajor: true, current: "0.5.2" })).toBe("0.6.0");
     });
 
     it("demotes minor bumps to patch when both flags are set", () => {
+        expect.hasAssertions();
         expect(
             bumpVersion({
                 bump: "minor",
@@ -30,6 +33,7 @@ describe("bumpVersion: bumpMinorPreMajor", () => {
     });
 
     it("leaves patch bumps alone", () => {
+        expect.hasAssertions();
         expect(
             bumpVersion({
                 bump: "patch",
@@ -41,11 +45,13 @@ describe("bumpVersion: bumpMinorPreMajor", () => {
     });
 
     it("is a NO-OP once current.major >= 1 (pre-major demotion only applies to 0.x)", () => {
+        expect.hasAssertions();
         expect(bumpVersion({ bump: "major", bumpMinorPreMajor: true, current: "1.0.0" })).toBe("2.0.0");
         expect(bumpVersion({ bump: "major", bumpMinorPreMajor: true, current: "12.5.7" })).toBe("13.0.0");
     });
 
     it("composes with prerelease channels (major bump on 0.x alpha → minor + .0)", () => {
+        expect.hasAssertions();
         expect(
             bumpVersion({
                 bump: "major",

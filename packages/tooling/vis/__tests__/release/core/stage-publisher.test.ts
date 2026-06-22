@@ -34,6 +34,8 @@ const buildRunner = (
 
 describe(waitForStageDecision, () => {
     it("returns 'approved' when the stage view 404s and `npm view` reports the version live", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([
             // First poll: still staged.
             { stdout: JSON.stringify({ id: "stage-xyz", package: "x", version: "1.0.0" }) },
@@ -61,6 +63,8 @@ describe(waitForStageDecision, () => {
     });
 
     it("returns 'rejected' when the stage record is gone and the version isn't on the registry", async () => {
+        expect.hasAssertions();
+
         const { runner } = buildRunner([
             // First poll: empty stdout → decision made.
             { exitCode: 0, stdout: "" },
@@ -83,6 +87,8 @@ describe(waitForStageDecision, () => {
 
     it("returns 'timeout' when timeoutMs elapses with the stage record still present", async () => {
         // Every poll returns "still staged".
+        expect.hasAssertions();
+
         const responses = Array.from({ length: 20 }, () => {
             return {
                 stdout: JSON.stringify({ id: "stage-xyz", package: "x", version: "1.0.0" }),
@@ -104,6 +110,8 @@ describe(waitForStageDecision, () => {
     });
 
     it("fires onProgress while polling", async () => {
+        expect.hasAssertions();
+
         const responses = [
             { stdout: JSON.stringify({ id: "stage-xyz" }) },
             { stdout: JSON.stringify({ id: "stage-xyz" }) },
@@ -130,6 +138,8 @@ describe(waitForStageDecision, () => {
 
 describe(refuseRestrictedOidc, () => {
     it("throws CONFIG_INVALID when both restricted + OIDC are present", () => {
+        expect.hasAssertions();
+
         const env = { ACTIONS_ID_TOKEN_REQUEST_URL: "https://example/oidc" };
 
         expect(() => { refuseRestrictedOidc("restricted", env); }).toThrow(VisReleaseError);
@@ -137,6 +147,8 @@ describe(refuseRestrictedOidc, () => {
     });
 
     it("passes when only OIDC is set (public package)", () => {
+        expect.hasAssertions();
+
         const env = { ACTIONS_ID_TOKEN_REQUEST_URL: "https://example/oidc" };
 
         expect(() => { refuseRestrictedOidc("public", env); }).not.toThrow();
@@ -144,10 +156,13 @@ describe(refuseRestrictedOidc, () => {
     });
 
     it("passes when only restricted is set (no OIDC)", () => {
+        expect.hasAssertions();
         expect(() => { refuseRestrictedOidc("restricted", {}); }).not.toThrow();
     });
 
     it("passes when NPM_TOKEN is also set alongside OIDC (operator has the fallback)", () => {
+        expect.hasAssertions();
+
         const env = {
             ACTIONS_ID_TOKEN_REQUEST_URL: "https://example/oidc",
             NPM_TOKEN: "npm_xxx",

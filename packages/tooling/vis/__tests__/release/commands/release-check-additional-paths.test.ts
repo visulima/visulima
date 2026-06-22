@@ -109,6 +109,8 @@ describe.skipIf(isWindows)("vis release check --strict — additionalPaths (rele
     });
 
     it("flags @scope/cli as uncovered when docs/cli/ changes match its additionalPaths glob", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             baseBranch: "main",
             packages: {
@@ -146,6 +148,8 @@ describe.skipIf(isWindows)("vis release check --strict — additionalPaths (rele
     });
 
     it("does NOT flag @scope/cli when docs/cli/ changes match no additionalPaths", async () => {
+        expect.hasAssertions();
+
         cwd = setupFixture({
             baseBranch: "main",
             // No additionalPaths set — docs change is unattributed.
@@ -189,6 +193,8 @@ describe.skipIf(isWindows)("vis release check --strict — additionalPaths (rele
         // embedded copy. Over-attribution only ever yields a visible
         // "uncovered" warning the operator resolves (add a change file or
         // narrow the glob); under-attribution would be a silent stale release.
+        expect.hasAssertions();
+
         const cwd2 = mkdtempSync(join(tmpdir(), "vis-check-double-"));
 
         try {

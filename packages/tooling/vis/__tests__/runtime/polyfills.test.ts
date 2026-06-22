@@ -1,4 +1,4 @@
-/* eslint-disable n/no-unsupported-features/node-builtins, prefer-destructuring, vitest/no-conditional-expect -- this suite exercises the experimental-global shims (navigator.locks, Float16Array, …) via dynamic property access, and guards a few assertions on the host Node version. */
+/* eslint-disable n/no-unsupported-features/node-builtins, prefer-destructuring, vitest/no-conditional-expect, vitest/no-conditional-in-test -- this suite exercises the experimental-global shims (navigator.locks, Float16Array, …) via dynamic property access, and guards a few assertions on the host Node version. */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { installPolyfills } from "../../src/runtime/polyfills";

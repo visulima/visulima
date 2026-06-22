@@ -32,6 +32,8 @@ const mkCtx = (overrides: Partial<ChangelogContext> = {}): ChangelogContext => {
 
 describe(defaultFormatter, () => {
     it("renders header + sub date for changelog target", async () => {
+        expect.hasAssertions();
+
         const result = await defaultFormatter(mkCtx());
 
         expect(result).toContain("## 1.1.0");
@@ -39,6 +41,8 @@ describe(defaultFormatter, () => {
     });
 
     it("strips version heading for github-release target", async () => {
+        expect.hasAssertions();
+
         const result = await defaultFormatter(mkCtx({ target: "github-release" }));
 
         expect(result).not.toContain("## 1.1.0");
@@ -46,6 +50,8 @@ describe(defaultFormatter, () => {
     });
 
     it("renders change-file body lines as bullets", async () => {
+        expect.hasAssertions();
+
         const result = await defaultFormatter(
             mkCtx({
                 changeFiles: [
@@ -64,6 +70,8 @@ describe(defaultFormatter, () => {
     });
 
     it("preserves existing bullet markers", async () => {
+        expect.hasAssertions();
+
         const result = await defaultFormatter(
             mkCtx({
                 changeFiles: [
@@ -78,6 +86,8 @@ describe(defaultFormatter, () => {
     });
 
     it("emits 'Cascade from' line for cascade bumps", async () => {
+        expect.hasAssertions();
+
         const result = await defaultFormatter(
             mkCtx({
                 release: mkRelease({
@@ -91,6 +101,8 @@ describe(defaultFormatter, () => {
     });
 
     it("emits 'Group bump with' line for group bumps", async () => {
+        expect.hasAssertions();
+
         const result = await defaultFormatter(
             mkCtx({
                 release: mkRelease({
@@ -104,6 +116,8 @@ describe(defaultFormatter, () => {
     });
 
     it("emits 'Updated dependency' line for pure dep bumps with no change file", async () => {
+        expect.hasAssertions();
+
         const result = await defaultFormatter(
             mkCtx({
                 release: mkRelease({
@@ -119,6 +133,8 @@ describe(defaultFormatter, () => {
 
 describe("default formatter: authorCredit option", () => {
     it("appends `(@user)` when the option is enabled and the change file has author meta", async () => {
+        expect.hasAssertions();
+
         const formatter = createDefaultFormatter({ authorCredit: true });
         const result = await formatter(mkCtx({
             changeFiles: [
@@ -136,6 +152,8 @@ describe("default formatter: authorCredit option", () => {
     });
 
     it("does NOT append author when the option is off (default behaviour)", async () => {
+        expect.hasAssertions();
+
         const result = await defaultFormatter(mkCtx({
             changeFiles: [
                 {
@@ -153,6 +171,8 @@ describe("default formatter: authorCredit option", () => {
     });
 
     it("normalises authors without leading @", async () => {
+        expect.hasAssertions();
+
         const formatter = createDefaultFormatter({ authorCredit: true });
         const result = await formatter(mkCtx({
             changeFiles: [
@@ -170,6 +190,8 @@ describe("default formatter: authorCredit option", () => {
     });
 
     it("skips credit when no author meta is present (silent)", async () => {
+        expect.hasAssertions();
+
         const formatter = createDefaultFormatter({ authorCredit: true });
         const result = await formatter(mkCtx({
             changeFiles: [
@@ -198,6 +220,8 @@ describe("default formatter: sections option (release-please parity)", () => {
     };
 
     it("emits a flat list when `sections` is omitted (legacy default)", async () => {
+        expect.hasAssertions();
+
         const formatter = createDefaultFormatter();
         const result = await formatter(mkCtx({
             changeFiles: [mkFile("feat: add tab completion\nfix: handle empty input")],
@@ -209,6 +233,8 @@ describe("default formatter: sections option (release-please parity)", () => {
     });
 
     it("groups entries under inferred conventional-commit sections when `sections: []`", async () => {
+        expect.hasAssertions();
+
         const formatter = createDefaultFormatter({ sections: [] });
         const result = await formatter(mkCtx({
             changeFiles: [mkFile("feat: add tab completion\nfix: handle empty input")],
@@ -220,6 +246,8 @@ describe("default formatter: sections option (release-please parity)", () => {
     });
 
     it("treats `feat!:` as a breaking change", async () => {
+        expect.hasAssertions();
+
         const formatter = createDefaultFormatter({ sections: [] });
         const result = await formatter(mkCtx({
             changeFiles: [mkFile("feat!: drop legacy API")],
@@ -230,6 +258,8 @@ describe("default formatter: sections option (release-please parity)", () => {
     });
 
     it("hidden types are dropped entirely from the output", async () => {
+        expect.hasAssertions();
+
         const formatter = createDefaultFormatter({ sections: [] });
         const result = await formatter(mkCtx({
             changeFiles: [mkFile("chore: bump linter\nfeat: real feature")],
@@ -241,6 +271,8 @@ describe("default formatter: sections option (release-please parity)", () => {
     });
 
     it("custom sections override the default mapping", async () => {
+        expect.hasAssertions();
+
         const formatter = createDefaultFormatter({
             sections: [
                 { section: "Headlines", type: "feat" },
@@ -257,6 +289,8 @@ describe("default formatter: sections option (release-please parity)", () => {
     });
 
     it("lines without a conventional prefix go to a `Miscellaneous` section", async () => {
+        expect.hasAssertions();
+
         const formatter = createDefaultFormatter({ sections: [] });
         const result = await formatter(mkCtx({
             changeFiles: [mkFile("feat: typed thing\nUntagged note here.")],

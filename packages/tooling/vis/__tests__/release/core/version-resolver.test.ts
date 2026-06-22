@@ -60,6 +60,8 @@ const mkDepGraph = (pkgs: WorkspacePackage[]): DependencyGraph => new Dependency
 
 describe("resolveCurrentVersion — disk mode", () => {
     it("returns the manifest version verbatim and tags the result as resolvedFrom: disk", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const pkg = mkPkg("@scope/a", "1.2.3");
 
@@ -77,6 +79,8 @@ describe("resolveCurrentVersion — disk mode", () => {
 
 describe("resolveCurrentVersion — registry mode (npm package)", () => {
     it("returns the registry version when `npm view` answers with a semver", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const pkg = mkPkg("@scope/a", "1.2.3");
 
@@ -94,6 +98,8 @@ describe("resolveCurrentVersion — registry mode (npm package)", () => {
     });
 
     it("falls back to the manifest version when `npm view` returns a 404 (non-zero exit, empty stdout)", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const pkg = mkPkg("@scope/new-pkg", "0.0.1");
 
@@ -121,6 +127,8 @@ describe("resolveCurrentVersion — registry mode (npm package)", () => {
 
 describe("resolveCurrentVersion — git-tag mode", () => {
     it("happy path: finds the highest matching tag and returns its version", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const pkg = mkPkg("@scope/a", "1.0.0"); // manifest lags behind tags
 
@@ -145,6 +153,8 @@ describe("resolveCurrentVersion — git-tag mode", () => {
     });
 
     it("no matching tag → falls back to manifest, with a warning nudging toward --first-release", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const pkg = mkPkg("@scope/freshpkg", "0.0.1");
 
@@ -166,6 +176,8 @@ describe("resolveCurrentVersion — git-tag mode", () => {
 
 describe("resolveModeForPackage — precedence", () => {
     it("per-package override wins over workspace-level", () => {
+        expect.hasAssertions();
+
         const mode = resolveModeForPackage(
             { currentVersionResolver: "registry" },
             { currentVersionResolver: "git-tag" },
@@ -176,6 +188,8 @@ describe("resolveModeForPackage — precedence", () => {
     });
 
     it("workspace-level wins over the default disk", () => {
+        expect.hasAssertions();
+
         const mode = resolveModeForPackage(
             { currentVersionResolver: "registry" },
             undefined,
@@ -186,6 +200,8 @@ describe("resolveModeForPackage — precedence", () => {
     });
 
     it("`firstRelease` forces disk regardless of config", () => {
+        expect.hasAssertions();
+
         const mode = resolveModeForPackage(
             { currentVersionResolver: "registry" },
             { currentVersionResolver: "git-tag" },
@@ -196,6 +212,8 @@ describe("resolveModeForPackage — precedence", () => {
     });
 
     it("default is disk when nothing is configured", () => {
+        expect.hasAssertions();
+
         const mode = resolveModeForPackage(undefined, undefined, false);
 
         expect(mode).toBe("disk");
@@ -211,6 +229,8 @@ describe("resolveCurrentVersionsForWorkspace — batch resolution", () => {
     });
 
     it("resolves every package in parallel and surfaces per-package fallbacks as warnings", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const a = mkPkg("@scope/a", "1.0.0");
         const b = mkPkg("@scope/b", "2.0.0");
@@ -249,6 +269,8 @@ describe("resolveCurrentVersionsForWorkspace — batch resolution", () => {
     });
 
     it("`firstRelease: true` forces every package to disk even when config says otherwise", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const a = mkPkg("@scope/a", "1.0.0");
         const depGraph = mkDepGraph([a]);
@@ -336,6 +358,8 @@ describe("resolveCurrentVersionsForWorkspace — concurrency cap (C-3)", () => {
     }
 
     it("never exceeds REGISTRY_LOOKUP_CONCURRENCY in-flight registry probes (cap = 4 by default)", async () => {
+        expect.hasAssertions();
+
         const counting = new CountingRunner();
         // NpmAdapter's `readPublishedVersion` runs through `pm.runner.run`,
         // so the CountingRunner must be the adapter's runner — not just
@@ -385,6 +409,8 @@ describe("resolveCurrentVersionsForWorkspace — concurrency cap (C-3)", () => {
     });
 
     it("memoises repeat lookups within the same process — a second resolve hits the cache (one fetch only)", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const a = mkPkg("@scope/memoed", "1.0.0");
         const depGraph = mkDepGraph([a]);
@@ -420,6 +446,8 @@ describe("resolveCurrentVersionsForWorkspace — concurrency cap (C-3)", () => {
     });
 
     it("skipRegistryLookup: true falls back to disk for every package, never probing the registry", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const a = mkPkg("@scope/skip-a", "1.0.0");
         const b = mkPkg("@scope/skip-b", "2.0.0");
@@ -460,6 +488,8 @@ describe("resolveCurrentVersionsForWorkspace — concurrency cap (C-3)", () => {
  */
 describe("git-tag mode — releaseTagPattern compilation (N-7)", () => {
     it("compileReleaseTagRegex: a custom pattern 'v{version}' matches 'v1.2.3' but not random 'v1'", () => {
+        expect.hasAssertions();
+
         const re = compileReleaseTagRegex("v{version}", { name: "@scope/foo" });
 
         const m = re.exec("v1.2.3");
@@ -476,6 +506,8 @@ describe("git-tag mode — releaseTagPattern compilation (N-7)", () => {
     });
 
     it("compileReleaseTagRegex: a name-prefix pattern '{name}-v{version}' anchors on the package name", () => {
+        expect.hasAssertions();
+
         const re = compileReleaseTagRegex("{name}-v{version}", { name: "cerebro" });
 
         expect(re.exec("cerebro-v3.0.0")![1]).toBe("3.0.0");
@@ -484,6 +516,8 @@ describe("git-tag mode — releaseTagPattern compilation (N-7)", () => {
     });
 
     it("git-tag mode honours a workspace-configured releaseTagPattern: 'v{version}' (no literal name@ fallback)", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const pkg = mkPkg("@scope/a", "0.0.1");
 
@@ -508,6 +542,8 @@ describe("git-tag mode — releaseTagPattern compilation (N-7)", () => {
     });
 
     it("git-tag mode rejects tags that don't match the configured pattern (no second-chance literal-prefix fallback)", async () => {
+        expect.hasAssertions();
+
         const runner = mkRunner();
         const pkg = mkPkg("@scope/a", "0.0.1");
 

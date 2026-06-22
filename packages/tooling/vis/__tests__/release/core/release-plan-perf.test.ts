@@ -22,6 +22,8 @@ describe("release-plan: glob-expansion cache", () => {
         // Phase B (fixed group) + Phase C1 (cascade) both expand globs every
         // iteration of the fixed-point loop. The WeakMap cache should make
         // this O(patterns) per loop instead of O(patterns × packages).
+        expect.hasAssertions();
+
         const packages: WorkspacePackage[] = [mkPkg("@scope/source")];
 
         for (let i = 0; i < 100; i += 1) {
@@ -53,6 +55,8 @@ describe("release-plan: glob-expansion cache", () => {
         // Build a workspace where the fixed group gets bumped by ONE explicit
         // change file but the fixed-point loop runs many iterations because of
         // chained dep propagation.
+        expect.hasAssertions();
+
         const packages: WorkspacePackage[] = [];
 
         for (let i = 0; i < 50; i += 1) {

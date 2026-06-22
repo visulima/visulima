@@ -66,6 +66,8 @@ describe(runSnapshot, () => {
     });
 
     it("requires a working git repo (throws when sha is unresolvable)", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         // No git handlers → getCurrentSha returns undefined.
 
@@ -75,6 +77,8 @@ describe(runSnapshot, () => {
     });
 
     it("computes the snapshot version from the configured template", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["rev-parse", "HEAD"], () => {
@@ -92,6 +96,8 @@ describe(runSnapshot, () => {
     });
 
     it("supports custom version templates with all placeholders", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["rev-parse", "HEAD"], () => {
@@ -111,6 +117,8 @@ describe(runSnapshot, () => {
     });
 
     it("excludes private packages from snapshot publishing", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["rev-parse", "HEAD"], () => {
@@ -124,10 +132,12 @@ describe(runSnapshot, () => {
 
         const result = await runSnapshot({ context: ctx, dryRun: true, runner, tag: "x" });
 
-        expect(result.published.map((p) => p.name)).toEqual(["@scope/public"]);
+        expect(result.published.map((p) => p.name)).toStrictEqual(["@scope/public"]);
     });
 
     it("--filter narrows the target set", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["rev-parse", "HEAD"], () => {
@@ -141,6 +151,6 @@ describe(runSnapshot, () => {
 
         const result = await runSnapshot({ context: ctx, dryRun: true, filter: "@scope/*", runner, tag: "x" });
 
-        expect(result.published.map((p) => p.name).sort()).toEqual(["@scope/a", "@scope/b"]);
+        expect(result.published.map((p) => p.name).sort()).toStrictEqual(["@scope/a", "@scope/b"]);
     });
 });

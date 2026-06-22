@@ -15,8 +15,8 @@
     },
     "main": "vis-native.win32-x64-msvc.node",
     "files": [
-        "vis-native.win32-x64-msvc.node",
-        "vis-native-cli.exe"
+        "vis-native-cli.exe",
+        "vis-native.win32-x64-msvc.node"
     ],
     "engines": {
         "node": "^22.14.0 || >=24.10.0"

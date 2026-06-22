@@ -176,6 +176,8 @@ describe("vis release doctor — git.signing key redaction (F9)", () => {
     it("redacts filesystem-path signing keys (does not echo the full path)", async () => {
         // A path-style signing.key — common when operators point at an
         // exported private key file rather than a key id.
+        expect.hasAssertions();
+
         const keyPath = "/home/runner/.ssh/release-signing-key";
 
         cwd = setupRepo({ signing: { key: keyPath, mode: "gpg" } });
@@ -210,6 +212,8 @@ describe("vis release doctor — git.signing key redaction (F9)", () => {
     it("emits a redacted-tail hint for short key ids (no path chars)", async () => {
         // A short hex key id (no `/` or `\`) — keeping the last 4 chars
         // is useful for the operator to confirm WHICH key was picked.
+        expect.hasAssertions();
+
         const keyId = "ABCDEF1234567890";
 
         cwd = setupRepo({ signing: { key: keyId, mode: "gpg" } });
@@ -264,6 +268,8 @@ describe("vis release doctor — floating-major-tag.signing-risk (F24)", () => {
     });
 
     it("warns when floatingMajorTag AND signing.mode=sigstore are both set", async () => {
+        expect.hasAssertions();
+
         cwd = setupRepo({ floatingMajorTag: true, signing: { mode: "sigstore" } });
 
         // Stub gitsign --version returning 0 so the sigstore check passes
@@ -315,6 +321,8 @@ describe("vis release doctor — floating-major-tag.signing-risk (F24)", () => {
     });
 
     it("does NOT emit the risk check when floatingMajorTag is off", async () => {
+        expect.hasAssertions();
+
         cwd = setupRepo({ floatingMajorTag: false, signing: { mode: "sigstore" } });
 
         vi.doMock(import("../../../src/release/core/shell-runner"), () => {
@@ -355,6 +363,8 @@ describe("vis release doctor — floating-major-tag.signing-risk (F24)", () => {
     });
 
     it("does NOT emit the risk check when signing.mode is gpg (no Rekor entries)", async () => {
+        expect.hasAssertions();
+
         cwd = setupRepo({ floatingMajorTag: true, signing: { mode: "gpg" } });
         stubShellRunnerForSigningPass("ABCD1234");
 
@@ -427,6 +437,8 @@ describe("vis release doctor — floating-major-tag.legacy-tags (wave-7)", () =>
     };
 
     it("is skipped (no check emitted) when floatingMajorTag is disabled", async () => {
+        expect.hasAssertions();
+
         cwd = setupRepo({ floatingMajorTag: false });
         stubGitTagList(["v1", "v2"]); // legacy tags exist but should be ignored
 
@@ -449,6 +461,8 @@ describe("vis release doctor — floating-major-tag.legacy-tags (wave-7)", () =>
     });
 
     it("fires (warn / fail) when floatingMajorTag is on AND legacy v<major> tags exist", async () => {
+        expect.hasAssertions();
+
         cwd = setupRepo({ floatingMajorTag: true });
         stubGitTagList(["v1", "v2", "v1.0.0", "acme-action-v1"]);
 
@@ -483,6 +497,8 @@ describe("vis release doctor — floating-major-tag.legacy-tags (wave-7)", () =>
     });
 
     it("passes when floatingMajorTag is on but only new-format tags exist", async () => {
+        expect.hasAssertions();
+
         cwd = setupRepo({ floatingMajorTag: true });
         // No bare `v<N>` — only the new-format tags and a SemVer tag.
         stubGitTagList(["acme-action-v1", "acme-action-v2", "v1.0.0"]);
@@ -509,6 +525,8 @@ describe("vis release doctor — floating-major-tag.legacy-tags (wave-7)", () =>
     });
 
     it("caps the listed tags at 5 with a `+N more` suffix when there are more", async () => {
+        expect.hasAssertions();
+
         cwd = setupRepo({ floatingMajorTag: true });
         stubGitTagList(["v1", "v2", "v3", "v4", "v5", "v6", "v7"]);
 

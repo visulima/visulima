@@ -135,6 +135,8 @@ const buildPublishContext = (overrides: { dryRun?: boolean; newVersion?: string;
 
 describe(parsePomCoordinates, () => {
     it("extracts groupId / artifactId / version from a simple pom", () => {
+        expect.hasAssertions();
+
         const result = parsePomCoordinates(POM_SIMPLE);
 
         expect(result.groupId).toBe("io.visulima");
@@ -144,6 +146,8 @@ describe(parsePomCoordinates, () => {
     });
 
     it("skips <parent> + <dependency> version tags and finds the project version", () => {
+        expect.hasAssertions();
+
         const result = parsePomCoordinates(POM_WITH_PARENT);
 
         // 1.2.3 is the project version; 3.2.0 / 9.9.9 are the parent + dep
@@ -154,6 +158,8 @@ describe(parsePomCoordinates, () => {
     });
 
     it("flags multi-module reactor projects via hasModules", () => {
+        expect.hasAssertions();
+
         const result = parsePomCoordinates(POM_MULTI_MODULE);
 
         expect(result.hasModules).toBe(true);
@@ -161,6 +167,8 @@ describe(parsePomCoordinates, () => {
     });
 
     it("ignores commented-out version tags", () => {
+        expect.hasAssertions();
+
         const xml = `<project>
             <groupId>a.b</groupId>
             <artifactId>c</artifactId>
@@ -176,20 +184,24 @@ describe(parsePomCoordinates, () => {
 
 describe(parseMavenMetadataLatest, () => {
     it("prefers <latest>", () => {
+        expect.hasAssertions();
         expect(parseMavenMetadataLatest(METADATA_WITH_LATEST)).toBe("1.2.4");
     });
 
     it("falls back to the last <version> in <versions> when <latest> is missing", () => {
+        expect.hasAssertions();
         expect(parseMavenMetadataLatest(METADATA_NO_LATEST)).toBe("1.0.0");
     });
 
     it("returns undefined for malformed metadata", () => {
+        expect.hasAssertions();
         expect(parseMavenMetadataLatest("<metadata />")).toBeUndefined();
     });
 });
 
 describe(mavenCentralMetadataUrl, () => {
     it("translates dotted groupId into slash path", () => {
+        expect.hasAssertions();
         expect(mavenCentralMetadataUrl("io.visulima", "vis-jvm")).toBe(
             "https://repo1.maven.org/maven2/io/visulima/vis-jvm/maven-metadata.xml",
         );
@@ -211,6 +223,8 @@ describe("mavenVersionActions.readPublishedVersion", () => {
     });
 
     it("returns the metadata <latest> for an existing artifact", async () => {
+        expect.hasAssertions();
+
         globalThis.fetch = vi.fn().mockResolvedValue({
             ok: true,
             status: 200,
@@ -231,6 +245,8 @@ describe("mavenVersionActions.readPublishedVersion", () => {
     });
 
     it("returns undefined on 404 (fresh artifact)", async () => {
+        expect.hasAssertions();
+
         globalThis.fetch = vi.fn().mockResolvedValue({
             ok: false,
             status: 404,
@@ -247,6 +263,8 @@ describe("mavenVersionActions.readPublishedVersion", () => {
     });
 
     it("returns undefined when the network errors (fail-open)", async () => {
+        expect.hasAssertions();
+
         globalThis.fetch = vi.fn().mockRejectedValue(new Error("ENOTFOUND")) as never;
 
         const actions = new MavenVersionActions();
@@ -259,6 +277,8 @@ describe("mavenVersionActions.readPublishedVersion", () => {
     });
 
     it("returns undefined when the pom is missing", async () => {
+        expect.hasAssertions();
+
         const emptyDir = mkdtempSync(join(tmpdir(), "vis-maven-empty-"));
 
         try {
@@ -275,6 +295,8 @@ describe("mavenVersionActions.readPublishedVersion", () => {
     });
 
     it("warns to stderr when the pom declares <modules>", async () => {
+        expect.hasAssertions();
+
         writeFileSync(join(pkgDir, "pom.xml"), POM_MULTI_MODULE);
         globalThis.fetch = vi.fn().mockResolvedValue({
             ok: true,
@@ -300,6 +322,8 @@ describe("mavenVersionActions.readPublishedVersion", () => {
     });
 
     it("honours mavenMetadataUrl: \"\" to disable the metadata check", async () => {
+        expect.hasAssertions();
+
         const fetchSpy = vi.fn();
 
         globalThis.fetch = fetchSpy as never;
@@ -317,6 +341,8 @@ describe("mavenVersionActions.readPublishedVersion", () => {
 
     it("stamps a vis-release User-Agent on the metadata request (B-3)", async () => {
         // B-3: every registry-probe fetch carries a contact UA.
+        expect.hasAssertions();
+
         const fetchSpy = vi.fn().mockResolvedValue({
             headers: new Headers(),
             ok: true,
@@ -333,7 +359,7 @@ describe("mavenVersionActions.readPublishedVersion", () => {
             pm: { runner: {} as CommandRunner } as never,
         });
 
-        expect(fetchSpy).toHaveBeenCalled();
+        expect(fetchSpy).toHaveBeenCalledTimes(1);
 
         const init = fetchSpy.mock.calls[0]![1] as RequestInit | undefined;
         const headers = init?.headers as Record<string, string> | undefined;
@@ -347,6 +373,8 @@ describe("mavenVersionActions.readPublishedVersion", () => {
     it("follows up to 2 same-host redirects (M-4 SSRF guard)", async () => {
         // M-4: when Maven Central's CDN normalises a path with a 301,
         // we want to follow IF the target stays on the same host.
+        expect.hasAssertions();
+
         let call = 0;
         const fetchSpy = vi.fn().mockImplementation(async (_url: string) => {
             call += 1;
@@ -393,6 +421,8 @@ describe("mavenVersionActions.readPublishedVersion", () => {
         // treated as a 404 rather than silently following the 30x.
         // This protects against cloud-metadata exfil, intranet
         // probing, etc.
+        expect.hasAssertions();
+
         const fetchSpy = vi.fn().mockResolvedValueOnce({
             headers: new Headers({
                 // Cross-host redirect → SSRF risk → reject.
@@ -420,6 +450,8 @@ describe("mavenVersionActions.readPublishedVersion", () => {
     it("stops after 2 same-host redirects to bound chains (M-4 SSRF guard)", async () => {
         // Bounded chain — at most 2 follows. The 3rd 301 in a row
         // surfaces as "unknown" rather than continuing indefinitely.
+        expect.hasAssertions();
+
         const fetchSpy = vi.fn().mockResolvedValue({
             headers: new Headers({
                 location: "https://repo1.maven.org/maven2/io/visulima/vis-jvm/loop/maven-metadata.xml",
@@ -457,6 +489,8 @@ describe("mavenVersionActions.publish", () => {
     });
 
     it("returns published: true in dryRun mode without throwing", async () => {
+        expect.hasAssertions();
+
         const actions = new MavenVersionActions();
         const result = await actions.publish(buildPublishContext({ dryRun: true, pkg: buildPkg(pkgDir) }));
 
@@ -465,6 +499,8 @@ describe("mavenVersionActions.publish", () => {
     });
 
     it("throws CONFIG_INVALID with the shell-path workaround hint", async () => {
+        expect.hasAssertions();
+
         const actions = new MavenVersionActions();
 
         await expect(actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir) }))).rejects.toMatchObject({
@@ -474,6 +510,8 @@ describe("mavenVersionActions.publish", () => {
     });
 
     it("error mentions the docs guide for the full operator setup", async () => {
+        expect.hasAssertions();
+
         const actions = new MavenVersionActions();
 
         await expect(actions.publish(buildPublishContext({ pkg: buildPkg(pkgDir) }))).rejects.toMatchObject({
@@ -482,6 +520,7 @@ describe("mavenVersionActions.publish", () => {
     });
 
     it("stable id is `maven`", () => {
+        expect.hasAssertions();
         expect(new MavenVersionActions().id).toBe("maven");
     });
 
@@ -490,6 +529,8 @@ describe("mavenVersionActions.publish", () => {
         // across the workspace to find the offending pom. The publish
         // error now stamps `groupId:artifactId` (and the resolved pom
         // path) so the log line points straight at the source.
+        expect.hasAssertions();
+
         const actions = new MavenVersionActions();
         const pkg = buildPkg(pkgDir);
 
@@ -504,6 +545,8 @@ describe("mavenVersionActions.publish", () => {
         // Best-effort pom read: a missing/malformed pom doesn't change
         // the error class, but the coordinate label degrades to the
         // package name so the operator still has SOMETHING to grep.
+        expect.hasAssertions();
+
         const emptyDir = mkdtempSync(join(tmpdir(), "vis-maven-no-pom-"));
 
         try {
@@ -520,6 +563,8 @@ describe("mavenVersionActions.publish", () => {
     });
 
     it("includes the resolved pom path in the hint (B-1)", async () => {
+        expect.hasAssertions();
+
         const actions = new MavenVersionActions();
         const pkg = buildPkg(pkgDir);
 
@@ -565,6 +610,8 @@ describe("mavenVersionActions instance state (N-5)", () => {
     });
 
     it("emits the multi-module warning once per actions instance", async () => {
+        expect.hasAssertions();
+
         const writeSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
 
         const actions = new MavenVersionActions();
@@ -595,6 +642,8 @@ describe("mavenVersionActions instance state (N-5)", () => {
         // long-running daemon, REPL session, or test harness reusing
         // module imports) gets the warning again. Previously the
         // module-level WeakSet ate it.
+        expect.hasAssertions();
+
         const writeSpy = vi.spyOn(process.stderr, "write").mockImplementation(() => true);
 
         const pkg = buildPkg(pkgDir);
@@ -634,6 +683,8 @@ describe("parsePomCoordinates regex sharing (B-4)", () => {
     // times must produce identical results without state contamination
     // (the hoisted regexes are stateless — no `g` flag — so safe to share).
     it("yields identical coordinates across repeated calls (regex statelessness)", () => {
+        expect.hasAssertions();
+
         const xml = `<project>
             <groupId>a.b</groupId>
             <artifactId>c</artifactId>
@@ -643,7 +694,7 @@ describe("parsePomCoordinates regex sharing (B-4)", () => {
         const results = Array.from({ length: 100 }, () => parsePomCoordinates(xml));
 
         for (const result of results) {
-            expect(result).toEqual({
+            expect(result).toStrictEqual({
                 artifactId: "c",
                 groupId: "a.b",
                 hasModules: false,

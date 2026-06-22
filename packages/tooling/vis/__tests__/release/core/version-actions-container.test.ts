@@ -106,16 +106,19 @@ describe("validateContainerConfig (N-4)", () => {
     // into buildBuildxCommand where it would throw a confusing internal
     // error.
     it("returns a narrowed struct on a valid containerImage", () => {
+        expect.hasAssertions();
+
         const result = validateContainerConfig(
             { containerImage: "ghcr.io/scope/foo", containerPlatforms: ["linux/amd64"] },
             "@scope/foo",
         );
 
         expect(result.containerImage).toBe("ghcr.io/scope/foo");
-        expect(result.containerPlatforms).toEqual(["linux/amd64"]);
+        expect(result.containerPlatforms).toStrictEqual(["linux/amd64"]);
     });
 
     it("throws CONFIG_INVALID when containerImage is missing entirely", () => {
+        expect.hasAssertions();
         expect(() => validateContainerConfig({}, "@scope/foo")).toThrow(
             expect.objectContaining({
                 code: "CONFIG_INVALID",
@@ -125,6 +128,7 @@ describe("validateContainerConfig (N-4)", () => {
     });
 
     it("throws CONFIG_INVALID when containerImage is an empty string", () => {
+        expect.hasAssertions();
         expect(() => validateContainerConfig({ containerImage: "" }, "@scope/foo")).toThrow(
             expect.objectContaining({
                 code: "CONFIG_INVALID",
@@ -137,6 +141,7 @@ describe("validateContainerConfig (N-4)", () => {
         // A user mis-configuring `containerImage: 42` via a templated
         // config tool previously slipped through the `as` cast; now it
         // surfaces clearly.
+        expect.hasAssertions();
         expect(() =>
             validateContainerConfig(
                 { containerImage: 42 as unknown as string },
@@ -147,6 +152,7 @@ describe("validateContainerConfig (N-4)", () => {
     });
 
     it("treats undefined perPkg as missing-image (not a TypeError)", () => {
+        expect.hasAssertions();
         expect(() => validateContainerConfig(undefined, "@scope/foo")).toThrow(
             expect.objectContaining({ code: "CONFIG_INVALID" }),
         );
@@ -155,44 +161,55 @@ describe("validateContainerConfig (N-4)", () => {
 
 describe(parseImageRef, () => {
     it("splits GHCR refs (registry contains a dot)", () => {
+        expect.hasAssertions();
+
         const result = parseImageRef("ghcr.io/scope/foo");
 
-        expect(result).toEqual({ registry: "ghcr.io", repository: "scope/foo" });
+        expect(result).toStrictEqual({ registry: "ghcr.io", repository: "scope/foo" });
     });
 
     it("recognises localhost as a registry", () => {
+        expect.hasAssertions();
+
         const result = parseImageRef("localhost:5000/foo");
 
-        expect(result).toEqual({ registry: "localhost:5000", repository: "foo" });
+        expect(result).toStrictEqual({ registry: "localhost:5000", repository: "foo" });
     });
 
     it("defaults the registry to docker.io and adds library/ for single-segment images", () => {
+        expect.hasAssertions();
+
         const result = parseImageRef("nginx");
 
-        expect(result).toEqual({ registry: "docker.io", repository: "library/nginx" });
+        expect(result).toStrictEqual({ registry: "docker.io", repository: "library/nginx" });
     });
 
     it("treats two-segment images without a hostname as docker.io", () => {
+        expect.hasAssertions();
+
         const result = parseImageRef("myorg/myimage");
 
-        expect(result).toEqual({ registry: "docker.io", repository: "myorg/myimage" });
+        expect(result).toStrictEqual({ registry: "docker.io", repository: "myorg/myimage" });
     });
 });
 
 describe(ociManifestUrl, () => {
     it("composes the v2 manifest URL for GHCR", () => {
+        expect.hasAssertions();
         expect(ociManifestUrl("ghcr.io/scope/foo", "1.2.3")).toBe(
             "https://ghcr.io/v2/scope/foo/manifests/1.2.3",
         );
     });
 
     it("uses registry-1.docker.io for Docker Hub", () => {
+        expect.hasAssertions();
         expect(ociManifestUrl("nginx", "stable")).toBe(
             "https://registry-1.docker.io/v2/library/nginx/manifests/stable",
         );
     });
 
     it("uRL-encodes tag values with special chars", () => {
+        expect.hasAssertions();
         expect(ociManifestUrl("ghcr.io/s/f", "1.0.0+build")).toContain("%2B");
     });
 });
@@ -204,10 +221,12 @@ describe(buildBuildxCommand, () => {
     };
 
     it("includes --platform, both tags, --push, and OCI labels by default", () => {
+        expect.hasAssertions();
+
         const { command } = buildBuildxCommand(minPkg, { containerImage: "ghcr.io/scope/app" });
 
         expect(command[0]).toBe("docker");
-        expect(command.slice(1, 3)).toEqual(["buildx", "build"]);
+        expect(command.slice(1, 3)).toStrictEqual(["buildx", "build"]);
         expect(command).toContain("--platform");
         expect(command[command.indexOf("--platform") + 1]).toBe("linux/amd64,linux/arm64");
         expect(command).toContain("ghcr.io/scope/app:1.1.0");
@@ -217,6 +236,8 @@ describe(buildBuildxCommand, () => {
     });
 
     it("omits :latest when containerSkipLatest is true", () => {
+        expect.hasAssertions();
+
         const { command } = buildBuildxCommand(minPkg, {
             containerImage: "ghcr.io/scope/app",
             containerSkipLatest: true,
@@ -227,6 +248,8 @@ describe(buildBuildxCommand, () => {
     });
 
     it("respects a custom containerPlatforms array", () => {
+        expect.hasAssertions();
+
         const { command } = buildBuildxCommand(minPkg, {
             containerImage: "ghcr.io/scope/app",
             containerPlatforms: ["linux/amd64"],
@@ -236,6 +259,8 @@ describe(buildBuildxCommand, () => {
     });
 
     it("forwards containerBuildArgs as --build-arg KEY=VALUE pairs", () => {
+        expect.hasAssertions();
+
         const { command } = buildBuildxCommand(minPkg, {
             containerBuildArgs: { BUILD_DATE: "2025-01-01", VERSION: "1.1.0" },
             containerImage: "ghcr.io/scope/app",
@@ -248,6 +273,8 @@ describe(buildBuildxCommand, () => {
     });
 
     it("uses buildContext as the final positional arg", () => {
+        expect.hasAssertions();
+
         const { command } = buildBuildxCommand(minPkg, {
             buildContext: "./images/app",
             containerImage: "ghcr.io/scope/app",
@@ -265,6 +292,8 @@ describe("containerActions.readPublishedVersion", () => {
     });
 
     it("returns the current version when HEAD returns 200", async () => {
+        expect.hasAssertions();
+
         globalThis.fetch = vi.fn().mockResolvedValue({ status: 200 }) as never;
 
         const actions = new ContainerActions();
@@ -282,6 +311,8 @@ describe("containerActions.readPublishedVersion", () => {
     });
 
     it("returns undefined when HEAD is 404", async () => {
+        expect.hasAssertions();
+
         globalThis.fetch = vi.fn().mockResolvedValue({ status: 404 }) as never;
 
         const actions = new ContainerActions();
@@ -295,6 +326,8 @@ describe("containerActions.readPublishedVersion", () => {
     });
 
     it("returns undefined when containerImage is missing", async () => {
+        expect.hasAssertions();
+
         const fetchSpy = vi.fn();
 
         globalThis.fetch = fetchSpy as never;
@@ -310,6 +343,8 @@ describe("containerActions.readPublishedVersion", () => {
     });
 
     it("stamps a vis-release User-Agent and uses manual redirects (B-3 + M-4)", async () => {
+        expect.hasAssertions();
+
         const fetchSpy = vi.fn().mockResolvedValue({
             headers: new Headers(),
             ok: true,
@@ -347,6 +382,8 @@ describe("containerActions.publish", () => {
     });
 
     it("throws CONFIG_INVALID when containerImage is missing", async () => {
+        expect.hasAssertions();
+
         const actions = new ContainerActions();
 
         await expect(actions.publish(buildContext())).rejects.toMatchObject({
@@ -356,6 +393,8 @@ describe("containerActions.publish", () => {
     });
 
     it("emits a dry-run preview without invoking docker", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([]);
         const actions = new ContainerActions();
 
@@ -372,6 +411,8 @@ describe("containerActions.publish", () => {
     });
 
     it("short-circuits with alreadyPublished when the manifest HEAD is 200", async () => {
+        expect.hasAssertions();
+
         globalThis.fetch = vi.fn().mockResolvedValue({ status: 200 }) as never;
         const { calls, runner } = buildRunner([]);
         const actions = new ContainerActions();
@@ -387,6 +428,8 @@ describe("containerActions.publish", () => {
     });
 
     it("invokes docker buildx with the constructed command on a fresh publish", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([{ exitCode: 0 }]);
         const actions = new ContainerActions();
 
@@ -404,6 +447,8 @@ describe("containerActions.publish", () => {
     });
 
     it("runs cosign sign after a successful push when containerSigning is set", async () => {
+        expect.hasAssertions();
+
         const { calls, runner } = buildRunner([
             { exitCode: 0 }, // buildx
             { exitCode: 0 }, // cosign
@@ -422,10 +467,12 @@ describe("containerActions.publish", () => {
         expect(result.output).toContain("cosign");
         expect(calls).toHaveLength(2);
         expect(calls[1]!.command).toBe("cosign");
-        expect(calls[1]!.args).toEqual(["sign", "--yes", "ghcr.io/scope/app:1.1.0"]);
+        expect(calls[1]!.args).toStrictEqual(["sign", "--yes", "ghcr.io/scope/app:1.1.0"]);
     });
 
     it("throws PUBLISH_FAILED when docker buildx exits non-zero with auth hints", async () => {
+        expect.hasAssertions();
+
         const { runner } = buildRunner([{ exitCode: 1, stderr: "unauthorized: authentication required" }]);
         const actions = new ContainerActions();
 
@@ -439,6 +486,8 @@ describe("containerActions.publish", () => {
     });
 
     it("throws PUBLISH_FAILED when cosign sign fails", async () => {
+        expect.hasAssertions();
+
         const { runner } = buildRunner([
             { exitCode: 0 }, // buildx
             { exitCode: 1, stderr: "no OIDC token available" }, // cosign
@@ -458,6 +507,7 @@ describe("containerActions.publish", () => {
     });
 
     it("stable id is `container`", () => {
+        expect.hasAssertions();
         expect(new ContainerActions().id).toBe("container");
     });
 });

@@ -12,6 +12,8 @@ import { MockRunner } from "../../../src/release/core/shell-runner";
  */
 describe("git: stageAndCommitFile", () => {
     it("no-op when `git diff --cached` reports no change after staging", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         const calls: string[] = [];
 
@@ -46,6 +48,8 @@ describe("git: stageAndCommitFile", () => {
     });
 
     it("commits when the file has staged changes", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let committed = false;
 
@@ -70,6 +74,8 @@ describe("git: stageAndCommitFile", () => {
     });
 
     it("pushes when `push: true` and a branch is resolvable", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let pushed = false;
 
@@ -95,6 +101,8 @@ describe("git: stageAndCommitFile", () => {
     });
 
     it("commits but does NOT push when push is false", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let pushed = false;
 
@@ -120,6 +128,8 @@ describe("git: stageAndCommitFile", () => {
     });
 
     it("returns pushed=false when push attempt fails (soft-fail)", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("git", ["add"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
@@ -146,6 +156,8 @@ describe("git: stageAndCommitFile", () => {
     });
 
     it("skips the push step when no branch is resolvable (detached HEAD)", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let pushed = false;
 
@@ -172,6 +184,8 @@ describe("git: stageAndCommitFile", () => {
     });
 
     it("commits with author when provided (smoke test — env propagation is exercised by stageAndCommit's test)", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let committed = false;
 

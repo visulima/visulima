@@ -106,6 +106,8 @@ const baseContext = (overrides: { resumeStageId?: string; stageEnabled?: boolean
 
 describe("npmVersionActions.publish: resume path", () => {
     it("does NOT pack or publish — only waits on the existing stage decision", async () => {
+        expect.hasAssertions();
+
         const actions = new NpmVersionActions();
         const ctx = baseContext({ resumeStageId: "stage-xyz", stageEnabled: true });
 
@@ -128,6 +130,8 @@ describe("npmVersionActions.publish: resume path", () => {
     });
 
     it("throws CONFIG_INVALID when publish.stage is disabled but resume is requested", async () => {
+        expect.hasAssertions();
+
         const actions = new NpmVersionActions();
         const ctx = baseContext({ resumeStageId: "stage-xyz", stageEnabled: false });
 
@@ -137,6 +141,8 @@ describe("npmVersionActions.publish: resume path", () => {
     });
 
     it("returns `stage-rejected` on the resume path when the wait decides rejected", async () => {
+        expect.hasAssertions();
+
         const actions = new NpmVersionActions();
         // Set up runner: stage view gone, npm view returns nothing → rejected
         const { calls, runner } = buildRunner([
@@ -164,6 +170,8 @@ describe("npmVersionActions.publish: resume path", () => {
     });
 
     it("returns `stage-timeout` on the resume path when the wait deadline elapses", async () => {
+        expect.hasAssertions();
+
         const actions = new NpmVersionActions();
         // Set up runner: stage view always pending → timeout
         const { calls, runner } = buildRunner(

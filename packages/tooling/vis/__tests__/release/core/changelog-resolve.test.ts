@@ -2,7 +2,7 @@ import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, expectTypeOf, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { resolveFormatter } from "../../../src/release/core/changelog/resolve";
 import type { ChangeFile, PlannedRelease } from "../../../src/release/types";
@@ -32,6 +32,8 @@ const mkChangeFile = (body: string): ChangeFile => {
 
 describe("resolveFormatter — built-ins", () => {
     it("returns a no-op formatter for setting=false", async () => {
+        expect.hasAssertions();
+
         const formatter = await resolveFormatter(false, "/tmp");
         const out = await formatter({ changeFiles: [], date: "2026-01-01", release: mkRelease("a"), target: "changelog" });
 
@@ -39,6 +41,8 @@ describe("resolveFormatter — built-ins", () => {
     });
 
     it("returns the default formatter for setting=undefined", async () => {
+        expect.hasAssertions();
+
         const formatter = await resolveFormatter(undefined, "/tmp");
         const out = await formatter({
             changeFiles: [mkChangeFile("- something happened")],
@@ -53,6 +57,8 @@ describe("resolveFormatter — built-ins", () => {
     });
 
     it("returns the default formatter for setting=\"default\"", async () => {
+        expect.hasAssertions();
+
         const formatter = await resolveFormatter("default", "/tmp");
         const out = await formatter({ changeFiles: [], date: "2026-01-01", release: mkRelease("a"), target: "changelog" });
 
@@ -63,6 +69,8 @@ describe("resolveFormatter — built-ins", () => {
     // per-change-file `git log`) plus a dynamic `import("../remote/detect")`. Fine
     // in isolation, but the cold spawn is slow under full-suite parallel load.
     it("returns the github formatter for setting=\"github\"", async () => {
+        expect.hasAssertions();
+
         const formatter = await resolveFormatter("github", "/tmp");
         const out = await formatter({
             changeFiles: [mkChangeFile("did a thing\n\npr: 42")],
@@ -71,46 +79,56 @@ describe("resolveFormatter — built-ins", () => {
             target: "changelog",
         });
 
-        expectTypeOf(out).toBeString();
+        expect(out).toBeTypeOf("string");
 
         expect(out).toContain("1.1.0");
     }, 15_000);
 
     it("returns the keep-a-changelog formatter for setting=\"keep-a-changelog\"", async () => {
+        expect.hasAssertions();
+
         const formatter = await resolveFormatter("keep-a-changelog", "/tmp");
         const out = await formatter({ changeFiles: [], date: "2026-01-01", release: mkRelease("a"), target: "changelog" });
 
-        expectTypeOf(out).toBeString();
+        expect(out).toBeTypeOf("string");
     });
 
     it("aliases \"keepachangelog\" to the same formatter", async () => {
+        expect.hasAssertions();
+
         const formatter = await resolveFormatter("keepachangelog", "/tmp");
         const out = await formatter({ changeFiles: [], date: "2026-01-01", release: mkRelease("a"), target: "changelog" });
 
-        expectTypeOf(out).toBeString();
+        expect(out).toBeTypeOf("string");
     });
 });
 
 describe("resolveFormatter — tuple form for built-ins", () => {
     it("forwards options to the github factory", async () => {
+        expect.hasAssertions();
+
         const formatter = await resolveFormatter(["github", { repo: "owner/name" }], "/tmp");
         const out = await formatter({ changeFiles: [], date: "2026-01-01", release: mkRelease("a"), target: "changelog" });
 
-        expectTypeOf(out).toBeString();
+        expect(out).toBeTypeOf("string");
     });
 
     it("forwards options to the keep-a-changelog factory", async () => {
+        expect.hasAssertions();
+
         const formatter = await resolveFormatter(["keep-a-changelog", {}], "/tmp");
         const out = await formatter({ changeFiles: [], date: "2026-01-01", release: mkRelease("a"), target: "changelog" });
 
-        expectTypeOf(out).toBeString();
+        expect(out).toBeTypeOf("string");
     });
 
     it("aliases \"keepachangelog\" tuple form", async () => {
+        expect.hasAssertions();
+
         const formatter = await resolveFormatter(["keepachangelog", {}], "/tmp");
         const out = await formatter({ changeFiles: [], date: "2026-01-01", release: mkRelease("a"), target: "changelog" });
 
-        expectTypeOf(out).toBeString();
+        expect(out).toBeTypeOf("string");
     });
 });
 
@@ -128,6 +146,8 @@ describe("resolveFormatter — custom user module", () => {
     });
 
     it("loads a relative module that default-exports a formatter", async () => {
+        expect.hasAssertions();
+
         const file = join(cwd, "my-formatter.mjs");
 
         writeFileSync(file, "export default (ctx) => `CUSTOM ${ctx.release.newVersion}`;\n");
@@ -139,6 +159,8 @@ describe("resolveFormatter — custom user module", () => {
     });
 
     it("loads a relative module whose default export is already callable (factory shape)", async () => {
+        expect.hasAssertions();
+
         const file = join(cwd, "factory.mjs");
 
         writeFileSync(file, "export default (opts) => (ctx) => `FACTORY ${opts.prefix} ${ctx.release.newVersion}`;\n");
@@ -153,6 +175,8 @@ describe("resolveFormatter — custom user module", () => {
         // If the default export *is* the formatter (not a factory) but the user
         // passed tuple form by mistake — calling it with options yields a string,
         // not a function, so resolve.ts returns the original export.
+        expect.hasAssertions();
+
         const file = join(cwd, "noopt.mjs");
 
         writeFileSync(file, "export default (ctx) => `PLAIN ${ctx.release.newVersion}`;\n");
@@ -164,6 +188,8 @@ describe("resolveFormatter — custom user module", () => {
     });
 
     it("throws when the module's default is not a function", async () => {
+        expect.hasAssertions();
+
         const file = join(cwd, "bad.mjs");
 
         writeFileSync(file, "export default { not: 'a function' };\n");

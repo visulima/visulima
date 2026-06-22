@@ -20,16 +20,20 @@ const makePkg = (
 
 describe("dep-graph: build inverted index", () => {
     it("indexes a simple workspace dep", () => {
+        expect.hasAssertions();
+
         const a = makePkg("a", { dependencies: { b: "^1.0.0" } });
         const b = makePkg("b");
         const graph = new DependencyGraph([a, b]);
 
-        expect(graph.getDependents("b")).toEqual([{ kind: "dependencies", name: "a", range: "^1.0.0" }]);
-        expect(graph.getDependents("a")).toEqual([]);
-        expect(graph.getDependencies("a")).toEqual([{ kind: "dependencies", name: "b", range: "^1.0.0" }]);
+        expect(graph.getDependents("b")).toStrictEqual([{ kind: "dependencies", name: "a", range: "^1.0.0" }]);
+        expect(graph.getDependents("a")).toStrictEqual([]);
+        expect(graph.getDependencies("a")).toStrictEqual([{ kind: "dependencies", name: "b", range: "^1.0.0" }]);
     });
 
     it("indexes peerDependencies, devDependencies, and optionalDependencies separately", () => {
+        expect.hasAssertions();
+
         const a = makePkg("a", {
             devDependencies: { b: "*" },
             optionalDependencies: { d: "~1.0.0" },
@@ -43,6 +47,8 @@ describe("dep-graph: build inverted index", () => {
     });
 
     it("ignores external (non-workspace) deps", () => {
+        expect.hasAssertions();
+
         const a = makePkg("a", { dependencies: { b: "^1.0.0", lodash: "^4.0.0" } });
         const graph = new DependencyGraph([a, makePkg("b")]);
 
@@ -52,6 +58,8 @@ describe("dep-graph: build inverted index", () => {
     });
 
     it("preserves the original range string (incl. workspace: / catalog: prefixes)", () => {
+        expect.hasAssertions();
+
         const a = makePkg("a", { dependencies: { b: "workspace:^1.0.0", c: "catalog:dev" } });
         const graph = new DependencyGraph([a, makePkg("b"), makePkg("c")]);
 
@@ -60,6 +68,8 @@ describe("dep-graph: build inverted index", () => {
     });
 
     it("rejects duplicate package names", () => {
+        expect.hasAssertions();
+
         const a1 = makePkg("a");
         const a2 = { ...makePkg("a"), dir: "/repo/packages/elsewhere" };
 
@@ -80,6 +90,8 @@ describe("dep-graph: build inverted index", () => {
 
 describe("dep-graph: topologicalSort", () => {
     it("sorts a linear chain a → b → c (deps before dependents)", () => {
+        expect.hasAssertions();
+
         const c = makePkg("c");
         const b = makePkg("b", { dependencies: { c: "^1.0.0" } });
         const a = makePkg("a", { dependencies: { b: "^1.0.0" } });
@@ -93,6 +105,8 @@ describe("dep-graph: topologicalSort", () => {
 
     it("sorts a fan-out graph correctly", () => {
         // shared depended on by a, b, c
+        expect.hasAssertions();
+
         const shared = makePkg("shared");
         const a = makePkg("a", { dependencies: { shared: "^1.0.0" } });
         const b = makePkg("b", { dependencies: { shared: "^1.0.0" } });
@@ -107,6 +121,8 @@ describe("dep-graph: topologicalSort", () => {
     });
 
     it("detects cyclic dependencies (non-dev)", () => {
+        expect.hasAssertions();
+
         const a = makePkg("a", { dependencies: { b: "^1.0.0" } });
         const b = makePkg("b", { dependencies: { a: "^1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -126,6 +142,8 @@ describe("dep-graph: topologicalSort", () => {
     });
 
     it("tolerates devDependency cycles", () => {
+        expect.hasAssertions();
+
         const a = makePkg("a", { devDependencies: { b: "^1.0.0" } });
         const b = makePkg("b", { devDependencies: { a: "^1.0.0" } });
         const graph = new DependencyGraph([a, b]);
@@ -138,6 +156,8 @@ describe("dep-graph: topologicalSort", () => {
     });
 
     it("respects subset filter — only sorts requested packages", () => {
+        expect.hasAssertions();
+
         const c = makePkg("c");
         const b = makePkg("b", { dependencies: { c: "^1.0.0" } });
         const a = makePkg("a", { dependencies: { b: "^1.0.0" } });
@@ -154,12 +174,16 @@ describe("dep-graph: topologicalSort", () => {
 
 describe("dep-graph: helpers", () => {
     it("size returns total package count", () => {
+        expect.hasAssertions();
+
         const graph = new DependencyGraph([makePkg("a"), makePkg("b"), makePkg("c")]);
 
         expect(graph.size).toBe(3);
     });
 
     it("getPackage returns the workspace entry", () => {
+        expect.hasAssertions();
+
         const a = makePkg("a");
         const graph = new DependencyGraph([a]);
 
@@ -168,6 +192,8 @@ describe("dep-graph: helpers", () => {
     });
 
     it("isInternal reports membership", () => {
+        expect.hasAssertions();
+
         const graph = new DependencyGraph([makePkg("a"), makePkg("b")]);
 
         expect(graph.isInternal("a")).toBe(true);

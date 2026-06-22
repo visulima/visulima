@@ -145,6 +145,8 @@ describe("vis release doctor — first-release.repo-not-greenfield (M-1)", () =>
     });
 
     it("passes on a greenfield repo (no tags, no published versions) when --first-release is set", async () => {
+        expect.hasAssertions();
+
         const capture = captureStdout();
 
         try {
@@ -168,6 +170,8 @@ describe("vis release doctor — first-release.repo-not-greenfield (M-1)", () =>
     it("errors out when --first-release is set but a matching release tag exists", async () => {
         // Create a tag matching the default `{name}@{version}` pattern
         // — once present, the workspace is no longer greenfield.
+        expect.hasAssertions();
+
         execFileSync("git", ["tag", "@scope/a@0.0.1"], { cwd });
 
         const capture = captureStdout();
@@ -199,6 +203,8 @@ describe("vis release doctor — first-release.repo-not-greenfield (M-1)", () =>
         // Even with a tag present, the check is silent without the flag —
         // doctor is not a "is this greenfield?" probe, it's an opt-in
         // guardrail for the bootstrap workflow.
+        expect.hasAssertions();
+
         execFileSync("git", ["tag", "@scope/a@0.0.1"], { cwd });
 
         const capture = captureStdout();

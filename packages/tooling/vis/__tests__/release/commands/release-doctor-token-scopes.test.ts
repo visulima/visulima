@@ -129,6 +129,8 @@ describe("vis release doctor — github.token-scopes (semantic-release #2469)", 
     });
 
     it("warns when the token carries the broad `repo` scope", async () => {
+        expect.hasAssertions();
+
         vi.doMock(import("../../../src/release/core/shell-runner"), () => {
             return {
                 createShellRunner: () => {
@@ -173,6 +175,8 @@ describe("vis release doctor — github.token-scopes (semantic-release #2469)", 
     });
 
     it("passes when the token scopes are appropriately narrow", async () => {
+        expect.hasAssertions();
+
         vi.doMock(import("../../../src/release/core/shell-runner"), () => {
             return {
                 createShellRunner: () => {
@@ -218,6 +222,8 @@ describe("vis release doctor — github.token-scopes (semantic-release #2469)", 
     });
 
     it("skips when `gh auth status` returns no parseable Token scopes line", async () => {
+        expect.hasAssertions();
+
         vi.doMock(import("../../../src/release/core/shell-runner"), () => {
             return {
                 createShellRunner: () => {
