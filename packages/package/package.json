@@ -143,7 +143,7 @@
         "eslint": "9.39.1",
         "execa": "^9.6.0",
         "npm": "^11.6.3",
-        "prettier": "^3.6.2",
+        "prettier": "^3.8.4",
         "publint": "^0.3.15",
         "rimraf": "6.1.2",
         "semantic-release": "25.0.2",
