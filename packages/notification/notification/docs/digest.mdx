@@ -1,0 +1,74 @@
+---
+title: Digest
+description: Batch a burst of events into a single notification over a time or cron window
+---
+
+# Digest
+
+`@visulima/notification/digest` collapses a burst of events into **one** notification — the antidote to notification
+fatigue ("50 people liked your post" instead of 50 pushes). Events are grouped by a key into a time (or cron) window;
+when the window closes, every collected event is flushed together.
+
+It is store-backed and edge-safe; [`croner`](https://github.com/hexagon/croner) is an optional peer used for cron
+windows:
+
+```sh
+npm install @visulima/notification croner
+```
+
+## Usage
+
+```typescript
+import { createDigester } from "@visulima/notification/digest";
+
+const digester = createDigester<{ subscriberId: string; postId: string }>({
+    // Group events into one window per subscriber + post.
+    key: (event) => `${event.subscriberId}:${event.postId}`,
+    // Collect for 10 minutes from the first event.
+    window: { amount: 10, unit: "minutes" },
+    // Called once when the window closes, with every event.
+    onFlush: (events, key) => runtime.trigger(summaryWorkflow, { count: events.length, events }),
+});
+
+// On each incoming event:
+await digester.add({ subscriberId: "u1", postId: "p1" }); // opens a window
+await digester.add({ subscriberId: "u1", postId: "p1" }); // folds into the open window
+
+// Flush closed windows on a timer (cron job, Cloudflare alarm, alongside runtime.sweep):
+await digester.sweep();
+```
+
+`add` returns `{ key, opened }` (`opened: true` when it started a new window). `sweep(now?, limit?)` flushes every window
+whose wake-at has passed and returns how many it flushed.
+
+## Windows
+
+`window` is a [`Duration`](/docs/packages/workflow/steps): a number of milliseconds, a structured `{ amount, unit }`, or
+a `{ cron }` expression (e.g. `{ cron: "0 9 * * *" }` for "every day at 9am"). Pass a function `(event) => Duration` to
+vary the window per event. A window's close time is fixed by its **first** event — later events do not extend it.
+
+## Stores
+
+`createDigester` defaults to an in-process store. For durability across restarts/instances pass an
+`UnstorageDigestStore` (any [unstorage](https://unstorage.unjs.io) driver — Cloudflare KV/D1, Redis, filesystem):
+
+```typescript
+import { createDigester, UnstorageDigestStore } from "@visulima/notification/digest";
+import { createStorage } from "unstorage";
+
+const digester = createDigester({
+    key: (event) => event.subscriberId,
+    window: { amount: 1, unit: "hours" },
+    onFlush: (events) => sendSummary(events),
+    store: new UnstorageDigestStore(createStorage()),
+});
+```
+
+The unstorage store keeps a small wake-index document; its writes are not transactional, so for high-contention
+multi-writer setups prefer a store with atomic guarantees.
+
+## Digest vs. workflow `step.digest`
+
+This digester aggregates **before** triggering — it batches raw events and fires one workflow/notification per window.
+That keeps the model simple and the engine store-agnostic. Combine it with [workflows](/docs/packages/notification/workflow)
+by having `onFlush` trigger a notification workflow with the batched events.

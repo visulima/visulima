@@ -204,6 +204,14 @@
             "types": "./dist/utils/result.d.ts",
             "default": "./dist/utils/result.js"
         },
+        "./workflow": {
+            "types": "./dist/workflow/index.d.ts",
+            "default": "./dist/workflow/index.js"
+        },
+        "./digest": {
+            "types": "./dist/digest/index.d.ts",
+            "default": "./dist/digest/index.js"
+        },
         "./package.json": "./package.json"
     },
     "files": [
@@ -241,9 +249,11 @@
         "@visulima/email": "1.0.0-alpha.41",
         "@visulima/error": "6.0.0-alpha.34",
         "@visulima/packem": "catalog:dev",
+        "@visulima/workflow": "1.0.0-alpha.1",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
+        "croner": "^10.0.1",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "handlebars": "catalog:dev",
@@ -261,7 +271,9 @@
         "@aws-sdk/client-sqs": "^3.0.0",
         "@opentelemetry/api": "^1.0.0 || ^2.0.0",
         "@visulima/email": "1.0.0-alpha.41",
+        "@visulima/workflow": "1.0.0-alpha.1",
         "bullmq": "^5.0.0",
+        "croner": "^10.0.1",
         "handlebars": "catalog:peer",
         "liquidjs": "^10.0.0",
         "pg-boss": "^10.0.0",
@@ -277,7 +289,13 @@
         "@visulima/email": {
             "optional": true
         },
+        "@visulima/workflow": {
+            "optional": true
+        },
         "bullmq": {
+            "optional": true
+        },
+        "croner": {
             "optional": true
         },
         "handlebars": {

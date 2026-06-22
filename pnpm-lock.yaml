@@ -6718,7 +6718,7 @@ importers:
     devDependencies:
       '@anolilab/eslint-config':
         specifier: catalog:lint
-        version: 27.0.10(79d37b0a3404c8949c1338e2b9b64ef4)
+        version: 27.0.10(f3857ae4b52c2636343217e067f22515)
       '@anolilab/prettier-config':
         specifier: catalog:lint
         version: 10.0.1(prettier@3.8.4)
@@ -6752,6 +6752,9 @@ importers:
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.89(8852eb4de89e2a1acb38b0db66cc4cc6)
+      '@visulima/workflow':
+        specifier: 1.0.0-alpha.1
+        version: link:../../workflow/workflow
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.8(@vitest/browser@4.1.8)(vitest@4.1.8)
@@ -6761,6 +6764,9 @@ importers:
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 9.3.1
+      croner:
+        specifier: ^10.0.1
+        version: 10.0.1
       esbuild:
         specifier: catalog:build
         version: 0.28.1
@@ -17918,7 +17924,7 @@ packages:
       esbuild: '>=0.28.1'
       rollup: '>=4.59.0'
       storybook: ^10.4.4
-      vite: '>=7.1.11'
+      vite: ^7.3.5
       webpack: '*'
     peerDependenciesMeta:
       esbuild:

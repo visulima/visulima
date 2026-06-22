@@ -12,6 +12,8 @@
         "queue",
         "events",
         "webhooks",
-        "templates"
+        "templates",
+        "workflow",
+        "digest"
     ]
 }

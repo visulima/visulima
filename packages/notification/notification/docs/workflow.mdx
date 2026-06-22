@@ -1,0 +1,79 @@
+---
+title: Workflows
+description: Code-first, durable multi-step notifications built on @visulima/workflow
+---
+
+# Workflows
+
+`@visulima/notification/workflow` turns the send primitive into **durable, code-first workflows**: a sequence of channel
+sends with delays and conditional logic that survives process restarts. It is a thin layer over
+[`@visulima/workflow`](/docs/packages/workflow) — `createNotificationWorkflow` returns a plain `WorkflowDefinition`, so
+it plugs straight into a workflow runtime.
+
+`@visulima/workflow` is an optional peer; install it alongside:
+
+```sh
+npm install @visulima/notification @visulima/workflow
+```
+
+## Defining a workflow
+
+```typescript
+import { createNotification } from "@visulima/notification";
+import { createNotificationWorkflow } from "@visulima/notification/workflow";
+import { slackProvider } from "@visulima/notification/providers/slack";
+import { fcmProvider } from "@visulima/notification/providers/fcm";
+import { createRuntime } from "@visulima/workflow";
+
+const notify = createNotification({
+    chat: slackProvider({ token: "xoxb-…", defaultChannel: "C123" }),
+    push: fcmProvider({ projectId: "app", getAccessToken: getToken }),
+});
+
+const onComment = createNotificationWorkflow<{ subscriberId: string; author: string }>(notify, {
+    id: "comment-posted",
+    run: async ({ step, payload }) => {
+        // Each channel step delivers exactly once and records its receipt.
+        await step.push("ping", () => ({ to: [payload.subscriberId], title: "New comment", body: payload.author }));
+
+        // Durably pause — the process can exit and resume later.
+        await step.delay("cool-off", { amount: 1, unit: "hours" });
+
+        // Conditionally skip a step.
+        await step.chat("recap", () => ({ text: `${payload.author} commented` }), {
+            skip: ({ payload }) => payload.author === "bot",
+        });
+    },
+});
+```
+
+## Running it
+
+A notification workflow is an ordinary `WorkflowDefinition` — drive it with a workflow runtime:
+
+```typescript
+const runtime = createRuntime({ workflows: [onComment] });
+
+await runtime.trigger(onComment, { subscriberId: "u1", author: "ada" });
+
+// Resume delayed runs on a timer (cron job, Cloudflare alarm, …):
+await runtime.sweep();
+```
+
+See the [workflow engine docs](/docs/packages/workflow) for durability, stores (memory / unstorage / SQL / Redis) and
+the cross-process lease.
+
+## The `step` object
+
+| Step                                               | What it does                                                                                               |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `step.email / sms / push / chat / inApp / webhook` | Resolve a channel payload and deliver it through the bound facade **exactly once**; returns the `Receipt`. |
+| `step.delay(id, duration)`                         | Durably pause (ms, `{ amount, unit }`, or `{ cron }`).                                                     |
+| `step.custom(id, fn)`                              | Escape hatch to a raw engine step for non-send side effects.                                               |
+
+Each channel step takes `(id, resolve, options?)`. `resolve` returns the channel payload (it receives `{ payload }`);
+`options.skip` conditionally skips the send. Because sends go through the engine's `step`, they are recorded and **not
+re-sent on replay**.
+
+> **Replay safety:** only work inside `step.*` runs exactly once. Bare side effects in the `run` body re-execute on every
+> replay — see the [workflow durability docs](/docs/packages/workflow/durability).
