@@ -73,6 +73,8 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
     });
 
     it("throws STAGE_PENDING when staged.json holds an entry for a planned package", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",
@@ -96,6 +98,8 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
     it("blocks even when the staged version is older than the planned bump (would orphan the prior tarball)", async () => {
         // Staged 1.2.0 (timed out); plan would bump to 1.2.1 — without the
         // guard, we'd publish 1.2.1 leaving 1.2.0 pending on npm forever.
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",
@@ -117,6 +121,8 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
     });
 
     it("includes the package + stage id + reason in the error message", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",
@@ -150,6 +156,8 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
     });
 
     it("does NOT block when staged.json holds an entry for an UNRELATED package", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-other",
@@ -171,6 +179,8 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
     });
 
     it("does NOT block when staged.json is absent", async () => {
+        expect.hasAssertions();
+
         const ctx = await buildContext({ cwd });
 
         await expect(applyContext(ctx, { dryRun: true })).resolves.toBeDefined();
@@ -179,6 +189,8 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
     it("does NOT block when staged.json has an empty pending array", async () => {
         // Write directly to the file path so writeStagedRegistry doesn't
         // delete it for being empty.
+        expect.hasAssertions();
+
         const { mkdir, writeFile } = await import("node:fs/promises");
 
         await mkdir(join(cwd, ".vis", "release"), { recursive: true });
@@ -210,6 +222,8 @@ describe.skipIf(isWindows)("stage guardrail: RESUME case (same name + same versi
         // the in-memory plan matches the pending stage, which is the
         // resume case — we want to resume waiting on the existing stage,
         // not refuse the operation.
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",
@@ -233,6 +247,8 @@ describe.skipIf(isWindows)("stage guardrail: RESUME case (same name + same versi
     it("bLOCKS when the pending stage's version is below the planned version (orphan-risk)", async () => {
         // Pending at 1.2.0; plan bumps to 1.2.1. If we let this through,
         // 1.2.0 would never be tagged and the pending tarball orphans.
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",
@@ -256,6 +272,8 @@ describe.skipIf(isWindows)("stage guardrail: RESUME case (same name + same versi
     it("bLOCKS when the pending stage's version is ABOVE the planned version (would orphan the newer stage)", async () => {
         // Pending at 1.3.0 (somehow); plan only bumps to 1.2.1. Letting
         // this through would still leave 1.3.0 orphaned. Block.
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",
@@ -277,6 +295,8 @@ describe.skipIf(isWindows)("stage guardrail: RESUME case (same name + same versi
     });
 
     it("aLLOWS resume when MULTIPLE pending entries all match planned versions", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [
                 {
@@ -312,6 +332,8 @@ describe.skipIf(isWindows)("stage guardrail: assertNoConflictingPendingStages (p
     });
 
     it("throws STAGE_PENDING with hint when called for the publish phase", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",
@@ -339,11 +361,13 @@ describe.skipIf(isWindows)("stage guardrail: assertNoConflictingPendingStages (p
             // Verb in the message differs by phase so logs are
             // unambiguous when the guard fires in mixed flows.
             expect(error.message).toContain("Refusing to publish");
-            expect(error.hint).toBeTruthy();
+            expect(error.hint).toBeDefined();
         }
     });
 
     it("uses the `version` verb when phase is version", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",
@@ -384,6 +408,8 @@ describe.skipIf(isWindows)("stage guardrail: self-heal for out-of-band approvals
     });
 
     it("drains a pending entry whose version is already on the registry (operator approved via npmjs.com UI)", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",
@@ -423,6 +449,8 @@ describe.skipIf(isWindows)("stage guardrail: self-heal for out-of-band approvals
     });
 
     it("does NOT drain when `npm view` returns no tarball (still pending)", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",
@@ -463,6 +491,8 @@ describe.skipIf(isWindows)("stage guardrail: self-heal for out-of-band approvals
         // Two pending entries — one already live (approved out-of-band),
         // one still pending. Guard should drain the live one and still
         // throw for the other.
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [
                 {
@@ -529,6 +559,8 @@ describe.skipIf(isWindows)("stage guardrail: self-heal for out-of-band approvals
     });
 
     it("respects skipSelfHeal — no npm-view round-trips, straight to throw", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-xyz",

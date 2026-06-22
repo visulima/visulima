@@ -11,12 +11,16 @@ import { VisReleaseError } from "../../../src/release/errors";
 
 describe(mergeProtectedContent, () => {
     it("returns the new body unchanged when there is no existing body", () => {
+        expect.hasAssertions();
+
         const next = "## Pending releases\n\n- pkg: 1.0 -> 1.1";
 
         expect(mergeProtectedContent(undefined, next)).toBe(next);
     });
 
     it("returns the new body unchanged when the existing body has no markers", () => {
+        expect.hasAssertions();
+
         const existing = "Plain text I edited — but no markers.";
         const next = "## Pending releases\n\n- pkg: 1.0 -> 1.1";
 
@@ -24,6 +28,8 @@ describe(mergeProtectedContent, () => {
     });
 
     it("preserves a single operator-edited block verbatim", () => {
+        expect.hasAssertions();
+
         const existing = [
             "## Pending releases (old)",
             "",
@@ -49,6 +55,8 @@ describe(mergeProtectedContent, () => {
     });
 
     it("preserves multiple operator-edited blocks in order", () => {
+        expect.hasAssertions();
+
         const existing = [
             "<!-- vis:user-content -->",
             "BLOCK ONE",
@@ -70,6 +78,8 @@ describe(mergeProtectedContent, () => {
     });
 
     it("fills empty marker pairs in the new body before appending the rest", () => {
+        expect.hasAssertions();
+
         const existing = [
             "<!-- vis:user-content -->",
             "PRESERVED",
@@ -95,6 +105,8 @@ describe(mergeProtectedContent, () => {
     });
 
     it("rejects nested markers up-front (silent data loss otherwise)", () => {
+        expect.hasAssertions();
+
         const nested = [
             "<!-- vis:user-content -->",
             "outer",
@@ -111,6 +123,8 @@ describe(mergeProtectedContent, () => {
     // the CI handler can surface a clean CI-tail diagnostic instead of a
     // bare `Error`. Code is `CONFIG_INVALID` (RFC §19.4).
     it("f7: throws VisReleaseError with CONFIG_INVALID for nested markers", () => {
+        expect.hasAssertions();
+
         const nested = [
             "<!-- vis:user-content -->",
             "outer",
@@ -136,6 +150,8 @@ describe(mergeProtectedContent, () => {
     // partial edit because BLOCK_RE only matches well-formed pairs. We
     // count opens vs closes and refuse to merge when they're unbalanced.
     it("f18: rejects unbalanced markers (more opens than closes)", () => {
+        expect.hasAssertions();
+
         const orphan = [
             "<!-- vis:user-content -->",
             "first block — closed",
@@ -157,6 +173,8 @@ describe(mergeProtectedContent, () => {
     });
 
     it("f18: rejects unbalanced markers (more closes than opens)", () => {
+        expect.hasAssertions();
+
         const orphan = [
             "<!-- vis:user-content -->",
             "first",
@@ -182,6 +200,8 @@ describe(mergeProtectedContent, () => {
     // trip the balance check. The fenced occurrences are documentation,
     // not real markers — strip fences before counting.
     it("f18: ignores marker tokens inside fenced code blocks (``` fence)", () => {
+        expect.hasAssertions();
+
         const documented = [
             "## How protected blocks work",
             "",
@@ -217,6 +237,8 @@ describe(mergeProtectedContent, () => {
         // and the pre-strip code would throw. With the strip, the
         // fence is treated as documentation and only the real
         // well-formed pair below counts.
+        expect.hasAssertions();
+
         const documented = [
             "Example of the open marker:",
             "",
@@ -238,6 +260,8 @@ describe(mergeProtectedContent, () => {
         // Fence contains a balanced documentation pair; the body
         // OUTSIDE the fence is genuinely unbalanced (orphan open).
         // The strip must not mask the real imbalance.
+        expect.hasAssertions();
+
         const orphan = [
             "```",
             "<!-- vis:user-content -->",

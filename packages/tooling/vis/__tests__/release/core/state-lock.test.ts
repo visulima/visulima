@@ -22,6 +22,8 @@ describe("state — process-level lock (RFC §19.1)", () => {
     });
 
     it("writes a lock file with current PID + timestamp", async () => {
+        expect.hasAssertions();
+
         const path = await acquireLock(cwd, changesDir);
 
         expect(path).toBe(lockFilePath(cwd, changesDir));
@@ -36,19 +38,24 @@ describe("state — process-level lock (RFC §19.1)", () => {
     });
 
     it("releaseLock removes the file", async () => {
+        expect.hasAssertions();
+
         await acquireLock(cwd, changesDir);
         await releaseLock(cwd, changesDir);
 
         const fs = await import("node:fs/promises");
 
-        await expect(fs.access(lockFilePath(cwd, changesDir))).rejects.toThrow();
+        await expect(fs.access(lockFilePath(cwd, changesDir))).rejects.toThrow(/ENOENT/);
     });
 
     it("releaseLock is a no-op when no lock exists", async () => {
+        expect.hasAssertions();
         await expect(releaseLock(cwd, changesDir)).resolves.toBeUndefined();
     });
 
     it("refuses to acquire when held by a live PID (current process)", async () => {
+        expect.hasAssertions();
+
         await acquireLock(cwd, changesDir);
 
         await expect(acquireLock(cwd, changesDir)).rejects.toThrow(VisReleaseError);
@@ -59,6 +66,8 @@ describe("state — process-level lock (RFC §19.1)", () => {
 
     it("takes over a stale lock (dead PID)", async () => {
         // Pick a PID that's almost certainly not running.
+        expect.hasAssertions();
+
         const fakeDeadPid = 999_999;
 
         mkdirSync(join(cwd, changesDir), { recursive: true });
@@ -77,6 +86,8 @@ describe("state — process-level lock (RFC §19.1)", () => {
 
     it("takes over an old lock (older than 1h) even if PID is live", async () => {
         // Use a definitely-live PID (us) but timestamp from 2 hours ago.
+        expect.hasAssertions();
+
         const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
         mkdirSync(join(cwd, changesDir), { recursive: true });
@@ -94,6 +105,8 @@ describe("state — process-level lock (RFC §19.1)", () => {
     });
 
     it("takes over an unparseable lock (treats as stale)", async () => {
+        expect.hasAssertions();
+
         mkdirSync(join(cwd, changesDir), { recursive: true });
         writeFileSync(lockFilePath(cwd, changesDir), "not valid json");
 
@@ -107,6 +120,8 @@ describe("state — process-level lock (RFC §19.1)", () => {
     it("uses O_EXCL: only one of two parallel acquires can succeed (RFC §19.1)", async () => {
         // Race two acquires at the same instant. With O_EXCL, exactly one
         // should succeed; the loser sees the live PID lock and throws.
+        expect.hasAssertions();
+
         const results = await Promise.allSettled([
             acquireLock(cwd, changesDir),
             acquireLock(cwd, changesDir),

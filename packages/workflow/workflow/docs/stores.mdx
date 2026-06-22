@@ -5,8 +5,8 @@ description: The WorkflowStore contract and the built-in adapters
 
 # Stores
 
-Durability is delegated to a small `WorkflowStore` contract; the engine stays storage-agnostic. Two stores ship in the
-box, and you can implement the contract over Redis, Postgres, a Durable Object, or anything else.
+Durability is delegated to a small `WorkflowStore` contract; the engine stays storage-agnostic. Five stores ship in the
+box (memory, unstorage, SQL, Redis, Durable Object), and you can implement the contract over anything else.
 
 ## Built-in stores
 
@@ -73,6 +73,38 @@ import Redis from "ioredis";
 const store = new RedisStore(new Redis(process.env.REDIS_URL));
 const runtime = createRuntime({ store });
 ```
+
+### DurableObjectStore (Cloudflare)
+
+Persistence in a [Cloudflare Durable Object](https://developers.cloudflare.com/durable-objects/)'s storage. Because a
+Durable Object processes requests **serially**, the lease is race-free by construction — the cleanest correct
+cross-process store. It also uses DO **alarms**: the store arms an alarm at the earliest wake-at, so the object wakes
+itself to `sweep` — **no external cron needed** (the push model the `due` contract was designed for). The adapter takes a
+structural storage object, so it needs no `@cloudflare/workers-types` dependency.
+
+```typescript
+import { createRuntime } from "@visulima/workflow";
+import { DurableObjectStore } from "@visulima/workflow/store/durable-object";
+
+export class WorkflowDurableObject {
+    #runtime;
+
+    constructor(state: DurableObjectState) {
+        this.#runtime = createRuntime({ store: new DurableObjectStore(state.storage), workflows });
+    }
+
+    async fetch(request: Request) {
+        // route trigger() / signal() calls into this.#runtime
+    }
+
+    async alarm() {
+        await this.#runtime.sweep(); // the store re-arms the next alarm after each save
+    }
+}
+```
+
+One Durable Object instance is one runtime, so there is no cross-instance contention to coordinate — the DO _is_ the
+single owner. Completed runs are retained in storage (for `getRun`); `delete(runId)` to evict them.
 
 ## The contract
 

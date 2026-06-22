@@ -11,7 +11,10 @@ license = "MIT"
 # always builds a package's library when building one of its binaries. Shared
 # logic ported off Node lives in the `core` crate, which the CLI depends on.
 [workspace]
-members = [ "cli", "core" ]
+members = [
+  "cli",
+  "core"
+]
 
 # `rlib` is added alongside `cdylib` so the in-crate criterion benches
 # (native/benches/) can link the pure transpile/sort logic. `napi build` still

@@ -50,34 +50,44 @@ describe(createVisWorkspaceReader, () => {
     });
 
     it("enumerates every workspace project that has a package.json", async () => {
+        expect.hasAssertions();
+
         const reader = createVisWorkspaceReader({ cwd });
         const result = await reader.listPackages();
 
-        expect(result.map((r) => r.manifest.name).sort()).toEqual(["@scope/a", "@scope/b", "@scope/web"]);
+        expect(result.map((r) => r.manifest.name).sort()).toStrictEqual(["@scope/a", "@scope/b", "@scope/web"]);
     });
 
     it("filters by project.json tag", async () => {
+        expect.hasAssertions();
+
         const reader = createVisWorkspaceReader({ cwd, tag: "type:package" });
         const result = await reader.listPackages();
 
-        expect(result.map((r) => r.manifest.name).sort()).toEqual(["@scope/a", "@scope/b"]);
+        expect(result.map((r) => r.manifest.name).sort()).toStrictEqual(["@scope/a", "@scope/b"]);
     });
 
     it("filters by projectType", async () => {
+        expect.hasAssertions();
+
         const reader = createVisWorkspaceReader({ cwd, projectType: "application" });
         const result = await reader.listPackages();
 
-        expect(result.map((r) => r.manifest.name)).toEqual(["@scope/web"]);
+        expect(result.map((r) => r.manifest.name)).toStrictEqual(["@scope/web"]);
     });
 
     it("composes tag + projectType filters", async () => {
+        expect.hasAssertions();
+
         const reader = createVisWorkspaceReader({ cwd, projectType: "library", tag: "category:internal" });
         const result = await reader.listPackages();
 
-        expect(result.map((r) => r.manifest.name)).toEqual(["@scope/b"]);
+        expect(result.map((r) => r.manifest.name)).toStrictEqual(["@scope/b"]);
     });
 
     it("returns absolute manifestPath usable by downstream consumers", async () => {
+        expect.hasAssertions();
+
         const reader = createVisWorkspaceReader({ cwd, tag: "type:package" });
         const result = await reader.listPackages();
         const a = result.find((r) => r.manifest.name === "@scope/a");

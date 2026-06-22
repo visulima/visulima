@@ -13,6 +13,8 @@ import { cargo, goMod, gradleProperties, jsr, pomXml, pyproject } from "../../sr
 
 describe("presets: jsr", () => {
     it("wires jsr versionActions + jsrConfigPath, no jsrPublishArgs by default", () => {
+        expect.hasAssertions();
+
         const config = jsr();
 
         expect(config.versionActions).toBe("jsr");
@@ -21,12 +23,16 @@ describe("presets: jsr", () => {
     });
 
     it("maps allowSlowTypes → --allow-slow-types and merges publishArgs", () => {
+        expect.hasAssertions();
+
         const config = jsr({ allowSlowTypes: true, publishArgs: ["--no-provenance"] });
 
-        expect(config.jsrPublishArgs).toEqual(["--allow-slow-types", "--no-provenance"]);
+        expect(config.jsrPublishArgs).toStrictEqual(["--allow-slow-types", "--no-provenance"]);
     });
 
     it("points jsrConfigPath at a custom manifest", () => {
+        expect.hasAssertions();
+
         const config = jsr({ manifestPath: "deno.json" });
 
         expect(config.jsrConfigPath).toBe("deno.json");
@@ -35,6 +41,8 @@ describe("presets: jsr", () => {
 
 describe("presets: cargo", () => {
     it("emits a Cargo.toml rule under the package root by default", () => {
+        expect.hasAssertions();
+
         const config = cargo();
 
         expect(config.extraFiles).toHaveLength(1);
@@ -45,12 +53,16 @@ describe("presets: cargo", () => {
     });
 
     it("places Cargo.toml under crateDir when provided", () => {
+        expect.hasAssertions();
+
         const config = cargo({ crateDir: "crates/native" });
 
         expect(config.extraFiles?.[0]?.path).toBe("crates/native/Cargo.toml");
     });
 
     it("appends user-provided extra rules after the preset's own", () => {
+        expect.hasAssertions();
+
         const config = cargo({
             extraFiles: [{ path: "README.md", search: String.raw`v\d+\.\d+\.\d+` }],
         });
@@ -60,6 +72,8 @@ describe("presets: cargo", () => {
     });
 
     it("regex matches a typical Cargo.toml [package] version line", () => {
+        expect.hasAssertions();
+
         const rule = cargo().extraFiles![0]!;
         const regex = new RegExp(rule.search, rule.flags);
 
@@ -77,18 +91,24 @@ describe("presets: cargo", () => {
 
 describe("presets: pyproject", () => {
     it("emits a pyproject.toml rule under the package root by default", () => {
+        expect.hasAssertions();
+
         const config = pyproject();
 
         expect(config.extraFiles?.[0]?.path).toBe("pyproject.toml");
     });
 
     it("places pyproject.toml under projectDir when provided", () => {
+        expect.hasAssertions();
+
         const config = pyproject({ projectDir: "py/sdk" });
 
         expect(config.extraFiles?.[0]?.path).toBe("py/sdk/pyproject.toml");
     });
 
     it("regex matches a PEP 621 [project] version line", () => {
+        expect.hasAssertions();
+
         const rule = pyproject().extraFiles![0]!;
         const regex = new RegExp(rule.search, rule.flags);
 
@@ -101,6 +121,8 @@ describe("presets: pyproject", () => {
         // The preset doesn't mutate uv.lock itself — uv regenerates it
         // on `uv sync`/`uv build`. The path is recorded so doctor can
         // warn when it's missing despite the operator opting in.
+        expect.hasAssertions();
+
         const config = pyproject({ uvLockPath: "../uv.lock" });
 
         expect(config.uvLockPath).toBe("../uv.lock");
@@ -110,12 +132,16 @@ describe("presets: pyproject", () => {
     });
 
     it("threads uvWorkspace through when set (release-please #2560)", () => {
+        expect.hasAssertions();
+
         const config = pyproject({ uvWorkspace: { root: ".." } });
 
-        expect(config.uvWorkspace).toEqual({ root: ".." });
+        expect(config.uvWorkspace).toStrictEqual({ root: ".." });
     });
 
     it("omits uvLockPath / uvWorkspace fields when not requested (default config stays minimal)", () => {
+        expect.hasAssertions();
+
         const config = pyproject();
 
         expect(config.uvLockPath).toBeUndefined();
@@ -125,6 +151,8 @@ describe("presets: pyproject", () => {
 
 describe("presets: gradleProperties", () => {
     it("uses the `version` property by default", () => {
+        expect.hasAssertions();
+
         const config = gradleProperties();
         const rule = config.extraFiles![0]!;
 
@@ -133,6 +161,8 @@ describe("presets: gradleProperties", () => {
     });
 
     it("uses a custom property name when provided", () => {
+        expect.hasAssertions();
+
         const config = gradleProperties({ property: "projectVersion" });
         const rule = config.extraFiles![0]!;
 
@@ -141,6 +171,8 @@ describe("presets: gradleProperties", () => {
     });
 
     it("regex matches a gradle.properties version line", () => {
+        expect.hasAssertions();
+
         const rule = gradleProperties().extraFiles![0]!;
         const regex = new RegExp(rule.search, rule.flags);
 
@@ -152,6 +184,8 @@ describe("presets: gradleProperties", () => {
 
 describe("presets: pomXml", () => {
     it("emits a pom.xml rule WITHOUT the `g` flag (project version only)", () => {
+        expect.hasAssertions();
+
         const config = pomXml();
         const rule = config.extraFiles![0]!;
 
@@ -160,6 +194,8 @@ describe("presets: pomXml", () => {
     });
 
     it("regex matches the project version (first <version> tag)", () => {
+        expect.hasAssertions();
+
         const rule = pomXml().extraFiles![0]!;
         const regex = new RegExp(rule.search, rule.flags);
 
@@ -175,10 +211,13 @@ describe("presets: pomXml", () => {
 
 describe("presets: goMod", () => {
     it("emits zero rules by default (Go uses git tags, not manifest versions)", () => {
-        expect(goMod().extraFiles).toEqual([]);
+        expect.hasAssertions();
+        expect(goMod().extraFiles).toStrictEqual([]);
     });
 
     it("passes through extra rules when provided", () => {
+        expect.hasAssertions();
+
         const config = goMod({
             extraFiles: [{ path: "version.go", replace: "Version = \"{version}\"", search: "Version = \"[^\"]+\"" }],
         });

@@ -106,6 +106,8 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
     });
 
     it("records a stage-timeout outcome in staged.json with reason=timeout", async () => {
+        expect.hasAssertions();
+
         const actions = new StubVersionActions({
             alreadyPublished: false,
             output: "stage-timeout: stage-xyz",
@@ -141,6 +143,8 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
     });
 
     it("records a stage-rejected outcome with reason=rejected", async () => {
+        expect.hasAssertions();
+
         const actions = new StubVersionActions({
             alreadyPublished: false,
             output: "stage-rejected: stage-abc",
@@ -167,6 +171,8 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
 
     it("drains a prior pending entry when the same (name, version) goes through the published path", async () => {
         // Seed: a leftover stage from a prior wave.
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-prior",
@@ -199,10 +205,12 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
         // Registry was drained — file is deleted when pending is empty.
         const registry = await readStagedRegistry(cwd, ".vis/release");
 
-        expect(registry.pending).toEqual([]);
+        expect(registry.pending).toStrictEqual([]);
     });
 
     it("passes resumeStageId to the action when staged.json already holds an entry for the planned (name, version)", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-resume",
@@ -240,6 +248,8 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
     });
 
     it("drains the registry entry on a successful resume (out.published from resume path)", async () => {
+        expect.hasAssertions();
+
         await writeStagedRegistry(cwd, ".vis/release", {
             pending: [{
                 id: "stage-resume",
@@ -271,7 +281,7 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
 
         const registry = await readStagedRegistry(cwd, ".vis/release");
 
-        expect(registry.pending).toEqual([]);
+        expect(registry.pending).toStrictEqual([]);
     });
 });
 
@@ -367,6 +377,8 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
         // Seed the tracked registry as if a prior CI run (on a different
         // machine) had already dispatched the notification for the
         // package + version we're about to publish.
+        expect.hasAssertions();
+
         const seeded = recordRecentlyNotified(
             { pending: [], updatedAt: new Date().toISOString(), version: 1 },
             ["@scope/a@1.0.1"],
@@ -396,6 +408,8 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
         // Happy path: nothing in staged.json yet, publishContext dispatches
         // the webhook, then commits the (name, version) into the registry
         // so the next runner sees it.
+        expect.hasAssertions();
+
         const actions = new StubVersionActions({ output: "ok", published: true });
         const ctx = await buildContext({ cwd });
 
@@ -418,6 +432,8 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
         // dedupe check — if recentlyWalked already covers the published
         // entry, the gate filter empties `walkable.published` and the
         // walk function isn't entered at all (zero-cost dedupe).
+        expect.hasAssertions();
+
         const seeded = recordRecentlyWalked(
             { pending: [], updatedAt: new Date().toISOString(), version: 1 },
             ["@scope/a@1.0.1"],
@@ -430,7 +446,7 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
         const result = await publishContext(ctx, { publishActionsOverride: actions });
 
         // Publish itself succeeded.
-        expect(result.published.map((p) => p.name)).toEqual(["@scope/a"]);
+        expect(result.published.map((p) => p.name)).toStrictEqual(["@scope/a"]);
 
         // No `successWalk:` warning surfaced (the gate skipped the walk
         // before any remote-client call could fail). Compare with the
@@ -438,7 +454,7 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
         // either "successWalk" or "post-release walk".
         const walkWarnings = ctx.plan.warnings.filter((w) => w.toLowerCase().includes("walk"));
 
-        expect(walkWarnings).toEqual([]);
+        expect(walkWarnings).toStrictEqual([]);
     });
 });
 
@@ -499,6 +515,8 @@ describe.skipIf(isWindows)("orchestrator: publish loop does not orphan dependent
 
     it("skips a dependent when its internal dependency fails to publish", async () => {
         // @scope/a throws; @scope/b (which depends on it) must be skipped, not published.
+        expect.hasAssertions();
+
         const actions = new StubVersionActions((context: PublishContext): PublishResult => {
             if (context.pkg.name === "@scope/a") {
                 throw new Error("npm publish failed (E500 internal registry error)");
@@ -529,6 +547,6 @@ describe.skipIf(isWindows)("orchestrator: publish loop does not orphan dependent
 
         // The dependent's publish was never even attempted (short-circuited
         // before the action call), so the stub only saw @scope/a.
-        expect(actions.calls.map((c) => c.pkg)).toEqual(["@scope/a"]);
+        expect(actions.calls.map((c) => c.pkg)).toStrictEqual(["@scope/a"]);
     });
 });

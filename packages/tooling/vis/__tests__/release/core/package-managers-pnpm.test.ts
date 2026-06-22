@@ -22,6 +22,8 @@ describe("pnpmAdapter — pack", () => {
     });
 
     it("returns the tarball path on success (pnpm emits a single object, not array)", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["pack", "--json"], () => {
@@ -38,6 +40,8 @@ describe("pnpmAdapter — pack", () => {
     });
 
     it("treats absolute filenames as-is", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["pack", "--json"], () => {
@@ -54,6 +58,8 @@ describe("pnpmAdapter — pack", () => {
     });
 
     it("respects --pack-destination", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["pack", "--json", "--pack-destination", "/dst"], () => {
@@ -70,6 +76,8 @@ describe("pnpmAdapter — pack", () => {
     });
 
     it("throws PUBLISH_FAILED on non-zero exit", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["pack"], () => {
@@ -80,6 +88,8 @@ describe("pnpmAdapter — pack", () => {
     });
 
     it("throws when output has no filename field", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["pack"], () => {
@@ -92,6 +102,8 @@ describe("pnpmAdapter — pack", () => {
 
 describe("pnpmAdapter — listWorkspacePackages", () => {
     it("parses pnpm's recursive ls JSON output", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["-r", "ls", "--depth", "-1", "--json"], () => {
@@ -113,26 +125,32 @@ describe("pnpmAdapter — listWorkspacePackages", () => {
     });
 
     it("returns empty array on non-zero exit", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["-r", "ls"], () => {
             return { exitCode: 1, stderr: "", stdout: "" };
         });
 
-        await expect(new PnpmAdapter(runner).listWorkspacePackages("/r")).resolves.toEqual([]);
+        await expect(new PnpmAdapter(runner).listWorkspacePackages("/r")).resolves.toStrictEqual([]);
     });
 
     it("returns empty array when JSON is malformed", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["-r", "ls"], () => {
             return { exitCode: 0, stderr: "", stdout: "not json" };
         });
 
-        await expect(new PnpmAdapter(runner).listWorkspacePackages("/r")).resolves.toEqual([]);
+        await expect(new PnpmAdapter(runner).listWorkspacePackages("/r")).resolves.toStrictEqual([]);
     });
 
     it("filters out entries without a name", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["-r", "ls"], () => {
@@ -152,6 +170,8 @@ describe("pnpmAdapter — listWorkspacePackages", () => {
 
 describe("pnpmAdapter — installLockfileOnly", () => {
     it("calls pnpm install --lockfile-only", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let called = false;
 
@@ -167,6 +187,8 @@ describe("pnpmAdapter — installLockfileOnly", () => {
     });
 
     it("throws on failure", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["install"], () => {
@@ -181,6 +203,8 @@ describe("pnpmAdapter — installLockfileOnly", () => {
 
 describe("pnpmAdapter — publish delegates to npm", () => {
     it("invokes `npm publish <tarball>` instead of pnpm publish", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
         let npmPublishCalled = false;
 
@@ -211,6 +235,8 @@ describe("pnpmAdapter — readCatalogYaml", () => {
     });
 
     it("returns the file content when present", async () => {
+        expect.hasAssertions();
+
         writeFileSync(join(cwd, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
 
         const yaml = await new PnpmAdapter(new MockRunner()).readCatalogYaml(cwd);
@@ -219,6 +245,8 @@ describe("pnpmAdapter — readCatalogYaml", () => {
     });
 
     it("returns undefined when the file is missing", async () => {
+        expect.hasAssertions();
+
         const yaml = await new PnpmAdapter(new MockRunner()).readCatalogYaml(cwd);
 
         expect(yaml).toBeUndefined();
@@ -227,6 +255,8 @@ describe("pnpmAdapter — readCatalogYaml", () => {
 
 describe("pnpmAdapter — detectVersion", () => {
     it("returns trimmed pnpm version", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["--version"], () => {
@@ -237,6 +267,8 @@ describe("pnpmAdapter — detectVersion", () => {
     });
 
     it("returns undefined when the CLI is unavailable", async () => {
+        expect.hasAssertions();
+
         const runner = new MockRunner();
 
         runner.on("pnpm", ["--version"], () => {
