@@ -12,16 +12,16 @@
  *     the entry's local `.ts` imports aren't transpiled on 22.14 — recommend
  *     22.15+ for that; config/`vis x` entries themselves work everywhere.
  */
-import { existsSync, readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
+import { readFileSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import nodeModule from "node:module";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 import { readJson5Sync } from "@visulima/fs/json5";
 import { readJsoncSync } from "@visulima/fs/jsonc";
 import { readTomlSync } from "@visulima/fs/toml";
-import { stripJsonComments } from "@visulima/fs/utils";
 import { readYamlSync } from "@visulima/fs/yaml";
-import { dirname, isAbsolute, join, resolve as resolvePath } from "@visulima/path";
+import { dirname, join, resolve as resolvePath } from "@visulima/path";
+import { configDirectoryPlaceholder, findTsConfigSync, implicitBaseUrlSymbol } from "@visulima/tsconfig";
 
 import { transformTs } from "#native";
 
@@ -128,30 +128,13 @@ const serializeForModule = (value: unknown): string => {
 };
 
 /**
- * Minimal tsconfig `compilerOptions.baseUrl` + `paths` resolver.
- *
- * NOTE: `@visulima/tsconfig` (`findTsConfigSync`) is the canonical reader and
- * handles the full `extends` surface (array reverse-merge, package `extends` via
- * `exports`) more faithfully than this does. Migrating to it is the right
- * follow-up; it's deferred only because the loader's tests are gated to a Node
- * with `module.registerHooks` (22.15+), so the swap can't be runtime-verified in
- * all CI environments. Adding it is `@visulima/tsconfig: workspace:*` (its deps
- * are already on vis's graph).
- *
- * This hand-rolled reader covers the common case: it walks up to the nearest
- * tsconfig, follows a single string `extends` (and, for an `extends` ARRAY, the
- * last entry — the highest-precedence one — only) merging `compilerOptions`
- * nearest-wins, and resolves `paths`/`baseUrl`. Multi-entry `extends` arrays and
- * package `extends` are best-effort.
+ * tsconfig `compilerOptions.baseUrl` + `paths` resolver, backed by the canonical
+ * `@visulima/tsconfig` reader (`findTsConfigSync`) — which handles the full
+ * `extends` surface (array reverse-merge, package `extends` via `exports`,
+ * JSONC + trailing commas, `${configDir}` placeholders). We read the resolved
+ * `paths` and derive the base directory targets resolve against; the matcher in
+ * {@link resolveTsConfigPaths} consumes this shape.
  */
-interface TsConfigShape {
-    compilerOptions?: {
-        baseUrl?: string;
-        paths?: Record<string, string[]>;
-    };
-    extends?: string | string[];
-}
-
 interface ResolvedTsConfigPaths {
     /** Whether a `baseUrl` was set (enables bare baseUrl-rooted resolution). */
     hasBaseUrl: boolean;
@@ -162,127 +145,60 @@ interface ResolvedTsConfigPaths {
 
 const tsconfigCache = new Map<string, ResolvedTsConfigPaths | undefined>();
 
-const readRawTsConfig = (tsconfigPath: string): TsConfigShape | undefined => {
-    try {
-        const stripped = stripJsonComments(readFileSync(tsconfigPath, "utf8"), { whitespace: false });
-        // Tolerate trailing commas the way tsconfig parsers do; `stripJsonComments`
-        // only removes comments, so drop dangling commas before `}`/`]`.
-        const withoutTrailingCommas = stripped.replaceAll(/,(\s*[\]}])/g, "$1");
-
-        return JSON.parse(withoutTrailingCommas) as TsConfigShape;
-    } catch {
-        return undefined;
+/** Substitute a leading `${configDir}` placeholder with the config's directory. */
+const expandConfigDir = (value: string, configDirectory: string): string => {
+    if (value.startsWith(configDirectoryPlaceholder)) {
+        return join(configDirectory, value.slice(configDirectoryPlaceholder.length));
     }
+
+    return value;
 };
 
 /**
- * Find the nearest `tsconfig.json` walking up from `startDirectory`, resolve its
- * `extends` chain (relative + local node_modules best-effort), and return the
- * effective `baseUrl`/`paths` plus the directory `baseUrl` is relative to.
+ * Find the nearest tsconfig from `startDirectory` (via `findTsConfigSync`) and
+ * return its effective `baseUrl`/`paths` plus the directory targets resolve
+ * against. Returns undefined when no tsconfig is found or it declares no `paths`.
  */
 const loadTsConfigPaths = (startDirectory: string): ResolvedTsConfigPaths | undefined => {
     if (tsconfigCache.has(startDirectory)) {
         return tsconfigCache.get(startDirectory);
     }
 
-    let directory = startDirectory;
-    let tsconfigPath: string | undefined;
+    let result: ResolvedTsConfigPaths | undefined;
 
-    // Walk up to the filesystem root looking for a tsconfig.json.
+    try {
+        // `findTsConfigSync` throws (NotFoundError) when there is no tsconfig.
+        const { config, path: tsconfigPath } = findTsConfigSync(startDirectory, { cache: false });
+        const configDirectory = dirname(tsconfigPath);
+        const options = config.compilerOptions;
+        const paths = options?.paths;
 
-    while (true) {
-        const candidate = join(directory, "tsconfig.json");
+        if (options !== undefined && paths !== undefined) {
+            // eslint-disable-next-line sonarjs/deprecation -- baseUrl is deprecated in TS 5+ but still supported for back-compat.
+            const { baseUrl } = options;
 
-        if (existsSync(candidate)) {
-            tsconfigPath = candidate;
+            let pathsBase: string;
+            let hasBaseUrl = false;
 
-            break;
-        }
+            if (baseUrl === undefined) {
+                // TS 5+ `paths` without `baseUrl`: the reader attaches the dir of the
+                // config that declared `paths` via `implicitBaseUrlSymbol`.
+                const implicit = (options as Record<symbol, unknown>)[implicitBaseUrlSymbol];
 
-        const parent = dirname(directory);
-
-        if (parent === directory) {
-            break;
-        }
-
-        directory = parent;
-    }
-
-    if (tsconfigPath === undefined) {
-        tsconfigCache.set(startDirectory, undefined);
-
-        return undefined;
-    }
-
-    // Merge the extends chain: start from the furthest ancestor, let nearer
-    // configs override. We collect configs root-first.
-    const chain: { config: TsConfigShape; directory: string }[] = [];
-    const seen = new Set<string>();
-    let current: string | undefined = tsconfigPath;
-
-    while (current !== undefined && !seen.has(current)) {
-        seen.add(current);
-
-        const config = readRawTsConfig(current);
-
-        if (config === undefined) {
-            break;
-        }
-
-        chain.unshift({ config, directory: dirname(current) });
-
-        const extendsField = config.extends;
-        const firstExtend = Array.isArray(extendsField) ? extendsField[extendsField.length - 1] : extendsField;
-
-        if (typeof firstExtend !== "string") {
-            break;
-        }
-
-        if (firstExtend.startsWith(".") || isAbsolute(firstExtend)) {
-            let resolved = resolvePath(dirname(current), firstExtend);
-
-            if (!resolved.endsWith(".json")) {
-                resolved = `${resolved}.json`;
+                pathsBase = typeof implicit === "string" ? implicit : configDirectory;
+            } else {
+                // `@visulima/tsconfig` keeps the top config's baseUrl relative and
+                // relativizes inherited ones to the consuming config's dir.
+                hasBaseUrl = true;
+                pathsBase = resolvePath(configDirectory, expandConfigDir(baseUrl, configDirectory));
             }
 
-            current = existsSync(resolved) ? resolved : undefined;
-        } else {
-            // Bare package extends — best-effort lookup under local node_modules.
-            const packageCandidate = join(dirname(current), "node_modules", firstExtend);
-            const withJson = packageCandidate.endsWith(".json") ? packageCandidate : `${packageCandidate}.json`;
-
-            current = existsSync(withJson) ? withJson : undefined;
+            result = { hasBaseUrl, paths, pathsBase };
         }
+    } catch {
+        // No tsconfig found, or it couldn't be read — no aliases to resolve.
+        result = undefined;
     }
-
-    // Absolute directory `baseUrl` points at (when any config sets it); nearest wins.
-    let baseUrlDirectory: string | undefined;
-    // Directory the most-recent `paths` block was declared in (its fallback base).
-    let pathsDeclarationDirectory: string | undefined;
-    let paths: Record<string, string[]> = {};
-
-    for (const { config, directory: configDirectory } of chain) {
-        const options = config.compilerOptions;
-
-        if (options?.baseUrl !== undefined) {
-            baseUrlDirectory = resolvePath(configDirectory, options.baseUrl);
-        }
-
-        if (options?.paths !== undefined) {
-            paths = options.paths;
-            pathsDeclarationDirectory = configDirectory;
-        }
-    }
-
-    // TS resolves `paths` relative to `baseUrl` when set; otherwise (TS 5+ allows
-    // `paths` without `baseUrl`) relative to the config that declared `paths`.
-    const pathsBase = baseUrlDirectory ?? pathsDeclarationDirectory ?? dirname(tsconfigPath);
-
-    const result: ResolvedTsConfigPaths = {
-        hasBaseUrl: baseUrlDirectory !== undefined,
-        paths,
-        pathsBase,
-    };
 
     tsconfigCache.set(startDirectory, result);
 
@@ -293,7 +209,7 @@ const loadTsConfigPaths = (startDirectory: string): ResolvedTsConfigPaths | unde
  * Resolve a bare specifier against tsconfig `baseUrl` + `paths`. Returns an
  * absolute filesystem path (post-probe) or undefined when no alias matches.
  */
-const resolveTsConfigPaths = (specifier: string, parentDirectory: string): string | undefined => {
+export const resolveTsConfigPaths = (specifier: string, parentDirectory: string): string | undefined => {
     const config = loadTsConfigPaths(parentDirectory);
 
     if (config === undefined) {

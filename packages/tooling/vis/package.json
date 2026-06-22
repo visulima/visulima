@@ -43,6 +43,9 @@
         }
     },
     "exports": {
+        "./bin": {
+            "default": "./dist/bin.js"
+        },
         "./config": {
             "types": "./dist/config/index.d.ts",
             "default": "./dist/config/index.js"
@@ -200,6 +203,7 @@
         "@visulima/source-map": "3.0.0-alpha.12",
         "@visulima/spinner": "1.0.0-alpha.4",
         "@visulima/string": "3.0.0-alpha.17",
+        "@visulima/tsconfig": "3.0.0-alpha.31",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "@yarnpkg/parsers": "^3.0.3",
