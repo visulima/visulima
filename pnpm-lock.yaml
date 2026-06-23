@@ -826,6 +826,9 @@ catalogs:
     eslint-plugin-zod:
       specifier: 4.7.0
       version: 4.7.0
+    fallow:
+      specifier: 2.101.0
+      version: 2.101.0
     husky:
       specifier: ^9.1.7
       version: 9.1.7
@@ -2538,6 +2541,9 @@ importers:
       express:
         specifier: ^5.2.1
         version: 5.2.1
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       fastify:
         specifier: catalog:backend
         version: 5.8.5
@@ -2720,6 +2726,9 @@ importers:
       express:
         specifier: catalog:backend
         version: 5.2.1
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       fastify:
         specifier: catalog:backend
         version: 5.8.5
@@ -2859,6 +2868,9 @@ importers:
       eslint-plugin-validate-jsx-nesting:
         specifier: catalog:lint
         version: 0.1.1(eslint@10.4.1(jiti@2.7.0))
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       json-schema:
         specifier: catalog:dev
         version: 0.4.0
@@ -2998,6 +3010,9 @@ importers:
       eslint-plugin-validate-jsx-nesting:
         specifier: catalog:lint
         version: 0.1.1(eslint@10.4.1(jiti@2.7.0))
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       msw:
         specifier: catalog:dev
         version: 2.14.6(@types/node@25.9.3)(typescript@6.0.3)
@@ -3101,6 +3116,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       openapi-types:
         specifier: catalog:dev
         version: 12.1.3
@@ -3191,6 +3209,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       openapi-types:
         specifier: catalog:dev
         version: 12.1.3
@@ -3272,6 +3293,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -3347,6 +3371,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -3422,6 +3449,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       jsdom:
         specifier: catalog:dev
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -3562,6 +3592,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       html-entities:
         specifier: catalog:dev
         version: 2.6.0
@@ -3655,6 +3688,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       ms:
         specifier: catalog:dev
         version: 2.1.3
@@ -3755,6 +3791,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -3859,6 +3898,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       filter-obj:
         specifier: catalog:dev
         version: 6.1.0
@@ -3947,6 +3989,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -4065,6 +4110,9 @@ importers:
       eslint-plugin-you-dont-need-lodash-underscore:
         specifier: catalog:lint
         version: 6.14.0
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       fastest-levenshtein:
         specifier: catalog:dev
         version: 1.0.16
@@ -4234,6 +4282,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -4358,6 +4409,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       fast-xml-parser:
         specifier: ^5.9.2
         version: 5.9.2
@@ -4558,6 +4612,9 @@ importers:
       eslint-plugin-zod:
         specifier: catalog:lint
         version: 4.7.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.4.3)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       jsdom:
         specifier: catalog:dev
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -5025,6 +5082,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       is-plain-obj:
         specifier: catalog:dev
         version: 4.1.0
@@ -5113,6 +5173,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       node-mocks-http:
         specifier: catalog:dev
         version: 1.17.2(@types/express@5.0.6)(@types/node@25.9.3)
@@ -5245,6 +5308,9 @@ importers:
       eslint-plugin-playwright:
         specifier: catalog:test
         version: 2.10.4(eslint@10.4.1(jiti@2.7.0))
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       playwright:
         specifier: catalog:test
         version: 1.61.0
@@ -5394,6 +5460,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       http-errors:
         specifier: catalog:dev
         version: 2.0.1
@@ -5579,6 +5648,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -5777,6 +5849,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -5907,6 +5982,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       hast:
         specifier: catalog:dev
         version: 1.0.0
@@ -6396,6 +6474,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -6487,6 +6568,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       fast-safe-stringify:
         specifier: catalog:dev
         version: 2.1.1
@@ -6661,6 +6745,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -6773,6 +6860,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       handlebars:
         specifier: catalog:dev
         version: 4.7.9
@@ -6996,6 +7086,9 @@ importers:
       express:
         specifier: catalog:backend
         version: 5.2.1
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       firebase-admin:
         specifier: 14.0.0
         version: 14.0.0
@@ -7176,6 +7269,9 @@ importers:
       eslint-plugin-vue:
         specifier: catalog:lint
         version: 10.9.2(@stylistic/eslint-plugin@5.10.0(eslint@10.4.1(jiti@2.7.0)))(@typescript-eslint/parser@8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(vue-eslint-parser@10.4.1(eslint@10.4.1(jiti@2.7.0)))
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       happy-dom:
         specifier: catalog:dev
         version: 20.10.2
@@ -8033,6 +8129,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       jiti:
         specifier: catalog:dev
         version: 2.7.0
@@ -8129,6 +8228,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -8262,6 +8364,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       github-slugger:
         specifier: catalog:dev
         version: 2.0.0
@@ -8446,6 +8551,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -8637,6 +8745,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -8767,6 +8878,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -8870,6 +8984,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -8948,6 +9065,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -9033,6 +9153,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -9115,6 +9238,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -9199,6 +9325,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       publint:
         specifier: catalog:dev
         version: 0.3.21
@@ -9434,6 +9563,9 @@ importers:
       eslint-plugin-validate-jsx-nesting:
         specifier: catalog:lint
         version: 0.1.1(eslint@10.4.1(jiti@2.7.0))
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       marked:
         specifier: catalog:dev
         version: 18.0.5
@@ -9590,6 +9722,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -9690,6 +9825,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       npm:
         specifier: catalog:dev
         version: 11.17.0
@@ -9799,6 +9937,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       json-schema:
         specifier: catalog:dev
         version: 0.4.0
@@ -9917,6 +10058,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       google-auth-library:
         specifier: 10.7.0
         version: 10.7.0
@@ -10070,6 +10214,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -10164,6 +10311,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -10278,6 +10428,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -10567,6 +10720,9 @@ importers:
       eslint-plugin-validate-jsx-nesting:
         specifier: 0.1.1
         version: 0.1.1(eslint@10.4.1(jiti@2.7.0))
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       giget:
         specifier: ^3.3.0
         version: 3.3.0
@@ -10749,6 +10905,9 @@ importers:
       eslint-plugin-zod:
         specifier: 4.7.0
         version: 4.7.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.4.3)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       prettier:
         specifier: catalog:lint
         version: 3.8.4
@@ -10938,6 +11097,9 @@ importers:
       eslint:
         specifier: catalog:lint
         version: 10.4.1(jiti@2.7.0)
+      fallow:
+        specifier: catalog:lint
+        version: 2.101.0
       mysql-memory-server:
         specifier: 1.14.1
         version: 1.14.1
@@ -12734,6 +12896,46 @@ packages:
 
   '@exodus/schemasafe@1.3.0':
     resolution: {integrity: sha512-5Aap/GaRupgNx/feGBwLLTVv8OQFfv3pq2lPRzPg9R+IOBnDgghTGW7l7EuVXOvg5cc/xSAlRW8rBrjIC3Nvqw==}
+
+  '@fallow-cli/darwin-arm64@2.101.0':
+    resolution: {integrity: sha512-LUdT8IGU0v/c9/N1hq6HrrCGUtwKFNw2NrZBx/TS1nsqt/EfrDAhRBYm4nE1y7O/p47WlCcHHcEq7O0F4Tb5tA==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@fallow-cli/darwin-x64@2.101.0':
+    resolution: {integrity: sha512-W8uM2xbnVioP6GpUGbSV1aGZUC8Ru3D4a1JSkSOZoPvS4K7CWWZte0KaGe35FYOkR+g4DLvfkjrjLcMEpi+3OQ==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@fallow-cli/linux-arm64-gnu@2.101.0':
+    resolution: {integrity: sha512-KUsm8EAjuLVi5TUb5K/ADyLXLe5gGQnOpU/4u8nnzxJmaiAWamibnkwFlKdHx88NMVIpOG/VQ1zVyS8HRv2zNQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@fallow-cli/linux-arm64-musl@2.101.0':
+    resolution: {integrity: sha512-AJKZl4YP2p/9xpPo31fAzLO95HrBAbiQD+nYzQ6AlibZV2J41teswD/dVBXW+togR9qME0pMhx0UdESRoQ2hAw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@fallow-cli/linux-x64-gnu@2.101.0':
+    resolution: {integrity: sha512-Q3VPCUGtEkrDRujrrmNI64L7F7EuE845eRMYNI23DuFOyif3VaprLRAAjcDShZnbaoaOkc5ToJBYuo6V30ntkQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@fallow-cli/linux-x64-musl@2.101.0':
+    resolution: {integrity: sha512-VQIBVwm4afBUCkpAOH5I2QoikFONkWOmC/u8pePElKv8Oy/GYv8K0Lz2stNU3s/+u17LYUKVLcmiIgoV3F4hyA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@fallow-cli/win32-arm64-msvc@2.101.0':
+    resolution: {integrity: sha512-JVdh1GCxYXB5Pglx4Z/XY28lMJXNpMsas40q01sIm9TK/wTDN28+sF754c17IyV4wwH4iews9hCc2VnKj9Mg3Q==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@fallow-cli/win32-x64-msvc@2.101.0':
+    resolution: {integrity: sha512-AH4PTlTGeaYsiGIBJhuKIYt10ErkgTXBiIKkVCggHLxjmV4E/f9/AYC2YTwRXO8DtZngCIfH1BAzwrL+SmESQQ==}
+    cpu: [x64]
+    os: [win32]
 
   '@fastify/accept-negotiator@2.0.1':
     resolution: {integrity: sha512-/c/TW2bO/v9JeEgoD/g1G5GxGeCF1Hafdf79WPmUlgYiBXummY0oX3VVq4yFkKKVBKDNlaDUYoab7g38RpPqCQ==}
@@ -24166,6 +24368,11 @@ packages:
   extract-zip@2.0.1:
     resolution: {integrity: sha512-GDhU9ntwuKyGXdZBUgTIe+vXnWj0fppUEtMDL0+idd5Sta8TGpHssn/eusA9mrPr9qNDym6SxAYZjNvCn/9RBg==}
     engines: {node: '>= 10.17.0'}
+    hasBin: true
+
+  fallow@2.101.0:
+    resolution: {integrity: sha512-7N1tBOD2EuomFhPNyTJl4PgcWNlrvz7hy8kfvbNBlFbt62byF8mDzAZ5x+GrjDVmetLjNerMeOojpwEy3GRJ5g==}
+    engines: {node: '>=16'}
     hasBin: true
 
   farmhash-modern@1.1.0:
@@ -36720,6 +36927,30 @@ snapshots:
       '@noble/hashes': 1.8.0
 
   '@exodus/schemasafe@1.3.0': {}
+
+  '@fallow-cli/darwin-arm64@2.101.0':
+    optional: true
+
+  '@fallow-cli/darwin-x64@2.101.0':
+    optional: true
+
+  '@fallow-cli/linux-arm64-gnu@2.101.0':
+    optional: true
+
+  '@fallow-cli/linux-arm64-musl@2.101.0':
+    optional: true
+
+  '@fallow-cli/linux-x64-gnu@2.101.0':
+    optional: true
+
+  '@fallow-cli/linux-x64-musl@2.101.0':
+    optional: true
+
+  '@fallow-cli/win32-arm64-msvc@2.101.0':
+    optional: true
+
+  '@fallow-cli/win32-x64-msvc@2.101.0':
+    optional: true
 
   '@fastify/accept-negotiator@2.0.1': {}
 
@@ -50816,6 +51047,19 @@ snapshots:
       '@types/yauzl': 2.10.3
     transitivePeerDependencies:
       - supports-color
+
+  fallow@2.101.0:
+    dependencies:
+      detect-libc: 2.1.2
+    optionalDependencies:
+      '@fallow-cli/darwin-arm64': 2.101.0
+      '@fallow-cli/darwin-x64': 2.101.0
+      '@fallow-cli/linux-arm64-gnu': 2.101.0
+      '@fallow-cli/linux-arm64-musl': 2.101.0
+      '@fallow-cli/linux-x64-gnu': 2.101.0
+      '@fallow-cli/linux-x64-musl': 2.101.0
+      '@fallow-cli/win32-arm64-msvc': 2.101.0
+      '@fallow-cli/win32-x64-msvc': 2.101.0
 
   farmhash-modern@1.1.0: {}
 
