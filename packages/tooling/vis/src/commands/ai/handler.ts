@@ -1,3 +1,4 @@
+// fallow-ignore-file circular-dependencies -- handler and index reference each other only through lazy dynamic `import()` (command registration / lazy execute), so there is no runtime initialization cycle.
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 import { detectAllProviders, runProvider } from "@visulima/find-ai-runner";
 import { renderToString } from "@visulima/tui";

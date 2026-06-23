@@ -1,10 +1,10 @@
 import { getStringWidth, indent as indentString, isFullwidthCodePoint } from "@visulima/string";
 import Yoga from "yoga-layout";
 
+import { getAbsoluteContentPosition } from "./absolute-position";
 import type { CursorShape } from "./cursor-helpers";
 import type { DOMElement, DOMNode } from "./dom";
 import getMaxWidth from "./get-max-width";
-import { getAbsoluteContentPosition } from "./layout";
 import { calculateScrollbarLayout } from "./measure-element";
 import Output from "./output";
 import type { Region } from "./region";
@@ -429,6 +429,8 @@ const renderNodeToOutput = (
 
                         renderActiveStickyNodes(activeStickyNodes, node, output, createOutput, {
                             newTransformers,
+                            // Injected to avoid a render-sticky -> render-node-to-output import cycle.
+                            renderNodeToOutput,
                             skipStaticElements,
                             x,
                             y,
@@ -514,6 +516,8 @@ const renderNodeToOutput = (
         }
     }
 };
+
+export type RenderNodeToOutputFunction = typeof renderNodeToOutput;
 
 export default renderNodeToOutput;
 

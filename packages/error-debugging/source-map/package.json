@@ -78,7 +78,6 @@
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
-        "@visulima/path": "3.0.0-alpha.13",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",

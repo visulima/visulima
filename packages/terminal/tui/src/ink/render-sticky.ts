@@ -14,8 +14,7 @@ import Yoga from "yoga-layout";
 import type { DOMElement } from "./dom";
 import { getRelativeLeft, getRelativeTop } from "./measure-element";
 import type Output from "./output";
-import type { OutputTransformer } from "./render-node-to-output";
-import renderNodeToOutput from "./render-node-to-output";
+import type { OutputTransformer, RenderNodeToOutputFunction } from "./render-node-to-output";
 import { getScrollTop } from "./scroll";
 
 export type StickyNodeInfo = {
@@ -185,12 +184,14 @@ export const renderActiveStickyNodes = (
     createOutput: OutputFactory,
     options: {
         newTransformers: OutputTransformer[];
+        // Injected by render-node-to-output.ts to avoid an import cycle.
+        renderNodeToOutput: RenderNodeToOutputFunction;
         skipStaticElements: boolean;
         x: number;
         y: number;
     },
 ): void => {
-    const { newTransformers, skipStaticElements, x, y } = options;
+    const { newTransformers, renderNodeToOutput, skipStaticElements, x, y } = options;
     const { yogaNode } = node;
 
     if (!yogaNode) {

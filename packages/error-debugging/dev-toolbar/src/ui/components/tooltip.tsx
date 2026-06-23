@@ -41,6 +41,7 @@ interface TooltipContentProps extends JSX.HTMLAttributes<HTMLDivElement> {
     sideOffset?: number;
 }
 
+// fallow-ignore-next-line unused-component-prop -- delayDuration is part of the public Radix-style Tooltip API; accepted for compatibility, applied by consumers.
 const Tooltip = ({ children, delayDuration: _delayDuration = 0 }: TooltipProps): JSX.Element => {
     const [open, setOpen] = useState(false);
     const triggerRef = useRef<Element | null>(null);

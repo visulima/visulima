@@ -1,3 +1,5 @@
+// fallow-ignore-file circular-dependencies -- channel implementations (slack/webhook/discord) import shared helpers from here, while this module lazy-loads them via dynamic `import()` in the factory. The dynamic back-edge breaks the runtime cycle; the coupling is intentional.
+
 /**
  * Notifications — post-release fan-out to chat / webhook destinations.
  *

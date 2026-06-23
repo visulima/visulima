@@ -98,8 +98,6 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "fallow": "catalog:lint",
-        "filter-obj": "catalog:dev",
-        "is-plain-obj": "catalog:dev",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",

@@ -96,7 +96,6 @@
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
-        "test-runner": "catalog:test",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },

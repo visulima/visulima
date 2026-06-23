@@ -109,8 +109,6 @@
         "eslint-plugin-zod": "catalog:lint",
         "express": "catalog:backend",
         "fallow": "catalog:lint",
-        "fastify": "catalog:backend",
-        "isomorphic-fetch": "catalog:dev",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
