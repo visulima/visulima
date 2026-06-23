@@ -255,3 +255,5 @@ The visulima workflow is open-sourced software licensed under the [MIT][license]
 [chat]: https://discord.gg/TtFJY8xkFK
 [typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
 [typescript-url]: https://www.typescriptlang.org/
+
+<!-- release trigger -->
