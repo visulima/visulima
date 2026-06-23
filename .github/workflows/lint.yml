@@ -513,3 +513,26 @@ jobs:
 
             - name: "Check formatting (vis)"
               run: "cargo fmt --check --manifest-path packages/tooling/vis/native/Cargo.toml"
+
+    # Single aggregated required check for branch protection — mirrors test.yml's
+    # "Check Test Run". `if: always()` so it runs even when lint jobs are skipped
+    # (file-filtered); the step fails red only if a dependency actually failed,
+    # so a genuine lint failure blocks the merge.
+    lint-required-check:
+        needs: ["files-changed", "ts-lint", "fallow", "package-json-lint", "vis-schemas-drift", "yaml-lint", "lint-workflows", "rust-fmt"]
+        name: "Check Lint Run"
+        if: "always()"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 30
+        steps:
+            # If any jobs we depend on fail, we will fail since this is a required check.
+            # NOTE: A timeout is considered a failure.
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Check for failures"
+              if: "contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')"
+              run: |
+                  echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
