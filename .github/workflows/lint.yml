@@ -163,6 +163,73 @@ jobs:
             - name: "lint attw"
               run: "pnpm run lint:affected:attw"
 
+    # fallow codebase-intelligence over the affected graph. `health` is a report
+    # (prints each project's score, exits 0) — it surfaces dead code / dupes /
+    # complexity drift without blocking merges. fetch-depth 0 so `nx affected`
+    # can diff against the base ref. No build needed — fallow is static source
+    # analysis.
+    fallow:
+        if: "needs.files-changed.outputs.frontend_lintable == 'true'"
+        needs: "files-changed"
+        name: "Lint (fallow)"
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
+            # wrap with a two-shot retry (same pattern as test.yml).
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
+              id: "checkout"
+              continue-on-error: true
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+              with:
+                  persist-credentials: false
+                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
+                  # Pulls all commits (needed for NX)
+                  fetch-depth: 0
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Wait before retrying checkout"
+              if: "steps.checkout.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 15"
+
+            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
+              if: "steps.checkout.outcome == 'failure'"
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+              with:
+                  persist-credentials: false
+                  fetch-depth: 0
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
+              id: "setSHAs"
+              uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              with:
+                  node-version: "22"
+                  install-node-gyp: "true"
+                  cache-prefix: "lint"
+                  run-npm-audit: true
+                  # TODO: re-enable once npm arborist fixes alias-name + installed-version mismatch for npm: aliases (e.g. vite-plugin-inspect's "vite": "npm:rolldown-vite@...")
+                  run-signatures-audit: false
+
+            - name: "Run fallow health"
+              run: "pnpm run fallow:affected:health"
+
     package-json-lint:
         if: "needs.files-changed.outputs.package_json_lintable == 'true'"
         needs: "files-changed"
