@@ -1,3 +1,19 @@
+## @visulima/notification [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/notification@1.0.0-alpha.1...@visulima/notification@1.0.0-alpha.2) (2026-06-23)
+
+### Features
+
+* **notification:** add workflow steps and digest subsystems ([#698](https://github.com/visulima/visulima/issues/698)) ([81e2551](https://github.com/visulima/visulima/commit/81e2551b00508e1b5b50e96cb2aec248d938f8fc))
+
+### Bug Fixes
+
+* fixed hoisted package ([45d4062](https://github.com/visulima/visulima/commit/45d40626dc6930fcd457ae90d6d4293cfad92595))
+
+
+### Dependencies
+
+* **@visulima/email:** upgraded to 1.0.0-alpha.42
+* **@visulima/workflow:** upgraded to 1.0.0-alpha.1
+
 ## @visulima/notification 1.0.0-alpha.1 (2026-06-20)
 
 ### Features
