@@ -1,3 +1,30 @@
+## @visulima/vis [1.0.0-alpha.44](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.43...@visulima/vis@1.0.0-alpha.44) (2026-06-23)
+
+### Features
+
+* **vis:** native Rust CLI front-end + nub-parity for x/run ([#697](https://github.com/visulima/visulima/issues/697)) ([88d505b](https://github.com/visulima/visulima/commit/88d505bef74f08a895849e41f26682e684aa67be))
+* **vis:** task-runner feedback fixes + CI hook skip ([#696](https://github.com/visulima/visulima/issues/696)) ([450412c](https://github.com/visulima/visulima/commit/450412cb92eee1397edaa46447128b1487d06369))
+
+### Bug Fixes
+
+* **vis:** group failed tasks in ci log output ([0fb8678](https://github.com/visulima/visulima/commit/0fb8678d9b66c6b587fb113310cfe9abce9aa6d0))
+* **vis:** unbreak full build — exclude variable-import modules from dynamic-import-vars ([#712](https://github.com/visulima/visulima/issues/712)) ([29d46eb](https://github.com/visulima/visulima/commit/29d46eb719de11ab8f09e5303748264607b04fe3)), closes [#697](https://github.com/visulima/visulima/issues/697) [#697](https://github.com/visulima/visulima/issues/697) [#697](https://github.com/visulima/visulima/issues/697) [#697](https://github.com/visulima/visulima/issues/697)
+* **vis:** wrap native crate-type array to satisfy toml lint rule ([9470654](https://github.com/visulima/visulima/commit/94706547342291197afb8babd5d2929ae9e0bb9b))
+
+### Documentation
+
+* **task-runner,vis:** add nub MIT attribution to ported native code ([9305f59](https://github.com/visulima/visulima/commit/9305f592da38dd13a179ef1af75fb0c8f5d84693))
+
+### Tests
+
+* **vis,task-runner:** address review on native benches ([f89dd33](https://github.com/visulima/visulima/commit/f89dd335d103744308a48568e49577d2019aca35))
+* **vis:** add criterion transpile bench + harness docs ([fb34159](https://github.com/visulima/visulima/commit/fb341597b498916afb398bfc1be66944f2967c98)), closes [nubjs/nub#17](https://github.com/nubjs/nub/issues/17)
+
+
+### Dependencies
+
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.25
+
 ## @visulima/vis [1.0.0-alpha.43](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.42...@visulima/vis@1.0.0-alpha.43) (2026-06-20)
 
 ### Features
