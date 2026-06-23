@@ -1644,6 +1644,21 @@ catalogs:
       version: 4.4.3
 
 overrides:
+  '@tanstack/start-server-core@<1.167.30': '>=1.167.30'
+  fastify@<5.7.2: '>=5.7.2'
+  fastify@<=5.7.2: '>=5.7.3'
+  fastify@>=5.3.2 <=5.8.4: '>=5.8.5'
+  h3@>=2.0.0-0 <2.0.1-rc.15: '>=2.0.1-rc.15'
+  h3@>=2.0.0-beta.0 <=2.0.0-rc.8: '>=2.0.1-rc.9'
+  h3@>=2.0.0-beta.0 <=2.0.1-rc.16: '>=2.0.1-rc.17'
+  h3@>=2.0.0-beta.4 <2.0.1-rc.18: '>=2.0.1-rc.18'
+  preact@>=10.27.0 <10.27.3: '>=10.27.3'
+  seroval@<1.4.1: '>=1.4.1'
+  seroval@<=1.4.0: '>=1.4.1'
+  seroval@>=0.2.0 <=1.4.0: '>=1.4.1'
+  svgo@=4.0.0: '>=4.0.1'
+  webpack@>=5.49.0 <5.104.0: '>=5.104.0'
+  webpack@>=5.49.0 <=5.104.0: '>=5.104.1'
   '@anthropic-ai/sdk@>=0.79.0 <0.91.1': ^0.91.1
   '@eslint/plugin-kit@<0.3.4': '>=0.4.0'
   '@grpc/grpc-js@<1.14.4': '>=1.14.4'
@@ -2085,7 +2100,7 @@ importers:
         version: 7.29.7
       '@fuma-comment/react':
         specifier: catalog:frontend
-        version: 1.4.2(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(highlight.js@11.11.1)(lucide-react@1.17.0(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+        version: 1.4.2(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(highlight.js@11.11.1)(lucide-react@1.17.0(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
       '@fumadocs/mdx-remote':
         specifier: catalog:prod
         version: 1.4.10(@types/mdx@2.0.14)(@types/react@19.2.17)(fumadocs-core@16.10.4(@mdx-js/mdx@3.1.1)(@tanstack/react-router@1.170.15(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(@types/estree-jsx@1.0.5)(@types/hast@3.0.4)(@types/mdast@4.0.4)(@types/react@19.2.17)(lucide-react@1.17.0(react@19.2.6))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react-router@7.17.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(react@19.2.6)(zod@4.4.3))(react@19.2.6)
@@ -2272,7 +2287,7 @@ importers:
         version: 1.3.0
       '@netlify/vite-plugin-tanstack-start':
         specifier: catalog:build
-        version: 1.3.15(@azure/storage-blob@12.32.0)(@tanstack/react-start@1.168.25(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(webpack@5.107.2(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.15)))(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(rollup@4.61.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+        version: 1.3.15(c39b076e23cc2b2c09a8c640fb884c8a)
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: catalog:lint
         version: 13.0.2
@@ -4411,7 +4426,7 @@ importers:
         version: 6.0.3
       unstorage:
         specifier: ^1.17.5
-        version: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+        version: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
       vitest:
         specifier: catalog:test
         version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-v8@4.1.8)(@vitest/ui@4.1.8)(happy-dom@20.10.2)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
@@ -6826,7 +6841,7 @@ importers:
         version: 6.0.3
       unstorage:
         specifier: ^1.17.5
-        version: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+        version: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
       vitest:
         specifier: catalog:test
         version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-v8@4.1.8)(@vitest/ui@4.1.8)(happy-dom@20.10.2)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
@@ -6929,7 +6944,7 @@ importers:
         version: 0.21.1
       '@solidjs/start':
         specifier: catalog:frontend
-        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       '@supabase/storage-js':
         specifier: 2.108.1
         version: 2.108.1
@@ -7085,7 +7100,7 @@ importers:
         version: 6.0.3
       uploadthing:
         specifier: 7.7.4
-        version: 7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)
+        version: 7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)
       vitest:
         specifier: catalog:test
         version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-v8@4.1.8)(@vitest/ui@4.1.8)(happy-dom@20.10.2)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
@@ -7308,7 +7323,7 @@ importers:
         version: link:../..
       nuxt:
         specifier: catalog:prod
-        version: 4.4.8(@azure/storage-blob@12.32.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.7))(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.28.6(@babel/core@7.29.7))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@parcel/watcher@2.5.6)(@types/node@25.9.3)(@vercel/blob@2.4.0)(@vue/compiler-sfc@3.5.38)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(eslint@10.4.1(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.5(@types/node@25.9.3))(optionator@0.9.4)(rolldown@1.0.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.3)(rollup@4.61.1))(rollup@4.61.1)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue-tsc@3.3.4(typescript@6.0.3))(yaml@2.9.0)
+        version: 4.4.8(@azure/storage-blob@12.32.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.7))(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.28.6(@babel/core@7.29.7))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@parcel/watcher@2.5.6)(@types/node@25.9.3)(@vercel/blob@2.4.0)(@vue/compiler-sfc@3.5.38)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(eslint@10.4.1(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.5(@types/node@25.9.3))(optionator@0.9.4)(rolldown@1.0.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.3)(rollup@4.61.1))(rollup@4.61.1)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue-tsc@3.3.4(typescript@6.0.3))(yaml@2.9.0)
       vue:
         specifier: catalog:frontend
         version: 3.5.38(typescript@6.0.3)
@@ -7370,7 +7385,7 @@ importers:
         version: 0.16.1(solid-js@1.9.13)
       '@solidjs/start':
         specifier: catalog:frontend
-        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       '@visulima/storage':
         specifier: workspace:*
         version: link:../../../storage
@@ -7382,7 +7397,7 @@ importers:
         version: 1.9.13
       vinxi:
         specifier: catalog:prod
-        version: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0)
+        version: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
 
   packages/storage/storage-client/examples/svelte-kit:
     dependencies:
@@ -7431,7 +7446,7 @@ importers:
         version: link:../..
       nitro:
         specifier: catalog:prod
-        version: 3.0.260311-beta(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@netlify/runtime@4.1.25)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.5.1)(miniflare@4.20260611.0)(mongodb@7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7))(mysql2@3.22.5(@types/node@25.9.3))(rollup@4.61.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+        version: 3.0.260311-beta(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@netlify/runtime@4.1.25)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.5.1)(miniflare@4.20260611.0)(mongodb@7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7))(mysql2@3.22.5(@types/node@25.9.3))(rollup@4.61.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -11042,7 +11057,7 @@ importers:
         version: 6.0.3
       unstorage:
         specifier: ^1.17.5
-        version: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+        version: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
       vitest:
         specifier: catalog:test
         version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.3)(@vitest/coverage-v8@4.1.8)(@vitest/ui@4.1.8)(happy-dom@20.10.2)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.3)(typescript@6.0.3))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
@@ -15947,7 +15962,7 @@ packages:
   '@prefresh/core@1.5.9':
     resolution: {integrity: sha512-IKBKCPaz34OFVC+adiQ2qaTF5qdztO2/4ZPf4KsRTgjKosWqxVXmEbxCiUydYZRY8GVie+DQlKzQr9gt6HQ+EQ==}
     peerDependencies:
-      preact: ^10.0.0 || ^11.0.0-0
+      preact: '>=10.27.3'
 
   '@prefresh/utils@1.2.1':
     resolution: {integrity: sha512-vq/sIuN5nYfYzvyayXI4C2QkprfNaHUQ9ZX+3xLD8nL3rWyzpxOm1+K7RtMbhd+66QcaISViK7amjnheQ/4WZw==}
@@ -15955,7 +15970,7 @@ packages:
   '@prefresh/vite@2.4.12':
     resolution: {integrity: sha512-FY1fzXpUjiuosznMV0YM7XAOPZjB5FIdWS0W24+XnlxYkt9hNAwwsiKYn+cuTEoMtD/ZVazS5QVssBr9YhpCQA==}
     peerDependencies:
-      preact: ^10.4.0 || ^11.0.0-0
+      preact: '>=10.27.3'
       vite: '>=7.1.11'
 
   '@prisma/client@6.19.2':
@@ -18055,7 +18070,7 @@ packages:
       rollup: '>=4.59.0'
       storybook: ^10.4.4
       vite: '>=7.1.11'
-      webpack: '*'
+      webpack: '>=5.104.1'
     peerDependenciesMeta:
       esbuild:
         optional: true
@@ -18775,7 +18790,7 @@ packages:
       '@tanstack/react-router': ^1.170.15
       vite: '>=7.1.11'
       vite-plugin-solid: ^2.11.10 || ^3.0.0-0
-      webpack: '>=5.92.0'
+      webpack: '>=5.104.1'
     peerDependenciesMeta:
       '@rsbuild/core':
         optional: true
@@ -18881,7 +18896,7 @@ packages:
     resolution: {integrity: sha512-F+kJ243LP6VmEK1M809unzTE/ijg+bsMNuiRN0JEDIJBELKKDNhdgC/WrUSZ7klwJvtlO3wQZ9ix+jhObG07Fg==}
     engines: {node: '>= 12'}
     peerDependencies:
-      preact: '>=10 || ^10.0.0-alpha.0 || ^10.0.0-beta.0'
+      preact: '>=10.27.3'
 
   '@testing-library/react@16.3.2':
     resolution: {integrity: sha512-XU5/SytQM+ykqMnAnvB2umaJNIOsLF3PVv//1Ew4CTcpz0/BRyy/af40qqrt7SjKpDdT1saBMc42CUok5gaw+g==}
@@ -25511,7 +25526,7 @@ packages:
       purgecss: ^8.0.0
       relateurl: ^0.2.7
       srcset: ^5.0.1
-      svgo: ^4.0.0
+      svgo: '>=4.0.1'
       terser: ^5.21.0
       uncss: ^0.17.3
     peerDependenciesMeta:
@@ -31273,7 +31288,7 @@ packages:
     resolution: {integrity: sha512-S0xQPhUTefAhNvNWFg0c1J8qJArHt5KdtJ/cFAofo06KD1MVSeFWyl4iiu+ApDIuw0WhjpOfCdgConOfAnLgkw==}
     engines: {node: '>=10'}
     peerDependencies:
-      seroval: ^1.0
+      seroval: '>=1.4.1'
 
   seroval@1.5.4:
     resolution: {integrity: sha512-46uFvgrXTVxZcUorgSSRZ4y+ieqLLQRMlG4bnCZKW3qI6BZm7Rg4ntMW4p1mILEEBZWrFlcpp0AyIIlM6jD9iw==}
@@ -32239,7 +32254,7 @@ packages:
       lightningcss: '*'
       postcss: '*'
       uglify-js: '*'
-      webpack: ^5.1.0
+      webpack: '>=5.104.1'
     peerDependenciesMeta:
       '@minify-html/node':
         optional: true
@@ -33332,7 +33347,7 @@ packages:
     peerDependencies:
       express: '>=4.22.0'
       fastify: '*'
-      h3: '>=1.15.9'
+      h3: '>=2.0.1-rc.18'
       next: '*'
       tailwindcss: ^3.0.0 || ^4.0.0-beta.0
     peerDependenciesMeta:
@@ -36858,7 +36873,7 @@ snapshots:
 
   '@formatjs/icu-skeleton-parser@2.1.10': {}
 
-  '@fuma-comment/react@1.4.2(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(highlight.js@11.11.1)(lucide-react@1.17.0(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))':
+  '@fuma-comment/react@1.4.2(@floating-ui/dom@1.7.6)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(highlight.js@11.11.1)(lucide-react@1.17.0(react@19.2.6))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))':
     dependencies:
       '@radix-ui/react-collapsible': 1.1.14(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       '@radix-ui/react-dialog': 1.1.17(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -36897,7 +36912,7 @@ snapshots:
       tippy.js: 6.3.7
     optionalDependencies:
       lucide-react: 1.17.0(react@19.2.6)
-      uploadthing: 7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)
+      uploadthing: 7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)
     transitivePeerDependencies:
       - '@floating-ui/dom'
       - '@types/react'
@@ -38544,7 +38559,7 @@ snapshots:
       semver: 7.8.4
       tmp-promise: 3.0.3
 
-  '@netlify/dev@4.18.7(@azure/storage-blob@12.32.0)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(rollup@4.61.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))':
+  '@netlify/dev@4.18.7(@azure/storage-blob@12.32.0)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(rollup@4.61.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))':
     dependencies:
       '@netlify/ai': 0.4.1
       '@netlify/blobs': 10.7.9
@@ -38554,7 +38569,7 @@ snapshots:
       '@netlify/edge-functions-dev': 1.0.20
       '@netlify/functions-dev': 1.3.0(rollup@4.61.1)
       '@netlify/headers': 2.1.11
-      '@netlify/images': 1.3.10(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+      '@netlify/images': 1.3.10(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
       '@netlify/redirects': 3.1.13
       '@netlify/runtime': 4.1.25
       '@netlify/static': 3.1.10
@@ -38665,9 +38680,9 @@ snapshots:
     dependencies:
       '@netlify/headers-parser': 9.0.3
 
-  '@netlify/images@1.3.10(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))':
+  '@netlify/images@1.3.10(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))':
     dependencies:
-      ipx: 3.1.1(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+      ipx: 3.1.1(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
     transitivePeerDependencies:
       - '@azure/app-configuration'
       - '@azure/cosmos'
@@ -38738,9 +38753,9 @@ snapshots:
 
   '@netlify/types@2.8.0': {}
 
-  '@netlify/vite-plugin-tanstack-start@1.3.15(@azure/storage-blob@12.32.0)(@tanstack/react-start@1.168.25(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(webpack@5.107.2(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.15)))(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(rollup@4.61.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
+  '@netlify/vite-plugin-tanstack-start@1.3.15(c39b076e23cc2b2c09a8c640fb884c8a)':
     dependencies:
-      '@netlify/vite-plugin': 2.12.7(@azure/storage-blob@12.32.0)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(rollup@4.61.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+      '@netlify/vite-plugin': 2.12.7(@azure/storage-blob@12.32.0)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(rollup@4.61.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       vite: 8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
     optionalDependencies:
       '@tanstack/react-start': 1.168.25(crossws@0.4.5(srvx@0.11.16))(react-dom@19.2.6(react@19.2.6))(react@19.2.6)(vite-plugin-solid@2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(webpack@5.107.2(@swc/core@1.15.24)(esbuild@0.28.1)(postcss@8.5.15))
@@ -38772,9 +38787,9 @@ snapshots:
       - supports-color
       - uploadthing
 
-  '@netlify/vite-plugin@2.12.7(@azure/storage-blob@12.32.0)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(rollup@4.61.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
+  '@netlify/vite-plugin@2.12.7(@azure/storage-blob@12.32.0)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(rollup@4.61.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
-      '@netlify/dev': 4.18.7(@azure/storage-blob@12.32.0)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(rollup@4.61.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+      '@netlify/dev': 4.18.7(@azure/storage-blob@12.32.0)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(rollup@4.61.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
       '@netlify/dev-utils': 4.4.6
       dedent: 1.7.2
       vite: 8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
@@ -39062,7 +39077,7 @@ snapshots:
     transitivePeerDependencies:
       - magicast
 
-  '@nuxt/nitro-server@4.4.8(abbae54ac182c4c5ab83e03e467cf592)':
+  '@nuxt/nitro-server@4.4.8(85a52fc5baf715e41383ad128e440347)':
     dependencies:
       '@nuxt/devalue': 2.0.2
       '@nuxt/kit': 4.4.8(magicast@0.5.2)
@@ -39079,8 +39094,8 @@ snapshots:
       impound: 1.1.5
       klona: 2.0.6
       mocked-exports: 0.1.1
-      nitropack: 2.13.4(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))
-      nuxt: 4.4.8(@azure/storage-blob@12.32.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.7))(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.28.6(@babel/core@7.29.7))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@parcel/watcher@2.5.6)(@types/node@25.9.3)(@vercel/blob@2.4.0)(@vue/compiler-sfc@3.5.38)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(eslint@10.4.1(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.5(@types/node@25.9.3))(optionator@0.9.4)(rolldown@1.0.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.3)(rollup@4.61.1))(rollup@4.61.1)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue-tsc@3.3.4(typescript@6.0.3))(yaml@2.9.0)
+      nitropack: 2.13.4(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))
+      nuxt: 4.4.8(@azure/storage-blob@12.32.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.7))(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.28.6(@babel/core@7.29.7))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@parcel/watcher@2.5.6)(@types/node@25.9.3)(@vercel/blob@2.4.0)(@vue/compiler-sfc@3.5.38)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(eslint@10.4.1(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.5(@types/node@25.9.3))(optionator@0.9.4)(rolldown@1.0.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.3)(rollup@4.61.1))(rollup@4.61.1)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue-tsc@3.3.4(typescript@6.0.3))(yaml@2.9.0)
       nypm: 0.6.6
       ohash: 2.0.11
       pathe: 2.0.3
@@ -39088,7 +39103,7 @@ snapshots:
       std-env: 4.1.0
       ufo: 1.6.4
       unctx: 2.5.0
-      unstorage: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+      unstorage: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
       vue: 3.5.38(typescript@6.0.3)
       vue-bundle-renderer: 2.2.0
       vue-devtools-stub: 0.1.0
@@ -39150,7 +39165,7 @@ snapshots:
       rc9: 3.0.1
       std-env: 4.1.0
 
-  '@nuxt/vite-builder@4.4.8(ea32cdfa7f6ff898d8cc54ee1fe768d1)':
+  '@nuxt/vite-builder@4.4.8(6907c08a119bce192cf07e9326883c07)':
     dependencies:
       '@nuxt/kit': 4.4.8(magicast@0.5.2)
       '@rollup/plugin-replace': 6.0.3(rollup@4.61.1)
@@ -39168,7 +39183,7 @@ snapshots:
       magic-string: 0.30.21
       mlly: 1.8.2
       mocked-exports: 0.1.1
-      nuxt: 4.4.8(@azure/storage-blob@12.32.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.7))(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.28.6(@babel/core@7.29.7))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@parcel/watcher@2.5.6)(@types/node@25.9.3)(@vercel/blob@2.4.0)(@vue/compiler-sfc@3.5.38)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(eslint@10.4.1(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.5(@types/node@25.9.3))(optionator@0.9.4)(rolldown@1.0.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.3)(rollup@4.61.1))(rollup@4.61.1)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue-tsc@3.3.4(typescript@6.0.3))(yaml@2.9.0)
+      nuxt: 4.4.8(@azure/storage-blob@12.32.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.7))(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.28.6(@babel/core@7.29.7))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@parcel/watcher@2.5.6)(@types/node@25.9.3)(@vercel/blob@2.4.0)(@vue/compiler-sfc@3.5.38)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(eslint@10.4.1(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.5(@types/node@25.9.3))(optionator@0.9.4)(rolldown@1.0.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.3)(rollup@4.61.1))(rollup@4.61.1)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue-tsc@3.3.4(typescript@6.0.3))(yaml@2.9.0)
       nypm: 0.6.6
       pathe: 2.0.3
       pkg-types: 2.3.1
@@ -42393,11 +42408,11 @@ snapshots:
     dependencies:
       solid-js: 1.9.13
 
-  '@solidjs/start@1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
+  '@solidjs/start@1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@tanstack/server-functions-plugin': 1.121.21(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0))
-      '@vinxi/server-components': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))
+      '@vinxi/server-components': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))
       cookie-es: 2.0.1
       defu: 6.1.7
       error-stack-parser: 2.1.4
@@ -42409,7 +42424,7 @@ snapshots:
       source-map-js: 1.2.1
       terracotta: 1.1.0(solid-js@1.9.13)
       tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
-      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0)
+      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
       vite-plugin-solid: 2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
     transitivePeerDependencies:
       - '@testing-library/jest-dom'
@@ -45605,7 +45620,7 @@ snapshots:
       untun: 0.1.3
       uqr: 0.1.3
 
-  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0))':
+  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))':
     dependencies:
       '@babel/parser': 7.29.7
       acorn: 8.16.0
@@ -45616,18 +45631,18 @@ snapshots:
       magicast: 0.2.11
       recast: 0.23.11
       tslib: 2.8.1
-      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0)
+      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
 
-  '@vinxi/server-components@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0))':
+  '@vinxi/server-components@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))':
     dependencies:
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))
       acorn: 8.16.0
       acorn-loose: 8.5.2
       acorn-typescript: 1.4.13(acorn@8.16.0)
       astring: 1.9.0
       magicast: 0.2.11
       recast: 0.23.11
-      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0)
+      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
 
   '@visulima/cerebro@3.0.0-alpha.25(@bomb.sh/tab@0.0.15(cac@6.7.14)(citty@0.2.2)(commander@15.0.0))(@visulima/find-cache-dir@3.0.0-alpha.9)(github-slugger@2.0.0)':
     dependencies:
@@ -52719,7 +52734,7 @@ snapshots:
 
   ipaddr.js@2.3.0: {}
 
-  ipx@3.1.1(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)):
+  ipx@3.1.1(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)):
     dependencies:
       '@fastify/accept-negotiator': 2.0.1
       citty: 0.1.6
@@ -52735,7 +52750,7 @@ snapshots:
       sharp: 0.34.5
       svgo: 4.0.1
       ufo: 1.6.4
-      unstorage: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+      unstorage: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
       xss: 1.0.15
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -56573,7 +56588,7 @@ snapshots:
       just-extend: 6.2.0
       path-to-regexp: 8.4.2
 
-  nitro@3.0.260311-beta(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@netlify/runtime@4.1.25)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.5.1)(miniflare@4.20260611.0)(mongodb@7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7))(mysql2@3.22.5(@types/node@25.9.3))(rollup@4.61.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)):
+  nitro@3.0.260311-beta(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@netlify/runtime@4.1.25)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(chokidar@5.0.0)(dotenv@17.4.2)(giget@3.3.0)(ioredis@5.10.1)(jiti@2.7.0)(lru-cache@11.5.1)(miniflare@4.20260611.0)(mongodb@7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7))(mysql2@3.22.5(@types/node@25.9.3))(rollup@4.61.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)):
     dependencies:
       consola: 3.4.2
       crossws: 0.4.5(srvx@0.11.16)
@@ -56588,7 +56603,7 @@ snapshots:
       rolldown: 1.0.3
       srvx: 0.11.16
       unenv: 2.0.0-rc.24
-      unstorage: 2.0.0-alpha.7(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(chokidar@5.0.0)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(lru-cache@11.5.1)(mongodb@7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7))(ofetch@2.0.0-alpha.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))
+      unstorage: 2.0.0-alpha.7(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(chokidar@5.0.0)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(lru-cache@11.5.1)(mongodb@7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7))(ofetch@2.0.0-alpha.3)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))
     optionalDependencies:
       dotenv: 17.4.2
       giget: 3.3.0
@@ -56626,7 +56641,7 @@ snapshots:
       - sqlite3
       - uploadthing
 
-  nitropack@2.13.4(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0)):
+  nitropack@2.13.4(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0)):
     dependencies:
       '@cloudflare/kv-asset-handler': 0.4.2
       '@rollup/plugin-alias': 6.0.0(rollup@4.61.1)
@@ -56693,7 +56708,7 @@ snapshots:
       unenv: 2.0.0-rc.24
       unimport: 6.3.0(oxc-parser@0.133.0)(rolldown@1.0.3)
       unplugin-utils: 0.3.1
-      unstorage: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+      unstorage: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
       untyped: 2.0.0
       unwasm: 0.5.3
       youch: 4.1.1
@@ -56977,16 +56992,16 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  nuxt@4.4.8(@azure/storage-blob@12.32.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.7))(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.28.6(@babel/core@7.29.7))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@parcel/watcher@2.5.6)(@types/node@25.9.3)(@vercel/blob@2.4.0)(@vue/compiler-sfc@3.5.38)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(eslint@10.4.1(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.5(@types/node@25.9.3))(optionator@0.9.4)(rolldown@1.0.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.3)(rollup@4.61.1))(rollup@4.61.1)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue-tsc@3.3.4(typescript@6.0.3))(yaml@2.9.0):
+  nuxt@4.4.8(@azure/storage-blob@12.32.0)(@babel/plugin-proposal-decorators@7.29.0(@babel/core@7.29.7))(@babel/plugin-syntax-jsx@7.29.7(@babel/core@7.29.7))(@babel/plugin-syntax-typescript@7.28.6(@babel/core@7.29.7))(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@parcel/watcher@2.5.6)(@types/node@25.9.3)(@vercel/blob@2.4.0)(@vue/compiler-sfc@3.5.38)(aws4fetch@1.0.20)(cac@6.7.14)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(eslint@10.4.1(jiti@2.7.0))(ioredis@5.10.1)(lightningcss@1.32.0)(magicast@0.5.2)(meow@14.1.0)(mysql2@3.22.5(@types/node@25.9.3))(optionator@0.9.4)(rolldown@1.0.3)(rollup-plugin-visualizer@7.0.1(rolldown@1.0.3)(rollup@4.61.1))(rollup@4.61.1)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(typescript@6.0.3)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue-tsc@3.3.4(typescript@6.0.3))(yaml@2.9.0):
     dependencies:
       '@dxup/nuxt': 0.4.1(magicast@0.5.2)(typescript@6.0.3)
       '@nuxt/cli': 3.35.2(@nuxt/schema@4.4.8)(cac@6.7.14)(magicast@0.5.2)
       '@nuxt/devtools': 3.2.4(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))(vue@3.5.38(typescript@6.0.3))
       '@nuxt/kit': 4.4.8(magicast@0.5.2)
-      '@nuxt/nitro-server': 4.4.8(abbae54ac182c4c5ab83e03e467cf592)
+      '@nuxt/nitro-server': 4.4.8(85a52fc5baf715e41383ad128e440347)
       '@nuxt/schema': 4.4.8
       '@nuxt/telemetry': 2.8.0(@nuxt/kit@4.4.8(magicast@0.5.2))
-      '@nuxt/vite-builder': 4.4.8(ea32cdfa7f6ff898d8cc54ee1fe768d1)
+      '@nuxt/vite-builder': 4.4.8(6907c08a119bce192cf07e9326883c07)
       '@unhead/vue': 2.1.15(vue@3.5.38(typescript@6.0.3))
       '@vue/shared': 3.5.38
       chokidar: 5.0.0
@@ -62735,7 +62750,7 @@ snapshots:
       has-value: 2.0.2
       isobject: 4.0.0
 
-  unstorage@1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)):
+  unstorage@1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)):
     dependencies:
       anymatch: 3.1.3
       chokidar: 5.0.0
@@ -62752,9 +62767,9 @@ snapshots:
       aws4fetch: 1.0.20
       db0: 0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3))
       ioredis: 5.10.1
-      uploadthing: 7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)
+      uploadthing: 7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)
 
-  unstorage@1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)):
+  unstorage@1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)):
     dependencies:
       anymatch: 3.1.3
       chokidar: 5.0.0
@@ -62771,9 +62786,9 @@ snapshots:
       aws4fetch: 1.0.20
       db0: 0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3))
       ioredis: 5.10.1
-      uploadthing: 7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)
+      uploadthing: 7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)
 
-  unstorage@2.0.0-alpha.7(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(chokidar@5.0.0)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(lru-cache@11.5.1)(mongodb@7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7))(ofetch@2.0.0-alpha.3)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0)):
+  unstorage@2.0.0-alpha.7(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(chokidar@5.0.0)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(lru-cache@11.5.1)(mongodb@7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7))(ofetch@2.0.0-alpha.3)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0)):
     optionalDependencies:
       '@azure/storage-blob': 12.32.0
       '@netlify/blobs': 10.7.9
@@ -62785,7 +62800,7 @@ snapshots:
       lru-cache: 11.5.1
       mongodb: 7.3.0(@aws-sdk/credential-providers@3.1067.0)(socks@2.8.7)
       ofetch: 2.0.0-alpha.3
-      uploadthing: 7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)
+      uploadthing: 7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0)
 
   until-async@3.0.2: {}
 
@@ -62840,7 +62855,7 @@ snapshots:
       semver-diff: 4.0.0
       xdg-basedir: 5.1.0
 
-  uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0):
+  uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0):
     dependencies:
       '@effect/platform': 0.90.3(effect@3.21.0)
       '@standard-schema/spec': 1.0.0-beta.4
@@ -62849,12 +62864,12 @@ snapshots:
       effect: 3.21.0
     optionalDependencies:
       express: 5.2.1
-      h3: 1.15.11
+      h3: 2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16))
       next: 16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       tailwindcss: 4.3.0
     optional: true
 
-  uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0):
+  uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0):
     dependencies:
       '@effect/platform': 0.90.3(effect@3.21.0)
       '@standard-schema/spec': 1.0.0-beta.4
@@ -62863,7 +62878,7 @@ snapshots:
       effect: 3.21.0
     optionalDependencies:
       express: 5.2.1
-      h3: 1.15.11
+      h3: 2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16))
       next: 16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(babel-plugin-react-compiler@19.1.0-rc.3)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
       tailwindcss: 4.3.0
 
@@ -63049,7 +63064,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))(yaml@2.9.0):
+  vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0):
     dependencies:
       '@babel/core': 7.29.7
       '@babel/plugin-syntax-jsx': 7.29.7(@babel/core@7.29.7)
@@ -63070,7 +63085,7 @@ snapshots:
       hookable: 5.5.3
       http-proxy: 1.18.1
       micromatch: 4.0.8
-      nitropack: 2.13.4(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(tailwindcss@4.3.0))
+      nitropack: 2.13.4(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))
       node-fetch-native: 1.6.7
       path-to-regexp: 6.3.0
       pathe: 1.1.2
@@ -63082,7 +63097,7 @@ snapshots:
       ufo: 1.6.4
       unctx: 2.5.0
       unenv: 1.10.0
-      unstorage: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@1.15.11)(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
+      unstorage: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
       vite: 8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
       zod: 4.4.3
     transitivePeerDependencies:
