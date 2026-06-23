@@ -1,5 +1,3 @@
-import tab from "@bomb.sh/tab";
-
 import CompletionError from "../errors/completion-error";
 import type { Command as ICommand, EnvDefinition, OptionDefinition } from "../types/command";
 import type { Toolbox as IToolbox } from "../types/toolbox";
@@ -95,8 +93,22 @@ interface TabInstance {
     setup: (cliName: string, scriptPath: string, shell: string) => void;
 }
 
-// Type assertion for tab library - it provides command() and setup() methods
-const tabInstance = tab as TabInstance;
+/**
+ * Lazily loads the optional `@bomb.sh/tab` peer dependency.
+ *
+ * It is declared as an **optional** peer, so it may be absent. Importing it at
+ * module scope would crash the whole CLI at load time (before any command runs)
+ * whenever the peer is missing or version-skewed. Loading it on demand — only
+ * when the `completion` command executes — keeps every other command working
+ * and lets {@link completionCommand}'s catch block surface a helpful
+ * "install \@bomb.sh/tab" message instead.
+ * @throws When the optional peer is not installed.
+ */
+const loadTab = async (): Promise<TabInstance> => {
+    const tab = (await import("@bomb.sh/tab")) as { default: TabInstance };
+
+    return tab.default;
+};
 
 /**
  * Registers options for a command.
@@ -137,7 +149,7 @@ const registerCommandOptions = (
  * @param tabInstance The tab instance to register commands with
  * @param commands Map of CLI commands to register
  */
-// eslint-disable-next-line @typescript-eslint/no-shadow
+
 const registerCommands = (tabInstance: TabInstance, commands: Map<string, ICommand>): void => {
     for (const [commandName, command] of commands) {
         // Skip aliases and hidden commands
@@ -241,7 +253,6 @@ const completionCommand: ICommand = {
             type: String,
         } satisfies EnvDefinition,
     ],
-    // eslint-disable-next-line @typescript-eslint/require-await
     execute: async ({ env: toolboxEnv, logger, options, runtime }: IToolbox) => {
         const cliName = runtime.getCliName();
 
@@ -258,6 +269,10 @@ const completionCommand: ICommand = {
             // Validate options
             validateShell(shell);
             validateRuntime(options.runtime as string | undefined);
+
+            // Load the optional `@bomb.sh/tab` peer on demand (see loadTab).
+            const tabInstance = await loadTab();
+
             // Register all commands from the CLI
             registerCommands(tabInstance, runtime.getCommands());
 

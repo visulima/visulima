@@ -1,8 +1,6 @@
 // packages/cerebro/src/commands/readme-command.ts
 import { dirname, join, resolve } from "node:path";
 
-import GithubSlugger from "github-slugger";
-
 import type { Command as ICommand, OptionDefinition } from "../types/command";
 import type { Section } from "../types/command-line-usage";
 import type { CerebroFs } from "../types/runtime";
@@ -25,8 +23,25 @@ const existsViaFs = async (fs: CerebroFs, path: string): Promise<boolean> => {
     }
 };
 
-const slugger = new GithubSlugger();
-const slugify = (text: string) => slugger.slug(text);
+/**
+ * Lazily loads the optional `github-slugger` peer dependency and returns a
+ * `slugify` bound to a fresh slugger for one generation run.
+ *
+ * `github-slugger` is declared as an **optional** peer (README generation is the
+ * opt-in `./command/readme-generator` deep import), so it may be absent.
+ * Importing it at module scope would load it for every consumer that pulls in
+ * this module and crash the CLI at load time whenever the peer is missing.
+ * Loading it on demand — only when the `readme` command executes — keeps the
+ * module off the hot path and scopes the slugger's per-run anchor-dedup state to
+ * a single generation instead of leaking it across invocations.
+ * @throws When the optional peer is not installed.
+ */
+const loadSlugify = async (): Promise<(text: string) => string> => {
+    const { default: GithubSlugger } = await import("github-slugger");
+    const slugger = new GithubSlugger();
+
+    return (text: string) => slugger.slug(text);
+};
 
 interface ReadmeOptions {
     aliases?: boolean;
@@ -181,7 +196,7 @@ USAGE
 /**
  * Generates commands section for README.
  */
-const generateCommands = (commands: ICommand[], cliName: string, _options: ReadmeOptions): string => {
+const generateCommands = (commands: ICommand[], cliName: string, _options: ReadmeOptions, slugify: (text: string) => string): string => {
     const commandList = commands.map((command) => {
         const usage = formatCommandUsage(command, cliName);
 
@@ -217,6 +232,7 @@ const generateMultiCommands = async (
     outputDirectory: string,
     cliName: string,
     options: ReadmeOptions,
+    slugify: (text: string) => string,
 ): Promise<string> => {
     // Group commands by their group property
     const groupedCommands = new Map<string, ICommand[]>();
@@ -245,7 +261,14 @@ const generateMultiCommands = async (
             const filePath = join(".", outputDirectory, `${groupPath}.md`);
             const bin = `\`${cliName} ${group}\``;
 
-            const document = `${[bin, "=".repeat(bin.length), "", `Commands in the ${group} group.`, "", generateCommands(groupCommands, cliName, options)]
+            const document = `${[
+                bin,
+                "=".repeat(bin.length),
+                "",
+                `Commands in the ${group} group.`,
+                "",
+                generateCommands(groupCommands, cliName, options, slugify),
+            ]
                 .join("\n")
                 .trim()}\n`;
 
@@ -273,7 +296,7 @@ const normalizeLineEndings = (text: string): string => text.replaceAll("\r\n", "
 /**
  * Generates table of contents from README content.
  */
-const generateTableOfContents = (readme: string): string => {
+const generateTableOfContents = (readme: string, slugify: (text: string) => string): string => {
     const normalizedReadme = normalizeLineEndings(readme);
     const toc = normalizedReadme
         .split("\n")
@@ -319,6 +342,9 @@ const readmeCommand: ICommand = {
         const packageVersion = runtime.getPackageVersion();
         const versions = getVersions();
         const nodeVersion = versions.node ?? "unknown";
+
+        // Load the optional `github-slugger` peer on demand (see loadSlugify).
+        const slugify = await loadSlugify();
 
         const readmeOptions: ReadmeOptions = {
             aliases: options.aliases as boolean | undefined,
@@ -379,10 +405,10 @@ const readmeCommand: ICommand = {
             readme,
             "commands",
             readmeOptions.multi
-                ? await generateMultiCommands(fs, process.cwd, uniqueCommands, outputDirectory, cliName, readmeOptions)
-                : generateCommands(uniqueCommands, cliName, readmeOptions),
+                ? await generateMultiCommands(fs, process.cwd, uniqueCommands, outputDirectory, cliName, readmeOptions, slugify)
+                : generateCommands(uniqueCommands, cliName, readmeOptions, slugify),
         );
-        readme = replaceTag(readme, "toc", generateTableOfContents(readme));
+        readme = replaceTag(readme, "toc", generateTableOfContents(readme, slugify));
         readme = `${readme.trimEnd()}\n`;
 
         // Write README
