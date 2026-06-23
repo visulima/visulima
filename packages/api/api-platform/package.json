@@ -1,6 +1,6 @@
 {
     "name": "@visulima/api-platform",
-    "version": "4.0.0-alpha.36",
+    "version": "4.0.0-alpha.37",
     "description": "Visulima API platform is a set of tools to build and consume web APIs",
     "keywords": [
         "accepts",
@@ -176,7 +176,7 @@
     "dependencies": {
         "@visulima/connect": "4.0.0-alpha.31",
         "@visulima/fs": "5.0.0-alpha.32",
-        "@visulima/jsdoc-open-api": "3.0.0-alpha.35",
+        "@visulima/jsdoc-open-api": "3.0.0-alpha.36",
         "@visulima/path": "3.0.0-alpha.13",
         "accepts": "catalog:prod",
         "debug": "catalog:prod",
