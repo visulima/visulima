@@ -1,5 +1,3 @@
-import { Buffer } from "node:buffer";
-
 import EmailError from "../../errors/email-error";
 import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailResult, Result } from "../../types";
@@ -11,7 +9,7 @@ import { sanitizeHeaderName, sanitizeHeaderValue } from "../../utils/sanitize-he
 import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { createProviderLogger, formatMandrillAddresses, handleProviderError, ProviderState } from "../utils";
+import { createProviderLogger, formatMandrillAddresses, handleProviderError, processAttachmentContent, ProviderState } from "../utils";
 import type { MandrillConfig, MandrillEmailOptions } from "./types";
 
 const PROVIDER_NAME = "mandrill";
@@ -292,23 +290,7 @@ const mandrillProvider: ProviderFactory<MandrillConfig> = defineProvider((config
                 if (emailOptions.attachments && emailOptions.attachments.length > 0) {
                     message.attachments = await Promise.all(
                         emailOptions.attachments.map(async (attachment) => {
-                            let content: string;
-
-                            if (attachment.content) {
-                                if (typeof attachment.content === "string") {
-                                    content = attachment.content;
-                                } else if (attachment.content instanceof Promise) {
-                                    const buffer = await attachment.content;
-
-                                    content = Buffer.from(buffer).toString("base64");
-                                } else {
-                                    content = attachment.content.toString("base64");
-                                }
-                            } else if (attachment.raw) {
-                                content = typeof attachment.raw === "string" ? attachment.raw : attachment.raw.toString("base64");
-                            } else {
-                                throw new EmailError(PROVIDER_NAME, `Attachment ${attachment.filename} has no content`);
-                            }
+                            const content = await processAttachmentContent(attachment, PROVIDER_NAME);
 
                             return {
                                 content,
