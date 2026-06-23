@@ -8,8 +8,8 @@
  */
 import Yoga from "yoga-layout";
 
+import { getAbsolutePosition } from "./absolute-position";
 import type { DOMElement, DOMNode } from "./dom";
-import { getAbsolutePosition } from "./layout";
 import { getScrollLeft, getScrollTop } from "./scroll";
 import squashTextNodes from "./squash-text-nodes";
 

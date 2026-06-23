@@ -342,7 +342,6 @@
         "basic-ftp": "6.0.1",
         "box-typescript-sdk-gen": "1.19.1",
         "cloudinary": "2.10.0",
-        "cross-fetch": "catalog:dev",
         "dropbox": "10.34.0",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",

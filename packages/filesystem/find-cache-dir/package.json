@@ -92,7 +92,6 @@
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
-        "tempy": "catalog:dev",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test"
     },

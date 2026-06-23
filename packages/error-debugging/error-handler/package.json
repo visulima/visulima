@@ -160,7 +160,6 @@
     },
     "dependencies": {
         "@tinyhttp/accepts": "catalog:prod",
-        "@visulima/boxen": "3.0.0-alpha.14",
         "@visulima/error": "6.0.0-alpha.34",
         "http-errors": "catalog:prod",
         "http-status-codes": "catalog:prod",

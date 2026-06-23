@@ -107,7 +107,6 @@
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "react": "catalog:frontend",
-        "react-dom": "catalog:frontend",
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
         "typescript": "catalog:tsc",

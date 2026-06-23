@@ -126,7 +126,6 @@
         "http-errors": "catalog:dev",
         "lucide-static": "catalog:icons",
         "marked": "catalog:dev",
-        "node-mocks-http": "catalog:dev",
         "openai": "catalog:dev",
         "prettier": "catalog:lint",
         "prettier-plugin-tailwindcss": "catalog:lint",

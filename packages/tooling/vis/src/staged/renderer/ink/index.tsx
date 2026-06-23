@@ -67,6 +67,7 @@ const iconForStatus = (status: TaskStatus): ReactElement => {
     return <Text color={colorForStatus(status)}>{glyph}</Text>;
 };
 
+// fallow-ignore-next-line unused-component-prop -- `tick` is a re-render driver: its changing value forces Ink to repaint on each frame; the value itself is intentionally never read.
 const App = ({ state, tick: _tick, verbose }: AppProps): ReactElement => (
     <Box flexDirection="column">
         {[...state.patterns.values()].map((pattern) => (

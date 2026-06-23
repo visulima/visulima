@@ -102,7 +102,6 @@
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
         "terminal-size": "catalog:dev",
-        "type-fest": "catalog:dev",
         "typedoc": "catalog:dev",
         "typedoc-plugin-markdown": "catalog:dev",
         "typedoc-plugin-rename-defaults": "catalog:dev",

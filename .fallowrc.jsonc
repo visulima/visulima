@@ -1,0 +1,166 @@
+{
+    "$schema": "https://raw.githubusercontent.com/fallow-rs/fallow/main/schema.json",
+    // Each workspace's package.json `exports`/`main` are auto-detected entry
+    // points. These add the files the tooling executes but never imports —
+    // build, test, and lint configs. Globs are `**/`-prefixed so they resolve
+    // inside every workspace in the monorepo run, not just the repo root.
+    "entry": [
+        "**/packem.config.ts",
+        "**/tsup.config.ts",
+        "**/vitest.config.ts",
+        "**/vitest.bench.config.ts",
+        "**/vitest.*.config.ts",
+        "**/eslint.config.js",
+        "**/prettier.config.js",
+        "**/playwright.config.ts",
+        "vis.config.ts",
+    ],
+    // Non-code / generated / fixture / bench / docs trees, plus the website and
+    // storybook apps and repo tooling scripts. The fallow scripts only live in
+    // packages/* (type:package), so the dead-code surface is scoped to match.
+    "ignorePatterns": [
+        "**/docs/**",
+        "**/__docs__/**",
+        "**/*.mdx",
+        "**/__fixtures__/**",
+        // Test fixtures that ship their own fake package graphs (vis release
+        // tests instantiate pnpm-workspace fixtures with `@fixture/*` packages).
+        "**/__tests__/**/fixtures/**",
+        "**/fixtures/**",
+        "**/__bench__/**",
+        "**/__assets__/**",
+        "**/examples/**",
+        "**/recipes/**",
+        "**/*.stories.*",
+        "**/*.mock.{ts,tsx}",
+        "apps/**",
+        // Root tooling scripts only — NOT nested package `scripts/` dirs, whose
+        // build/codegen deps (ts-json-schema-generator, smol-toml, …) would
+        // otherwise look unused.
+        "scripts/**",
+        // The vis studio is a nested Vite sub-app with its own package.json and
+        // build; it isn't a pnpm workspace member, so fallow can't trace its
+        // src and flags every UI dep. Analyzed by its own `vite build`. Scoped
+        // to the sub-app dir only — NOT `src/dashboard/` (real vis source).
+        "packages/tooling/vis/dashboard/**",
+    ],
+    // Generated NAPI loaders reference per-platform `.node` files and
+    // `@visulima/*-binding-*` packages that only exist on the matching OS/arch,
+    // so they never resolve on a single host. Not real broken imports.
+    "ignoreUnresolvedImports": [
+        "**/*.node",
+        "@visulima/*-binding-*",
+        // Importing the manifest for version/metadata is a normal pattern fallow
+        // does not resolve.
+        "**/package.json",
+    ],
+    // Dev tooling consumed through config files or run as CLIs via package
+    // scripts, plus deps loaded only through dynamic subpath imports inside
+    // bundled shared utilities — fallow can't trace any of these from the
+    // static import graph.
+    "ignoreDependencies": [
+        // eslint / prettier / lint-staged config presets and plugins.
+        "@anolilab/eslint-config",
+        "@anolilab/prettier-config",
+        "@anolilab/lint-staged-config",
+        "@rushstack/eslint-plugin-security",
+        "@eslint/css",
+        "eslint",
+        "prettier",
+        "prettier-plugin-tailwindcss",
+        // release / commit / changelog tooling consumed via config.
+        "@anolilab/semantic-release-pnpm",
+        "@anolilab/semantic-release-preset",
+        "@anolilab/commitlint-config",
+        "@anolilab/development-config",
+        "@anolilab/multi-semantic-release",
+        "@anolilab/textlint-config",
+        "browserslist-config-anolilab",
+        "conventional-changelog-conventionalcommits",
+        "cz-conventional-changelog",
+        "semantic-release",
+        "is-ci",
+        "read-pkg",
+        "pkg-pr-new",
+        // build / bundler / transform tooling consumed via config.
+        "esbuild",
+        "@visulima/packem",
+        "jiti",
+        "@babel/preset-react",
+        "babel-plugin-transform-hook-names",
+        "@tailwindcss/node",
+        "@tailwindcss/oxide",
+        "@tailwindcss/typography",
+        "tailwind-csstree",
+        "tailwindcss-animate",
+        // test runners / coverage / reporters invoked as bins.
+        "vitest",
+        "@vitest/coverage-v8",
+        "@vitest/ui",
+        "@codspeed/vitest-plugin",
+        "typescript",
+        "rimraf",
+        "standard",
+        // secret / lint / publish bins.
+        "secretlint",
+        "@secretlint/secretlint-rule-preset-recommend",
+        "publint",
+        "@arethetypeswrong/cli",
+        // typedoc plugins consumed via typedoc config.
+        "typedoc-plugin-markdown",
+        "typedoc-plugin-rename-defaults",
+        // ts-reset is a side-effect type import wired through src/reset.d.ts.
+        "@total-typescript/ts-reset",
+        // package-manager probes / pnp shims used by @visulima/package detection.
+        "@pnpm/exe",
+        "@yarnpkg/pnp",
+        // Syntax-highlighting langs/themes loaded via dynamic subpath imports in
+        // the bundled shared `get-highlighter` util (shiki/core + @shikijs/*).
+        "@shikijs/langs",
+        "@shikijs/themes",
+        // fallow itself is a CLI run through package scripts, never imported.
+        "fallow",
+        // Intentional consumer-provided / optional runtime deps loaded via
+        // guarded dynamic import or try/catch require (graceful degradation):
+        // api-platform reads dotenv from the consuming project; cerebro uses
+        // v8-compile-cache only when present.
+        "dotenv",
+        "v8-compile-cache",
+        // The repo-root vis.config.ts references the workspace's own CLI.
+        "@visulima/vis",
+        // Real deps fallow's static graph can't trace: bundled-via-packem
+        // externals, dynamic imports, type-only usage, or used only in
+        // __tests__/__bench__ trees that are ignored above.
+        "shiki", // type-only `import type { Highlighter } from "shiki"`
+        "yaml", // imported in packem.config.ts
+        "@visulima/tabular", // packem.config externals (vis)
+        "@bomb.sh/tab", // optional shell-completion peer, packem.config (vis)
+        "@floating-ui/core",
+        "@floating-ui/dom",
+        "sigma", // packem.config externals (vis)
+        "@visulima/email", // dynamic channel adapter (notification)
+        "openai", // dynamic provider (storage src/ai)
+        "@aws-sdk/signature-v4-crt", // packem.config (storage)
+        "commander", // benchmark-only comparison (cerebro __bench__)
+        // Optional secret-scanner validator transports (lazy `import()`).
+        "mongodb",
+        "mysql2",
+        "pg",
+        "@azure/storage-blob",
+        "google-auth-library",
+        "@grpc/grpc-js",
+        "@aws-sdk/client-sts",
+        // package-manager probes exercised by @visulima/package detection/tests.
+        "npm",
+        "yarn",
+    ],
+    // The lazy-command convention (@visulima/cerebro `loader: () => import(...)`)
+    // makes every command handler export `execute`, which trips duplicate-exports
+    // by design. Keep it visible as a warning rather than a CI-failing error;
+    // genuine accidental duplicates are still surfaced.
+    "rules": {
+        "duplicate-exports": "warn",
+    },
+    // An export consumed only inside its own defining file is not dead.
+    "ignoreExportsUsedInFile": true,
+}

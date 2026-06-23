@@ -151,7 +151,6 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
-        "tempy": "catalog:dev",
         "tinyexec": "catalog:dev",
         "type-fest": "catalog:prod",
         "typescript": "catalog:tsc",
