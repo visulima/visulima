@@ -2370,7 +2370,7 @@ importers:
         specifier: 5.0.0-alpha.32
         version: link:../../filesystem/fs
       '@visulima/jsdoc-open-api':
-        specifier: 3.0.0-alpha.35
+        specifier: 3.0.0-alpha.36
         version: link:../jsdoc-open-api
       '@visulima/path':
         specifier: 3.0.0-alpha.13
@@ -6744,7 +6744,7 @@ importers:
         specifier: catalog:types
         version: 25.9.3
       '@visulima/email':
-        specifier: 1.0.0-alpha.41
+        specifier: 1.0.0-alpha.42
         version: link:../../email/email
       '@visulima/error':
         specifier: 6.0.0-alpha.34
@@ -10351,7 +10351,7 @@ importers:
         specifier: 4.0.0-alpha.14
         version: link:../../terminal/tabular
       '@visulima/task-runner':
-        specifier: 1.0.0-alpha.24
+        specifier: 1.0.0-alpha.25
         version: link:../task-runner
       '@visulima/tui':
         specifier: 1.0.0-alpha.26
@@ -10695,7 +10695,7 @@ importers:
         specifier: 3.0.0-alpha.13
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.43
+        specifier: 1.0.0-alpha.44
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -17936,7 +17936,7 @@ packages:
       esbuild: '>=0.28.1'
       rollup: '>=4.59.0'
       storybook: ^10.4.4
-      vite: '>=7.1.11'
+      vite: ^7.3.5
       webpack: '*'
     peerDependenciesMeta:
       esbuild:
