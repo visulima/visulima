@@ -1,3 +1,14 @@
+## @visulima/vis-mcp [1.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.33...@visulima/vis-mcp@1.0.0-alpha.34) (2026-06-23)
+
+### Bug Fixes
+
+* **vis:** unbreak full build — exclude variable-import modules from dynamic-import-vars ([#712](https://github.com/visulima/visulima/issues/712)) ([29d46eb](https://github.com/visulima/visulima/commit/29d46eb719de11ab8f09e5303748264607b04fe3)), closes [#697](https://github.com/visulima/visulima/issues/697) [#697](https://github.com/visulima/visulima/issues/697) [#697](https://github.com/visulima/visulima/issues/697) [#697](https://github.com/visulima/visulima/issues/697)
+
+
+### Dependencies
+
+* **@visulima/vis:** upgraded to 1.0.0-alpha.44
+
 ## @visulima/vis-mcp [1.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.32...@visulima/vis-mcp@1.0.0-alpha.33) (2026-06-20)
 
 
