@@ -10,7 +10,7 @@ import retry from "../../utils/retry";
 import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
-import { createProviderLogger, formatMailjetAddress, formatMailjetAddresses, handleProviderError, ProviderState } from "../utils";
+import { createProviderLogger, formatMailjetAddress, formatMailjetAddresses, handleProviderError, processAttachmentContent, ProviderState } from "../utils";
 import type { MailjetConfig, MailjetEmailOptions } from "./types";
 
 const PROVIDER_NAME = "mailjet";
@@ -302,23 +302,7 @@ const provider: ProviderFactory<MailjetConfig, unknown, MailjetEmailOptions> = d
                     if (emailOptions.attachments && emailOptions.attachments.length > 0) {
                         message.Attachments = await Promise.all(
                             emailOptions.attachments.map(async (attachment) => {
-                                let content: string;
-
-                                if (attachment.content) {
-                                    if (typeof attachment.content === "string") {
-                                        content = attachment.content;
-                                    } else if (attachment.content instanceof Promise) {
-                                        const buffer = await attachment.content;
-
-                                        content = Buffer.from(buffer).toString("base64");
-                                    } else {
-                                        content = attachment.content.toString("base64");
-                                    }
-                                } else if (attachment.raw) {
-                                    content = typeof attachment.raw === "string" ? attachment.raw : attachment.raw.toString("base64");
-                                } else {
-                                    throw new EmailError(PROVIDER_NAME, `Attachment ${attachment.filename} has no content`);
-                                }
+                                const content = await processAttachmentContent(attachment, PROVIDER_NAME);
 
                                 return {
                                     Base64Content: content,
