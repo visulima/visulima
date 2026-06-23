@@ -1,3 +1,26 @@
+## @visulima/task-runner [1.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.24...@visulima/task-runner@1.0.0-alpha.25) (2026-06-23)
+
+### Features
+
+* **task-runner:** add import-level boundary checking ([#694](https://github.com/visulima/visulima/issues/694)) ([7ad9817](https://github.com/visulima/visulima/commit/7ad9817ce3b5c1d95f54db025da114b8e21a0330))
+
+### Bug Fixes
+
+* **task-runner:** finish piped task on child exit ([8e48a90](https://github.com/visulima/visulima/commit/8e48a905aecc31f12a0951b910067c7392981d46))
+
+### Performance Improvements
+
+* **task-runner:** use FxHashMap for native graph maps ([279bb76](https://github.com/visulima/visulima/commit/279bb768c2eb2928110d7b1694f433a44dc0ca90)), closes [nubjs/nub#17](https://github.com/nubjs/nub/issues/17)
+
+### Documentation
+
+* **task-runner,vis:** add nub MIT attribution to ported native code ([9305f59](https://github.com/visulima/visulima/commit/9305f592da38dd13a179ef1af75fb0c8f5d84693))
+
+### Tests
+
+* **task-runner:** add criterion benches (graph, file-hasher) ([26d7d5b](https://github.com/visulima/visulima/commit/26d7d5b3ec92744f973b7d6b82a655bde73cde98))
+* **vis,task-runner:** address review on native benches ([f89dd33](https://github.com/visulima/visulima/commit/f89dd335d103744308a48568e49577d2019aca35))
+
 ## @visulima/task-runner [1.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.23...@visulima/task-runner@1.0.0-alpha.24) (2026-06-19)
 
 
