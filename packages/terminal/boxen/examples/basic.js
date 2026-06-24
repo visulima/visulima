@@ -1,4 +1,4 @@
-import { boxen } from "../dist/index.mjs";
+import { boxen } from "../dist/index.js";
 
 // Basic usage
 const box = boxen("foo");

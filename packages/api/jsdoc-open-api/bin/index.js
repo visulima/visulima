@@ -8,7 +8,7 @@ import { fileURLToPath } from "node:url";
 import { Command } from "commander";
 
 // eslint-disable-next-line antfu/no-import-dist -- bin entry point loads the built ESM dist after build
-import { generateCommand, initCommand } from "../dist/cli/commander/index.mjs";
+import { generateCommand, initCommand } from "../dist/cli/commander/index.js";
 
 const { version } = JSON.parse(readFileSync(fileURLToPath(new URL("../package.json", import.meta.url)), "utf8"));
 
