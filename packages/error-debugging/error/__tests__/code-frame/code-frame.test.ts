@@ -8,18 +8,12 @@
  * Copyright (c) 2014-present Sebastian McKenzie and other contributors
  */
 
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import { codeFrame } from "../../src/code-frame";
 import process from "../../src/util/process";
 
 const POINTER = process.platform === "win32" && !process.env?.WT_SESSION ? ">" : "❯";
-
-vi.mock(import("./utils"), () => {
-    return {
-        normalizeLF: (string_: string) => string_,
-    };
-});
 
 describe("code-frame", () => {
     it("should return an empty string if line or column is undefined", () => {

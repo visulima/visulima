@@ -38,4 +38,3 @@ const createViteHMRClient = (handlers: MessageHandlers): MessageChannel<ViteHMRE
 };
 
 export { createViteHMRClient };
-export default createViteHMRClient;

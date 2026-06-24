@@ -27,4 +27,3 @@ const useApps = (): {
 };
 
 export { useApps };
-export default useApps;

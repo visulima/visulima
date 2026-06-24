@@ -51,6 +51,7 @@ const base64ToBytes = (value: string): Uint8Array => {
  * is used directly. A hex digest is also accepted as a fallback for non-conformant
  * senders. Edge-safe — uses Web Crypto only.
  */
+// eslint-disable-next-line import/prefer-default-export -- named export is re-exported by the ./webhooks barrel
 export const standardWebhook: WebhookVerifier = {
     parse: (body: string): NotificationEvent | undefined => {
         const parsed = tryParseObject(body);
@@ -105,5 +106,3 @@ export const standardWebhook: WebhookVerifier = {
         return false;
     },
 };
-
-export default standardWebhook;

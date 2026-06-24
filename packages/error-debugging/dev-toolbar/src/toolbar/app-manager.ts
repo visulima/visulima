@@ -318,4 +318,3 @@ class AppManager {
 }
 
 export { AppManager };
-export default AppManager;

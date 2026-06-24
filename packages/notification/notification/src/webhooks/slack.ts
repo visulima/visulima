@@ -21,6 +21,7 @@ const TIMESTAMP_HEADER = "X-Slack-Request-Timestamp";
  * The request timestamp is checked against a 5-minute replay window. Edge-safe — uses
  * Web Crypto only.
  */
+// eslint-disable-next-line import/prefer-default-export -- named export is re-exported by the ./webhooks barrel
 export const slackWebhook: WebhookVerifier = {
     parse: (body: string): NotificationEvent | undefined => {
         const parsed = tryParseObject(body);
@@ -64,5 +65,3 @@ export const slackWebhook: WebhookVerifier = {
         return timingSafeEqual(`v0=${digest}`, provided);
     },
 };
-
-export default slackWebhook;

@@ -116,28 +116,6 @@ export const createRangeStream = (sourceStream: Readable, start: number, end?: n
 export const shouldUseStreaming = (fileSize: number, threshold: number = 1024 * 1024): boolean => fileSize > threshold;
 
 /**
- * Calculate optimal chunk size for streaming based on file size.
- * @param fileSize Size of the file in bytes
- * @returns Optimal chunk size in bytes (64KB for small files, 256KB for medium, 1MB for large)
- */
-export const getOptimalChunkSize = (fileSize: number): number => {
-    // Smaller files: use 64KB chunks
-    // Medium files: use 256KB chunks
-    // Large files: use 1MB chunks
-    if (fileSize < 10 * 1024 * 1024) {
-        // < 10MB
-        return 64 * 1024; // 64KB
-    }
-
-    if (fileSize < 100 * 1024 * 1024) {
-        // < 100MB
-        return 256 * 1024; // 256KB
-    }
-
-    return 1024 * 1024; // 1MB
-};
-
-/**
  * Create a timeout wrapper for streaming operations that destroys the stream on timeout.
  * @param stream Readable stream to wrap with timeout
  * @param timeoutMs Timeout duration in milliseconds

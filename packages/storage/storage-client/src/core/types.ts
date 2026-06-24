@@ -49,33 +49,6 @@ export interface UploadResult extends FileMeta {
 }
 
 /**
- * Upload item state (used by the internal multipart uploader).
- */
-export interface UploadItem {
-    /** Upload progress percentage (0-100) */
-    completed: number;
-    /** Error message if upload failed */
-    error?: string;
-    /** The file being uploaded */
-    file: File;
-    /** Unique item ID */
-    id: string;
-    /** Bytes uploaded so far */
-    loaded: number;
-    /** Total file size in bytes */
-    size: number;
-    /** Upload status */
-    status: "pending" | "uploading" | "completed" | "error" | "aborted";
-    /** Upload response data */
-    uploadResponse?: {
-        data?: unknown;
-        response?: string;
-    };
-    /** File URL after upload */
-    url?: string;
-}
-
-/**
  * A function (sync or async) that resolves additional HTTP headers to attach to
  * every upload / file-management request. Returning `Authorization` lets you
  * attach a session token or JWT to all requests issued by an adapter.

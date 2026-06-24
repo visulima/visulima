@@ -14,6 +14,7 @@ export class ConcurrencyLimiter {
         this.capacity = Math.max(1, capacity);
     }
 
+    // fallow-ignore-next-line unused-class-member -- Public utility exercised via the validator barrel in __tests__; kept as deliberate API surface.
     public async run<T>(fn: () => Promise<T>): Promise<T> {
         for (;;) {
             if (this.active < this.capacity) {

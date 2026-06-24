@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from "vitest";
 
-import type { CommandSection } from "../../src/@types";
 import EmptyToolbox from "../../src/empty-toolbox";
+import type { CommandSection } from "../../src/types/cli";
 
 describe("emptyToolbox", () => {
     it("should create an instance with the given command name and command", () => {

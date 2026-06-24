@@ -230,4 +230,3 @@ const getViteConfig = async (server: ViteDevServer): Promise<ViteConfigSnapshot>
 };
 
 export { getViteConfig };
-export default getViteConfig;

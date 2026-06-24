@@ -502,6 +502,4 @@ export type PailServerType<T extends string = string, L extends string = string>
         force: Record<DefaultLogTypes, LoggerFunction> & Record<T, LoggerFunction>;
     };
 
-export type PailConstructor<T extends string = string, L extends string = string> = new (options?: ServerConstructorOptions<T, L>) => PailServerType<T, L>;
-
 export const PailServer = PailServerImpl as unknown as PailServerType;

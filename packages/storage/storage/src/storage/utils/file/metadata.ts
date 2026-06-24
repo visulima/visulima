@@ -1,5 +1,3 @@
-import isRecord from "../../../utils/primitives/is-record";
-
 const ASCII_SPACE: number = " ".codePointAt(0) ?? 32;
 const ASCII_COMMA: number = ",".codePointAt(0) ?? 44;
 const BASE64_REGEX: RegExp = /^[\d+/A-Z]*={0,2}$/i;
@@ -37,8 +35,6 @@ export class Metadata {
 
     public plastModified?: number | string;
 }
-
-export const isMetadata = (raw: unknown): raw is Metadata => isRecord(raw);
 
 export const validateKey = (key: string): boolean => {
     if (key.length === 0) {

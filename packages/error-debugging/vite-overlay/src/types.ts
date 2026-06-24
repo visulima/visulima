@@ -10,20 +10,7 @@ export type { Solution, SolutionFinder } from "@visulima/error/solution";
  */
 export type Framework = "preact" | "react" | "solid" | "svelte" | "vue";
 
-export type ErrorLike = Error | { message?: string; name?: string; stack?: string };
-
-export interface PluginPattern {
-    readonly name: string;
-    readonly pattern: RegExp;
-}
-
 export type SupportedExtension = ".js" | ".ts" | ".mjs" | ".cjs" | ".jsx" | ".tsx" | ".vue" | ".svelte";
-
-export interface StackLocation {
-    readonly column?: number;
-    readonly file?: string;
-    readonly line?: number;
-}
 
 export interface VisulimaViteOverlayErrorPayload {
     readonly errors: ReadonlyArray<ExtendedError>;
@@ -72,22 +59,9 @@ export interface RawErrorData {
     readonly stack: string;
 }
 
-export interface VueErrorInfo {
-    readonly column: number;
-    readonly line: number;
-    readonly message?: string;
-    readonly originalFilePath: string;
-}
-
 export type ViteErrorData = ErrorLocation & {
     plugin?: string;
 };
-
-export interface ResolvedLocation {
-    readonly originalFileColumn: number;
-    readonly originalFileLine: number;
-    readonly originalFilePath: string;
-}
 
 export interface SourceTexts {
     readonly compiledSourceText?: string;

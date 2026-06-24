@@ -56,7 +56,7 @@ const normalizeAddresses = (address: AddressInput): EmailAddress[] => {
 /**
  * Mail message builder - provides fluent interface for building emails.
  */
-export class MailMessage {
+class MailMessage {
     private fromAddress?: EmailAddress;
 
     private toAddresses: EmailAddress[] = [];

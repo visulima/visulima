@@ -177,5 +177,5 @@ export const reportValidators = (rules: { validation?: unknown }[]): ValidatorRe
     return out.toSorted((a, b) => b.ruleCount - a.ruleCount);
 };
 
-export type { TransportContext, TransportValidator, ValidatorTransport } from "./context";
+export type { TransportContext, ValidatorTransport } from "./context";
 export { resetWarningsForTests } from "./runtime";

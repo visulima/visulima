@@ -81,41 +81,9 @@ export const makeRequest = async <T = unknown>(url: string, options: MakeRequest
 export const isRetryableStatus = (status: number): boolean => status === 408 || status === 429 || status >= 500;
 
 /**
- * Retries an async function with exponential backoff + jitter.
- * @param function_ The async function to run.
- * @param retries Maximum retry attempts (in addition to the first call).
- * @param baseDelay Base backoff delay in ms.
- * @returns The function's resolved value.
- */
-export const retry = async <T>(function_: () => Promise<T>, retries = 3, baseDelay = 250): Promise<T> => {
-    let lastError: unknown;
-
-    for (let attempt = 0; attempt <= retries; attempt += 1) {
-        try {
-            // eslint-disable-next-line no-await-in-loop
-            return await function_();
-        } catch (error) {
-            lastError = error;
-
-            if (attempt === retries) {
-                break;
-            }
-
-            // eslint-disable-next-line sonarjs/pseudo-random
-            const delay = baseDelay * 2 ** attempt + Math.floor(Math.random() * baseDelay);
-
-            // eslint-disable-next-line no-await-in-loop,no-promise-executor-return
-            await new Promise((resolve) => setTimeout(resolve, delay));
-        }
-    }
-
-    throw lastError;
-};
-
-/**
  * Performs an HTTP request via {@link makeRequest}, retrying on network failures
  * and transient HTTP statuses (see {@link isRetryableStatus}) with exponential
- * backoff + jitter. Unlike {@link retry}, this inspects the resolved response so
+ * backoff + jitter. Unlike a bare retry helper, this inspects the resolved response so
  * completed-but-retryable responses (429 / 5xx) are retried too.
  * @param url The absolute URL to request.
  * @param options Method, body, headers and timeout for the request.

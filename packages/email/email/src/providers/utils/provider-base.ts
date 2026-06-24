@@ -13,15 +13,6 @@ type Logger = {
 };
 
 /**
- * Common provider configuration interface
- */
-export interface BaseProviderConfig {
-    debug?: boolean;
-    logger?: Console;
-    timeout?: number;
-}
-
-/**
  * Provider initialization state management
  */
 export class ProviderState {

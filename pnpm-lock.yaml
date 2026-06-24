@@ -4412,6 +4412,9 @@ importers:
       publint:
         specifier: catalog:dev
         version: 0.3.21
+      react:
+        specifier: 19.2.6
+        version: 19.2.6
       rimraf:
         specifier: catalog:node
         version: 6.1.3

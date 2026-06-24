@@ -29,7 +29,7 @@ const RE_STACK_AT_FRAME = /\s*at\s+(?:(.+?)\s+\()?(.*?):(\d+):(\d+)\)?/;
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 class ErrorOverlay extends HTMLElement {
     /**
-     * @typedef {import('../types').VisulimaViteOverlayErrorPayload} VisulimaViteOverlayErrorPayload
+     * @typedef {import('../../types').VisulimaViteOverlayErrorPayload} VisulimaViteOverlayErrorPayload
      */
     static COPY_SUCCESS_DELAY = 2000;
 

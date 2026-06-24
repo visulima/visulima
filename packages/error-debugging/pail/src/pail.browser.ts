@@ -287,6 +287,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.restoreConsole(); // Restore original console methods
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public wrapConsole(): void {
         /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- console wrapping requires dynamic property access */
         // eslint-disable-next-line guard-for-in,no-restricted-syntax
@@ -318,6 +319,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * // Console methods are restored to original behavior
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public restoreConsole(): void {
         /* eslint-disable @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment -- console restore requires dynamic property access */
         // eslint-disable-next-line no-restricted-syntax
@@ -348,6 +350,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * throw new Error("This will be logged");
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public wrapException(): void {
         if (typeof process === "undefined") {
             return;
@@ -391,6 +394,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.restoreException(); // global handlers removed
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public restoreException(): void {
         if (typeof process === "undefined") {
             return;
@@ -422,6 +426,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.info("This will be logged"); // Output produced
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public disable(): void {
         this.disabled = true;
     }
@@ -440,6 +445,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.info("This will be logged");
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public enable(): void {
         this.disabled = false;
     }
@@ -457,6 +463,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * console.log(logger.isEnabled()); // false
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public isEnabled(): boolean {
         return !this.disabled;
     }
@@ -476,6 +483,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.resume(); // Now both messages are output
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public pause(): void {
         this.paused = true;
     }
@@ -496,6 +504,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.info("Message 3"); // Output immediately
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public resume(): void {
         this.paused = false;
 
@@ -527,6 +536,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * scopedLogger.info("User logged in"); // Will include scope: ["auth", "login"]
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public scope<N extends string = T>(...name: string[]): PailBrowserType<N, L> {
         if (name.length === 0) {
             throw new Error("No scope name was defined.");
@@ -552,6 +562,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * scopedLogger.info("Unscoped message"); // No scope
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public unscope(): void {
         this.scopeName = [];
     }
@@ -696,6 +707,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.timeEnd("operation"); // Logs: "Timer run for: X ms"
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public time(label = "default"): void {
         this.timerManager.time(label);
     }
@@ -718,6 +730,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.timeEnd("task"); // Logs final time and stops timer
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public timeLog(label?: string, ...data: unknown[]): void {
         this.timerManager.timeLog(label, ...data);
     }
@@ -737,6 +750,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.timeEnd("operation"); // Logs: "Timer run for: X ms"
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public timeEnd(label?: string): void {
         this.timerManager.timeEnd(label);
     }
@@ -757,6 +771,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.groupEnd(); // End the group
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public group(label = "console.group"): void {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- runtime SSR check
         if (globalThis.window === undefined) {
@@ -781,6 +796,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.groupEnd(); // Closes the "Processing" group
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public groupEnd(): void {
         // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- runtime SSR check
         if (globalThis.window === undefined) {
@@ -806,6 +822,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.count("errors");   // Logs: "errors: 1"
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public count(label = "default"): void {
         this.counterManager.count(label);
     }
@@ -824,6 +841,7 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.count("requests"); // Logs: "requests: 1" (starts over)
      * ```
      */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public countReset(label = "default"): void {
         this.counterManager.countReset(label);
     }
@@ -841,11 +859,13 @@ export class PailBrowserImpl<T extends string = string, L extends string = strin
      * logger.clear(); // Clears the console
      * ```
      */
-    // eslint-disable-next-line class-methods-use-this
+    /* eslint-disable class-methods-use-this */
+    // fallow-ignore-next-line unused-class-member -- public logger API on exported PailBrowser class
     public clear(): void {
         // eslint-disable-next-line no-console
         console.clear();
     }
+    /* eslint-enable class-methods-use-this */
 
     /**
      * Logs a raw message bypassing normal processing.
@@ -1154,7 +1174,5 @@ export type PailBrowserType<T extends string = string, L extends string = string
     & Record<T, LoggerFunction> & {
         force: Record<DefaultLogTypes, LoggerFunction> & Record<T, LoggerFunction>;
     };
-
-export type PailConstructor<T extends string = string, L extends string = string> = new (options?: ConstructorOptions<T, L>) => PailBrowserType<T, L>;
 
 export const PailBrowser = PailBrowserImpl as unknown as PailBrowserType;

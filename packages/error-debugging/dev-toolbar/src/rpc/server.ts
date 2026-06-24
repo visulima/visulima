@@ -180,4 +180,3 @@ const createServerRPCContext = (server: ViteDevServer, customFunctions?: Partial
 };
 
 export { createServerRPCContext };
-export default createServerRPCContext;

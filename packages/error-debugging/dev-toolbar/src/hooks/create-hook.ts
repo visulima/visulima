@@ -103,4 +103,3 @@ const createDevToolbarHook = (
 };
 
 export { createDevToolbarHook };
-export default createDevToolbarHook;

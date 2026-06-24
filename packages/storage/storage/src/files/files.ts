@@ -1163,5 +1163,3 @@ export class Files<TStorage extends BaseStorage = BaseStorage> {
         });
     }
 }
-
-export default Files;

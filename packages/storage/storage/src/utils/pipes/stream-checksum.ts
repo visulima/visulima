@@ -43,6 +43,7 @@ export class StreamChecksum extends Transform {
      * @param done Callback to signal completion
      */
 
+    // fallow-ignore-next-line unused-class-member -- Node.js Transform stream hook invoked by the stream runtime
     public override _transform(chunk: Buffer, _encoding: string, done: () => void): void {
         this.push(chunk);
         this.hash.update(chunk);
@@ -56,6 +57,7 @@ export class StreamChecksum extends Transform {
      * @param callback Callback called with error if checksum validation fails
      */
 
+    // fallow-ignore-next-line unused-class-member -- Node.js Transform stream hook invoked by the stream runtime
     public override _flush(callback: (error?: Error) => void): void {
         this.digest = this.hash.digest(this.encoding);
 

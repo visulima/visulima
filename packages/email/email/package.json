@@ -437,6 +437,7 @@
         "pkijs": "catalog:dev",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
+        "react": "catalog:frontend",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",

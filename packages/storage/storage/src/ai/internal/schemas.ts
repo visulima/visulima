@@ -164,8 +164,6 @@ export type FileReadToolName = "downloadFile" | "getFileMetadata" | "getFileUrl"
 
 export type FileWriteToolName = "copyFile" | "deleteFile" | "signUploadUrl" | "uploadFile";
 
-export const READ_TOOL_NAMES: ReadonlyArray<FileReadToolName> = ["listFiles", "getFileMetadata", "downloadFile", "getFileUrl"];
-
 export const WRITE_TOOL_NAMES: ReadonlyArray<FileWriteToolName> = ["uploadFile", "deleteFile", "copyFile", "signUploadUrl"];
 
 export const WRITE_TOOL_NAME_SET: ReadonlySet<FileWriteToolName> = new Set(WRITE_TOOL_NAMES);

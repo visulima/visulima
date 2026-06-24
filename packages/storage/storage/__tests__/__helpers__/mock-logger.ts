@@ -1,6 +1,11 @@
 import { vi } from "vitest";
 
-import type { Logger } from "../../src/utils";
+export interface Logger {
+    debug: (message?: unknown, ...arguments_: unknown[]) => void;
+    error: (message?: unknown, ...arguments_: unknown[]) => void;
+    info: (message?: unknown, ...arguments_: unknown[]) => void;
+    warn: (message?: unknown, ...arguments_: unknown[]) => void;
+}
 
 class MockLogger implements Logger {
     public debug = vi.fn().mockImplementation(console.debug);

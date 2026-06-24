@@ -184,22 +184,6 @@ const decompressBuffer = async (sourcePath: string, transform: NodeJS.ReadWriteS
     return Buffer.concat(chunks);
 };
 
-/** Plain tar: `sourceDirectory` → `outputPath`, no compression. */
-export const createTar = async (sourceDirectory: string, outputPath: string): Promise<void> => {
-    const entries = await collectEntries(sourceDirectory);
-    const bytes = nanoCreateTar(entries);
-
-    await writeFile(outputPath, bytes);
-};
-
-/** Plain tar extract into `destinationDirectory`, with path-traversal validation. */
-export const extractTar = async (archivePath: string, destinationDirectory: string, options?: ExtractOptions): Promise<void> => {
-    const buffer = await readFile(archivePath);
-    const entries = nanoParseTar(buffer);
-
-    await writeTarEntries(entries, destinationDirectory, options);
-};
-
 /** tar + gzip. Used when Turborepo-protocol compatibility matters. */
 export const createTarGz = async (sourceDirectory: string, outputPath: string): Promise<void> => {
     const entries = await collectEntries(sourceDirectory);
