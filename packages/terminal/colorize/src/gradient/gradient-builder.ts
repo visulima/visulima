@@ -24,14 +24,20 @@ const resolveStopColor = (color: StopInput["color"]): [number, number, number] |
 };
 
 /** Build a stop from an explicit `{ position, color? }` input, validating ordering and the position range. */
-const buildPositionedStop = (stopInput: StopInput, index: number, length: number, lastColorLess: boolean, previousPosition: number): StopOutput => {
+const buildPositionedStop = (
+    stopInput: StopInput,
+    index: number,
+    length: number,
+    lastColorLess: boolean,
+    previousPosition: number,
+): StopOutput & { colorLess: boolean } => {
     const hasColor = stopInput.color !== undefined;
 
     if (!hasColor && (lastColorLess || index === 0 || index === length - 1)) {
         throw new Error("Cannot define two consecutive position-only stops");
     }
 
-    const stop: StopOutput = {
+    const stop: StopOutput & { colorLess: boolean } = {
         color: hasColor ? resolveStopColor(stopInput.color) : undefined,
         colorLess: !hasColor,
         position: stopInput.position,
@@ -52,19 +58,19 @@ const buildPositionedStop = (stopInput: StopInput, index: number, length: number
 const buildAutoStop = (stop: StopValue, index: number, length: number): StopOutput => {
     const position = index / (length - 1);
 
-    if (Array.isArray(stop)) {
-        return { color: stop, position };
+    // Arrays and color strings always yield a stop — an unrecognized color name
+    // resolves to `undefined` here without throwing (preserving the original).
+    if (Array.isArray(stop) || typeof stop === "string") {
+        return { color: resolveStopColor(stop), position };
     }
 
-    if (typeof stop === "string") {
-        return { color: stop.includes("#") ? convertHexToRgb(stop) : colorNames[stop as CssColorName], position };
+    const color = resolveStopColor(stop as StopInput["color"]);
+
+    if (color === undefined) {
+        throw new Error("Invalid color stop");
     }
 
-    if ((stop as RGB | undefined)?.r !== undefined && (stop as RGB | undefined)?.g !== undefined && (stop as RGB | undefined)?.b !== undefined) {
-        return { color: [(stop as RGB).r, (stop as RGB).g, (stop as RGB).b], position };
-    }
-
-    throw new Error("Invalid color stop");
+    return { color, position };
 };
 
 // eslint-disable-next-line import/prefer-default-export -- public API uses named export
@@ -100,9 +106,11 @@ export class GradientBuilder {
             let stop: StopOutput;
 
             if (hasPosition) {
-                stop = buildPositionedStop(stop_ as StopInput, index, l, lastColorLess, p);
-                lastColorLess = stop.colorLess ?? false;
-                p = stop.position;
+                const positioned = buildPositionedStop(stop_ as StopInput, index, l, lastColorLess, p);
+
+                lastColorLess = positioned.colorLess;
+                p = positioned.position;
+                stop = positioned;
             } else {
                 stop = buildAutoStop(stop_, index, l);
             }
@@ -165,36 +173,26 @@ export class GradientBuilder {
     }
 
     public rgb(steps: number): ColorizeType[] {
-        const subSteps = computeSubSteps(this.stops, steps);
-        const gradient: ColorizeType[] = [];
-
-        this.stops.forEach((stop, index) => {
-            if (stop.colorLess) {
-                const rgbs = interpolateRgb(this.stops[index - 1] as StopOutput, this.stops[index + 1] as StopOutput, 2);
-
-                // eslint-disable-next-line no-param-reassign
-                stop.color = [(rgbs[1] as RGB).r, (rgbs[1] as RGB).g, (rgbs[1] as RGB).b];
-            }
-        });
-
-        for (let index = 0, l = this.stops.length; index < l - 1; index += 1) {
-            const rgbs = interpolateRgb(this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number);
-
-            gradient.splice(gradient.length, 0, ...rgbs.map((rgb) => this.#colorize.rgb(rgb.r, rgb.g, rgb.b)));
-        }
-
-        gradient.push(this.#colorize.rgb(...((this.stops.at(-1) as StopOutput).color as [number, number, number])));
-
-        return gradient;
+        return this.#build(interpolateRgb, steps);
     }
 
     public hsv(steps: number, mode: boolean | "long" | "short" = false): ColorizeType[] {
+        return this.#build((start, end, count) => interpolateHsv(start, end, count, mode), steps);
+    }
+
+    /**
+     * Shared gradient assembly for {@link rgb} and {@link hsv}: fill any
+     * color-less stop by interpolating its neighbours, then interpolate every
+     * adjacent pair and append the final stop's color. The only difference
+     * between the two public variants is the interpolation function.
+     */
+    #build(interpolate: (start: StopOutput, end: StopOutput, count: number) => RGB[], steps: number): ColorizeType[] {
         const subSteps = computeSubSteps(this.stops, steps);
         const gradient: ColorizeType[] = [];
 
         this.stops.forEach((stop, index) => {
             if (stop.colorLess) {
-                const rgbs = interpolateHsv(this.stops[index - 1] as StopOutput, this.stops[index + 1] as StopOutput, 2, mode);
+                const rgbs = interpolate(this.stops[index - 1] as StopOutput, this.stops[index + 1] as StopOutput, 2);
 
                 // eslint-disable-next-line no-param-reassign
                 stop.color = [(rgbs[1] as RGB).r, (rgbs[1] as RGB).g, (rgbs[1] as RGB).b];
@@ -202,7 +200,7 @@ export class GradientBuilder {
         });
 
         for (let index = 0, l = this.stops.length; index < l - 1; index += 1) {
-            const rgbs = interpolateHsv(this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number, mode);
+            const rgbs = interpolate(this.stops[index] as StopOutput, this.stops[index + 1] as StopOutput, subSteps[index] as number);
 
             gradient.splice(gradient.length, 0, ...rgbs.map((rgb) => this.#colorize.rgb(rgb.r, rgb.g, rgb.b)));
         }
