@@ -1,9 +1,6 @@
 "package: ansi":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/ansi/**/*"
-"package: api-platform":
-    - changed-files:
-          - any-glob-to-any-file: "packages/api/api-platform/**/*"
 "package: boxen":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/boxen/**/*"
@@ -19,15 +16,9 @@
 "package: command-line-args":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/command-line-args/**/*"
-"package: connect":
-    - changed-files:
-          - any-glob-to-any-file: "packages/api/connect/**/*"
 "package: content-safety":
     - changed-files:
           - any-glob-to-any-file: "packages/data-manipulation/content-safety/**/*"
-"package: crud":
-    - changed-files:
-          - any-glob-to-any-file: "packages/api/crud/**/*"
 "package: dashboard":
     - changed-files:
           - any-glob-to-any-file: "packages/tooling/vis/dashboard/**/*"
@@ -109,9 +100,6 @@
 "package: path":
     - changed-files:
           - any-glob-to-any-file: "packages/filesystem/path/**/*"
-"package: prisma-dmmf-transformer":
-    - changed-files:
-          - any-glob-to-any-file: "packages/tooling/prisma-dmmf-transformer/**/*"
 "package: progress-bar":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/progress-bar/**/*"
