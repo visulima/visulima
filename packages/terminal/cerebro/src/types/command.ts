@@ -104,8 +104,6 @@ export interface EnvDefinition<T = string> {
     typeLabel?: string;
 }
 
-export type PossibleEnvDefinition = EnvDefinition<boolean> | EnvDefinition<number> | EnvDefinition;
-
 /**
  * Command interface with type-safe options and environment variables.
  * @template O - The option definition type

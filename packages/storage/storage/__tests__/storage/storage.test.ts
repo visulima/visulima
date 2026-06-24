@@ -4,8 +4,8 @@ import { temporaryDirectory } from "tempy";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 
 import DiskStorage from "../../src/storage/local/disk-storage";
-import type { Logger } from "../../src/utils";
 import { metafile, storageOptions } from "../__helpers__/config";
+import type { Logger } from "../__helpers__/mock-logger";
 import MockLogger from "../__helpers__/mock-logger";
 
 describe("baseStorage", () => {

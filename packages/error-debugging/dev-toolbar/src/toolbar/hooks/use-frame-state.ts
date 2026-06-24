@@ -269,12 +269,5 @@ const useFrameState = (): UseFrameStateReturn => {
     };
 };
 
-/**
- * Returns the currently selected editor preference (empty string = auto-detect).
- * Reads from the singleton shared state, so always reflects the latest value
- * without re-reading localStorage.
- */
-const getEditorPreference = (): string | undefined => sharedState.editor || undefined;
-
 export type { DevToolsFrameState, KeyBindings, UseFrameStateReturn };
-export { DEFAULT_KEYBINDINGS, DEFAULT_STATE, getEditorPreference, useFrameState };
+export { DEFAULT_KEYBINDINGS, DEFAULT_STATE, useFrameState };

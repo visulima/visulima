@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-file -- standalone benchmark entry point run via bench/runall.sh
 import { createServer } from "node:http";
 
 import { createRouter } from "../src";

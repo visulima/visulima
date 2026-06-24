@@ -33,4 +33,3 @@ const openInEditor = async (server: ViteDevServer, file: string, line?: number, 
 };
 
 export { openInEditor };
-export default openInEditor;

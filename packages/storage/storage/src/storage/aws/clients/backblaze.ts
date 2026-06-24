@@ -10,7 +10,7 @@ import type { CreateBackblazeClientParameters } from "./types";
  * - `B2_APP_KEY_ID`
  * - `B2_APP_KEY`
  */
-export const backblaze = (parameters?: CreateBackblazeClientParameters): S3ClientConfig => {
+const backblaze = (parameters?: CreateBackblazeClientParameters): S3ClientConfig => {
     const applicationKey = parameters?.applicationKey ?? process.env.AWS_SECRET_ACCESS_KEY ?? process.env.B2_APP_KEY ?? process.env.BACKBLAZE_APP_KEY;
     const applicationKeyId = parameters?.applicationKeyId ?? process.env.AWS_ACCESS_KEY_ID ?? process.env.B2_APP_KEY_ID ?? process.env.BACKBLAZE_APP_KEY_ID;
     const region = parameters?.region ?? process.env.AWS_REGION ?? process.env.B2_REGION ?? process.env.BACKBLAZE_REGION;

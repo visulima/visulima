@@ -961,6 +961,7 @@ export class Cli<T extends Console = Console> implements ICli<T> {
      * Gets the current working directory.
      * @returns The current working directory path
      */
+    // fallow-ignore-next-line unused-class-member -- public API declared on the Cli interface (types/cli.ts); kept for backward compatibility
     public getCwd(): string {
         return this.#cwd;
     }

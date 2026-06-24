@@ -124,6 +124,5 @@ export async function validateFinding(
 
 export type { ValidationStatus } from "../types";
 export { ConcurrencyLimiter } from "./concurrency";
-export { runHttpValidation } from "./http";
 export { PerHostLimiter } from "./per-host-limiter";
 export { renderTemplate } from "./template";

@@ -95,4 +95,3 @@ const createClientRPCContext = (customFunctions?: Partial<ClientFunctions>): Cli
 };
 
 export { createClientRPCContext };
-export default createClientRPCContext;

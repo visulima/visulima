@@ -23,4 +23,5 @@ export const ErrorCodes = {
     VERSION_PARSE_ERROR: "VERSION_PARSE_ERROR",
 } as const satisfies Record<string, string>;
 
+// fallow-ignore-next-line unused-type -- public companion type for the exported ErrorCodes const; kept for consumers narrowing error codes
 export type ErrorCode = keyof typeof ErrorCodes;

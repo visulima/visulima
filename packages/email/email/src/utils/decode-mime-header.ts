@@ -64,7 +64,7 @@ const ENCODED_WORD_REGEX = /=\?([^?]+)\?([bq])\?([^?]*)\?=/gi;
  * @param value The raw header value (possibly containing encoded-words).
  * @returns The decoded, human-readable header value.
  */
-export const decodeMimeHeaderValue = (value: string): string => {
+const decodeMimeHeaderValue = (value: string): string => {
     if (!value.includes("=?")) {
         return value;
     }

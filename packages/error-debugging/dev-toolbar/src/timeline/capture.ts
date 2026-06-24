@@ -169,4 +169,3 @@ const startTimelineCapture = (): void => {
 };
 
 export { startTimelineCapture };
-export default startTimelineCapture;

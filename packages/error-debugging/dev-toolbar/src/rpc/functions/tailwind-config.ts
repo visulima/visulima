@@ -209,4 +209,3 @@ const getTailwindConfig = async (server: ViteDevServer): Promise<TailwindConfigR
 
 export type { TailwindConfigResult };
 export { getTailwindConfig };
-export default getTailwindConfig;

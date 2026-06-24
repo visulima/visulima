@@ -7,7 +7,6 @@ import retrieveSourceTexts from "../../../../src/utils/error-processing/retrieve
 
 // Mock dependencies
 vi.mock(import("node:fs/promises"));
-vi.mock(import("../source-map-utils"));
 
 describe(retrieveSourceTexts, () => {
     const mockServer = {

@@ -21,59 +21,6 @@ export const waitForErrorTestPage = async (page: Page, timeout = 10_000): Promis
 };
 
 /**
- * Triggers a runtime error on the page.
- */
-export const triggerRuntimeError = async (page: Page, message = "Test runtime error"): Promise<void> => {
-    await page.evaluate((errorMessage) => {
-        throw new Error(errorMessage);
-    }, message);
-};
-
-/**
- * Triggers an error with cause chain.
- */
-export const triggerCauseChainError = async (page: Page): Promise<void> => {
-    await page.evaluate(() => {
-        try {
-            const inner = () => {
-                throw new Error("Inner cause error");
-            };
-
-            const middle = () => {
-                try {
-                    inner();
-                } catch (error) {
-                    const middleError = new Error("Middle cause error");
-
-                    middleError.cause = error;
-                    throw middleError;
-                }
-            };
-
-            middle();
-        } catch (error) {
-            const outerError = new Error("Outer cause error");
-
-            outerError.cause = error;
-            throw outerError;
-        }
-    });
-};
-
-/**
- * Gets the current error overlay content.
- */
-export const getOverlayContent = async (page: Page): Promise<{ html: string; isVisible: boolean; text: string | null }> => {
-    const overlay = page.locator("#__v_o__overlay");
-
-    return {
-        html: await overlay.innerHTML(),
-        isVisible: await overlay.isVisible(),
-        text: await overlay.textContent(),
-    };
-};
-
-/**
  * Gets error overlay header information.
  */
 export const getOverlayHeader = async (page: Page): Promise<{ fileHref: string | null; filePath: string | null; title: string | null }> => {
@@ -115,18 +62,6 @@ export const getErrorNavigation = async (page: Page): Promise<{ canGoNext: boole
 };
 
 /**
- * Switches between original and compiled code views.
- */
-export const switchCodeView = async (page: Page, mode: "original" | "compiled"): Promise<void> => {
-    const button = page.locator(`[data-flame-mode="${mode}"]`);
-
-    if (await button.isVisible()) {
-        await button.click();
-        await page.waitForTimeout(100);
-    }
-};
-
-/**
  * Gets the current error title/name.
  */
 export const getErrorTitle = async (page: Page): Promise<string> =>
@@ -159,39 +94,6 @@ export const getErrorMessage = async (page: Page): Promise<string> =>
     });
 
 /**
- * Gets the current file path being displayed.
- */
-export const getCurrentFilePath = async (page: Page): Promise<string> =>
-    await page.evaluate(() => {
-        const overlay = document.querySelector("error-overlay");
-
-        if (overlay && overlay.shadowRoot) {
-            const fileElement = overlay.shadowRoot.querySelector("#__v_o__filelink");
-
-            return fileElement ? fileElement.textContent || "" : "";
-        }
-
-        return "";
-    });
-
-/**
- * Checks if the code frame contains a specific line number.
- */
-export const codeFrameContainsLine = async (page: Page, lineNumber: number): Promise<boolean> =>
-    await page.evaluate((line) => {
-        const overlay = document.querySelector("error-overlay");
-
-        if (overlay && overlay.shadowRoot) {
-            const overlayElement = overlay.shadowRoot.querySelector("#__v_o__overlay");
-            const overlayText = overlayElement ? overlayElement.textContent || "" : "";
-
-            return overlayText.includes(`:${line}`) || overlayText.includes(`${line}:`);
-        }
-
-        return false;
-    }, lineNumber);
-
-/**
  * Waits for the overlay to update after navigation.
  */
 export const waitForOverlayUpdate = async (page: Page, timeout = 1000): Promise<void> => {
@@ -222,24 +124,6 @@ export const isOriginalSourcePath = (filePath: string | null): boolean => {
     const isNotCompiled = !hasNodeModules && !hasQuery && !hasMap && !hasViteBuild && !hasNodeModulesPath;
 
     return (hasOriginalExtension || isRelativePath) && isNotCompiled;
-};
-
-/**
- * Closes the error overlay via the close button.
- */
-export const closeErrorOverlay = async (page: Page): Promise<void> => {
-    const closeButton = page.locator("#__v_o__close");
-
-    await closeButton.click();
-    await page.waitForSelector("#__v_o__overlay", { state: "hidden", timeout: 5000 });
-};
-
-/**
- * Closes overlay using ESC key.
- */
-export const closeOverlayWithEsc = async (page: Page): Promise<void> => {
-    await page.keyboard.press("Escape");
-    await page.waitForSelector("#__v_o__overlay", { state: "hidden", timeout: 5000 });
 };
 
 /**

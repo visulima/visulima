@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-file -- standalone dev script run manually (`node playwright-setup.js`) to install Playwright browsers; not imported by any module
 /**
  * Playwright setup script for error overlay e2e tests
  */

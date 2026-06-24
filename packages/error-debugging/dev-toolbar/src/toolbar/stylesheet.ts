@@ -22,4 +22,3 @@ const createSharedStylesheet = (): CSSStyleSheet | undefined => {
 const sharedToolbarStylesheet: CSSStyleSheet | undefined = createSharedStylesheet();
 
 export { sharedToolbarStylesheet };
-export default sharedToolbarStylesheet;

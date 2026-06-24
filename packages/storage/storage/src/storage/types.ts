@@ -238,6 +238,7 @@ export interface BatchOperationResponse<T extends File = File> {
 /**
  * Generic storage operations that all backends should support
  */
+// fallow-ignore-next-line unused-type -- documented storage-backend contract interface kept as intentional reference API
 export interface GenericStorageOperations<T extends File = File, TReturn extends FileReturn = FileReturn> {
     /** Copy a file */
     copy: (source: string, destination: string, options?: OperationOptions & { storageClass?: string }) => Promise<T>;

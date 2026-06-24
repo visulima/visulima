@@ -3,20 +3,6 @@ import toBase64 from "./to-base64";
 // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison
 const hasBuffer = globalThis.Buffer !== undefined;
 
-/**
- * Returns the UTF-8 byte length of a string without allocating a Buffer when
- * one is unavailable.
- * @param value The string to measure.
- * @returns The number of UTF-8 octets the string encodes to.
- */
-const utf8ByteLength = (value: string): number => {
-    if (hasBuffer) {
-        return Buffer.byteLength(value, "utf8");
-    }
-
-    return new TextEncoder().encode(value).length;
-};
-
 // Matches any character outside the 7-bit US-ASCII range.
 // eslint-disable-next-line no-control-regex
 const NON_ASCII_REGEX = /[^\u0000-\u007F]/;
@@ -38,6 +24,7 @@ const isAscii = (value: string): boolean => !NON_ASCII_REGEX.test(value);
  * @param value The raw, possibly non-ASCII header value to encode.
  * @returns The RFC 2047 encoded representation, or the original value when it is already ASCII-only (callers still strip CR/LF separately).
  */
+// eslint-disable-next-line import/prefer-default-export
 export const encodeMimeHeaderValue = (value: string): string => {
     if (isAscii(value)) {
         return value;
@@ -75,5 +62,3 @@ export const encodeMimeHeaderValue = (value: string): string => {
 
     return words.join(" ");
 };
-
-export { utf8ByteLength };

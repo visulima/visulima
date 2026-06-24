@@ -135,8 +135,3 @@ export interface BunS3StorageOptions extends BaseStorageOptions {
      */
     virtualHostedStyle?: boolean;
 }
-
-export interface BunS3Error extends Error {
-    code?: string;
-    name: string;
-}

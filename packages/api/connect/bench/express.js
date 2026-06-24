@@ -1,3 +1,4 @@
+// fallow-ignore-file unused-file -- standalone benchmark entry point run via bench/runall.sh
 // eslint-disable-next-line import/no-extraneous-dependencies, e18e/ban-dependencies -- benchmark target: connect is compared against express
 import express from "express";
 

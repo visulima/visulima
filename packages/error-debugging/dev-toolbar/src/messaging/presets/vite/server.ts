@@ -35,4 +35,3 @@ const createViteHMRServer = (server: ViteDevServer, handlers: MessageHandlers): 
 };
 
 export { createViteHMRServer };
-export default createViteHMRServer;

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import routesGroupBy from "../../../../../../src/framework/cli/command/list/routes/routes-group-by";
-import type { Route } from "../../../../../../src/framework/cli/command/list/routes/types.d";
+import type { Route } from "../../../../../../src/framework/cli/command/list/routes/types";
 
 describe("routes-group-by", () => {
     it("routesGroupBy returns a Map", () => {
@@ -39,7 +39,7 @@ describe("routes-group-by", () => {
             },
         ];
 
-        // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/prefer-nullish-coalescing -- intentional: treat empty-string tags as "unsorted"; routes literal matches Route[] structurally despite minor type-flow noise
+        // eslint-disable-next-line @typescript-eslint/prefer-nullish-coalescing -- intentional: treat empty-string tags as "unsorted" (nullish coalescing would let "" through)
         const result = routesGroupBy(routes, (item) => item.tags[0] || "unsorted");
 
         expect(result.get("test")).toStrictEqual([

@@ -131,11 +131,6 @@ const emailMatchers: {
 };
 
 /**
- * The shape of the {@link emailMatchers} map.
- */
-type EmailMatchers = typeof emailMatchers;
-
-/**
  * A Vitest/Jest-compatible `expect` exposing `.extend(...)`.
  */
 interface ExpectLike {
@@ -161,5 +156,5 @@ const registerEmailMatchers = (expectInstance: ExpectLike): void => {
     expectInstance.extend(emailMatchers);
 };
 
-export type { EmailMatchers, MatcherResult, MatcherTarget };
+export type { MatcherResult, MatcherTarget };
 export { emailMatchers, registerEmailMatchers, toHaveSentMatching, toHaveSentTo, toHaveSentWithAttachment, toHaveSentWithSubject };

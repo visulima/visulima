@@ -41,6 +41,7 @@ const parseEnvelope = (body: string): SnsMessage | undefined => tryParseObject(b
  * TODO: implement RSA-SHA1/RSA-SHA256 verification of the canonical string-to-sign
  * against the fetched signing certificate (SignatureVersion 1 and 2).
  */
+// eslint-disable-next-line import/prefer-default-export -- named export is re-exported by the ./webhooks barrel
 export const snsWebhook: WebhookVerifier = {
     parse: (body: string): NotificationEvent | undefined => {
         const envelope = parseEnvelope(body);
@@ -71,5 +72,3 @@ export const snsWebhook: WebhookVerifier = {
         // bypass, so always reject.
         Promise.resolve(false),
 };
-
-export default snsWebhook;

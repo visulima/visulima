@@ -49,6 +49,10 @@
         // src and flags every UI dep. Analyzed by its own `vite build`. Scoped
         // to the sub-app dir only — NOT `src/dashboard/` (real vis source).
         "packages/tooling/vis/dashboard/**",
+        // Same sub-app, matched when fallow is scoped per-package (`--root
+        // packages/tooling/vis`), where paths are root-relative. Anchored so it
+        // matches the top-level `dashboard/` only, never `src/dashboard/`.
+        "dashboard/**",
     ],
     // Generated NAPI loaders reference per-platform `.node` files and
     // `@visulima/*-binding-*` packages that only exist on the matching OS/arch,
@@ -59,6 +63,10 @@
         // Generated NAPI loaders also reference a WASI fallback bundle that is
         // only emitted by the native build, so it never resolves on a host run.
         "**/*.wasi.cjs",
+        // Repo-root `shared/utils/*` are imported across the package boundary via
+        // deep relative climbs (e.g. from a package's __tests__); they resolve at
+        // runtime but fallow can't trace the out-of-package hop.
+        "**/shared/utils/*",
         // Importing the manifest for version/metadata is a normal pattern fallow
         // does not resolve.
         "**/package.json",
@@ -146,6 +154,8 @@
         // __tests__/__bench__ trees that are ignored above.
         "shiki", // type-only `import type { Highlighter } from "shiki"`
         "yaml", // imported in packem.config.ts
+        "smol-toml", // imported by secret-scanner's scripts/build-rules.mjs (scripts/ is ignored)
+        "ts-json-schema-generator", // used by vis's scripts/generate-schemas.ts (scripts/ is ignored)
         "@visulima/tabular", // packem.config externals (vis)
         "@bomb.sh/tab", // optional shell-completion peer, packem.config (vis)
         "@floating-ui/core",
@@ -166,6 +176,86 @@
         // package-manager probes exercised by @visulima/package detection/tests.
         "npm",
         "yarn",
+        // Per-platform NAPI binding packages: the generated native loaders
+        // (index.js) reference the full napi target matrix (~27 triples) but
+        // only 8 are built/published as optionalDependencies, so the rest are
+        // always "unlisted" on any host. ignoreDependencies is exact-match only.
+        "@visulima/secret-scanner-binding-android-arm-eabi",
+        "@visulima/secret-scanner-binding-android-arm64",
+        "@visulima/secret-scanner-binding-darwin-universal",
+        "@visulima/secret-scanner-binding-freebsd-arm64",
+        "@visulima/secret-scanner-binding-freebsd-x64",
+        "@visulima/secret-scanner-binding-linux-arm-gnueabihf",
+        "@visulima/secret-scanner-binding-linux-arm-musleabihf",
+        "@visulima/secret-scanner-binding-linux-loong64-gnu",
+        "@visulima/secret-scanner-binding-linux-loong64-musl",
+        "@visulima/secret-scanner-binding-linux-ppc64-gnu",
+        "@visulima/secret-scanner-binding-linux-riscv64-gnu",
+        "@visulima/secret-scanner-binding-linux-riscv64-musl",
+        "@visulima/secret-scanner-binding-linux-s390x-gnu",
+        "@visulima/secret-scanner-binding-openharmony-arm",
+        "@visulima/secret-scanner-binding-openharmony-arm64",
+        "@visulima/secret-scanner-binding-openharmony-x64",
+        "@visulima/secret-scanner-binding-wasm32-wasi",
+        "@visulima/secret-scanner-binding-win32-ia32-msvc",
+        "@visulima/secret-scanner-binding-win32-x64-gnu",
+        "@visulima/task-runner-binding-android-arm-eabi",
+        "@visulima/task-runner-binding-android-arm64",
+        "@visulima/task-runner-binding-darwin-universal",
+        "@visulima/task-runner-binding-freebsd-arm64",
+        "@visulima/task-runner-binding-freebsd-x64",
+        "@visulima/task-runner-binding-linux-arm-gnueabihf",
+        "@visulima/task-runner-binding-linux-arm-musleabihf",
+        "@visulima/task-runner-binding-linux-loong64-gnu",
+        "@visulima/task-runner-binding-linux-loong64-musl",
+        "@visulima/task-runner-binding-linux-ppc64-gnu",
+        "@visulima/task-runner-binding-linux-riscv64-gnu",
+        "@visulima/task-runner-binding-linux-riscv64-musl",
+        "@visulima/task-runner-binding-linux-s390x-gnu",
+        "@visulima/task-runner-binding-openharmony-arm",
+        "@visulima/task-runner-binding-openharmony-arm64",
+        "@visulima/task-runner-binding-openharmony-x64",
+        "@visulima/task-runner-binding-wasm32-wasi",
+        "@visulima/task-runner-binding-win32-ia32-msvc",
+        "@visulima/task-runner-binding-win32-x64-gnu",
+        "@visulima/tui-binding-android-arm-eabi",
+        "@visulima/tui-binding-android-arm64",
+        "@visulima/tui-binding-darwin-universal",
+        "@visulima/tui-binding-freebsd-arm64",
+        "@visulima/tui-binding-freebsd-x64",
+        "@visulima/tui-binding-linux-arm-gnueabihf",
+        "@visulima/tui-binding-linux-arm-musleabihf",
+        "@visulima/tui-binding-linux-loong64-gnu",
+        "@visulima/tui-binding-linux-loong64-musl",
+        "@visulima/tui-binding-linux-ppc64-gnu",
+        "@visulima/tui-binding-linux-riscv64-gnu",
+        "@visulima/tui-binding-linux-riscv64-musl",
+        "@visulima/tui-binding-linux-s390x-gnu",
+        "@visulima/tui-binding-openharmony-arm",
+        "@visulima/tui-binding-openharmony-arm64",
+        "@visulima/tui-binding-openharmony-x64",
+        "@visulima/tui-binding-wasm32-wasi",
+        "@visulima/tui-binding-win32-ia32-msvc",
+        "@visulima/tui-binding-win32-x64-gnu",
+        "@visulima/vis-binding-android-arm-eabi",
+        "@visulima/vis-binding-android-arm64",
+        "@visulima/vis-binding-darwin-universal",
+        "@visulima/vis-binding-freebsd-arm64",
+        "@visulima/vis-binding-freebsd-x64",
+        "@visulima/vis-binding-linux-arm-gnueabihf",
+        "@visulima/vis-binding-linux-arm-musleabihf",
+        "@visulima/vis-binding-linux-loong64-gnu",
+        "@visulima/vis-binding-linux-loong64-musl",
+        "@visulima/vis-binding-linux-ppc64-gnu",
+        "@visulima/vis-binding-linux-riscv64-gnu",
+        "@visulima/vis-binding-linux-riscv64-musl",
+        "@visulima/vis-binding-linux-s390x-gnu",
+        "@visulima/vis-binding-openharmony-arm",
+        "@visulima/vis-binding-openharmony-arm64",
+        "@visulima/vis-binding-openharmony-x64",
+        "@visulima/vis-binding-wasm32-wasi",
+        "@visulima/vis-binding-win32-ia32-msvc",
+        "@visulima/vis-binding-win32-x64-gnu",
     ],
     // The lazy-command convention (@visulima/cerebro `loader: () => import(...)`)
     // makes every command handler export `execute`, which trips duplicate-exports

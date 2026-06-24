@@ -63,6 +63,7 @@ const parseForm = (body: string): Record<string, string> => {
  * `x-twilio-signature-url` header (the verifier cannot reconstruct it from the body).
  * Edge-safe — uses Web Crypto only.
  */
+// eslint-disable-next-line import/prefer-default-export -- named export is re-exported by the ./webhooks barrel
 export const twilioWebhook: WebhookVerifier = {
     parse: (body: string): NotificationEvent | undefined => {
         const parameters = parseForm(body);
@@ -108,5 +109,3 @@ export const twilioWebhook: WebhookVerifier = {
         return timingSafeEqual(expected, provided);
     },
 };
-
-export default twilioWebhook;

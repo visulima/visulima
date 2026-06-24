@@ -1,4 +1,4 @@
-export { default, Files } from "./files";
+export { Files } from "./files";
 export { sync, transfer } from "./migration";
 export type {
     BulkDeleteResult,

@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/prefer-optional-chain,sonarjs/no-undefined-argument */
+/* eslint-disable sonarjs/no-undefined-argument */
 // Mock all dependencies first
 import { readFile } from "node:fs/promises";
 
@@ -51,74 +51,6 @@ vi.mock(import("@visulima/error"), () => {
 vi.mock(import("@visulima/error/solution/ai/prompt"));
 vi.mock(import("../../../../../../shared/utils/find-language-based-on-extension"));
 vi.mock(import("../../../../../../shared/utils/get-highlighter"));
-vi.mock(import("../../module-finder"));
-vi.mock(import("../../normalize-id-candidates"));
-vi.mock(import("../../realign-original-position"));
-vi.mock(import("../../source-map-resolver"));
-vi.mock(import("../../stack-trace-utils"), () => {
-    return {
-        cleanErrorMessage: vi.fn((error) => error?.message || ""),
-        cleanErrorStack: vi.fn((stack) => stack || ""),
-        extractErrors: vi.fn((error) => {
-            if (Array.isArray(error)) {
-                return error;
-            }
-
-            if (error && typeof error === "object" && "errors" in error) {
-                return error.errors || [error];
-            }
-
-            return [error];
-        }),
-        isAggregateError: vi.fn((error) => error instanceof AggregateError),
-        isESBuildErrorArray: vi.fn((error) => Array.isArray(error) && error.length > 0 && typeof error[0] === "object"),
-        processESBuildErrors: vi.fn((errors) =>
-            errors.map((error: any) => {
-                return {
-                    message: error.message || "ESBuild error",
-                    name: "Error",
-                    stack: error.stack || "",
-                    ...error,
-                };
-            }),
-        ),
-    };
-});
-
-// Mock the vite-error-adapter module
-const mockExtractLocationFromViteError = vi.fn((message, _server) => {
-    // Handle undefined, null, or non-string message
-    if (!message || typeof message !== "string") {
-        return null;
-    }
-
-    // Mock location extraction for Vue errors
-    if (message.includes("[vue/compiler-sfc]")) {
-        return {
-            column: 10,
-            file: "src/components/Test.vue",
-            line: 5,
-        };
-    }
-
-    // Handle single error in array format
-    if (message && message.includes("Single error in array")) {
-        return {
-            column: 5,
-            file: "/src/Component.tsx",
-            line: 10,
-        };
-    }
-
-    return null;
-});
-
-vi.mock(import("../../vite-error-adapter"), () => {
-    return {
-        extractLocationFromViteError: mockExtractLocationFromViteError,
-        extractViteErrorLocation: vi.fn(() => null),
-    };
-});
 
 describe(buildExtendedErrorData, () => {
     const mockServer = {

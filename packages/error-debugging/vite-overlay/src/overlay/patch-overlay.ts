@@ -329,4 +329,5 @@ export const patchOverlay = (code: string, showBalloonButton: boolean, balloonCo
     return patched;
 };
 
+// fallow-ignore-next-line unused-export -- default re-export of patchOverlay; satisfies import/prefer-default-export (consumers use the named export)
 export default patchOverlay;

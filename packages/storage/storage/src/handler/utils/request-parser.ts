@@ -246,28 +246,3 @@ export const extractFileInit = (request: IncomingMessage, contentLength: number,
         size: fileSize,
     };
 };
-
-/**
- * Validates chunk offset and size for chunked uploads.
- * @param chunkOffset The chunk offset
- * @param contentLength The chunk content length
- * @param totalSize The total file size
- * @throws {HttpError} If validation fails
- */
-export const validateChunk = (chunkOffset: number, contentLength: number, totalSize: number): void => {
-    if (Number.isNaN(chunkOffset) || chunkOffset < 0) {
-        throw createHttpError(400, "X-Chunk-Offset must be a valid non-negative number");
-    }
-
-    if (chunkOffset + contentLength > totalSize) {
-        throw createHttpError(400, `Chunk exceeds file size. Offset: ${chunkOffset}, Size: ${contentLength}, Total: ${totalSize}`);
-    }
-};
-
-/**
- * Gets content type from request headers with fallback.
- * @param request The HTTP request
- * @param fallback Default content type if not found (default: application/octet-stream)
- * @returns Content type string
- */
-export const getContentType = (request: IncomingMessage, fallback = "application/octet-stream"): string => getHeader(request, "content-type") || fallback;
