@@ -78,6 +78,7 @@ export class OutputCaches {
         return cached;
     }
 
+    // fallow-ignore-next-line unused-class-member -- public Output API, not called inside the repo.
     getWidestLine(text: string): number {
         let cached = this.blockWidths.get(text);
 
@@ -284,6 +285,7 @@ export default class Output {
         }
     }
 
+    // fallow-ignore-next-line unused-class-member -- public Output API, invoked by the native-renderer branch.
     writeStyledLine(x: number, y: number, line: StyledLine): void {
         if (line.length === 0 || y < 0 || y >= this.grid.length) {
             return;
@@ -476,6 +478,7 @@ export default class Output {
         };
     }
 
+    // fallow-ignore-next-line unused-class-member -- public Output API, used by renderer.ts native-renderer branch.
     getBuffer(): { buffer: Uint32Array; height: number } {
         const output = this.grid;
         const rows = output.length;

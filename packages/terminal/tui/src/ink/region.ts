@@ -129,14 +129,3 @@ export const treesEqual = (a: RegionNode, b: RegionNode): boolean => {
 
     return true;
 };
-
-/**
- * Extract selectable text from a list of selectable spans.
- */
-export const extractSelectableText = (spans: ReadonlyArray<SelectableSpan>): string => {
-    if (spans.length === 0) {
-        return "";
-    }
-
-    return spans.map((s) => s.text).join("");
-};

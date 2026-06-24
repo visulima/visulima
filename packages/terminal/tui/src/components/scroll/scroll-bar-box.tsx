@@ -83,4 +83,3 @@ const ScrollBarBox = ({
 export type { ScrollBarBoxProps };
 
 export { ScrollBarBox };
-export default ScrollBarBox;

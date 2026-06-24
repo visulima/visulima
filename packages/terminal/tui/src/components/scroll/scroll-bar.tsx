@@ -154,4 +154,3 @@ const ScrollBar: React.FC<ScrollBarProps> = ({
 
 export type { ScrollBarPlacement, ScrollBarProps, ScrollBarStyle };
 export { ScrollBar };
-export default ScrollBar;

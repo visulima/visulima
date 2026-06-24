@@ -84,5 +84,3 @@ export const composeBackbufferSlice = (node: DOMElement, start: number, count: n
 
     return slice.get().output;
 };
-
-export default composeBackbufferSlice;

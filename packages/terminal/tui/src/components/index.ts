@@ -1,3 +1,6 @@
+// fallow-ignore-file unused-type -- intentional maintenance-index barrel; re-exports are consumed via per-component subpath entries, not internally.
+// fallow-ignore-file unused-export -- intentional maintenance-index barrel; re-exports are consumed via per-component subpath entries, not internally.
+
 /**
  * Internal barrel listing every component shipped by `@visulima/tui`.
  *

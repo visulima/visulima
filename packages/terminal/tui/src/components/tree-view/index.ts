@@ -1,3 +1,5 @@
+// fallow-ignore-file unused-type -- public component API barrel; re-exports consumed by library users, not internally.
+// fallow-ignore-file unused-export -- public component API barrel; re-exports consumed by library users, not internally.
 export type { Theme as TreeViewTheme } from "./theme";
 export { theme as treeViewTheme } from "./theme";
 export type { FlatNode } from "./tree-node-map";

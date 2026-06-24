@@ -120,19 +120,6 @@ export const colorToSgrParams = (color: string, isFg: boolean): number[] => {
 };
 
 /**
- * Convert a color string to a raw ANSI escape code string.
- */
-export const colorToAnsiCode = (color: string, isFg: boolean): string | undefined => {
-    const params = colorToSgrParams(color, isFg);
-
-    if (params.length === 0) {
-        return undefined;
-    }
-
-    return `\u001B[${params.join(";")}m`;
-};
-
-/**
  * Convert an ANSI 256-color index to a named color string.
  * Standard colors (0-7) use names; everything else uses ansi256(N).
  */
