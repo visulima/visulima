@@ -49,10 +49,7 @@ describe("windows fullscreen clear (ink#971)", () => {
 
             await waitFor(() => stripAnsi(stdout.getWrites().join("")).includes("second"));
 
-            const redrawOutput = stdout
-                .getWrites()
-                .slice(writesBeforeRerender)
-                .join("");
+            const redrawOutput = stdout.getWrites().slice(writesBeforeRerender).join("");
 
             // The fullscreen redraw must clear the terminal rather than emit an
             // incremental eraseLines diff.
@@ -77,10 +74,7 @@ describe("windows fullscreen clear (ink#971)", () => {
 
             await waitFor(() => stripAnsi(stdout.getWrites().join("")).includes("second"));
 
-            const redrawOutput = stdout
-                .getWrites()
-                .slice(writesBeforeRerender)
-                .join("");
+            const redrawOutput = stdout.getWrites().slice(writesBeforeRerender).join("");
 
             // Steady fullscreen redraws on Unix keep the incremental path: no clear.
             expect(redrawOutput).not.toContain(clearScreenAndHomeCursor);

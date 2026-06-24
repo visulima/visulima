@@ -172,7 +172,7 @@ const materialiseChannels = async (
 
             try {
                 const moduleUrl = path.startsWith(".") ? pathToFileURL(`${process.cwd()}/${path}`).href : path;
-                const loaded = await dynamicEsmImport(moduleUrl) as { default?: unknown };
+                const loaded = (await dynamicEsmImport(moduleUrl)) as { default?: unknown };
                 const exported = (loaded.default ?? loaded) as unknown;
 
                 let constructed: NotificationChannel | undefined;
@@ -260,12 +260,11 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
 
     const config = ctx.config.notifications;
     const hasAnyConfig = Boolean(
-        config && (
-            (config.slack && (Array.isArray(config.slack) ? config.slack.length > 0 : true))
+        config
+        && ((config.slack && (Array.isArray(config.slack) ? config.slack.length > 0 : true))
             || (config.discord && (Array.isArray(config.discord) ? config.discord.length > 0 : true))
             || (config.webhook && (Array.isArray(config.webhook) ? config.webhook.length > 0 : true))
-            || (config.plugins && config.plugins.length > 0)
-        ),
+            || (config.plugins && config.plugins.length > 0)),
     );
 
     if (!hasAnyConfig) {
@@ -291,9 +290,7 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
     let synthetic: NotificationContext;
 
     try {
-        synthetic = options.customContext
-            ? await loadCustomContext(fs, options.customContext)
-            : await buildSyntheticContext(fs, cwd);
+        synthetic = options.customContext ? await loadCustomContext(fs, options.customContext) : await buildSyntheticContext(fs, cwd);
     } catch (error) {
         logger.error(`Could not load NotificationContext: ${(error as Error).message}`);
         process.exitCode = 1;
@@ -330,16 +327,24 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
     // sees the bad config even when only one plugin is broken.
     const allOutcomes: ChannelOutcome[] = [
         ...outcomes,
-        ...pluginFailures.map((failure) => { return { error: `plugin load failed: ${failure.error}`, id: failure.id, ok: false }; }),
+        ...pluginFailures.map((failure) => {
+            return { error: `plugin load failed: ${failure.error}`, id: failure.id, ok: false };
+        }),
     ];
 
     const failed = allOutcomes.filter((outcome) => !outcome.ok);
 
     if (options.json) {
-        process.stdout.write(`${JSON.stringify({
-            channels: allOutcomes,
-            ok: failed.length === 0,
-        }, null, 2)}\n`);
+        process.stdout.write(
+            `${JSON.stringify(
+                {
+                    channels: allOutcomes,
+                    ok: failed.length === 0,
+                },
+                null,
+                2,
+            )}\n`,
+        );
     } else {
         for (const outcome of allOutcomes) {
             if (outcome.ok) {

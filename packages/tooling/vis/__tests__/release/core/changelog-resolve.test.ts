@@ -194,8 +194,6 @@ describe("resolveFormatter — custom user module", () => {
 
         writeFileSync(file, "export default { not: 'a function' };\n");
 
-        await expect(resolveFormatter(`./bad.mjs`, cwd)).rejects.toThrow(
-            /did not export a default function or a callable module/,
-        );
+        await expect(resolveFormatter(`./bad.mjs`, cwd)).rejects.toThrow(/did not export a default function or a callable module/);
     });
 });

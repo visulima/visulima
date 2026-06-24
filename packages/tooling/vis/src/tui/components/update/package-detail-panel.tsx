@@ -332,15 +332,15 @@ alert
                     <Box flexDirection="column" marginTop={1} paddingLeft={2}>
                         {entry.kind === "ecosystem"
                             ? (
-                                <Text color="cyan" underline>
-                                    {entry.detailUrl ?? entry.displayName ?? entry.packageName}
-                                </Text>
+                            <Text color="cyan" underline>
+                                {entry.detailUrl ?? entry.displayName ?? entry.packageName}
+                            </Text>
                             )
                             : (
-                                <Text color="cyan" underline>
-                                    https://npmx.dev/
-                                    {entry.packageName}
-                                </Text>
+                            <Text color="cyan" underline>
+                                https://npmx.dev/
+                                {entry.packageName}
+                            </Text>
                             )}
                     </Box>
                 </Box>

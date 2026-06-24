@@ -45,9 +45,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     // exact package name only; ambiguous globs are out of scope for
     // a question-style command.
     const filter = options.package;
-    const releases = filter
-        ? ctx.plan.releases.filter((r) => r.name === filter)
-        : ctx.plan.releases;
+    const releases = filter ? ctx.plan.releases.filter((r) => r.name === filter) : ctx.plan.releases;
 
     if (releases.length === 0) {
         // F11: when the operator supplied `--package <name>` and the
@@ -68,10 +66,11 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
             } else if (inWorkspace) {
                 reason = `package "${filter}" is in the workspace but has no pending release (no change file targets it).`;
             } else {
-                const sample = ctx.packages.slice(0, 5).map((p) => p.name).join(", ");
-                const hint = sample
-                    ? ` Known workspace packages: ${sample}${ctx.packages.length > 5 ? ", …" : ""}.`
-                    : "";
+                const sample = ctx.packages
+                    .slice(0, 5)
+                    .map((p) => p.name)
+                    .join(", ");
+                const hint = sample ? ` Known workspace packages: ${sample}${ctx.packages.length > 5 ? ", …" : ""}.` : "";
 
                 reason = `package "${filter}" is not in this workspace.${hint}`;
             }

@@ -56,9 +56,7 @@ const buildRunner = (responses: { exitCode?: number; stderr?: string; stdout?: s
 
             cursor += 1;
 
-            return next
-                ? { exitCode: next.exitCode ?? 0, stderr: next.stderr ?? "", stdout: next.stdout ?? "" }
-                : { exitCode: 0, stderr: "", stdout: "" };
+            return next ? { exitCode: next.exitCode ?? 0, stderr: next.stderr ?? "", stdout: next.stdout ?? "" } : { exitCode: 0, stderr: "", stdout: "" };
         },
     };
 
@@ -129,7 +127,7 @@ const ctx = (overridesInput?: {
             type: "patch" as const,
         } as never,
         versionedManifestByName: new Map(),
-        workspaceConfig: (overrides.workspaceConfig ?? {}),
+        workspaceConfig: overrides.workspaceConfig ?? {},
     };
 };
 
@@ -246,10 +244,7 @@ describe("cargo version actions", () => {
         it("resolves version.workspace = true via [workspace.package]", async () => {
             expect.hasAssertions();
 
-            const path = writeCargoToml(
-                workspace,
-                `[package]\nname = "member"\nversion.workspace = true\n\n[workspace.package]\nversion = "3.0.0"\n`,
-            );
+            const path = writeCargoToml(workspace, `[package]\nname = "member"\nversion.workspace = true\n\n[workspace.package]\nversion = "3.0.0"\n`);
 
             const result = await __testing.readCargoToml(path);
 
@@ -288,9 +283,11 @@ describe("cargo version actions", () => {
     describe("cargoVersionActions: shouldUseTrustedPublishing (M-3)", () => {
         it("returns true with OIDC env + no static token", () => {
             expect.hasAssertions();
-            expect(__testing.shouldUseTrustedPublishing({
-                ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
-            })).toBe(true);
+            expect(
+                __testing.shouldUseTrustedPublishing({
+                    ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
+                }),
+            ).toBe(true);
         });
 
         it("returns true even when CARGO_REGISTRY_TOKEN is set (OIDC wins by default)", () => {
@@ -298,32 +295,35 @@ describe("cargo version actions", () => {
             // static token in the env shouldn't silently downgrade the
             // operator's choice when the OIDC env signal is present.
             expect.hasAssertions();
-            expect(__testing.shouldUseTrustedPublishing({
-                ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
-                CARGO_REGISTRY_TOKEN: "cio_abc123",
-            })).toBe(true);
+            expect(
+                __testing.shouldUseTrustedPublishing({
+                    ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
+                    CARGO_REGISTRY_TOKEN: "cio_abc123",
+                }),
+            ).toBe(true);
         });
 
         it("returns false when preferStaticToken: true AND a static token is set (escape hatch)", () => {
             // M-3 escape hatch: explicit operator opt-in flips the
             // precedence so static wins even with OIDC env present.
             expect.hasAssertions();
-            expect(__testing.shouldUseTrustedPublishing(
-                {
-                    ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
-                    CARGO_REGISTRY_TOKEN: "cio_abc123",
-                },
-                { publish: { preferStaticToken: true } },
-            )).toBe(false);
+            expect(
+                __testing.shouldUseTrustedPublishing(
+                    {
+                        ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
+                        CARGO_REGISTRY_TOKEN: "cio_abc123",
+                    },
+                    { publish: { preferStaticToken: true } },
+                ),
+            ).toBe(false);
         });
 
         it("returns true with preferStaticToken: true but no static token (degenerate — falls back to OIDC)", () => {
             // Escape hatch only matters when both signals are present.
             expect.hasAssertions();
-            expect(__testing.shouldUseTrustedPublishing(
-                { ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com" },
-                { publish: { preferStaticToken: true } },
-            )).toBe(true);
+            expect(
+                __testing.shouldUseTrustedPublishing({ ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com" }, { publish: { preferStaticToken: true } }),
+            ).toBe(true);
         });
 
         it("returns false without OIDC env (developer machine, no token)", () => {
@@ -340,11 +340,13 @@ describe("cargo version actions", () => {
             const { calls, runner } = buildRunner([]);
             const fetchSpy = stubFetch({ body: {} });
 
-            const result = await new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                dryRun: true,
-                runner,
-            }));
+            const result = await new CargoVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    dryRun: true,
+                    runner,
+                }),
+            );
 
             expect(result.published).toBe(true);
             expect(result.output).toContain("[dry-run / cargo]");
@@ -362,10 +364,12 @@ describe("cargo version actions", () => {
             stubFetch({ body: { crate: { max_version: "1.0.0" } } });
 
             const { calls, runner } = buildRunner([{ exitCode: 0, stdout: "uploaded" }]);
-            const result = await new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-            }));
+            const result = await new CargoVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    runner,
+                }),
+            );
 
             expect(result.published).toBe(true);
             expect(result.alreadyPublished).not.toBe(true);
@@ -390,10 +394,12 @@ describe("cargo version actions", () => {
             stubFetch({ body: { crate: { max_version: "1.0.0" } } });
 
             const { calls, runner } = buildRunner([{ exitCode: 0 }]);
-            const result = await new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-            }));
+            const result = await new CargoVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    runner,
+                }),
+            );
 
             expect(result.published).toBe(true);
             expect(result.output).toContain("trusted publishing");
@@ -415,10 +421,12 @@ describe("cargo version actions", () => {
             stubFetch({ body: { crate: { max_version: "1.0.0" } } });
 
             const { runner } = buildRunner([{ exitCode: 0 }]);
-            const result = await new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-            }));
+            const result = await new CargoVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    runner,
+                }),
+            );
 
             expect(result.published).toBe(true);
             // Output flags the OIDC path so operators can see in CI logs
@@ -436,11 +444,13 @@ describe("cargo version actions", () => {
             stubFetch({ body: { crate: { max_version: "1.0.0" } } });
 
             const { runner } = buildRunner([{ exitCode: 0 }]);
-            const result = await new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-                workspaceConfig: { publish: { preferStaticToken: true } },
-            }));
+            const result = await new CargoVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    runner,
+                    workspaceConfig: { publish: { preferStaticToken: true } },
+                }),
+            );
 
             expect(result.published).toBe(true);
             // No "trusted publishing" suffix — we're on the static path.
@@ -457,10 +467,12 @@ describe("cargo version actions", () => {
             stubFetch({ body: { crate: { max_version: "1.0.1" } } });
 
             const { calls, runner } = buildRunner([]);
-            const result = await new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-            }));
+            const result = await new CargoVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    runner,
+                }),
+            );
 
             expect(result.alreadyPublished).toBe(true);
             expect(result.published).toBe(false);
@@ -478,10 +490,14 @@ describe("cargo version actions", () => {
             // No env set in beforeEach.
             stubFetch({ body: { crate: { max_version: "1.0.0" } } });
 
-            await expect(new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                runner: buildRunner([]).runner,
-            }))).rejects.toMatchObject({ code: "AUTH_MISSING" });
+            await expect(
+                new CargoVersionActions().publish(
+                    ctx({
+                        dir: workspace,
+                        runner: buildRunner([]).runner,
+                    }),
+                ),
+            ).rejects.toMatchObject({ code: "AUTH_MISSING" });
         });
 
         it("throws PUBLISH_FAILED when cargo publish exits non-zero", async () => {
@@ -493,10 +509,14 @@ describe("cargo version actions", () => {
 
             const { runner } = buildRunner([{ exitCode: 101, stderr: "error: 401 Unauthorized" }]);
 
-            await expect(new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-            }))).rejects.toMatchObject({ code: "PUBLISH_FAILED" });
+            await expect(
+                new CargoVersionActions().publish(
+                    ctx({
+                        dir: workspace,
+                        runner,
+                    }),
+                ),
+            ).rejects.toMatchObject({ code: "PUBLISH_FAILED" });
         });
 
         it("throws CONFIG_INVALID when Cargo.toml version doesn't match planned release version", async () => {
@@ -510,11 +530,15 @@ describe("cargo version actions", () => {
             process.env["CARGO_REGISTRY_TOKEN"] = "cio_dummy";
             stubFetch({ body: { crate: { max_version: "0.9.0" } } });
 
-            await expect(new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                newVersion: "1.0.1",
-                runner: buildRunner([]).runner,
-            }))).rejects.toMatchObject({ code: "CONFIG_INVALID" });
+            await expect(
+                new CargoVersionActions().publish(
+                    ctx({
+                        dir: workspace,
+                        newVersion: "1.0.1",
+                        runner: buildRunner([]).runner,
+                    }),
+                ),
+            ).rejects.toMatchObject({ code: "CONFIG_INVALID" });
         });
     });
 
@@ -543,11 +567,15 @@ describe("cargo version actions", () => {
                 { exitCode: 0, stdout: "Cargo.toml\nCargo.lock\nleaked.env\n" }, // cargo package --list
             ]);
 
-            await expect(new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-                workspaceConfig: { publish: { guards: { packSecretScan: true } } },
-            }))).rejects.toMatchObject({ code: "PUBLISH_FAILED" });
+            await expect(
+                new CargoVersionActions().publish(
+                    ctx({
+                        dir: workspace,
+                        runner,
+                        workspaceConfig: { publish: { guards: { packSecretScan: true } } },
+                    }),
+                ),
+            ).rejects.toMatchObject({ code: "PUBLISH_FAILED" });
 
             // Only the file-list call ran — the actual publish was aborted.
             expect(calls).toHaveLength(1);
@@ -594,11 +622,13 @@ describe("cargo version actions", () => {
 
             const { calls, runner } = buildRunner([{ exitCode: 0 }]);
 
-            await new CargoVersionActions().publish(ctx({
-                dir: workspace,
-                registry: "internal",
-                runner,
-            }));
+            await new CargoVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    registry: "internal",
+                    runner,
+                }),
+            );
 
             expect(calls[0]!.args).toStrictEqual(["publish", "--allow-dirty", "--registry", "internal"]);
         });

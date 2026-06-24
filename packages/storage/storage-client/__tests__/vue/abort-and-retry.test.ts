@@ -76,7 +76,7 @@ describe("vue abort and retry composables", () => {
 
             const { result } = mountComposable(() => useAbortAll({ endpoint: "/upload" }));
 
-            expect(typeof result.abortAll).toBe("function");
+            expect(result.abortAll).toBeTypeOf("function");
 
             result.abortAll();
 

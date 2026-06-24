@@ -1,7 +1,7 @@
 name: vis-yaml
 port: 8080
 nested:
-  enabled: true
-  tags:
-    - a
-    - b
+    enabled: true
+    tags:
+        - a
+        - b

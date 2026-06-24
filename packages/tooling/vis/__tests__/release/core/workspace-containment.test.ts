@@ -27,10 +27,12 @@ describe("workspace: discoverPackages containment with 8.3 short-name cwd", () =
         expect.assertions(1);
 
         const reader = {
-            listPackages: async () => [{
-                manifest: { name: "a", version: "1.0.0" } as PackageManifest,
-                manifestPath: "/Users/runneradmin/Temp/ws/packages/a/package.json",
-            }],
+            listPackages: async () => [
+                {
+                    manifest: { name: "a", version: "1.0.0" } as PackageManifest,
+                    manifestPath: "/Users/runneradmin/Temp/ws/packages/a/package.json",
+                },
+            ],
         };
 
         const result = await discoverPackages(reader, { defaultManaged: true }, { cwd: "/Users/RUNNER~1/Temp/ws" });
@@ -42,10 +44,12 @@ describe("workspace: discoverPackages containment with 8.3 short-name cwd", () =
         expect.assertions(1);
 
         const reader = {
-            listPackages: async () => [{
-                manifest: { name: "evil", version: "1.0.0" } as PackageManifest,
-                manifestPath: "/Users/runneradmin/Temp/elsewhere/package.json",
-            }],
+            listPackages: async () => [
+                {
+                    manifest: { name: "evil", version: "1.0.0" } as PackageManifest,
+                    manifestPath: "/Users/runneradmin/Temp/elsewhere/package.json",
+                },
+            ],
         };
 
         await expect(discoverPackages(reader, { defaultManaged: true }, { cwd: "/Users/RUNNER~1/Temp/ws" })).rejects.toThrow(VisReleaseError);

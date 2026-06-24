@@ -11,15 +11,7 @@
 import { isAbsolute, join } from "node:path";
 
 import { VisReleaseError } from "../../errors";
-import type {
-    InstallLockfileOnlyOptions,
-    PackOptions,
-    PackResult,
-    PublishNativeOptions,
-    PublishOptions,
-    PublishResult,
-    WorkspaceListEntry,
-} from "./interface";
+import type { InstallLockfileOnlyOptions, PackOptions, PackResult, PublishNativeOptions, PublishOptions, PublishResult, WorkspaceListEntry } from "./interface";
 import { PackageManagerAdapter } from "./interface";
 
 /**
@@ -33,10 +25,7 @@ import { PackageManagerAdapter } from "./interface";
  * @param label human label for the failure message (e.g. `"pnpm publish"`).
  * @returns published / already-published result; throws PUBLISH_FAILED otherwise.
  */
-export const interpretNativePublishResult = (
-    result: { exitCode: number; stderr: string; stdout: string },
-    label: string,
-): PublishResult => {
+export const interpretNativePublishResult = (result: { exitCode: number; stderr: string; stdout: string }, label: string): PublishResult => {
     if (result.exitCode === 0) {
         return { output: result.stdout, published: true };
     }

@@ -95,14 +95,13 @@ const buildDefaultSafeBody = (context: NotificationContext): Record<string, unkn
         repo: context.repo,
         // M-10: drop `reason`; it carries shell stderr fragments that
         // may embed secrets the redactor missed.
-        skipped: context.skipped.map((entry) => { return { name: entry.name }; }),
+        skipped: context.skipped.map((entry) => {
+            return { name: entry.name };
+        }),
     };
 };
 
-const interpolateHeaders = (
-    headers: Record<string, string> | undefined,
-    context: NotificationContext,
-): Record<string, string> => {
+const interpolateHeaders = (headers: Record<string, string> | undefined, context: NotificationContext): Record<string, string> => {
     if (!headers) {
         return {};
     }
@@ -136,9 +135,7 @@ export class WebhookNotificationChannel implements NotificationChannel {
         // `skipped[].reason`, which is populated from shell-runner
         // stderr and can carry pre-redaction secrets). Operators who
         // want the full context must opt in with an explicit template.
-        const body = this.config.body === undefined
-            ? buildDefaultSafeBody(context)
-            : interpolateDeep(this.config.body, context);
+        const body = this.config.body === undefined ? buildDefaultSafeBody(context) : interpolateDeep(this.config.body, context);
 
         let response: Response;
 

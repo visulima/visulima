@@ -80,8 +80,7 @@ interface ExtractedSpecifier {
  * untouched, which is fine because we only ever match import/require
  * shapes afterwards.
  */
-const stripComments = (source: string): string =>
-    source.replaceAll(/\/\*[\s\S]*?\*\//g, " ").replaceAll(/(^|[^:])\/\/[^\n]*/g, "$1");
+const stripComments = (source: string): string => source.replaceAll(/\/\*[\s\S]*?\*\//g, " ").replaceAll(/(^|[^:])\/\/[^\n]*/g, "$1");
 
 // import ... from "x" / export ... from "x". Capture group 1 is the clause
 // between the keyword and `from` (used to detect a leading `type` modifier);
@@ -172,8 +171,7 @@ const globToRegExp = (glob: string): RegExp => {
 };
 
 /** True when `relativePath` (forward-slash) matches any ignore glob. */
-const isIgnored = (relativePath: string, ignoreRegexps: RegExp[]): boolean =>
-    ignoreRegexps.some((regex) => regex.test(relativePath));
+const isIgnored = (relativePath: string, ignoreRegexps: RegExp[]): boolean => ignoreRegexps.some((regex) => regex.test(relativePath));
 
 /**
  * Determines whether a workspace dependency name resolves to a project

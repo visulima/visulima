@@ -15,7 +15,12 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
             channel: options.channel,
             cwd,
             firstRelease: options.firstRelease === true,
-            projects: options.filter ? options.filter.split(",").map((s) => s.trim()).filter(Boolean) : undefined,
+            projects: options.filter
+                ? options.filter
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter(Boolean)
+                : undefined,
         });
     } catch (error) {
         logger.error(`Failed to load release context: ${error instanceof Error ? error.message : String(error)}`);
@@ -58,7 +63,9 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         );
     }
 
-    logger.info(`${dryRun ? "[dry-run] would publish" : "Publishing"} ${ctx.plan.releases.length} package(s) to dist-tag "${tag ?? "latest"}"${dryRun ? "" : "..."}`);
+    logger.info(
+        `${dryRun ? "[dry-run] would publish" : "Publishing"} ${ctx.plan.releases.length} package(s) to dist-tag "${tag ?? "latest"}"${dryRun ? "" : "..."}`,
+    );
 
     let result;
 

@@ -256,7 +256,9 @@ export type ReleaseGroupConfig
  * object form. Centralised so plan-assembly, changelog routing, and
  * print-config all see the same shape.
  */
-export const normaliseGroup = (group: ReleaseGroupConfig): {
+export const normaliseGroup = (
+    group: ReleaseGroupConfig,
+): {
     changelog: ReleaseGroupChangelogConfig;
     name?: string;
     packages: string[];
@@ -913,19 +915,21 @@ export interface PublishConfig {
      * to override per-workspace. Snapshots always publish directly (preview
      * content shouldn't gate on review).
      */
-    stage?: boolean | {
-        /**
-         * Sleep between consecutive `npm stage view` checks while waiting.
-         * Default: 15_000 (15 seconds).
-         */
-        pollIntervalMs?: number;
+    stage?:
+        | boolean
+        | {
+            /**
+             * Sleep between consecutive `npm stage view` checks while waiting.
+             * Default: 15_000 (15 seconds).
+             */
+            pollIntervalMs?: number;
 
-        /**
-         * Hard deadline before the wait gives up and skips the publish.
-         * Default: 1_800_000 (30 minutes).
-         */
-        timeoutMs?: number;
-    };
+            /**
+             * Hard deadline before the wait gives up and skips the publish.
+             * Default: 1_800_000 (30 minutes).
+             */
+            timeoutMs?: number;
+        };
 }
 
 export interface VersionPrConfig {

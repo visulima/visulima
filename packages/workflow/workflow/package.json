@@ -117,6 +117,7 @@
         "conventional-changelog-conventionalcommits": "catalog:dev",
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
+        "eslint-plugin-zod": "4.7.0",
         "fallow": "catalog:lint",
         "mysql-memory-server": "1.14.1",
         "mysql2": "^3.22.5",

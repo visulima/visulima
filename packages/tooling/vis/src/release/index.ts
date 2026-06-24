@@ -19,14 +19,7 @@ export type {
     VersionOptions,
     VersionResult,
 } from "./api";
-export {
-    release,
-    releaseChangelog,
-    ReleaseClient,
-    releasePublish,
-    releaseSnapshot,
-    releaseVersion,
-} from "./api";
+export { release, releaseChangelog, ReleaseClient, releasePublish, releaseSnapshot, releaseVersion } from "./api";
 export { DEFAULT_CLEAN_KEEP, DEFAULT_CLEAN_STRIP, DEFAULT_CONFIG, DEFAULT_DEPENDENCY_BUMP_RULES, defineReleaseConfig, resolveCleanStripList } from "./config";
 export type { VisReleaseErrorCode, VisReleaseErrorOptions } from "./errors";
 export { VisReleaseError, visReleaseError } from "./errors";

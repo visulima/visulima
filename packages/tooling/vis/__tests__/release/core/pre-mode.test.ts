@@ -4,13 +4,7 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import {
-    buildEnterFile,
-    deletePreMode,
-    preModeFilePath,
-    readPreMode,
-    writePreMode,
-} from "../../../src/release/core/pre-mode";
+import { buildEnterFile, deletePreMode, preModeFilePath, readPreMode, writePreMode } from "../../../src/release/core/pre-mode";
 import { VisReleaseError } from "../../../src/release/errors";
 
 const CHANGES_DIR = ".vis/release";
@@ -93,10 +87,7 @@ describe("pre-mode: corrupt file errors", () => {
     it("throws on unknown schema version", async () => {
         expect.hasAssertions();
 
-        await writeFile(
-            preModeFilePath(cwd, CHANGES_DIR),
-            JSON.stringify({ initialVersions: {}, mode: "pre", tag: "alpha", version: 99 }),
-        );
+        await writeFile(preModeFilePath(cwd, CHANGES_DIR), JSON.stringify({ initialVersions: {}, mode: "pre", tag: "alpha", version: 99 }));
 
         await expect(readPreMode(cwd, CHANGES_DIR)).rejects.toBeInstanceOf(VisReleaseError);
     });
@@ -104,10 +95,7 @@ describe("pre-mode: corrupt file errors", () => {
     it("throws on invalid mode value", async () => {
         expect.hasAssertions();
 
-        await writeFile(
-            preModeFilePath(cwd, CHANGES_DIR),
-            JSON.stringify({ initialVersions: {}, mode: "bogus", tag: "alpha", version: 1 }),
-        );
+        await writeFile(preModeFilePath(cwd, CHANGES_DIR), JSON.stringify({ initialVersions: {}, mode: "bogus", tag: "alpha", version: 1 }));
 
         await expect(readPreMode(cwd, CHANGES_DIR)).rejects.toMatchObject({
             code: "STATE_FILE_CORRUPT",
@@ -117,10 +105,7 @@ describe("pre-mode: corrupt file errors", () => {
     it("throws on missing tag", async () => {
         expect.hasAssertions();
 
-        await writeFile(
-            preModeFilePath(cwd, CHANGES_DIR),
-            JSON.stringify({ initialVersions: {}, mode: "pre", version: 1 }),
-        );
+        await writeFile(preModeFilePath(cwd, CHANGES_DIR), JSON.stringify({ initialVersions: {}, mode: "pre", version: 1 }));
 
         await expect(readPreMode(cwd, CHANGES_DIR)).rejects.toMatchObject({
             code: "STATE_FILE_CORRUPT",

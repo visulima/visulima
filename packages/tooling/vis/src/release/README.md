@@ -33,6 +33,7 @@ Contributors drop YAML-frontmatter Markdown files in `.vis/release/`, one per lo
 "@scope/cerebro": minor
 "@scope/cerebro-plugins": patch
 ---
+
 Add lazy command loading API. Plugins now ship via `loader: () => import(…)`.
 ```
 
@@ -46,25 +47,25 @@ Add a `release` block to your `vis.config.ts`:
 import { defineConfig } from "@visulima/vis/config";
 
 export default defineConfig({
-  // … existing vis config …
-  release: {
-    baseBranch: "main",
-    defaultManaged: true,
-    channels: {
-      main:  { tag: "latest", mode: "version-pr" },
-      next:  { tag: "next",   mode: "version-pr" },
-      alpha: { tag: "alpha",  mode: "auto-publish", prerelease: "alpha" },
-      beta:  { tag: "beta",   mode: "auto-publish", prerelease: "beta" },
-      "+([0-9])?(.{+([0-9]),x}).x": { tag: "branch-name", range: "match" },
+    // … existing vis config …
+    release: {
+        baseBranch: "main",
+        defaultManaged: true,
+        channels: {
+            main: { tag: "latest", mode: "version-pr" },
+            next: { tag: "next", mode: "version-pr" },
+            alpha: { tag: "alpha", mode: "auto-publish", prerelease: "alpha" },
+            beta: { tag: "beta", mode: "auto-publish", prerelease: "beta" },
+            "+([0-9])?(.{+([0-9]),x}).x": { tag: "branch-name", range: "match" },
+        },
+        publish: {
+            packManager: "auto",
+            publishStrategy: "npm-publish-tarball",
+            publishArgs: ["--provenance"],
+            cleanPackageJson: true,
+        },
+        gitUser: { name: "release-bot", email: "release@example.com" },
     },
-    publish: {
-      packManager: "auto",
-      publishStrategy: "npm-publish-tarball",
-      publishArgs: ["--provenance"],
-      cleanPackageJson: true,
-    },
-    gitUser: { name: "release-bot", email: "release@example.com" },
-  },
 });
 ```
 
@@ -81,23 +82,23 @@ The `channels` block maps git branches → npm dist-tags + optional prerelease I
 
 Versions collapse / re-counter as you move across channels:
 
-| From | Last | To | Result |
-|---|---|---|---|
-| `main` (1.2.3) | + minor | `alpha` | `1.3.0-alpha.0` (open prerelease line) |
-| `alpha` (1.3.0-alpha.5) | + patch | `alpha` | `1.3.0-alpha.6` (counter increments) |
-| `alpha` (1.3.0-alpha.5) | (no bump) | `beta` | `1.3.0-beta.0` (re-counter on new preid) |
-| `beta` (1.3.0-beta.5) | (no bump) | `main` | `1.3.0` (preid stripped — final) |
+| From                    | Last      | To      | Result                                   |
+| ----------------------- | --------- | ------- | ---------------------------------------- |
+| `main` (1.2.3)          | + minor   | `alpha` | `1.3.0-alpha.0` (open prerelease line)   |
+| `alpha` (1.3.0-alpha.5) | + patch   | `alpha` | `1.3.0-alpha.6` (counter increments)     |
+| `alpha` (1.3.0-alpha.5) | (no bump) | `beta`  | `1.3.0-beta.0` (re-counter on new preid) |
+| `beta` (1.3.0-beta.5)   | (no bump) | `main`  | `1.3.0` (preid stripped — final)         |
 
 ## Cross-PM publishing
 
 Detected from lockfile + `packageManager` field:
 
-| Manager | Pack | Lockfile sync | Publish |
-|---|---|---|---|
-| npm ≥11.5.1 | `npm pack --json` | `npm install --package-lock-only` | `npm publish <tarball>` |
-| pnpm ≥9.5 | `pnpm pack --json` | `pnpm install --lockfile-only` | `npm publish <tarball>` (LCD) |
+| Manager         | Pack                          | Lockfile sync                         | Publish                       |
+| --------------- | ----------------------------- | ------------------------------------- | ----------------------------- |
+| npm ≥11.5.1     | `npm pack --json`             | `npm install --package-lock-only`     | `npm publish <tarball>`       |
+| pnpm ≥9.5       | `pnpm pack --json`            | `pnpm install --lockfile-only`        | `npm publish <tarball>` (LCD) |
 | yarn (Berry/v4) | `yarn pack --out '%s-%v.tgz'` | `yarn install --mode update-lockfile` | `npm publish <tarball>` (LCD) |
-| bun ≥1.1.36 | `bun pm pack` | `bun install --lockfile-only` | `npm publish <tarball>` (LCD) |
+| bun ≥1.1.36     | `bun pm pack`                 | `bun install --lockfile-only`         | `npm publish <tarball>` (LCD) |
 
 Why always `npm publish`? Yarn refuses to publish pre-built tarballs in `yarn npm publish`; bun lacks OIDC and `--provenance`. The npm CLI is the lowest-common-denominator that works with foreign tarballs and supports trusted publishing.
 

@@ -6,17 +6,9 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import {
-    buildContext,
-    publishContext,
-} from "../../../src/release/core/orchestrator";
+import { buildContext, publishContext } from "../../../src/release/core/orchestrator";
 import type { PublishResult } from "../../../src/release/core/package-managers/interface";
-import {
-    readStagedRegistry,
-    recordRecentlyNotified,
-    recordRecentlyWalked,
-    writeStagedRegistry,
-} from "../../../src/release/core/staged-registry";
+import { readStagedRegistry, recordRecentlyNotified, recordRecentlyWalked, writeStagedRegistry } from "../../../src/release/core/staged-registry";
 import type { PublishContext } from "../../../src/release/core/version-actions/interface";
 import { VersionActions } from "../../../src/release/core/version-actions/interface";
 
@@ -30,28 +22,49 @@ import { VersionActions } from "../../../src/release/core/version-actions/interf
 const setupFixture = (): string => {
     const cwd = mkdtempSync(join(tmpdir(), "vis-orch-stage-"));
 
-    writeFileSync(join(cwd, "package.json"), `${JSON.stringify({
-        name: "fixture-root",
-        packageManager: "pnpm@10.0.0",
-        private: true,
-        version: "0.0.0",
-        workspaces: ["packages/*"],
-    }, null, 4)}\n`);
+    writeFileSync(
+        join(cwd, "package.json"),
+        `${JSON.stringify(
+            {
+                name: "fixture-root",
+                packageManager: "pnpm@10.0.0",
+                private: true,
+                version: "0.0.0",
+                workspaces: ["packages/*"],
+            },
+            null,
+            4,
+        )}\n`,
+    );
 
     writeFileSync(join(cwd, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n  - 'packages/*/*'\n");
 
     mkdirSync(join(cwd, "packages", "a"), { recursive: true });
-    writeFileSync(join(cwd, "packages", "a", "package.json"), `${JSON.stringify({
-        name: "@scope/a",
-        version: "1.0.0",
-    }, null, 4)}\n`);
+    writeFileSync(
+        join(cwd, "packages", "a", "package.json"),
+        `${JSON.stringify(
+            {
+                name: "@scope/a",
+                version: "1.0.0",
+            },
+            null,
+            4,
+        )}\n`,
+    );
 
     mkdirSync(join(cwd, ".vis", "release"), { recursive: true });
     writeFileSync(join(cwd, ".vis", "release", "feat.md"), "---\n\"@scope/a\": patch\n---\nbody\n");
 
-    writeFileSync(join(cwd, "vis.config.cjs"), `module.exports = ${JSON.stringify({
-        release: { acknowledgeUnstable: true, defaultManaged: true },
-    }, null, 4)};\n`);
+    writeFileSync(
+        join(cwd, "vis.config.cjs"),
+        `module.exports = ${JSON.stringify(
+            {
+                release: { acknowledgeUnstable: true, defaultManaged: true },
+            },
+            null,
+            4,
+        )};\n`,
+    );
 
     return cwd;
 };
@@ -66,9 +79,7 @@ class StubVersionActions extends VersionActions {
 
     public readonly calls: { pkg: string; resumeStageId?: string; version: string }[] = [];
 
-    public constructor(
-        private readonly response: PublishResult | ((ctx: PublishContext) => PublishResult),
-    ) {
+    public constructor(private readonly response: PublishResult | ((ctx: PublishContext) => PublishResult)) {
         super();
     }
 
@@ -174,14 +185,16 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-prior",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.0.1",
-            }],
+            pending: [
+                {
+                    id: "stage-prior",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.0.1",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -212,14 +225,16 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-resume",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.0.1", // matches the planned patch bump
-            }],
+            pending: [
+                {
+                    id: "stage-resume",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.0.1", // matches the planned patch bump
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -251,14 +266,16 @@ describe.skipIf(isWindows)("orchestrator: publishContext → staged.json wiring"
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-resume",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.0.1",
-            }],
+            pending: [
+                {
+                    id: "stage-resume",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.0.1",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -313,36 +330,57 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
         const pkgCwd = mkdtempSync(join(tmpdir(), "vis-orch-notify-"));
         const origin = mkdtempSync(join(tmpdir(), "vis-orch-notify-origin-"));
 
-        writeFileSync(join(pkgCwd, "package.json"), `${JSON.stringify({
-            name: "fixture-root",
-            packageManager: "pnpm@10.0.0",
-            private: true,
-            version: "0.0.0",
-            workspaces: ["packages/*"],
-        }, null, 4)}\n`);
+        writeFileSync(
+            join(pkgCwd, "package.json"),
+            `${JSON.stringify(
+                {
+                    name: "fixture-root",
+                    packageManager: "pnpm@10.0.0",
+                    private: true,
+                    version: "0.0.0",
+                    workspaces: ["packages/*"],
+                },
+                null,
+                4,
+            )}\n`,
+        );
         writeFileSync(join(pkgCwd, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
 
         mkdirSync(join(pkgCwd, "packages", "a"), { recursive: true });
-        writeFileSync(join(pkgCwd, "packages", "a", "package.json"), `${JSON.stringify({
-            name: "@scope/a",
-            version: "1.0.0",
-        }, null, 4)}\n`);
+        writeFileSync(
+            join(pkgCwd, "packages", "a", "package.json"),
+            `${JSON.stringify(
+                {
+                    name: "@scope/a",
+                    version: "1.0.0",
+                },
+                null,
+                4,
+            )}\n`,
+        );
 
         mkdirSync(join(pkgCwd, ".vis", "release"), { recursive: true });
         writeFileSync(join(pkgCwd, ".vis", "release", "feat.md"), "---\n\"@scope/a\": patch\n---\nbody\n");
 
         // Notifications config — webhook channel keeps the test offline
         // (vs. slack/discord which validate webhook URL shape).
-        writeFileSync(join(pkgCwd, "vis.config.cjs"), `module.exports = ${JSON.stringify({
-            release: {
-                acknowledgeUnstable: true,
-                defaultManaged: true,
-                notifications: {
-                    skipPrerelease: false,
-                    webhook: { url: "https://example.com/hook" },
+        writeFileSync(
+            join(pkgCwd, "vis.config.cjs"),
+            `module.exports = ${JSON.stringify(
+                {
+                    release: {
+                        acknowledgeUnstable: true,
+                        defaultManaged: true,
+                        notifications: {
+                            skipPrerelease: false,
+                            webhook: { url: "https://example.com/hook" },
+                        },
+                    },
                 },
-            },
-        }, null, 4)};\n`);
+                null,
+                4,
+            )};\n`,
+        );
 
         // Bare repo as origin so `git push --tags` succeeds without a
         // real remote.
@@ -379,10 +417,7 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
         // package + version we're about to publish.
         expect.hasAssertions();
 
-        const seeded = recordRecentlyNotified(
-            { pending: [], updatedAt: new Date().toISOString(), version: 1 },
-            ["@scope/a@1.0.1"],
-        );
+        const seeded = recordRecentlyNotified({ pending: [], updatedAt: new Date().toISOString(), version: 1 }, ["@scope/a@1.0.1"]);
 
         await writeStagedRegistry(cwd, ".vis/release", seeded);
 
@@ -434,10 +469,7 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
         // walk function isn't entered at all (zero-cost dedupe).
         expect.hasAssertions();
 
-        const seeded = recordRecentlyWalked(
-            { pending: [], updatedAt: new Date().toISOString(), version: 1 },
-            ["@scope/a@1.0.1"],
-        );
+        const seeded = recordRecentlyWalked({ pending: [], updatedAt: new Date().toISOString(), version: 1 }, ["@scope/a@1.0.1"]);
 
         await writeStagedRegistry(cwd, ".vis/release", seeded);
 
@@ -468,36 +500,64 @@ describe.skipIf(isWindows)("orchestrator: cross-runner notify/walk dedupe via st
 const setupDependencyFixture = (): string => {
     const cwd = mkdtempSync(join(tmpdir(), "vis-orch-dep-"));
 
-    writeFileSync(join(cwd, "package.json"), `${JSON.stringify({
-        name: "fixture-root",
-        packageManager: "pnpm@10.0.0",
-        private: true,
-        version: "0.0.0",
-        workspaces: ["packages/*"],
-    }, null, 4)}\n`);
+    writeFileSync(
+        join(cwd, "package.json"),
+        `${JSON.stringify(
+            {
+                name: "fixture-root",
+                packageManager: "pnpm@10.0.0",
+                private: true,
+                version: "0.0.0",
+                workspaces: ["packages/*"],
+            },
+            null,
+            4,
+        )}\n`,
+    );
 
     writeFileSync(join(cwd, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n");
 
     mkdirSync(join(cwd, "packages", "a"), { recursive: true });
-    writeFileSync(join(cwd, "packages", "a", "package.json"), `${JSON.stringify({
-        name: "@scope/a",
-        version: "1.0.0",
-    }, null, 4)}\n`);
+    writeFileSync(
+        join(cwd, "packages", "a", "package.json"),
+        `${JSON.stringify(
+            {
+                name: "@scope/a",
+                version: "1.0.0",
+            },
+            null,
+            4,
+        )}\n`,
+    );
 
     // @scope/b depends on @scope/a — publishing b after a fails would orphan it.
     mkdirSync(join(cwd, "packages", "b"), { recursive: true });
-    writeFileSync(join(cwd, "packages", "b", "package.json"), `${JSON.stringify({
-        dependencies: { "@scope/a": "workspace:^" },
-        name: "@scope/b",
-        version: "1.0.0",
-    }, null, 4)}\n`);
+    writeFileSync(
+        join(cwd, "packages", "b", "package.json"),
+        `${JSON.stringify(
+            {
+                dependencies: { "@scope/a": "workspace:^" },
+                name: "@scope/b",
+                version: "1.0.0",
+            },
+            null,
+            4,
+        )}\n`,
+    );
 
     mkdirSync(join(cwd, ".vis", "release"), { recursive: true });
     writeFileSync(join(cwd, ".vis", "release", "feat.md"), "---\n\"@scope/a\": patch\n\"@scope/b\": patch\n---\nbody\n");
 
-    writeFileSync(join(cwd, "vis.config.cjs"), `module.exports = ${JSON.stringify({
-        release: { acknowledgeUnstable: true, defaultManaged: true },
-    }, null, 4)};\n`);
+    writeFileSync(
+        join(cwd, "vis.config.cjs"),
+        `module.exports = ${JSON.stringify(
+            {
+                release: { acknowledgeUnstable: true, defaultManaged: true },
+            },
+            null,
+            4,
+        )};\n`,
+    );
 
     return cwd;
 };

@@ -65,11 +65,7 @@ describe("release-plan: glob-expansion cache", () => {
 
         const graph = new DependencyGraph(packages);
 
-        const plan = assembleReleasePlan(
-            [parseChangeFile(`---\n"@grp/p0": minor\n---\nFixed group bump.\n`, "x.md")],
-            graph,
-            { fixed: [["@grp/*"]] },
-        );
+        const plan = assembleReleasePlan([parseChangeFile(`---\n"@grp/p0": minor\n---\nFixed group bump.\n`, "x.md")], graph, { fixed: [["@grp/*"]] });
 
         // Every member of the fixed group should bump.
         expect(plan.releases).toHaveLength(50);

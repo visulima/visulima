@@ -47,16 +47,17 @@ describe(createTag, () => {
         captureInvocations(runner, calls);
 
         // tagExists + tagExistsRemote both report "no" so we proceed to creation.
-        runner.on("git", ["rev-parse", "--verify"], () => { return { exitCode: 1, stderr: "", stdout: "" }; });
-        runner.on("git", ["ls-remote"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["tag"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        runner.on("git", ["rev-parse", "--verify"], () => {
+            return { exitCode: 1, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["ls-remote"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["tag"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
 
-        await createTag(
-            { cwd: "/r", runner },
-            "pkg@1.0.0",
-            "Release pkg@1.0.0",
-            { signing: { mode: "gpg" } },
-        );
+        await createTag({ cwd: "/r", runner }, "pkg@1.0.0", "Release pkg@1.0.0", { signing: { mode: "gpg" } });
 
         const tagCall = calls.find((c) => c.command === "git" && c.args[0] === "tag");
 
@@ -72,16 +73,17 @@ describe(createTag, () => {
 
         captureInvocations(runner, calls);
 
-        runner.on("git", ["rev-parse", "--verify"], () => { return { exitCode: 1, stderr: "", stdout: "" }; });
-        runner.on("git", ["ls-remote"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["tag"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        runner.on("git", ["rev-parse", "--verify"], () => {
+            return { exitCode: 1, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["ls-remote"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["tag"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
 
-        await createTag(
-            { cwd: "/r", runner },
-            "pkg@1.0.0",
-            "msg",
-            { signing: { key: "ABCD1234", mode: "gpg" } },
-        );
+        await createTag({ cwd: "/r", runner }, "pkg@1.0.0", "msg", { signing: { key: "ABCD1234", mode: "gpg" } });
 
         const tagCall = calls.find((c) => c.command === "git" && c.args[0] === "tag");
 
@@ -97,16 +99,17 @@ describe(createTag, () => {
 
         captureInvocations(runner, calls);
 
-        runner.on("git", ["rev-parse", "--verify"], () => { return { exitCode: 1, stderr: "", stdout: "" }; });
-        runner.on("git", ["ls-remote"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["tag"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        runner.on("git", ["rev-parse", "--verify"], () => {
+            return { exitCode: 1, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["ls-remote"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["tag"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
 
-        await createTag(
-            { cwd: "/r", runner },
-            "pkg@1.0.0",
-            "msg",
-            { signing: { mode: "ssh" } },
-        );
+        await createTag({ cwd: "/r", runner }, "pkg@1.0.0", "msg", { signing: { mode: "ssh" } });
 
         const tagCall = calls.find((c) => c.command === "git" && c.args[0] === "tag");
 
@@ -126,28 +129,31 @@ describe(createTag, () => {
 
         captureInvocations(runner, calls);
 
-        runner.on("git", ["rev-parse", "--verify"], () => { return { exitCode: 1, stderr: "", stdout: "" }; });
-        runner.on("git", ["ls-remote"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["tag"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        runner.on("git", ["rev-parse", "--verify"], () => {
+            return { exitCode: 1, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["ls-remote"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["tag"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
         // gitsign is missing → --version exits non-zero.
-        runner.on("gitsign", ["--version"], () => { return { exitCode: 127, stderr: "command not found", stdout: "" }; });
+        runner.on("gitsign", ["--version"], () => {
+            return { exitCode: 127, stderr: "command not found", stdout: "" };
+        });
 
         const originalStderrWrite = process.stderr.write.bind(process.stderr);
         const stderrCaptured: string[] = [];
 
-        process.stderr.write = ((chunk: string | Uint8Array) => {
+        process.stderr.write = (chunk: string | Uint8Array) => {
             stderrCaptured.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"));
 
             return true;
-        });
+        };
 
         try {
-            await createTag(
-                { cwd: "/r", runner },
-                "pkg@1.0.0",
-                "msg",
-                { signing: { mode: "sigstore" } },
-            );
+            await createTag({ cwd: "/r", runner }, "pkg@1.0.0", "msg", { signing: { mode: "sigstore" } });
         } finally {
             process.stderr.write = originalStderrWrite;
         }

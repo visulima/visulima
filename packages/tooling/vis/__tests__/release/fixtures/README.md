@@ -2,15 +2,15 @@
 
 7 fixture monorepos for integration / e2e testing of `vis release`:
 
-| Fixture | Purpose |
-|---|---|
-| `npm-workspace/` | npm 11+ workspace; tests `NpmAdapter` pack/publish/install |
-| `pnpm-workspace/` | pnpm 10+ workspace with `catalog:` + `workspace:^` refs |
-| `yarn-workspace/` | yarn Berry/v4 workspace with `workspace:^` |
-| `bun-workspace/` | bun 1.2+ workspace |
+| Fixture                  | Purpose                                                                               |
+| ------------------------ | ------------------------------------------------------------------------------------- |
+| `npm-workspace/`         | npm 11+ workspace; tests `NpmAdapter` pack/publish/install                            |
+| `pnpm-workspace/`        | pnpm 10+ workspace with `catalog:` + `workspace:^` refs                               |
+| `yarn-workspace/`        | yarn Berry/v4 workspace with `workspace:^`                                            |
+| `bun-workspace/`         | bun 1.2+ workspace                                                                    |
 | `from-semantic-release/` | per-package `.releaserc.json` files; tests `vis release init --from-semantic-release` |
-| `from-changesets/` | `.changeset/` dir with config + pending change files; tests `--from-changesets` |
-| `from-bumpy/` | `.bumpy/` dir with config + pending change files; tests `--from-bumpy` |
+| `from-changesets/`       | `.changeset/` dir with config + pending change files; tests `--from-changesets`       |
+| `from-bumpy/`            | `.bumpy/` dir with config + pending change files; tests `--from-bumpy`                |
 
 ## Layout per pm-fixture
 
@@ -29,17 +29,19 @@
 ## How to run e2e against these (TODO — verdaccio + runner not yet wired)
 
 1. Install verdaccio + msw (currently NOT in vis's package.json):
-   ```sh
-   pnpm add -D --filter @visulima/vis verdaccio msw @types/verdaccio
-   ```
+
+    ```sh
+    pnpm add -D --filter @visulima/vis verdaccio msw @types/verdaccio
+    ```
 
 2. Run the harness:
-   ```sh
-   pnpm --filter @visulima/vis run test:e2e
-   ```
 
-   (script not yet added to package.json — see harness/runner.ts for the
-   intended entry point.)
+    ```sh
+    pnpm --filter @visulima/vis run test:e2e
+    ```
+
+    (script not yet added to package.json — see harness/runner.ts for the
+    intended entry point.)
 
 3. The harness will, for each fixture:
    a. Spin up verdaccio on `localhost:4873`
@@ -49,7 +51,7 @@
    e. Run `vis release version --commit` → assert package.json + CHANGELOG writes
    f. Run `vis release publish --tag latest` → assert verdaccio receives the tarball
    g. Verify the published `package.json` has `workspace:` / `catalog:`
-      refs **resolved** (not literal protocol prefixes)
+   refs **resolved** (not literal protocol prefixes)
 
 ## Status
 

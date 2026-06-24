@@ -201,9 +201,7 @@ describe("applyReleasePlan — produces structured AppliedPlan", () => {
         const graph = new DependencyGraph([a]);
 
         const plan: ReleasePlan = {
-            consumedChangeFiles: [
-                { body: "", id: "abc", path: ".vis/release/abc.md", payload: { bumps: { a: "minor" } } },
-            ],
+            consumedChangeFiles: [{ body: "", id: "abc", path: ".vis/release/abc.md", payload: { bumps: { a: "minor" } } }],
             releases: [mkRelease("a", "1.0.0", "1.1.0")],
             warnings: [],
         };

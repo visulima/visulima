@@ -45,10 +45,7 @@ const writeVisConfigCjs = (cwd: string, releaseBlock: Record<string, unknown>): 
 };
 
 const writeChangeFile = (cwd: string, slug: string, frontmatter: string, body: string = ""): void => {
-    writeFileSync(
-        join(cwd, ".vis", "release", `${slug}.md`),
-        `---\n${frontmatter}\n---\n${body}\n`,
-    );
+    writeFileSync(join(cwd, ".vis", "release", `${slug}.md`), `---\n${frontmatter}\n---\n${body}\n`);
 };
 
 /**
@@ -182,8 +179,7 @@ describe("first-release flag — fallback behaviour without the flag", () => {
         // fell back to the manifest. A warning surfaces this so the
         // operator knows the bootstrap path was hit.
         const hasResolverFallbackWarning = ctx.plan.warnings.some(
-            (w) => w.includes("currentVersionResolver (git-tag)")
-                && w.includes("no git tag matched pattern"),
+            (w) => w.includes("currentVersionResolver (git-tag)") && w.includes("no git tag matched pattern"),
         );
 
         expect(hasResolverFallbackWarning).toBe(true);

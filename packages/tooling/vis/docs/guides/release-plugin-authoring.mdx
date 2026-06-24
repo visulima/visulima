@@ -7,11 +7,11 @@ description: "Extend `vis release` with custom notification channels, version ac
 
 `vis release` ships with batteries-included built-ins for the 80% case: npm / cargo / python / maven / container publishing, default / github / keep-a-changelog formatters, slack / discord / generic-webhook notifications. The other 20% has too much variety to bundle — your internal chat tool, your private registry, your house style guide — so vis exposes three typed plugin surfaces that you load from the workspace config.
 
-| Surface               | What it controls                                  | Where it loads from                                         |
-| --------------------- | ------------------------------------------------- | ----------------------------------------------------------- |
-| `NotificationChannel` | Post-publish chat / webhook fan-out               | `release.notifications.plugins: ["./my-channel.ts"]`        |
-| `VersionActions`      | Per-package read-published + publish steps        | `release.packages.<name>.versionActions: "./my-actions.ts"` |
-| `ChangelogFormatter`  | Per-release changelog rendering (file + GH body)  | `release.changelog: "./my-formatter.ts"`                    |
+| Surface               | What it controls                                 | Where it loads from                                         |
+| --------------------- | ------------------------------------------------ | ----------------------------------------------------------- |
+| `NotificationChannel` | Post-publish chat / webhook fan-out              | `release.notifications.plugins: ["./my-channel.ts"]`        |
+| `VersionActions`      | Per-package read-published + publish steps       | `release.packages.<name>.versionActions: "./my-actions.ts"` |
+| `ChangelogFormatter`  | Per-release changelog rendering (file + GH body) | `release.changelog: "./my-formatter.ts"`                    |
 
 All three plugin surfaces — types, identity wrappers, abstract base classes — are re-exported from `@visulima/vis/release/plugin-sdk`. Always import from there in your plugin modules; the deeper sub-paths (`/core/notifications/interface`, etc.) are internal and not covered by the stability contract.
 
@@ -26,11 +26,7 @@ Use this when the three built-in channels (slack / discord / webhook) cannot mod
 ### The interface
 
 ```typescript
-import type {
-    NotificationChannel,
-    NotificationContext,
-    NotificationPackage,
-} from "@visulima/vis/release/plugin-sdk";
+import type { NotificationChannel, NotificationContext, NotificationPackage } from "@visulima/vis/release/plugin-sdk";
 
 interface NotificationChannel {
     /** Stable id used in log messages: `"slack"`, `"discord"`, `"teams"`, …. */
@@ -125,11 +121,7 @@ Below is a minimal Teams channel that uses an OAuth Bearer token and the Microso
 
 ```typescript
 // .vis/release/teams-channel.ts
-import {
-    defineNotificationChannel,
-    type NotificationChannel,
-    type NotificationContext,
-} from "@visulima/vis/release/plugin-sdk";
+import { defineNotificationChannel, type NotificationChannel, type NotificationContext } from "@visulima/vis/release/plugin-sdk";
 
 export interface TeamsChannelOptions {
     /** Microsoft Graph endpoint — your tenant + chat id baked in. */
@@ -144,52 +136,53 @@ export interface TeamsChannelOptions {
  * Factory form — receives the options object from the
  * `["./teams-channel.ts", { ...options }]` config tuple.
  */
-export default (options: TeamsChannelOptions): NotificationChannel => defineNotificationChannel({
-    id: "teams",
+export default (options: TeamsChannelOptions): NotificationChannel =>
+    defineNotificationChannel({
+        id: "teams",
 
-    async send(context: NotificationContext) {
-        const title = (options.titleTemplate ?? "Released {count} packages")
-            .replaceAll("{count}", String(context.published.length))
-            .replaceAll("{repo}", context.repo ?? "")
-            .replaceAll("{channel}", context.channel ?? "");
+        async send(context: NotificationContext) {
+            const title = (options.titleTemplate ?? "Released {count} packages")
+                .replaceAll("{count}", String(context.published.length))
+                .replaceAll("{repo}", context.repo ?? "")
+                .replaceAll("{channel}", context.channel ?? "");
 
-        const packageList = context.published
-            .map((p) => p.url ? `<li><a href="${p.url}">${p.name}@${p.version}</a></li>` : `<li>${p.name}@${p.version}</li>`)
-            .join("");
+            const packageList = context.published
+                .map((p) => (p.url ? `<li><a href="${p.url}">${p.name}@${p.version}</a></li>` : `<li>${p.name}@${p.version}</li>`))
+                .join("");
 
-        const body = {
-            body: {
-                contentType: "html",
-                content: `<h2>${title}</h2><ul>${packageList}</ul>`,
-            },
-        };
-
-        let response: Response;
-
-        try {
-            response = await fetch(options.endpoint, {
-                method: "POST",
-                headers: {
-                    "Authorization": `Bearer ${options.token}`,
-                    "Content-Type": "application/json",
+            const body = {
+                body: {
+                    contentType: "html",
+                    content: `<h2>${title}</h2><ul>${packageList}</ul>`,
                 },
-                body: JSON.stringify(body),
-            });
-        } catch (error) {
-            // Wrap the underlying error so neither the token (in
-            // Authorization) nor any URL fragments leak into the log line.
-            const reason = error instanceof Error ? error.name : "NetworkError";
+            };
 
-            throw new Error(`Teams channel fetch failed (${reason})`);
-        }
+            let response: Response;
 
-        if (!response.ok) {
-            const errorBody = await response.text().catch(() => "");
+            try {
+                response = await fetch(options.endpoint, {
+                    method: "POST",
+                    headers: {
+                        Authorization: `Bearer ${options.token}`,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify(body),
+                });
+            } catch (error) {
+                // Wrap the underlying error so neither the token (in
+                // Authorization) nor any URL fragments leak into the log line.
+                const reason = error instanceof Error ? error.name : "NetworkError";
 
-            throw new Error(`Teams channel returned ${response.status} ${response.statusText}${errorBody ? `: ${errorBody.slice(0, 200)}` : ""}`);
-        }
-    },
-});
+                throw new Error(`Teams channel fetch failed (${reason})`);
+            }
+
+            if (!response.ok) {
+                const errorBody = await response.text().catch(() => "");
+
+                throw new Error(`Teams channel returned ${response.status} ${response.statusText}${errorBody ? `: ${errorBody.slice(0, 200)}` : ""}`);
+            }
+        },
+    });
 ```
 
 Wire it up:
@@ -200,11 +193,14 @@ export default {
     release: {
         notifications: {
             plugins: [
-                ["./.vis/release/teams-channel.ts", {
-                    endpoint: "https://graph.microsoft.com/v1.0/chats/19:.../messages",
-                    token: "${TEAMS_BOT_TOKEN}",
-                    titleTemplate: "🚀 {repo} shipped {count} packages",
-                }],
+                [
+                    "./.vis/release/teams-channel.ts",
+                    {
+                        endpoint: "https://graph.microsoft.com/v1.0/chats/19:.../messages",
+                        token: "${TEAMS_BOT_TOKEN}",
+                        titleTemplate: "🚀 {repo} shipped {count} packages",
+                    },
+                ],
             ],
         },
     },
@@ -226,11 +222,7 @@ Use this when your package ships to a registry vis does not have a first-class a
 ### The interface
 
 ```typescript
-import {
-    VersionActions,
-    type PublishContext,
-    type PublishResult,
-} from "@visulima/vis/release/plugin-sdk";
+import { VersionActions, type PublishContext, type PublishResult } from "@visulima/vis/release/plugin-sdk";
 
 abstract class VersionActions {
     /** Stable id (`"npm"`, `"cargo"`, `"shell"`, or a path for custom). */
@@ -240,10 +232,7 @@ abstract class VersionActions {
      * Read the current published version of this package from the registry.
      * Returns `undefined` for packages never published / not yet live.
      */
-    public abstract readPublishedVersion(context: {
-        pkg: WorkspacePackage;
-        pm: PackageManagerAdapter;
-    }): Promise<string | undefined>;
+    public abstract readPublishedVersion(context: { pkg: WorkspacePackage; pm: PackageManagerAdapter }): Promise<string | undefined>;
 
     /**
      * Publish this package. Responsible for: protocol resolution, catalog
@@ -253,7 +242,7 @@ abstract class VersionActions {
 }
 ```
 
-`PublishContext` is the heavy one — it carries the workspace config, the per-package config, the planned release entry (with `newVersion`), the dist-tag, the dry-run flag, the OTP if applicable, the resolved registry URL, and a map of every other manifest being released in the same wave (so your `workspace:` / `catalog:` rewrites can resolve against the *bumped* versions, not the on-disk values).
+`PublishContext` is the heavy one — it carries the workspace config, the per-package config, the planned release entry (with `newVersion`), the dist-tag, the dry-run flag, the OTP if applicable, the resolved registry URL, and a map of every other manifest being released in the same wave (so your `workspace:` / `catalog:` rewrites can resolve against the _bumped_ versions, not the on-disk values).
 
 Two abstract methods. Two return shapes. The minimum bar is "produce a value from a registry, push a tarball / artefact to that registry".
 
@@ -296,7 +285,7 @@ For the full set of helpers, study `src/release/core/version-actions/npm.ts` (th
 
 If your custom actions shell out (via `context.pm.runner.run("npm", ...)` or `child_process` directly), that is fine — actions code is repo-local and trusted. The trust gate (`release.allowCustomCommands`) applies only to **operator-configured shell strings** (`publishCommand`, `preReleaseCommand`, `checkPublished`) consumed by the generic `shell` actions. Your typed `VersionActions` plugin can shell out at will; you wrote it, you trust it.
 
-For the **inverse** — if your actions plugin wants to *use* an operator-supplied `publishCommand` — copy the trust-gate evaluation pattern from the built-in `shell` actions (`packages/tooling/vis/src/release/core/version-actions/shell.ts`). It calls the workspace's `allowCustomCommands` check before evaluating any operator-supplied command string.
+For the **inverse** — if your actions plugin wants to _use_ an operator-supplied `publishCommand` — copy the trust-gate evaluation pattern from the built-in `shell` actions (`packages/tooling/vis/src/release/core/version-actions/shell.ts`). It calls the workspace's `allowCustomCommands` check before evaluating any operator-supplied command string.
 
 ### Worked example: private Verdaccio actions
 
@@ -310,11 +299,7 @@ A skeleton:
 
 ```typescript
 // .vis/release/verdaccio-actions.ts
-import {
-    VersionActions,
-    type PublishContext,
-    type PublishResult,
-} from "@visulima/vis/release/plugin-sdk";
+import { VersionActions, type PublishContext, type PublishResult } from "@visulima/vis/release/plugin-sdk";
 
 export default class VerdaccioVersionActions extends VersionActions {
     public readonly id = "verdaccio" as const;
@@ -349,7 +334,7 @@ export default class VerdaccioVersionActions extends VersionActions {
             return undefined; // soft-fail; orchestrator handles fallback
         }
 
-        const body = await response.json() as { "dist-tags"?: Record<string, string> };
+        const body = (await response.json()) as { "dist-tags"?: Record<string, string> };
 
         return body["dist-tags"]?.latest;
     }
@@ -379,12 +364,7 @@ export default class VerdaccioVersionActions extends VersionActions {
         //    against any npm-protocol-compatible registry, Verdaccio included.
         const publishResult = await context.pm.runner.run(
             "npm",
-            [
-                "publish",
-                packResult.tarballPath,
-                `--registry=${registry}`,
-                `--tag=${context.tag ?? "latest"}`,
-            ],
+            ["publish", packResult.tarballPath, `--registry=${registry}`, `--tag=${context.tag ?? "latest"}`],
             { cwd: context.pkg.dir, silent: false },
         );
 
@@ -433,12 +413,7 @@ Use this when neither the `default` formatter (plain Markdown), the `github` for
 ### The interface
 
 ```typescript
-import {
-    defineChangelogFormatter,
-    type ChangelogContext,
-    type ChangelogFormatter,
-    type ChangelogTarget,
-} from "@visulima/vis/release/plugin-sdk";
+import { defineChangelogFormatter, type ChangelogContext, type ChangelogFormatter, type ChangelogTarget } from "@visulima/vis/release/plugin-sdk";
 
 type ChangelogTarget = "changelog" | "github-release";
 
@@ -504,11 +479,7 @@ Suppose you want the Keep-a-Changelog layout — `### Added | Changed | Fixed | 
 
 ```typescript
 // .vis/release/emoji-keep-a-changelog.ts
-import {
-    defineChangelogFormatter,
-    type ChangelogContext,
-    type ChangelogFormatter,
-} from "@visulima/vis/release/plugin-sdk";
+import { defineChangelogFormatter, type ChangelogContext, type ChangelogFormatter } from "@visulima/vis/release/plugin-sdk";
 
 export interface EmojiFormatterOptions {
     /** Owner/repo for the trailing comparison link. */
@@ -639,7 +610,10 @@ export default (options: EmojiFormatterOptions = {}): ChangelogFormatter =>
             lines.push(`[${release.newVersion}]: https://github.com/${options.repo}/compare/v${release.oldVersion}...v${release.newVersion}`);
         }
 
-        return lines.join("\n").replace(/\n{3,}/g, "\n\n").trim();
+        return lines
+            .join("\n")
+            .replace(/\n{3,}/g, "\n\n")
+            .trim();
     });
 ```
 
@@ -649,12 +623,15 @@ Wire it up:
 // vis.config.ts
 export default {
     release: {
-        changelog: ["./.vis/release/emoji-keep-a-changelog.ts", {
-            repo: "foo/bar",
-            emoji: {
-                Added: "🎁",  // override the default ✨
+        changelog: [
+            "./.vis/release/emoji-keep-a-changelog.ts",
+            {
+                repo: "foo/bar",
+                emoji: {
+                    Added: "🎁", // override the default ✨
+                },
             },
-        }],
+        ],
     },
 };
 ```

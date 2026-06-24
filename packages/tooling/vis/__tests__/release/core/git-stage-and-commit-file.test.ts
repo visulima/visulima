@@ -36,11 +36,7 @@ describe("git: stageAndCommitFile", () => {
             return { exitCode: 0, stderr: "", stdout: "" };
         });
 
-        const result = await stageAndCommitFile(
-            { cwd: "/r", runner },
-            ".vis/release/staged.json",
-            "chore(release): noop [skip ci]",
-        );
+        const result = await stageAndCommitFile({ cwd: "/r", runner }, ".vis/release/staged.json", "chore(release): noop [skip ci]");
 
         expect(result.committed).toBe(false);
         expect(result.pushed).toBe(false);
@@ -53,20 +49,20 @@ describe("git: stageAndCommitFile", () => {
         const runner = new MockRunner();
         let committed = false;
 
-        runner.on("git", ["add"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        runner.on("git", ["add"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
         // exit 1 from `git diff --cached --quiet` => something IS staged
-        runner.on("git", ["diff", "--cached", "--quiet"], () => { return { exitCode: 1, stderr: "", stdout: "" }; });
+        runner.on("git", ["diff", "--cached", "--quiet"], () => {
+            return { exitCode: 1, stderr: "", stdout: "" };
+        });
         runner.on("git", ["commit"], () => {
             committed = true;
 
             return { exitCode: 0, stderr: "", stdout: "" };
         });
 
-        const result = await stageAndCommitFile(
-            { cwd: "/r", runner },
-            ".vis/release/staged.json",
-            "chore(release): record 1 pending stage [skip ci]",
-        );
+        const result = await stageAndCommitFile({ cwd: "/r", runner }, ".vis/release/staged.json", "chore(release): record 1 pending stage [skip ci]");
 
         expect(committed).toBe(true);
         expect(result.committed).toBe(true);
@@ -79,22 +75,25 @@ describe("git: stageAndCommitFile", () => {
         const runner = new MockRunner();
         let pushed = false;
 
-        runner.on("git", ["add"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["diff", "--cached", "--quiet"], () => { return { exitCode: 1, stderr: "", stdout: "" }; });
-        runner.on("git", ["commit"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["rev-parse", "--abbrev-ref", "HEAD"], () => { return { exitCode: 0, stderr: "", stdout: "alpha\n" }; });
+        runner.on("git", ["add"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["diff", "--cached", "--quiet"], () => {
+            return { exitCode: 1, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["commit"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["rev-parse", "--abbrev-ref", "HEAD"], () => {
+            return { exitCode: 0, stderr: "", stdout: "alpha\n" };
+        });
         runner.on("git", ["push", "origin", "HEAD:alpha"], () => {
             pushed = true;
 
             return { exitCode: 0, stderr: "", stdout: "" };
         });
 
-        const result = await stageAndCommitFile(
-            { cwd: "/r", runner },
-            ".vis/release/staged.json",
-            "chore: [skip ci]",
-            { push: true },
-        );
+        const result = await stageAndCommitFile({ cwd: "/r", runner }, ".vis/release/staged.json", "chore: [skip ci]", { push: true });
 
         expect(pushed).toBe(true);
         expect(result.pushed).toBe(true);
@@ -106,21 +105,22 @@ describe("git: stageAndCommitFile", () => {
         const runner = new MockRunner();
         let pushed = false;
 
-        runner.on("git", ["add"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["diff", "--cached", "--quiet"], () => { return { exitCode: 1, stderr: "", stdout: "" }; });
-        runner.on("git", ["commit"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        runner.on("git", ["add"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["diff", "--cached", "--quiet"], () => {
+            return { exitCode: 1, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["commit"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
         runner.on("git", ["push"], () => {
             pushed = true;
 
             return { exitCode: 0, stderr: "", stdout: "" };
         });
 
-        const result = await stageAndCommitFile(
-            { cwd: "/r", runner },
-            ".vis/release/staged.json",
-            "chore: [skip ci]",
-            { push: false },
-        );
+        const result = await stageAndCommitFile({ cwd: "/r", runner }, ".vis/release/staged.json", "chore: [skip ci]", { push: false });
 
         expect(result.committed).toBe(true);
         expect(result.pushed).toBe(false);
@@ -132,10 +132,18 @@ describe("git: stageAndCommitFile", () => {
 
         const runner = new MockRunner();
 
-        runner.on("git", ["add"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["diff", "--cached", "--quiet"], () => { return { exitCode: 1, stderr: "", stdout: "" }; });
-        runner.on("git", ["commit"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["rev-parse", "--abbrev-ref", "HEAD"], () => { return { exitCode: 0, stderr: "", stdout: "alpha\n" }; });
+        runner.on("git", ["add"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["diff", "--cached", "--quiet"], () => {
+            return { exitCode: 1, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["commit"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["rev-parse", "--abbrev-ref", "HEAD"], () => {
+            return { exitCode: 0, stderr: "", stdout: "alpha\n" };
+        });
         runner.on("git", ["push", "origin", "HEAD:alpha"], () => {
             return {
                 exitCode: 1,
@@ -144,12 +152,7 @@ describe("git: stageAndCommitFile", () => {
             };
         });
 
-        const result = await stageAndCommitFile(
-            { cwd: "/r", runner },
-            ".vis/release/staged.json",
-            "chore: [skip ci]",
-            { push: true },
-        );
+        const result = await stageAndCommitFile({ cwd: "/r", runner }, ".vis/release/staged.json", "chore: [skip ci]", { push: true });
 
         expect(result.committed).toBe(true);
         expect(result.pushed).toBe(false);
@@ -161,22 +164,25 @@ describe("git: stageAndCommitFile", () => {
         const runner = new MockRunner();
         let pushed = false;
 
-        runner.on("git", ["add"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["diff", "--cached", "--quiet"], () => { return { exitCode: 1, stderr: "", stdout: "" }; });
-        runner.on("git", ["commit"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["rev-parse", "--abbrev-ref", "HEAD"], () => { return { exitCode: 0, stderr: "", stdout: "HEAD\n" }; });
+        runner.on("git", ["add"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["diff", "--cached", "--quiet"], () => {
+            return { exitCode: 1, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["commit"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["rev-parse", "--abbrev-ref", "HEAD"], () => {
+            return { exitCode: 0, stderr: "", stdout: "HEAD\n" };
+        });
         runner.on("git", ["push"], () => {
             pushed = true;
 
             return { exitCode: 0, stderr: "", stdout: "" };
         });
 
-        const result = await stageAndCommitFile(
-            { cwd: "/r", runner },
-            ".vis/release/staged.json",
-            "chore: [skip ci]",
-            { push: true },
-        );
+        const result = await stageAndCommitFile({ cwd: "/r", runner }, ".vis/release/staged.json", "chore: [skip ci]", { push: true });
 
         expect(result.committed).toBe(true);
         expect(result.pushed).toBe(false);
@@ -189,20 +195,19 @@ describe("git: stageAndCommitFile", () => {
         const runner = new MockRunner();
         let committed = false;
 
-        runner.on("git", ["add"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["diff", "--cached", "--quiet"], () => { return { exitCode: 1, stderr: "", stdout: "" }; });
+        runner.on("git", ["add"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["diff", "--cached", "--quiet"], () => {
+            return { exitCode: 1, stderr: "", stdout: "" };
+        });
         runner.on("git", ["commit"], () => {
             committed = true;
 
             return { exitCode: 0, stderr: "", stdout: "" };
         });
 
-        await stageAndCommitFile(
-            { cwd: "/r", runner },
-            ".vis/release/staged.json",
-            "chore: [skip ci]",
-            { author: { email: "bot@example.com", name: "Bot" } },
-        );
+        await stageAndCommitFile({ cwd: "/r", runner }, ".vis/release/staged.json", "chore: [skip ci]", { author: { email: "bot@example.com", name: "Bot" } });
 
         expect(committed).toBe(true);
     });

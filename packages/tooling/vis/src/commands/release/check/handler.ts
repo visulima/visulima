@@ -57,11 +57,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     const baseBranch = ctx.config.baseBranch ?? "main";
     const runner = createShellRunner();
 
-    const diffResult = await runner.run(
-        "git",
-        ["diff", "--name-only", `${baseBranch}...HEAD`],
-        { cwd, silent: true },
-    );
+    const diffResult = await runner.run("git", ["diff", "--name-only", `${baseBranch}...HEAD`], { cwd, silent: true });
 
     if (diffResult.exitCode !== 0) {
         logger.warn(`Could not run git diff vs ${baseBranch}: ${diffResult.stderr}`);
@@ -71,7 +67,10 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         return;
     }
 
-    const allChangedFiles = diffResult.stdout.split("\n").map((s) => s.trim()).filter(Boolean);
+    const allChangedFiles = diffResult.stdout
+        .split("\n")
+        .map((s) => s.trim())
+        .filter(Boolean);
 
     if (allChangedFiles.length === 0) {
         logger.info("No source files changed. ✓");

@@ -25,12 +25,12 @@ const createStdin = (withRawMode = true): StdinStub => {
     const stdin = new EventEmitter() as unknown as StdinStub;
 
     if (withRawMode) {
-        stdin.setRawMode = vi.fn(() => stdin);
+        vi.spyOn(stdin, "setRawMode").mockImplementation(() => stdin);
     }
 
-    stdin.resume = vi.fn(() => stdin);
-    stdin.pause = vi.fn(() => stdin);
-    stdin.setEncoding = vi.fn(() => stdin);
+    vi.spyOn(stdin, "resume").mockImplementation(() => stdin);
+    vi.spyOn(stdin, "pause").mockImplementation(() => stdin);
+    vi.spyOn(stdin, "setEncoding").mockImplementation(() => stdin);
 
     return stdin;
 };
@@ -254,7 +254,7 @@ describe("core/input InputParser", () => {
         });
     });
 
-    describe("SGR 1006 mouse tracking", () => {
+    describe("sGR 1006 mouse tracking", () => {
         beforeEach(() => {
             parser.start();
         });

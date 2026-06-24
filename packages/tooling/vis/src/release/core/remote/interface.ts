@@ -258,10 +258,7 @@ export interface RemoteReleaseClient {
      * `[]` (and may log a warning) when the adapter doesn't support the
      * operation (current GitLab behaviour).
      */
-    listRecentReleases: (
-        runner: CommandRunner,
-        options: ListRecentReleasesOptions,
-    ) => Promise<RecentRelease[]>;
+    listRecentReleases: (runner: CommandRunner, options: ListRecentReleasesOptions) => Promise<RecentRelease[]>;
 
     /**
      * Find-by-marker-or-create an issue, used for "release failed" reports.

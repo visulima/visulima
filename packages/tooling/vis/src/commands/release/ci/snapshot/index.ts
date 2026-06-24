@@ -14,7 +14,8 @@ const ciSnapshot: Command = {
             type: String,
         },
         {
-            description: "PR-close cleanup mode — enumerate the closed PR's commit SHAs and remove their snapshot tags from the registry (when supported by the backend)",
+            description:
+                "PR-close cleanup mode — enumerate the closed PR's commit SHAs and remove their snapshot tags from the registry (when supported by the backend)",
             name: "on-close",
             type: Boolean,
         },

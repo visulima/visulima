@@ -30,21 +30,14 @@ export const upsertStickyComment = async (options: StickyCommentOptions): Promis
     return client.upsertStickyComment(runner, rest);
 };
 
-export const detectRepoSlug = async (
-    runner: CommandRunner,
-    cwd: string,
-    options: { gitlabHost?: string } = {},
-): Promise<string | undefined> => {
+export const detectRepoSlug = async (runner: CommandRunner, cwd: string, options: { gitlabHost?: string } = {}): Promise<string | undefined> => {
     const provider = await detectRemoteProvider(cwd, runner, undefined);
     const client = createRemoteClient(provider, { gitlabHost: resolveGitlabHost(options.gitlabHost) });
 
     return client.detectRepoSlug(cwd, runner);
 };
 
-export const detectPullRequestNumber = (
-    env: NodeJS.ProcessEnv,
-    options: { gitlabHost?: string } = {},
-): number | undefined => {
+export const detectPullRequestNumber = (env: NodeJS.ProcessEnv, options: { gitlabHost?: string } = {}): number | undefined => {
     const provider = detectFromEnvSync(env);
     const client = createRemoteClient(provider, { gitlabHost: resolveGitlabHost(options.gitlabHost) });
 

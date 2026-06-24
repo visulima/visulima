@@ -1,1 +1,1 @@
-module.exports = { name: '@fixture-npm/b' };
+module.exports = { name: "@fixture-npm/b" };

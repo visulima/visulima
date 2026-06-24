@@ -18,15 +18,7 @@ import { basename, isAbsolute, join } from "node:path";
 import zeptomatch from "zeptomatch";
 
 import { VisReleaseError } from "../../errors";
-import type {
-    InstallLockfileOnlyOptions,
-    PackOptions,
-    PackResult,
-    PublishNativeOptions,
-    PublishOptions,
-    PublishResult,
-    WorkspaceListEntry,
-} from "./interface";
+import type { InstallLockfileOnlyOptions, PackOptions, PackResult, PublishNativeOptions, PublishOptions, PublishResult, WorkspaceListEntry } from "./interface";
 import { PackageManagerAdapter } from "./interface";
 import { interpretNativePublishResult, NpmAdapter } from "./npm";
 
@@ -69,9 +61,7 @@ export class BunAdapter extends PackageManagerAdapter {
             producedTarball = isAbsolute(tarballName) ? tarballName : join(dest, tarballName);
         } else {
             // Fallback: derive from package.json
-            const pkgJson = JSON.parse(
-                await readFile(join(options.cwd, "package.json"), "utf8"),
-            ) as { name?: string; version?: string };
+            const pkgJson = JSON.parse(await readFile(join(options.cwd, "package.json"), "utf8")) as { name?: string; version?: string };
 
             const safeName = (pkgJson.name ?? "package").replaceAll("/", "-").replace(/^@/, "");
 
@@ -109,7 +99,7 @@ export class BunAdapter extends PackageManagerAdapter {
                 workspaces?: string[] | { packages?: string[] };
             };
 
-            const globs = Array.isArray(root.workspaces) ? root.workspaces : root.workspaces?.packages ?? [];
+            const globs = Array.isArray(root.workspaces) ? root.workspaces : (root.workspaces?.packages ?? []);
 
             if (globs.length === 0) {
                 return [];

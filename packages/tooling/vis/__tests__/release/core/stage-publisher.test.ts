@@ -9,9 +9,7 @@ interface RecordedCall {
     command: string;
 }
 
-const buildRunner = (
-    responses: { args?: ReadonlyArray<string>; exitCode?: number; stdout?: string }[],
-): { calls: RecordedCall[]; runner: CommandRunner } => {
+const buildRunner = (responses: { args?: ReadonlyArray<string>; exitCode?: number; stdout?: string }[]): { calls: RecordedCall[]; runner: CommandRunner } => {
     const calls: RecordedCall[] = [];
     let cursor = 0;
 
@@ -142,8 +140,12 @@ describe(refuseRestrictedOidc, () => {
 
         const env = { ACTIONS_ID_TOKEN_REQUEST_URL: "https://example/oidc" };
 
-        expect(() => { refuseRestrictedOidc("restricted", env); }).toThrow(VisReleaseError);
-        expect(() => { refuseRestrictedOidc("restricted", env); }).toThrow(/restricted-access/);
+        expect(() => {
+            refuseRestrictedOidc("restricted", env);
+        }).toThrow(VisReleaseError);
+        expect(() => {
+            refuseRestrictedOidc("restricted", env);
+        }).toThrow(/restricted-access/);
     });
 
     it("passes when only OIDC is set (public package)", () => {
@@ -151,13 +153,19 @@ describe(refuseRestrictedOidc, () => {
 
         const env = { ACTIONS_ID_TOKEN_REQUEST_URL: "https://example/oidc" };
 
-        expect(() => { refuseRestrictedOidc("public", env); }).not.toThrow();
-        expect(() => { refuseRestrictedOidc(undefined, env); }).not.toThrow();
+        expect(() => {
+            refuseRestrictedOidc("public", env);
+        }).not.toThrow();
+        expect(() => {
+            refuseRestrictedOidc(undefined, env);
+        }).not.toThrow();
     });
 
     it("passes when only restricted is set (no OIDC)", () => {
         expect.hasAssertions();
-        expect(() => { refuseRestrictedOidc("restricted", {}); }).not.toThrow();
+        expect(() => {
+            refuseRestrictedOidc("restricted", {});
+        }).not.toThrow();
     });
 
     it("passes when NPM_TOKEN is also set alongside OIDC (operator has the fallback)", () => {
@@ -168,6 +176,8 @@ describe(refuseRestrictedOidc, () => {
             NPM_TOKEN: "npm_xxx",
         };
 
-        expect(() => { refuseRestrictedOidc("restricted", env); }).not.toThrow();
+        expect(() => {
+            refuseRestrictedOidc("restricted", env);
+        }).not.toThrow();
     });
 });

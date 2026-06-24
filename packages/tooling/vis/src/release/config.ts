@@ -36,24 +36,29 @@ export const defineReleaseConfig = (config: VisReleaseConfig): VisReleaseConfig 
  * Built-in defaults. Used by the loader when a key is not set by the user
  * and must be in the resolved config.
  */
-export const DEFAULT_CONFIG: Required<Pick<VisReleaseConfig, | "baseBranch"
-    | "changesDir"
-    | "access"
-    | "changelog"
-    | "changedFilePatterns"
-    | "updateInternalDependencies"
-    | "fixed"
-    | "linked"
-    | "ignore"
-    | "include"
-    | "privatePackages"
-    | "aggregateRelease"
-    | "defaultManaged"
-    | "allowCustomCommands"
-    | "preVersionCommand"
-    | "postVersionCommand"
-    | "prePublishCommand"
-    | "postPublishCommand">> = {
+export const DEFAULT_CONFIG: Required<
+    Pick<
+        VisReleaseConfig,
+        | "baseBranch"
+        | "changesDir"
+        | "access"
+        | "changelog"
+        | "changedFilePatterns"
+        | "updateInternalDependencies"
+        | "fixed"
+        | "linked"
+        | "ignore"
+        | "include"
+        | "privatePackages"
+        | "aggregateRelease"
+        | "defaultManaged"
+        | "allowCustomCommands"
+        | "preVersionCommand"
+        | "postVersionCommand"
+        | "prePublishCommand"
+        | "postPublishCommand"
+    >
+> = {
     access: "public",
     aggregateRelease: false,
     allowCustomCommands: false,

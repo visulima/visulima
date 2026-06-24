@@ -94,10 +94,7 @@ export const compileRule = (rule: ExtraFileRule, source: string): RegExp => {
  *   - `{packageName}` — alias for `{name}` (release-please parity).
  */
 const expandTemplate = (template: string, newVersion: string, packageName: string): string =>
-    template
-        .replaceAll("{version}", newVersion)
-        .replaceAll("{name}", packageName)
-        .replaceAll("{packageName}", packageName);
+    template.replaceAll("{version}", newVersion).replaceAll("{name}", packageName).replaceAll("{packageName}", packageName);
 
 /**
  * Semver-shaped substring detector. Used by the annotation path to
@@ -128,10 +125,7 @@ const SEMVER_REGEX = /\d+\.\d+\.\d+(?:-[\w.-]+)?(?:\+[\w.-]+)?/;
  * Returns `undefined` when the anchor is set but absent, or when no
  * semver substring exists in the searched span.
  */
-const findSemverOnLine = (
-    line: string,
-    anchor: string | undefined,
-): { index: number; match: string } | undefined => {
+const findSemverOnLine = (line: string, anchor: string | undefined): { index: number; match: string } | undefined => {
     let searchStart = 0;
 
     if (anchor !== undefined) {
@@ -215,9 +209,7 @@ const applyAnnotationRule = (
             const targetLine = lines[targetIndex];
 
             if (targetLine === undefined) {
-                warnings.push(
-                    `extra-files: ${label}[${rule.path}] annotation marker on the last line of ${absolutePath} (no following line to update).`,
-                );
+                warnings.push(`extra-files: ${label}[${rule.path}] annotation marker on the last line of ${absolutePath} (no following line to update).`);
                 continue;
             }
 
@@ -256,9 +248,7 @@ const applyAnnotationRule = (
     }
 
     if (!anyMatched) {
-        warnings.push(
-            `extra-files: ${label}[${rule.path}] annotation marker "${marker}" not found in ${absolutePath}; rule may be stale.`,
-        );
+        warnings.push(`extra-files: ${label}[${rule.path}] annotation marker "${marker}" not found in ${absolutePath}; rule may be stale.`);
 
         return { warnings };
     }
@@ -350,7 +340,9 @@ const applyRulesToFile = async (
         });
 
         if (!matched) {
-            warnings.push(`extra-files: ${label}[${rule.path}] regex /${rule.search}/${rule.flags ?? "g"} matched nothing in ${absolutePath}; rule may be stale.`);
+            warnings.push(
+                `extra-files: ${label}[${rule.path}] regex /${rule.search}/${rule.flags ?? "g"} matched nothing in ${absolutePath}; rule may be stale.`,
+            );
             continue;
         }
 

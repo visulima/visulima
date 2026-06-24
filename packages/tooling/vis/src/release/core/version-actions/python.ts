@@ -124,10 +124,7 @@ interface PyProjectTomlShape {
  * lockfile (uv manages it) so this helper isn't called from
  * `PythonVersionActions.publish`.
  */
-export const resolveUvLockPath = (
-    pkg: WorkspacePackage,
-    perPkg?: PerPackageReleaseConfig,
-): string => {
+export const resolveUvLockPath = (pkg: WorkspacePackage, perPkg?: PerPackageReleaseConfig): string => {
     if (perPkg?.uvLockPath) {
         return join(pkg.dir, perPkg.uvLockPath);
     }
@@ -239,7 +236,7 @@ const readPyProject = async (projectDir: string): Promise<PyProjectTomlShape | u
     try {
         raw = await readFile(path, "utf8");
     } catch (error) {
-        const { code } = (error as NodeJS.ErrnoException);
+        const { code } = error as NodeJS.ErrnoException;
 
         if (code === "ENOENT") {
             return undefined;
@@ -376,10 +373,8 @@ const resolveBuildEnv = (backend: PythonBuildBackend, hasUv: boolean): ResolvedB
  *   - `TWINE_PASSWORD` → "token" (used when OIDC is absent).
  *   - Neither → "missing".
  */
-const detectAuthMode = (
-    env: NodeJS.ProcessEnv,
-    workspaceConfig?: VisReleaseConfig,
-): "missing" | "oidc" | "token" => resolveAuthMode({ env, staticTokenVar: "TWINE_PASSWORD", workspaceConfig });
+const detectAuthMode = (env: NodeJS.ProcessEnv, workspaceConfig?: VisReleaseConfig): "missing" | "oidc" | "token" =>
+    resolveAuthMode({ env, staticTokenVar: "TWINE_PASSWORD", workspaceConfig });
 
 /**
  * Single helper that fetches `https://pypi.org/pypi/&lt;name>/json` and
@@ -547,11 +542,7 @@ export class PythonVersionActions extends VersionActions {
 
         // Build step. We always invoke from the project dir so build
         // artifacts land in `<projectDir>/dist/`.
-        const buildResult = await context.pm.runner.run(
-            buildEnv.buildCommand.binary,
-            buildEnv.buildCommand.args,
-            { cwd: projectDir, silent: false },
-        );
+        const buildResult = await context.pm.runner.run(buildEnv.buildCommand.binary, buildEnv.buildCommand.args, { cwd: projectDir, silent: false });
 
         if (buildResult.exitCode !== 0) {
             throw new VisReleaseError({
@@ -571,11 +562,11 @@ export class PythonVersionActions extends VersionActions {
             publishEnv.TWINE_USERNAME = "__token__";
         }
 
-        const publishResult = await context.pm.runner.run(
-            buildEnv.publishCommand.binary,
-            buildEnv.publishCommand.args,
-            { cwd: projectDir, env: publishEnv, silent: false },
-        );
+        const publishResult = await context.pm.runner.run(buildEnv.publishCommand.binary, buildEnv.publishCommand.args, {
+            cwd: projectDir,
+            env: publishEnv,
+            silent: false,
+        });
 
         if (publishResult.exitCode !== 0) {
             throw new VisReleaseError({
@@ -601,16 +592,7 @@ export type { PyProjectTomlShape, ResolvedBuildEnv };
 // the module's named-exports list (rather than re-using them via the
 // class instance) lets us unit-test the decision matrices in
 // isolation, which is much cheaper than driving the full publish flow.
-export {
-    detectAuthMode,
-    detectBackend,
-    detectUv,
-    fetchPyPiVersion,
-    PYPI_PROJECT_URL,
-    readPyProject,
-    resolveBuildEnv,
-    resolveProjectDir,
-};
+export { detectAuthMode, detectBackend, detectUv, fetchPyPiVersion, PYPI_PROJECT_URL, readPyProject, resolveBuildEnv, resolveProjectDir };
 
 // `resolveUvLockPath` and `checkUvWorkspaceMembership` are also
 // exported as named exports above (alongside the helper definitions)

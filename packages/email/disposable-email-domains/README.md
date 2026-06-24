@@ -52,28 +52,29 @@ pnpm add @visulima/disposable-email-domains
 
 <!-- START_PLACEHOLDER_CONTRIBUTING -->
 
-| Repository | Domains | Success | Performance |
-|------------|---------|---------|-------------|
-| disposable/disposable-email-domains | 73,466 | ✅ | 0.27s (1.1 MB) |
-| FGRibreau/mailchecker | 56,048 | ✅ | 0.19s (840.7 KB) |
-| wesbos/burner-email-providers | 27,283 | ✅ | 0.17s (388.1 KB) |
-| groundcat/disposable-email-domain-list | 22,492 | ✅ | 0.23s (318.9 KB) |
-| sublime-security/static-files | 10,523 | ✅ | 0.15s (144.0 KB) |
-| 7c/fakefilter | 9,889 | ✅ | 0.13s (137.2 KB) |
-| disposable-email-domains/disposable-email-domains | 6,945 | ✅ | 0.25s (95.3 KB) |
-| willwhite/freemail | 4,462 | ✅ | 0.16s (61.8 KB) |
-| eser/sanitizer-svc | 3,855 | ✅ | 0.22s (48.9 KB) |
-| unkn0w/disposable-email-domain-list | 3,618 | ✅ | 0.17s (45.8 KB) |
-| MattKetmo/EmailChecker | 2,515 | ✅ | 0.18s (32.4 KB) |
-| GeroldSetz/emailondeck.com-domains | 1,121 | ✅ | 0.20s (15.4 KB) |
-| castle/disposable-email-domains | 1,000 | ✅ | 0.15s (14.0 KB) |
-| jespernissen/disposable-maildomain-list | 996 | ✅ | 0.19s (12.8 KB) |
-| TheDahoom/disposable-email | 18 | ✅ | 0.22s (234 B) |
+| Repository                                        | Domains | Success | Performance      |
+| ------------------------------------------------- | ------- | ------- | ---------------- |
+| kslr/disposable-email-domains                     | 122.764 | ✅      | 0.51s (1.8 MB)   |
+| disposable/disposable-email-domains               | 74.196  | ✅      | 0.41s (1.1 MB)   |
+| FGRibreau/mailchecker                             | 56.047  | ✅      | 0.13s (840.6 KB) |
+| wesbos/burner-email-providers                     | 27.283  | ✅      | 0.22s (388.1 KB) |
+| groundcat/disposable-email-domain-list            | 18.500  | ✅      | 0.20s (261.6 KB) |
+| sublime-security/static-files                     | 10.522  | ✅      | 0.20s (144.0 KB) |
+| 7c/fakefilter                                     | 9.889   | ✅      | 0.02s (137.2 KB) |
+| disposable-email-domains/disposable-email-domains | 7.557   | ✅      | 0.13s (105.0 KB) |
+| willwhite/freemail                                | 4.462   | ✅      | 0.17s (61.8 KB)  |
+| eser/sanitizer-svc                                | 3.855   | ✅      | 0.25s (48.9 KB)  |
+| unkn0w/disposable-email-domain-list               | 3.618   | ✅      | 0.02s (45.8 KB)  |
+| MattKetmo/EmailChecker                            | 2.515   | ✅      | 0.24s (32.4 KB)  |
+| GeroldSetz/emailondeck.com-domains                | 1.121   | ✅      | 0.25s (15.4 KB)  |
+| castle/disposable-email-domains                   | 1.000   | ✅      | 0.14s (14.6 KB)  |
+| jespernissen/disposable-maildomain-list           | 994     | ✅      | 0.15s (12.8 KB)  |
+| TheDahoom/disposable-email                        | 18      | ✅      | 0.21s (234 B)    |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-06-12_
+_Last updated: 2026-06-24_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 

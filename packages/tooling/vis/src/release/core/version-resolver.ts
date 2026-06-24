@@ -91,22 +91,21 @@ const pLimit = (n: number): (<T>(thunk: () => Promise<T>) => Promise<T>) => {
         }
     };
 
-    return async <T>(thunk: () => Promise<T>): Promise<T> => new Promise<T>((resolve, reject) => {
-        const onSettled = (): void => {
-            active -= 1;
+    return async <T>(thunk: () => Promise<T>): Promise<T> =>
+        new Promise<T>((resolve, reject) => {
+            const onSettled = (): void => {
+                active -= 1;
+                next();
+            };
+
+            const run = (): void => {
+                // eslint-disable-next-line promise/catch-or-return -- rejection handled by the reject handler passed to then()
+                thunk().then(resolve, reject).finally(onSettled);
+            };
+
+            queue.push(run);
             next();
-        };
-
-        const run = (): void => {
-            // eslint-disable-next-line promise/catch-or-return -- rejection handled by the reject handler passed to then()
-            thunk()
-                .then(resolve, reject)
-                .finally(onSettled);
-        };
-
-        queue.push(run);
-        next();
-    });
+        });
 };
 
 /**
@@ -207,13 +206,13 @@ export const compileReleaseTagRegex = (pattern: string, pkg: { name: string }): 
                 break;
             }
             case "version": {
-            // semver capture — major.minor.patch with optional pre/build segments
+                // semver capture — major.minor.patch with optional pre/build segments
                 reSource += String.raw`(\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?(?:\+[0-9A-Za-z.-]+)?)`;
 
                 break;
             }
             default: {
-            // major/minor/patch/date/channel — one-or-more non-/ chars
+                // major/minor/patch/date/channel — one-or-more non-/ chars
                 reSource += "[^/]+";
             }
         }
@@ -260,18 +259,17 @@ export const resolveCurrentVersion = async (
         }
 
         return {
-            fallbackReason: published === undefined
-                ? `registry returned no version for ${pkg.name} (likely a 404 / not-yet-published); falling back to manifest version ${pkg.version}.`
-                : `registry returned an invalid semver "${published}" for ${pkg.name}; falling back to manifest version ${pkg.version}.`,
+            fallbackReason:
+                published === undefined
+                    ? `registry returned no version for ${pkg.name} (likely a 404 / not-yet-published); falling back to manifest version ${pkg.version}.`
+                    : `registry returned an invalid semver "${published}" for ${pkg.name}; falling back to manifest version ${pkg.version}.`,
             resolvedFrom: "disk",
             version: pkg.version,
         };
     }
 
     // git-tag mode
-    const pattern = options.perPackageConfig?.releaseTagPattern
-        ?? options.workspaceConfig?.releaseTagPattern
-        ?? "{name}@{version}";
+    const pattern = options.perPackageConfig?.releaseTagPattern ?? options.workspaceConfig?.releaseTagPattern ?? "{name}@{version}";
 
     // Compile the pattern to a globbed `--list` filter so we don't have to
     // pull every tag in the repo and post-filter in process. The substitution
@@ -290,11 +288,7 @@ export const resolveCurrentVersion = async (
         return "*";
     });
 
-    const listResult = await options.runner.run(
-        "git",
-        ["tag", "--list", listGlob, "--sort=-v:refname"],
-        { cwd: options.cwd, silent: true },
-    );
+    const listResult = await options.runner.run("git", ["tag", "--list", listGlob, "--sort=-v:refname"], { cwd: options.cwd, silent: true });
 
     if (listResult.exitCode !== 0) {
         return {
@@ -304,7 +298,10 @@ export const resolveCurrentVersion = async (
         };
     }
 
-    const tags = listResult.stdout.split("\n").map((line) => line.trim()).filter(Boolean);
+    const tags = listResult.stdout
+        .split("\n")
+        .map((line) => line.trim())
+        .filter(Boolean);
 
     if (tags.length === 0) {
         return {
@@ -366,9 +363,7 @@ export const resolveModeForPackage = (
         return "disk";
     }
 
-    return perPackageConfig?.currentVersionResolver
-        ?? workspaceConfig?.currentVersionResolver
-        ?? "disk";
+    return perPackageConfig?.currentVersionResolver ?? workspaceConfig?.currentVersionResolver ?? "disk";
 };
 
 /**
@@ -401,47 +396,49 @@ export const resolveCurrentVersionsForWorkspace = async (
     // Resolve in parallel with a concurrency cap. Every package's lookup
     // is independent; the in-flight cap is the only coupling.
     const results = await Promise.all(
-        packages.map(async (pkg) => limit(async () => {
-            const perPkg = perPackageConfigMap.get(pkg.name);
-            const configuredMode = resolveModeForPackage(workspaceConfig, perPkg, options.firstRelease);
+        packages.map(async (pkg) =>
+            limit(async () => {
+                const perPkg = perPackageConfigMap.get(pkg.name);
+                const configuredMode = resolveModeForPackage(workspaceConfig, perPkg, options.firstRelease);
 
-            // `skipRegistryLookup` short-circuits to disk for every
-            // package regardless of configured mode — used by read-only
-            // command paths that have no need for the upstream value.
-            // No warning is emitted: the operator did not opt into
-            // a non-disk resolver for this invocation, the resolver
-            // entry-point opted out for them.
-            const mode: CurrentVersionResolverMode = options.skipRegistryLookup ? "disk" : configuredMode;
+                // `skipRegistryLookup` short-circuits to disk for every
+                // package regardless of configured mode — used by read-only
+                // command paths that have no need for the upstream value.
+                // No warning is emitted: the operator did not opt into
+                // a non-disk resolver for this invocation, the resolver
+                // entry-point opted out for them.
+                const mode: CurrentVersionResolverMode = options.skipRegistryLookup ? "disk" : configuredMode;
 
-            // Memoise on `name@mode@manifest-version`. The manifest
-            // version is in the key so a `version`-apply that mutates
-            // `pkg.json` mid-process invalidates the entry for the
-            // follow-up `publish`.
-            const memoKey = `${pkg.name}@${mode}@${pkg.version}`;
-            const cached = lookupMemo.get(memoKey);
+                // Memoise on `name@mode@manifest-version`. The manifest
+                // version is in the key so a `version`-apply that mutates
+                // `pkg.json` mid-process invalidates the entry for the
+                // follow-up `publish`.
+                const memoKey = `${pkg.name}@${mode}@${pkg.version}`;
+                const cached = lookupMemo.get(memoKey);
 
-            if (cached) {
-                return { mode, pkg, result: await cached };
-            }
-
-            const promise = resolveCurrentVersion(pkg, mode, depGraph, {
-                ...options,
-                perPackageConfig: perPkg,
-                workspaceConfig,
-            });
-
-            lookupMemo.set(memoKey, promise);
-
-            // If the lookup rejects, evict the entry so the next caller
-            // re-attempts rather than re-failing on a cached rejection.
-            promise.catch(() => {
-                if (lookupMemo.get(memoKey) === promise) {
-                    lookupMemo.delete(memoKey);
+                if (cached) {
+                    return { mode, pkg, result: await cached };
                 }
-            });
 
-            return { mode, pkg, result: await promise };
-        })),
+                const promise = resolveCurrentVersion(pkg, mode, depGraph, {
+                    ...options,
+                    perPackageConfig: perPkg,
+                    workspaceConfig,
+                });
+
+                lookupMemo.set(memoKey, promise);
+
+                // If the lookup rejects, evict the entry so the next caller
+                // re-attempts rather than re-failing on a cached rejection.
+                promise.catch(() => {
+                    if (lookupMemo.get(memoKey) === promise) {
+                        lookupMemo.delete(memoKey);
+                    }
+                });
+
+                return { mode, pkg, result: await promise };
+            }),
+        ),
     );
 
     for (const { mode, pkg, result } of results) {

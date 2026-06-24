@@ -46,9 +46,7 @@ interface RunCall {
     cwd: string;
 }
 
-const buildRunner = (
-    responses: { exitCode?: number; stderr?: string; stdout?: string }[],
-): { calls: RunCall[]; runner: CommandRunner } => {
+const buildRunner = (responses: { exitCode?: number; stderr?: string; stdout?: string }[]): { calls: RunCall[]; runner: CommandRunner } => {
     const calls: RunCall[] = [];
     let cursor = 0;
 
@@ -60,9 +58,7 @@ const buildRunner = (
 
             cursor += 1;
 
-            return next
-                ? { exitCode: next.exitCode ?? 0, stderr: next.stderr ?? "", stdout: next.stdout ?? "" }
-                : { exitCode: 0, stderr: "", stdout: "" };
+            return next ? { exitCode: next.exitCode ?? 0, stderr: next.stderr ?? "", stdout: next.stdout ?? "" } : { exitCode: 0, stderr: "", stdout: "" };
         },
     };
 
@@ -132,7 +128,7 @@ const ctx = (overrides: {
             type: "patch" as const,
         } as never,
         versionedManifestByName: new Map(),
-        workspaceConfig: (overrides.workspaceConfig ?? {}),
+        workspaceConfig: overrides.workspaceConfig ?? {},
     };
 };
 
@@ -331,9 +327,11 @@ describe("jsr version actions", () => {
     describe("jsrVersionActions: shouldUseTrustedPublishing", () => {
         it("returns true with OIDC env + no static token", () => {
             expect.hasAssertions();
-            expect(__testing.shouldUseTrustedPublishing({
-                ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
-            })).toBe(true);
+            expect(
+                __testing.shouldUseTrustedPublishing({
+                    ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
+                }),
+            ).toBe(true);
         });
 
         it("returns true even when JSR_API_KEY is set (OIDC wins by default)", () => {
@@ -341,21 +339,25 @@ describe("jsr version actions", () => {
             // operator wired up trusted publishing; a leftover static token
             // shouldn't silently downgrade.
             expect.hasAssertions();
-            expect(__testing.shouldUseTrustedPublishing({
-                ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
-                JSR_API_KEY: "jsr_abc123",
-            })).toBe(true);
+            expect(
+                __testing.shouldUseTrustedPublishing({
+                    ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
+                    JSR_API_KEY: "jsr_abc123",
+                }),
+            ).toBe(true);
         });
 
         it("returns false when preferStaticToken: true AND a static token is set (escape hatch)", () => {
             expect.hasAssertions();
-            expect(__testing.shouldUseTrustedPublishing(
-                {
-                    ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
-                    JSR_API_KEY: "jsr_abc123",
-                },
-                { publish: { preferStaticToken: true } },
-            )).toBe(false);
+            expect(
+                __testing.shouldUseTrustedPublishing(
+                    {
+                        ACTIONS_ID_TOKEN_REQUEST_URL: "https://example.com",
+                        JSR_API_KEY: "jsr_abc123",
+                    },
+                    { publish: { preferStaticToken: true } },
+                ),
+            ).toBe(false);
         });
 
         it("returns false without OIDC env (developer machine, no key)", () => {
@@ -372,11 +374,13 @@ describe("jsr version actions", () => {
             const { calls, runner } = buildRunner([]);
             const fetchSpy = stubFetch({ body: {} });
 
-            const result = await new JsrVersionActions().publish(ctx({
-                dir: workspace,
-                dryRun: true,
-                runner,
-            }));
+            const result = await new JsrVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    dryRun: true,
+                    runner,
+                }),
+            );
 
             expect(result.published).toBe(true);
             expect(result.output).toContain("[dry-run / jsr]");
@@ -394,10 +398,12 @@ describe("jsr version actions", () => {
             stubFetch({ body: { latest: "1.0.0" } });
 
             const { calls, runner } = buildRunner([{ exitCode: 0, stdout: "uploaded" }]);
-            const result = await new JsrVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-            }));
+            const result = await new JsrVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    runner,
+                }),
+            );
 
             expect(result.published).toBe(true);
             expect(result.alreadyPublished).not.toBe(true);
@@ -416,10 +422,12 @@ describe("jsr version actions", () => {
             stubFetch({ body: { latest: "1.0.0" } });
 
             const { calls, runner } = buildRunner([{ exitCode: 0 }]);
-            const result = await new JsrVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-            }));
+            const result = await new JsrVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    runner,
+                }),
+            );
 
             expect(result.published).toBe(true);
             expect(result.output).toContain("trusted publishing");
@@ -435,11 +443,13 @@ describe("jsr version actions", () => {
 
             const { calls, runner } = buildRunner([{ exitCode: 0 }]);
 
-            await new JsrVersionActions().publish(ctx({
-                dir: workspace,
-                jsrPublishArgs: ["--allow-slow-types"],
-                runner,
-            }));
+            await new JsrVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    jsrPublishArgs: ["--allow-slow-types"],
+                    runner,
+                }),
+            );
 
             expect(calls[0]!.args).toStrictEqual(["jsr", "publish", "--allow-dirty", "--allow-slow-types"]);
         });
@@ -453,12 +463,14 @@ describe("jsr version actions", () => {
 
             const { calls, runner } = buildRunner([{ exitCode: 0 }]);
 
-            await new JsrVersionActions().publish(ctx({
-                dir: workspace,
-                jsrConfigPath: "deno.json",
-                pkgName: "@scope/deno-pkg",
-                runner,
-            }));
+            await new JsrVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    jsrConfigPath: "deno.json",
+                    pkgName: "@scope/deno-pkg",
+                    runner,
+                }),
+            );
 
             expect(calls[0]!.args).toStrictEqual(["jsr", "publish", "--allow-dirty", "--config", "deno.json"]);
         });
@@ -473,10 +485,12 @@ describe("jsr version actions", () => {
             stubFetch({ body: { latest: "1.0.1" } });
 
             const { calls, runner } = buildRunner([]);
-            const result = await new JsrVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-            }));
+            const result = await new JsrVersionActions().publish(
+                ctx({
+                    dir: workspace,
+                    runner,
+                }),
+            );
 
             expect(result.alreadyPublished).toBe(true);
             expect(result.published).toBe(false);
@@ -492,10 +506,14 @@ describe("jsr version actions", () => {
             writeJsrManifest(workspace, "jsr.json", { name: "@acme/sdk", version: "1.0.1" });
             stubFetch({ body: { latest: "1.0.0" } });
 
-            await expect(new JsrVersionActions().publish(ctx({
-                dir: workspace,
-                runner: buildRunner([]).runner,
-            }))).rejects.toMatchObject({ code: "AUTH_MISSING" });
+            await expect(
+                new JsrVersionActions().publish(
+                    ctx({
+                        dir: workspace,
+                        runner: buildRunner([]).runner,
+                    }),
+                ),
+            ).rejects.toMatchObject({ code: "AUTH_MISSING" });
         });
 
         it("throws CONFIG_INVALID when the manifest's name is unscoped", async () => {
@@ -508,10 +526,14 @@ describe("jsr version actions", () => {
             process.env["JSR_API_KEY"] = "jsr_dummy";
             stubFetch({ body: { latest: "1.0.0" } });
 
-            await expect(new JsrVersionActions().publish(ctx({
-                dir: workspace,
-                runner: buildRunner([]).runner,
-            }))).rejects.toMatchObject({ code: "CONFIG_INVALID" });
+            await expect(
+                new JsrVersionActions().publish(
+                    ctx({
+                        dir: workspace,
+                        runner: buildRunner([]).runner,
+                    }),
+                ),
+            ).rejects.toMatchObject({ code: "CONFIG_INVALID" });
         });
 
         it("throws CONFIG_INVALID when manifest version differs from planned release version", async () => {
@@ -523,11 +545,15 @@ describe("jsr version actions", () => {
             process.env["JSR_API_KEY"] = "jsr_dummy";
             stubFetch({ body: { latest: "0.9.0" } });
 
-            await expect(new JsrVersionActions().publish(ctx({
-                dir: workspace,
-                newVersion: "1.0.1",
-                runner: buildRunner([]).runner,
-            }))).rejects.toMatchObject({ code: "CONFIG_INVALID" });
+            await expect(
+                new JsrVersionActions().publish(
+                    ctx({
+                        dir: workspace,
+                        newVersion: "1.0.1",
+                        runner: buildRunner([]).runner,
+                    }),
+                ),
+            ).rejects.toMatchObject({ code: "CONFIG_INVALID" });
         });
 
         it("throws PUBLISH_FAILED when jsr publish exits non-zero", async () => {
@@ -539,10 +565,14 @@ describe("jsr version actions", () => {
 
             const { runner } = buildRunner([{ exitCode: 1, stderr: "error: 401 Unauthorized" }]);
 
-            await expect(new JsrVersionActions().publish(ctx({
-                dir: workspace,
-                runner,
-            }))).rejects.toMatchObject({ code: "PUBLISH_FAILED" });
+            await expect(
+                new JsrVersionActions().publish(
+                    ctx({
+                        dir: workspace,
+                        runner,
+                    }),
+                ),
+            ).rejects.toMatchObject({ code: "PUBLISH_FAILED" });
         });
     });
 

@@ -1,14 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-    defaultTagFor,
-    getCurrentBranch,
-    getCurrentSha,
-    getShortSha,
-    hasUncommittedChanges,
-    tagExists,
-    tagExistsRemote,
-} from "../../../src/release/core/git";
+import { defaultTagFor, getCurrentBranch, getCurrentSha, getShortSha, hasUncommittedChanges, tagExists, tagExistsRemote } from "../../../src/release/core/git";
 import { MockRunner } from "../../../src/release/core/shell-runner";
 
 describe("git: defaultTagFor", () => {

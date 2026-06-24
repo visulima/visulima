@@ -78,7 +78,11 @@ describe(checkImportBoundaries, () => {
         expect.assertions(1);
 
         await writeProject("packages/app", { dependencies: {}, name: "app" });
-        await writeSource("packages/app", "src/index.ts", `import { readFile } from "node:fs";\nimport { join } from "path";\nexport const y = [readFile, join];`);
+        await writeSource(
+            "packages/app",
+            "src/index.ts",
+            `import { readFile } from "node:fs";\nimport { join } from "path";\nexport const y = [readFile, join];`,
+        );
 
         const violations = await checkImportBoundaries(makeGraph({ app: { root: "packages/app" } }), { workspaceRoot });
 

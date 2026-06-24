@@ -57,9 +57,7 @@ describe("gitlabRemoteClient.detectRepoSlug", () => {
     it("parses HTTPS gitlab remotes", async () => {
         expect.hasAssertions();
 
-        const { runner } = buildRunner([
-            { stdout: "https://gitlab.com/group/sub/proj.git\n" },
-        ]);
+        const { runner } = buildRunner([{ stdout: "https://gitlab.com/group/sub/proj.git\n" }]);
 
         const slug = await new GitlabRemoteClient().detectRepoSlug("/cwd", runner);
 
@@ -69,9 +67,7 @@ describe("gitlabRemoteClient.detectRepoSlug", () => {
     it("parses SSH gitlab remotes", async () => {
         expect.hasAssertions();
 
-        const { runner } = buildRunner([
-            { stdout: "git@gitlab.example.com:org/repo.git\n" },
-        ]);
+        const { runner } = buildRunner([{ stdout: "git@gitlab.example.com:org/repo.git\n" }]);
 
         const slug = await new GitlabRemoteClient().detectRepoSlug("/cwd", runner);
 
@@ -133,10 +129,7 @@ describe("gitlabRemoteClient.upsertStickyComment", () => {
     it("pUTs the existing note when a marker match exists", async () => {
         expect.hasAssertions();
 
-        const { calls, runner } = buildRunner([
-            { stdout: JSON.stringify([{ body: "<!-- vis-marker -->\n stale", id: 7, system: false }]) },
-            { stdout: "{}" },
-        ]);
+        const { calls, runner } = buildRunner([{ stdout: JSON.stringify([{ body: "<!-- vis-marker -->\n stale", id: 7, system: false }]) }, { stdout: "{}" }]);
 
         const result = await new GitlabRemoteClient().upsertStickyComment(runner, {
             body: "<!-- vis-marker -->\nfresh",
@@ -191,10 +184,7 @@ describe("gitlabRemoteClient.createRelease", () => {
         ]);
 
         const result = await new GitlabRemoteClient().createRelease(runner, {
-            assets: [
-                "/tmp/pkg-1.0.0.tgz",
-                { label: "Container", linkUrl: "https://images.example/repo:1.0.0", type: "image" },
-            ],
+            assets: ["/tmp/pkg-1.0.0.tgz", { label: "Container", linkUrl: "https://images.example/repo:1.0.0", type: "image" }],
             body: "release notes",
             cwd: "/cwd",
             milestones: ["v1.0.0"],
@@ -220,10 +210,7 @@ describe("gitlabRemoteClient — self-hosted host", () => {
     it("threads GITLAB_HOST through every runner invocation", async () => {
         expect.hasAssertions();
 
-        const { calls, runner } = buildRunner([
-            { stdout: "[]" },
-            { stdout: JSON.stringify({ id: 1 }) },
-        ]);
+        const { calls, runner } = buildRunner([{ stdout: "[]" }, { stdout: JSON.stringify({ id: 1 }) }]);
 
         await new GitlabRemoteClient({ host: "gitlab.example.com" }).upsertStickyComment(runner, {
             body: "x",
@@ -351,10 +338,7 @@ describe("gitlabRemoteClient.upsertIssue", () => {
     it("creates a new issue when none match", async () => {
         expect.hasAssertions();
 
-        const { calls, runner } = buildRunner([
-            { stdout: "[]" },
-            { stdout: "https://gitlab.com/g/p/-/issues/42" },
-        ]);
+        const { calls, runner } = buildRunner([{ stdout: "[]" }, { stdout: "https://gitlab.com/g/p/-/issues/42" }]);
 
         const result = await new GitlabRemoteClient().upsertIssue(runner, {
             body: "fresh",
@@ -376,10 +360,7 @@ describe("gitlabRemoteClient.closeIssue", () => {
     it("posts the closing comment then closes", async () => {
         expect.hasAssertions();
 
-        const { calls, runner } = buildRunner([
-            { stdout: "" },
-            { stdout: "" },
-        ]);
+        const { calls, runner } = buildRunner([{ stdout: "" }, { stdout: "" }]);
 
         const ok = await new GitlabRemoteClient().closeIssue(runner, {
             closingComment: "shipped in v1.2",
@@ -396,9 +377,7 @@ describe("gitlabRemoteClient.closeIssue", () => {
     it("skips the comment call when closingComment is omitted", async () => {
         expect.hasAssertions();
 
-        const { calls, runner } = buildRunner([
-            { stdout: "" },
-        ]);
+        const { calls, runner } = buildRunner([{ stdout: "" }]);
 
         const ok = await new GitlabRemoteClient().closeIssue(runner, {
             cwd: "/cwd",

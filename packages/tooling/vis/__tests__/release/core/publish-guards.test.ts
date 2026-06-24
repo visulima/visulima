@@ -180,10 +180,7 @@ describe(runLifecycleScripts, () => {
     it("allow-list bypasses on exact-match", () => {
         expect.hasAssertions();
 
-        const result = runLifecycleScripts(
-            manifest({ postinstall: "node-gyp rebuild" }),
-            { allow: { postinstall: "node-gyp rebuild" }, mode: "strict" },
-        );
+        const result = runLifecycleScripts(manifest({ postinstall: "node-gyp rebuild" }), { allow: { postinstall: "node-gyp rebuild" }, mode: "strict" });
 
         expect(result.passed).toBe(true);
     });
@@ -191,10 +188,10 @@ describe(runLifecycleScripts, () => {
     it("allow-list rejects on partial match", () => {
         expect.hasAssertions();
 
-        const result = runLifecycleScripts(
-            manifest({ postinstall: "node-gyp rebuild --debug" }),
-            { allow: { postinstall: "node-gyp rebuild" }, mode: "strict" },
-        );
+        const result = runLifecycleScripts(manifest({ postinstall: "node-gyp rebuild --debug" }), {
+            allow: { postinstall: "node-gyp rebuild" },
+            mode: "strict",
+        });
 
         expect(result.passed).toBe(false);
     });
@@ -279,9 +276,7 @@ describe(runRuntimeAudit, () => {
     it("returns parse-failure finding when output isn't JSON", async () => {
         expect.hasAssertions();
 
-        const runner = stubRunner([
-            { args: ["audit", "--omit=dev", "--json"], exitCode: 0, stdout: "not json" },
-        ]);
+        const runner = stubRunner([{ args: ["audit", "--omit=dev", "--json"], exitCode: 0, stdout: "not json" }]);
 
         const result = await runRuntimeAudit(pkgDir, runner, "moderate");
 

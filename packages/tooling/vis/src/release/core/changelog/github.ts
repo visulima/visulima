@@ -53,11 +53,7 @@ const detectRepoSlugSync = async (option: string | undefined, runner: CommandRun
 };
 
 const resolveAuthorFromGit = async (runner: CommandRunner, cwd: string, changeFilePath: string): Promise<string | undefined> => {
-    const result = await runner.run(
-        "git",
-        ["log", "--diff-filter=A", "--pretty=format:%aN%n%aE", "--", changeFilePath],
-        { cwd, silent: true },
-    );
+    const result = await runner.run("git", ["log", "--diff-filter=A", "--pretty=format:%aN%n%aE", "--", changeFilePath], { cwd, silent: true });
 
     if (result.exitCode !== 0) {
         return undefined;

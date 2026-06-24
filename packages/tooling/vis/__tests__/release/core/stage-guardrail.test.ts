@@ -5,17 +5,9 @@ import { join } from "node:path";
 
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import {
-    applyContext,
-    assertNoConflictingPendingStages,
-    buildContext,
-} from "../../../src/release/core/orchestrator";
+import { applyContext, assertNoConflictingPendingStages, buildContext } from "../../../src/release/core/orchestrator";
 import { MockRunner } from "../../../src/release/core/shell-runner";
-import {
-    readStagedRegistry,
-    stagedRegistryPath,
-    writeStagedRegistry,
-} from "../../../src/release/core/staged-registry";
+import { readStagedRegistry, stagedRegistryPath, writeStagedRegistry } from "../../../src/release/core/staged-registry";
 import { VisReleaseError } from "../../../src/release/errors";
 
 /**
@@ -26,30 +18,51 @@ import { VisReleaseError } from "../../../src/release/errors";
 const setupFixture = (): string => {
     const cwd = mkdtempSync(join(tmpdir(), "vis-stage-guard-"));
 
-    writeFileSync(join(cwd, "package.json"), `${JSON.stringify({
-        name: "fixture-root",
-        packageManager: "pnpm@10.0.0",
-        private: true,
-        version: "0.0.0",
-        workspaces: ["packages/*"],
-    }, null, 4)}\n`);
+    writeFileSync(
+        join(cwd, "package.json"),
+        `${JSON.stringify(
+            {
+                name: "fixture-root",
+                packageManager: "pnpm@10.0.0",
+                private: true,
+                version: "0.0.0",
+                workspaces: ["packages/*"],
+            },
+            null,
+            4,
+        )}\n`,
+    );
 
     writeFileSync(join(cwd, "pnpm-workspace.yaml"), "packages:\n  - 'packages/*'\n  - 'packages/*/*'\n");
 
     mkdirSync(join(cwd, "packages", "a"), { recursive: true });
-    writeFileSync(join(cwd, "packages", "a", "package.json"), `${JSON.stringify({
-        name: "@scope/a",
-        version: "1.2.0",
-    }, null, 4)}\n`);
+    writeFileSync(
+        join(cwd, "packages", "a", "package.json"),
+        `${JSON.stringify(
+            {
+                name: "@scope/a",
+                version: "1.2.0",
+            },
+            null,
+            4,
+        )}\n`,
+    );
 
     mkdirSync(join(cwd, ".vis", "release"), { recursive: true });
 
     // Pending change → patch bump → plan.releases.length === 1
     writeFileSync(join(cwd, ".vis", "release", "feat.md"), "---\n\"@scope/a\": patch\n---\nbody\n");
 
-    writeFileSync(join(cwd, "vis.config.cjs"), `module.exports = ${JSON.stringify({
-        release: { acknowledgeUnstable: true, defaultManaged: true },
-    }, null, 4)};\n`);
+    writeFileSync(
+        join(cwd, "vis.config.cjs"),
+        `module.exports = ${JSON.stringify(
+            {
+                release: { acknowledgeUnstable: true, defaultManaged: true },
+            },
+            null,
+            4,
+        )};\n`,
+    );
 
     return cwd;
 };
@@ -76,14 +89,16 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.2.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.2.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -101,14 +116,16 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.2.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.2.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -124,14 +141,16 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "rejected",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.2.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "rejected",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.2.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -159,14 +178,16 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-other",
-                name: "@other/pkg",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.0.0",
-            }],
+            pending: [
+                {
+                    id: "stage-other",
+                    name: "@other/pkg",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.0.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -194,10 +215,7 @@ describe.skipIf(isWindows)("stage guardrail: applyContext refuses to re-version 
         const { mkdir, writeFile } = await import("node:fs/promises");
 
         await mkdir(join(cwd, ".vis", "release"), { recursive: true });
-        await writeFile(
-            stagedRegistryPath(cwd, ".vis/release"),
-            JSON.stringify({ pending: [], updatedAt: "now", version: 1 }, null, 2),
-        );
+        await writeFile(stagedRegistryPath(cwd, ".vis/release"), JSON.stringify({ pending: [], updatedAt: "now", version: 1 }, null, 2));
 
         const ctx = await buildContext({ cwd });
 
@@ -225,23 +243,23 @@ describe.skipIf(isWindows)("stage guardrail: RESUME case (same name + same versi
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.2.1", // matches the planned bump
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.2.1", // matches the planned bump
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
 
         const ctx = await buildContext({ cwd });
 
-        await expect(
-            assertNoConflictingPendingStages(ctx, "publish", undefined, { skipSelfHeal: true }),
-        ).resolves.toBeUndefined();
+        await expect(assertNoConflictingPendingStages(ctx, "publish", undefined, { skipSelfHeal: true })).resolves.toBeUndefined();
     });
 
     it("bLOCKS when the pending stage's version is below the planned version (orphan-risk)", async () => {
@@ -250,23 +268,23 @@ describe.skipIf(isWindows)("stage guardrail: RESUME case (same name + same versi
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.2.0", // != planned 1.2.1
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.2.0", // != planned 1.2.1
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
 
         const ctx = await buildContext({ cwd });
 
-        await expect(
-            assertNoConflictingPendingStages(ctx, "publish", undefined, { skipSelfHeal: true }),
-        ).rejects.toMatchObject({ code: "STAGE_PENDING" });
+        await expect(assertNoConflictingPendingStages(ctx, "publish", undefined, { skipSelfHeal: true })).rejects.toMatchObject({ code: "STAGE_PENDING" });
     });
 
     it("bLOCKS when the pending stage's version is ABOVE the planned version (would orphan the newer stage)", async () => {
@@ -275,23 +293,23 @@ describe.skipIf(isWindows)("stage guardrail: RESUME case (same name + same versi
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.3.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.3.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
 
         const ctx = await buildContext({ cwd });
 
-        await expect(
-            assertNoConflictingPendingStages(ctx, "publish", undefined, { skipSelfHeal: true }),
-        ).rejects.toMatchObject({ code: "STAGE_PENDING" });
+        await expect(assertNoConflictingPendingStages(ctx, "publish", undefined, { skipSelfHeal: true })).rejects.toMatchObject({ code: "STAGE_PENDING" });
     });
 
     it("aLLOWS resume when MULTIPLE pending entries all match planned versions", async () => {
@@ -314,9 +332,7 @@ describe.skipIf(isWindows)("stage guardrail: RESUME case (same name + same versi
 
         const ctx = await buildContext({ cwd });
 
-        await expect(
-            assertNoConflictingPendingStages(ctx, "publish", undefined, { skipSelfHeal: true }),
-        ).resolves.toBeUndefined();
+        await expect(assertNoConflictingPendingStages(ctx, "publish", undefined, { skipSelfHeal: true })).resolves.toBeUndefined();
     });
 });
 
@@ -335,14 +351,16 @@ describe.skipIf(isWindows)("stage guardrail: assertNoConflictingPendingStages (p
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.2.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.2.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -369,13 +387,15 @@ describe.skipIf(isWindows)("stage guardrail: assertNoConflictingPendingStages (p
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                version: "1.2.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    version: "1.2.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -411,14 +431,16 @@ describe.skipIf(isWindows)("stage guardrail: self-heal for out-of-band approvals
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.2.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.2.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -438,9 +460,7 @@ describe.skipIf(isWindows)("stage guardrail: self-heal for out-of-band approvals
         const ctx = await buildContext({ cwd });
 
         // Should NOT throw — the guard self-heals.
-        await expect(
-            assertNoConflictingPendingStages(ctx, "publish", undefined, { runner }),
-        ).resolves.toBeUndefined();
+        await expect(assertNoConflictingPendingStages(ctx, "publish", undefined, { runner })).resolves.toBeUndefined();
 
         // …and the registry file is updated to reflect the resolution.
         const after = await readStagedRegistry(cwd, ".vis/release");
@@ -452,14 +472,16 @@ describe.skipIf(isWindows)("stage guardrail: self-heal for out-of-band approvals
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                tag: "latest",
-                version: "1.2.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    tag: "latest",
+                    version: "1.2.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -477,9 +499,7 @@ describe.skipIf(isWindows)("stage guardrail: self-heal for out-of-band approvals
 
         const ctx = await buildContext({ cwd });
 
-        await expect(
-            assertNoConflictingPendingStages(ctx, "publish", undefined, { runner }),
-        ).rejects.toMatchObject({ code: "STAGE_PENDING" });
+        await expect(assertNoConflictingPendingStages(ctx, "publish", undefined, { runner })).rejects.toMatchObject({ code: "STAGE_PENDING" });
 
         // Registry unchanged — the entry stays pending.
         const after = await readStagedRegistry(cwd, ".vis/release");
@@ -562,13 +582,15 @@ describe.skipIf(isWindows)("stage guardrail: self-heal for out-of-band approvals
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, ".vis/release", {
-            pending: [{
-                id: "stage-xyz",
-                name: "@scope/a",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                version: "1.2.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "@scope/a",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    version: "1.2.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -584,9 +606,9 @@ describe.skipIf(isWindows)("stage guardrail: self-heal for out-of-band approvals
 
         const ctx = await buildContext({ cwd });
 
-        await expect(
-            assertNoConflictingPendingStages(ctx, "publish", undefined, { runner, skipSelfHeal: true }),
-        ).rejects.toMatchObject({ code: "STAGE_PENDING" });
+        await expect(assertNoConflictingPendingStages(ctx, "publish", undefined, { runner, skipSelfHeal: true })).rejects.toMatchObject({
+            code: "STAGE_PENDING",
+        });
 
         expect(viewCalls).toBe(0);
     });

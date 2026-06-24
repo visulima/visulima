@@ -82,7 +82,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-android-arm64");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-android-arm64/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -104,7 +104,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-android-arm-eabi");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-android-arm-eabi/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -131,7 +131,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-win32-x64-gnu");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-win32-x64-gnu/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -153,7 +153,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-win32-x64-msvc");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-win32-x64-msvc/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -176,7 +176,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-win32-ia32-msvc");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-win32-ia32-msvc/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -198,7 +198,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-win32-arm64-msvc");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-win32-arm64-msvc/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -222,7 +222,7 @@ function requireNative() {
         try {
             const binding = require("@visulima/task-runner-binding-darwin-universal");
             const bindingPackageVersion = require("@visulima/task-runner-binding-darwin-universal/package.json").version;
-            if (bindingPackageVersion !== "1.0.0-alpha.20" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
+            if (bindingPackageVersion !== "1.0.0-alpha.25" && process.env.NAPI_RS_ENFORCE_VERSION_CHECK && process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0") {
                 throw new Error(
                     `Native binding package version mismatch, expected 1.0.0-alpha.25 but got ${bindingPackageVersion}. You can reinstall dependencies to fix this issue.`,
                 );
@@ -241,7 +241,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-darwin-x64");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-darwin-x64/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -263,7 +263,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-darwin-arm64");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-darwin-arm64/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -289,7 +289,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-freebsd-x64");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-freebsd-x64/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -311,7 +311,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-freebsd-arm64");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-freebsd-arm64/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -338,7 +338,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-linux-x64-musl");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-linux-x64-musl/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -360,7 +360,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-linux-x64-gnu");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-linux-x64-gnu/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -384,7 +384,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-linux-arm64-musl");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-linux-arm64-musl/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -406,7 +406,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-linux-arm64-gnu");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-linux-arm64-gnu/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -430,7 +430,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-linux-arm-musleabihf");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-linux-arm-musleabihf/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -452,7 +452,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-linux-arm-gnueabihf");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-linux-arm-gnueabihf/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -476,7 +476,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-linux-loong64-musl");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-linux-loong64-musl/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -498,7 +498,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-linux-loong64-gnu");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-linux-loong64-gnu/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -522,7 +522,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-linux-riscv64-musl");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-linux-riscv64-musl/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -544,7 +544,7 @@ function requireNative() {
                     const binding = require("@visulima/task-runner-binding-linux-riscv64-gnu");
                     const bindingPackageVersion = require("@visulima/task-runner-binding-linux-riscv64-gnu/package.json").version;
                     if (
-                        bindingPackageVersion !== "1.0.0-alpha.20" &&
+                        bindingPackageVersion !== "1.0.0-alpha.25" &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                         process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                     ) {
@@ -567,7 +567,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-linux-ppc64-gnu");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-linux-ppc64-gnu/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -589,7 +589,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-linux-s390x-gnu");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-linux-s390x-gnu/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -615,7 +615,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-openharmony-arm64");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-openharmony-arm64/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -637,7 +637,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-openharmony-x64");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-openharmony-x64/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -659,7 +659,7 @@ function requireNative() {
                 const binding = require("@visulima/task-runner-binding-openharmony-arm");
                 const bindingPackageVersion = require("@visulima/task-runner-binding-openharmony-arm/package.json").version;
                 if (
-                    bindingPackageVersion !== "1.0.0-alpha.20" &&
+                    bindingPackageVersion !== "1.0.0-alpha.25" &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK &&
                     process.env.NAPI_RS_ENFORCE_VERSION_CHECK !== "0"
                 ) {
@@ -681,23 +681,32 @@ function requireNative() {
 
 nativeBinding = requireNative();
 
-if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
+// NAPI_RS_FORCE_WASI is a tri-state flag:
+//   unset / any other value → native binding preferred, WASI is only a fallback
+//   'true'                   → force WASI fallback even if native loaded
+//   'error'                  → force WASI and throw if no WASI binding is found
+// Treating any non-empty string as truthy (the historical behavior) meant
+// NAPI_RS_FORCE_WASI=false, NAPI_RS_FORCE_WASI=0, etc. inadvertently triggered
+// the WASI path, causing ENOENT for packages shipped without a .wasi.cjs file.
+const forceWasi = process.env.NAPI_RS_FORCE_WASI === "true" || process.env.NAPI_RS_FORCE_WASI === "error";
+
+if (!nativeBinding || forceWasi) {
     let wasiBinding = null;
     let wasiBindingError = null;
     try {
         wasiBinding = require("./task-runner-native.wasi.cjs");
         nativeBinding = wasiBinding;
     } catch (err) {
-        if (process.env.NAPI_RS_FORCE_WASI) {
+        if (forceWasi) {
             wasiBindingError = err;
         }
     }
-    if (!nativeBinding || process.env.NAPI_RS_FORCE_WASI) {
+    if (!nativeBinding || forceWasi) {
         try {
             wasiBinding = require("@visulima/task-runner-binding-wasm32-wasi");
             nativeBinding = wasiBinding;
         } catch (err) {
-            if (process.env.NAPI_RS_FORCE_WASI) {
+            if (forceWasi) {
                 if (!wasiBindingError) {
                     wasiBindingError = err;
                 } else {

@@ -21,7 +21,11 @@ import {
 } from "../../../src/release/core/success-walk";
 import type { ChangeFile, PlannedRelease } from "../../../src/release/types";
 
-const noopRunner: CommandRunner = { run: async () => { return { exitCode: 0, stderr: "", stdout: "" }; } };
+const noopRunner: CommandRunner = {
+    run: async () => {
+        return { exitCode: 0, stderr: "", stdout: "" };
+    },
+};
 
 interface CommentCall {
     body: string;
@@ -61,13 +65,19 @@ const buildMockClient = (options: MockClientOptions = {}): MockClient => {
             return options.addLabelsResult ?? true;
         },
         closeIssue: async () => true,
-        createRelease: async () => { return { url: "" }; },
+        createRelease: async () => {
+            return { url: "" };
+        },
         detectPullRequestNumber: () => undefined,
         detectRepoSlug: async () => "owner/repo",
         id: "test",
         listRecentReleases: async () => [],
-        upsertIssue: async () => { return { created: false, number: 0 }; },
-        upsertPullRequest: async () => { return { existing: false, number: 0 }; },
+        upsertIssue: async () => {
+            return { created: false, number: 0 };
+        },
+        upsertPullRequest: async () => {
+            return { existing: false, number: 0 };
+        },
         upsertStickyComment: async (_runner, args) => {
             commentCalls.push({ body: args.body, issueNumber: args.issueNumber });
 
@@ -131,7 +141,9 @@ const mkContext = (overrides: Partial<OrchestratorContext> = {}, releases: Plann
 const mkResult = (published: { name: string; url?: string; version: string }[]): PublishContextResult => {
     return {
         failed: [],
-        published: published.map((p) => { return { name: p.name, url: p.url, version: p.version }; }),
+        published: published.map((p) => {
+            return { name: p.name, url: p.url, version: p.version };
+        }),
         skipped: [],
         tags: [],
         tagsPushed: true,
@@ -184,23 +196,17 @@ describe(extractReferences, () => {
         it("drops URL refs pointing at a different repo", () => {
             // `#42` in a competitor's URL must not get applied locally.
             expect.hasAssertions();
-            expect(
-                extractReferences("See https://github.com/competitor/repo/pull/42 for context", "owner/repo"),
-            ).toStrictEqual([]);
+            expect(extractReferences("See https://github.com/competitor/repo/pull/42 for context", "owner/repo")).toStrictEqual([]);
         });
 
         it("keeps URL refs that match the local repo", () => {
             expect.hasAssertions();
-            expect(
-                extractReferences("See https://github.com/owner/repo/pull/42 for context", "owner/repo"),
-            ).toStrictEqual([42]);
+            expect(extractReferences("See https://github.com/owner/repo/pull/42 for context", "owner/repo")).toStrictEqual([42]);
         });
 
         it("keeps GitLab URLs (`-/merge_requests/N`) that match the local repo", () => {
             expect.hasAssertions();
-            expect(
-                extractReferences("See https://gitlab.com/owner/repo/-/merge_requests/77", "owner/repo"),
-            ).toStrictEqual([77]);
+            expect(extractReferences("See https://gitlab.com/owner/repo/-/merge_requests/77", "owner/repo")).toStrictEqual([77]);
         });
 
         it("keeps bare `#123` refs even when a cross-repo URL is present", () => {
@@ -223,17 +229,13 @@ describe(extractReferences, () => {
 
         it("treats the repo comparison as case-insensitive (GitHub repo slugs are too)", () => {
             expect.hasAssertions();
-            expect(
-                extractReferences("See https://github.com/Owner/Repo/pull/42", "owner/repo"),
-            ).toStrictEqual([42]);
+            expect(extractReferences("See https://github.com/Owner/Repo/pull/42", "owner/repo")).toStrictEqual([42]);
         });
 
         it("drops a URL whose path partially overlaps but doesn't match exactly", () => {
             // `owner/repo-other` must not match `owner/repo`.
             expect.hasAssertions();
-            expect(
-                extractReferences("See https://github.com/owner/repo-other/pull/42", "owner/repo"),
-            ).toStrictEqual([]);
+            expect(extractReferences("See https://github.com/owner/repo-other/pull/42", "owner/repo")).toStrictEqual([]);
         });
     });
 });
@@ -262,10 +264,7 @@ describe(walkSuccessfulRelease, () => {
         expect.hasAssertions();
 
         const { client, commentCalls } = buildMockClient();
-        const releases = [
-            mkRelease("@scope/a", "1.0.0", ["See #42."]),
-            mkRelease("@scope/b", "2.0.0", ["See #42 and #43."]),
-        ];
+        const releases = [mkRelease("@scope/a", "1.0.0", ["See #42."]), mkRelease("@scope/b", "2.0.0", ["See #42 and #43."])];
         const context = mkContext({}, releases);
         const result = mkResult([
             { name: "@scope/a", version: "1.0.0" },
@@ -289,9 +288,12 @@ describe(walkSuccessfulRelease, () => {
         expect.hasAssertions();
 
         const { addLabelsCalls, client } = buildMockClient();
-        const context = mkContext({
-            config: { successWalk: { labels: ["released", "shipped"] } },
-        }, [mkRelease("@scope/pkg", "1.0.0", ["Closes #1."])]);
+        const context = mkContext(
+            {
+                config: { successWalk: { labels: ["released", "shipped"] } },
+            },
+            [mkRelease("@scope/pkg", "1.0.0", ["Closes #1."])],
+        );
         const result = mkResult([{ name: "@scope/pkg", version: "1.0.0" }]);
 
         await walkSuccessfulRelease(context, result, noopRunner, {
@@ -324,10 +326,9 @@ describe(walkSuccessfulRelease, () => {
         expect.hasAssertions();
 
         const { client, commentCalls } = buildMockClient();
-        const context = mkContext(
-            { channel: { mode: "auto-publish", prerelease: "beta", tag: "beta" } },
-            [mkRelease("@scope/pkg", "1.0.0-beta.1", ["Closes #99."])],
-        );
+        const context = mkContext({ channel: { mode: "auto-publish", prerelease: "beta", tag: "beta" } }, [
+            mkRelease("@scope/pkg", "1.0.0-beta.1", ["Closes #99."]),
+        ]);
         const result = mkResult([{ name: "@scope/pkg", version: "1.0.0-beta.1" }]);
 
         await walkSuccessfulRelease(context, result, noopRunner, {
@@ -418,13 +419,8 @@ describe(walkSuccessfulRelease, () => {
         expect.hasAssertions();
 
         const { client, commentCalls } = buildMockClient();
-        const context = mkContext(
-            { config: { successWalk: { commentBody: "url={url}" } } },
-            [mkRelease("@scope/pkg", "1.0.0", ["#7"])],
-        );
-        const result = mkResult([
-            { name: "@scope/pkg", url: "https://github.com/owner/repo/releases/tag/v1.0.0", version: "1.0.0" },
-        ]);
+        const context = mkContext({ config: { successWalk: { commentBody: "url={url}" } } }, [mkRelease("@scope/pkg", "1.0.0", ["#7"])]);
+        const result = mkResult([{ name: "@scope/pkg", url: "https://github.com/owner/repo/releases/tag/v1.0.0", version: "1.0.0" }]);
 
         await walkSuccessfulRelease(context, result, noopRunner, {
             client,
@@ -439,10 +435,7 @@ describe(walkSuccessfulRelease, () => {
         expect.hasAssertions();
 
         const { client, commentCalls } = buildMockClient();
-        const context = mkContext(
-            { config: { successWalk: { enabled: false } } },
-            [mkRelease("@scope/pkg", "1.0.0", ["Closes #1."])],
-        );
+        const context = mkContext({ config: { successWalk: { enabled: false } } }, [mkRelease("@scope/pkg", "1.0.0", ["Closes #1."])]);
         const result = mkResult([{ name: "@scope/pkg", version: "1.0.0" }]);
 
         await walkSuccessfulRelease(context, result, noopRunner, {
@@ -474,10 +467,7 @@ describe(walkSuccessfulRelease, () => {
         expect.hasAssertions();
 
         const { addLabelsCalls, client, commentCalls } = buildMockClient();
-        const context = mkContext(
-            { config: { successWalk: { labels: [] } } },
-            [mkRelease("@scope/pkg", "1.0.0", ["#9"])],
-        );
+        const context = mkContext({ config: { successWalk: { labels: [] } } }, [mkRelease("@scope/pkg", "1.0.0", ["#9"])]);
         const result = mkResult([{ name: "@scope/pkg", version: "1.0.0" }]);
 
         await walkSuccessfulRelease(context, result, noopRunner, {
@@ -495,9 +485,7 @@ describe(walkSuccessfulRelease, () => {
 
         const { client, commentCalls } = buildMockClient();
         const context = mkContext({}, [mkRelease("@scope/pkg", "9.9.9", ["Closes #11."])]);
-        const result = mkResult([
-            { name: "@scope/pkg", url: "https://example/r", version: "9.9.9" },
-        ]);
+        const result = mkResult([{ name: "@scope/pkg", url: "https://example/r", version: "9.9.9" }]);
 
         await walkSuccessfulRelease(context, result, noopRunner, {
             client,
@@ -585,13 +573,19 @@ describe(walkSuccessfulRelease, () => {
             const slowClient: RemoteReleaseClient = {
                 addLabels: async () => true,
                 closeIssue: async () => true,
-                createRelease: async () => { return { url: "" }; },
+                createRelease: async () => {
+                    return { url: "" };
+                },
                 detectPullRequestNumber: () => undefined,
                 detectRepoSlug: async () => "owner/repo",
                 id: "test",
                 listRecentReleases: async () => [],
-                upsertIssue: async () => { return { created: false, number: 0 }; },
-                upsertPullRequest: async () => { return { existing: false, number: 0 }; },
+                upsertIssue: async () => {
+                    return { created: false, number: 0 };
+                },
+                upsertPullRequest: async () => {
+                    return { existing: false, number: 0 };
+                },
                 upsertStickyComment: async (_runner, args) => {
                     active += 1;
                     peak = Math.max(peak, active);
@@ -632,13 +626,19 @@ describe(walkSuccessfulRelease, () => {
             const flakyClient: RemoteReleaseClient = {
                 addLabels: async () => true,
                 closeIssue: async () => true,
-                createRelease: async () => { return { url: "" }; },
+                createRelease: async () => {
+                    return { url: "" };
+                },
                 detectPullRequestNumber: () => undefined,
                 detectRepoSlug: async () => "owner/repo",
                 id: "test",
                 listRecentReleases: async () => [],
-                upsertIssue: async () => { return { created: false, number: 0 }; },
-                upsertPullRequest: async () => { return { existing: false, number: 0 }; },
+                upsertIssue: async () => {
+                    return { created: false, number: 0 };
+                },
+                upsertPullRequest: async () => {
+                    return { existing: false, number: 0 };
+                },
                 upsertStickyComment: async (_runner, args) => {
                     attempts += 1;
 
@@ -675,13 +675,19 @@ describe(walkSuccessfulRelease, () => {
             const persistentClient: RemoteReleaseClient = {
                 addLabels: async () => true,
                 closeIssue: async () => true,
-                createRelease: async () => { return { url: "" }; },
+                createRelease: async () => {
+                    return { url: "" };
+                },
                 detectPullRequestNumber: () => undefined,
                 detectRepoSlug: async () => "owner/repo",
                 id: "test",
                 listRecentReleases: async () => [],
-                upsertIssue: async () => { return { created: false, number: 0 }; },
-                upsertPullRequest: async () => { return { existing: false, number: 0 }; },
+                upsertIssue: async () => {
+                    return { created: false, number: 0 };
+                },
+                upsertPullRequest: async () => {
+                    return { existing: false, number: 0 };
+                },
                 upsertStickyComment: async () => {
                     throw new Error("HTTP 429: rate limit hit again\nRetry-After: 0");
                 },
@@ -707,13 +713,19 @@ describe(walkSuccessfulRelease, () => {
             const grumpyClient: RemoteReleaseClient = {
                 addLabels: async () => true,
                 closeIssue: async () => true,
-                createRelease: async () => { return { url: "" }; },
+                createRelease: async () => {
+                    return { url: "" };
+                },
                 detectPullRequestNumber: () => undefined,
                 detectRepoSlug: async () => "owner/repo",
                 id: "test",
                 listRecentReleases: async () => [],
-                upsertIssue: async () => { return { created: false, number: 0 }; },
-                upsertPullRequest: async () => { return { existing: false, number: 0 }; },
+                upsertIssue: async () => {
+                    return { created: false, number: 0 };
+                },
+                upsertPullRequest: async () => {
+                    return { existing: false, number: 0 };
+                },
                 upsertStickyComment: async () => {
                     attempts += 1;
 
@@ -761,9 +773,7 @@ describe(walkSuccessfulRelease, () => {
             expect.hasAssertions();
 
             const { client, commentCalls } = buildMockClient();
-            const body = ""
-                + "Same-repo: https://github.com/owner/repo/pull/10. "
-                + "Competitor: https://github.com/competitor/repo/pull/42.";
+            const body = "Same-repo: https://github.com/owner/repo/pull/10. Competitor: https://github.com/competitor/repo/pull/42.";
             const context = mkContext({}, [mkRelease("@scope/pkg", "1.0.0", [body])]);
             const result = mkResult([{ name: "@scope/pkg", version: "1.0.0" }]);
 
@@ -788,17 +798,18 @@ describe(pLimit, () => {
         let peak = 0;
         const limit = pLimit<number>(3);
 
-        const tasks = Array.from({ length: 20 }, (_, i) => limit(async () => {
-            active += 1;
-            peak = Math.max(peak, active);
-            // Yield to other awaiters so concurrent tasks actually overlap.
-            await new Promise<void>((resolve) => {
-                setTimeout(resolve, 2);
-            });
-            active -= 1;
+        const tasks = Array.from({ length: 20 }, (_, i) =>
+            limit(async () => {
+                active += 1;
+                peak = Math.max(peak, active);
+                // Yield to other awaiters so concurrent tasks actually overlap.
+                await new Promise<void>((resolve) => {
+                    setTimeout(resolve, 2);
+                });
+                active -= 1;
 
-            return i;
-        }));
+                return i;
+            }));
 
         const results = await Promise.all(tasks);
 

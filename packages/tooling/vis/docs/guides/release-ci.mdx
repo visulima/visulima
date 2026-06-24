@@ -46,13 +46,13 @@ export default {
 
 ## Secrets and tokens
 
-| Secret / env   | Used for                                                                                                                                                                                                                                                              |
-| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `GH_TOKEN`     | Comments, reads, and PR creation. On GitHub Actions, default to `${{ github.token }}`.                                                                                                                                                                                |
+| Secret / env   | Used for                                                                                                                                                                                                                                                                    |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `GH_TOKEN`     | Comments, reads, and PR creation. On GitHub Actions, default to `${{ github.token }}`.                                                                                                                                                                                      |
 | `VIS_GH_TOKEN` | Force-pushing the version-PR branch. **Required** for `version-pr` mode on GitHub — the default `github.token` is locked against recursion so it cannot trigger downstream workflows on the version-PR. Use a fine-grained PAT or a GitHub App token with `contents:write`. |
-| `NPM_TOKEN`    | `npm publish`. Skip if you use OIDC trusted publishing (see below).                                                                                                                                                                                                   |
-| `GITLAB_TOKEN` | GitLab adapter — used by `glab` for MR comments + release creation.                                                                                                                                                                                                   |
-| `CI_JOB_TOKEN` | GitLab — pushes back to the project via the `oauth2:$CI_JOB_TOKEN@…` URL.                                                                                                                                                                                             |
+| `NPM_TOKEN`    | `npm publish`. Skip if you use OIDC trusted publishing (see below).                                                                                                                                                                                                         |
+| `GITLAB_TOKEN` | GitLab adapter — used by `glab` for MR comments + release creation.                                                                                                                                                                                                         |
+| `CI_JOB_TOKEN` | GitLab — pushes back to the project via the `oauth2:$CI_JOB_TOKEN@…` URL.                                                                                                                                                                                                   |
 
 Run `vis release ci setup` to see the exact list for your provider.
 

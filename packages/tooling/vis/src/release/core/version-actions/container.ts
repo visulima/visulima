@@ -384,11 +384,7 @@ export class ContainerActions extends VersionActions {
         // pointer — signatures should target the immutable version).
         if (containerConfig.containerSigning === "cosign") {
             const target = `${containerConfig.containerImage}:${context.release.newVersion}`;
-            const signResult = await context.pm.runner.run(
-                "cosign",
-                ["sign", "--yes", target],
-                { cwd: context.pkg.dir, silent: false },
-            );
+            const signResult = await context.pm.runner.run("cosign", ["sign", "--yes", target], { cwd: context.pkg.dir, silent: false });
 
             if (signResult.exitCode !== 0) {
                 throw new VisReleaseError({
@@ -430,15 +426,7 @@ export const buildBuildxCommand = (
     const tagLatest = `${config.containerImage}:latest`;
     const buildContext = config.buildContext ?? ".";
 
-    const command: string[] = [
-        "docker",
-        "buildx",
-        "build",
-        "--platform",
-        platforms,
-        "-t",
-        tagPrimary,
-    ];
+    const command: string[] = ["docker", "buildx", "build", "--platform", platforms, "-t", tagPrimary];
 
     if (!config.containerSkipLatest) {
         command.push("-t", tagLatest);

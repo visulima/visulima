@@ -1,9 +1,4 @@
 {
     "extends": "@anolilab/semantic-release-preset/pnpm",
-    "branches": [
-        "main",
-        "next",
-        { "name": "alpha", "prerelease": true },
-        { "name": "beta", "prerelease": true }
-    ]
+    "branches": ["main", "next", { "name": "alpha", "prerelease": true }, { "name": "beta", "prerelease": true }]
 }

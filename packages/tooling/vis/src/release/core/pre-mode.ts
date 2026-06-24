@@ -70,8 +70,7 @@ export interface PreModeFile {
     version: 1;
 }
 
-export const preModeFilePath = (cwd: string, changesDir: string): string =>
-    join(cwd, changesDir, "pre.json");
+export const preModeFilePath = (cwd: string, changesDir: string): string => join(cwd, changesDir, "pre.json");
 
 export const readPreMode = async (cwd: string, changesDir: string): Promise<PreModeFile | undefined> => {
     const path = preModeFilePath(cwd, changesDir);
@@ -128,11 +127,7 @@ export const readPreMode = async (cwd: string, changesDir: string): Promise<PreM
     return parsed;
 };
 
-export const writePreMode = async (
-    cwd: string,
-    changesDir: string,
-    file: PreModeFile,
-): Promise<string> => {
+export const writePreMode = async (cwd: string, changesDir: string, file: PreModeFile): Promise<string> => {
     const path = preModeFilePath(cwd, changesDir);
 
     await mkdir(dirname(path), { recursive: true });
@@ -161,10 +156,7 @@ export const deletePreMode = async (cwd: string, changesDir: string): Promise<bo
  * Pure helper used by the `pre enter` command to assemble the initial
  * file content from a snapshot of workspace packages.
  */
-export const buildEnterFile = (
-    tag: string,
-    packages: ReadonlyArray<{ name: string; version: string }>,
-): PreModeFile => {
+export const buildEnterFile = (tag: string, packages: ReadonlyArray<{ name: string; version: string }>): PreModeFile => {
     const initialVersions: Record<string, string> = {};
 
     for (const pkg of packages) {

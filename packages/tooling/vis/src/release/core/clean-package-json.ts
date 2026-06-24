@@ -15,10 +15,7 @@ import type { CleanPackageJsonConfig, PackageManifest } from "../types";
  * @param manifest — the source `package.json` contents (un-mutated)
  * @param cfg — strip/keep config; `false` ships untouched, `true`/undefined uses defaults
  */
-export const cleanPackageJsonForPublish = (
-    manifest: PackageManifest,
-    cfg?: boolean | CleanPackageJsonConfig,
-): PackageManifest => {
+export const cleanPackageJsonForPublish = (manifest: PackageManifest, cfg?: boolean | CleanPackageJsonConfig): PackageManifest => {
     if (cfg === false) {
         return { ...manifest };
     }

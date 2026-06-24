@@ -38,11 +38,7 @@ describe("orchestrator groupPreVersionCommands — glob expansion regression", (
 
         // Plan only bumps @scope/a, but the fixed group is `["@scope/*"]`.
         // Phase B should expand the glob and bump every group member.
-        const plan = assembleReleasePlan(
-            [parseChangeFile(`---\n"@scope/a": minor\n---\n`, "x.md")],
-            graph,
-            { fixed: [["@scope/*"]] },
-        );
+        const plan = assembleReleasePlan([parseChangeFile(`---\n"@scope/a": minor\n---\n`, "x.md")], graph, { fixed: [["@scope/*"]] });
 
         // Every @scope/* member should be bumped → group is "touched"
         // (which is the precondition the orchestrator's
@@ -61,11 +57,7 @@ describe("orchestrator groupPreVersionCommands — glob expansion regression", (
         const packages = [mkPkg("core"), mkPkg("plugin-foo"), mkPkg("plugin-bar"), mkPkg("unrelated")];
         const graph = new DependencyGraph(packages);
 
-        const plan = assembleReleasePlan(
-            [parseChangeFile(`---\ncore: minor\n---\n`, "x.md")],
-            graph,
-            { fixed: [["core", "plugin-*"]] },
-        );
+        const plan = assembleReleasePlan([parseChangeFile(`---\ncore: minor\n---\n`, "x.md")], graph, { fixed: [["core", "plugin-*"]] });
 
         const planned = new Set(plan.releases.map((r) => r.name));
 

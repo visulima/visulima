@@ -1,21 +1,13 @@
 import { describe, expect, it } from "vitest";
 
-import {
-    collectExplicitBumps,
-    findChangeFilesFor,
-    formatChangeFile,
-    parseChangeFile,
-} from "../../../src/release/core/change-file";
+import { collectExplicitBumps, findChangeFilesFor, formatChangeFile, parseChangeFile } from "../../../src/release/core/change-file";
 import { VisReleaseError } from "../../../src/release/errors";
 
 describe("change-file: parseChangeFile (simple shape)", () => {
     it("parses a single-package simple change file", () => {
         expect.hasAssertions();
 
-        const result = parseChangeFile(
-            `---\n"@scope/pkg-a": minor\n---\nAdded a feature.\n`,
-            ".vis/release/abc123.md",
-        );
+        const result = parseChangeFile(`---\n"@scope/pkg-a": minor\n---\nAdded a feature.\n`, ".vis/release/abc123.md");
 
         expect(result.id).toBe("abc123");
         expect(result.path).toBe(".vis/release/abc123.md");
@@ -32,10 +24,7 @@ describe("change-file: parseChangeFile (simple shape)", () => {
     it("parses a multi-package simple change file", () => {
         expect.hasAssertions();
 
-        const result = parseChangeFile(
-            `---\n"@scope/pkg-a": minor\n"@scope/pkg-b": patch\npkg-c: major\n---\nMulti-package changelog body.\n`,
-            "f.md",
-        );
+        const result = parseChangeFile(`---\n"@scope/pkg-a": minor\n"@scope/pkg-b": patch\npkg-c: major\n---\nMulti-package changelog body.\n`, "f.md");
 
         if (!("bumps" in result.payload)) {
             throw new Error("expected simple shape");
@@ -89,10 +78,7 @@ describe("change-file: parseChangeFile (nested shape)", () => {
     it("parses a nested change file without cascade", () => {
         expect.hasAssertions();
 
-        const result = parseChangeFile(
-            `---\npkg-a:\n  bump: major\n---\nBody.\n`,
-            "f.md",
-        );
+        const result = parseChangeFile(`---\npkg-a:\n  bump: major\n---\nBody.\n`, "f.md");
 
         if (!("package" in result.payload)) {
             throw new Error("expected nested shape");
@@ -105,10 +91,7 @@ describe("change-file: parseChangeFile (nested shape)", () => {
 
     it("rejects mixed simple+nested entries (multiple top-level)", () => {
         expect.hasAssertions();
-        expect(() => parseChangeFile(
-            `---\npkg-a:\n  bump: minor\npkg-b: patch\n---\n`,
-            "f.md",
-        )).toThrow(/Mixed simple/);
+        expect(() => parseChangeFile(`---\npkg-a:\n  bump: minor\npkg-b: patch\n---\n`, "f.md")).toThrow(/Mixed simple/);
     });
 });
 
@@ -176,10 +159,7 @@ describe("change-file: inline metadata extraction", () => {
     it("extracts pr / commit / author from body header", () => {
         expect.hasAssertions();
 
-        const result = parseChangeFile(
-            `---\npkg-a: minor\n---\npr: 42\ncommit: abc1234\nauthor: @prisis\n\nThe actual changelog body.\n`,
-            "f.md",
-        );
+        const result = parseChangeFile(`---\npkg-a: minor\n---\npr: 42\ncommit: abc1234\nauthor: @prisis\n\nThe actual changelog body.\n`, "f.md");
 
         expect(result.meta).toStrictEqual({ author: "@prisis", commit: "abc1234", pr: 42 });
         expect(result.body).toBe("The actual changelog body.");
@@ -188,10 +168,7 @@ describe("change-file: inline metadata extraction", () => {
     it("auto-prepends @ to author handles", () => {
         expect.hasAssertions();
 
-        const result = parseChangeFile(
-            `---\npkg-a: minor\n---\nauthor: someone\nBody.\n`,
-            "f.md",
-        );
+        const result = parseChangeFile(`---\npkg-a: minor\n---\nauthor: someone\nBody.\n`, "f.md");
 
         expect(result.meta?.author).toBe("@someone");
     });
@@ -207,10 +184,7 @@ describe("change-file: inline metadata extraction", () => {
     it("ignores invalid pr numbers", () => {
         expect.hasAssertions();
 
-        const result = parseChangeFile(
-            `---\npkg-a: minor\n---\npr: not-a-number\nBody.\n`,
-            "f.md",
-        );
+        const result = parseChangeFile(`---\npkg-a: minor\n---\npr: not-a-number\nBody.\n`, "f.md");
 
         expect(result.meta).toBeUndefined();
     });
@@ -218,10 +192,7 @@ describe("change-file: inline metadata extraction", () => {
     it("stops scanning meta at the first non-meta non-blank line", () => {
         expect.hasAssertions();
 
-        const result = parseChangeFile(
-            `---\npkg-a: minor\n---\npr: 1\nactual body line\nauthor: @foo\nmore body\n`,
-            "f.md",
-        );
+        const result = parseChangeFile(`---\npkg-a: minor\n---\npr: 1\nactual body line\nauthor: @foo\nmore body\n`, "f.md");
 
         expect(result.meta).toStrictEqual({ pr: 1 });
         expect(result.body).toBe("actual body line\nauthor: @foo\nmore body");
@@ -246,10 +217,7 @@ describe("change-file: formatChangeFile (round-trip)", () => {
     it("formats then re-parses a nested file with cascade", () => {
         expect.hasAssertions();
 
-        const formatted = formatChangeFile(
-            { bump: "minor", cascade: { "@scope/plugin-*": "patch" }, package: "@scope/core" },
-            "Body.",
-        );
+        const formatted = formatChangeFile({ bump: "minor", cascade: { "@scope/plugin-*": "patch" }, package: "@scope/core" }, "Body.");
         const parsed = parseChangeFile(formatted, "x.md");
 
         if (!("package" in parsed.payload)) {
@@ -325,10 +293,7 @@ describe("change-file: findChangeFilesFor", () => {
     it("finds files mentioning a given package (nested shape)", () => {
         expect.hasAssertions();
 
-        const files = [
-            parseChangeFile(`---\npkg-a:\n  bump: minor\n---\nA.\n`, "1.md"),
-            parseChangeFile(`---\npkg-b:\n  bump: patch\n---\nB.\n`, "2.md"),
-        ];
+        const files = [parseChangeFile(`---\npkg-a:\n  bump: minor\n---\nA.\n`, "1.md"), parseChangeFile(`---\npkg-b:\n  bump: patch\n---\nB.\n`, "2.md")];
 
         const result = findChangeFilesFor("pkg-a", files);
 

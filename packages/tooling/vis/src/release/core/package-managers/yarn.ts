@@ -16,15 +16,7 @@
 import { join } from "node:path";
 
 import { VisReleaseError } from "../../errors";
-import type {
-    InstallLockfileOnlyOptions,
-    PackOptions,
-    PackResult,
-    PublishNativeOptions,
-    PublishOptions,
-    PublishResult,
-    WorkspaceListEntry,
-} from "./interface";
+import type { InstallLockfileOnlyOptions, PackOptions, PackResult, PublishNativeOptions, PublishOptions, PublishResult, WorkspaceListEntry } from "./interface";
 import { PackageManagerAdapter } from "./interface";
 import { interpretNativePublishResult, NpmAdapter } from "./npm";
 
@@ -52,9 +44,7 @@ export class YarnAdapter extends PackageManagerAdapter {
         const path = await import("node:path");
 
         // %s/%v get expanded by yarn at write time. Read package.json to compute.
-        const pkgJson = JSON.parse(
-            await fs.readFile(path.join(options.cwd, "package.json"), "utf8"),
-        ) as { name?: string; version?: string };
+        const pkgJson = JSON.parse(await fs.readFile(path.join(options.cwd, "package.json"), "utf8")) as { name?: string; version?: string };
 
         const expanded = filename
             .replaceAll("%s", (pkgJson.name ?? "package").replaceAll("/", "-").replace(/^@/, ""))

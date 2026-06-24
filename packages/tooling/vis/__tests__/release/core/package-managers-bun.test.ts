@@ -163,9 +163,7 @@ describe("bunAdapter — installLockfileOnly", () => {
             return { exitCode: 1, stderr: "lockfile conflict", stdout: "" };
         });
 
-        await expect(new BunAdapter(runner).installLockfileOnly({ cwd: "/r" })).rejects.toThrow(
-            /bun install --lockfile-only failed: lockfile conflict/,
-        );
+        await expect(new BunAdapter(runner).installLockfileOnly({ cwd: "/r" })).rejects.toThrow(/bun install --lockfile-only failed: lockfile conflict/);
     });
 });
 
@@ -205,10 +203,13 @@ describe("bunAdapter — listWorkspacePackages (no first-class CLI)", () => {
     it("supports the workspaces.packages object form", async () => {
         expect.hasAssertions();
 
-        writeFileSync(join(cwd, "package.json"), JSON.stringify({
-            name: "root",
-            workspaces: { packages: ["pkg-*"] },
-        }));
+        writeFileSync(
+            join(cwd, "package.json"),
+            JSON.stringify({
+                name: "root",
+                workspaces: { packages: ["pkg-*"] },
+            }),
+        );
 
         mkdirSync(join(cwd, "pkg-a"), { recursive: true });
         writeFileSync(join(cwd, "pkg-a", "package.json"), JSON.stringify({ name: "pkg-a", version: "1.0.0" }));
@@ -225,10 +226,7 @@ describe("bunAdapter — listWorkspacePackages (no first-class CLI)", () => {
         writeFileSync(join(cwd, "package.json"), JSON.stringify({ name: "root", workspaces: ["**/package"] }));
 
         mkdirSync(join(cwd, "node_modules", "thing", "package"), { recursive: true });
-        writeFileSync(
-            join(cwd, "node_modules", "thing", "package", "package.json"),
-            JSON.stringify({ name: "should-not-see", version: "0.0.0" }),
-        );
+        writeFileSync(join(cwd, "node_modules", "thing", "package", "package.json"), JSON.stringify({ name: "should-not-see", version: "0.0.0" }));
 
         mkdirSync(join(cwd, ".cache", "package"), { recursive: true });
         writeFileSync(join(cwd, ".cache", "package", "package.json"), JSON.stringify({ name: "hidden", version: "0.0.0" }));

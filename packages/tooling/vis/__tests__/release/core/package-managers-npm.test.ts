@@ -121,9 +121,7 @@ describe("npmAdapter — installLockfileOnly", () => {
             };
         });
 
-        await expect(new NpmAdapter(runner).installLockfileOnly({ cwd: "/r" })).rejects.toThrow(
-            /npm install --package-lock-only failed: lockfile conflict/,
-        );
+        await expect(new NpmAdapter(runner).installLockfileOnly({ cwd: "/r" })).rejects.toThrow(/npm install --package-lock-only failed: lockfile conflict/);
     });
 });
 
@@ -305,9 +303,7 @@ describe("npmAdapter — publish", () => {
             };
         });
 
-        await expect(new NpmAdapter(runner).publish({ tarball: "/tmp/pkg.tgz" })).rejects.toThrow(
-            /npm publish failed[\s\S]*ETIMEDOUT/,
-        );
+        await expect(new NpmAdapter(runner).publish({ tarball: "/tmp/pkg.tgz" })).rejects.toThrow(/npm publish failed[\s\S]*ETIMEDOUT/);
     });
 });
 

@@ -39,14 +39,24 @@ const mkContext = (packages: WorkspacePackage[], runner: MockRunner): Orchestrat
         perPackageConfig: new Map(),
         plan: { consumedChangeFiles: [], releases: [], warnings: [] },
         pm: {
-            async detectVersion() { return "11.0.0"; },
+            async detectVersion() {
+                return "11.0.0";
+            },
             id: "npm",
             async installLockfileOnly() {},
-            async listWorkspacePackages() { return []; },
+            async listWorkspacePackages() {
+                return [];
+            },
             minVersion: "11.0.0",
-            async pack() { throw new Error("not stubbed"); },
-            async publish() { throw new Error("not stubbed"); },
-            async readCatalogYaml() { return undefined; },
+            async pack() {
+                throw new Error("not stubbed");
+            },
+            async publish() {
+                throw new Error("not stubbed");
+            },
+            async readCatalogYaml() {
+                return undefined;
+            },
             runner,
         } as never,
     };

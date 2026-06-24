@@ -170,11 +170,7 @@ export const discoverPackages = async (
  * Per-package config resolution: package.json["vis-release"] wins over
  * the root config's `packages[&lt;name>]` block (matches bumpy's precedence).
  */
-export const mergePerPackageConfig = (
-    name: string,
-    manifest: PackageManifest,
-    config: VisReleaseConfig,
-): PerPackageReleaseConfig => {
+export const mergePerPackageConfig = (name: string, manifest: PackageManifest, config: VisReleaseConfig): PerPackageReleaseConfig => {
     const fromRoot = config.packages?.[name] ?? {};
     const fromPkg = manifest["vis-release"] ?? {};
 
@@ -192,12 +188,7 @@ export const mergePerPackageConfig = (
  * 5. `private: true` with no `privatePackages.version` rule excludes.
  * 6. Otherwise respect `defaultManaged` (default `false`).
  */
-export const isPackageManaged = (
-    name: string,
-    manifest: PackageManifest,
-    perPkg: PerPackageReleaseConfig,
-    config: VisReleaseConfig,
-): boolean => {
+export const isPackageManaged = (name: string, manifest: PackageManifest, perPkg: PerPackageReleaseConfig, config: VisReleaseConfig): boolean => {
     if (perPkg.managed === false) {
         return false;
     }

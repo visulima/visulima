@@ -19,13 +19,7 @@ import semver from "semver";
 
 import { DEFAULT_CHANGES_DIR, DEFAULT_CONFIG } from "../config";
 import { VisReleaseError } from "../errors";
-import type {
-    PackageManifest,
-    PerPackageReleaseConfig,
-    ReleasePlan,
-    VisReleaseConfig,
-    WorkspacePackage,
-} from "../types";
+import type { PackageManifest, PerPackageReleaseConfig, ReleasePlan, VisReleaseConfig, WorkspacePackage } from "../types";
 import { applyReleasePlan } from "./apply-release-plan";
 import { parseCatalogs } from "./catalog";
 import { readChangeFiles } from "./change-file-reader";
@@ -114,9 +108,7 @@ export interface BuildContextOptions {
  * Reusable across `vis release status` (read-only print), `vis release version`
  * (apply to disk), `vis release publish` (publish), `vis release plan` (json).
  */
-export const buildContext = async (
-    options: BuildContextOptions = {},
-): Promise<OrchestratorContext> => {
+export const buildContext = async (options: BuildContextOptions = {}): Promise<OrchestratorContext> => {
     const cwd = options.cwd ?? process.cwd();
     const runner = createShellRunner();
     const pmId = await detectPackageManager(cwd, runner);
@@ -148,7 +140,7 @@ export const buildContext = async (
             fileConfig = visConfig.release;
         }
     } catch (error) {
-        const { code } = (error as NodeJS.ErrnoException);
+        const { code } = error as NodeJS.ErrnoException;
         const message = (error as Error).message ?? "";
         const isMissing = code === "ENOENT" || code === "MODULE_NOT_FOUND" || /cannot find module/i.test(message);
 
@@ -178,22 +170,24 @@ export const buildContext = async (
         listPackages: async () => {
             const entries = await pm.listWorkspacePackages(cwd);
 
-            const settled = await Promise.all(entries.map(async (entry) => {
-                const manifestPath = `${entry.path}/package.json`;
+            const settled = await Promise.all(
+                entries.map(async (entry) => {
+                    const manifestPath = `${entry.path}/package.json`;
 
-                try {
-                    const content = await fs.readFile(manifestPath, "utf8");
-                    const manifest = JSON.parse(content) as PackageManifest;
+                    try {
+                        const content = await fs.readFile(manifestPath, "utf8");
+                        const manifest = JSON.parse(content) as PackageManifest;
 
-                    return { manifest, manifestPath };
-                } catch {
-                    // Safe to swallow: a PM adapter can list a stale workspace
-                    // path (lockfile drift, partially-deleted package). Dropping
-                    // it from discovery is the right call — releasing against a
-                    // missing manifest would fail later anyway.
-                    return undefined;
-                }
-            }));
+                        return { manifest, manifestPath };
+                    } catch {
+                        // Safe to swallow: a PM adapter can list a stale workspace
+                        // path (lockfile drift, partially-deleted package). Dropping
+                        // it from discovery is the right call — releasing against a
+                        // missing manifest would fail later anyway.
+                        return undefined;
+                    }
+                }),
+            );
 
             return settled.filter((entry): entry is { manifest: PackageManifest; manifestPath: string } => entry !== undefined);
         },
@@ -236,23 +230,17 @@ export const buildContext = async (
     // function — the async lookups live one level up.
     const firstRelease = options.firstRelease === true;
     const { resolveCurrentVersionsForWorkspace } = await import("./version-resolver");
-    const { versions: currentVersions, warnings: resolverWarnings } = await resolveCurrentVersionsForWorkspace(
-        packages,
-        depGraph,
-        config,
-        perPackageConfig,
-        {
-            cwd,
-            firstRelease,
-            pm,
-            runner,
-            // Read-only handlers (plan/status/doctor/etc.) pass true so
-            // they don't fire N parallel registry probes. Default false
-            // for the version/publish/ci-release paths that need an
-            // accurate baseline.
-            skipRegistryLookup: options.skipRegistryLookup === true,
-        },
-    );
+    const { versions: currentVersions, warnings: resolverWarnings } = await resolveCurrentVersionsForWorkspace(packages, depGraph, config, perPackageConfig, {
+        cwd,
+        firstRelease,
+        pm,
+        runner,
+        // Read-only handlers (plan/status/doctor/etc.) pass true so
+        // they don't fire N parallel registry probes. Default false
+        // for the version/publish/ci-release paths that need an
+        // accurate baseline.
+        skipRegistryLookup: options.skipRegistryLookup === true,
+    });
 
     // Catalog change-detection (changesets #1707, opt-in via
     // `release.detectCatalogChanges`). When enabled, we diff
@@ -326,9 +314,7 @@ export const buildContext = async (
                 }
             }
         } catch (error) {
-            catalogWarnings.push(
-                `Catalog change-detection skipped: ${(error as Error).message}.`,
-            );
+            catalogWarnings.push(`Catalog change-detection skipped: ${(error as Error).message}.`);
         }
     }
 
@@ -391,9 +377,7 @@ export const buildContext = async (
 
     return {
         branch,
-        channel: resolved
-            ? { mode: resolved.mode, prerelease: resolved.prerelease, tag: resolved.tag }
-            : undefined,
+        channel: resolved ? { mode: resolved.mode, prerelease: resolved.prerelease, tag: resolved.tag } : undefined,
         config,
         cwd,
         depGraph,
@@ -524,7 +508,7 @@ export const assertNoConflictingPendingStages = async (
 ): Promise<void> => {
     const { findConflictingPendingStages, readStagedRegistry, removePendingStages, writeStagedRegistry } = await import("./staged-registry");
     const changesDir = context.config.changesDir ?? DEFAULT_CHANGES_DIR;
-    let registry = preloaded ?? await readStagedRegistry(context.cwd, changesDir);
+    let registry = preloaded ?? (await readStagedRegistry(context.cwd, changesDir));
 
     if (registry.pending.length === 0) {
         return;
@@ -539,9 +523,7 @@ export const assertNoConflictingPendingStages = async (
     // plan for `pkg@1.2.0` is the resume case (allow — the publish
     // loop's per-package action will see the existing stage and either
     // resolve through `alreadyPublished` or re-stage; either is correct).
-    let conflicts = findConflictingPendingStages(registry, planNames).filter(
-        (entry) => planByName.get(entry.name) !== entry.version,
-    );
+    let conflicts = findConflictingPendingStages(registry, planNames).filter((entry) => planByName.get(entry.name) !== entry.version);
 
     if (conflicts.length === 0) {
         return;
@@ -565,11 +547,10 @@ export const assertNoConflictingPendingStages = async (
         // second one.
         const lookups = await Promise.all(
             conflicts.map(async (entry) => {
-                const npmView = await runner.run(
-                    "npm",
-                    ["view", `${entry.name}@${entry.version}`, "dist.tarball", "--silent"],
-                    { cwd: context.cwd, silent: true },
-                );
+                const npmView = await runner.run("npm", ["view", `${entry.name}@${entry.version}`, "dist.tarball", "--silent"], {
+                    cwd: context.cwd,
+                    silent: true,
+                });
 
                 // npm prints the tarball URL on stdout when the version is
                 // live. On 404 / non-zero exit, the version isn't
@@ -595,18 +576,14 @@ export const assertNoConflictingPendingStages = async (
 
         // Re-check with the same "different version is the orphan-risk
         // case" filter (the resume case stays allowed).
-        conflicts = findConflictingPendingStages(registry, planNames).filter(
-            (entry) => planByName.get(entry.name) !== entry.version,
-        );
+        conflicts = findConflictingPendingStages(registry, planNames).filter((entry) => planByName.get(entry.name) !== entry.version);
 
         if (conflicts.length === 0) {
             return;
         }
     }
 
-    const summary = conflicts
-        .map((entry) => `  • ${entry.name}@${entry.version} — stage ${entry.id} (${entry.reason}, recorded ${entry.stagedAt})`)
-        .join("\n");
+    const summary = conflicts.map((entry) => `  • ${entry.name}@${entry.version} — stage ${entry.id} (${entry.reason}, recorded ${entry.stagedAt})`).join("\n");
 
     const verb = phase === "version" ? "version" : "publish";
 
@@ -617,10 +594,7 @@ export const assertNoConflictingPendingStages = async (
     });
 };
 
-export const applyContext = async (
-    context: OrchestratorContext,
-    options: ApplyOptions = {},
-): Promise<ApplyResult> => {
+export const applyContext = async (context: OrchestratorContext, options: ApplyOptions = {}): Promise<ApplyResult> => {
     if (context.plan.releases.length === 0) {
         return { changedFiles: [], deletedFiles: [], plan: context.plan };
     }
@@ -647,8 +621,7 @@ export const applyContext = async (
     // workspace-level preVersionCommand, before any package mutations.
     if (!options.dryRun && context.config.groupPreVersionCommands) {
         const { normaliseGroup } = await import("../types");
-        const allGroups = [...(context.config.fixed ?? []), ...(context.config.linked ?? [])]
-            .map((g) => normaliseGroup(g));
+        const allGroups = [...(context.config.fixed ?? []), ...(context.config.linked ?? [])].map((g) => normaliseGroup(g));
         const { default: zeptomatch } = await import("zeptomatch");
 
         for (const [groupKey, command] of Object.entries(context.config.groupPreVersionCommands)) {
@@ -702,12 +675,13 @@ export const applyContext = async (
                 return undefined;
             }
         },
-        renderChangelogEntry: (release) => formatter({
-            changeFiles: release.changeFiles,
-            date,
-            release,
-            target: "changelog",
-        }),
+        renderChangelogEntry: (release) =>
+            formatter({
+                changeFiles: release.changeFiles,
+                date,
+                release,
+                target: "changelog",
+            }),
     });
 
     // Apply extra-files rules per release. Workspace + per-package
@@ -734,14 +708,7 @@ export const applyContext = async (
                     return { warnings: [], writes: [] };
                 }
 
-                return applyExtraFilesForRelease(
-                    context.cwd,
-                    pkg.dir,
-                    release.newVersion,
-                    release.name,
-                    workspaceRules,
-                    perPkgRules,
-                );
+                return applyExtraFilesForRelease(context.cwd, pkg.dir, release.newVersion, release.name, workspaceRules, perPkgRules);
             }),
         );
 
@@ -795,7 +762,10 @@ export const applyContext = async (
     // soft-fail. Runs after lockfile sync so a reformatted lockfile (if the
     // PM emitted one) is included.
     if (!options.dryRun && context.config.formatChangedFiles) {
-        await formatChangedFiles(applied.writes.map((w) => w.path), context.cwd);
+        await formatChangedFiles(
+            applied.writes.map((w) => w.path),
+            context.cwd,
+        );
     }
 
     let commitSha: string | undefined;
@@ -818,8 +788,8 @@ export const applyContext = async (
             }
         }
 
-        const aggregateEnabled = context.config.aggregateRelease === true
-            || (typeof context.config.aggregateRelease === "object" && context.config.aggregateRelease.enabled);
+        const aggregateEnabled
+            = context.config.aggregateRelease === true || (typeof context.config.aggregateRelease === "object" && context.config.aggregateRelease.enabled);
 
         // RFC §19.5: one release commit per package (multi-semantic-release
         // parity) when opted in and not aggregating. Shared artifacts
@@ -845,9 +815,7 @@ export const applyContext = async (
                 // Last package sweeps up anything unclaimed (writes outside a
                 // package dir, e.g. a root file), the change-file deletions,
                 // and the lockfiles.
-                const trailing = index === releases.length - 1
-                    ? [...writePaths.filter((p) => !claimed.has(p)), ...applied.deletions, ...lockfilesPresent]
-                    : [];
+                const trailing = index === releases.length - 1 ? [...writePaths.filter((p) => !claimed.has(p)), ...applied.deletions, ...lockfilesPresent] : [];
 
                 const files = [...pkgFiles, ...trailing];
 
@@ -855,28 +823,16 @@ export const applyContext = async (
                     continue;
                 }
 
-                commitSha = await stageAndCommit(
-                    { cwd: context.cwd, runner },
-                    files,
-                    `release(${channel}): ${release.name}@${release.newVersion} [skip ci]`,
-                    { author: context.config.gitUser },
-                );
+                commitSha = await stageAndCommit({ cwd: context.cwd, runner }, files, `release(${channel}): ${release.name}@${release.newVersion} [skip ci]`, {
+                    author: context.config.gitUser,
+                });
             }
         } else {
             // Single aggregate commit for the whole wave (default).
             const message = options.commitMessage ?? buildDefaultCommitMessage(context);
-            const allFiles = [
-                ...applied.writes.map((w) => w.path),
-                ...applied.deletions,
-                ...lockfilesPresent,
-            ];
+            const allFiles = [...applied.writes.map((w) => w.path), ...applied.deletions, ...lockfilesPresent];
 
-            commitSha = await stageAndCommit(
-                { cwd: context.cwd, runner },
-                allFiles,
-                message,
-                { author: context.config.gitUser },
-            );
+            commitSha = await stageAndCommit({ cwd: context.cwd, runner }, allFiles, message, { author: context.config.gitUser });
         }
     }
 
@@ -982,9 +938,7 @@ const formatChangedFiles = async (files: string[], cwd: string): Promise<void> =
 const buildDefaultCommitMessage = (context: OrchestratorContext): string => {
     const channel = context.channel?.tag ?? context.branch ?? "main";
     const { releases } = context.plan;
-    const summary = releases.length <= 3
-        ? releases.map((r) => `${r.name}@${r.newVersion}`).join(", ")
-        : `version ${releases.length} packages`;
+    const summary = releases.length <= 3 ? releases.map((r) => `${r.name}@${r.newVersion}`).join(", ") : `version ${releases.length} packages`;
 
     const details = releases.map((r) => `- ${r.name}: ${r.oldVersion} → ${r.newVersion}`).join("\n");
 
@@ -1035,10 +989,7 @@ export interface PublishContextResult {
  * Publish each release in the plan via its resolved versionActions.
  * Topological order is honored so dependencies publish before dependents.
  */
-export const publishContext = async (
-    context: OrchestratorContext,
-    options: PublishContextOptions = {},
-): Promise<PublishContextResult> => {
+export const publishContext = async (context: OrchestratorContext, options: PublishContextOptions = {}): Promise<PublishContextResult> => {
     const result: PublishContextResult = { failed: [], published: [], skipped: [], tags: [], tagsPushed: false };
     const runner = createShellRunner();
 
@@ -1052,18 +1003,21 @@ export const publishContext = async (
     if (!options.dryRun && context.channel?.mode === "version-pr") {
         const { createRemoteClient, detectRemoteProvider } = await import("./remote/detect");
         const provider = await detectRemoteProvider(context.cwd, runner, context.config.provider);
-        const client = createRemoteClient(provider, { githubHost: context.config.githubHost, gitlabHost: context.config.gitlabHost, httpProxy: context.config.httpProxy });
+        const client = createRemoteClient(provider, {
+            githubHost: context.config.githubHost,
+            gitlabHost: context.config.gitlabHost,
+            httpProxy: context.config.httpProxy,
+        });
         const repo = await client.detectRepoSlug(context.cwd, runner);
         const branch = context.config.versionPr?.branch ?? "vis-release/version-packages";
 
         if (repo) {
             try {
                 // gh CLI: list open PRs from the version-PR branch.
-                const list = await runner.run(
-                    "gh",
-                    ["pr", "list", "--head", branch, "--state", "open", "--json", "number"],
-                    { cwd: context.cwd, silent: true },
-                );
+                const list = await runner.run("gh", ["pr", "list", "--head", branch, "--state", "open", "--json", "number"], {
+                    cwd: context.cwd,
+                    silent: true,
+                });
 
                 if (list.exitCode === 0 && list.stdout.trim() && list.stdout.trim() !== "[]") {
                     const parsed = JSON.parse(list.stdout) as { number: number }[];
@@ -1112,7 +1066,7 @@ export const publishContext = async (
     }
 
     try {
-    // Resume support: read state file, skip already-published packages.
+        // Resume support: read state file, skip already-published packages.
         const { clearState, filterPlanByState, newState, readState, writeState } = await import("./state");
         const { readStagedRegistry, removePendingStages, upsertPendingStages, writeStagedRegistry } = await import("./staged-registry");
         const changesDir = context.config.changesDir ?? DEFAULT_CHANGES_DIR;
@@ -1180,9 +1134,9 @@ export const publishContext = async (
             const release = releaseByName.get(name);
 
             if (!release) {
-            // Should never happen — the topo sort runs over the same names
-            // we put into releaseByName. If it does, surface it via the
-            // result.skipped channel so downstream tooling can spot the bug.
+                // Should never happen — the topo sort runs over the same names
+                // we put into releaseByName. If it does, surface it via the
+                // result.skipped channel so downstream tooling can spot the bug.
                 result.skipped.push({ name, reason: "topo-sort returned a name not in the release plan (internal bug)" });
                 continue;
             }
@@ -1230,9 +1184,7 @@ export const publishContext = async (
             // method short-circuits pack+publish and resumes the wait —
             // re-uploading would either be rejected by npm or create a
             // parallel stage.
-            const existingStage = stagedRegistry.pending.find(
-                (entry) => entry.name === name && entry.version === release.newVersion,
-            );
+            const existingStage = stagedRegistry.pending.find((entry) => entry.name === name && entry.version === release.newVersion);
 
             try {
                 const out = await actions.publish({
@@ -1284,18 +1236,18 @@ export const publishContext = async (
                     // come back later (workflow re-run, `stage approve --all`,
                     // npmjs.com UI) without losing the id.
                     if (out.stageId) {
-                        const reason = (out.output ?? "").startsWith("stage-rejected")
-                            ? "rejected"
-                            : "timeout";
+                        const reason = (out.output ?? "").startsWith("stage-rejected") ? "rejected" : "timeout";
 
-                        stagedRegistry = upsertPendingStages(stagedRegistry, [{
-                            id: out.stageId,
-                            name,
-                            reason,
-                            stagedAt: new Date().toISOString(),
-                            tag: tag ?? "latest",
-                            version: release.newVersion,
-                        }]);
+                        stagedRegistry = upsertPendingStages(stagedRegistry, [
+                            {
+                                id: out.stageId,
+                                name,
+                                reason,
+                                stagedAt: new Date().toISOString(),
+                                tag: tag ?? "latest",
+                                version: release.newVersion,
+                            },
+                        ]);
                     }
                 }
 
@@ -1378,13 +1330,7 @@ export const publishContext = async (
                 const isPrivate = pkgForFloat?.manifest?.private === true;
                 const skipNpmPublish = perPkgForFloat?.skipNpmPublish === true;
 
-                if (
-                    floatingMajorEnabled
-                    && !isPrerelease
-                    && !pattern?.includes("{major}")
-                    && !isPrivate
-                    && !skipNpmPublish
-                ) {
+                if (floatingMajorEnabled && !isPrerelease && !pattern?.includes("{major}") && !isPrivate && !skipNpmPublish) {
                     const major = version.split(/[-+]/, 1)[0]!.split(".")[0];
 
                     if (major !== undefined && major !== "") {
@@ -1414,14 +1360,10 @@ export const publishContext = async (
                             const floatTag = `${safeName}-v${major}`;
 
                             try {
-                                await createOrUpdateFloatingTag(
-                                    { cwd: context.cwd, runner },
-                                    floatTag,
-                                    {
-                                        push: !options.noPush,
-                                        signing: context.config.signing,
-                                    },
-                                );
+                                await createOrUpdateFloatingTag({ cwd: context.cwd, runner }, floatTag, {
+                                    push: !options.noPush,
+                                    signing: context.config.signing,
+                                });
                                 // Recorded in result.tags so the operator
                                 // sees it on the summary line.
                                 result.tags.push(floatTag);
@@ -1505,24 +1447,17 @@ export const publishContext = async (
                 }
 
                 try {
-                    await stageAndCommitFile(
-                        { cwd: context.cwd, runner },
-                        write.path,
-                        message,
-                        {
-                            author: context.config.gitUser,
-                            push: !options.noPush,
-                            sign: context.config.gitSignCommits === true,
-                        },
-                    );
+                    await stageAndCommitFile({ cwd: context.cwd, runner }, write.path, message, {
+                        author: context.config.gitUser,
+                        push: !options.noPush,
+                        sign: context.config.gitSignCommits === true,
+                    });
                 } catch (error) {
                     // Don't fail the whole publish for a registry-commit
                     // hiccup — the file is on disk; the next run will pick it
                     // up and retry the commit. Log to stderr only; we don't
                     // pollute `result.skipped[]` with infrastructure noise.
-                    process.stderr.write(
-                        `[vis release] Warning: could not commit ${write.path}: ${(error as Error).message}\n`,
-                    );
+                    process.stderr.write(`[vis release] Warning: could not commit ${write.path}: ${(error as Error).message}\n`);
                 }
             }
         }
@@ -1532,17 +1467,12 @@ export const publishContext = async (
         // stage rejected at the gate never produces an orphan wave entry.
         // Skipped on dry-run, when config disables it, or when no package
         // actually published.
-        if (
-            !options.dryRun
-            && result.published.length > 0
-            && context.config.workspaceChangelog !== false
-        ) {
+        if (!options.dryRun && result.published.length > 0 && context.config.workspaceChangelog !== false) {
             const wsRaw = context.config.workspaceChangelog;
             const wsConfig = typeof wsRaw === "object" ? wsRaw : undefined;
             // Default: only render workspace-level when explicitly opted-in OR when aggregateRelease is enabled.
-            const aggregate = typeof context.config.aggregateRelease === "object"
-                ? context.config.aggregateRelease.enabled
-                : context.config.aggregateRelease === true;
+            const aggregate
+                = typeof context.config.aggregateRelease === "object" ? context.config.aggregateRelease.enabled : context.config.aggregateRelease === true;
 
             if (wsConfig !== undefined || aggregate) {
                 try {
@@ -1568,33 +1498,24 @@ export const publishContext = async (
                         try {
                             const { stageAndCommitFile } = await import("./git");
 
-                            await stageAndCommitFile(
-                                { cwd: context.cwd, runner },
-                                waveEntryPath,
-                                "chore(release): record wave [skip ci]",
-                                {
-                                    author: context.config.gitUser,
-                                    push: !options.noPush,
-                                    sign: context.config.gitSignCommits === true,
-                                },
-                            );
+                            await stageAndCommitFile({ cwd: context.cwd, runner }, waveEntryPath, "chore(release): record wave [skip ci]", {
+                                author: context.config.gitUser,
+                                push: !options.noPush,
+                                sign: context.config.gitSignCommits === true,
+                            });
                         } catch (error) {
                             // Soft-fail: the workspace CHANGELOG.md is on
                             // disk; the next wave will pick up the staged
                             // file and commit it together with the next
                             // entry. Don't fail the whole publish for a
                             // commit hiccup.
-                            process.stderr.write(
-                                `[vis release] Warning: could not commit workspace CHANGELOG.md: ${(error as Error).message}\n`,
-                            );
+                            process.stderr.write(`[vis release] Warning: could not commit workspace CHANGELOG.md: ${(error as Error).message}\n`);
                         }
                     }
                 } catch (error) {
                     // Soft-fail: workspace changelog is documentation, not
                     // a release blocker.
-                    process.stderr.write(
-                        `[vis release] Warning: could not write workspace CHANGELOG.md wave entry: ${(error as Error).message}\n`,
-                    );
+                    process.stderr.write(`[vis release] Warning: could not write workspace CHANGELOG.md wave entry: ${(error as Error).message}\n`);
                 }
             }
         }
@@ -1635,7 +1556,11 @@ export const publishContext = async (
                 const { createRemoteClient, detectRemoteProvider } = await import("./remote/detect");
                 const { resolveFormatter } = await import("./changelog/resolve");
                 const provider = await detectRemoteProvider(context.cwd, runner, context.config.provider);
-                const client = createRemoteClient(provider, { githubHost: context.config.githubHost, gitlabHost: context.config.gitlabHost, httpProxy: context.config.httpProxy });
+                const client = createRemoteClient(provider, {
+                    githubHost: context.config.githubHost,
+                    gitlabHost: context.config.gitlabHost,
+                    httpProxy: context.config.httpProxy,
+                });
                 const repo = await client.detectRepoSlug(context.cwd, runner);
                 const formatter = await resolveFormatter(context.config.changelog, context.cwd);
 
@@ -1646,10 +1571,7 @@ export const publishContext = async (
                 // runner checkout, so a re-fired workflow on a different
                 // machine doesn't re-walk the PRs).
                 const { recordRecentlyWalked } = await import("./staged-registry");
-                const alreadyWalked = new Set([
-                    ...(state.walked ?? []),
-                    ...(stagedRegistry.recentlyWalked ?? []).map((entry) => entry.key),
-                ]);
+                const alreadyWalked = new Set([...(state.walked ?? []), ...(stagedRegistry.recentlyWalked ?? []).map((entry) => entry.key)]);
                 const walkable = {
                     ...result,
                     published: result.published.filter((p) => !alreadyWalked.has(`${p.name}@${p.version}`)),
@@ -1670,10 +1592,7 @@ export const publishContext = async (
                     // forge issues.
                     const walkedKeys = walkable.published.map((p) => `${p.name}@${p.version}`);
 
-                    state.walked = [
-                        ...(state.walked ?? []),
-                        ...walkedKeys,
-                    ];
+                    state.walked = [...(state.walked ?? []), ...walkedKeys];
                     await writeState(context.cwd, changesDir, state);
 
                     // Cross-runner persistence — append to the tracked
@@ -1690,9 +1609,7 @@ export const publishContext = async (
                 // Top-level safety net — any orchestration error in the walk
                 // setup itself (provider detect crash, formatter resolution)
                 // shouldn't fail the publish.
-                context.plan.warnings.push(
-                    `successWalk: could not run post-release walk: ${(error as Error).message}`,
-                );
+                context.plan.warnings.push(`successWalk: could not run post-release walk: ${(error as Error).message}`);
             }
 
             // Fan out post-release notifications (slack / discord / webhook /
@@ -1706,7 +1623,11 @@ export const publishContext = async (
                     const { dispatchNotifications } = await import("./notifications/interface");
                     const { createRemoteClient, detectRemoteProvider } = await import("./remote/detect");
                     const provider = await detectRemoteProvider(context.cwd, runner, context.config.provider);
-                    const client = createRemoteClient(provider, { githubHost: context.config.githubHost, gitlabHost: context.config.gitlabHost, httpProxy: context.config.httpProxy });
+                    const client = createRemoteClient(provider, {
+                        githubHost: context.config.githubHost,
+                        gitlabHost: context.config.gitlabHost,
+                        httpProxy: context.config.httpProxy,
+                    });
                     const repo = await client.detectRepoSlug(context.cwd, runner);
 
                     // Pull root package.json#name when available so chat
@@ -1738,10 +1659,7 @@ export const publishContext = async (
                     // runner clone. `state.notified` alone is per-run + per-
                     // machine — a re-fired workflow on a different runner
                     // would otherwise re-fire the chat pings.
-                    const alreadyNotified = new Set([
-                        ...(state.notified ?? []),
-                        ...(stagedRegistry.recentlyNotified ?? []).map((entry) => entry.key),
-                    ]);
+                    const alreadyNotified = new Set([...(state.notified ?? []), ...(stagedRegistry.recentlyNotified ?? []).map((entry) => entry.key)]);
                     const notifiable = result.published.filter((p) => !alreadyNotified.has(`${p.name}@${p.version}`));
 
                     // When everything in this wave was already notified on a
@@ -1766,7 +1684,9 @@ export const publishContext = async (
                                     };
                                 }),
                                 ...(repo === undefined ? {} : { repo }),
-                                skipped: result.skipped.map((s) => { return { name: s.name, reason: s.reason }; }),
+                                skipped: result.skipped.map((s) => {
+                                    return { name: s.name, reason: s.reason };
+                                }),
                             },
                             { warn: (m) => context.plan.warnings.push(m) },
                         );
@@ -1780,10 +1700,7 @@ export const publishContext = async (
                         if (notificationResult.succeeded.length > 0) {
                             const notifiedKeys = notifiable.map((p) => `${p.name}@${p.version}`);
 
-                            state.notified = [
-                                ...(state.notified ?? []),
-                                ...notifiedKeys,
-                            ];
+                            state.notified = [...(state.notified ?? []), ...notifiedKeys];
                             await writeState(context.cwd, changesDir, state);
 
                             // Cross-runner persistence — same rationale as the
@@ -1808,9 +1725,7 @@ export const publishContext = async (
                                 );
 
                                 for (const failure of notificationResult.failed) {
-                                    context.plan.warnings.push(
-                                        `[notifications:${failure.id}] ${failure.error}`,
-                                    );
+                                    context.plan.warnings.push(`[notifications:${failure.id}] ${failure.error}`);
                                 }
                             }
                         }
@@ -1818,9 +1733,7 @@ export const publishContext = async (
                 } catch (error) {
                     // Top-level safety net for the dispatcher itself
                     // (config materialisation crash, dynamic-import failure).
-                    context.plan.warnings.push(
-                        `notifications: dispatch failed: ${(error as Error).message}`,
-                    );
+                    context.plan.warnings.push(`notifications: dispatch failed: ${(error as Error).message}`);
                 }
             }
 
@@ -1863,9 +1776,7 @@ export const publishContext = async (
                     // hiccup — the cross-runner dedupe degrades gracefully
                     // back to `state.notified` / `state.walked` (per-run
                     // only) on the next wave.
-                    process.stderr.write(
-                        `[vis release] Warning: could not update cross-runner dedupe registry: ${(error as Error).message}\n`,
-                    );
+                    process.stderr.write(`[vis release] Warning: could not update cross-runner dedupe registry: ${(error as Error).message}\n`);
                 }
             }
         }
@@ -1874,7 +1785,7 @@ export const publishContext = async (
             try {
                 await runHook(context.cwd, context.config.postPublishCommand, "postPublishCommand");
             } catch (error) {
-            // Don't fail the whole release for a post-hook bug; surface it.
+                // Don't fail the whole release for a post-hook bug; surface it.
                 result.failed.push({ name: "_postPublishCommand", reason: (error as Error).message });
             }
         }
@@ -1893,9 +1804,7 @@ export const publishContext = async (
  * the same logic inside `createRemoteReleases`. Returns an empty string
  * when `recent` is empty so callers can append/prepend unconditionally.
  */
-export const composeRelatedReleasesBlock = (
-    recent: ReadonlyArray<{ name: string; tag: string; url: string }>,
-): string => {
+export const composeRelatedReleasesBlock = (recent: ReadonlyArray<{ name: string; tag: string; url: string }>): string => {
     if (recent.length === 0) {
         return "";
     }
@@ -1998,9 +1907,7 @@ export const applyReleaseNoteTemplate = (
  *
  * Exported for unit testing.
  */
-export const extractInternalAuthors = (
-    changelog: VisReleaseConfig["changelog"],
-): ReadonlyArray<string> | undefined => {
+export const extractInternalAuthors = (changelog: VisReleaseConfig["changelog"]): ReadonlyArray<string> | undefined => {
     if (!Array.isArray(changelog)) {
         return undefined;
     }
@@ -2014,7 +1921,7 @@ export const extractInternalAuthors = (
         return undefined;
     }
 
-    const { internalAuthors } = (options as { internalAuthors?: unknown });
+    const { internalAuthors } = options as { internalAuthors?: unknown };
 
     if (!Array.isArray(internalAuthors)) {
         return undefined;
@@ -2034,16 +1941,19 @@ const createRemoteReleases = async (
 ): Promise<void> => {
     const { createRemoteClient, detectRemoteProvider } = await import("./remote/detect");
     const provider = await detectRemoteProvider(context.cwd, runner, context.config.provider);
-    const client = createRemoteClient(provider, { githubHost: context.config.githubHost, gitlabHost: context.config.gitlabHost, httpProxy: context.config.httpProxy });
+    const client = createRemoteClient(provider, {
+        githubHost: context.config.githubHost,
+        gitlabHost: context.config.gitlabHost,
+        httpProxy: context.config.httpProxy,
+    });
     const repo = await client.detectRepoSlug(context.cwd, runner);
 
     if (!repo) {
         return;
     }
 
-    const aggregateConfig = typeof context.config.aggregateRelease === "object"
-        ? context.config.aggregateRelease
-        : { enabled: context.config.aggregateRelease === true };
+    const aggregateConfig
+        = typeof context.config.aggregateRelease === "object" ? context.config.aggregateRelease : { enabled: context.config.aggregateRelease === true };
 
     const draftRelease = context.config.publish?.draftRelease === true;
     const discussionCategory = context.config.publish?.discussionCategory;
@@ -2054,9 +1964,7 @@ const createRemoteReleases = async (
         const titleTemplate = aggregateConfig.title ?? "Release {date}";
         const title = titleTemplate.replaceAll("{date}", date);
         const tag = `release-${date}`;
-        const body = result.published
-            .map((p) => `- \`${p.name}\` → ${p.version}`)
-            .join("\n");
+        const body = result.published.map((p) => `- \`${p.name}\` → ${p.version}`).join("\n");
 
         try {
             const created = await client.createRelease(runner, {
@@ -2107,10 +2015,7 @@ const createRemoteReleases = async (
     //     #292 semantics (audit S-8).
     const date = new Date().toISOString().slice(0, 10);
     const internalAuthors = extractInternalAuthors(context.config.changelog);
-    const waveContributors = collectContributors(
-        context.plan.consumedChangeFiles ?? [],
-        { internalAuthors },
-    );
+    const waveContributors = collectContributors(context.plan.consumedChangeFiles ?? [], { internalAuthors });
 
     for (const item of result.published) {
         const perPkgPattern = context.perPackageConfig.get(item.name)?.releaseTagPattern;

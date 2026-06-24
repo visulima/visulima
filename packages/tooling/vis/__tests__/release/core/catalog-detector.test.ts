@@ -18,15 +18,13 @@
 
 import { describe, expect, it } from "vitest";
 
-import {
-    detectCatalogChanges,
-    extractCatalogRefs,
-    findCatalogConsumers,
-    parseCatalogs,
-} from "../../../src/release/core/catalog-detector";
+import { detectCatalogChanges, extractCatalogRefs, findCatalogConsumers, parseCatalogs } from "../../../src/release/core/catalog-detector";
 import type { WorkspacePackage } from "../../../src/release/types";
 
-const mkPkg = (name: string, deps: Partial<Record<"dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies", Record<string, string>>>): WorkspacePackage => {
+const mkPkg = (
+    name: string,
+    deps: Partial<Record<"dependencies" | "devDependencies" | "peerDependencies" | "optionalDependencies", Record<string, string>>>,
+): WorkspacePackage => {
     return {
         dir: `/repo/${name}`,
         manifest: { name, version: "1.0.0", ...deps },
@@ -104,9 +102,7 @@ describe("catalog-detector: extractCatalogRefs", () => {
 
         const refs = extractCatalogRefs(pkg);
 
-        expect(refs).toStrictEqual([
-            { catalog: "", dep: "react", kind: "dependencies", packageName: "@scope/a" },
-        ]);
+        expect(refs).toStrictEqual([{ catalog: "", dep: "react", kind: "dependencies", packageName: "@scope/a" }]);
     });
 
     it("extracts `catalog:<name>` refs and includes the catalog name", () => {
@@ -116,9 +112,7 @@ describe("catalog-detector: extractCatalogRefs", () => {
             devDependencies: { vitest: "catalog:dev" },
         });
 
-        expect(extractCatalogRefs(pkg)).toStrictEqual([
-            { catalog: "dev", dep: "vitest", kind: "devDependencies", packageName: "@scope/b" },
-        ]);
+        expect(extractCatalogRefs(pkg)).toStrictEqual([{ catalog: "dev", dep: "vitest", kind: "devDependencies", packageName: "@scope/b" }]);
     });
 
     it("returns one entry per (dep, kind) pair when the same dep appears in multiple blocks", () => {
@@ -168,7 +162,12 @@ catalogs:
 
         const defaultBlock = index.get("");
 
-        expect(defaultBlock?.get("react")?.map((c) => c.packageName).sort()).toStrictEqual(["@scope/a", "@scope/b"]);
+        expect(
+            defaultBlock
+                ?.get("react")
+                ?.map((c) => c.packageName)
+                .sort(),
+        ).toStrictEqual(["@scope/a", "@scope/b"]);
 
         const devBlock = index.get("dev");
 
@@ -204,9 +203,7 @@ catalog:
   react: ^18.2.0
 `);
 
-        const packages = [
-            mkPkg("@scope/a", { dependencies: { foo: "catalog:typo" } }),
-        ];
+        const packages = [mkPkg("@scope/a", { dependencies: { foo: "catalog:typo" } })];
 
         const index = findCatalogConsumers(packages, catalogs);
 
@@ -246,9 +243,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toStrictEqual([
-            { catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0" },
-        ]);
+        expect(changes).toStrictEqual([{ catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0" }]);
     });
 
     it("detects additions (entry in next only, oldVersion undefined)", () => {
@@ -267,9 +262,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toStrictEqual([
-            { catalog: "", dep: "zod", newVersion: "^3.23.0", oldVersion: undefined },
-        ]);
+        expect(changes).toStrictEqual([{ catalog: "", dep: "zod", newVersion: "^3.23.0", oldVersion: undefined }]);
     });
 
     it("detects removals (entry in prev only, newVersion undefined)", () => {
@@ -288,9 +281,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toStrictEqual([
-            { catalog: "", dep: "legacy", newVersion: undefined, oldVersion: "^1.0.0" },
-        ]);
+        expect(changes).toStrictEqual([{ catalog: "", dep: "legacy", newVersion: undefined, oldVersion: "^1.0.0" }]);
     });
 
     it("detects changes inside named catalogs (catalog name preserved)", () => {
@@ -310,9 +301,7 @@ catalogs:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toStrictEqual([
-            { catalog: "dev", dep: "vitest", newVersion: "^2.1.0", oldVersion: "^2.0.0" },
-        ]);
+        expect(changes).toStrictEqual([{ catalog: "dev", dep: "vitest", newVersion: "^2.1.0", oldVersion: "^2.0.0" }]);
     });
 
     it("detects changes across multiple catalogs in deterministic order", () => {
@@ -377,9 +366,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toStrictEqual([
-            { catalog: "", dep: "react", newVersion: "^18.2.0", oldVersion: undefined },
-        ]);
+        expect(changes).toStrictEqual([{ catalog: "", dep: "react", newVersion: "^18.2.0", oldVersion: undefined }]);
     });
 
     it("does NOT bail when only `next` is empty (removals still surface)", () => {
@@ -395,9 +382,7 @@ catalog:
 
         const changes = detectCatalogChanges(prev, next);
 
-        expect(changes).toStrictEqual([
-            { catalog: "", dep: "react", newVersion: undefined, oldVersion: "^18.2.0" },
-        ]);
+        expect(changes).toStrictEqual([{ catalog: "", dep: "react", newVersion: undefined, oldVersion: "^18.2.0" }]);
     });
 
     it("treats an entirely-removed catalog as N removals", () => {

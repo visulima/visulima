@@ -128,10 +128,7 @@ export interface CreateRemoteClientOptions {
     httpProxy?: string;
 }
 
-export const createRemoteClient = (
-    provider: RemoteProvider,
-    options: CreateRemoteClientOptions = {},
-): RemoteReleaseClient => {
+export const createRemoteClient = (provider: RemoteProvider, options: CreateRemoteClientOptions = {}): RemoteReleaseClient => {
     if (provider === "gitlab") {
         return new GitlabRemoteClient({ host: options.gitlabHost, httpProxy: options.httpProxy });
     }

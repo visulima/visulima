@@ -36,10 +36,7 @@ import { VersionActions } from "./interface";
  * ideal for the secret-scan gate, but a missing-CLI shouldn't block the
  * publish; the operator should see the underlying npm error first.
  */
-const listPackFiles = async (
-    context: PublishContext,
-    packResult: PackResult,
-): Promise<string[]> => {
+const listPackFiles = async (context: PublishContext, packResult: PackResult): Promise<string[]> => {
     const { extractPackFilesFromRaw } = await import("../publish-guards");
     const fromRaw = extractPackFilesFromRaw(packResult.raw);
 
@@ -47,11 +44,7 @@ const listPackFiles = async (
         return fromRaw;
     }
 
-    const result = await context.pm.runner.run(
-        "npm",
-        ["pack", "--dry-run", "--json"],
-        { cwd: context.pkg.dir, silent: true },
-    );
+    const result = await context.pm.runner.run("npm", ["pack", "--dry-run", "--json"], { cwd: context.pkg.dir, silent: true });
 
     if (result.exitCode !== 0) {
         return [];
@@ -104,11 +97,7 @@ export class NpmVersionActions extends VersionActions {
 
     public async readPublishedVersion(context: { pkg: WorkspacePackage; pm: PackageManagerAdapter }): Promise<string | undefined> {
         try {
-            const result = await context.pm.runner.run(
-                "npm",
-                ["view", context.pkg.name, "version", "--silent"],
-                { cwd: context.pkg.dir, silent: true },
-            );
+            const result = await context.pm.runner.run("npm", ["view", context.pkg.name, "version", "--silent"], { cwd: context.pkg.dir, silent: true });
 
             if (result.exitCode !== 0) {
                 return undefined;
@@ -147,9 +136,10 @@ export class NpmVersionActions extends VersionActions {
         }
 
         // Custom-command path (RFC §19.4 trust gate)
-        const customCommands = context.perPackageConfig && context.workspaceConfig
-            ? resolveCustomCommands(context.pkg.name, context.perPackageConfig, context.workspaceConfig)
-            : {};
+        const customCommands
+            = context.perPackageConfig && context.workspaceConfig
+                ? resolveCustomCommands(context.pkg.name, context.perPackageConfig, context.workspaceConfig)
+                : {};
 
         // Optional buildCommand (always before publish)
         if (customCommands.buildCommand) {
@@ -158,11 +148,10 @@ export class NpmVersionActions extends VersionActions {
                 version: context.release.newVersion,
             });
 
-            const result = await context.pm.runner.run(
-                process.platform === "win32" ? "cmd" : "sh",
-                process.platform === "win32" ? ["/c", cmd] : ["-c", cmd],
-                { cwd: context.pkg.dir, silent: false },
-            );
+            const result = await context.pm.runner.run(process.platform === "win32" ? "cmd" : "sh", process.platform === "win32" ? ["/c", cmd] : ["-c", cmd], {
+                cwd: context.pkg.dir,
+                silent: false,
+            });
 
             if (result.exitCode !== 0) {
                 throw new Error(`buildCommand failed for ${context.pkg.name}: exit ${result.exitCode}`);
@@ -241,7 +230,9 @@ export class NpmVersionActions extends VersionActions {
                         // shared token regex before serialising.
                         const { redactTokens } = await import("../security");
                         const summary = report.blockers
-                            .flatMap((r) => r.findings.map((f) => `  • [${r.gate}] ${redactTokens(f.message)}${f.hint ? `\n      → ${redactTokens(f.hint)}` : ""}`))
+                            .flatMap((r) =>
+                                r.findings.map((f) => `  • [${r.gate}] ${redactTokens(f.message)}${f.hint ? `\n      → ${redactTokens(f.hint)}` : ""}`),
+                            )
                             .join("\n");
 
                         throw new VisReleaseError({
@@ -268,11 +259,15 @@ export class NpmVersionActions extends VersionActions {
                     const pmId = context.pm.id;
 
                     if (context.provenance && pmId === "bun") {
-                        process.stderr.write(`[vis release] ⚠ publishStrategy "native": bun has no --provenance/OIDC support; ${context.pkg.name}@${context.release.newVersion} publishes without provenance.\n`);
+                        process.stderr.write(
+                            `[vis release] ⚠ publishStrategy "native": bun has no --provenance/OIDC support; ${context.pkg.name}@${context.release.newVersion} publishes without provenance.\n`,
+                        );
                     }
 
                     if (context.otp && pmId === "yarn") {
-                        process.stderr.write(`[vis release] ⚠ publishStrategy "native": \`yarn npm publish\` ignores --otp; configure 2FA via .yarnrc.yml for ${context.pkg.name}.\n`);
+                        process.stderr.write(
+                            `[vis release] ⚠ publishStrategy "native": \`yarn npm publish\` ignores --otp; configure 2FA via .yarnrc.yml for ${context.pkg.name}.\n`,
+                        );
                     }
 
                     const nativeResult = await context.pm.publishNative({
@@ -346,7 +341,9 @@ export class NpmVersionActions extends VersionActions {
                 });
 
                 if (decision === "approved") {
-                    process.stderr.write(`[vis release] ✓ ${context.pkg.name}@${context.release.newVersion} approved + promoted (${Math.round((Date.now() - startedAt) / 1000)}s).\n`);
+                    process.stderr.write(
+                        `[vis release] ✓ ${context.pkg.name}@${context.release.newVersion} approved + promoted (${Math.round((Date.now() - startedAt) / 1000)}s).\n`,
+                    );
 
                     // Clear stageId — the version is live, the id is consumed.
                     return { ...publishResult, stageId: undefined, tarball: hashes };
@@ -355,7 +352,9 @@ export class NpmVersionActions extends VersionActions {
                 if (decision === "rejected") {
                     // GH-Actions annotation so the reviewer's decision surfaces
                     // in the job summary without failing the run.
-                    process.stdout.write(`::warning::Stage rejected for ${context.pkg.name}@${context.release.newVersion} (id ${stageId}). Re-stage by re-running the release once the review feedback is addressed.\n`);
+                    process.stdout.write(
+                        `::warning::Stage rejected for ${context.pkg.name}@${context.release.newVersion} (id ${stageId}). Re-stage by re-running the release once the review feedback is addressed.\n`,
+                    );
 
                     return {
                         alreadyPublished: false,
@@ -366,7 +365,9 @@ export class NpmVersionActions extends VersionActions {
                 }
 
                 // decision === "timeout"
-                process.stdout.write(`::warning::Stage timeout for ${context.pkg.name}@${context.release.newVersion} (id ${stageId}) after ${Math.round(stageConfig.timeoutMs / 60_000)}m. Re-run \`vis release publish\` once a maintainer can approve, or run \`vis release stage approve ${stageId}\` manually.\n`);
+                process.stdout.write(
+                    `::warning::Stage timeout for ${context.pkg.name}@${context.release.newVersion} (id ${stageId}) after ${Math.round(stageConfig.timeoutMs / 60_000)}m. Re-run \`vis release publish\` once a maintainer can approve, or run \`vis release stage approve ${stageId}\` manually.\n`,
+                );
 
                 return {
                     alreadyPublished: false,
@@ -404,10 +405,7 @@ export class NpmVersionActions extends VersionActions {
      * different sha (timestamps in archive headers) which a future
      * verification step could flag as tarball-divergence.
      */
-    private async resumeStagedPublish(
-        context: PublishContext,
-        stageConfig: ResolvedStageConfig,
-    ): Promise<PublishResult> {
+    private async resumeStagedPublish(context: PublishContext, stageConfig: ResolvedStageConfig): Promise<PublishResult> {
         const stageId = context.resumeStageId!;
         const startedAt = Date.now();
 
@@ -435,7 +433,9 @@ export class NpmVersionActions extends VersionActions {
         });
 
         if (decision === "approved") {
-            process.stderr.write(`[vis release] ✓ ${context.pkg.name}@${context.release.newVersion} approved + promoted on resume (${Math.round((Date.now() - startedAt) / 1000)}s).\n`);
+            process.stderr.write(
+                `[vis release] ✓ ${context.pkg.name}@${context.release.newVersion} approved + promoted on resume (${Math.round((Date.now() - startedAt) / 1000)}s).\n`,
+            );
 
             // No tarball hashes on the resume path — we never re-packed.
             // releaseAssets.stampHashes will skip this package gracefully
@@ -458,7 +458,9 @@ export class NpmVersionActions extends VersionActions {
         }
 
         // decision === "timeout"
-        process.stdout.write(`::warning::Stage timeout on resume for ${context.pkg.name}@${context.release.newVersion} (id ${stageId}) after ${Math.round(stageConfig.timeoutMs / 60_000)}m.\n`);
+        process.stdout.write(
+            `::warning::Stage timeout on resume for ${context.pkg.name}@${context.release.newVersion} (id ${stageId}) after ${Math.round(stageConfig.timeoutMs / 60_000)}m.\n`,
+        );
 
         return {
             alreadyPublished: false,
@@ -487,7 +489,7 @@ const resolveWorkspaceRefs = (manifest: PackageManifest, versionedByName: Readon
             continue;
         }
 
-        const next: Record<string, string> = { ...(block) };
+        const next: Record<string, string> = { ...block };
 
         for (const [depName, range] of Object.entries(block)) {
             if (!range.startsWith("workspace:")) {

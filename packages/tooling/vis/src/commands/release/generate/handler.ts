@@ -87,11 +87,10 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
     const sentinelSalt = Math.random().toString(16).slice(2, 10);
     const SENTINEL_COMMIT = `@@VIS_RELEASE_COMMIT_${sentinelSalt}@@`;
     const SENTINEL_FILES = `@@VIS_RELEASE_FILES_${sentinelSalt}@@`;
-    const log = await runner.run(
-        "git",
-        ["log", `${fromRef}..HEAD`, `--pretty=format:${SENTINEL_COMMIT}%n%H%n%s%n%b%n${SENTINEL_FILES}`, "--name-only"],
-        { cwd, silent: true },
-    );
+    const log = await runner.run("git", ["log", `${fromRef}..HEAD`, `--pretty=format:${SENTINEL_COMMIT}%n%H%n%s%n%b%n${SENTINEL_FILES}`, "--name-only"], {
+        cwd,
+        silent: true,
+    });
 
     if (log.exitCode !== 0) {
         logger.error(`git log failed: ${log.stderr}`);
@@ -104,10 +103,18 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
     const subjects: string[] = [];
 
     // Parse the sentinel-delimited stream into per-commit records.
-    interface CommitRecord { body: string; files: string[]; hash: string; subject: string }
+    interface CommitRecord {
+        body: string;
+        files: string[];
+        hash: string;
+        subject: string;
+    }
 
     const commits: CommitRecord[] = [];
-    const sections = log.stdout.split(SENTINEL_COMMIT).map((s) => s.trim()).filter(Boolean);
+    const sections = log.stdout
+        .split(SENTINEL_COMMIT)
+        .map((s) => s.trim())
+        .filter(Boolean);
 
     for (const section of sections) {
         const [filesPart, headerPart = ""] = section.split(SENTINEL_FILES).toReversed();
@@ -115,7 +122,10 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
         const hash = headerLines[0]?.trim() ?? "";
         const subject = headerLines[1]?.trim() ?? "";
         const body = headerLines.slice(2).join("\n").trim();
-        const files = (filesPart ?? "").split("\n").map((s) => s.trim()).filter(Boolean);
+        const files = (filesPart ?? "")
+            .split("\n")
+            .map((s) => s.trim())
+            .filter(Boolean);
 
         if (hash) {
             commits.push({ body, files, hash, subject });

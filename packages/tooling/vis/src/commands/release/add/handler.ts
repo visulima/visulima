@@ -207,11 +207,7 @@ interface GhPrViewPayload {
 const fetchPrPayload = async (cwd: string, pr: number): Promise<GhPrViewPayload | undefined> => {
     try {
         const runner = await resolveRunner();
-        const result = await runner.run(
-            "gh",
-            ["pr", "view", String(pr), "--json", "title,body,author"],
-            { cwd, silent: true },
-        );
+        const result = await runner.run("gh", ["pr", "view", String(pr), "--json", "title,body,author"], { cwd, silent: true });
 
         if (result.exitCode !== 0) {
             return undefined;
@@ -231,7 +227,15 @@ const fetchPrPayload = async (cwd: string, pr: number): Promise<GhPrViewPayload 
  */
 const findAffectedWorkspacePackages = (
     dep: string,
-    workspacePackages: { manifest: { dependencies?: Record<string, string>; devDependencies?: Record<string, string>; optionalDependencies?: Record<string, string>; peerDependencies?: Record<string, string> }; name: string }[],
+    workspacePackages: {
+        manifest: {
+            dependencies?: Record<string, string>;
+            devDependencies?: Record<string, string>;
+            optionalDependencies?: Record<string, string>;
+            peerDependencies?: Record<string, string>;
+        };
+        name: string;
+    }[],
 ): string[] => {
     const affected: string[] = [];
 
@@ -360,9 +364,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
 
         const affected = findAffectedWorkspacePackages(parsed.dep, ctx.packages);
 
-        const fromTo = parsed.fromVersion
-            ? `from ${parsed.fromVersion} to ${parsed.toVersion}`
-            : `to ${parsed.toVersion}`;
+        const fromTo = parsed.fromVersion ? `from ${parsed.fromVersion} to ${parsed.toVersion}` : `to ${parsed.toVersion}`;
 
         body = body || `Updated ${parsed.dep} ${fromTo}`;
 

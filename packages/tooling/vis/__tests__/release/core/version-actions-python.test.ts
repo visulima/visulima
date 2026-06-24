@@ -94,12 +94,13 @@ const mkContext = (overrides: CtxOverrides = {}): PublishContext => {
 };
 
 // PyPI JSON-API stub. Returns a `Response`-shaped object.
-const stubPypiResponse = (body: unknown, status = 200): Response => ({
-    json: async () => body,
-    ok: status >= 200 && status < 300,
-    status,
-    statusText: status === 200 ? "OK" : status === 404 ? "Not Found" : "Error",
-} as Response);
+const stubPypiResponse = (body: unknown, status = 200): Response =>
+    ({
+        json: async () => body,
+        ok: status >= 200 && status < 300,
+        status,
+        statusText: status === 200 ? "OK" : status === 404 ? "Not Found" : "Error",
+    }) as Response;
 
 describe("python version actions", () => {
     beforeEach(() => {
@@ -151,17 +152,18 @@ describe("python version actions", () => {
         it("parses .info.version from PyPI JSON on 200", async () => {
             expect.hasAssertions();
 
-            vi.spyOn(globalThis, "fetch").mockResolvedValue(
-                stubPypiResponse({ info: { version: "2.3.4" } }),
-            );
+            vi.spyOn(globalThis, "fetch").mockResolvedValue(stubPypiResponse({ info: { version: "2.3.4" } }));
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo-pkg"
 version = "1.0.0"
-`);
+`,
+            );
 
             const actions = new PythonVersionActions();
             const result = await actions.readPublishedVersion({
@@ -208,7 +210,11 @@ version = "1.0.0"
         it("returns undefined on malformed JSON / missing info.version", async () => {
             expect.hasAssertions();
 
-            vi.spyOn(globalThis, "fetch").mockResolvedValue(stubPypiResponse({ /* no info */ }));
+            vi.spyOn(globalThis, "fetch").mockResolvedValue(
+                stubPypiResponse({
+                    /* no info */
+                }),
+            );
 
             const result = await fetchPyPiVersion("partial-pkg");
 
@@ -224,11 +230,14 @@ version = "1.0.0"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-dyn-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "scm-pkg"
 dynamic = ["version"]
-`);
+`,
+            );
 
             // OIDC set so auth-missing isn't the failure path.
             process.env.ACTIONS_ID_TOKEN_REQUEST_URL = "https://token-url";
@@ -342,30 +351,28 @@ dynamic = ["version"]
             // silently downgrade. (Previous behaviour was the inverse —
             // that was the bug.)
             expect.hasAssertions();
-            expect(detectAuthMode({
-                ACTIONS_ID_TOKEN_REQUEST_URL: "https://x",
-                TWINE_PASSWORD: "tok",
-            })).toBe("oidc");
+            expect(
+                detectAuthMode({
+                    ACTIONS_ID_TOKEN_REQUEST_URL: "https://x",
+                    TWINE_PASSWORD: "tok",
+                }),
+            ).toBe("oidc");
         });
 
         it("returns 'token' when preferStaticToken: true AND both signals are present (escape hatch)", () => {
             // M-3 escape hatch for operators migrating off OIDC or
             // running a shadow publish.
             expect.hasAssertions();
-            expect(detectAuthMode(
-                { ACTIONS_ID_TOKEN_REQUEST_URL: "https://x", TWINE_PASSWORD: "tok" },
-                { publish: { preferStaticToken: true } },
-            )).toBe("token");
+            expect(detectAuthMode({ ACTIONS_ID_TOKEN_REQUEST_URL: "https://x", TWINE_PASSWORD: "tok" }, { publish: { preferStaticToken: true } })).toBe(
+                "token",
+            );
         });
 
         it("returns 'oidc' when preferStaticToken: true but no static token is present", () => {
             // Escape hatch only fires when there's actually a static
             // token to fall back to.
             expect.hasAssertions();
-            expect(detectAuthMode(
-                { ACTIONS_ID_TOKEN_REQUEST_URL: "https://x" },
-                { publish: { preferStaticToken: true } },
-            )).toBe("oidc");
+            expect(detectAuthMode({ ACTIONS_ID_TOKEN_REQUEST_URL: "https://x" }, { publish: { preferStaticToken: true } })).toBe("oidc");
         });
 
         it("returns 'missing' when neither is set", () => {
@@ -382,7 +389,9 @@ dynamic = ["version"]
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-twine-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo"
 version = "1.0.1"
@@ -390,21 +399,26 @@ version = "1.0.1"
 [build-system]
 requires = ["hatchling"]
 build-backend = "hatchling.build"
-`);
+`,
+            );
 
             process.env.TWINE_PASSWORD = "pypi-token";
 
             // PyPI JSON returns older version — proceed with publish.
-            vi.spyOn(globalThis, "fetch").mockResolvedValue(
-                stubPypiResponse({ info: { version: "1.0.0" } }),
-            );
+            vi.spyOn(globalThis, "fetch").mockResolvedValue(stubPypiResponse({ info: { version: "1.0.0" } }));
 
             const runner = new MockRunner();
 
             // uv probe → fail (not installed)
-            runner.on("uv", ["--version"], () => { return { exitCode: 127, stderr: "uv: not found", stdout: "" }; });
-            runner.on("python", ["-m", "build"], () => { return { exitCode: 0, stderr: "", stdout: "build ok" }; });
-            runner.on("twine", ["upload", "dist/*"], () => { return { exitCode: 0, stderr: "", stdout: "upload ok" }; });
+            runner.on("uv", ["--version"], () => {
+                return { exitCode: 127, stderr: "uv: not found", stdout: "" };
+            });
+            runner.on("python", ["-m", "build"], () => {
+                return { exitCode: 0, stderr: "", stdout: "build ok" };
+            });
+            runner.on("twine", ["upload", "dist/*"], () => {
+                return { exitCode: 0, stderr: "", stdout: "upload ok" };
+            });
 
             const actions = new PythonVersionActions();
             const result = await actions.publish(mkContext({ cwd: tmp, runner, version: "1.0.1" }));
@@ -421,11 +435,14 @@ build-backend = "hatchling.build"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-uv-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo"
 version = "1.0.1"
-`);
+`,
+            );
 
             process.env.TWINE_PASSWORD = "pypi-token";
 
@@ -476,9 +493,7 @@ version = "1.0.1"
             // JSON-API probe through `safeFetchVersionMetadata`.
             expect.hasAssertions();
 
-            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-                stubPypiResponse({ info: { version: "1.0.0" } }),
-            );
+            const fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(stubPypiResponse({ info: { version: "1.0.0" } }));
 
             await fetchPyPiVersion("any-pkg");
 
@@ -501,11 +516,14 @@ version = "1.0.1"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-oidc-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo"
 version = "1.0.1"
-`);
+`,
+            );
 
             process.env.ACTIONS_ID_TOKEN_REQUEST_URL = "https://token-url";
 
@@ -549,11 +567,14 @@ version = "1.0.1"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-tok-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo"
 version = "1.0.1"
-`);
+`,
+            );
 
             process.env.TWINE_PASSWORD = "pypi-token";
 
@@ -597,11 +618,14 @@ version = "1.0.1"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-m3-oidc-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo"
 version = "1.0.1"
-`);
+`,
+            );
 
             process.env.TWINE_PASSWORD = "stale-token-from-last-year";
             process.env.ACTIONS_ID_TOKEN_REQUEST_URL = "https://token-url";
@@ -647,11 +671,14 @@ version = "1.0.1"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-m3-escape-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo"
 version = "1.0.1"
-`);
+`,
+            );
 
             process.env.TWINE_PASSWORD = "operator-chose-static";
             process.env.ACTIONS_ID_TOKEN_REQUEST_URL = "https://token-url";
@@ -702,17 +729,22 @@ version = "1.0.1"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-noauth-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo"
 version = "1.0.1"
-`);
+`,
+            );
 
             vi.spyOn(globalThis, "fetch").mockResolvedValue(stubPypiResponse({}, 404));
 
             const runner = new MockRunner();
 
-            runner.on("uv", ["--version"], () => { return { exitCode: 127, stderr: "", stdout: "" }; });
+            runner.on("uv", ["--version"], () => {
+                return { exitCode: 127, stderr: "", stdout: "" };
+            });
 
             const actions = new PythonVersionActions();
 
@@ -730,11 +762,14 @@ version = "1.0.1"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-buildfail-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo"
 version = "1.0.1"
-`);
+`,
+            );
 
             process.env.TWINE_PASSWORD = "pypi-token";
 
@@ -742,7 +777,9 @@ version = "1.0.1"
 
             const runner = new MockRunner();
 
-            runner.on("uv", ["--version"], () => { return { exitCode: 127, stderr: "", stdout: "" }; });
+            runner.on("uv", ["--version"], () => {
+                return { exitCode: 127, stderr: "", stdout: "" };
+            });
             runner.on("python", ["-m", "build"], () => {
                 return {
                     exitCode: 1,
@@ -768,18 +805,19 @@ version = "1.0.1"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-py-already-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo"
 version = "1.0.1"
-`);
+`,
+            );
 
             process.env.TWINE_PASSWORD = "pypi-token";
 
             // PyPI already has 1.0.1 — vis must skip.
-            vi.spyOn(globalThis, "fetch").mockResolvedValue(
-                stubPypiResponse({ info: { version: "1.0.1" } }),
-            );
+            vi.spyOn(globalThis, "fetch").mockResolvedValue(stubPypiResponse({ info: { version: "1.0.1" } }));
 
             const calls: string[] = [];
             const runner: CommandRunner = {
@@ -810,9 +848,7 @@ version = "1.0.1"
         it("returns <pkg.dir>/uv.lock when no per-package override is set", () => {
             expect.hasAssertions();
 
-            const result = resolveUvLockPath(
-                { dir: "/repo/py/sdk", name: "@scope/sdk" } as never,
-            );
+            const result = resolveUvLockPath({ dir: "/repo/py/sdk", name: "@scope/sdk" } as never);
 
             expect(result).toBe(join("/repo/py/sdk", "uv.lock"));
         });
@@ -822,10 +858,7 @@ version = "1.0.1"
             // lockfile at the workspace root rather than per-package.
             expect.hasAssertions();
 
-            const result = resolveUvLockPath(
-                { dir: "/repo/py/sdk", name: "@scope/sdk" } as never,
-                { uvLockPath: "../uv.lock" },
-            );
+            const result = resolveUvLockPath({ dir: "/repo/py/sdk", name: "@scope/sdk" } as never, { uvLockPath: "../uv.lock" });
 
             expect(result).toBe(join("/repo/py/sdk", "../uv.lock"));
         });
@@ -847,11 +880,14 @@ version = "1.0.1"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-uv-no-ws-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "monorepo-root"
 version = "0.0.0"
-`);
+`,
+            );
 
             const result = await checkUvWorkspaceMembership(tmp, "py/sdk");
 
@@ -863,14 +899,17 @@ version = "0.0.0"
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-uv-literal-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "monorepo-root"
 version = "0.0.0"
 
 [tool.uv.workspace]
 members = ["py/sdk", "py/cli"]
-`);
+`,
+            );
 
             const result = await checkUvWorkspaceMembership(tmp, "py/sdk");
 
@@ -882,14 +921,17 @@ members = ["py/sdk", "py/cli"]
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-uv-glob-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "monorepo-root"
 version = "0.0.0"
 
 [tool.uv.workspace]
 members = ["py/*"]
-`);
+`,
+            );
 
             const result = await checkUvWorkspaceMembership(tmp, "py/sdk");
 
@@ -901,14 +943,17 @@ members = ["py/*"]
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-uv-recursive-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "monorepo-root"
 version = "0.0.0"
 
 [tool.uv.workspace]
 members = ["py/**"]
-`);
+`,
+            );
 
             const result = await checkUvWorkspaceMembership(tmp, "py/sdk/nested");
 
@@ -920,14 +965,17 @@ members = ["py/**"]
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-uv-missing-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "monorepo-root"
 version = "0.0.0"
 
 [tool.uv.workspace]
 members = ["py/sdk"]
-`);
+`,
+            );
 
             const result = await checkUvWorkspaceMembership(tmp, "py/cli");
 
@@ -942,14 +990,17 @@ members = ["py/sdk"]
 
             const tmp = mkdtempSync(join(tmpdir(), "vis-uv-nonrecursive-"));
 
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "monorepo-root"
 version = "0.0.0"
 
 [tool.uv.workspace]
 members = ["py/*"]
-`);
+`,
+            );
 
             const result = await checkUvWorkspaceMembership(tmp, "py/sdk/sub");
 
@@ -965,11 +1016,14 @@ members = ["py/*"]
 
             // On-disk pyproject has 0.9.0 but plan says 1.0.1 — preset
             // didn't run / was misconfigured.
-            writePyProject(tmp, `
+            writePyProject(
+                tmp,
+                `
 [project]
 name = "demo"
 version = "0.9.0"
-`);
+`,
+            );
 
             process.env.TWINE_PASSWORD = "pypi-token";
 

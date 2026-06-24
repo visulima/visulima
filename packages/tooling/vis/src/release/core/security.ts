@@ -82,8 +82,7 @@ export const cmdq = (value: string): string => `"${value.replaceAll(`"`, `""`)}"
  * POSIX, `cmd /c` on Windows. The orchestrator and shell action both pick the
  * shell from `process.platform`, so the quoting must match that decision.
  */
-export const shellQuote = (value: string, isWindows: boolean = process.platform === "win32"): string =>
-    (isWindows ? cmdq(value) : sq(value));
+export const shellQuote = (value: string, isWindows: boolean = process.platform === "win32"): string => (isWindows ? cmdq(value) : sq(value));
 
 // ── Custom-command trust gate ──────────────────────────────────────
 
@@ -96,10 +95,7 @@ export const shellQuote = (value: string, isWindows: boolean = process.platform 
  * runs per-package commands; `true` runs for any package; an array of globs
  * acts as an allowlist (e.g. `["@scope/*"]`).
  */
-export const isCustomCommandAllowed = (
-    packageName: string,
-    config: VisReleaseConfig,
-): boolean => {
+export const isCustomCommandAllowed = (packageName: string, config: VisReleaseConfig): boolean => {
     const gate = config.allowCustomCommands;
 
     if (gate === undefined || gate === false) {
@@ -230,11 +226,7 @@ export interface ResolvedCustomCommands {
  * If gating denies, returns an empty object (callers fall through to default
  * pack-then-publish path).
  */
-export const resolveCustomCommands = (
-    packageName: string,
-    perPkg: PerPackageReleaseConfig,
-    config: VisReleaseConfig,
-): ResolvedCustomCommands => {
+export const resolveCustomCommands = (packageName: string, perPkg: PerPackageReleaseConfig, config: VisReleaseConfig): ResolvedCustomCommands => {
     if (!isCustomCommandAllowed(packageName, config)) {
         return {};
     }

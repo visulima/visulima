@@ -371,26 +371,20 @@ export const jsr = (options: JsrPresetOptions = {}): PerPackageReleaseConfig => 
         search: String.raw`^(\s*"version"\s*:\s*")([^"]+)(")`,
     };
 
-    const denoRule: ExtraFileRule | undefined = options.deno && manifestPath !== "deno.json"
-        ? {
-            flags: "m",
-            path: "deno.json",
-            replace: "$1{version}$3",
-            search: String.raw`^(\s*"version"\s*:\s*")([^"]+)(")`,
-        }
-        : undefined;
+    const denoRule: ExtraFileRule | undefined
+        = options.deno && manifestPath !== "deno.json"
+            ? {
+                flags: "m",
+                path: "deno.json",
+                replace: "$1{version}$3",
+                search: String.raw`^(\s*"version"\s*:\s*")([^"]+)(")`,
+            }
+            : undefined;
 
-    const jsrPublishArgs = [
-        ...(options.allowSlowTypes ? ["--allow-slow-types"] : []),
-        ...(options.publishArgs ?? []),
-    ];
+    const jsrPublishArgs = [...(options.allowSlowTypes ? ["--allow-slow-types"] : []), ...(options.publishArgs ?? [])];
 
     return {
-        extraFiles: [
-            versionRule,
-            ...(denoRule ? [denoRule] : []),
-            ...(options.extraFiles ?? []),
-        ],
+        extraFiles: [versionRule, ...(denoRule ? [denoRule] : []), ...(options.extraFiles ?? [])],
         // Route the jsr versionActions reader at the same manifest the
         // extra-files bump targets so the natively-parsed version always
         // matches the literal we just wrote.

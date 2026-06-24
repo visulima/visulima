@@ -67,11 +67,7 @@ export class MockRunner implements CommandRunner {
         this.handlers.push({ argsPrefix, command, respond });
     }
 
-    public async run(
-        command: string,
-        args: ReadonlyArray<string>,
-        options: { cwd: string },
-    ): Promise<{ exitCode: number; stderr: string; stdout: string }> {
+    public async run(command: string, args: ReadonlyArray<string>, options: { cwd: string }): Promise<{ exitCode: number; stderr: string; stdout: string }> {
         for (const handler of this.handlers) {
             if (handler.command !== command) {
                 continue;

@@ -57,10 +57,7 @@ const MAX_RECENT_AGE_MS = 30 * 24 * 60 * 60 * 1000;
  *
  * Pure — no I/O, no mutation of the input array.
  */
-export const pruneOldEntries = (
-    entries: ReadonlyArray<{ at: string; key: string }> | undefined,
-    now: number = Date.now(),
-): { at: string; key: string }[] => {
+export const pruneOldEntries = (entries: ReadonlyArray<{ at: string; key: string }> | undefined, now: number = Date.now()): { at: string; key: string }[] => {
     if (!entries || entries.length === 0) {
         return [];
     }
@@ -80,9 +77,7 @@ export const pruneOldEntries = (
 
     // Sort by `at` DESC and take the head. Stable sort preserves the
     // insertion order for entries with identical timestamps.
-    return [...filtered]
-        .sort((a, b) => Date.parse(b.at) - Date.parse(a.at))
-        .slice(0, MAX_RECENT_ENTRIES);
+    return [...filtered].sort((a, b) => Date.parse(b.at) - Date.parse(a.at)).slice(0, MAX_RECENT_ENTRIES);
 };
 
 /**
@@ -187,9 +182,7 @@ export const writeStagedRegistry = async (
     // recentlyNotified, recentlyWalked. Only delete when ALL THREE are
     // empty — otherwise we'd lose the cross-runner dedupe state every
     // time the pending set drained.
-    const hasNoState = next.pending.length === 0
-        && prunedNotified.length === 0
-        && prunedWalked.length === 0;
+    const hasNoState = next.pending.length === 0 && prunedNotified.length === 0 && prunedWalked.length === 0;
 
     if (hasNoState) {
         if (previous === undefined) {
@@ -238,9 +231,11 @@ export const recordRecentlyNotified = (
 
     const existing = registry.recentlyNotified ?? [];
     const seen = new Set(existing.map((entry) => entry.key));
-    const additions = keys.filter((key) => !seen.has(key)).map((key) => {
-        return { at: now, key };
-    });
+    const additions = keys
+        .filter((key) => !seen.has(key))
+        .map((key) => {
+            return { at: now, key };
+        });
 
     if (additions.length === 0) {
         return registry;
@@ -258,20 +253,18 @@ export const recordRecentlyNotified = (
  * tracks packages whose PR/issue sticky-comment + label landed on a
  * prior run so a fresh CI runner doesn't re-walk them.
  */
-export const recordRecentlyWalked = (
-    registry: StagedRegistryFile,
-    keys: ReadonlyArray<string>,
-    now: string = new Date().toISOString(),
-): StagedRegistryFile => {
+export const recordRecentlyWalked = (registry: StagedRegistryFile, keys: ReadonlyArray<string>, now: string = new Date().toISOString()): StagedRegistryFile => {
     if (keys.length === 0) {
         return registry;
     }
 
     const existing = registry.recentlyWalked ?? [];
     const seen = new Set(existing.map((entry) => entry.key));
-    const additions = keys.filter((key) => !seen.has(key)).map((key) => {
-        return { at: now, key };
-    });
+    const additions = keys
+        .filter((key) => !seen.has(key))
+        .map((key) => {
+            return { at: now, key };
+        });
 
     if (additions.length === 0) {
         return registry;
@@ -289,10 +282,7 @@ export const recordRecentlyWalked = (
  * that aren't in `next`. Pure — no I/O. Useful when composing multiple
  * incremental updates within a single publish wave.
  */
-export const upsertPendingStages = (
-    registry: StagedRegistryFile,
-    next: ReadonlyArray<PendingStage>,
-): StagedRegistryFile => {
+export const upsertPendingStages = (registry: StagedRegistryFile, next: ReadonlyArray<PendingStage>): StagedRegistryFile => {
     if (next.length === 0) {
         return registry;
     }
@@ -315,10 +305,7 @@ export const upsertPendingStages = (
  * registry when nothing matches so callers can short-circuit the
  * commit step.
  */
-export const removePendingStages = (
-    registry: StagedRegistryFile,
-    ids: ReadonlyArray<string>,
-): StagedRegistryFile => {
+export const removePendingStages = (registry: StagedRegistryFile, ids: ReadonlyArray<string>): StagedRegistryFile => {
     if (ids.length === 0 || registry.pending.length === 0) {
         return registry;
     }
@@ -349,10 +336,7 @@ export const removePendingStages = (
  * "same package, different version" (orphan-risk case → block) since
  * the plan version isn't visible at this layer.
  */
-export const findConflictingPendingStages = (
-    registry: StagedRegistryFile,
-    packageNames: ReadonlyArray<string>,
-): PendingStage[] => {
+export const findConflictingPendingStages = (registry: StagedRegistryFile, packageNames: ReadonlyArray<string>): PendingStage[] => {
     if (registry.pending.length === 0 || packageNames.length === 0) {
         return [];
     }
@@ -372,10 +356,7 @@ export const findConflictingPendingStages = (
  * Order-independent within each list: registries with the same entries
  * in different order compare equal.
  */
-const recentSetsEqual = (
-    a: ReadonlyArray<{ at: string; key: string }> | undefined,
-    b: ReadonlyArray<{ at: string; key: string }> | undefined,
-): boolean => {
+const recentSetsEqual = (a: ReadonlyArray<{ at: string; key: string }> | undefined, b: ReadonlyArray<{ at: string; key: string }> | undefined): boolean => {
     const ax = a ?? [];
     const bx = b ?? [];
 
@@ -400,22 +381,15 @@ const recentSetsEqual = (
     return true;
 };
 
-export const registryContentsEqual = (
-    a: StagedRegistryFile,
-    b: StagedRegistryFile,
-): boolean => pendingSetsEqual(a.pending, b.pending)
-    && recentSetsEqual(a.recentlyNotified, b.recentlyNotified)
-    && recentSetsEqual(a.recentlyWalked, b.recentlyWalked);
+export const registryContentsEqual = (a: StagedRegistryFile, b: StagedRegistryFile): boolean =>
+    pendingSetsEqual(a.pending, b.pending) && recentSetsEqual(a.recentlyNotified, b.recentlyNotified) && recentSetsEqual(a.recentlyWalked, b.recentlyWalked);
 
 /**
  * Stable structural comparison of two registries' pending sets. Kept as
  * a public helper so the existing callers (the tests + the publish
  * loop's no-op detection) don't break.
  */
-export const pendingSetsEqual = (
-    a: ReadonlyArray<PendingStage>,
-    b: ReadonlyArray<PendingStage>,
-): boolean => {
+export const pendingSetsEqual = (a: ReadonlyArray<PendingStage>, b: ReadonlyArray<PendingStage>): boolean => {
     if (a.length !== b.length) {
         return false;
     }

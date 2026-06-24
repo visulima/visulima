@@ -7,21 +7,10 @@
  * so the same code paths are testable without a real filesystem.
  */
 
-import type {
-    DependencyKind,
-    PackageManifest,
-    PlannedRelease,
-    ReleasePlan,
-    WorkspacePackage,
-} from "../types";
+import type { DependencyKind, PackageManifest, PlannedRelease, ReleasePlan, WorkspacePackage } from "../types";
 import type { DependencyGraph } from "./dep-graph";
 
-const DEPENDENCY_KINDS: ReadonlyArray<DependencyKind> = [
-    "dependencies",
-    "devDependencies",
-    "peerDependencies",
-    "optionalDependencies",
-];
+const DEPENDENCY_KINDS: ReadonlyArray<DependencyKind> = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
 
 // ── Range rewrite (preserves workspace: prefix per RFC §11.1) ──────
 
@@ -197,11 +186,7 @@ export const applyReleasePlan = async (
     };
 };
 
-const applyVersionToManifest = (
-    manifest: PackageManifest,
-    newVersion: string,
-    newVersionByPackage: ReadonlyMap<string, string>,
-): PackageManifest => {
+const applyVersionToManifest = (manifest: PackageManifest, newVersion: string, newVersionByPackage: ReadonlyMap<string, string>): PackageManifest => {
     const out: PackageManifest = { ...manifest, version: newVersion };
 
     for (const kind of DEPENDENCY_KINDS) {
@@ -211,7 +196,7 @@ const applyVersionToManifest = (
             continue;
         }
 
-        const next: Record<string, string> = { ...(block) };
+        const next: Record<string, string> = { ...block };
         let changed = false;
 
         for (const [depName, range] of Object.entries(block)) {

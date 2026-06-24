@@ -383,7 +383,7 @@ describe(redact, () => {
 
                 expect(Object.keys(input)).toHaveLength(numberInputKeys);
                 expect(Object.keys(input.veryUnusualObject)).toHaveLength(numveryUnusualObjectKeys);
-                expect(typeof input.veryUnusualObject).toBe(veryUnusualObjectType);
+                expect(input.veryUnusualObject).toBeTypeOf(veryUnusualObjectType);
                 expect(input.veryUnusualObject.constructor).toBe(veryUnusualObjectConstructor);
 
                 expect(input.message).toBe("hello");
@@ -701,7 +701,7 @@ describe(redact, () => {
                 expect.assertions(7);
 
                 expect(Object.keys(input)).toHaveLength(inputKeyCount);
-                expect(typeof input).toBe(inputType);
+                expect(input).toBeTypeOf(inputType);
                 expect(input.constructor).toBe(inputConstructor);
 
                 expect(input.message).toBe(inputMessage);
@@ -875,7 +875,7 @@ describe(redact, () => {
 
                 expect(Object.keys(input)).toHaveLength(numberInputKeys);
                 expect(Object.keys(input.customData)).toHaveLength(numberCustomDataKeys);
-                expect(typeof input).toBe(inputType);
+                expect(input).toBeTypeOf(inputType);
                 expect(input.constructor).toBe(inputConstructor);
 
                 expect(input.message).toBe(inputMessage);
@@ -896,7 +896,7 @@ describe(redact, () => {
                 expect.assertions(4);
 
                 expect(Object.keys(output)).toHaveLength(numberInputKeys);
-                expect(typeof output).toBe(inputType);
+                expect(output).toBeTypeOf(inputType);
                 expect(output.stack).toBe(inputStack);
                 expect(output.customData.error).toStrictEqual(output);
             });

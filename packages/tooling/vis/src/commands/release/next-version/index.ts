@@ -33,7 +33,8 @@ const nextVersion: Command = {
             type: String,
         },
         {
-            description: "Bootstrap mode for greenfield monorepos: preview the plan without registry / tag lookups (matches `vis release version --first-release`).",
+            description:
+                "Bootstrap mode for greenfield monorepos: preview the plan without registry / tag lookups (matches `vis release version --first-release`).",
             name: "first-release",
             type: Boolean,
         },

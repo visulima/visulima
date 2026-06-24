@@ -150,7 +150,7 @@ describe(opentelemetryProvider, () => {
             const provider = opentelemetryProvider({ provider: wrapped });
 
             await expect(provider.isAvailable()).resolves.toBe(true);
-            expect(wrapped.isAvailable).toHaveBeenCalled();
+            expect(wrapped.isAvailable).toHaveBeenCalledWith();
         });
 
         it("should return false when isAvailable throws", async () => {
@@ -171,7 +171,7 @@ describe(opentelemetryProvider, () => {
             const provider = opentelemetryProvider({ provider: wrapped });
 
             await expect(provider.validateCredentials?.()).resolves.toBe(true);
-            expect(wrapped.validateCredentials).toHaveBeenCalled();
+            expect(wrapped.validateCredentials).toHaveBeenCalledWith();
         });
 
         it("should fall back to isAvailable when validateCredentials is missing", async () => {
@@ -181,7 +181,7 @@ describe(opentelemetryProvider, () => {
             const provider = opentelemetryProvider({ provider: wrapped });
 
             await expect(provider.validateCredentials?.()).resolves.toBe(true);
-            expect(wrapped.isAvailable).toHaveBeenCalled();
+            expect(wrapped.isAvailable).toHaveBeenCalledWith();
         });
 
         it("should return false when validateCredentials throws", async () => {
@@ -229,7 +229,7 @@ describe(opentelemetryProvider, () => {
                     "email.to": "user@example.com",
                 }),
             );
-            expect(span.end).toHaveBeenCalled();
+            expect(span.end).toHaveBeenCalledWith();
         });
 
         it("should record content lengths when recordContent is true", async () => {
@@ -388,7 +388,7 @@ describe(opentelemetryProvider, () => {
             await provider.initialize();
             await provider.shutdown?.();
 
-            expect(wrapped.shutdown).toHaveBeenCalled();
+            expect(wrapped.shutdown).toHaveBeenCalledWith();
         });
     });
 
@@ -503,7 +503,7 @@ describe(opentelemetryProvider, () => {
 
             await provider.initialize();
 
-            expect(wrapped.initialize).toHaveBeenCalled();
+            expect(wrapped.initialize).toHaveBeenCalledWith();
         });
 
         it("reuses the wrapped provider for isAvailable after initialize", async () => {

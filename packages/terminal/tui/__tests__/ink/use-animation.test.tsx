@@ -1237,82 +1237,85 @@ describe(useAnimation, () => {
     // committed-animation regression guard is retained there. The same
     // timing-sensitivity already forced `delta approximates interval` and
     // `delta accounts for throttled ticks` to be skipped on Windows below.
-    it.skipIf(process.platform === "win32" || process.platform === "darwin")("suspended transitions do not reset the committed animation before commit", async () => {
-        expect.assertions(3);
+    it.skipIf(process.platform === "win32" || process.platform === "darwin")(
+        "suspended transitions do not reset the committed animation before commit",
+        async () => {
+            expect.assertions(3);
 
-        let resolveSuspense!: () => void;
-        const suspendedRender = new Promise<void>((resolve) => {
-            resolveSuspense = resolve;
-        });
-        let suspendWithNewInterval!: () => void;
+            let resolveSuspense!: () => void;
+            const suspendedRender = new Promise<void>((resolve) => {
+                resolveSuspense = resolve;
+            });
+            let suspendWithNewInterval!: () => void;
 
-        const MaybeSuspendingAnimation = ({ interval, shouldSuspend }: { readonly interval: number; readonly shouldSuspend: boolean }) => {
-            const { frame } = useAnimation({ interval });
+            const MaybeSuspendingAnimation = ({ interval, shouldSuspend }: { readonly interval: number; readonly shouldSuspend: boolean }) => {
+                const { frame } = useAnimation({ interval });
 
-            if (shouldSuspend) {
-                // eslint-disable-next-line @typescript-eslint/only-throw-error
-                throw suspendedRender;
-            }
+                if (shouldSuspend) {
+                    // eslint-disable-next-line @typescript-eslint/only-throw-error
+                    throw suspendedRender;
+                }
 
-            return <Text>{String(frame)}</Text>;
-        };
-
-        const TestCase = () => {
-            const [interval, setInterval] = React.useState(50);
-            const [shouldSuspend, setShouldSuspend] = React.useState(false);
-
-            suspendWithNewInterval = () => {
-                startTransition(() => {
-                    setInterval(200);
-                    setShouldSuspend(true);
-                });
+                return <Text>{String(frame)}</Text>;
             };
 
-            return (
-                <Suspense fallback={<Text>loading</Text>}>
-                    <MaybeSuspendingAnimation interval={interval} shouldSuspend={shouldSuspend} />
-                </Suspense>
-            );
-        };
+            const TestCase = () => {
+                const [interval, setInterval] = React.useState(50);
+                const [shouldSuspend, setShouldSuspend] = React.useState(false);
 
-        const stdout = createStdout();
-        let instance: ReturnType<typeof render> | undefined;
+                suspendWithNewInterval = () => {
+                    startTransition(() => {
+                        setInterval(200);
+                        setShouldSuspend(true);
+                    });
+                };
 
-        try {
-            instance = render(<TestCase />, {
-                concurrent: true,
-                debug: true,
-                stdout,
-            });
+                return (
+                    <Suspense fallback={<Text>loading</Text>}>
+                        <MaybeSuspendingAnimation interval={interval} shouldSuspend={shouldSuspend} />
+                    </Suspense>
+                );
+            };
 
-            // 50ms interval ticks; 130ms was too tight on loaded macOS-15 CI
-            // where React Suspense setup occasionally consumed the first tick
-            // window. 250ms guarantees ≥4 tick opportunities before sampling.
-            await delay(250);
-            const frameBeforeSuspend = Number.parseInt(stdout.get(), 10);
+            const stdout = createStdout();
+            let instance: ReturnType<typeof render> | undefined;
 
-            expect(frameBeforeSuspend).toBeGreaterThanOrEqual(1);
+            try {
+                instance = render(<TestCase />, {
+                    concurrent: true,
+                    debug: true,
+                    stdout,
+                });
 
-            await act(async () => {
-                suspendWithNewInterval();
-            });
+                // 50ms interval ticks; 130ms was too tight on loaded macOS-15 CI
+                // where React Suspense setup occasionally consumed the first tick
+                // window. 250ms guarantees ≥4 tick opportunities before sampling.
+                await delay(250);
+                const frameBeforeSuspend = Number.parseInt(stdout.get(), 10);
 
-            // The committed animation must not reset to 0 when the transition suspends.
-            // It is allowed to advance past frameBeforeSuspend because the old interval
-            // keeps ticking during the act() flush; the failure mode this guards against
-            // is a regression that drops the visible frame back to 0.
-            const frameAfterSuspend = Number.parseInt(stdout.get(), 10);
+                expect(frameBeforeSuspend).toBeGreaterThanOrEqual(1);
 
-            expect(frameAfterSuspend).toBeGreaterThanOrEqual(frameBeforeSuspend);
+                await act(async () => {
+                    suspendWithNewInterval();
+                });
 
-            await delay(250);
+                // The committed animation must not reset to 0 when the transition suspends.
+                // It is allowed to advance past frameBeforeSuspend because the old interval
+                // keeps ticking during the act() flush; the failure mode this guards against
+                // is a regression that drops the visible frame back to 0.
+                const frameAfterSuspend = Number.parseInt(stdout.get(), 10);
 
-            expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThan(frameAfterSuspend);
-        } finally {
-            resolveSuspense();
-            instance?.unmount();
-        }
-    });
+                expect(frameAfterSuspend).toBeGreaterThanOrEqual(frameBeforeSuspend);
+
+                await delay(250);
+
+                expect(Number.parseInt(stdout.get(), 10)).toBeGreaterThan(frameAfterSuspend);
+            } finally {
+                resolveSuspense();
+                instance?.unmount();
+            }
+        },
+    );
 
     it("cleans up on unmount", async () => {
         expect.assertions(1);

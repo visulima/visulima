@@ -4,10 +4,7 @@ import { DependencyGraph } from "../../../src/release/core/dep-graph";
 import { VisReleaseError } from "../../../src/release/errors";
 import type { WorkspacePackage } from "../../../src/release/types";
 
-const makePkg = (
-    name: string,
-    extras: Partial<WorkspacePackage["manifest"]> = {},
-): WorkspacePackage => {
+const makePkg = (name: string, extras: Partial<WorkspacePackage["manifest"]> = {}): WorkspacePackage => {
     return {
         dir: `/repo/packages/${name}`,
         manifest: { name, version: "1.0.0", ...extras },

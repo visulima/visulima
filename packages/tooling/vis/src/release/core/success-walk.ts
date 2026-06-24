@@ -45,8 +45,7 @@ export const DEFAULT_SUCCESS_WALK_LABELS = ["released"];
  * Default comment template — mirrors semantic-release's `successComment`
  * with the marker prepended so the upsert path can find it on re-runs.
  */
-export const DEFAULT_SUCCESS_WALK_COMMENT
-    = `${SUCCESS_WALK_MARKER}\n:tada: This issue has been resolved in version {version} :tada:\n\nThe release is available on [GitHub release]({url}).\n\nYour **[vis](https://github.com/visulima/visulima)** release pipeline shipped this. :rocket:`;
+export const DEFAULT_SUCCESS_WALK_COMMENT = `${SUCCESS_WALK_MARKER}\n:tada: This issue has been resolved in version {version} :tada:\n\nThe release is available on [GitHub release]({url}).\n\nYour **[vis](https://github.com/visulima/visulima)** release pipeline shipped this. :rocket:`;
 
 /**
  * Extract every PR / issue reference from a rendered changelog body. Both
@@ -133,9 +132,7 @@ export const extractReferences = (body: string, repo?: string): number[] => {
             // MRs structure the path as `<owner>/<name>/-/merge_requests/N`
             // — strip a trailing `/-` so the comparison against `<owner>/<name>`
             // still works. Trailing/leading slashes trimmed on both sides.
-            const pathSegment = (match[2] ?? "")
-                .replaceAll(/^\/+|\/+$/g, "")
-                .replace(/\/-$/, "");
+            const pathSegment = (match[2] ?? "").replaceAll(/^\/+|\/+$/g, "").replace(/\/-$/, "");
             const expected = repo.replaceAll(/^\/+|\/+$/g, "");
 
             if (pathSegment.toLowerCase() !== expected.toLowerCase()) {
@@ -182,10 +179,7 @@ const expandTemplate = (template: string, vars: { name: string; tag: string; url
         out = out.replaceAll("{url}", fallback);
     }
 
-    return out
-        .replaceAll("{version}", vars.version)
-        .replaceAll("{name}", vars.name)
-        .replaceAll("{tag}", vars.tag);
+    return out.replaceAll("{version}", vars.version).replaceAll("{name}", vars.name).replaceAll("{tag}", vars.tag);
 };
 
 export interface WalkSuccessfulReleaseDeps {
@@ -332,24 +326,23 @@ export const pLimit = <T = unknown>(n: number): ((task: () => Promise<T>) => Pro
         }
     };
 
-    return (task) => new Promise<T>((resolve, reject) => {
-        const onSettled = (): void => {
-            active -= 1;
+    return (task) =>
+        new Promise<T>((resolve, reject) => {
+            const onSettled = (): void => {
+                active -= 1;
+                next();
+            };
+
+            const run = (): void => {
+                // The reject handler passed to then() captures every rejection;
+                // catch-or-return is satisfied by returning the settled chain.
+                // eslint-disable-next-line promise/catch-or-return -- rejection handled by the reject handler passed to then()
+                task().then(resolve, reject).finally(onSettled);
+            };
+
+            queue.push(run);
             next();
-        };
-
-        const run = (): void => {
-            // The reject handler passed to then() captures every rejection;
-            // catch-or-return is satisfied by returning the settled chain.
-            // eslint-disable-next-line promise/catch-or-return -- rejection handled by the reject handler passed to then()
-            task()
-                .then(resolve, reject)
-                .finally(onSettled);
-        };
-
-        queue.push(run);
-        next();
-    });
+        });
 };
 
 /**
@@ -357,9 +350,10 @@ export const pLimit = <T = unknown>(n: number): ((task: () => Promise<T>) => Pro
  * `await` it inline. The retry layer caps at one retry per call so the
  * worst-case extra latency per ref is one Retry-After header value.
  */
-const sleep = (ms: number): Promise<void> => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
+const sleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
 
 /**
  * Detect whether an error thrown by `RemoteReleaseClient` was a 429 / rate
@@ -434,10 +428,7 @@ const parseRetryAfter = (error: unknown, defaultMs: number): number => {
  * Exported for testability — the M-8 regression test injects a fake
  * client that throws a 429 on first call and succeeds on retry.
  */
-export const withRateLimitRetry = async <T = unknown>(
-    op: () => Promise<T>,
-    defaultRetryAfterMs = 5000,
-): Promise<T> => {
+export const withRateLimitRetry = async <T = unknown>(op: () => Promise<T>, defaultRetryAfterMs = 5000): Promise<T> => {
     try {
         return await op();
     } catch (error) {
@@ -499,8 +490,7 @@ export const walkSuccessfulRelease = async (
     // and the published versions themselves (-rc / -alpha / etc.) so the
     // guardrail still kicks in when a release was prereleased without a
     // channel having been declared.
-    const isPrerelease = Boolean(context.channel?.prerelease)
-        || result.published.some((p) => p.version.includes("-"));
+    const isPrerelease = Boolean(context.channel?.prerelease) || result.published.some((p) => p.version.includes("-"));
 
     if (cfg.skipPrerelease && isPrerelease) {
         return out;
@@ -520,63 +510,69 @@ export const walkSuccessfulRelease = async (
     // eslint-disable-next-line @typescript-eslint/no-invalid-void-type -- pLimit's type parameter is the task return type; these tasks resolve to void.
     const limit = pLimit<void>(4);
 
-    const tasks = refs.map((ref) => limit(async () => {
-        const release = firstReleaseByRef.get(ref);
-        const version = release?.newVersion ?? result.published[0]?.version ?? "";
-        const name = release?.name ?? result.published[0]?.name ?? "";
-        const url = resolveReleaseUrl(release, result);
-        const body = expandTemplate(cfg.commentBody, { name, tag: channelTag, url, version });
+    const tasks = refs.map((ref) =>
+        limit(async () => {
+            const release = firstReleaseByRef.get(ref);
+            const version = release?.newVersion ?? result.published[0]?.version ?? "";
+            const name = release?.name ?? result.published[0]?.name ?? "";
+            const url = resolveReleaseUrl(release, result);
+            const body = expandTemplate(cfg.commentBody, { name, tag: channelTag, url, version });
 
-        // 1. Sticky comment. Marker is appended automatically when the
-        //    template doesn't already include it, so a user-supplied
-        //    template can't accidentally lose update semantics on re-run.
-        const finalBody = body.includes(SUCCESS_WALK_MARKER) ? body : `${SUCCESS_WALK_MARKER}\n${body}`;
+            // 1. Sticky comment. Marker is appended automatically when the
+            //    template doesn't already include it, so a user-supplied
+            //    template can't accidentally lose update semantics on re-run.
+            const finalBody = body.includes(SUCCESS_WALK_MARKER) ? body : `${SUCCESS_WALK_MARKER}\n${body}`;
 
-        try {
-            const upsert = await withRateLimitRetry(() => deps.client.upsertStickyComment(runner, {
-                body: finalBody,
-                cwd: context.cwd,
-                issueNumber: ref,
-                marker: SUCCESS_WALK_MARKER,
-                repo: deps.repo as string,
-            }));
+            try {
+                const upsert = await withRateLimitRetry(() =>
+                    deps.client.upsertStickyComment(runner, {
+                        body: finalBody,
+                        cwd: context.cwd,
+                        issueNumber: ref,
+                        marker: SUCCESS_WALK_MARKER,
+                        repo: deps.repo as string,
+                    }),
+                );
 
-            if (upsert) {
-                out.commented.push(ref);
-            } else {
-                out.warnings.push(`successWalk: upsertStickyComment returned undefined for #${ref}; skipping label step.`);
+                if (upsert) {
+                    out.commented.push(ref);
+                } else {
+                    out.warnings.push(`successWalk: upsertStickyComment returned undefined for #${ref}; skipping label step.`);
+
+                    return;
+                }
+            } catch (error) {
+                out.warnings.push(`successWalk: failed to comment on #${ref}: ${(error as Error).message}`);
 
                 return;
             }
-        } catch (error) {
-            out.warnings.push(`successWalk: failed to comment on #${ref}: ${(error as Error).message}`);
 
-            return;
-        }
-
-        // 2. Labels. Empty `labels: []` is a valid config — skip the call
-        //    entirely so we don't waste a round-trip.
-        if (cfg.labels.length === 0) {
-            return;
-        }
-
-        try {
-            const ok = await withRateLimitRetry(() => deps.client.addLabels(runner, {
-                cwd: context.cwd,
-                issueNumber: ref,
-                labels: cfg.labels,
-                repo: deps.repo as string,
-            }));
-
-            if (ok) {
-                out.labeled.push(ref);
-            } else {
-                out.warnings.push(`successWalk: addLabels returned false for #${ref}; the labels may not have been applied.`);
+            // 2. Labels. Empty `labels: []` is a valid config — skip the call
+            //    entirely so we don't waste a round-trip.
+            if (cfg.labels.length === 0) {
+                return;
             }
-        } catch (error) {
-            out.warnings.push(`successWalk: failed to label #${ref}: ${(error as Error).message}`);
-        }
-    }));
+
+            try {
+                const ok = await withRateLimitRetry(() =>
+                    deps.client.addLabels(runner, {
+                        cwd: context.cwd,
+                        issueNumber: ref,
+                        labels: cfg.labels,
+                        repo: deps.repo as string,
+                    }),
+                );
+
+                if (ok) {
+                    out.labeled.push(ref);
+                } else {
+                    out.warnings.push(`successWalk: addLabels returned false for #${ref}; the labels may not have been applied.`);
+                }
+            } catch (error) {
+                out.warnings.push(`successWalk: failed to label #${ref}: ${(error as Error).message}`);
+            }
+        }),
+    );
 
     await Promise.all(tasks);
 

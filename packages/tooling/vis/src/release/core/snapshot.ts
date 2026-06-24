@@ -17,10 +17,7 @@ import type { OrchestratorContext } from "./orchestrator";
 import type { CommandRunner } from "./package-managers/interface";
 import { NpmAdapter } from "./package-managers/npm";
 
-const interpolateTemplate = (
-    template: string,
-    vars: { branch?: string; pr?: string; sha: string; shortSha: string; tag: string; timestamp: string },
-): string =>
+const interpolateTemplate = (template: string, vars: { branch?: string; pr?: string; sha: string; shortSha: string; tag: string; timestamp: string }): string =>
     template
         .replaceAll("{tag}", vars.tag)
         .replaceAll("{sha}", vars.sha)
@@ -127,7 +124,10 @@ export const runSnapshot = async (options: RunSnapshotOptions): Promise<RunSnaps
 
     if (options.filter) {
         const { default: zeptomatch } = await import("zeptomatch");
-        const globs = options.filter.split(",").map((s) => s.trim()).filter(Boolean);
+        const globs = options.filter
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean);
 
         targets = targets.filter((p) => globs.some((g) => p.name === g || zeptomatch(g, p.name)));
     }
@@ -229,12 +229,12 @@ export const runSnapshot = async (options: RunSnapshotOptions): Promise<RunSnaps
             } catch (error) {
                 failed.push({ name: pkg.name, reason: (error as Error).message });
             } finally {
-            // Always restore the source manifest.
+                // Always restore the source manifest.
                 if (original !== undefined) {
                     try {
                         await writeFile(pkg.manifestPath, original);
                     } catch {
-                    // best-effort restore
+                        // best-effort restore
                     }
                 }
             }
@@ -250,10 +250,7 @@ export const runSnapshot = async (options: RunSnapshotOptions): Promise<RunSnaps
 
 const DEPENDENCY_KINDS = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"] as const;
 
-const composeSnapshotManifest = (
-    pkg: WorkspacePackage,
-    versionedByName: ReadonlyMap<string, PackageManifest>,
-): PackageManifest => {
+const composeSnapshotManifest = (pkg: WorkspacePackage, versionedByName: ReadonlyMap<string, PackageManifest>): PackageManifest => {
     const baseManifest = versionedByName.get(pkg.name) ?? pkg.manifest;
     const composed: PackageManifest = { ...baseManifest };
 
@@ -264,7 +261,7 @@ const composeSnapshotManifest = (
             continue;
         }
 
-        const next: Record<string, string> = { ...(block) };
+        const next: Record<string, string> = { ...block };
 
         for (const [depName, range] of Object.entries(block)) {
             const versioned = versionedByName.get(depName);

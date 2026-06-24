@@ -19,10 +19,7 @@ const KNOWN_ROUTES_PATTERN = [...KNOWN_ROUTES].join("|");
 
 /** True when a doc page exists at `base` — either `base.{md,mdx}` or `base/index.{md,mdx}`. */
 const docExists = (base) =>
-    existsSync(base + ".mdx") ||
-    existsSync(base + ".md") ||
-    existsSync(path.join(base, "index.mdx")) ||
-    existsSync(path.join(base, "index.md"));
+    existsSync(base + ".mdx") || existsSync(base + ".md") || existsSync(path.join(base, "index.mdx")) || existsSync(path.join(base, "index.md"));
 
 /**
  * External repos whose docs/ folder should be fetched and merged into the packages docs.
@@ -324,7 +321,10 @@ async function fixBrokenDocsLinks(dir, contentRoot) {
                 }
 
                 if (docExists(absolute)) {
-                    const urlPath = relToContent.split(path.sep).join("/").replace(/\/index$/, "");
+                    const urlPath = relToContent
+                        .split(path.sep)
+                        .join("/")
+                        .replace(/\/index$/, "");
                     changed = true;
 
                     return `${before}${label}(/docs/${urlPath}${anchor})`;

@@ -115,7 +115,7 @@ describe(PrismaAdapter, () => {
             const client = makeClient() as Record<string, unknown> & TestClient;
 
             delete client["_dmmf"];
-            client["_getDmmf"] = vi.fn().mockResolvedValue({ mappingsMap: { User: { plural: "users" } } });
+            vi.spyOn(client, "_getDmmf").mockImplementation().mockResolvedValue({ mappingsMap: { User: { plural: "users" } } });
 
             const a = new PrismaAdapter({
                 models: ["User"],
@@ -259,8 +259,8 @@ describe(PrismaAdapter, () => {
 
             const fetched = { id: 1 };
 
-            prismaClient.user.findUnique = vi.fn().mockResolvedValue(fetched);
-            prismaClient.user.findOne = vi.fn();
+            vi.spyOn(prismaClient.user, "findUnique").mockImplementation().mockResolvedValue(fetched);
+            vi.spyOn(prismaClient.user, "findOne").mockImplementation();
 
             const result = await adapter.getOne("User", 1, {});
 
@@ -272,7 +272,7 @@ describe(PrismaAdapter, () => {
             expect.assertions(1);
 
             prismaClient.user.findUnique = undefined;
-            prismaClient.user.findOne = vi.fn().mockResolvedValue({ id: 1 });
+            vi.spyOn(prismaClient.user, "findOne").mockImplementation().mockResolvedValue({ id: 1 });
 
             await adapter.getOne("User", 1, {});
 

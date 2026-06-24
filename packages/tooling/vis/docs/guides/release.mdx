@@ -275,29 +275,29 @@ Explicit `managed: false` always wins. Private packages (`"private": true`) are 
 
 ## Commands
 
-| Command                          | What it does                                                                 |
-| -------------------------------- | ---------------------------------------------------------------------------- |
-| `vis release init`               | Scaffold the subsystem; auto-detect migration source. `--apply` writes       |
-| `vis release add`                | Author a change file (interactive or `--packages '@a:minor,@b:patch'`)       |
-| `vis release generate`           | Derive a change file from branch commits                                     |
-| `vis release status`             | Human-readable pending plan (table)                                          |
-| `vis release plan`               | JSON plan; `--interactive` walks you through overrides                       |
-| `vis release next-version`       | Print `<pkg> <old> -> <new>` for every package in the plan                   |
-| `vis release changelog`          | Render the would-be changelog entries without writing                        |
-| `vis release check`              | Verify change files cover every changed package (husky / CI gate)            |
-| `vis release doctor`             | Preflight diagnostics                                                        |
-| `vis release version`            | Apply the plan to disk                                                       |
-| `vis release publish`            | Pack + publish + tag + push                                                  |
-| `vis release snapshot`           | Ephemeral `0.0.0-<tag>-<sha>` PR previews                                    |
-| `vis release pre enter/exit`     | Toggle changesets-compatible pre-mode (every `version` is a prerelease)      |
+| Command                          | What it does                                                                              |
+| -------------------------------- | ----------------------------------------------------------------------------------------- |
+| `vis release init`               | Scaffold the subsystem; auto-detect migration source. `--apply` writes                    |
+| `vis release add`                | Author a change file (interactive or `--packages '@a:minor,@b:patch'`)                    |
+| `vis release generate`           | Derive a change file from branch commits                                                  |
+| `vis release status`             | Human-readable pending plan (table)                                                       |
+| `vis release plan`               | JSON plan; `--interactive` walks you through overrides                                    |
+| `vis release next-version`       | Print `<pkg> <old> -> <new>` for every package in the plan                                |
+| `vis release changelog`          | Render the would-be changelog entries without writing                                     |
+| `vis release check`              | Verify change files cover every changed package (husky / CI gate)                         |
+| `vis release doctor`             | Preflight diagnostics                                                                     |
+| `vis release version`            | Apply the plan to disk                                                                    |
+| `vis release publish`            | Pack + publish + tag + push                                                               |
+| `vis release snapshot`           | Ephemeral `0.0.0-<tag>-<sha>` PR previews                                                 |
+| `vis release pre enter/exit`     | Toggle changesets-compatible pre-mode (every `version` is a prerelease)                   |
 | `vis release stage list/approve` | Manage `npm stage publish` records ([staged publishing](./release-staged-publishing.mdx)) |
-| `vis release notifications test` | Dry-run configured Slack / Discord / webhook destinations                    |
-| `vis release ci release`         | The CI driver — opens / updates the version-PR (or `--auto-publish` to skip) |
-| `vis release ci snapshot`        | CI snapshot publish + sticky PR comment                                      |
-| `vis release ci check`           | Sticky-comment the pending plan on the PR                                    |
-| `vis release ci plan`            | Emit JSON plan + write to `$GITHUB_OUTPUT` for workflow gating               |
-| `vis release ci rebase-pr`       | Rebase the version-PR onto base — wire to a cron when `versionPr.autoRebase` is on |
-| `vis release ci setup`           | Print the recommended secrets / permissions checklist                        |
+| `vis release notifications test` | Dry-run configured Slack / Discord / webhook destinations                                 |
+| `vis release ci release`         | The CI driver — opens / updates the version-PR (or `--auto-publish` to skip)              |
+| `vis release ci snapshot`        | CI snapshot publish + sticky PR comment                                                   |
+| `vis release ci check`           | Sticky-comment the pending plan on the PR                                                 |
+| `vis release ci plan`            | Emit JSON plan + write to `$GITHUB_OUTPUT` for workflow gating                            |
+| `vis release ci rebase-pr`       | Rebase the version-PR onto base — wire to a cron when `versionPr.autoRebase` is on        |
+| `vis release ci setup`           | Print the recommended secrets / permissions checklist                                     |
 
 See [the commands reference](../commands/release.mdx) for per-flag detail.
 
@@ -495,14 +495,14 @@ publish: {
 
 Tokens (single-pass — your token values won't be re-interpolated even if they contain `{...}` themselves):
 
-| Token              | What                                            |
-| ------------------ | ----------------------------------------------- |
-| `{name}`           | Full package name (`@scope/pkg`)                |
-| `{version}`        | Version being released                          |
-| `{previousVersion}`| Last published version on this channel          |
-| `{date}`           | ISO date of the release                         |
-| `{repo}`           | `owner/repo` slug                               |
-| `{contributors}`   | Bullet-list of authors from this wave's change files (release-please #292) |
+| Token               | What                                                                       |
+| ------------------- | -------------------------------------------------------------------------- |
+| `{name}`            | Full package name (`@scope/pkg`)                                           |
+| `{version}`         | Version being released                                                     |
+| `{previousVersion}` | Last published version on this channel                                     |
+| `{date}`            | ISO date of the release                                                    |
+| `{repo}`            | `owner/repo` slug                                                          |
+| `{contributors}`    | Bullet-list of authors from this wave's change files (release-please #292) |
 
 The `{contributors}` token expands to a `- @handle` bullet list (one per line) collected from every change file in the wave, so cascade and dependency-only bumps still credit the upstream author. Authors are de-duplicated case-insensitively, markdown-escaped, and filtered through the github formatter's `internalAuthors` list when that formatter is configured. If no change file in the wave declares an author, the token renders as the empty string and the surrounding header / footer line is dropped — a templated `## Contributors\n{contributors}` block collapses cleanly to nothing. (A git-log fallback for waves with no `author:` metadata is tracked as a follow-up — see `collectContributors` in `release-note-template.ts`.)
 
@@ -670,51 +670,51 @@ Run it locally before pushing release config changes, or wire it into your pre-m
 <details>
 <summary>All workspace-level options</summary>
 
-| Option                                            | Default                          | What it controls                                                                                                      |
-| ------------------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `baseBranch`                                      | `"main"`                         | Baseline ref for `status` / `generate` / merge-base detection                                                         |
-| `changesDir`                                      | `".vis/release"`                 | Where change files live                                                                                               |
-| `access`                                          | `"public"`                       | Default npm `--access`                                                                                                |
-| `defaultManaged`                                  | `false`                          | Whether unconfigured packages are released by default                                                                 |
-| `channels`                                        | —                                | Branch → publish profile. No built-in defaults — you declare every branch                                             |
-| `notifications`                                   | —                                | Post-release fan-out: Slack / Discord / generic webhook / plugins. Per-channel failures log a warning, never fail CI  |
-| `updateInternalDependencies`                      | `"out-of-range"`                 | When to bump internal dependents: `"patch"` / `"minor"` / `"out-of-range"`                                            |
-| `dependencyBumpRules`                             | sensible defaults                | Per-dep-kind `{ trigger, bumpAs }`. Disable a kind with `false`                                                       |
-| `bumpDevDependencies`                             | `false`                          | Opt-in cascade for devDep bumps. `true` for all, or `string[]` allow-list of source pkgs                              |
-| `detectCatalogChanges`                            | `false`                          | Treat consumers of changed `pnpm-workspace.yaml` catalog entries as bumped                                            |
-| `fixed` / `linked`                                | `[]`                             | Group rules (locked versions / locked bump levels). Object form opts into a shared changelog                          |
-| `ignore` / `include`                              | `[]`                             | Globs that opt-out / force-include packages                                                                           |
-| `privatePackages`                                 | `{ version: false, tag: false }` | Whether to version / tag `private: true` packages                                                                     |
-| `changelog`                                       | `"default"`                      | `false` / `"default"` / `"github"` / `"keep-a-changelog"` / `[path, options]` / `[builtin, options]`                  |
-| `publish.cleanPackageJson`                        | `true`                           | Strip `scripts`, `devDependencies`, etc. from the published manifest                                                  |
-| `publish.guards`                                  | conservative defaults            | Pre-publish gates — see [security audit](./security-audit.mdx)                                                        |
-| `publish.releaseAssets`                           | `{}`                             | Post-publish: stamp tarball hashes into the release body and/or upload the tarball                                    |
-| `publish.draftRelease`                            | `false`                          | Create the GitHub / GitLab release as a draft (human-published from the UI)                                           |
-| `publish.discussionCategory`                      | —                                | GitHub: link each release to a Discussion in the named category                                                       |
-| `publish.addReleases`                             | `false`                          | `"top"` / `"bottom"` prepends or appends a "Related releases" block linking the previous 3-5 releases of the same package (GitHub only; GitLab logs a warning) |
-| `publish.extraFiles`                              | `[]`                             | Workspace-level regex or annotation-comment rules — keep version strings in README badges, Cargo.toml, Dockerfiles, etc. in sync |
-| `publish.releaseNoteTemplate`                     | —                                | `{ header?, footer? }` — wrap each per-package release body. Tokens: `{name}`, `{version}`, `{previousVersion}`, `{date}`, `{repo}`, `{contributors}`. NOT applied in `aggregateRelease` mode |
-| `publish.noRelease`                               | `false`                          | Skip GitHub/GitLab release creation but still tag + publish + notify                                                  |
-| `publish.stage`                                   | `false`                          | Use `npm stage publish` for human-approved npm releases — see [staged publishing](./release-staged-publishing.mdx)    |
-| `releaseTagPattern`                               | `"{name}@{version}"`             | Tag template. Tokens: `{name}`, `{unscopedName}`, `{version}`, `{major}`, `{minor}`, `{patch}`, `{date}`, `{channel}` |
-| `aggregateRelease`                                | `false`                          | One GitHub release per wave vs per-package                                                                            |
-| `versionPr.{title,branch,preamble,commentMarker,labels,reviewers,assignees,autoMerge,autoMergeMethod,autoRebase}` | —                                | Cosmetics + lifecycle metadata for the rolling version-PR (auto-merge needs `repo settings → allow auto-merge`; auto-rebase needs a cron running `vis release ci rebase-pr`) |
-| `gitUser`                                         | —                                | `{ name, email }` used for CI commits                                                                                 |
-| `gitSignCommits`                                  | `false`                          | Pass `git commit -S` to release-flow commits                                                                          |
-| `signing`                                         | —                                | `{ mode: "gpg" \| "ssh" \| "sigstore", key? }` — sign release tags                                                    |
-| `floatingMajorTag`                                | `false`                          | Maintain a `<safe-name>-v<major>` tag that always points at the latest non-prerelease of that major line              |
-| `bumpMinorPreMajor`                               | `false`                          | For pre-1.0 versions, demote major → minor (avoids leaping to 2.0 on first breaking change)                           |
-| `bumpPatchForMinorPreMajor`                       | `false`                          | Companion: also demote minor → patch when pre-1.0. No-op without `bumpMinorPreMajor`                                  |
-| `preVersionCommand` / `postVersionCommand` / `prePublishCommand` / `postPublishCommand` | — | Shell hooks at version / publish stage boundaries                                                                     |
-| `allowCustomCommands`                             | `false`                          | Trust gate for per-package `publishCommand` / `buildCommand` / `checkPublished`. `true` for all, or `string[]` allow-list |
-| `provider`                                        | `"auto"`                         | `"github"` / `"gitlab"` / `"auto"`                                                                                    |
-| `gitlabHost`                                      | —                                | Self-hosted GitLab base (e.g. `gitlab.acme.com`). Maps to `GITLAB_HOST` for `glab`                                    |
-| `githubHost`                                      | —                                | Self-hosted GitHub Enterprise host (e.g. `github.acme.com`). Maps to `GH_HOST` for `gh`. Doctor warns if `gh` isn't on PATH |
-| `httpProxy`                                       | —                                | HTTPS proxy URL — sets `HTTPS_PROXY`/`HTTP_PROXY` on `gh`/`glab` subprocesses AND routes internal `fetch()` calls through an undici `ProxyAgent` |
-| `workspaceChangelog`                              | `false`                          | Write one root-level `CHANGELOG.md` aggregating each wave                                                             |
-| `successWalk`                                     | —                                | Post-release walk that posts sticky comments + adds a `released` label on every PR/issue referenced in changelog bodies. Off when undefined — set `{}` to opt in |
-| `currentVersionResolver`                          | `"disk"`                         | `"disk"` / `"registry"` / `"git-tag"` — see [first release & resolver](./release-first-release-and-resolver.mdx)      |
-| `acknowledgeUnstable`                             | `false`                          | Suppress the unstable-subsystem warning                                                                               |
+| Option                                                                                                            | Default                          | What it controls                                                                                                                                                                              |
+| ----------------------------------------------------------------------------------------------------------------- | -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `baseBranch`                                                                                                      | `"main"`                         | Baseline ref for `status` / `generate` / merge-base detection                                                                                                                                 |
+| `changesDir`                                                                                                      | `".vis/release"`                 | Where change files live                                                                                                                                                                       |
+| `access`                                                                                                          | `"public"`                       | Default npm `--access`                                                                                                                                                                        |
+| `defaultManaged`                                                                                                  | `false`                          | Whether unconfigured packages are released by default                                                                                                                                         |
+| `channels`                                                                                                        | —                                | Branch → publish profile. No built-in defaults — you declare every branch                                                                                                                     |
+| `notifications`                                                                                                   | —                                | Post-release fan-out: Slack / Discord / generic webhook / plugins. Per-channel failures log a warning, never fail CI                                                                          |
+| `updateInternalDependencies`                                                                                      | `"out-of-range"`                 | When to bump internal dependents: `"patch"` / `"minor"` / `"out-of-range"`                                                                                                                    |
+| `dependencyBumpRules`                                                                                             | sensible defaults                | Per-dep-kind `{ trigger, bumpAs }`. Disable a kind with `false`                                                                                                                               |
+| `bumpDevDependencies`                                                                                             | `false`                          | Opt-in cascade for devDep bumps. `true` for all, or `string[]` allow-list of source pkgs                                                                                                      |
+| `detectCatalogChanges`                                                                                            | `false`                          | Treat consumers of changed `pnpm-workspace.yaml` catalog entries as bumped                                                                                                                    |
+| `fixed` / `linked`                                                                                                | `[]`                             | Group rules (locked versions / locked bump levels). Object form opts into a shared changelog                                                                                                  |
+| `ignore` / `include`                                                                                              | `[]`                             | Globs that opt-out / force-include packages                                                                                                                                                   |
+| `privatePackages`                                                                                                 | `{ version: false, tag: false }` | Whether to version / tag `private: true` packages                                                                                                                                             |
+| `changelog`                                                                                                       | `"default"`                      | `false` / `"default"` / `"github"` / `"keep-a-changelog"` / `[path, options]` / `[builtin, options]`                                                                                          |
+| `publish.cleanPackageJson`                                                                                        | `true`                           | Strip `scripts`, `devDependencies`, etc. from the published manifest                                                                                                                          |
+| `publish.guards`                                                                                                  | conservative defaults            | Pre-publish gates — see [security audit](./security-audit.mdx)                                                                                                                                |
+| `publish.releaseAssets`                                                                                           | `{}`                             | Post-publish: stamp tarball hashes into the release body and/or upload the tarball                                                                                                            |
+| `publish.draftRelease`                                                                                            | `false`                          | Create the GitHub / GitLab release as a draft (human-published from the UI)                                                                                                                   |
+| `publish.discussionCategory`                                                                                      | —                                | GitHub: link each release to a Discussion in the named category                                                                                                                               |
+| `publish.addReleases`                                                                                             | `false`                          | `"top"` / `"bottom"` prepends or appends a "Related releases" block linking the previous 3-5 releases of the same package (GitHub only; GitLab logs a warning)                                |
+| `publish.extraFiles`                                                                                              | `[]`                             | Workspace-level regex or annotation-comment rules — keep version strings in README badges, Cargo.toml, Dockerfiles, etc. in sync                                                              |
+| `publish.releaseNoteTemplate`                                                                                     | —                                | `{ header?, footer? }` — wrap each per-package release body. Tokens: `{name}`, `{version}`, `{previousVersion}`, `{date}`, `{repo}`, `{contributors}`. NOT applied in `aggregateRelease` mode |
+| `publish.noRelease`                                                                                               | `false`                          | Skip GitHub/GitLab release creation but still tag + publish + notify                                                                                                                          |
+| `publish.stage`                                                                                                   | `false`                          | Use `npm stage publish` for human-approved npm releases — see [staged publishing](./release-staged-publishing.mdx)                                                                            |
+| `releaseTagPattern`                                                                                               | `"{name}@{version}"`             | Tag template. Tokens: `{name}`, `{unscopedName}`, `{version}`, `{major}`, `{minor}`, `{patch}`, `{date}`, `{channel}`                                                                         |
+| `aggregateRelease`                                                                                                | `false`                          | One GitHub release per wave vs per-package                                                                                                                                                    |
+| `versionPr.{title,branch,preamble,commentMarker,labels,reviewers,assignees,autoMerge,autoMergeMethod,autoRebase}` | —                                | Cosmetics + lifecycle metadata for the rolling version-PR (auto-merge needs `repo settings → allow auto-merge`; auto-rebase needs a cron running `vis release ci rebase-pr`)                  |
+| `gitUser`                                                                                                         | —                                | `{ name, email }` used for CI commits                                                                                                                                                         |
+| `gitSignCommits`                                                                                                  | `false`                          | Pass `git commit -S` to release-flow commits                                                                                                                                                  |
+| `signing`                                                                                                         | —                                | `{ mode: "gpg" \| "ssh" \| "sigstore", key? }` — sign release tags                                                                                                                            |
+| `floatingMajorTag`                                                                                                | `false`                          | Maintain a `<safe-name>-v<major>` tag that always points at the latest non-prerelease of that major line                                                                                      |
+| `bumpMinorPreMajor`                                                                                               | `false`                          | For pre-1.0 versions, demote major → minor (avoids leaping to 2.0 on first breaking change)                                                                                                   |
+| `bumpPatchForMinorPreMajor`                                                                                       | `false`                          | Companion: also demote minor → patch when pre-1.0. No-op without `bumpMinorPreMajor`                                                                                                          |
+| `preVersionCommand` / `postVersionCommand` / `prePublishCommand` / `postPublishCommand`                           | —                                | Shell hooks at version / publish stage boundaries                                                                                                                                             |
+| `allowCustomCommands`                                                                                             | `false`                          | Trust gate for per-package `publishCommand` / `buildCommand` / `checkPublished`. `true` for all, or `string[]` allow-list                                                                     |
+| `provider`                                                                                                        | `"auto"`                         | `"github"` / `"gitlab"` / `"auto"`                                                                                                                                                            |
+| `gitlabHost`                                                                                                      | —                                | Self-hosted GitLab base (e.g. `gitlab.acme.com`). Maps to `GITLAB_HOST` for `glab`                                                                                                            |
+| `githubHost`                                                                                                      | —                                | Self-hosted GitHub Enterprise host (e.g. `github.acme.com`). Maps to `GH_HOST` for `gh`. Doctor warns if `gh` isn't on PATH                                                                   |
+| `httpProxy`                                                                                                       | —                                | HTTPS proxy URL — sets `HTTPS_PROXY`/`HTTP_PROXY` on `gh`/`glab` subprocesses AND routes internal `fetch()` calls through an undici `ProxyAgent`                                              |
+| `workspaceChangelog`                                                                                              | `false`                          | Write one root-level `CHANGELOG.md` aggregating each wave                                                                                                                                     |
+| `successWalk`                                                                                                     | —                                | Post-release walk that posts sticky comments + adds a `released` label on every PR/issue referenced in changelog bodies. Off when undefined — set `{}` to opt in                              |
+| `currentVersionResolver`                                                                                          | `"disk"`                         | `"disk"` / `"registry"` / `"git-tag"` — see [first release & resolver](./release-first-release-and-resolver.mdx)                                                                              |
+| `acknowledgeUnstable`                                                                                             | `false`                          | Suppress the unstable-subsystem warning                                                                                                                                                       |
 
 </details>
 

@@ -209,7 +209,7 @@ describe(css, () => {
 
             const result = css`
                 .test::after {
-                    content: 'x   y';
+                    content: "x   y";
                 }
             `;
 

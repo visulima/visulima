@@ -18,10 +18,7 @@ import { YarnAdapter } from "./yarn";
 
 export type PackageManagerId = "npm" | "pnpm" | "yarn" | "bun";
 
-export const detectPackageManager = async (
-    cwd: string,
-    _runner: CommandRunner,
-): Promise<PackageManagerId> => {
+export const detectPackageManager = async (cwd: string, _runner: CommandRunner): Promise<PackageManagerId> => {
     const fs = await import("node:fs/promises");
     const path = await import("node:path");
 

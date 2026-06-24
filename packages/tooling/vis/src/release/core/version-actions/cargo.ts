@@ -164,7 +164,7 @@ const readCargoToml = async (cargoTomlPath: string): Promise<{ name: string; ver
 
     if (typeof versionField === "string") {
         version = versionField;
-    } else if (versionField && typeof versionField === "object" && (versionField).workspace === true) {
+    } else if (versionField && typeof versionField === "object" && versionField.workspace === true) {
         // `version.workspace = true` → look up the inherited value in
         // [workspace.package].version of the SAME file (workspace root)
         // or — when we're a member crate — the operator points us at
@@ -266,10 +266,7 @@ const shouldUseTrustedPublishing = (env: NodeJS.ProcessEnv, workspaceConfig?: Vi
  * is workspace-relative; we leave it as-is so the secret scanner can
  * pair the path with `pkgDir`.
  */
-const listCratePackFiles = async (
-    runner: PackageManagerAdapter["runner"],
-    cwd: string,
-): Promise<string[]> => {
+const listCratePackFiles = async (runner: PackageManagerAdapter["runner"], cwd: string): Promise<string[]> => {
     const result = await runner.run("cargo", ["package", "--list", "--allow-dirty"], { cwd, silent: true });
 
     if (result.exitCode !== 0) {

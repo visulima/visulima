@@ -157,9 +157,7 @@ describe(gatherPackageInfo, () => {
         expect.assertions(2);
 
         mockedGetPackument.mockResolvedValue(makePackument({ bin: "./cli.js", version: "1.0.0" }));
-        mockedFetchSocketReports.mockResolvedValue(
-            new Map([["demo@1.0.0", makeReport({ alerts: [makeAlert({ type: "somethingUnmapped" })] })]]),
-        );
+        mockedFetchSocketReports.mockResolvedValue(new Map([["demo@1.0.0", makeReport({ alerts: [makeAlert({ type: "somethingUnmapped" })] })]]));
 
         const info = await gatherPackageInfo({ name: "demo", now: 0, socketToken: "tok" });
 
@@ -197,7 +195,9 @@ describe(gatherPackageInfo, () => {
         expect.assertions(1);
 
         mockedGetPackument.mockResolvedValue(makePackument({ version: "1.0.0" }));
-        mockedFetchSocketReports.mockResolvedValue(new Map([["weird-key", makeReport({ score: { license: 1, maintenance: 1, overall: 0.5, quality: 1, supplyChain: 1, vulnerability: 1 } })]]));
+        mockedFetchSocketReports.mockResolvedValue(
+            new Map([["weird-key", makeReport({ score: { license: 1, maintenance: 1, overall: 0.5, quality: 1, supplyChain: 1, vulnerability: 1 } })]]),
+        );
 
         const info = await gatherPackageInfo({ name: "demo", now: 0, socketToken: "tok" });
 
@@ -209,7 +209,14 @@ describe(gatherPackageInfo, () => {
 
         mockedGetPackument.mockResolvedValue(makePackument({ version: "1.0.0" }));
         mockedFetchSocketReports.mockResolvedValue(
-            new Map([["demo@1.0.0", makeReport({ score: { license: 1, maintenance: 1, overall: undefined as unknown as number, quality: 1, supplyChain: 1, vulnerability: 1 } })]]),
+            new Map([
+                [
+                    "demo@1.0.0",
+                    makeReport({
+                        score: { license: 1, maintenance: 1, overall: undefined as unknown as number, quality: 1, supplyChain: 1, vulnerability: 1 },
+                    }),
+                ],
+            ]),
         );
 
         const info = await gatherPackageInfo({ name: "demo", now: 0, socketToken: "tok" });

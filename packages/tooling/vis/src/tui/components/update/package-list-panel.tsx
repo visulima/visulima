@@ -112,8 +112,8 @@ const CatalogHeader = ({ count, ecosystem = false, name }: CatalogHeaderProps): 
         </Text>
         {ecosystem && (
             <Text color="cyan" dimColor>
-{"  "}
-ci/cd refs
+                {"  "}
+                ci/cd refs
             </Text>
         )}
     </Box>
@@ -225,12 +225,7 @@ const PackageListPanel = ({
 
     for (const [catalogName, catalogEntries] of groupedByCatalog) {
         rows.push(
-            <CatalogHeader
-                count={catalogEntries.length}
-                ecosystem={catalogEntries[0]?.kind === "ecosystem"}
-                key={`hdr-${catalogName}`}
-                name={catalogName}
-            />,
+            <CatalogHeader count={catalogEntries.length} ecosystem={catalogEntries[0]?.kind === "ecosystem"} key={`hdr-${catalogName}`} name={catalogName} />,
         );
 
         for (const entry of catalogEntries) {
@@ -268,19 +263,18 @@ const PackageListPanel = ({
                     {ecosystemCount > 0 ? packageCount : totalEntries}
                     {totalChecked > 0 ? `/${totalChecked}` : ""}
 {" "}
-                    {ecosystemCount > 0 ? "pkgs" : "outdated"}
-{summaryText}
+{ecosystemCount > 0 ? "pkgs" : "outdated"}
+                    {summaryText}
                     {totalCatalogEntries > totalChecked ? ` · ${totalCatalogEntries - totalChecked} dupes` : ""}
                 </Text>
                 {ecosystemCount > 0 && (
-                    <Text color="cyan">
+<Text color="cyan">
 {" "}
 ◈
-{" "}
 {ecosystemCount}
 {" "}
 ci/cd
-                    </Text>
+</Text>
                 )}
                 {!isDryRun && checkedCount > 0 && (
 <Text dimColor>

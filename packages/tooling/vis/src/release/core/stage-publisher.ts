@@ -60,9 +60,7 @@ export interface WaitForStageDecisionOptions {
  * auth for restricted packages. We refuse the OIDC + restricted combo at
  * publish time (RFC §13.6); for public packages the GET is unauthenticated.
  */
-export const waitForStageDecision = async (
-    options: WaitForStageDecisionOptions,
-): Promise<StageDecision> => {
+export const waitForStageDecision = async (options: WaitForStageDecisionOptions): Promise<StageDecision> => {
     const start = Date.now();
     const stageStillPresent = (stdout: string): boolean => {
         const trimmed = stdout.trim();
@@ -81,22 +79,17 @@ export const waitForStageDecision = async (
     };
 
     while (Date.now() - start < options.timeoutMs) {
-        const view = await options.runner.run(
-            "npm",
-            ["stage", "view", options.stageId, "--json"],
-            { cwd: options.cwd, silent: true },
-        );
+        const view = await options.runner.run("npm", ["stage", "view", options.stageId, "--json"], { cwd: options.cwd, silent: true });
 
         const stillStaged = view.exitCode === 0 && stageStillPresent(view.stdout);
 
         if (!stillStaged) {
             // Decision made (or stage id no longer exists). Probe the live
             // registry to disambiguate approve vs reject.
-            const live = await options.runner.run(
-                "npm",
-                ["view", `${options.packageName}@${options.version}`, "dist.tarball", "--silent"],
-                { cwd: options.cwd, silent: true },
-            );
+            const live = await options.runner.run("npm", ["view", `${options.packageName}@${options.version}`, "dist.tarball", "--silent"], {
+                cwd: options.cwd,
+                silent: true,
+            });
 
             return live.exitCode === 0 && live.stdout.trim() ? "approved" : "rejected";
         }
@@ -116,10 +109,7 @@ export const waitForStageDecision = async (
  * requires either a fallback `NPM_TOKEN` (out of scope for v1) or proper
  * stage-decision webhooks from npm Inc (none documented yet).
  */
-export const refuseRestrictedOidc = (
-    publishConfigAccess: string | undefined,
-    env: NodeJS.ProcessEnv = process.env,
-): void => {
+export const refuseRestrictedOidc = (publishConfigAccess: string | undefined, env: NodeJS.ProcessEnv = process.env): void => {
     const isRestricted = publishConfigAccess === "restricted";
     const isOidc = Boolean(env["ACTIONS_ID_TOKEN_REQUEST_URL"]) && !env["NPM_TOKEN"];
 

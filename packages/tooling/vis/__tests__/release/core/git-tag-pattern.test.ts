@@ -73,7 +73,10 @@ describe(renderTagPattern, () => {
 });
 
 describe(createOrUpdateFloatingTag, () => {
-    interface InvocationLog { args: ReadonlyArray<string>; command: string }
+    interface InvocationLog {
+        args: ReadonlyArray<string>;
+        command: string;
+    }
 
     const captureInvocations = (runner: MockRunner, sink: InvocationLog[]): void => {
         const original = runner.run.bind(runner);
@@ -92,8 +95,12 @@ describe(createOrUpdateFloatingTag, () => {
         const calls: InvocationLog[] = [];
 
         captureInvocations(runner, calls);
-        runner.on("git", ["tag"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["push"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        runner.on("git", ["tag"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["push"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
 
         await createOrUpdateFloatingTag({ cwd: "/r", runner }, "v1");
 
@@ -117,8 +124,12 @@ describe(createOrUpdateFloatingTag, () => {
         const calls: InvocationLog[] = [];
 
         captureInvocations(runner, calls);
-        runner.on("git", ["tag"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["push"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        runner.on("git", ["tag"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["push"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
 
         await createOrUpdateFloatingTag({ cwd: "/r", runner }, "v1", { push: false });
 
@@ -134,8 +145,12 @@ describe(createOrUpdateFloatingTag, () => {
         const calls: InvocationLog[] = [];
 
         captureInvocations(runner, calls);
-        runner.on("git", ["tag"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
-        runner.on("git", ["push"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        runner.on("git", ["tag"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
+        runner.on("git", ["push"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
 
         await createOrUpdateFloatingTag({ cwd: "/r", runner }, "v1", { signing: { mode: "gpg" } });
 

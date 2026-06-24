@@ -25,7 +25,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         return;
     }
 
-    const mode = ctx.plan.releases.length === 0 ? "nothing" : (ctx.channel?.mode === "version-pr" ? "version-pr" : "publish");
+    const mode = ctx.plan.releases.length === 0 ? "nothing" : ctx.channel?.mode === "version-pr" ? "version-pr" : "publish";
     const packageNames = ctx.plan.releases.map((r) => r.name);
 
     const out = {

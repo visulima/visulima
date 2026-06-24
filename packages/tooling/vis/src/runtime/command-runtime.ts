@@ -48,5 +48,4 @@ export const resolveCommandRuntime = (context: RuntimeCommandContext, cwd: strin
  * selection to lockfile/config detection (pnpm/npm/yarn). Returns `undefined`
  * when the runtime should not override backend detection.
  */
-export const runtimeInstallerBackend = (resolution: RuntimeResolution): "bun" | undefined =>
-    (resolution.runtime === "bun" ? "bun" : undefined);
+export const runtimeInstallerBackend = (resolution: RuntimeResolution): "bun" | undefined => (resolution.runtime === "bun" ? "bun" : undefined);

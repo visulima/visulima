@@ -4,8 +4,7 @@ import { buildContext } from "../../../release/core/orchestrator";
 import type { BumpLevel } from "../../../release/types";
 import type { ReleaseStatusOptions } from "./index";
 
-const isBumpLevel = (value: string): value is BumpLevel =>
-    value === "major" || value === "minor" || value === "patch" || value === "none";
+const isBumpLevel = (value: string): value is BumpLevel => value === "major" || value === "minor" || value === "patch" || value === "none";
 
 const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, ReleaseStatusOptions>): Promise<void> => {
     const cwd = workspaceRoot ?? process.cwd();
@@ -35,7 +34,10 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
 
     // Filter by bump level
     if (options.bump) {
-        const wanted = options.bump.split(",").map((s) => s.trim()).filter(isBumpLevel);
+        const wanted = options.bump
+            .split(",")
+            .map((s) => s.trim())
+            .filter(isBumpLevel);
 
         if (wanted.length > 0) {
             releases = releases.filter((r) => wanted.includes(r.type));
