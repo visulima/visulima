@@ -50,6 +50,9 @@
     "ignoreUnresolvedImports": [
         "**/*.node",
         "@visulima/*-binding-*",
+        // Generated NAPI loaders also reference a WASI fallback bundle that is
+        // only emitted by the native build, so it never resolves on a host run.
+        "**/*.wasi.cjs",
         // Importing the manifest for version/metadata is a normal pattern fallow
         // does not resolve.
         "**/package.json",
@@ -97,6 +100,10 @@
         "vitest",
         "@vitest/coverage-v8",
         "@vitest/ui",
+        // @vue/test-utils does an undeclared runtime require("@vue/server-renderer")
+        // for its SSR render path; storage-client declares it so the vue tests can
+        // resolve it, but nothing imports it statically.
+        "@vue/server-renderer",
         "@codspeed/vitest-plugin",
         "typescript",
         "rimraf",

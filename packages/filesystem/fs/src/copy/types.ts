@@ -56,8 +56,3 @@ export type CopyOptions = {
  * Synchronous variant of {@link CopyOptions.filter}.
  */
 export type CopyFilterSync = (source: string, destination: string) => boolean;
-
-/**
- * Re-exported for convenience when typing filter callbacks against `fs.Stats`.
- */
-export type { Stats } from "node:fs";

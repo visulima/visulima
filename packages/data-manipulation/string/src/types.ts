@@ -134,6 +134,7 @@ namespace Math {
      * @returns A positive index as a number type
      */
 
+    // fallow-ignore-next-line unused-type -- used in-file via the `Math.GetPositiveIndex` namespace qualifier, which fallow's in-file-usage check misses.
     export type GetPositiveIndex<T extends string, I extends number> = IsNegative<I> extends false ? I : Subtract<Length<T>, Abs<I>>;
 }
 
