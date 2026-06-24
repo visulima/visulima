@@ -11,18 +11,6 @@
 /** JS runtimes vis can target today. `"deno"` is deferred. */
 export type RuntimeId = "bun" | "node";
 
-/**
- * A spawn description. Adapters build the argv/env; callers do the actual
- * spawning. Reserved for the Phase 1 verb-routing methods — defined now so
- * the contract is stable.
- */
-// fallow-ignore-next-line unused-type -- reserved Phase 1 verb-routing adapter contract, kept stable ahead of consumers
-export interface SpawnSpec {
-    args: string[];
-    command: string;
-    env?: Record<string, string>;
-}
-
 export interface RuntimeAdapter {
     /** Stable runtime identifier. */
     readonly id: RuntimeId;
