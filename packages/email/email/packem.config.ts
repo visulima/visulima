@@ -17,4 +17,12 @@ export default defineConfig({
         },
     },
     transformer,
+    cjsInterop: true,
+    validation: {
+        dependencies: {
+            hoisted: {
+                exclude: ["@visulima/path"],
+            },
+        },
+    },
 }) as BuildConfig;
