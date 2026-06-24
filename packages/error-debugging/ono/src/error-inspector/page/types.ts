@@ -31,7 +31,6 @@ interface CustomRequest {
 
 // Unified types that work across all runtimes
 type HeadersLike = NativeHeaders | CustomHeaders;
-type RequestLikeType = NativeRequest | CustomRequest;
 
 // Flexible RequestLike interface that supports multiple request types
 type RequestLike
@@ -102,7 +101,7 @@ export type ContextContentOptions = {
 };
 
 // Export statements
-export type { HeadersLike, RequestLike, RequestLikeType };
+export type { HeadersLike, RequestLike };
 
 // Export runtime detection constants
 export const runtime: {

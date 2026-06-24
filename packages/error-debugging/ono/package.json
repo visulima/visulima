@@ -132,7 +132,6 @@
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "semantic-release": "catalog:cli",
-        "sort-package-json": "catalog:dev",
         "tailwind-csstree": "catalog:dev",
         "tailwindcss": "catalog:style",
         "typescript": "catalog:tsc",
