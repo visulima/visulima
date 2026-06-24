@@ -32,6 +32,12 @@ export const getVitestConfig = (options: ViteUserConfig = {}) => {
             },
             environment: "node",
             hideSkippedTests: true,
+            // Integration tests across the monorepo spawn subprocesses (tsc, node,
+            // CLI binaries). Each is fast in isolation, but Nx runs many packages
+            // in parallel and process startup gets starved well past Vitest's 5s
+            // default, surfacing as flaky timeouts. Give them generous headroom.
+            hookTimeout: 30_000,
+            testTimeout: 30_000,
             reporters: process.env.CI
                 ? process.env.CI_PREFLIGHT
                     ? ["dot", "github-actions"]

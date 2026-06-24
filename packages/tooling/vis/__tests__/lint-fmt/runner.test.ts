@@ -144,54 +144,61 @@ describe("lint-fmt runner", () => {
             }
         });
 
-        it("delivers parallel speedup vs sequential", async () => {
+        it("runs adapters concurrently (overlapping execution windows)", async () => {
             expect.assertions(1);
 
-            const sleepy = writeScript("slow.cjs", { delayMs: 300 });
-            const makeJobs = (): AdapterJob[] =>
-                Array.from({ length: 4 }, (_, index) => {
-                    return {
-                        adapter: stubAdapter(`stub-${index}`, sleepy),
-                        files: ["."],
-                        presence: stubPresence(),
-                    };
-                });
+            // Each spawned job records its own start/end wall-clock to a shared
+            // log. Parallelism is proven by *overlapping* execution windows — a
+            // signal that is independent of machine load. A wall-clock speedup
+            // ratio flakes on a saturated CI box (CPU contention slows both the
+            // serial and parallel runs, eroding the ratio), whereas overlap is
+            // binary: the serial fallback runs jobs strictly one-after-another
+            // and can never overlap, no matter how loaded the host is.
+            const markerFile = join(scriptDir, "intervals.log");
+            const intervalScript = join(scriptDir, "interval.cjs");
 
-            // Measure a forced-serial baseline (VIS_LINT_FMT_SERIAL=1) and the
-            // parallel run, then assert a *relative* speedup. An absolute
-            // wall-clock ceiling flakes on loaded CI/dev machines (process
-            // spawn cost + CPU contention scale both runs); a ratio stays
-            // meaningful because both halves absorb the same jitter.
-            const previous = process.env.VIS_LINT_FMT_SERIAL;
+            // Markers are written as space-separated "<kind> <timestamp>"
+            // tokens (no newlines) so the generated source stays free of escape
+            // sequences; the reader recovers the events with a regex.
+            writeFileSync(
+                intervalScript,
+                [
+                    `const fs = require("node:fs");`,
+                    `const marker = ${JSON.stringify(markerFile)};`,
+                    `fs.appendFileSync(marker, "start " + Date.now() + " ");`,
+                    // A generous window so all four processes are alive at once
+                    // even when spawns stagger under heavy load.
+                    `setTimeout(() => { fs.appendFileSync(marker, "end " + Date.now() + " "); process.exit(0); }, 1500);`,
+                ].join("\n"),
+            );
 
-            process.env.VIS_LINT_FMT_SERIAL = "1";
+            const jobs: AdapterJob[] = Array.from({ length: 4 }, (_, index) => {
+                return {
+                    adapter: stubAdapter(`stub-${index}`, intervalScript),
+                    files: ["."],
+                    presence: stubPresence(),
+                };
+            });
 
-            let serialDuration: number;
+            await runAdaptersParallel(jobs, {}, "check", 4);
 
-            try {
-                const serialStart = Date.now();
+            // Sweep start (+1) / end (-1) events for the peak number of
+            // simultaneously-live processes. Ties resolve starts before ends.
+            const events = [...readFileSync(markerFile, "utf8").matchAll(/(start|end) (\d+)/g)]
+                .map((match) => {
+                    return { delta: match[1] === "start" ? 1 : -1, time: Number(match[2]) };
+                })
+                .sort((a, b) => (a.time === b.time ? b.delta - a.delta : a.time - b.time));
 
-                await runAdaptersParallel(makeJobs(), {}, "check", 4);
+            let live = 0;
+            let peak = 0;
 
-                serialDuration = Date.now() - serialStart;
-            } finally {
-                if (previous === undefined) {
-                    delete process.env.VIS_LINT_FMT_SERIAL;
-                } else {
-                    process.env.VIS_LINT_FMT_SERIAL = previous;
-                }
+            for (const event of events) {
+                live += event.delta;
+                peak = Math.max(peak, live);
             }
 
-            const parallelStart = Date.now();
-
-            await runAdaptersParallel(makeJobs(), {}, "check", 4);
-
-            const parallelDuration = Date.now() - parallelStart;
-
-            // 4 × 300ms jobs: serial ≈ 1200ms+, parallel ≈ one job + overhead.
-            // Require a clear speedup (parallel under 70% of serial) without
-            // pinning an absolute budget.
-            expect(parallelDuration).toBeLessThan(serialDuration * 0.7);
+            expect(peak).toBeGreaterThanOrEqual(2);
         });
     });
 

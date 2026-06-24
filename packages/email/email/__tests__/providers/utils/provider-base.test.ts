@@ -124,6 +124,6 @@ describe(handleProviderError, () => {
 
         handleProviderError("test", "send email", new Error("upstream"), logger);
 
-        expect(logger.debug).toHaveBeenCalledWith();
+        expect(logger.debug).toHaveBeenCalledWith("Exception send email", new Error("upstream"));
     });
 });

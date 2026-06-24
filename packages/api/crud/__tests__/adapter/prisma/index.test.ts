@@ -20,12 +20,13 @@ interface ModelDelegate {
 
 const makeDelegate = (overrides: Partial<ModelDelegate> = {}): ModelDelegate => {
     return {
-        count: vi.fn().mockResolvedValue(0),
-        create: vi.fn().mockResolvedValue({}),
-        delete: vi.fn().mockResolvedValue({}),
-        findMany: vi.fn().mockResolvedValue([]),
-        findUnique: vi.fn().mockResolvedValue({}),
-        update: vi.fn().mockResolvedValue({}),
+        count: vi.fn<() => any>().mockResolvedValue(0),
+        create: vi.fn<() => any>().mockResolvedValue({}),
+        delete: vi.fn<() => any>().mockResolvedValue({}),
+        findMany: vi.fn<() => any>().mockResolvedValue([]),
+        findOne: vi.fn<() => any>().mockResolvedValue({}),
+        findUnique: vi.fn<() => any>().mockResolvedValue({}),
+        update: vi.fn<() => any>().mockResolvedValue({}),
         ...overrides,
     };
 };
@@ -36,8 +37,8 @@ interface TestClient extends FakePrismaClient {
 
 const makeClient = (overrides: Partial<TestClient> = {}): TestClient => {
     const client = {
-        $connect: vi.fn(),
-        $disconnect: vi.fn().mockResolvedValue(undefined),
+        $connect: vi.fn<() => any>(),
+        $disconnect: vi.fn<() => any>().mockResolvedValue(undefined),
 
         _dmmf: { mappingsMap: { User: { plural: "users" } } },
         user: makeDelegate(),
@@ -112,10 +113,11 @@ describe(PrismaAdapter, () => {
         it("should support clients exposing _getDmmf instead of _dmmf", async () => {
             expect.assertions(1);
 
-            const client = makeClient() as Record<string, unknown> & TestClient;
+            const client = makeClient({
+                _getDmmf: vi.fn<() => any>().mockResolvedValue({ mappingsMap: { User: { plural: "users" } } }),
+            }) as Record<string, unknown> & TestClient;
 
             delete client["_dmmf"];
-            vi.spyOn(client, "_getDmmf").mockImplementation().mockResolvedValue({ mappingsMap: { User: { plural: "users" } } });
 
             const a = new PrismaAdapter({
                 models: ["User"],
@@ -260,7 +262,6 @@ describe(PrismaAdapter, () => {
             const fetched = { id: 1 };
 
             vi.spyOn(prismaClient.user, "findUnique").mockImplementation().mockResolvedValue(fetched);
-            vi.spyOn(prismaClient.user, "findOne").mockImplementation();
 
             const result = await adapter.getOne("User", 1, {});
 
@@ -272,7 +273,6 @@ describe(PrismaAdapter, () => {
             expect.assertions(1);
 
             prismaClient.user.findUnique = undefined;
-            vi.spyOn(prismaClient.user, "findOne").mockImplementation().mockResolvedValue({ id: 1 });
 
             await adapter.getOne("User", 1, {});
 

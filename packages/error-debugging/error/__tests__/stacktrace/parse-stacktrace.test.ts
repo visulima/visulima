@@ -2010,7 +2010,7 @@ If you used to conditionally omit it with %s={condition && value}, pass %s={cond
                     stack: "Error\n    at foo (http://localhost/file.js:1:1)",
                 } as unknown as Error);
 
-                expect(debugSpy).toHaveBeenCalledWith();
+                expect(debugSpy).toHaveBeenCalledWith("error:parse-stacktrace: parse error stack line: \"Error\"", "not parser found");
             } finally {
                 debugSpy.mockRestore();
 

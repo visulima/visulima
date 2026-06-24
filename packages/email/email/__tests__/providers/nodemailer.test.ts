@@ -307,7 +307,12 @@ describe(nodemailerProvider, () => {
                 transportOverride: { host: "smtp.override.com" },
             });
 
-            expect(overrideTransporter.sendMail).toHaveBeenCalledWith();
+            expect(overrideTransporter.sendMail).toHaveBeenCalledWith({
+                from: "sender@example.com",
+                html: "<h1>Hi</h1>",
+                subject: "Test",
+                to: "u@example.com",
+            });
             expect(defaultTransporter.sendMail).not.toHaveBeenCalled();
         });
 
