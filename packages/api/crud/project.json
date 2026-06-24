@@ -1,8 +1,0 @@
-{
-    "name": "api/crud",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/api/crud/src",
-    "projectType": "library",
-    "tags": ["type:package", "api-platform", "crud", "category:api-web"],
-    "implicitDependencies": []
-}

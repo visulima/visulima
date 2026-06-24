@@ -1,8 +1,0 @@
-{
-    "name": "api/api-platform",
-    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/api/api-platform/src",
-    "projectType": "library",
-    "tags": ["type:package", "api-platform", "category:api-web"],
-    "implicitDependencies": ["api/connect", "api/crud", "api/jsdoc-open-api", "filesystem/fs", "filesystem/path"]
-}

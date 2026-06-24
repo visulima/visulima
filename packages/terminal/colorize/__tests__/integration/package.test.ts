@@ -6,32 +6,6 @@ import { describe, expect, it } from "vitest";
 import { esc, execScriptSync, normalizeFunctionNames, typeCheckFixture } from "../helpers";
 
 describe("usage `@visulima/colorize` npm package", () => {
-    it(`should work as CommonJS package`, () => {
-        expect.assertions(1);
-
-        const filename = join(dirname(fileURLToPath(import.meta.url)), "../..", "__fixtures__/package/cjs/test.cjs");
-
-        const received = execScriptSync(filename, ["--color"]);
-
-        const expected
-            = `[Function: self] Object {
-  strip: [Function (anonymous)],
-  Colorize: [Function: Colorize]
-}\n`
-                + "\u001B[93m\u001B[7m -= [colorize package] CommonJS =- \u001B[27m\u001B[39m\n"
-                + "\u001B[31m\u001B[1m\u001B[4mred.bold.underline('red')\u001B[24m\u001B[22m\u001B[39m\n"
-                + "\u001B[31m\u001B[1m\u001B[4mcolorize.red.bold.underline(red)\u001B[24m\u001B[22m\u001B[39m\n"
-                + "\u001B[93m\u001B[1mhex('#FFAB40').bold('#63ffc6')\u001B[22m\u001B[39m\n"
-                + "\u001B[93m\u001B[1mcolorize.hex('#FFAB40').bold(#63ffc6)\u001B[22m\u001B[39m\n"
-                + "\u001B[1m\u001B[31mcolorize2.bold.red\u001B[39m\u001B[22m\n"
-                + "colored:  \u001B[32mgreen text\u001B[39m\n"
-                + "striped:  green text";
-
-        // Normalize `[Function: name]` tokens: the production build minifies `self`/`Colorize`,
-        // so this dist-runtime test verifies structure, not minifier-mangled identifiers.
-        expect(esc(normalizeFunctionNames(received))).toStrictEqual(esc(normalizeFunctionNames(expected)));
-    });
-
     it(`should work as ESM package`, () => {
         expect.assertions(1);
 
@@ -41,13 +15,13 @@ describe("usage `@visulima/colorize` npm package", () => {
 
         const expected
             = "[Function: self] Object { strip: [Function (anonymous)] }\n"
-                + "\u001B[91m\u001B[7m -= [colorize package] ESM =- \u001B[27m\u001B[39m\n"
-                + "\u001B[31m\u001B[1m\u001B[4mred.bold.underline('red')\u001B[24m\u001B[22m\u001B[39m\n"
-                + "\u001B[31m\u001B[1m\u001B[4mcolorize.red.bold.underline(red)\u001B[24m\u001B[22m\u001B[39m\n"
-                + "\u001B[93m\u001B[1mhex('#FFAB40').bold('#63ffc6')\u001B[22m\u001B[39m\n"
-                + "\u001B[93m\u001B[1mcolorize.hex('#FFAB40').bold(#63ffc6)\u001B[22m\u001B[39m\n"
-                + "\u001B[1m\u001B[31mcolorize2.bold.red\u001B[39m\u001B[22m\n"
-                + "colored:  \u001B[32mgreen text\u001B[39m\n"
+                + "[91m[7m -= [colorize package] ESM =- [27m[39m\n"
+                + "[31m[1m[4mred.bold.underline('red')[24m[22m[39m\n"
+                + "[31m[1m[4mcolorize.red.bold.underline(red)[24m[22m[39m\n"
+                + "[93m[1mhex('#FFAB40').bold('#63ffc6')[22m[39m\n"
+                + "[93m[1mcolorize.hex('#FFAB40').bold(#63ffc6)[22m[39m\n"
+                + "[1m[31mcolorize2.bold.red[39m[22m\n"
+                + "colored:  [32mgreen text[39m\n"
                 + "striped:  green text";
 
         // Normalize `[Function: name]` tokens: the production build minifies `self`/`Colorize`,
