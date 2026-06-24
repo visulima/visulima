@@ -1,3 +1,5 @@
+// fallow-ignore-file unused-type -- public component API barrel; re-exports consumed by library users, not internally.
+// fallow-ignore-file unused-export -- public component API barrel; re-exports consumed by library users, not internally.
 export type { ControlledScrollViewProps, ControlledScrollViewRef } from "./controlled-scroll-view";
 export { ControlledScrollView } from "./controlled-scroll-view";
 export type { ScrollBarPlacement, ScrollBarProps, ScrollBarStyle } from "./scroll-bar";

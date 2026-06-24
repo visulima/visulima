@@ -16,6 +16,7 @@ type State = {
 // Error boundary must be a class component since getDerivedStateFromError
 // and componentDidCatch are not available as hooks
 export default class ErrorBoundary extends PureComponent<Props, State> {
+    // fallow-ignore-next-line unused-class-member -- consumed by React DevTools / the runtime, not called in-repo.
     static displayName = "InternalErrorBoundary";
 
     static getDerivedStateFromError(error: Error): State {

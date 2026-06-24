@@ -733,6 +733,7 @@ export default class Ink {
      * Force a full layout recalculation by marking all text nodes dirty.
      * Useful when the string width function changes or terminal font changes.
      */
+    // fallow-ignore-next-line unused-class-member -- public Ink API, not called inside the repo.
     recalculateLayout(): void {
         this.markAllTextNodesDirty(this.rootNode);
         this.calculateLayout();

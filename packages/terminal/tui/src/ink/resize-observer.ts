@@ -119,32 +119,4 @@ export function measureAndExtractObservers(node: DOMElement, observerEntries: Ma
     }
 }
 
-/**
- * Traverse a node tree, measure all nodes, and trigger resize observers.
- * Skips into static/cached subtrees to avoid double-counting.
- */
-export function triggerResizeObservers(node: DOMElement, forceCache = false): void {
-    const observerEntries = new Map<ResizeObserver, ResizeObserverEntry[]>();
-
-    function traverse(n: DOMElement): void {
-        measureAndExtractObservers(n, observerEntries, forceCache);
-
-        if (n.internal_static) {
-            return;
-        }
-
-        for (const child of n.childNodes) {
-            if (child.nodeName !== "#text") {
-                traverse(child);
-            }
-        }
-    }
-
-    traverse(node);
-
-    for (const [observer, entries] of observerEntries) {
-        observer.internalTrigger(entries);
-    }
-}
-
 export default ResizeObserver;
