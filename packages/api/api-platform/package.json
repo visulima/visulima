@@ -164,7 +164,7 @@
         "dev": "pnpm run build --watch",
         "fallow:audit": "fallow audit",
         "fallow:dead-code": "fallow dead-code",
-        "fallow:health": "fallow health --score",
+        "fallow:health": "fallow health --report-only",
         "lint:eslint": "eslint . --cache --concurrency auto ",
         "lint:eslint:fix": "eslint . --cache --concurrency auto  --fix",
         "lint:package-json": "publint --strict",
