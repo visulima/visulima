@@ -81,37 +81,37 @@
     "exports": {
         ".": {
             "browser": {
-                "types": "./dist/index.browser.d.mts",
-                "default": "./dist/index.browser.mjs"
+                "types": "./dist/index.browser.d.ts",
+                "default": "./dist/index.browser.js"
             },
             "edge-light": {
-                "types": "./dist/index.server.d.mts",
-                "default": "./dist/index.server.mjs"
+                "types": "./dist/index.server.d.ts",
+                "default": "./dist/index.server.js"
             },
             "default": {
-                "types": "./dist/index.server.d.mts",
-                "default": "./dist/index.server.mjs"
+                "types": "./dist/index.server.d.ts",
+                "default": "./dist/index.server.js"
             }
         },
         "./browser": {
-            "types": "./dist/index.browser.d.mts",
-            "default": "./dist/index.browser.mjs"
+            "types": "./dist/index.browser.d.ts",
+            "default": "./dist/index.browser.js"
         },
         "./template": {
-            "types": "./dist/template.d.mts",
-            "default": "./dist/template.mjs"
+            "types": "./dist/template.d.ts",
+            "default": "./dist/template.js"
         },
         "./gradient": {
-            "types": "./dist/gradient.d.mts",
-            "default": "./dist/gradient.mjs"
+            "types": "./dist/gradient.d.ts",
+            "default": "./dist/gradient.js"
         },
         "./utils": {
-            "types": "./dist/utils.d.mts",
-            "default": "./dist/utils.mjs"
+            "types": "./dist/utils.d.ts",
+            "default": "./dist/utils.js"
         },
         "./package.json": "./package.json"
     },
-    "module": "dist/index.server.mjs",
+    "module": "dist/index.server.js",
     "types": "dist/index.server.d.ts",
     "typesVersions": {
         ">=5.0": {

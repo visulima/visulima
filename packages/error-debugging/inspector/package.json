@@ -40,14 +40,14 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.mjs",
-            "types": "./dist/index.d.mts",
-            "default": "./dist/index.mjs"
+            "browser": "./dist/index.js",
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
         },
         "./package.json": "./package.json"
     },
-    "module": "dist/index.mjs",
-    "browser": "./dist/index.mjs",
+    "module": "dist/index.js",
+    "browser": "./dist/index.js",
     "types": "dist/index.d.ts",
     "typesVersions": {
         ">=5.0": {

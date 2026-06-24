@@ -40,20 +40,20 @@
     "type": "module",
     "exports": {
         ".": {
-            "types": "./dist/index.d.mts",
-            "default": "./dist/index.mjs"
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
         },
         "./cli": {
-            "types": "./dist/cli/index.d.mts",
-            "default": "./dist/cli/index.mjs"
+            "types": "./dist/cli/index.d.ts",
+            "default": "./dist/cli/index.js"
         },
         "./cli/commander": {
-            "types": "./dist/cli/commander/index.d.mts",
-            "default": "./dist/cli/commander/index.mjs"
+            "types": "./dist/cli/commander/index.d.ts",
+            "default": "./dist/cli/commander/index.js"
         },
         "./package.json": "./package.json"
     },
-    "module": "dist/index.mjs",
+    "module": "dist/index.js",
     "types": "dist/index.d.ts",
     "typesVersions": {
         ">=5.0": {

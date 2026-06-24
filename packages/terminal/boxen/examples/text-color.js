@@ -1,6 +1,6 @@
 import { bgRed, blue, green, yellow } from "@visulima/colorize";
 
-import { boxen } from "../dist/index.mjs";
+import { boxen } from "../dist/index.js";
 
 const text = "This text has a custom color!";
 

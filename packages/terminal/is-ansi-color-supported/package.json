@@ -59,30 +59,30 @@
     "exports": {
         ".": {
             "edge-light": {
-                "types": "./dist/is-color-supported.edge-light.d.mts",
-                "default": "./dist/is-color-supported.edge-light.mjs"
+                "types": "./dist/is-color-supported.edge-light.d.ts",
+                "default": "./dist/is-color-supported.edge-light.js"
             },
             "browser": {
-                "types": "./dist/is-color-supported.browser.d.mts",
-                "default": "./dist/is-color-supported.browser.mjs"
+                "types": "./dist/is-color-supported.browser.d.ts",
+                "default": "./dist/is-color-supported.browser.js"
             },
             "default": {
-                "types": "./dist/is-color-supported.server.d.mts",
-                "default": "./dist/is-color-supported.server.mjs"
+                "types": "./dist/is-color-supported.server.d.ts",
+                "default": "./dist/is-color-supported.server.js"
             }
         },
         "./browser": {
-            "types": "./dist/is-color-supported.browser.d.mts",
-            "default": "./dist/is-color-supported.browser.mjs"
+            "types": "./dist/is-color-supported.browser.d.ts",
+            "default": "./dist/is-color-supported.browser.js"
         },
         "./edge-light": {
-            "types": "./dist/is-color-supported.edge-light.d.mts",
-            "default": "./dist/is-color-supported.edge-light.mjs"
+            "types": "./dist/is-color-supported.edge-light.d.ts",
+            "default": "./dist/is-color-supported.edge-light.js"
         },
         "./package.json": "./package.json"
     },
-    "module": "dist/is-color-supported.server.mjs",
-    "browser": "dist/is-color-supported.browser.mjs",
+    "module": "dist/is-color-supported.server.js",
+    "browser": "dist/is-color-supported.browser.js",
     "types": "dist/is-color-supported.server.d.ts",
     "typesVersions": {
         ">=5.0": {
