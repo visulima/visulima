@@ -530,6 +530,7 @@ const acceptHeal = async (toolbox: Toolbox<Console, AiHealAcceptOptions>, deps: 
     }
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const aiHealAccept: CommandExecute<Toolbox<Console, AiHealAcceptOptions>> = async (toolbox) => {
     await acceptHeal(toolbox);
 };

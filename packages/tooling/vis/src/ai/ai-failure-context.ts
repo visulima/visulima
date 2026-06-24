@@ -166,5 +166,3 @@ const mapCacheStatusToTaskStatus = (summaryTask: { cacheStatus: string; exitCode
         }
     }
 };
-
-export type { FailureLogEntry } from "../report/failure-log";

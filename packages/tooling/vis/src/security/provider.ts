@@ -86,4 +86,4 @@ export const mergeReports = (maps: Iterable<Map<string, PackageReportData>>): Ma
     return merged;
 };
 
-export { type PackageAlert, type PackageAlertProps, type PackageReportData, type PackageScore } from "./socket-security";
+export { type PackageAlert, type PackageReportData } from "./socket-security";

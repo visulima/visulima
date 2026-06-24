@@ -446,5 +446,3 @@ export const buildBuildxCommand = (
 
 // Re-export the manifest type so downstream callers know what fields
 // they get on `context.pkg`.
-
-export { type PackageManifest } from "../../types";

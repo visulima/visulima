@@ -107,11 +107,13 @@ const partitionAssets = (
 };
 
 export class GitlabRemoteClient implements RemoteReleaseClient {
+    // fallow-ignore-next-line unused-class-member -- RemoteReleaseClient contract member (accessed polymorphically via the remote interface)
     public readonly id = "gitlab" as const;
 
     /** Latch so the not-supported warning only prints once per process. */
     private static recentReleasesWarned = false;
 
+    // fallow-ignore-next-line unused-class-member -- RemoteReleaseClient contract member (accessed polymorphically via the remote interface)
     public async listRecentReleases(_runner: CommandRunner, _options: ListRecentReleasesOptions): Promise<RecentRelease[]> {
         if (!GitlabRemoteClient.recentReleasesWarned) {
             GitlabRemoteClient.recentReleasesWarned = true;
@@ -365,6 +367,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         }
     }
 
+    // fallow-ignore-next-line unused-class-member -- RemoteReleaseClient contract member (accessed polymorphically via the remote interface)
     public async addLabels(runner: CommandRunner, options: AddLabelsOptions): Promise<boolean> {
         if (options.labels.length === 0) {
             return true;
@@ -483,6 +486,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         return result.exitCode === 0;
     }
 
+    // fallow-ignore-next-line unused-class-member -- RemoteReleaseClient contract member (accessed polymorphically via the remote interface)
     public async upsertPullRequest(runner: CommandRunner, options: UpsertPullRequestOptions): Promise<UpsertPullRequestResult | undefined> {
         const project = encodeProjectPath(options.repo);
         const list = await runner.run(

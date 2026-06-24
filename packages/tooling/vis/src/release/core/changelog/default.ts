@@ -254,5 +254,3 @@ export const createDefaultFormatter
         };
 
 export const defaultFormatter: ChangelogFormatter = createDefaultFormatter();
-
-export default defaultFormatter;

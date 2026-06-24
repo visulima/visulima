@@ -394,6 +394,7 @@ export class UpdateStore {
         });
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public updateApplyProgress(current: number): void {
         if (this.#state.applyProgress) {
             this.#emit({
@@ -403,10 +404,12 @@ export class UpdateStore {
         }
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public markDone(): void {
         this.#emit({ ...this.#state, phase: "done" });
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public setError(error: string): void {
         this.#emit({ ...this.#state, error, phase: "error" });
     }

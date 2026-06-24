@@ -45,6 +45,7 @@ export const interpretNativePublishResult = (result: { exitCode: number; stderr:
 export class NpmAdapter extends PackageManagerAdapter {
     public readonly id = "npm" as const;
 
+    // fallow-ignore-next-line unused-class-member -- package-manager adapter contract member (accessed polymorphically via PackageManagerAdapter)
     public readonly minVersion = "11.5.1"; // OIDC trusted publishing GA
 
     public async pack(options: PackOptions): Promise<PackResult> {

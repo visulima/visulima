@@ -4,7 +4,7 @@ import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { dirname, join, parse as parsePath } from "@visulima/path";
 import { coerce, lt } from "semver";
 
-import type { AddOptions, DlxOptions, ExecOptions, InstallOptions, OutdatedOptions, RemoveOptions, ResolvedCommand, WhyOptions } from "#native";
+import type { AddOptions, DlxOptions, ExecOptions, InstallOptions, RemoveOptions, ResolvedCommand, WhyOptions } from "#native";
 import {
     detectPackageManager,
     execPmCommandInteractive,
@@ -14,7 +14,6 @@ import {
     resolveExec,
     resolveInstall,
     resolveLink,
-    resolveOutdated,
     resolvePmCommand,
     resolveRemove,
     resolveUnlink,
@@ -30,7 +29,6 @@ import {
     resolveAubeInfo,
     resolveAubeInstall,
     resolveAubeLink,
-    resolveAubeOutdated,
     resolveAubePmCommand,
     resolveAubeRemove,
     resolveAubeUnlink,
@@ -825,14 +823,6 @@ const runWhy = (pm: InstallerInfo, options: WhyOptions, cwd: string, logger: Con
     return resolveAndRun(pm, () => resolveWhy(pm.name, pm.version, options), cwd, logger, extras);
 };
 
-const runOutdated = (pm: InstallerInfo, options: OutdatedOptions, cwd: string, logger: Console, extras: RunOverrides = {}): number => {
-    if (pm.name === "aube") {
-        return runResolved(pm, resolveAubeOutdated(options), cwd, logger, extras);
-    }
-
-    return resolveAndRun(pm, () => resolveOutdated(pm.name, pm.version, options), cwd, logger, extras);
-};
-
 interface InfoOptions {
     fields: string[];
     json: boolean;
@@ -1133,7 +1123,6 @@ export {
     runInstall,
     runInstallCaptured,
     runLink,
-    runOutdated,
     runPmSubcommand,
     runRemove,
     runUnlink,

@@ -43,7 +43,7 @@ import { vitestDetector } from "./detectors/vitest";
 import { webpackDetector } from "./detectors/webpack";
 import type { DetectContext, Detector } from "./types";
 
-export type { DetectContext, DetectedTargets, Detector } from "./types";
+export type { DetectContext, Detector } from "./types";
 
 /**
  * Detector registry. Order is meaningful: when two detectors would

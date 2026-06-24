@@ -54,4 +54,5 @@ const execute = async ({ logger }: Toolbox<Console, ReleaseCiSetupOptions>): Pro
     logger.info(CHECKLIST);
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

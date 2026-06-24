@@ -432,4 +432,5 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     printNextSteps(targetDir, cwd, pm.name, depsInstalled);
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

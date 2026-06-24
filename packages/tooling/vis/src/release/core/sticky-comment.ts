@@ -9,7 +9,7 @@ import type { CommandRunner } from "./package-managers/interface";
 import { createRemoteClient, detectRemoteProvider } from "./remote/detect";
 import type { UpsertStickyCommentOptions } from "./remote/interface";
 
-export type { UpsertCommentResult, UpsertStickyCommentOptions } from "./remote/interface";
+export type { UpsertStickyCommentOptions } from "./remote/interface";
 
 export interface StickyCommentOptions extends UpsertStickyCommentOptions {
     /** Self-hosted GitLab host. Forwarded to the GitLab adapter so on-prem instances work. */

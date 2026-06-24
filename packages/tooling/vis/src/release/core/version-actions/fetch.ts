@@ -103,14 +103,6 @@ export const getUserAgent = async (): Promise<string> => {
     return cachedUserAgent;
 };
 
-/**
- * Synchronous accessor — returns the cached UA if available, else a
- * sensible fallback. Used in the rare case a caller can't await
- * (e.g. inside a synchronous header-construction block). Prefer
- * {@link getUserAgent} where possible.
- */
-export const getUserAgentSync = (): string => cachedUserAgent ?? `vis-release/unknown (+${VIS_HOMEPAGE})`;
-
 /** Options accepted by {@link safeFetchVersionMetadata}. */
 export interface SafeFetchOptions {
     /**
@@ -339,12 +331,4 @@ export const safeFetchVersionMetadata = async (url: string, options: SafeFetchOp
         currentUrl = resolved;
         redirectsFollowed += 1;
     }
-};
-
-// Test-only reset of the cached user-agent. Lets a test fixture verify
-// that the first request stamps the expected header without leaking
-// across test runs.
-// eslint-disable-next-line no-underscore-dangle, @typescript-eslint/naming-convention -- test-only export seam
-export const __resetUserAgentCacheForTests = (): void => {
-    cachedUserAgent = undefined;
 };

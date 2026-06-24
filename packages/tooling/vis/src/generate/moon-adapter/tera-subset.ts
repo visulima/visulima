@@ -639,13 +639,7 @@ const renderNodes = (nodes: Node[], options: RenderOptions): string => {
 export const parseTemplate = (source: string, filename: string): Node[] => parse(tokenize(source), filename);
 
 /**
- * Render a parsed AST with the given scope.
- */
-export const renderAst = (nodes: Node[], options: RenderOptions): string => renderNodes(nodes, options);
-
-/**
- * Convenience: parse + render in one call. Prefer `parseTemplate` +
- * `renderAst` when a template is rendered repeatedly (e.g. in loops).
+ * Convenience: parse + render in one call.
  */
 export const renderTemplate = (source: string, options: RenderOptions): string => renderNodes(parse(tokenize(source), options.filename), options);
 

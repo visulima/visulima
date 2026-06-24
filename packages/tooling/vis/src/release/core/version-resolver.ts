@@ -451,9 +451,3 @@ export const resolveCurrentVersionsForWorkspace = async (
 
     return { versions, warnings };
 };
-
-// Renders a tag for a given package@version (re-exported for tests). Not a
-// resolver concern per se but lives here so the test harness can compose
-// "tag exists for X@Y" without depending on git.ts directly.
-
-export { defaultTagFor, renderTagPattern } from "./git";

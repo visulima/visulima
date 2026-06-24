@@ -165,4 +165,5 @@ const execute = ({ options, workspaceRoot: wsRoot }: Toolbox<Console, SecurityTr
     pail.notice("  running every dependency's lifecycle scripts.");
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

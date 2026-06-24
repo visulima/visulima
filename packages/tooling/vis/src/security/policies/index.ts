@@ -322,9 +322,3 @@ export const parsePoliciesFlag = (raw: string | undefined, onUnknown?: (name: st
 
     return result;
 };
-
-/**
- * Re-export of `findAcceptedRisk` scoped to a specific policy. Every
- * policy module calls this so accepted-risk handling stays uniform.
- */
-export { findAcceptedRisk } from "../socket-security";

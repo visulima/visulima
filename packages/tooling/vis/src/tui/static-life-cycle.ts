@@ -119,6 +119,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         this.#ciGrouping = options.ciGrouping ?? "auto";
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public startCommand(): void {
         this.#commandStartTime = Date.now();
 
@@ -143,8 +144,8 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         process.stdout.write("\n");
     }
 
-    // eslint-disable-next-line class-methods-use-this -- LifeCycleInterface contract; the static variant has no instance state
-    public startTasks(tasks: Task[]): void {
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
+    public startTasks(tasks: Task[]): void { // eslint-disable-line class-methods-use-this -- LifeCycleInterface contract; the static variant has no instance state
         const columns = process.stdout.columns || 80;
 
         for (const task of tasks) {
@@ -154,6 +155,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         }
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public endTasks(taskResults: TaskResult[]): void {
         const columns = process.stdout.columns || 80;
 
@@ -202,20 +204,24 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         process.stdout.write(`${line}\n`);
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public printCacheDisabledByTask(task: Task): void {
         this.#printCacheNotice(`${task.id}: caching disabled by task via disableCache()`);
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public printSelfModifyingSkip(task: Task, modifiedFiles: string[]): void {
         this.#printCacheNotice(
             `${task.id}: caching skipped — task modified its own input${modifiedFiles.length === 1 ? "" : "s"} (${modifiedFiles.join(", ")})`,
         );
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public printEmptyFingerprintWarning(task: Task, reason: string): void {
         this.#printCacheNotice(`${task.id}: caching skipped — ${reason}`);
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public printTaskTerminalOutput(task: Task, status: TaskStatus, terminalOutput: string): void {
         // `quiet` swallows successful + cached output but keeps failures visible
         // so users still see what broke without scrolling past clean runs.
@@ -238,6 +244,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         logCommandOutputCI(task.id, status, rendered, this.#ciGrouping);
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public endCommand(): void {
         const totalTime = formatMs(Date.now() - this.#commandStartTime);
 

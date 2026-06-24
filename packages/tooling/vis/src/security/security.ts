@@ -16,16 +16,11 @@
  * the barrel so existing callers and tests do not need to change.
  */
 
-export type { BinConflict } from "./bin-shadows";
 export { collectBinShadows } from "./bin-shadows";
-export type { BuildScriptEntry, BuildScriptStatus } from "./build-scripts";
 export { scanBuildScriptStatus, scanUnapprovedBuildScripts } from "./build-scripts";
-export type { SecurityCheckResult } from "./config-check";
 export { checkSecurityConfig, emitSecurityWarnings, previewPnpmSync, printSecurityReport } from "./config-check";
-export type { DriftReport } from "./drift";
 export { checkPmNativeConfigDrift, formatDriftReport } from "./drift";
 export { formatMinutesAsTimeString, parseDurationToMinutes } from "./duration";
-export type { EnforcementResult } from "./enforcement";
 export { enforceScriptSecurity } from "./enforcement";
 export { syncMinimumReleaseAgeToNativeConfig } from "./min-release-age";
 export { syncAllowBuildsToNativeConfig } from "./native-config-sync";

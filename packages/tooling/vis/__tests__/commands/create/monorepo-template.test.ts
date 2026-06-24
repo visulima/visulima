@@ -2,19 +2,10 @@ import { existsSync, mkdtempSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { executeMonorepoTemplate } from "../../../src/commands/create/templates/monorepo";
 import type { ExecutionContext } from "../../../src/commands/create/templates/types";
-
-// Mock output module to avoid dependency on @visulima/ansi (requires build)
-vi.mock(import("../../../src/output"), () => {
-    return {
-        info: vi.fn(),
-        success: vi.fn(),
-        warn: vi.fn(),
-    };
-});
 
 describe(executeMonorepoTemplate, () => {
     let tmpDir: string;

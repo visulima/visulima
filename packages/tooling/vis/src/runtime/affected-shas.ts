@@ -73,20 +73,6 @@ const defaultRunGit: GitRunner = (args, cwd) => {
 
 const isNonEmptySha = (value: string | undefined): value is string => typeof value === "string" && value.length > 0 && value !== ZERO_SHA;
 
-const getNested = (payload: Record<string, unknown> | undefined, ...keys: string[]): unknown => {
-    let current: unknown = payload;
-
-    for (const key of keys) {
-        if (current === null || typeof current !== "object") {
-            return undefined;
-        }
-
-        current = (current as Record<string, unknown>)[key];
-    }
-
-    return current;
-};
-
 const resolveGithub = (env: NodeJS.ProcessEnv, defaultBase: string, readEventPayload: EventPayloadReader): ResolvedShas => {
     const notes: string[] = [];
 
@@ -240,17 +226,4 @@ export const resolveAffectedShas = (options?: ResolveAffectedShasOptions): Resol
     }
 
     return resolveLocal(defaultBase, runGit, workspaceRoot);
-};
-
-/**
- * Internal helpers re-exported for unit tests. Not part of the public API.
- */
-export const resolveAffectedShasForTesting = {
-    getNested,
-    isNonEmptySha,
-    resolveBuildkite,
-    resolveCircleCI,
-    resolveGithub,
-    resolveGitlab,
-    resolveLocal,
 };

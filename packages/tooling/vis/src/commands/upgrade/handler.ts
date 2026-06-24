@@ -54,4 +54,5 @@ const execute = async ({ argument, logger, options }: Toolbox<Console, UpgradeOp
     logger.info(`\n✓ Updated @visulima/vis from ${currentVersion} → ${latestVersion}`);
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

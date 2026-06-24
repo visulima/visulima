@@ -27,6 +27,3 @@ export const pickRenderer = async (options: RunOptions): Promise<Renderer> => {
         return createPlainRenderer({ quiet: options.quiet, verbose: options.verbose });
     }
 };
-
-export { createInkRenderer } from "./ink";
-export { createPlainRenderer } from "./plain";

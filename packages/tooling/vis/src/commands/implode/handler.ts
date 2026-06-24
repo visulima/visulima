@@ -100,4 +100,5 @@ const execute = async ({ fs, logger, options }: Toolbox<Console, ImplodeOptions>
     logger.info("✓ vis has been uninstalled.");
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

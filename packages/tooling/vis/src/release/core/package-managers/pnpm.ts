@@ -19,6 +19,7 @@ import { interpretNativePublishResult, NpmAdapter } from "./npm";
 export class PnpmAdapter extends PackageManagerAdapter {
     public readonly id = "pnpm" as const;
 
+    // fallow-ignore-next-line unused-class-member -- package-manager adapter contract member (accessed polymorphically via PackageManagerAdapter)
     public readonly minVersion = "9.5.0"; // catalog protocol GA
 
     public async pack(options: PackOptions): Promise<PackResult> {

@@ -207,4 +207,5 @@ const execute = async (toolbox: Toolbox<Console, ReleasePlanOptions>): Promise<v
     });
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

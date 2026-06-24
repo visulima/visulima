@@ -94,6 +94,7 @@ export interface GithubClientOptions {
 }
 
 export class GithubRemoteClient implements RemoteReleaseClient {
+    // fallow-ignore-next-line unused-class-member -- RemoteReleaseClient contract member (accessed polymorphically via the remote interface)
     public readonly id = "github" as const;
 
     private readonly host: string | undefined;
@@ -191,6 +192,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
         return filtered;
     }
 
+    // fallow-ignore-next-line unused-class-member -- RemoteReleaseClient contract member (accessed polymorphically via the remote interface)
     public async detectRepoSlug(cwd: string, runner: CommandRunner): Promise<string | undefined> {
         const result = await runner.run("gh", ["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"], this.runOpts(cwd));
 
@@ -201,6 +203,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
         return result.stdout.trim() || undefined;
     }
 
+    // fallow-ignore-next-line unused-class-member -- RemoteReleaseClient contract member (accessed polymorphically via the remote interface)
     public detectPullRequestNumber(env: NodeJS.ProcessEnv): number | undefined {
         // Pull-request event: refs/pull/<n>/{merge,head}
         const ref = env["GITHUB_REF"];
@@ -224,6 +227,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
         return undefined;
     }
 
+    // fallow-ignore-next-line unused-class-member -- RemoteReleaseClient contract member (accessed polymorphically via the remote interface)
     public async upsertStickyComment(runner: CommandRunner, options: UpsertStickyCommentOptions): Promise<UpsertCommentResult | undefined> {
         const listResult = await runner.run(
             "gh",
@@ -380,6 +384,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
         return result.exitCode === 0;
     }
 
+    // fallow-ignore-next-line unused-class-member -- RemoteReleaseClient contract member (accessed polymorphically via the remote interface)
     public async upsertPullRequest(runner: CommandRunner, options: UpsertPullRequestOptions): Promise<UpsertPullRequestResult | undefined> {
         const list = await runner.run(
             "gh",

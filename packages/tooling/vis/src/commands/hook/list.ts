@@ -144,4 +144,3 @@ const runList = (hooksDirectory: string, logger: { info: (message: string) => vo
 
 export type { HookBlock, ListResult, StageEntry };
 export { formatListResult, listHooks, parseStageScript, runList };
-export { DEFAULT_HOOKS_DIRECTORY as LIST_DEFAULT_DIRECTORY } from "./constants";

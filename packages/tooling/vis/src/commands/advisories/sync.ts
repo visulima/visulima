@@ -113,4 +113,5 @@ const execute = async ({ logger: _logger, options, visConfig, workspaceRoot }: T
 
 const formatDuration = (ms: number): string => (ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${Math.round(ms)}ms`);
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const advisoriesSyncExecute: CommandExecute<Toolbox> = execute as CommandExecute<Toolbox>;

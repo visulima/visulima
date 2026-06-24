@@ -4,7 +4,7 @@ import type { ServiceConfig } from "../services/types";
 import type { TaskArgument } from "./arguments";
 
 export type { ServiceConfig } from "../services/types";
-export type { TaskArgument, TaskArgumentType } from "./arguments";
+export type { TaskArgument } from "./arguments";
 
 /**
  * Semantic classification for a target.

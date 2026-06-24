@@ -57,6 +57,7 @@ export class MigrateStore {
         return this.#state.items.filter((item) => this.#state.checkedItems.has(item.entry.id));
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public getSelectedItem(): MigrateItem | null {
         return this.#state.items[this.#state.selectedIndex] ?? null;
     }
@@ -109,16 +110,19 @@ export class MigrateStore {
         this.#emit({ ...this.#state, applyProgress: { current: 0, total }, phase: "applying" });
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public updateApplyProgress(current: number): void {
         if (this.#state.applyProgress) {
             this.#emit({ ...this.#state, applyProgress: { ...this.#state.applyProgress, current } });
         }
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public markDone(): void {
         this.#emit({ ...this.#state, phase: "done" });
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public setError(error: string): void {
         this.#emit({ ...this.#state, error, phase: "error" });
     }

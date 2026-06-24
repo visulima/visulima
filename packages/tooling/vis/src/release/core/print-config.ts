@@ -245,8 +245,3 @@ export const printConfigIfRequested = <O extends PrintConfigOptions & Record<str
 };
 
 /** Cerebro option spec — drop into any release command's `options` array. */
-export const printConfigOption = {
-    description: "Print the resolved release config (with `=debug` for runtime-resolved fields) and exit",
-    name: "print-config",
-    type: String,
-} as const;

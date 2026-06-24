@@ -25,6 +25,7 @@ import { interpretNativePublishResult, NpmAdapter } from "./npm";
 export class BunAdapter extends PackageManagerAdapter {
     public readonly id = "bun" as const;
 
+    // fallow-ignore-next-line unused-class-member -- package-manager adapter contract member (accessed polymorphically via PackageManagerAdapter)
     public readonly minVersion = "1.1.36"; // workspace publish + protocol rewriting
 
     public async pack(options: PackOptions): Promise<PackResult> {

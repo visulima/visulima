@@ -753,8 +753,6 @@ const applyPackageJsonUpdates = (workspaceRoot: string, updates: OutdatedEntry[]
     }
 };
 
-type CatalogProvider = "bun" | "pnpm";
-
 const hasCatalogs = (workspaceRoot: string, packageManager?: string): boolean => {
     if (packageManager === "bun") {
         return hasBunCatalogs(workspaceRoot) || hasPackageJsonDeps(workspaceRoot);
@@ -1960,8 +1958,6 @@ const hasBackup = (workspaceRoot: string, packageManager?: string): boolean => {
     }
 };
 
-type OutputFormat = "json" | "minimal" | "table";
-
 const formatOutdatedJson = (result: CheckOutdatedResult): string => JSON.stringify(result, undefined, 2);
 
 const formatOutdatedMinimal = (outdated: OutdatedEntry[]): string =>
@@ -2461,13 +2457,11 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
 
 export type {
     CatalogCheckOptions,
-    CatalogProvider,
     ChangelogInfo,
     CheckOutdatedResult,
     MaturityOptions,
     NpmrcConfig,
     OutdatedEntry,
-    OutputFormat,
     ReadCatalogOptions,
     SecurityVulnerability,
     SocketReport,

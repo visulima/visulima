@@ -177,4 +177,5 @@ const handlePrCloseCleanup = async (
     logger.info("Default backend (pkg-pr-new) auto-cleans by TTL — no DELETE issued. Implement a custom backend's delete endpoint to enable real cleanup.");
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

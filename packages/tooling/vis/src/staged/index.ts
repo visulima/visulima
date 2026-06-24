@@ -213,5 +213,5 @@ export const runStaged = async (options: RunOptions = {}): Promise<RunResult> =>
     }
 };
 
-export { ApplyEmptyCommitError, ConfigError, GetBackupStashError, GitError, RestoreOriginalStateError, StagedError, TaskError } from "./errors";
-export type { CommandTask, CustomTask, RunOptions, RunResult, StagedConfig } from "./types";
+export { ApplyEmptyCommitError, ConfigError } from "./errors";
+export type { RunOptions, RunResult, StagedConfig } from "./types";

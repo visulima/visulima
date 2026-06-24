@@ -22,13 +22,7 @@
 
 import { basename } from "node:path";
 
-import {
-    allKnownTags,
-    NATIVE_BINDING_VERSION,
-    parseShebang as parseShebangNative,
-    tagsFromPath as tagsFromPathNative,
-    tagsFromPaths as tagsFromPathsNative,
-} from "#native";
+import { allKnownTags, NATIVE_BINDING_VERSION, tagsFromPaths as tagsFromPathsNative } from "#native";
 
 const EXPECTED_BINDING_VERSION = 6;
 
@@ -128,19 +122,6 @@ const getPrekUniverse = (): Set<string> => {
 };
 
 /**
- * Classifies a single path. The native layer is consulted for the prek
- * layer; failures collapse to an empty prek set (the file may have been
- * deleted between staging and classification, for example).
- */
-export const classify = (path: string): ClassifyResult => {
-    const prek = new Set<string>(tagsFromPathNative(path));
-    const vis = classifyVis(path);
-    const all = new Set<string>([...prek, ...vis]);
-
-    return { all, prek, vis };
-};
-
-/**
  * Batch classifier. Uses the native batch entrypoint so the FFI cost is
  * paid once per call instead of once per path.
  */
@@ -159,14 +140,8 @@ export const classifyMany = (paths: ReadonlyArray<string>): Map<string, Classify
     return out;
 };
 
-export const parseShebang = (path: string): ReadonlyArray<string> => parseShebangNative(path);
-
 /** True iff `tag` is recognised by either the prek universe or the vis overlay. */
 export const isKnownTag = (tag: string): boolean => getPrekUniverse().has(tag) || VIS_TAG_UNIVERSE.has(tag);
-
-export const isPrekTag = (tag: string): boolean => getPrekUniverse().has(tag);
-
-export const isVisTag = (tag: string): boolean => VIS_TAG_UNIVERSE.has(tag);
 
 /**
  * Evaluates a pre-commit-style filter against a classification.

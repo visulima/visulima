@@ -93,8 +93,10 @@ const resolveStageConfig = (raw: unknown): ResolvedStageConfig => {
 };
 
 export class NpmVersionActions extends VersionActions {
+    // fallow-ignore-next-line unused-class-member -- version-action adapter contract member (accessed polymorphically via the adapter interface)
     public readonly id = "npm" as const;
 
+    // fallow-ignore-next-line unused-class-member -- version-action adapter contract member (accessed polymorphically via the adapter interface)
     public async readPublishedVersion(context: { pkg: WorkspacePackage; pm: PackageManagerAdapter }): Promise<string | undefined> {
         try {
             const result = await context.pm.runner.run("npm", ["view", context.pkg.name, "version", "--silent"], { cwd: context.pkg.dir, silent: true });

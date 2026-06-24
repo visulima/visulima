@@ -85,6 +85,7 @@ export class AdvisoryDbNotFoundError extends Error {
 }
 
 export class AdvisorySourceNotAllowedError extends Error {
+    // fallow-ignore-next-line unused-class-member -- error subclass cause field (part of the Error contract / consumed via error inspection)
     override readonly cause = "SOURCE_NOT_ALLOWED";
 
     constructor(host: string) {

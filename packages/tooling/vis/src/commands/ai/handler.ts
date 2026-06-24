@@ -28,6 +28,7 @@ export const aiDiscoverHelpExecute: CommandExecute<Toolbox<Console, AiDiscoverHe
     process.stdout.write(renderDiscoveryJson(subcommands));
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const aiTestExecute: CommandExecute<Toolbox<Console, AiTestOptions>> = async ({ logger, visConfig }) => {
     const aiConfig: AiConfig | undefined = visConfig?.ai;
     const provider = resolveProvider(aiConfig);
@@ -53,6 +54,7 @@ export const aiTestExecute: CommandExecute<Toolbox<Console, AiTestOptions>> = as
     }
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const aiProvidersExecute: CommandExecute<Toolbox<Console, AiProvidersOptions>> = ({ logger, options, visConfig }) => {
     const format = options.format ?? "table";
     const aiConfig: AiConfig | undefined = visConfig?.ai;
@@ -101,6 +103,7 @@ export const aiProvidersExecute: CommandExecute<Toolbox<Console, AiProvidersOpti
     }
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const aiFixExecute: CommandExecute<Toolbox<Console, AiFixOptions>> = async (toolbox) => {
     const { aiFix } = await import("./fix");
 

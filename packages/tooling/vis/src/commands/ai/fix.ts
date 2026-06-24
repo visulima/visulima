@@ -281,4 +281,5 @@ export const aiFix: CommandExecute<Toolbox<Console, AiFixOptions>> = async ({ ar
     }
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default aiFix;

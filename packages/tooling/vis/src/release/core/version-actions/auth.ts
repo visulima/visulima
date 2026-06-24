@@ -58,11 +58,3 @@ export const resolveAuthMode = (options: ResolveAuthModeOptions): AuthMode => {
 
     return "missing";
 };
-
-/**
- * Convenience predicate for adapters that only need a yes/no on OIDC.
- * Equivalent to `resolveAuthMode(options) === "oidc"`.
- * @param options resolution inputs.
- * @returns true when OIDC trusted publishing should be used.
- */
-export const shouldUseTrustedPublishing = (options: ResolveAuthModeOptions): boolean => resolveAuthMode(options) === "oidc";

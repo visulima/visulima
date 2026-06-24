@@ -71,9 +71,6 @@ export interface ResolveRuntimeOverride {
     flag?: string;
 }
 
-/** Look up the adapter for a known runtime id. */
-export const getRuntimeAdapter = (id: RuntimeId): RuntimeAdapter => ADAPTERS[id];
-
 /** Parse an explicit runtime request, hard-erroring on unknown/deferred values. */
 const parseExplicit = (value: string, origin: string): RuntimeId => {
     if (value === "node" || value === "bun") {
