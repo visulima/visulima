@@ -1047,6 +1047,9 @@ publicHoistPattern:
   - '*prisma*'
   # Needed for api-platform package to work properly. Don't remove these entries.
   - '*redoc*'
+  # @vue/test-utils does an undeclared require('@vue/server-renderer') for its
+  # SSR render path; hoist it so storage-client's @testing-library/vue tests resolve it.
+  - '@vue/server-renderer'
   # Needed for all packages to work properly. Don't remove these entries.
   - '*eslint*'
   - '@prettier/plugin-*'

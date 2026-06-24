@@ -22,15 +22,15 @@ const CTRL_A = "\u0001";
 const BACKSPACE = "\u007F";
 
 const createStdin = (withRawMode = true): StdinStub => {
-    const stdin = new EventEmitter() as unknown as StdinStub;
-
-    if (withRawMode) {
-        vi.spyOn(stdin, "setRawMode").mockImplementation(() => stdin);
-    }
-
-    vi.spyOn(stdin, "resume").mockImplementation(() => stdin);
-    vi.spyOn(stdin, "pause").mockImplementation(() => stdin);
-    vi.spyOn(stdin, "setEncoding").mockImplementation(() => stdin);
+    // `vi.spyOn` requires the spied property to already exist, but a bare
+    // EventEmitter has none of stdin's stream methods — so seed them as mocks
+    // up front. `setRawMode` is omitted when `withRawMode` is false so the
+    // parser's `typeof setRawMode === "function"` guard sees a stream without it.
+    const stdin = Object.assign(
+        new EventEmitter(),
+        { pause: vi.fn(), resume: vi.fn(), setEncoding: vi.fn() },
+        withRawMode ? { setRawMode: vi.fn() } : {},
+    ) as unknown as StdinStub;
 
     return stdin;
 };
