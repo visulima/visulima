@@ -66,38 +66,21 @@
                 "types": "./dist/is-color-supported.browser.d.mts",
                 "default": "./dist/is-color-supported.browser.mjs"
             },
-            "import": {
+            "default": {
                 "types": "./dist/is-color-supported.server.d.mts",
                 "default": "./dist/is-color-supported.server.mjs"
-            },
-            "require": {
-                "types": "./dist/is-color-supported.server.d.cts",
-                "default": "./dist/is-color-supported.server.cjs"
             }
         },
         "./browser": {
-            "import": {
-                "types": "./dist/is-color-supported.browser.d.mts",
-                "default": "./dist/is-color-supported.browser.mjs"
-            },
-            "require": {
-                "types": "./dist/is-color-supported.browser.d.cts",
-                "default": "./dist/is-color-supported.browser.cjs"
-            }
+            "types": "./dist/is-color-supported.browser.d.mts",
+            "default": "./dist/is-color-supported.browser.mjs"
         },
         "./edge-light": {
-            "import": {
-                "types": "./dist/is-color-supported.edge-light.d.mts",
-                "default": "./dist/is-color-supported.edge-light.mjs"
-            },
-            "require": {
-                "types": "./dist/is-color-supported.edge-light.d.cts",
-                "default": "./dist/is-color-supported.edge-light.cjs"
-            }
+            "types": "./dist/is-color-supported.edge-light.d.mts",
+            "default": "./dist/is-color-supported.edge-light.mjs"
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/is-color-supported.server.cjs",
     "module": "dist/is-color-supported.server.mjs",
     "browser": "dist/is-color-supported.browser.mjs",
     "types": "dist/is-color-supported.server.d.ts",
@@ -130,7 +113,7 @@
         "fallow:audit": "fallow audit",
         "fallow:dead-code": "fallow dead-code",
         "fallow:health": "fallow health --report-only",
-        "lint:attw": "attw --pack",
+        "lint:attw": "attw --pack --profile esm-only",
         "lint:eslint": "eslint . --cache --concurrency auto",
         "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
         "lint:package-json": "publint --strict",

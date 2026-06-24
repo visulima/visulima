@@ -1,24 +1,27 @@
 #!/usr/bin/env node
 
-const { exit } = require("node:process");
-// eslint-disable-next-line import/no-extraneous-dependencies
-const { Command } = require("commander");
+import { readFileSync } from "node:fs";
+import { argv, exit } from "node:process";
+import { fileURLToPath } from "node:url";
 
-const { generateCommand, initCommand } = require("../dist/cli/commander/index.cjs");
+// eslint-disable-next-line import/no-extraneous-dependencies -- commander is an optional CLI dependency; the bin only runs when a consumer has installed it
+import { Command } from "commander";
 
-// eslint-disable-next-line no-underscore-dangle
-const package_ = require("../package.json");
+// eslint-disable-next-line antfu/no-import-dist -- bin entry point loads the built ESM dist after build
+import { generateCommand, initCommand } from "../dist/cli/commander/index.mjs";
+
+const { version } = JSON.parse(readFileSync(fileURLToPath(new URL("../package.json", import.meta.url)), "utf8"));
 
 const program = new Command();
 
-program.name("@visulima/jsdoc-open-api").description("CLI to generate OpenAPI (Swagger) documentation from JSDoc's").version(package_.version);
+program.name("@visulima/jsdoc-open-api").description("CLI to generate OpenAPI (Swagger) documentation from JSDoc's").version(version);
 
 initCommand(program);
 generateCommand(program);
 
-program.parse(process.argv);
+program.parse(argv);
 
-if (process.argv.slice(2).length === 0) {
+if (argv.slice(2).length === 0) {
     program.help();
     exit(1);
 }

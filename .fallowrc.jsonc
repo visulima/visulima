@@ -14,12 +14,6 @@
         "**/prettier.config.js",
         "**/playwright.config.ts",
         "vis.config.ts",
-        // `.cts` sources back the CommonJS `require` build condition of a
-        // package's public entry (e.g. colorize's `src/index.server.cts`), but
-        // fallow can't map the `require` → `dist/*.cjs` → `.cts` source chain,
-        // so it treats the entry — and everything only reachable through it — as
-        // dead. Mark these CJS entry sources as roots.
-        "**/src/**/index.*.cts",
     ],
     // Non-code / generated / fixture / bench / docs trees, plus the website and
     // storybook apps and repo tooling scripts. The fallow scripts only live in

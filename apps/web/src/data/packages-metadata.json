@@ -90,18 +90,6 @@
         "displayName": "TSConfig",
         "features": ["Extends resolution", "Path alias handling", "Config validation", "Workspace support"]
     },
-    "api-platform": {
-        "displayName": "API Platform",
-        "features": ["Connect middleware", "Serialization", "Route handling", "Type-safe APIs"]
-    },
-    "connect": {
-        "displayName": "Connect",
-        "features": ["Middleware chaining", "Zod validation", "Next.js and Vercel support", "HTTP/2 compatible"]
-    },
-    "crud": {
-        "displayName": "CRUD",
-        "features": ["Prisma integration", "Auto-generated endpoints", "Validation", "Filtering and sorting"]
-    },
     "health-check": {
         "displayName": "Health Check",
         "features": ["Readiness checks", "Liveness probes", "Custom health indicators", "Middleware integration"]
@@ -153,10 +141,6 @@
     "dev-toolbar": {
         "displayName": "Dev Toolbar",
         "features": ["Accessibility auditing", "Performance monitoring", "SEO inspection", "Extensible app system"]
-    },
-    "prisma-dmmf-transformer": {
-        "displayName": "Prisma DMMF Transformer",
-        "features": ["DMMF to JSON Schema", "Validation generation", "Documentation support", "Prisma integration"]
     },
     "email": {
         "displayName": "Email",

@@ -88,58 +88,29 @@
                 "types": "./dist/index.server.d.mts",
                 "default": "./dist/index.server.mjs"
             },
-            "import": {
+            "default": {
                 "types": "./dist/index.server.d.mts",
                 "default": "./dist/index.server.mjs"
-            },
-            "require": {
-                "types": "./dist/index.server.d.cts",
-                "default": "./dist/index.server.cjs"
             }
         },
         "./browser": {
-            "import": {
-                "types": "./dist/index.browser.d.mts",
-                "default": "./dist/index.browser.mjs"
-            },
-            "require": {
-                "types": "./dist/index.browser.d.cts",
-                "default": "./dist/index.browser.cjs"
-            }
+            "types": "./dist/index.browser.d.mts",
+            "default": "./dist/index.browser.mjs"
         },
         "./template": {
-            "import": {
-                "types": "./dist/template.d.mts",
-                "default": "./dist/template.mjs"
-            },
-            "require": {
-                "types": "./dist/template.d.cts",
-                "default": "./dist/template.cjs"
-            }
+            "types": "./dist/template.d.mts",
+            "default": "./dist/template.mjs"
         },
         "./gradient": {
-            "import": {
-                "types": "./dist/gradient.d.mts",
-                "default": "./dist/gradient.mjs"
-            },
-            "require": {
-                "types": "./dist/gradient.d.cts",
-                "default": "./dist/gradient.cjs"
-            }
+            "types": "./dist/gradient.d.mts",
+            "default": "./dist/gradient.mjs"
         },
         "./utils": {
-            "import": {
-                "types": "./dist/utils.d.mts",
-                "default": "./dist/utils.mjs"
-            },
-            "require": {
-                "types": "./dist/utils.d.cts",
-                "default": "./dist/utils.cjs"
-            }
+            "types": "./dist/utils.d.mts",
+            "default": "./dist/utils.mjs"
         },
         "./package.json": "./package.json"
     },
-    "main": "dist/index.server.cjs",
     "module": "dist/index.server.mjs",
     "types": "dist/index.server.d.ts",
     "typesVersions": {
