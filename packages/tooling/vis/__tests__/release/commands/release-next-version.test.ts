@@ -17,6 +17,7 @@ import { join } from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import nextVersionHandler from "../../../src/commands/release/next-version/handler";
+import { fixturePackageManager } from "../../test-helpers";
 
 const writeJson = (path: string, value: unknown): void => {
     writeFileSync(path, `${JSON.stringify(value, null, 4)}\n`);
@@ -32,7 +33,7 @@ const setupFixture = (changeFile?: string): string => {
 
     writeJson(join(cwd, "package.json"), {
         name: "fixture-root",
-        packageManager: "pnpm@10.0.0",
+        packageManager: fixturePackageManager(),
         private: true,
         version: "0.0.0",
         workspaces: ["packages/*"],

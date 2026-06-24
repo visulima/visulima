@@ -300,7 +300,7 @@ export interface TaskkillRunResult {
 
 export type TaskkillRunner = (args: string[]) => TaskkillRunResult;
 
-const defaultTaskkillRunner: TaskkillRunner = (args) => spawnSync("taskkill", args, { encoding: "utf8" });
+const defaultTaskkillRunner: TaskkillRunner = (args) => spawnSync("taskkill", args, { encoding: "utf8", timeout: 10_000 });
 const defaultProcessKill = (pid: number, signal: "SIGKILL" | "SIGTERM"): void => {
     process.kill(pid, signal);
 };
@@ -359,7 +359,11 @@ const defaultKill = (pid: number, signal: "SIGKILL" | "SIGTERM"): void => {
 };
 
 const runProcessListing = (command: string, args: string[]): string => {
-    const result = spawnSync(command, args, { encoding: "utf8" });
+    // Bound the call: `tasklist` (and occasionally `ps`) can hang indefinitely
+    // on locked-down / headless CI Windows runners. spawnSync surfaces a timeout
+    // as `result.error` (ETIMEDOUT), which the callers already treat as "could
+    // not enumerate" and degrade to an empty PID list rather than a hung process.
+    const result = spawnSync(command, args, { encoding: "utf8", timeout: 10_000 });
 
     if (result.error) {
         throw result.error;

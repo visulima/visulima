@@ -1,8 +1,47 @@
-import { mkdtempSync } from "node:fs";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
+import { fileURLToPath } from "node:url";
 
 import { removeSync } from "@visulima/fs";
-import { join } from "@visulima/path";
+import { dirname, join } from "@visulima/path";
+
+/**
+ * The `packageManager` value a temp workspace fixture should declare.
+ *
+ * A fixture that hardcodes e.g. `pnpm@10.0.0` while the test process runs a
+ * different pnpm makes Corepack (or pnpm's own version management) download
+ * the pinned version on first `pnpm` spawn. That download hangs on locked-down
+ * Windows CI runners — `vis release` handlers that shell out to `pnpm -r ls`
+ * during `buildContext` then time out, and the still-running child leaves the
+ * tmp dir locked (EBUSY) for cleanup.
+ *
+ * Pinning the fixture to the already-running pnpm sidesteps the download
+ * entirely. We read it from pnpm's user-agent (set whenever the suite runs
+ * under `pnpm exec`, i.e. CI and local pnpm), falling back to this monorepo's
+ * own pinned pnpm when the agent is absent (e.g. a raw `vitest` run).
+ */
+export const fixturePackageManager = (): string => {
+    const userAgent = process.env["npm_config_user_agent"] ?? "";
+    const fromAgent = /\bpnpm\/(\d[\w.+-]*)/.exec(userAgent);
+
+    if (fromAgent) {
+        return `pnpm@${fromAgent[1]}`;
+    }
+
+    try {
+        // test-helpers.ts → packages/tooling/vis/__tests__/ ⇒ repo root is four up.
+        const root = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "..", "..", "package.json");
+        const { packageManager } = JSON.parse(readFileSync(root, "utf8")) as { packageManager?: string };
+
+        if (typeof packageManager === "string" && packageManager.startsWith("pnpm@")) {
+            return packageManager;
+        }
+    } catch {
+        // Fall through to the conservative default below.
+    }
+
+    return "pnpm@10.0.0";
+};
 
 /**
  * Creates a fresh temporary directory and returns its absolute path.
