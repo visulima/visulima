@@ -69,11 +69,11 @@ const captureStdout = async (run: () => Promise<void>): Promise<string> => {
     const original = process.stdout.write.bind(process.stdout);
     const chunks: string[] = [];
 
-    process.stdout.write = ((chunk: string | Uint8Array) => {
+    process.stdout.write = (chunk: string | Uint8Array) => {
         chunks.push(typeof chunk === "string" ? chunk : Buffer.from(chunk).toString("utf8"));
 
         return true;
-    });
+    };
 
     try {
         await run();

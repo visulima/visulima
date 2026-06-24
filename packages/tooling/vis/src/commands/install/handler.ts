@@ -122,8 +122,14 @@ const execute = async (toolbox: Toolbox<Console, InstallOptions>): Promise<void>
 
     try {
         pm = noAube
-            ? (runtimeBackend === undefined ? detectPm(cwd) : resolveInstaller(cwd, { backend: runtimeBackend }))
-            : resolveInstaller(cwd, { backend: flagBackend ?? runtimeBackend, configBackend: visConfig?.install?.backend, configCorepack: visConfig?.install?.corepack });
+            ? runtimeBackend === undefined
+                ? detectPm(cwd)
+                : resolveInstaller(cwd, { backend: runtimeBackend })
+            : resolveInstaller(cwd, {
+                backend: flagBackend ?? runtimeBackend,
+                configBackend: visConfig?.install?.backend,
+                configCorepack: visConfig?.install?.corepack,
+            });
     } catch (error: unknown) {
         pail.error(error instanceof Error ? error.message : String(error));
         process.exitCode = 1;

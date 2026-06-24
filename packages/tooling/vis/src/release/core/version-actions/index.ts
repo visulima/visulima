@@ -6,11 +6,5 @@
  * lifecycle, then point a package's `versionActions` config at the module.
  * `createVersionActions` is the built-in id-to-implementation registry.
  */
-export {
-    AfterAllProjectsVersioned,
-    type AfterAllVersionedContext,
-    type AfterAllVersionedResult,
-    type PublishContext,
-    VersionActions,
-} from "./interface";
+export { AfterAllProjectsVersioned, type AfterAllVersionedContext, type AfterAllVersionedResult, type PublishContext, VersionActions } from "./interface";
 export { createVersionActions } from "./registry";

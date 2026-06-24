@@ -89,9 +89,7 @@ const sectionFromBumpType = (bumpType: string): Section => {
 };
 
 const isBreaking = (line: string, bumpType: string): boolean =>
-    /\bBREAKING(?:\s+CHANGE)?\b/.test(line)
-    || /^\s*[a-z]+(?:\([^)]+\))?!\s*:/i.test(line)
-    || bumpType === "major";
+    /\bBREAKING(?:\s+CHANGE)?\b/.test(line) || /^\s*[a-z]+(?:\([^)]+\))?!\s*:/i.test(line) || bumpType === "major";
 
 const bucketEntry = (line: string, bumpType: string, buckets: Record<Section, string[]>, breaking: string[]): void => {
     const text = stripBullet(line);
@@ -149,97 +147,102 @@ const renderCompareLink = (
     return `https://github.com/${repo}/compare/${fromTag}...${toTag}`;
 };
 
-export const createKeepAChangelogFormatter = (options: KeepAChangelogOptions = {}): ChangelogFormatter => (context: ChangelogContext): string => {
-    const { changeFiles, date, release, target } = context;
+export const createKeepAChangelogFormatter
+    = (options: KeepAChangelogOptions = {}): ChangelogFormatter =>
+        (context: ChangelogContext): string => {
+            const { changeFiles, date, release, target } = context;
 
-    const buckets: Record<Section, string[]> = {
-        Added: [],
-        Changed: [],
-        Deprecated: [],
-        Fixed: [],
-        Removed: [],
-        Security: [],
-    };
-    const breaking: string[] = [];
-    const bumpType = release.type;
+            const buckets: Record<Section, string[]> = {
+                Added: [],
+                Changed: [],
+                Deprecated: [],
+                Fixed: [],
+                Removed: [],
+                Security: [],
+            };
+            const breaking: string[] = [];
+            const bumpType = release.type;
 
-    for (const file of changeFiles) {
-        for (const rawLine of file.body.trim().split(/\r?\n/)) {
-            if (!rawLine.trim()) {
-                continue;
+            for (const file of changeFiles) {
+                for (const rawLine of file.body.trim().split(/\r?\n/)) {
+                    if (!rawLine.trim()) {
+                        continue;
+                    }
+
+                    bucketEntry(rawLine, bumpType, buckets, breaking);
+                }
             }
 
-            bucketEntry(rawLine, bumpType, buckets, breaking);
-        }
-    }
+            if (release.isCascadeBump || release.isGroupBump) {
+                for (const source of release.sources) {
+                    const verb = release.isCascadeBump ? "Cascade from" : "Group bump with";
 
-    if (release.isCascadeBump || release.isGroupBump) {
-        for (const source of release.sources) {
-            const verb = release.isCascadeBump ? "Cascade from" : "Group bump with";
-
-            buckets.Changed.push(`- ${verb} \`${source.name}\`@${source.newVersion}`);
-        }
-    } else if (release.isDependencyBump && changeFiles.length === 0) {
-        for (const source of release.sources) {
-            // F13: catalog REMOVALs surface as `newVersion === ""` (the
-            // release-plan stores `entry.newVersion ?? ""` for the
-            // synthetic catalog source). Route to the Removed section
-            // rather than emitting a malformed trailing `@` in Changed.
-            if (source.newVersion === "") {
-                buckets.Removed.push(`- Removed dependency \`${source.name}\``);
-            } else {
-                buckets.Changed.push(`- Updated dependency \`${source.name}\`@${source.newVersion}`);
+                    buckets.Changed.push(`- ${verb} \`${source.name}\`@${source.newVersion}`);
+                }
+            } else if (release.isDependencyBump && changeFiles.length === 0) {
+                for (const source of release.sources) {
+                // F13: catalog REMOVALs surface as `newVersion === ""` (the
+                // release-plan stores `entry.newVersion ?? ""` for the
+                // synthetic catalog source). Route to the Removed section
+                // rather than emitting a malformed trailing `@` in Changed.
+                    if (source.newVersion === "") {
+                        buckets.Removed.push(`- Removed dependency \`${source.name}\``);
+                    } else {
+                        buckets.Changed.push(`- Updated dependency \`${source.name}\`@${source.newVersion}`);
+                    }
+                }
             }
-        }
-    }
 
-    const lines: string[] = [];
+            const lines: string[] = [];
 
-    if (target !== "github-release") {
-        lines.push(`## [${release.newVersion}] - ${date}`);
-        lines.push("");
-    }
+            if (target !== "github-release") {
+                lines.push(`## [${release.newVersion}] - ${date}`);
+                lines.push("");
+            }
 
-    if (breaking.length > 0) {
-        lines.push("### ⚠ BREAKING CHANGES");
-        lines.push("");
+            if (breaking.length > 0) {
+                lines.push("### ⚠ BREAKING CHANGES");
+                lines.push("");
 
-        for (const item of breaking) {
-            lines.push(item);
-        }
+                for (const item of breaking) {
+                    lines.push(item);
+                }
 
-        lines.push("");
-    }
+                lines.push("");
+            }
 
-    for (const section of SECTIONS_IN_ORDER) {
-        const items = buckets[section];
+            for (const section of SECTIONS_IN_ORDER) {
+                const items = buckets[section];
 
-        if (items.length === 0) {
-            continue;
-        }
+                if (items.length === 0) {
+                    continue;
+                }
 
-        lines.push(`### ${section}`);
-        lines.push("");
+                lines.push(`### ${section}`);
+                lines.push("");
 
-        for (const item of items) {
-            lines.push(item);
-        }
+                for (const item of items) {
+                    lines.push(item);
+                }
 
-        lines.push("");
-    }
+                lines.push("");
+            }
 
-    // Comparison link footer (Keep-a-Changelog convention).
-    if (target !== "github-release") {
-        const fromTag = `${release.name}@${release.oldVersion}`;
-        const toTag = `${release.name}@${release.newVersion}`;
-        const link = renderCompareLink(options.repo, options.compareUrlPrefix, release.name, fromTag, toTag);
+            // Comparison link footer (Keep-a-Changelog convention).
+            if (target !== "github-release") {
+                const fromTag = `${release.name}@${release.oldVersion}`;
+                const toTag = `${release.name}@${release.newVersion}`;
+                const link = renderCompareLink(options.repo, options.compareUrlPrefix, release.name, fromTag, toTag);
 
-        if (link) {
-            lines.push(`[${release.newVersion}]: ${link}`);
-        }
-    }
+                if (link) {
+                    lines.push(`[${release.newVersion}]: ${link}`);
+                }
+            }
 
-    return lines.join("\n").replaceAll(/\n{3,}/g, "\n\n").trimEnd();
-};
+            return lines
+                .join("\n")
+                .replaceAll(/\n{3,}/g, "\n\n")
+                .trimEnd();
+        };
 
 export default createKeepAChangelogFormatter;

@@ -64,11 +64,7 @@ const findOrCreateVersionPr = async (
     baseBranch: string,
 ): Promise<{ existing: boolean; number: number } | undefined> => {
     // Check for existing PR head=<branch>
-    const list = await runner.run(
-        "gh",
-        ["pr", "list", "--head", branch, "--state", "open", "--json", "number"],
-        { cwd, silent: true },
-    );
+    const list = await runner.run("gh", ["pr", "list", "--head", branch, "--state", "open", "--json", "number"], { cwd, silent: true });
 
     if (list.exitCode === 0 && list.stdout.trim() !== "" && list.stdout.trim() !== "[]") {
         try {
@@ -96,11 +92,7 @@ const findOrCreateVersionPr = async (
                 let skipBodyUpdate = false;
 
                 try {
-                    const viewResult = await runner.run(
-                        "gh",
-                        ["pr", "view", String(parsed[0].number), "--json", "body", "-q", ".body"],
-                        { cwd, silent: true },
-                    );
+                    const viewResult = await runner.run("gh", ["pr", "view", String(parsed[0].number), "--json", "body", "-q", ".body"], { cwd, silent: true });
 
                     if (viewResult.exitCode === 0) {
                         // `gh pr view -q .body` emits the raw body
@@ -140,11 +132,7 @@ const findOrCreateVersionPr = async (
         }
     }
 
-    const create = await runner.run(
-        "gh",
-        ["pr", "create", "--head", branch, "--base", baseBranch, "--title", title, "--body", body],
-        { cwd, silent: true },
-    );
+    const create = await runner.run("gh", ["pr", "create", "--head", branch, "--base", baseBranch, "--title", title, "--body", body], { cwd, silent: true });
 
     if (create.exitCode !== 0) {
         return undefined;
@@ -171,28 +159,16 @@ const applyPrMetadata = async (
     const labels = metadata.labels ?? ["autorelease: pending"];
 
     if (labels.length > 0) {
-        await runner.run(
-            "gh",
-            ["pr", "edit", String(prNumber), ...labels.flatMap((l) => ["--add-label", l])],
-            { cwd, silent: true },
-        );
+        await runner.run("gh", ["pr", "edit", String(prNumber), ...labels.flatMap((l) => ["--add-label", l])], { cwd, silent: true });
     }
 
     if (metadata.reviewers && metadata.reviewers.length > 0) {
         // gh pr edit --add-reviewer accepts comma-separated values.
-        await runner.run(
-            "gh",
-            ["pr", "edit", String(prNumber), "--add-reviewer", metadata.reviewers.join(",")],
-            { cwd, silent: true },
-        );
+        await runner.run("gh", ["pr", "edit", String(prNumber), "--add-reviewer", metadata.reviewers.join(",")], { cwd, silent: true });
     }
 
     if (metadata.assignees && metadata.assignees.length > 0) {
-        await runner.run(
-            "gh",
-            ["pr", "edit", String(prNumber), "--add-assignee", metadata.assignees.join(",")],
-            { cwd, silent: true },
-        );
+        await runner.run("gh", ["pr", "edit", String(prNumber), "--add-assignee", metadata.assignees.join(",")], { cwd, silent: true });
     }
 };
 
@@ -319,9 +295,7 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
     await stageAndCommit(
         { cwd, runner },
         stageList,
-        ctx.config.gitUser
-            ? `release(${ctx.channel?.tag ?? "main"}): version packages [skip ci]`
-            : "release: version packages [skip ci]",
+        ctx.config.gitUser ? `release(${ctx.channel?.tag ?? "main"}): version packages [skip ci]` : "release: version packages [skip ci]",
         { author: ctx.config.gitUser },
     );
 
@@ -358,11 +332,7 @@ const execute = async ({ fs, logger, options, workspaceRoot }: Toolbox<Console, 
         // is the deliverable).
         if (ctx.config.versionPr?.autoMerge && !pr.existing) {
             const method = ctx.config.versionPr.autoMergeMethod ?? "squash";
-            const enable = await runner.run(
-                "gh",
-                ["pr", "merge", String(pr.number), "--auto", `--${method}`],
-                { cwd, silent: true },
-            );
+            const enable = await runner.run("gh", ["pr", "merge", String(pr.number), "--auto", `--${method}`], { cwd, silent: true });
 
             if (enable.exitCode === 0) {
                 logger.info(`Auto-merge enabled (${method}).`);

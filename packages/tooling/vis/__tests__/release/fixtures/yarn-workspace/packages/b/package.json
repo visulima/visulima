@@ -2,6 +2,10 @@
     "name": "@fixture-yarn/b",
     "version": "1.0.0",
     "main": "index.js",
-    "files": ["index.js"],
-    "dependencies": { "@fixture-yarn/a": "workspace:^1.0.0" }
+    "files": [
+        "index.js"
+    ],
+    "dependencies": {
+        "@fixture-yarn/a": "workspace:^1.0.0"
+    }
 }

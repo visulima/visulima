@@ -195,9 +195,7 @@ describe("pnpmAdapter — installLockfileOnly", () => {
             return { exitCode: 1, stderr: "frozen lock changed", stdout: "" };
         });
 
-        await expect(new PnpmAdapter(runner).installLockfileOnly({ cwd: "/r" })).rejects.toThrow(
-            /pnpm install --lockfile-only failed: frozen lock changed/,
-        );
+        await expect(new PnpmAdapter(runner).installLockfileOnly({ cwd: "/r" })).rejects.toThrow(/pnpm install --lockfile-only failed: frozen lock changed/);
     });
 });
 

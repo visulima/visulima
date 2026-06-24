@@ -14,12 +14,7 @@
 import { VisReleaseError } from "../errors";
 import type { DependencyKind, DependentInfo, WorkspacePackage } from "../types";
 
-const DEPENDENCY_KINDS: ReadonlyArray<DependencyKind> = [
-    "dependencies",
-    "devDependencies",
-    "peerDependencies",
-    "optionalDependencies",
-] as const;
+const DEPENDENCY_KINDS: ReadonlyArray<DependencyKind> = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"] as const;
 
 export class DependencyGraph {
     /** Source package name → array of dependents. */

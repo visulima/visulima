@@ -5,10 +5,7 @@ import { DependencyGraph } from "../../../src/release/core/dep-graph";
 import { assembleReleasePlan } from "../../../src/release/core/release-plan";
 import type { ChangeFile, VisReleaseConfig, WorkspacePackage } from "../../../src/release/types";
 
-const mkPkg = (
-    name: string,
-    extras: Partial<WorkspacePackage["manifest"]> & { version?: string } = {},
-): WorkspacePackage => {
+const mkPkg = (name: string, extras: Partial<WorkspacePackage["manifest"]> & { version?: string } = {}): WorkspacePackage => {
     const { version = "1.0.0", ...rest } = extras;
 
     return {
@@ -122,11 +119,7 @@ describe("release-plan: phase A — out-of-range fix", () => {
         const b = mkPkg("b", { devDependencies: { a: "~1.0.0" } });
         const graph = new DependencyGraph([a, b]);
 
-        const plan = assembleReleasePlan(
-            [cf(`---\na: minor\n---\n`)],
-            graph,
-            { bumpDevDependencies: true },
-        );
+        const plan = assembleReleasePlan([cf(`---\na: minor\n---\n`)], graph, { bumpDevDependencies: true });
 
         const releaseB = findRelease(plan, "b");
 
@@ -144,11 +137,7 @@ describe("release-plan: phase A — out-of-range fix", () => {
         const graph = new DependencyGraph([a, b, c]);
 
         // Only `a` is in the allow-list, so a→b cascades but c→b doesn't.
-        const plan = assembleReleasePlan(
-            [cf(`---\na: minor\nc: minor\n---\n`)],
-            graph,
-            { bumpDevDependencies: ["a"] },
-        );
+        const plan = assembleReleasePlan([cf(`---\na: minor\nc: minor\n---\n`)], graph, { bumpDevDependencies: ["a"] });
 
         const releaseB = findRelease(plan, "b");
 
@@ -274,9 +263,7 @@ describe("release-plan: phase C2 — cascadeTo from per-pkg config", () => {
             graph,
             {},
             {
-                perPackageConfig: new Map([
-                    ["a", { cascadeTo: { b: { bumpAs: "patch", trigger: "minor" } } }],
-                ]),
+                perPackageConfig: new Map([["a", { cascadeTo: { b: { bumpAs: "patch", trigger: "minor" } } }]]),
             },
         );
 
@@ -296,9 +283,7 @@ describe("release-plan: phase C2 — cascadeTo from per-pkg config", () => {
             graph,
             {},
             {
-                perPackageConfig: new Map([
-                    ["a", { cascadeTo: { b: { bumpAs: "patch", trigger: "minor" } } }],
-                ]),
+                perPackageConfig: new Map([["a", { cascadeTo: { b: { bumpAs: "patch", trigger: "minor" } } }]]),
             },
         );
 
@@ -317,9 +302,7 @@ describe("release-plan: phase C2 — cascadeTo from per-pkg config", () => {
             graph,
             {},
             {
-                perPackageConfig: new Map([
-                    ["a", { cascadeTo: { b: { bumpAs: "match", trigger: "patch" } } }],
-                ]),
+                perPackageConfig: new Map([["a", { cascadeTo: { b: { bumpAs: "match", trigger: "patch" } } }]]),
             },
         );
 
@@ -336,11 +319,7 @@ describe("release-plan: phase C3 — dep-graph rules (gated by mode)", () => {
         const graph = new DependencyGraph([a, b]);
 
         // a 1.0.0 → 1.1.0 stays in ^1.0.0, so out-of-range wouldn't trigger.
-        const plan = assembleReleasePlan(
-            [cf(`---\na: minor\n---\n`)],
-            graph,
-            { updateInternalDependencies: "out-of-range" },
-        );
+        const plan = assembleReleasePlan([cf(`---\na: minor\n---\n`)], graph, { updateInternalDependencies: "out-of-range" });
 
         expect(findRelease(plan, "b")).toBeUndefined();
     });
@@ -352,11 +331,7 @@ describe("release-plan: phase C3 — dep-graph rules (gated by mode)", () => {
         const b = mkPkg("b", { dependencies: { a: "^1.0.0" } });
         const graph = new DependencyGraph([a, b]);
 
-        const plan = assembleReleasePlan(
-            [cf(`---\na: patch\n---\n`)],
-            graph,
-            { updateInternalDependencies: "patch" },
-        );
+        const plan = assembleReleasePlan([cf(`---\na: patch\n---\n`)], graph, { updateInternalDependencies: "patch" });
 
         expect(findRelease(plan, "b")?.type).toBe("patch");
         expect(findRelease(plan, "b")?.reasons).toContain("DEPENDENCY_BUMPED");
@@ -369,11 +344,7 @@ describe("release-plan: phase C3 — dep-graph rules (gated by mode)", () => {
         const b = mkPkg("b", { dependencies: { a: "^1.0.0" } });
         const graph = new DependencyGraph([a, b]);
 
-        const plan = assembleReleasePlan(
-            [cf(`---\na: patch\n---\n`)],
-            graph,
-            { updateInternalDependencies: "minor" },
-        );
+        const plan = assembleReleasePlan([cf(`---\na: patch\n---\n`)], graph, { updateInternalDependencies: "minor" });
 
         // patch < minor threshold → no propagation in this mode
         expect(findRelease(plan, "b")).toBeUndefined();
@@ -389,11 +360,7 @@ describe("release-plan: combined scenarios", () => {
         const a = mkPkg("a");
         const graph = new DependencyGraph([a]);
 
-        const files = [
-            cf(`---\na: patch\n---\n`, "1.md"),
-            cf(`---\na: minor\n---\n`, "2.md"),
-            cf(`---\na: patch\n---\n`, "3.md"),
-        ];
+        const files = [cf(`---\na: patch\n---\n`, "1.md"), cf(`---\na: minor\n---\n`, "2.md"), cf(`---\na: patch\n---\n`, "3.md")];
 
         const plan = assembleReleasePlan(files, graph, {});
 
@@ -492,17 +459,22 @@ describe("release-plan: catalog change cascade", () => {
         const consumer = mkPkg("consumer", { dependencies: { react: "catalog:" } });
         const graph = new DependencyGraph([consumer]);
 
-        const plan = assembleReleasePlan([], graph, {}, {
-            catalogConsumers: [
-                {
-                    catalog: "",
-                    dep: "react",
-                    newVersion: "^18.3.0",
-                    oldVersion: "^18.2.0",
-                    packageName: "consumer",
-                },
-            ],
-        });
+        const plan = assembleReleasePlan(
+            [],
+            graph,
+            {},
+            {
+                catalogConsumers: [
+                    {
+                        catalog: "",
+                        dep: "react",
+                        newVersion: "^18.3.0",
+                        oldVersion: "^18.2.0",
+                        packageName: "consumer",
+                    },
+                ],
+            },
+        );
 
         const release = findRelease(plan, "consumer");
 
@@ -522,12 +494,17 @@ describe("release-plan: catalog change cascade", () => {
         const present = mkPkg("present", { dependencies: { react: "catalog:" } });
         const graph = new DependencyGraph([present]);
 
-        const plan = assembleReleasePlan([], graph, {}, {
-            catalogConsumers: [
-                { catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0", packageName: "present" },
-                { catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0", packageName: "filtered" },
-            ],
-        });
+        const plan = assembleReleasePlan(
+            [],
+            graph,
+            {},
+            {
+                catalogConsumers: [
+                    { catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0", packageName: "present" },
+                    { catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0", packageName: "filtered" },
+                ],
+            },
+        );
 
         expect(plan.releases.map((r) => r.name)).toStrictEqual(["present"]);
     });
@@ -546,9 +523,7 @@ describe("release-plan: catalog change cascade", () => {
             graph,
             {},
             {
-                catalogConsumers: [
-                    { catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0", packageName: "consumer" },
-                ],
+                catalogConsumers: [{ catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0", packageName: "consumer" }],
             },
         );
 
@@ -569,11 +544,14 @@ describe("release-plan: catalog change cascade", () => {
         const b = mkPkg("b", { dependencies: { a: "1.0.0" }, version: "1.0.0" });
         const graph = new DependencyGraph([a, b]);
 
-        const plan = assembleReleasePlan([], graph, {}, {
-            catalogConsumers: [
-                { catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0", packageName: "a" },
-            ],
-        });
+        const plan = assembleReleasePlan(
+            [],
+            graph,
+            {},
+            {
+                catalogConsumers: [{ catalog: "", dep: "react", newVersion: "^18.3.0", oldVersion: "^18.2.0", packageName: "a" }],
+            },
+        );
 
         expect(findRelease(plan, "a")?.reasons).toContain("CATALOG_CHANGED");
         // b was pulled in by Phase A because a's new version broke its tight range.
@@ -602,17 +580,22 @@ describe("release-plan: catalog change cascade", () => {
         const consumer = mkPkg("consumer", { dependencies: { lodash: "catalog:" } });
         const graph = new DependencyGraph([consumer]);
 
-        const plan = assembleReleasePlan([], graph, {}, {
-            catalogConsumers: [
-                {
-                    catalog: "",
-                    dep: "lodash",
-                    newVersion: "4.17.21",
-                    oldVersion: "4.17.20",
-                    packageName: "consumer",
-                },
-            ],
-        });
+        const plan = assembleReleasePlan(
+            [],
+            graph,
+            {},
+            {
+                catalogConsumers: [
+                    {
+                        catalog: "",
+                        dep: "lodash",
+                        newVersion: "4.17.21",
+                        oldVersion: "4.17.20",
+                        packageName: "consumer",
+                    },
+                ],
+            },
+        );
 
         const release = findRelease(plan, "consumer");
 
@@ -629,17 +612,22 @@ describe("release-plan: catalog change cascade", () => {
         const consumer = mkPkg("consumer", { devDependencies: { vitest: "catalog:dev" } });
         const graph = new DependencyGraph([consumer]);
 
-        const plan = assembleReleasePlan([], graph, {}, {
-            catalogConsumers: [
-                {
-                    catalog: "dev",
-                    dep: "vitest",
-                    newVersion: "^2.1.0",
-                    oldVersion: "^2.0.0",
-                    packageName: "consumer",
-                },
-            ],
-        });
+        const plan = assembleReleasePlan(
+            [],
+            graph,
+            {},
+            {
+                catalogConsumers: [
+                    {
+                        catalog: "dev",
+                        dep: "vitest",
+                        newVersion: "^2.1.0",
+                        oldVersion: "^2.0.0",
+                        packageName: "consumer",
+                    },
+                ],
+            },
+        );
 
         const release = findRelease(plan, "consumer");
 
@@ -653,17 +641,22 @@ describe("release-plan: catalog change cascade", () => {
         const consumer = mkPkg("consumer", { dependencies: { legacy: "catalog:" } });
         const graph = new DependencyGraph([consumer]);
 
-        const plan = assembleReleasePlan([], graph, {}, {
-            catalogConsumers: [
-                {
-                    catalog: "",
-                    dep: "legacy",
-                    newVersion: undefined,
-                    oldVersion: "1.0.0",
-                    packageName: "consumer",
-                },
-            ],
-        });
+        const plan = assembleReleasePlan(
+            [],
+            graph,
+            {},
+            {
+                catalogConsumers: [
+                    {
+                        catalog: "",
+                        dep: "legacy",
+                        newVersion: undefined,
+                        oldVersion: "1.0.0",
+                        packageName: "consumer",
+                    },
+                ],
+            },
+        );
 
         const release = findRelease(plan, "consumer");
 
@@ -685,11 +678,7 @@ describe("release-plan: bumpDevDependencies fanout warning (F12)", () => {
         const consumers = Array.from({ length: 11 }, (_, i) => mkPkg(`consumer-${i}`, { devDependencies: { source: "1.0.0" } }));
         const graph = new DependencyGraph([source, ...consumers]);
 
-        const plan = assembleReleasePlan(
-            [cf(`---\nsource: minor\n---\n`)],
-            graph,
-            { bumpDevDependencies: true },
-        );
+        const plan = assembleReleasePlan([cf(`---\nsource: minor\n---\n`)], graph, { bumpDevDependencies: true });
 
         const fanoutWarning = plan.warnings.find((w) => w.includes("patch-cascades"));
 
@@ -708,11 +697,7 @@ describe("release-plan: bumpDevDependencies fanout warning (F12)", () => {
         const consumers = Array.from({ length: 10 }, (_, i) => mkPkg(`consumer-${i}`, { devDependencies: { source: "1.0.0" } }));
         const graph = new DependencyGraph([source, ...consumers]);
 
-        const plan = assembleReleasePlan(
-            [cf(`---\nsource: minor\n---\n`)],
-            graph,
-            { bumpDevDependencies: true },
-        );
+        const plan = assembleReleasePlan([cf(`---\nsource: minor\n---\n`)], graph, { bumpDevDependencies: true });
 
         expect(plan.warnings.some((w) => w.includes("patch-cascades"))).toBe(false);
     });
@@ -726,11 +711,7 @@ describe("release-plan: bumpDevDependencies fanout warning (F12)", () => {
         const consumers = Array.from({ length: 20 }, (_, i) => mkPkg(`consumer-${i}`, { devDependencies: { source: "1.0.0" } }));
         const graph = new DependencyGraph([source, ...consumers]);
 
-        const plan = assembleReleasePlan(
-            [cf(`---\nsource: minor\n---\n`)],
-            graph,
-            { bumpDevDependencies: ["source"] },
-        );
+        const plan = assembleReleasePlan([cf(`---\nsource: minor\n---\n`)], graph, { bumpDevDependencies: ["source"] });
 
         expect(plan.warnings.some((w) => w.includes("patch-cascades"))).toBe(false);
     });
@@ -745,11 +726,7 @@ describe("release-plan: bumpDevDependencies fanout warning (F12)", () => {
         const consumers = Array.from({ length: 12 }, (_, i) => mkPkg(`consumer-${i}`, { devDependencies: { source: "1.0.0" } }));
         const graph = new DependencyGraph([source, ...consumers]);
 
-        const plan = assembleReleasePlan(
-            [cf(`---\nsource: minor\n---\n`)],
-            graph,
-            { bumpDevDependencies: true },
-        );
+        const plan = assembleReleasePlan([cf(`---\nsource: minor\n---\n`)], graph, { bumpDevDependencies: true });
 
         const fanoutWarnings = plan.warnings.filter((w) => w.includes("patch-cascades"));
 

@@ -1,1 +1,1 @@
-module.exports = { name: '@fixture-bun/b' };
+module.exports = { name: "@fixture-bun/b" };

@@ -180,7 +180,9 @@ export const releaseSnapshot = async (options: SnapshotOptions): Promise<Snapsho
     };
 };
 
-export const release = async (options: ReleaseOptions = {}): Promise<{
+export const release = async (
+    options: ReleaseOptions = {},
+): Promise<{
     changelog: ChangelogResult;
     publish: PublishResult;
     version: VersionResult;

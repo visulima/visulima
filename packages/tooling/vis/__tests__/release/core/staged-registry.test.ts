@@ -74,13 +74,15 @@ describe("staged-registry: read/write round-trip", () => {
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, CHANGES_DIR, {
-            pending: [{
-                id: "stage-xyz",
-                name: "x",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                version: "1.0.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "x",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    version: "1.0.0",
+                },
+            ],
             updatedAt: "now",
             version: 1,
         });
@@ -114,13 +116,15 @@ describe("staged-registry: read/write round-trip", () => {
         expect.hasAssertions();
 
         const registry: StagedRegistryFile = {
-            pending: [{
-                id: "stage-xyz",
-                name: "x",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                version: "1.0.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "x",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    version: "1.0.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         };
@@ -140,26 +144,30 @@ describe("staged-registry: read/write round-trip", () => {
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, CHANGES_DIR, {
-            pending: [{
-                id: "stage-xyz",
-                name: "x",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                version: "1.0.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "x",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    version: "1.0.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
 
         // Write the same registry but with a fresh updatedAt.
         const second = await writeStagedRegistry(cwd, CHANGES_DIR, {
-            pending: [{
-                id: "stage-xyz",
-                name: "x",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                version: "1.0.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "x",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    version: "1.0.0",
+                },
+            ],
             updatedAt: new Date().toISOString(),
             version: 1,
         });
@@ -171,25 +179,29 @@ describe("staged-registry: read/write round-trip", () => {
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, CHANGES_DIR, {
-            pending: [{
-                id: "stage-a",
-                name: "x",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                version: "1.0.0",
-            }],
+            pending: [
+                {
+                    id: "stage-a",
+                    name: "x",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    version: "1.0.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
 
         const second = await writeStagedRegistry(cwd, CHANGES_DIR, {
-            pending: [{
-                id: "stage-b",
-                name: "x",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                version: "1.0.0",
-            }],
+            pending: [
+                {
+                    id: "stage-b",
+                    name: "x",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    version: "1.0.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -201,25 +213,29 @@ describe("staged-registry: read/write round-trip", () => {
         expect.hasAssertions();
 
         await writeStagedRegistry(cwd, CHANGES_DIR, {
-            pending: [{
-                id: "stage-xyz",
-                name: "x",
-                reason: "timeout",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                version: "1.0.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "x",
+                    reason: "timeout",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    version: "1.0.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
 
         const second = await writeStagedRegistry(cwd, CHANGES_DIR, {
-            pending: [{
-                id: "stage-xyz",
-                name: "x",
-                reason: "rejected",
-                stagedAt: "2026-05-22T14:00:00.000Z",
-                version: "1.0.0",
-            }],
+            pending: [
+                {
+                    id: "stage-xyz",
+                    name: "x",
+                    reason: "rejected",
+                    stagedAt: "2026-05-22T14:00:00.000Z",
+                    version: "1.0.0",
+                },
+            ],
             updatedAt: "2026-05-22T14:00:00.000Z",
             version: 1,
         });
@@ -537,7 +553,7 @@ describe("staged-registry: cross-runner notify/walk dedupe", () => {
         const now = Date.now();
         const entries = Array.from({ length: 150 }, (_, idx) => {
             return {
-            // Older entries first; idx=149 is the most recent.
+                // Older entries first; idx=149 is the most recent.
                 at: new Date(now - (150 - idx) * 60_000).toISOString(),
                 key: `@scope/p${idx}@1.0.0`,
             };

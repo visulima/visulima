@@ -178,9 +178,7 @@ export const printConfigIfRequested = <O extends PrintConfigOptions & Record<str
 
     // Redact the configured author email — it's PII when this output gets
     // captured in a CI log. Name is kept (it's published in commits anyway).
-    const safeGitUser = config.gitUser
-        ? { ...config.gitUser, email: config.gitUser.email ? "[REDACTED]" : config.gitUser.email }
-        : config.gitUser;
+    const safeGitUser = config.gitUser ? { ...config.gitUser, email: config.gitUser.email ? "[REDACTED]" : config.gitUser.email } : config.gitUser;
 
     const out: Record<string, unknown> = {
         access: config.access,

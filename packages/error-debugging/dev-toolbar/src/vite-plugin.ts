@@ -642,9 +642,7 @@ export const devToolbar = (options: DevToolbarOptions = {}): Plugin[] => {
             // its `sources`/`names` arrays as `readonly`, which is nominally incompatible
             // with Vite's mutable `ExistingRawSourceMap`. The map is consumed read-only
             // downstream, so the cast is safe.
-            const result = generated
-                ? { code: generated.code ?? code, map: (generated.map ?? undefined) as Rolldown.SourceMapInput | undefined }
-                : undefined;
+            const result = generated ? { code: generated.code ?? code, map: (generated.map ?? undefined) as Rolldown.SourceMapInput | undefined } : undefined;
 
             if (cacheKey !== undefined) {
                 injectSourceCache.set(id, { key: cacheKey, result });

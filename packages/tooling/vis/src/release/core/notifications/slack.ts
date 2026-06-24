@@ -47,9 +47,7 @@ export class SlackNotificationChannel implements NotificationChannel {
             ? expandNotificationTemplate(this.config.title, context)
             : `🚀 Released ${context.published.length} package${context.published.length === 1 ? "" : "s"}`;
 
-        const blocks: SlackBlock[] = [
-            { text: { text: title, type: "plain_text" }, type: "header" },
-        ];
+        const blocks: SlackBlock[] = [{ text: { text: title, type: "plain_text" }, type: "header" }];
 
         if (context.published.length > 0) {
             blocks.push({

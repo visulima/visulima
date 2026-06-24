@@ -47,10 +47,7 @@ describe.skipIf(!visBuilt())("e2e: vis release init --from-changesets", () => {
 
         const fs = await import("node:fs/promises");
 
-        await fs.writeFile(
-            join(result.cwd, ".changeset", "pre.json"),
-            JSON.stringify({ changesets: [], initialVersions: {}, mode: "pre", tag: "alpha" }),
-        );
+        await fs.writeFile(join(result.cwd, ".changeset", "pre.json"), JSON.stringify({ changesets: [], initialVersions: {}, mode: "pre", tag: "alpha" }));
 
         const { exitCode, stderr } = result.runVisRelease(["init", "--from-changesets"]);
 

@@ -147,11 +147,7 @@ interface RawNested {
 
 const isRawNested = (value: unknown): value is RawNested => typeof value === "object" && value !== null && !Array.isArray(value) && "bump" in value;
 
-const parseNested = (
-    primary: string,
-    raw: RawNested,
-    file: string,
-): ChangeFileNested => {
+const parseNested = (primary: string, raw: RawNested, file: string): ChangeFileNested => {
     if (!isBumpLevel(raw.bump)) {
         throw new VisReleaseError({
             code: "BUMP_FILE_INVALID",
@@ -422,10 +418,11 @@ export const collectExplicitBumps = (files: ChangeFile[]): Map<string, BumpLevel
  * Find every `ChangeFile` that explicitly bumps a given package.
  * Used to attach change-file bodies to the changelog entry for a release.
  */
-export const findChangeFilesFor = (packageName: string, files: ChangeFile[]): ChangeFile[] => files.filter((file) => {
-    if ("bumps" in file.payload) {
-        return Object.hasOwn(file.payload.bumps, packageName);
-    }
+export const findChangeFilesFor = (packageName: string, files: ChangeFile[]): ChangeFile[] =>
+    files.filter((file) => {
+        if ("bumps" in file.payload) {
+            return Object.hasOwn(file.payload.bumps, packageName);
+        }
 
-    return file.payload.package === packageName;
-});
+        return file.payload.package === packageName;
+    });

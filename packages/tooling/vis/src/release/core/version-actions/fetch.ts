@@ -223,10 +223,7 @@ const sameHost = (a: string, b: string): boolean => {
  *
  * Never throws — wraps network errors into `{ ok: false, status: 0 }`.
  */
-export const safeFetchVersionMetadata = async (
-    url: string,
-    options: SafeFetchOptions = {},
-): Promise<SafeFetchResponse> => {
+export const safeFetchVersionMetadata = async (url: string, options: SafeFetchOptions = {}): Promise<SafeFetchResponse> => {
     const maxRedirects = options.maxRedirects ?? 2;
     const userAgent = await getUserAgent();
     const baseHeaders: Record<string, string> = {
@@ -281,7 +278,7 @@ export const safeFetchVersionMetadata = async (
             return {
                 json: async (): Promise<unknown> => {
                     try {
-                        return await response.json() as unknown;
+                        return (await response.json()) as unknown;
                     } catch {
                         return undefined;
                     }

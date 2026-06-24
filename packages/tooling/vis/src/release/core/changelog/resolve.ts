@@ -17,10 +17,7 @@ import { createDefaultFormatter, defaultFormatter } from "./default";
 import { createGithubFormatter } from "./github";
 import { createKeepAChangelogFormatter } from "./keep-a-changelog";
 
-export const resolveFormatter = async (
-    setting: VisReleaseConfig["changelog"],
-    cwd: string,
-): Promise<ChangelogFormatter> => {
+export const resolveFormatter = async (setting: VisReleaseConfig["changelog"], cwd: string): Promise<ChangelogFormatter> => {
     if (setting === false) {
         return () => "";
     }

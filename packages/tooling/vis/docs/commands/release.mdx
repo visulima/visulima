@@ -101,13 +101,13 @@ vis release add --from-bot-pr
 
 **Options**
 
-| Option             | Type    | Description                                                                                       |
-| ------------------ | ------- | ------------------------------------------------------------------------------------------------- |
-| `--packages <csv>` | string  | `@scope/a:minor,@scope/b:patch` — non-interactive package + bump pairs                            |
-| `--message <text>` | string  | Changelog body                                                                                    |
-| `--name <slug>`    | string  | Filename slug (default: random animal name)                                                       |
-| `--empty`          | boolean | Author an empty change file (satisfies non-strict `check`)                                        |
-| `--none`           | boolean | Author a `none`-bump file (acknowledged but no direct bump)                                       |
+| Option             | Type    | Description                                                                                           |
+| ------------------ | ------- | ----------------------------------------------------------------------------------------------------- |
+| `--packages <csv>` | string  | `@scope/a:minor,@scope/b:patch` — non-interactive package + bump pairs                                |
+| `--message <text>` | string  | Changelog body                                                                                        |
+| `--name <slug>`    | string  | Filename slug (default: random animal name)                                                           |
+| `--empty`          | boolean | Author an empty change file (satisfies non-strict `check`)                                            |
+| `--none`           | boolean | Author a `none`-bump file (acknowledged but no direct bump)                                           |
 | `--from-bot-pr`    | boolean | Inspect the current PR via `gh pr view` and author a change file from its Dependabot / Renovate title |
 
 ---
@@ -130,12 +130,12 @@ vis release generate --dry-run
 
 **Options**
 
-| Option                       | Type    | Description                                                                |
-| ---------------------------- | ------- | -------------------------------------------------------------------------- |
-| `--from <ref>`               | string  | Git ref to compare against (default: merge-base with `release.baseBranch`) |
-| `--name <slug>`              | string  | Filename slug (default: random animal name)                                |
-| `--dry-run`                  | boolean | Print the would-be content without writing                                 |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                                 |
+| Option                   | Type    | Description                                                                |
+| ------------------------ | ------- | -------------------------------------------------------------------------- |
+| `--from <ref>`           | string  | Git ref to compare against (default: merge-base with `release.baseBranch`) |
+| `--name <slug>`          | string  | Filename slug (default: random animal name)                                |
+| `--dry-run`              | boolean | Print the would-be content without writing                                 |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                 |
 
 ---
 
@@ -158,13 +158,13 @@ vis release status --filter '@scope/*'
 
 **Options**
 
-| Option                       | Type    | Description                                |
-| ---------------------------- | ------- | ------------------------------------------ |
-| `--json`                     | boolean | Machine-readable JSON                      |
-| `--filter <glob>`            | string  | Filter by package name (single glob)       |
-| `--bump <levels>`            | string  | Filter by bump level (`major,minor,patch`) |
-| `--channel <name>`           | string  | Override branch-detected channel           |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit |
+| Option                   | Type    | Description                                |
+| ------------------------ | ------- | ------------------------------------------ |
+| `--json`                 | boolean | Machine-readable JSON                      |
+| `--filter <glob>`        | string  | Filter by package name (single glob)       |
+| `--bump <levels>`        | string  | Filter by bump level (`major,minor,patch`) |
+| `--channel <name>`       | string  | Override branch-detected channel           |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit |
 
 ---
 
@@ -186,13 +186,13 @@ vis release next-version --json
 
 **Options**
 
-| Option                       | Type    | Description                                                                              |
-| ---------------------------- | ------- | ---------------------------------------------------------------------------------------- |
-| `--package <name>`           | string  | Limit output to a single package                                                         |
-| `--json`                     | boolean | Emit a `{ name: { from, to } }` map instead of pretty `pkg old -> new` lines             |
-| `--channel <name>`           | string  | Override branch-detected channel                                                         |
-| `--first-release`            | boolean | Bootstrap mode: preview without registry / tag lookups (matches `version --first-release`) |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                                               |
+| Option                   | Type    | Description                                                                                |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------ |
+| `--package <name>`       | string  | Limit output to a single package                                                           |
+| `--json`                 | boolean | Emit a `{ name: { from, to } }` map instead of pretty `pkg old -> new` lines               |
+| `--channel <name>`       | string  | Override branch-detected channel                                                           |
+| `--first-release`        | boolean | Bootstrap mode: preview without registry / tag lookups (matches `version --first-release`) |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                                 |
 
 ---
 
@@ -214,13 +214,13 @@ vis release plan -i --write            # Same, plus persist overrides as a new c
 
 **Options**
 
-| Option                       | Type    | Description                                                                |
-| ---------------------------- | ------- | -------------------------------------------------------------------------- |
-| `--filter <glob>`            | string  | Filter by package name                                                     |
-| `--channel <name>`           | string  | Override branch-detected channel                                           |
-| `-i`, `--interactive`        | boolean | Step through pending releases; accept or override each bump                |
-| `--write`                    | boolean | With `--interactive`, write the chosen overrides to `.vis/release/<id>.md` |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                                 |
+| Option                   | Type    | Description                                                                |
+| ------------------------ | ------- | -------------------------------------------------------------------------- |
+| `--filter <glob>`        | string  | Filter by package name                                                     |
+| `--channel <name>`       | string  | Override branch-detected channel                                           |
+| `-i`, `--interactive`    | boolean | Step through pending releases; accept or override each bump                |
+| `--write`                | boolean | With `--interactive`, write the chosen overrides to `.vis/release/<id>.md` |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                 |
 
 ---
 
@@ -242,12 +242,12 @@ vis release changelog --filter '@scope/*'
 
 **Options**
 
-| Option                       | Type    | Description                                  |
-| ---------------------------- | ------- | -------------------------------------------- |
-| `--json`                     | boolean | Emit `ChangelogResult` JSON                  |
-| `--filter <glob>`            | string  | Filter by package name (CSV)                 |
-| `--channel <name>`           | string  | Override branch-detected channel             |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit   |
+| Option                   | Type    | Description                                |
+| ------------------------ | ------- | ------------------------------------------ |
+| `--json`                 | boolean | Emit `ChangelogResult` JSON                |
+| `--filter <glob>`        | string  | Filter by package name (CSV)               |
+| `--channel <name>`       | string  | Override branch-detected channel           |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit |
 
 ---
 
@@ -270,12 +270,12 @@ vis release check --no-fail            # Warnings only, exit 0
 
 **Options**
 
-| Option                       | Type    | Description                                                                     |
-| ---------------------------- | ------- | ------------------------------------------------------------------------------- |
-| `--strict`                   | boolean | Require every changed package to have its own non-empty change file             |
-| `--hook <name>`              | string  | Hook context (`pre-commit`, `pre-push`) — affects which file states are counted |
-| `--no-fail`                  | boolean | Always exit 0; warnings still print to stderr                                   |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                                      |
+| Option                   | Type    | Description                                                                     |
+| ------------------------ | ------- | ------------------------------------------------------------------------------- |
+| `--strict`               | boolean | Require every changed package to have its own non-empty change file             |
+| `--hook <name>`          | string  | Hook context (`pre-commit`, `pre-push`) — affects which file states are counted |
+| `--no-fail`              | boolean | Always exit 0; warnings still print to stderr                                   |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                      |
 
 ---
 
@@ -297,11 +297,11 @@ vis release doctor --first-release
 
 **Options**
 
-| Option                       | Type    | Description                                                                          |
-| ---------------------------- | ------- | ------------------------------------------------------------------------------------ |
-| `--json`                     | boolean | Emit a machine-readable report                                                       |
-| `--first-release`            | boolean | Bootstrap mode: assert the workspace has no release tags and no package is published |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                                           |
+| Option                   | Type    | Description                                                                          |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------ |
+| `--json`                 | boolean | Emit a machine-readable report                                                       |
+| `--first-release`        | boolean | Bootstrap mode: assert the workspace has no release tags and no package is published |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                           |
 
 ---
 
@@ -325,15 +325,15 @@ vis release version --first-release    # Greenfield monorepo, no prior tags
 
 **Options**
 
-| Option                       | Type    | Description                                                                                                |
-| ---------------------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| `--dry-run`                  | boolean | Print the diff and exit; no writes                                                                         |
-| `--channel <name>`           | string  | Override branch-detected channel                                                                           |
-| `--filter <glob>`            | string  | Limit to packages matching the glob (CSV)                                                                  |
-| `--commit`                   | boolean | Auto-commit after applying                                                                                 |
-| `--check-only`               | boolean | Run preflight checks (config + workspace + plan) and exit. No mutations.                                   |
-| `--first-release`            | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag-collision checks                   |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                                                                 |
+| Option                   | Type    | Description                                                                              |
+| ------------------------ | ------- | ---------------------------------------------------------------------------------------- |
+| `--dry-run`              | boolean | Print the diff and exit; no writes                                                       |
+| `--channel <name>`       | string  | Override branch-detected channel                                                         |
+| `--filter <glob>`        | string  | Limit to packages matching the glob (CSV)                                                |
+| `--commit`               | boolean | Auto-commit after applying                                                               |
+| `--check-only`           | boolean | Run preflight checks (config + workspace + plan) and exit. No mutations.                 |
+| `--first-release`        | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag-collision checks |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                               |
 
 ---
 
@@ -357,18 +357,18 @@ vis release publish --resume
 
 **Options**
 
-| Option                       | Type    | Description                                                                                |
-| ---------------------------- | ------- | ------------------------------------------------------------------------------------------ |
-| `--dry-run`                  | boolean | Skip uploads; print what would happen                                                      |
-| `--tag <name>`               | string  | Override the npm dist-tag                                                                  |
-| `--filter <glob>`            | string  | Limit to packages matching the glob (CSV)                                                  |
-| `--no-push`                  | boolean | Skip `git push --tags` after publish                                                       |
-| `--otp <code>`               | string  | 2FA token                                                                                  |
-| `--channel <name>`           | string  | Override branch-detected channel                                                           |
-| `--resume`                   | boolean | Resume from a previous run's state file (skips already-published packages)                 |
-| `--check-only`               | boolean | Preflight checks (config + workspace + plan + auth) and exit. No mutations.                |
-| `--first-release`            | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag-collision checks   |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                                                 |
+| Option                   | Type    | Description                                                                              |
+| ------------------------ | ------- | ---------------------------------------------------------------------------------------- |
+| `--dry-run`              | boolean | Skip uploads; print what would happen                                                    |
+| `--tag <name>`           | string  | Override the npm dist-tag                                                                |
+| `--filter <glob>`        | string  | Limit to packages matching the glob (CSV)                                                |
+| `--no-push`              | boolean | Skip `git push --tags` after publish                                                     |
+| `--otp <code>`           | string  | 2FA token                                                                                |
+| `--channel <name>`       | string  | Override branch-detected channel                                                         |
+| `--resume`               | boolean | Resume from a previous run's state file (skips already-published packages)               |
+| `--check-only`           | boolean | Preflight checks (config + workspace + plan + auth) and exit. No mutations.              |
+| `--first-release`        | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag-collision checks |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                               |
 
 ---
 
@@ -390,13 +390,13 @@ vis release snapshot --tag pr-1234 --dry-run
 
 **Options**
 
-| Option                       | Type    | Description                                                       |
-| ---------------------------- | ------- | ----------------------------------------------------------------- |
-| `--tag <name>`               | string  | Required: dist-tag for the snapshot release                       |
-| `--registry <url>`           | string  | Override the registry (falls back to `release.snapshot.registry`) |
-| `--filter <glob>`            | string  | Limit to packages matching the glob (CSV)                         |
-| `--dry-run`                  | boolean | Print what would publish without uploading                        |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                        |
+| Option                   | Type    | Description                                                       |
+| ------------------------ | ------- | ----------------------------------------------------------------- |
+| `--tag <name>`           | string  | Required: dist-tag for the snapshot release                       |
+| `--registry <url>`       | string  | Override the registry (falls back to `release.snapshot.registry`) |
+| `--filter <glob>`        | string  | Limit to packages matching the glob (CSV)                         |
+| `--dry-run`              | boolean | Print what would publish without uploading                        |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                        |
 
 ---
 
@@ -427,10 +427,10 @@ vis release pre exit --no-push
 
 **Options**
 
-| Option         | Type    | Default | Description                                                  |
-| -------------- | ------- | ------- | ------------------------------------------------------------ |
-| `--no-commit`  | boolean | commit  | Skip auto-committing `pre.json` after writing                |
-| `--no-push`    | boolean | push    | Skip pushing the commit                                      |
+| Option        | Type    | Default | Description                                   |
+| ------------- | ------- | ------- | --------------------------------------------- |
+| `--no-commit` | boolean | commit  | Skip auto-committing `pre.json` after writing |
+| `--no-push`   | boolean | push    | Skip pushing the commit                       |
 
 State lives in `.vis/release/pre.json` (tracked in git so CI sees the same mode across runs). Auto-committed with `[skip ci]` on every transition.
 
@@ -464,13 +464,13 @@ vis release stage approve <stage-id> --no-commit # Approve and update registry o
 
 **Options**
 
-| Option            | Type    | Default | Description                                                          |
-| ----------------- | ------- | ------- | -------------------------------------------------------------------- |
-| `--all`           | boolean |         | Approve every pending stage tracked in `.vis/release/staged.json`    |
-| `--filter <name>` | string  |         | Package name filter for `list`                                       |
-| `--json`          | boolean |         | Emit machine-readable JSON                                           |
-| `--no-commit`     | boolean | commit  | Update `staged.json` but skip the auto-commit                        |
-| `--no-push`       | boolean | push    | Skip pushing the registry commit to the remote                       |
+| Option            | Type    | Default | Description                                                       |
+| ----------------- | ------- | ------- | ----------------------------------------------------------------- |
+| `--all`           | boolean |         | Approve every pending stage tracked in `.vis/release/staged.json` |
+| `--filter <name>` | string  |         | Package name filter for `list`                                    |
+| `--json`          | boolean |         | Emit machine-readable JSON                                        |
+| `--no-commit`     | boolean | commit  | Update `staged.json` but skip the auto-commit                     |
+| `--no-push`       | boolean | push    | Skip pushing the registry commit to the remote                    |
 
 ---
 
@@ -480,7 +480,7 @@ vis release stage approve <stage-id> --no-commit # Approve and update registry o
 vis release notifications test [flags]
 ```
 
-Dry-run the configured notification channels (`slack` / `discord` / `webhook` / plugins) with a synthetic release context. Lets operators verify a destination is wired up *before* relying on it for a real release.
+Dry-run the configured notification channels (`slack` / `discord` / `webhook` / plugins) with a synthetic release context. Lets operators verify a destination is wired up _before_ relying on it for a real release.
 
 **When to use.** Once after configuring `release.notifications` in `vis.config.ts`, and again whenever you rotate a webhook secret.
 
@@ -498,11 +498,11 @@ vis release notifications test --json                           # Machine-readab
 
 **Options**
 
-| Option                       | Type    | Description                                                                                                |
-| ---------------------------- | ------- | ---------------------------------------------------------------------------------------------------------- |
-| `--channel <kind[:id]>`      | string  | Restrict dispatch to a single channel kind (`slack`, `discord`, `webhook`) or an id'd channel (`slack:eng`) |
-| `--custom-context <file>`    | string  | Path to a JSON file containing a `NotificationContext` to use instead of the synthetic default             |
-| `--json`                     | boolean | Emit machine-readable JSON instead of a per-channel report                                                 |
+| Option                    | Type    | Description                                                                                                 |
+| ------------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| `--channel <kind[:id]>`   | string  | Restrict dispatch to a single channel kind (`slack`, `discord`, `webhook`) or an id'd channel (`slack:eng`) |
+| `--custom-context <file>` | string  | Path to a JSON file containing a `NotificationContext` to use instead of the synthetic default              |
+| `--json`                  | boolean | Emit machine-readable JSON instead of a per-channel report                                                  |
 
 Exit 0 iff every dispatched channel succeeded.
 
@@ -530,13 +530,13 @@ vis release ci release --auto-publish
 
 **Options**
 
-| Option                       | Type    | Description                                                                          |
-| ---------------------------- | ------- | ------------------------------------------------------------------------------------ |
-| `--auto-publish`             | boolean | Skip the version-PR; version + publish inline                                        |
-| `--branch <name>`            | string  | Override the version-PR branch (default: `vis-release/version-packages`)             |
-| `--channel <name>`           | string  | Override branch-detected channel                                                     |
-| `--first-release`            | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag checks       |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                                           |
+| Option                   | Type    | Description                                                                    |
+| ------------------------ | ------- | ------------------------------------------------------------------------------ |
+| `--auto-publish`         | boolean | Skip the version-PR; version + publish inline                                  |
+| `--branch <name>`        | string  | Override the version-PR branch (default: `vis-release/version-packages`)       |
+| `--channel <name>`       | string  | Override branch-detected channel                                               |
+| `--first-release`        | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag checks |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                     |
 
 **Tokens**
 
@@ -565,11 +565,11 @@ vis release ci snapshot --on-close     # Clean up the snapshot when the PR close
 
 **Options**
 
-| Option                       | Type    | Description                                                                                                                                                                          |
-| ---------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `--tag <name>`               | string  | Override the dist-tag (default: `pr-<PR_NUMBER>`)                                                                                                                                    |
-| `--on-close`                 | boolean | PR-close cleanup mode — enumerates the closed PR's commit SHAs (via `gh api`, **GitHub-only**) and removes their snapshot tags from the registry (when the backend supports DELETE) |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                                                                                                                                           |
+| Option                   | Type    | Description                                                                                                                                                                         |
+| ------------------------ | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--tag <name>`           | string  | Override the dist-tag (default: `pr-<PR_NUMBER>`)                                                                                                                                   |
+| `--on-close`             | boolean | PR-close cleanup mode — enumerates the closed PR's commit SHAs (via `gh api`, **GitHub-only**) and removes their snapshot tags from the registry (when the backend supports DELETE) |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                                                                                                                          |
 
 ---
 
@@ -590,11 +590,11 @@ vis release ci check --strict
 
 **Options**
 
-| Option                       | Type    | Description                                                  |
-| ---------------------------- | ------- | ------------------------------------------------------------ |
-| `--strict`                   | boolean | Require every changed package to be covered by a change file |
-| `--no-fail`                  | boolean | Always exit 0 (warnings still print)                         |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit                   |
+| Option                   | Type    | Description                                                  |
+| ------------------------ | ------- | ------------------------------------------------------------ |
+| `--strict`               | boolean | Require every changed package to be covered by a change file |
+| `--no-fail`              | boolean | Always exit 0 (warnings still print)                         |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                   |
 
 ---
 
@@ -622,9 +622,9 @@ vis release ci plan
 
 **Options**
 
-| Option                       | Type    | Description                                |
-| ---------------------------- | ------- | ------------------------------------------ |
-| `--print-config[=debug]`     | string  | Print the resolved release config and exit |
+| Option                   | Type   | Description                                |
+| ------------------------ | ------ | ------------------------------------------ |
+| `--print-config[=debug]` | string | Print the resolved release config and exit |
 
 ---
 

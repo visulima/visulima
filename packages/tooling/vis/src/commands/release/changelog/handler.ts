@@ -11,7 +11,12 @@ import type { ReleaseChangelogOptions } from "./index";
 
 const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, ReleaseChangelogOptions>): Promise<void> => {
     const cwd = workspaceRoot ?? process.cwd();
-    const projects = options.filter ? options.filter.split(",").map((s) => s.trim()).filter(Boolean) : undefined;
+    const projects = options.filter
+        ? options.filter
+            .split(",")
+            .map((s) => s.trim())
+            .filter(Boolean)
+        : undefined;
 
     const result = await releaseChangelog({
         channel: options.channel,

@@ -55,9 +55,11 @@ describe("keep-a-changelog formatter", () => {
         expect.hasAssertions();
 
         const fmt = createKeepAChangelogFormatter();
-        const result = await fmt(mkCtx({
-            changeFiles: [{ body: "feat: shiny new thing", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
-        }));
+        const result = await fmt(
+            mkCtx({
+                changeFiles: [{ body: "feat: shiny new thing", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
+            }),
+        );
 
         expect(result).toMatch(/### Added\s*\n\s*\n- shiny new thing/);
     });
@@ -66,10 +68,12 @@ describe("keep-a-changelog formatter", () => {
         expect.hasAssertions();
 
         const fmt = createKeepAChangelogFormatter();
-        const result = await fmt(mkCtx({
-            changeFiles: [{ body: "fix: a flaky bug", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "patch" } } }],
-            release: mkRelease({ newVersion: "1.0.1", oldVersion: "1.0.0", type: "patch" }),
-        }));
+        const result = await fmt(
+            mkCtx({
+                changeFiles: [{ body: "fix: a flaky bug", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "patch" } } }],
+                release: mkRelease({ newVersion: "1.0.1", oldVersion: "1.0.0", type: "patch" }),
+            }),
+        );
 
         expect(result).toMatch(/### Fixed\s*\n\s*\n- a flaky bug/);
     });
@@ -78,9 +82,11 @@ describe("keep-a-changelog formatter", () => {
         expect.hasAssertions();
 
         const fmt = createKeepAChangelogFormatter();
-        const result = await fmt(mkCtx({
-            changeFiles: [{ body: "[Security] Patched a CVE\n[Deprecated] old API", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
-        }));
+        const result = await fmt(
+            mkCtx({
+                changeFiles: [{ body: "[Security] Patched a CVE\n[Deprecated] old API", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
+            }),
+        );
 
         expect(result).toContain("### Security");
         expect(result).toContain("- Patched a CVE");
@@ -92,10 +98,12 @@ describe("keep-a-changelog formatter", () => {
         expect.hasAssertions();
 
         const fmt = createKeepAChangelogFormatter();
-        const result = await fmt(mkCtx({
-            changeFiles: [{ body: "did stuff", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
-            release: mkRelease({ type: "minor" }),
-        }));
+        const result = await fmt(
+            mkCtx({
+                changeFiles: [{ body: "did stuff", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
+                release: mkRelease({ type: "minor" }),
+            }),
+        );
 
         // minor → Added by default heuristic
         expect(result).toMatch(/### Added\s*\n\s*\n- did stuff/);
@@ -105,10 +113,12 @@ describe("keep-a-changelog formatter", () => {
         expect.hasAssertions();
 
         const fmt = createKeepAChangelogFormatter();
-        const result = await fmt(mkCtx({
-            changeFiles: [{ body: "feat!: removed old api", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "major" } } }],
-            release: mkRelease({ newVersion: "2.0.0", oldVersion: "1.0.0", type: "major" }),
-        }));
+        const result = await fmt(
+            mkCtx({
+                changeFiles: [{ body: "feat!: removed old api", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "major" } } }],
+                release: mkRelease({ newVersion: "2.0.0", oldVersion: "1.0.0", type: "major" }),
+            }),
+        );
 
         expect(result).toContain("### ⚠ BREAKING CHANGES");
         expect(result).toContain("- removed old api");
@@ -118,10 +128,19 @@ describe("keep-a-changelog formatter", () => {
         expect.hasAssertions();
 
         const fmt = createKeepAChangelogFormatter();
-        const result = await fmt(mkCtx({
-            changeFiles: [{ body: "feat: added thing\n\nBREAKING CHANGE: caller must update config", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "major" } } }],
-            release: mkRelease({ type: "minor" }),
-        }));
+        const result = await fmt(
+            mkCtx({
+                changeFiles: [
+                    {
+                        body: "feat: added thing\n\nBREAKING CHANGE: caller must update config",
+                        id: "x",
+                        path: "x.md",
+                        payload: { bumps: { "@scope/pkg": "major" } },
+                    },
+                ],
+                release: mkRelease({ type: "minor" }),
+            }),
+        );
 
         expect(result).toContain("### ⚠ BREAKING CHANGES");
     });
@@ -157,12 +176,14 @@ describe("keep-a-changelog formatter", () => {
         expect.hasAssertions();
 
         const fmt = createKeepAChangelogFormatter();
-        const result = await fmt(mkCtx({
-            release: mkRelease({
-                isCascadeBump: true,
-                sources: [{ bumpType: "minor", name: "@scope/core", newVersion: "2.0.0" }],
+        const result = await fmt(
+            mkCtx({
+                release: mkRelease({
+                    isCascadeBump: true,
+                    sources: [{ bumpType: "minor", name: "@scope/core", newVersion: "2.0.0" }],
+                }),
             }),
-        }));
+        );
 
         expect(result).toContain("### Changed");
         expect(result).toContain("Cascade from `@scope/core`@2.0.0");
@@ -172,9 +193,11 @@ describe("keep-a-changelog formatter", () => {
         expect.hasAssertions();
 
         const fmt = createKeepAChangelogFormatter();
-        const result = await fmt(mkCtx({
-            changeFiles: [{ body: "feat: only an addition", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
-        }));
+        const result = await fmt(
+            mkCtx({
+                changeFiles: [{ body: "feat: only an addition", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
+            }),
+        );
 
         expect(result).toContain("### Added");
         expect(result).not.toContain("### Fixed");

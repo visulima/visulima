@@ -45,10 +45,7 @@ export interface ResolvedChannel {
  * the first match in iteration order wins (so users should order
  * specific globs before catch-alls in `vis.config.ts`).
  */
-export const resolveChannel = (
-    branch: string,
-    channels: Record<string, ChannelConfig> | undefined,
-): ResolvedChannel | undefined => {
+export const resolveChannel = (branch: string, channels: Record<string, ChannelConfig> | undefined): ResolvedChannel | undefined => {
     if (!channels) {
         return undefined;
     }
@@ -58,9 +55,7 @@ export const resolveChannel = (
         // Glob patterns that *also* match the branch are surfaced so the
         // CLI can warn — a literal still wins, but the user might have
         // intended the glob.
-        const overlapping = Object.keys(channels).filter(
-            (pattern) => pattern !== branch && isGlobPattern(pattern) && zeptomatch(pattern, branch),
-        );
+        const overlapping = Object.keys(channels).filter((pattern) => pattern !== branch && isGlobPattern(pattern) && zeptomatch(pattern, branch));
 
         return materialize(branch, channels[branch]!, overlapping);
     }
@@ -106,7 +101,11 @@ const materialize = (branch: string, cfg: ChannelConfig, overlapping: ReadonlyAr
  * ASCII with no spaces or slashes. Used for maintenance branches like `1.x`
  * that publish under a tag matching the branch name.
  */
-const sanitizeDistTag = (branch: string): string => branch.toLowerCase().replaceAll(/[^a-z0-9.-]/g, "-").replaceAll(/^-+|-+$/g, "") || "branch";
+const sanitizeDistTag = (branch: string): string =>
+    branch
+        .toLowerCase()
+        .replaceAll(/[^a-z0-9.-]/g, "-")
+        .replaceAll(/^-+|-+$/g, "") || "branch";
 
 const GLOB_META_RE = /[!()*+?@[\]{|}]/;
 const isGlobPattern = (pattern: string): boolean => GLOB_META_RE.test(pattern);
@@ -121,7 +120,9 @@ const isGlobPattern = (pattern: string): boolean => GLOB_META_RE.test(pattern);
  */
 export const detectCurrentBranch = async (
     cwd: string,
-    runner: { run: (command: string, args: ReadonlyArray<string>, options: { cwd: string; silent?: boolean }) => Promise<{ exitCode: number; stdout: string }> },
+    runner: {
+        run: (command: string, args: ReadonlyArray<string>, options: { cwd: string; silent?: boolean }) => Promise<{ exitCode: number; stdout: string }>;
+    },
 ): Promise<string | undefined> => {
     try {
         const result = await runner.run("git", ["rev-parse", "--abbrev-ref", "HEAD"], { cwd, silent: true });

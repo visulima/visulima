@@ -196,24 +196,26 @@ export const dispatchNotifications = async (
 
     // Fan out in parallel. Per-channel try/catch so one bad webhook
     // doesn't take the others with it.
-    await Promise.all(channels.map(async (channel) => {
-        try {
-            await channel.send(context);
-            result.succeeded.push(channel.id);
-        } catch (error) {
-            const message = error instanceof Error ? error.message : String(error);
-            // Redact through the shared token regex BEFORE pushing into
-            // `result.failed` — the orchestrator surfaces this on
-            // `plan.warnings`, and the underlying fetch rejection from
-            // Node embeds the URL ("connect ECONNREFUSED https://hooks.
-            // slack.com/services/T/B/SECRET"). Channel implementations
-            // additionally wrap their fetch rejections to drop the URL.
-            const safeMessage = redactTokens(message);
+    await Promise.all(
+        channels.map(async (channel) => {
+            try {
+                await channel.send(context);
+                result.succeeded.push(channel.id);
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+                // Redact through the shared token regex BEFORE pushing into
+                // `result.failed` — the orchestrator surfaces this on
+                // `plan.warnings`, and the underlying fetch rejection from
+                // Node embeds the URL ("connect ECONNREFUSED https://hooks.
+                // slack.com/services/T/B/SECRET"). Channel implementations
+                // additionally wrap their fetch rejections to drop the URL.
+                const safeMessage = redactTokens(message);
 
-            result.failed.push({ error: safeMessage, id: channel.id });
-            resolvedLogger.warn(`[notifications:${channel.id}] ${safeMessage}`);
-        }
-    }));
+                result.failed.push({ error: safeMessage, id: channel.id });
+                resolvedLogger.warn(`[notifications:${channel.id}] ${safeMessage}`);
+            }
+        }),
+    );
 
     return result;
 };
@@ -232,13 +234,13 @@ const loadPluginChannel = async (pluginRef: string | [string, Record<string, unk
     const { pathToFileURL } = await import("node:url");
     const moduleUrl = path.startsWith(".") ? pathToFileURL(`${process.cwd()}/${path}`).href : path;
     const { dynamicEsmImport } = await import("../changelog/dynamic-import");
-    const loaded = await dynamicEsmImport(moduleUrl) as { default?: unknown };
+    const loaded = (await dynamicEsmImport(moduleUrl)) as { default?: unknown };
     const exported = loaded.default ?? loaded;
 
     if (typeof exported === "function") {
         const constructed = (exported as (opts?: Record<string, unknown>) => NotificationChannel)(options);
 
-        if (constructed && typeof constructed === "object" && typeof (constructed).send === "function") {
+        if (constructed && typeof constructed === "object" && typeof constructed.send === "function") {
             return constructed;
         }
     }
@@ -260,10 +262,7 @@ const loadPluginChannel = async (pluginRef: string | [string, Record<string, unk
  *   {repo}         — `owner/name` slug
  *   {date}         — `YYYY-MM-DD`
  */
-export const expandNotificationTemplate = (
-    template: string,
-    context: NotificationContext,
-): string => {
+export const expandNotificationTemplate = (template: string, context: NotificationContext): string => {
     // Defensive coercion: a misconfigured user passing a number /
     // boolean / object as `title` would otherwise throw on .replaceAll
     // and pollute warnings. Coerce non-strings via String(); null and

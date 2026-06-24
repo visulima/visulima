@@ -68,10 +68,7 @@ const getConfigFile = (packageName: string): string => {
  * @param fs Filesystem adapter (defaults to a `node:fs/promises` wrapper).
  * @returns - The timestamp of the last update check, or undefined if the check failed.
  */
-export const getLastUpdate = async (
-    packageName: string,
-    fs: Pick<CerebroFs, "access" | "readFile"> = defaultFs,
-): Promise<number | undefined> => {
+export const getLastUpdate = async (packageName: string, fs: Pick<CerebroFs, "access" | "readFile"> = defaultFs): Promise<number | undefined> => {
     const configFile = getConfigFile(packageName);
 
     try {
@@ -94,10 +91,7 @@ export const getLastUpdate = async (
  * @param packageName
  * @param fs Filesystem adapter (defaults to a `node:fs/promises` wrapper).
  */
-export const saveLastUpdate = async (
-    packageName: string,
-    fs: Pick<CerebroFs, "access" | "mkdir" | "writeFile"> = defaultFs,
-): Promise<void> => {
+export const saveLastUpdate = async (packageName: string, fs: Pick<CerebroFs, "access" | "mkdir" | "writeFile"> = defaultFs): Promise<void> => {
     const configFile = getConfigFile(packageName);
     const configDirectory = dirname(configFile);
     const directoryExists = await existsViaFs(fs, configDirectory);

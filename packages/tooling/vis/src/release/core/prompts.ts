@@ -49,10 +49,7 @@ export const textPrompt = async (question: string, defaultValue: string = ""): P
     }
 };
 
-export const selectPrompt = async <T extends string>(
-    question: string,
-    options: ReadonlyArray<{ label: string; value: T }>,
-): Promise<T> => {
+export const selectPrompt = async <T extends string>(question: string, options: ReadonlyArray<{ label: string; value: T }>): Promise<T> => {
     if (options.length === 0) {
         throw new Error("selectPrompt called with no options.");
     }
@@ -81,10 +78,7 @@ export const selectPrompt = async <T extends string>(
     }
 };
 
-export const multiSelectPrompt = async <T extends string>(
-    question: string,
-    options: ReadonlyArray<{ label: string; value: T }>,
-): Promise<T[]> => {
+export const multiSelectPrompt = async <T extends string>(question: string, options: ReadonlyArray<{ label: string; value: T }>): Promise<T[]> => {
     if (options.length === 0) {
         throw new Error("multiSelectPrompt called with no options.");
     }
@@ -100,7 +94,10 @@ export const multiSelectPrompt = async <T extends string>(
 
         while (true) {
             const answer = await ask(rl, dim("  Comma-separated indices (e.g. 1,3,4): "));
-            const parts = answer.split(",").map((s) => s.trim()).filter(Boolean);
+            const parts = answer
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean);
             const indices = parts.map((s) => Number.parseInt(s, 10));
 
             if (indices.every((index) => !Number.isNaN(index) && index >= 1 && index <= options.length)) {

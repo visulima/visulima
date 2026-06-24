@@ -16,12 +16,7 @@ import { parse as parseYaml } from "yaml";
 import { VisReleaseError } from "../errors";
 import type { DependencyKind, PackageManifest } from "../types";
 
-const DEPENDENCY_KINDS: ReadonlyArray<DependencyKind> = [
-    "dependencies",
-    "devDependencies",
-    "peerDependencies",
-    "optionalDependencies",
-];
+const DEPENDENCY_KINDS: ReadonlyArray<DependencyKind> = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"];
 
 /**
  * Parsed `pnpm-workspace.yaml` catalogs.
@@ -95,11 +90,7 @@ export const parseCatalogs = (yamlContent: string | undefined): Catalogs => {
  * so the publish step can surface a clear `NATIVE_ADDON_VERSION_MISMATCH`-
  * style error rather than a silent broken tarball).
  */
-export const resolveCatalogRef = (
-    ref: string,
-    packageName: string,
-    catalogs: Catalogs,
-): string | undefined => {
+export const resolveCatalogRef = (ref: string, packageName: string, catalogs: Catalogs): string | undefined => {
     if (!ref.startsWith("catalog:")) {
         return ref;
     }
@@ -122,10 +113,7 @@ export const resolveCatalogRef = (
  *
  * Throws `VisReleaseError("CONFIG_INVALID")` on the first unresolvable ref.
  */
-export const rewriteCatalogRefs = (
-    manifest: PackageManifest,
-    catalogs: Catalogs,
-): PackageManifest => {
+export const rewriteCatalogRefs = (manifest: PackageManifest, catalogs: Catalogs): PackageManifest => {
     const out: PackageManifest = { ...manifest };
 
     for (const kind of DEPENDENCY_KINDS) {
@@ -135,7 +123,7 @@ export const rewriteCatalogRefs = (
             continue;
         }
 
-        const next: Record<string, string> = { ...(block) };
+        const next: Record<string, string> = { ...block };
 
         for (const [name, range] of Object.entries(block)) {
             if (!range.startsWith("catalog:")) {

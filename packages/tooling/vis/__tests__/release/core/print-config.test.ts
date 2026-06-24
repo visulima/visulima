@@ -26,11 +26,11 @@ describe("release print-config", () => {
     beforeEach(() => {
         stdoutChunks = [];
         originalWrite = process.stdout.write.bind(process.stdout);
-        process.stdout.write = ((chunk: string | Uint8Array) => {
+        process.stdout.write = (chunk: string | Uint8Array) => {
             stdoutChunks.push(typeof chunk === "string" ? chunk : chunk.toString());
 
             return true;
-        });
+        };
     });
 
     afterEach(() => {

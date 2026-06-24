@@ -41,6 +41,7 @@ packages/tooling/vis/
 ```
 
 `packages/tooling/vis/package.json`:
+
 - adds `conventional-commits-parser` (the only net-new dep — `yaml`/`semver`/`zeptomatch`/`@visulima/redact` already present)
 - adds `./release` + `./release/types` to `exports` map
 - adds `release?: VisReleaseConfig` field on `VisConfig` type
@@ -84,6 +85,7 @@ Per-package opt-in via `package.json["vis-release"]["managed"]: true`. Both syst
 ## Test coverage
 
 11 test files / 1662 LOC against ~5800 LOC of release subsystem code:
+
 - M2 core algorithms — release-plan (every phase + edge case), change-file, semver (every channel-transition table row), dep-graph, channels
 - M3 modules — apply-release-plan (workspace:/catalog: preservation), catalog (parseCatalogs + rewrite), clean-package-json
 - M6 default changelog formatter

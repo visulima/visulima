@@ -12,7 +12,12 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         channel: options.channel,
         cwd,
         firstRelease: options.firstRelease === true,
-        projects: options.filter ? options.filter.split(",").map((s) => s.trim()).filter(Boolean) : undefined,
+        projects: options.filter
+            ? options.filter
+                .split(",")
+                .map((s) => s.trim())
+                .filter(Boolean)
+            : undefined,
     });
 
     const { printConfigIfRequested } = await import("../../../release/core/print-config");

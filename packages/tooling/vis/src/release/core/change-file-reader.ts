@@ -70,14 +70,16 @@ export const readChangeFiles = async (options: ReadChangeFilesOptions): Promise<
     // in parallel. For a PR with many pending change files this turns
     // sequential ~5ms-per-file into one wall-clock batch.
     const candidates = entries.filter((name) => !RESERVED_FILENAMES.has(name) && name.endsWith(".md"));
-    const settled = await Promise.all(candidates.map(async (name) => {
-        const path = join(dir, name);
-        const content = await readFile(path, "utf8");
+    const settled = await Promise.all(
+        candidates.map(async (name) => {
+            const path = join(dir, name);
+            const content = await readFile(path, "utf8");
 
-        // Parse errors propagate — a malformed change file is user error
-        // and silently dropping it can hide a broken release.
-        return parseChangeFile(content, path);
-    }));
+            // Parse errors propagate — a malformed change file is user error
+            // and silently dropping it can hide a broken release.
+            return parseChangeFile(content, path);
+        }),
+    );
 
     return { files: settled, warnings };
 };

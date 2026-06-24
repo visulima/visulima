@@ -48,17 +48,11 @@ describe("native-addon: temp-dir cleanup on failure (RFC §19.4)", () => {
 
         writeFileSync(join(workspace, "package.json"), JSON.stringify(parentManifest));
         mkdirSync(join(workspace, "npm", "linux-x64"), { recursive: true });
-        writeFileSync(
-            join(workspace, "npm", "linux-x64", "package.json"),
-            JSON.stringify({ name: "@scope/parent-linux-x64", version: "1.0.0" }),
-        );
+        writeFileSync(join(workspace, "npm", "linux-x64", "package.json"), JSON.stringify({ name: "@scope/parent-linux-x64", version: "1.0.0" }));
 
         // Force the OIDC exchange to succeed so we reach the temp-dir-creating branch.
         originalFetch = globalThis.fetch;
-        globalThis.fetch = (async () => Response.json(
-            { token: "fake-pkg-token", value: "fake-id-token" },
-            { status: 200 },
-        ));
+        globalThis.fetch = async () => Response.json({ token: "fake-pkg-token", value: "fake-id-token" }, { status: 200 });
 
         originalReqUrl = process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
         originalReqToken = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;

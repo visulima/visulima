@@ -247,9 +247,11 @@ describe("init --from-semantic-release", () => {
     let logs: { level: "info" | "warn" | "error"; message: string }[];
 
     const fakeLogger = (): Console => {
-        const sink = (level: "info" | "warn" | "error") => (...args: unknown[]) => {
-            logs.push({ level, message: args.map(String).join(" ") });
-        };
+        const sink
+            = (level: "info" | "warn" | "error") =>
+                (...args: unknown[]) => {
+                    logs.push({ level, message: args.map(String).join(" ") });
+                };
 
         return {
             error: sink("error"),
@@ -365,7 +367,10 @@ describe("init --from-semantic-release", () => {
         await initExecute(toolbox);
 
         // Warning was logged at warn level.
-        const warnMessages = logs.filter((l) => l.level === "warn").map((l) => l.message).join("\n");
+        const warnMessages = logs
+            .filter((l) => l.level === "warn")
+            .map((l) => l.message)
+            .join("\n");
 
         expect(warnMessages).toContain("--apply is ignored");
         expect(warnMessages).toContain("dry-run takes precedence");

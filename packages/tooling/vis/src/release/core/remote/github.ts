@@ -20,9 +20,7 @@ import type {
     UpsertStickyCommentOptions,
 } from "./interface";
 
-const normalizeAssets = (
-    assets: CreateReleaseOptions["assets"],
-): { linkAppendix: string; paths: string[] } => {
+const normalizeAssets = (assets: CreateReleaseOptions["assets"]): { linkAppendix: string; paths: string[] } => {
     const paths: string[] = [];
     const links: string[] = [];
 
@@ -140,10 +138,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
      * is NOT set — operators may explicitly want to link to a previous
      * prerelease for an `addReleases: "top"` on a beta channel.
      */
-    public async listRecentReleases(
-        runner: CommandRunner,
-        options: ListRecentReleasesOptions,
-    ): Promise<RecentRelease[]> {
+    public async listRecentReleases(runner: CommandRunner, options: ListRecentReleasesOptions): Promise<RecentRelease[]> {
         const limit = Math.max(1, options.limit);
         // Over-fetch when filtering to absorb tag interleaving with
         // sibling packages in the same monorepo. Soft-cap at 100 so we
@@ -151,16 +146,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
         const fetchSize = options.tagPrefix ? Math.min(100, limit * 4) : limit;
         const result = await runner.run(
             "gh",
-            [
-                "release",
-                "list",
-                "--repo",
-                options.repo,
-                "--limit",
-                String(fetchSize),
-                "--json",
-                "tagName,url,name",
-            ],
+            ["release", "list", "--repo", options.repo, "--limit", String(fetchSize), "--json", "tagName,url,name"],
             this.runOpts(options.cwd),
         );
 
@@ -206,11 +192,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
     }
 
     public async detectRepoSlug(cwd: string, runner: CommandRunner): Promise<string | undefined> {
-        const result = await runner.run(
-            "gh",
-            ["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"],
-            this.runOpts(cwd),
-        );
+        const result = await runner.run("gh", ["repo", "view", "--json", "nameWithOwner", "-q", ".nameWithOwner"], this.runOpts(cwd));
 
         if (result.exitCode !== 0) {
             return undefined;
@@ -242,10 +224,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
         return undefined;
     }
 
-    public async upsertStickyComment(
-        runner: CommandRunner,
-        options: UpsertStickyCommentOptions,
-    ): Promise<UpsertCommentResult | undefined> {
+    public async upsertStickyComment(runner: CommandRunner, options: UpsertStickyCommentOptions): Promise<UpsertCommentResult | undefined> {
         const listResult = await runner.run(
             "gh",
             ["api", `repos/${options.repo}/issues/${options.issueNumber}/comments`, "--paginate"],
@@ -284,10 +263,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
         }
     }
 
-    public async createRelease(
-        runner: CommandRunner,
-        options: CreateReleaseOptions,
-    ): Promise<CreateReleaseResult | undefined> {
+    public async createRelease(runner: CommandRunner, options: CreateReleaseOptions): Promise<CreateReleaseResult | undefined> {
         const { linkAppendix, paths } = normalizeAssets(options.assets);
         const body = linkAppendix ? `${options.body}${linkAppendix}` : options.body;
         const args = ["release", "create", options.tag, "--repo", options.repo, "--title", options.title, "--notes", body];
@@ -334,10 +310,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
         return result.exitCode === 0;
     }
 
-    public async upsertIssue(
-        runner: CommandRunner,
-        options: UpsertIssueOptions,
-    ): Promise<UpsertIssueResult | undefined> {
+    public async upsertIssue(runner: CommandRunner, options: UpsertIssueOptions): Promise<UpsertIssueResult | undefined> {
         // Search open issues by title-marker. Using the `gh issue list` JSON
         // surface keeps us off the search-API rate limit.
         const list = await runner.run(
@@ -364,9 +337,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
 
                     const editResult = await runner.run("gh", editArgs, this.runOpts(options.cwd));
 
-                    return editResult.exitCode === 0
-                        ? { created: false, number: existing.number, url: existing.url }
-                        : undefined;
+                    return editResult.exitCode === 0 ? { created: false, number: existing.number, url: existing.url } : undefined;
                 }
             } catch {
                 // fall through to create
@@ -392,9 +363,7 @@ export class GithubRemoteClient implements RemoteReleaseClient {
         const url = create.stdout.trim();
         const match = /\/issues\/(\d+)/.exec(url);
 
-        return match
-            ? { created: true, number: Number.parseInt(match[1] ?? "0", 10), url }
-            : undefined;
+        return match ? { created: true, number: Number.parseInt(match[1] ?? "0", 10), url } : undefined;
     }
 
     public async closeIssue(runner: CommandRunner, options: CloseIssueOptions): Promise<boolean> {
@@ -406,19 +375,12 @@ export class GithubRemoteClient implements RemoteReleaseClient {
             );
         }
 
-        const result = await runner.run(
-            "gh",
-            ["issue", "close", String(options.issueNumber), "--repo", options.repo],
-            this.runOpts(options.cwd),
-        );
+        const result = await runner.run("gh", ["issue", "close", String(options.issueNumber), "--repo", options.repo], this.runOpts(options.cwd));
 
         return result.exitCode === 0;
     }
 
-    public async upsertPullRequest(
-        runner: CommandRunner,
-        options: UpsertPullRequestOptions,
-    ): Promise<UpsertPullRequestResult | undefined> {
+    public async upsertPullRequest(runner: CommandRunner, options: UpsertPullRequestOptions): Promise<UpsertPullRequestResult | undefined> {
         const list = await runner.run(
             "gh",
             ["pr", "list", "--repo", options.repo, "--head", options.head, "--state", "open", "--json", "number,url"],
@@ -455,8 +417,6 @@ export class GithubRemoteClient implements RemoteReleaseClient {
 
         const match = /\/pull\/(\d+)/.exec(create.stdout);
 
-        return match
-            ? { existing: false, number: Number.parseInt(match[1] ?? "0", 10), url: create.stdout.trim() }
-            : undefined;
+        return match ? { existing: false, number: Number.parseInt(match[1] ?? "0", 10), url: create.stdout.trim() } : undefined;
     }
 }

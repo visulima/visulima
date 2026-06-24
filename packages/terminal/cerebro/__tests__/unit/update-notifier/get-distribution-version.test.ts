@@ -24,7 +24,7 @@ describe("update-notifier/get-dist-version", () => {
         const st = new Stream();
         const requestStream = new Stream() as Stream & { destroy: () => void };
 
-        requestStream.destroy = vi.fn();
+        vi.spyOn(requestStream, "destroy").mockImplementation();
 
         // The production call is `get(url, { timeout }, callback)`, so the
         // response callback is the third argument and `get` returns the request.
@@ -48,7 +48,7 @@ describe("update-notifier/get-dist-version", () => {
         const st = new Stream();
         const requestStream = new Stream() as Stream & { destroy: () => void };
 
-        requestStream.destroy = vi.fn();
+        vi.spyOn(requestStream, "destroy").mockImplementation();
 
         vi.mocked(get).mockImplementation((_url, _options, callback) => {
             (callback as (message: Stream) => void)(st);
@@ -68,7 +68,7 @@ describe("update-notifier/get-dist-version", () => {
         const st = new Stream();
         const requestStream = new Stream() as Stream & { destroy: () => void };
 
-        requestStream.destroy = vi.fn();
+        vi.spyOn(requestStream, "destroy").mockImplementation();
 
         vi.mocked(get).mockImplementation((_url, _options, callback) => {
             (callback as (message: Stream) => void)(st);

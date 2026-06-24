@@ -350,7 +350,13 @@ const runHistoryScan = async (flags: SecretsFlags, root: string, scanOptions: Sc
 
     switch (format) {
         case "json": {
-            process.stdout.write(`${JSON.stringify(reportFindings.map((f) => toRelativeFinding(f, root)), null, 2)}\n`);
+            process.stdout.write(
+                `${JSON.stringify(
+                    reportFindings.map((f) => toRelativeFinding(f, root)),
+                    null,
+                    2,
+                )}\n`,
+            );
             break;
         }
         case "sarif": {
@@ -367,7 +373,9 @@ const runHistoryScan = async (flags: SecretsFlags, root: string, scanOptions: Sc
     if (findings.length > 0) {
         if (!flags.quiet) {
             pail.warn(`${String(findings.length)} potential secret(s) found across git history`);
-            pail.notice("Findings reference the commit that introduced them — rotate the credential and rewrite history (e.g. git filter-repo) if it is still reachable.");
+            pail.notice(
+                "Findings reference the commit that introduced them — rotate the credential and rewrite history (e.g. git filter-repo) if it is still reachable.",
+            );
         }
 
         process.exitCode = 1;

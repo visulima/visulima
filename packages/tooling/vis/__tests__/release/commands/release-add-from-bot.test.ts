@@ -28,7 +28,11 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import addFromBotHandler, { __setBotPrRunnerForTests, parseBotPrTitle } from "../../../src/commands/release/add/handler";
 
-interface RunResult { exitCode: number; stderr: string; stdout: string }
+interface RunResult {
+    exitCode: number;
+    stderr: string;
+    stdout: string;
+}
 
 const writeJson = (path: string, value: unknown): void => {
     writeFileSync(path, `${JSON.stringify(value, null, 4)}\n`);
@@ -206,24 +210,27 @@ describe.skipIf(isWindows)("vis release add --from-bot-pr (handler integration)"
     // `ghRun` to the behaviour it needs.
     let ghRun: (cmd: string, args: ReadonlyArray<string>) => Promise<RunResult>;
 
-    const ghPrView = (response: { author: string; body?: string; title: string }) =>
-        async (cmd: string, args: ReadonlyArray<string>): Promise<RunResult> => {
-            if (cmd === "gh" && args[0] === "pr" && args[1] === "view") {
-                return {
-                    exitCode: 0,
-                    stderr: "",
-                    stdout: JSON.stringify({ author: { login: response.author }, body: response.body ?? "", title: response.title }),
-                };
-            }
+    const ghPrView
+        = (response: { author: string; body?: string; title: string }) =>
+            async (cmd: string, args: ReadonlyArray<string>): Promise<RunResult> => {
+                if (cmd === "gh" && args[0] === "pr" && args[1] === "view") {
+                    return {
+                        exitCode: 0,
+                        stderr: "",
+                        stdout: JSON.stringify({ author: { login: response.author }, body: response.body ?? "", title: response.title }),
+                    };
+                }
 
-            return { exitCode: 0, stderr: "", stdout: "" };
-        };
+                return { exitCode: 0, stderr: "", stdout: "" };
+            };
 
     beforeEach(() => {
         cwd = setupFixture();
         process.exitCode = 0;
         process.env.PR_NUMBER = "42";
-        ghRun = async () => { return { exitCode: 0, stderr: "", stdout: "" }; };
+        ghRun = async () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        };
         __setBotPrRunnerForTests({ run: (cmd, args) => ghRun(cmd, args) });
     });
 
@@ -302,7 +309,9 @@ describe.skipIf(isWindows)("vis release add --from-bot-pr (handler integration)"
         delete process.env.PR_NUMBER;
         delete process.env.GITHUB_REF;
 
-        ghRun = async () => { return { exitCode: 1, stderr: "no PR", stdout: "" }; };
+        ghRun = async () => {
+            return { exitCode: 1, stderr: "no PR", stdout: "" };
+        };
 
         const { logs, toolbox } = makeToolbox(cwd, { "from-bot-pr": true });
 

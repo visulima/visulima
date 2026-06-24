@@ -101,10 +101,7 @@ export interface CollectContributorsOptions {
  * @param options Optional internal-author filter.
  * @returns A bullet list (`- \@alice\n- \@bob`) or `""` if none.
  */
-export const collectContributors = (
-    changeFiles: ReadonlyArray<ContributorSourceChangeFile>,
-    options: CollectContributorsOptions = {},
-): string => {
+export const collectContributors = (changeFiles: ReadonlyArray<ContributorSourceChangeFile>, options: CollectContributorsOptions = {}): string => {
     const suppressed = new Set<string>();
 
     for (const raw of options.internalAuthors ?? []) {

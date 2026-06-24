@@ -34,11 +34,7 @@ const parseAction = (raw: string | undefined): Action | undefined => {
     return (KNOWN as ReadonlyArray<string>).includes(raw) ? (raw as Action) : undefined;
 };
 
-const runEnter = async (
-    cwd: string,
-    options: ReleasePreOptions,
-    logger: Toolbox<Console, ReleasePreOptions>["logger"],
-): Promise<void> => {
+const runEnter = async (cwd: string, options: ReleasePreOptions, logger: Toolbox<Console, ReleasePreOptions>["logger"]): Promise<void> => {
     const tag = options.tag?.[0];
 
     if (!tag) {
@@ -62,9 +58,12 @@ const runEnter = async (
     // Snapshot every workspace package's current version. Used by the
     // exit consolidation to compute the right stable bump regardless of
     // how many prerelease counters were burnt in between.
-    const file = buildEnterFile(tag, ctx.packages.map((p) => {
-        return { name: p.name, version: p.version };
-    }));
+    const file = buildEnterFile(
+        tag,
+        ctx.packages.map((p) => {
+            return { name: p.name, version: p.version };
+        }),
+    );
     const path = await writePreMode(cwd, changesDir, file);
 
     logger.info(`Entered pre-mode with tag "${tag}". ${Object.keys(file.initialVersions).length} package version(s) snapshot.`);
@@ -75,16 +74,11 @@ const runEnter = async (
         const runner = createShellRunner();
 
         try {
-            await stageAndCommitFile(
-                { cwd, runner },
-                path,
-                `chore(release): enter pre-mode (${tag}) [skip ci]`,
-                {
-                    author: ctx.config.gitUser,
-                    push: options.push !== false,
-                    sign: ctx.config.gitSignCommits === true,
-                },
-            );
+            await stageAndCommitFile({ cwd, runner }, path, `chore(release): enter pre-mode (${tag}) [skip ci]`, {
+                author: ctx.config.gitUser,
+                push: options.push !== false,
+                sign: ctx.config.gitSignCommits === true,
+            });
             logger.info(`Committed ${path}${options.push === false ? "" : " + pushed"}.`);
         } catch (error) {
             logger.warn(`Could not commit ${path}: ${(error as Error).message}`);
@@ -92,11 +86,7 @@ const runEnter = async (
     }
 };
 
-const runExit = async (
-    cwd: string,
-    options: ReleasePreOptions,
-    logger: Toolbox<Console, ReleasePreOptions>["logger"],
-): Promise<void> => {
+const runExit = async (cwd: string, options: ReleasePreOptions, logger: Toolbox<Console, ReleasePreOptions>["logger"]): Promise<void> => {
     const ctx = await buildContext({ cwd, skipRegistryLookup: true });
     const changesDir = ctx.config.changesDir ?? DEFAULT_CHANGES_DIR;
     const existing = await readPreMode(cwd, changesDir);
@@ -139,16 +129,11 @@ const runExit = async (
         const runner = createShellRunner();
 
         try {
-            await stageAndCommitFile(
-                { cwd, runner },
-                path,
-                `chore(release): exit pre-mode (was ${existing.tag}) [skip ci]`,
-                {
-                    author: ctx.config.gitUser,
-                    push: options.push !== false,
-                    sign: ctx.config.gitSignCommits === true,
-                },
-            );
+            await stageAndCommitFile({ cwd, runner }, path, `chore(release): exit pre-mode (was ${existing.tag}) [skip ci]`, {
+                author: ctx.config.gitUser,
+                push: options.push !== false,
+                sign: ctx.config.gitSignCommits === true,
+            });
             logger.info(`Committed ${path}${options.push === false ? "" : " + pushed"}.`);
         } catch (error) {
             logger.warn(`Could not commit ${path}: ${(error as Error).message}`);
@@ -156,10 +141,7 @@ const runExit = async (
     }
 };
 
-const runStatus = async (
-    cwd: string,
-    logger: Toolbox<Console, ReleasePreOptions>["logger"],
-): Promise<void> => {
+const runStatus = async (cwd: string, logger: Toolbox<Console, ReleasePreOptions>["logger"]): Promise<void> => {
     const ctx = await buildContext({ cwd, skipRegistryLookup: true });
     const changesDir = ctx.config.changesDir ?? DEFAULT_CHANGES_DIR;
     const file = await readPreMode(cwd, changesDir);

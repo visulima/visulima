@@ -44,10 +44,7 @@ describe("githubRemoteClient.createRelease — structured assets", () => {
         const { calls, runner } = buildRunner([{ stdout: "https://github.com/.../release" }]);
 
         await new GithubRemoteClient().createRelease(runner, {
-            assets: [
-                { label: "Bundle", path: "/tmp/pkg.tgz" },
-                { path: "/tmp/raw.tgz" },
-            ],
+            assets: [{ label: "Bundle", path: "/tmp/pkg.tgz" }, { path: "/tmp/raw.tgz" }],
             body: "notes",
             cwd: "/cwd",
             repo: "owner/name",
@@ -55,7 +52,7 @@ describe("githubRemoteClient.createRelease — structured assets", () => {
             title: "v1.0.0",
         });
 
-        const { args } = (calls[0]!);
+        const { args } = calls[0]!;
 
         expect(args).toContain("/tmp/pkg.tgz#Bundle");
         expect(args).toContain("/tmp/raw.tgz");
@@ -119,7 +116,7 @@ describe("githubRemoteClient.addLabels", () => {
 
         expect(ok).toBe(true);
 
-        const { args } = (calls[0]!);
+        const { args } = calls[0]!;
 
         expect(args[1]).toBe("-X");
         expect(args[2]).toBe("POST");
@@ -177,10 +174,7 @@ describe("githubRemoteClient.upsertIssue", () => {
     it("creates a new issue when none match", async () => {
         expect.hasAssertions();
 
-        const { calls, runner } = buildRunner([
-            { stdout: "[]" },
-            { stdout: "https://github.com/owner/name/issues/42" },
-        ]);
+        const { calls, runner } = buildRunner([{ stdout: "[]" }, { stdout: "https://github.com/owner/name/issues/42" }]);
 
         const result = await new GithubRemoteClient().upsertIssue(runner, {
             body: "fresh",

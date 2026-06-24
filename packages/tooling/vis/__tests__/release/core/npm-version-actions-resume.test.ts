@@ -72,11 +72,17 @@ const baseContext = (overrides: { resumeStageId?: string; stageEnabled?: boolean
             // throw so the test fails loudly if pack/publish is touched.
             detectVersion: async () => "10.0.0",
             id: "npm" as const,
-            installLockfileOnly: async () => { throw new Error("must not install on resume"); },
+            installLockfileOnly: async () => {
+                throw new Error("must not install on resume");
+            },
             list: async () => [],
             minVersion: "8.0.0",
-            pack: async () => { throw new Error("must not pack on resume"); },
-            publish: async () => { throw new Error("must not publish on resume"); },
+            pack: async () => {
+                throw new Error("must not pack on resume");
+            },
+            publish: async () => {
+                throw new Error("must not publish on resume");
+            },
             readCatalogYaml: async () => undefined,
             runner: runner.runner,
         } as never,
@@ -96,9 +102,7 @@ const baseContext = (overrides: { resumeStageId?: string; stageEnabled?: boolean
         versionedManifestByName: new Map(),
         workspaceConfig: {
             publish: {
-                stage: overrides.stageEnabled
-                    ? { pollIntervalMs: 1, timeoutMs: 60_000 }
-                    : false,
+                stage: overrides.stageEnabled ? { pollIntervalMs: 1, timeoutMs: 60_000 } : false,
             },
         },
     };
@@ -154,8 +158,12 @@ describe("npmVersionActions.publish: resume path", () => {
             ...baseContext({ resumeStageId: "stage-xyz", stageEnabled: true }),
             pm: {
                 detectVersion: async () => "10.0.0",
-                pack: async () => { throw new Error("must not pack on resume"); },
-                publish: async () => { throw new Error("must not publish on resume"); },
+                pack: async () => {
+                    throw new Error("must not pack on resume");
+                },
+                publish: async () => {
+                    throw new Error("must not publish on resume");
+                },
                 runner,
             },
             runner,
@@ -175,15 +183,21 @@ describe("npmVersionActions.publish: resume path", () => {
         const actions = new NpmVersionActions();
         // Set up runner: stage view always pending → timeout
         const { calls, runner } = buildRunner(
-            Array.from({ length: 20 }, () => { return { stdout: JSON.stringify({ id: "stage-xyz" }) }; }),
+            Array.from({ length: 20 }, () => {
+                return { stdout: JSON.stringify({ id: "stage-xyz" }) };
+            }),
         );
 
         const ctx = {
             ...baseContext({ resumeStageId: "stage-xyz", stageEnabled: true }),
             pm: {
                 detectVersion: async () => "10.0.0",
-                pack: async () => { throw new Error("must not pack on resume"); },
-                publish: async () => { throw new Error("must not publish on resume"); },
+                pack: async () => {
+                    throw new Error("must not pack on resume");
+                },
+                publish: async () => {
+                    throw new Error("must not publish on resume");
+                },
                 runner,
             },
             runner,

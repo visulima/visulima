@@ -39,11 +39,7 @@ describe(mergeProtectedContent, () => {
             "<!-- /vis:user-content -->",
         ].join("\n");
 
-        const next = [
-            "## Pending releases",
-            "",
-            "- pkg: 1.0 -> 1.1",
-        ].join("\n");
+        const next = ["## Pending releases", "", "- pkg: 1.0 -> 1.1"].join("\n");
 
         const merged = mergeProtectedContent(existing, next);
 
@@ -80,19 +76,9 @@ describe(mergeProtectedContent, () => {
     it("fills empty marker pairs in the new body before appending the rest", () => {
         expect.hasAssertions();
 
-        const existing = [
-            "<!-- vis:user-content -->",
-            "PRESERVED",
-            "<!-- /vis:user-content -->",
-        ].join("\n");
+        const existing = ["<!-- vis:user-content -->", "PRESERVED", "<!-- /vis:user-content -->"].join("\n");
 
-        const next = [
-            "## Pending releases",
-            "",
-            "<!-- vis:user-content --><!-- /vis:user-content -->",
-            "",
-            "## Footer",
-        ].join("\n");
+        const next = ["## Pending releases", "", "<!-- vis:user-content --><!-- /vis:user-content -->", "", "## Footer"].join("\n");
 
         const merged = mergeProtectedContent(existing, next);
 

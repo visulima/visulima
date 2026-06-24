@@ -71,10 +71,7 @@ describe("state — process-level lock (RFC §19.1)", () => {
         const fakeDeadPid = 999_999;
 
         mkdirSync(join(cwd, changesDir), { recursive: true });
-        writeFileSync(
-            lockFilePath(cwd, changesDir),
-            JSON.stringify({ acquiredAt: new Date().toISOString(), pid: fakeDeadPid }),
-        );
+        writeFileSync(lockFilePath(cwd, changesDir), JSON.stringify({ acquiredAt: new Date().toISOString(), pid: fakeDeadPid }));
 
         // Should not throw — stale lock is taken over.
         const path = await acquireLock(cwd, changesDir);
@@ -91,10 +88,7 @@ describe("state — process-level lock (RFC §19.1)", () => {
         const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString();
 
         mkdirSync(join(cwd, changesDir), { recursive: true });
-        writeFileSync(
-            lockFilePath(cwd, changesDir),
-            JSON.stringify({ acquiredAt: twoHoursAgo, pid: process.pid }),
-        );
+        writeFileSync(lockFilePath(cwd, changesDir), JSON.stringify({ acquiredAt: twoHoursAgo, pid: process.pid }));
 
         const path = await acquireLock(cwd, changesDir);
 
@@ -122,10 +116,7 @@ describe("state — process-level lock (RFC §19.1)", () => {
         // should succeed; the loser sees the live PID lock and throws.
         expect.hasAssertions();
 
-        const results = await Promise.allSettled([
-            acquireLock(cwd, changesDir),
-            acquireLock(cwd, changesDir),
-        ]);
+        const results = await Promise.allSettled([acquireLock(cwd, changesDir), acquireLock(cwd, changesDir)]);
 
         const fulfilled = results.filter((r) => r.status === "fulfilled");
         const rejected = results.filter((r) => r.status === "rejected");

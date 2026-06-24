@@ -22,7 +22,8 @@ const doctor: Command = {
             type: String,
         },
         {
-            description: "Bootstrap mode for greenfield monorepos: doctor asserts the workspace has no release tags and no package has been published yet. Pair with `vis release version --first-release`.",
+            description:
+                "Bootstrap mode for greenfield monorepos: doctor asserts the workspace has no release tags and no package has been published yet. Pair with `vis release version --first-release`.",
             name: "first-release",
             type: Boolean,
         },

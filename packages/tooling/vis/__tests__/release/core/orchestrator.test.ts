@@ -51,10 +51,7 @@ const setupFixture = (workspaces: { deps?: Record<string, string>; name: string;
 };
 
 const writeChangeFile = (cwd: string, slug: string, frontmatter: string, body: string = ""): void => {
-    writeFileSync(
-        join(cwd, ".vis", "release", `${slug}.md`),
-        `---\n${frontmatter}\n---\n${body}\n`,
-    );
+    writeFileSync(join(cwd, ".vis", "release", `${slug}.md`), `---\n${frontmatter}\n---\n${body}\n`);
 };
 
 const writeVisConfig = (cwd: string, releaseBlock: Record<string, unknown>): void => {
@@ -128,11 +125,11 @@ describe.skipIf(isWindows)("orchestrator: buildContext loads vis.config.ts relea
         const stderrChunks: string[] = [];
         const orig = process.stderr.write.bind(process.stderr);
 
-        process.stderr.write = ((chunk: string | Uint8Array) => {
+        process.stderr.write = (chunk: string | Uint8Array) => {
             stderrChunks.push(typeof chunk === "string" ? chunk : chunk.toString());
 
             return true;
-        });
+        };
 
         try {
             await buildContext({ cwd });
@@ -151,11 +148,11 @@ describe.skipIf(isWindows)("orchestrator: buildContext loads vis.config.ts relea
         const stderrChunks: string[] = [];
         const orig = process.stderr.write.bind(process.stderr);
 
-        process.stderr.write = ((chunk: string | Uint8Array) => {
+        process.stderr.write = (chunk: string | Uint8Array) => {
             stderrChunks.push(typeof chunk === "string" ? chunk : chunk.toString());
 
             return true;
-        });
+        };
 
         try {
             await buildContext({ cwd });
@@ -173,11 +170,11 @@ describe.skipIf(isWindows)("orchestrator: buildContext loads vis.config.ts relea
         const stderrChunks: string[] = [];
         const orig = process.stderr.write.bind(process.stderr);
 
-        process.stderr.write = ((chunk: string | Uint8Array) => {
+        process.stderr.write = (chunk: string | Uint8Array) => {
             stderrChunks.push(typeof chunk === "string" ? chunk : chunk.toString());
 
             return true;
-        });
+        };
 
         try {
             await buildContext({ cwd });
@@ -457,11 +454,7 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
     it("places header above body and footer below body (full composition)", () => {
         expect.hasAssertions();
 
-        const rendered = applyReleaseNoteTemplate(
-            "BODY",
-            { footer: "FOOTER", header: "HEADER" },
-            tokens,
-        );
+        const rendered = applyReleaseNoteTemplate("BODY", { footer: "FOOTER", header: "HEADER" }, tokens);
 
         expect(rendered).toBe("HEADER\n\nBODY\n\nFOOTER");
     });
@@ -485,11 +478,7 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
     it("renders {contributors} as empty when no authors were collected", () => {
         expect.hasAssertions();
 
-        const rendered = applyReleaseNoteTemplate(
-            "BODY",
-            { header: "Thanks: {contributors}done" },
-            { ...tokens, contributors: "" },
-        );
+        const rendered = applyReleaseNoteTemplate("BODY", { header: "Thanks: {contributors}done" }, { ...tokens, contributors: "" });
 
         expect(rendered).toBe("Thanks: done\n\nBODY");
     });
@@ -500,11 +489,7 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
     it("drops the header entirely when it interpolates to empty (audit V1)", () => {
         expect.hasAssertions();
 
-        const rendered = applyReleaseNoteTemplate(
-            "BODY",
-            { footer: "{contributors}", header: "{contributors}" },
-            { ...tokens, contributors: "" },
-        );
+        const rendered = applyReleaseNoteTemplate("BODY", { footer: "{contributors}", header: "{contributors}" }, { ...tokens, contributors: "" });
 
         expect(rendered).toBe("BODY");
     });
@@ -515,11 +500,7 @@ describe.skipIf(isWindows)("orchestrator: applyReleaseNoteTemplate (releaseNoteT
     it("strips trailing whitespace from header after interpolation (audit S-2)", () => {
         expect.hasAssertions();
 
-        const rendered = applyReleaseNoteTemplate(
-            "BODY",
-            { header: "## Contributors\n\n{contributors}" },
-            { ...tokens, contributors: "" },
-        );
+        const rendered = applyReleaseNoteTemplate("BODY", { header: "## Contributors\n\n{contributors}" }, { ...tokens, contributors: "" });
 
         expect(rendered).toBe("## Contributors\n\nBODY");
     });
@@ -551,10 +532,7 @@ describe.skipIf(isWindows)(extractInternalAuthors, () => {
     it("extracts the internalAuthors array from a github-formatter tuple", () => {
         expect.hasAssertions();
 
-        const result = extractInternalAuthors([
-            "github",
-            { internalAuthors: ["renovate[bot]", "dependabot"] },
-        ]);
+        const result = extractInternalAuthors(["github", { internalAuthors: ["renovate[bot]", "dependabot"] }]);
 
         expect(result).toStrictEqual(["renovate[bot]", "dependabot"]);
     });
@@ -562,10 +540,7 @@ describe.skipIf(isWindows)(extractInternalAuthors, () => {
     it("filters out non-string entries defensively (e.g. operator passed a number)", () => {
         expect.hasAssertions();
 
-        const result = extractInternalAuthors([
-            "github",
-            { internalAuthors: ["renovate", 42, null, "dependabot"] as unknown as string[] },
-        ]);
+        const result = extractInternalAuthors(["github", { internalAuthors: ["renovate", 42, null, "dependabot"] as unknown as string[] }]);
 
         expect(result).toStrictEqual(["renovate", "dependabot"]);
     });

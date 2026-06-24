@@ -124,7 +124,11 @@ export const parseCommit = (subject: string, body: string): ParsedCommit => {
  * conventional-commits convention and the default git
  * `Revert "&lt;subject>"` message format.
  */
-export const detectRevert = (subject: string, body: string, parsed: ParsedCommit): {
+export const detectRevert = (
+    subject: string,
+    body: string,
+    parsed: ParsedCommit,
+): {
     isRevert: boolean;
     targetSha?: string;
     targetSubject?: string;
@@ -424,9 +428,7 @@ export const annotateAndResolveReverts = (
                     // toggle so we don't mutate a mid-chain revert,
                     // surface a warning, and treat the revert itself
                     // as a normal commit.
-                    warnings.push(
-                        `Revert chain at ${commit.hash} exceeded depth limit (${CHAIN_DEPTH_CAP}) — skipping cancellation`,
-                    );
+                    warnings.push(`Revert chain at ${commit.hash} exceeded depth limit (${CHAIN_DEPTH_CAP}) — skipping cancellation`);
                     walked.push(commit);
 
                     continue;
@@ -480,9 +482,7 @@ export const annotateAndResolveReverts = (
     if (eligible.length > 0 && noType.length / eligible.length > 0.5) {
         const label = range ?? "<from>..HEAD";
 
-        warnings.push(
-            `${noType.length}/${eligible.length} commits in ${label} have no conventional-commits prefix. Consider enabling commit-message linting.`,
-        );
+        warnings.push(`${noType.length}/${eligible.length} commits in ${label} have no conventional-commits prefix. Consider enabling commit-message linting.`);
     }
 
     return { commits: annotated, warnings };

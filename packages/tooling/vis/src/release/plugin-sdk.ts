@@ -32,9 +32,7 @@
  */
 
 import type { ChangelogFormatter } from "./core/changelog/api";
-import type {
-    NotificationChannel,
-} from "./core/notifications/interface";
+import type { NotificationChannel } from "./core/notifications/interface";
 import type { VersionActions } from "./core/version-actions/interface";
 
 // ── Notification channel ───────────────────────────────────────────
@@ -118,4 +116,10 @@ export const defineChangelogFormatter = (formatter: ChangelogFormatter): Changel
 export { type ChangelogContext, type ChangelogFormatter, type ChangelogFormatterModule, type ChangelogTarget } from "./core/changelog/api";
 export { type NotificationChannel, type NotificationContext, type NotificationPackage } from "./core/notifications/interface";
 export { type PublishResult } from "./core/package-managers/interface";
-export { AfterAllProjectsVersioned, type AfterAllVersionedContext, type AfterAllVersionedResult, type PublishContext, VersionActions } from "./core/version-actions/interface";
+export {
+    AfterAllProjectsVersioned,
+    type AfterAllVersionedContext,
+    type AfterAllVersionedResult,
+    type PublishContext,
+    VersionActions,
+} from "./core/version-actions/interface";

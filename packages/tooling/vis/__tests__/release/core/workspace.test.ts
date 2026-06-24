@@ -30,11 +30,20 @@ describe("workspace: discoverPackages", () => {
         const reader = {
             listPackages: async () => [
                 // Native-addon parent (napi field) at packages/vis.
-                { manifest: { name: "@scope/vis", napi: { binaryName: "vis" }, version: "1.0.0" } as unknown as PackageManifest, manifestPath: "/repo/packages/vis/package.json" },
+                {
+                    manifest: { name: "@scope/vis", napi: { binaryName: "vis" }, version: "1.0.0" } as unknown as PackageManifest,
+                    manifestPath: "/repo/packages/vis/package.json",
+                },
                 // Platform packages live under the parent's npm/ dir — managed
                 // by the parent, must NOT be discovered standalone.
-                { manifest: { name: "@scope/vis-binding-linux-x64", version: "1.0.0" } as PackageManifest, manifestPath: "/repo/packages/vis/npm/linux-x64/package.json" },
-                { manifest: { name: "@scope/vis-binding-darwin-arm64", version: "1.0.0" } as PackageManifest, manifestPath: "/repo/packages/vis/npm/darwin-arm64/package.json" },
+                {
+                    manifest: { name: "@scope/vis-binding-linux-x64", version: "1.0.0" } as PackageManifest,
+                    manifestPath: "/repo/packages/vis/npm/linux-x64/package.json",
+                },
+                {
+                    manifest: { name: "@scope/vis-binding-darwin-arm64", version: "1.0.0" } as PackageManifest,
+                    manifestPath: "/repo/packages/vis/npm/darwin-arm64/package.json",
+                },
                 // Unrelated package — kept.
                 mkPkg("@scope/other"),
             ],
@@ -54,8 +63,14 @@ describe("workspace: discoverPackages", () => {
 
         const reader = {
             listPackages: async () => [
-                { manifest: { name: "@scope/native", version: "1.0.0", "vis-release": { versionActions: "native-addon" } } as unknown as PackageManifest, manifestPath: "/repo/packages/native/package.json" },
-                { manifest: { name: "@scope/native-binding-linux-x64", version: "1.0.0" } as PackageManifest, manifestPath: "/repo/packages/native/npm/linux-x64/package.json" },
+                {
+                    manifest: { name: "@scope/native", version: "1.0.0", "vis-release": { versionActions: "native-addon" } } as unknown as PackageManifest,
+                    manifestPath: "/repo/packages/native/package.json",
+                },
+                {
+                    manifest: { name: "@scope/native-binding-linux-x64", version: "1.0.0" } as PackageManifest,
+                    manifestPath: "/repo/packages/native/npm/linux-x64/package.json",
+                },
             ],
         };
 
@@ -103,10 +118,7 @@ describe("workspace: discoverPackages", () => {
         expect.hasAssertions();
 
         const reader = {
-            listPackages: async () => [
-                mkPkg("a"),
-                mkPkg("b", { "vis-release": { managed: false } }),
-            ],
+            listPackages: async () => [mkPkg("a"), mkPkg("b", { "vis-release": { managed: false } })],
         };
 
         const result = await discoverPackages(reader, { defaultManaged: true });
@@ -118,10 +130,7 @@ describe("workspace: discoverPackages", () => {
         expect.hasAssertions();
 
         const reader = {
-            listPackages: async () => [
-                mkPkg("a"),
-                mkPkg("b", { "vis-release": { managed: true } }),
-            ],
+            listPackages: async () => [mkPkg("a"), mkPkg("b", { "vis-release": { managed: true } })],
         };
 
         const result = await discoverPackages(reader, { defaultManaged: false });
@@ -133,10 +142,7 @@ describe("workspace: discoverPackages", () => {
         expect.hasAssertions();
 
         const reader = {
-            listPackages: async () => [
-                mkPkg("a"),
-                mkPkg("internal", { private: true }),
-            ],
+            listPackages: async () => [mkPkg("a"), mkPkg("internal", { private: true })],
         };
 
         const result = await discoverPackages(reader, { defaultManaged: true });
@@ -148,10 +154,7 @@ describe("workspace: discoverPackages", () => {
         expect.hasAssertions();
 
         const reader = {
-            listPackages: async () => [
-                mkPkg("a"),
-                mkPkg("internal", { private: true }),
-            ],
+            listPackages: async () => [mkPkg("a"), mkPkg("internal", { private: true })],
         };
 
         const result = await discoverPackages(reader, { defaultManaged: true, privatePackages: { tag: false, version: true } });
@@ -163,10 +166,12 @@ describe("workspace: discoverPackages", () => {
         expect.hasAssertions();
 
         const reader = {
-            listPackages: async () => [{
-                manifest: { name: "evil$(rm -rf /)", version: "1.0.0" } as PackageManifest,
-                manifestPath: "/repo/packages/evil/package.json",
-            }],
+            listPackages: async () => [
+                {
+                    manifest: { name: "evil$(rm -rf /)", version: "1.0.0" } as PackageManifest,
+                    manifestPath: "/repo/packages/evil/package.json",
+                },
+            ],
         };
 
         await expect(discoverPackages(reader, { defaultManaged: true })).rejects.toThrow(VisReleaseError);
@@ -177,10 +182,12 @@ describe("workspace: discoverPackages", () => {
 
         const longName = `@scope/${"a".repeat(214)}`;
         const reader = {
-            listPackages: async () => [{
-                manifest: { name: longName, version: "1.0.0" } as PackageManifest,
-                manifestPath: "/repo/packages/long/package.json",
-            }],
+            listPackages: async () => [
+                {
+                    manifest: { name: longName, version: "1.0.0" } as PackageManifest,
+                    manifestPath: "/repo/packages/long/package.json",
+                },
+            ],
         };
 
         await expect(discoverPackages(reader, { defaultManaged: true })).rejects.toThrow(VisReleaseError);
@@ -190,10 +197,12 @@ describe("workspace: discoverPackages", () => {
         expect.hasAssertions();
 
         const reader = {
-            listPackages: async () => [{
-                manifest: { name: "evil", version: "1.0.0" } as PackageManifest,
-                manifestPath: "/etc/passwd-pkg/package.json",
-            }],
+            listPackages: async () => [
+                {
+                    manifest: { name: "evil", version: "1.0.0" } as PackageManifest,
+                    manifestPath: "/etc/passwd-pkg/package.json",
+                },
+            ],
         };
 
         await expect(discoverPackages(reader, { defaultManaged: true }, { cwd: "/repo" })).rejects.toThrow(VisReleaseError);
@@ -203,10 +212,12 @@ describe("workspace: discoverPackages", () => {
         expect.hasAssertions();
 
         const reader = {
-            listPackages: async () => [{
-                manifest: { name: "a", version: "1.0.0" } as PackageManifest,
-                manifestPath: "/repo/packages/a/package.json",
-            }],
+            listPackages: async () => [
+                {
+                    manifest: { name: "a", version: "1.0.0" } as PackageManifest,
+                    manifestPath: "/repo/packages/a/package.json",
+                },
+            ],
         };
 
         const result = await discoverPackages(reader, { defaultManaged: true }, { cwd: "/repo" });
@@ -231,11 +242,7 @@ describe("workspace: mergePerPackageConfig", () => {
     it("root config supplies fields when package.json is absent", () => {
         expect.hasAssertions();
 
-        const merged = mergePerPackageConfig(
-            "a",
-            { name: "a", version: "1.0.0" },
-            { packages: { a: { registry: "https://x", versionActions: "private" } } },
-        );
+        const merged = mergePerPackageConfig("a", { name: "a", version: "1.0.0" }, { packages: { a: { registry: "https://x", versionActions: "private" } } });
 
         expect(merged.versionActions).toBe("private");
         expect(merged.registry).toBe("https://x");

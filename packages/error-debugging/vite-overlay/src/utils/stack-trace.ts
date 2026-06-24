@@ -31,8 +31,7 @@ const VALID_STACK_KEYWORDS = new Set<string>(["<anonymous>", "<unknown>", "nativ
 
 const isDigit = (char: string): boolean => char >= "0" && char <= "9";
 
-const isLocationWhitespace = (char: string): boolean =>
-    char === " " || char === "\t" || char === "\n" || char === "\r" || char === "\f" || char === "\v";
+const isLocationWhitespace = (char: string): boolean => char === " " || char === "\t" || char === "\n" || char === "\r" || char === "\f" || char === "\v";
 
 /**
  * Returns the index just past a `:digit+(:digit+)?` location run that starts at `colonIndex`,

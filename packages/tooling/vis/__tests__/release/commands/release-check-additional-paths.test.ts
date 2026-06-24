@@ -236,10 +236,7 @@ describe.skipIf(isWindows)("vis release check --strict — additionalPaths (rele
             // inside packages/cli/.
             execFileSync("git", ["checkout", "-q", "-b", "feature"], { cwd: cwd2 });
             await writeFile(join(cwd2, "packages", "cli", "src", "index.ts"), "export const x = 2;\n");
-            await writeFile(
-                join(cwd2, ".vis", "release", "cli-bump.md"),
-                "---\n\"@scope/cli\": patch\n---\nedit\n",
-            );
+            await writeFile(join(cwd2, ".vis", "release", "cli-bump.md"), "---\n\"@scope/cli\": patch\n---\nedit\n");
             execFileSync("git", ["add", "."], { cwd: cwd2 });
             execFileSync("git", ["commit", "-q", "-m", "cli edit"], { cwd: cwd2 });
 

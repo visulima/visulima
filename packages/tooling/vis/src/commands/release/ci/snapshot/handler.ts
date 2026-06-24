@@ -14,10 +14,7 @@ import { createShellRunner } from "../../../../release/core/shell-runner";
 import { runSnapshot } from "../../../../release/core/snapshot";
 import type { ReleaseCiSnapshotOptions } from "./index";
 
-const renderInstallSnippet = (
-    packages: { name: string; version: string }[],
-    registry: string | undefined,
-): string => {
+const renderInstallSnippet = (packages: { name: string; version: string }[], registry: string | undefined): string => {
     if (packages.length === 0) {
         return "_No packages were affected by this PR._";
     }

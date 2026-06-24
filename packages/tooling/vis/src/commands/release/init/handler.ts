@@ -313,7 +313,10 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
             const existing = await readFile(secretlintignorePath, "utf8");
 
             if (!existing.includes(secretlintEntry)) {
-                await writeFile(secretlintignorePath, `${existing.replace(/\n*$/, "\n")}\n# vis release change files (author handles false-positive secretlint)\n${secretlintEntry}\n`);
+                await writeFile(
+                    secretlintignorePath,
+                    `${existing.replace(/\n*$/, "\n")}\n# vis release change files (author handles false-positive secretlint)\n${secretlintEntry}\n`,
+                );
                 logger.info("Updated .secretlintignore.");
             }
         } catch {
@@ -407,9 +410,10 @@ const migrateFromSemanticRelease = async (
         return true;
     });
 
-    const channels = dedupedBranches.length > 0
-        ? renderChannelsFromBranches(dedupedBranches)
-        : { alpha: { mode: "auto-publish", prerelease: "alpha", tag: "alpha" }, main: { mode: "version-pr", tag: "latest" } };
+    const channels
+        = dedupedBranches.length > 0
+            ? renderChannelsFromBranches(dedupedBranches)
+            : { alpha: { mode: "auto-publish", prerelease: "alpha", tag: "alpha" }, main: { mode: "version-pr", tag: "latest" } };
 
     logger.info("");
     logger.info("Suggested vis.config.ts release block (paste into your existing config):");
@@ -466,7 +470,9 @@ ${channelsRendered}
 
     logger.info("");
     logger.info("Migration writes complete. Follow-up steps you still need to do manually:");
-    logger.info("  - Update your CI workflow: remove `multi-semantic-release` step, add `vis release ci/release` step (see `.github/workflows/vis-release.yml` example in the vis package)");
+    logger.info(
+        "  - Update your CI workflow: remove `multi-semantic-release` step, add `vis release ci/release` step (see `.github/workflows/vis-release.yml` example in the vis package)",
+    );
     logger.info("  - Run `pnpm install` to drop semantic-release deps once you remove them from root package.json");
     logger.info("  - Run `vis release doctor` to verify the migration");
 };
@@ -510,7 +516,9 @@ const applySemanticReleaseMigration = async (
         const injected = injectReleaseBlock(existingVisConfig, releaseBlock);
 
         if (injected === undefined) {
-            logger.warn(`  skipped ${relative(cwd, visConfigPath)} — could not locate \`defineConfig({\` or \`export default {\` to inject into; merge the suggested block manually.`);
+            logger.warn(
+                `  skipped ${relative(cwd, visConfigPath)} — could not locate \`defineConfig({\` or \`export default {\` to inject into; merge the suggested block manually.`,
+            );
         } else {
             await writeFile(visConfigPath, injected);
             logger.info(`  updated ${relative(cwd, visConfigPath)} (injected release block)`);
@@ -548,9 +556,7 @@ const applySemanticReleaseMigration = async (
             continue;
         }
 
-        const merged = existing !== null && typeof existing === "object"
-            ? { ...(existing as Record<string, unknown>), managed: true }
-            : { managed: true };
+        const merged = existing !== null && typeof existing === "object" ? { ...(existing as Record<string, unknown>), managed: true } : { managed: true };
 
         parsed["vis-release"] = merged;
 
@@ -701,7 +707,9 @@ const migrateFromChangesets = async (cwd: string, dryRun: boolean, logger: Toolb
         }
     }
 
-    logger.info(`Found ${mdFiles.length} pending .changeset/*.md file(s); ${preserved > 0 ? `copied ${preserved} to .vis/release/` : "(dry-run — would copy)"}.`);
+    logger.info(
+        `Found ${mdFiles.length} pending .changeset/*.md file(s); ${preserved > 0 ? `copied ${preserved} to .vis/release/` : "(dry-run — would copy)"}.`,
+    );
     logger.info("");
     logger.info("Suggested vis.config.ts release block:");
     logger.info("");
@@ -814,12 +822,7 @@ const migrateFromBumpy = async (cwd: string, dryRun: boolean, logger: Toolbox<Co
  * modifies. `--yes` auto-wires; `--no-husky` skips entirely (handled
  * upstream by not calling this function).
  */
-const offerHuskyWiring = async (
-    cwd: string,
-    dryRun: boolean,
-    autoYes: boolean,
-    logger: Toolbox<Console, ReleaseInitOptions>["logger"],
-): Promise<void> => {
+const offerHuskyWiring = async (cwd: string, dryRun: boolean, autoYes: boolean, logger: Toolbox<Console, ReleaseInitOptions>["logger"]): Promise<void> => {
     const huskyHook = join(cwd, ".husky", "pre-commit");
 
     if (!(await fileExists(huskyHook))) {
@@ -899,15 +902,18 @@ const offerWorkflowGeneration = async (
         return;
     }
 
-    const shouldGenerate = explicit || autoYes || await (async (): Promise<boolean> => {
-        try {
-            const { confirmPrompt } = await import("../../../release/core/prompts");
+    const shouldGenerate
+        = explicit
+            || autoYes
+            || (await (async (): Promise<boolean> => {
+                try {
+                    const { confirmPrompt } = await import("../../../release/core/prompts");
 
-            return await confirmPrompt("Generate CI workflow files for the active provider?", true);
-        } catch {
-            return false;
-        }
-    })();
+                    return await confirmPrompt("Generate CI workflow files for the active provider?", true);
+                } catch {
+                    return false;
+                }
+            })());
 
     if (!shouldGenerate) {
         logger.info("");

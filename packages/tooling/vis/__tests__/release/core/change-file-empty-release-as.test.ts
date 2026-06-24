@@ -51,10 +51,7 @@ describe("change-file: releaseAs override (nested frontmatter)", () => {
     it("parses a valid semver string in releaseAs", () => {
         expect.hasAssertions();
 
-        const file = parseChangeFile(
-            "---\n\"@scope/pkg\":\n  bump: minor\n  releaseAs: 2.0.0\n---\nbody\n",
-            "/x.md",
-        );
+        const file = parseChangeFile("---\n\"@scope/pkg\":\n  bump: minor\n  releaseAs: 2.0.0\n---\nbody\n", "/x.md");
 
         if (!("releaseAs" in file.payload)) {
             throw new Error("expected nested payload with releaseAs");
@@ -67,10 +64,7 @@ describe("change-file: releaseAs override (nested frontmatter)", () => {
     it("accepts semver with prerelease + build metadata", () => {
         expect.hasAssertions();
 
-        const file = parseChangeFile(
-            "---\n\"@scope/pkg\":\n  bump: patch\n  releaseAs: 2.0.0-rc.1\n---\nbody\n",
-            "/x.md",
-        );
+        const file = parseChangeFile("---\n\"@scope/pkg\":\n  bump: patch\n  releaseAs: 2.0.0-rc.1\n---\nbody\n", "/x.md");
 
         if (!("releaseAs" in file.payload)) {
             throw new Error("expected nested payload");
@@ -81,31 +75,18 @@ describe("change-file: releaseAs override (nested frontmatter)", () => {
 
     it("rejects non-semver strings with BUMP_FILE_INVALID", () => {
         expect.hasAssertions();
-        expect(() =>
-            parseChangeFile(
-                "---\n\"@scope/pkg\":\n  bump: minor\n  releaseAs: not-a-version\n---\nbody\n",
-                "/x.md",
-            ),
-        ).toThrow(/Invalid releaseAs/);
+        expect(() => parseChangeFile("---\n\"@scope/pkg\":\n  bump: minor\n  releaseAs: not-a-version\n---\nbody\n", "/x.md")).toThrow(/Invalid releaseAs/);
     });
 
     it("rejects non-string releaseAs values", () => {
         expect.hasAssertions();
-        expect(() =>
-            parseChangeFile(
-                "---\n\"@scope/pkg\":\n  bump: minor\n  releaseAs: 200\n---\nbody\n",
-                "/x.md",
-            ),
-        ).toThrow(/Invalid releaseAs/);
+        expect(() => parseChangeFile("---\n\"@scope/pkg\":\n  bump: minor\n  releaseAs: 200\n---\nbody\n", "/x.md")).toThrow(/Invalid releaseAs/);
     });
 
     it("round-trips via formatChangeFile → parseChangeFile with releaseAs", () => {
         expect.hasAssertions();
 
-        const serialised = formatChangeFile(
-            { bump: "minor", package: "@scope/pkg", releaseAs: "2.0.0" },
-            "body",
-        );
+        const serialised = formatChangeFile({ bump: "minor", package: "@scope/pkg", releaseAs: "2.0.0" }, "body");
 
         expect(serialised).toContain("releaseAs: 2.0.0");
 

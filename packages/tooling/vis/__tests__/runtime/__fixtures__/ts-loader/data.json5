@@ -1,5 +1,5 @@
 {
-  name: 'vis-json5',
-  port: 5678,
-  // comment
+    name: "vis-json5",
+    port: 5678,
+    // comment
 }

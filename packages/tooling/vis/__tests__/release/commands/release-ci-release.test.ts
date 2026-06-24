@@ -179,10 +179,7 @@ describe("vis release ci release — C7 publish idempotency", () => {
         });
 
         // Auto-publish only fires when there are pending change files.
-        await writeFile(
-            join(cwd, ".vis", "release", "change-1.md"),
-            "---\n\"@scope/a\": minor\n---\nFeature\n",
-        );
+        await writeFile(join(cwd, ".vis", "release", "change-1.md"), "---\n\"@scope/a\": minor\n---\nFeature\n");
 
         const { default: execute } = await import("../../../src/commands/release/ci/release/handler");
 

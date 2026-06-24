@@ -44,9 +44,7 @@ const buildRunner = (responses: { exitCode?: number; stderr?: string; stdout?: s
 
             cursor += 1;
 
-            return next
-                ? { exitCode: next.exitCode ?? 0, stderr: next.stderr ?? "", stdout: next.stdout ?? "" }
-                : { exitCode: 0, stderr: "", stdout: "" };
+            return next ? { exitCode: next.exitCode ?? 0, stderr: next.stderr ?? "", stdout: next.stdout ?? "" } : { exitCode: 0, stderr: "", stdout: "" };
         },
     };
 
@@ -65,12 +63,14 @@ const buildPkg = (overrides: Partial<WorkspacePackage> = {}): WorkspacePackage =
     };
 };
 
-const buildContext = (overrides: {
-    dryRun?: boolean;
-    newVersion?: string;
-    perPackageConfig?: PerPackageReleaseConfig;
-    runner?: CommandRunner;
-} = {}): PublishContext => {
+const buildContext = (
+    overrides: {
+        dryRun?: boolean;
+        newVersion?: string;
+        perPackageConfig?: PerPackageReleaseConfig;
+        runner?: CommandRunner;
+    } = {},
+): PublishContext => {
     return {
         catalogs: { default: {}, named: {} },
         dryRun: overrides.dryRun,
@@ -108,10 +108,7 @@ describe("validateContainerConfig (N-4)", () => {
     it("returns a narrowed struct on a valid containerImage", () => {
         expect.hasAssertions();
 
-        const result = validateContainerConfig(
-            { containerImage: "ghcr.io/scope/foo", containerPlatforms: ["linux/amd64"] },
-            "@scope/foo",
-        );
+        const result = validateContainerConfig({ containerImage: "ghcr.io/scope/foo", containerPlatforms: ["linux/amd64"] }, "@scope/foo");
 
         expect(result.containerImage).toBe("ghcr.io/scope/foo");
         expect(result.containerPlatforms).toStrictEqual(["linux/amd64"]);
@@ -142,20 +139,14 @@ describe("validateContainerConfig (N-4)", () => {
         // config tool previously slipped through the `as` cast; now it
         // surfaces clearly.
         expect.hasAssertions();
-        expect(() =>
-            validateContainerConfig(
-                { containerImage: 42 as unknown as string },
-                "@scope/foo",
-            )).toThrow(
+        expect(() => validateContainerConfig({ containerImage: 42 as unknown as string }, "@scope/foo")).toThrow(
             expect.objectContaining({ code: "CONFIG_INVALID" }),
         );
     });
 
     it("treats undefined perPkg as missing-image (not a TypeError)", () => {
         expect.hasAssertions();
-        expect(() => validateContainerConfig(undefined, "@scope/foo")).toThrow(
-            expect.objectContaining({ code: "CONFIG_INVALID" }),
-        );
+        expect(() => validateContainerConfig(undefined, "@scope/foo")).toThrow(expect.objectContaining({ code: "CONFIG_INVALID" }));
     });
 });
 
@@ -196,16 +187,12 @@ describe(parseImageRef, () => {
 describe(ociManifestUrl, () => {
     it("composes the v2 manifest URL for GHCR", () => {
         expect.hasAssertions();
-        expect(ociManifestUrl("ghcr.io/scope/foo", "1.2.3")).toBe(
-            "https://ghcr.io/v2/scope/foo/manifests/1.2.3",
-        );
+        expect(ociManifestUrl("ghcr.io/scope/foo", "1.2.3")).toBe("https://ghcr.io/v2/scope/foo/manifests/1.2.3");
     });
 
     it("uses registry-1.docker.io for Docker Hub", () => {
         expect.hasAssertions();
-        expect(ociManifestUrl("nginx", "stable")).toBe(
-            "https://registry-1.docker.io/v2/library/nginx/manifests/stable",
-        );
+        expect(ociManifestUrl("nginx", "stable")).toBe("https://registry-1.docker.io/v2/library/nginx/manifests/stable");
     });
 
     it("uRL-encodes tag values with special chars", () => {
@@ -304,10 +291,7 @@ describe("containerActions.readPublishedVersion", () => {
         });
 
         expect(result).toBe("1.0.0");
-        expect(globalThis.fetch).toHaveBeenCalledWith(
-            "https://ghcr.io/v2/scope/app/manifests/1.0.0",
-            expect.objectContaining({ method: "HEAD" }),
-        );
+        expect(globalThis.fetch).toHaveBeenCalledWith("https://ghcr.io/v2/scope/app/manifests/1.0.0", expect.objectContaining({ method: "HEAD" }));
     });
 
     it("returns undefined when HEAD is 404", async () => {
@@ -398,11 +382,13 @@ describe("containerActions.publish", () => {
         const { calls, runner } = buildRunner([]);
         const actions = new ContainerActions();
 
-        const result = await actions.publish(buildContext({
-            dryRun: true,
-            perPackageConfig: { containerImage: "ghcr.io/scope/app" },
-            runner,
-        }));
+        const result = await actions.publish(
+            buildContext({
+                dryRun: true,
+                perPackageConfig: { containerImage: "ghcr.io/scope/app" },
+                runner,
+            }),
+        );
 
         expect(result.published).toBe(true);
         expect(result.output).toContain("[dry-run / container]");
@@ -417,10 +403,12 @@ describe("containerActions.publish", () => {
         const { calls, runner } = buildRunner([]);
         const actions = new ContainerActions();
 
-        const result = await actions.publish(buildContext({
-            perPackageConfig: { containerImage: "ghcr.io/scope/app" },
-            runner,
-        }));
+        const result = await actions.publish(
+            buildContext({
+                perPackageConfig: { containerImage: "ghcr.io/scope/app" },
+                runner,
+            }),
+        );
 
         expect(result.alreadyPublished).toBe(true);
         expect(result.published).toBe(false);
@@ -433,10 +421,12 @@ describe("containerActions.publish", () => {
         const { calls, runner } = buildRunner([{ exitCode: 0 }]);
         const actions = new ContainerActions();
 
-        const result = await actions.publish(buildContext({
-            perPackageConfig: { containerImage: "ghcr.io/scope/app" },
-            runner,
-        }));
+        const result = await actions.publish(
+            buildContext({
+                perPackageConfig: { containerImage: "ghcr.io/scope/app" },
+                runner,
+            }),
+        );
 
         expect(result.published).toBe(true);
         expect(calls).toHaveLength(1);
@@ -455,13 +445,15 @@ describe("containerActions.publish", () => {
         ]);
         const actions = new ContainerActions();
 
-        const result = await actions.publish(buildContext({
-            perPackageConfig: {
-                containerImage: "ghcr.io/scope/app",
-                containerSigning: "cosign",
-            } as never,
-            runner,
-        }));
+        const result = await actions.publish(
+            buildContext({
+                perPackageConfig: {
+                    containerImage: "ghcr.io/scope/app",
+                    containerSigning: "cosign",
+                } as never,
+                runner,
+            }),
+        );
 
         expect(result.published).toBe(true);
         expect(result.output).toContain("cosign");
@@ -476,10 +468,14 @@ describe("containerActions.publish", () => {
         const { runner } = buildRunner([{ exitCode: 1, stderr: "unauthorized: authentication required" }]);
         const actions = new ContainerActions();
 
-        await expect(actions.publish(buildContext({
-            perPackageConfig: { containerImage: "ghcr.io/scope/app" },
-            runner,
-        }))).rejects.toMatchObject({
+        await expect(
+            actions.publish(
+                buildContext({
+                    perPackageConfig: { containerImage: "ghcr.io/scope/app" },
+                    runner,
+                }),
+            ),
+        ).rejects.toMatchObject({
             code: "PUBLISH_FAILED",
             hint: expect.stringContaining("docker login"),
         });
@@ -494,13 +490,17 @@ describe("containerActions.publish", () => {
         ]);
         const actions = new ContainerActions();
 
-        await expect(actions.publish(buildContext({
-            perPackageConfig: {
-                containerImage: "ghcr.io/scope/app",
-                containerSigning: "cosign",
-            } as never,
-            runner,
-        }))).rejects.toMatchObject({
+        await expect(
+            actions.publish(
+                buildContext({
+                    perPackageConfig: {
+                        containerImage: "ghcr.io/scope/app",
+                        containerSigning: "cosign",
+                    } as never,
+                    runner,
+                }),
+            ),
+        ).rejects.toMatchObject({
             code: "PUBLISH_FAILED",
             message: expect.stringContaining("cosign"),
         });

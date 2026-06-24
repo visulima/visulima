@@ -81,7 +81,7 @@ export const extractPackFilesFromRaw = (raw: unknown): string[] | undefined => {
         return undefined;
     }
 
-    const { files } = (candidate as { files?: RawPackFileEntry[] });
+    const { files } = candidate as { files?: RawPackFileEntry[] };
 
     if (!Array.isArray(files)) {
         return undefined;
@@ -121,17 +121,19 @@ const DEFAULT_SECRET_IGNORES = ["**/*.test.*", "**/__tests__/**", "**/__fixtures
 export const runPackSecretScan = async (context: PackSecretScanContext): Promise<GuardResult> => {
     const findings: GuardFinding[] = [];
 
-    let scanFiles: typeof import("@visulima/secret-scanner")["scanFiles"];
+    let scanFiles: (typeof import("@visulima/secret-scanner"))["scanFiles"];
 
     try {
         ({ scanFiles } = await import("@visulima/secret-scanner"));
     } catch {
         return {
-            findings: [{
-                hint: "pnpm add -D @visulima/secret-scanner, or set publish.guards.packSecretScan: false.",
-                id: "packSecretScan:dep-missing",
-                message: "publish.guards.packSecretScan is enabled but @visulima/secret-scanner is not installed.",
-            }],
+            findings: [
+                {
+                    hint: "pnpm add -D @visulima/secret-scanner, or set publish.guards.packSecretScan: false.",
+                    id: "packSecretScan:dep-missing",
+                    message: "publish.guards.packSecretScan is enabled but @visulima/secret-scanner is not installed.",
+                },
+            ],
             gate: "packSecretScan",
             passed: false,
         };
@@ -168,11 +170,7 @@ export const runPackSecretScan = async (context: PackSecretScanContext): Promise
 
 const isExportsLeaf = (value: unknown): value is string => typeof value === "string";
 
-const collectExportLeaves = (
-    node: unknown,
-    keyPath: string,
-    out: { keyPath: string; target: string }[],
-): void => {
+const collectExportLeaves = (node: unknown, keyPath: string, out: { keyPath: string; target: string }[]): void => {
     if (node === null) {
         return;
     }
@@ -326,10 +324,7 @@ const resolveLifecycleConfig = (setting: PublishGuardsConfig["lifecycleScripts"]
  * allow-list entry. Defaults to `strict` when enabled because the consumer
  * runs whatever lands here on their own machine.
  */
-export const runLifecycleScripts = (
-    manifest: PackageManifest,
-    setting: PublishGuardsConfig["lifecycleScripts"],
-): GuardResult => {
+export const runLifecycleScripts = (manifest: PackageManifest, setting: PublishGuardsConfig["lifecycleScripts"]): GuardResult => {
     const findings: GuardFinding[] = [];
     const config = resolveLifecycleConfig(setting);
 
@@ -380,11 +375,7 @@ const AUDIT_TIMEOUT_MS = 90_000;
  * meets or exceeds the configured threshold. Skipped when `setting` is
  * `"off"` or undefined.
  */
-export const runRuntimeAudit = async (
-    pkgDir: string,
-    runner: CommandRunner,
-    setting: PublishGuardsConfig["audit"],
-): Promise<GuardResult> => {
+export const runRuntimeAudit = async (pkgDir: string, runner: CommandRunner, setting: PublishGuardsConfig["audit"]): Promise<GuardResult> => {
     const findings: GuardFinding[] = [];
 
     if (setting === undefined || setting === "off") {
@@ -405,18 +396,17 @@ export const runRuntimeAudit = async (
     let result: Awaited<ReturnType<CommandRunner["run"]>>;
 
     try {
-        const raced = await Promise.race([
-            runner.run("npm", ["audit", "--omit=dev", "--json"], { cwd: pkgDir, silent: true }),
-            timeout,
-        ]);
+        const raced = await Promise.race([runner.run("npm", ["audit", "--omit=dev", "--json"], { cwd: pkgDir, silent: true }), timeout]);
 
         if (raced === auditTimedOut) {
             return {
-                findings: [{
-                    hint: "Network or registry outage — re-run later, or set publish.guards.audit: \"off\".",
-                    id: "audit:timeout",
-                    message: `\`npm audit\` exceeded ${AUDIT_TIMEOUT_MS}ms and was aborted.`,
-                }],
+                findings: [
+                    {
+                        hint: "Network or registry outage — re-run later, or set publish.guards.audit: \"off\".",
+                        id: "audit:timeout",
+                        message: `\`npm audit\` exceeded ${AUDIT_TIMEOUT_MS}ms and was aborted.`,
+                    },
+                ],
                 gate: "audit",
                 passed: false,
             };
@@ -437,11 +427,13 @@ export const runRuntimeAudit = async (
         parsed = JSON.parse(result.stdout) as NpmAuditOutput;
     } catch {
         return {
-            findings: [{
-                hint: result.stderr.trim() || "Re-run npm audit manually to inspect.",
-                id: "audit:parse",
-                message: `Could not parse \`npm audit\` output for ${pkgDir}.`,
-            }],
+            findings: [
+                {
+                    hint: result.stderr.trim() || "Re-run npm audit manually to inspect.",
+                    id: "audit:parse",
+                    message: `Could not parse \`npm audit\` output for ${pkgDir}.`,
+                },
+            ],
             gate: "audit",
             passed: false,
         };
@@ -562,17 +554,20 @@ export const runPublishGuards = async (context: RunGuardsContext): Promise<RunGu
     // gate (e.g. secret-scanner I/O error, missing `npm` binary in audit)
     // doesn't fail-fast the whole publish — callers expect a structured
     // RunGuardsResult, not an opaque rejection.
-    const isolate = (gate: keyof PublishGuardsConfig, promise: Promise<GuardResult>): Promise<GuardResult> => promise.catch((error: unknown): GuardResult => {
-        return {
-            findings: [{
-                hint: "Re-run with --debug to capture the stack, or disable this gate.",
-                id: `${gate}:internal-error`,
-                message: `Guard "${gate}" threw: ${error instanceof Error ? error.message : String(error)}`,
-            }],
-            gate,
-            passed: false,
-        };
-    });
+    const isolate = (gate: keyof PublishGuardsConfig, promise: Promise<GuardResult>): Promise<GuardResult> =>
+        promise.catch((error: unknown): GuardResult => {
+            return {
+                findings: [
+                    {
+                        hint: "Re-run with --debug to capture the stack, or disable this gate.",
+                        id: `${gate}:internal-error`,
+                        message: `Guard "${gate}" threw: ${error instanceof Error ? error.message : String(error)}`,
+                    },
+                ],
+                gate,
+                passed: false,
+            };
+        });
 
     if (config.packSecretScan) {
         const ignore = typeof config.packSecretScan === "object" ? config.packSecretScan.ignore : undefined;
@@ -598,9 +593,7 @@ export const runPublishGuards = async (context: RunGuardsContext): Promise<RunGu
         results.push(lifecycleResult);
     }
 
-    const lifecycleMode = typeof config.lifecycleScripts === "string"
-        ? config.lifecycleScripts
-        : config.lifecycleScripts?.mode ?? "off";
+    const lifecycleMode = typeof config.lifecycleScripts === "string" ? config.lifecycleScripts : (config.lifecycleScripts?.mode ?? "off");
     const blockers: GuardResult[] = [];
     const warnings: GuardResult[] = [];
 

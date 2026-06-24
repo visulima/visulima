@@ -97,12 +97,14 @@ describe("extra-files: applyExtraFilesForRelease", () => {
             join(cwd, "packages", "a"),
             "1.0.0",
             "@scope/a",
-            [{
-                flags: "m",
-                path: "config.toml",
-                replace: "$1{version}$3",
-                search: "^(version = \")([^\"]+)(\")",
-            }],
+            [
+                {
+                    flags: "m",
+                    path: "config.toml",
+                    replace: "$1{version}$3",
+                    search: "^(version = \")([^\"]+)(\")",
+                },
+            ],
             [],
         );
 
@@ -265,19 +267,9 @@ describe("extra-files: annotation-comment mode", () => {
     it("replaces the semver on the same line when the marker is inline", async () => {
         expect.hasAssertions();
 
-        await writeFile(
-            join(cwd, "src.ts"),
-            "export const VERSION = \"0.1.0\"; // x-release-please-version\nexport const OTHER = \"1.0.0\";\n",
-        );
+        await writeFile(join(cwd, "src.ts"), "export const VERSION = \"0.1.0\"; // x-release-please-version\nexport const OTHER = \"1.0.0\";\n");
 
-        const result = await applyExtraFilesForRelease(
-            cwd,
-            join(cwd, "packages", "a"),
-            "1.2.3",
-            "@scope/a",
-            [{ path: "src.ts", type: "annotation" }],
-            [],
-        );
+        const result = await applyExtraFilesForRelease(cwd, join(cwd, "packages", "a"), "1.2.3", "@scope/a", [{ path: "src.ts", type: "annotation" }], []);
 
         expect(result.writes).toHaveLength(1);
         expect(result.writes[0]!.content).toContain("VERSION = \"1.2.3\";");
@@ -288,19 +280,9 @@ describe("extra-files: annotation-comment mode", () => {
     it("replaces the semver on the next line when the marker sits on its own line (Dockerfile style)", async () => {
         expect.hasAssertions();
 
-        await writeFile(
-            join(cwd, "Dockerfile"),
-            "FROM node:18-alpine\n# x-release-please-version\nENV APP_VERSION=\"0.1.0\"\n",
-        );
+        await writeFile(join(cwd, "Dockerfile"), "FROM node:18-alpine\n# x-release-please-version\nENV APP_VERSION=\"0.1.0\"\n");
 
-        const result = await applyExtraFilesForRelease(
-            cwd,
-            join(cwd, "packages", "a"),
-            "2.0.0",
-            "@scope/a",
-            [{ path: "Dockerfile", type: "annotation" }],
-            [],
-        );
+        const result = await applyExtraFilesForRelease(cwd, join(cwd, "packages", "a"), "2.0.0", "@scope/a", [{ path: "Dockerfile", type: "annotation" }], []);
 
         expect(result.writes).toHaveLength(1);
         expect(result.writes[0]!.content).toContain("APP_VERSION=\"2.0.0\"");
@@ -312,10 +294,7 @@ describe("extra-files: annotation-comment mode", () => {
     it("honours a custom marker via `marker:` option", async () => {
         expect.hasAssertions();
 
-        await writeFile(
-            join(cwd, "CUSTOM.txt"),
-            "foo = \"0.1.0\" // x-release-vis-version\n",
-        );
+        await writeFile(join(cwd, "CUSTOM.txt"), "foo = \"0.1.0\" // x-release-vis-version\n");
 
         const result = await applyExtraFilesForRelease(
             cwd,
@@ -354,14 +333,7 @@ describe("extra-files: annotation-comment mode", () => {
 
         await writeFile(join(cwd, "plain.txt"), "no markers here\nversion 1.2.3\n");
 
-        const result = await applyExtraFilesForRelease(
-            cwd,
-            join(cwd, "packages", "a"),
-            "9.9.9",
-            "@scope/a",
-            [{ path: "plain.txt", type: "annotation" }],
-            [],
-        );
+        const result = await applyExtraFilesForRelease(cwd, join(cwd, "packages", "a"), "9.9.9", "@scope/a", [{ path: "plain.txt", type: "annotation" }], []);
 
         expect(result.writes).toHaveLength(0);
         expect(result.warnings[0]).toContain("not found");
@@ -373,19 +345,9 @@ describe("extra-files: annotation-comment mode", () => {
     it("warns when the marker is present but no semver is on the marked line", async () => {
         expect.hasAssertions();
 
-        await writeFile(
-            join(cwd, "weird.ts"),
-            "const NOT_A_VERSION = \"hello\"; // x-release-please-version\n",
-        );
+        await writeFile(join(cwd, "weird.ts"), "const NOT_A_VERSION = \"hello\"; // x-release-please-version\n");
 
-        const result = await applyExtraFilesForRelease(
-            cwd,
-            join(cwd, "packages", "a"),
-            "1.0.0",
-            "@scope/a",
-            [{ path: "weird.ts", type: "annotation" }],
-            [],
-        );
+        const result = await applyExtraFilesForRelease(cwd, join(cwd, "packages", "a"), "1.0.0", "@scope/a", [{ path: "weird.ts", type: "annotation" }], []);
 
         expect(result.writes).toHaveLength(0);
         expect(result.warnings.length).toBeGreaterThan(0);
@@ -397,18 +359,10 @@ describe("extra-files: annotation-comment mode", () => {
 
         await writeFile(
             join(cwd, "multi.ts"),
-            "export const A = \"0.1.0\"; // x-release-please-version\n"
-            + "export const B = \"0.1.0\"; // x-release-please-version\n",
+            "export const A = \"0.1.0\"; // x-release-please-version\nexport const B = \"0.1.0\"; // x-release-please-version\n",
         );
 
-        const result = await applyExtraFilesForRelease(
-            cwd,
-            join(cwd, "packages", "a"),
-            "2.0.0",
-            "@scope/a",
-            [{ path: "multi.ts", type: "annotation" }],
-            [],
-        );
+        const result = await applyExtraFilesForRelease(cwd, join(cwd, "packages", "a"), "2.0.0", "@scope/a", [{ path: "multi.ts", type: "annotation" }], []);
 
         expect(result.writes[0]!.content).toContain("A = \"2.0.0\"");
         expect(result.writes[0]!.content).toContain("B = \"2.0.0\"");
@@ -480,7 +434,7 @@ describe("extra-files: annotation-comment mode — anchor (M-6)", () => {
 
         expect(result.writes[0]!.content).toContain("FROM nginx:1.21.0");
         // Sanity — `2.0.0` only appears once.
-        expect((result.writes[0]!.content.match(/2\.0\.0/g) ?? [])).toHaveLength(1);
+        expect(result.writes[0]!.content.match(/2\.0\.0/g) ?? []).toHaveLength(1);
     });
 
     it("without `anchor`, the FIRST semver on the marked line wins (documents the footgun)", async () => {
@@ -498,14 +452,7 @@ describe("extra-files: annotation-comment mode — anchor (M-6)", () => {
             "ENV APP_VERSION=\"0.1.0\" BASE_TAG=\"1.21.0\" # x-release-please-version\n",
         );
 
-        const result = await applyExtraFilesForRelease(
-            cwd,
-            join(cwd, "packages", "a"),
-            "2.0.0",
-            "@scope/a",
-            [{ path: "Dockerfile", type: "annotation" }],
-            [],
-        );
+        const result = await applyExtraFilesForRelease(cwd, join(cwd, "packages", "a"), "2.0.0", "@scope/a", [{ path: "Dockerfile", type: "annotation" }], []);
 
         // First semver = APP_VERSION's 0.1.0 → 2.0.0; BASE_TAG untouched.
         expect(result.writes[0]!.content).toContain("APP_VERSION=\"2.0.0\"");

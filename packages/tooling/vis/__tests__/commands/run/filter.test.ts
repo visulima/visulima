@@ -23,7 +23,9 @@ const makeGraph = (deps: Record<string, string[]>, options: { roots?: Record<str
             type: "library",
         };
 
-        dependencies[name] = (deps[name] ?? []).map((target): ProjectGraphDependency => { return { source: name, target, type: "static" }; });
+        dependencies[name] = (deps[name] ?? []).map((target): ProjectGraphDependency => {
+            return { source: name, target, type: "static" };
+        });
     }
 
     return { dependencies, nodes };

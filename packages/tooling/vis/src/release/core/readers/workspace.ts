@@ -59,28 +59,30 @@ export const createVisWorkspaceReader = (options: VisWorkspaceReaderOptions): Pa
             const { workspace } = discoverWorkspace(options.cwd, options.config ?? {});
             const { projectType, tag } = options;
 
-            const settled = await Promise.all(Object.values(workspace.projects).map(async (project) => {
-                if (tag && !project.tags?.includes(tag)) {
-                    return undefined;
-                }
+            const settled = await Promise.all(
+                Object.values(workspace.projects).map(async (project) => {
+                    if (tag && !project.tags?.includes(tag)) {
+                        return undefined;
+                    }
 
-                if (projectType && project.projectType !== projectType) {
-                    return undefined;
-                }
+                    if (projectType && project.projectType !== projectType) {
+                        return undefined;
+                    }
 
-                const projectRoot = isAbsolute(project.root) ? project.root : join(options.cwd, project.root);
-                const manifestPath = join(projectRoot, "package.json");
+                    const projectRoot = isAbsolute(project.root) ? project.root : join(options.cwd, project.root);
+                    const manifestPath = join(projectRoot, "package.json");
 
-                try {
-                    const content = await readFile(manifestPath, "utf8");
-                    const manifest = JSON.parse(content) as PackageManifest;
+                    try {
+                        const content = await readFile(manifestPath, "utf8");
+                        const manifest = JSON.parse(content) as PackageManifest;
 
-                    return { manifest, manifestPath };
-                } catch {
-                // Pure vis projects without a package.json (e.g. e2e harnesses) are skipped.
-                    return undefined;
-                }
-            }));
+                        return { manifest, manifestPath };
+                    } catch {
+                        // Pure vis projects without a package.json (e.g. e2e harnesses) are skipped.
+                        return undefined;
+                    }
+                }),
+            );
 
             return settled.filter((entry): entry is { manifest: PackageManifest; manifestPath: string } => entry !== undefined);
         },

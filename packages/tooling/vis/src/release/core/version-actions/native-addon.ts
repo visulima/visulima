@@ -72,13 +72,10 @@ const getGithubActionsIdToken = async (env: NodeJS.ProcessEnv): Promise<string |
 };
 
 const exchangeOidcTokenForPackage = async (packageName: string, idToken: string): Promise<string | undefined> => {
-    const response = await fetch(
-        `${OFFICIAL_REGISTRY}-/npm/v1/oidc/token/exchange/package/${encodeURIComponent(packageName)}`,
-        {
-            headers: { Authorization: `Bearer ${idToken}` },
-            method: "POST",
-        },
-    );
+    const response = await fetch(`${OFFICIAL_REGISTRY}-/npm/v1/oidc/token/exchange/package/${encodeURIComponent(packageName)}`, {
+        headers: { Authorization: `Bearer ${idToken}` },
+        method: "POST",
+    });
 
     if (!response.ok) {
         return undefined;
@@ -125,7 +122,9 @@ export class NativeAddonVersionActions extends VersionActions {
             assertValidPackageName(context.pkg.name);
 
             const { execFileSync } = await import("node:child_process");
-            const out = execFileSync("npm", ["view", context.pkg.name, "version"], { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+            const out = execFileSync("npm", ["view", context.pkg.name, "version"], { stdio: ["ignore", "pipe", "ignore"] })
+                .toString()
+                .trim();
 
             return out || undefined;
         } catch {
@@ -165,43 +164,47 @@ export class NativeAddonVersionActions extends VersionActions {
 
         try {
             // 2a. Bump every platform package.json in parallel (8 small fs writes).
-            await Promise.all(platforms.map(async (platform) => {
-                const manifestPath = join(context.pkg.dir, "npm", platform, "package.json");
-                const original = await readFile(manifestPath, "utf8");
+            await Promise.all(
+                platforms.map(async (platform) => {
+                    const manifestPath = join(context.pkg.dir, "npm", platform, "package.json");
+                    const original = await readFile(manifestPath, "utf8");
 
-                platformOriginals.set(manifestPath, original);
+                    platformOriginals.set(manifestPath, original);
 
-                const manifest = JSON.parse(original) as PackageManifest;
+                    const manifest = JSON.parse(original) as PackageManifest;
 
-                manifest.version = parentNewVersion;
+                    manifest.version = parentNewVersion;
 
-                await writeFile(manifestPath, `${JSON.stringify(manifest, null, 4)}\n`);
-            }));
+                    await writeFile(manifestPath, `${JSON.stringify(manifest, null, 4)}\n`);
+                }),
+            );
 
             // 2b. Resolve OIDC tokens for every platform in parallel (8
             // independent token-exchange round-trips to npmjs.org). Was the
             // dominant wall-time cost — typically ~400ms each, so 8×400ms
             // sequential drops to ~400ms total.
             const { execFileSync } = await import("node:child_process");
-            const platformResolved = await Promise.all(platforms.map(async (platform) => {
-                const platformDir = join(context.pkg.dir, "npm", platform);
-                const manifestPath = join(platformDir, "package.json");
-                const manifestRaw = await readFile(manifestPath, "utf8");
-                const manifest = JSON.parse(manifestRaw) as PackageManifest;
+            const platformResolved = await Promise.all(
+                platforms.map(async (platform) => {
+                    const platformDir = join(context.pkg.dir, "npm", platform);
+                    const manifestPath = join(platformDir, "package.json");
+                    const manifestRaw = await readFile(manifestPath, "utf8");
+                    const manifest = JSON.parse(manifestRaw) as PackageManifest;
 
-                assertValidPackageName(manifest.name);
+                    assertValidPackageName(manifest.name);
 
-                const auth = await resolveAuthToken(manifest.name, idToken, env);
-                const tempDir = mkdtempSync(join(tmpdir(), "vis-release-napi-"));
+                    const auth = await resolveAuthToken(manifest.name, idToken, env);
+                    const tempDir = mkdtempSync(join(tmpdir(), "vis-release-napi-"));
 
-                tempDirs.push(tempDir);
+                    tempDirs.push(tempDir);
 
-                const npmrcPath = join(tempDir, ".npmrc");
+                    const npmrcPath = join(tempDir, ".npmrc");
 
-                writeNpmrc(npmrcPath, auth.token);
+                    writeNpmrc(npmrcPath, auth.token);
 
-                return { manifest, npmrcPath, platform, platformDir };
-            }));
+                    return { manifest, npmrcPath, platform, platformDir };
+                }),
+            );
 
             // 3. Pre-publish guards on every platform package. Platform
             // packages ship binaries, so this is precisely where malicious
@@ -218,11 +221,7 @@ export class NativeAddonVersionActions extends VersionActions {
                     // List files via npm pack --dry-run --json so the
                     // packSecretScan / exportsExist gates see the same
                     // file set the registry will receive.
-                    const listing = execFileSync(
-                        "npm",
-                        ["pack", "--dry-run", "--json"],
-                        { cwd: platformDir, stdio: ["ignore", "pipe", "ignore"] },
-                    ).toString();
+                    const listing = execFileSync("npm", ["pack", "--dry-run", "--json"], { cwd: platformDir, stdio: ["ignore", "pipe", "ignore"] }).toString();
                     let packFiles: string[] = [];
 
                     try {
@@ -273,11 +272,7 @@ export class NativeAddonVersionActions extends VersionActions {
 
             for (const { manifest, npmrcPath, platformDir } of platformResolved) {
                 try {
-                    execFileSync(
-                        "npm",
-                        publishArgs(platformDir, npmrcPath),
-                        { env: { ...env, NPM_CONFIG_USERCONFIG: npmrcPath }, stdio: "inherit" },
-                    );
+                    execFileSync("npm", publishArgs(platformDir, npmrcPath), { env: { ...env, NPM_CONFIG_USERCONFIG: npmrcPath }, stdio: "inherit" });
                 } catch (error) {
                     // Already-published is OK — common on idempotent re-runs.
                     const errMsg = (error as Error).message;
@@ -334,11 +329,11 @@ export class NativeAddonVersionActions extends VersionActions {
                 // `npm pack --json` emits the tarball filename; we then run
                 // `npm publish <tarball>` instead of `npm publish <dir>` so
                 // the publish bytes match the hashed bytes exactly.
-                const packOutput = execFileSync(
-                    "npm",
-                    ["pack", "--pack-destination", tempDir, "--json"],
-                    { cwd: context.pkg.dir, env, stdio: ["ignore", "pipe", "ignore"] },
-                ).toString();
+                const packOutput = execFileSync("npm", ["pack", "--pack-destination", tempDir, "--json"], {
+                    cwd: context.pkg.dir,
+                    env,
+                    stdio: ["ignore", "pipe", "ignore"],
+                }).toString();
 
                 let parentTarball: string | undefined;
 

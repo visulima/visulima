@@ -82,9 +82,7 @@ describe("github formatter", () => {
 
         const result = await fmt(
             mkCtx({
-                changeFiles: [
-                    { body: "Closes #42 and fixes #101", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } },
-                ],
+                changeFiles: [{ body: "Closes #42 and fixes #101", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
             }),
         );
 
@@ -202,9 +200,7 @@ describe("github formatter", () => {
 
         const result = await fmt(
             mkCtx({
-                changeFiles: [
-                    { body: "Closes #42", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } },
-                ],
+                changeFiles: [{ body: "Closes #42", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
             }),
         );
 

@@ -246,15 +246,15 @@ slack: { webhook: "${MATTERMOST_WEBHOOK_URL}" },
 
 Every string field that runs through the template engine (`title`, header values, every string leaf in a webhook `body`) supports these tokens.
 
-| Token            | Expands to                                          | Example                                  |
-| ---------------- | --------------------------------------------------- | ---------------------------------------- |
-| `{count}`        | Number of published packages                        | `2`                                      |
-| `{packages}`     | Comma-separated `name@version` list                 | `@scope/a@1.0.0, @scope/b@2.1.0`         |
-| `{firstName}`    | First package's name (handy for single-pkg waves)   | `@scope/a`                               |
-| `{firstVersion}` | First package's version                             | `1.0.0`                                  |
-| `{channel}`      | Active channel name (`latest`, `alpha`, …)          | `latest`                                 |
-| `{repo}`         | Repo slug (`owner/name`)                            | `foo/bar`                                |
-| `{date}`         | ISO date (`YYYY-MM-DD`) of the wave completion      | `2026-05-22`                             |
+| Token            | Expands to                                        | Example                          |
+| ---------------- | ------------------------------------------------- | -------------------------------- |
+| `{count}`        | Number of published packages                      | `2`                              |
+| `{packages}`     | Comma-separated `name@version` list               | `@scope/a@1.0.0, @scope/b@2.1.0` |
+| `{firstName}`    | First package's name (handy for single-pkg waves) | `@scope/a`                       |
+| `{firstVersion}` | First package's version                           | `1.0.0`                          |
+| `{channel}`      | Active channel name (`latest`, `alpha`, …)        | `latest`                         |
+| `{repo}`         | Repo slug (`owner/name`)                          | `foo/bar`                        |
+| `{date}`         | ISO date (`YYYY-MM-DD`) of the wave completion    | `2026-05-22`                     |
 
 Unset optional fields (`{channel}` / `{repo}` when not detected) expand to the empty string. Non-string values passed by misconfiguration (a number, a boolean) are coerced via `String()` rather than throwing.
 
@@ -327,9 +327,7 @@ const alreadyNotified = new Set(state.notified ?? []);
 
 // Filter this wave's published[] down to only the entries that have not
 // been notified yet (keyed by `name@version`).
-const notifiable = result.published.filter(
-    (p) => !alreadyNotified.has(`${p.name}@${p.version}`),
-);
+const notifiable = result.published.filter((p) => !alreadyNotified.has(`${p.name}@${p.version}`));
 
 if (notifiable.length === 0) {
     // Everything in this wave was notified on a prior run. Skip dispatch entirely.
@@ -404,6 +402,6 @@ Exits 0 only when every dispatched channel succeeds. Use this in a one-off CI jo
 
 ## When NOT to use notifications
 
-- **You want to gate the release on chat approval.** Notifications fire *after* publish. They cannot block. For human-in-the-loop approval, see [staged publishing](./release-staged-publishing.mdx).
+- **You want to gate the release on chat approval.** Notifications fire _after_ publish. They cannot block. For human-in-the-loop approval, see [staged publishing](./release-staged-publishing.mdx).
 - **You need delivery guarantees.** Webhooks are best-effort. A 502 from Slack is logged and dropped (after the per-channel try/catch). If your audit requirements demand a durable record, write a custom channel that persists to your own datastore before returning success.
 - **You want PR-time previews of what would ship.** Use the `vis release plan` command and the [PR sticky-comment workflow](./release-ci.mdx#workflow-c-pr-sticky-comment) — those fire **before** publish, not after.

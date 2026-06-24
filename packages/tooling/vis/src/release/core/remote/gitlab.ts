@@ -112,10 +112,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
     /** Latch so the not-supported warning only prints once per process. */
     private static recentReleasesWarned = false;
 
-    public async listRecentReleases(
-        _runner: CommandRunner,
-        _options: ListRecentReleasesOptions,
-    ): Promise<RecentRelease[]> {
+    public async listRecentReleases(_runner: CommandRunner, _options: ListRecentReleasesOptions): Promise<RecentRelease[]> {
         if (!GitlabRemoteClient.recentReleasesWarned) {
             GitlabRemoteClient.recentReleasesWarned = true;
             // eslint-disable-next-line no-console
@@ -160,17 +157,8 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         return { cwd, env, silent: true };
     }
 
-    private async listMrNotes(
-        runner: CommandRunner,
-        cwd: string,
-        repo: string,
-        mrIid: number,
-    ): Promise<ExistingNote[]> {
-        const result = await runner.run(
-            "glab",
-            ["api", `projects/${encodeProjectPath(repo)}/merge_requests/${mrIid}/notes`, "--paginate"],
-            this.runOpts(cwd),
-        );
+    private async listMrNotes(runner: CommandRunner, cwd: string, repo: string, mrIid: number): Promise<ExistingNote[]> {
+        const result = await runner.run("glab", ["api", `projects/${encodeProjectPath(repo)}/merge_requests/${mrIid}/notes`, "--paginate"], this.runOpts(cwd));
 
         if (result.exitCode !== 0) {
             return [];
@@ -183,7 +171,9 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
             // they aren't comments we want to treat as sticky candidates.
             return parsed
                 .filter((n) => typeof n.body === "string" && n.system !== true)
-                .map((n) => { return { body: n.body ?? "", id: n.id }; });
+                .map((n) => {
+                    return { body: n.body ?? "", id: n.id };
+                });
         } catch {
             return [];
         }
@@ -197,13 +187,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
      * itself (deletion of a release detaches but doesn't purge the
      * package). Two-step PUT-then-link.
      */
-    private async uploadGenericPackage(
-        runner: CommandRunner,
-        cwd: string,
-        repo: string,
-        tag: string,
-        asset: GenericPackageAsset,
-    ): Promise<void> {
+    private async uploadGenericPackage(runner: CommandRunner, cwd: string, repo: string, tag: string, asset: GenericPackageAsset): Promise<void> {
         const project = encodeProjectPath(repo);
         const filename = basename(asset.path);
         const packageName = asset.packageName ?? repo.split("/").pop() ?? "release";
@@ -211,11 +195,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         const uploadPath = `projects/${project}/packages/generic/${encodeURIComponent(packageName)}/${encodeURIComponent(packageVersion)}/${encodeURIComponent(filename)}`;
 
         // PUT the file. `glab api` accepts `--input <path>` for body uploads.
-        const upload = await runner.run(
-            "glab",
-            ["api", "-X", "PUT", uploadPath, "--input", asset.path],
-            this.runOpts(cwd),
-        );
+        const upload = await runner.run("glab", ["api", "-X", "PUT", uploadPath, "--input", asset.path], this.runOpts(cwd));
 
         if (upload.exitCode !== 0) {
             return;
@@ -280,10 +260,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         return Number.isNaN(n) ? undefined : n;
     }
 
-    public async upsertStickyComment(
-        runner: CommandRunner,
-        options: UpsertStickyCommentOptions,
-    ): Promise<UpsertCommentResult | undefined> {
+    public async upsertStickyComment(runner: CommandRunner, options: UpsertStickyCommentOptions): Promise<UpsertCommentResult | undefined> {
         const notes = await this.listMrNotes(runner, options.cwd, options.repo, options.issueNumber);
         const existing = notes.find((n) => n.body.includes(options.marker));
         const fullBody = options.body.includes(options.marker) ? options.body : `${options.marker}\n${options.body}`;
@@ -292,14 +269,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         if (existing) {
             const result = await runner.run(
                 "glab",
-                [
-                    "api",
-                    "-X",
-                    "PUT",
-                    `projects/${project}/merge_requests/${options.issueNumber}/notes/${existing.id}`,
-                    "-f",
-                    `body=${fullBody}`,
-                ],
+                ["api", "-X", "PUT", `projects/${project}/merge_requests/${options.issueNumber}/notes/${existing.id}`, "-f", `body=${fullBody}`],
                 this.runOpts(options.cwd),
             );
 
@@ -308,14 +278,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
 
         const result = await runner.run(
             "glab",
-            [
-                "api",
-                "-X",
-                "POST",
-                `projects/${project}/merge_requests/${options.issueNumber}/notes`,
-                "-f",
-                `body=${fullBody}`,
-            ],
+            ["api", "-X", "POST", `projects/${project}/merge_requests/${options.issueNumber}/notes`, "-f", `body=${fullBody}`],
             this.runOpts(options.cwd),
         );
 
@@ -332,25 +295,12 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         }
     }
 
-    public async createRelease(
-        runner: CommandRunner,
-        options: CreateReleaseOptions,
-    ): Promise<CreateReleaseResult | undefined> {
+    public async createRelease(runner: CommandRunner, options: CreateReleaseOptions): Promise<CreateReleaseResult | undefined> {
         // GitLab Releases v4 doesn't have a native draft flag — `options.draft`
         // is preserved for interface symmetry but ignored here. Operators
         // wanting drafts can delete the release manually.
         const { genericPackages, links, uploads } = partitionAssets(options.assets);
-        const args = [
-            "release",
-            "create",
-            options.tag,
-            "--repo",
-            options.repo,
-            "--name",
-            options.title,
-            "--notes",
-            options.body,
-        ];
+        const args = ["release", "create", options.tag, "--repo", options.repo, "--name", options.title, "--notes", options.body];
 
         if (options.milestones && options.milestones.length > 0) {
             for (const milestone of options.milestones) {
@@ -368,11 +318,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         // doesn't wipe the already-created release. Soft-fail handled by the
         // orchestrator wrapper.
         if (uploads.length > 0) {
-            await runner.run(
-                "glab",
-                ["release", "upload", options.tag, "--repo", options.repo, ...uploads],
-                this.runOpts(options.cwd),
-            );
+            await runner.run("glab", ["release", "upload", options.tag, "--repo", options.repo, ...uploads], this.runOpts(options.cwd));
         }
 
         // Link-only assets (e.g. container image URLs) go through the
@@ -406,11 +352,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
 
         // glab release create's stdout shape varies between versions; ask the
         // API for the canonical URL instead.
-        const view = await runner.run(
-            "glab",
-            ["api", `projects/${project}/releases/${encodeURIComponent(options.tag)}`],
-            this.runOpts(options.cwd),
-        );
+        const view = await runner.run("glab", ["api", `projects/${project}/releases/${encodeURIComponent(options.tag)}`], this.runOpts(options.cwd));
 
         try {
             // GitLab API uses snake_case + `_links` HAL field — not a private prop.
@@ -435,32 +377,19 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         const project = encodeProjectPath(options.repo);
         const result = await runner.run(
             "glab",
-            [
-                "api",
-                "-X",
-                "PUT",
-                `projects/${project}/issues/${options.issueNumber}`,
-                "-f",
-                `add_labels=${options.labels.join(",")}`,
-            ],
+            ["api", "-X", "PUT", `projects/${project}/issues/${options.issueNumber}`, "-f", `add_labels=${options.labels.join(",")}`],
             this.runOpts(options.cwd),
         );
 
         return result.exitCode === 0;
     }
 
-    public async upsertIssue(
-        runner: CommandRunner,
-        options: UpsertIssueOptions,
-    ): Promise<UpsertIssueResult | undefined> {
+    public async upsertIssue(runner: CommandRunner, options: UpsertIssueOptions): Promise<UpsertIssueResult | undefined> {
         const project = encodeProjectPath(options.repo);
         // Search open issues by title-marker via REST search.
         const list = await runner.run(
             "glab",
-            [
-                "api",
-                `projects/${project}/issues?state=opened&search=${encodeURIComponent(options.marker)}&in=title`,
-            ],
+            ["api", `projects/${project}/issues?state=opened&search=${encodeURIComponent(options.marker)}&in=title`],
             this.runOpts(options.cwd),
         );
 
@@ -507,9 +436,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
 
                     const editResult = await runner.run("glab", editArgs, this.runOpts(options.cwd));
 
-                    return editResult.exitCode === 0
-                        ? { created: false, number: existing.iid, url: existing.web_url }
-                        : undefined;
+                    return editResult.exitCode === 0 ? { created: false, number: existing.iid, url: existing.web_url } : undefined;
                 }
             } catch {
                 // fall through to create
@@ -518,17 +445,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
 
         // Use `glab issue create` for the create path — friendlier flag set
         // than raw API and handles labels natively.
-        const createArgs = [
-            "issue",
-            "create",
-            "--repo",
-            options.repo,
-            "--title",
-            options.title,
-            "--description",
-            options.body,
-            "--yes",
-        ];
+        const createArgs = ["issue", "create", "--repo", options.repo, "--title", options.title, "--description", options.body, "--yes"];
 
         if (options.labels && options.labels.length > 0) {
             createArgs.push("--label", options.labels.join(","));
@@ -547,9 +464,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         const trimmed = create.stdout.trim();
         const match = /\/issues\/(\d+)/.exec(trimmed);
 
-        return match
-            ? { created: true, number: Number.parseInt(match[1] ?? "0", 10), url: trimmed }
-            : undefined;
+        return match ? { created: true, number: Number.parseInt(match[1] ?? "0", 10), url: trimmed } : undefined;
     }
 
     public async closeIssue(runner: CommandRunner, options: CloseIssueOptions): Promise<boolean> {
@@ -558,31 +473,17 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
 
             await runner.run(
                 "glab",
-                [
-                    "api",
-                    "-X",
-                    "POST",
-                    `projects/${project}/issues/${options.issueNumber}/notes`,
-                    "-f",
-                    `body=${options.closingComment}`,
-                ],
+                ["api", "-X", "POST", `projects/${project}/issues/${options.issueNumber}/notes`, "-f", `body=${options.closingComment}`],
                 this.runOpts(options.cwd),
             );
         }
 
-        const result = await runner.run(
-            "glab",
-            ["issue", "close", String(options.issueNumber), "--repo", options.repo],
-            this.runOpts(options.cwd),
-        );
+        const result = await runner.run("glab", ["issue", "close", String(options.issueNumber), "--repo", options.repo], this.runOpts(options.cwd));
 
         return result.exitCode === 0;
     }
 
-    public async upsertPullRequest(
-        runner: CommandRunner,
-        options: UpsertPullRequestOptions,
-    ): Promise<UpsertPullRequestResult | undefined> {
+    public async upsertPullRequest(runner: CommandRunner, options: UpsertPullRequestOptions): Promise<UpsertPullRequestResult | undefined> {
         const project = encodeProjectPath(options.repo);
         const list = await runner.run(
             "glab",
@@ -613,9 +514,7 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
                         this.runOpts(options.cwd),
                     );
 
-                    return editResult.exitCode === 0
-                        ? { existing: true, number: parsed[0].iid, url: parsed[0].web_url }
-                        : undefined;
+                    return editResult.exitCode === 0 ? { existing: true, number: parsed[0].iid, url: parsed[0].web_url } : undefined;
                 }
             } catch {
                 // fall through to create
@@ -649,8 +548,6 @@ export class GitlabRemoteClient implements RemoteReleaseClient {
         const trimmed = create.stdout.trim();
         const match = /\/merge_requests\/(\d+)/.exec(trimmed);
 
-        return match
-            ? { existing: false, number: Number.parseInt(match[1] ?? "0", 10), url: trimmed }
-            : undefined;
+        return match ? { existing: false, number: Number.parseInt(match[1] ?? "0", 10), url: trimmed } : undefined;
     }
 }

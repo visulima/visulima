@@ -6,12 +6,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { CommandRunner } from "../../../src/release/core/package-managers/interface";
 import type { PublishContext } from "../../../src/release/core/version-actions/interface";
-import {
-    mavenCentralMetadataUrl,
-    MavenVersionActions,
-    parseMavenMetadataLatest,
-    parsePomCoordinates,
-} from "../../../src/release/core/version-actions/maven";
+import { mavenCentralMetadataUrl, MavenVersionActions, parseMavenMetadataLatest, parsePomCoordinates } from "../../../src/release/core/version-actions/maven";
 import type { WorkspacePackage } from "../../../src/release/types";
 
 /**
@@ -115,7 +110,11 @@ const buildPublishContext = (overrides: { dryRun?: boolean; newVersion?: string;
         pm: {
             id: "npm",
             minVersion: "8.0.0",
-            runner: { run: async () => { return { exitCode: 0, stderr: "", stdout: "" }; } } as CommandRunner,
+            runner: {
+                run: async () => {
+                    return { exitCode: 0, stderr: "", stdout: "" };
+                },
+            } as CommandRunner,
         } as never,
         release: {
             changeFiles: [],
@@ -202,9 +201,7 @@ describe(parseMavenMetadataLatest, () => {
 describe(mavenCentralMetadataUrl, () => {
     it("translates dotted groupId into slash path", () => {
         expect.hasAssertions();
-        expect(mavenCentralMetadataUrl("io.visulima", "vis-jvm")).toBe(
-            "https://repo1.maven.org/maven2/io/visulima/vis-jvm/maven-metadata.xml",
-        );
+        expect(mavenCentralMetadataUrl("io.visulima", "vis-jvm")).toBe("https://repo1.maven.org/maven2/io/visulima/vis-jvm/maven-metadata.xml");
     });
 });
 
@@ -627,9 +624,7 @@ describe("mavenVersionActions instance state (N-5)", () => {
             pm: { runner: {} as CommandRunner } as never,
         });
 
-        const multiModuleWarnings = writeSpy.mock.calls
-            .map((c) => String(c[0]))
-            .filter((s) => s.includes("multi-module"));
+        const multiModuleWarnings = writeSpy.mock.calls.map((c) => String(c[0])).filter((s) => s.includes("multi-module"));
 
         expect(multiModuleWarnings).toHaveLength(1);
 
@@ -665,9 +660,7 @@ describe("mavenVersionActions instance state (N-5)", () => {
             pm: { runner: {} as CommandRunner } as never,
         });
 
-        const multiModuleWarnings = writeSpy.mock.calls
-            .map((c) => String(c[0]))
-            .filter((s) => s.includes("multi-module"));
+        const multiModuleWarnings = writeSpy.mock.calls.map((c) => String(c[0])).filter((s) => s.includes("multi-module"));
 
         // One warning from actions1, one from actions2 — total of TWO.
         expect(multiModuleWarnings).toHaveLength(2);

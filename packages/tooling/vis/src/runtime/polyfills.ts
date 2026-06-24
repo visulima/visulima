@@ -370,7 +370,9 @@ const installNavigatorLocks = (): void => {
 
     const abortError = (signal: AbortSignal): unknown =>
         signal.reason
-        ?? (typeof DOMException === "function" ? new DOMException("The lock request is aborted", "AbortError") : Object.assign(new Error("The lock request is aborted"), { name: "AbortError" }));
+        ?? (typeof DOMException === "function"
+            ? new DOMException("The lock request is aborted", "AbortError")
+            : Object.assign(new Error("The lock request is aborted"), { name: "AbortError" }));
 
     const request = async (name: string, optionsOrCallback: unknown, maybeCallback?: unknown): Promise<unknown> => {
         const hasOptions = typeof optionsOrCallback !== "function";

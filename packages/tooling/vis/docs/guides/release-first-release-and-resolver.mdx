@@ -77,7 +77,7 @@ If neither does:
 // vis.config.ts
 export default {
     release: {
-        currentVersionResolver: "disk",     // default
+        currentVersionResolver: "disk", // default
         // or "registry"
         // or "git-tag"
     },
@@ -113,7 +113,7 @@ Query the live version on the package's own registry via `versionActions.readPub
 
 Use `"registry"` when:
 
-- The registry is your team's source of truth (`npm` is what shipped; the manifest is what *will* ship).
+- The registry is your team's source of truth (`npm` is what shipped; the manifest is what _will_ ship).
 - You publish from multiple branches and want vis to dynamically catch up to whichever was most recent.
 - You have an out-of-band publish flow (e.g. a manual `npm publish` for a hotfix) and want vis to pick up wherever you left off.
 
@@ -209,7 +209,7 @@ The memo does not persist across processes. A new `vis release` invocation start
 
 There is one more knob most operators never need to touch directly. The internal `skipRegistryLookup: true` option, set by **read-only commands** (`vis release plan`, `vis release status`, `vis release add`, `vis release doctor`, `vis release generate`), forces every package's resolver to `"disk"` for the duration of that invocation.
 
-The reasoning: those commands do not actually need the upstream value. `vis release add` is writing a change file — the registry has no opinion on that. `vis release plan` is showing the operator what *would* ship; it surfaces the warning text but the registry answer is not load-bearing. Probing the registry on every `vis release add` invocation would make the most common command take 5+ seconds for no reason.
+The reasoning: those commands do not actually need the upstream value. `vis release add` is writing a change file — the registry has no opinion on that. `vis release plan` is showing the operator what _would_ ship; it surfaces the warning text but the registry answer is not load-bearing. Probing the registry on every `vis release add` invocation would make the most common command take 5+ seconds for no reason.
 
 **Operators do not need to do anything.** The flag is set automatically by the command handlers; you cannot pass it on the command line and you should not need to. It is documented here only so the absence of registry probes on read-only commands does not look mysterious.
 
@@ -230,7 +230,7 @@ export default {
         // Match whatever semantic-release was writing. The defaults:
         //   single-package repo:  "v{version}"        (semantic-release default)
         //   monorepo (multi-pkg): "{name}@{version}"  (vis default; also semantic-release-monorepo default)
-        releaseTagPattern: "v{version}",   // or "{name}@{version}", or your custom pattern
+        releaseTagPattern: "v{version}", // or "{name}@{version}", or your custom pattern
     },
 };
 ```
@@ -253,7 +253,7 @@ The cleanest path:
 2. For packages where they disagree, decide which value is authoritative. Usually the registry — that is what your users see.
 3. Run a one-time backfill commit to align manifests with the registry.
 4. Configure `currentVersionResolver: "disk"` (the default — no config needed).
-5. Run `vis release version --first-release` *only if* none of those packages were ever git-tagged with a matching `releaseTagPattern` (run `vis release doctor --first-release` first to confirm).
+5. Run `vis release version --first-release` _only if_ none of those packages were ever git-tagged with a matching `releaseTagPattern` (run `vis release doctor --first-release` first to confirm).
 
 After that one bootstrap release, you are on the normal flow. `--first-release` is gone. The manifest is in sync. The default resolver does the right thing.
 
@@ -295,7 +295,7 @@ Common variant: **first release of an existing-on-npm package that was migrated 
 export default {
     release: {
         // Workspace-level default. Three valid values.
-        currentVersionResolver: "disk",   // or "registry", or "git-tag"
+        currentVersionResolver: "disk", // or "registry", or "git-tag"
 
         // Optional — the pattern vis uses for BOTH tag-writing (publish phase)
         // and tag-reading (git-tag resolver mode). Tokens: {name}, {unscopedName},

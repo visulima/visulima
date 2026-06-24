@@ -80,12 +80,7 @@ export interface CatalogRef {
     packageName: string;
 }
 
-const DEPENDENCY_KINDS = [
-    "dependencies",
-    "devDependencies",
-    "peerDependencies",
-    "optionalDependencies",
-] as const satisfies ReadonlyArray<CatalogRef["kind"]>;
+const DEPENDENCY_KINDS = ["dependencies", "devDependencies", "peerDependencies", "optionalDependencies"] as const satisfies ReadonlyArray<CatalogRef["kind"]>;
 
 /**
  * Extract every `catalog:` / `catalog:&lt;name>` reference from a single
@@ -206,10 +201,7 @@ export interface CatalogChange {
  * release-plan cascade path) can filter on `oldVersion !== undefined
  * &amp;& newVersion !== undefined`.
  */
-export const detectCatalogChanges = (
-    prev: CatalogSnapshot,
-    next: CatalogSnapshot,
-): CatalogChange[] => {
+export const detectCatalogChanges = (prev: CatalogSnapshot, next: CatalogSnapshot): CatalogChange[] => {
     // F25: fast bail — when neither snapshot carries any catalog block,
     // there's nothing to diff. The workspace never used catalogs (most
     // repos) and walking an empty diff every `buildContext` invocation

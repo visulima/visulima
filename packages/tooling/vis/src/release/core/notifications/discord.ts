@@ -68,7 +68,7 @@ export class DiscordNotificationChannel implements NotificationChannel {
         const embed: Record<string, unknown> = {
             // Discord uses an integer RGB colour. Default to a calm
             // blue-ish that doesn't scream alert.
-            color: this.config.color ?? 0x3B_82_F6,
+            color: this.config.color ?? 0x3b_82_f6,
             description: buildDescription(context),
             fields: [] as { inline?: boolean; name: string; value: string }[],
             timestamp: context.completedAt,

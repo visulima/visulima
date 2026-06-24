@@ -106,9 +106,7 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
 
     beforeEach(() => {
         cwd = undefined;
-        fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-            new Response("ok", { status: 200 }),
-        );
+        fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("ok", { status: 200 }));
     });
 
     afterEach(async () => {
@@ -221,9 +219,7 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
             JSON.stringify({
                 channel: "alpha",
                 completedAt: "2026-05-22T14:00:00.000Z",
-                published: [
-                    { name: "@operator/custom", url: "https://example.com/p", version: "9.9.9" },
-                ],
+                published: [{ name: "@operator/custom", url: "https://example.com/p", version: "9.9.9" }],
                 repo: "operator/custom",
                 skipped: [],
             }),
@@ -283,11 +279,11 @@ describe.skipIf(isWindows)("vis release notifications test", () => {
         const writes: string[] = [];
         const original = process.stdout.write.bind(process.stdout);
 
-        process.stdout.write = ((chunk: string | Uint8Array) => {
+        process.stdout.write = (chunk: string | Uint8Array) => {
             writes.push(typeof chunk === "string" ? chunk : new TextDecoder().decode(chunk));
 
             return true;
-        });
+        };
 
         try {
             await callHandler(cwd, { json: true });

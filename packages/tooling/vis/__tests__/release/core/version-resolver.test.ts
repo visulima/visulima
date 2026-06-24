@@ -84,7 +84,9 @@ describe("resolveCurrentVersion — registry mode (npm package)", () => {
         const runner = mkRunner();
         const pkg = mkPkg("@scope/a", "1.2.3");
 
-        runner.on("npm", ["view", "@scope/a", "version"], () => { return { exitCode: 0, stderr: "", stdout: "2.5.1\n" }; });
+        runner.on("npm", ["view", "@scope/a", "version"], () => {
+            return { exitCode: 0, stderr: "", stdout: "2.5.1\n" };
+        });
 
         const result = await resolveCurrentVersion(pkg, "registry", mkDepGraph([pkg]), {
             cwd: "/r",
@@ -158,7 +160,9 @@ describe("resolveCurrentVersion — git-tag mode", () => {
         const runner = mkRunner();
         const pkg = mkPkg("@scope/freshpkg", "0.0.1");
 
-        runner.on("git", ["tag", "--list"], () => { return { exitCode: 0, stderr: "", stdout: "" }; });
+        runner.on("git", ["tag", "--list"], () => {
+            return { exitCode: 0, stderr: "", stdout: "" };
+        });
 
         const result = await resolveCurrentVersion(pkg, "git-tag", mkDepGraph([pkg]), {
             cwd: "/r",
@@ -178,11 +182,7 @@ describe("resolveModeForPackage — precedence", () => {
     it("per-package override wins over workspace-level", () => {
         expect.hasAssertions();
 
-        const mode = resolveModeForPackage(
-            { currentVersionResolver: "registry" },
-            { currentVersionResolver: "git-tag" },
-            false,
-        );
+        const mode = resolveModeForPackage({ currentVersionResolver: "registry" }, { currentVersionResolver: "git-tag" }, false);
 
         expect(mode).toBe("git-tag");
     });
@@ -190,11 +190,7 @@ describe("resolveModeForPackage — precedence", () => {
     it("workspace-level wins over the default disk", () => {
         expect.hasAssertions();
 
-        const mode = resolveModeForPackage(
-            { currentVersionResolver: "registry" },
-            undefined,
-            false,
-        );
+        const mode = resolveModeForPackage({ currentVersionResolver: "registry" }, undefined, false);
 
         expect(mode).toBe("registry");
     });
@@ -202,11 +198,7 @@ describe("resolveModeForPackage — precedence", () => {
     it("`firstRelease` forces disk regardless of config", () => {
         expect.hasAssertions();
 
-        const mode = resolveModeForPackage(
-            { currentVersionResolver: "registry" },
-            { currentVersionResolver: "git-tag" },
-            true,
-        );
+        const mode = resolveModeForPackage({ currentVersionResolver: "registry" }, { currentVersionResolver: "git-tag" }, true);
 
         expect(mode).toBe("disk");
     });
@@ -250,13 +242,12 @@ describe("resolveCurrentVersionsForWorkspace — batch resolution", () => {
 
         const workspaceConfig: VisReleaseConfig = { currentVersionResolver: "registry" };
 
-        const { versions, warnings } = await resolveCurrentVersionsForWorkspace(
-            [a, b],
-            depGraph,
-            workspaceConfig,
-            perPkg,
-            { cwd: "/r", firstRelease: false, pm: mkPm(runner), runner },
-        );
+        const { versions, warnings } = await resolveCurrentVersionsForWorkspace([a, b], depGraph, workspaceConfig, perPkg, {
+            cwd: "/r",
+            firstRelease: false,
+            pm: mkPm(runner),
+            runner,
+        });
 
         // a fell back to its manifest version; b is disk by per-pkg override.
         expect(versions.get("@scope/a")).toBe("1.0.0");
@@ -284,13 +275,12 @@ describe("resolveCurrentVersionsForWorkspace — batch resolution", () => {
             return { exitCode: 0, stderr: "", stdout: "9.9.9\n" };
         });
 
-        const { versions, warnings } = await resolveCurrentVersionsForWorkspace(
-            [a],
-            depGraph,
-            { currentVersionResolver: "registry" },
-            new Map(),
-            { cwd: "/r", firstRelease: true, pm: mkPm(runner), runner },
-        );
+        const { versions, warnings } = await resolveCurrentVersionsForWorkspace([a], depGraph, { currentVersionResolver: "registry" }, new Map(), {
+            cwd: "/r",
+            firstRelease: true,
+            pm: mkPm(runner),
+            runner,
+        });
 
         expect(versions.get("@scope/a")).toBe("1.0.0");
         // firstRelease short-circuits BEFORE the registry call — no warning.
@@ -370,13 +360,12 @@ describe("resolveCurrentVersionsForWorkspace — concurrency cap (C-3)", () => {
 
         // Kick off the resolver — it will block on the CountingRunner's
         // deferred until we release. Don't await yet.
-        const resolverPromise = resolveCurrentVersionsForWorkspace(
-            pkgs,
-            depGraph,
-            { currentVersionResolver: "registry" },
-            new Map(),
-            { cwd: "/r", firstRelease: false, pm, runner: counting },
-        );
+        const resolverPromise = resolveCurrentVersionsForWorkspace(pkgs, depGraph, { currentVersionResolver: "registry" }, new Map(), {
+            cwd: "/r",
+            firstRelease: false,
+            pm,
+            runner: counting,
+        });
 
         // Yield to the event loop a few times so all the limiter slots
         // that CAN start actually start. Anything beyond the cap should
@@ -422,21 +411,19 @@ describe("resolveCurrentVersionsForWorkspace — concurrency cap (C-3)", () => {
             return { exitCode: 0, stderr: "", stdout: "5.0.0\n" };
         });
 
-        const first = await resolveCurrentVersionsForWorkspace(
-            [a],
-            depGraph,
-            { currentVersionResolver: "registry" },
-            new Map(),
-            { cwd: "/r", firstRelease: false, pm: mkPm(runner), runner },
-        );
+        const first = await resolveCurrentVersionsForWorkspace([a], depGraph, { currentVersionResolver: "registry" }, new Map(), {
+            cwd: "/r",
+            firstRelease: false,
+            pm: mkPm(runner),
+            runner,
+        });
 
-        const second = await resolveCurrentVersionsForWorkspace(
-            [a],
-            depGraph,
-            { currentVersionResolver: "registry" },
-            new Map(),
-            { cwd: "/r", firstRelease: false, pm: mkPm(runner), runner },
-        );
+        const second = await resolveCurrentVersionsForWorkspace([a], depGraph, { currentVersionResolver: "registry" }, new Map(), {
+            cwd: "/r",
+            firstRelease: false,
+            pm: mkPm(runner),
+            runner,
+        });
 
         // Both invocations resolved to the same registry value.
         expect(first.versions.get("@scope/memoed")).toBe("5.0.0");

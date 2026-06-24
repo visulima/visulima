@@ -51,10 +51,10 @@ describe(createProviderLogger, () => {
 
         const logger = createProviderLogger("test");
 
-        expect(typeof logger.debug).toBe("function");
-        expect(typeof logger.info).toBe("function");
-        expect(typeof logger.warn).toBe("function");
-        expect(typeof logger.error).toBe("function");
+        expect(logger.debug).toBeTypeOf("function");
+        expect(logger.info).toBeTypeOf("function");
+        expect(logger.warn).toBeTypeOf("function");
+        expect(logger.error).toBeTypeOf("function");
     });
 
     it("should accept a custom console", () => {
@@ -124,6 +124,6 @@ describe(handleProviderError, () => {
 
         handleProviderError("test", "send email", new Error("upstream"), logger);
 
-        expect(logger.debug).toHaveBeenCalled();
+        expect(logger.debug).toHaveBeenCalledWith();
     });
 });

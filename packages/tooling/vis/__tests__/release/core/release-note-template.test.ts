@@ -172,10 +172,7 @@ describe(collectContributors, () => {
     it("renders a bullet list with one author per line, in input order", () => {
         expect.hasAssertions();
 
-        const result = collectContributors([
-            { meta: { author: "@alice" } },
-            { meta: { author: "@bob" } },
-        ]);
+        const result = collectContributors([{ meta: { author: "@alice" } }, { meta: { author: "@bob" } }]);
 
         expect(result).toBe("- @alice\n- @bob");
     });
@@ -208,12 +205,7 @@ describe(collectContributors, () => {
     it("tolerates missing `meta` and missing `author` keys", () => {
         expect.hasAssertions();
 
-        const result = collectContributors([
-            { meta: { author: "@alice" } },
-            {},
-            { meta: {} },
-            { meta: { author: "@bob" } },
-        ]);
+        const result = collectContributors([{ meta: { author: "@alice" } }, {}, { meta: {} }, { meta: { author: "@bob" } }]);
 
         expect(result).toBe("- @alice\n- @bob");
     });
@@ -222,9 +214,7 @@ describe(collectContributors, () => {
     it("splits a comma-separated `author:` line into one bullet per handle", () => {
         expect.hasAssertions();
 
-        const result = collectContributors([
-            { meta: { author: "@alice, @bob,@carol" } },
-        ]);
+        const result = collectContributors([{ meta: { author: "@alice, @bob,@carol" } }]);
 
         expect(result).toBe("- @alice\n- @bob\n- @carol");
     });
@@ -234,11 +224,7 @@ describe(collectContributors, () => {
     it("rejects a bare `@` with no handle attached", () => {
         expect.hasAssertions();
 
-        const result = collectContributors([
-            { meta: { author: "@" } },
-            { meta: { author: "@   " } },
-            { meta: { author: "@alice" } },
-        ]);
+        const result = collectContributors([{ meta: { author: "@" } }, { meta: { author: "@   " } }, { meta: { author: "@alice" } }]);
 
         expect(result).toBe("- @alice");
     });
@@ -278,12 +264,7 @@ describe(collectContributors, () => {
         expect.hasAssertions();
 
         const result = collectContributors(
-            [
-                { meta: { author: "@alice" } },
-                { meta: { author: "@renovate[bot]" } },
-                { meta: { author: "@DependaBot" } },
-                { meta: { author: "@bob" } },
-            ],
+            [{ meta: { author: "@alice" } }, { meta: { author: "@renovate[bot]" } }, { meta: { author: "@DependaBot" } }, { meta: { author: "@bob" } }],
             { internalAuthors: ["renovate[bot]", "@dependabot"] },
         );
 

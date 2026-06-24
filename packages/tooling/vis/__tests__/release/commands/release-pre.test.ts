@@ -104,9 +104,7 @@ describe("vis release pre exit — C6 channel-conflict refusal", () => {
 
         cwd = setupFixture("alpha");
 
-        await writePreMode(cwd, ".vis/release", buildEnterFile("rc", [
-            { name: "@scope/a", version: "1.0.0" },
-        ]));
+        await writePreMode(cwd, ".vis/release", buildEnterFile("rc", [{ name: "@scope/a", version: "1.0.0" }]));
 
         writeVisConfigCjs(cwd, {
             channels: {
@@ -114,9 +112,7 @@ describe("vis release pre exit — C6 channel-conflict refusal", () => {
             },
         });
 
-        await expect(
-            callHandler(cwd, { action: "exit", commit: false }),
-        ).rejects.toMatchObject({
+        await expect(callHandler(cwd, { action: "exit", commit: false })).rejects.toMatchObject({
             code: "CONFIG_INVALID",
         });
 
@@ -160,9 +156,7 @@ describe("vis release pre exit — C6 channel-conflict refusal", () => {
 
         cwd = setupFixture("main");
 
-        await writePreMode(cwd, ".vis/release", buildEnterFile("rc", [
-            { name: "@scope/a", version: "1.0.0" },
-        ]));
+        await writePreMode(cwd, ".vis/release", buildEnterFile("rc", [{ name: "@scope/a", version: "1.0.0" }]));
 
         // main channel has no prerelease set — exit should proceed and
         // flip pre.json to exit-pending.

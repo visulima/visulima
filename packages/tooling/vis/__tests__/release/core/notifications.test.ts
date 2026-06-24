@@ -2,10 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DiscordNotificationChannel } from "../../../src/release/core/notifications/discord";
 import type { NotificationContext } from "../../../src/release/core/notifications/interface";
-import {
-    dispatchNotifications,
-    expandNotificationTemplate,
-} from "../../../src/release/core/notifications/interface";
+import { dispatchNotifications, expandNotificationTemplate } from "../../../src/release/core/notifications/interface";
 import { SlackNotificationChannel } from "../../../src/release/core/notifications/slack";
 import { WebhookNotificationChannel } from "../../../src/release/core/notifications/webhook";
 
@@ -70,9 +67,7 @@ describe(dispatchNotifications, () => {
     let fetchSpy: ReturnType<typeof vi.spyOn>;
 
     beforeEach(() => {
-        fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(
-            new Response("", { status: 200 }),
-        );
+        fetchSpy = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("", { status: 200 }));
     });
 
     afterEach(() => {
@@ -91,10 +86,7 @@ describe(dispatchNotifications, () => {
     it("skips when published[] is empty (no-op wave)", async () => {
         expect.hasAssertions();
 
-        const result = await dispatchNotifications(
-            { slack: { webhook: "https://hooks.slack.com/services/T/B/X" } },
-            buildContext({ published: [] }),
-        );
+        const result = await dispatchNotifications({ slack: { webhook: "https://hooks.slack.com/services/T/B/X" } }, buildContext({ published: [] }));
 
         expect(fetchSpy).not.toHaveBeenCalled();
         expect(result.succeeded).toStrictEqual([]);
@@ -202,11 +194,7 @@ describe(dispatchNotifications, () => {
         // crash the constructor. arrayify(null) returns [].
         expect.hasAssertions();
 
-        const result = await dispatchNotifications(
-
-            { discord: null as any, slack: null as any, webhook: null as any },
-            buildContext(),
-        );
+        const result = await dispatchNotifications({ discord: null as any, slack: null as any, webhook: null as any }, buildContext());
 
         expect(fetchSpy).not.toHaveBeenCalled();
         expect(result.succeeded).toStrictEqual([]);
@@ -226,11 +214,7 @@ describe(dispatchNotifications, () => {
         });
 
         const warnings: string[] = [];
-        const result = await dispatchNotifications(
-            { webhook: { url: secretUrl } },
-            buildContext(),
-            { warn: (m) => warnings.push(m) },
-        );
+        const result = await dispatchNotifications({ webhook: { url: secretUrl } }, buildContext(), { warn: (m) => warnings.push(m) });
 
         expect(result.failed).toHaveLength(1);
         // The secret slug must not appear anywhere — neither in the
@@ -253,10 +237,7 @@ describe(dispatchNotifications, () => {
         fetchSpy.mockReset();
         fetchSpy.mockResolvedValue(new Response("Forbidden", { status: 403 }));
 
-        const result = await dispatchNotifications(
-            { webhook: { url: secretUrl } },
-            buildContext(),
-        );
+        const result = await dispatchNotifications({ webhook: { url: secretUrl } }, buildContext());
 
         expect(result.failed).toHaveLength(1);
         expect(result.failed[0]!.error).not.toContain("SECRETTOKEN");
@@ -338,9 +319,7 @@ describe(SlackNotificationChannel, () => {
 
         fetchSpy.mockResolvedValue(new Response("invalid_token", { status: 403 }));
 
-        await expect(
-            new SlackNotificationChannel({ webhook: "https://hooks.slack.com/x" }).send(buildContext()),
-        ).rejects.toThrow(/Slack webhook returned 403/);
+        await expect(new SlackNotificationChannel({ webhook: "https://hooks.slack.com/x" }).send(buildContext())).rejects.toThrow(/Slack webhook returned 403/);
     });
 
     it("appends an id suffix when configured (for multi-channel disambiguation)", () => {
@@ -357,9 +336,7 @@ describe(SlackNotificationChannel, () => {
     it("falls back to plain timestamp when completedAt is not parseable (M-5)", async () => {
         expect.hasAssertions();
 
-        await new SlackNotificationChannel({ webhook: "https://hooks.slack.com/x" }).send(
-            buildContext({ completedAt: "definitely-not-a-date" }),
-        );
+        await new SlackNotificationChannel({ webhook: "https://hooks.slack.com/x" }).send(buildContext({ completedAt: "definitely-not-a-date" }));
 
         const body = JSON.parse(capturedBody!);
         const stringified = JSON.stringify(body);
@@ -412,9 +389,7 @@ describe(DiscordNotificationChannel, () => {
             };
         });
 
-        await new DiscordNotificationChannel({ webhook: "https://discord.com/x" }).send(
-            buildContext({ published: big }),
-        );
+        await new DiscordNotificationChannel({ webhook: "https://discord.com/x" }).send(buildContext({ published: big }));
 
         const body = JSON.parse(capturedBody!);
 
@@ -477,9 +452,7 @@ describe(WebhookNotificationChannel, () => {
 
         const secretReason = "publish failed: token=ghp_LEAKEDSECRET123 invalid";
 
-        await new WebhookNotificationChannel({ url: "https://example.com/hook" }).send(
-            buildContext({ skipped: [{ name: "@scope/c", reason: secretReason }] }),
-        );
+        await new WebhookNotificationChannel({ url: "https://example.com/hook" }).send(buildContext({ skipped: [{ name: "@scope/c", reason: secretReason }] }));
 
         const raw = capturedInit!.body as string;
 

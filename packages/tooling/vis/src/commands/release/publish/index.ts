@@ -59,7 +59,8 @@ const publish: Command = {
             type: String,
         },
         {
-            description: "Bootstrap mode for greenfield monorepos: force currentVersionResolver=disk and skip remote tag-collision checks. Use on the very first release before any git tags exist.",
+            description:
+                "Bootstrap mode for greenfield monorepos: force currentVersionResolver=disk and skip remote tag-collision checks. Use on the very first release before any git tags exist.",
             name: "first-release",
             type: Boolean,
         },

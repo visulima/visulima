@@ -1,13 +1,13 @@
 # Design — `vis release`: release subsystem inside `@visulima/vis`
 
-| Field | Value |
-|---|---|
-| **Status** | Draft (RFC) |
-| **Author** | Claude (initial draft) |
-| **Branch** | `claude/add-release-management-HRxHK` |
-| **Belongs to** | `@visulima/vis` — release subsystem at `packages/tooling/vis/src/release/` |
-| **Replaces** | `multi-semantic-release` + per-package `.releaserc.json` + `scripts/semantic-release-native-addons.mjs` + `scripts/publish-preview-release.js` |
-| **Reference designs** | bumpy (primary port target) · nx release · semantic-release · changesets |
+| Field                 | Value                                                                                                                                          |
+| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Status**            | Draft (RFC)                                                                                                                                    |
+| **Author**            | Claude (initial draft)                                                                                                                         |
+| **Branch**            | `claude/add-release-management-HRxHK`                                                                                                          |
+| **Belongs to**        | `@visulima/vis` — release subsystem at `packages/tooling/vis/src/release/`                                                                     |
+| **Replaces**          | `multi-semantic-release` + per-package `.releaserc.json` + `scripts/semantic-release-native-addons.mjs` + `scripts/publish-preview-release.js` |
+| **Reference designs** | bumpy (primary port target) · nx release · semantic-release · changesets                                                                       |
 
 ---
 
@@ -54,13 +54,13 @@ Migration from visulima's existing `multi-semantic-release` setup is per-package
 
 ## 3. Non-goals
 
-- **Replacing Nx** for task orchestration. Nx still owns build/test/lint via `vis run` / `nx run-many`. The release subsystem *consumes* Nx's project graph in visulima's case but doesn't *require* it: in non-Nx projects vis already falls back to walking `package.json` `workspaces` globs (or pnpm-workspace.yaml / yarn workspaces / bun workspaces).
+- **Replacing Nx** for task orchestration. Nx still owns build/test/lint via `vis run` / `nx run-many`. The release subsystem _consumes_ Nx's project graph in visulima's case but doesn't _require_ it: in non-Nx projects vis already falls back to walking `package.json` `workspaces` globs (or pnpm-workspace.yaml / yarn workspaces / bun workspaces).
 - **A separate the release subsystem package.** The release subsystem ships inside `@visulima/vis`. If external adoption demands it later, a `core/` extraction is a mechanical refactor (see §1) — but we do not build for that hypothetical user upfront.
 - **A standalone `vis-release` bin.** Users invoke `vis release …`. No `npx vis-release add` — `npx vis release add` (which works because `vis` is the bin).
 - **Complete GitHub + GitLab support** in v1. The `RemoteReleaseClient` interface is shipped with full `github` and `gitlab` adapters: sticky comments, release creation (including structured assets, GitHub `discussion-category`, GitLab `milestones`, GitLab Generic Package Registry uploads), pull/merge-request upsert, label application, and find-or-create + close failure-issue management. Self-hosted GitLab is configurable via `release.gitlabHost`. Detection (env vars + git remote URL) works for both providers; `release.provider: "github" | "gitlab" | "auto"` config is wired. Capabilities still deferred to a follow-up RFC: GH Enterprise URL config, HTTP(S) proxy config, GitHub two-step draft→publish atomic asset upload, GitHub `generate_release_notes: true` shortcut, post-release walk-and-comment for `successComment`/`releasedLabels` (the methods exist; an orchestrator wrapper is what's missing). **Bitbucket is explicitly out of scope** — Bitbucket Cloud's release model is different enough (no native Releases concept; tags + downloads instead) that a clean adapter requires more design than v1 has time for.
 - **Docker image versioning** (nx release has it, experimental). Out of scope for v1.
 - **Long-lived `canary` channel** as a permanent snapshot workflow. v1 ships one-shot snapshots only; canary channels are a v2 follow-up.
-- **Rewriting commit-driven releases**. We support conventional-commits-driven bumps as a *fallback* (`vis release generate`), but the primary workflow is change files.
+- **Rewriting commit-driven releases**. We support conventional-commits-driven bumps as a _fallback_ (`vis release generate`), but the primary workflow is change files.
 - **Breaking the public CLI surface of `vis`**. `vis release` is additive; `vis run`, `vis ci`, etc. are unchanged.
 - **Replacing `pkg-pr-new` itself.** Default snapshot backend remains pkg-pr-new (free, hosted, battle-tested). The subsystem is registry-agnostic so users can point at a self-hosted backend (e.g. alchemy's `pr-package`) via config.
 
@@ -95,30 +95,30 @@ Audited in `/home/user/visulima` on `claude/add-release-management-HRxHK`:
 
 ## 5. Feature comparison matrix (synthesis of the four research outputs)
 
-| Capability | semantic-release | changesets | nx release | bumpy | **vis release (this RFC)** |
-|---|---|---|---|---|---|
-| Bump source | conventional commits | `.changeset/*.md` | CC **or** `.nx/version-plans/*.md` | `.bumpy/*.md` | `.bumpy/*.md` (primary) + CC (fallback via `vis release generate`) |
-| Multi-pkg-per-PR | ✗ | ✓ | ✓ | ✓ | ✓ |
-| User-facing changelog | ✗ (commit-derived) | ✓ | ✓ | ✓ | ✓ |
-| Dep propagation | `--deps.bump` modes | `updateInternalDependencies` | `updateDependents: auto/always/never` | three-phase loop, `out-of-range`/`patch`/`minor` modes + `cascadeTo` | port bumpy three-phase + add `updateDependents:never` (nx) for opt-out |
-| Fixed groups | ✗ | ✓ | ✓ | ✓ | ✓ |
-| Linked groups | ✗ | ✓ | ✗ (nx uses fixed-group only) | ✓ | ✓ |
-| `workspace:` protocol resolution | ✗ (delegated, often broken) | delegated to pm | ✓ (`preserveLocalDependencyProtocols`) | ✓ (`pack` or `in-place` modes) | ✓ port bumpy `pack` default; rewrite at `version` time also like bumpy |
-| `catalog:` protocol resolution | ✗ | ✗ (PR open) | ✗ | ✓ (named catalogs supported) | ✓ port bumpy + visulima uses 31 catalogs |
-| Per-pkg channels (alpha/beta/next/latest) | ✓ via `branches: [...]` | partial via `pre enter/exit` | partial via `--preid` + `--tag` | ✗ (single `--tag` per run) | **borrow semantic-release `branches: [...]` config + dist-tag derivation by branch name** |
-| Pre-release versions (`-alpha.0`) | ✓ | ✓ via `pre.json` | ✓ via `--preid` | ✗ | ✓ port from semantic-release model |
-| Snapshot / preview | ✗ (custom) | ✓ `--snapshot [tag]` | ✗ | ✗ | ✓ port changesets `--snapshot`; replaces `pkg-pr-new` script |
-| Native addon support | bespoke plugin | ✗ | pluggable `versionActions` | per-pkg `publishCommand` | **port existing native-addons plugin into a `@visulima/vis/release/version-actions (native-addon impl)` package** |
-| OIDC trusted publishing | ✓ | ✗ | via executor | ✓ | ✓ port bumpy + reuse existing OIDC code from `semantic-release-native-addons.mjs` |
-| GH Action UX | push-to-release-branch | release PR (sticky) | `nx release` in CI | release PR (sticky) | release PR (port bumpy) — replaces current "push to alpha → publish" flow |
-| Programmatic API | yes (`semanticRelease()`) | yes (`@changesets/*`) | yes (`releaseVersion`/`Changelog`/`Publish`) | yes (`src/index.ts` exports core) | yes — model on nx release shape |
-| Lifecycle hooks | 9-hook plugin lifecycle | none (custom changelog only) | `preVersionCommand`, `groupPreVersionCommand`, `afterAllProjectsVersioned` | none | nx-style: `preVersionCommand`, `groupPreVersionCommand`, `versionActions.afterAllVersioned`, `prePublish`, `postPublish` |
-| `--printConfig` | ✗ | ✗ | ✓ | ✗ | ✓ borrow from nx — invaluable for debugging |
-| Plugin/extension | rich (verifyConditions/analyzeCommits/…) | none (custom changelog) | `versionActions` per project | custom `publishCommand`/`buildCommand`/`checkPublished` per pkg | both: `versionActions` (core) + per-pkg `publishCommand`/`checkPublished` (escape hatch) |
-| Custom changelog formatter | yes | yes | yes (renderer class) | yes (`default`/`github`/path) | yes — port bumpy formatter API |
-| Aggregated GH release | ✗ | per-pkg | per-pkg + workspace | ✓ optional | ✓ port bumpy `aggregateRelease` |
-| `migrate from existing tool` | n/a | n/a | n/a | from changesets | **from `.releaserc.json` + per-pkg opt-in `managed: true`** |
-| Already-published detection | ✗ (re-runs harmless) | ✗ | ✗ | git tag → npm registry → custom `checkPublished` | port bumpy |
+| Capability                                | semantic-release                         | changesets                   | nx release                                                                 | bumpy                                                                | **vis release (this RFC)**                                                                                               |
+| ----------------------------------------- | ---------------------------------------- | ---------------------------- | -------------------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| Bump source                               | conventional commits                     | `.changeset/*.md`            | CC **or** `.nx/version-plans/*.md`                                         | `.bumpy/*.md`                                                        | `.bumpy/*.md` (primary) + CC (fallback via `vis release generate`)                                                       |
+| Multi-pkg-per-PR                          | ✗                                        | ✓                            | ✓                                                                          | ✓                                                                    | ✓                                                                                                                        |
+| User-facing changelog                     | ✗ (commit-derived)                       | ✓                            | ✓                                                                          | ✓                                                                    | ✓                                                                                                                        |
+| Dep propagation                           | `--deps.bump` modes                      | `updateInternalDependencies` | `updateDependents: auto/always/never`                                      | three-phase loop, `out-of-range`/`patch`/`minor` modes + `cascadeTo` | port bumpy three-phase + add `updateDependents:never` (nx) for opt-out                                                   |
+| Fixed groups                              | ✗                                        | ✓                            | ✓                                                                          | ✓                                                                    | ✓                                                                                                                        |
+| Linked groups                             | ✗                                        | ✓                            | ✗ (nx uses fixed-group only)                                               | ✓                                                                    | ✓                                                                                                                        |
+| `workspace:` protocol resolution          | ✗ (delegated, often broken)              | delegated to pm              | ✓ (`preserveLocalDependencyProtocols`)                                     | ✓ (`pack` or `in-place` modes)                                       | ✓ port bumpy `pack` default; rewrite at `version` time also like bumpy                                                   |
+| `catalog:` protocol resolution            | ✗                                        | ✗ (PR open)                  | ✗                                                                          | ✓ (named catalogs supported)                                         | ✓ port bumpy + visulima uses 31 catalogs                                                                                 |
+| Per-pkg channels (alpha/beta/next/latest) | ✓ via `branches: [...]`                  | partial via `pre enter/exit` | partial via `--preid` + `--tag`                                            | ✗ (single `--tag` per run)                                           | **borrow semantic-release `branches: [...]` config + dist-tag derivation by branch name**                                |
+| Pre-release versions (`-alpha.0`)         | ✓                                        | ✓ via `pre.json`             | ✓ via `--preid`                                                            | ✗                                                                    | ✓ port from semantic-release model                                                                                       |
+| Snapshot / preview                        | ✗ (custom)                               | ✓ `--snapshot [tag]`         | ✗                                                                          | ✗                                                                    | ✓ port changesets `--snapshot`; replaces `pkg-pr-new` script                                                             |
+| Native addon support                      | bespoke plugin                           | ✗                            | pluggable `versionActions`                                                 | per-pkg `publishCommand`                                             | **port existing native-addons plugin into a `@visulima/vis/release/version-actions (native-addon impl)` package**        |
+| OIDC trusted publishing                   | ✓                                        | ✗                            | via executor                                                               | ✓                                                                    | ✓ port bumpy + reuse existing OIDC code from `semantic-release-native-addons.mjs`                                        |
+| GH Action UX                              | push-to-release-branch                   | release PR (sticky)          | `nx release` in CI                                                         | release PR (sticky)                                                  | release PR (port bumpy) — replaces current "push to alpha → publish" flow                                                |
+| Programmatic API                          | yes (`semanticRelease()`)                | yes (`@changesets/*`)        | yes (`releaseVersion`/`Changelog`/`Publish`)                               | yes (`src/index.ts` exports core)                                    | yes — model on nx release shape                                                                                          |
+| Lifecycle hooks                           | 9-hook plugin lifecycle                  | none (custom changelog only) | `preVersionCommand`, `groupPreVersionCommand`, `afterAllProjectsVersioned` | none                                                                 | nx-style: `preVersionCommand`, `groupPreVersionCommand`, `versionActions.afterAllVersioned`, `prePublish`, `postPublish` |
+| `--printConfig`                           | ✗                                        | ✗                            | ✓                                                                          | ✗                                                                    | ✓ borrow from nx — invaluable for debugging                                                                              |
+| Plugin/extension                          | rich (verifyConditions/analyzeCommits/…) | none (custom changelog)      | `versionActions` per project                                               | custom `publishCommand`/`buildCommand`/`checkPublished` per pkg      | both: `versionActions` (core) + per-pkg `publishCommand`/`checkPublished` (escape hatch)                                 |
+| Custom changelog formatter                | yes                                      | yes                          | yes (renderer class)                                                       | yes (`default`/`github`/path)                                        | yes — port bumpy formatter API                                                                                           |
+| Aggregated GH release                     | ✗                                        | per-pkg                      | per-pkg + workspace                                                        | ✓ optional                                                           | ✓ port bumpy `aggregateRelease`                                                                                          |
+| `migrate from existing tool`              | n/a                                      | n/a                          | n/a                                                                        | from changesets                                                      | **from `.releaserc.json` + per-pkg opt-in `managed: true`**                                                              |
+| Already-published detection               | ✗ (re-runs harmless)                     | ✗                            | ✗                                                                          | git tag → npm registry → custom `checkPublished`                     | port bumpy                                                                                                               |
 
 ---
 
@@ -211,13 +211,13 @@ CLI handlers in `src/commands/release/<sub>/handler.ts` are the cerebro-aware la
 
 After verifying current vis deps (`packages/tooling/vis/package.json`), most needs are already covered:
 
-| Dep | Why | Status |
-|---|---|---|
-| `yaml` | parse change-file frontmatter | already a vis dep (`catalog:prod`) — reuse |
-| `semver` | version math + range satisfaction | already a vis dep (`^7.7.4`) — reuse |
-| `zeptomatch` | glob matching for `fixed`/`linked`/`ignore` | already a vis dep (`catalog:dev`) — reuse |
-| `@visulima/redact` | OIDC / npm-token / GH-token redaction in logs | already a vis dep — reuse |
-| `conventional-commits-parser` | `vis release generate` CC parsing fallback | NEW — must be added in M1 |
+| Dep                           | Why                                           | Status                                     |
+| ----------------------------- | --------------------------------------------- | ------------------------------------------ |
+| `yaml`                        | parse change-file frontmatter                 | already a vis dep (`catalog:prod`) — reuse |
+| `semver`                      | version math + range satisfaction             | already a vis dep (`^7.7.4`) — reuse       |
+| `zeptomatch`                  | glob matching for `fixed`/`linked`/`ignore`   | already a vis dep (`catalog:dev`) — reuse  |
+| `@visulima/redact`            | OIDC / npm-token / GH-token redaction in logs | already a vis dep — reuse                  |
+| `conventional-commits-parser` | `vis release generate` CC parsing fallback    | NEW — must be added in M1                  |
 
 **Net new runtime deps: 1** (`conventional-commits-parser`). vis already standardizes on `yaml` (not `js-yaml`) and `zeptomatch` (not `picomatch`); using the same libraries keeps the bundle from carrying duplicates.
 
@@ -232,23 +232,22 @@ Programmatic API is exposed via a sub-export:
 ```jsonc
 // packages/tooling/vis/package.json (additions only)
 {
-  "exports": {
-    ".":              "./dist/index.js",
-    "./release":      "./dist/release/index.js",
-    "./release/types": "./dist/release/types.js",
-    "./release/version-actions": "./dist/release/core/version-actions/index.js",
-    "./release/changelog": "./dist/release/core/changelog/index.js",
-    "./release/package-managers": "./dist/release/core/package-managers/index.js"
-    // (existing exports unchanged)
-  }
+    "exports": {
+        ".": "./dist/index.js",
+        "./release": "./dist/release/index.js",
+        "./release/types": "./dist/release/types.js",
+        "./release/version-actions": "./dist/release/core/version-actions/index.js",
+        "./release/changelog": "./dist/release/core/changelog/index.js",
+        "./release/package-managers": "./dist/release/core/package-managers/index.js",
+        // (existing exports unchanged)
+    },
 }
 ```
 
 Consumers:
 
 ```ts
-import { releaseVersion, releaseChangelog, releasePublish, releaseSnapshot, release, ReleaseClient, defineReleaseConfig }
-  from "@visulima/vis/release";
+import { releaseVersion, releaseChangelog, releasePublish, releaseSnapshot, release, ReleaseClient, defineReleaseConfig } from "@visulima/vis/release";
 
 import type { ChangelogFormatter, ChangelogContext } from "@visulima/vis/release/changelog";
 import { VersionActions } from "@visulima/vis/release/version-actions";
@@ -269,6 +268,7 @@ export type * from "./types";
 Verified during M1: `@visulima/vis/config` already exports `defineConfig` (line 596 of `src/config/config.ts`) — wraps `applyDefaults(config)`. Examples in this RFC use that name.
 
 What M1 actually adds:
+
 1. `release?: VisReleaseConfig` field on the existing `VisConfig` type (in `src/config/types.ts`).
 2. `VisReleaseConfig` itself (in `src/release/types.ts`) — see §8.1 for the shape.
 
@@ -293,23 +293,23 @@ Every subcommand handler uses `loader: () => import("./<sub>/handler")` so the h
 
 All commands invoked as `vis release <sub>`. Handlers in `src/commands/release/<sub>/handler.ts`, business logic in `src/release/core/`.
 
-| Subcommand | Purpose |
-|---|---|
-| `vis release add` | interactive (or `--packages a:minor,b:patch`) change-file authoring |
-| `vis release generate [--from <ref>]` | auto-derive a change file from branch commits (CC + path-based fallback) |
-| `vis release status [--json] [--filter <glob>] [--bump major,minor]` | print pending plan |
-| `vis release check [--strict] [--hook pre-commit\|pre-push] [--no-fail]` | enforce change-file presence (for husky/lint-staged) |
-| `vis release version [--commit] [--channel <name>]` | apply change files: write versions + changelogs + delete consumed files |
-| `vis release publish [--dry-run] [--tag <dist-tag>] [--filter <glob>] [--no-push] [--resume]` | pack-then-publish unpublished packages, push tags, create GH releases |
-| `vis release snapshot --tag <name> [--filter <glob>] [--registry <url>]` | publish `0.0.0-<tag>-<sha>` versions to a named dist-tag (default backend: `pkg-pr-new`) |
-| `vis release plan [--json]` | alias of `status --json` (kept for symmetry with nx) |
-| `vis release doctor [--json]` | preflight diagnostics — see §19.2 |
-| `vis release init [--from-semantic-release\|--from-changesets\|--from-bumpy\|--fresh]` | scaffold a `release: {…}` block in `vis.config.ts`, migrate `.releaserc.json` / `.changeset/` |
-| `vis release ci check` | post/update sticky PR comment with release plan |
-| `vis release ci plan` | emit JSON + `$GITHUB_OUTPUT` for workflow step gating |
-| `vis release ci release [--auto-publish] [--branch <name>]` | maintain version-PR or run version+publish on main |
-| `vis release ci snapshot [--tag <name>]` | snapshot publish + sticky PR comment with install instructions |
-| `vis release ci setup` | interactive: walk through `VIS_GH_TOKEN` / `NPM_TOKEN` / OIDC config |
+| Subcommand                                                                                    | Purpose                                                                                       |
+| --------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `vis release add`                                                                             | interactive (or `--packages a:minor,b:patch`) change-file authoring                           |
+| `vis release generate [--from <ref>]`                                                         | auto-derive a change file from branch commits (CC + path-based fallback)                      |
+| `vis release status [--json] [--filter <glob>] [--bump major,minor]`                          | print pending plan                                                                            |
+| `vis release check [--strict] [--hook pre-commit\|pre-push] [--no-fail]`                      | enforce change-file presence (for husky/lint-staged)                                          |
+| `vis release version [--commit] [--channel <name>]`                                           | apply change files: write versions + changelogs + delete consumed files                       |
+| `vis release publish [--dry-run] [--tag <dist-tag>] [--filter <glob>] [--no-push] [--resume]` | pack-then-publish unpublished packages, push tags, create GH releases                         |
+| `vis release snapshot --tag <name> [--filter <glob>] [--registry <url>]`                      | publish `0.0.0-<tag>-<sha>` versions to a named dist-tag (default backend: `pkg-pr-new`)      |
+| `vis release plan [--json]`                                                                   | alias of `status --json` (kept for symmetry with nx)                                          |
+| `vis release doctor [--json]`                                                                 | preflight diagnostics — see §19.2                                                             |
+| `vis release init [--from-semantic-release\|--from-changesets\|--from-bumpy\|--fresh]`        | scaffold a `release: {…}` block in `vis.config.ts`, migrate `.releaserc.json` / `.changeset/` |
+| `vis release ci check`                                                                        | post/update sticky PR comment with release plan                                               |
+| `vis release ci plan`                                                                         | emit JSON + `$GITHUB_OUTPUT` for workflow step gating                                         |
+| `vis release ci release [--auto-publish] [--branch <name>]`                                   | maintain version-PR or run version+publish on main                                            |
+| `vis release ci snapshot [--tag <name>]`                                                      | snapshot publish + sticky PR comment with install instructions                                |
+| `vis release ci setup`                                                                        | interactive: walk through `VIS_GH_TOKEN` / `NPM_TOKEN` / OIDC config                          |
 
 Inherited globals (already on every vis command): `--cwd`, `--verbose`. Added by release: `--printConfig[=debug]` (port from nx), `--dry-run`, `--resume`.
 
@@ -333,92 +333,92 @@ Per-package overrides go in `package.json["vis-release"]` (the `vis-release` key
 import { defineConfig } from "@visulima/vis/config";
 
 export default defineConfig({
-  // ... existing vis.config.ts fields (taskDefaults, targetDefaults, extends, etc.) ...
+    // ... existing vis.config.ts fields (taskDefaults, targetDefaults, extends, etc.) ...
 
-  release: {
-  // ── Workspace-wide ───────────────────────────────────────────────────
-  baseBranch: "main",                        // override per project
-  changesDir: ".vis/release",                // default; configurable
-  access: "public",
-  changelog: "github",                       // "default" | "github" | "./path.ts" | [path, opts] | false
-  changedFilePatterns: ["**", "!__fixtures__/**", "!**/*.test.ts"],
+    release: {
+        // ── Workspace-wide ───────────────────────────────────────────────────
+        baseBranch: "main", // override per project
+        changesDir: ".vis/release", // default; configurable
+        access: "public",
+        changelog: "github", // "default" | "github" | "./path.ts" | [path, opts] | false
+        changedFilePatterns: ["**", "!__fixtures__/**", "!**/*.test.ts"],
 
-  // ── Channels (semantic-release-style, optional) ──────────────────────
-  // Omit or set to {} for single-channel projects.
-  channels: {
-    main:        { tag: "latest", mode: "version-pr" },     // review gate before publish
-    next:        { tag: "next",   mode: "version-pr" },
-    alpha:       { tag: "alpha",  mode: "auto-publish", prerelease: "alpha" },
-    beta:        { tag: "beta",   mode: "auto-publish", prerelease: "beta" },
-    "next-major":{ tag: "next-major", mode: "version-pr" },
-    // glob: maintenance branches
-    "+([0-9])?(.{+([0-9]),x}).x": { tag: "branch-name", range: "match" },
-  },
+        // ── Channels (semantic-release-style, optional) ──────────────────────
+        // Omit or set to {} for single-channel projects.
+        channels: {
+            main: { tag: "latest", mode: "version-pr" }, // review gate before publish
+            next: { tag: "next", mode: "version-pr" },
+            alpha: { tag: "alpha", mode: "auto-publish", prerelease: "alpha" },
+            beta: { tag: "beta", mode: "auto-publish", prerelease: "beta" },
+            "next-major": { tag: "next-major", mode: "version-pr" },
+            // glob: maintenance branches
+            "+([0-9])?(.{+([0-9]),x}).x": { tag: "branch-name", range: "match" },
+        },
 
-  // ── Dep propagation (port bumpy) ─────────────────────────────────────
-  updateInternalDependencies: "out-of-range", // "patch" | "minor" | "out-of-range"
-  dependencyBumpRules: {
-    dependencies: { trigger: "patch", bumpAs: "patch" },
-    peerDependencies: { trigger: "major", bumpAs: "match" },
-    devDependencies: false,
-    optionalDependencies: { trigger: "minor", bumpAs: "patch" },
-  },
+        // ── Dep propagation (port bumpy) ─────────────────────────────────────
+        updateInternalDependencies: "out-of-range", // "patch" | "minor" | "out-of-range"
+        dependencyBumpRules: {
+            dependencies: { trigger: "patch", bumpAs: "patch" },
+            peerDependencies: { trigger: "major", bumpAs: "match" },
+            devDependencies: false,
+            optionalDependencies: { trigger: "minor", bumpAs: "patch" },
+        },
 
-  // ── Groups ───────────────────────────────────────────────────────────
-  fixed: [],     // [["@visulima/cerebro", "@visulima/cerebro-plugins-*"]]
-  linked: [],
-  ignore: [],
-  include: [],
-  privatePackages: { version: false, tag: false },
+        // ── Groups ───────────────────────────────────────────────────────────
+        fixed: [], // [["@visulima/cerebro", "@visulima/cerebro-plugins-*"]]
+        linked: [],
+        ignore: [],
+        include: [],
+        privatePackages: { version: false, tag: false },
 
-  // ── Publish ──────────────────────────────────────────────────────────
-  publish: {
-    packManager: "auto",                     // detect from lockfile (npm/pnpm/yarn/bun)
-    publishStrategy: "npm-publish-tarball",  // "npm-publish-tarball" (recommended, cross-pm) | "native"
-    publishArgs: ["--provenance"],            // npm/pnpm/yarn only — bun ignores
-    protocolResolution: "pack",              // "pack" | "in-place" | "none"
-    catalogResolution: "auto",               // "auto" | "in-place" | "delegate"
-                                             // auto → in-place if pack manager isn't pnpm
-  },
+        // ── Publish ──────────────────────────────────────────────────────────
+        publish: {
+            packManager: "auto", // detect from lockfile (npm/pnpm/yarn/bun)
+            publishStrategy: "npm-publish-tarball", // "npm-publish-tarball" (recommended, cross-pm) | "native"
+            publishArgs: ["--provenance"], // npm/pnpm/yarn only — bun ignores
+            protocolResolution: "pack", // "pack" | "in-place" | "none"
+            catalogResolution: "auto", // "auto" | "in-place" | "delegate"
+            // auto → in-place if pack manager isn't pnpm
+        },
 
-  // ── Snapshot ─────────────────────────────────────────────────────────
-  snapshot: {
-    backend: "pkg-pr-new",                   // "pkg-pr-new" | "registry" | { url, auth }
-    tags: ["sha", "short-sha", "branch", "pr"],  // multi-tag publish (port from pr-package)
-    cleanupOnPrClose: true,                  // borrowed from pr-package workflow
-    versionTemplate: "0.0.0-{tag}-{shortSha}",
-  },
+        // ── Snapshot ─────────────────────────────────────────────────────────
+        snapshot: {
+            backend: "pkg-pr-new", // "pkg-pr-new" | "registry" | { url, auth }
+            tags: ["sha", "short-sha", "branch", "pr"], // multi-tag publish (port from pr-package)
+            cleanupOnPrClose: true, // borrowed from pr-package workflow
+            versionTemplate: "0.0.0-{tag}-{shortSha}",
+        },
 
-  // ── GH integration ───────────────────────────────────────────────────
-  aggregateRelease: false,                   // single GH release vs per-pkg
-  gitUser: { name: "release-bot", email: "..." },
-  versionPr: {
-    title: "🚀 Versioned release",
-    branch: "vis-release/version-packages",
-    preamble: "<docs link>",
-    commentMarker: "<!-- vis-release-comment -->", // sticky-comment-via-marker pattern
-  },
+        // ── GH integration ───────────────────────────────────────────────────
+        aggregateRelease: false, // single GH release vs per-pkg
+        gitUser: { name: "release-bot", email: "..." },
+        versionPr: {
+            title: "🚀 Versioned release",
+            branch: "vis-release/version-packages",
+            preamble: "<docs link>",
+            commentMarker: "<!-- vis-release-comment -->", // sticky-comment-via-marker pattern
+        },
 
-  // ── Per-package overrides (visulima case rarely needs them — NAPI is auto-detected) ─
-  packages: {
-    // example: force a custom versionActions for one package
-    // "@my/special-pkg": { versionActions: "./version-actions/special.ts" },
-  },
+        // ── Per-package overrides (visulima case rarely needs them — NAPI is auto-detected) ─
+        packages: {
+            // example: force a custom versionActions for one package
+            // "@my/special-pkg": { versionActions: "./version-actions/special.ts" },
+        },
 
-  // ── Migration gate ───────────────────────────────────────────────────
-  // Per-package; missing/false → still managed by multi-semantic-release
-  // (or whatever existed before)
-  defaultManaged: false,
+        // ── Migration gate ───────────────────────────────────────────────────
+        // Per-package; missing/false → still managed by multi-semantic-release
+        // (or whatever existed before)
+        defaultManaged: false,
 
-  // ── Pluggable hooks ──────────────────────────────────────────────────
-  preVersionCommand: "",
-  postVersionCommand: "",
-  prePublishCommand: "",
-  postPublishCommand: "",
+        // ── Pluggable hooks ──────────────────────────────────────────────────
+        preVersionCommand: "",
+        postVersionCommand: "",
+        prePublishCommand: "",
+        postPublishCommand: "",
 
-    // ── Trust gate for per-pkg custom commands ───────────────────────────
-    allowCustomCommands: false,
-  },
+        // ── Trust gate for per-pkg custom commands ───────────────────────────
+        allowCustomCommands: false,
+    },
 });
 ```
 
@@ -465,10 +465,10 @@ Add lazy command loading API. Plugins now ship via `loader: () => import(…)`.
 ```yaml
 ---
 "@visulima/error":
-  bump: minor
-  cascade:
-    "@visulima/error-handler": patch
-    "@visulima/inspector": patch
+    bump: minor
+    cascade:
+        "@visulima/error-handler": patch
+        "@visulima/inspector": patch
 ---
 Body becomes the changelog entry for `@visulima/error`; cascaded packages get a "Version bump from @visulima/error@X.Y.Z" entry.
 ```
@@ -491,26 +491,26 @@ Bumpy has no per-package channel concept. We port semantic-release's channel mod
 4. When `prerelease` is set, every `newVersion` is computed as `bumpVersion(oldVersion, level, preid)` — using semver's `prerelease` math: `1.2.3` + minor + alpha → `1.3.0-alpha.0`, then `-alpha.1`, etc.
 5. **Channel transitions** collapse or re-counter pre-release suffixes. Concrete table (matches semantic-release's behavior):
 
-   | From channel | Last published | To channel | Result | Notes |
-   |---|---|---|---|---|
-   | `main` | `1.2.3` | `alpha` (minor bump) | `1.3.0-alpha.0` | new prerelease line opened |
-   | `alpha` | `1.3.0-alpha.5` | `alpha` (patch bump) | `1.3.0-alpha.6` | counter increments |
-   | `alpha` | `1.3.0-alpha.5` | `beta` (no new bump) | `1.3.0-beta.0` | re-counter against new preid |
-   | `beta` | `1.3.0-beta.5` | `next` (no new bump) | `1.3.0-rc.0` | next channel's preid is `rc` (configurable per channel) |
-   | `next` | `1.3.0-rc.5` | `main` (no new bump) | `1.3.0` | preid stripped — final release |
-   | `alpha` | `1.3.0-alpha.5` | `main` (no new bump) | `1.3.0` | direct merge — preid stripped |
-   | `main` | `1.2.3` | `1.x` (maintenance, patch) | `1.2.4` | maintenance branch range-bound |
+    | From channel | Last published  | To channel                 | Result          | Notes                                                   |
+    | ------------ | --------------- | -------------------------- | --------------- | ------------------------------------------------------- |
+    | `main`       | `1.2.3`         | `alpha` (minor bump)       | `1.3.0-alpha.0` | new prerelease line opened                              |
+    | `alpha`      | `1.3.0-alpha.5` | `alpha` (patch bump)       | `1.3.0-alpha.6` | counter increments                                      |
+    | `alpha`      | `1.3.0-alpha.5` | `beta` (no new bump)       | `1.3.0-beta.0`  | re-counter against new preid                            |
+    | `beta`       | `1.3.0-beta.5`  | `next` (no new bump)       | `1.3.0-rc.0`    | next channel's preid is `rc` (configurable per channel) |
+    | `next`       | `1.3.0-rc.5`    | `main` (no new bump)       | `1.3.0`         | preid stripped — final release                          |
+    | `alpha`      | `1.3.0-alpha.5` | `main` (no new bump)       | `1.3.0`         | direct merge — preid stripped                           |
+    | `main`       | `1.2.3`         | `1.x` (maintenance, patch) | `1.2.4`         | maintenance branch range-bound                          |
 
-   Pending change files at the merge point are **consumed at the next `vis release version`** (i.e. they accumulate; they don't auto-merge with the channel-transition step). The channel-transition logic only re-computes the preid; bump levels still come from change files.
+    Pending change files at the merge point are **consumed at the next `vis release version`** (i.e. they accumulate; they don't auto-merge with the channel-transition step). The channel-transition logic only re-computes the preid; bump levels still come from change files.
 
 6. **Dist-tag** is taken from `config.channels[branch].tag`. Snapshots use whatever tag the user passes to `--tag`.
 
 ### 10.1.1 Channel mode (per-channel auto-publish vs version-PR)
 
-| `mode` | CI behavior |
-|---|---|
-| `"auto-publish"` | `vis release ci release` runs version + publish inline on push to the branch (current visulima alpha/beta workflow). |
-| `"version-pr"` | `vis release ci release` opens or updates a rolling "Versioned release" PR; merging it publishes (current bumpy default; closer to changesets). |
+| `mode`           | CI behavior                                                                                                                                     |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `"auto-publish"` | `vis release ci release` runs version + publish inline on push to the branch (current visulima alpha/beta workflow).                            |
+| `"version-pr"`   | `vis release ci release` opens or updates a rolling "Versioned release" PR; merging it publishes (current bumpy default; closer to changesets). |
 
 **Auto-publish ordering** (precise sequence): write versions + changelogs → run lockfile sync → format → commit + tag locally → publish each package (topo order) → push commit + tags atomically (`git push && git push --tags`, or `git push --atomic`) → create GH releases. State file (§19.1) is written before commit and cleared after push succeeds. If publish fails mid-wave: state file persists with `applied: [...] published: [...] tagged: [...] pushed: false`; re-run with `--resume` skips already-published packages and retries the rest.
 
@@ -524,7 +524,7 @@ Some packages need to release on a channel even from another branch (rare but re
 
 ```yaml
 ---
-"@visulima/cerebro": minor!latest    # force channel "latest" regardless of branch
+"@visulima/cerebro": minor!latest # force channel "latest" regardless of branch
 ---
 ```
 
@@ -533,6 +533,7 @@ The `!<channel>` suffix overrides branch detection for that package only. (Open 
 ### 10.3 Already-published version lookup
 
 For each package, the resolver consults (in order):
+
 1. The latest matching git tag for the channel (`<pkg>@<X.Y.Z-channel.*>`)
 2. The npm registry's dist-tag for that channel
 3. `package.json`'s current version
@@ -553,15 +554,15 @@ Rewrites internal-dep ranges in `package.json` source files but **preserves the 
 
 Pre-publish, `core/publish-pipeline.ts` rewrites:
 
-| Source | Resolved to (in published `package.json`) |
-|---|---|
-| `workspace:*` | `^<post-bump-version>` (yarn writes `=<version>` natively — we normalize to `^`) |
-| `workspace:^` | `^<post-bump-version>` |
-| `workspace:~` | `~<post-bump-version>` |
-| `workspace:^1.2.3` | `^1.2.3` (literal) |
-| `catalog:` | resolved from default catalog in `pnpm-workspace.yaml` |
-| `catalog:<name>` | resolved from named catalog |
-| `npm:<name>@<spec>` | passed through unchanged |
+| Source              | Resolved to (in published `package.json`)                                        |
+| ------------------- | -------------------------------------------------------------------------------- |
+| `workspace:*`       | `^<post-bump-version>` (yarn writes `=<version>` natively — we normalize to `^`) |
+| `workspace:^`       | `^<post-bump-version>`                                                           |
+| `workspace:~`       | `~<post-bump-version>`                                                           |
+| `workspace:^1.2.3`  | `^1.2.3` (literal)                                                               |
+| `catalog:`          | resolved from default catalog in `pnpm-workspace.yaml`                           |
+| `catalog:<name>`    | resolved from named catalog                                                      |
+| `npm:<name>@<spec>` | passed through unchanged                                                         |
 
 ### 11.3 Cross-PM strategy
 
@@ -588,6 +589,7 @@ Resulting rules in `core/publish-pipeline.ts`:
 ### 11.5 Already-published detection
 
 Per-package, in order:
+
 1. Custom `checkPublished` shell command (per-pkg config), if `allowCustomCommands` is on.
 2. Git tag presence: `<name>@<version>`.
 3. npm registry query: `npm view <name>@<version> version`.
@@ -602,14 +604,14 @@ The current `scripts/semantic-release-native-addons.mjs` is the most fragile par
 
 ```ts
 abstract class VersionActions {
-  abstract readCurrentVersion(): Promise<string>;
-  abstract bumpVersion(newVersion: string, ctx: BumpContext): Promise<{ changedFiles: string[] }>;
-  abstract updateDependencyVersions(deps: DepUpdate[]): Promise<{ changedFiles: string[] }>;
-  abstract publish(opts: PublishOptions): Promise<PublishResult>;
+    abstract readCurrentVersion(): Promise<string>;
+    abstract bumpVersion(newVersion: string, ctx: BumpContext): Promise<{ changedFiles: string[] }>;
+    abstract updateDependencyVersions(deps: DepUpdate[]): Promise<{ changedFiles: string[] }>;
+    abstract publish(opts: PublishOptions): Promise<PublishResult>;
 }
 
 abstract class AfterAllProjectsVersioned {
-  abstract afterAllVersioned(ctx: WorkspaceContext): Promise<{ changedFiles: string[]; deletedFiles: string[] }>;
+    abstract afterAllVersioned(ctx: WorkspaceContext): Promise<{ changedFiles: string[]; deletedFiles: string[] }>;
 }
 ```
 
@@ -619,11 +621,11 @@ For `task-runner`, `vis`, `tui`, `secret-scanner`:
 
 - `bumpVersion(newVersion)`: writes parent `package.json` AND every `npm/<platform>/package.json` to `newVersion`. Updates parent's `optionalDependencies` to `<binding>: <newVersion>` (resolves `workspace:*`).
 - `publish()`:
-  1. Detects OIDC vs `NPM_TOKEN` (port `getGithubActionsIdToken` + `resolveAuthToken` helpers from existing script).
-  2. Topo-publish: every `npm/<platform>/` first, parent last.
-  3. Per-platform OIDC token exchange: `https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/<name>` (port verbatim).
-  4. Dist-tag derived from `channels[branch].tag` (NOT from version string suffix as the current script does — single source of truth).
-  5. On failure during platform publishing, parent is **not** published; re-runs are idempotent because of "already published" detection.
+    1. Detects OIDC vs `NPM_TOKEN` (port `getGithubActionsIdToken` + `resolveAuthToken` helpers from existing script).
+    2. Topo-publish: every `npm/<platform>/` first, parent last.
+    3. Per-platform OIDC token exchange: `https://registry.npmjs.org/-/npm/v1/oidc/token/exchange/package/<name>` (port verbatim).
+    4. Dist-tag derived from `channels[branch].tag` (NOT from version string suffix as the current script does — single source of truth).
+    5. On failure during platform publishing, parent is **not** published; re-runs are idempotent because of "already published" detection.
 
 ### 12.3 Default `versionActions` per package — auto-detection
 
@@ -656,10 +658,10 @@ Replaces visulima's `scripts/publish-preview-release.js`. Algorithm derived from
 `vis release snapshot --tag pr-1234`:
 
 1. Resolve **affected packages**:
-   - If Nx project graph is available (visulima): `nx affected --files=<changed>`.
-   - Else: walk the dep graph from packages whose source files changed since `<base-ref>`.
+    - If Nx project graph is available (visulima): `nx affected --files=<changed>`.
+    - Else: walk the dep graph from packages whose source files changed since `<base-ref>`.
 2. For each affected package:
-   - `newVersion = config.snapshot.versionTemplate` interpolated (default `0.0.0-{tag}-{shortSha}`)
+    - `newVersion = config.snapshot.versionTemplate` interpolated (default `0.0.0-{tag}-{shortSha}`)
 3. Apply versions in a **throwaway worktree** (`git worktree add` then deleted) — never mutates the user's working tree.
 4. Resolve workspace protocols + `catalog:` refs (mode: forced `"in-place"` for snapshots — the pack manager doesn't always rewrite, and the version is fake).
 5. Pack via active PM, publish via `npm publish <tarball> --tag <tag> --no-git-checks`.
@@ -678,6 +680,7 @@ snapshot: {
 ```
 
 For PR #1234 on commit `abc1234567890def…`:
+
 - `0.0.0-pr-1234-abc1234` (the `pr` tag)
 - `0.0.0-abc1234-abc1234` (the `short-sha` tag)
 - `0.0.0-abc1234567890def…` (the `sha` tag)
@@ -702,11 +705,11 @@ If the configured backend supports tag deletion (self-hosted registries, or a cu
 
 ### 13.5 Backend choice
 
-| `snapshot.backend` | Behavior |
-|---|---|
-| `"pkg-pr-new"` (default) | shell out to `pnpm dlx pkg-pr-new publish ...`; consumers install via `npm i pkg@<pkg-pr-new-url>` |
-| `"registry"` | publish to whatever `publish.registry` is configured (a private/scoped npm registry) |
-| `{ url, auth }` | custom HTTP backend (e.g. self-hosted alchemy `pr-package` Worker) — POST tarball, return install URL |
+| `snapshot.backend`       | Behavior                                                                                              |
+| ------------------------ | ----------------------------------------------------------------------------------------------------- |
+| `"pkg-pr-new"` (default) | shell out to `pnpm dlx pkg-pr-new publish ...`; consumers install via `npm i pkg@<pkg-pr-new-url>`    |
+| `"registry"`             | publish to whatever `publish.registry` is configured (a private/scoped npm registry)                  |
+| `{ url, auth }`          | custom HTTP backend (e.g. self-hosted alchemy `pr-package` Worker) — POST tarball, return install URL |
 
 Visulima keeps `"pkg-pr-new"` for v1 (lowest-risk migration from current setup).
 
@@ -764,7 +767,7 @@ the operator re-run `vis release publish` once the team is ready.
   for those packages. Tracked for v2.
 - Approval itself requires interactive 2FA; OIDC tokens are rejected at
   `stage approve` time by design. Operators run `vis release stage
-  approve --all` locally with their authenticator if they need to
+approve --all` locally with their authenticator if they need to
   promote a stage that was left pending after CI cancelled.
 
 Snapshots always use the regular `npm publish` path; preview content
@@ -799,7 +802,7 @@ mutating anything. The function:
   this catches both "re-publish would create a parallel stage" and
   "re-version would orphan the prior tarball"
 - Self-heals out-of-band approvals by running `npm view <pkg>@<version>
-  dist.tarball` per conflict; live versions are silently drained so the
+dist.tarball` per conflict; live versions are silently drained so the
   operator doesn't need to manually edit `staged.json` after approving
   on npmjs.com
 - Throws `STAGE_PENDING` if any conflict remains
@@ -810,7 +813,7 @@ mutating anything. The function:
   `staged.json`. Entries get a `[npm-only]` / `[registry-only, reason]`
   tag when the two sources disagree.
 - `vis release stage approve <ids…>` or `--all` — wraps `npm stage
-  approve` per id, runs sequentially so the 2FA prompt reaches the
+approve` per id, runs sequentially so the 2FA prompt reaches the
   operator's tty once per id. `--all` reads `.vis/release/staged.json`
   (the tracked file). On success, drains approved ids from the
   registry, commits with `chore(release): approve N stages [skip ci]`,
@@ -836,15 +839,15 @@ before committing.
 
 Port nx release's hook model (less surface than semantic-release's 9 hooks but more focused):
 
-| Hook | Where | Port from |
-|---|---|---|
-| `preVersionCommand` | shell command, before any versioning | nx |
-| `groupPreVersionCommand` (per fixed/linked group) | shell command | nx |
-| `versionActions.afterAllVersioned` | TS function returning `{changedFiles, deletedFiles}` for git staging | nx |
-| `prePublishCommand` | shell command, after version, before publish | (new) |
-| `postPublishCommand` | shell command, after all publishes | (new) |
-| Custom `versionActions` class | per-pkg | nx |
-| Custom `ChangelogFormatter` | function | bumpy |
+| Hook                                              | Where                                                                | Port from |
+| ------------------------------------------------- | -------------------------------------------------------------------- | --------- |
+| `preVersionCommand`                               | shell command, before any versioning                                 | nx        |
+| `groupPreVersionCommand` (per fixed/linked group) | shell command                                                        | nx        |
+| `versionActions.afterAllVersioned`                | TS function returning `{changedFiles, deletedFiles}` for git staging | nx        |
+| `prePublishCommand`                               | shell command, after version, before publish                         | (new)     |
+| `postPublishCommand`                              | shell command, after all publishes                                   | (new)     |
+| Custom `versionActions` class                     | per-pkg                                                              | nx        |
+| Custom `ChangelogFormatter`                       | function                                                             | bumpy     |
 
 Hook execution order on `vis release`:
 
@@ -871,21 +874,21 @@ Hook execution order on `vis release`:
 import { releaseVersion, releaseChangelog, releasePublish } from "@visulima/vis/release";
 
 const versionData = await releaseVersion({
-  // optional overrides; defaults from vis.config.ts
-  projects: ["@visulima/cerebro"],
-  channel: "alpha",
-  dryRun: false,
+    // optional overrides; defaults from vis.config.ts
+    projects: ["@visulima/cerebro"],
+    channel: "alpha",
+    dryRun: false,
 });
 
 const changelogData = await releaseChangelog({
-  versionData,
-  interactive: false,
+    versionData,
+    interactive: false,
 });
 
 const publishResult = await releasePublish({
-  versionData,
-  tag: "alpha",
-  otp: undefined,
+    versionData,
+    tag: "alpha",
+    otp: undefined,
 });
 ```
 
@@ -899,11 +902,11 @@ Same shape as nx: `versionData` flows from version → changelog → publish so 
 
 ### 16.1 New workflows
 
-| Workflow | Purpose | Replaces |
-|---|---|---|
-| `.github/workflows/vis-release-check.yml` | runs `vis release ci check` on every PR | (no equivalent today) |
-| `.github/workflows/vis-release.yml` | runs `vis release ci release` on push to release branches | `semantic-release.yml` |
-| `.github/workflows/vis-release-snapshot.yml` | runs `vis release ci snapshot --tag pr-<n>` on PRs | `preview-release.yaml` |
+| Workflow                                     | Purpose                                                   | Replaces               |
+| -------------------------------------------- | --------------------------------------------------------- | ---------------------- |
+| `.github/workflows/vis-release-check.yml`    | runs `vis release ci check` on every PR                   | (no equivalent today)  |
+| `.github/workflows/vis-release.yml`          | runs `vis release ci release` on push to release branches | `semantic-release.yml` |
+| `.github/workflows/vis-release-snapshot.yml` | runs `vis release ci snapshot --tag pr-<n>` on PRs        | `preview-release.yaml` |
 
 ### 16.2 Tokens & permissions
 
@@ -915,19 +918,20 @@ Same pattern as bumpy:
 
 Permissions:
 
-| Workflow | Needs |
-|---|---|
-| check | `pull-requests: write` |
-| release | `contents: write`, `pull-requests: write`, `id-token: write` |
+| Workflow | Needs                                                        |
+| -------- | ------------------------------------------------------------ |
+| check    | `pull-requests: write`                                       |
+| release  | `contents: write`, `pull-requests: write`, `id-token: write` |
 | snapshot | `contents: write`, `pull-requests: write`, `id-token: write` |
 
 ### 16.3 Native artifact distribution stays workflow-side
 
 The release workflow still:
+
 1. Waits for `build-native.yml` to complete.
 2. Downloads artifacts via `actions/download-artifact`.
 3. Distributes via `pnpm exec napi artifacts --output-dir . --npm-dir npm`.
-4. *Then* calls `vis release ci release`.
+4. _Then_ calls `vis release ci release`.
 
 The release subsystem does not orchestrate native builds — only the publish of `.node`-containing platform packages.
 
@@ -968,13 +972,13 @@ Goal: zero-downtime migration. Both systems coexist for ≥1 release cycle.
 1. **Read root config** (`package.json["release"]` if present, plus root `.releaserc.json`).
 2. **Detect preset chain** via `extends:` field. Common: `@anolilab/semantic-release-preset/pnpm` → infer plugin chain (commit-analyzer + release-notes-generator + changelog + git + npm + github).
 3. **Map `branches` config → `channels` config**:
-   ```text
-   "main"                                         → channels.main = { tag: "latest" }
-   { name: "alpha", prerelease: true }            → channels.alpha = { tag: "alpha", prerelease: "alpha", mode: "auto-publish" }
-   { name: "beta", prerelease: true }             → channels.beta  = { tag: "beta",  prerelease: "beta",  mode: "auto-publish" }
-   "next"                                         → channels.next  = { tag: "next",  mode: "auto-publish" }
-   "+([0-9])?(.{+([0-9]),x}).x"                   → channels[…glob…] = { tag: "branch-name", range: "match" }
-   ```
+    ```text
+    "main"                                         → channels.main = { tag: "latest" }
+    { name: "alpha", prerelease: true }            → channels.alpha = { tag: "alpha", prerelease: "alpha", mode: "auto-publish" }
+    { name: "beta", prerelease: true }             → channels.beta  = { tag: "beta",  prerelease: "beta",  mode: "auto-publish" }
+    "next"                                         → channels.next  = { tag: "next",  mode: "auto-publish" }
+    "+([0-9])?(.{+([0-9]),x}).x"                   → channels[…glob…] = { tag: "branch-name", range: "match" }
+    ```
 4. **Per-package overrides**: walk every `*/.releaserc.json`, capture any plugin-array overrides (e.g. `scripts/semantic-release-native-addons.mjs`) → emit a TODO comment in the generated config asking the user to confirm `versionActions: "native-addon"` (already auto-detected via `napi` field for visulima).
 5. **Last-published baseline**: existing `<pkg>@<X.Y.Z>` git tags **stay valid** — `vis release publish`'s already-published detection reads them in the same format. No tag backfill needed.
 6. **Existing `CHANGELOG.md`**: untouched. New entries prepended on next release. Mixed format accepted (see §17.3).
@@ -988,19 +992,19 @@ Goal: zero-downtime migration. Both systems coexist for ≥1 release cycle.
 #### What `vis release init --from-changesets` does
 
 1. **Read `.changeset/config.json`** → emit `vis.config.ts`. Mapping:
-   ```text
-   changelog                       → changelog              (path supported as-is; "@changesets/cli/changelog" → "default"; "@changesets/changelog-github" → "github")
-   commit                          → versionPr.autoCommit    (boolean)
-   fixed                           → fixed
-   linked                          → linked
-   access                          → access
-   baseBranch                      → baseBranch
-   updateInternalDependencies      → updateInternalDependencies (compatible: "patch"|"minor")
-   ignore                          → ignore
-   privatePackages                 → privatePackages
-   snapshot.prereleaseTemplate     → snapshot.versionTemplate (translate placeholder syntax)
-   snapshot.useCalculatedVersion   → snapshot.useCalculatedVersion
-   ```
+    ```text
+    changelog                       → changelog              (path supported as-is; "@changesets/cli/changelog" → "default"; "@changesets/changelog-github" → "github")
+    commit                          → versionPr.autoCommit    (boolean)
+    fixed                           → fixed
+    linked                          → linked
+    access                          → access
+    baseBranch                      → baseBranch
+    updateInternalDependencies      → updateInternalDependencies (compatible: "patch"|"minor")
+    ignore                          → ignore
+    privatePackages                 → privatePackages
+    snapshot.prereleaseTemplate     → snapshot.versionTemplate (translate placeholder syntax)
+    snapshot.useCalculatedVersion   → snapshot.useCalculatedVersion
+    ```
 2. **Migrate `.changeset/*.md` files** to `.vis/release/*.md`. The frontmatter is **already compatible** (YAML keys = package names, values = bump levels). Copy verbatim, rename file extension preserved.
 3. **Pre-release mode** (`.changeset/pre.json`): if present, **abort migration with a clear error**: "exit pre-release mode (`changeset pre exit`) and run a release before migrating". Pre-mode state is too tightly coupled to changesets internals to translate cleanly.
 4. **Existing tags + CHANGELOG.md**: untouched. Same as semantic-release migration.
@@ -1017,6 +1021,7 @@ Goal: zero-downtime migration. Both systems coexist for ≥1 release cycle.
 **Phase 2 — Pilot package: a non-NAPI package.** Vis itself is a NAPI parent (has a `napi` field, ships 8 platform packages under `npm/`) so it cannot self-host until the `native-addon` versionActions plugin lands in Phase 4. Pilot Phase 2 instead with a leaf, non-NAPI, well-isolated package — recommendation: **`@visulima/string`** (no inter-package deps that complicate the propagation algorithm; produces a fast feedback loop). Add `"vis-release": { "managed": true }` to the pilot, delete its `.releaserc.json`, write the first `.vis/release/*.md` change file. Catches dogfooding bugs in change-file authoring, version computation, publish-pipeline, and the mixed-format CHANGELOG flow.
 
 **Phase 3 — Migrate non-NAPI packages in waves.** For each wave:
+
 1. Add `"vis-release": { "managed": true }` to the wave's packages.
 2. Backfill missing git tags for the wave (so "already published" detection works).
 3. Add wave packages to `multi-semantic-release` `--ignore-packages` exclusion list.
@@ -1039,11 +1044,11 @@ Suggested wave order: tooling (least dep'd) → terminal → error-debugging →
 
 **Insertion-point logic** (handles all three real-world starting states):
 
-| Existing CHANGELOG state | Insertion point |
-|---|---|
-| Has `# Title` then `##` entries (bumpy / changesets convention) | After the `# Title` line, before the first `##` |
-| Starts directly with `##` entries (semantic-release / visulima convention — verified `## @visulima/string [3.0.0-alpha.11]…`) | At the very top of the file |
-| Empty file or file does not exist | Create file with `# Changelog\n\n` header, then prepend |
+| Existing CHANGELOG state                                                                                                      | Insertion point                                         |
+| ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| Has `# Title` then `##` entries (bumpy / changesets convention)                                                               | After the `# Title` line, before the first `##`         |
+| Starts directly with `##` entries (semantic-release / visulima convention — verified `## @visulima/string [3.0.0-alpha.11]…`) | At the very top of the file                             |
+| Empty file or file does not exist                                                                                             | Create file with `# Changelog\n\n` header, then prepend |
 
 Existing semantic-release entries (`## @visulima/cerebro [3.0.0-alpha.13](compare-link) (2026-04-30)`) and changesets entries (`## 1.2.3\n\n### Patch Changes\n\n- abc1234: …`) remain untouched below the new entries. Mixed format is intentional and accepted — the file is human-readable, the inconsistency is a one-time visual artifact at the migration boundary.
 
@@ -1057,22 +1062,22 @@ Port semantic-release's `branches` config (§10) so all 5 visulima channels work
 
 **Distinct from §17.3's rollout phases.** §17.3 phases (P0–P7) describe **when each visulima package migrates**. §18 milestones (M1–M14) describe **what code lands in vis when**. Renamed to avoid the "Phase 4 means two different things" confusion.
 
-| Milestone | Deliverable | Estimated complexity |
-|---|---|---|
-| **M1. RFC + skeleton** | This file + `package.json` adds `conventional-commits-parser` (the only net-new dep — `yaml`/`semver`/`zeptomatch`/`@visulima/redact` already present) + empty `src/release/` + empty `src/commands/release/` + `release` field on `VisConfig` | trivial |
-| **M2. Core algorithms** | `core/release-plan.ts` (three-phase loop), `core/dep-graph.ts`, `core/change-file.ts`, `core/semver.ts`, `core/channels.ts`, `core/catalog.ts`, `core/workspace.ts` (Nx-graph-backed where available) | ~800 LOC + tests |
-| **M3. Apply + publish** | `core/apply-release-plan.ts`, `core/publish-pipeline.ts`, `core/clean-package-json.ts`, `core/package-managers/{npm,pnpm,yarn,bun}.ts`, `core/version-actions/{npm,private}.ts` | ~700 LOC |
-| **M4. CLI scaffold** | `commands/release/{add,status,check,version,publish,plan,doctor,init}/{handler,index}.ts` + cerebro registration in `bin.ts` | ~500 LOC |
-| **M5. Channels in CLI** | wire branch detection + channel routing + pre-release suffix into `version`/`publish` handlers | ~150 LOC |
-| **M6. Changelog formatters** | `core/changelog/{default,github,api}.ts` + author resolver | ~300 LOC |
-| **M7. Native addon plugin** | `core/version-actions/native-addon.ts` — port `semantic-release-native-addons.mjs` (OIDC token exchange, per-platform pack/publish) | ~300 LOC |
-| **M8. Snapshot** | `commands/release/snapshot/handler.ts` + `commands/release/ci/snapshot/handler.ts` + Nx-affected integration + multi-tag publish | ~200 LOC |
-| **M9. CI commands** | `commands/release/ci/{check,plan,release,setup}/handler.ts` + state file persistence + sticky-comment-via-marker | ~500 LOC |
-| **M10. Init + migration readers** | `commands/release/init/handler.ts` + readers for `.releaserc.json`, `.changeset/config.json`, `.bumpy/_config.json`; husky prompt; per-pkg opt-in plumbing | ~400 LOC |
-| **M11. Programmatic API** | `src/release/index.ts`, `src/release/api.ts`, `ReleaseClient`, types export from `@visulima/vis/release` sub-export | ~200 LOC |
-| **M12. Docs + JSON-schema** | `README.md` section, `config-schema.json`, examples, migration recipes | ~docs |
-| **M13. GH Actions workflows** | `vis-release-check.yml`, `vis-release.yml`, `vis-release-snapshot.yml` — replaces `semantic-release.yml` and `preview-release.yaml` | ~200 LOC YAML |
-| **M14. Pilot release of `@visulima/string`** | First non-NAPI package self-hosts (matches §17.3 Phase 2). End-to-end smoke test of M1–M13 | trivial |
+| Milestone                                    | Deliverable                                                                                                                                                                                                                                    | Estimated complexity |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | -------------------- |
+| **M1. RFC + skeleton**                       | This file + `package.json` adds `conventional-commits-parser` (the only net-new dep — `yaml`/`semver`/`zeptomatch`/`@visulima/redact` already present) + empty `src/release/` + empty `src/commands/release/` + `release` field on `VisConfig` | trivial              |
+| **M2. Core algorithms**                      | `core/release-plan.ts` (three-phase loop), `core/dep-graph.ts`, `core/change-file.ts`, `core/semver.ts`, `core/channels.ts`, `core/catalog.ts`, `core/workspace.ts` (Nx-graph-backed where available)                                          | ~800 LOC + tests     |
+| **M3. Apply + publish**                      | `core/apply-release-plan.ts`, `core/publish-pipeline.ts`, `core/clean-package-json.ts`, `core/package-managers/{npm,pnpm,yarn,bun}.ts`, `core/version-actions/{npm,private}.ts`                                                                | ~700 LOC             |
+| **M4. CLI scaffold**                         | `commands/release/{add,status,check,version,publish,plan,doctor,init}/{handler,index}.ts` + cerebro registration in `bin.ts`                                                                                                                   | ~500 LOC             |
+| **M5. Channels in CLI**                      | wire branch detection + channel routing + pre-release suffix into `version`/`publish` handlers                                                                                                                                                 | ~150 LOC             |
+| **M6. Changelog formatters**                 | `core/changelog/{default,github,api}.ts` + author resolver                                                                                                                                                                                     | ~300 LOC             |
+| **M7. Native addon plugin**                  | `core/version-actions/native-addon.ts` — port `semantic-release-native-addons.mjs` (OIDC token exchange, per-platform pack/publish)                                                                                                            | ~300 LOC             |
+| **M8. Snapshot**                             | `commands/release/snapshot/handler.ts` + `commands/release/ci/snapshot/handler.ts` + Nx-affected integration + multi-tag publish                                                                                                               | ~200 LOC             |
+| **M9. CI commands**                          | `commands/release/ci/{check,plan,release,setup}/handler.ts` + state file persistence + sticky-comment-via-marker                                                                                                                               | ~500 LOC             |
+| **M10. Init + migration readers**            | `commands/release/init/handler.ts` + readers for `.releaserc.json`, `.changeset/config.json`, `.bumpy/_config.json`; husky prompt; per-pkg opt-in plumbing                                                                                     | ~400 LOC             |
+| **M11. Programmatic API**                    | `src/release/index.ts`, `src/release/api.ts`, `ReleaseClient`, types export from `@visulima/vis/release` sub-export                                                                                                                            | ~200 LOC             |
+| **M12. Docs + JSON-schema**                  | `README.md` section, `config-schema.json`, examples, migration recipes                                                                                                                                                                         | ~docs                |
+| **M13. GH Actions workflows**                | `vis-release-check.yml`, `vis-release.yml`, `vis-release-snapshot.yml` — replaces `semantic-release.yml` and `preview-release.yaml`                                                                                                            | ~200 LOC YAML        |
+| **M14. Pilot release of `@visulima/string`** | First non-NAPI package self-hosts (matches §17.3 Phase 2). End-to-end smoke test of M1–M13                                                                                                                                                     | trivial              |
 
 Order can run partially in parallel (changelog formatters and CI commands have no shared code; M6/M9 can land in parallel after M2–M4 ship). M7 unblocks §17.3 Phase 4 (NAPI migration including vis itself).
 
@@ -1091,7 +1096,6 @@ Before writing more code, verify the tool-chain assumptions made in this RFC:
 
 ---
 
-
 ## 19. Operational concerns
 
 ### 19.1 Failure modes, atomicity, recovery
@@ -1099,6 +1103,7 @@ Before writing more code, verify the tool-chain assumptions made in this RFC:
 Best-practice contract for a release tool — borrowed from semantic-release's `verifyConditions` discipline plus bumpy's per-package isolation:
 
 **Pre-flight (no side effects):**
+
 1. Auth check — OIDC env vars or `NPM_TOKEN`; `gh auth status`; `git remote get-url`.
 2. Registry reachability — HEAD `https://registry.npmjs.org/-/ping` (or configured registry) per unique registry.
 3. Workspace integrity — no duplicate package names, no dep cycles, all platform packages exist for `native-addon` parents, all `workspace:` refs resolve.
@@ -1113,6 +1118,7 @@ If any pre-flight check fails, **no version files are written**, **no tags are c
 Each package's mutation is treated as a **single atomic unit**: pack → publish → tag local → record success. Failures don't roll back **already-successful** packages; `vis release publish` collects failures and exits non-zero with a summary.
 
 **Ordering invariants:**
+
 - Topological order (deps before dependents).
 - Native-addon: platform packages publish before parent (forced by the `native-addon` versionActions implementation, not config).
 - Tags created **after** publish succeeds (avoids the "tag exists but package doesn't" failure mode).
@@ -1121,6 +1127,7 @@ Each package's mutation is treated as a **single atomic unit**: pack → publish
 **Idempotent re-runs:**
 
 The "already-published" detection (§11.5) makes every command safe to re-run:
+
 1. `<pkg>@<version>` git tag exists locally → skip publish.
 2. `npm view <pkg>@<version> version` returns the version → create the missing tag, skip publish.
 3. Custom `checkPublished` shell command (per-pkg, gated by `allowCustomCommands`) → run it.
@@ -1133,14 +1140,16 @@ A failed wave can be resumed by re-running the same `vis release publish` invoca
 
 ```jsonc
 {
-  "version": 1,
-  "startedAt": "2026-05-02T10:15:00Z",
-  "channel": "alpha",
-  "plan": [/* full release plan */],
-  "applied": ["@scope/pkg-a@1.2.0", "@scope/pkg-b@2.0.1"],   // versions written to disk
-  "published": ["@scope/pkg-a@1.2.0"],                        // tarballs uploaded
-  "tagged": ["@scope/pkg-a@1.2.0"],                           // local tags created
-  "pushed": false                                              // tags pushed to remote
+    "version": 1,
+    "startedAt": "2026-05-02T10:15:00Z",
+    "channel": "alpha",
+    "plan": [
+        /* full release plan */
+    ],
+    "applied": ["@scope/pkg-a@1.2.0", "@scope/pkg-b@2.0.1"], // versions written to disk
+    "published": ["@scope/pkg-a@1.2.0"], // tarballs uploaded
+    "tagged": ["@scope/pkg-a@1.2.0"], // local tags created
+    "pushed": false, // tags pushed to remote
 }
 ```
 
@@ -1151,6 +1160,7 @@ A failed wave can be resumed by re-running the same `vis release publish` invoca
 **Concurrency lock:**
 
 Three layers (defense in depth):
+
 - **Process-level**: `<changesDir>/.lock` file with PID + timestamp; refuses to start if held by a live PID. Stale-lock detection: PID not running OR lock older than 1 hour.
 - **In-flight version-PR check**: before starting `publish`, query `gh pr list --head ${versionPr.branch} --state open --json number`. If a version-PR exists, `publish` refuses with a clear error: "An open release PR exists (#NNN). Merge or close it before publishing locally." This catches the cross-machine race where a developer runs `vis release publish` locally while CI is mid-release-PR cycle.
 - **CI-level**: GitHub Actions `concurrency: { group: "vis-release-${{ github.ref }}", cancel-in-progress: false }` (port from bumpy). Configurable via workflow.
@@ -1162,6 +1172,7 @@ If `git push --tags` fails after publish succeeded: state file persists with `ta
 **Half-published wave summary:**
 
 `vis release publish` exit codes:
+
 - `0` — every package published successfully.
 - `1` — pre-flight failed (no changes made).
 - `2` — partial publish (some packages published, others failed). State file persisted.
@@ -1173,21 +1184,21 @@ The summary printed at the end lists every `published` / `skipped` / `failed` pa
 
 `vis release doctor` runs the pre-flight checks above plus deeper diagnostics, designed for "why isn't my setup working?" troubleshooting:
 
-| Check | Severity |
-|---|---|
-| Lockfile + `packageManager` field consistency | warn |
-| All workspace globs resolve to ≥1 package | error |
-| No duplicate package names | error |
-| No dep cycles (DFS check) | warn (cycles work but cause topo-sort surprises) |
-| `gh auth status` returns OK | error if `gh` is required by config |
-| Registry reachable (HEAD ping per unique registry) | error |
-| OIDC env vars present (in CI only) | warn |
-| Native-addon parents: all platform packages exist + version match | error |
-| Native-addon parents: `optionalDependencies` reference platform packages | error |
-| Existing tags parseable as `<pkg>@<version>` | warn |
-| Existing `CHANGELOG.md` files have a recognized format | info |
-| `pnpm-workspace.yaml` catalogs match catalog refs in package.jsons | warn |
-| Package manager version meets minimums (§19.6) | error |
+| Check                                                                    | Severity                                         |
+| ------------------------------------------------------------------------ | ------------------------------------------------ |
+| Lockfile + `packageManager` field consistency                            | warn                                             |
+| All workspace globs resolve to ≥1 package                                | error                                            |
+| No duplicate package names                                               | error                                            |
+| No dep cycles (DFS check)                                                | warn (cycles work but cause topo-sort surprises) |
+| `gh auth status` returns OK                                              | error if `gh` is required by config              |
+| Registry reachable (HEAD ping per unique registry)                       | error                                            |
+| OIDC env vars present (in CI only)                                       | warn                                             |
+| Native-addon parents: all platform packages exist + version match        | error                                            |
+| Native-addon parents: `optionalDependencies` reference platform packages | error                                            |
+| Existing tags parseable as `<pkg>@<version>`                             | warn                                             |
+| Existing `CHANGELOG.md` files have a recognized format                   | info                                             |
+| `pnpm-workspace.yaml` catalogs match catalog refs in package.jsons       | warn                                             |
+| Package manager version meets minimums (§19.6)                           | error                                            |
 
 `vis release doctor --json` emits a machine-readable report. Exit code: 0 if no errors, 1 otherwise.
 
@@ -1224,6 +1235,7 @@ Change files are parsed via vis's existing `yaml` dep: `yaml.parse(content, { st
 Regex `^(@[a-z0-9-]{1,39}\/)?[a-z0-9._-]{1,214}$`, max total length 214, no leading hyphen/dot/underscore (npm-compliant). Reject control chars, HTML metachars, shell metachars, path separators outside scopes. Validation runs at the discovery boundary so every downstream consumer can trust `pkg.name` is shell-safe.
 
 **Workspace path containment:** ✅ shipped
+
 - `discoverPackages` rejects any `manifestPath` that resolves outside `cwd` — defends against a buggy PM adapter writing under `/etc`.
 - `readChangeFiles` rejects any `changesDir` that resolves outside `cwd` — defends against a malicious `release.changesDir: "../../etc"` exfiltrating files.
 
@@ -1234,6 +1246,7 @@ User-supplied text (change-file body warnings, package descriptions) is escaped 
 Port of bumpy's `sq()` quoter (POSIX `'…'` quoting with single-quote escape via `'\''`). Custom commands (`publishCommand`, `buildCommand`, `checkPublished`) ALWAYS run user-supplied tokens (`{{name}}`, `{{version}}`) through `sq()` before substitution. No raw concatenation. No `eval`. Native-addon publish uses `execFileSync` argv form (not `execSync` + string-concat) so even validated names get a second trust gate.
 
 **Custom-command trust gate:** ✅ shipped (`core/security.ts:isCustomCommandAllowed`/`resolveCustomCommands`)
+
 - Root `vis.config.ts`'s commands are trusted (the maintainer wrote them).
 - Per-package `package.json["vis-release"]["publishCommand"]` requires `allowCustomCommands` to be truthy. Reasoning: in version-PR flows the bot runs publish, and a malicious PR could add a per-package custom command. Match bumpy's gate exactly.
 - `allowCustomCommands` accepts `boolean | string[]`. Array form is a glob allowlist of package names.
@@ -1258,14 +1271,17 @@ Port nx's `CreateNxReleaseConfigError` shape. Single union type `VisReleaseError
 
 ```ts
 type VisReleaseErrorCode =
-  | "AUTH_MISSING"
-  | "DUPLICATE_PACKAGE_NAME" | "CYCLIC_DEPENDENCY"
-  | "TAG_COLLISION"
-  | "BUMP_FILE_INVALID" | "CONFIG_INVALID"
-  | "PM_VERSION_TOO_LOW"
-  | "NATIVE_ADDON_VERSION_MISMATCH"
-  | "PUBLISH_FAILED" | "TAG_PUSH_FAILED"
-  | "STATE_FILE_CORRUPT";
+    | "AUTH_MISSING"
+    | "DUPLICATE_PACKAGE_NAME"
+    | "CYCLIC_DEPENDENCY"
+    | "TAG_COLLISION"
+    | "BUMP_FILE_INVALID"
+    | "CONFIG_INVALID"
+    | "PM_VERSION_TOO_LOW"
+    | "NATIVE_ADDON_VERSION_MISMATCH"
+    | "PUBLISH_FAILED"
+    | "TAG_PUSH_FAILED"
+    | "STATE_FILE_CORRUPT";
 ```
 
 > Codes are added as needed. Previously-listed but never-thrown codes
@@ -1297,6 +1313,7 @@ ${plan.details}
 ```
 
 Where:
+
 - `${channel}` is the active channel name (`alpha`, `beta`, `next`, `main`, ...) → satisfies the `(scope)` requirement.
 - `${plan.summary}` is `"version 12 packages"` or `"@visulima/cerebro 1.2.3, @visulima/cerebro-plugins 0.4.1"` if ≤3 packages.
 - `${plan.details}` is the per-package list.
@@ -1314,16 +1331,16 @@ This format passes commitlint (visulima already has `release` in the allowed typ
 
 Hard requirements:
 
-| Manager | Minimum | Why |
-|---|---|---|
-| npm | **11.5.1** | OIDC trusted publishing GA |
-| pnpm | **9.5** | catalog protocol |
-| pnpm | **10.0** (recommended) | catalog refinements + native publish |
-| yarn (Berry) | **4.0** | only Berry; v1/Classic unsupported |
-| bun | **1.1.36** | workspace publish + protocol rewriting |
-| node | **22.14.0** ‖ **>=24.10.0** | matches visulima's `engines` |
-| git | **2.31** | sane `git for-each-ref` output for tag enumeration |
-| gh CLI | **2.40** | required when `gh` is invoked (release create + PR comments); otherwise optional |
+| Manager      | Minimum                     | Why                                                                              |
+| ------------ | --------------------------- | -------------------------------------------------------------------------------- |
+| npm          | **11.5.1**                  | OIDC trusted publishing GA                                                       |
+| pnpm         | **9.5**                     | catalog protocol                                                                 |
+| pnpm         | **10.0** (recommended)      | catalog refinements + native publish                                             |
+| yarn (Berry) | **4.0**                     | only Berry; v1/Classic unsupported                                               |
+| bun          | **1.1.36**                  | workspace publish + protocol rewriting                                           |
+| node         | **22.14.0** ‖ **>=24.10.0** | matches visulima's `engines`                                                     |
+| git          | **2.31**                    | sane `git for-each-ref` output for tag enumeration                               |
+| gh CLI       | **2.40**                    | required when `gh` is invoked (release create + PR comments); otherwise optional |
 
 Detected at startup via `<pm> --version`. Hard-fail with `PM_VERSION_TOO_LOW` if below minimum. Warn (not fail) if below recommended.
 
@@ -1333,15 +1350,15 @@ Detected at startup via `<pm> --version`. Hard-fail with `PM_VERSION_TOO_LOW` if
 
 Every command accepts `--dry-run`. Behavior:
 
-| Phase | Live behavior | Dry-run behavior |
-|---|---|---|
-| File writes | write to disk | write to in-memory `FsTree`; print unified diff |
-| Git commit/tag | execute | print command + flags |
-| Git push | execute | print command + flags |
-| `npm publish` | execute | print command + tarball name + dist-tag + registry |
-| `gh api` | execute | print method + URL + redacted body summary |
-| State file | persist | persist in-memory only |
-| Exit code | 0 on success / non-zero on failure | always 0 unless pre-flight fails |
+| Phase          | Live behavior                      | Dry-run behavior                                   |
+| -------------- | ---------------------------------- | -------------------------------------------------- |
+| File writes    | write to disk                      | write to in-memory `FsTree`; print unified diff    |
+| Git commit/tag | execute                            | print command + flags                              |
+| Git push       | execute                            | print command + flags                              |
+| `npm publish`  | execute                            | print command + tarball name + dist-tag + registry |
+| `gh api`       | execute                            | print method + URL + redacted body summary         |
+| State file     | persist                            | persist in-memory only                             |
+| Exit code      | 0 on success / non-zero on failure | always 0 unless pre-flight fails                   |
 
 Dry-run output is prefixed with `[dry-run]` on every line for `grep`-ability. Trailer: `Dry run complete. No changes made.`
 
@@ -1359,8 +1376,8 @@ Visulima's root `postinstall` script runs `pnpm run generate:release-artifacts` 
 
 ```ts
 defineConfig({
-  postVersionCommand: "pnpm run generate:release-artifacts",
-  // ...
+    postVersionCommand: "pnpm run generate:release-artifacts",
+    // ...
 });
 ```
 
@@ -1381,6 +1398,7 @@ Husky `pre-commit` runs `secretlint` (via `lint-staged`) on every staged file. C
 Today's preset uses `@anolilab/semantic-release-clean-package-json`. The new tool ships `core/clean-package-json.ts` with the equivalent default behavior:
 
 **Stripped on publish** (in the resolved tarball, never on disk):
+
 - `scripts` (don't ship build/dev scripts)
 - `devDependencies`
 - `private` (false meta — published packages aren't private)
@@ -1388,6 +1406,7 @@ Today's preset uses `@anolilab/semantic-release-clean-package-json`. The new too
 - Tool config blocks: `vis-release`, `bumpy`, `release`, `nx`, `lint-staged`, `husky`, `commitlint`, `eslint`, `prettier`, `vitest`, `tsup`, `packem`, `tsdown`, `@visulima/packem`, `pnpm`
 
 **Preserved**:
+
 - `name`, `version`, `description`, `keywords`, `homepage`, `bugs`, `repository`, `funding`, `author`, `contributors`, `license`
 - `dependencies`, `peerDependencies`, `peerDependenciesMeta`, `optionalDependencies` (after protocol/catalog resolution)
 - `engines`, `os`, `cpu`
@@ -1395,22 +1414,26 @@ Today's preset uses `@anolilab/semantic-release-clean-package-json`. The new too
 - `publishConfig`, `napi`
 
 Configurable per project:
+
 ```ts
 publish: {
   cleanPackageJson: { strip: [...], keep: [...] } | false;
 }
 ```
+
 `strip` extends defaults; `keep` removes from defaults. `false` ships the unmodified `package.json`.
 
 ### 20.5 `lint-staged` integration
 
 `vis release init --update-lint-staged` adds entries:
+
 ```jsonc
 {
-  ".vis/release/*.md": ["vis release check --hook pre-commit --no-fail"],
-  "package.json":      ["vis release validate-package-json"]
+    ".vis/release/*.md": ["vis release check --hook pre-commit --no-fail"],
+    "package.json": ["vis release validate-package-json"],
 }
 ```
+
 Optional — opt-in via flag. Documented as the recommended setup.
 
 ### 20.6 Existing `commitlint` and `release` type allowance
@@ -1424,6 +1447,7 @@ Optional — opt-in via flag. Documented as the recommended setup.
 ### 20.8 Dependency on existing `pkg-pr-new`
 
 Visulima already has `pkg-pr-new` working via `scripts/publish-preview-release.js`. The `vis release ci snapshot` command preserves this:
+
 - Default backend: `pkg-pr-new`
 - Default behavior: identical PR comment to today's
 - Migration: replace `scripts/publish-preview-release.js` invocation in `.github/workflows/preview-release.yaml` with `vis release ci snapshot --tag pr-${PR_NUMBER}`. Drop-in.
@@ -1468,6 +1492,7 @@ The release subsystem is **flagged unstable** (printed warning on first invocati
 ### 21.3 Bootstrap
 
 Detailed in §17.3 (Phase 0 → Phase 7). Summary:
+
 - Phase 0–1: code lands in vis but visulima releases continue via existing `multi-semantic-release`.
 - Phase 2: vis itself adopts `release.managed: true` — first dogfood.
 - Phase 3+: visulima packages migrate in waves; both systems coexist.
@@ -1511,6 +1536,7 @@ Detailed in §17.3 (Phase 0 → Phase 7). Summary:
 ## 23. References
 
 ### Reference designs (deeply analyzed during this RFC)
+
 - Bumpy (primary port): <https://github.com/dmno-dev/bumpy>
 - Bumpy docs: `docs/cli.md`, `docs/configuration.md`, `docs/version-propagation.md`, `docs/github-actions.md`
 - nx release: <https://github.com/nrwl/nx/tree/master/packages/nx/src/command-line/release>
@@ -1521,11 +1547,13 @@ Detailed in §17.3 (Phase 0 → Phase 7). Summary:
 - changesets docs: `docs/detailed-explanation.md`, `docs/command-line-options.md`, `docs/config-file-options.md`
 
 ### Snapshot/preview backends evaluated
+
 - pkg-pr-new (kept as default): <https://github.com/stackblitz-labs/pkg.pr.new>
 - alchemy `pr-package` (server-side, not ported; ideas borrowed from workflow only): <https://github.com/alchemy-run/alchemy-effect/tree/main/packages/pr-package>
 - verdaccio (test registry): <https://verdaccio.org>
 
 ### Cross-PM references
+
 - npm CLI source: <https://github.com/npm/cli> (`lib/commands/{pack,publish}.js`, `lib/utils/oidc.js`)
 - pnpm catalogs: <https://pnpm.io/catalogs>
 - yarn pack: <https://yarnpkg.com/cli/pack>
@@ -1534,11 +1562,13 @@ Detailed in §17.3 (Phase 0 → Phase 7). Summary:
 - npm Trusted Publishers (OIDC): <https://docs.npmjs.com/trusted-publishers/>
 
 ### Tooling
+
 - conventional-commits-parser: <https://www.npmjs.com/package/conventional-commits-parser>
 - cosmiconfig: <https://github.com/cosmiconfig/cosmiconfig>
 - MSW: <https://mswjs.io>
 
 ### Existing visulima release machinery (audit findings)
+
 - `/scripts/semantic-release-native-addons.mjs` (NAPI plugin to be ported into `version-actions/native-addon`)
 - `/scripts/publish-preview-release.js` (replaced by `vis release ci snapshot`)
 - `@anolilab/semantic-release-preset/pnpm` chain (replaced by `vis release` lifecycle)

@@ -217,10 +217,7 @@ const resolveBumpAs = (sourceBump: BumpLevel, bumpAs: BumpAs): BumpLevel => (bum
  * source package. Defaults to `false`; `true` enables every source;
  * an array narrows the set to a name allow-list.
  */
-const devDepCascadeFires = (
-    sourceName: string,
-    bumpDevDependencies: VisReleaseConfig["bumpDevDependencies"],
-): boolean => {
+const devDepCascadeFires = (sourceName: string, bumpDevDependencies: VisReleaseConfig["bumpDevDependencies"]): boolean => {
     if (bumpDevDependencies === true) {
         return true;
     }
@@ -264,13 +261,15 @@ const phaseA = (
         }
 
         const currentForBump = options.currentVersions?.get(entry.name) ?? sourcePkg.version;
-        const newVersion = versionsCache.get(entry.name) ?? bumpVersion({
-            bump: entry.type,
-            bumpMinorPreMajor: options.bumpMinorPreMajor,
-            bumpPatchForMinorPreMajor: options.bumpPatchForMinorPreMajor,
-            current: currentForBump,
-            prerelease: options.prerelease,
-        });
+        const newVersion
+            = versionsCache.get(entry.name)
+                ?? bumpVersion({
+                    bump: entry.type,
+                    bumpMinorPreMajor: options.bumpMinorPreMajor,
+                    bumpPatchForMinorPreMajor: options.bumpPatchForMinorPreMajor,
+                    current: currentForBump,
+                    prerelease: options.prerelease,
+                });
 
         versionsCache.set(entry.name, newVersion);
 
@@ -348,9 +347,7 @@ const phaseA = (
 
                 // Bumpy warning: ^0.x peers producing non-patch propagation.
                 if (cleaned.startsWith("^0.") && propagatedBump !== "patch") {
-                    warnings.push(
-                        `^0.x peer dep "${entry.name}" → "${dep.name}" produced a ${propagatedBump} bump. Consider widening the range manually.`,
-                    );
+                    warnings.push(`^0.x peer dep "${entry.name}" → "${dep.name}" produced a ${propagatedBump} bump. Consider widening the range manually.`);
                 }
             } else {
                 propagatedBump = "patch";
@@ -375,11 +372,7 @@ const phaseA = (
 
 // ── Phase B — fixed / linked groups ─────────────────────────────────
 
-const phaseB = (
-    plan: Map<string, PlannedEntry>,
-    depGraph: DependencyGraph,
-    config: VisReleaseConfig,
-): boolean => {
+const phaseB = (plan: Map<string, PlannedEntry>, depGraph: DependencyGraph, config: VisReleaseConfig): boolean => {
     let changed = false;
 
     // Fixed: all members bumped to the max level among members.
@@ -536,13 +529,15 @@ const phaseC = (
             continue;
         }
 
-        const sourceVersion = versionsCache.get(sourceEntry.name) ?? bumpVersion({
-            bump: sourceEntry.type,
-            bumpMinorPreMajor: options.bumpMinorPreMajor,
-            bumpPatchForMinorPreMajor: options.bumpPatchForMinorPreMajor,
-            current: options.currentVersions?.get(sourceEntry.name) ?? depGraph.getPackage(sourceEntry.name)!.version,
-            prerelease: options.prerelease,
-        });
+        const sourceVersion
+            = versionsCache.get(sourceEntry.name)
+                ?? bumpVersion({
+                    bump: sourceEntry.type,
+                    bumpMinorPreMajor: options.bumpMinorPreMajor,
+                    bumpPatchForMinorPreMajor: options.bumpPatchForMinorPreMajor,
+                    current: options.currentVersions?.get(sourceEntry.name) ?? depGraph.getPackage(sourceEntry.name)!.version,
+                    prerelease: options.prerelease,
+                });
 
         versionsCache.set(sourceEntry.name, sourceVersion);
 
@@ -778,7 +773,9 @@ export const assembleReleasePlan = (
         }
 
         if (i === MAX_ITERATIONS - 1) {
-            warnings.push(`Release plan did not converge after ${MAX_ITERATIONS} iterations — releasing the current best plan. This usually indicates a config bug (cyclic cascade?).`);
+            warnings.push(
+                `Release plan did not converge after ${MAX_ITERATIONS} iterations — releasing the current best plan. This usually indicates a config bug (cyclic cascade?).`,
+            );
         }
     }
 
@@ -818,13 +815,16 @@ export const assembleReleasePlan = (
         const releaseAsVersion = releaseAsByPackage.get(entry.name);
 
         const resolvedCurrent = options.currentVersions?.get(entry.name) ?? pkg.version;
-        const newVersion = releaseAsVersion ?? versionsCache.get(entry.name) ?? bumpVersion({
-            bump: entry.type,
-            bumpMinorPreMajor: options.bumpMinorPreMajor,
-            bumpPatchForMinorPreMajor: options.bumpPatchForMinorPreMajor,
-            current: resolvedCurrent,
-            prerelease: options.prerelease,
-        });
+        const newVersion
+            = releaseAsVersion
+                ?? versionsCache.get(entry.name)
+                ?? bumpVersion({
+                    bump: entry.type,
+                    bumpMinorPreMajor: options.bumpMinorPreMajor,
+                    bumpPatchForMinorPreMajor: options.bumpPatchForMinorPreMajor,
+                    current: resolvedCurrent,
+                    prerelease: options.prerelease,
+                });
 
         releases.push({
             changeFiles: filesForPkg,
@@ -835,7 +835,9 @@ export const assembleReleasePlan = (
             newVersion,
             oldVersion: resolvedCurrent,
             reasons: [...entry.reasons],
-            sources: [...entry.sources.entries()].map(([name, src]) => { return { name, ...src }; }),
+            sources: [...entry.sources.entries()].map(([name, src]) => {
+                return { name, ...src };
+            }),
             type: entry.type,
         });
     }

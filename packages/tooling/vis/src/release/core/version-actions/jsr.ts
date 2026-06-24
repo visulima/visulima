@@ -173,10 +173,7 @@ interface JsrMetaResponse {
  * Routed through {@link safeFetchVersionMetadata} so we inherit the
  * SSRF guard + contact `User-Agent`.
  */
-const fetchJsrLatestVersion = async (
-    packageName: string,
-    httpProxy?: string,
-): Promise<string | undefined> => {
+const fetchJsrLatestVersion = async (packageName: string, httpProxy?: string): Promise<string | undefined> => {
     // `packageName` is `@scope/name`; the URL is `${base}/@scope/name/meta.json`.
     // We don't encodeURIComponent the scope/name pair because `/` is
     // structural here — but we do validate via `JSR_NAME_REGEX` above so
@@ -213,10 +210,8 @@ const fetchJsrLatestVersion = async (
  * the operator can opt back into static-token precedence via the
  * workspace-level escape hatch `release.publish.preferStaticToken: true`.
  */
-const shouldUseTrustedPublishing = (
-    env: NodeJS.ProcessEnv,
-    workspaceConfig?: VisReleaseConfig,
-): boolean => resolveAuthMode({ env, staticTokenVar: "JSR_API_KEY", workspaceConfig }) === "oidc";
+const shouldUseTrustedPublishing = (env: NodeJS.ProcessEnv, workspaceConfig?: VisReleaseConfig): boolean =>
+    resolveAuthMode({ env, staticTokenVar: "JSR_API_KEY", workspaceConfig }) === "oidc";
 
 /**
  * Resolve the absolute path to the JSR manifest for a given workspace
@@ -224,10 +219,7 @@ const shouldUseTrustedPublishing = (
  * `jsrConfigPath` from its `manifestPath` option so operators using
  * `deno.json` (or a custom subdirectory) get pointed at the right file.
  */
-const resolveJsrManifestPath = (
-    pkg: WorkspacePackage,
-    perPackageConfig?: { jsrConfigPath?: string },
-): string => {
+const resolveJsrManifestPath = (pkg: WorkspacePackage, perPackageConfig?: { jsrConfigPath?: string }): string => {
     const relative = perPackageConfig?.jsrConfigPath ?? "jsr.json";
 
     return join(pkg.dir, relative);

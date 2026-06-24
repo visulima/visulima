@@ -245,6 +245,7 @@ flowchart TD
 ```
 
 > 🔧 **Why does the guard refine by version?**
+>
 > - **Same `(name, version)` is the resume case** — `vis release publish --resume` after a timed-out wave needs to re-attempt the SAME version. Blocking would break resume entirely.
 > - **Different version is the orphan-risk case** — a re-version to `1.2.1` while `1.2.0` is still staged would either leave 1.2.0 orphaned (changelog references it but it never installs) or land both out of order if both eventually get approved.
 
@@ -272,15 +273,15 @@ The next release wave will refuse to touch those 2 packages until they're resolv
 - 404 / empty output → version isn't live → **rejected** (or never staged at all, which we treat as rejection)
 - npm itself isn't on PATH (e.g. CI runner stripped it mid-job) → **timeout** path eventually trips after `timeoutMs`
 
-A *truly* unrecoverable polling error (e.g. npm CLI segfaults) would bubble up as a hard publish failure → `result.failed[]` → CI exits non-zero. That's the right behaviour — something is broken with the runtime, not with the release.
+A _truly_ unrecoverable polling error (e.g. npm CLI segfaults) would bubble up as a hard publish failure → `result.failed[]` → CI exits non-zero. That's the right behaviour — something is broken with the runtime, not with the release.
 
 ## The state files
 
 vis maintains two files in `.vis/release/`. They serve different purposes:
 
-| File | Tracked in git? | Lifecycle | Purpose |
-|---|---|---|---|
-| `.state.json` | **No** (gitignored) | Per-wave; deleted on full success | Resume-from-failure within a single release wave |
+| File          | Tracked in git?     | Lifecycle                                      | Purpose                                           |
+| ------------- | ------------------- | ---------------------------------------------- | ------------------------------------------------- |
+| `.state.json` | **No** (gitignored) | Per-wave; deleted on full success              | Resume-from-failure within a single release wave  |
 | `staged.json` | **Yes** (committed) | Long-lived; only entries for unresolved stages | Pending-stage registry — survives CI runner churn |
 
 The two files have distinct timelines — `.state.json` lives only as long as one wave is in flight; `staged.json` is the long-lived record:
@@ -461,6 +462,7 @@ $ vis release stage list
 Calls `npm stage approve` (2FA-interactive), then drains successful ids from `staged.json`, commits the registry with `chore(release): approve <n> stage(s) [skip ci]`, and pushes.
 
 Flags:
+
 - `--all` — approve every entry in `staged.json` sequentially (one 2FA prompt per stage; terminal-friendly)
 - `--no-commit` — update the registry on disk but skip the commit (useful for local triage)
 - `--no-push` — commit but don't push (useful for batched ops)
@@ -487,8 +489,8 @@ The release flow needs to be serialised — two parallel `vis release publish` i
 
 - **Per-machine** — a `.vis/release/.lock` file (1h staleness check) prevents two `vis release publish` invocations on the same machine. `vis release stage approve|reject` acquires the same lock so a local approval doesn't race with an in-progress CI publish.
 - **Per-CI-branch** — the generated workflows ship with native concurrency primitives:
-  - GitHub Actions: `concurrency: { group: vis-release-${{ github.ref }}, cancel-in-progress: false }` — queues a second push behind the first.
-  - GitLab CI: `resource_group: vis-release-$CI_COMMIT_BRANCH` — only one job per resource group runs at a time.
+    - GitHub Actions: `concurrency: { group: vis-release-${{ github.ref }}, cancel-in-progress: false }` — queues a second push behind the first.
+    - GitLab CI: `resource_group: vis-release-$CI_COMMIT_BRANCH` — only one job per resource group runs at a time.
 
 > ⚠ **Cross-machine local races aren't guarded.** Two developers running `vis release publish` on different machines against the same branch can't see each other's lockfile. The remote-side guard is the git push: only one branch update succeeds, the other gets `non-fast-forward` and re-runs.
 
@@ -503,15 +505,15 @@ Some are inherent to npm's stage API; others are vis's current scope.
 
 ## Comparison with non-staged publish
 
-| | Without staging | With staging |
-|---|---|---|
-| Publish takes | Seconds | Minutes (wait for human) |
-| 2FA required at publish time | Configurable (`npm publish --otp`) | Always (`npm stage approve`) |
-| Rollback if bad publish | Mostly impossible (immutable) | Free — reject the stage |
-| CI green on rejection | N/A | ✅ |
-| Resume after CI runner restart | Via `.state.json` | Via committed `staged.json` |
-| Webhook on publish | npmjs.com webhooks | npmjs.com webhooks (after promotion) |
-| Out-of-order risk for parallel waves | Low (no human gate) | **Mitigated by the guardrail** — see Failure Mode 3 |
+|                                      | Without staging                    | With staging                                        |
+| ------------------------------------ | ---------------------------------- | --------------------------------------------------- |
+| Publish takes                        | Seconds                            | Minutes (wait for human)                            |
+| 2FA required at publish time         | Configurable (`npm publish --otp`) | Always (`npm stage approve`)                        |
+| Rollback if bad publish              | Mostly impossible (immutable)      | Free — reject the stage                             |
+| CI green on rejection                | N/A                                | ✅                                                  |
+| Resume after CI runner restart       | Via `.state.json`                  | Via committed `staged.json`                         |
+| Webhook on publish                   | npmjs.com webhooks                 | npmjs.com webhooks (after promotion)                |
+| Out-of-order risk for parallel waves | Low (no human gate)                | **Mitigated by the guardrail** — see Failure Mode 3 |
 
 ## Related
 

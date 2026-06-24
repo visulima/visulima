@@ -19,11 +19,14 @@ describe("generateWorkflowFiles — GitHub", () => {
     it("uses configured branches in the on.push trigger", () => {
         expect.hasAssertions();
 
-        const files = generateWorkflowFiles({}, {
-            branches: ["main", "alpha", "beta"],
-            packageManager: "pnpm",
-            provider: "github",
-        });
+        const files = generateWorkflowFiles(
+            {},
+            {
+                branches: ["main", "alpha", "beta"],
+                packageManager: "pnpm",
+                provider: "github",
+            },
+        );
 
         const release = files.find((f) => f.path === ".github/workflows/vis-release.yml");
 
@@ -36,9 +39,12 @@ describe("generateWorkflowFiles — GitHub", () => {
     it("derives branches from config.channels when not overridden", () => {
         expect.hasAssertions();
 
-        const files = generateWorkflowFiles({
-            channels: { alpha: { prerelease: "alpha", tag: "alpha" }, main: { tag: "latest" } },
-        }, { packageManager: "pnpm", provider: "github" });
+        const files = generateWorkflowFiles(
+            {
+                channels: { alpha: { prerelease: "alpha", tag: "alpha" }, main: { tag: "latest" } },
+            },
+            { packageManager: "pnpm", provider: "github" },
+        );
 
         const release = files.find((f) => f.path === ".github/workflows/vis-release.yml")!;
 

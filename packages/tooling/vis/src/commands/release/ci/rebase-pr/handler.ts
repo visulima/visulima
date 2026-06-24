@@ -36,11 +36,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     logger.info(`Rebasing ${branch} onto ${baseBranch}...`);
 
     // Verify the PR branch exists locally OR fetch it.
-    const fetchResult = await runner.run(
-        "git",
-        ["fetch", "origin", `${branch}:${branch}`, baseBranch],
-        { cwd, silent: true },
-    );
+    const fetchResult = await runner.run("git", ["fetch", "origin", `${branch}:${branch}`, baseBranch], { cwd, silent: true });
 
     if (fetchResult.exitCode !== 0) {
         // Branch may not exist on the remote yet — surface and exit 0
@@ -60,11 +56,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         return;
     }
 
-    const rebaseResult = await runner.run(
-        "git",
-        ["rebase", `origin/${baseBranch}`],
-        { cwd, silent: true },
-    );
+    const rebaseResult = await runner.run("git", ["rebase", `origin/${baseBranch}`], { cwd, silent: true });
 
     if (rebaseResult.exitCode !== 0) {
         // Abort cleanly so the worktree isn't left in a half-rebased
@@ -72,18 +64,16 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         // version PR from scratch on the next push.
         await runner.run("git", ["rebase", "--abort"], { cwd, silent: true });
 
-        logger.error(`Rebase produced conflicts; aborting. Resolve manually, or let the next \`vis release ci release\` recompute the version PR from scratch.`);
+        logger.error(
+            `Rebase produced conflicts; aborting. Resolve manually, or let the next \`vis release ci release\` recompute the version PR from scratch.`,
+        );
         process.exitCode = 1;
 
         return;
     }
 
     // No-op detection: if rebase didn't change HEAD, skip the push.
-    const aheadResult = await runner.run(
-        "git",
-        ["rev-list", "--count", `origin/${branch}..${branch}`],
-        { cwd, silent: true },
-    );
+    const aheadResult = await runner.run("git", ["rev-list", "--count", `origin/${branch}..${branch}`], { cwd, silent: true });
 
     if (aheadResult.exitCode === 0 && aheadResult.stdout.trim() === "0") {
         logger.info(`${branch} is already up to date with ${baseBranch}. Nothing to push.`);
@@ -91,11 +81,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         return;
     }
 
-    const pushResult = await runner.run(
-        "git",
-        ["push", "--force-with-lease", "origin", `${branch}:${branch}`],
-        { cwd, silent: true },
-    );
+    const pushResult = await runner.run("git", ["push", "--force-with-lease", "origin", `${branch}:${branch}`], { cwd, silent: true });
 
     if (pushResult.exitCode !== 0) {
         logger.error(`Failed to force-push ${branch}: ${pushResult.stderr.trim()}`);

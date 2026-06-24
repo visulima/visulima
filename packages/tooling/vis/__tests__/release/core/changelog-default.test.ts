@@ -74,9 +74,7 @@ describe(defaultFormatter, () => {
 
         const result = await defaultFormatter(
             mkCtx({
-                changeFiles: [
-                    { body: "- Already a bullet\n* Also a bullet", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } },
-                ],
+                changeFiles: [{ body: "- Already a bullet\n* Also a bullet", id: "x", path: "x.md", payload: { bumps: { "@scope/pkg": "minor" } } }],
             }),
         );
 
@@ -136,17 +134,19 @@ describe("default formatter: authorCredit option", () => {
         expect.hasAssertions();
 
         const formatter = createDefaultFormatter({ authorCredit: true });
-        const result = await formatter(mkCtx({
-            changeFiles: [
-                {
-                    body: "Add tab completion",
-                    file: "/repo/.vis/release/abc.md",
-                    id: "abc",
-                    meta: { author: "@alice" },
-                    payload: { bumps: { "@scope/pkg": "minor" } },
-                },
-            ],
-        }));
+        const result = await formatter(
+            mkCtx({
+                changeFiles: [
+                    {
+                        body: "Add tab completion",
+                        file: "/repo/.vis/release/abc.md",
+                        id: "abc",
+                        meta: { author: "@alice" },
+                        payload: { bumps: { "@scope/pkg": "minor" } },
+                    },
+                ],
+            }),
+        );
 
         expect(result).toContain("- Add tab completion (@alice)");
     });
@@ -154,17 +154,19 @@ describe("default formatter: authorCredit option", () => {
     it("does NOT append author when the option is off (default behaviour)", async () => {
         expect.hasAssertions();
 
-        const result = await defaultFormatter(mkCtx({
-            changeFiles: [
-                {
-                    body: "Add tab completion",
-                    file: "/repo/.vis/release/abc.md",
-                    id: "abc",
-                    meta: { author: "@alice" },
-                    payload: { bumps: { "@scope/pkg": "minor" } },
-                },
-            ],
-        }));
+        const result = await defaultFormatter(
+            mkCtx({
+                changeFiles: [
+                    {
+                        body: "Add tab completion",
+                        file: "/repo/.vis/release/abc.md",
+                        id: "abc",
+                        meta: { author: "@alice" },
+                        payload: { bumps: { "@scope/pkg": "minor" } },
+                    },
+                ],
+            }),
+        );
 
         expect(result).toContain("- Add tab completion");
         expect(result).not.toContain("@alice");
@@ -174,17 +176,19 @@ describe("default formatter: authorCredit option", () => {
         expect.hasAssertions();
 
         const formatter = createDefaultFormatter({ authorCredit: true });
-        const result = await formatter(mkCtx({
-            changeFiles: [
-                {
-                    body: "Fix a thing",
-                    file: "/repo/.vis/release/x.md",
-                    id: "x",
-                    meta: { author: "bob" },
-                    payload: { bumps: { "@scope/pkg": "patch" } },
-                },
-            ],
-        }));
+        const result = await formatter(
+            mkCtx({
+                changeFiles: [
+                    {
+                        body: "Fix a thing",
+                        file: "/repo/.vis/release/x.md",
+                        id: "x",
+                        meta: { author: "bob" },
+                        payload: { bumps: { "@scope/pkg": "patch" } },
+                    },
+                ],
+            }),
+        );
 
         expect(result).toContain("(@bob)");
     });
@@ -193,16 +197,18 @@ describe("default formatter: authorCredit option", () => {
         expect.hasAssertions();
 
         const formatter = createDefaultFormatter({ authorCredit: true });
-        const result = await formatter(mkCtx({
-            changeFiles: [
-                {
-                    body: "Anonymous improvement",
-                    file: "/repo/.vis/release/x.md",
-                    id: "x",
-                    payload: { bumps: { "@scope/pkg": "patch" } },
-                },
-            ],
-        }));
+        const result = await formatter(
+            mkCtx({
+                changeFiles: [
+                    {
+                        body: "Anonymous improvement",
+                        file: "/repo/.vis/release/x.md",
+                        id: "x",
+                        payload: { bumps: { "@scope/pkg": "patch" } },
+                    },
+                ],
+            }),
+        );
 
         expect(result).toContain("- Anonymous improvement");
         expect(result).not.toContain("(");
@@ -223,9 +229,11 @@ describe("default formatter: sections option (release-please parity)", () => {
         expect.hasAssertions();
 
         const formatter = createDefaultFormatter();
-        const result = await formatter(mkCtx({
-            changeFiles: [mkFile("feat: add tab completion\nfix: handle empty input")],
-        }));
+        const result = await formatter(
+            mkCtx({
+                changeFiles: [mkFile("feat: add tab completion\nfix: handle empty input")],
+            }),
+        );
 
         expect(result).not.toContain("### Features");
         expect(result).not.toContain("### Bug Fixes");
@@ -236,9 +244,11 @@ describe("default formatter: sections option (release-please parity)", () => {
         expect.hasAssertions();
 
         const formatter = createDefaultFormatter({ sections: [] });
-        const result = await formatter(mkCtx({
-            changeFiles: [mkFile("feat: add tab completion\nfix: handle empty input")],
-        }));
+        const result = await formatter(
+            mkCtx({
+                changeFiles: [mkFile("feat: add tab completion\nfix: handle empty input")],
+            }),
+        );
 
         expect(result).toContain("### Features");
         expect(result).toContain("### Bug Fixes");
@@ -249,9 +259,11 @@ describe("default formatter: sections option (release-please parity)", () => {
         expect.hasAssertions();
 
         const formatter = createDefaultFormatter({ sections: [] });
-        const result = await formatter(mkCtx({
-            changeFiles: [mkFile("feat!: drop legacy API")],
-        }));
+        const result = await formatter(
+            mkCtx({
+                changeFiles: [mkFile("feat!: drop legacy API")],
+            }),
+        );
 
         expect(result).toContain("### Breaking Changes");
         expect(result).not.toContain("### Features");
@@ -261,9 +273,11 @@ describe("default formatter: sections option (release-please parity)", () => {
         expect.hasAssertions();
 
         const formatter = createDefaultFormatter({ sections: [] });
-        const result = await formatter(mkCtx({
-            changeFiles: [mkFile("chore: bump linter\nfeat: real feature")],
-        }));
+        const result = await formatter(
+            mkCtx({
+                changeFiles: [mkFile("chore: bump linter\nfeat: real feature")],
+            }),
+        );
 
         expect(result).not.toContain("chore: bump linter");
         expect(result).toContain("### Features");
@@ -279,9 +293,11 @@ describe("default formatter: sections option (release-please parity)", () => {
                 { hidden: true, section: "Internal", type: "fix" },
             ],
         });
-        const result = await formatter(mkCtx({
-            changeFiles: [mkFile("feat: feature\nfix: internal")],
-        }));
+        const result = await formatter(
+            mkCtx({
+                changeFiles: [mkFile("feat: feature\nfix: internal")],
+            }),
+        );
 
         expect(result).toContain("### Headlines");
         expect(result).not.toContain("### Internal");
@@ -292,9 +308,11 @@ describe("default formatter: sections option (release-please parity)", () => {
         expect.hasAssertions();
 
         const formatter = createDefaultFormatter({ sections: [] });
-        const result = await formatter(mkCtx({
-            changeFiles: [mkFile("feat: typed thing\nUntagged note here.")],
-        }));
+        const result = await formatter(
+            mkCtx({
+                changeFiles: [mkFile("feat: typed thing\nUntagged note here.")],
+            }),
+        );
 
         expect(result).toContain("### Features");
         expect(result).toContain("### Miscellaneous");

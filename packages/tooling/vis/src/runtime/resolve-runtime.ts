@@ -41,9 +41,7 @@ const DEFERRED_LOCKFILES: Readonly<Record<string, string>> = {
 };
 
 /** Lockfile → runtime, built from each adapter's declared lockfiles. */
-const LOCKFILE_RUNTIME: ReadonlyArray<readonly [string, RuntimeId]> = SUPPORTED.flatMap((id) =>
-    ADAPTERS[id].lockfiles.map((file) => [file, id] as const),
-);
+const LOCKFILE_RUNTIME: ReadonlyArray<readonly [string, RuntimeId]> = SUPPORTED.flatMap((id) => ADAPTERS[id].lockfiles.map((file) => [file, id] as const));
 
 const DEFERRED_HINT = "Deno is not supported yet (deferred — see rfc/design-runtime-multitool.md).";
 
@@ -152,11 +150,7 @@ export const resolveRuntime = (cwd: string, override: ResolveRuntimeOverride = {
     }
 
     if (detected.deferred !== undefined) {
-        return make(
-            "node",
-            "default",
-            `Detected a ${detected.deferred} project but ${DEFERRED_HINT} Falling back to node.`,
-        );
+        return make("node", "default", `Detected a ${detected.deferred} project but ${DEFERRED_HINT} Falling back to node.`);
     }
 
     return make("node", "default");

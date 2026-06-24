@@ -58,16 +58,13 @@ describe(resolveRuntime, () => {
             expect(resolveRuntime(root, { env: {} }).runtime).toBe("bun");
         });
 
-        it.each(["pnpm-lock.yaml", "yarn.lock", "package-lock.json", "npm-shrinkwrap.json"])(
-            "selects node for %s",
-            (lockfile) => {
-                expect.hasAssertions();
+        it.each(["pnpm-lock.yaml", "yarn.lock", "package-lock.json", "npm-shrinkwrap.json"])("selects node for %s", (lockfile) => {
+            expect.hasAssertions();
 
-                touch(lockfile);
+            touch(lockfile);
 
-                expect(resolveRuntime(root, { env: {} }).runtime).toBe("node");
-            },
-        );
+            expect(resolveRuntime(root, { env: {} }).runtime).toBe("node");
+        });
 
         it("walks up to a parent lockfile", () => {
             expect.hasAssertions();

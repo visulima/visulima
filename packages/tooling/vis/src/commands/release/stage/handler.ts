@@ -73,9 +73,7 @@ const runList = async (
 
     // Apply the same filter to the registry view so `list @scope/pkg`
     // shows a consistent result across both sources.
-    const registry = filterArg
-        ? { ...fullRegistry, pending: fullRegistry.pending.filter((entry) => entry.name === filterArg) }
-        : fullRegistry;
+    const registry = filterArg ? { ...fullRegistry, pending: fullRegistry.pending.filter((entry) => entry.name === filterArg) } : fullRegistry;
 
     let npmEntries: { id?: string; package?: string; tag?: string; version?: string }[] = [];
 
@@ -129,7 +127,9 @@ const collectIdsForApprove = async (
         const registry = await readStagedRegistry(cwd, ctx.config.changesDir ?? DEFAULT_CHANGES_DIR);
 
         if (registry.pending.length === 0) {
-            logger.error("No pending stages in .vis/release/staged.json. Approve manually with explicit ids, or rerun `vis release publish` with publish.stage: true.");
+            logger.error(
+                "No pending stages in .vis/release/staged.json. Approve manually with explicit ids, or rerun `vis release publish` with publish.stage: true.",
+            );
 
             return undefined;
         }
@@ -155,9 +155,7 @@ const runApproveOrReject = async (
     options: ReleaseStageOptions,
     logger: Toolbox<Console, ReleaseStageOptions>["logger"],
 ): Promise<void> => {
-    const ids = action === "approve"
-        ? await collectIdsForApprove(cwd, options, logger)
-        : options.stageIds;
+    const ids = action === "approve" ? await collectIdsForApprove(cwd, options, logger) : options.stageIds;
 
     if (!ids || ids.length === 0) {
         if (action === "reject") {
@@ -210,7 +208,9 @@ const runApproveOrReject = async (
 
                 rejectedEntries = registry.pending
                     .filter((entry) => successSet.has(entry.id))
-                    .map((entry) => { return { name: entry.name, version: entry.version }; });
+                    .map((entry) => {
+                        return { name: entry.name, version: entry.version };
+                    });
             }
 
             const next = removePendingStages(registry, successes);
@@ -224,16 +224,11 @@ const runApproveOrReject = async (
                         ? `chore(release): clear pending stage registry [skip ci]`
                         : `chore(release): ${action} ${successes.length} stage${successes.length === 1 ? "" : "s"} [skip ci]`;
 
-                    await stageAndCommitFile(
-                        { cwd, runner },
-                        write.path,
-                        message,
-                        {
-                            author: ctx.config.gitUser,
-                            push: options.push !== false,
-                            sign: ctx.config.gitSignCommits === true,
-                        },
-                    );
+                    await stageAndCommitFile({ cwd, runner }, write.path, message, {
+                        author: ctx.config.gitUser,
+                        push: options.push !== false,
+                        sign: ctx.config.gitSignCommits === true,
+                    });
 
                     logger.info(`Updated ${write.path} and committed${options.push === false ? "" : " + pushed"}.`);
                 } else if (write.changed) {

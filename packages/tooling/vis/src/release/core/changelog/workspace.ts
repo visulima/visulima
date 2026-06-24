@@ -49,9 +49,7 @@ export const renderWorkspaceChangelog = async (
     options: WorkspaceChangelogOptions = {},
 ): Promise<string> => {
     const renderer = options.renderer ?? perPackageRenderer;
-    const heading = (options.waveHeading ?? DEFAULT_WAVE_HEADING)
-        .replaceAll("{date}", date)
-        .replaceAll("{count}", String(releases.length));
+    const heading = (options.waveHeading ?? DEFAULT_WAVE_HEADING).replaceAll("{date}", date).replaceAll("{count}", String(releases.length));
 
     const lines: string[] = [heading, ""];
 
@@ -129,16 +127,9 @@ const expandMembers = (patterns: string[], packages: ReadonlyArray<WorkspacePack
  * configuration error we don't try to second-guess; print-config
  * surfaces the duplicate via the resolved config dump).
  */
-export const resolveGroupChangelogRouting = (
-    config: VisReleaseConfig,
-    packages: ReadonlyArray<WorkspacePackage>,
-    cwd: string,
-): Map<string, string> => {
+export const resolveGroupChangelogRouting = (config: VisReleaseConfig, packages: ReadonlyArray<WorkspacePackage>, cwd: string): Map<string, string> => {
     const routing = new Map<string, string>();
-    const groups: ReleaseGroupConfig[] = [
-        ...(config.fixed ?? []),
-        ...(config.linked ?? []),
-    ];
+    const groups: ReleaseGroupConfig[] = [...(config.fixed ?? []), ...(config.linked ?? [])];
 
     for (const raw of groups) {
         const group = normaliseGroup(raw);
@@ -156,9 +147,7 @@ export const resolveGroupChangelogRouting = (
         let resolvedPath: string;
 
         if (group.changelog.path) {
-            resolvedPath = group.changelog.path.startsWith("/")
-                ? group.changelog.path
-                : `${cwd}/${group.changelog.path}`;
+            resolvedPath = group.changelog.path.startsWith("/") ? group.changelog.path : `${cwd}/${group.changelog.path}`;
         } else {
             // Default: place the file alongside the lexicographically-
             // first member's package directory. Deterministic + keeps
@@ -195,10 +184,7 @@ export interface WorkspaceWaveEntryContext {
  * path that was written so the caller can stage + commit it; `undefined`
  * when workspace changelog is disabled or `releases` is empty.
  */
-export const writeWorkspaceChangelogWave = async (
-    context: WorkspaceWaveEntryContext,
-    releases: ReadonlyArray<PlannedRelease>,
-): Promise<string | undefined> => {
+export const writeWorkspaceChangelogWave = async (context: WorkspaceWaveEntryContext, releases: ReadonlyArray<PlannedRelease>): Promise<string | undefined> => {
     if (releases.length === 0) {
         return undefined;
     }

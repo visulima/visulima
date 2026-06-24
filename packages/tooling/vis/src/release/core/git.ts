@@ -174,7 +174,7 @@ let gitsignAvailableCache: GitsignCache | undefined;
 export const gitsignAvailable = async (ctx: GitContext): Promise<boolean> => {
     const now = Date.now();
 
-    if (gitsignAvailableCache !== undefined && (now - gitsignAvailableCache.cachedAtMs) < GITSIGN_CACHE_TTL_MS) {
+    if (gitsignAvailableCache !== undefined && now - gitsignAvailableCache.cachedAtMs < GITSIGN_CACHE_TTL_MS) {
         return gitsignAvailableCache.value;
     }
 
@@ -267,9 +267,7 @@ export const createTag = async (
 
         // Fall through to the GPG path with the warning printed to
         // stderr so the operator sees that the preview mode degraded.
-        process.stderr.write(
-            `[vis release] Warning: signing.mode is "sigstore" but \`gitsign\` is not on PATH; falling back to GPG signing for tag ${tag}.\n`,
-        );
+        process.stderr.write(`[vis release] Warning: signing.mode is "sigstore" but \`gitsign\` is not on PATH; falling back to GPG signing for tag ${tag}.\n`);
     }
 
     const args = ["tag"];
@@ -303,10 +301,7 @@ export const createTag = async (
     }
 };
 
-export const pushTags = async (
-    ctx: GitContext,
-    options: { atomic?: boolean; remote?: string } = {},
-): Promise<void> => {
+export const pushTags = async (ctx: GitContext, options: { atomic?: boolean; remote?: string } = {}): Promise<void> => {
     const args = ["push", options.remote ?? "origin", "--tags"];
 
     if (options.atomic) {
@@ -491,26 +486,18 @@ export const stageAndCommitFile = async (
         return { committed: true, pushed: false };
     }
 
-    const branch = options.branch ?? await getCurrentBranch(ctx);
+    const branch = options.branch ?? (await getCurrentBranch(ctx));
 
     if (!branch) {
         return { committed: true, pushed: false };
     }
 
-    const pushResult = await ctx.runner.run(
-        "git",
-        ["push", options.remote ?? "origin", `HEAD:${branch}`],
-        { cwd: ctx.cwd, silent: false },
-    );
+    const pushResult = await ctx.runner.run("git", ["push", options.remote ?? "origin", `HEAD:${branch}`], { cwd: ctx.cwd, silent: false });
 
     return { committed: true, pushed: pushResult.exitCode === 0 };
 };
 
-export const pushBranch = async (
-    ctx: GitContext,
-    branch: string,
-    options: { force?: boolean; remote?: string } = {},
-): Promise<void> => {
+export const pushBranch = async (ctx: GitContext, branch: string, options: { force?: boolean; remote?: string } = {}): Promise<void> => {
     const args = ["push", options.remote ?? "origin", `HEAD:${branch}`];
 
     if (options.force) {
@@ -555,10 +542,7 @@ export const defaultTagFor = (packageName: string, version: string): string => `
  */
 const TAG_TOKEN_RE = /\{(name|unscopedName|version|major|minor|patch|date|channel)\}/g;
 
-export const renderTagPattern = (
-    template: string,
-    tokens: { channel?: string; date?: string; name?: string; version?: string },
-): string => {
+export const renderTagPattern = (template: string, tokens: { channel?: string; date?: string; name?: string; version?: string }): string => {
     const version = tokens.version ?? "";
     const [major = "", minor = "", patch = ""] = version.split(/[-+]/, 1)[0]!.split(".");
     const values: Record<string, string> = {

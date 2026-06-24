@@ -14,18 +14,8 @@
 
 import { describe, expect, it } from "vitest";
 
-import type {
-    ChangelogFormatter,
-    NotificationChannel,
-    PublishContext,
-    PublishResult,
-} from "../../src/release/plugin-sdk";
-import {
-    defineChangelogFormatter,
-    defineNotificationChannel,
-    defineVersionActions,
-    VersionActions,
-} from "../../src/release/plugin-sdk";
+import type { ChangelogFormatter, NotificationChannel, PublishContext, PublishResult } from "../../src/release/plugin-sdk";
+import { defineChangelogFormatter, defineNotificationChannel, defineVersionActions, VersionActions } from "../../src/release/plugin-sdk";
 
 describe(defineNotificationChannel, () => {
     it("returns the input unchanged (identity)", () => {
@@ -46,7 +36,9 @@ describe(defineNotificationChannel, () => {
         const channel = defineNotificationChannel({
             id: "test",
             send: async (context) => {
-                captured = context.published.map((p) => { return { name: p.name }; });
+                captured = context.published.map((p) => {
+                    return { name: p.name };
+                });
             },
         });
 

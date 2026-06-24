@@ -184,7 +184,8 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
                 // which `gh auth status` describes differently, or the env may
                 // not be authenticated at all (e.g. release ran via OIDC).
                 checks.push({
-                    message: "Skipped: `gh auth status` did not return a parseable Token scopes line. (Fine-grained tokens / OIDC-only auth fall in this bucket.)",
+                    message:
+                        "Skipped: `gh auth status` did not return a parseable Token scopes line. (Fine-grained tokens / OIDC-only auth fall in this bucket.)",
                     name: "github.token-scopes",
                     severity: "info",
                     status: "skip",
@@ -237,7 +238,8 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
             });
         } else if (process.env["NPM_TOKEN"]) {
             checks.push({
-                message: "OIDC env vars missing; falling back to NPM_TOKEN. Add `permissions: { id-token: write }` to the workflow to enable trusted publishing.",
+                message:
+                    "OIDC env vars missing; falling back to NPM_TOKEN. Add `permissions: { id-token: write }` to the workflow to enable trusted publishing.",
                 name: "oidc-available",
                 severity: "warn",
                 status: "fail",
@@ -354,9 +356,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     // `jsr`, so non-JSR workspaces (and the doctor test fixtures) skip it.
     {
         const { resolveVersionActionsId } = await import("../../../release/core/workspace");
-        const jsrPackages = ctx.packages.filter(
-            (pkg) => resolveVersionActionsId(pkg, ctx.perPackageConfig.get(pkg.name) ?? {}) === "jsr",
-        );
+        const jsrPackages = ctx.packages.filter((pkg) => resolveVersionActionsId(pkg, ctx.perPackageConfig.get(pkg.name) ?? {}) === "jsr");
 
         for (const pkg of jsrPackages) {
             const perPkg = ctx.perPackageConfig.get(pkg.name) ?? {};
@@ -428,7 +428,8 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
             });
         } catch {
             checks.push({
-                message: "publish.guards.packSecretScan is enabled but @visulima/secret-scanner is not installed. pnpm add -D @visulima/secret-scanner, or set the gate to false.",
+                message:
+                    "publish.guards.packSecretScan is enabled but @visulima/secret-scanner is not installed. pnpm add -D @visulima/secret-scanner, or set the gate to false.",
                 name: "publish-guards.packSecretScan",
                 severity: "error",
                 status: "fail",
@@ -463,10 +464,11 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         // npm version
         try {
             const { execSync } = await import("node:child_process");
-            const npmVersion = execSync("npm --version", { stdio: ["ignore", "pipe", "ignore"] }).toString().trim();
+            const npmVersion = execSync("npm --version", { stdio: ["ignore", "pipe", "ignore"] })
+                .toString()
+                .trim();
             const [major = "0", minor = "0"] = npmVersion.split(".");
-            const ok = Number.parseInt(major, 10) > 11
-                || (Number.parseInt(major, 10) === 11 && Number.parseInt(minor, 10) >= 15);
+            const ok = Number.parseInt(major, 10) > 11 || (Number.parseInt(major, 10) === 11 && Number.parseInt(minor, 10) >= 15);
 
             checks.push({
                 message: ok
@@ -530,9 +532,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         const registry = await readStagedRegistry(cwd, ctx.config.changesDir ?? DEFAULT_CHANGES_DIR);
 
         if (registry.pending.length > 0) {
-            const summary = registry.pending
-                .map((entry) => `${entry.name}@${entry.version} (${entry.reason})`)
-                .join(", ");
+            const summary = registry.pending.map((entry) => `${entry.name}@${entry.version} (${entry.reason})`).join(", ");
 
             checks.push({
                 message: `${registry.pending.length} pending stage(s) recorded in .vis/release/staged.json: ${summary}. Approve / reject before the next release: vis release stage approve --all`,
@@ -586,8 +586,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         for (const pkg of shellPackages) {
             const perPkg = ctx.perPackageConfig.get(pkg.name) ?? {};
             const allow = ctx.config.allowCustomCommands;
-            const allowed = allow === true
-                || (Array.isArray(allow) && allow.includes(pkg.name));
+            const allowed = allow === true || (Array.isArray(allow) && allow.includes(pkg.name));
             const hasPublishCommand = perPkg.publishCommand !== undefined && perPkg.publishCommand !== "";
 
             if (!allowed) {
@@ -723,9 +722,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
                 // (`…e.pem`). Short ids (<8 chars) also bypass the last-4
                 // path because last-4 of a 5-char id leaks 80% of the secret.
                 const keyHint = signing.key
-                    ? /[\\/]/.test(signing.key)
-                    || /\.(?:pem|gpg|key|asc|p12|pfx)$/i.test(signing.key)
-                    || signing.key.length < 8
+                    ? /[\\/]/.test(signing.key) || /\.(?:pem|gpg|key|asc|p12|pfx)$/i.test(signing.key) || signing.key.length < 8
                         ? "configured"
                         : `…${signing.key.slice(-4)}`
                     : "from git config";
@@ -893,10 +890,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
             // Translate each pattern into a `git tag --list` glob —
             // tokens that we can't resolve at preflight expand to `*`.
             for (const pattern of seen) {
-                const glob = pattern.replaceAll(
-                    /\{(?:name|unscopedName|version|major|minor|patch|date|channel)\}/g,
-                    () => "*",
-                );
+                const glob = pattern.replaceAll(/\{(?:name|unscopedName|version|major|minor|patch|date|channel)\}/g, () => "*");
 
                 const listResult = await runner.run("git", ["tag", "--list", glob], { cwd, silent: true });
 
@@ -910,7 +904,9 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
                     .filter(Boolean);
 
                 if (tags.length > 0) {
-                    greenFindings.push(`Found ${tags.length} git tag(s) matching "${pattern}": ${tags.slice(0, 5).join(", ")}${tags.length > 5 ? ` (+${tags.length - 5} more)` : ""}.`);
+                    greenFindings.push(
+                        `Found ${tags.length} git tag(s) matching "${pattern}": ${tags.slice(0, 5).join(", ")}${tags.length > 5 ? ` (+${tags.length - 5} more)` : ""}.`,
+                    );
                     // One pattern with hits is enough — keep walking
                     // to surface every pattern that's been used in the
                     // repo, but cap output.
@@ -955,17 +951,21 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
                     // narrower, so we cast to bypass structural
                     // checking. The cast keeps `actions` as the
                     // receiver so `this` is preserved.
-                    type ExtendedReadPublishedVersion = (this: typeof actions, context: {
-                        perPackageConfig?: unknown;
-                        pkg: typeof pkg;
-                        pm: typeof ctx.pm;
-                    }) => Promise<string | undefined>;
+                    type ExtendedReadPublishedVersion = (
+                        this: typeof actions,
+                        context: {
+                            perPackageConfig?: unknown;
+                            pkg: typeof pkg;
+                            pm: typeof ctx.pm;
+                        },
+                    ) => Promise<string | undefined>;
 
                     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion -- needed for tsc: the base VersionActions signature rejects the extra `perPackageConfig` (excess-property check); the rule's bivariance view sees the cast as identity and false-positives.
-                    published = await (actions.readPublishedVersion as ExtendedReadPublishedVersion).call(
-                        actions,
-                        { perPackageConfig: perPkg, pkg, pm: ctx.pm },
-                    );
+                    published = await (actions.readPublishedVersion as ExtendedReadPublishedVersion).call(actions, {
+                        perPackageConfig: perPkg,
+                        pkg,
+                        pm: ctx.pm,
+                    });
                 } catch {
                     // readPublishedVersion is a probe — failures
                     // collapse to undefined and we treat that as "not
@@ -1096,9 +1096,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
             // doctor can warn if it's missing despite the config —
             // typically the operator forgot to run `uv lock`.
             if (perPkg.uvLockPath) {
-                const lockAbsolute = pathModule.isAbsolute(perPkg.uvLockPath)
-                    ? perPkg.uvLockPath
-                    : pathModule.join(pkg.dir, perPkg.uvLockPath);
+                const lockAbsolute = pathModule.isAbsolute(perPkg.uvLockPath) ? perPkg.uvLockPath : pathModule.join(pkg.dir, perPkg.uvLockPath);
 
                 try {
                     await fsModule.access(lockAbsolute);
@@ -1196,7 +1194,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     {
         const nodeVersion = process.versions.node;
         const [major = 0, minor = 0] = nodeVersion.split(".").map((n) => Number.parseInt(n, 10));
-        const ok = (major === 22 && minor >= 14) || major >= 24 || (major === 23);
+        const ok = (major === 22 && minor >= 14) || major >= 24 || major === 23;
 
         checks.push({
             message: `node@${nodeVersion} (min: 22.14.0 || >=24.10.0)`,
@@ -1207,7 +1205,10 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     }
 
     // git ≥ 2.31, gh ≥ 2.40 (gh only when present)
-    for (const [bin, min, name] of [["git", "2.31", "git-version"], ["gh", "2.40", "gh-version"]] as const) {
+    for (const [bin, min, name] of [
+        ["git", "2.31", "git-version"],
+        ["gh", "2.40", "gh-version"],
+    ] as const) {
         try {
             const raw = execFileSync(bin, ["--version"], { stdio: ["ignore", "pipe", "ignore"] }).toString();
             const matched = /(\d+\.\d+\.\d+)/.exec(raw);
@@ -1222,7 +1223,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
                 message: `${bin}@${matched[1]} (min: ${min})`,
                 name,
                 // gh is optional unless invoked; surface as warn. git is required.
-                severity: ok ? "info" : (bin === "git" ? "error" : "warn"),
+                severity: ok ? "info" : bin === "git" ? "error" : "warn",
                 status: ok ? "pass" : "fail",
             });
         } catch {
@@ -1268,15 +1269,19 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     // ── Existing tags parse as <pkg>@<version> (RFC §19.2) ─────────────
     try {
         const raw = execFileSync("git", ["tag", "--list"], { cwd, stdio: ["ignore", "pipe", "ignore"] }).toString();
-        const tags = raw.split(/\r?\n/).map((t) => t.trim()).filter(Boolean);
+        const tags = raw
+            .split(/\r?\n/)
+            .map((t) => t.trim())
+            .filter(Boolean);
         // Recognise `<name>@<semver>` and bare `v<semver>` / `<semver>` forms.
         const tagPattern = /(?:^|@)\d+\.\d+\.\d+(?:[-+].+)?$/;
         const unparseable = tags.filter((t) => !tagPattern.test(t) && !/^v?\d+\.\d+\.\d+/.test(t));
 
         checks.push({
-            message: tags.length === 0
-                ? "No git tags yet (fresh repo)."
-                : `${tags.length - unparseable.length}/${tags.length} tags parse as a release tag${unparseable.length > 0 ? ` (unrecognised: ${unparseable.slice(0, 3).join(", ")}${unparseable.length > 3 ? "…" : ""})` : ""}.`,
+            message:
+                tags.length === 0
+                    ? "No git tags yet (fresh repo)."
+                    : `${tags.length - unparseable.length}/${tags.length} tags parse as a release tag${unparseable.length > 0 ? ` (unrecognised: ${unparseable.slice(0, 3).join(", ")}${unparseable.length > 3 ? "…" : ""})` : ""}.`,
             name: "tags-parseable",
             severity: "warn",
             status: unparseable.length > 0 ? "fail" : "pass",
@@ -1341,9 +1346,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
                         }
 
                         const catalogName = range.slice("catalog:".length) || "default";
-                        const resolved = catalogName === "default"
-                            ? catalogs.default?.[dep]
-                            : catalogs.named?.[catalogName]?.[dep];
+                        const resolved = catalogName === "default" ? catalogs.default?.[dep] : catalogs.named?.[catalogName]?.[dep];
 
                         if (!resolved) {
                             missing.push(`${pkg.name} → ${dep} (${range})`);
@@ -1353,9 +1356,10 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
             }
 
             checks.push({
-                message: missing.length === 0
-                    ? "All catalog: references resolve against pnpm-workspace.yaml."
-                    : `${missing.length} catalog: reference(s) don't resolve: ${missing.slice(0, 3).join("; ")}${missing.length > 3 ? "…" : ""}`,
+                message:
+                    missing.length === 0
+                        ? "All catalog: references resolve against pnpm-workspace.yaml."
+                        : `${missing.length} catalog: reference(s) don't resolve: ${missing.slice(0, 3).join("; ")}${missing.length > 3 ? "…" : ""}`,
                 name: "catalog-consistency",
                 severity: "warn",
                 status: missing.length === 0 ? "pass" : "fail",
@@ -1372,11 +1376,7 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     process.exitCode = hasErrors ? 1 : 0;
 };
 
-const emit = async (
-    logger: Toolbox<Console, ReleaseDoctorOptions>["logger"],
-    options: ReleaseDoctorOptions,
-    checks: Check[],
-): Promise<void> => {
+const emit = async (logger: Toolbox<Console, ReleaseDoctorOptions>["logger"], options: ReleaseDoctorOptions, checks: Check[]): Promise<void> => {
     if (options.json) {
         process.stdout.write(`${JSON.stringify({ checks }, null, 2)}\n`);
 

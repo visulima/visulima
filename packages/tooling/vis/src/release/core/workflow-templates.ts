@@ -233,8 +233,9 @@ variables:
 before_script:
 ${gitlabPmSetup(options.packageManager) ? `    - ${gitlabPmSetup(options.packageManager)}\n` : ""}    - ${installCmd(options.packageManager)}
 
-${options.includeCheck
-    ? `vis-release-check:
+${
+    options.includeCheck
+        ? `vis-release-check:
     stage: check
     rules:
         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -242,8 +243,10 @@ ${options.includeCheck
         - ${execCmd(options.packageManager)} vis release ci check
 
 `
-    : ""}${options.includeSnapshot
-    ? `vis-release-snapshot:
+        : ""
+}${
+    options.includeSnapshot
+        ? `vis-release-snapshot:
     stage: check
     rules:
         - if: $CI_PIPELINE_SOURCE == "merge_request_event"
@@ -252,7 +255,8 @@ ${options.includeCheck
         - ${execCmd(options.packageManager)} vis release ci snapshot
 
 `
-    : ""}vis-release:
+        : ""
+}vis-release:
     stage: release
     # Serialize releases per branch so two close-together pushes don't
     # race on the same registry / staged.json / tag namespace. GitLab's
@@ -272,8 +276,7 @@ ${options.branches.map((b) => `        - if: $CI_COMMIT_BRANCH == "${b}"`).join(
  * Caller writes them to disk (handler does the prompting + dry-run logic).
  */
 export const generateWorkflowFiles = (config: VisReleaseConfig, overrides: Partial<WorkflowGenerationOptions> = {}): GeneratedFile[] => {
-    const provider: RemoteProvider = overrides.provider
-        ?? (config.provider === "github" || config.provider === "gitlab" ? config.provider : "github");
+    const provider: RemoteProvider = overrides.provider ?? (config.provider === "github" || config.provider === "gitlab" ? config.provider : "github");
 
     const channels = config.channels ?? {};
     const branches = overrides.branches ?? Object.keys(channels);
@@ -296,9 +299,7 @@ export const generateWorkflowFiles = (config: VisReleaseConfig, overrides: Parti
     }
 
     // GitHub
-    const files: GeneratedFile[] = [
-        { content: githubReleaseYml(opts), path: ".github/workflows/vis-release.yml" },
-    ];
+    const files: GeneratedFile[] = [{ content: githubReleaseYml(opts), path: ".github/workflows/vis-release.yml" }];
 
     if (opts.includeCheck) {
         files.push({ content: githubCheckYml(opts), path: ".github/workflows/vis-release-check.yml" });

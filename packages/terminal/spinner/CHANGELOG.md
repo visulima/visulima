@@ -2,29 +2,28 @@
 
 ### Features
 
-* **spinner:** add standalone, promise helper, custom frames and fix multispinner ([969e4ea](https://github.com/visulima/visulima/commit/969e4ea751abd08d59376fbb4fc73ea0cbb03f3a))
+- **spinner:** add standalone, promise helper, custom frames and fix multispinner ([969e4ea](https://github.com/visulima/visulima/commit/969e4ea751abd08d59376fbb4fc73ea0cbb03f3a))
 
 ### Miscellaneous Chores
 
-* apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
+- apply safe prettier and eslint formatting ([05120af](https://github.com/visulima/visulima/commit/05120af8c898d18c495575680f01134681e29b65))
 
 ### Code Refactoring
 
-* **spinner:** wrap ternary operand in parens for lint ([ccde3ab](https://github.com/visulima/visulima/commit/ccde3ab36ecf1ca3a191e9cc44905c871ffba433))
+- **spinner:** wrap ternary operand in parens for lint ([ccde3ab](https://github.com/visulima/visulima/commit/ccde3ab36ecf1ca3a191e9cc44905c871ffba433))
 
 ### Tests
 
-* **spinner:** neutralize CI detection in standalone TTY animation test ([fcb899c](https://github.com/visulima/visulima/commit/fcb899cfe004fd16cac3b06ae91185f4a6103776))
-* **spinner:** standalone TTY render + timer unref ([521c398](https://github.com/visulima/visulima/commit/521c3986d6afd96d2479de508e95cdb871c44915))
+- **spinner:** neutralize CI detection in standalone TTY animation test ([fcb899c](https://github.com/visulima/visulima/commit/fcb899cfe004fd16cac3b06ae91185f4a6103776))
+- **spinner:** standalone TTY render + timer unref ([521c398](https://github.com/visulima/visulima/commit/521c3986d6afd96d2479de508e95cdb871c44915))
 
 ### Build System
 
-* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
-
+- regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
 
 ### Dependencies
 
-* **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.5
+- **@visulima/interactive-manager:** upgraded to 1.0.0-alpha.5
 
 ## @visulima/spinner [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/spinner@1.0.0-alpha.2...@visulima/spinner@1.0.0-alpha.3) (2026-06-04)
 

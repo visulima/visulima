@@ -63,16 +63,13 @@ const chooseLevel = async (release: PlannedRelease): Promise<BumpLevel> => {
 
     process.stdout.write(`\n${renderRelease(release, release.type)}\n`);
 
-    const action = await selectPrompt<"accept" | "promote" | "demote" | "skip" | "set">(
-        "Action?",
-        [
-            { label: "accept (keep as-is)", value: "accept" },
-            { label: "promote (bump up one level)", value: "promote" },
-            { label: "demote (bump down one level)", value: "demote" },
-            { label: "set explicitly (major | minor | patch | none)", value: "set" },
-            { label: "skip this package", value: "skip" },
-        ],
-    );
+    const action = await selectPrompt<"accept" | "promote" | "demote" | "skip" | "set">("Action?", [
+        { label: "accept (keep as-is)", value: "accept" },
+        { label: "promote (bump up one level)", value: "promote" },
+        { label: "demote (bump down one level)", value: "demote" },
+        { label: "set explicitly (major | minor | patch | none)", value: "set" },
+        { label: "skip this package", value: "skip" },
+    ]);
 
     if (action === "promote") {
         return adjustLevel(release.type, 1);
@@ -87,15 +84,12 @@ const chooseLevel = async (release: PlannedRelease): Promise<BumpLevel> => {
     }
 
     if (action === "set") {
-        return selectPrompt<BumpLevel>(
-            "Set bump level to?",
-            [
-                { label: "major", value: "major" },
-                { label: "minor", value: "minor" },
-                { label: "patch", value: "patch" },
-                { label: "none (skip)", value: "none" },
-            ],
-        );
+        return selectPrompt<BumpLevel>("Set bump level to?", [
+            { label: "major", value: "major" },
+            { label: "minor", value: "minor" },
+            { label: "patch", value: "patch" },
+            { label: "none (skip)", value: "none" },
+        ]);
     }
 
     return release.type;
@@ -111,13 +105,7 @@ const walkThroughInteractive = async (releases: ReadonlyArray<PlannedRelease>): 
     return out;
 };
 
-const writeOverrideChangeFile = async (
-    fs: CerebroFs,
-    cwd: string,
-    changesDir: string,
-    chosen: ReleaseWithOverride[],
-    body: string,
-): Promise<string> => {
+const writeOverrideChangeFile = async (fs: CerebroFs, cwd: string, changesDir: string, chosen: ReleaseWithOverride[], body: string): Promise<string> => {
     const bumps: Record<string, BumpLevel> = {};
 
     for (const item of chosen) {

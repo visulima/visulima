@@ -1,11 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { ChangelogContext, ChangelogFormatter } from "../../../src/release/core/changelog/api";
-import {
-    renderWorkspaceChangelog,
-    resolveGroupChangelogRouting,
-    workspaceChangelogPath,
-} from "../../../src/release/core/changelog/workspace";
+import { renderWorkspaceChangelog, resolveGroupChangelogRouting, workspaceChangelogPath } from "../../../src/release/core/changelog/workspace";
 import type { PlannedRelease, VisReleaseConfig, WorkspacePackage } from "../../../src/release/types";
 
 const mkRelease = (name: string, version: string): PlannedRelease => {
@@ -107,11 +103,7 @@ const mkPkg = (name: string, dir: string): WorkspacePackage => {
 };
 
 describe(resolveGroupChangelogRouting, () => {
-    const packages = [
-        mkPkg("@scope/a", "/r/packages/a"),
-        mkPkg("@scope/b", "/r/packages/b"),
-        mkPkg("@scope/c", "/r/packages/c"),
-    ];
+    const packages = [mkPkg("@scope/a", "/r/packages/a"), mkPkg("@scope/b", "/r/packages/b"), mkPkg("@scope/c", "/r/packages/c")];
 
     it("returns an empty map when no group opts into shared mode", () => {
         expect.hasAssertions();

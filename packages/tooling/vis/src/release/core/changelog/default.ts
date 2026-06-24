@@ -115,19 +115,13 @@ const formatAuthor = (author: string): string => `(${author.startsWith("@") ? au
 
 const renderFlat = (lines: string[], entries: { line: string; suffix: string }[]): void => {
     for (const entry of entries) {
-        const normalised = entry.line.startsWith("-") || entry.line.startsWith("*")
-            ? entry.line
-            : `- ${entry.line}`;
+        const normalised = entry.line.startsWith("-") || entry.line.startsWith("*") ? entry.line : `- ${entry.line}`;
 
         lines.push(`${normalised}${entry.suffix}`);
     }
 };
 
-const renderSectioned = (
-    lines: string[],
-    entries: { line: string; suffix: string; type: string | undefined }[],
-    sections: ChangelogSection[],
-): void => {
+const renderSectioned = (lines: string[], entries: { line: string; suffix: string; type: string | undefined }[], sections: ChangelogSection[]): void => {
     // Bucket entries by type. Lines without a recognised type go to a
     // "Miscellaneous" catch-all rendered after every configured
     // section, unless that catch-all type is itself hidden.
@@ -160,9 +154,7 @@ const renderSectioned = (
         lines.push("");
 
         for (const entry of bucket) {
-            const normalised = entry.line.startsWith("-") || entry.line.startsWith("*")
-                ? entry.line
-                : `- ${entry.line}`;
+            const normalised = entry.line.startsWith("-") || entry.line.startsWith("*") ? entry.line : `- ${entry.line}`;
 
             lines.push(`${normalised}${entry.suffix}`);
         }
@@ -182,9 +174,7 @@ const renderSectioned = (
 
         for (const bucket of byType.values()) {
             for (const entry of bucket) {
-                const normalised = entry.line.startsWith("-") || entry.line.startsWith("*")
-                    ? entry.line
-                    : `- ${entry.line}`;
+                const normalised = entry.line.startsWith("-") || entry.line.startsWith("*") ? entry.line : `- ${entry.line}`;
 
                 lines.push(`${normalised}${entry.suffix}`);
             }
@@ -192,74 +182,76 @@ const renderSectioned = (
     }
 };
 
-export const createDefaultFormatter = (options: DefaultFormatterOptions = {}): ChangelogFormatter =>
-    (context: ChangelogContext): string => {
-        const { changeFiles, date, release, target } = context;
-        const lines: string[] = [];
+export const createDefaultFormatter
+    = (options: DefaultFormatterOptions = {}): ChangelogFormatter =>
+        (context: ChangelogContext): string => {
+            const { changeFiles, date, release, target } = context;
+            const lines: string[] = [];
 
-        if (target !== "github-release") {
-            lines.push(`## ${release.newVersion}`);
-            lines.push(`<sub>${date}</sub>`);
-            lines.push("");
-        }
-
-        // Collect entries with their inferred conventional-commit type
-        // so the renderer can decide flat-list vs sectioned output.
-        const entries: { line: string; suffix: string; type: string | undefined }[] = [];
-
-        for (const file of changeFiles) {
-            const body = file.body.trim();
-
-            if (!body) {
-                continue;
+            if (target !== "github-release") {
+                lines.push(`## ${release.newVersion}`);
+                lines.push(`<sub>${date}</sub>`);
+                lines.push("");
             }
 
-            const author = options.authorCredit ? file.meta?.author : undefined;
-            const suffix = author ? ` ${formatAuthor(author)}` : "";
+            // Collect entries with their inferred conventional-commit type
+            // so the renderer can decide flat-list vs sectioned output.
+            const entries: { line: string; suffix: string; type: string | undefined }[] = [];
 
-            for (const rawLine of body.split(/\r?\n/)) {
-                const line = rawLine.trim();
+            for (const file of changeFiles) {
+                const body = file.body.trim();
 
-                if (!line) {
+                if (!body) {
                     continue;
                 }
 
-                entries.push({ line, suffix, type: extractCommitType(line) });
+                const author = options.authorCredit ? file.meta?.author : undefined;
+                const suffix = author ? ` ${formatAuthor(author)}` : "";
+
+                for (const rawLine of body.split(/\r?\n/)) {
+                    const line = rawLine.trim();
+
+                    if (!line) {
+                        continue;
+                    }
+
+                    entries.push({ line, suffix, type: extractCommitType(line) });
+                }
             }
-        }
 
-        const sections = options.sections === undefined
-            ? undefined
-            : options.sections.length === 0 ? DEFAULT_SECTIONS : options.sections;
+            const sections = options.sections === undefined ? undefined : options.sections.length === 0 ? DEFAULT_SECTIONS : options.sections;
 
-        if (sections) {
-            renderSectioned(lines, entries, sections);
-        } else {
-            renderFlat(lines, entries);
-        }
-
-        if (release.isCascadeBump || release.isGroupBump) {
-            for (const source of release.sources) {
-                const verb = release.isCascadeBump ? "Cascade from" : "Group bump with";
-
-                lines.push(`- ${verb} ${source.name}@${source.newVersion}`);
+            if (sections) {
+                renderSectioned(lines, entries, sections);
+            } else {
+                renderFlat(lines, entries);
             }
-        } else if (release.isDependencyBump && changeFiles.length === 0) {
-            for (const source of release.sources) {
+
+            if (release.isCascadeBump || release.isGroupBump) {
+                for (const source of release.sources) {
+                    const verb = release.isCascadeBump ? "Cascade from" : "Group bump with";
+
+                    lines.push(`- ${verb} ${source.name}@${source.newVersion}`);
+                }
+            } else if (release.isDependencyBump && changeFiles.length === 0) {
+                for (const source of release.sources) {
                 // F13: catalog REMOVALs surface as `newVersion === ""`
                 // (the release-plan stores `entry.newVersion ?? ""` for
                 // the synthetic catalog source). Render as a removal
                 // line so we don't emit a malformed trailing `@`.
-                if (source.newVersion === "") {
-                    lines.push(`- Removed dependency ${source.name}`);
-                } else {
-                    lines.push(`- Updated dependency ${source.name}@${source.newVersion}`);
+                    if (source.newVersion === "") {
+                        lines.push(`- Removed dependency ${source.name}`);
+                    } else {
+                        lines.push(`- Updated dependency ${source.name}@${source.newVersion}`);
+                    }
                 }
             }
-        }
 
-        return lines.join("\n").replaceAll(/\n{3,}/g, "\n\n").trim();
-    };
+            return lines
+                .join("\n")
+                .replaceAll(/\n{3,}/g, "\n\n")
+                .trim();
+        };
 
 export const defaultFormatter: ChangelogFormatter = createDefaultFormatter();
 

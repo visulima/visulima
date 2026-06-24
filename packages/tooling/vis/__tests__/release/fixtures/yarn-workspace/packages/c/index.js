@@ -1,1 +1,1 @@
-module.exports = { name: '@fixture-yarn/c' };
+module.exports = { name: "@fixture-yarn/c" };

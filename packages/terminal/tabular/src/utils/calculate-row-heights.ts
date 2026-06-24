@@ -174,10 +174,12 @@ const calculateRowHeights = (
                         }
                     } else {
                         // All rows in span are fixed, content won't fit.
-                        const warn = options.onWarn ?? ((message: string): void => {
-                            // eslint-disable-next-line no-console
-                            console.warn(message);
-                        });
+                        const warn
+                            = options.onWarn
+                                ?? ((message: string): void => {
+                                // eslint-disable-next-line no-console
+                                    console.warn(message);
+                                });
 
                         warn(
                             `[calculateRowHeights] Content of spanning cell exceeds fixed height allocated. `

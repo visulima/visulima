@@ -11,11 +11,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { CommitRecord } from "../../../src/release/core/generate/conventional-commits";
-import {
-    annotateAndResolveReverts,
-    detectRevert,
-    parseCommit,
-} from "../../../src/release/core/generate/conventional-commits";
+import { annotateAndResolveReverts, detectRevert, parseCommit } from "../../../src/release/core/generate/conventional-commits";
 
 const mk = (hash: string, subject: string, body = "", files: string[] = []): CommitRecord => {
     return { body, files, hash, subject };
@@ -82,10 +78,7 @@ describe(annotateAndResolveReverts, () => {
         //   c1 (feat: retry)            ← older
         expect.hasAssertions();
 
-        const commits = [
-            mk("c2", "Revert \"feat: retry\""),
-            mk("c1", "feat: retry"),
-        ];
+        const commits = [mk("c2", "Revert \"feat: retry\""), mk("c1", "feat: retry")];
 
         const { commits: annotated } = annotateAndResolveReverts(commits);
         const original = annotated.find((c) => c.hash === "c1")!;
@@ -99,10 +92,7 @@ describe(annotateAndResolveReverts, () => {
     it("cancels via the `This reverts commit <sha>` body trailer", () => {
         expect.hasAssertions();
 
-        const commits = [
-            mk("def4567", "revert: something different", "Bla bla\n\nThis reverts commit abc1234."),
-            mk("abc1234", "feat(foo): land thing"),
-        ];
+        const commits = [mk("def4567", "revert: something different", "Bla bla\n\nThis reverts commit abc1234."), mk("abc1234", "feat(foo): land thing")];
 
         const { commits: annotated } = annotateAndResolveReverts(commits);
         const original = annotated.find((c) => c.hash === "abc1234")!;
@@ -212,10 +202,7 @@ describe(annotateAndResolveReverts, () => {
     it("matches when the `This reverts commit` trailer SHA is uppercase", () => {
         expect.hasAssertions();
 
-        const commits = [
-            mk("def4567", "Revert \"feat: y\"", "This reverts commit ABC1234."),
-            mk("abc1234567890123456789012345678901234567", "feat: y"),
-        ];
+        const commits = [mk("def4567", "Revert \"feat: y\"", "This reverts commit ABC1234."), mk("abc1234567890123456789012345678901234567", "feat: y")];
 
         const { commits: annotated } = annotateAndResolveReverts(commits);
         const original = annotated.find((c) => c.hash === "abc1234567890123456789012345678901234567")!;
@@ -241,11 +228,7 @@ describe(annotateAndResolveReverts, () => {
         //   revert → references `lateSha` (full 40 chars)
         //   feat   → lateSha
         //   feat   → earlySha
-        const commits = [
-            mk("def4567", "Revert \"feat: late\"", `This reverts commit ${lateSha}.`),
-            mk(lateSha, "feat: late"),
-            mk(earlySha, "feat: early"),
-        ];
+        const commits = [mk("def4567", "Revert \"feat: late\"", `This reverts commit ${lateSha}.`), mk(lateSha, "feat: late"), mk(earlySha, "feat: early")];
 
         const { commits: annotated } = annotateAndResolveReverts(commits);
         const early = annotated.find((c) => c.hash === earlySha)!;
@@ -261,9 +244,7 @@ describe(annotateAndResolveReverts, () => {
     it("treats a revert of an already-released commit as a no-op", () => {
         expect.hasAssertions();
 
-        const commits = [
-            mk("c2", "Revert \"feat: shipped already\""),
-        ];
+        const commits = [mk("c2", "Revert \"feat: shipped already\"")];
 
         // c1 is referenced by the revert via subject, but it is not in
         // the commit window. Instead we simulate the "already-released"
@@ -281,10 +262,7 @@ describe(annotateAndResolveReverts, () => {
     it("respects releasedShas: when revert target IS in the window but already shipped, keep the revert active", () => {
         expect.hasAssertions();
 
-        const commits = [
-            mk("c2", "Revert \"feat: shipped already\"", "This reverts commit shipped1."),
-            mk("shipped1", "feat: shipped already"),
-        ];
+        const commits = [mk("c2", "Revert \"feat: shipped already\"", "This reverts commit shipped1."), mk("shipped1", "feat: shipped already")];
 
         const { commits: annotated } = annotateAndResolveReverts(commits, new Set(["shipped1"]));
         const original = annotated.find((c) => c.hash === "shipped1")!;
@@ -304,12 +282,7 @@ describe("annotateAndResolveReverts: F19 no-type-ratio warning", () => {
     it("emits a warning when > 50% of active commits have no conventional-commits prefix", () => {
         expect.hasAssertions();
 
-        const commits = [
-            mk("h1", "Just a thing"),
-            mk("h2", "another untyped commit"),
-            mk("h3", "more untyped stuff"),
-            mk("h4", "feat: typed once"),
-        ];
+        const commits = [mk("h1", "Just a thing"), mk("h2", "another untyped commit"), mk("h3", "more untyped stuff"), mk("h4", "feat: typed once")];
 
         const { warnings } = annotateAndResolveReverts(commits, undefined, "main..HEAD");
 
@@ -322,12 +295,7 @@ describe("annotateAndResolveReverts: F19 no-type-ratio warning", () => {
     it("does NOT emit the warning when the no-type ratio is at or below 50%", () => {
         expect.hasAssertions();
 
-        const commits = [
-            mk("h1", "feat: typed one"),
-            mk("h2", "fix: typed two"),
-            mk("h3", "no type here"),
-            mk("h4", "still no type"),
-        ];
+        const commits = [mk("h1", "feat: typed one"), mk("h2", "fix: typed two"), mk("h3", "no type here"), mk("h4", "still no type")];
 
         const { warnings } = annotateAndResolveReverts(commits);
 
@@ -341,10 +309,7 @@ describe("annotateAndResolveReverts: F19 no-type-ratio warning", () => {
         // 0/0 → no warning.
         expect.hasAssertions();
 
-        const commits = [
-            mk("c2", "Revert \"feat: x\"", "This reverts commit c1."),
-            mk("c1", "feat: x"),
-        ];
+        const commits = [mk("c2", "Revert \"feat: x\"", "This reverts commit c1."), mk("c1", "feat: x")];
 
         const { warnings } = annotateAndResolveReverts(commits);
 

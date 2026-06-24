@@ -186,7 +186,10 @@ export const parseMavenMetadataLatest = (xml: string): string | undefined => {
  *   `io.visulima:vis-jvm`  →  `https://repo1.maven.org/maven2/io/visulima/vis-jvm/maven-metadata.xml`
  */
 export const mavenCentralMetadataUrl = (groupId: string, artifactId: string): string => {
-    const groupPath = groupId.split(".").map((segment) => encodeURIComponent(segment)).join("/");
+    const groupPath = groupId
+        .split(".")
+        .map((segment) => encodeURIComponent(segment))
+        .join("/");
     const safeArtifact = encodeURIComponent(artifactId);
 
     return `https://repo1.maven.org/maven2/${groupPath}/${safeArtifact}/maven-metadata.xml`;
@@ -354,7 +357,7 @@ export class MavenVersionActions extends VersionActions {
      * name — the operator still has enough to find the source.
      */
     public async publish(context: PublishContext): Promise<PublishResult> {
-        const perPkg = (context.perPackageConfig) ?? {};
+        const perPkg = context.perPackageConfig ?? {};
         const pomPath = join(context.pkg.dir, perPkg.pomPath ?? "pom.xml");
 
         // Best-effort pom read for the B-1 coordinate enrichment. A
@@ -370,9 +373,7 @@ export class MavenVersionActions extends VersionActions {
             coordinates = undefined;
         }
 
-        const coordinateLabel = coordinates?.groupId && coordinates?.artifactId
-            ? `${coordinates.groupId}:${coordinates.artifactId}`
-            : context.pkg.name;
+        const coordinateLabel = coordinates?.groupId && coordinates?.artifactId ? `${coordinates.groupId}:${coordinates.artifactId}` : context.pkg.name;
 
         if (context.dryRun) {
             // Honour dryRun so vis-release dry-runs don't blow up on
