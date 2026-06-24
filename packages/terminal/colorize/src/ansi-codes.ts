@@ -173,4 +173,5 @@ const styleMethods: StyleMethods = defaultCodes.styleMethods;
 
 export type { AnsiCodes, StyleMethods };
 
+// fallow-ignore-next-line unused-export -- baseColors/baseStyles/styleMethods are intentional backwards-compatible public exports (see the module-level codes above); not consumed inside the repo.
 export { baseColors, baseStyles, createAnsiCodes, stderrColorLevel, stdoutColorLevel, styleMethods };

@@ -173,6 +173,7 @@ const Colorize = function (this: ColorizeType, options?: ColorizeOptions) {
 
 export type { ColorizeConstructor, ColorizeOptions };
 
+// fallow-ignore-next-line unused-export -- stdoutColorLevel is public API (re-exported for parity with stderrColorLevel); not consumed inside the repo.
 export { stderrColorLevel, stdoutColorLevel } from "./ansi-codes";
 
 export default Colorize;
