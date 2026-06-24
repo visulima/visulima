@@ -1,13 +1,6 @@
 import type { GridCell, InternalGridItem } from "../types";
 
 /**
- * @deprecated No longer used as a content sentinel. Empty cells are now marked
- * with the internal `isEmpty` flag on {@link InternalGridItem} and render as an
- * empty string. Kept only for backwards compatibility and will be removed.
- */
-export const EMPTY_CELL_REPRESENTATION = "__EMPTY__";
-
-/**
  * Normalizes a GridCell input into an InternalGridItem.
  * Ensures the 'content' property is always a string.
  *
@@ -19,6 +12,7 @@ export const EMPTY_CELL_REPRESENTATION = "__EMPTY__";
  * @returns The normalized InternalGridItem.
  * @throws {TypeError} If the input cell type is invalid.
  */
+// eslint-disable-next-line import/prefer-default-export -- named export kept; this util is imported by name across the package.
 export const normalizeGridCell = (cell: GridCell): InternalGridItem => {
     if (typeof cell === "string") {
         return { content: cell };

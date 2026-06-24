@@ -139,6 +139,7 @@ export class Table {
      * current data without keeping a separate shadow copy.
      * @returns A copy of the body rows.
      */
+    // fallow-ignore-next-line unused-class-member -- public Table API, not called inside the repo.
     public getRows(): TableCell[][] {
         return this.#rows.map((row) => [...row]);
     }
@@ -147,6 +148,7 @@ export class Table {
      * Returns the number of body rows currently stored in the table.
      * @returns The body row count.
      */
+    // fallow-ignore-next-line unused-class-member -- public Table API, not called inside the repo.
     public get rowCount(): number {
         return this.#rows.length;
     }
@@ -157,6 +159,7 @@ export class Table {
      * @returns The Table instance for chaining.
      * @throws {RangeError} If the index is out of bounds.
      */
+    // fallow-ignore-next-line unused-class-member -- public Table API, not called inside the repo.
     public removeRow(index: number): this {
         if (!Number.isInteger(index) || index < 0 || index >= this.#rows.length) {
             throw new RangeError(`Row index ${String(index)} is out of bounds (0..${String(this.#rows.length - 1)})`);
@@ -173,6 +176,7 @@ export class Table {
      * Removes all body rows. Headers and footers are preserved.
      * @returns The Table instance for chaining.
      */
+    // fallow-ignore-next-line unused-class-member -- public Table API, not called inside the repo.
     public clear(): this {
         this.#rows.length = 0;
         this.#isDirty = true;
