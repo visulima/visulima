@@ -268,7 +268,7 @@
         "dev": "pnpm run build --watch",
         "fallow:audit": "fallow audit",
         "fallow:dead-code": "fallow dead-code",
-        "fallow:health": "fallow health --score",
+        "fallow:health": "fallow health --report-only",
         "generate:charmap": "node ./scripts/generate-charmap.mjs",
         "lint:attw": "attw --pack --profile esm-only",
         "lint:eslint": "eslint . --cache --concurrency auto",

@@ -60,7 +60,7 @@
         "dev": "pnpm run build --watch",
         "fallow:audit": "fallow audit",
         "fallow:dead-code": "fallow dead-code",
-        "fallow:health": "fallow health --score",
+        "fallow:health": "fallow health --report-only",
         "lint:attw": "attw --pack --profile esm-only",
         "lint:eslint": "eslint .",
         "lint:eslint:fix": "eslint . --fix",
