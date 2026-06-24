@@ -21,8 +21,6 @@ interface MigrateLogger {
 
 // Detection ---------------------------------------------------------
 
-const hasStandaloneNanoStagedConfig = (root: string): boolean => NANO_STAGED_ALL_CONFIG_FILES.some((file) => isAccessibleSync(join(root, file)));
-
 const hasUnsupportedNanoStagedConfig = (root: string): boolean => {
     for (const filename of NANO_STAGED_OTHER_CONFIG_FILES) {
         if (isAccessibleSync(join(root, filename))) {
@@ -385,7 +383,6 @@ export {
     extractNanoStagedFromPackageJson,
     generateStagedConfigSnippet,
     hasStagedConfigInVisConfig,
-    hasStandaloneNanoStagedConfig,
     hasUnsupportedNanoStagedConfig,
     insertStagedIntoVisConfig,
     migrateNanoStaged,

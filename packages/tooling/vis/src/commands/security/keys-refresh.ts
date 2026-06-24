@@ -65,4 +65,5 @@ const execute = async ({ options }: Toolbox<Console, SecurityKeysRefreshOptions>
     pail.success(`Refreshed npm signing keys (${String(result.keys.length)} keys).`);
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

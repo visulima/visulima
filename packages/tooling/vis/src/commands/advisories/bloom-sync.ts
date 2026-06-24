@@ -99,4 +99,5 @@ const execute = async ({ options, visConfig, workspaceRoot }: Toolbox<Console, A
     }
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const advisoriesBloomSyncExecute: CommandExecute<Toolbox> = execute as CommandExecute<Toolbox>;

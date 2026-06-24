@@ -5,7 +5,6 @@ import { checkDocker, scanDockerRepository } from "./docker/index";
 import { checkGitlab, scanGitlabRepository } from "./gitlab/index";
 import type { EcosystemId, EcosystemUpdate, EcosystemUpdateOptions, EcosystemUpdateResult } from "./types";
 
-export type { ApplyResult } from "./applier";
 export { applyEcosystemUpdates } from "./applier";
 export type { EcosystemId, EcosystemUpdate, EcosystemUpdateOptions, EcosystemUpdateResult, EcosystemUpdateType } from "./types";
 

@@ -1222,4 +1222,5 @@ const runFixes = async (opts: RunFixesOptions): Promise<void> => {
     }
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

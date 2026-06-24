@@ -68,4 +68,5 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
     process.exitCode = result.failed.length > 0 ? 2 : 0;
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

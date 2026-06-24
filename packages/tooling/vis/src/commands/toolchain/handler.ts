@@ -561,6 +561,7 @@ export const detectExecute: CommandExecute<Toolbox<Console, ToolchainOptions>> =
 };
 
 /** `vis toolchain install` — install pinned versions via the right manager. */
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const installExecute: CommandExecute<Toolbox<Console, ToolchainOptions>> = async ({ options, visConfig, workspaceRoot }) => {
     executeInstall(requireRoot(workspaceRoot), visConfig?.toolchain, options);
 };

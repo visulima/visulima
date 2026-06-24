@@ -87,4 +87,5 @@ const execute: CommandExecute<Toolbox<Console, ImportOptions>> = async ({ argume
     logger.info(dim("Note: project.json / nx tags are not generated. Add them if your tooling needs them."));
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

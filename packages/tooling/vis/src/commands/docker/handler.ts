@@ -69,6 +69,7 @@ export const pruneExecute: CommandExecute<Toolbox<Console, DockerPruneOptions>> 
 };
 
 /** `vis docker lint` — lint a Dockerfile with hadolint (downloaded on demand). */
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const lintExecute: CommandExecute<Toolbox<Console, DockerLintOptions>> = async ({
     argument,
     fs,

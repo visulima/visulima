@@ -244,5 +244,3 @@ export const createKeepAChangelogFormatter
                 .replaceAll(/\n{3,}/g, "\n\n")
                 .trimEnd();
         };
-
-export default createKeepAChangelogFormatter;

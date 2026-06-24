@@ -67,8 +67,10 @@ const runShell = async (
 };
 
 export class ShellPublishActions extends VersionActions {
+    // fallow-ignore-next-line unused-class-member -- version-action adapter contract member (accessed polymorphically via the adapter interface)
     public readonly id = "shell" as const;
 
+    // fallow-ignore-next-line unused-class-member -- version-action adapter contract member (accessed polymorphically via the adapter interface)
     public async readPublishedVersion(context: {
         perPackageConfig?: { checkPublished?: string };
         pkg: WorkspacePackage;
@@ -215,5 +217,3 @@ export class ShellPublishActions extends VersionActions {
 
 // Re-export the manifest type so consumers know what fields the
 // `pkg` argument carries (helpful when writing custom check commands).
-
-export { type PackageManifest } from "../../types";

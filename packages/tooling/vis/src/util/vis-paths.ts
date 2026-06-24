@@ -61,8 +61,6 @@ export const getVisWorkspaceDataDir = (workspaceRoot: string): string => join(wo
 /** Default cache directory name for `vis run` (relative to workspace root). */
 export const DEFAULT_WORKSPACE_CACHE_DIRECTORY = `${VIS_WORKSPACE_DIR_NAME}/cache`;
 
-export const getVisWorkspaceCacheDir = (workspaceRoot: string): string => join(getVisWorkspaceDataDir(workspaceRoot), "cache");
-
 export const getVisRunsDir = (workspaceRoot: string): string => join(getVisWorkspaceDataDir(workspaceRoot), "runs");
 
 export const getVisLastSummaryPath = (workspaceRoot: string): string => join(getVisWorkspaceDataDir(workspaceRoot), "last-summary.json");

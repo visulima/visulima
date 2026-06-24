@@ -117,4 +117,5 @@ const execute = async ({ logger: _logger, options, workspaceRoot }: Toolbox<Cons
     }
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const advisoriesStatusExecute: CommandExecute<Toolbox> = execute as CommandExecute<Toolbox>;

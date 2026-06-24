@@ -35,4 +35,5 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     }
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute;

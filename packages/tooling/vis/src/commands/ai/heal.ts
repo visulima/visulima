@@ -572,6 +572,7 @@ const heal = async (toolbox: Toolbox<Console, AiHealOptions>, deps: HealRunDeps 
     pail.error(`Failed to post ${noun}: ${postResult.error ?? "unknown error"}`);
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const aiHeal: CommandExecute<Toolbox<Console, AiHealOptions>> = async (toolbox) => {
     await heal(toolbox);
 };

@@ -16,6 +16,7 @@ export type RuntimeId = "bun" | "node";
  * spawning. Reserved for the Phase 1 verb-routing methods — defined now so
  * the contract is stable.
  */
+// fallow-ignore-next-line unused-type -- reserved Phase 1 verb-routing adapter contract, kept stable ahead of consumers
 export interface SpawnSpec {
     args: string[];
     command: string;

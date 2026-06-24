@@ -28,7 +28,7 @@ import { dirname, join } from "node:path";
 import { findCacheDirSync } from "@visulima/find-cache-dir";
 
 import type { OsvBloomBatchHit, OsvBloomBatchQuery, OsvBloomHandle } from "#native";
-import { NATIVE_BINDING_VERSION, osvBloomDecode, osvBloomProbe, osvBloomProbeBatch } from "#native";
+import { NATIVE_BINDING_VERSION, osvBloomDecode, osvBloomProbeBatch } from "#native";
 
 const EXPECTED_BINDING_VERSION = 6;
 
@@ -120,6 +120,7 @@ interface OsvBloomState {
 }
 
 export class OsvBloomSourceNotAllowedError extends Error {
+    // fallow-ignore-next-line unused-class-member -- error subclass cause field (part of the Error contract / consumed via error inspection)
     override readonly cause = "OSV_BLOOM_SOURCE_NOT_ALLOWED";
 
     constructor(host: string) {
@@ -129,6 +130,7 @@ export class OsvBloomSourceNotAllowedError extends Error {
 }
 
 export class OsvBloomNetworkError extends Error {
+    // fallow-ignore-next-line unused-class-member -- error subclass cause field (part of the Error contract / consumed via error inspection)
     override readonly cause = "OSV_BLOOM_NETWORK";
 
     constructor(url: string, status: number | string) {
@@ -138,6 +140,7 @@ export class OsvBloomNetworkError extends Error {
 }
 
 export class OsvBloomIntegrityError extends Error {
+    // fallow-ignore-next-line unused-class-member -- error subclass cause field (part of the Error contract / consumed via error inspection)
     override readonly cause = "OSV_BLOOM_INTEGRITY";
 
     constructor(expectedSha: string, actualSha: string) {
@@ -156,6 +159,7 @@ export class OsvBloomManifestError extends Error {
 }
 
 export class OsvBloomCacheMissError extends Error {
+    // fallow-ignore-next-line unused-class-member -- error subclass cause field (part of the Error contract / consumed via error inspection)
     override readonly cause = "OSV_BLOOM_CACHE_MISS";
 
     constructor(cacheDir: string) {
@@ -343,9 +347,6 @@ export const loadOsvBloomHandle = async (workspaceRoot: string, opts?: { cacheDi
 
     return osvBloomDecode(bytes);
 };
-
-/** Single-pair convenience wrapper. */
-export const probeOsvBloom = (handle: OsvBloomHandle, name: string, version: string): boolean => osvBloomProbe(handle, name, version);
 
 /** Batch wrapper. Returns only the hits in input order. */
 export const probeOsvBloomBatch = (handle: OsvBloomHandle, queries: OsvBloomBatchQuery[]): OsvBloomBatchHit[] => osvBloomProbeBatch(handle, queries);

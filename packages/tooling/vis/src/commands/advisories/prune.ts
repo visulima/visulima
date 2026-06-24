@@ -46,4 +46,5 @@ const execute = async ({ fs, logger: _logger, options, workspaceRoot }: Toolbox<
     pail.success(`Removed ${dbPath}.`);
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export const advisoriesPruneExecute: CommandExecute<Toolbox> = execute as CommandExecute<Toolbox>;

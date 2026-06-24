@@ -277,5 +277,6 @@ const execute = async ({ argument, options, workspaceRoot: wsRoot }: Toolbox<Con
     }
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;
 export { parsePackageArg };

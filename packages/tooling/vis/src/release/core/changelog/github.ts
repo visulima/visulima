@@ -171,5 +171,3 @@ export const createGithubFormatter = (options: GithubFormatterOptions = {}): Cha
 
     return formatter;
 };
-
-export default createGithubFormatter;

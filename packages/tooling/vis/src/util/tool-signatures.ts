@@ -143,5 +143,3 @@ export const TOOL_SIGNATURES = {
         packageNames: ["stylelint"],
     },
 } as const satisfies Record<string, ToolSignature>;
-
-export type ToolSignatureKey = keyof typeof TOOL_SIGNATURES;

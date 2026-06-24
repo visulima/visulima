@@ -20,4 +20,5 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     }
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

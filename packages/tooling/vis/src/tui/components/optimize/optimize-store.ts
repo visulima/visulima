@@ -148,6 +148,7 @@ class OptimizeStore {
         this.#notify();
     }
 
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     setPhase(phase: OptimizeState["phase"]): void {
         this.#state.phase = phase;
         this.#notify();

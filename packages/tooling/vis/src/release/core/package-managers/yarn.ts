@@ -23,6 +23,7 @@ import { interpretNativePublishResult, NpmAdapter } from "./npm";
 export class YarnAdapter extends PackageManagerAdapter {
     public readonly id = "yarn" as const;
 
+    // fallow-ignore-next-line unused-class-member -- package-manager adapter contract member (accessed polymorphically via PackageManagerAdapter)
     public readonly minVersion = "4.0.0"; // Berry only
 
     public async pack(options: PackOptions): Promise<PackResult> {

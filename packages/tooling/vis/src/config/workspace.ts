@@ -1057,10 +1057,8 @@ export type {
     PackageJsonIndex,
     ProjectJson,
     ProjectOptionsIndex,
-    ScopedTasksBlock,
     ScopedTasksMatch,
     VisConfig,
     VisProjectConfiguration,
-    VisTaskConfig,
     VisTaskConfigIndex,
 } from "./types";

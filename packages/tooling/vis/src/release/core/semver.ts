@@ -267,5 +267,3 @@ export const cleanRange = (range: string): string | null => {
 
     return range;
 };
-
-export { default as semver } from "semver";

@@ -27,11 +27,9 @@ const BUILTIN_REGISTRY: Readonly<Record<string, BuiltinFunction>> = {
 const BUILTIN_HOOK_IDS: ReadonlyArray<string> = Object.keys(BUILTIN_REGISTRY).sort();
 
 /** Whether `id` is a registered builtin hook. */
-const isBuiltin = (id: string): boolean => Object.hasOwn(BUILTIN_REGISTRY, id);
-
 /** Returns the builtin hook function for `id`, or `undefined` if none. */
 const getBuiltin = (id: string): BuiltinFunction | undefined => BUILTIN_REGISTRY[id];
 
-export { BUILTIN_HOOK_IDS, BUILTIN_REGISTRY, getBuiltin, isBuiltin };
+export { BUILTIN_HOOK_IDS, BUILTIN_REGISTRY, getBuiltin };
 
 export { type BuiltinContext, type BuiltinFunction, type BuiltinLogger } from "./types";

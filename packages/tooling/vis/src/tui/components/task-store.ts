@@ -244,6 +244,7 @@ export class TaskStore {
     }
 
     /** Replace the full output for a task (used by PTY mode where ANSI sequences update in place). */
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public setOutput(taskId: string, content: string): void {
         this.#state.outputs.set(taskId, content);
         this.#emit({ ...this.#state });
@@ -259,6 +260,7 @@ export class TaskStore {
      * watchers) start running after the regular task graph completes —
      * the run isn't really "done" until they exit too.
      */
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public unmarkDone(): void {
         this.#emit({ ...this.#state, autoExitCountdown: null, done: false, endTime: null });
     }
@@ -372,6 +374,7 @@ export class TaskStore {
     }
 
     /** Acknowledge the retry request (called by lifecycle after re-launching). */
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public acknowledgeRetry(): string | null {
         const id = this.#state.retryTaskId;
 
@@ -429,6 +432,7 @@ export class TaskStore {
     }
 
     /** Acknowledge the rerun request (called by lifecycle after re-launching tasks). */
+    // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
     public acknowledgeRerun(): void {
         if (this.#state.rerunRequested) {
             this.#emit({ ...this.#state, rerunRequested: false });

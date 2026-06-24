@@ -56,4 +56,5 @@ const execute = async ({ options, visConfig, workspaceRoot: wsRoot }: Toolbox<Co
     process.exitCode = 1;
 };
 
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
 export default execute as CommandExecute<Toolbox>;

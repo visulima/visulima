@@ -115,8 +115,10 @@ const writeNpmrc = (path: string, token: string): void => {
 };
 
 export class NativeAddonVersionActions extends VersionActions {
+    // fallow-ignore-next-line unused-class-member -- version-action adapter contract member (accessed polymorphically via the adapter interface)
     public readonly id = "native-addon" as const;
 
+    // fallow-ignore-next-line unused-class-member -- version-action adapter contract member (accessed polymorphically via the adapter interface)
     public async readPublishedVersion(context: { pkg: WorkspacePackage; pm: PackageManagerAdapter }): Promise<string | undefined> {
         try {
             assertValidPackageName(context.pkg.name);

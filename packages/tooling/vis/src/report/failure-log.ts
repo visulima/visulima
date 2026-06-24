@@ -34,6 +34,7 @@ export class FailureLogLifeCycle implements LifeCycleInterface {
         this.#runId = runId;
     }
 
+    // fallow-ignore-next-line unused-class-member -- public reporter method invoked via the life-cycle driver
     public printTaskTerminalOutput(task: Task, status: TaskStatus, terminalOutput: string): void {
         if (status !== "failure") {
             return;
