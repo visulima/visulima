@@ -29,7 +29,11 @@ jobs:
     # before the job timeout cancelled the entire workflow.
     wait-for-tests:
         name: "Wait for tests to succeed"
-        if: "github.repository == 'visulima/visulima'"
+        # Skip when a promotion merge (e.g. alpha -> main) lands carrying the
+        # `[skip release]` marker: those merges only graduate already-published
+        # pre-releases onto main and must NOT cut a fresh stable release.
+        # `head_commit` is null on workflow_dispatch, so manual runs are unaffected.
+        if: "github.repository == 'visulima/visulima' && !contains(github.event.head_commit.message, '[skip release]')"
         runs-on: "ubuntu-latest"
         timeout-minutes: 30
         permissions:
@@ -94,7 +98,7 @@ jobs:
     semantic-release:
         name: "Semantic Release"
         needs: "wait-for-tests"
-        if: "github.repository == 'visulima/visulima'"
+        if: "github.repository == 'visulima/visulima' && !contains(github.event.head_commit.message, '[skip release]')"
         runs-on: "ubuntu-latest"
         # No explicit timeout: multi-semantic-release walks ~50 packages and
         # commits/tags/publishes each one. A 30-minute cap previously cancelled
