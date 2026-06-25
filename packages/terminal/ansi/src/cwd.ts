@@ -1,4 +1,4 @@
-import { BEL, OSC } from "./constants";
+import { BEL, OSC, stripOscTerminators } from "./constants";
 
 /**
  * Returns a sequence that reports the current working directory to the terminal.
@@ -29,8 +29,7 @@ export const notifyWorkingDirectory = (host: string, ...paths: string[]): string
     const path = joined.startsWith("/") ? joined : `/${joined}`;
 
     // `encodeURI` already neutralizes control bytes in the path; strip them from the host too so it cannot inject escape sequences.
-    // eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-    const safeHost = host.replaceAll(/[\u0007\u001B]/g, "");
+    const safeHost = stripOscTerminators(host);
 
     return `${OSC}7;file://${safeHost}${encodeURI(path)}${BEL}`;
 };

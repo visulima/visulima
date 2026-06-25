@@ -751,8 +751,8 @@ Emit-only wrappers that frame already-encoded graphics payloads. They do **not**
 **Signatures:**
 
 ```typescript
-// Sixel: DCS p1 ; p2 ; p3 q payload ST
-function sixelGraphics(p1: number, p2: number, p3: number, payload: string): string;
+// Sixel: DCS aspectRatio ; backgroundMode ; gridSize q payload ST
+function sixelGraphics(aspectRatio: number, backgroundMode: number, gridSize: number, payload: string): string;
 
 // Kitty graphics: APC _G options ; payload ST
 function kittyGraphics(payload: string, ...options: string[]): string;

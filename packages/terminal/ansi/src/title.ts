@@ -1,5 +1,5 @@
 /* eslint-disable no-secrets/no-secrets */
-import { BEL, OSC, ST } from "./constants";
+import { BEL, OSC, ST, stripOscTerminators } from "./constants";
 
 /**
  * Sanitizes a title string for use in OSC sequences. BEL (U+0007) and ESC
@@ -10,15 +10,12 @@ import { BEL, OSC, ST } from "./constants";
  * @param title The title string to validate
  * @returns The sanitized title string
  */
-// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-const TITLE_SANITIZE_REGEX = /[\u0007\u001B]/g;
-
 const validateTitle = (title: string): string => {
     if (typeof title !== "string") {
         throw new TypeError("Title must be a string");
     }
 
-    return title.replaceAll(TITLE_SANITIZE_REGEX, "");
+    return stripOscTerminators(title);
 };
 
 /**

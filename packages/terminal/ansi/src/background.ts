@@ -1,10 +1,4 @@
-import { BEL, OSC } from "./constants";
-
-/** Strips OSC terminators (BEL, ESC) so caller-supplied colors cannot inject escape sequences. */
-// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-const COLOR_SANITIZE_REGEX = /[\u0007\u001B]/g;
-
-const sanitizeColor = (color: string): string => color.replaceAll(COLOR_SANITIZE_REGEX, "");
+import { BEL, OSC, stripOscTerminators } from "./constants";
 
 /**
  * Returns a sequence that sets the terminal's default foreground (text) color.
@@ -18,7 +12,7 @@ const sanitizeColor = (color: string): string => color.replaceAll(COLOR_SANITIZE
  * @returns The `OSC 10` escape sequence.
  * @see {@link https://invisible-island.net/xterm/ctlseqs/ctlseqs.html#h3-Operating-System-Commands}
  */
-export const setForegroundColor = (color: string): string => `${OSC}10;${sanitizeColor(color)}${BEL}`;
+export const setForegroundColor = (color: string): string => `${OSC}10;${stripOscTerminators(color)}${BEL}`;
 
 /**
  * Sequence that queries the terminal's current default foreground color.
@@ -44,7 +38,7 @@ export const resetForegroundColor: string = `${OSC}110${BEL}`;
  * @param color The color to set the background to.
  * @returns The `OSC 11` escape sequence.
  */
-export const setBackgroundColor = (color: string): string => `${OSC}11;${sanitizeColor(color)}${BEL}`;
+export const setBackgroundColor = (color: string): string => `${OSC}11;${stripOscTerminators(color)}${BEL}`;
 
 /**
  * Sequence that queries the terminal's current default background color.
@@ -70,7 +64,7 @@ export const resetBackgroundColor: string = `${OSC}111${BEL}`;
  * @param color The color to set the cursor to.
  * @returns The `OSC 12` escape sequence.
  */
-export const setCursorColor = (color: string): string => `${OSC}12;${sanitizeColor(color)}${BEL}`;
+export const setCursorColor = (color: string): string => `${OSC}12;${stripOscTerminators(color)}${BEL}`;
 
 /**
  * Sequence that queries the terminal's current cursor color.

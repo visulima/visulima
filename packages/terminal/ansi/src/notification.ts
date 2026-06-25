@@ -1,8 +1,4 @@
-import { BEL, OSC } from "./constants";
-
-/** Strips OSC terminators (BEL, ESC) so caller-supplied text cannot inject escape sequences. */
-// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-const sanitize = (value: string): string => value.replaceAll(/[\u0007\u001B]/g, "");
+import { BEL, OSC, stripOscTerminators } from "./constants";
 
 /**
  * Returns a sequence that triggers a desktop notification using the simple
@@ -19,7 +15,7 @@ const sanitize = (value: string): string => value.replaceAll(/[\u0007\u001B]/g, 
  * ```
  * @see {@link https://iterm2.com/documentation-escape-codes.html}
  */
-export const notify = (message: string): string => `${OSC}9;${sanitize(message)}${BEL}`;
+export const notify = (message: string): string => `${OSC}9;${stripOscTerminators(message)}${BEL}`;
 
 /**
  * Returns a sequence for the extensible `OSC 99` desktop notification protocol.
@@ -34,4 +30,5 @@ export const notify = (message: string): string => `${OSC}9;${sanitize(message)}
  * @see {@link https://sw.kovidgoyal.net/kitty/desktop-notifications/}
  */
 export const desktopNotification = (payload: string, ...metadata: string[]): string =>
-    `${OSC}99;${metadata.map((value) => sanitize(value)).join(":")};${sanitize(payload)}${BEL}`;
+    // The empty metadata segment (leading `;`) when no metadata is supplied is intentional per the OSC 99 grammar.
+    `${OSC}99;${metadata.map((value) => stripOscTerminators(value)).join(":")};${stripOscTerminators(payload)}${BEL}`;

@@ -27,3 +27,12 @@ export const SOS: string = `${ESC}X`;
 
 /** Privacy Message (ESC ^). */
 export const PM: string = `${ESC}^`;
+
+/**
+ * Strips OSC terminators (BEL, ESC) from a caller-supplied value so it cannot
+ * inject or prematurely terminate an escape sequence when interpolated into one.
+ * @param value The untrusted string to sanitize.
+ * @returns `value` with all BEL and ESC characters removed.
+ */
+// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
+export const stripOscTerminators = (value: string): string => value.replaceAll(/[\u0007\u001B]/g, "");
