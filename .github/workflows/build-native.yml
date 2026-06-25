@@ -275,7 +275,7 @@ jobs:
             # `cargo install` would add multiple minutes per CI run).
             - name: "Install cargo-zigbuild (Linux only)"
               if: "contains(matrix.settings.target, 'linux') && (steps.cache-task-runner.outputs.cache-hit != 'true' || steps.cache-vis.outputs.cache-hit != 'true')"
-              uses: "taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538" # v2
+              uses: "taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538" # v2.81.1
               with:
                   tool: "cargo-zigbuild"
 

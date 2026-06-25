@@ -101,13 +101,15 @@ const GECKO_EVAL_REGEX = /(\S+) line (\d+)(?: > eval line \d+)* > eval/i;
 const FIREFOX_REGEX = /(\S[^\s[]*\[.*\]|.*?)@(.*):(\d+):(\d+)/;
 
 // Used to sanitize webpack (error: *) wrapped stack errors
-const WEBPACK_ERROR_REGEXP = /\(error: (.*)\)/;
+const WEBPACK_ERROR_REGEXP = /\(error: ([^)]*)\)/;
 
 // Inline regex patterns moved to module scope for performance
 const AT_PREFIX_REGEX = /at\s/;
 const CHROMIUM_EVAL_SPLIT_REGEX = /^(\S+):(\d+):(\d+)$|^(\S+):(\d+)$/;
-// eslint-disable-next-line sonarjs/slow-regex
-const ERROR_LINE_REGEX = /\S*(?:Error: |AggregateError:)/;
+// Only used with `.test()`, so the original leading `\S*` was redundant: a match
+// exists iff the line contains `Error: ` / `AggregateError:` as a substring. Dropping
+// it removes the super-linear backtracking on uncontrolled stack strings (ReDoS-safe).
+const ERROR_LINE_REGEX = /Error: |AggregateError:/;
 const ANONYMOUS_FUNCTION_REGEX = /^Anonymous function$/;
 const NODE_LINE_REGEX = /^\s*in\s.*/;
 // eslint-disable-next-line regexp/no-super-linear-backtracking, sonarjs/slow-regex
