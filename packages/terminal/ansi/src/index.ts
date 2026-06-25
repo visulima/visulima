@@ -15,6 +15,26 @@ export {
     setCursorColor,
     setForegroundColor,
 } from "./background";
+export {
+    DEC_SPECIAL_GRAPHICS,
+    G0,
+    G1,
+    G2,
+    G3,
+    LS0,
+    LS1,
+    LS1R,
+    LS2,
+    LS2R,
+    LS3,
+    LS3R,
+    SCS,
+    selectCharacterSet,
+    SI,
+    SO,
+    UNITED_KINGDOM,
+    USASCII,
+} from "./charset";
 export { clearLineAndHomeCursor, clearScreenAndHomeCursor, clearScreenFromTopLeft, resetTerminal } from "./clear";
 export type { ClipboardSelection } from "./clipboard";
 export { clearClipboard, requestClipboard, setClipboard } from "./clipboard";
