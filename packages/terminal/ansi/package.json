@@ -148,6 +148,10 @@
             "types": "./dist/mouse.d.ts",
             "default": "./dist/mouse.js"
         },
+        "./notification": {
+            "types": "./dist/notification.d.ts",
+            "default": "./dist/notification.js"
+        },
         "./passthrough": {
             "types": "./dist/passthrough.d.ts",
             "default": "./dist/passthrough.js"
