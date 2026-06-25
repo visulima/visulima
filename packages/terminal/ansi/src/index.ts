@@ -192,6 +192,7 @@ export {
     setTopBottomMargins,
 } from "./screen";
 export { SCROLL_DOWN_1, SCROLL_UP_1, scrollDown, scrollUp } from "./scroll";
+export { default as sixelGraphics } from "./sixel";
 export type { AnsiStatusReport, DecStatusReport, StatusReport } from "./status";
 export {
     CPR,
