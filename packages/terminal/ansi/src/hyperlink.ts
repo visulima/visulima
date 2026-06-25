@@ -1,4 +1,4 @@
-import { BEL, OSC, SEP } from "./constants";
+import { BEL, OSC, SEP, stripOscTerminators } from "./constants";
 
 /**
  * Creates a clickable hyperlink in the terminal.
@@ -26,12 +26,9 @@ import { BEL, OSC, SEP } from "./constants";
  * @see {@link https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda} for supported terminals.
  */
 
-// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-const OSC_SANITIZE_REGEX = /[]/g;
-
 const hyperlink = (text: string, url: string): string => {
-    const safeUrl = url.replaceAll(OSC_SANITIZE_REGEX, "");
-    const safeText = text.replaceAll(OSC_SANITIZE_REGEX, "");
+    const safeUrl = stripOscTerminators(url);
+    const safeText = stripOscTerminators(text);
 
     return [OSC, "8", SEP, SEP, safeUrl, BEL, safeText, OSC, "8", SEP, SEP, BEL].join("");
 };

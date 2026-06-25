@@ -1,8 +1,4 @@
-import { BEL, OSC } from "./constants";
-
-/** Strips OSC terminators (BEL, ESC) so caller-supplied parameters cannot inject escape sequences. */
-// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-const sanitize = (value: string): string => value.replaceAll(/[\u0007\u001B]/g, "");
+import { BEL, OSC, stripOscTerminators } from "./constants";
 
 /**
  * Returns a FinalTerm shell-integration sequence (`OSC 133`).
@@ -17,7 +13,7 @@ const sanitize = (value: string): string => value.replaceAll(/[\u0007\u001B]/g, 
  * @returns The `OSC 133` escape sequence.
  * @see {@link https://iterm2.com/documentation-shell-integration.html}
  */
-export const finalTerm = (...pm: string[]): string => `${OSC}133;${pm.map((value) => sanitize(value)).join(";")}${BEL}`;
+export const finalTerm = (...pm: string[]): string => `${OSC}133;${pm.map((value) => stripOscTerminators(value)).join(";")}${BEL}`;
 
 /**
  * Marks the start of the shell prompt. Sent just before the prompt is printed.

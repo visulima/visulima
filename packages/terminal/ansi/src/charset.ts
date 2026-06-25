@@ -19,7 +19,7 @@ import { ESC } from "./constants";
 export const selectCharacterSet = (gset: string, charset: string): string => `${ESC}${gset}${charset}`;
 
 /** Alias for {@link selectCharacterSet} (Select Character Set). */
-export const SCS: (gset: string, charset: string) => string = selectCharacterSet;
+export const SCS: typeof selectCharacterSet = selectCharacterSet;
 
 /** G0 designator for a 94-character set. */
 export const G0: string = "(";

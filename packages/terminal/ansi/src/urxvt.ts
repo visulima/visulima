@@ -1,8 +1,4 @@
-import { BEL, OSC } from "./constants";
-
-/** Strips OSC terminators (BEL, ESC) so caller-supplied values cannot inject escape sequences. */
-// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-const sanitize = (value: string): string => value.replaceAll(/[\u0007\u001B]/g, "");
+import { BEL, OSC, stripOscTerminators } from "./constants";
 
 /**
  * Returns a urxvt (rxvt-unicode) extension sequence (`OSC 777`).
@@ -18,6 +14,6 @@ const sanitize = (value: string): string => value.replaceAll(/[\u0007\u001B]/g, 
  * @see {@link https://man.archlinux.org/man/urxvt.7}
  */
 const urxvtExtension = (extension: string, ...parameters: string[]): string =>
-    `${OSC}777;${sanitize(extension)};${parameters.map((value) => sanitize(value)).join(";")}${BEL}`;
+    `${OSC}777;${stripOscTerminators(extension)};${parameters.map((value) => stripOscTerminators(value)).join(";")}${BEL}`;
 
 export default urxvtExtension;
