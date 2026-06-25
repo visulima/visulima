@@ -92,6 +92,10 @@
             "types": "./dist/cursor.d.ts",
             "default": "./dist/cursor.js"
         },
+        "./cwd": {
+            "types": "./dist/cwd.d.ts",
+            "default": "./dist/cwd.js"
+        },
         "./erase": {
             "types": "./dist/erase.d.ts",
             "default": "./dist/erase.js"

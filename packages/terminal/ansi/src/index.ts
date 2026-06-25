@@ -51,6 +51,7 @@ export {
     SAVE_CURSOR_DEC, // Constant for ESC 7
     setCursorStyle,
 } from "./cursor";
+export { notifyWorkingDirectory, setWorkingDirectory } from "./cwd";
 export type { EraseDisplayMode, EraseLineMode } from "./erase";
 export {
     eraseDisplay,
