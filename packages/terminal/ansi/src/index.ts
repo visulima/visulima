@@ -65,6 +65,7 @@ export {
     eraseScreenAndScrollback,
     eraseUp,
 } from "./erase";
+export { finalTerm, finalTermCmdExecuted, finalTermCmdFinished, finalTermCmdStart, finalTermPrompt } from "./finalterm";
 export { default as hyperlink } from "./hyperlink";
 export type { ImageOptions } from "./image";
 export { image } from "./image";
