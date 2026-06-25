@@ -28,7 +28,11 @@ export const notifyWorkingDirectory = (host: string, ...paths: string[]): string
 
     const path = joined.startsWith("/") ? joined : `/${joined}`;
 
-    return `${OSC}7;file://${host}${encodeURI(path)}${BEL}`;
+    // `encodeURI` already neutralizes control bytes in the path; strip them from the host too so it cannot inject escape sequences.
+    // eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
+    const safeHost = host.replaceAll(/[\u0007\u001B]/g, "");
+
+    return `${OSC}7;file://${safeHost}${encodeURI(path)}${BEL}`;
 };
 
 /**

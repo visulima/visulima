@@ -58,4 +58,9 @@ describe("background/foreground/cursor color sequences", () => {
         expect.assertions(1);
         expect(resetCursorColor).toBe(`${OSC}112${BEL}`);
     });
+
+    it("should strip escape-sequence terminators from the color", () => {
+        expect.assertions(1);
+        expect(setForegroundColor("red\u001B]0;pwned\u0007")).toBe(`${OSC}10;red]0;pwned${BEL}`);
+    });
 });

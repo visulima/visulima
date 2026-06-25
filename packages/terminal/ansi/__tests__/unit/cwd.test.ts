@@ -29,6 +29,11 @@ describe("working directory reporting (OSC 7)", () => {
         expect(notifyWorkingDirectory("", "/home/a b")).toBe(`${OSC}7;file:///home/a%20b${BEL}`);
     });
 
+    it("should strip escape-sequence terminators from the host", () => {
+        expect.assertions(1);
+        expect(notifyWorkingDirectory("ho\u001Bst\u0007", "/x")).toBe(`${OSC}7;file://host/x${BEL}`);
+    });
+
     it("should expose setWorkingDirectory as an alias", () => {
         expect.assertions(1);
         expect(setWorkingDirectory).toBe(notifyWorkingDirectory);
