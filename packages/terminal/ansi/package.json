@@ -136,6 +136,10 @@
             "types": "./dist/title.d.ts",
             "default": "./dist/title.js"
         },
+        "./urxvt": {
+            "types": "./dist/urxvt.d.ts",
+            "default": "./dist/urxvt.js"
+        },
         "./window-ops": {
             "types": "./dist/window-ops.d.ts",
             "default": "./dist/window-ops.js"

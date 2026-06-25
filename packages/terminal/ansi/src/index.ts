@@ -249,6 +249,7 @@ export {
     setWindowTitle,
     setWindowTitleWithST,
 } from "./title";
+export { default as urxvtExtension } from "./urxvt";
 export type { XTermWindowOp } from "./window-ops";
 export {
     deiconifyWindow,
