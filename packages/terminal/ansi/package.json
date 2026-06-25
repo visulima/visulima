@@ -108,6 +108,10 @@
             "types": "./dist/finalterm.d.ts",
             "default": "./dist/finalterm.js"
         },
+        "./focus": {
+            "types": "./dist/focus.d.ts",
+            "default": "./dist/focus.js"
+        },
         "./image": {
             "types": "./dist/image.d.ts",
             "default": "./dist/image.js"
