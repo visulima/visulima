@@ -141,6 +141,16 @@ export default createConfig(
         },
     },
     {
+        // TUI lifecycle handlers implement `LifeCycleInterface`, which fixes
+        // each method's signature. Some hooks (e.g. `startTasks`) render their
+        // arguments to stdout and don't read instance state — per-method
+        // `this`-usage isn't a useful signal for an interface-driven contract.
+        files: ["src/tui/*-life-cycle.ts"],
+        rules: {
+            "class-methods-use-this": "off",
+        },
+    },
+    {
         files: ["**/*.tsx"],
         rules: {
             "react-hooks/exhaustive-deps": "off",
