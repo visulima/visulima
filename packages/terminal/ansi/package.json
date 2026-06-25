@@ -140,6 +140,10 @@
             "types": "./dist/iterm2.d.ts",
             "default": "./dist/iterm2.js"
         },
+        "./keypad": {
+            "types": "./dist/keypad.d.ts",
+            "default": "./dist/keypad.js"
+        },
         "./mode": {
             "types": "./dist/mode.d.ts",
             "default": "./dist/mode.js"
