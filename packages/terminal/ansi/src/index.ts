@@ -71,6 +71,7 @@ export type { ImageOptions } from "./image";
 export { image } from "./image";
 export type { IITerm2Payload, ITerm2FileProperties } from "./iterm2";
 export { IT2_AUTO, it2Cells, it2Percent, it2Pixels, iTerm2, ITerm2File, ITerm2FileEnd, ITerm2FilePart, ITerm2MultipartFileStart } from "./iterm2";
+export { DECKPAM, DECKPNM, keypadApplicationMode, keypadNumericMode } from "./keypad";
 export type { AnsiMode, DecMode, Mode, ModeSetting } from "./mode";
 export {
     BDSM,
