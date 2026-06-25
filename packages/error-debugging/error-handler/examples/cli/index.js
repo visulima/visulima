@@ -53,9 +53,7 @@ async function demoHint() {
 async function demoRule() {
     try {
         // Trigger a TypeError to exercise the built-in rule-based hints
-        const object = /** @type {any} */ undefined;
-
-        console.log(object.foo);
+        throw new TypeError("Cannot read properties of undefined (reading 'foo')");
     } catch (error) {
         await cliHandler(/** @type {Error} */ error, {
             color: {
