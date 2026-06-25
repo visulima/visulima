@@ -164,6 +164,10 @@
             "types": "./dist/passthrough.d.ts",
             "default": "./dist/passthrough.js"
         },
+        "./paste": {
+            "types": "./dist/paste.d.ts",
+            "default": "./dist/paste.js"
+        },
         "./progress": {
             "types": "./dist/progress.d.ts",
             "default": "./dist/progress.js"
