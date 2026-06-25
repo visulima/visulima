@@ -40,8 +40,8 @@
     "type": "module",
     "exports": {
         ".": {
-            "browser": "./dist/index.js",
             "types": "./dist/index.d.ts",
+            "browser": "./dist/index.js",
             "default": "./dist/index.js"
         },
         "./package.json": "./package.json"

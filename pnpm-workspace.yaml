@@ -85,6 +85,8 @@ autoInstallPeers: true
 
 blockExoticSubdeps: true
 
+managePackageManagerVersions: true
+
 catalogs:
   backend:
     '@hono/node-server': ^2.0.5
