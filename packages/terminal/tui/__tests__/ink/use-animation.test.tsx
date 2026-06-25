@@ -100,9 +100,12 @@ describe(useAnimation, () => {
         const output = stdout.get();
         const [a, b] = output.split(",").map(Number);
 
-        // Both frames should be equal since they use the same interval.
-        expect(a).toBe(b);
-        expect(a!).toBeGreaterThanOrEqual(1);
+        // Under real timers the two subscriptions are captured a hair apart, so near
+        // a tick boundary their frame counters may differ by at most one. Exact
+        // lockstep sync is asserted deterministically by the fake-timer test below
+        // ("multiple animations with the same interval share one timer").
+        expect(Math.abs(a! - b!)).toBeLessThanOrEqual(1);
+        expect(Math.max(a!, b!)).toBeGreaterThanOrEqual(1);
 
         unmount();
     });
