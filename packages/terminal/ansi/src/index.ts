@@ -153,6 +153,7 @@ export {
     mouseSgrSequence,
     mouseX10Sequence,
 } from "./mouse";
+export { desktopNotification, notify } from "./notification";
 export { SCREEN_MAX_LEN_DEFAULT, SCREEN_TYPICAL_LIMIT, screenPassthrough, tmuxPassthrough } from "./passthrough";
 export { resetProgressBar, setErrorProgressBar, setIndeterminateProgressBar, setProgressBar, setWarningProgressBar } from "./progress";
 export { RESET_INITIAL_STATE, RIS } from "./reset";
