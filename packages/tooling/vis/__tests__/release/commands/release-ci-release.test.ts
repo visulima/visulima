@@ -45,7 +45,6 @@ const setupFixture = (branch: string): string => {
 
     writeJson(join(cwd, "package.json"), {
         name: "fixture-root",
-        packageManager: "pnpm@10.0.0",
         private: true,
         version: "0.0.0",
         workspaces: ["packages/*"],
