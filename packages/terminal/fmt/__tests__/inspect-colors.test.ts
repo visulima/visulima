@@ -94,7 +94,7 @@ describe(parseCss, () => {
             const parsed = parseCss("text-decoration: underline red");
 
             expect(parsed.textDecorationLine).toContain("underline");
-            expect(parsed.textDecorationColor).toEqual([255, 0, 0]);
+            expect(parsed.textDecorationColor).toStrictEqual([255, 0, 0]);
         });
 
         it("should parse multiple decoration lines", () => {
@@ -111,7 +111,7 @@ describe(parseCss, () => {
 
             const parsed = parseCss("text-decoration-color: rgb(10, 20, 30)");
 
-            expect(parsed.textDecorationColor).toEqual([10, 20, 30]);
+            expect(parsed.textDecorationColor).toStrictEqual([10, 20, 30]);
         });
 
         it("should ignore invalid text-decoration-color values", () => {
