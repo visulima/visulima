@@ -76,6 +76,10 @@
             "types": "./dist/background.d.ts",
             "default": "./dist/background.js"
         },
+        "./charset": {
+            "types": "./dist/charset.d.ts",
+            "default": "./dist/charset.js"
+        },
         "./clear": {
             "types": "./dist/clear.d.ts",
             "default": "./dist/clear.js"
