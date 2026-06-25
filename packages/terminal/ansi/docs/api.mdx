@@ -557,6 +557,218 @@ process.stdout.write(resetMode("IRM"));
 
 ---
 
+## Color Control
+
+Set, query and reset the terminal's foreground, background and cursor colors (`OSC 10/11/12`, reset via `OSC 110/111/112`). Color strings may be X11 names (`"red"`), hex (`"#ff0000"`) or `XParseColor` strings (`"rgb:ff/00/00"`). Caller-supplied colors are sanitized to prevent escape-sequence injection.
+
+**Signatures:**
+
+```typescript
+function setForegroundColor(color: string): string;
+function setBackgroundColor(color: string): string;
+function setCursorColor(color: string): string;
+
+const requestForegroundColor: string;
+const requestBackgroundColor: string;
+const requestCursorColor: string;
+
+const resetForegroundColor: string;
+const resetBackgroundColor: string;
+const resetCursorColor: string;
+```
+
+**Example:**
+
+```typescript
+import { setBackgroundColor, resetBackgroundColor } from "@visulima/ansi/background";
+
+process.stdout.write(setBackgroundColor("#1e1e2e"));
+// ... later ...
+process.stdout.write(resetBackgroundColor);
+```
+
+---
+
+## Shell Integration
+
+### Working Directory (OSC 7)
+
+Report the shell's current working directory so terminals (iTerm2, WezTerm, …) can open new tabs in the same place.
+
+**Signature:**
+
+```typescript
+function notifyWorkingDirectory(host: string, ...paths: string[]): string;
+const setWorkingDirectory: typeof notifyWorkingDirectory;
+```
+
+**Example:**
+
+```typescript
+import { notifyWorkingDirectory } from "@visulima/ansi/cwd";
+
+process.stdout.write(notifyWorkingDirectory("", process.cwd()));
+```
+
+### FinalTerm Prompt Marks (OSC 133)
+
+Mark the structure of shell output (prompt / command / output boundaries) so terminals can offer jump-to-prompt and command-status features.
+
+**Signatures:**
+
+```typescript
+function finalTerm(...pm: string[]): string;
+function finalTermPrompt(...pm: string[]): string; // A
+function finalTermCmdStart(...pm: string[]): string; // B
+function finalTermCmdExecuted(...pm: string[]): string; // C
+function finalTermCmdFinished(...pm: string[]): string; // D
+```
+
+---
+
+## Notifications
+
+Trigger desktop notifications using the simple `OSC 9` protocol or the extensible `OSC 99` protocol. Message, payload and metadata are sanitized to prevent escape-sequence injection.
+
+**Signatures:**
+
+```typescript
+function notify(message: string): string; // OSC 9
+function desktopNotification(payload: string, ...metadata: string[]): string; // OSC 99
+```
+
+**Example:**
+
+```typescript
+import { notify } from "@visulima/ansi/notification";
+
+process.stdout.write(notify("Build finished"));
+```
+
+### urxvt Extensions (OSC 777)
+
+Invoke rxvt-unicode Perl extensions.
+
+```typescript
+import urxvtExtension from "@visulima/ansi/urxvt";
+
+process.stdout.write(urxvtExtension("notify", "title", "body"));
+```
+
+---
+
+## Keypad Modes
+
+Switch the numeric keypad between application and numeric mode.
+
+**Signatures:**
+
+```typescript
+const keypadApplicationMode: string; // DECKPAM, ESC =
+const keypadNumericMode: string; // DECKPNM, ESC >
+const DECKPAM: string;
+const DECKPNM: string;
+```
+
+---
+
+## Character Sets (SCS)
+
+Designate a character set into one of the G0–G3 slots, plus locking-shift constants.
+
+**Signatures:**
+
+```typescript
+function selectCharacterSet(gset: string, charset: string): string;
+const SCS: typeof selectCharacterSet;
+
+// G-set designators
+const G0: string; // "("
+const G1: string; // ")"
+const G2: string; // "*"
+const G3: string; // "+"
+
+// Common charset identifiers
+const DEC_SPECIAL_GRAPHICS: string; // "0"
+const UNITED_KINGDOM: string; // "A"
+const USASCII: string; // "B"
+
+// Locking shifts
+const LS0: string; // SI
+const LS1: string; // SO
+const LS1R: string;
+const LS2: string;
+const LS2R: string;
+const LS3: string;
+const LS3R: string;
+```
+
+**Example:**
+
+```typescript
+import { selectCharacterSet, G0, DEC_SPECIAL_GRAPHICS, USASCII } from "@visulima/ansi/charset";
+
+process.stdout.write(selectCharacterSet(G0, DEC_SPECIAL_GRAPHICS)); // line-drawing mode
+// ...
+process.stdout.write(selectCharacterSet(G0, USASCII)); // back to ASCII
+```
+
+---
+
+## Bracketed Paste
+
+Markers a terminal emits around pasted text (`CSI 200~` / `CSI 201~`), plus a wrap helper.
+
+**Signatures:**
+
+```typescript
+const bracketedPasteStart: string;
+const bracketedPasteEnd: string;
+function wrapBracketedPaste(text: string): string;
+```
+
+---
+
+## Focus Events
+
+Events a terminal emits when the window gains/loses focus (DEC private mode 1004). Enable/disable reporting via `enableFocusTracking` / `disableFocusTracking` (from `@visulima/ansi/mouse`).
+
+**Signatures:**
+
+```typescript
+const FOCUS: string; // CSI I
+const BLUR: string; // CSI O
+const focusInEvent: string;
+const focusOutEvent: string;
+```
+
+---
+
+## Graphics
+
+Emit-only wrappers that frame already-encoded graphics payloads. They do **not** encode pixel/image data — the caller supplies encoded data (and, for Kitty, Base64 + chunking).
+
+**Signatures:**
+
+```typescript
+// Sixel: DCS p1 ; p2 ; p3 q payload ST
+function sixelGraphics(p1: number, p2: number, p3: number, payload: string): string;
+
+// Kitty graphics: APC _G options ; payload ST
+function kittyGraphics(payload: string, ...options: string[]): string;
+```
+
+**Example:**
+
+```typescript
+import kittyGraphics from "@visulima/ansi/kitty-graphics";
+
+// Transmit and display a Base64-encoded PNG already in `data`.
+process.stdout.write(kittyGraphics(data, "a=T", "f=100"));
+```
+
+---
+
 ## Constants
 
 ### Cursor Movement
@@ -636,27 +848,35 @@ import { image } from "@visulima/ansi/image";
 import { strip } from "@visulima/ansi/strip";
 ```
 
-**Other submodules:** `alternative-screen`, `scroll`, `title`, `window-ops`, `mouse`, `mode`, `status`, `iterm2`, `xterm`, `screen`, `passthrough`, `reset`
+**Other submodules:** `alternative-screen`, `scroll`, `title`, `window-ops`, `mouse`, `mode`, `status`, `iterm2`, `xterm`, `screen`, `passthrough`, `reset`, `background`, `cwd`, `finalterm`, `notification`, `urxvt`, `keypad`, `charset`, `paste`, `focus`, `sixel`, `kitty-graphics`
 
 ---
 
 ## Function Summary by Category
 
-| Category              | Key Functions                                               |
-| --------------------- | ----------------------------------------------------------- |
-| **Cursor Position**   | `cursorTo`, `cursorMove`, `cursorSave`, `cursorRestore`     |
-| **Cursor Movement**   | `cursorUp`, `cursorDown`, `cursorForward`, `cursorBackward` |
-| **Cursor Visibility** | `cursorHide`, `cursorShow`, `setCursorStyle`                |
-| **Screen Clear**      | `clearScreen`, `eraseDown`, `eraseUp`                       |
-| **Line Erase**        | `eraseLine`, `eraseLineEnd`, `eraseLineStart`, `eraseLines` |
-| **Screen Buffer**     | `alternativeScreenOn`, `alternativeScreenOff`               |
-| **Scrolling**         | `scrollUp`, `scrollDown`                                    |
-| **Hyperlinks**        | `hyperlink`                                                 |
-| **Images**            | `image`                                                     |
-| **Strip**             | `strip`                                                     |
-| **Window**            | `setWindowTitle`, `maximizeWindow`, `moveWindow`            |
-| **Mouse**             | `enableNormalMouse`, `disableNormalMouse`                   |
-| **Modes**             | `setMode`, `resetMode`                                      |
+| Category              | Key Functions                                                |
+| --------------------- | ------------------------------------------------------------ |
+| **Cursor Position**   | `cursorTo`, `cursorMove`, `cursorSave`, `cursorRestore`      |
+| **Cursor Movement**   | `cursorUp`, `cursorDown`, `cursorForward`, `cursorBackward`  |
+| **Cursor Visibility** | `cursorHide`, `cursorShow`, `setCursorStyle`                 |
+| **Screen Clear**      | `clearScreen`, `eraseDown`, `eraseUp`                        |
+| **Line Erase**        | `eraseLine`, `eraseLineEnd`, `eraseLineStart`, `eraseLines`  |
+| **Screen Buffer**     | `alternativeScreenOn`, `alternativeScreenOff`                |
+| **Scrolling**         | `scrollUp`, `scrollDown`                                     |
+| **Hyperlinks**        | `hyperlink`                                                  |
+| **Images**            | `image`                                                      |
+| **Strip**             | `strip`                                                      |
+| **Window**            | `setWindowTitle`, `maximizeWindow`, `moveWindow`             |
+| **Mouse**             | `enableNormalMouse`, `disableNormalMouse`                    |
+| **Modes**             | `setMode`, `resetMode`                                       |
+| **Color**             | `setForegroundColor`, `setBackgroundColor`, `setCursorColor` |
+| **Shell Integration** | `notifyWorkingDirectory`, `finalTermPrompt`                  |
+| **Notifications**     | `notify`, `desktopNotification`, `urxvtExtension`            |
+| **Keypad**            | `keypadApplicationMode`, `keypadNumericMode`                 |
+| **Character Sets**    | `selectCharacterSet`, `SCS`                                  |
+| **Paste**             | `bracketedPasteStart`, `wrapBracketedPaste`                  |
+| **Focus**             | `FOCUS`, `BLUR`                                              |
+| **Graphics**          | `sixelGraphics`, `kittyGraphics`                             |
 
 ---
 
