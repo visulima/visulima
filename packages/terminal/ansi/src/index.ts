@@ -4,6 +4,17 @@
 export const beep = "\u0007";
 
 export { ALT_SCREEN_OFF, ALT_SCREEN_ON, alternativeScreenOff, alternativeScreenOn } from "./alternative-screen";
+export {
+    requestBackgroundColor,
+    requestCursorColor,
+    requestForegroundColor,
+    resetBackgroundColor,
+    resetCursorColor,
+    resetForegroundColor,
+    setBackgroundColor,
+    setCursorColor,
+    setForegroundColor,
+} from "./background";
 export { clearLineAndHomeCursor, clearScreenAndHomeCursor, clearScreenFromTopLeft, resetTerminal } from "./clear";
 export type { ClipboardSelection } from "./clipboard";
 export { clearClipboard, requestClipboard, setClipboard } from "./clipboard";

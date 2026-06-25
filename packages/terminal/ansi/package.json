@@ -72,6 +72,10 @@
             "types": "./dist/alternative-screen.d.ts",
             "default": "./dist/alternative-screen.js"
         },
+        "./background": {
+            "types": "./dist/background.d.ts",
+            "default": "./dist/background.js"
+        },
         "./clear": {
             "types": "./dist/clear.d.ts",
             "default": "./dist/clear.js"
