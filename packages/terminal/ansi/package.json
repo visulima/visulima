@@ -160,6 +160,10 @@
             "types": "./dist/keypad.d.ts",
             "default": "./dist/keypad.js"
         },
+        "./kitty-graphics": {
+            "types": "./dist/kitty-graphics.d.ts",
+            "default": "./dist/kitty-graphics.js"
+        },
         "./mode": {
             "types": "./dist/mode.d.ts",
             "default": "./dist/mode.js"
