@@ -28,7 +28,18 @@ export const createShellRunner = (): CommandRunner => {
                 const result = await x(command, [...args], {
                     nodeOptions: {
                         cwd: options.cwd,
-                        env: { ...process.env, ...options.env },
+                        env: {
+                            ...process.env,
+                            // Never block on corepack's interactive "Do you want to
+                            // download <pm>@<version>?" prompt. vis runs subprocesses
+                            // non-interactively and silent mode ignores stdin, so the
+                            // prompt would wait on EOF forever — observed as a 30s+
+                            // hang on Windows CI when a fixture pins a packageManager
+                            // version corepack must resolve. `0` makes corepack proceed
+                            // without prompting instead of hanging.
+                            COREPACK_ENABLE_DOWNLOAD_PROMPT: "0",
+                            ...options.env,
+                        },
                         stdio: options.silent ? ["ignore", "pipe", "pipe"] : "inherit",
                     },
                     throwOnError: false,
