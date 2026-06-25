@@ -145,7 +145,7 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
     }
 
     // fallow-ignore-next-line unused-class-member -- public TUI store/life-cycle method driven by the React TUI components
-    public startTasks(tasks: Task[]): void { // eslint-disable-line class-methods-use-this -- implements LifeCycleInterface; renders to stdout without instance state
+    public startTasks(tasks: Task[]): void {
         const columns = process.stdout.columns || 80;
 
         for (const task of tasks) {
@@ -196,7 +196,6 @@ export class StaticOutputLifeCycle implements LifeCycleInterface {
         }
     }
 
-    // eslint-disable-next-line class-methods-use-this -- shared append-only notice; no instance state
     #printCacheNotice(message: string): void {
         const columns = process.stdout.columns || 80;
         const line = renderToString(React.createElement(Text, { dimColor: true }, `  ⓘ ${message}`), { columns });
