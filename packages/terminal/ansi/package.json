@@ -124,6 +124,10 @@
             "types": "./dist/scroll.d.ts",
             "default": "./dist/scroll.js"
         },
+        "./sixel": {
+            "types": "./dist/sixel.d.ts",
+            "default": "./dist/sixel.js"
+        },
         "./strip": {
             "types": "./dist/strip.d.ts",
             "default": "./dist/strip.js"
