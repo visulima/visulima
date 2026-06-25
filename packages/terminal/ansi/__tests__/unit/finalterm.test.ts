@@ -28,4 +28,9 @@ describe("finalTerm shell integration (OSC 133)", () => {
         expect.assertions(1);
         expect(finalTermCmdFinished("0")).toBe(`${OSC}133;D;0${BEL}`);
     });
+
+    it("should strip escape-sequence terminators from parameters", () => {
+        expect.assertions(1);
+        expect(finalTerm("A", "x\u001By\u0007z")).toBe(`${OSC}133;A;xyz${BEL}`);
+    });
 });
