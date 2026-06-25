@@ -63,6 +63,15 @@ export const detectPackageManager = async (cwd: string, _runner: CommandRunner):
         return "pnpm";
     }
 
+    // A `pnpm-workspace.yaml` unambiguously marks a pnpm workspace even before a
+    // lockfile exists (fresh/greenfield repos, test fixtures). Detecting pnpm here
+    // means callers don't need a `packageManager` field just to be recognised —
+    // which avoids triggering corepack version resolution/downloads for a pinned
+    // version (a source of Windows-CI hangs when probing the PM).
+    if (await exists("pnpm-workspace.yaml")) {
+        return "pnpm";
+    }
+
     if (await exists("yarn.lock")) {
         return "yarn";
     }
