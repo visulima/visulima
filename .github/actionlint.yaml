@@ -15,7 +15,7 @@
 paths:
     ".github/workflows/build-native.yml":
         ignore:
-            - 'step must run script with "run" section or run action with "uses" section'
+            - "step must run script with \"run\" section or run action with \"uses\" section"
     ".github/workflows/lint.yml":
         ignore:
-            - 'step must run script with "run" section or run action with "uses" section'
+            - "step must run script with \"run\" section or run action with \"uses\" section"
