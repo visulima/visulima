@@ -26,13 +26,17 @@
 
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, readFileSync, writeFileSync } from "node:fs";
-import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { applyContext, buildContext, publishContext } from "../../../src/release/core/orchestrator";
+import { RELEASE_SUITE_TIMEOUT, removeTemporaryDirectoryWithRetry } from "../../test-helpers";
+
+// These tests shell out to real git/pnpm and transpile the release/core graph;
+// the 30s global default is too tight on Windows CI. See RELEASE_SUITE_TIMEOUT.
+vi.setConfig({ hookTimeout: RELEASE_SUITE_TIMEOUT, testTimeout: RELEASE_SUITE_TIMEOUT });
 
 const writeJson = (path: string, value: unknown): void => {
     writeFileSync(path, `${JSON.stringify(value, null, 4)}\n`);
@@ -89,12 +93,28 @@ const setupGreenfieldFixture = (packageVersion: string = "0.0.1"): string => {
 describe("first-release flag — version", () => {
     let cwd: string;
 
+    // Warm the `release/core` lazy-`import()` graph once so the first real test
+    // isn't charged the (Windows-amplified) cold transpile cost on top of its
+    // own subprocess spawns. This is the first suite in the file, so warming
+    // here covers every test below. The scratch context is discarded.
+    beforeAll(async () => {
+        const scratch = setupGreenfieldFixture("0.0.1");
+
+        try {
+            await buildContext({ cwd: scratch, firstRelease: true });
+        } catch {
+            // Warm-up only — failures here are not test failures.
+        } finally {
+            await removeTemporaryDirectoryWithRetry(scratch);
+        }
+    });
+
     beforeEach(() => {
         cwd = setupGreenfieldFixture("0.0.1");
     });
 
     afterEach(async () => {
-        await rm(cwd, { force: true, recursive: true });
+        await removeTemporaryDirectoryWithRetry(cwd);
     });
 
     it("version --first-release succeeds on a fresh repo with no tags", async () => {
@@ -164,7 +184,7 @@ describe("first-release flag — fallback behaviour without the flag", () => {
     });
 
     afterEach(async () => {
-        await rm(cwd, { force: true, recursive: true });
+        await removeTemporaryDirectoryWithRetry(cwd);
     });
 
     it("wITHOUT --first-release on the same fresh fixture, the git-tag resolver falls back to manifest with a warning", async () => {
@@ -204,7 +224,7 @@ describe("first-release flag — idempotency", () => {
     });
 
     afterEach(async () => {
-        await rm(cwd, { force: true, recursive: true });
+        await removeTemporaryDirectoryWithRetry(cwd);
     });
 
     it("running version --first-release twice on the same wave doesn't double-bump", async () => {
