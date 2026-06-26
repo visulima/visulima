@@ -44,30 +44,9 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
-            # wrap with a two-shot retry (same pattern as cargo-test.yml).
             - name: "Git checkout"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
               with:
-                  persist-credentials: false
-                  # Full history so dorny/paths-filter resolves the main...alpha
-                  # merge-base without `git fetch --deepen`, which races with the
-                  # harden-runner agent rewriting .git/shallow (fatal: shallow file
-                  # has changed since we read it -> git exit 128).
-                  fetch-depth: 0
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
                   fetch-depth: 0
 
             - name: "Check for native file changes"
@@ -141,25 +120,8 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
-            # wrap with a two-shot retry (same pattern as cargo-test.yml).
             - name: "Git checkout"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
 
             # --- Cache per package ---
             # Caches always restore (keyed by source hash) so test.yml can download

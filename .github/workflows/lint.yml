@@ -42,33 +42,8 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
-            # wrap with a two-shot retry (same pattern as test.yml).
             - name: "Git checkout"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
 
             - name: "Check for file changes"
               uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
@@ -104,37 +79,10 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
-            # wrap with a two-shot retry (same pattern as test.yml).
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
               with:
-                  persist-credentials: false
-                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
-                  # Pulls all commits (needed for NX)
                   fetch-depth: 0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-                  fetch-depth: 0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
@@ -185,37 +133,10 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
-            # wrap with a two-shot retry (same pattern as test.yml).
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
               with:
-                  persist-credentials: false
-                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
-                  # Pulls all commits (needed for NX)
                   fetch-depth: 0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-                  fetch-depth: 0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
@@ -247,37 +168,10 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
-            # wrap with a two-shot retry (same pattern as test.yml).
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
               with:
-                  persist-credentials: false
-                  # Number of commits to fetch. 0 indicates all history for all branches and tags.
-                  # Pulls all commits (needed for NX)
                   fetch-depth: 0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-                  fetch-depth: 0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
               id: "setSHAs"
@@ -312,33 +206,8 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
-            # wrap with a two-shot retry (same pattern as test.yml).
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
 
             - name: "Setup resources and environment"
               uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
@@ -375,33 +244,8 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
-            # wrap with a two-shot retry (same pattern as test.yml).
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }}"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout ${{ env.HEAD_REPOSITORY }}:${{ env.HEAD_REF }} (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
 
             - name: "Lint YAML files"
               uses: "ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c" # v3.1.1
@@ -421,33 +265,8 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
-            # wrap with a two-shot retry (same pattern as cargo-test.yml).
             - name: "Git checkout"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
 
             - name: "Lint github workflows"
               # raven-actions/actionlint shells out to `npm install @actions/tool-cache`
@@ -484,25 +303,8 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            # `secrets.GITHUB_TOKEN` returns transient HTTP 401 mid-checkout;
-            # wrap with a two-shot retry (same pattern as cargo-test.yml).
             - name: "Git checkout"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              with:
-                  persist-credentials: false
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
 
             - name: "Install Rust toolchain"
               uses: "oxc-project/setup-rust@3d6fb132fbe7cdcb66bf8ec193911c2945369d12" # v1.0.17
