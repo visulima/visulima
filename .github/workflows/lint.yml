@@ -154,14 +154,19 @@ jobs:
             - name: "Build"
               run: "pnpm run build:affected:packages"
 
-            - name: "lint eslint"
-              run: "pnpm run lint:affected:eslint"
+            # eslint, tsc and attw all read the same built outputs and share no
+            # mutable state, so they run concurrently via the `parallel:` step
+            # group (each runs in the background with an implicit wait-all at the
+            # group's end). The job still fails if any one of them fails.
+            - parallel:
+                  - name: "lint eslint"
+                    run: "pnpm run lint:affected:eslint"
 
-            - name: "lint typescript types"
-              run: "pnpm run lint:affected:types"
+                  - name: "lint typescript types"
+                    run: "pnpm run lint:affected:types"
 
-            - name: "lint attw"
-              run: "pnpm run lint:affected:attw"
+                  - name: "lint attw"
+                    run: "pnpm run lint:affected:attw"
 
     # fallow codebase-intelligence over the affected graph. `health` is a report
     # (prints each project's score, exits 0) — it surfaces dead code / dupes /
