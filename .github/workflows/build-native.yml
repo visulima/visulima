@@ -283,10 +283,35 @@ jobs:
             # Cache keys are derived from native sources, so cache hits short-circuit
             # unchanged packages. Removing the files-changed gate ensures that PRs
             # whose diff misses native sources still produce artifacts for test.yml.
-            - name: "Build task-runner native"
-              if: "steps.cache-task-runner.outputs.cache-hit != 'true'"
-              run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
-              working-directory: "packages/tooling/task-runner"
+            #
+            # The four napi addons are independent cargo workspaces in separate
+            # working directories, so they build concurrently via `parallel:` (each
+            # step runs in the background with an implicit wait-all at the group's
+            # end). Per-step `if:` cache gates are preserved, so a cached package is
+            # still skipped inside the group. The sidecar binaries (fspy-* / vis-cli)
+            # and their `rustup target add` calls stay OUTSIDE the group and remain
+            # sequential — that avoids concurrent rustup invocations racing on the
+            # toolchain lock, and keeps peak memory lower during release linking.
+            - parallel:
+                  - name: "Build task-runner native"
+                    if: "steps.cache-task-runner.outputs.cache-hit != 'true'"
+                    run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    working-directory: "packages/tooling/task-runner"
+
+                  - name: "Build tui native"
+                    if: "steps.cache-tui.outputs.cache-hit != 'true'"
+                    run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    working-directory: "packages/terminal/tui"
+
+                  - name: "Build vis native"
+                    if: "steps.cache-vis.outputs.cache-hit != 'true'"
+                    run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    working-directory: "packages/tooling/vis"
+
+                  - name: "Build secret-scanner native"
+                    if: "steps.cache-secret-scanner.outputs.cache-hit != 'true'"
+                    run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    working-directory: "packages/tooling/secret-scanner"
 
             # Build the fspy-seccomp-helper sidecar binary for every
             # Linux target. Pure-Rust seccomp (no libseccomp dep), so
@@ -373,16 +398,6 @@ jobs:
                       cp "native/fspy_windows/target/$TARGET/release/fspy_windows.dll" "npm/$binding/fspy-windows.dll"
                   fi
 
-            - name: "Build tui native"
-              if: "steps.cache-tui.outputs.cache-hit != 'true'"
-              run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
-              working-directory: "packages/terminal/tui"
-
-            - name: "Build vis native"
-              if: "steps.cache-vis.outputs.cache-hit != 'true'"
-              run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
-              working-directory: "packages/tooling/vis"
-
             # Build the vis CLI front-end binary (the Rust startup + dispatch
             # shell) for this target and drop it into the matching binding package
             # so its `files` array publishes it. `-p vis-cli` compiles ONLY the
@@ -422,11 +437,6 @@ jobs:
                     *windows*) : ;;
                     *) chmod 0755 "npm/$binding/$dest" ;;
                   esac
-
-            - name: "Build secret-scanner native"
-              if: "steps.cache-secret-scanner.outputs.cache-hit != 'true'"
-              run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
-              working-directory: "packages/tooling/secret-scanner"
 
             # --- Save build artifacts back to cache (trusted refs only) ---
             # PRs (including forks) restore but never write — a fork build can't
@@ -562,15 +572,20 @@ jobs:
               run: "pnpm vitest run __tests__/native/native-binding.test.ts"
               working-directory: "packages/tooling/vis"
 
-            - name: "Build @visulima/path (secret-scanner dep)"
-              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
-              run: "pnpm run build"
-              working-directory: "packages/filesystem/path"
+            # @visulima/path and @visulima/error have no @visulima inter-deps, so
+            # they build concurrently. @visulima/fs depends on @visulima/path, so it
+            # stays sequential AFTER the group (the implicit wait-all guarantees path
+            # is built before fs starts).
+            - parallel:
+                  - name: "Build @visulima/path (secret-scanner dep)"
+                    if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
+                    run: "pnpm run build"
+                    working-directory: "packages/filesystem/path"
 
-            - name: "Build @visulima/error (secret-scanner dep)"
-              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
-              run: "pnpm run build"
-              working-directory: "packages/error-debugging/error"
+                  - name: "Build @visulima/error (secret-scanner dep)"
+                    if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
+                    run: "pnpm run build"
+                    working-directory: "packages/error-debugging/error"
 
             - name: "Build @visulima/fs (secret-scanner dep)"
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
