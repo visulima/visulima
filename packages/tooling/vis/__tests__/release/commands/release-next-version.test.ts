@@ -10,13 +10,18 @@
 
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import nextVersionHandler from "../../../src/commands/release/next-version/handler";
+import { buildContext } from "../../../src/release/core/orchestrator";
+import { RELEASE_SUITE_TIMEOUT, removeTemporaryDirectoryWithRetry, restorePristineStdout } from "../../test-helpers";
+
+// These tests shell out to real git/pnpm and transpile the release/core graph;
+// the 30s global default is too tight on Windows CI. See RELEASE_SUITE_TIMEOUT.
+vi.setConfig({ hookTimeout: RELEASE_SUITE_TIMEOUT, testTimeout: RELEASE_SUITE_TIMEOUT });
 
 const writeJson = (path: string, value: unknown): void => {
     writeFileSync(path, `${JSON.stringify(value, null, 4)}\n`);
@@ -100,13 +105,33 @@ const SIMPLE_CHANGE = "---\n\"@scope/a\": minor\n\"@scope/b\": patch\n---\n\nTwo
 describe("vis release next-version", () => {
     let cwd: string | undefined;
 
+    // Warm the `release/core` lazy-`import()` graph once so the first real test
+    // isn't charged the (Windows-amplified) cold transpile cost on top of its
+    // own subprocess spawns. The scratch context is discarded.
+    beforeAll(async () => {
+        const scratch = setupFixture(SIMPLE_CHANGE);
+
+        try {
+            await buildContext({ cwd: scratch, skipRegistryLookup: true });
+        } catch {
+            // Warm-up only — a failure here is not a test failure; the real
+            // tests below assert behaviour. We just wanted the graph loaded.
+        } finally {
+            await removeTemporaryDirectoryWithRetry(scratch);
+        }
+    }, RELEASE_SUITE_TIMEOUT);
+
     beforeEach(() => {
         cwd = undefined;
     });
 
     afterEach(async () => {
+        // Reset stdout first: a timed-out test never reaches its own restore, so
+        // its patch would otherwise leak into the next test's capture.
+        restorePristineStdout();
+
         if (cwd) {
-            await rm(cwd, { force: true, recursive: true });
+            await removeTemporaryDirectoryWithRetry(cwd);
         }
     });
 

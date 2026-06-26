@@ -21,14 +21,18 @@
 
 import { execFileSync } from "node:child_process";
 import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
-import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import doctorHandler from "../../../src/commands/release/doctor/handler";
-import { fixturePackageManager } from "../../test-helpers";
+import { buildContext } from "../../../src/release/core/orchestrator";
+import { fixturePackageManager, RELEASE_SUITE_TIMEOUT, removeTemporaryDirectoryWithRetry, restorePristineStdout } from "../../test-helpers";
+
+// These tests shell out to real git/pnpm and transpile the release/core graph;
+// the 30s global default is too tight on Windows CI. See RELEASE_SUITE_TIMEOUT.
+vi.setConfig({ hookTimeout: RELEASE_SUITE_TIMEOUT, testTimeout: RELEASE_SUITE_TIMEOUT });
 
 const writeJson = (path: string, value: unknown): void => {
     writeFileSync(path, `${JSON.stringify(value, null, 4)}\n`);
@@ -126,6 +130,21 @@ describe("vis release doctor — first-release.repo-not-greenfield (M-1)", () =>
     const originalExitCode = process.exitCode;
     const originalEnv = { ...process.env };
 
+    // Warm the `release/core` lazy-`import()` graph once so the first real test
+    // isn't charged the (Windows-amplified) cold transpile cost on top of its
+    // own subprocess spawns. The scratch context is discarded.
+    beforeAll(async () => {
+        const scratch = setupRepo("0.0.1");
+
+        try {
+            await buildContext({ cwd: scratch });
+        } catch {
+            // Warm-up only — failures here are not test failures.
+        } finally {
+            await removeTemporaryDirectoryWithRetry(scratch);
+        }
+    });
+
     beforeEach(() => {
         cwd = setupRepo("0.0.1");
         process.exitCode = 0;
@@ -140,9 +159,13 @@ describe("vis release doctor — first-release.repo-not-greenfield (M-1)", () =>
     });
 
     afterEach(async () => {
+        // Reset stdout first: a timed-out test never reaches its own
+        // `capture.restore()`, so its patch would otherwise leak into the next
+        // test's capture (a straggler write landing in an unrelated buffer).
+        restorePristineStdout();
         process.exitCode = originalExitCode;
         process.env = originalEnv;
-        await rm(cwd, { force: true, recursive: true });
+        await removeTemporaryDirectoryWithRetry(cwd);
     });
 
     it("passes on a greenfield repo (no tags, no published versions) when --first-release is set", async () => {
