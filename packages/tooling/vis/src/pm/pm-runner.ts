@@ -1084,9 +1084,11 @@ const isWindows = process.platform === "win32";
  * Extensions a `node_modules/.bin` shim can carry. On Windows the shim
  * is a `.cmd`/`.exe`/`.bat`/`.ps1` (or the extension-less shell script);
  * on POSIX it is an extension-less executable. Mirrors the lookup
- * npm/pnpm perform when they place `.bin` on PATH.
+ * npm/pnpm perform when they place `.bin` on PATH. On Windows `.exe` is
+ * listed first so the fast path prefers the one shim it can spawn
+ * directly (without a shell) — see {@link runLocalExec}.
  */
-const LOCAL_BIN_EXTENSIONS = isWindows ? ["", ".cmd", ".exe", ".bat", ".ps1"] : [""];
+const LOCAL_BIN_EXTENSIONS = isWindows ? [".exe", ".cmd", ".bat", ".ps1", ""] : [""];
 
 /**
  * Resolve `command` against the workspace-local `node_modules/.bin`
@@ -1128,18 +1130,26 @@ const resolveLocalBin = (command: string, cwd: string): string | undefined => {
  * shell mode hands a shell string (not a binary) to the PM.
  */
 const runLocalExec = (command: string, args: string[], cwd: string): number | null => {
-    if (resolveLocalBin(command, cwd) === undefined) {
+    const binary = resolveLocalBin(command, cwd);
+
+    if (binary === undefined) {
         return null;
     }
 
-    // Pass the bare command and let the spawn resolve it through the
-    // enhanced PATH: on POSIX an argv spawn keeps user arguments free of
-    // shell-quoting; on Windows `.cmd`/`.bat` shims can only be launched
-    // through a shell, which also resolves the extension via PATHEXT.
-    const result = spawnSync(command, args, {
+    // Never spawn through a shell: handing `args` to /bin/sh or cmd.exe
+    // would let them be re-tokenized (an argument such as `a & b` could
+    // inject a second command). Spawning the resolved path directly
+    // passes each argument as a distinct argv entry, which the OS does
+    // not re-parse. On Windows only a `.exe` is directly spawnable —
+    // `.cmd`/`.bat`/shell shims require a shell, so skip the fast path
+    // for them and let the package manager run them safely.
+    if (isWindows && !binary.toLowerCase().endsWith(".exe")) {
+        return null;
+    }
+
+    const result = spawnSync(binary, args, {
         cwd,
         env: withEnhancedPath({ ...process.env }, cwd),
-        shell: isWindows,
         stdio: "inherit",
     });
 

@@ -1,4 +1,4 @@
-import { chmodSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -71,5 +71,25 @@ describe("runLocalExec", () => {
 
         expect(runLocalExec("ok", [], workspace)).toBe(0);
         expect(runLocalExec("boom", [], workspace)).toBe(3);
+    });
+
+    it.skipIf(process.platform === "win32")("passes arguments as argv without shell re-tokenization", () => {
+        expect.assertions(2);
+
+        const sentinel = join(workspace, "captured.txt");
+        const injected = join(workspace, "injected.txt");
+
+        // Writes its raw first argument to a file. If the spawn went through
+        // a shell, the `&` would split the argument and run a second command.
+        writeBin("capture", `#!/bin/sh\nprintf '%s' "$1" > ${JSON.stringify(sentinel)}\nexit 0\n`);
+
+        const evil = `a & echo pwned > ${injected}`;
+
+        runLocalExec("capture", [evil], workspace);
+
+        // The whole metacharacter-laden string arrives as a single argv entry…
+        expect(readFileSync(sentinel, "utf8")).toBe(evil);
+        // …and the injected command never executed.
+        expect(existsSync(injected)).toBe(false);
     });
 });
