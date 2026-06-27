@@ -1106,7 +1106,10 @@ const resolveLocalBin = (command: string, cwd: string): string | undefined => {
             const candidate = join(binDir, `${command}${extension}`);
 
             if (isAccessibleSync(candidate)) {
-                return candidate;
+                // `@visulima/path` always joins with `/`, even on Windows.
+                // Hand callers (and `spawnSync`) an OS-native path so the
+                // separator matches the rest of the platform's tooling.
+                return isWindows ? candidate.replaceAll("/", "\\") : candidate;
             }
         }
     }
