@@ -1115,7 +1115,7 @@ const resolveLocalBin = (command: string, cwd: string): string | undefined => {
 };
 
 /**
- * Fast path for `vis exec <bin>`: when the binary already lives in the
+ * Fast path for `vis exec &lt;bin>`: when the binary already lives in the
  * workspace's `node_modules/.bin`, launch it directly with that chain
  * prepended to PATH instead of booting the package manager's
  * `exec`/`x` wrapper. The PM wrapper costs hundreds of milliseconds of
