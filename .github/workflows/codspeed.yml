@@ -98,32 +98,8 @@ jobs:
                   done
 
             - name: "Git checkout"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
               with:
-                  persist-credentials: false
-                  # Pulls all commits (needed for NX affected)
-                  fetch-depth: 0
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-              with:
-                  persist-credentials: false
                   fetch-depth: 0
 
             - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
@@ -184,30 +160,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              id: "checkout"
-              continue-on-error: true
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-              with:
-                  persist-credentials: false
-
-            - name: "Wait before retrying checkout"
-              if: "steps.checkout.outcome == 'failure'"
-              shell: "bash"
-              run: "sleep 15"
-
-            - name: "Git checkout (retry)"
-              if: "steps.checkout.outcome == 'failure'"
-              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-              with:
-                  persist-credentials: false
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
 
             - name: "Setup resources and environment"
               uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main

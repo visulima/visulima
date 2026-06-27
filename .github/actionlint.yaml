@@ -1,0 +1,21 @@
+# actionlint configuration.
+#
+# TEMPORARY suppression: actionlint v1.7.12 (the latest release, 2026-03-30) does
+# not yet understand the GitHub Actions `parallel:` step group, which shipped
+# 2026-06-25 — after actionlint's last release. The syntax runs correctly on
+# GitHub-hosted runners; actionlint just flags it as:
+#
+#     step must run script with "run" section or run action with "uses" section
+#
+# This ignore is scoped to ONLY the two files that use `parallel:` and ONLY that
+# one message, so every other actionlint check stays active everywhere else.
+#
+# Remove this file (and bump the pinned actionlint) once actionlint supports
+# `parallel:`. Tracking: https://github.com/visulima/visulima/issues/715
+paths:
+    ".github/workflows/build-native.yml":
+        ignore:
+            - "step must run script with \"run\" section or run action with \"uses\" section"
+    ".github/workflows/lint.yml":
+        ignore:
+            - "step must run script with \"run\" section or run action with \"uses\" section"
