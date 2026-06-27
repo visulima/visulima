@@ -11,6 +11,12 @@ on: # yamllint disable-line rule:truthy
 permissions:
     contents: "read" # to fetch code (actions/checkout)
 
+# Preview builds wait on Build Native and can run for many minutes; a new push
+# to the same PR should supersede the in-flight preview rather than stack on it.
+concurrency:
+    group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+    cancel-in-progress: true
+
 env:
     NX_BRANCH: "${{ github.event.number }}"
     NX_RUN_GROUP: "${{ github.run_id }}"
