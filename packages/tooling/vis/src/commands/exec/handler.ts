@@ -1,6 +1,6 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import { resolveInstaller, runExec } from "../../pm/pm-runner";
+import { resolveInstaller, runExec, runLocalExec } from "../../pm/pm-runner";
 import { resolveCommandRuntime, runtimeInstallerBackend } from "../../runtime/command-runtime";
 import { toStringArray } from "../../util/utils";
 import type { ExecOptions } from "./index";
@@ -26,28 +26,43 @@ const execute = async ({ argument, logger, options, rawUnknown, visConfig, works
     const rest = unknown[0] === "--" ? positionalRest : [...positionalRest, ...unknown];
 
     const cwd = wsRoot ?? process.cwd();
-    const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
-    const pm = resolveInstaller(cwd, {
-        backend: runtimeInstallerBackend(runtime),
-        configBackend: visConfig?.install?.backend,
-        configCorepack: visConfig?.install?.corepack,
-    });
+    const filter = toStringArray(options.filter);
 
-    const code = runExec(
-        pm,
-        {
-            args: rest,
-            command: command as string,
-            filter: toStringArray(options.filter),
-            parallel: options.parallel || false,
-            recursive: options.recursive || false,
-            reverse: options.reverse || false,
-            shellMode: options.shellMode || false,
-            workspaceRoot: options.workspaceRoot || false,
-        },
-        cwd,
-        logger,
-    );
+    // Fast path: when the invocation targets a single package (no
+    // recursive / filter / workspace-root / shell mode) and the binary is
+    // already in `node_modules/.bin`, launch it directly and skip the
+    // package manager's `exec`/`x` wrapper start-up. `runLocalExec`
+    // returns `null` when the binary is not local, so we fall through to
+    // the PM, which can still resolve workspace-aware or globally-linked
+    // binaries.
+    const singlePackage = !options.recursive && !options.workspaceRoot && !options.parallel && !options.reverse && !options.shellMode && filter.length === 0;
+
+    let code = singlePackage ? runLocalExec(command as string, rest, cwd) : null;
+
+    if (code === null) {
+        const runtime = resolveCommandRuntime({ logger, options, visConfig }, cwd);
+        const pm = resolveInstaller(cwd, {
+            backend: runtimeInstallerBackend(runtime),
+            configBackend: visConfig?.install?.backend,
+            configCorepack: visConfig?.install?.corepack,
+        });
+
+        code = runExec(
+            pm,
+            {
+                args: rest,
+                command: command as string,
+                filter,
+                parallel: options.parallel || false,
+                recursive: options.recursive || false,
+                reverse: options.reverse || false,
+                shellMode: options.shellMode || false,
+                workspaceRoot: options.workspaceRoot || false,
+            },
+            cwd,
+            logger,
+        );
+    }
 
     if (code !== 0) {
         process.exitCode = code;

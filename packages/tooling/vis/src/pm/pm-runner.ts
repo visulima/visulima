@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 
 import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { dirname, join, parse as parsePath } from "@visulima/path";
+import { collectNodeModulesBinDirs, withEnhancedPath } from "@visulima/task-runner";
 import { coerce, lt } from "semver";
 
 import type { AddOptions, DlxOptions, ExecOptions, InstallOptions, RemoveOptions, ResolvedCommand, WhyOptions } from "#native";
@@ -1077,6 +1078,91 @@ const runDlx = (pm: InstallerInfo, options: DlxOptions, cwd: string, logger: Con
     return runResolved(pm, resolved, cwd, logger, { dry: extras.dry, env: extras.env });
 };
 
+const isWindows = process.platform === "win32";
+
+/**
+ * Extensions a `node_modules/.bin` shim can carry. On Windows the shim
+ * is a `.cmd`/`.exe`/`.bat`/`.ps1` (or the extension-less shell script);
+ * on POSIX it is an extension-less executable. Mirrors the lookup
+ * npm/pnpm perform when they place `.bin` on PATH. On Windows `.exe` is
+ * listed first so the fast path prefers the one shim it can spawn
+ * directly (without a shell) — see {@link runLocalExec}.
+ */
+const LOCAL_BIN_EXTENSIONS = isWindows ? [".exe", ".cmd", ".bat", ".ps1", ""] : [""];
+
+/**
+ * Resolve `command` against the workspace-local `node_modules/.bin`
+ * chain (nearest-first), returning the matched shim path or undefined.
+ * Bare names only — a command containing a path separator is the
+ * caller's explicit path and is left for the package manager / shell.
+ */
+const resolveLocalBin = (command: string, cwd: string): string | undefined => {
+    if (command.includes("/") || command.includes("\\")) {
+        return undefined;
+    }
+
+    for (const binDir of collectNodeModulesBinDirs(cwd)) {
+        for (const extension of LOCAL_BIN_EXTENSIONS) {
+            const candidate = join(binDir, `${command}${extension}`);
+
+            if (isAccessibleSync(candidate)) {
+                // `@visulima/path` always joins with `/`, even on Windows.
+                // Hand callers (and `spawnSync`) an OS-native path so the
+                // separator matches the rest of the platform's tooling.
+                return isWindows ? candidate.replaceAll("/", "\\") : candidate;
+            }
+        }
+    }
+
+    return undefined;
+};
+
+/**
+ * Fast path for `vis exec &lt;bin>`: when the binary already lives in the
+ * workspace's `node_modules/.bin`, launch it directly with that chain
+ * prepended to PATH instead of booting the package manager's
+ * `exec`/`x` wrapper. The PM wrapper costs hundreds of milliseconds of
+ * Node/PM start-up before it does the same `.bin` resolution we do here.
+ *
+ * Returns the child's exit code, or `null` when the binary is not
+ * locally installed — the caller then falls back to {@link runExec} so
+ * the PM can still resolve workspace-aware or globally-linked binaries.
+ *
+ * Only valid for a single-package, non-shell invocation; recursive /
+ * filtered / workspace-root runs need the PM's workspace topology, and
+ * shell mode hands a shell string (not a binary) to the PM.
+ */
+const runLocalExec = (command: string, args: string[], cwd: string): number | null => {
+    const binary = resolveLocalBin(command, cwd);
+
+    if (binary === undefined) {
+        return null;
+    }
+
+    // Never spawn through a shell: handing `args` to /bin/sh or cmd.exe
+    // would let them be re-tokenized (an argument such as `a & b` could
+    // inject a second command). Spawning the resolved path directly
+    // passes each argument as a distinct argv entry, which the OS does
+    // not re-parse. On Windows only a `.exe` is directly spawnable —
+    // `.cmd`/`.bat`/shell shims require a shell, so skip the fast path
+    // for them and let the package manager run them safely.
+    if (isWindows && !binary.toLowerCase().endsWith(".exe")) {
+        return null;
+    }
+
+    const result = spawnSync(binary, args, {
+        cwd,
+        env: withEnhancedPath({ ...process.env }, cwd),
+        stdio: "inherit",
+    });
+
+    if (result.error) {
+        throw result.error;
+    }
+
+    return result.status ?? 1;
+};
+
 const runExec = (pm: InstallerInfo, options: ExecOptions, cwd: string, logger: Console, extras: RunOverrides = {}): number => {
     if (pm.name === "aube") {
         return runResolved(pm, resolveAubeExec(options), cwd, logger, extras);
@@ -1123,6 +1209,7 @@ export {
     runInstall,
     runInstallCaptured,
     runLink,
+    runLocalExec,
     runPmSubcommand,
     runRemove,
     runUnlink,
@@ -1140,6 +1227,7 @@ export const pmRunnerInternals = {
     applyDryRun,
     applyImmutableCache,
     applySilent,
+    resolveLocalBin,
     shouldUseCorepack,
     spawnResolved,
 };
