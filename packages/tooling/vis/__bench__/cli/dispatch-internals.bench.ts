@@ -13,14 +13,16 @@
  *
  * Run with `pnpm --filter @visulima/vis run bench`.
  */
-import { mkdtempSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 import { afterAll, bench, describe } from "vitest";
 
-import { detectLockfileDrift, detectPm, resolveInstaller } from "../../src/pm/pm-runner";
+import { detectLockfileDrift, detectPm, pmRunnerInternals, resolveInstaller } from "../../src/pm/pm-runner";
 import { satisfies } from "../../src/runtime/toolchain";
+
+const { resolveLocalBin } = pmRunnerInternals;
 
 // ── Fixtures: isolated single-lockfile workspaces, built once. ───────────────
 // detectPm/resolveInstaller read the lockfile family on disk, so each PM gets a
@@ -44,6 +46,17 @@ const npmDir = makeWorkspace("package-lock.json", JSON.stringify({ lockfileVersi
 // An aube installer over a dir carrying a foreign (pnpm) lockfile — the only
 // shape for which detectLockfileDrift does real work (it early-returns otherwise).
 const aubeInstaller = { name: "aube" as const, useCorepack: false, version: "latest" };
+
+// ── Fixture: a nested package carrying a workspace-local `.bin`. ─────────────
+// `vis exec`'s fast path calls `resolveLocalBin` on every single-package
+// invocation — it walks `node_modules/.bin` from cwd up to the filesystem root
+// looking for the binary. The nested cwd makes the "miss" walk several ancestor
+// `.bin` dirs (realistic monorepo depth), which is the worst case the fast path
+// pays before falling back to the package manager.
+const binNestedDir = join(makeWorkspace("pnpm-lock.yaml", "lockfileVersion: '9.0'\n"), "packages", "app");
+
+mkdirSync(join(binNestedDir, "node_modules", ".bin"), { recursive: true });
+writeFileSync(join(binNestedDir, "node_modules", ".bin", "widget"), "#!/bin/sh\nexit 0\n");
 
 // A representative batch of semver checks, mirroring engines/devEngines gating.
 const SEMVER_CASES: ReadonlyArray<readonly [string, string]> = [
@@ -94,6 +107,16 @@ describe("dispatch internals · installer resolution", () => {
 describe("dispatch internals · lockfile-drift detection", () => {
     bench("detectLockfileDrift · aube over foreign lockfile", () => {
         detectLockfileDrift(pnpmDir, aubeInstaller);
+    });
+});
+
+describe("dispatch internals · exec fast-path bin resolution", () => {
+    bench("resolveLocalBin · local hit (nearest .bin)", () => {
+        resolveLocalBin("widget", binNestedDir);
+    });
+
+    bench("resolveLocalBin · miss (full ancestor walk → PM fallback)", () => {
+        resolveLocalBin("not-installed-binary", binNestedDir);
     });
 });
 
