@@ -103,7 +103,14 @@ jobs:
                       cross: "-x"
                     - target: "aarch64-unknown-linux-gnu"
                       os: "ubuntu-latest"
-                      cross: "--use-napi-cross"
+                      # Cross via cargo-zigbuild (zig cc), like the musl
+                      # targets. The vis napi addon links rusqlite's bundled
+                      # SQLite, so cross-compiling needs a C cross-compiler;
+                      # --use-napi-cross downloads a toolchain that has been
+                      # flaky (missing .tgz → "failed to find tool
+                      # aarch64-linux-gnu-gcc"). zig ships its own cc and
+                      # already cross-builds the vis-cli helper for this triple.
+                      cross: "-x"
                     - target: "aarch64-unknown-linux-musl"
                       os: "ubuntu-latest"
                       cross: "-x"
