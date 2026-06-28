@@ -110,7 +110,7 @@ export const RE_ANSI: RegExp = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{
 // matched with a flat `[\d;]*` class instead of the nested `(\d+(?:;\d+)*)?`
 // quantifier. The flat class is linear and avoids the polynomial backtracking
 // CodeQL flags (js/polynomial-redos) on adversarial input like `\u001B[1111…`.
-// eslint-disable-next-line no-control-regex, sonarjs/regex-complexity, sonarjs/no-control-regex
+// eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
 export const RE_VALID_ANSI_PAIRS: RegExp = /\u001B\[[\d;]*m[^\u001B]*(?:\u001B\[[\d;]*m|$)/g;
 
 // Matches OSC 8 hyperlinks. Used only as a presence gate (`.test`), so the
