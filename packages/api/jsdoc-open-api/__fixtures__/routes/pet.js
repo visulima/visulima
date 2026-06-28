@@ -103,12 +103,16 @@ router.get("/findByTags", async (request, res, next) => {
  * @security ApiKey
  */
 router.get("/:petId", async (request, res, next) => {
+    // petId is an int64 path param — coerce before echoing so the value can't
+    // carry markup into the XML response (avoids reflected XSS).
+    const petId = Number.parseInt(request.params.petId, 10);
+
     res.format({
         "application/xml": () => {
-            res.send(`<pet><id>${request.params.petId}</id></pet>`);
+            res.send(`<pet><id>${Number.isNaN(petId) ? "" : petId}</id></pet>`);
         },
         "application/json": () => {
-            res.send({ id: request.params.petId });
+            res.send({ id: petId });
         },
     });
 });
