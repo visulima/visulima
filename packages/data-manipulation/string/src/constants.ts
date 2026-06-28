@@ -106,12 +106,19 @@ export const RE_ANSI: RegExp = /[\u001B\u009B](?:[[()#;?]{0,10}(?:\d{1,4}(?:;\d{
  * Regular expression for valid ANSI color/style sequences with proper open/close pairs
  * Matches sequences like '\u001B[31mtext\u001B[39m'
  */
+// Used only as a presence gate (`.test`), so the SGR parameter bytes are
+// matched with a flat `[\d;]*` class instead of the nested `(\d+(?:;\d+)*)?`
+// quantifier. The flat class is linear and avoids the polynomial backtracking
+// CodeQL flags (js/polynomial-redos) on adversarial input like `\u001B[1111…`.
 // eslint-disable-next-line no-control-regex, sonarjs/regex-complexity, sonarjs/no-control-regex
-export const RE_VALID_ANSI_PAIRS: RegExp = /\u001B\[(\d+(?:;\d+)*)?m[^\u001B]*(?:\u001B\[(?:\d+(?:;\d+)*)?m|$)/g;
+export const RE_VALID_ANSI_PAIRS: RegExp = /\u001B\[[\d;]*m[^\u001B]*(?:\u001B\[[\d;]*m|$)/g;
 
-// Matches OSC 8 hyperlinks and captures the *text* part (group 1)
+// Matches OSC 8 hyperlinks. Used only as a presence gate (`.test`), so the
+// label is matched with `[^\u001B]*` rather than a lazy `(.*?)`: bounding it to
+// non-ESC keeps the scan linear (no O(n^2) backtracking on repeated `\u001B]8;…`
+// openers without a closing `]8;;`) — CodeQL js/polynomial-redos.
 // eslint-disable-next-line no-control-regex, sonarjs/no-control-regex
-export const RE_VALID_HYPERLINKS: RegExp = /\u001B\]8;[^\u0007\u001B]*(?:\u0007|\u001B\\)(.*?)\u001B\]8;;(?:\u0007|\u001B\\)/g;
+export const RE_VALID_HYPERLINKS: RegExp = /\u001B\]8;[^\u0007\u001B]*(?:\u0007|\u001B\\)[^\u001B]*\u001B\]8;;(?:\u0007|\u001B\\)/g;
 
 /**
  * Regular expression for control characters
