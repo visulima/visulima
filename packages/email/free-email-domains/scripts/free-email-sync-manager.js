@@ -327,17 +327,20 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
 
             const data = await response.json();
 
-            // Handle different API response formats
+            // Handle different API response formats. Every path runs through the
+            // same normalize + validate pipeline (trim/lowercase/isValidDomain)
+            // as the raw-text and email-providers sources, so API-fed domains are
+            // never persisted unvalidated.
             if (Array.isArray(data)) {
-                return data.filter((item) => typeof item === "string");
+                return this.normalizeApiDomains(data);
             }
 
             if (data.domains && Array.isArray(data.domains)) {
-                return data.domains;
+                return this.normalizeApiDomains(data.domains);
             }
 
             if (typeof data === "object") {
-                return Object.keys(data);
+                return this.normalizeApiDomains(Object.keys(data));
             }
 
             throw new Error("Unsupported API response format");
@@ -417,15 +420,15 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
      * present in the exclude list (`scripts/config/blacklist.json`).
      */
     async generateDomainsList() {
-        const domainsArray = [...this.domains.keys()]
-            .filter((domain) => !this.excludeDomains.has(domain.toLowerCase().trim()))
-            .toSorted();
+        const domainsArray = [...this.domains.keys()].filter((domain) => !this.excludeDomains.has(domain.toLowerCase().trim())).toSorted();
 
         await fs.writeFile(join(this.syncOptions.outputPath, "domains.json"), JSON.stringify(domainsArray), "utf8");
 
-        // Emit a type declaration so the `./domains` subpath export carries types
-        // (`import domains from "@visulima/free-email-domains/domains" with { type: "json" }`).
-        await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport = domains;\n", "utf8");
+        // Emit a type declaration so the `./domains` subpath export carries types.
+        // Use a default export to match the JSON module's default export, so
+        // `import domains from "@visulima/free-email-domains/domains" with { type: "json" }`
+        // type-checks (an `export =` would force `import domains = require(...)`).
+        await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport default domains;\n", "utf8");
     }
 
     /**
@@ -582,6 +585,31 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
         } catch {
             // File doesn't exist, which is fine for first run
         }
+    }
+
+    /**
+     * Normalizes and validates a list of domain strings coming from a JSON API
+     * source, mirroring the raw-text/email-providers pipeline: trim, lowercase,
+     * and drop anything that fails `isValidDomain`.
+     * @param {Array<unknown>} list Raw values from the API response.
+     * @returns {Array<string>} Normalized, validated domain strings.
+     */
+    normalizeApiDomains(list) {
+        const domains = [];
+
+        for (const item of list) {
+            if (typeof item !== "string") {
+                continue;
+            }
+
+            const normalizedDomain = item.trim().toLowerCase();
+
+            if (normalizedDomain && this.isValidDomain(normalizedDomain)) {
+                domains.push(normalizedDomain);
+            }
+        }
+
+        return domains;
     }
 
     /**
