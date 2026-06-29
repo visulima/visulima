@@ -113,7 +113,9 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
      * @param {number} startTime Start time timestamp.
      */
     calculateFinalStats(stats, startTime) {
-        const currentDomains = new Set(this.domains.keys());
+        // Use the published (exclude-filtered) set so report counts and
+        // new/removed deltas match what actually lands in domains.json.
+        const currentDomains = new Set(this.getPublishedDomains());
         const duplicates = [...this.domains.values()].reduce((sum, entry) => sum + (entry.sources.size - 1), 0);
         const newDomains = [...currentDomains].filter((domain) => !this.previousDomains.has(domain)).length;
         const removedDomains = [...this.previousDomains].filter((domain) => !currentDomains.has(domain)).length;
@@ -126,8 +128,8 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
             newDomains,
             processingTime,
             removedDomains,
-            totalDomains: this.domains.size,
-            uniqueDomains: this.domains.size,
+            totalDomains: currentDomains.size,
+            uniqueDomains: currentDomains.size,
         });
     }
 
@@ -420,7 +422,7 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
      * present in the exclude list (`scripts/config/blacklist.json`).
      */
     async generateDomainsList() {
-        const domainsArray = [...this.domains.keys()].filter((domain) => !this.excludeDomains.has(domain.toLowerCase().trim())).toSorted();
+        const domainsArray = this.getPublishedDomains();
 
         await fs.writeFile(join(this.syncOptions.outputPath, "domains.json"), JSON.stringify(domainsArray), "utf8");
 
@@ -439,6 +441,19 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
 
         // Generate main domains list
         await this.generateDomainsList();
+    }
+
+    /**
+     * Returns the published domain set: every collected domain minus anything in
+     * the exclude list (`scripts/config/blacklist.json`), sorted and de-duplicated.
+     * This is the single source of truth shared by the generated `domains.json`,
+     * the final statistics, and the value returned from {@link sync}, so excluded
+     * domains never leak into report counts or the returned set while being absent
+     * from the file.
+     * @returns {string[]} The sorted, exclude-filtered domain list.
+     */
+    getPublishedDomains() {
+        return [...this.domains.keys()].filter((domain) => !this.excludeDomains.has(domain.toLowerCase().trim())).toSorted();
     }
 
     /**
@@ -698,7 +713,7 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
             await this.generateOutputs();
 
             return {
-                domains: new Set(this.domains.keys()),
+                domains: new Set(this.getPublishedDomains()),
                 errors,
                 stats,
             };
