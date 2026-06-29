@@ -427,10 +427,12 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
         await fs.writeFile(join(this.syncOptions.outputPath, "domains.json"), JSON.stringify(domainsArray), "utf8");
 
         // Emit a type declaration so the `./domains` subpath export carries types.
-        // Use a default export to match the JSON module's default export, so
-        // `import domains from "@visulima/free-email-domains/domains" with { type: "json" }`
-        // type-checks (an `export =` would force `import domains = require(...)`).
-        await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport default domains;\n", "utf8");
+        // Use `export =` to match the JSON module's `module.exports =` shape (the
+        // subpath's runtime is the raw `domains.json`). `export default` trips
+        // are-the-types-wrong's FalseExportDefault check under node16/bundler
+        // resolution; `import domains from "…/domains"` still type-checks via
+        // esModuleInterop. Mirrors the sibling `@visulima/disposable-email-domains`.
+        await fs.writeFile(join(this.syncOptions.outputPath, "domains.d.ts"), "declare const domains: string[];\nexport = domains;\n", "utf8");
     }
 
     /**
