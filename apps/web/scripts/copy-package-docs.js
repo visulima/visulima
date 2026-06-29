@@ -467,6 +467,40 @@ async function rewriteDocsLinks(destPath, pkgName, pkgRoot) {
 }
 
 /**
+ * Removes self-closing <Card .../> elements whose `href="/docs/..."` target
+ * does not resolve to an existing doc page. Returns the number of cards removed.
+ */
+async function pruneBrokenCards(filePath, contentRoot) {
+    const content = await fs.readFile(filePath, "utf-8");
+    let removed = 0;
+
+    const updated = content.replace(/[^\S\n]*<Card\b[^>]*?\/>[^\S\n]*\n?/g, (match) => {
+        const hrefMatch = match.match(/href="\/docs\/([^"]+)"/);
+
+        if (!hrefMatch) {
+            return match;
+        }
+
+        const cleanPath = hrefMatch[1].replace(/#.*$/, "").replace(/\/$/, "");
+        const resolved = path.join(contentRoot, cleanPath);
+
+        if (docExists(resolved)) {
+            return match;
+        }
+
+        removed++;
+
+        return "";
+    });
+
+    if (removed > 0) {
+        await fs.writeFile(filePath, updated);
+    }
+
+    return removed;
+}
+
+/**
  * Generates a basic meta.json from the directory contents when none exists.
  */
 async function generateMetaJson(destPath) {
@@ -711,8 +745,20 @@ async function main() {
 
     try {
         await fs.stat(indexSrc);
-        await fs.copyFile(indexSrc, path.join(DEST_DIR, "index.mdx"));
+        const indexDest = path.join(DEST_DIR, "index.mdx");
+        await fs.copyFile(indexSrc, indexDest);
         console.log("Copied packages/index.mdx from static source");
+
+        // The static index hardcodes a <Card> per package. Packages without a docs/
+        // folder have no generated route, so their cards would 404 when the prerender
+        // crawler follows them. This runs after every package is copied (and after the
+        // index itself), so existence checks are reliable — drop cards whose target
+        // doc page doesn't exist instead of shipping a broken link.
+        const pruned = await pruneBrokenCards(indexDest, path.join(DEST_DIR, ".."));
+
+        if (pruned > 0) {
+            console.log(`Pruned ${pruned} package card(s) in index.mdx with no docs page`);
+        }
     } catch {
         console.log("Warning: docs-static/packages-index.mdx not found, skipping index generation");
     }
