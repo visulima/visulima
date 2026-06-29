@@ -34,6 +34,12 @@
 "package: email":
     - changed-files:
           - any-glob-to-any-file: "packages/email/email/**/*"
+"package: email-provider-mx":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/email-provider-mx/**/*"
+"package: email-verifier":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/email-verifier/**/*"
 "package: error":
     - changed-files:
           - any-glob-to-any-file: "packages/error-debugging/error/**/*"
@@ -49,6 +55,9 @@
 "package: fmt":
     - changed-files:
           - any-glob-to-any-file: "packages/terminal/fmt/**/*"
+"package: free-email-domains":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/free-email-domains/**/*"
 "package: fs":
     - changed-files:
           - any-glob-to-any-file: "packages/filesystem/fs/**/*"

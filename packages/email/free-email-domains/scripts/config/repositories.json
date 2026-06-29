@@ -1,0 +1,24 @@
+[
+    {
+        "name": "willwhite/freemail - Free Email Providers",
+        "url": "https://github.com/willwhite/freemail",
+        "type": "git",
+        "blocklist_files": ["/refs/heads/master/data/free.txt"],
+        "description": "Canonical, regularly maintained list of free email service providers",
+        "priority": 1
+    },
+    {
+        "name": "ihmpavel/free-email-domains-list",
+        "url": "https://raw.githubusercontent.com/ihmpavel/free-email-domains-list/master/data.json",
+        "type": "api",
+        "description": "Community-maintained JSON list of free email provider domains",
+        "priority": 2
+    },
+    {
+        "name": "derhuerst/email-providers - All",
+        "url": "https://raw.githubusercontent.com/derhuerst/email-providers/master/all.json",
+        "type": "api",
+        "description": "Full upstream email-providers dataset (also bundled locally as a deterministic base source)",
+        "priority": 3
+    }
+]

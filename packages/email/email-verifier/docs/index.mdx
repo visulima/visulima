@@ -1,0 +1,55 @@
+---
+title: Introduction
+description: "Mailer-free email address verification and enrichment — syntax, MX/SMTP, disposable/free/role, catch-all, provider & SEG classification, typo suggestions, and a 0–100 quality score."
+---
+
+# @visulima/email-verifier
+
+`@visulima/email-verifier` validates and enriches an email address without
+pulling in a mail-sending stack. It mirrors the surface of commercial APIs like
+[emailable](https://emailable.com): syntax + domain + SMTP verification,
+catch-all / mailbox-full / greylist handling, disposable / free / role / no-reply
+detection, sub-address (tag) parsing, character & Unicode-symbol analysis,
+provider & Secure-Email-Gateway classification, misspelled-domain suggestions,
+name parsing, and a transparent 0–100 quality score — all aggregated into one
+`EmailVerificationReport`.
+
+> It is **mailer-free**: it does not depend on `@visulima/email`, so a
+> validation-only consumer never installs the 25 provider adapters.
+
+## Quick Start
+
+```typescript
+import { verifyEmail } from "@visulima/email-verifier";
+
+const report = await verifyEmail("john.doe@gmail.com");
+
+report.state; // "deliverable" | "risky" | "undeliverable" | "unknown"
+report.reason; // e.g. "accepted_email"
+report.score; // 0–100
+report.free; // true
+report.provider?.display; // "Google Workspace"
+report.name; // { firstName: "John", lastName: "Doe", fullName: "John Doe", confidence: "high" }
+```
+
+## Use Cases
+
+- **Signup Validation** - Block undeliverable, disposable, or role addresses at registration
+- **List Hygiene** - Score and segment an existing list before a send
+- **Lead Scoring** - Combine free/role/provider signals into a quality score
+- **Fraud Signals** - Surface catch-all, mixed-script, and typo-domain risks
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install the package
+    </Card>
+    <Card title="Usage" href="/usage">
+        Verify an address end-to-end or à la carte
+    </Card>
+    <Card title="Scoring" href="/scoring">
+        Understand and override the quality score
+    </Card>
+    <Card title="API" href="/api">
+        API documentation
+    </Card>
+</Cards>
