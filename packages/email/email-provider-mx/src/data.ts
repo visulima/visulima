@@ -150,29 +150,35 @@ export const MX_PROVIDERS: MxProviderEntry[] = [
     },
     {
         display: "Barracuda",
-        // *.ess.barracudanetworks.com, *.cudasvc.com
-        patterns: ["barracudanetworks.com", "barracuda.com", "cudasvc.com"],
+        // Email Security Service MX: *.ess.barracudanetworks.com; *.cudasvc.com.
+        // The bare corporate barracuda.com / barracudanetworks.com domains are NOT
+        // the product MX, so they are intentionally excluded to avoid false SEGs.
+        patterns: ["ess.barracudanetworks.com", "cudasvc.com"],
         provider: "barracuda",
         type: "seg",
     },
     {
         display: "Cisco Secure Email",
-        // Cisco Ironport / ESA / Cloud Email Security: mx*.iphmx.com
-        patterns: ["iphmx.com", "cisco.com"],
+        // Cisco Ironport / ESA / Cloud Email Security MX: mx*.iphmx.com. The
+        // corporate cisco.com domain is not the product MX, so it is excluded.
+        patterns: ["iphmx.com"],
         provider: "cisco",
         type: "seg",
     },
     {
         display: "Trend Micro Email Security",
-        // *.tmes.trendmicro.com, *.tmes.trendmicro.eu, in.hes.trendmicro.com
-        patterns: ["trendmicro.com", "trendmicro.eu"],
+        // Hosted Email Security MX: *.in.tmes.trendmicro.com, *.in.tmes.trendmicro.eu,
+        // *.in.hes.trendmicro.com. The bare trendmicro.com / trendmicro.eu corporate
+        // domains are not the product MX, so they are excluded.
+        patterns: ["tmes.trendmicro.com", "hes.trendmicro.com", "tmes.trendmicro.eu"],
         provider: "trendmicro",
         type: "seg",
     },
     {
         display: "Sophos Email",
-        // mx-01-eu-west.prod.hydra.sophos.com
-        patterns: ["sophos.com"],
+        // Sophos Email Security MX: *.prod.hydra.sophos.com. The bare sophos.com
+        // corporate domain is not the product MX, so it is excluded.
+        patterns: ["hydra.sophos.com"],
         provider: "sophos",
         type: "seg",
     },

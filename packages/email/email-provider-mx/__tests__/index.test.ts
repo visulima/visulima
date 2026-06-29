@@ -30,6 +30,25 @@ describe(classifyMx, () => {
         expect(isSecureEmailGateway("mx0a-00000000.pphosted.com")).toBe(true);
     });
 
+    it("classifies SEG product MX hosts but not bare corporate domains", () => {
+        expect.assertions(10);
+
+        // Real product MX suffixes still classify as the gateway.
+        expect(classifyMx("mx1.ess.barracudanetworks.com")?.provider).toBe("barracuda");
+        expect(classifyMx("a1234.cudasvc.com")?.provider).toBe("barracuda");
+        expect(classifyMx("mx1.iphmx.com")?.provider).toBe("cisco");
+        expect(classifyMx("in.tmes.trendmicro.com")?.provider).toBe("trendmicro");
+        expect(classifyMx("in.hes.trendmicro.com")?.provider).toBe("trendmicro");
+        expect(classifyMx("mx-01-eu-west.prod.hydra.sophos.com")?.provider).toBe("sophos");
+
+        // Bare corporate domains are NOT the email-security product MX and must not
+        // be mis-classified as a secure email gateway.
+        expect(classifyMx("mail.barracuda.com")).toBeUndefined();
+        expect(classifyMx("mail.cisco.com")).toBeUndefined();
+        expect(classifyMx("mail.trendmicro.com")).toBeUndefined();
+        expect(classifyMx("mail.sophos.com")).toBeUndefined();
+    });
+
     it("normalizes case and a trailing dot before matching", () => {
         expect.assertions(2);
 
