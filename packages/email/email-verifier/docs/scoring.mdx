@@ -1,0 +1,57 @@
+---
+title: "Scoring"
+---
+
+# Quality Score
+
+Every report carries a composite `score` from 0–100 produced by a **transparent
+additive model**: it starts from a 100-point baseline, subtracts a penalty for
+each negative signal, and adds a small bonus for a known-good provider. The
+result is clamped to the 0–100 range, then mapped to the `state` / `reason`.
+
+## Default weights
+
+```typescript
+import { DEFAULT_WEIGHTS } from "@visulima/email-verifier/score";
+```
+
+| Signal           | Weight | Effect                                            |
+| ---------------- | ------ | ------------------------------------------------- |
+| `disposable`     | 60     | Throwaway / disposable domain                     |
+| `mailboxFull`    | 40     | Mailbox over quota (452 / 552)                    |
+| `mixedScripts`   | 30     | Local-part mixes Unicode scripts (homoglyph risk) |
+| `acceptAll`      | 25     | Catch-all domain — existence unverifiable         |
+| `noReply`        | 25     | `no-reply`-style address                          |
+| `role`           | 25     | Role / shared mailbox (`info@`, `sales@`)         |
+| `didYouMean`     | 20     | A likely typo domain was detected                 |
+| `character`      | 15     | Irregular local-part characters                   |
+| `deferred`       | 15     | Greylisted / inconclusive SMTP                    |
+| `smtpUnverified` | 10     | SMTP could not confirm the mailbox                |
+| `symbol`         | 10     | Unusual Unicode symbols                           |
+| `free`           | 5      | Free mailbox provider                             |
+| `knownProvider`  | 5      | Bonus for a recognized mailbox provider           |
+
+## Overriding weights
+
+Pass `weights` (a partial override merged over the defaults) to `verifyEmail` to
+tune the model to your risk appetite — e.g. treat free providers as neutral and
+penalise role accounts harder:
+
+```typescript
+import { verifyEmail } from "@visulima/email-verifier";
+
+const report = await verifyEmail("info@example.com", {
+    weights: { free: 0, role: 40 },
+});
+```
+
+## Scoring a report directly
+
+`scoreReport` is exported standalone so you can re-score an existing report (or a
+hand-built `ScoreInput`) without re-running the checks:
+
+```typescript
+import { scoreReport } from "@visulima/email-verifier/score";
+
+const { score, state, reason } = scoreReport(input, { disposable: 80 });
+```

@@ -1,0 +1,86 @@
+---
+title: "Usage"
+---
+
+# Usage
+
+## Full verification
+
+`verifyEmail` runs the offline checks (syntax, disposable, free, role, tag,
+character, symbol, name, typo) immediately, then — unless `offline` is set —
+resolves the network checks (MX, SMTP, provider) and aggregates everything into
+one `EmailVerificationReport`.
+
+```typescript
+import { verifyEmail } from "@visulima/email-verifier";
+
+const report = await verifyEmail("john.doe@gmail.com");
+
+if (report.state === "deliverable") {
+    console.log(`OK (${report.score}/100), provider: ${report.provider?.display}`);
+} else {
+    console.log(`${report.state}: ${report.reason}`);
+}
+```
+
+The report exposes every signal as a discrete flag — `disposable`, `free`,
+`role`, `noReply`, `acceptAll`, `mailboxFull`, `deferred`, `secureEmailGateway`,
+`syntaxValid` — plus structured `domain`, `smtp`, `name`, `character`, `symbol`,
+`tag`, and `provider` sub-objects, an optional `didYouMean` typo suggestion, and
+the composite `score`.
+
+## Offline mode
+
+Skip every network round-trip (no MX, SMTP, or provider lookup) for a fast,
+deterministic, heuristic-only report — useful in tests, edge runtimes, or at
+form-submit time:
+
+```typescript
+const report = await verifyEmail("info@example.com", { offline: true });
+
+report.syntaxValid; // true
+report.role; // true
+report.state; // "unknown" — deliverability was not probed
+```
+
+## Catch-all and SMTP options
+
+```typescript
+const report = await verifyEmail("user@example.com", {
+    smtp: {
+        catchAllProbes: 2, // extra random RCPTs to detect accept-all
+        timeout: 10_000,
+    },
+});
+
+report.acceptAll; // true when the server accepts random local-parts
+report.mailboxFull; // true on a 452/552 over-quota response
+report.deferred; // true when greylisted (4xx) — inconclusive
+```
+
+## À la carte checks
+
+Each check is a pure function you can call on its own:
+
+```typescript
+import { validateSyntax } from "@visulima/email-verifier/checks/syntax";
+import { isRoleAccount } from "@visulima/email-verifier/checks/role";
+import { suggestEmailTypo } from "@visulima/email-verifier/enrich/typo";
+
+validateSyntax("john@gmail.com"); // true
+isRoleAccount("info@acme.com"); // true
+suggestEmailTypo("john@gmial.com"); // → "john@gmail.com"
+```
+
+## Batch verification
+
+Pass a shared `cache` so repeated domains reuse the same MX/SMTP work across a
+list:
+
+```typescript
+import { InMemoryCache, verifyEmail } from "@visulima/email-verifier";
+
+const cache = new InMemoryCache();
+
+const reports = await Promise.all(emails.map((email) => verifyEmail(email, { cache })));
+```
