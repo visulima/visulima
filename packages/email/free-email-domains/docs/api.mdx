@@ -1,0 +1,62 @@
+---
+title: "API"
+---
+
+# API Reference
+
+## `isFreeEmail(email: string, options?): boolean`
+
+Check if an email address is from a free email provider.
+
+**Parameters:**
+
+- `email` (string): Email address to check
+- `options?` (`Set<string>` | `FreeEmailOptions`): Additional free domains, or an options object with `allowDomains`/`customDomains`
+
+**Returns:** `true` if free, `false` otherwise
+
+**Example:**
+
+```typescript
+isFreeEmail("user@gmail.com"); // true
+isFreeEmail("ceo@my-company.com"); // false
+```
+
+## `isFreeDomain(domain: string, options?): boolean`
+
+Like `isFreeEmail` but accepts a bare domain rather than a full email address.
+
+```typescript
+isFreeDomain("gmail.com"); // true
+```
+
+## `areFreeEmails(emails: string[], options?): Map<string, boolean>`
+
+Check multiple email addresses at once. Returns a `Map` of email to boolean.
+
+## `extractDomain(email: string): string | undefined`
+
+Returns the normalized (lowercased, trimmed) domain of an email address, or `undefined` if invalid.
+
+## `setDomains(domains: ReadonlyArray<string>): void`
+
+Inject the free-domain list explicitly, bypassing the Node filesystem loader (edge/browser/bundled runtimes).
+
+## `preload(): Promise<void>`
+
+Eagerly load the built-in list so the first check does not stall the event loop.
+
+## `isListLoaded(): boolean`
+
+Returns `true` once the built-in list is loaded; `false` if it has not been accessed yet or failed to load.
+
+## `./domains` subpath
+
+Array of all known free email provider domains.
+
+```typescript
+import domains from "@visulima/free-email-domains/domains" with { type: "json" };
+
+console.log(domains.length);
+// 8000+
+```

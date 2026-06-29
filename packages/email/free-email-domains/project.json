@@ -1,0 +1,8 @@
+{
+    "name": "email/free-email-domains",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/email/free-email-domains/src",
+    "projectType": "library",
+    "tags": ["free-email-domains", "type:package", "category:internationalization"],
+    "implicitDependencies": ["terminal/tabular"]
+}
