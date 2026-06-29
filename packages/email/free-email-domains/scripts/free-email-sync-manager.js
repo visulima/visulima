@@ -65,7 +65,7 @@ class FreeEmailSyncManager {
      */
     // eslint-disable-next-line class-methods-use-this -- Method uses stats parameter, not instance state
     buildDetailedReport(stats) {
-        const successRate = ((stats.successfulDownloads / stats.totalRepositories) * 100).toFixed(1);
+        const successRate = stats.totalRepositories > 0 ? ((stats.successfulDownloads / stats.totalRepositories) * 100).toFixed(1) : "0.0";
 
         return `# Free Email Domains Sync Report
 
@@ -512,8 +512,15 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
                         const normalizedDomain = domain.trim().toLowerCase();
 
                         if (normalizedDomain && this.isValidDomain(normalizedDomain)) {
+                            // `common.json` and `all.json` overlap; only count a domain
+                            // the first time it is inserted so the total stays accurate.
+                            const isNew = !this.domains.has(normalizedDomain);
+
                             this.addDomain(normalizedDomain, "email-providers");
-                            added += 1;
+
+                            if (isNew) {
+                                added += 1;
+                            }
                         }
                     }
                 });
@@ -687,6 +694,13 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
      */
     async sync(repositories, excludePath) {
         const startTime = Date.now();
+
+        // Reset mutable state so each run starts from a clean slate when the same
+        // instance is reused; loadPreviousDomains()/loadExcludeList() repopulate.
+        this.domains = new Map();
+        this.previousDomains = new Set();
+        this.excludeDomains = new Set();
+
         const stats = this.initializeStats(repositories.length);
         const errors = [];
 
