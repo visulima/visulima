@@ -236,7 +236,7 @@
         "fallow:dead-code": "fallow dead-code",
         "fallow:health": "fallow health --report-only",
         "lint:attw": "attw --pack --profile esm-only",
-        "lint:eslint": "eslint .",
+        "lint:eslint": "eslint . --cache --concurrency auto",
         "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
         "lint:package-json": "publint --strict",
         "lint:prettier": "prettier --config=prettier.config.js --check .",
