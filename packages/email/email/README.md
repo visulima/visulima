@@ -1229,203 +1229,22 @@ Template engines are optional peer dependencies and work where their underlying 
 
 \* Runtime support depends on the wrapped providers. Works if all wrapped providers support the runtime.
 
-## Disposable Email Detection
+## Email Verification & Enrichment
 
-The package includes support for detecting disposable email addresses using the `@visulima/disposable-email-domains` package, which is included as a dependency.
-
-### Usage
+Address verification and enrichment — MX/SMTP probing, disposable/free/role detection, catch-all & mailbox-full detection, SMTP-provider and secure-email-gateway classification, misspelled-domain suggestions, and a 0–100 quality score — now live in the standalone, mailer-free [`@visulima/email-verifier`](https://visulima.com/packages/email-verifier) package, so a validation-only consumer doesn't pull in the provider adapters.
 
 ```typescript
-import { isDisposableEmail } from "@visulima/email/validation/disposable-email-domains";
+import { verifyEmail } from "@visulima/email-verifier";
 
-// Check if an email is disposable
-if (isDisposableEmail("user@mailinator.com")) {
-    console.log("Disposable email detected!");
-}
-
-// With custom domains
-const customDomains = new Set(["my-disposable.com"]);
-if (isDisposableEmail("user@my-disposable.com", customDomains)) {
-    console.log("Custom disposable email detected!");
-}
+const report = await verifyEmail("user@example.com");
+// { state: "deliverable" | "risky" | "undeliverable" | "unknown", score, disposable, free, role, acceptAll, provider, ... }
 ```
 
-**Note:** The `@visulima/disposable-email-domains` package is included as a dependency, so no additional installation is required.
-
-## Email Verification
-
-The package provides comprehensive email verification utilities including MX record checking, SMTP verification, and role account detection.
-
-### MX Record Checking
-
-Check if a domain has valid MX (Mail Exchange) records:
-
-```typescript
-import { checkMxRecords } from "@visulima/email/validation/check-mx-records";
-
-const result = await checkMxRecords("example.com");
-
-if (result.valid) {
-    console.log("MX records:", result.records);
-    // Records are sorted by priority (lowest first)
-} else {
-    console.error("No MX records found:", result.error);
-}
-```
-
-#### Caching MX Records
-
-Use caching to improve performance and reduce DNS lookups:
-
-```typescript
-import { checkMxRecords } from "@visulima/email/validation/check-mx-records";
-import { InMemoryCache } from "@visulima/email/utils/cache";
-
-// Create a cache instance
-const cache = new InMemoryCache();
-
-// Use cache with default TTL (1 hour)
-const result1 = await checkMxRecords("example.com", { cache });
-
-// Use cache with custom TTL (5 minutes)
-const result2 = await checkMxRecords("example.com", {
-    cache,
-    ttl: 5 * 60 * 1000, // 5 minutes in milliseconds
-});
-
-// Clear cache when needed
-await cache.clear();
-```
-
-#### Custom Cache Implementation
-
-You can implement your own cache using the `Cache` interface (e.g., for Redis, LRU cache, etc.):
-
-```typescript
-import type { Cache, MxCheckResult } from "@visulima/email/utils/cache";
-import { checkMxRecords } from "@visulima/email/validation/check-mx-records";
-
-// Example: Custom Redis cache implementation
-const redisCache: Cache<MxCheckResult> = {
-    get: async (key: string) => {
-        const cached = await redis.get(`mx:${key}`);
-        return cached ? JSON.parse(cached) : undefined;
-    },
-    set: async (key: string, value: MxCheckResult, ttl: number) => {
-        await redis.setex(`mx:${key}`, Math.floor(ttl / 1000), JSON.stringify(value));
-    },
-    delete: async (key: string) => {
-        await redis.del(`mx:${key}`);
-    },
-    clear: async () => {
-        // Clear all MX cache keys
-        const keys = await redis.keys("mx:*");
-        if (keys.length > 0) {
-            await redis.del(...keys);
-        }
-    },
-};
-
-// Use custom cache
-const result = await checkMxRecords("example.com", {
-    cache: redisCache,
-    ttl: 10 * 60 * 1000, // 10 minutes
-});
-```
-
-### Role Account Detection
-
-Detect if an email address is a role account (non-personal email like `noreply@`, `support@`, etc.):
-
-```typescript
-import { isRoleAccount } from "@visulima/email/validation/role-accounts";
-
-if (isRoleAccount("noreply@example.com")) {
-    console.log("This is a role account");
-}
-
-// With custom role prefixes
-const customPrefixes = new Set(["custom-role", "my-role"]);
-if (isRoleAccount("custom-role@example.com", customPrefixes)) {
-    console.log("Custom role account detected");
-}
-```
-
-### SMTP Verification
-
-Verify if an email address exists by connecting to the mail server:
-
-```typescript
-import { verifySmtp } from "@visulima/email/validation/verify-smtp";
-import { InMemoryCache } from "@visulima/email/utils/cache";
-import type { MxCheckResult, SmtpVerificationResult } from "@visulima/email/validation/check-mx-records";
-
-// Create separate caches for MX records and SMTP results
-const mxCache = new InMemoryCache<MxCheckResult>();
-const smtpCache = new InMemoryCache<SmtpVerificationResult>();
-
-const result = await verifySmtp("user@example.com", {
-    timeout: 5000,
-    fromEmail: "test@example.com",
-    port: 25,
-    cache: mxCache, // Optional: cache MX records
-    smtpCache, // Optional: cache SMTP verification results
-    ttl: 5 * 60 * 1000, // Cache for 5 minutes
-});
-
-if (result.valid) {
-    console.log("Email address exists");
-} else {
-    console.error("Verification failed:", result.error);
-}
-```
-
-**Note:** Many mail servers block SMTP verification to prevent email harvesting. This method may not work for all domains.
-
-### Comprehensive Email Verification
-
-Combine all verification checks in a single function:
-
-```typescript
-import { verifyEmail } from "@visulima/email/validation/verify-email";
-import { InMemoryCache } from "@visulima/email/utils/cache";
-import type { MxCheckResult, SmtpVerificationResult } from "@visulima/email/validation/check-mx-records";
-
-// Create separate caches for MX records and SMTP results
-const mxCache = new InMemoryCache<MxCheckResult>();
-const smtpCache = new InMemoryCache<SmtpVerificationResult>();
-
-const result = await verifyEmail("user@example.com", {
-    checkDisposable: true,
-    checkRoleAccount: true,
-    checkMx: true,
-    checkSmtp: false, // Optional, many servers block this
-    cache: mxCache, // Optional: cache MX records
-    smtpCache, // Optional: cache SMTP verification results
-    customDisposableDomains: new Set(["custom-disposable.com"]),
-    customRolePrefixes: new Set(["custom-role"]),
-});
-
-if (result.valid) {
-    console.log("Email is valid!");
-} else {
-    console.error("Errors:", result.errors);
-    console.warn("Warnings:", result.warnings);
-}
-
-// Access individual check results
-console.log("Format valid:", result.formatValid);
-console.log("Is disposable:", result.disposable);
-console.log("Is role account:", result.roleAccount);
-console.log("MX valid:", result.mxValid);
-console.log("SMTP valid:", result.smtpValid);
-```
-
-### Email Utilities
+## Email Utilities
 
 The package also exports standalone utility functions that can be used independently:
 
-#### Email Validation
+### Email Validation
 
 ```typescript
 import { validateEmail } from "@visulima/email/validation/validate-email";
@@ -1435,7 +1254,7 @@ if (validateEmail("user@example.com")) {
 }
 ```
 
-#### Parse Email Address
+### Parse Email Address
 
 ```typescript
 import { parseAddress } from "@visulima/email/utils/parse-address";
@@ -1449,7 +1268,7 @@ const simple = parseAddress("jane@example.com");
 // { email: "jane@example.com" }
 ```
 
-#### Format Email Address
+### Format Email Address
 
 ```typescript
 import { formatEmailAddress } from "@visulima/email/utils/format-email-address";
@@ -1464,7 +1283,7 @@ const simple = formatEmailAddress({ email: "user@example.com" });
 // "user@example.com"
 ```
 
-#### Normalize Email Aliases
+### Normalize Email Aliases
 
 Normalize email aliases for supported providers (Gmail, Yahoo, Outlook, etc.):
 
