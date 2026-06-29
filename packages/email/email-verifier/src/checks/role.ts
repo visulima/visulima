@@ -172,9 +172,11 @@ const isRoleAccount = (email: string, customPrefixes?: Iterable<string>): boolea
 
     const tokens = beforeTag.split(PART_SPLIT_REGEX).filter(Boolean);
 
-    // Treat the local part as a role account only when *every* token is a role
-    // word (e.g. `sales-team`), avoiding false positives like `john.sales.report`.
-    return tokens.length > 1 && tokens.every((token) => isRolePrefix(token, ROLE_ACCOUNT_PREFIXES, customPrefixes));
+    // Treat the local part as a role account when *any* dot/dash/underscore token
+    // is a role word (e.g. `sales.john`, `sales-team`), matching the documented
+    // behaviour. A purely personal local part like `john.doe` has no role token
+    // and so is not flagged.
+    return tokens.length > 1 && tokens.some((token) => isRolePrefix(token, ROLE_ACCOUNT_PREFIXES, customPrefixes));
 };
 
 /**

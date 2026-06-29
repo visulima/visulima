@@ -84,6 +84,12 @@ interface SmtpReply {
     text: string;
 }
 
+// Any C0/C1 control character (notably CR/LF). A value containing one of these
+// must never be written into an SMTP command line, since an embedded CRLF would
+// smuggle a second command (SMTP command injection).
+// eslint-disable-next-line no-control-regex -- intentionally matching control chars to reject them
+const CONTROL_CHAR_REGEX = /[\u0000-\u001F\u007F]/;
+
 const ENHANCED_CODE_REGEX = /\b([245]\.\d{1,3}\.\d{1,3})\b/;
 // A final reply line is a 3-digit code followed by a space (or end of line), as
 // opposed to a continuation line whose code is followed by a hyphen. Accepting
@@ -377,6 +383,23 @@ const probeRecords = async (address: string, domain: string, records: MxRecord[]
 };
 
 /**
+ * Validates caller-supplied SMTP command arguments for control characters.
+ * @param options The verification options.
+ * @returns An error result if `heloHost`/`fromEmail` contains a control char, else `undefined`.
+ */
+const findCommandInjection = (options: SmtpVerificationOptions): SmtpVerificationResult | undefined => {
+    if (options.heloHost !== undefined && CONTROL_CHAR_REGEX.test(options.heloHost)) {
+        return { error: "Invalid heloHost: control characters are not allowed", valid: false };
+    }
+
+    if (options.fromEmail !== undefined && CONTROL_CHAR_REGEX.test(options.fromEmail)) {
+        return { error: "Invalid fromEmail: control characters are not allowed", valid: false };
+    }
+
+    return undefined;
+};
+
+/**
  * Verifies an email address over SMTP without sending a message.
  *
  * Performs the full handshake (greeting → EHLO/HELO → MAIL FROM → RCPT TO),
@@ -409,8 +432,30 @@ const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}):
     }
 
     const { domain } = parts;
+
+    // Reject control characters (notably CR/LF) in caller-supplied command
+    // arguments before they are written into EHLO/HELO/MAIL FROM, so a crafted
+    // value cannot smuggle a second SMTP command (command injection). The
+    // recipient address is already control-char-free via splitAddress.
+    const injectionError = findCommandInjection(options);
+
+    if (injectionError) {
+        return injectionError;
+    }
+
     const { retries = 1, retryDelay = 5000, ttl = 3_600_000 } = options;
-    const cacheKey = `smtp:${parts.address}:${options.fromEmail ?? ""}:${String(options.port ?? 25)}`;
+    // The cache key must include every option that can change the verdict —
+    // otherwise a later call with different probing/HELO/MX inputs could read a
+    // result computed under different conditions.
+    const cacheKey = [
+        "smtp",
+        parts.address,
+        options.fromEmail ?? "",
+        String(options.port ?? 25),
+        options.heloHost ?? "",
+        String(options.catchAllProbes ?? 1),
+        (options.mxRecords ?? []).map((record) => record.exchange).join(","),
+    ].join("|");
 
     if (options.smtpCache) {
         const cached = await options.smtpCache.get(cacheKey);
@@ -448,7 +493,10 @@ const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}):
 
     result = { ...result, mxRecords: records };
 
-    if (options.smtpCache) {
+    // Only cache definitive verdicts. A `deferred` result (greylisting, 4xx,
+    // timeout, connection-level refusal) is transient and inconclusive, so
+    // caching it for the full TTL would pin a wrong/stale answer.
+    if (options.smtpCache && !result.deferred) {
         await options.smtpCache.set(cacheKey, result, ttl);
     }
 

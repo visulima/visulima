@@ -57,8 +57,16 @@ const analyzeSymbols = (email: string): SymbolResult => {
 
     const scripts = SCRIPT_REGEXES.filter(([, regex]) => regex.test(subject)).map(([name]) => name);
 
+    // Mixed-script spoofing is a property of a single label, not of the address
+    // as a whole: a legitimate IDN can pair a Latin local part with a non-Latin
+    // domain (e.g. `john@例子.公司`) without being a homoglyph attack. So check
+    // each segment — the local part and every domain label — independently and
+    // flag only when one segment itself mixes scripts.
+    const segments = [parts.localPart, ...parts.domain.split(".").filter(Boolean)];
+    const hasMixedScripts = segments.some((segment) => SCRIPT_REGEXES.filter(([, regex]) => regex.test(segment)).length > 1);
+
     return {
-        hasMixedScripts: scripts.length > 1,
+        hasMixedScripts,
         hasNonAscii: NON_ASCII_REGEX.test(parts.address),
         hasSymbols: SYMBOL_REGEX.test(subject),
         scripts,

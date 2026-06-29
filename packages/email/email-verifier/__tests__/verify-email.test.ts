@@ -55,6 +55,27 @@ describe("verifyEmail (online)", () => {
         });
     });
 
+    it("probes SMTP for an implicit-MX (A/AAAA fallback) domain", async () => {
+        expect.assertions(3);
+
+        // A domain with no MX but a resolvable A record yields a synthesized
+        // priority-0 record pointing at the bare domain (resolvedVia "address").
+        vi.mocked(checkMxRecords).mockResolvedValueOnce({
+            domainResolves: true,
+            records: [{ exchange: "implicit-mx.example", priority: 0 }],
+            resolvedVia: "address",
+            valid: true,
+        });
+
+        const report = await verifyEmail("user@implicit-mx.example");
+
+        expect(report.domain.resolvedVia).toBe("address");
+        expect(report.smtp?.valid).toBe(true);
+        expect(vi.mocked(verifySmtp).mock.calls[0]?.[1]).toMatchObject({
+            mxRecords: [{ exchange: "implicit-mx.example", priority: 0 }],
+        });
+    });
+
     it("skips the SMTP probe when checkSmtp is false but still classifies the provider", async () => {
         expect.assertions(4);
 

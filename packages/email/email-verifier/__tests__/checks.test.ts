@@ -23,6 +23,10 @@ describe(validateSyntax, () => {
         ["user@-example.com", false],
         ["user@example-.com", false],
         ["user@exa mple.com", false],
+        ["user@foo_bar.com", false],
+        ["user@exa!mple.com", false],
+        ["user@xn--80ak6aa92e.com", true],
+        ["user@münchen.de", true],
     ])("validateSyntax(%s) === %s", (email, expected) => {
         expect.assertions(1);
 
@@ -64,6 +68,7 @@ describe(isRoleAccount, () => {
         ["support@example.com", true],
         ["no-reply@example.com", true],
         ["sales-team@example.com", true],
+        ["sales.john@example.com", true],
         ["info+news@example.com", true],
         ["john.doe@example.com", false],
         ["jane@example.com", false],
@@ -152,6 +157,17 @@ describe(analyzeSymbols, () => {
 
         // "ра" here is Cyrillic.
         expect(analyzeSymbols("раypal@example.com").hasMixedScripts).toBe(true);
+    });
+
+    it("does not flag a legitimate IDN address (Latin local + non-Latin domain)", () => {
+        expect.assertions(2);
+
+        // Latin local part with a Han-script domain is a valid IDN, not a
+        // homoglyph attack: the scripts live in separate segments.
+        const result = analyzeSymbols("john@例子.公司");
+
+        expect(result.hasMixedScripts).toBe(false);
+        expect(result.hasNonAscii).toBe(true);
     });
 
     it("returns clean for plain ASCII", () => {

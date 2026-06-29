@@ -66,7 +66,24 @@ const hasAddressRecord = async (domain: string): Promise<boolean> => {
     }
 };
 
-const ADDRESS_RESULT: MxCheckResult = { domainResolves: true, records: [], resolvedVia: "address", valid: true };
+/**
+ * Builds the implicit-MX result for a domain that has no MX records but does
+ * resolve to an A/AAAA address. Per RFC 5321 §5.1 the domain itself acts as the
+ * mail exchanger, so we synthesize a priority-0 MX record pointing at the bare
+ * domain. This lets downstream provider classification and the SMTP probe treat
+ * the implicit MX exactly like a published one (they gate on `records.length`),
+ * while `resolvedVia: "address"` keeps the implicit case distinguishable.
+ * @param domain The domain that resolved via A/AAAA.
+ * @returns The implicit-MX check result.
+ */
+const buildAddressResult = (domain: string): MxCheckResult => {
+    return {
+        domainResolves: true,
+        records: [{ exchange: domain, priority: 0 }],
+        resolvedVia: "address",
+        valid: true,
+    };
+};
 
 const resolveDomain = async (domain: string, fallbackToAddress: boolean): Promise<MxCheckResult> => {
     try {
@@ -88,7 +105,7 @@ const resolveDomain = async (domain: string, fallbackToAddress: boolean): Promis
             const hasAddress = await hasAddressRecord(domain);
 
             if (hasAddress) {
-                return ADDRESS_RESULT;
+                return buildAddressResult(domain);
             }
         }
 
@@ -100,7 +117,7 @@ const resolveDomain = async (domain: string, fallbackToAddress: boolean): Promis
             const hasAddress = await hasAddressRecord(domain);
 
             if (hasAddress) {
-                return ADDRESS_RESULT;
+                return buildAddressResult(domain);
             }
         }
 

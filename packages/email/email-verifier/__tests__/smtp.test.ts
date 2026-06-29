@@ -73,6 +73,20 @@ const startMockSmtp = async (rcpt: RcptResponder): Promise<{ port: number; serve
     return { port: (server.address() as AddressInfo).port, server };
 };
 
+describe("verifySmtp (input sanitization)", () => {
+    it.each([
+        ["heloHost", { heloHost: "evil\r\nMAIL FROM:<a@b.c>" }],
+        ["fromEmail", { fromEmail: "a@b.c>\r\nRCPT TO:<victim@b.c>" }],
+    ])("rejects CRLF injection in %s without opening a connection", async (field, options) => {
+        expect.assertions(2);
+
+        const result = await verifySmtp("user@example.com", options);
+
+        expect(result.valid).toBe(false);
+        expect(result.error).toContain(`Invalid ${field}`);
+    });
+});
+
 describe.skipIf(process.platform !== "linux")("verifySmtp (mock server)", () => {
     let active: Server | undefined;
 
@@ -151,6 +165,56 @@ describe.skipIf(process.platform !== "linux")("verifySmtp (mock server)", () => 
         expect(result.valid).toBe(false);
         expect(result.deferred).toBeUndefined();
         expect(result.code).toBe(550);
+    });
+
+    it("does not cache a transient deferred result but caches a definitive one", async () => {
+        expect.assertions(4);
+
+        const store = new Map<string, { deferred?: boolean; valid: boolean }>();
+        const smtpCache = {
+            clear: vi.fn<() => Promise<void>>(() => {
+                store.clear();
+
+                return Promise.resolve();
+            }),
+            delete: vi.fn<(key: string) => Promise<void>>((key) => {
+                store.delete(key);
+
+                return Promise.resolve();
+            }),
+            get: vi.fn<(key: string) => Promise<{ deferred?: boolean; valid: boolean } | undefined>>((key) => Promise.resolve(store.get(key))),
+            set: vi.fn<(key: string, value: { deferred?: boolean; valid: boolean }, ttl: number) => Promise<void>>((key, value) => {
+                store.set(key, value);
+
+                return Promise.resolve();
+            }),
+        };
+
+        // A greylist (deferred) result must not be persisted.
+        const greylist = await startMockSmtp(() => "451 4.7.1 Greylisted, try later");
+
+        active = greylist.server;
+
+        const deferredResult = await verifySmtp("grey@example.com", { catchAllProbes: 0, port: greylist.port, retries: 0, smtpCache, timeout: 2000 });
+
+        expect(deferredResult.deferred).toBe(true);
+        expect(smtpCache.set).not.toHaveBeenCalled();
+
+        await new Promise<void>((resolve) => {
+            greylist.server.close(() => {
+                resolve();
+            });
+        });
+
+        // A definitive 550 rejection is cached.
+        const rejected = await startMockSmtp(() => "550 5.1.1 No such user");
+
+        active = rejected.server;
+
+        const definitiveResult = await verifySmtp("ghost@example.com", { catchAllProbes: 0, port: rejected.port, retries: 0, smtpCache, timeout: 2000 });
+
+        expect(definitiveResult.valid).toBe(false);
+        expect(smtpCache.set).toHaveBeenCalledTimes(1);
     });
 
     it("retries past a transient greylist (451 then 250)", async () => {
