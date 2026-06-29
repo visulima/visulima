@@ -32,8 +32,7 @@ the composite `score`.
 ## Offline mode
 
 Skip every network round-trip (no MX, SMTP, or provider lookup) for a fast,
-deterministic, heuristic-only report — useful in tests, edge runtimes, or at
-form-submit time:
+deterministic, heuristic-only report — useful in tests or at form-submit time:
 
 ```typescript
 const report = await verifyEmail("info@example.com", { offline: true });
@@ -69,7 +68,7 @@ import { suggestEmailTypo } from "@visulima/email-verifier/enrich/typo";
 
 validateSyntax("john@gmail.com"); // true
 isRoleAccount("info@acme.com"); // true
-suggestEmailTypo("john@gmial.com"); // → "john@gmail.com"
+suggestEmailTypo("john@gmial.com")?.full; // "john@gmail.com"
 ```
 
 ## Batch verification
