@@ -146,6 +146,18 @@
         "displayName": "Email",
         "features": ["Multiple providers", "Template engines & i18n", "Inbound parsing & webhooks", "Deliverability tooling", "Middleware pipeline", "Queue & batch sending"]
     },
+    "email-provider-mx": {
+        "displayName": "Email Provider MX",
+        "features": ["MX host classification", "Mailbox, free & SEG types", "Secure Email Gateway detection", "Zero network, pure lookup"]
+    },
+    "email-verifier": {
+        "displayName": "Email Verifier",
+        "features": ["Syntax, domain & SMTP checks", "Catch-all & mailbox-full detection", "Disposable, free & role flags", "Typo suggestions & name parsing", "0–100 quality score", "Mailer-free"]
+    },
+    "free-email-domains": {
+        "displayName": "Free Email Domains",
+        "features": ["Free provider detection", "Regular updates", "Custom allowlists", "Lightweight"]
+    },
     "notification": {
         "displayName": "Notification",
         "features": ["SMS, push, chat, in-app", "Edge-ready fetch providers", "Failover & routing", "Preferences & gating", "Middleware pipeline", "Queue & worker"]

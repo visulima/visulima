@@ -1,0 +1,61 @@
+---
+title: "API"
+---
+
+# API Reference
+
+## `classifyMx(mxHost: string): MxProviderInfo | undefined`
+
+Classifies a single MX hostname.
+
+**Parameters:**
+
+- `mxHost` (string): The MX hostname (e.g. the `exchange` field of a DNS MX record)
+
+**Returns:** `MxProviderInfo` (`{ provider, type, display }`), or `undefined` if the host is not recognized.
+
+```typescript
+classifyMx("aspmx.l.google.com");
+// → { provider: "google", type: "mailbox", display: "Google Workspace" }
+```
+
+## `classifyMxRecords(records): MxProviderInfo | undefined`
+
+Classifies a set of MX records, returning the provider of the primary
+(lowest-priority) recognized record.
+
+**Parameters:**
+
+- `records` (`{ exchange: string; priority: number }[]`): The MX records to classify
+
+**Returns:** `MxProviderInfo | undefined`
+
+## `isSecureEmailGateway(mxHost: string): boolean`
+
+Reports whether an MX hostname belongs to a known Secure Email Gateway.
+
+```typescript
+isSecureEmailGateway("eu-smtp-inbound-1.mimecast.com"); // → true
+isSecureEmailGateway("aspmx.l.google.com"); // → false
+```
+
+## Types
+
+```typescript
+type MxProviderType = "free" | "mailbox" | "seg";
+
+interface MxProviderInfo {
+    provider: string; // stable identifier, e.g. "google"
+    type: MxProviderType; // "mailbox" | "free" | "seg"
+    display: string; // human-friendly label, e.g. "Google Workspace"
+}
+```
+
+## `MX_PROVIDERS`
+
+The raw curated dataset is also exported as `MX_PROVIDERS` (with the `patterns`
+each provider matches) for advanced use.
+
+```typescript
+import { MX_PROVIDERS } from "@visulima/email-provider-mx";
+```

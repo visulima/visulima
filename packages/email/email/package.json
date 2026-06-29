@@ -12,8 +12,6 @@
         "brevo",
         "crypto",
         "deliverability",
-        "disposable-email",
-        "disposable-email-domains",
         "dkim",
         "dmarc",
         "email",
@@ -336,29 +334,9 @@
             "types": "./dist/utils/cache.d.ts",
             "default": "./dist/utils/cache.js"
         },
-        "./validation/disposable-email-domains": {
-            "types": "./dist/utils/validation/disposable-email-domains.d.ts",
-            "default": "./dist/utils/validation/disposable-email-domains.js"
-        },
         "./validation/validate-email": {
             "types": "./dist/utils/validation/validate-email.d.ts",
             "default": "./dist/utils/validation/validate-email.js"
-        },
-        "./validation/check-mx-records": {
-            "types": "./dist/utils/validation/check-mx-records.d.ts",
-            "default": "./dist/utils/validation/check-mx-records.js"
-        },
-        "./validation/role-accounts": {
-            "types": "./dist/utils/validation/role-accounts.d.ts",
-            "default": "./dist/utils/validation/role-accounts.js"
-        },
-        "./validation/verify-smtp": {
-            "types": "./dist/utils/validation/verify-smtp.d.ts",
-            "default": "./dist/utils/validation/verify-smtp.js"
-        },
-        "./validation/verify-email": {
-            "types": "./dist/utils/validation/verify-email.d.ts",
-            "default": "./dist/utils/validation/verify-email.js"
         },
         "./validation/check-feature-support": {
             "types": "./dist/utils/validation/check-feature-support.d.ts",
@@ -396,7 +374,6 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/disposable-email-domains": "1.0.0-alpha.17",
         "html-to-text": "catalog:prod",
         "ical-generator": "catalog:prod",
         "lru-cache": "catalog:prod",

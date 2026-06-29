@@ -1,0 +1,48 @@
+---
+title: "Usage"
+---
+
+# Usage
+
+## Check Free Email
+
+```typescript
+import { isFreeEmail } from "@visulima/free-email-domains";
+
+const email = "user@gmail.com";
+
+if (isFreeEmail(email)) {
+    console.log("Free email provider detected");
+} else {
+    console.log("Custom/corporate email");
+}
+```
+
+## Get Domain List
+
+```typescript
+import domains from "@visulima/free-email-domains/domains" with { type: "json" };
+
+console.log(domains);
+// ["gmail.com", "outlook.com", "yahoo.com", ...]
+```
+
+## Business-Email Gating
+
+```typescript
+import { isFreeEmail } from "@visulima/free-email-domains";
+
+function requireBusinessEmail(email: string): boolean {
+    // Check format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return false;
+    }
+
+    // Reject free providers — require a corporate domain
+    if (isFreeEmail(email)) {
+        return false;
+    }
+
+    return true;
+}
+```

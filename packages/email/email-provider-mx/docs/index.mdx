@@ -1,0 +1,51 @@
+---
+title: Introduction
+description: "Classify the email provider — mailbox host, free webmail, or Secure Email Gateway — behind an MX record."
+---
+
+# @visulima/email-provider-mx
+
+A tiny, static, hand-curated lookup that turns an MX hostname into the mail
+provider behind it. It distinguishes **mailbox hosts** (Google Workspace,
+Microsoft 365, Zoho, Fastmail, Proton, Yandex), **free consumer webmail**
+(Yahoo, iCloud, GMX, Mail.ru, Mail.com, Web.de), and **Secure Email Gateways /
+SEGs** (Proofpoint, Mimecast, Barracuda, Cisco, Trend Micro, Sophos, Forcepoint,
+Symantec/MessageLabs, Cloudflare Area 1).
+
+There are **no network calls** — it is pure data plus suffix matching. Pair it
+with your own DNS resolver (`dns.resolveMx`, a DoH client, etc.) to feed it MX
+records.
+
+## Quick Start
+
+```typescript
+import { classifyMx } from "@visulima/email-provider-mx";
+
+classifyMx("aspmx.l.google.com");
+// → { provider: "google", type: "mailbox", display: "Google Workspace" }
+
+classifyMx("mx0a-00000000.pphosted.com");
+// → { provider: "proofpoint", type: "seg", display: "Proofpoint" }
+
+classifyMx("mail.example.com");
+// → undefined (unknown host)
+```
+
+## Use Cases
+
+- **Deliverability Diagnostics** - Identify the mailbox host or gateway fronting a domain
+- **SEG Detection** - Flag domains protected by a Secure Email Gateway
+- **Provider Analytics** - Segment recipients by mail provider
+- **Enrichment** - Feed `@visulima/email-verifier` provider/SEG classification
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install the package
+    </Card>
+    <Card title="Usage" href="/usage">
+        Learn how to classify MX records
+    </Card>
+    <Card title="API" href="/api">
+        API documentation
+    </Card>
+</Cards>

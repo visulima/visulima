@@ -1,0 +1,60 @@
+---
+title: "Usage"
+---
+
+# Usage
+
+## Classify a single MX host
+
+```typescript
+import { classifyMx } from "@visulima/email-provider-mx";
+
+classifyMx("aspmx.l.google.com");
+// → { provider: "google", type: "mailbox", display: "Google Workspace" }
+
+classifyMx("mx0a-00000000.pphosted.com");
+// → { provider: "proofpoint", type: "seg", display: "Proofpoint" }
+
+classifyMx("mail.example.com");
+// → undefined (unknown host)
+```
+
+Matching is case-insensitive, ignores a trailing dot, and only matches on a dot
+boundary, so `notgoogle.com` does **not** match `google.com`. The most specific
+(longest) known suffix wins, so `tenant.mail.protection.outlook.com` resolves to
+Microsoft 365.
+
+## Classify a set of MX records
+
+Feed it the records from a DNS lookup. They are sorted by ascending priority and
+the first recognized record wins — which is usually the primary MX. Secure Email
+Gateways are typically published as the lowest-priority (primary) MX, so this
+surfaces the gateway fronting the mailbox host.
+
+```typescript
+import { resolveMx } from "node:dns/promises";
+
+import { classifyMxRecords } from "@visulima/email-provider-mx";
+
+const records = await resolveMx("example.com");
+// e.g. [{ exchange: "mx0a-00000000.pphosted.com", priority: 10 }, …]
+
+classifyMxRecords(records);
+// → { provider: "proofpoint", type: "seg", display: "Proofpoint" }
+```
+
+## Detect a Secure Email Gateway
+
+```typescript
+import { isSecureEmailGateway } from "@visulima/email-provider-mx";
+
+isSecureEmailGateway("eu-smtp-inbound-1.mimecast.com"); // → true
+isSecureEmailGateway("aspmx.l.google.com"); // → false
+```
+
+## A note on classification
+
+Classification is by MX host, which cannot always separate a free consumer tier
+from a paid business tier on the same infrastructure. For example, consumer
+Gmail (`gmail-smtp-in.l.google.com`) and Google Workspace (`aspmx.l.google.com`)
+both resolve under `google.com`, so both classify as Google `mailbox`.
