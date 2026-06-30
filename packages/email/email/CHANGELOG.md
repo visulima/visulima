@@ -1,3 +1,43 @@
+## @visulima/email [1.0.0-alpha.44](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.43...@visulima/email@1.0.0-alpha.44) (2026-06-30)
+
+### Features
+
+* **email:** emailable-parity verification & enrichment packages ([#718](https://github.com/visulima/visulima/issues/718)) ([e2d8c1e](https://github.com/visulima/visulima/commit/e2d8c1e78e3e0c2548ece87b20d730dab60f677a))
+
+### Bug Fixes
+
+* **email:** fixed missing eslint deps ([5bab056](https://github.com/visulima/visulima/commit/5bab056decffc16cdcbcd81d9ec5edb569019255))
+* **mail:** fixed build ([9c677c6](https://github.com/visulima/visulima/commit/9c677c60c370f59c7def564df25977cf2d97e08c))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* **fallow:** resolve dead-code findings ([c4125d5](https://github.com/visulima/visulima/commit/c4125d53e03ac9d90115399634535991927a96cc))
+
+### Code Refactoring
+
+* **email:** use shared processAttachmentContent in 13 providers ([12b3512](https://github.com/visulima/visulima/commit/12b3512c31641d41d2a05a0caf155df85f0af6c8))
+* resolve fallow dead-code across 13 packages ([8c458d2](https://github.com/visulima/visulima/commit/8c458d2eb17225ed48fc4bee4569e522912e8c3d))
+
+### Tests
+
+* fix failing and flaky package tests ([3f2894e](https://github.com/visulima/visulima/commit/3f2894e816e99f465abb0d3b7d5161af69bbb4ec))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+* **lint:** raise eslint job timeout and cache slow per-package eslint runs ([#717](https://github.com/visulima/visulima/issues/717)) ([c93878d](https://github.com/visulima/visulima/commit/c93878dbfa1888cc834704448ae6eefd3098597e)), closes [#713](https://github.com/visulima/visulima/issues/713)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.35
+* **@visulima/fs:** upgraded to 5.0.0-alpha.33
+
 ## @visulima/email [1.0.0-alpha.43](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.42...@visulima/email@1.0.0-alpha.43) (2026-06-23)
 
 ## @visulima/email [1.0.0-alpha.42](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.41...@visulima/email@1.0.0-alpha.42) (2026-06-23)
