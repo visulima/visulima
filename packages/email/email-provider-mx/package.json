@@ -1,6 +1,6 @@
 {
     "name": "@visulima/email-provider-mx",
-    "version": "1.0.0-alpha.0",
+    "version": "1.0.0-alpha.1",
     "description": "Classify the email provider (mailbox host or secure email gateway) behind an MX record.",
     "keywords": [
         "mx",
