@@ -275,6 +275,74 @@ describe("change-file: collectExplicitBumps", () => {
     });
 });
 
+describe("change-file: implicit (heading-depth) bump", () => {
+    it("infers minor from an H2 heading for a null-valued package", () => {
+        expect.hasAssertions();
+
+        const result = parseChangeFile(`---\n"@scope/pkg-a":\n---\n## Add streaming API\n\nDetails.\n`, "f.md");
+
+        if (!("bumps" in result.payload)) {
+            throw new Error("expected simple shape");
+        }
+
+        expect(result.payload.bumps).toStrictEqual({ "@scope/pkg-a": "minor" });
+    });
+
+    it("infers major from an H1 and applies the highest heading found", () => {
+        expect.hasAssertions();
+
+        const result = parseChangeFile(`---\npkg-a:\npkg-b:\n---\n### Patch note\n\n# Breaking change\n\n## Feature\n`, "f.md");
+
+        if (!("bumps" in result.payload)) {
+            throw new Error("expected simple shape");
+        }
+
+        expect(result.payload.bumps).toStrictEqual({ "pkg-a": "major", "pkg-b": "major" });
+    });
+
+    it("infers patch from an H3 heading", () => {
+        expect.hasAssertions();
+
+        const result = parseChangeFile(`---\npkg-a:\n---\n### Fix off-by-one\n`, "f.md");
+
+        if (!("bumps" in result.payload)) {
+            throw new Error("expected simple shape");
+        }
+
+        expect(result.payload.bumps).toStrictEqual({ "pkg-a": "patch" });
+    });
+
+    it("mixes explicit levels with inferred (null) entries", () => {
+        expect.hasAssertions();
+
+        const result = parseChangeFile(`---\npkg-a: major\npkg-b:\n---\n## Feature\n`, "f.md");
+
+        if (!("bumps" in result.payload)) {
+            throw new Error("expected simple shape");
+        }
+
+        expect(result.payload.bumps).toStrictEqual({ "pkg-a": "major", "pkg-b": "minor" });
+    });
+
+    it("ignores headings inside fenced code blocks", () => {
+        expect.hasAssertions();
+
+        const result = parseChangeFile(`---\npkg-a:\n---\n## Real heading\n\n\`\`\`sh\n# not a heading\n\`\`\`\n`, "f.md");
+
+        if (!("bumps" in result.payload)) {
+            throw new Error("expected simple shape");
+        }
+
+        expect(result.payload.bumps).toStrictEqual({ "pkg-a": "minor" });
+    });
+
+    it("throws when a null entry has no heading to infer from", () => {
+        expect.hasAssertions();
+
+        expect(() => parseChangeFile(`---\npkg-a:\n---\nJust prose, no heading.\n`, "f.md")).toThrow(VisReleaseError);
+    });
+});
+
 describe("change-file: findChangeFilesFor", () => {
     it("finds files mentioning a given package (simple shape)", () => {
         expect.hasAssertions();

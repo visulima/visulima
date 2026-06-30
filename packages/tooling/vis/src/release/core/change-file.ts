@@ -24,6 +24,21 @@
  *       "@scope/pkg-*": patch
  *   ---
  *   Body for pkg-a; cascaded entries get a synthesized "Version bump from …" line.
+ *
+ * Implicit (heading-depth) — list packages with no explicit level and let the
+ * deepest markdown heading in the body decide the bump for all of them
+ * (`#` → major, `##` → minor, `###` → patch). The highest level found wins:
+ *
+ *   ---
+ *   "@scope/pkg-a":
+ *   "@scope/pkg-b":
+ *   ---
+ *   ## Add streaming API
+ *
+ *   Both packages bump `minor`.
+ *
+ * Explicit levels and null (infer-me) entries can be mixed in one file; only
+ * the null entries take the inferred level.
  */
 
 import { parse as parseYaml } from "yaml";
@@ -31,6 +46,7 @@ import { parse as parseYaml } from "yaml";
 import { VisReleaseError } from "../errors";
 import type { BumpLevel, ChangeFile, ChangeFileNested, ChangeFileSimple } from "../types";
 import { BUMP_LEVELS } from "../types";
+import { parseReplayConditions } from "./replay";
 
 // ── Frontmatter split ────────────────────────────────────────────────
 
@@ -72,6 +88,55 @@ const isValidPackageName = (name: string): boolean => {
 // ── Bump-level validation ───────────────────────────────────────────
 
 const isBumpLevel = (value: unknown): value is BumpLevel => typeof value === "string" && (BUMP_LEVELS as ReadonlyArray<string>).includes(value);
+
+// ── Implicit (heading-depth) bump inference ─────────────────────────
+
+/** ATX markdown heading at depth 1–3 followed by visible text. */
+const HEADING_RE = /^ {0,3}(#{1,3})\s+\S/;
+
+/** Opening / closing fence of a ``` or ~~~ code block. */
+const FENCE_RE = /^ {0,3}(?:```|~~~)/;
+
+/**
+ * Infer a bump level from the deepest markdown heading in a change-file body
+ * (tegami-style implicit changelogs). `#` → major, `##` → minor, `###` →
+ * patch; the highest level found wins. Headings inside fenced code blocks are
+ * ignored so a shell `# comment` can't silently inflate a release to major.
+ * Returns `undefined` when the body has no qualifying heading.
+ */
+const inferBumpFromHeadings = (body: string): BumpLevel | undefined => {
+    let best: BumpLevel | undefined;
+    let bestRank = 0;
+    let inFence = false;
+
+    for (const line of body.split(/\r?\n/)) {
+        if (FENCE_RE.test(line)) {
+            inFence = !inFence;
+
+            continue;
+        }
+
+        if (inFence) {
+            continue;
+        }
+
+        const match = HEADING_RE.exec(line);
+
+        if (!match) {
+            continue;
+        }
+
+        const depth = (match[1] ?? "").length;
+        const rank = 4 - depth; // depth 1 → 3 (major), 2 → 2 (minor), 3 → 1 (patch)
+
+        if (rank > bestRank) {
+            bestRank = rank;
+            best = depth === 1 ? "major" : depth === 2 ? "minor" : "patch";
+        }
+    }
+
+    return best;
+};
 
 // ── Inline metadata extraction ──────────────────────────────────────
 
@@ -140,15 +205,35 @@ const extractMeta = (body: string): { meta: ChangeFile["meta"]; remainder: strin
 // ── Payload classification ──────────────────────────────────────────
 
 interface RawNested {
-    bump: unknown;
+    bump?: unknown;
     cascade?: unknown;
     releaseAs?: unknown;
+    replay?: unknown;
 }
 
-const isRawNested = (value: unknown): value is RawNested => typeof value === "object" && value !== null && !Array.isArray(value) && "bump" in value;
+const isRawNested = (value: unknown): value is RawNested =>
+    typeof value === "object" && value !== null && !Array.isArray(value) && ("bump" in value || "replay" in value);
 
 const parseNested = (primary: string, raw: RawNested, file: string): ChangeFileNested => {
-    if (!isBumpLevel(raw.bump)) {
+    // Replay files are changelog-only — `bump` is optional and defaults to
+    // `none` (the engine excludes them from version computation anyway).
+    const hasReplay = raw.replay !== undefined;
+
+    // A `bump` alongside `replay` would be silently dropped (replay files never
+    // contribute a version bump). Reject it rather than swallow the author's
+    // intent — they should pick one or the other.
+    if (hasReplay && raw.bump !== undefined) {
+        throw new VisReleaseError({
+            code: "BUMP_FILE_INVALID",
+            file,
+            message: `"${primary}" sets both \`bump\` and \`replay\`. Replay files are changelog-only and never bump — remove \`bump\`, or drop \`replay\` to make this a normal change file.`,
+            packageName: primary,
+        });
+    }
+
+    const bump = raw.bump === undefined && hasReplay ? "none" : raw.bump;
+
+    if (!isBumpLevel(bump)) {
         throw new VisReleaseError({
             code: "BUMP_FILE_INVALID",
             file,
@@ -157,7 +242,11 @@ const parseNested = (primary: string, raw: RawNested, file: string): ChangeFileN
         });
     }
 
-    const result: ChangeFileNested = { bump: raw.bump, package: primary };
+    const result: ChangeFileNested = { bump, package: primary };
+
+    if (hasReplay) {
+        result.replay = parseReplayConditions(raw.replay, file);
+    }
 
     if (raw.releaseAs !== undefined) {
         if (typeof raw.releaseAs !== "string" || !/^\d+\.\d+\.\d+(?:[-+].*)?$/.test(raw.releaseAs)) {
@@ -301,6 +390,9 @@ export const parseChangeFile = (content: string, file: string): ChangeFile => {
         payload = parseNested(name, rawEntry as RawNested, file);
     } else {
         const bumps: Record<string, BumpLevel> = {};
+        // Packages listed with a null/empty value defer their bump to the
+        // implicit heading-depth style (resolved once after the loop).
+        const inferEntries: string[] = [];
 
         for (const [name, level] of entries) {
             if (isRawNested(level)) {
@@ -310,6 +402,12 @@ export const parseChangeFile = (content: string, file: string): ChangeFile => {
                     message: `Mixed simple + nested entries are not allowed. Package "${name}" uses the nested shape but the file has multiple top-level entries.`,
                     packageName: name,
                 });
+            }
+
+            if (level === null || level === undefined || level === "") {
+                inferEntries.push(name);
+
+                continue;
             }
 
             if (!isBumpLevel(level)) {
@@ -322,6 +420,25 @@ export const parseChangeFile = (content: string, file: string): ChangeFile => {
             }
 
             bumps[name] = level;
+        }
+
+        if (inferEntries.length > 0) {
+            const inferred = inferBumpFromHeadings(split.body);
+
+            if (!inferred) {
+                throw new VisReleaseError({
+                    code: "BUMP_FILE_INVALID",
+                    file,
+                    message:
+                        `No bump level for ${inferEntries.map((n) => `"${n}"`).join(", ")}: the entry is empty and the body has no markdown heading to infer one from. `
+                        + `Add an explicit level (e.g. \`${inferEntries[0]}: minor\`) or a heading (\`# major\`, \`## minor\`, \`### patch\`).`,
+                    packageName: inferEntries[0],
+                });
+            }
+
+            for (const name of inferEntries) {
+                bumps[name] = inferred;
+            }
         }
 
         payload = { bumps };
@@ -368,6 +485,16 @@ export const formatChangeFile = (payload: ChangeFileSimple | ChangeFileNested, b
 
             for (const [glob, level] of Object.entries(payload.cascade)) {
                 lines.push(`    ${quoteIfNeeded(glob)}: ${level}`);
+            }
+        }
+
+        if (payload.replay && payload.replay.length > 0) {
+            lines.push("  replay:");
+
+            for (const condition of payload.replay) {
+                const value = condition.kind === "version" ? `${condition.package}@${condition.version}` : `exit-prerelease:${condition.package}`;
+
+                lines.push(`    - "${value}"`);
             }
         }
 

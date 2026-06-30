@@ -44,6 +44,30 @@ describe("state — file lifecycle", () => {
         expect(state).toBeUndefined();
     });
 
+    it("uses .state.json by default and publish-lock.json when lockInGit", () => {
+        expect.hasAssertions();
+
+        expect(stateFilePath(cwd, changesDir)).toBe(join(cwd, changesDir, ".state.json"));
+        expect(stateFilePath(cwd, changesDir, true)).toBe(join(cwd, changesDir, "publish-lock.json"));
+    });
+
+    it("git-tracked lock round-trips independently of the local state file", async () => {
+        expect.hasAssertions();
+
+        const state = newState("main", [mkRelease("a", "1.1.0")]);
+
+        await writeState(cwd, changesDir, state, true);
+
+        // The tracked lock is readable with lockInGit=true …
+        await expect(readState(cwd, changesDir, true)).resolves.toMatchObject({ version: 1 });
+        // … and is a distinct file from the gitignored .state.json.
+        await expect(readState(cwd, changesDir, false)).resolves.toBeUndefined();
+
+        await clearState(cwd, changesDir, true);
+
+        await expect(readState(cwd, changesDir, true)).resolves.toBeUndefined();
+    });
+
     it("write → read round-trip preserves shape", async () => {
         expect.hasAssertions();
 

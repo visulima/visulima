@@ -45,6 +45,7 @@ import type {
 import { bumpRank, maxBump, normaliseGroup } from "../types";
 import { collectExplicitBumps, findChangeFilesFor } from "./change-file";
 import type { DependencyGraph } from "./dep-graph";
+import { evaluateReplayFiles, isReplayFile } from "./replay";
 import { bumpVersion, cleanRange, satisfiesRange } from "./semver";
 
 // ── Options ──────────────────────────────────────────────────────────
@@ -651,11 +652,18 @@ const phaseC = (
  * sorted alphabetically by package name.
  */
 export const assembleReleasePlan = (
-    changeFiles: ChangeFile[],
+    allChangeFiles: ChangeFile[],
     depGraph: DependencyGraph,
     config: VisReleaseConfig,
     options: AssembleReleasePlanOptions = {},
 ): ReleasePlan => {
+    // Replay files (tegami parity) are changelog-only + retained — they must
+    // not feed version computation. Split them off so every existing bump path
+    // (collectExplicitBumps / phaseC / findChangeFilesFor) sees only normal
+    // files; the replay engine re-attaches their bodies after the plan is built.
+    const replayFiles = allChangeFiles.filter((file) => isReplayFile(file));
+    const changeFiles = replayFiles.length > 0 ? allChangeFiles.filter((file) => !isReplayFile(file)) : allChangeFiles;
+
     const plan = new Map<string, PlannedEntry>();
     const warnings: string[] = [];
     const versionsCache = new Map<string, string>();
@@ -843,6 +851,27 @@ export const assembleReleasePlan = (
     }
 
     releases.sort((a, b) => a.name.localeCompare(b.name));
+
+    // Replay engine: re-attach retained replay bodies to the packages whose
+    // milestones fired this run, and decide which replay files are now fully
+    // satisfied (consumed → deleted) vs still pending (retained → kept on disk).
+    if (replayFiles.length > 0) {
+        const evaluation = evaluateReplayFiles(replayFiles, releases);
+
+        for (const [packageName, files] of evaluation.injectionsByPackage) {
+            const release = releases.find((entry) => entry.name === packageName);
+
+            if (release) {
+                release.changeFiles = [...release.changeFiles, ...files];
+            }
+        }
+
+        return {
+            consumedChangeFiles: [...changeFiles, ...evaluation.consumed],
+            releases,
+            warnings,
+        };
+    }
 
     return {
         consumedChangeFiles: changeFiles,

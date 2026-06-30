@@ -299,6 +299,31 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
         }
     }
 
+    // 1a) Optional: scaffold AGENTS.md guidance (`--agent`) so AI agents know
+    // how to author change files instead of hand-bumping versions.
+    if (options.agent) {
+        const { upsertAgentSection } = await import("../../../release/core/agent-instructions");
+        const agentsPath = join(cwd, "AGENTS.md");
+        let existing: string | undefined;
+
+        try {
+            existing = await readFile(agentsPath, "utf8");
+        } catch {
+            existing = undefined;
+        }
+
+        const { changed, content } = upsertAgentSection(existing);
+
+        if (!changed) {
+            logger.info("AGENTS.md already up to date.");
+        } else if (dryRun) {
+            logger.info(`[dry-run] would ${existing ? "update" : "create"} AGENTS.md with the 'Releasing with vis' section`);
+        } else {
+            await writeFile(agentsPath, content);
+            logger.info(`${existing ? "Updated" : "Created"} AGENTS.md.`);
+        }
+    }
+
     // 1b) secretlintignore for change files (RFC §20.3). Author-handle
     // patterns (`@danielbannert`) in change-file bodies false-positive on some
     // secretlint rules; ignore the directory so the pre-commit hook stays

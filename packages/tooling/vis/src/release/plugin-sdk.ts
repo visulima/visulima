@@ -116,6 +116,22 @@ export const defineChangelogFormatter = (formatter: ChangelogFormatter): Changel
 export { type ChangelogContext, type ChangelogFormatter, type ChangelogFormatterModule, type ChangelogTarget } from "./core/changelog/api";
 export { type NotificationChannel, type NotificationContext, type NotificationPackage } from "./core/notifications/interface";
 export { type PublishResult } from "./core/package-managers/interface";
+
+/**
+ * Author a lifecycle plugin (tegami parity). Unlike the single-purpose
+ * `define*` helpers above, a plugin hooks arbitrary points of the release
+ * lifecycle — `applyDraft`, `willPublish`, `afterPublish`, `afterPublishAll`.
+ *
+ * ```ts
+ * export default defineReleasePlugin({
+ *     name: "build-before-publish",
+ *     async willPublish({ package: pkg }) {
+ *         await build(pkg.name);
+ *     },
+ * });
+ * ```
+ */
+export { defineReleasePlugin } from "./core/plugins";
 export {
     AfterAllProjectsVersioned,
     type AfterAllVersionedContext,
@@ -123,3 +139,4 @@ export {
     type PublishContext,
     VersionActions,
 } from "./core/version-actions/interface";
+export type { PluginPackageInfo, PluginPublishSummary, ReleasePlugin, ReleasePluginContext } from "./types";

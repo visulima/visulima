@@ -29,6 +29,7 @@ import nextVersionCommand from "./next-version";
 import notificationsCommand from "./notifications";
 import planCommand from "./plan";
 import preCommand from "./pre";
+import pretrustCommand from "./pretrust";
 import publishCommand from "./publish";
 import snapshotCommand from "./snapshot";
 import stageCommand from "./stage";
@@ -51,6 +52,7 @@ const releaseCommands: Command[] = [
     snapshotCommand,
     stageCommand,
     preCommand,
+    pretrustCommand,
     // Init / migration
     initCommand,
     // Notifications dry-run

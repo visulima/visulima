@@ -6,8 +6,14 @@
  * leave it in place; `git push --tags` success deletes it.
  *
  * Location: gitignored by `vis release init`. State is per-workspace, not
- * per-machine — a CI re-run from a different runner can resume because
- * the file lives in the worktree.
+ * per-machine — a CI re-run from the SAME worktree can resume because the
+ * file lives there.
+ *
+ * Git-tracked lock (`release.publish.lockInGit`): when enabled the state is
+ * written to a git-TRACKED `&lt;changesDir>/publish-lock.json` instead. Committed
+ * + pushed by the publish flow, it lets an *ephemeral* CI runner (a fresh
+ * checkout on a different machine) resume a partially-failed publish — the
+ * gitignored `.state.json` never survives a fresh clone, the tracked lock does.
  */
 
 import { constants as fsConstants } from "node:fs";
@@ -18,17 +24,28 @@ import { dirname, join } from "node:path";
 import { VisReleaseError } from "../errors";
 import type { LockInfo, PlannedRelease, StateFile } from "../types";
 
-export const stateFilePath = (cwd: string, changesDir: string): string => join(cwd, changesDir, ".state.json");
+/** Gitignored, worktree-local state file (default). */
+const LOCAL_STATE_FILENAME = ".state.json";
+/** Git-tracked lock file used when `release.publish.lockInGit` is on. */
+const TRACKED_LOCK_FILENAME = "publish-lock.json";
 
-export const readState = async (cwd: string, changesDir: string): Promise<StateFile | undefined> => {
+/**
+ * Resolve the state/lock file path. When `lockInGit` is true the tracked
+ * `publish-lock.json` is used (survives a fresh clone); otherwise the
+ * gitignored `.state.json`.
+ */
+export const stateFilePath = (cwd: string, changesDir: string, lockInGit = false): string =>
+    join(cwd, changesDir, lockInGit ? TRACKED_LOCK_FILENAME : LOCAL_STATE_FILENAME);
+
+export const readState = async (cwd: string, changesDir: string, lockInGit = false): Promise<StateFile | undefined> => {
     try {
-        const content = await readFile(stateFilePath(cwd, changesDir), "utf8");
+        const content = await readFile(stateFilePath(cwd, changesDir, lockInGit), "utf8");
         const parsed = JSON.parse(content) as StateFile;
 
         if (parsed.version !== 1) {
             throw new VisReleaseError({
                 code: "STATE_FILE_CORRUPT",
-                message: `Unknown state file version: ${parsed.version}. Delete ${stateFilePath(cwd, changesDir)} to start fresh.`,
+                message: `Unknown state file version: ${parsed.version}. Delete ${stateFilePath(cwd, changesDir, lockInGit)} to start fresh.`,
             });
         }
 
@@ -50,16 +67,16 @@ export const readState = async (cwd: string, changesDir: string): Promise<StateF
     }
 };
 
-export const writeState = async (cwd: string, changesDir: string, state: StateFile): Promise<void> => {
-    const path = stateFilePath(cwd, changesDir);
+export const writeState = async (cwd: string, changesDir: string, state: StateFile, lockInGit = false): Promise<void> => {
+    const path = stateFilePath(cwd, changesDir, lockInGit);
 
     await mkdir(dirname(path), { recursive: true });
     await writeFile(path, `${JSON.stringify(state, null, 2)}\n`);
 };
 
-export const clearState = async (cwd: string, changesDir: string): Promise<void> => {
+export const clearState = async (cwd: string, changesDir: string, lockInGit = false): Promise<void> => {
     try {
-        await unlink(stateFilePath(cwd, changesDir));
+        await unlink(stateFilePath(cwd, changesDir, lockInGit));
     } catch (error) {
         // ENOENT is expected on a fresh-success path (nothing to clear).
         // Anything else — EACCES, EIO, etc. — means the NEXT run sees a
@@ -70,7 +87,7 @@ export const clearState = async (cwd: string, changesDir: string): Promise<void>
             throw new VisReleaseError({
                 cause: error,
                 code: "STATE_FILE_CORRUPT",
-                message: `Could not clear state file at ${stateFilePath(cwd, changesDir)}: ${(error as Error).message}. Remove it manually before the next run.`,
+                message: `Could not clear state file at ${stateFilePath(cwd, changesDir, lockInGit)}: ${(error as Error).message}. Remove it manually before the next run.`,
             });
         }
     }
