@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pail",
-    "version": "4.0.0-alpha.22",
+    "version": "4.0.0-alpha.23",
     "description": "Highly configurable Logger for Node.js, Edge and Browser.",
     "keywords": [
         "anolilab",
@@ -249,7 +249,7 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/colorize": "2.0.0-alpha.14",
+        "@visulima/colorize": "2.0.0-alpha.15",
         "@visulima/interactive-manager": "1.0.0-alpha.5"
     },
     "devDependencies": {
@@ -262,13 +262,13 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/ansi": "4.0.0-alpha.17",
-        "@visulima/error": "6.0.0-alpha.33",
-        "@visulima/fmt": "2.0.0-alpha.13",
-        "@visulima/inspector": "2.0.0-alpha.14",
+        "@visulima/ansi": "4.0.0-alpha.18",
+        "@visulima/error": "6.0.0-alpha.35",
+        "@visulima/fmt": "2.0.0-alpha.14",
+        "@visulima/inspector": "2.0.0-alpha.15",
         "@visulima/packem": "catalog:dev",
         "@visulima/redact": "3.0.0-alpha.14",
-        "@visulima/string": "3.0.0-alpha.17",
+        "@visulima/string": "3.0.0-alpha.18",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
