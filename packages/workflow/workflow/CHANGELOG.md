@@ -1,3 +1,22 @@
+## @visulima/workflow [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/workflow@1.0.0-alpha.1...@visulima/workflow@1.0.0-alpha.2) (2026-06-30)
+
+### Bug Fixes
+
+* **vis:** stop Windows test hangs; start fallow dead-code cleanup ([e87ca70](https://github.com/visulima/visulima/commit/e87ca708223560775c2bd9ec7a59e1aa5853b5de))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+* **lint:** raise eslint job timeout and cache slow per-package eslint runs ([#717](https://github.com/visulima/visulima/issues/717)) ([c93878d](https://github.com/visulima/visulima/commit/c93878dbfa1888cc834704448ae6eefd3098597e)), closes [#713](https://github.com/visulima/visulima/issues/713)
+
 ## @visulima/workflow 1.0.0-alpha.1 (2026-06-23)
 
 ### Features
