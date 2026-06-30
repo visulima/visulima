@@ -1,3 +1,37 @@
+## @visulima/tui [1.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.26...@visulima/tui@1.0.0-alpha.27) (2026-06-30)
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* **fallow:** resolve dead-code findings ([c4125d5](https://github.com/visulima/visulima/commit/c4125d53e03ac9d90115399634535991927a96cc))
+
+### Code Refactoring
+
+* **tui:** resolve fallow dead-code findings ([24fc8ad](https://github.com/visulima/visulima/commit/24fc8ad90face6d37f02edb4e87d18a7f2eb7900))
+
+### Tests
+
+* fix failing and flaky package tests ([3f2894e](https://github.com/visulima/visulima/commit/3f2894e816e99f465abb0d3b7d5161af69bbb4ec))
+* **tui:** de-flake same-interval animation sync on slow ci ([d8418de](https://github.com/visulima/visulima/commit/d8418de0831740b473cdfde665811fe0eeccebdc))
+* **tui:** gate ink input emits on the readable listener ([3c45fc6](https://github.com/visulima/visulima/commit/3c45fc666349d4c2983f92ed028ed65e1cb671a3))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/ansi:** upgraded to 4.0.0-alpha.18
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.15
+* **@visulima/error:** upgraded to 6.0.0-alpha.35
+* **@visulima/string:** upgraded to 3.0.0-alpha.18
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.15
+
 ## @visulima/tui [1.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/tui@1.0.0-alpha.25...@visulima/tui@1.0.0-alpha.26) (2026-06-19)
 
 ### Bug Fixes
