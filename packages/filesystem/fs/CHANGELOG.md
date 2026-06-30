@@ -1,3 +1,26 @@
+## @visulima/fs [5.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.32...@visulima/fs@5.0.0-alpha.33) (2026-06-30)
+
+### Bug Fixes
+
+* **vis:** stop Windows test hangs; start fallow dead-code cleanup ([e87ca70](https://github.com/visulima/visulima/commit/e87ca708223560775c2bd9ec7a59e1aa5853b5de))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.35
+
 ## @visulima/fs [5.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/fs@5.0.0-alpha.31...@visulima/fs@5.0.0-alpha.32) (2026-06-13)
 
 ### Bug Fixes
