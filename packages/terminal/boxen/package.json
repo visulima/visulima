@@ -1,6 +1,6 @@
 {
     "name": "@visulima/boxen",
-    "version": "3.0.0-alpha.14",
+    "version": "3.0.0-alpha.15",
     "description": "Create beautiful boxes in the terminal with customizable borders, padding, and alignment.",
     "keywords": [
         "anolilab",
@@ -91,10 +91,10 @@
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/colorize": "2.0.0-alpha.14",
+        "@visulima/colorize": "2.0.0-alpha.15",
         "@visulima/packem": "catalog:dev",
         "@visulima/path": "3.0.0-alpha.13",
-        "@visulima/string": "3.0.0-alpha.17",
+        "@visulima/string": "3.0.0-alpha.18",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
