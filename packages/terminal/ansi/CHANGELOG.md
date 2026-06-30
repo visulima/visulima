@@ -1,3 +1,44 @@
+## @visulima/ansi [4.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.17...@visulima/ansi@4.0.0-alpha.18) (2026-06-30)
+
+### Features
+
+* **ansi:** add bracketed paste markers ([5dc3d57](https://github.com/visulima/visulima/commit/5dc3d579cd1887c3b949ffee875d7259d8a5879e))
+* **ansi:** add character set selection (SCS) ([60852bd](https://github.com/visulima/visulima/commit/60852bd00920dc90c582adc298584a13e4f361a8))
+* **ansi:** add desktop notification sequences ([36f0a69](https://github.com/visulima/visulima/commit/36f0a69191e502750c7e104838688edd249e837e))
+* **ansi:** add FinalTerm shell integration marks (OSC 133) ([e087278](https://github.com/visulima/visulima/commit/e087278a25f5665172cbaa3f4dacd628ebd344ba))
+* **ansi:** add focus event reporting sequences ([83718f7](https://github.com/visulima/visulima/commit/83718f770c6e5297a69675f3adea2ba9004b95aa))
+* **ansi:** add foreground/background/cursor color sequences ([2c562bd](https://github.com/visulima/visulima/commit/2c562bdfb3a67168fd106b78159b4e98d6131f47))
+* **ansi:** add keypad application/numeric mode sequences ([cc62e9d](https://github.com/visulima/visulima/commit/cc62e9d21c7043df0b101c967133ae0b335e2d83))
+* **ansi:** add kitty graphics protocol sequence wrapper ([6e83b5c](https://github.com/visulima/visulima/commit/6e83b5cff7938ae38df8d9aa6e019453c89ae1ea))
+* **ansi:** add sixel graphics sequence wrapper ([fb2a225](https://github.com/visulima/visulima/commit/fb2a225d10ad6008e0cdc6959128d30502536c2f))
+* **ansi:** add urxvt OSC 777 extension ([8b96c1a](https://github.com/visulima/visulima/commit/8b96c1ac11c19c56fa3a55adff21309ad2287b43))
+* **ansi:** add working directory reporting (OSC 7) ([95059d5](https://github.com/visulima/visulima/commit/95059d5462a416393937d5bbab6ca425397a22b4))
+
+### Bug Fixes
+
+* **ansi:** strip OSC terminators from color/cwd/finalterm payloads ([6c4ab8c](https://github.com/visulima/visulima/commit/6c4ab8c4cae3f8bafd7483f161887883bb315a6b))
+
+### Documentation
+
+* **ansi:** document new escape sequence modules ([0bbc476](https://github.com/visulima/visulima/commit/0bbc4766259d9bde491186cadeb167d9e353f4dc))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* **fallow:** resolve dead-code findings ([c4125d5](https://github.com/visulima/visulima/commit/c4125d53e03ac9d90115399634535991927a96cc))
+
+### Code Refactoring
+
+* **ansi:** share OSC terminator sanitizer; address review findings ([ed2215d](https://github.com/visulima/visulima/commit/ed2215d8a61e2896dae278c7a07eae393ed415ea))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
 ## @visulima/ansi [4.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.16...@visulima/ansi@4.0.0-alpha.17) (2026-06-13)
 
 ### Features

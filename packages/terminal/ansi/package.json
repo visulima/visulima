@@ -1,6 +1,6 @@
 {
     "name": "@visulima/ansi",
-    "version": "4.0.0-alpha.17",
+    "version": "4.0.0-alpha.18",
     "description": "ANSI escape codes for some terminal swag.",
     "keywords": [
         "alternative-screen",
