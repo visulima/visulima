@@ -1,3 +1,27 @@
+## @visulima/error-handler [2.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.33...@visulima/error-handler@2.0.0-alpha.34) (2026-06-30)
+
+### Bug Fixes
+
+* address pr 713 code-scanning findings ([66ab1fd](https://github.com/visulima/visulima/commit/66ab1fd4f5065014dd98cea9a014ae659cea2fb0))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* **fallow:** resolve dead-code findings ([c4125d5](https://github.com/visulima/visulima/commit/c4125d53e03ac9d90115399634535991927a96cc))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.35
+
 ## @visulima/error-handler [2.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/error-handler@2.0.0-alpha.32...@visulima/error-handler@2.0.0-alpha.33) (2026-06-19)
 
 
