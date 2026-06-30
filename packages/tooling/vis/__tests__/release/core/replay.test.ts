@@ -46,6 +46,13 @@ describe("replay: parseReplayCondition", () => {
         expect(() => parseReplayCondition("nonsense", "f.md")).toThrow(VisReleaseError);
         expect(() => parseReplayCondition(42, "f.md")).toThrow(VisReleaseError);
     });
+
+    it("rejects empty or malformed replay target package names", () => {
+        expect.hasAssertions();
+
+        expect(() => parseReplayCondition("exit-prerelease:   ", "f.md")).toThrow(VisReleaseError);
+        expect(() => parseReplayCondition("bad name@1.2.3", "f.md")).toThrow(VisReleaseError);
+    });
 });
 
 describe("replay: change-file parsing", () => {

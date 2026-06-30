@@ -164,18 +164,7 @@ export const buildTrustArgs = (packageName: string, claim: TrustClaim): string[]
     return args;
 };
 
-/** Parse a git remote URL into `{ provider, repo }` (https or ssh form). */
-export const parseRemoteUrl = (url: string): { provider: TrustProvider; repo: string } | undefined => {
-    const cleaned = url.trim().replace(/\.git$/, "");
-    const match = /(?:https?:\/\/|git@|ssh:\/\/git@)([^/:]+)[/:](\S+)/.exec(cleaned);
-
-    if (!match) {
-        return undefined;
-    }
-
-    const host = match[1] ?? "";
-    const repo = match[2] ?? "";
-
+const providerForHost = (host: string, repo: string): { provider: TrustProvider; repo: string } | undefined => {
     if (host.includes("gitlab")) {
         return { provider: "gitlab", repo };
     }
@@ -185,6 +174,31 @@ export const parseRemoteUrl = (url: string): { provider: TrustProvider; repo: st
     }
 
     return undefined;
+};
+
+/** Parse a git remote URL into `{ provider, repo }` (https, scp-like, or ssh:// form). */
+export const parseRemoteUrl = (url: string): { provider: TrustProvider; repo: string } | undefined => {
+    const cleaned = url.trim().replace(/\.git$/, "");
+
+    // `ssh://git@host:2222/group/project` — parse via URL so an explicit port
+    // isn't captured as part of the repo path.
+    if (cleaned.startsWith("ssh://")) {
+        try {
+            const parsed = new URL(cleaned);
+
+            return providerForHost(parsed.hostname, parsed.pathname.replace(/^\/+/, ""));
+        } catch {
+            return undefined;
+        }
+    }
+
+    const match = /(?:https?:\/\/|git@)([^/:]+)[/:](\S+)/.exec(cleaned);
+
+    if (!match) {
+        return undefined;
+    }
+
+    return providerForHost(match[1] ?? "", match[2] ?? "");
 };
 
 /** Detect `{ provider, repo }` from the git `origin` remote. */
@@ -238,8 +252,20 @@ export const detectReleaseWorkflow = async (cwd: string, provider: TrustProvider
         }
     }
 
-    // npm trust wants the bare filename, not a path.
-    return referencesRelease[0] ?? entries.find((f) => /release/i.test(f));
+    // The trust claim is workflow-specific, so guessing the wrong file leaves
+    // the real publish workflow unauthorized. Only auto-detect when there is
+    // exactly one plausible candidate; otherwise require an explicit --workflow.
+    if (referencesRelease.length === 1) {
+        return referencesRelease[0];
+    }
+
+    if (referencesRelease.length > 1) {
+        return undefined;
+    }
+
+    const releaseMatches = entries.filter((f) => /release/i.test(f));
+
+    return releaseMatches.length === 1 ? releaseMatches[0] : undefined;
 };
 
 /** Run `npm trust` for a single package. Best-effort — returns the outcome. */

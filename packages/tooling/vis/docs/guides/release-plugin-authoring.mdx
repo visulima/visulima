@@ -47,14 +47,14 @@ export default defineConfig({
 
 Every hook is optional:
 
-| Hook                          | When it runs                            | Return / effect                                                     |
-| ----------------------------- | --------------------------------------- | ------------------------------------------------------------------- |
-| `applyDraft({ plan })`        | After versions + changelogs are written | Inspect the computed plan; throw to abort                           |
-| `willPublish({ package })`    | Before each package is published        | Return `false` to skip it (its in-wave dependents are skipped too)  |
-| `afterPublish({ package })`   | After each successful publish           | Side effects (docs, cache warm, …)                                  |
-| `afterPublishAll({ result })` | Once the whole wave finishes            | Side effects with the full `{ published, skipped, failed }` summary |
+| Hook                          | When it runs                                                           | Return / effect                                                     |
+| ----------------------------- | ---------------------------------------------------------------------- | ------------------------------------------------------------------- |
+| `applyDraft({ plan })`        | After versions + changelogs are written, **before** the version commit | Inspect the computed plan; throw to abort before committing         |
+| `willPublish({ package })`    | Before each package is published                                       | Return `false` to skip it (its in-wave dependents are skipped too)  |
+| `afterPublish({ package })`   | After each successful publish                                          | Side effects (docs, cache warm, …)                                  |
+| `afterPublishAll({ result })` | Once the whole wave finishes                                           | Side effects with the full `{ published, skipped, failed }` summary |
 
-**Error policy.** `applyDraft` and `willPublish` **gate** the release — a throw propagates and aborts the wave (fail fast). `afterPublish` and `afterPublishAll` are **post-effect** — a throw is logged to stderr and swallowed, because a docs-push hiccup must never "unpublish" a package that already shipped. A `willPublish` veto is treated like a non-publish, so any package depending on the vetoed one is skipped rather than published against a version that never reached the registry.
+**Error policy.** `applyDraft` and `willPublish` **gate** the release — a throw propagates and aborts (fail fast). `applyDraft` runs after the draft is written but before the version commit, so a throw aborts before anything is committed, and edits a plugin makes to the already-written files (`package.json` bumps, `CHANGELOG.md`) are picked up by that commit — brand-new files a plugin creates must be staged by the plugin itself. `afterPublish` and `afterPublishAll` are **post-effect** — a throw is logged to stderr and swallowed, because a docs-push hiccup must never "unpublish" a package that already shipped. A `willPublish` veto is treated like a non-publish, so any package depending on the vetoed one is skipped rather than published against a version that never reached the registry.
 
 ## Custom `NotificationChannel`
 

@@ -10,6 +10,7 @@
  * Pure functions only.
  */
 
+import { gt as semverGt, valid as semverValid } from "semver";
 import zeptomatch from "zeptomatch";
 
 import type { VisReleaseConfig } from "../types";
@@ -36,28 +37,20 @@ export interface SyncTagResolution {
 const renderGroupTag = (pattern: string | undefined, name: string, version: string): string =>
     (pattern ?? "{name}@{version}").replaceAll("{name}", name).replaceAll("{version}", version);
 
-/** Compare two semver-ish versions by numeric core (major.minor.patch); ties → 0. */
-const coreCompare = (a: string, b: string): number => {
-    const parse = (v: string): number[] => (v.split(/[-+]/, 1)[0] ?? "").split(".").map((n) => Number.parseInt(n, 10) || 0);
-    const pa = parse(a);
-    const pb = parse(b);
-
-    for (let index = 0; index < 3; index += 1) {
-        const diff = (pa[index] ?? 0) - (pb[index] ?? 0);
-
-        if (diff !== 0) {
-            return diff;
-        }
-    }
-
-    return 0;
-};
-
+/**
+ * Highest version among the group's members. Uses full semver comparison
+ * (prerelease identifiers included) so `1.2.0` beats `1.2.0-rc.1` rather than
+ * tying on the numeric core and falling back to input order. Non-semver values
+ * sort below valid ones and ties keep the earlier entry.
+ */
 const pickMaxVersion = (versions: string[]): string => {
     let max = versions[0] ?? "0.0.0";
 
     for (const current of versions) {
-        if (coreCompare(current, max) > 0) {
+        const valid = semverValid(current) !== null;
+        const maxValid = semverValid(max) !== null;
+
+        if (valid && (!maxValid || semverGt(current, max))) {
             max = current;
         }
     }

@@ -10,7 +10,7 @@
  *     stderr and swallowed; a docs-push hiccup must never "unpublish" a package.
  */
 
-import type { PluginPackageInfo, PluginPublishSummary, ReleasePlan, ReleasePluginContext } from "../types";
+import type { PluginPackageInfo, PluginPublishSummary, ReleasePlan, ReleasePlugin, ReleasePluginContext } from "../types";
 
 const pluginsOf = (context: ReleasePluginContext): NonNullable<ReleasePluginContext["config"]["plugins"]> => context.config.plugins ?? [];
 
@@ -77,4 +77,4 @@ export const runAfterPublishAllHooks = async (context: ReleasePluginContext, sum
 };
 
 /** Type-narrowing identity helper for authoring plugins (mirrors define* family). */
-export const defineReleasePlugin = <T extends { name: string }>(plugin: T): T => plugin;
+export const defineReleasePlugin = <T extends ReleasePlugin>(plugin: T): T => plugin;

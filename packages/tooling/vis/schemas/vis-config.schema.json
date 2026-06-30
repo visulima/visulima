@@ -4925,7 +4925,7 @@
             "required": [
                 "name"
             ],
-            "additionalProperties": false,
+            "additionalProperties": true,
             "description": "A release lifecycle plugin (tegami parity). Unlike the single-purpose `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel` extension points, a plugin can hook arbitrary points of the version/publish lifecycle — e.g. run a build in `willPublish`, push docs in `afterPublishAll`.\n\nError semantics: `applyDraft` and `willPublish` throw-propagate (they gate the release — fail fast). `afterPublish` / `afterPublishAll` are post-effect: a throw is logged and swallowed so a side-effect hiccup can't \"unpublish\"."
         },
         "PublishConfig": {

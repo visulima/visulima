@@ -18,9 +18,24 @@
 
 import { VisReleaseError } from "../errors";
 import type { ChangeFile, ChangeFileNested, PlannedRelease, ReplayCondition } from "../types";
+import { isValidPackageName } from "./security";
 
 const EXIT_PRERELEASE_RE = /^exit[\s-]prerelease\s*:\s*(.+)$/i;
 const VERSION_RE = /^(.+)@(\d+\.\d+\.\d+(?:[-+].*)?)$/;
+
+/** Validate a replay target package name at parse time so malformed entries fail loudly. */
+const assertReplayPackage = (name: string, value: string, file: string): string => {
+    if (!isValidPackageName(name)) {
+        throw new VisReleaseError({
+            code: "BUMP_FILE_INVALID",
+            file,
+            message: `Invalid replay condition "${value}": ${JSON.stringify(name)} is not a valid package name.`,
+            packageName: name || undefined,
+        });
+    }
+
+    return name;
+};
 
 /** Parse a single raw `replay` entry (`"name@1.2.0"` or `"exit-prerelease:name"`). */
 export const parseReplayCondition = (raw: unknown, file: string): ReplayCondition => {
@@ -36,13 +51,13 @@ export const parseReplayCondition = (raw: unknown, file: string): ReplayConditio
     const exitMatch = EXIT_PRERELEASE_RE.exec(value);
 
     if (exitMatch) {
-        return { kind: "exit-prerelease", package: (exitMatch[1] ?? "").trim() };
+        return { kind: "exit-prerelease", package: assertReplayPackage((exitMatch[1] ?? "").trim(), value, file) };
     }
 
     const versionMatch = VERSION_RE.exec(value);
 
     if (versionMatch) {
-        return { kind: "version", package: (versionMatch[1] ?? "").trim(), version: versionMatch[2] ?? "" };
+        return { kind: "version", package: assertReplayPackage((versionMatch[1] ?? "").trim(), value, file), version: versionMatch[2] ?? "" };
     }
 
     throw new VisReleaseError({

@@ -308,7 +308,15 @@ const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, Rele
 
         try {
             existing = await readFile(agentsPath, "utf8");
-        } catch {
+        } catch (error) {
+            // Only a missing file is a "create from scratch" signal. Any other
+            // read failure (EACCES, EISDIR, …) must surface — otherwise the
+            // write below would clobber an existing-but-unreadable AGENTS.md,
+            // dropping content outside the managed block.
+            if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+                throw error;
+            }
+
             existing = undefined;
         }
 

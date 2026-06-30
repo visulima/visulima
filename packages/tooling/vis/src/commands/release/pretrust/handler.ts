@@ -9,15 +9,32 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { buildContext } from "../../../release/core/orchestrator";
-import type { TrustProvider } from "../../../release/core/pretrust";
 import { runPretrust } from "../../../release/core/pretrust";
 import type { ReleasePretrustOptions } from "./index";
 
 const execute = async ({ logger, options, workspaceRoot }: Toolbox<Console, ReleasePretrustOptions>): Promise<void> => {
     const cwd = workspaceRoot ?? process.cwd();
     const dryRun = options.dryRun === true;
-    const access = options.access === "restricted" ? "restricted" : "public";
-    const provider: TrustProvider | undefined = options.provider === "github" || options.provider === "gitlab" ? options.provider : undefined;
+
+    // Reject typos rather than silently downgrading: a bad `--access` would
+    // otherwise publish publicly, and a bad `--provider` would fall back to
+    // auto-detection and bind trust to the wrong forge.
+    if (options.access !== undefined && options.access !== "public" && options.access !== "restricted") {
+        logger.error(`Invalid --access value: "${options.access}". Expected "public" or "restricted".`);
+        process.exitCode = 1;
+
+        return;
+    }
+
+    if (options.provider !== undefined && options.provider !== "github" && options.provider !== "gitlab") {
+        logger.error(`Invalid --provider value: "${options.provider}". Expected "github" or "gitlab".`);
+        process.exitCode = 1;
+
+        return;
+    }
+
+    const access = options.access ?? "public";
+    const { provider } = options;
 
     const ctx = await buildContext({ cwd });
 

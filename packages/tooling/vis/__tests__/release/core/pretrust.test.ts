@@ -249,6 +249,13 @@ describe("pretrust: parseRemoteUrl", () => {
         expect(parseRemoteUrl("https://gitlab.com/group/project")).toStrictEqual({ provider: "gitlab", repo: "group/project" });
         expect(parseRemoteUrl("https://example.com/x/y")).toBeUndefined();
     });
+
+    it("handles ssh:// remotes with an explicit port", () => {
+        expect.hasAssertions();
+
+        expect(parseRemoteUrl("ssh://git@gitlab.example.com:2222/group/project.git")).toStrictEqual({ provider: "gitlab", repo: "group/project" });
+        expect(parseRemoteUrl("ssh://git@github.com/owner/repo.git")).toStrictEqual({ provider: "github", repo: "owner/repo" });
+    });
 });
 
 describe("pretrust: trust step", () => {

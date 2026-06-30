@@ -768,6 +768,17 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
         );
     }
 
+    // Lifecycle plugins: the draft (versions + changelogs + extra-files) is on
+    // disk but NOT yet committed. Run applyDraft here so a thrown hook aborts
+    // before the version commit (real fail-fast gate) and so edits a plugin
+    // makes to the already-written files land in that commit. (Brand-new files
+    // a plugin creates are its own responsibility to stage.)
+    if (context.config.plugins?.length) {
+        const { runApplyDraftHooks } = await import("./plugins");
+
+        await runApplyDraftHooks({ config: context.config, cwd: context.cwd }, context.plan);
+    }
+
     let commitSha: string | undefined;
 
     if (options.commit) {
@@ -869,14 +880,6 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
                 `Pre-mode exited: \`${preModeFilePath(context.cwd, changesDir)}\` was deleted. Commit the deletion so the registry stays consistent across CI runs.`,
             );
         }
-    }
-
-    // Lifecycle plugins: the draft (versions + changelogs) is now on disk.
-    // applyDraft throws propagate — a gating hook failing must abort.
-    if (context.config.plugins?.length) {
-        const { runApplyDraftHooks } = await import("./plugins");
-
-        await runApplyDraftHooks({ config: context.config, cwd: context.cwd }, context.plan);
     }
 
     return {
@@ -996,21 +999,23 @@ export interface PublishContextResult {
 /**
  * Commit + push the git-tracked publish lock (`release.publish.lockInGit`).
  * `open` is committed at the start of a wave (so an ephemeral runner can resume
- * if this one dies); `close` commits the lock removal on full success. Soft-fail
- * — a commit hiccup must not fail an otherwise-successful publish.
+ * if this one dies); `progress` checkpoints in-flight state mid-wave; `close`
+ * commits the lock removal on full success. Soft-fail — a commit hiccup must not
+ * fail an otherwise-successful publish. A failed *push* is surfaced as a warning
+ * because it silently breaks cross-runner resume.
  */
 const commitPublishLock = async (
     context: OrchestratorContext,
     runner: ReturnType<typeof createShellRunner>,
     changesDir: string,
-    phase: "close" | "open",
+    phase: "close" | "open" | "progress",
     options: { noPush?: boolean },
 ): Promise<void> => {
     const { stageAndCommitFile } = await import("./git");
     const { stateFilePath } = await import("./state");
 
     try {
-        await stageAndCommitFile(
+        const result = await stageAndCommitFile(
             { cwd: context.cwd, runner },
             stateFilePath(context.cwd, changesDir, true),
             `chore(release): ${phase} publish lock [skip ci]`,
@@ -1020,6 +1025,12 @@ const commitPublishLock = async (
                 sign: context.config.gitSignCommits === true,
             },
         );
+
+        if (!options.noPush && result.committed && !result.pushed) {
+            process.stderr.write(
+                `[vis release] Warning: publish lock (${phase}) was committed locally but could not be pushed — cross-runner resume may use a stale lock.\n`,
+            );
+        }
     } catch (error) {
         process.stderr.write(`[vis release] Warning: could not commit publish lock (${phase}): ${(error as Error).message}\n`);
     }
@@ -1352,6 +1363,13 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
             }
         }
 
+        // Checkpoint the tracked lock after the publish loop so a death during
+        // tagging / release-creation / notify resumes with the correct
+        // already-published set instead of replaying external side effects.
+        if (lockInGit && !options.dryRun && result.published.length > 0) {
+            await commitPublishLock(context, runner, changesDir, "progress", { noPush: options.noPush });
+        }
+
         // afterPublishAll: post-effect wave summary hook (errors logged, not fatal).
         if (pluginHooks) {
             await pluginHooks.runAfterPublishAllHooks(pluginBase, {
@@ -1536,11 +1554,16 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                 await writeState(context.cwd, changesDir, state, lockInGit);
             }
 
-            // Successful end-state: clear state file. We treat a successful
-            // publish as "done" even if `git push --tags` failed — tag pushing
-            // can be retried independently with `git push --tags` and shouldn't
-            // hold the state file open. The publish itself succeeded.
-            if (result.failed.length === 0 && result.published.length > 0 && !options.dryRun) {
+            // Successful end-state: clear the state file. "Done" means no
+            // failures — which includes a `--resume` that finishes with only
+            // already-published packages and zero new publishes this run. Gating
+            // on `published.length > 0` would strand the tracked lock in that
+            // case, so the next runner keeps auto-resuming a finished wave. (The
+            // empty-plan case returned early above, so reaching here means the
+            // wave had work and all of it succeeded.) We treat a successful
+            // publish as done even if `git push --tags` failed — that can be
+            // retried independently and shouldn't hold the state file open.
+            if (result.failed.length === 0 && !options.dryRun) {
                 await clearState(context.cwd, changesDir, lockInGit);
 
                 // Commit + push the lock removal so the next run (anywhere)

@@ -3,7 +3,10 @@ import { describe, expect, it } from "vitest";
 import { resolveSyncTagGroups } from "../../../src/release/core/group-tags";
 import type { VisReleaseConfig } from "../../../src/release/types";
 
-const pub = (...entries: [string, string][]): { name: string; version: string }[] => entries.map(([name, version]) => { return { name, version }; });
+const pub = (...entries: [string, string][]): { name: string; version: string }[] =>
+    entries.map(([name, version]) => {
+        return { name, version };
+    });
 
 describe("group-tags: resolveSyncTagGroups", () => {
     it("returns nothing when no group sets syncGitTag", () => {
@@ -31,6 +34,17 @@ describe("group-tags: resolveSyncTagGroups", () => {
         });
         // Only matched members are grouped; @other/x keeps its per-package tag.
         expect([...result.grouped]).toStrictEqual(["@acme/ui", "@acme/utils"]);
+    });
+
+    it("picks the highest version with full semver (stable beats same-core prerelease)", () => {
+        expect.hasAssertions();
+
+        const config: VisReleaseConfig = { fixed: [{ name: "acme", packages: ["@acme/*"], syncGitTag: true }] };
+        // @acme/ui is listed first but @acme/utils@1.2.0 (stable) outranks the rc.
+        const result = resolveSyncTagGroups(config, pub(["@acme/ui", "1.2.0-rc.1"], ["@acme/utils", "1.2.0"]));
+
+        expect(result.groups[0]?.version).toBe("1.2.0");
+        expect(result.groups[0]?.tag).toBe("acme@1.2.0");
     });
 
     it("honours a custom tagPattern", () => {
