@@ -1,3 +1,22 @@
+## @visulima/disposable-email-domains [1.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.17...@visulima/disposable-email-domains@1.0.0-alpha.18) (2026-06-30)
+
+### Bug Fixes
+
+* **disposable-email-domains:** emit `export =` for /domains types ([b80fd58](https://github.com/visulima/visulima/commit/b80fd587995e376f9cb6d872e387b5fc2d96e6d1))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+* **lint:** raise eslint job timeout and cache slow per-package eslint runs ([#717](https://github.com/visulima/visulima/issues/717)) ([c93878d](https://github.com/visulima/visulima/commit/c93878dbfa1888cc834704448ae6eefd3098597e)), closes [#713](https://github.com/visulima/visulima/issues/713)
+
 ## @visulima/disposable-email-domains [1.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/disposable-email-domains@1.0.0-alpha.16...@visulima/disposable-email-domains@1.0.0-alpha.17) (2026-06-13)
 
 ### Features
