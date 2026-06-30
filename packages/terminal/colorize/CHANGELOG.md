@@ -1,3 +1,42 @@
+## @visulima/colorize [2.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.14...@visulima/colorize@2.0.0-alpha.15) (2026-06-30)
+
+### ⚠ BREAKING CHANGES
+
+* the listed packages no longer publish a CommonJS build —
+consumers must use ESM (import) or dynamic import(). @visulima/connect,
+@visulima/crud, @visulima/prisma-dmmf-transformer and @visulima/api-platform
+are removed and deprecated.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+
+### Code Refactoring
+
+* address thermos code-quality findings ([392ed96](https://github.com/visulima/visulima/commit/392ed96b489b1c4df30157ad2f33fc9b3fd82fef))
+* **colorize,tabular:** resolve fallow dead-code findings ([28e41ec](https://github.com/visulima/visulima/commit/28e41ecffa073614f783d8527f4dceed772f2e20))
+* **colorize:** decompose GradientBuilder constructor (complexity) ([ae00682](https://github.com/visulima/visulima/commit/ae006822e366814ba63d0893c203d65c70f9b725))
+* ship esm-only; remove deprecated api packages ([6e58351](https://github.com/visulima/visulima/commit/6e58351e73ac7d8f8ec88be4d77871e4de5d5405))
+
+### Build System
+
+* emit .js instead of .mjs for esm output ([c8a6026](https://github.com/visulima/visulima/commit/c8a602665a59f0441a61a5a510cdfed9353101e6))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 3.0.0-alpha.14
+
 ## @visulima/colorize [2.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.13...@visulima/colorize@2.0.0-alpha.14) (2026-06-13)
 
 ### Features
