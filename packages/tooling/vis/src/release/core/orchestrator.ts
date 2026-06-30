@@ -1137,6 +1137,23 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
             state.channel = context.channel?.tag;
         }
 
+        // Persist the in-progress state at a resume checkpoint. When the lock is
+        // git-tracked, also commit + push it so a fresh runner resumes from this
+        // exact point (published / tagged / walked / notified) instead of
+        // replaying side effects. The commit is a no-op (no push) when `state`
+        // is unchanged, so only real progress reaches the remote.
+        const persistState = async (): Promise<void> => {
+            if (options.dryRun || !state) {
+                return;
+            }
+
+            await writeState(context.cwd, changesDir, state, lockInGit);
+
+            if (lockInGit) {
+                await commitPublishLock(context, runner, changesDir, "progress", { noPush: options.noPush });
+            }
+        };
+
         let stagedRegistry = await readStagedRegistry(context.cwd, changesDir);
 
         // Guard the publish phase too — `vis release publish` can run on its
@@ -1352,22 +1369,16 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                     }
                 }
 
-                if (!options.dryRun) {
-                    await writeState(context.cwd, changesDir, state, lockInGit);
-                }
+                // Per-package durability: persist + (for lockInGit) commit/push
+                // after each package so a death anywhere in the loop lets a fresh
+                // runner resume with the exact already-published set.
+                await persistState();
             } catch (error) {
                 result.failed.push({ name, reason: (error as Error).message });
                 // Mark so dependents downstream in the topo order are skipped
                 // rather than published against a missing dependency version.
                 failedNames.add(name);
             }
-        }
-
-        // Checkpoint the tracked lock after the publish loop so a death during
-        // tagging / release-creation / notify resumes with the correct
-        // already-published set instead of replaying external side effects.
-        if (lockInGit && !options.dryRun && result.published.length > 0) {
-            await commitPublishLock(context, runner, changesDir, "progress", { noPush: options.noPush });
         }
 
         // afterPublishAll: post-effect wave summary hook (errors logged, not fatal).
@@ -1550,9 +1561,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
             state.tagged = [...result.tags];
             state.pushed = result.tagsPushed;
 
-            if (!options.dryRun) {
-                await writeState(context.cwd, changesDir, state, lockInGit);
-            }
+            await persistState();
 
             // Successful end-state: clear the state file. "Done" means no
             // failures — which includes a `--resume` that finishes with only
@@ -1756,7 +1765,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                     const walkedKeys = walkable.published.map((p) => `${p.name}@${p.version}`);
 
                     state.walked = [...(state.walked ?? []), ...walkedKeys];
-                    await writeState(context.cwd, changesDir, state, lockInGit);
+                    await persistState();
 
                     // Cross-runner persistence — append to the tracked
                     // registry too. The follow-up registry write + commit
@@ -1864,7 +1873,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                             const notifiedKeys = notifiable.map((p) => `${p.name}@${p.version}`);
 
                             state.notified = [...(state.notified ?? []), ...notifiedKeys];
-                            await writeState(context.cwd, changesDir, state, lockInGit);
+                            await persistState();
 
                             // Cross-runner persistence — same rationale as the
                             // walked path above. Mutates the in-memory registry;

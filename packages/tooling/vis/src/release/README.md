@@ -144,9 +144,9 @@ A change file can carry `replay` conditions instead of a one-shot bump (tegami p
 ```markdown
 ---
 "@scope/cerebro":
-  replay:
-    - "@scope/cerebro@1.0.0" # when it reaches this exact version
-    - "exit-prerelease:@scope/cerebro" # when it leaves a prerelease line
+    replay:
+        - "@scope/cerebro@1.0.0" # when it reaches this exact version
+        - "exit-prerelease:@scope/cerebro" # when it leaves a prerelease line
 ---
 
 This note is replayed into the changelog at each milestone above.
@@ -253,7 +253,7 @@ This tags the wave once as `acme@<version>` (the highest member version; overrid
 
 - **Idempotent re-runs**: every command uses three-layer "already published" detection (git tag → npm registry → custom `checkPublished`). Re-running `vis release publish` after a partial failure skips already-published packages.
 - **State file**: `<changesDir>/.state.json` (gitignored) persists in-progress release state. Use `vis release publish --resume` after a failure to retry only the failed subset.
-- **Git-tracked publish lock**: set `release.publish.lockInGit: true` to persist that state to a committed `<changesDir>/publish-lock.json` instead. The lock is committed + pushed when a publish wave opens and removed (committed) on full success — so a partially-failed publish can be resumed from a **fresh checkout on a different runner** (the ephemeral-CI case where untracked `.state.json` never survives the clone). A committed lock is treated as an implicit `--resume`. Mirrors tegami's `publish-lock.yaml`-in-git model.
+- **Git-tracked publish lock**: set `release.publish.lockInGit: true` to persist that state to a committed `<changesDir>/publish-lock.json` instead. The lock is committed + pushed when a wave opens, **after every package** (and after the tag / walk / notify checkpoints), and removed (committed) on full success — so a death anywhere in the wave can be resumed from a **fresh checkout on a different runner** with the exact published / tagged / notified set, without replaying side effects (the ephemeral-CI case where untracked `.state.json` never survives the clone). Each commit is a no-op when nothing changed, so only real progress reaches the remote. A committed lock is treated as an implicit `--resume`. Mirrors tegami's `publish-lock.yaml`-in-git model.
 - **Concurrency**: process-level lock + GH Actions concurrency group. `vis release publish` refuses to start if an open release-PR exists (catches local-vs-CI races).
 - **Dry run**: every command supports `--dry-run` with `[dry-run]` log prefixes. No file writes, no network calls.
 - **Diagnostics**: `vis release doctor` runs preflight checks (workspace integrity, PM version, OIDC env, NAPI sidecars, etc.) and emits machine-readable `--json`.
