@@ -1,6 +1,6 @@
 {
     "name": "@visulima/string",
-    "version": "3.0.0-alpha.17",
+    "version": "3.0.0-alpha.18",
     "description": "Functions for manipulating strings.",
     "keywords": [
         "align",
@@ -292,7 +292,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/colorize": "2.0.0-alpha.14",
+        "@visulima/colorize": "2.0.0-alpha.15",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
