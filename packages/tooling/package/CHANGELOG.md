@@ -1,3 +1,27 @@
+## @visulima/package [5.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.31...@visulima/package@5.0.0-alpha.32) (2026-06-30)
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* **fallow:** resolve dead-code findings ([c4125d5](https://github.com/visulima/visulima/commit/c4125d53e03ac9d90115399634535991927a96cc))
+
+### Tests
+
+* **package:** skip JSON-content-vs-file collision tests on Windows ([5c2d2f1](https://github.com/visulima/visulima/commit/5c2d2f15a4e0b8bf2dad70251c402d1b3fe19796))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.33
+
 ## @visulima/package [5.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/package@5.0.0-alpha.30...@visulima/package@5.0.0-alpha.31) (2026-06-13)
 
 ### Features
