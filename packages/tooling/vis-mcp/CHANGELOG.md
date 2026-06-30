@@ -1,3 +1,19 @@
+## @visulima/vis-mcp [1.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.34...@visulima/vis-mcp@1.0.0-alpha.35) (2026-06-30)
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0-alpha.33
+* **@visulima/vis:** upgraded to 1.0.0-alpha.45
+
 ## @visulima/vis-mcp [1.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/vis-mcp@1.0.0-alpha.33...@visulima/vis-mcp@1.0.0-alpha.34) (2026-06-23)
 
 ### Bug Fixes
