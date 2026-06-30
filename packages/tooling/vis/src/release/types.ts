@@ -45,6 +45,21 @@ export interface ChangeFileSimple {
     bumps: Record<string, BumpLevel>;
 }
 
+/**
+ * A replay trigger (tegami parity). A change file carrying `replay` conditions
+ * is NOT consumed on `version`; instead its body is re-emitted into a package's
+ * changelog when a milestone is reached:
+ *   - `{ kind: "version" }` — the package reaches an exact version (`name@1.2.0`)
+ *   - `{ kind: "exit-prerelease" }` — the package leaves a prerelease line
+ *
+ * Per run, every condition that matches re-injects the body; the file is deleted
+ * once *all* its conditions are satisfied within a single run, otherwise it is
+ * retained. A file whose conditions can only fire in different runs (e.g. two
+ * distinct future version milestones) therefore stays on disk until you remove
+ * it — keep one milestone per file if you want automatic cleanup.
+ */
+export type ReplayCondition = { kind: "exit-prerelease"; package: string } | { kind: "version"; package: string; version: string };
+
 export interface ChangeFileNested {
     /** Bump level for the primary. */
     bump: BumpLevel;
@@ -64,6 +79,13 @@ export interface ChangeFileNested {
      * `releaseAs` literally, ignored by `bumpVersion`.
      */
     releaseAs?: string;
+
+    /**
+     * Replay triggers — when present this file is retained (not deleted) and its
+     * body is replayed into the matched package's changelog at each milestone.
+     * Replay files do NOT contribute a version bump (changelog-only).
+     */
+    replay?: ReplayCondition[];
 }
 
 export interface ChangeFile {
@@ -181,6 +203,56 @@ export interface ReleasePlan {
     warnings: string[];
 }
 
+// ── Lifecycle plugins (tegami-style hooks) ──────────────────────────
+
+/** A package as seen by a lifecycle hook. */
+export interface PluginPackageInfo {
+    /** Absolute package directory. */
+    dir: string;
+    /** Package name. */
+    name: string;
+    /** Version before this release. */
+    oldVersion: string;
+    /** Version being published. */
+    version: string;
+}
+
+/** Outcome summary handed to `afterPublishAll`. */
+export interface PluginPublishSummary {
+    failed: { name: string; reason: string }[];
+    published: { name: string; version: string }[];
+    skipped: { name: string; reason: string }[];
+}
+
+/** Common context passed to every lifecycle hook. */
+export interface ReleasePluginContext {
+    config: VisReleaseConfig;
+    cwd: string;
+}
+
+/**
+ * A release lifecycle plugin (tegami parity). Unlike the single-purpose
+ * `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel`
+ * extension points, a plugin can hook arbitrary points of the version/publish
+ * lifecycle — e.g. run a build in `willPublish`, push docs in `afterPublishAll`.
+ *
+ * Error semantics: `applyDraft` and `willPublish` throw-propagate (they gate the
+ * release — fail fast). `afterPublish` / `afterPublishAll` are post-effect: a
+ * throw is logged and swallowed so a side-effect hiccup can't "unpublish".
+ */
+export interface ReleasePlugin {
+    /** After each package is successfully published. Post-effect (errors are logged, not fatal). */
+    afterPublish?: (context: ReleasePluginContext & { package: PluginPackageInfo }) => Promise<void> | void;
+    /** After the whole publish wave completes. Post-effect (errors are logged, not fatal). */
+    afterPublishAll?: (context: ReleasePluginContext & { result: PluginPublishSummary }) => Promise<void> | void;
+    /** After versions + changelogs are written (the version/apply phase). Throw to abort. */
+    applyDraft?: (context: ReleasePluginContext & { plan: ReleasePlan }) => Promise<void> | void;
+    /** Stable plugin id (used in logs + skip reasons). */
+    name: string;
+    /** Before a package is published — return `false` to skip it (anything else proceeds). Throw to abort the wave. */
+    willPublish?: (context: ReleasePluginContext & { package: PluginPackageInfo }) => Promise<boolean | undefined> | boolean | undefined;
+}
+
 // ── Channel routing (semantic-release-style) ─────────────────────────
 
 export type ChannelMode = "auto-publish" | "version-pr";
@@ -249,6 +321,20 @@ export type ReleaseGroupConfig
             name?: string;
             /** Package names or globs that belong to this group. */
             packages: string[];
+
+            /**
+             * Emit a single shared git tag (and one aggregate GitHub/GitLab
+             * release) for the whole group instead of one tag + release per
+             * member (tegami parity). Default `false`.
+             */
+            syncGitTag?: boolean;
+
+            /**
+             * Override the shared git tag for a `syncGitTag` group. Tokens:
+             * `{name}` (group name), `{version}` (representative version).
+             * Default: `"{name}@{version}"`.
+             */
+            tagPattern?: string;
         };
 
 /**
@@ -262,15 +348,19 @@ export const normaliseGroup = (
     changelog: ReleaseGroupChangelogConfig;
     name?: string;
     packages: string[];
+    syncGitTag: boolean;
+    tagPattern?: string;
 } => {
     if (Array.isArray(group)) {
-        return { changelog: { mode: "per-package" }, packages: group };
+        return { changelog: { mode: "per-package" }, packages: group, syncGitTag: false };
     }
 
     return {
         changelog: group.changelog ?? { mode: "per-package" },
         name: group.name,
         packages: group.packages,
+        syncGitTag: group.syncGitTag ?? false,
+        tagPattern: group.tagPattern,
     };
 };
 
@@ -854,8 +944,22 @@ export interface PublishConfig {
      * warning surfaces so misconfigured rules don't silently rot.
      */
     extraFiles?: ExtraFileRule[];
+
     /** Pre-publish security gates. Each gate is opt-in. */
     guards?: PublishGuardsConfig;
+
+    /**
+     * Persist in-progress publish state to a git-TRACKED
+     * `&lt;changesDir>/publish-lock.json` instead of the gitignored
+     * `.state.json`. Default `false`.
+     *
+     * The tracked lock is committed (and pushed by the publish flow) so a
+     * partially-failed publish can be resumed from a *fresh checkout on a
+     * different runner* — the ephemeral-CI case where `.state.json` (untracked)
+     * never survives the clone. On full success the lock is removed and the
+     * removal committed. Mirrors tegami's `publish-lock.yaml`-in-git model.
+     */
+    lockInGit?: boolean;
 
     /**
      * Skip creating the GitHub / GitLab Release entirely while still
@@ -1328,6 +1432,8 @@ export interface VisReleaseConfig {
     oneCommitPerPackage?: boolean;
     /** Per-package overrides (matches `package.json["vis-release"]`). */
     packages?: Record<string, PerPackageReleaseConfig>;
+    /** Lifecycle plugins (tegami-style hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`). */
+    plugins?: ReleasePlugin[];
     /** Shell command run after all publishes complete. */
     postPublishCommand?: string;
     /** Shell command run after versioning, before publish. */

@@ -734,3 +734,58 @@ describe("release-plan: bumpDevDependencies fanout warning (F12)", () => {
         expect(fanoutWarnings[0]).toContain("12 patch-cascades");
     });
 });
+
+// ── Replay changelogs (tegami parity) ───────────────────────────────
+
+describe("release-plan: replay files", () => {
+    it("injects a replay body when the version milestone fires and consumes the file", () => {
+        expect.hasAssertions();
+
+        const a = mkPkg("a", { version: "1.0.0" });
+        const graph = new DependencyGraph([a]);
+
+        const bump = cf(`---\na: minor\n---\nNormal note.\n`, "bump.md");
+        const replay = cf(`---\na:\n  replay:\n    - "a@1.1.0"\n---\nReplayed milestone note.\n`, "replay.md");
+
+        const plan = assembleReleasePlan([bump, replay], graph, {});
+        const releaseA = findRelease(plan, "a");
+
+        expect(releaseA?.newVersion).toBe("1.1.0");
+        // The replay body is attached to a's changelog this run …
+        expect(releaseA?.changeFiles.some((f) => f.id === "replay")).toBe(true);
+        // … and the replay file is consumed (will be deleted).
+        expect(plan.consumedChangeFiles.some((f) => f.id === "replay")).toBe(true);
+    });
+
+    it("retains a replay file when its milestone has not been reached", () => {
+        expect.hasAssertions();
+
+        const a = mkPkg("a", { version: "1.0.0" });
+        const graph = new DependencyGraph([a]);
+
+        const bump = cf(`---\na: patch\n---\nNormal note.\n`, "bump.md");
+        const replay = cf(`---\na:\n  replay:\n    - "a@2.0.0"\n---\nFuture milestone.\n`, "replay.md");
+
+        const plan = assembleReleasePlan([bump, replay], graph, {});
+        const releaseA = findRelease(plan, "a");
+
+        // a only bumps to 1.0.1 — the 2.0.0 milestone hasn't fired.
+        expect(releaseA?.newVersion).toBe("1.0.1");
+        expect(releaseA?.changeFiles.some((f) => f.id === "replay")).toBe(false);
+        // Retained → NOT in consumedChangeFiles (stays on disk for a later run).
+        expect(plan.consumedChangeFiles.some((f) => f.id === "replay")).toBe(false);
+    });
+
+    it("does not let a replay file contribute a version bump on its own", () => {
+        expect.hasAssertions();
+
+        const a = mkPkg("a", { version: "1.0.0" });
+        const graph = new DependencyGraph([a]);
+
+        // Only a replay file present — no normal bump → no release.
+        const replay = cf(`---\na:\n  replay:\n    - "a@2.0.0"\n---\nFuture.\n`, "replay.md");
+        const plan = assembleReleasePlan([replay], graph, {});
+
+        expect(findRelease(plan, "a")).toBeUndefined();
+    });
+});

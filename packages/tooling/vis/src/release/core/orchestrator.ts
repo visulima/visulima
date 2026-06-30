@@ -768,6 +768,17 @@ export const applyContext = async (context: OrchestratorContext, options: ApplyO
         );
     }
 
+    // Lifecycle plugins: the draft (versions + changelogs + extra-files) is on
+    // disk but NOT yet committed. Run applyDraft here so a thrown hook aborts
+    // before the version commit (real fail-fast gate) and so edits a plugin
+    // makes to the already-written files land in that commit. (Brand-new files
+    // a plugin creates are its own responsibility to stage.)
+    if (context.config.plugins?.length) {
+        const { runApplyDraftHooks } = await import("./plugins");
+
+        await runApplyDraftHooks({ config: context.config, cwd: context.cwd }, context.plan);
+    }
+
     let commitSha: string | undefined;
 
     if (options.commit) {
@@ -986,6 +997,46 @@ export interface PublishContextResult {
 }
 
 /**
+ * Commit + push the git-tracked publish lock (`release.publish.lockInGit`).
+ * `open` is committed at the start of a wave (so an ephemeral runner can resume
+ * if this one dies); `progress` checkpoints in-flight state mid-wave; `close`
+ * commits the lock removal on full success. Soft-fail — a commit hiccup must not
+ * fail an otherwise-successful publish. A failed *push* is surfaced as a warning
+ * because it silently breaks cross-runner resume.
+ */
+const commitPublishLock = async (
+    context: OrchestratorContext,
+    runner: ReturnType<typeof createShellRunner>,
+    changesDir: string,
+    phase: "close" | "open" | "progress",
+    options: { noPush?: boolean },
+): Promise<void> => {
+    const { stageAndCommitFile } = await import("./git");
+    const { stateFilePath } = await import("./state");
+
+    try {
+        const result = await stageAndCommitFile(
+            { cwd: context.cwd, runner },
+            stateFilePath(context.cwd, changesDir, true),
+            `chore(release): ${phase} publish lock [skip ci]`,
+            {
+                author: context.config.gitUser,
+                push: !options.noPush,
+                sign: context.config.gitSignCommits === true,
+            },
+        );
+
+        if (!options.noPush && result.committed && !result.pushed) {
+            process.stderr.write(
+                `[vis release] Warning: publish lock (${phase}) was committed locally but could not be pushed — cross-runner resume may use a stale lock.\n`,
+            );
+        }
+    } catch (error) {
+        process.stderr.write(`[vis release] Warning: could not commit publish lock (${phase}): ${(error as Error).message}\n`);
+    }
+};
+
+/**
  * Publish each release in the plan via its resolved versionActions.
  * Topological order is honored so dependencies publish before dependents.
  */
@@ -1070,7 +1121,39 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
         const { clearState, filterPlanByState, newState, readState, writeState } = await import("./state");
         const { readStagedRegistry, removePendingStages, upsertPendingStages, writeStagedRegistry } = await import("./staged-registry");
         const changesDir = context.config.changesDir ?? DEFAULT_CHANGES_DIR;
-        let state = options.resume ? await readState(context.cwd, changesDir) : undefined;
+        // Git-tracked publish lock (RFC §19.1 / tegami parity): persists state to
+        // a committed `publish-lock.json` so an ephemeral runner can resume.
+        // When enabled, a committed lock means "resume" even without --resume —
+        // its mere presence signals an in-progress publish from another runner.
+        const lockInGit = context.config.publish?.lockInGit === true;
+        let state = options.resume || lockInGit ? await readState(context.cwd, changesDir, lockInGit) : undefined;
+
+        // A git-tracked lock is auto-resumed by presence, so a lock left behind
+        // by a prior wave (e.g. one whose "close" commit/push failed) could pin
+        // its stale channel tag onto this run. The current branch is the
+        // authoritative channel — refresh it. (Per-package `name@version` resume
+        // filtering still self-heals which packages publish.)
+        if (state && lockInGit) {
+            state.channel = context.channel?.tag;
+        }
+
+        // Persist the in-progress state at a resume checkpoint. When the lock is
+        // git-tracked, also commit + push it so a fresh runner resumes from this
+        // exact point (published / tagged / walked / notified) instead of
+        // replaying side effects. The commit is a no-op (no push) when `state`
+        // is unchanged, so only real progress reaches the remote.
+        const persistState = async (): Promise<void> => {
+            if (options.dryRun || !state) {
+                return;
+            }
+
+            await writeState(context.cwd, changesDir, state, lockInGit);
+
+            if (lockInGit) {
+                await commitPublishLock(context, runner, changesDir, "progress", { noPush: options.noPush });
+            }
+        };
+
         let stagedRegistry = await readStagedRegistry(context.cwd, changesDir);
 
         // Guard the publish phase too — `vis release publish` can run on its
@@ -1098,7 +1181,13 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
             state = newState(context.channel?.tag, context.plan.releases);
 
             if (!options.dryRun) {
-                await writeState(context.cwd, changesDir, state);
+                await writeState(context.cwd, changesDir, state, lockInGit);
+
+                // Commit + push the tracked lock at the start of the wave so a
+                // different (ephemeral) runner can resume if this one dies.
+                if (lockInGit) {
+                    await commitPublishLock(context, runner, changesDir, "open", { noPush: options.noPush });
+                }
             }
         }
 
@@ -1129,6 +1218,10 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                 versionedManifestByName.set(release.name, { ...pkg.manifest, version: release.newVersion });
             }
         }
+
+        // Lifecycle plugins (loaded once for the wave).
+        const pluginBase = { config: context.config, cwd: context.cwd };
+        const pluginHooks = context.config.plugins?.length ? await import("./plugins") : undefined;
 
         for (const name of order) {
             const release = releaseByName.get(name);
@@ -1179,6 +1272,26 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
 
             const tag = options.tag ?? context.channel?.tag;
 
+            // willPublish gate: a plugin can veto this package's publish.
+            if (pluginHooks) {
+                const verdict = await pluginHooks.runWillPublishHooks(pluginBase, {
+                    dir: pkg.dir,
+                    name,
+                    oldVersion: release.oldVersion,
+                    version: release.newVersion,
+                });
+
+                if (verdict.skip) {
+                    result.skipped.push({ name, reason: `plugin-skipped${verdict.by ? ` by "${verdict.by}"` : ""}` });
+                    // Treat a veto like a non-publish: mark it so dependents later
+                    // in the topo order are skipped by the `blockingDeps` guard
+                    // rather than published against a `workspace:` range that
+                    // resolves to a version this veto kept off the registry.
+                    failedNames.add(name);
+                    continue;
+                }
+            }
+
             // Resume the existing stage when staged.json already holds an
             // entry for this exact (name, version). The action's publish
             // method short-circuits pack+publish and resumes the wait —
@@ -1224,6 +1337,11 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                 if (out.published) {
                     result.published.push({ name, stageId: out.stageId, tarball: out.tarball, version: release.newVersion });
                     state.published.push(`${name}@${release.newVersion}`);
+
+                    // afterPublish: post-effect hook (errors logged, not fatal).
+                    if (pluginHooks) {
+                        await pluginHooks.runAfterPublishHooks(pluginBase, { dir: pkg.dir, name, oldVersion: release.oldVersion, version: release.newVersion });
+                    }
                 } else if (out.alreadyPublished) {
                     result.skipped.push({ name, reason: "already-published" });
                     // Treat as published for resume purposes — re-running won't try again.
@@ -1251,9 +1369,10 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                     }
                 }
 
-                if (!options.dryRun) {
-                    await writeState(context.cwd, changesDir, state);
-                }
+                // Per-package durability: persist + (for lockInGit) commit/push
+                // after each package so a death anywhere in the loop lets a fresh
+                // runner resume with the exact already-published set.
+                await persistState();
             } catch (error) {
                 result.failed.push({ name, reason: (error as Error).message });
                 // Mark so dependents downstream in the topo order are skipped
@@ -1261,6 +1380,27 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                 failedNames.add(name);
             }
         }
+
+        // afterPublishAll: post-effect wave summary hook (errors logged, not fatal).
+        if (pluginHooks) {
+            await pluginHooks.runAfterPublishAllHooks(pluginBase, {
+                failed: result.failed.map((f) => {
+                    return { name: f.name, reason: f.reason };
+                }),
+                published: result.published.map((p) => {
+                    return { name: p.name, version: p.version };
+                }),
+                skipped: result.skipped.map((s) => {
+                    return { name: s.name, reason: s.reason };
+                }),
+            });
+        }
+
+        // syncGitTag groups (tegami parity): members collapse to one shared tag +
+        // aggregate release. Resolved once for the wave — both the tag-creation
+        // phase below and createRemoteReleases consume it (no double resolution).
+        const { resolveSyncTagGroups } = await import("./group-tags");
+        const syncTags = resolveSyncTagGroups(context.config, result.published);
 
         // Create + push tags for successfully-published releases (RFC §14 / §19.1).
         if (!options.dryRun && !options.noTag && result.published.length > 0) {
@@ -1276,6 +1416,10 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
             const isPrerelease = Boolean(context.channel?.prerelease) || Boolean(context.preMode);
 
             for (const { name, version } of result.published) {
+                if (syncTags.grouped.has(name)) {
+                    continue;
+                }
+
                 const perPkgPattern = context.perPackageConfig.get(name)?.releaseTagPattern;
                 const pattern = perPkgPattern ?? rootTagPattern;
                 const tag = pattern ? renderTagPattern(pattern, { channel: channelName, name, version }) : defaultTagFor(name, version);
@@ -1378,6 +1522,24 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                 }
             }
 
+            // One shared tag per syncGitTag group (created after per-package tags
+            // so it's a single annotated tag for the whole group).
+            for (const group of syncTags.groups) {
+                try {
+                    await createTag({ cwd: context.cwd, runner }, group.tag, `Release ${group.name} ${group.version}`, {
+                        signing: context.config.signing,
+                        skipRemoteCheck: context.firstRelease,
+                    });
+                    result.tags.push(group.tag);
+                } catch (error) {
+                    if (context.firstRelease && error instanceof VisReleaseError && error.code === "TAG_COLLISION") {
+                        result.skipped.push({ name: group.tag, reason: "tag-creation: tag already exists (first-release — skipped)" });
+                    } else {
+                        result.skipped.push({ name: group.tag, reason: `tag-creation: ${(error as Error).message}` });
+                    }
+                }
+            }
+
             if (!options.noPush && result.tags.length > 0) {
                 try {
                     await pushTags({ cwd: context.cwd, runner });
@@ -1399,16 +1561,26 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
             state.tagged = [...result.tags];
             state.pushed = result.tagsPushed;
 
-            if (!options.dryRun) {
-                await writeState(context.cwd, changesDir, state);
-            }
+            await persistState();
 
-            // Successful end-state: clear state file. We treat a successful
-            // publish as "done" even if `git push --tags` failed — tag pushing
-            // can be retried independently with `git push --tags` and shouldn't
-            // hold the state file open. The publish itself succeeded.
-            if (result.failed.length === 0 && result.published.length > 0 && !options.dryRun) {
-                await clearState(context.cwd, changesDir);
+            // Successful end-state: clear the state file. "Done" means no
+            // failures — which includes a `--resume` that finishes with only
+            // already-published packages and zero new publishes this run. Gating
+            // on `published.length > 0` would strand the tracked lock in that
+            // case, so the next runner keeps auto-resuming a finished wave. (The
+            // empty-plan case returned early above, so reaching here means the
+            // wave had work and all of it succeeded.) We treat a successful
+            // publish as done even if `git push --tags` failed — that can be
+            // retried independently and shouldn't hold the state file open.
+            if (result.failed.length === 0 && !options.dryRun) {
+                await clearState(context.cwd, changesDir, lockInGit);
+
+                // Commit + push the lock removal so the next run (anywhere)
+                // sees a clean slate rather than a stale lock that would make
+                // it skip the whole already-published plan.
+                if (lockInGit) {
+                    await commitPublishLock(context, runner, changesDir, "close", { noPush: options.noPush });
+                }
             }
         }
 
@@ -1535,7 +1707,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
         // configured independently.
         if (!options.dryRun && result.published.length > 0 && result.tagsPushed) {
             if (context.config.publish?.noRelease !== true) {
-                await createRemoteReleases(context, result, runner);
+                await createRemoteReleases(context, result, runner, syncTags);
             }
 
             // Walk every referenced PR / issue and post a "released in X.Y.Z"
@@ -1593,7 +1765,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                     const walkedKeys = walkable.published.map((p) => `${p.name}@${p.version}`);
 
                     state.walked = [...(state.walked ?? []), ...walkedKeys];
-                    await writeState(context.cwd, changesDir, state);
+                    await persistState();
 
                     // Cross-runner persistence — append to the tracked
                     // registry too. The follow-up registry write + commit
@@ -1701,7 +1873,7 @@ export const publishContext = async (context: OrchestratorContext, options: Publ
                             const notifiedKeys = notifiable.map((p) => `${p.name}@${p.version}`);
 
                             state.notified = [...(state.notified ?? []), ...notifiedKeys];
-                            await writeState(context.cwd, changesDir, state);
+                            await persistState();
 
                             // Cross-runner persistence — same rationale as the
                             // walked path above. Mutates the in-memory registry;
@@ -1938,6 +2110,7 @@ const createRemoteReleases = async (
     context: OrchestratorContext,
     result: PublishContextResult,
     runner: ReturnType<typeof createShellRunner>,
+    syncTags: import("./group-tags").SyncTagResolution,
 ): Promise<void> => {
     const { createRemoteClient, detectRemoteProvider } = await import("./remote/detect");
     const provider = await detectRemoteProvider(context.cwd, runner, context.config.provider);
@@ -2017,7 +2190,43 @@ const createRemoteReleases = async (
     const internalAuthors = extractInternalAuthors(context.config.changelog);
     const waveContributors = collectContributors(context.plan.consumedChangeFiles ?? [], { internalAuthors });
 
+    // syncGitTag groups get ONE aggregate release pointing at the shared tag;
+    // their members are skipped in the per-package loop below. The resolution is
+    // computed once in publishContext and threaded in via `syncTags`.
+
+    for (const group of syncTags.groups) {
+        const body = group.members.map((name) => `- \`${name}\` → ${result.published.find((p) => p.name === name)?.version ?? group.version}`).join("\n");
+
+        try {
+            const created = await client.createRelease(runner, {
+                body,
+                cwd: context.cwd,
+                discussionCategory,
+                draft: draftRelease,
+                prerelease: group.version.includes("-"),
+                repo,
+                tag: group.tag,
+                title: `${group.name} ${group.version}`,
+            });
+
+            if (created?.url) {
+                for (const item of result.published) {
+                    if (group.members.includes(item.name)) {
+                        item.url = created.url;
+                    }
+                }
+            }
+        } catch (error) {
+            // eslint-disable-next-line no-console
+            console.warn(`createRelease failed for group ${group.name} (tag ${group.tag}): ${(error as Error).message}`);
+        }
+    }
+
     for (const item of result.published) {
+        if (syncTags.grouped.has(item.name)) {
+            continue;
+        }
+
         const perPkgPattern = context.perPackageConfig.get(item.name)?.releaseTagPattern;
         const pattern = perPkgPattern ?? rootTagPattern;
         const tag = pattern

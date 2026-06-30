@@ -125,6 +125,35 @@ vis release snapshot --tag pr-1234
 
 Publishes `0.0.0-pr-1234-<shortSha>` versions of affected packages. Default backend is `pkg-pr-new` (free, hosted); configurable via `release.snapshot.backend` (string id or `{ url, auth }`).
 
+## npm Trusted Publishing bootstrap (`pretrust`)
+
+npm — unlike PyPI — refuses to configure a Trusted Publisher (OIDC) for a package that doesn't exist yet, so the _first_ OIDC publish of a brand-new package fails. `vis release pretrust` breaks that chicken-and-egg by publishing a minimal, explicitly non-functional placeholder for every managed package missing from the registry:
+
+```bash
+vis release pretrust                  # placeholder for each not-yet-published package
+vis release pretrust --dry-run        # preview
+vis release pretrust --filter '@scope/*'
+```
+
+The placeholder ships only a `README.md` (stating it must not be used) under a dedicated dist-tag (default `placeholder`, so `latest` stays unset and `npm install` keeps failing until the real release). Each published placeholder prints its `https://www.npmjs.com/package/<name>/access` link; open it, add a GitHub Actions Trusted Publisher, then run `vis release publish` over OIDC. Mirrors [`azu/setup-npm-trusted-publish`](https://github.com/azu/setup-npm-trusted-publish). Auth uses `NPM_TOKEN` (or your local npm login); packages already on the registry are skipped unless `--force`.
+
+## Replay changelogs
+
+A change file can carry `replay` conditions instead of a one-shot bump (tegami parity). Such a file is **retained** on `version` — not deleted — and its body is re-emitted into a package's changelog when a milestone fires:
+
+```markdown
+---
+"@scope/cerebro":
+    replay:
+        - "@scope/cerebro@1.0.0" # when it reaches this exact version
+        - "exit-prerelease:@scope/cerebro" # when it leaves a prerelease line
+---
+
+This note is replayed into the changelog at each milestone above.
+```
+
+Replay files are **changelog-only** — they never contribute a version bump (the file is long-lived, so bumping off it would re-bump every run), and setting both `bump` and `replay` is rejected. Each run, every matching condition injects the body once (de-duplicated per package); the file is deleted once **all** its conditions fire within a single run, otherwise it is retained. A file whose milestones can only land in separate runs (e.g. two distinct future versions) stays on disk until you remove it — keep one milestone per file for automatic cleanup.
+
 ## Migration paths
 
 ```bash
@@ -132,6 +161,7 @@ vis release init                          # auto-detect
 vis release init --from-semantic-release  # walks .releaserc.json files; maps branches → channels
 vis release init --from-changesets        # copies .changeset/*.md verbatim; maps config.json
 vis release init --from-bumpy             # copies .bumpy/*.md into .vis/release/, prints the translated config block; .bumpy/ is left in place for the operator to delete.
+vis release init --agent                  # append a 'Releasing with vis' section to AGENTS.md (idempotent) so AI agents author change files instead of hand-bumping
 ```
 
 Per-package opt-in via `package.json["vis-release"]["managed"]: true`. Both old + new systems coexist during transition; existing tag history (`<pkg>@<version>`) and `CHANGELOG.md` files are preserved.
@@ -181,10 +211,49 @@ const client = new ReleaseClient({ baseBranch: "develop" });
 await client.releaseVersion();
 ```
 
+## Lifecycle plugins
+
+Beyond the single-purpose `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel` extension points, a **lifecycle plugin** (tegami parity) can hook arbitrary points of the version/publish flow. Register via `release.plugins`:
+
+```ts
+import { defineReleasePlugin } from "@visulima/vis/release";
+
+export default defineConfig({
+    release: {
+        plugins: [
+            defineReleasePlugin({
+                name: "build-before-publish",
+                async willPublish({ package: pkg }) {
+                    await runBuild(pkg.name); // return false to skip this package
+                },
+                async afterPublishAll({ result }) {
+                    await pingDeployHook(result.published);
+                },
+            }),
+        ],
+    },
+});
+```
+
+Hooks (all optional): `applyDraft({ plan })` after versions+changelogs are written, `willPublish({ package })` before each publish (return `false` to skip), `afterPublish({ package })` after each successful publish, `afterPublishAll({ result })` once the wave completes. **Error policy:** `applyDraft` / `willPublish` throw-propagate (they gate the release — fail fast); `afterPublish` / `afterPublishAll` are post-effect, so a throw is logged and swallowed — a side-effect hiccup can't "unpublish" a package.
+
+## Shared group tags (`syncGitTag`)
+
+`release.fixed` / `release.linked` groups can collapse to a **single git tag + one aggregate GitHub/GitLab release** for the whole group instead of one tag + release per member (tegami parity):
+
+```ts
+release: {
+    fixed: [{ name: "acme", packages: ["@acme/*"], syncGitTag: true }],
+}
+```
+
+This tags the wave once as `acme@<version>` (the highest member version; override with `tagPattern`, tokens `{name}`/`{version}`) and publishes one release listing every member. Members in a `syncGitTag` group are skipped in the per-package tag/release loop. Without `syncGitTag` (the default) each member keeps its own `<pkg>@<version>` tag + release.
+
 ## Operational concerns
 
 - **Idempotent re-runs**: every command uses three-layer "already published" detection (git tag → npm registry → custom `checkPublished`). Re-running `vis release publish` after a partial failure skips already-published packages.
 - **State file**: `<changesDir>/.state.json` (gitignored) persists in-progress release state. Use `vis release publish --resume` after a failure to retry only the failed subset.
+- **Git-tracked publish lock**: set `release.publish.lockInGit: true` to persist that state to a committed `<changesDir>/publish-lock.json` instead. The lock is committed + pushed when a wave opens, **after every package** (and after the tag / walk / notify checkpoints), and removed (committed) on full success — so a death anywhere in the wave can be resumed from a **fresh checkout on a different runner** with the exact published / tagged / notified set, without replaying side effects (the ephemeral-CI case where untracked `.state.json` never survives the clone). Each commit is a no-op when nothing changed, so only real progress reaches the remote. A committed lock is treated as an implicit `--resume`. Mirrors tegami's `publish-lock.yaml`-in-git model.
 - **Concurrency**: process-level lock + GH Actions concurrency group. `vis release publish` refuses to start if an open release-PR exists (catches local-vs-CI races).
 - **Dry run**: every command supports `--dry-run` with `[dry-run]` log prefixes. No file writes, no network calls.
 - **Diagnostics**: `vis release doctor` runs preflight checks (workspace integrity, PM version, OIDC env, NAPI sidecars, etc.) and emits machine-readable `--json`.
