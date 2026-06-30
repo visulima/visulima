@@ -25,6 +25,7 @@ The release subsystem ships package versions, changelogs, git tags, and registry
 | Apply pending bumps to disk (run locally — rare)       | [`vis release version`](#vis-release-version)             |
 | Publish to npm (run locally — rare)                    | [`vis release publish`](#vis-release-publish)             |
 | Ship an ephemeral PR preview install                   | [`vis release snapshot`](#vis-release-snapshot)           |
+| Bootstrap npm trusted publishing for new packages      | [`vis release pretrust`](#vis-release-pretrust)           |
 | Enter / exit a prerelease sprint mode                  | [`vis release pre`](#vis-release-pre)                     |
 | Manage npm staged-publish records                      | [`vis release stage`](#vis-release-stage)                 |
 | Dry-run a configured notification destination          | [`vis release notifications`](#vis-release-notifications) |
@@ -67,17 +68,18 @@ vis release init --workflows
 
 **Options**
 
-| Option                     | Type    | Description                                                                        |
-| -------------------------- | ------- | ---------------------------------------------------------------------------------- |
-| `--from-semantic-release`  | boolean | Force migration from semantic-release / multi-semantic-release                     |
-| `--from-changesets`        | boolean | Force migration from changesets                                                    |
-| `--from-bumpy`             | boolean | Force migration from bumpy                                                         |
-| `--fresh`                  | boolean | Skip migration; start clean                                                        |
-| `--dry-run`                | boolean | Print what would happen without writing files (default for migration runs)         |
-| `--apply`                  | boolean | Actually perform the migration writes (opt out of the implicit dry-run)            |
-| `--yes`, `-y`              | boolean | Auto-confirm prompts (CI-safe)                                                     |
-| `--workflows`              | boolean | Generate CI workflow files for the active provider                                 |
-| `--package-manager <name>` | string  | Override the package manager used in generated workflows (npm / pnpm / yarn / bun) |
+| Option                     | Type    | Description                                                                                                               |
+| -------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `--from-semantic-release`  | boolean | Force migration from semantic-release / multi-semantic-release                                                            |
+| `--from-changesets`        | boolean | Force migration from changesets                                                                                           |
+| `--from-bumpy`             | boolean | Force migration from bumpy                                                                                                |
+| `--fresh`                  | boolean | Skip migration; start clean                                                                                               |
+| `--dry-run`                | boolean | Print what would happen without writing files (default for migration runs)                                                |
+| `--apply`                  | boolean | Actually perform the migration writes (opt out of the implicit dry-run)                                                   |
+| `--yes`, `-y`              | boolean | Auto-confirm prompts (CI-safe)                                                                                            |
+| `--workflows`              | boolean | Generate CI workflow files for the active provider                                                                        |
+| `--package-manager <name>` | string  | Override the package manager used in generated workflows (npm / pnpm / yarn / bun)                                        |
+| `--agent`                  | boolean | Append an idempotent "Releasing with vis" section to `AGENTS.md` so AI agents author change files instead of hand-bumping |
 
 ---
 
@@ -397,6 +399,51 @@ vis release snapshot --tag pr-1234 --dry-run
 | `--filter <glob>`        | string  | Limit to packages matching the glob (CSV)                         |
 | `--dry-run`              | boolean | Print what would publish without uploading                        |
 | `--print-config[=debug]` | string  | Print the resolved release config and exit                        |
+
+---
+
+## vis release pretrust
+
+```bash
+vis release pretrust [flags]
+```
+
+npm — unlike PyPI — refuses to configure a Trusted Publisher (OIDC) for a package that does not exist yet, so the **first** OIDC publish of a brand-new package fails. `pretrust` breaks that chicken-and-egg: for every managed package missing from the registry it publishes a minimal, explicitly non-functional placeholder, then runs `npm trust` to configure the Trusted Publisher automatically.
+
+**When to use.** Once, before the first release of new packages (locally, by a maintainer who can clear the npm 2FA prompt). After it runs, `vis release publish` can publish those packages over OIDC. Mirrors [`azu/setup-npm-trusted-publish`](https://github.com/azu/setup-npm-trusted-publish).
+
+```bash
+vis release pretrust                       # placeholder + trust for every not-yet-published package
+vis release pretrust --dry-run             # preview, no upload
+vis release pretrust --filter '@scope/*'   # limit to a glob
+vis release pretrust --no-trust            # publish placeholders only, configure trust manually
+```
+
+**What it does**
+
+1. Skips packages that already exist on the registry (override with `--force`).
+2. Publishes a README-only placeholder under a dedicated dist-tag (default `placeholder`, so `latest` stays unset and `npm install` keeps failing until the real release).
+3. On a successful publish, runs `npm trust <provider> <pkg> --file <workflow> --allow-publish` (npm CLI ≥ 11.5.1). The provider, repo, and workflow file are auto-detected from the git remote and `.github/workflows`; override with `--provider`/`--repo`/`--workflow`/`--env`.
+4. The first `npm trust` call may require a 2FA OTP — a failure there is reported per package (not fatal) with the `https://www.npmjs.com/package/<name>/access` URL as a manual fallback.
+
+**Options**
+
+| Option                   | Type    | Description                                                                           |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------- |
+| `--filter <glob>`        | string  | Limit to packages matching the glob (CSV)                                             |
+| `--tag <name>`           | string  | dist-tag for the placeholder (default `placeholder`)                                  |
+| `--version <semver>`     | string  | Placeholder version (default `0.0.0`)                                                 |
+| `--access <level>`       | string  | `public` or `restricted` (default `public`)                                           |
+| `--registry <url>`       | string  | Override the registry                                                                 |
+| `--force`                | boolean | Publish a placeholder even if the package already exists                              |
+| `--no-trust`             | boolean | Skip the `npm trust` step (publish placeholders only)                                 |
+| `--provider <name>`      | string  | Trust claim provider: `github` or `gitlab` (default: auto-detect from the git remote) |
+| `--repo <slug>`          | string  | Trust claim: `owner/repo` (github) or `group/project` (gitlab); default auto-detected |
+| `--workflow <file>`      | string  | Trust claim: workflow/pipeline filename (`npm trust --file`); default auto-detected   |
+| `--env <name>`           | string  | Trust claim: restrict to a deployment environment                                     |
+| `--allow-stage-publish`  | boolean | Trust claim: also grant the staged-publish permission                                 |
+| `--dry-run`              | boolean | Print what would publish without uploading                                            |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                            |
 
 ---
 

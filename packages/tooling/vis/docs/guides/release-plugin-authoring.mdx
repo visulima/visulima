@@ -12,12 +12,49 @@ description: "Extend `vis release` with custom notification channels, version ac
 | `NotificationChannel` | Post-publish chat / webhook fan-out              | `release.notifications.plugins: ["./my-channel.ts"]`        |
 | `VersionActions`      | Per-package read-published + publish steps       | `release.packages.<name>.versionActions: "./my-actions.ts"` |
 | `ChangelogFormatter`  | Per-release changelog rendering (file + GH body) | `release.changelog: "./my-formatter.ts"`                    |
+| `ReleasePlugin`       | Arbitrary version/publish **lifecycle** hooks    | `release.plugins: [defineReleasePlugin({ … })]`             |
 
-All three plugin surfaces — types, identity wrappers, abstract base classes — are re-exported from `@visulima/vis/release/plugin-sdk`. Always import from there in your plugin modules; the deeper sub-paths (`/core/notifications/interface`, etc.) are internal and not covered by the stability contract.
+All four plugin surfaces — types, identity wrappers, abstract base classes — are re-exported from `@visulima/vis/release/plugin-sdk` (`defineReleasePlugin` is also re-exported from `@visulima/vis/release`). Always import from there in your plugin modules; the deeper sub-paths (`/core/notifications/interface`, etc.) are internal and not covered by the stability contract.
 
-This guide covers all three. Each section ends with a complete worked example you can paste into `.vis/release/` and adapt.
+This guide covers the three single-purpose surfaces in depth; the lifecycle-plugin surface is summarised below. Each single-purpose section ends with a complete worked example you can paste into `.vis/release/` and adapt.
 
 > **Trust gate.** Anything that runs shell commands you control (the `shell` version actions, `preReleaseCommand`, `publishCommand`) is gated by `release.allowCustomCommands` — either a workspace-wide boolean or an allow-list of package names. Plugin module loading itself is **not** gated, on the assumption that anything you commit to your repo is implicitly trusted. If you load plugins from outside the workspace (e.g. an npm package), audit them like any other dependency.
+
+## Lifecycle plugins (`ReleasePlugin`)
+
+The three surfaces above each own one well-defined job. A **lifecycle plugin** is the general escape hatch: it hooks arbitrary points of the version/publish flow — run a build before publishing, push docs after, gate a package, notify on completion. Register it inline in `release.plugins`:
+
+```typescript
+// vis.config.ts
+import { defineReleasePlugin } from "@visulima/vis/release";
+
+export default defineConfig({
+    release: {
+        plugins: [
+            defineReleasePlugin({
+                name: "build-before-publish",
+                async willPublish({ package: pkg }) {
+                    await runBuild(pkg.name); // return `false` to skip this package
+                },
+                async afterPublishAll({ result }) {
+                    await pingDeployHook(result.published);
+                },
+            }),
+        ],
+    },
+});
+```
+
+Every hook is optional:
+
+| Hook                          | When it runs                            | Return / effect                                                     |
+| ----------------------------- | --------------------------------------- | ------------------------------------------------------------------- |
+| `applyDraft({ plan })`        | After versions + changelogs are written | Inspect the computed plan; throw to abort                           |
+| `willPublish({ package })`    | Before each package is published        | Return `false` to skip it (its in-wave dependents are skipped too)  |
+| `afterPublish({ package })`   | After each successful publish           | Side effects (docs, cache warm, …)                                  |
+| `afterPublishAll({ result })` | Once the whole wave finishes            | Side effects with the full `{ published, skipped, failed }` summary |
+
+**Error policy.** `applyDraft` and `willPublish` **gate** the release — a throw propagates and aborts the wave (fail fast). `afterPublish` and `afterPublishAll` are **post-effect** — a throw is logged to stderr and swallowed, because a docs-push hiccup must never "unpublish" a package that already shipped. A `willPublish` veto is treated like a non-publish, so any package depending on the vetoed one is skipped rather than published against a version that never reached the registry.
 
 ## Custom `NotificationChannel`
 
