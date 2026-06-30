@@ -1,3 +1,20 @@
+## @visulima/command-line-args [2.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.13...@visulima/command-line-args@2.0.0-alpha.14) (2026-06-30)
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* **fallow:** resolve dead-code findings ([c4125d5](https://github.com/visulima/visulima/commit/c4125d53e03ac9d90115399634535991927a96cc))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+* **lint:** raise eslint job timeout and cache slow per-package eslint runs ([#717](https://github.com/visulima/visulima/issues/717)) ([c93878d](https://github.com/visulima/visulima/commit/c93878dbfa1888cc834704448ae6eefd3098597e)), closes [#713](https://github.com/visulima/visulima/issues/713)
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0-alpha.35
+
 ## @visulima/command-line-args [2.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/command-line-args@2.0.0-alpha.12...@visulima/command-line-args@2.0.0-alpha.13) (2026-06-19)
 
 
