@@ -1,3 +1,36 @@
+## @visulima/cerebro [3.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.32...@visulima/cerebro@3.0.0-alpha.33) (2026-06-30)
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+
+### Code Refactoring
+
+* **cerebro:** lazy-load optional peer deps in built-in commands ([d499fe6](https://github.com/visulima/visulima/commit/d499fe60e903eb4322e8fb449d2592b88b7039cd))
+* resolve fallow dead-code across 13 packages ([8c458d2](https://github.com/visulima/visulima/commit/8c458d2eb17225ed48fc4bee4569e522912e8c3d))
+
+### Tests
+
+* fix failing and flaky package tests ([3f2894e](https://github.com/visulima/visulima/commit/3f2894e816e99f465abb0d3b7d5161af69bbb4ec))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.15
+* **@visulima/boxen:** upgraded to 3.0.0-alpha.15
+* **@visulima/command-line-args:** upgraded to 2.0.0-alpha.14
+* **@visulima/error:** upgraded to 6.0.0-alpha.35
+* **@visulima/pail:** upgraded to 4.0.0-alpha.23
+* **@visulima/string:** upgraded to 3.0.0-alpha.18
+
 ## @visulima/cerebro [3.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.31...@visulima/cerebro@3.0.0-alpha.32) (2026-06-13)
 
 ### Features
