@@ -123,6 +123,16 @@ pnpm add @scope/cerebro@pr-1234
 
 Snapshots use the [pkg-pr-new](https://pkg-pr-new.com) backend by default — no extra setup. Override the host via `release.snapshot.backend` or `release.snapshot.registry` if you want them on npm or a private registry.
 
+### Bootstrap trusted publishing for a new package
+
+npm won't let you configure a Trusted Publisher (OIDC) for a package that doesn't exist yet, so the first OIDC publish of a brand-new package fails. Run this once (locally, where you can clear the npm 2FA prompt):
+
+```sh
+vis release pretrust
+```
+
+It publishes a non-functional placeholder for each not-yet-published package, then runs `npm trust` to configure the Trusted Publisher. After it finishes, `vis release publish` (and CI) can publish those packages over OIDC. See [`vis release pretrust`](../commands/release.mdx#vis-release-pretrust) for the flags.
+
 ### Maintain a 1.x line after shipping 2.0
 
 Add a maintenance channel using a glob:
@@ -220,6 +230,34 @@ Add tab completion. The string formatter picked up a patch via cascade.
 ```
 
 Inline meta on the first lines of the body (`pr: 42`, `commit: abc1234`, `author: @user`) gets picked up by the `github` changelog formatter for PR / commit / contributor links.
+
+You can also leave the bump level off and let the **deepest markdown heading** in the body decide it — `#` → major, `##` → minor, `###` → patch (the highest level found wins). Headings inside fenced code blocks are ignored, so a shell `# comment` can't inflate a release. Explicit and infer-me entries can mix in one file:
+
+```markdown
+---
+"@scope/cerebro":
+"@scope/string": patch
+---
+
+## Add tab completion
+
+`@scope/cerebro` bumps `minor` (from the H2); `@scope/string` keeps its explicit `patch`.
+```
+
+**Replay files** keep a changelog note around to re-emit at a future milestone instead of bumping now. They are changelog-only (no version bump — setting both `bump` and `replay` is rejected) and are retained until their conditions fire:
+
+```markdown
+---
+"@scope/cerebro":
+    replay:
+        - "@scope/cerebro@1.0.0" # when it reaches this exact version
+        - "exit-prerelease:@scope/cerebro" # when it leaves a prerelease line
+---
+
+Stability note replayed into the changelog at each milestone above.
+```
+
+Each run, every matching condition injects the body once (de-duplicated per package); the file is deleted once **all** its conditions fire within a single run. Keep one milestone per file if you want automatic cleanup.
 
 > 💡 **Tip:** Change files are the artefact reviewers care about. They make the release explicit in the PR diff. If you'd rather derive bumps from commit messages, see `vis release generate` — it produces the same file from your branch history.
 
@@ -345,6 +383,14 @@ linked: [["@scope/x", "@scope/y"]],  // share bump level; only changed members p
 ```
 
 The object form opts into a shared changelog file for the group — see `ReleaseGroupConfig` in [types.ts](https://github.com/visulima/visulima/blob/main/packages/tooling/vis/src/release/types.ts).
+
+Set `syncGitTag: true` on a group to collapse it to **one shared git tag and one aggregate release** for the whole group instead of one tag + release per member:
+
+```typescript
+fixed: [{ name: "acme", packages: ["@acme/*"], syncGitTag: true }],
+```
+
+This tags the wave once as `acme@<version>` (the highest member version; override the format with `tagPattern`, tokens `{name}`/`{version}`) and publishes one release listing every member. Members in a `syncGitTag` group are skipped in the per-package tag/release loop.
 
 ### Per-package overrides
 
@@ -650,6 +696,28 @@ Override per-package with `vis-release.versionActions: "native-addon"` if auto-d
 
 For JVM artifacts published alongside npm packages, vis has a `maven` versionActions. See [Maven publishing](./release-maven.mdx).
 
+### Lifecycle plugins
+
+Beyond the single-purpose `define*` extension points, a **lifecycle plugin** can hook arbitrary points of the version/publish flow. Register via `release.plugins`:
+
+```typescript
+import { defineReleasePlugin } from "@visulima/vis/release";
+
+plugins: [
+    defineReleasePlugin({
+        name: "build-before-publish",
+        async willPublish({ package: pkg }) {
+            await runBuild(pkg.name); // return false to skip this package
+        },
+        async afterPublishAll({ result }) {
+            await pingDeployHook(result.published);
+        },
+    }),
+],
+```
+
+Hooks (all optional): `applyDraft({ plan })` after versions + changelogs are written, `willPublish({ package })` before each publish (return `false` to skip — its dependents are skipped too), `afterPublish({ package })` after each successful publish, `afterPublishAll({ result })` once the wave completes. `applyDraft` / `willPublish` throw-propagate (they gate the release — fail fast); `afterPublish` / `afterPublishAll` are post-effect, so a throw is logged and swallowed.
+
 ### Plugin authoring
 
 Want a custom versionActions, notification channel, or changelog formatter? See [Plugin authoring](./release-plugin-authoring.mdx).
@@ -696,6 +764,8 @@ Run it locally before pushing release config changes, or wire it into your pre-m
 | `publish.releaseNoteTemplate`                                                                                     | —                                | `{ header?, footer? }` — wrap each per-package release body. Tokens: `{name}`, `{version}`, `{previousVersion}`, `{date}`, `{repo}`, `{contributors}`. NOT applied in `aggregateRelease` mode |
 | `publish.noRelease`                                                                                               | `false`                          | Skip GitHub/GitLab release creation but still tag + publish + notify                                                                                                                          |
 | `publish.stage`                                                                                                   | `false`                          | Use `npm stage publish` for human-approved npm releases — see [staged publishing](./release-staged-publishing.mdx)                                                                            |
+| `publish.lockInGit`                                                                                               | `false`                          | Persist in-progress publish state to a git-tracked `publish-lock.json` (committed + pushed) so an ephemeral CI runner can resume a partially-failed publish from a fresh checkout             |
+| `plugins`                                                                                                         | `[]`                             | Lifecycle plugins (`applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`) — see [Lifecycle plugins](#lifecycle-plugins)                                                           |
 | `releaseTagPattern`                                                                                               | `"{name}@{version}"`             | Tag template. Tokens: `{name}`, `{unscopedName}`, `{version}`, `{major}`, `{minor}`, `{patch}`, `{date}`, `{channel}`                                                                         |
 | `aggregateRelease`                                                                                                | `false`                          | One GitHub release per wave vs per-package                                                                                                                                                    |
 | `versionPr.{title,branch,preamble,commentMarker,labels,reviewers,assignees,autoMerge,autoMergeMethod,autoRebase}` | —                                | Cosmetics + lifecycle metadata for the rolling version-PR (auto-merge needs `repo settings → allow auto-merge`; auto-rebase needs a cron running `vis release ci rebase-pr`)                  |

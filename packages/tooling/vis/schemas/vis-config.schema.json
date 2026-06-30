@@ -4154,6 +4154,13 @@
                     },
                     "description": "Per-package overrides (matches `package.json[\"vis-release\"]`)."
                 },
+                "plugins": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/ReleasePlugin"
+                    },
+                    "description": "Lifecycle plugins (tegami-style hooks: `applyDraft` / `willPublish` / `afterPublish` / `afterPublishAll`)."
+                },
                 "postPublishCommand": {
                     "type": "string",
                     "description": "Shell command run after all publishes complete."
@@ -4423,6 +4430,14 @@
                                 "type": "string"
                             },
                             "description": "Package names or globs that belong to this group."
+                        },
+                        "syncGitTag": {
+                            "type": "boolean",
+                            "description": "Emit a single shared git tag (and one aggregate GitHub/GitLab release) for the whole group instead of one tag + release per member (tegami parity). Default `false`."
+                        },
+                        "tagPattern": {
+                            "type": "string",
+                            "description": "Override the shared git tag for a `syncGitTag` group. Tokens: `{name}` (group name), `{version}` (representative version). Default: `\"{name}@{version}\"`."
                         }
                     },
                     "required": [
@@ -4899,6 +4914,20 @@
             "additionalProperties": false,
             "description": "Regex-based file-substitution rule used by `publish.extraFiles` (workspace) or `packages.&lt;name>.extraFiles` (per-package) to keep version strings in non-package.json files in sync with the release."
         },
+        "ReleasePlugin": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string",
+                    "description": "Stable plugin id (used in logs + skip reasons)."
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": true,
+            "description": "A release lifecycle plugin (tegami parity). Unlike the single-purpose `defineVersionActions` / `defineChangelogFormatter` / `defineNotificationChannel` extension points, a plugin can hook arbitrary points of the version/publish lifecycle — e.g. run a build in `willPublish`, push docs in `afterPublishAll`.\n\nError semantics: `applyDraft` and `willPublish` throw-propagate (they gate the release — fail fast). `afterPublish` / `afterPublishAll` are post-effect: a throw is logged and swallowed so a side-effect hiccup can't \"unpublish\"."
+        },
         "PublishConfig": {
             "type": "object",
             "properties": {
@@ -4947,6 +4976,10 @@
                 "guards": {
                     "$ref": "#/$defs/PublishGuardsConfig",
                     "description": "Pre-publish security gates. Each gate is opt-in."
+                },
+                "lockInGit": {
+                    "type": "boolean",
+                    "description": "Persist in-progress publish state to a git-TRACKED `&lt;changesDir>/publish-lock.json` instead of the gitignored `.state.json`. Default `false`.\n\nThe tracked lock is committed (and pushed by the publish flow) so a partially-failed publish can be resumed from a *fresh checkout on a different runner* — the ephemeral-CI case where `.state.json` (untracked) never survives the clone. On full success the lock is removed and the removal committed. Mirrors tegami's `publish-lock.yaml`-in-git model."
                 },
                 "noRelease": {
                     "type": "boolean",

@@ -185,12 +185,37 @@ const flattenRootType = (raw: Schema, rootType: string): Record<string, unknown>
  * Build a single schema in memory. Returns the JSON-stringified schema
  * with a trailing newline, matching the on-disk shape.
  */
+/**
+ * Types whose members include functions (lifecycle hooks, etc.) can't be
+ * modelled in JSON Schema — ts-json-schema-generator drops the function
+ * properties and, with the global `additionalProperties: false`, the remaining
+ * definition rejects otherwise-valid objects. Relax those defs to
+ * `additionalProperties: true` so schema consumers accept programmatic plugins.
+ */
+const FUNCTION_BEARING_DEFS = new Set(["ReleasePlugin"]);
+
+const relaxFunctionBearingDefs = (schema: Schema): void => {
+    const container = schema as Record<string, unknown>;
+    const defs = (container["$defs"] ?? container["definitions"]) as Record<string, unknown> | undefined;
+
+    if (!defs) {
+        return;
+    }
+
+    for (const [name, definition] of Object.entries(defs)) {
+        if (FUNCTION_BEARING_DEFS.has(name) && definition && typeof definition === "object") {
+            (definition as Record<string, unknown>).additionalProperties = true;
+        }
+    }
+};
+
 export const buildSchema = (spec: SchemaSpec): string => {
     const generator = createGenerator({ ...baseConfig, path: spec.sourceFile ?? SOURCE_FILE, type: spec.type });
     const raw = generator.createSchema(spec.type) as Schema;
 
     rewriteRefs(raw);
     rewriteTuples(raw);
+    relaxFunctionBearingDefs(raw);
 
     const body = flattenRootType(raw, spec.type);
 

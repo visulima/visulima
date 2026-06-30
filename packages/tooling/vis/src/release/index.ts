@@ -12,6 +12,7 @@ export type {
     ChangelogResult,
     PublishOptions,
     PublishResult,
+    ReleaseDraft,
     ReleaseOptions,
     ReleaseOptionsBase,
     SnapshotOptions,
@@ -19,8 +20,9 @@ export type {
     VersionOptions,
     VersionResult,
 } from "./api";
-export { release, releaseChangelog, ReleaseClient, releasePublish, releaseSnapshot, releaseVersion } from "./api";
+export { release, releaseChangelog, ReleaseClient, releaseDraft, releasePublish, releaseSnapshot, releaseVersion } from "./api";
 export { DEFAULT_CLEAN_KEEP, DEFAULT_CLEAN_STRIP, DEFAULT_CONFIG, DEFAULT_DEPENDENCY_BUMP_RULES, defineReleaseConfig, resolveCleanStripList } from "./config";
+export { defineReleasePlugin } from "./core/plugins";
 export type { VisReleaseErrorCode, VisReleaseErrorOptions } from "./errors";
 export { VisReleaseError, visReleaseError } from "./errors";
 export type {
@@ -45,12 +47,17 @@ export type {
     PackManager,
     PerPackageReleaseConfig,
     PlannedRelease,
+    PluginPackageInfo,
+    PluginPublishSummary,
     ProtocolResolutionMode,
     PublishConfig,
     PublishGuardsConfig,
     PublishStrategy,
     ReleaseAssetsConfig,
     ReleasePlan,
+    ReleasePlugin,
+    ReleasePluginContext,
+    ReplayCondition,
     SnapshotBackend,
     SnapshotConfig,
     SnapshotTagKind,

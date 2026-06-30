@@ -8,6 +8,16 @@
 import { applyContext, buildContext, publishContext } from "./core/orchestrator";
 import type { PlannedRelease, ReleasePlan, VisReleaseConfig } from "./types";
 
+// `await using` resolves `obj[Symbol.asyncDispose]` against the engine's
+// well-known symbol, which Node 22 provides at runtime. The configured TS lib
+// is `ES2024` (no `esnext.disposable`), so the type is augmented here rather
+// than widening the whole repo's lib set.
+declare global {
+    interface SymbolConstructor {
+        readonly asyncDispose: unique symbol;
+    }
+}
+
 // ── Common option shapes ─────────────────────────────────────────────
 
 export interface ReleaseOptionsBase {
@@ -161,6 +171,76 @@ export const releasePublish = async (options: PublishOptions = {}): Promise<Publ
     return result;
 };
 
+// ── Draft (Explicit Resource Management) ─────────────────────────────
+
+/**
+ * A computed-but-not-yet-applied release. Holds the resolved {@link ReleasePlan}
+ * so callers can inspect what *would* happen, then either {@link ReleaseDraft.apply}
+ * it (write versions + changelogs, consume change files) or {@link ReleaseDraft.discard}
+ * it.
+ *
+ * Implements `Symbol.asyncDispose`, so the idiomatic form is:
+ *
+ * ```ts
+ * await using draft = await releaseDraft({ cwd });
+ * console.log(draft.plan.releases);
+ * // draft.apply() runs automatically when the block exits — unless you
+ * // called draft.discard() first.
+ * ```
+ *
+ * Disposal fires on *any* scope exit, including thrown errors. If you need
+ * apply-only-on-success semantics, call {@link ReleaseDraft.apply} explicitly
+ * and `discard()` on the error path instead of relying on disposal.
+ */
+export interface ReleaseDraft {
+    /** Auto-apply on `await using` scope exit unless already applied or discarded. */
+    [Symbol.asyncDispose]: () => Promise<void>;
+    /** Write the planned versions + changelogs and consume the change files. Idempotent — repeat calls are no-ops returning the first result. */
+    apply: () => Promise<VersionResult>;
+    /** Abandon the draft so disposal will not apply it. */
+    discard: () => void;
+    /** The computed plan (available before apply). */
+    readonly plan: ReleasePlan;
+}
+
+export const releaseDraft = async (options: VersionOptions = {}): Promise<ReleaseDraft> => {
+    const ctx = await buildContext(options);
+
+    let settled = false;
+    let appliedResult: VersionResult | undefined;
+
+    const apply = async (): Promise<VersionResult> => {
+        if (appliedResult) {
+            return appliedResult;
+        }
+
+        settled = true;
+
+        const result = await applyContext(ctx, { dryRun: options.dryRun });
+
+        appliedResult = {
+            changedFiles: result.changedFiles,
+            deletedFiles: result.deletedFiles,
+            plan: result.plan,
+        };
+
+        return appliedResult;
+    };
+
+    return {
+        apply,
+        discard: (): void => {
+            settled = true;
+        },
+        plan: ctx.plan,
+        [Symbol.asyncDispose]: async (): Promise<void> => {
+            if (!settled) {
+                await apply();
+            }
+        },
+    };
+};
+
 export const releaseSnapshot = async (options: SnapshotOptions): Promise<SnapshotResult> => {
     const ctx = await buildContext(options);
     const { runSnapshot } = await import("./core/snapshot");
@@ -262,6 +342,10 @@ export class ReleaseClient {
 
     public releasePublish(options: Omit<PublishOptions, "config"> = {}): Promise<PublishResult> {
         return releasePublish({ ...options, config: this.config });
+    }
+
+    public releaseDraft(options: Omit<VersionOptions, "config"> = {}): Promise<ReleaseDraft> {
+        return releaseDraft({ ...options, config: this.config });
     }
 
     public releaseSnapshot(options: Omit<SnapshotOptions, "config">): Promise<SnapshotResult> {

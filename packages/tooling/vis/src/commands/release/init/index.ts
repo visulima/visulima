@@ -61,12 +61,18 @@ const init: Command = {
             name: "apply",
             type: Boolean,
         },
+        {
+            description: "Append a 'Releasing with vis' section to AGENTS.md so AI agents know how to drive the release flow",
+            name: "agent",
+            type: Boolean,
+        },
     ],
 };
 
 export default init;
 
 export type ReleaseInitOptions = CreateOptions<{
+    agent: boolean | undefined;
     apply: boolean | undefined;
     "dry-run": boolean | undefined;
     fresh: boolean | undefined;
