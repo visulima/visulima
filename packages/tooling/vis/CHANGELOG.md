@@ -1,3 +1,9 @@
+## @visulima/vis [1.0.0-alpha.46](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.45...@visulima/vis@1.0.0-alpha.46) (2026-07-01)
+
+### Features
+
+* **vis:** release features + npm pretrust ([#719](https://github.com/visulima/visulima/issues/719)) ([c19a814](https://github.com/visulima/visulima/commit/c19a8142ccf0bc86ce232c9aaa7f79f3bf7c21f2))
+
 ## @visulima/vis [1.0.0-alpha.45](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.44...@visulima/vis@1.0.0-alpha.45) (2026-06-30)
 
 ### Bug Fixes
