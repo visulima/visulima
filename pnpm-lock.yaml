@@ -6408,7 +6408,7 @@ importers:
         specifier: catalog:types
         version: 25.9.3
       '@visulima/email':
-        specifier: 1.0.0-alpha.44
+        specifier: 1.0.0-alpha.45
         version: link:../../email/email
       '@visulima/error':
         specifier: 6.0.0-alpha.35
@@ -10307,7 +10307,7 @@ importers:
         specifier: 3.0.0-alpha.13
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.45
+        specifier: 1.0.0-alpha.46
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -17477,7 +17477,7 @@ packages:
       esbuild: '>=0.28.1'
       rollup: '>=4.59.0'
       storybook: ^10.4.4
-      vite: ^7.3.5
+      vite: '>=7.1.11'
       webpack: '>=5.104.1'
     peerDependenciesMeta:
       esbuild:
