@@ -1,3 +1,5 @@
+## @visulima/email [1.0.0-alpha.45](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.44...@visulima/email@1.0.0-alpha.45) (2026-07-01)
+
 ## @visulima/email [1.0.0-alpha.44](https://github.com/visulima/visulima/compare/@visulima/email@1.0.0-alpha.43...@visulima/email@1.0.0-alpha.44) (2026-06-30)
 
 ### Features
