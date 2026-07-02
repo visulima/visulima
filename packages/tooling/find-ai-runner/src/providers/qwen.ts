@@ -20,7 +20,10 @@ const qwen: AiProviderConfig = {
     },
     command: "qwen",
     defaultModel: "",
+    displayName: "Qwen Code",
     envVariable: "QWEN_PATH",
+    // Qwen Code sets gemini-cli's GEMINI_CLI (it is a fork); the marker lives on the gemini provider.
+    sessionMarkers: [],
     supportsMaxTokens: false,
     supportsModel: true,
 };

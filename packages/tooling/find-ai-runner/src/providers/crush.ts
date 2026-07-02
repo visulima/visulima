@@ -20,7 +20,10 @@ const crush: AiProviderConfig = {
     },
     command: "crush",
     defaultModel: "",
+    displayName: "Crush",
     envVariable: "CRUSH_PATH",
+    // No verified session marker yet — crush does not mark the shells it spawns.
+    sessionMarkers: [],
     supportsMaxTokens: false,
     supportsModel: true,
 };

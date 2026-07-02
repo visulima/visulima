@@ -14,7 +14,9 @@ const amp: AiProviderConfig = {
     },
     command: "amp",
     defaultModel: "",
+    displayName: "Amp",
     envVariable: "AMP_PATH",
+    sessionMarkers: [{ confidence: "definite", equals: "amp", variable: "AGENT" }],
     supportsMaxTokens: false,
     supportsModel: false,
 };

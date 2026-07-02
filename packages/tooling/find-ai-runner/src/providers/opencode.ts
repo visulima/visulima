@@ -15,7 +15,9 @@ const opencode: AiProviderConfig = {
     command: "opencode",
     // Empty default = provider-default model, avoids pinning a stale snapshot.
     defaultModel: "",
+    displayName: "opencode",
     envVariable: "OPENCODE_PATH",
+    sessionMarkers: [{ confidence: "definite", variable: "OPENCODE_CLIENT" }],
     supportsMaxTokens: false,
     supportsModel: true,
 };
