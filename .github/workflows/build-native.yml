@@ -26,6 +26,17 @@ permissions:
 
 env:
     CARGO_INCREMENTAL: 0
+    # Disable pnpm's verify-deps-before-run for every `pnpm run`/`pnpm exec`/
+    # `pnpm <script>` in this workflow. "Setup resources and environment" already
+    # runs an explicit `pnpm install --frozen-lockfile`, so re-verifying (and
+    # reinstalling) the whole workspace before each script is pure redundancy.
+    # It also breaks the concurrent native builds: the four `build:native` steps
+    # run in parallel (see the parallel group below), so four pre-run installs
+    # would mutate the shared `node_modules/.pnpm` hoist tree at once and race on
+    # Windows, failing with `ENOENT: ... unlink ...\.pnpm\node_modules\@visulima\...`
+    # inside `symlinkHoistedDependency` — the flaky failure that only a re-run
+    # cleared. Explicit `pnpm install` is unaffected (this only gates script runs).
+    npm_config_verify_deps_before_run: "false"
 
 jobs:
     files-changed:
@@ -261,6 +272,11 @@ jobs:
             # and their `rustup target add` calls stay OUTSIDE the group and remain
             # sequential — that avoids concurrent rustup invocations racing on the
             # toolchain lock, and keeps peak memory lower during release linking.
+            #
+            # NOTE: these run concurrently WITHOUT each triggering a workspace
+            # reinstall thanks to `npm_config_verify_deps_before_run=false` (set at
+            # the workflow env level). See that comment for why — without it, four
+            # parallel pre-run installs race on Windows and fail with a hoist ENOENT.
             - parallel:
                   - name: "Build task-runner native"
                     if: "steps.cache-task-runner.outputs.cache-hit != 'true'"
