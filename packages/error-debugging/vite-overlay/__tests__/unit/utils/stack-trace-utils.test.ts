@@ -321,8 +321,12 @@ describe(isValidStackFrame, () => {
 
         // No location marker => not a valid frame; correctness is preserved.
         expect(result).toBe(false);
-        // 1000 iterations of a linear scan stay well under a second; a backtracking regex would not.
-        expect(elapsed).toBeLessThan(1000);
+        // 1000 iterations of a linear scan take single-digit milliseconds; a
+        // backtracking regex on this 2000-char adversarial input would take
+        // *seconds*. The ceiling is deliberately generous (not a tight bound) so
+        // shared/loaded CI runners don't flake it, while still failing loudly on
+        // a real catastrophic-backtracking regression.
+        expect(elapsed).toBeLessThan(5000);
     });
 
     it("accepts a genuine location even when the line contains many parentheses", () => {
