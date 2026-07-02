@@ -26,17 +26,6 @@ permissions:
 
 env:
     CARGO_INCREMENTAL: 0
-    # Disable pnpm's verify-deps-before-run for every `pnpm run`/`pnpm exec`/
-    # `pnpm <script>` in this workflow. "Setup resources and environment" already
-    # runs an explicit `pnpm install --frozen-lockfile`, so re-verifying (and
-    # reinstalling) the whole workspace before each script is pure redundancy.
-    # It also breaks the concurrent native builds: the four `build:native` steps
-    # run in parallel (see the parallel group below), so four pre-run installs
-    # would mutate the shared `node_modules/.pnpm` hoist tree at once and race on
-    # Windows, failing with `ENOENT: ... unlink ...\.pnpm\node_modules\@visulima\...`
-    # inside `symlinkHoistedDependency` — the flaky failure that only a re-run
-    # cleared. Explicit `pnpm install` is unaffected (this only gates script runs).
-    npm_config_verify_deps_before_run: "false"
 
 jobs:
     files-changed:
@@ -273,29 +262,36 @@ jobs:
             # sequential — that avoids concurrent rustup invocations racing on the
             # toolchain lock, and keeps peak memory lower during release linking.
             #
-            # NOTE: these run concurrently WITHOUT each triggering a workspace
-            # reinstall thanks to `npm_config_verify_deps_before_run=false` (set at
-            # the workflow env level). See that comment for why — without it, four
-            # parallel pre-run installs race on Windows and fail with a hoist ENOENT.
+            # `--config.verify-deps-before-run=false` is REQUIRED on each command:
+            # otherwise pnpm re-verifies (and reinstalls) the whole workspace before
+            # running the script. Four in parallel means four concurrent installs
+            # mutating the shared `node_modules/.pnpm` hoist tree, which races and
+            # fails with `ENOENT: ... unlink ...\.pnpm\node_modules\...` inside
+            # `symlinkHoistedDependency` (seen on both Windows and macOS — the flaky
+            # failure that only a re-run cleared). "Setup resources and environment"
+            # already ran an explicit `pnpm install --frozen-lockfile`, so the
+            # pre-run verify is pure redundancy. NOTE: the flag must be passed
+            # per-command — the `npm_config_verify_deps_before_run` env var does NOT
+            # disable it (pnpm mis-coerces the env value); only the CLI flag does.
             - parallel:
                   - name: "Build task-runner native"
                     if: "steps.cache-task-runner.outputs.cache-hit != 'true'"
-                    run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    run: "pnpm --config.verify-deps-before-run=false build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
                     working-directory: "packages/tooling/task-runner"
 
                   - name: "Build tui native"
                     if: "steps.cache-tui.outputs.cache-hit != 'true'"
-                    run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    run: "pnpm --config.verify-deps-before-run=false build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
                     working-directory: "packages/terminal/tui"
 
                   - name: "Build vis native"
                     if: "steps.cache-vis.outputs.cache-hit != 'true'"
-                    run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    run: "pnpm --config.verify-deps-before-run=false build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
                     working-directory: "packages/tooling/vis"
 
                   - name: "Build secret-scanner native"
                     if: "steps.cache-secret-scanner.outputs.cache-hit != 'true'"
-                    run: "pnpm build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    run: "pnpm --config.verify-deps-before-run=false build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
                     working-directory: "packages/tooling/secret-scanner"
 
             # Build the fspy-seccomp-helper sidecar binary for every
@@ -564,17 +560,17 @@ jobs:
             - parallel:
                   - name: "Build @visulima/path (secret-scanner dep)"
                     if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
-                    run: "pnpm run build"
+                    run: "pnpm --config.verify-deps-before-run=false run build"
                     working-directory: "packages/filesystem/path"
 
                   - name: "Build @visulima/error (secret-scanner dep)"
                     if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
-                    run: "pnpm run build"
+                    run: "pnpm --config.verify-deps-before-run=false run build"
                     working-directory: "packages/error-debugging/error"
 
             - name: "Build @visulima/fs (secret-scanner dep)"
               if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
-              run: "pnpm run build"
+              run: "pnpm --config.verify-deps-before-run=false run build"
               working-directory: "packages/filesystem/fs"
 
             - name: "Test secret-scanner native binding"
