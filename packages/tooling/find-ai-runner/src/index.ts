@@ -6,37 +6,12 @@ import { join } from "node:path";
 import { promisify } from "node:util";
 
 import { DEFAULT_MAX_TOKENS, DEFAULT_RUN_TIMEOUT, DETECTION_TIMEOUT, IS_WINDOWS, PROVIDER_NAMES, VERSION_REGEX, VERSION_TIMEOUT } from "./constants";
-import amp from "./providers/amp";
-import claude from "./providers/claude";
-import codex from "./providers/codex";
-import copilot from "./providers/copilot";
-import crush from "./providers/crush";
-import cursor from "./providers/cursor";
-import droid from "./providers/droid";
-import gemini from "./providers/gemini";
-import kimi from "./providers/kimi";
-import opencode from "./providers/opencode";
-import qwen from "./providers/qwen";
-import type { AiDetectAsyncOptions, AiDetectOptions, AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult } from "./types";
+import PROVIDERS from "./providers";
+import type { AiDetectAsyncOptions, AiDetectOptions, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult } from "./types";
 import { AiRunError } from "./types"; // used as a value inside runProvider
 
 /** Promisified `execFile`, used by the async/parallel detection path. */
 const execFileAsync = promisify(execFile);
-
-/** All supported AI CLI provider configurations, keyed by name. */
-const PROVIDERS: Record<AiProviderName, AiProviderConfig> = {
-    amp,
-    claude,
-    codex,
-    copilot,
-    crush,
-    cursor,
-    droid,
-    gemini,
-    kimi,
-    opencode,
-    qwen,
-};
 
 /** Matches Windows `.cmd`/`.bat` shim extensions. */
 const WINDOWS_SHIM_REGEX = /\.(?:bat|cmd)$/i;
@@ -502,9 +477,12 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
     });
 };
 
-export { buildCliArgs, detectAllProviders, detectAllProvidersAsync, detectAvailableProviders, detectProvider, findRunner, PROVIDERS, runProvider };
+export { buildCliArgs, detectAllProviders, detectAllProvidersAsync, detectAvailableProviders, detectProvider, findRunner, runProvider };
 
 export { PROVIDER_NAMES } from "./constants";
+export { default as PROVIDERS } from "./providers";
+export { AI_AGENT_ENV, detectAiSession, isAiSession, SESSION_MARKERS } from "./session";
+export { type AiSessionInfo, type AiSessionMarker, type AiSessionOptions, type EnvLike } from "./session";
 export { AiRunError } from "./types";
 export {
     type AiBuildArgsOptions,
@@ -515,4 +493,6 @@ export {
     type AiProviderName,
     type AiRunOptions,
     type AiRunResult,
+    type AiSessionConfidence,
+    type AiSessionMarkerConfig,
 } from "./types";

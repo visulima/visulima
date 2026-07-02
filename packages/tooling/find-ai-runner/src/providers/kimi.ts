@@ -14,7 +14,10 @@ const kimi: AiProviderConfig = {
     },
     command: "kimi",
     defaultModel: "",
+    displayName: "Kimi CLI",
     envVariable: "KIMI_PATH",
+    // No verified session marker yet — kimi does not mark the shells it spawns.
+    sessionMarkers: [],
     supportsMaxTokens: false,
     supportsModel: true,
 };

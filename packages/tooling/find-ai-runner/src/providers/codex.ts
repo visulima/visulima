@@ -22,7 +22,13 @@ const codex: AiProviderConfig = {
     },
     command: "codex",
     defaultModel: "",
+    displayName: "Codex",
     envVariable: "CODEX_PATH",
+    sessionMarkers: [
+        { confidence: "definite", variable: "CODEX_SANDBOX" },
+        { confidence: "definite", variable: "CODEX_THREAD_ID" },
+        { confidence: "definite", variable: "CODEX_CI" },
+    ],
     supportsMaxTokens: false,
     supportsModel: true,
 };
