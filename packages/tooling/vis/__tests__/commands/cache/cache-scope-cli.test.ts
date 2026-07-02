@@ -138,8 +138,8 @@ describe("cache --scope CLI dispatch", () => {
 
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
-        const sharedCache = resolve(main, ".vis/cache");
-        const linkedCache = resolve(linked, ".vis/cache");
+        const sharedCache = resolve(main, "node_modules/.cache/vis");
+        const linkedCache = resolve(linked, "node_modules/.cache/vis");
 
         seedEntry(sharedCache, "shared-only-hash");
         seedEntry(linkedCache, "linked-only-hash");
@@ -183,8 +183,8 @@ describe("cache --scope CLI dispatch", () => {
 
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
-        const sharedCache = resolve(main, ".vis/cache");
-        const linkedCache = resolve(linked, ".vis/cache");
+        const sharedCache = resolve(main, "node_modules/.cache/vis");
+        const linkedCache = resolve(linked, "node_modules/.cache/vis");
 
         seedEntry(sharedCache, "shared-only-hash");
         seedEntry(linkedCache, "linked-only-hash");
@@ -228,8 +228,8 @@ describe("cache --scope CLI dispatch", () => {
 
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
-        const sharedCache = resolve(main, ".vis/cache");
-        const linkedCache = resolve(linked, ".vis/cache");
+        const sharedCache = resolve(main, "node_modules/.cache/vis");
+        const linkedCache = resolve(linked, "node_modules/.cache/vis");
 
         seedEntry(sharedCache, "shared-only-hash");
         seedEntry(linkedCache, "linked-only-hash");
@@ -271,7 +271,7 @@ describe("cache --scope CLI dispatch", () => {
         mkdirSync(main);
         initRepo(main);
 
-        const sharedCache = resolve(main, ".vis/cache");
+        const sharedCache = resolve(main, "node_modules/.cache/vis");
 
         seedEntry(sharedCache, "primary-hash");
 
@@ -311,7 +311,7 @@ describe("cache --scope CLI dispatch", () => {
 
         execFileSync("git", ["worktree", "add", "-b", "feat", linked], { cwd: main, stdio: "ignore" });
 
-        const sharedCache = resolve(main, ".vis/cache");
+        const sharedCache = resolve(main, "node_modules/.cache/vis");
 
         seedEntry(sharedCache, "shared-only-hash");
 

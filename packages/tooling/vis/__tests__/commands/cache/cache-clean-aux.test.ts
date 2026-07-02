@@ -40,7 +40,7 @@ describe("cacheCleanExecute --type filter", () => {
 
     beforeEach(() => {
         workspaceRoot = mkdtempSync(join(tmpdir(), "vis-cache-aux-ws-"));
-        cacheDirectory = join(workspaceRoot, ".vis/cache");
+        cacheDirectory = join(workspaceRoot, "node_modules/.cache/vis");
         mkdirSync(cacheDirectory, { recursive: true });
         writeCacheEntry(cacheDirectory, "hash1");
         aiClearMock.mockClear();

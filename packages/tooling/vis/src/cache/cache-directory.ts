@@ -12,7 +12,8 @@ import { DEFAULT_WORKSPACE_CACHE_DIRECTORY } from "../util/vis-paths";
  * cache from the outside) so both commands agree on:
  *
  * - the resolution order: `--cache-dir` flag > vis.config.ts
- *   `taskRunner.cacheDirectory` > `{workspaceRoot}/.vis/cache`
+ *   `taskRunner.cacheDirectory` > `VIS_CACHE_DIRECTORY` env >
+ *   `{workspaceRoot}/node_modules/.cache/vis`
  * - relative-path normalization against `workspaceRoot`
  * - containment checks (used to decide whether a destructive operation is
  *   safe to perform without confirmation)
@@ -85,7 +86,7 @@ export const resolveSharedCacheRoot = (workspaceRoot: string, enabled: boolean |
  * Same precedence as {@link resolveCacheDirectory}, but when no explicit
  * path is supplied the workspace anchor is the *main* worktree root rather
  * than the linked checkout. Used by `vis run` and `vis cache` so parallel
- * agents in sibling worktrees share `&lt;mainWorktreeRoot>/.vis/cache`.
+ * agents in sibling worktrees share `&lt;mainWorktreeRoot>/node_modules/.cache/vis`.
  * @param workspaceRoot Absolute path of the current workspace (linked or primary).
  * @param optionsCacheDir CLI `--cache-dir` value (may be relative or absolute).
  * @param configCacheDir `taskRunner.cacheDirectory` from vis.config.ts.
