@@ -14,7 +14,7 @@ import type { TaskHasher } from "./task-hasher";
 import { computeTaskHash } from "./task-hasher";
 import type { TaskScheduler } from "./task-scheduler";
 import { TrackedTaskExecutor } from "./tracked-executor";
-import type { LifeCycleInterface, OutputSpec, Task, TaskExecutor, TaskGraph, TaskResult, TaskResults, TaskStatus } from "./types";
+import type { LifeCycleInterface, OutputSpec, Task, TaskExecutor, TaskGraph, TaskHashDetails, TaskResult, TaskResults, TaskStatus } from "./types";
 import { createFailureResult, resolveTaskCwd } from "./utils";
 import type { WhenContext } from "./when-condition";
 import { evaluateWhen, explainWhen, getCurrentBranch } from "./when-condition";
@@ -564,10 +564,61 @@ class TaskOrchestrator {
         return task.hashMode === "trace" && this.#fingerprintManager !== undefined;
     }
 
+    /**
+     * Folds the content hashes of a task's direct `dependsOn` dependencies
+     * into its own hash details (as `dep:&lt;taskId>` implicit-dependency keys).
+     *
+     * Without this, `dependsOn` only *orders* execution: a task's cache key
+     * reflects only its own inputs. So when a dependency's source changes —
+     * and its rebuilt `dist` with it — but the task's own files don't, the
+     * task restores a STALE cache entry (the cross-package failure #1 in the
+     * vis feedback: a `lint:types` masking a dependency `dist` change). Folding
+     * the dependency's hash makes the task's key change whenever a dependency's
+     * does. Coverage is transitive for free: every task folds its *direct*
+     * dependencies, whose hashes already fold theirs — a Merkle-style chain,
+     * so we never walk the whole graph here.
+     *
+     * Only dependencies with an already-computed content hash contribute. The
+     * scheduler runs every dependency to completion before releasing a
+     * dependent, so a declared-path dependency's `hash` is set by the time we
+     * reach here. A dependency on the trace/fingerprint path (which instead
+     * records real dependency-output reads at execution time) has no content
+     * `hash` and is skipped — its invalidation is handled by that path.
+     */
+    #foldDependencyHashes(task: Task, hashDetails: TaskHashDetails): void {
+        const dependencyIds = this.#taskGraph?.dependencies[task.id];
+
+        if (!dependencyIds || dependencyIds.length === 0) {
+            return;
+        }
+
+        const implicitDeps = hashDetails.implicitDeps ?? {};
+        let folded = false;
+
+        for (const dependencyId of dependencyIds) {
+            const dependencyHash = this.#taskGraph?.tasks[dependencyId]?.hash;
+
+            if (dependencyHash) {
+                implicitDeps[`dep:${dependencyId}`] = dependencyHash;
+                folded = true;
+            }
+        }
+
+        if (folded) {
+            hashDetails.implicitDeps = implicitDeps;
+        }
+    }
+
     async #processTask(task: Task): Promise<TaskResult> {
         const startTime = Date.now();
 
         const hashDetails = await this.#taskHasher.hashTask(task);
+
+        // Make `dependsOn` cache-correct, not just execution-ordering: fold the
+        // hashes of this task's direct dependencies into its key so a stale
+        // dependency output can no longer be masked by a cache hit.
+        this.#foldDependencyHashes(task, hashDetails);
+
         const hash = computeTaskHash(hashDetails);
 
         Object.assign(task, { hash, hashDetails });

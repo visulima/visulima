@@ -264,4 +264,89 @@ describe("defaultTaskRunner (E2E via real subprocess)", () => {
 
         expect(bundled).toBe("compiled-bundled");
     });
+
+    it("invalidates a dependent when only a dependency's source changes (dependsOn folds into the cache key)", async () => {
+        expect.assertions(5);
+
+        // Two projects: consumer:check dependsOn lib:build. The consumer's OWN
+        // source never changes across runs — only lib's does. Before the
+        // dependency-hash fold, consumer:check keyed on its own inputs only and
+        // restored a STALE cache hit; now its key includes lib:build's hash, so
+        // it must re-run when lib changes. (Regression guard for vis feedback #1.)
+        await mkdir(join(workspaceRoot, "packages/lib/src"), { recursive: true });
+        await writeFile(join(workspaceRoot, "packages/lib/src/index.ts"), "export const v = 1;\n");
+        await writeFile(join(workspaceRoot, "packages/lib/package.json"), JSON.stringify({ name: "lib" }));
+
+        await mkdir(join(workspaceRoot, "packages/consumer/src"), { recursive: true });
+        await writeFile(join(workspaceRoot, "packages/consumer/src/index.ts"), "export const c = 1;\n");
+        await writeFile(join(workspaceRoot, "packages/consumer/package.json"), JSON.stringify({ name: "consumer" }));
+
+        const libBuild = makeTask("lib:build", "packages/lib", ["packages/lib/dist"]);
+        const consumerCheck = makeTask("consumer:check", "packages/consumer", []);
+
+        const libScript = `
+            const { mkdirSync, writeFileSync } = require('node:fs');
+            const { join } = require('node:path');
+            const distDir = join(process.cwd(), 'packages/lib/dist');
+            mkdirSync(distDir, { recursive: true });
+            writeFileSync(join(distDir, 'index.js'), 'built ' + Date.now());
+            process.stdout.write('lib built');
+        `;
+        const checkScript = `process.stdout.write('checked ' + Date.now());`;
+
+        let libCount = 0;
+        let checkCount = 0;
+        const executor: TaskExecutor = async (t, options) => {
+            if (t.id === "lib:build") {
+                libCount += 1;
+            }
+
+            if (t.id === "consumer:check") {
+                checkCount += 1;
+            }
+
+            return createNodeExecutor(workspaceRoot, { "consumer:check": checkScript, "lib:build": libScript })(t, options);
+        };
+
+        const taskGraph: TaskGraph = {
+            dependencies: { "consumer:check": ["lib:build"], "lib:build": [] },
+            roots: ["consumer:check", "lib:build"],
+            tasks: { "consumer:check": consumerCheck, "lib:build": libBuild },
+        };
+        const projectGraph: ProjectGraph = {
+            dependencies: { consumer: [{ source: "consumer", target: "lib", type: "static" }], lib: [] },
+            nodes: {
+                consumer: { data: { root: "packages/consumer" }, name: "consumer", type: "library" },
+                lib: { data: { root: "packages/lib" }, name: "lib", type: "library" },
+            },
+        };
+        const context: TaskRunnerContext = {
+            lifeCycle: new EmptyLifeCycle(),
+            projectGraph,
+            taskExecutor: executor,
+            taskGraph,
+            workspaceRoot,
+        };
+
+        // Cold run: both execute.
+        await defaultTaskRunner([consumerCheck, libBuild], {}, context);
+
+        expect(libCount).toBe(1);
+        expect(checkCount).toBe(1);
+
+        // Re-run with nothing changed → consumer:check restores from cache
+        // (control: the fold must not force a permanent miss).
+        await defaultTaskRunner([consumerCheck, libBuild], {}, context);
+
+        expect(checkCount).toBe(1);
+
+        // Change ONLY lib's source. consumer's own files are untouched, but
+        // consumer:check must still re-run because its dependency's hash changed.
+        await writeFile(join(workspaceRoot, "packages/lib/src/index.ts"), "export const v = 2;\n");
+
+        await defaultTaskRunner([consumerCheck, libBuild], {}, context);
+
+        expect(libCount).toBe(2);
+        expect(checkCount).toBe(2);
+    });
 });
