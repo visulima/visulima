@@ -18,7 +18,7 @@
  */
 import type { AiProviderName } from "./types";
 
-/** Minimal env shape — `process.env` structurally, injectable for tests. */
+/** Minimal env shape accepted by {@link detectAiSession} / {@link isAiSession} — `process.env` structurally, injectable for tests. */
 type EnvLike = Readonly<Record<string, string | undefined>>;
 
 /**
@@ -151,4 +151,4 @@ const detectAiSession = (env: EnvLike = process.env, options: AiSessionOptions =
 const isAiSession = (env: EnvLike = process.env, options: AiSessionOptions = {}): boolean => detectAiSession(env, options) !== undefined;
 
 export { AI_AGENT_ENV, detectAiSession, isAiSession, SESSION_MARKERS };
-export type { AiSessionConfidence, AiSessionInfo, AiSessionMarker, AiSessionOptions };
+export type { AiSessionConfidence, AiSessionInfo, AiSessionMarker, AiSessionOptions, EnvLike };
