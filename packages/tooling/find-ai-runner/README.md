@@ -230,6 +230,31 @@ Providers are detected using three strategies (tried in order):
 2. **`which`/`where` command** — checks system PATH
 3. **Known paths** — `/opt/homebrew/bin/`, `~/.local/bin/`, `~/.cargo/bin/`, etc.
 
+## Session Detection
+
+Binary detection answers "which AI CLIs are installed?". Session detection answers the complementary question: **is an AI agent driving _this_ process right now?** — what dev servers, scaffolders, and destructive CLIs ask before switching to machine-readable output, backgrounding themselves, or requiring explicit human consent.
+
+```ts
+import { detectAiSession, isAiSession } from "@visulima/find-ai-runner";
+
+const session = detectAiSession();
+
+if (session) {
+    console.log(`Driven by ${session.agent} (via ${session.variable})`);
+    // e.g. { agent: "Claude Code", confidence: "definite", provider: "claude", variable: "CLAUDECODE" }
+}
+
+if (isAiSession()) {
+    // emit JSON logs, skip interactive prompts, …
+}
+```
+
+Detection is by environment markers the agent harnesses set in the shells they spawn (Claude Code, Cursor Agent, Codex, Gemini CLI / Qwen Code, GitHub Copilot CLI, opencode, Amp, Cline, Aider, Antigravity, Augment, Replit Agent), plus the self-describing `AI_AGENT` variable, which wins over the marker table. Every marker is sourced from a shipping implementation — a false positive silently changes a tool's behavior under a human's fingers.
+
+Markers that only prove the **platform** (a Cursor editor terminal via `CURSOR_TRACE_ID`, a Replit workspace via `REPL_ID`) — where a human may well be the one typing — are reported with `confidence: "ambient"` and only consulted with `detectAiSession(process.env, { includeAmbient: true })`. Use ambient detection for telemetry, never for behavior switches.
+
+Both functions accept a custom env object for testing: `detectAiSession({ CLAUDECODE: "1" })`.
+
 ## API
 
 ### `detectAllProviders(options?: AiDetectOptions): AiProviderInfo[]`
@@ -255,6 +280,14 @@ Returns the first available provider in preference order, stopping at the first 
 ### `buildCliArgs(name: AiProviderName, prompt: string, options?: AiRunOptions): string[]`
 
 Build the CLI arguments array for a provider without executing.
+
+### `detectAiSession(env?: EnvLike, options?: AiSessionOptions): AiSessionInfo | undefined`
+
+Detects the AI agent session the current process runs inside via environment markers (see [Session Detection](#session-detection)). Pure; pass a custom `env` in tests.
+
+### `isAiSession(env?: EnvLike, options?: AiSessionOptions): boolean`
+
+Convenience predicate over `detectAiSession`.
 
 ### `runProvider(provider: AiProviderInfo, prompt: string, options?: AiRunOptions): Promise<AiRunResult>`
 

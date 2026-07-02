@@ -505,6 +505,8 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
 export { buildCliArgs, detectAllProviders, detectAllProvidersAsync, detectAvailableProviders, detectProvider, findRunner, PROVIDERS, runProvider };
 
 export { PROVIDER_NAMES } from "./constants";
+export { AI_AGENT_ENV, detectAiSession, isAiSession, SESSION_MARKERS } from "./session";
+export { type AiSessionConfidence, type AiSessionInfo, type AiSessionMarker, type AiSessionOptions } from "./session";
 export { AiRunError } from "./types";
 export {
     type AiBuildArgsOptions,
