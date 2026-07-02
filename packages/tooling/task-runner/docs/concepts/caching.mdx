@@ -9,7 +9,7 @@ The default caching mode uses explicit input declarations to compute determinist
 
 ## How It Works
 
-1. **Collect inputs** - File patterns, env vars, runtime commands, external dependencies
+1. **Collect inputs** - File patterns, env vars, runtime commands, external dependencies, and the hashes of `dependsOn` dependencies
 2. **Compute hash** - SHA-256 hash of all input contents
 3. **Check cache** - Look up hash in local (then remote) cache
 4. **Hit?** Replay terminal output and restore build artifacts
@@ -52,6 +52,23 @@ inputs: ["src/**", { fileset: { pattern: "tsconfig.base.json", base: "workspace"
 ```typescript
 const inputs = [{ runtime: "node --version" }, { env: "NODE_ENV" }, { externalDependencies: ["typescript", "esbuild"] }];
 ```
+
+### Dependency hashes (`dependsOn`)
+
+`dependsOn` does more than order execution — a task's cache key also folds in the hashes of its direct dependencies. When a dependency's source changes, its hash changes, which changes the dependent's hash, so the dependent re-runs instead of replaying a stale result.
+
+```typescript
+targetDefaults: {
+    // `check` runs after each dependency's `build` AND invalidates when any
+    // dependency's `build` hash changes — even if the checking project's own
+    // files are untouched.
+    check: { dependsOn: ["^build"] },
+};
+```
+
+This is what makes cross-package tasks (type-checking, bundling, integration tests) cache-correct: a task whose output depends on a sibling's `dist` can no longer restore a cache hit after that `dist` was rebuilt. Coverage is transitive — every task folds its direct dependencies, whose hashes already fold theirs (a Merkle-style chain).
+
+Because this is keyed on the dependency's hash (not its output files), you don't have to enumerate a dependency's `dist` paths as inputs. Tasks with no `dependsOn` edge to a project are unaffected by that project's changes, so invalidation stays scoped to the declared graph.
 
 ## Global Inputs
 
