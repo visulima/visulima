@@ -7,28 +7,23 @@
  * output, backgrounding themselves, or demanding explicit human consent.
  *
  * Detection is by environment-variable markers the agent harnesses set in the
- * shells they spawn. The table is deliberately conservative and every entry is
+ * shells they spawn. Markers for invokable providers live on each provider's
+ * config (`sessionMarkers` in `providers/*.ts`); agents that are not
+ * invokable CLIs (their harness spawns shells but exposes no promptable
+ * binary) are listed in {@link EXTRA_AGENT_MARKERS} here. Every entry is
  * sourced from a shipping implementation (the Vercel CLI / Next.js
  * `detect-agent`, Prisma's `ai-safety`, or the harness's own documentation):
- * a false positive here silently changes a tool's behavior under a human's
+ * a false positive silently changes a tool's behavior under a human's
  * fingers. Markers that only prove the PLATFORM (e.g. a Cursor editor
- * terminal, a Replit workspace) — where a human may well be typing — are
- * reported with `confidence: "ambient"` and excluded from detection unless
- * explicitly opted into.
+ * terminal, a Replit workspace) — where a human may well be typing — carry
+ * `confidence: "ambient"` and are excluded from detection unless explicitly
+ * opted into.
  */
-import type { AiProviderName } from "./types";
+import PROVIDERS from "./providers";
+import type { AiProviderConfig, AiProviderName, AiSessionConfidence } from "./types";
 
 /** Minimal env shape accepted by {@link detectAiSession} / {@link isAiSession} — `process.env` structurally, injectable for tests. */
 type EnvLike = Readonly<Record<string, string | undefined>>;
-
-/**
- * How strongly a marker implies an agent is driving the process.
- *
- * `definite` markers are set only in agent-spawned shells. `ambient` markers
- * prove the surrounding platform (editor, cloud workspace) but not that an
- * agent — rather than a human — is issuing commands.
- */
-type AiSessionConfidence = "ambient" | "definite";
 
 /** One detected agent session: which agent, how sure, and which env var gave it away. */
 interface AiSessionInfo {
@@ -36,7 +31,7 @@ interface AiSessionInfo {
     agent: string;
     /** See {@link AiSessionConfidence}. */
     confidence: AiSessionConfidence;
-    /** The matching invokable provider from `index.ts`, when the agent is one. */
+    /** The matching invokable provider from `providers/`, when the agent is one. */
     provider?: AiProviderName;
     /** The environment variable that matched. */
     variable: string;
@@ -54,7 +49,7 @@ interface AiSessionOptions {
     includeAmbient?: boolean;
 }
 
-/** One marker table entry. Matches when the variable is set non-empty (and not `0`/`false`), or exactly `equals` when given. */
+/** A fully resolved marker table entry: a provider's `sessionMarkers` entry (or an extra agent's) with display name and provider attached. */
 interface AiSessionMarker {
     agent: string;
     confidence: AiSessionConfidence;
@@ -71,36 +66,47 @@ interface AiSessionMarker {
 const AI_AGENT_ENV = "AI_AGENT";
 
 /**
- * Known session markers, first match wins; `definite` entries listed before
- * `ambient` ones so a definite signal always shadows an ambient one.
- *
- * Sources: Vercel CLI / Next.js `detect-agent.ts`, Prisma `ai-safety.ts`, and
- * the respective harness docs. When adding an entry, cite where it ships —
- * an unverified marker is a behavior bug waiting for a human to hit it.
+ * Session markers for agents that are NOT invokable providers — their harness
+ * spawns shells, but there is no promptable CLI for `providers/` to model.
+ * Sources: Vercel CLI / Next.js `detect-agent.ts`, Prisma `ai-safety.ts`.
  */
-const SESSION_MARKERS: ReadonlyArray<AiSessionMarker> = [
-    { agent: "Claude Code", confidence: "definite", provider: "claude", variable: "CLAUDECODE" },
-    { agent: "Claude Code", confidence: "definite", provider: "claude", variable: "CLAUDE_CODE" },
-    { agent: "Cursor Agent", confidence: "definite", provider: "cursor", variable: "CURSOR_AGENT" },
-    { agent: "Codex", confidence: "definite", provider: "codex", variable: "CODEX_SANDBOX" },
-    { agent: "Codex", confidence: "definite", provider: "codex", variable: "CODEX_THREAD_ID" },
-    { agent: "Codex", confidence: "definite", provider: "codex", variable: "CODEX_CI" },
-    // Qwen Code is a gemini-cli fork and sets the same variable.
-    { agent: "Gemini CLI", confidence: "definite", provider: "gemini", variable: "GEMINI_CLI" },
-    { agent: "GitHub Copilot CLI", confidence: "definite", provider: "copilot", variable: "COPILOT_MODEL" },
-    { agent: "GitHub Copilot CLI", confidence: "definite", provider: "copilot", variable: "COPILOT_ALLOW_ALL" },
-    { agent: "GitHub Copilot CLI", confidence: "definite", provider: "copilot", variable: "COPILOT_GITHUB_TOKEN" },
-    { agent: "opencode", confidence: "definite", provider: "opencode", variable: "OPENCODE_CLIENT" },
-    { agent: "Amp", confidence: "definite", equals: "amp", provider: "amp", variable: "AGENT" },
+const EXTRA_AGENT_MARKERS: ReadonlyArray<AiSessionMarker> = [
     { agent: "Cline", confidence: "definite", variable: "CLINE_ACTIVE" },
     { agent: "Aider", confidence: "definite", equals: "Aider", variable: "OR_APP_NAME" },
     { agent: "Antigravity", confidence: "definite", variable: "ANTIGRAVITY_AGENT" },
     { agent: "Augment", confidence: "definite", variable: "AUGMENT_AGENT" },
     { agent: "Replit Agent", confidence: "definite", variable: "REPLIT_CLI" },
     // Ambient: the platform is present, but a human may be the one typing.
-    { agent: "Cursor editor", confidence: "ambient", provider: "cursor", variable: "CURSOR_TRACE_ID" },
     { agent: "Replit workspace", confidence: "ambient", variable: "REPL_ID" },
 ];
+
+/** Resolve one provider's `sessionMarkers` into full table entries. */
+const resolveProviderMarkers = (name: AiProviderName, config: AiProviderConfig): AiSessionMarker[] =>
+    config.sessionMarkers.map((marker): AiSessionMarker => {
+        return {
+            agent: marker.agent ?? config.displayName,
+            confidence: marker.confidence,
+            equals: marker.equals,
+            provider: name,
+            variable: marker.variable,
+        };
+    });
+
+/**
+ * The full marker table, assembled from every provider's `sessionMarkers`
+ * plus {@link EXTRA_AGENT_MARKERS}, ordered `definite` before `ambient` so a
+ * definite signal always shadows an ambient one. First match wins.
+ */
+const SESSION_MARKERS: ReadonlyArray<AiSessionMarker> = [
+    ...(Object.keys(PROVIDERS) as AiProviderName[]).flatMap((name) => resolveProviderMarkers(name, PROVIDERS[name])),
+    ...EXTRA_AGENT_MARKERS,
+].toSorted((a, b) => {
+    if (a.confidence === b.confidence) {
+        return 0;
+    }
+
+    return a.confidence === "definite" ? -1 : 1;
+});
 
 /** True when the env value spells an explicit "off" (`0` / `false`). */
 const isDisabledValue = (value: string): boolean => value === "0" || value === "false";
@@ -151,4 +157,4 @@ const detectAiSession = (env: EnvLike = process.env, options: AiSessionOptions =
 const isAiSession = (env: EnvLike = process.env, options: AiSessionOptions = {}): boolean => detectAiSession(env, options) !== undefined;
 
 export { AI_AGENT_ENV, detectAiSession, isAiSession, SESSION_MARKERS };
-export type { AiSessionConfidence, AiSessionInfo, AiSessionMarker, AiSessionOptions, EnvLike };
+export type { AiSessionInfo, AiSessionMarker, AiSessionOptions, EnvLike };

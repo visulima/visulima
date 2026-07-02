@@ -20,7 +20,10 @@ const droid: AiProviderConfig = {
     },
     command: "droid",
     defaultModel: "",
+    displayName: "Droid",
     envVariable: "DROID_PATH",
+    // No verified session marker yet — droid does not mark the shells it spawns.
+    sessionMarkers: [],
     supportsMaxTokens: false,
     supportsModel: true,
 };

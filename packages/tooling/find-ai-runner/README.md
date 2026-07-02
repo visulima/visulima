@@ -249,7 +249,7 @@ if (isAiSession()) {
 }
 ```
 
-Detection is by environment markers the agent harnesses set in the shells they spawn (Claude Code, Cursor Agent, Codex, Gemini CLI / Qwen Code, GitHub Copilot CLI, opencode, Amp, Cline, Aider, Antigravity, Augment, Replit Agent), plus the self-describing `AI_AGENT` variable, which wins over the marker table. Every marker is sourced from a shipping implementation — a false positive silently changes a tool's behavior under a human's fingers.
+Detection is by environment markers the agent harnesses set in the shells they spawn (Claude Code, Cursor Agent, Codex, Gemini CLI / Qwen Code, GitHub Copilot CLI, opencode, Amp, Cline, Aider, Antigravity, Augment, Replit Agent), plus the self-describing `AI_AGENT` variable, which wins over the marker table. Markers for invokable providers are declared on each provider's config (`sessionMarkers` in `src/providers/*.ts`); non-invokable agents live in `src/session.ts`. Every marker is sourced from a shipping implementation — a false positive silently changes a tool's behavior under a human's fingers.
 
 Markers that only prove the **platform** (a Cursor editor terminal via `CURSOR_TRACE_ID`, a Replit workspace via `REPL_ID`) — where a human may well be the one typing — are reported with `confidence: "ambient"` and only consulted with `detectAiSession(process.env, { includeAmbient: true })`. Use ambient detection for telemetry, never for behavior switches.
 

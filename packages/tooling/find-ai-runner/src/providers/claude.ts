@@ -21,7 +21,12 @@ const claude: AiProviderConfig = {
     command: "claude",
     // Empty default = provider-default model, avoids pinning a stale snapshot.
     defaultModel: "",
+    displayName: "Claude Code",
     envVariable: "CLAUDE_PATH",
+    sessionMarkers: [
+        { confidence: "definite", variable: "CLAUDECODE" },
+        { confidence: "definite", variable: "CLAUDE_CODE" },
+    ],
     supportsMaxTokens: false,
     supportsModel: true,
 };

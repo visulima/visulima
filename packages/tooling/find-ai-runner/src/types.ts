@@ -25,6 +25,34 @@ interface AiBuildArgsOptions {
     model: string;
 }
 
+/**
+ * How strongly a session marker implies an agent is driving the process.
+ *
+ * `definite` markers are set only in agent-spawned shells. `ambient` markers
+ * prove the surrounding platform (editor, cloud workspace) but not that an
+ * agent — rather than a human — is issuing commands.
+ */
+type AiSessionConfidence = "ambient" | "definite";
+
+/**
+ * One environment marker a provider's harness sets in the shells it spawns,
+ * declared on the provider's config and consumed by `detectAiSession`.
+ * Matches when the variable is set non-empty (and not `0`/`false`), or
+ * exactly `equals` when given. Only add markers that ship in a production
+ * implementation — an unverified marker is a behavior bug waiting for a
+ * human to hit it.
+ */
+interface AiSessionMarkerConfig {
+    /** Display-name override for this marker (e.g. `"Cursor editor"` for the ambient Cursor marker); defaults to the provider's `displayName`. */
+    agent?: string;
+    /** See {@link AiSessionConfidence}. */
+    confidence: AiSessionConfidence;
+    /** Require this exact value (for shared variables like `AGENT`). */
+    equals?: string;
+    /** The environment variable to check. */
+    variable: string;
+}
+
 /** Configuration for an AI CLI provider, including how to build CLI arguments. */
 interface AiProviderConfig {
     /** Alternate CLI command names to try (e.g., `gemini-cli` for `gemini`). */
@@ -40,8 +68,12 @@ interface AiProviderConfig {
     command: string;
     /** Default model to use if none specified. Empty string means provider-default. */
     defaultModel: string;
+    /** Human-readable provider name (e.g. `"Claude Code"`), used in session-detection results. */
+    displayName: string;
     /** Environment variable that can override the CLI path (e.g., `CLAUDE_PATH`). */
     envVariable: string;
+    /** Env markers this provider's harness sets in agent-spawned shells (see {@link AiSessionMarkerConfig}); empty when none are verified. */
+    sessionMarkers: AiSessionMarkerConfig[];
     /** Whether the provider honors the `maxTokens` option in its CLI invocation. */
     supportsMaxTokens: boolean;
     /** Whether the provider honors the `model` option in its CLI invocation. */
@@ -204,4 +236,4 @@ class AiRunError extends Error {
 }
 
 export { AiRunError };
-export type { AiBuildArgsOptions, AiDetectAsyncOptions, AiDetectOptions, AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult };
+export type { AiBuildArgsOptions, AiDetectAsyncOptions, AiDetectOptions, AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult, AiSessionConfidence, AiSessionMarkerConfig };

@@ -22,7 +22,10 @@ const gemini: AiProviderConfig = {
     },
     command: "gemini",
     defaultModel: "gemini-2.5-pro",
+    displayName: "Gemini CLI",
     envVariable: "GEMINI_PATH",
+    // Qwen Code (a gemini-cli fork) sets the same variable; detection attributes it here.
+    sessionMarkers: [{ confidence: "definite", variable: "GEMINI_CLI" }],
     supportsMaxTokens: true,
     supportsModel: true,
 };
