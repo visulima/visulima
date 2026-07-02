@@ -24,7 +24,9 @@ All subcommands accept `--cache-dir <path>` to point at a non-default cache loca
 
 ## Cache scope and worktrees
 
-When the workspace is a linked git worktree (created with `git worktree add`), vis defaults to a **shared** cache at `<mainWorktreeRoot>/.vis/cache`. Sibling worktrees driven by parallel agents then share one cache instead of rebuilding the same hash N times. Single-checkout repos behave exactly as before.
+The task cache lives at `<workspaceRoot>/node_modules/.cache/vis` by default — deliberately **not** under `.vis/`, which also holds tracked source (`.vis/templates`, `.vis/hooks`). Keeping the cache out of the source-bearing directory means a CI step that caches it can never sweep tracked files into the GH Actions cache (a stale restore used to resurrect deleted templates). It is gitignored for free via `node_modules`.
+
+When the workspace is a linked git worktree (created with `git worktree add`), vis defaults to a **shared** cache at `<mainWorktreeRoot>/node_modules/.cache/vis`. Sibling worktrees driven by parallel agents then share one cache instead of rebuilding the same hash N times. Single-checkout repos behave exactly as before.
 
 Toggle the behaviour from `vis.config.ts`:
 
@@ -39,7 +41,7 @@ export default {
 | Value              | Cache directory                                                             |
 | ------------------ | --------------------------------------------------------------------------- |
 | `shared` (default) | The main worktree's cache (or this checkout when not in a linked worktree). |
-| `worktree`         | This checkout's local `.vis/cache`, never the main one.                     |
+| `worktree`         | This checkout's local `node_modules/.cache/vis`, never the main one.         |
 | `all`              | Operate on both directories (skipped when they resolve to the same path).   |
 
 ```bash

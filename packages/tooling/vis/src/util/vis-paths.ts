@@ -10,20 +10,32 @@
  *     workspaces/{hash}/                 # per-workspace bucket, keyed by workspace path
  *       services/                        # running-service registry (PIDs, ports, logs)
  *
- *   {workspaceRoot}/.vis/                # per-workspace (lives in the repo)
- *     cache/                             # task-runner cache (was .task-runner-cache/)
+ *   {workspaceRoot}/.vis/                # per-workspace SOURCE (lives in the repo)
  *     runs/                              # run summaries (was .task-runner/runs/)
  *     last-summary.json                  # most-recent run (was .task-runner/last-summary.json)
  *     last-failures/                     # per-task failure logs (was .task-runner/last-failures/)
  *     docker/                            # `vis docker scaffold` output
- *     templates/                         # user-vendored generator templates
+ *     templates/                         # user-vendored generator templates (tracked)
+ *     hooks/                             # user-vendored git hooks (tracked)
+ *
+ *   {workspaceRoot}/node_modules/.cache/vis/   # task-runner cache — ephemeral, gitignored
+ *
+ * The task cache lives under `node_modules/.cache/` — deliberately NOT under
+ * `.vis/`. `.vis/` also holds *tracked source* (`templates/`, `hooks/`), so a
+ * CI step that naively caches the whole `.vis/` directory used to sweep tracked
+ * files into the GH Actions cache; on restore, a stale cache could resurrect a
+ * template that had since been renamed/deleted, breaking `tsconfig` globs. By
+ * keeping the cache out of the source-bearing directory, "cache the vis cache"
+ * can only ever capture ephemeral cache entries. `node_modules/.cache/vis/` is
+ * gitignored for free (it's under `node_modules`) and dies with `node_modules`
+ * — the same desired lifecycle as the per-package-manager caches below.
  *
  * Per-workspace data is keyed by a 12-char sha256 prefix of the absolute
  * workspace root, so multiple git worktrees of the same repo each get
  * their own bucket and never collide.
  *
- * Per-package-manager workspace caches stay where they are (under
- * `{workspace}/node_modules/.cache/vis/`) — those die with `node_modules`
+ * Other per-package-manager workspace caches also live under
+ * `{workspace}/node_modules/.cache/vis/` — those die with `node_modules`
  * and that's the desired lifecycle.
  */
 
@@ -58,8 +70,17 @@ export const VIS_WORKSPACE_DIR_NAME = ".vis";
 
 export const getVisWorkspaceDataDir = (workspaceRoot: string): string => join(workspaceRoot, VIS_WORKSPACE_DIR_NAME);
 
-/** Default cache directory name for `vis run` (relative to workspace root). */
-export const DEFAULT_WORKSPACE_CACHE_DIRECTORY = `${VIS_WORKSPACE_DIR_NAME}/cache`;
+/**
+ * Default task-runner cache directory for `vis run` (relative to workspace root).
+ *
+ * Lives under `node_modules/.cache/` — NOT under the source-bearing `.vis/` —
+ * so caching it in CI can never sweep tracked `.vis/templates` / `.vis/hooks`
+ * into the cache (a stale restore used to resurrect deleted templates). It is
+ * gitignored for free via `node_modules` and follows the Turborepo/`.cache/`
+ * convention. Override with `--cache-dir`, `taskRunner.cacheDirectory`, or the
+ * `VIS_CACHE_DIRECTORY` env var.
+ */
+export const DEFAULT_WORKSPACE_CACHE_DIRECTORY = "node_modules/.cache/vis";
 
 export const getVisRunsDir = (workspaceRoot: string): string => join(getVisWorkspaceDataDir(workspaceRoot), "runs");
 

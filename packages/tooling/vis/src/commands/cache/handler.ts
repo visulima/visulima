@@ -1062,7 +1062,7 @@ const resolveCacheDirectoryFromContext = (
     const scope = parseScope(options.scope as string | undefined);
     const optionsCacheDir = options.cacheDir as string | undefined;
 
-    // Worktree-local: this checkout's `.vis/cache`. Disable
+    // Worktree-local: this checkout's `node_modules/.cache/vis`. Disable
     // worktree-share by passing `sharedWorktreeCache: false` so the
     // resolver returns the literal workspace_root path.
     const worktreeDirectory = resolveSharedCacheDirectory(resolvedWorkspaceRoot, optionsCacheDir, taskRunner.cacheDirectory, false);

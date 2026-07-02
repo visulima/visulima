@@ -1887,8 +1887,8 @@ export interface VisConfig {
     /**
      * Share the cache between sibling git worktrees. When the workspace is a
      * linked worktree (created with `git worktree add`), the cache root is
-     * relocated from `&lt;linkedRoot>/.vis/cache` to the *main*
-     * worktree's `.vis/cache`. Multiple parallel agents working in
+     * relocated from `&lt;linkedRoot>/node_modules/.cache/vis` to the *main*
+     * worktree's `node_modules/.cache/vis`. Multiple parallel agents working in
      * sibling worktrees then share a single cache instead of rebuilding the
      * same hash N times.
      *
