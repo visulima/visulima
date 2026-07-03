@@ -1,6 +1,6 @@
 {
     "name": "@visulima/pagination",
-    "version": "5.0.0-alpha.14",
+    "version": "5.0.0",
     "description": "Simple Pagination for Node.",
     "keywords": [
         "anolilab",

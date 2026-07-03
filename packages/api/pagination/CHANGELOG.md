@@ -1,3 +1,93 @@
+## @visulima/pagination [5.0.0](https://github.com/visulima/visulima/compare/@visulima/pagination@4.0.5...@visulima/pagination@5.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Features
+
+* **pagination:** fix docs, add cursor/window pagination + openapi nullability ([d33feb8](https://github.com/visulima/visulima/commit/d33feb85ad49a1336c55b5ab12a18a80c9a776b0))
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **api:** resolve eslint and type-safety issues across api packages ([3601491](https://github.com/visulima/visulima/commit/3601491261de56b5cfad87c97daafd458e4ee3b6))
+* **jsdoc-open-api:** combine name and description for path-based YAML parsing ([68e7d23](https://github.com/visulima/visulima/commit/68e7d2395ab97de3221892afe03da27688df7569))
+* **pagination:** 3 bug fixes ([bcc5dbf](https://github.com/visulima/visulima/commit/bcc5dbf91aac391b3df1d83d6a1850a7b4bdbcc2))
+* **pagination:** accept rows as an array, not variadic ([f4c3940](https://github.com/visulima/visulima/commit/f4c3940a7c799b32f1639473c01e2d43426f3c0c))
+* **pagination:** remove unnecessary Number() type conversions ([1393f87](https://github.com/visulima/visulima/commit/1393f8721e3824af7fdf59361ddd1e445bc2bff5))
+* **pagination:** update package files ([008ea06](https://github.com/visulima/visulima/commit/008ea06ff573a61eaabbc913f9dbe436b4943d67))
+* **pagination:** update packem to 2.0.0-alpha.54 ([6fd896e](https://github.com/visulima/visulima/commit/6fd896ed94b501df1ec85baff72015e5d8112540))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* update package.json description and keywords ([#578](https://github.com/visulima/visulima/issues/578)) ([154709c](https://github.com/visulima/visulima/commit/154709c05e71d1ffd3e360b27e12febd817912f0))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **crud,health-check,pagination:** add comprehensive Fumadocs documentation ([1fc3748](https://github.com/visulima/visulima/commit/1fc3748b2d9b1ef2332b5d38cb6dd2c7c1f78589))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* **api:** remove empty dependency objects from package.json ([f6bfc85](https://github.com/visulima/visulima/commit/f6bfc85c48c973ff8ea0a7db5951794ae0ea3efb))
+* **api:** update dependencies ([f3b6f7c](https://github.com/visulima/visulima/commit/f3b6f7c956e8ae2c0da67773b3790f159c07de29))
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* **pagination:** add tsconfig.eslint.json for type-aware linting ([d66266c](https://github.com/visulima/visulima/commit/d66266cf401e974d7dda3418228daa06d6ec7253))
+* **pagination:** apply auto-fix formatting ([343ccc0](https://github.com/visulima/visulima/commit/343ccc01b8e398f11bd592f865dec6d04b3a8fca))
+* **pagination:** apply formatting ([52c9c3b](https://github.com/visulima/visulima/commit/52c9c3b312d9e918235e2403918539a653c53a87))
+* **pagination:** apply prettier formatting ([8e4e960](https://github.com/visulima/visulima/commit/8e4e9609ac04bd3aee32ba8b73af49d995849fe2))
+* **pagination:** housekeeping cleanup ([bfd1f8f](https://github.com/visulima/visulima/commit/bfd1f8fb9263481b7bda22f5000c8b5aed49e62e))
+* **pagination:** migrate .prettierrc.cjs to prettier.config.js ([17c14e6](https://github.com/visulima/visulima/commit/17c14e69da0aa3beee75631cb33266fd41060e86))
+* **pagination:** migrate deps to pnpm catalogs ([ddb084e](https://github.com/visulima/visulima/commit/ddb084e6376edf13378862ea2d2196edcc24d310))
+* **pagination:** reformat long lines and normalize markdown italics ([8467425](https://github.com/visulima/visulima/commit/84674254fb5dcb2fcab600abe3f006b41bfabb88))
+* **pagination:** update dependencies ([31339af](https://github.com/visulima/visulima/commit/31339afb17bf8e0c3d0b4a4e9d7ec9645db2dda8))
+* **pagination:** update dependencies ([b47aee3](https://github.com/visulima/visulima/commit/b47aee327e28ba302f7c60cfc3cae3db5b2a101f))
+* **pagination:** upgrade packem to 2.0.0-alpha.76 ([443e12d](https://github.com/visulima/visulima/commit/443e12d4f90977f1d807d5d4d73f0bc17c2bd044))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **release:** @visulima/pagination@5.0.0-alpha.1 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/pagination@4.0.5...@visulima/pagination@5.0.0-alpha.1) (2025-12-04) ([98c157b](https://github.com/visulima/visulima/commit/98c157b555416ce0e83e4c0d35a3a3ec6e542c68))
+* **release:** @visulima/pagination@5.0.0-alpha.10 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.9...@visulima/pagination@5.0.0-alpha.10) (2026-04-15) ([8062a52](https://github.com/visulima/visulima/commit/8062a527c8338941f30c38d29ed1f655cca72b0c))
+* **release:** @visulima/pagination@5.0.0-alpha.11 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.10...@visulima/pagination@5.0.0-alpha.11) (2026-04-22) ([df73344](https://github.com/visulima/visulima/commit/df733440ff8e7f375f7691639f084af060e3fa71))
+* **release:** @visulima/pagination@5.0.0-alpha.12 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.11...@visulima/pagination@5.0.0-alpha.12) (2026-05-27) ([0e762b6](https://github.com/visulima/visulima/commit/0e762b60dbdc6a3d5a8c9d42b7181d51bba3115b))
+* **release:** @visulima/pagination@5.0.0-alpha.13 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.12...@visulima/pagination@5.0.0-alpha.13) (2026-06-04) ([039acc4](https://github.com/visulima/visulima/commit/039acc4e83ba8b8c63aedcc54a9f7d619a87a211))
+* **release:** @visulima/pagination@5.0.0-alpha.14 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.13...@visulima/pagination@5.0.0-alpha.14) (2026-06-13) ([2fb0fa4](https://github.com/visulima/visulima/commit/2fb0fa4e4507825be1e778f4eecea24b866dfda0))
+* **release:** @visulima/pagination@5.0.0-alpha.2 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.1...@visulima/pagination@5.0.0-alpha.2) (2025-12-06) ([d40d825](https://github.com/visulima/visulima/commit/d40d825fb9c38ec598d9d7d66352a5b938ea1dc7))
+* **release:** @visulima/pagination@5.0.0-alpha.3 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.2...@visulima/pagination@5.0.0-alpha.3) (2025-12-11) ([c980e7d](https://github.com/visulima/visulima/commit/c980e7d7f4cfa93ef3ebcb71d36e6d90bc5ed2e4))
+* **release:** @visulima/pagination@5.0.0-alpha.4 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.3...@visulima/pagination@5.0.0-alpha.4) (2025-12-27) ([ab7cd49](https://github.com/visulima/visulima/commit/ab7cd498492161e98b85ba2274ffc09776e7ad5f))
+* **release:** @visulima/pagination@5.0.0-alpha.5 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.4...@visulima/pagination@5.0.0-alpha.5) (2026-01-17) ([9d08240](https://github.com/visulima/visulima/commit/9d082409368bab361163d3fe8704793681a6da7f))
+* **release:** @visulima/pagination@5.0.0-alpha.6 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.5...@visulima/pagination@5.0.0-alpha.6) (2026-03-06) ([ccae713](https://github.com/visulima/visulima/commit/ccae713c6a741f0e6d53b6e7c890c200dbcce9da))
+* **release:** @visulima/pagination@5.0.0-alpha.7 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.6...@visulima/pagination@5.0.0-alpha.7) (2026-03-26) ([800ba4f](https://github.com/visulima/visulima/commit/800ba4fe478f5371f23ac22c07daa33fc48e68c7))
+* **release:** @visulima/pagination@5.0.0-alpha.8 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.7...@visulima/pagination@5.0.0-alpha.8) (2026-03-26) ([6dca8de](https://github.com/visulima/visulima/commit/6dca8deeff47966e4b903c2b4cd9ab704468cace))
+* **release:** @visulima/pagination@5.0.0-alpha.9 [skip ci]\n\n## @visulima/pagination [5.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.8...@visulima/pagination@5.0.0-alpha.9) (2026-04-08) ([94fe558](https://github.com/visulima/visulima/commit/94fe558e654dfdfd9c823e29588b6f17eda8d696))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update homepage URLs to visulima.com/packages/ format ([be42968](https://github.com/visulima/visulima/commit/be42968129df85fb074224435e33135ff44cab91))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
 ## @visulima/pagination [5.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/pagination@5.0.0-alpha.13...@visulima/pagination@5.0.0-alpha.14) (2026-06-13)
 
 ### Features
