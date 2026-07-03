@@ -1,3 +1,102 @@
+## @visulima/deep-clone [4.0.0](https://github.com/visulima/visulima/compare/@visulima/deep-clone@3.0.5...@visulima/deep-clone@4.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Features
+
+* create new html package ([#567](https://github.com/visulima/visulima/issues/567)) ([#583](https://github.com/visulima/visulima/issues/583)) ([cae765f](https://github.com/visulima/visulima/commit/cae765f59f31338cc9ab58d90de7945e73ded2bb))
+* **deep-clone:** export DeepReadwrite type ([7b7f130](https://github.com/visulima/visulima/commit/7b7f130ddbd97a9f49893b2fdbee2b26e912a323))
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **bench:** import deep-clone fixture + tui modules via public paths ([362417e](https://github.com/visulima/visulima/commit/362417e58ee07b8efa8fa1057572ea729a035058))
+* **data-manipulation:** repair broken bench imports ([79ddd8f](https://github.com/visulima/visulima/commit/79ddd8f6892cd34ae12018f98afb826bcaaffb3e))
+* **data-manipulation:** resolve eslint and type-safety issues ([f1682c2](https://github.com/visulima/visulima/commit/f1682c2611cbcc6c85d4bbea520d43464b42e7ee))
+* **deep-clone:** 4 bug fixes + 1 perf ([fd2fe5d](https://github.com/visulima/visulima/commit/fd2fe5df3a4a5aad5e487675a0a1b24dc3f66aca))
+* **deep-clone:** add node types for Buffer resolution ([55a5976](https://github.com/visulima/visulima/commit/55a597653cdf1c98500178f102a7636227c7b803))
+* **deep-clone:** harden deep-clone against proto pollution and runtime gaps ([31fb5ac](https://github.com/visulima/visulima/commit/31fb5ac492d68b31693e779218229bb1133a158f))
+* **deep-clone:** resolve eslint errors and include bench files in tsconfig ([1704120](https://github.com/visulima/visulima/commit/17041206df127961cfc96ce5f1202594eb8592e9))
+* **deep-clone:** update package files ([f0bf0bc](https://github.com/visulima/visulima/commit/f0bf0bce894b569ca80c7e2338937f4c2d110960))
+* **deep-clone:** update packem to 2.0.0-alpha.54 ([9c0f6bb](https://github.com/visulima/visulima/commit/9c0f6bb776ef44338faddadc61c1842c23c4054f))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **bytes,deep-clone,ansi,fmt,find-cache-dir:** add comprehensive Fumadocs documentation ([dfe0116](https://github.com/visulima/visulima/commit/dfe0116ebd26fe38f94f77b8ed4dadc3ff45ba91))
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+* **data-manipulation:** update dependencies ([49458ab](https://github.com/visulima/visulima/commit/49458ab8f8e17d875840b1b4fe8b5efe12ff3513))
+* **deep-clone:** add tsconfig.eslint.json for type-aware linting ([01d9837](https://github.com/visulima/visulima/commit/01d9837e60da9d8491a7c5bf8cfd45861f6954f0))
+* **deep-clone:** apply formatter sweep to benchmark ([95e5e5d](https://github.com/visulima/visulima/commit/95e5e5d99b52c6c0accb3531b35998ceea5c3097))
+* **deep-clone:** apply prettier formatting ([be602cc](https://github.com/visulima/visulima/commit/be602cc1d5b9da5a1c43c7d47e5cc6b8487147b3))
+* **deep-clone:** housekeeping cleanup ([c7cfcdc](https://github.com/visulima/visulima/commit/c7cfcdc1b136007e5bd9e070def83e6bd1cdd3f4))
+* **deep-clone:** migrate .prettierrc.cjs to prettier.config.js ([1373f0f](https://github.com/visulima/visulima/commit/1373f0f32344e66af5d42168ebde534dcb5284dd))
+* **deep-clone:** migrate deps to pnpm catalogs ([c29c51a](https://github.com/visulima/visulima/commit/c29c51af9083aaeaf216a332056d45ebecbdbba1))
+* **deep-clone:** update dependencies ([b9f542d](https://github.com/visulima/visulima/commit/b9f542ddbc21f5a7cf4dd2412e495ed052c0d06a))
+* **deep-clone:** update dependencies ([0dc9423](https://github.com/visulima/visulima/commit/0dc942387c0cd849ec0ee0bb42319b885cc39ab1))
+* **deep-clone:** update dependencies ([1eadc51](https://github.com/visulima/visulima/commit/1eadc51d84958b07c0fc7f8e59abda992352bf20))
+* **deep-clone:** upgrade packem to 2.0.0-alpha.76 ([44cf737](https://github.com/visulima/visulima/commit/44cf73796d2f9e82341a77e1050291f0e292a9e5))
+* **dependencies:** update msw to version 2.12.6, jsdom to version 27.4.0, and [@tanstack](https://github.com/tanstack) packages to version 1.144.0 in package.json files ([1aa0236](https://github.com/visulima/visulima/commit/1aa0236e1f8190eecf7526cf2dc0f369cac02d87))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* **lint:** clear eslint findings in bench + animation test ([16bba0b](https://github.com/visulima/visulima/commit/16bba0b6a35885904b719a3f4a560da436a997c4))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* **release:** @visulima/deep-clone@4.0.0-alpha.1 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/deep-clone@3.0.5...@visulima/deep-clone@4.0.0-alpha.1) (2025-12-04) ([4cf4378](https://github.com/visulima/visulima/commit/4cf43781ec1a6066387b11be874f3553c46e2ae6))
+* **release:** @visulima/deep-clone@4.0.0-alpha.10 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.9...@visulima/deep-clone@4.0.0-alpha.10) (2026-04-15) ([d0c52b6](https://github.com/visulima/visulima/commit/d0c52b6bd2dfe53afc1e726e1a2410aa59fe2849))
+* **release:** @visulima/deep-clone@4.0.0-alpha.11 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.10...@visulima/deep-clone@4.0.0-alpha.11) (2026-04-22) ([6379768](https://github.com/visulima/visulima/commit/6379768c06c45d611464c7a122388920b4b645ca))
+* **release:** @visulima/deep-clone@4.0.0-alpha.12 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.11...@visulima/deep-clone@4.0.0-alpha.12) (2026-05-07) ([73343d7](https://github.com/visulima/visulima/commit/73343d7f979ada7dda539b2ad1e00a8520bd1a88))
+* **release:** @visulima/deep-clone@4.0.0-alpha.13 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.12...@visulima/deep-clone@4.0.0-alpha.13) (2026-05-14) ([e179bd1](https://github.com/visulima/visulima/commit/e179bd1cc634de5c2d623264c01c74d880cbe8ce))
+* **release:** @visulima/deep-clone@4.0.0-alpha.14 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.13...@visulima/deep-clone@4.0.0-alpha.14) (2026-05-27) ([7aa7d27](https://github.com/visulima/visulima/commit/7aa7d27ce917dd3d3f880ddaefec810f59e13513))
+* **release:** @visulima/deep-clone@4.0.0-alpha.15 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.14...@visulima/deep-clone@4.0.0-alpha.15) (2026-06-04) ([80b0b33](https://github.com/visulima/visulima/commit/80b0b333165296826a56433c74fac384ed2f278b))
+* **release:** @visulima/deep-clone@4.0.0-alpha.16 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.15...@visulima/deep-clone@4.0.0-alpha.16) (2026-06-13) ([3ad2fda](https://github.com/visulima/visulima/commit/3ad2fda4a88d032d653eccdca13671a9e37692a3))
+* **release:** @visulima/deep-clone@4.0.0-alpha.2 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.1...@visulima/deep-clone@4.0.0-alpha.2) (2025-12-06) ([1c400d1](https://github.com/visulima/visulima/commit/1c400d18ef8ff91ee18c5cef9f6e66ccd5bed000))
+* **release:** @visulima/deep-clone@4.0.0-alpha.3 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.2...@visulima/deep-clone@4.0.0-alpha.3) (2025-12-11) ([44f0539](https://github.com/visulima/visulima/commit/44f0539f7a3bcf123baa3c5f05c0674a7053ef96))
+* **release:** @visulima/deep-clone@4.0.0-alpha.4 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.3...@visulima/deep-clone@4.0.0-alpha.4) (2025-12-12) ([dac991c](https://github.com/visulima/visulima/commit/dac991c1b14530db29f542419bf54e84ad8907f4))
+* **release:** @visulima/deep-clone@4.0.0-alpha.5 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.4...@visulima/deep-clone@4.0.0-alpha.5) (2025-12-27) ([ca8cd8c](https://github.com/visulima/visulima/commit/ca8cd8ca4507b340b444d2aa4a8ef267320e2178))
+* **release:** @visulima/deep-clone@4.0.0-alpha.6 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.5...@visulima/deep-clone@4.0.0-alpha.6) (2026-03-06) ([b10e7b5](https://github.com/visulima/visulima/commit/b10e7b54a098ff2b9dbdf86fdf3fde53df5fc0bf))
+* **release:** @visulima/deep-clone@4.0.0-alpha.7 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.6...@visulima/deep-clone@4.0.0-alpha.7) (2026-03-26) ([5398721](https://github.com/visulima/visulima/commit/5398721c226671323cda0a7b51a4b9122cecc20c))
+* **release:** @visulima/deep-clone@4.0.0-alpha.8 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.7...@visulima/deep-clone@4.0.0-alpha.8) (2026-03-26) ([3b9e53a](https://github.com/visulima/visulima/commit/3b9e53a72fdb0d7c08e324b6703312aa62244628))
+* **release:** @visulima/deep-clone@4.0.0-alpha.9 [skip ci]\n\n## @visulima/deep-clone [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.8...@visulima/deep-clone@4.0.0-alpha.9) (2026-04-08) ([88b30c7](https://github.com/visulima/visulima/commit/88b30c7917b50f5fd1b566c945a32647d59bc4f9))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update homepage URLs to visulima.com/packages/ format ([be42968](https://github.com/visulima/visulima/commit/be42968129df85fb074224435e33135ff44cab91))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
+### Tests
+
+* **deep-clone:** cover frozen/symbol object copy, error without stack, get-clean-clone branches and shared-buffer guards ([b5927dc](https://github.com/visulima/visulima/commit/b5927dc63fc60e8e37cb1041ed48ba0a719a49d1))
+* **deep-clone:** rework arguments clone assertion to avoid prototype leak ([355b1c1](https://github.com/visulima/visulima/commit/355b1c10ff0f0e8e00c74b5f0434a6fb50ccacc3))
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
 ## @visulima/deep-clone [4.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/deep-clone@4.0.0-alpha.15...@visulima/deep-clone@4.0.0-alpha.16) (2026-06-13)
 
 ### Features
