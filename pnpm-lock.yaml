@@ -6408,7 +6408,7 @@ importers:
         specifier: catalog:types
         version: 25.9.3
       '@visulima/email':
-        specifier: 1.0.0-alpha.45
+        specifier: 1.0.0-alpha.46
         version: link:../../email/email
       '@visulima/error':
         specifier: 6.0.0-alpha.35
@@ -9491,8 +9491,8 @@ importers:
         specifier: 3.0.0-alpha.12
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
-        specifier: 5.0.0-alpha.32
-        version: 5.0.0-alpha.32(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.6.1)(yaml@2.9.0)
+        specifier: 5.0.0-alpha.33
+        version: link:../../filesystem/fs
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.89(41bbe8608f25f1c02f631341c423e14a)
@@ -9951,7 +9951,7 @@ importers:
         specifier: 6.0.0-alpha.35
         version: link:../../error-debugging/error
       '@visulima/secret-scanner':
-        specifier: 1.0.0-alpha.7
+        specifier: 1.0.0-alpha.8
         version: link:../secret-scanner
       '@visulima/source-map':
         specifier: 3.0.0-alpha.12
@@ -9960,7 +9960,7 @@ importers:
         specifier: 4.0.0-alpha.14
         version: link:../../terminal/tabular
       '@visulima/task-runner':
-        specifier: 1.0.0-alpha.25
+        specifier: 1.0.0-alpha.26
         version: link:../task-runner
       '@visulima/tui':
         specifier: 1.0.0-alpha.27
@@ -10087,7 +10087,7 @@ importers:
         specifier: 2.0.0-alpha.15
         version: link:../../terminal/colorize
       '@visulima/find-ai-runner':
-        specifier: 1.0.0-alpha.8
+        specifier: 1.0.0-alpha.9
         version: link:../find-ai-runner
       '@visulima/find-cache-dir':
         specifier: 3.0.0-alpha.12
@@ -10307,7 +10307,7 @@ importers:
         specifier: 3.0.0-alpha.13
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0-alpha.46
+        specifier: 1.0.0-alpha.47
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -11671,7 +11671,7 @@ packages:
     resolution: {integrity: sha512-OBo1uYM/Y26WpFhUhaHU+/QxJqFTB8uFhVPBypuf8Dz51CMTNs3Y1JWazaujD/DrS5pt6Q6e6BHhxREXLpzsrA==}
     hasBin: true
     peerDependencies:
-      vite: '>=6.4.2'
+      vite: ^7.3.5
       wrangler: ^4.100.0
 
   '@cloudflare/workerd-darwin-64@1.20260611.1':
@@ -17477,7 +17477,7 @@ packages:
       esbuild: '>=0.28.1'
       rollup: '>=4.59.0'
       storybook: ^10.4.4
-      vite: '>=7.1.11'
+      vite: ^7.3.5
       webpack: '>=5.104.1'
     peerDependenciesMeta:
       esbuild:
@@ -48156,7 +48156,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.4.1(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))
@@ -59308,7 +59308,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.4.1(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.1))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
