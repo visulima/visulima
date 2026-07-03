@@ -1,3 +1,13 @@
+## @visulima/email-provider-mx 1.0.0 (2026-07-03)
+
+### Features
+
+* **email:** emailable-parity verification & enrichment packages ([#718](https://github.com/visulima/visulima/issues/718)) ([e2d8c1e](https://github.com/visulima/visulima/commit/e2d8c1e78e3e0c2548ece87b20d730dab60f677a))
+
+### Miscellaneous Chores
+
+* **release:** @visulima/email-provider-mx@1.0.0-alpha.1 [skip ci]\n\n## @visulima/email-provider-mx 1.0.0-alpha.1 (2026-06-30) ([cdb6377](https://github.com/visulima/visulima/commit/cdb6377011885f9d14b3e7fde2b875fe1e984d02))
+
 ## @visulima/email-provider-mx 1.0.0-alpha.1 (2026-06-30)
 
 ### Features
