@@ -1,0 +1,70 @@
+---
+title: Mailomat
+description: Send emails using the Mailomat API with @visulima/email
+---
+
+# Mailomat Provider
+
+The Mailomat provider allows you to send emails through the [Mailomat API](https://api.mailomat.com/docs).
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { mailomatProvider } from "@visulima/email/providers/mailomat";
+
+const mail = createMail(
+    mailomatProvider({
+        apiKey: process.env.MAILOMAT_API_KEY!,
+    }),
+);
+```
+
+## Configuration
+
+The `MailomatConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                    | Description                     |
+| ---------- | --------- | -------- | -------------------------- | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                          | Your Mailomat API key           |
+| `endpoint` | `string`  | No       | `https://api.mailomat.com` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                    | Enable debug logging            |
+| `logger`   | `Console` | No       | -                          | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                        | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                    | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Mailomat").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Mailomat provider supports additional options through `MailomatEmailOptions`:
+
+| Option              | Type                      | Description             |
+| ------------------- | ------------------------- | ----------------------- |
+| `tags`              | `string[]`                | Tags for categorization |
+| `templateId`        | `string`                  | Mailomat template ID    |
+| `templateVariables` | `Record<string, unknown>` | Template variables      |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | No        |

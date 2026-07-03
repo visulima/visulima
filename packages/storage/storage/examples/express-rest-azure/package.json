@@ -1,0 +1,22 @@
+{
+    "name": "upload_example_express-rest-azure",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx index.ts"
+    },
+    "dependencies": {
+        "@azure/storage-blob": "catalog:prod",
+        "@visulima/storage": "workspace:*",
+        "cors": "catalog:prod",
+        "dotenv": "catalog:prod",
+        "express": "catalog:backend",
+        "winston": "catalog:prod"
+    },
+    "devDependencies": {
+        "@types/cors": "catalog:types",
+        "@types/express": "catalog:types",
+        "tsx": "catalog:dev"
+    }
+}

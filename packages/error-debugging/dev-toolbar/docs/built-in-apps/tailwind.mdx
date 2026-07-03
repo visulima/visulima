@@ -1,0 +1,73 @@
+---
+title: Tailwind
+description: Browse all resolved Tailwind CSS design tokens and their current values.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+**App ID:** `dev-toolbar:tailwind`
+
+The Tailwind app fetches your project's fully-resolved Tailwind CSS configuration from the dev server and displays all design tokens — colors, spacing, typography, shadows, and more — in a searchable, grouped view.
+
+## What it shows
+
+The panel organizes tokens into tabs:
+
+| Tab            | Contents                                                              |
+| -------------- | --------------------------------------------------------------------- |
+| **Colors**     | Every color token with a visual swatch and its hex/rgb value          |
+| **Spacing**    | Spacing scale values (0, 0.5, 1, 2, 3, 4, ..., 96)                    |
+| **Typography** | Font families, font sizes, font weights, line heights, letter spacing |
+| **Effects**    | Box shadows, opacity scale, blur values                               |
+| **Config**     | Raw CSS custom properties from your `:root` / `@layer theme`          |
+
+Each section supports search — type to filter tokens by name or value.
+
+## How it works
+
+1. The Tailwind app calls the built-in `getTailwindConfig()` RPC function on the Vite dev server.
+2. The server resolves your CSS using `@tailwindcss/node` and `@tailwindcss/oxide`, extracting all theme tokens.
+3. It also scans your document's `:root` stylesheets for CSS custom properties (e.g. `--color-primary`).
+4. The resolved tokens are sent to the browser panel and rendered as interactive cards.
+
+<Callout type="info">
+    Only **Tailwind CSS v4** is supported. The app returns `null` and shows a "No Tailwind config found" message when no Tailwind v4 CSS is detected. Tailwind
+    v3 projects using `tailwind.config.js` are not supported.
+</Callout>
+
+## Token resolution
+
+Tokens are resolved from two sources:
+
+- **Tailwind theme** — values from `@tailwindcss/node`'s resolved config, including default + user overrides
+- **CSS variables** — custom properties found in `:root` rules across all loaded stylesheets
+
+The merged result gives you a complete view of your design system's actual runtime values.
+
+## Enabling the Tailwind app
+
+The Tailwind app is disabled by default. Enable it in your Vite config:
+
+```ts title="vite.config.ts"
+devToolbar({
+    apps: {
+        tailwind: true,
+    },
+});
+```
+
+### Dependencies
+
+The Tailwind app requires these packages (they should already be in your project if you use Tailwind v4):
+
+- `tailwindcss` (v4+)
+- `@tailwindcss/node`
+- `@tailwindcss/oxide`
+
+These are listed as `devDependencies` in the dev-toolbar's `package.json` and do not add any runtime overhead — they run only on the Vite dev server.
+
+## Limitations
+
+- **Tailwind v3 not supported** — only v4's CSS-first configuration is compatible.
+- **Token display is read-only** — you cannot edit tokens from the panel. Changes must be made in your CSS.
+- **CSS variable scanning** is limited to `:root` rules in loaded stylesheets. Variables defined in nested selectors or shadow DOM are not captured.

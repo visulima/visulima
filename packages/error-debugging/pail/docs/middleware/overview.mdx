@@ -1,0 +1,139 @@
+---
+title: Middleware Overview
+description: Automatic request-scoped wide event logging for web frameworks
+---
+
+# Framework Middleware
+
+Pail provides first-class middleware adapters for popular web frameworks. Each adapter automatically creates a request-scoped [Wide Event](/docs/packages/pail/usage/wide-events) that:
+
+- Accumulates context throughout the request lifecycle
+- Auto-emits a single structured log when the response completes or an error occurs
+- Is accessible via `req.log` / `request.log` / `context.log` and `useLogger()`
+- Supports route inclusion/exclusion via glob patterns
+- Supports per-route service name overrides
+- Automatically filters sensitive headers
+
+## Supported Frameworks
+
+| Framework | Import Path                           | Access Pattern                     |
+| --------- | ------------------------------------- | ---------------------------------- |
+| Express   | `@visulima/pail/middleware/express`   | `req.log` / `useLogger()`          |
+| Fastify   | `@visulima/pail/middleware/fastify`   | `request.log` / `useLogger()`      |
+| Hono      | `@visulima/pail/middleware/hono`      | `c.get("log")` / `useLogger(c)`    |
+| Elysia    | `@visulima/pail/middleware/elysia`    | `context.log` / `useLogger()`      |
+| SvelteKit | `@visulima/pail/middleware/sveltekit` | `event.locals.log` / `useLogger()` |
+| Next.js   | `@visulima/pail/middleware/next`      | `useLogger()`                      |
+
+## Shared Options
+
+All middleware adapters accept the `PailMiddlewareOptions` interface:
+
+```typescript
+interface PailMiddlewareOptions {
+    /** The pail logger instance (required) */
+    pail: Pail;
+    /** Default service name for all wide events */
+    service?: string;
+    /** Glob patterns for paths to include in logging */
+    include?: string[];
+    /** Glob patterns for paths to exclude from logging (takes precedence) */
+    exclude?: string[];
+    /** Route-specific configuration; maps glob patterns to config */
+    routes?: Record<string, { service?: string }>;
+}
+```
+
+## Route Configuration
+
+All adapters support glob-based route configuration:
+
+```typescript
+pailMiddleware({
+    pail: logger,
+    service: "api-gateway",
+    exclude: ["/health", "/metrics", "/_next/**"],
+    include: ["/api/**"],
+    routes: {
+        "/api/auth/**": { service: "auth-service" },
+        "/api/payments/**": { service: "payments-service" },
+    },
+});
+```
+
+### Pattern Matching
+
+| Pattern | Matches                      | Example                            |
+| ------- | ---------------------------- | ---------------------------------- |
+| `*`     | Any characters except `/`    | `/api/*` matches `/api/users`      |
+| `**`    | Any characters including `/` | `/api/**` matches `/api/users/123` |
+| `?`     | A single character           | `/api/v?` matches `/api/v1`        |
+
+- Exclusions always take precedence over inclusions
+- If no `include` patterns are provided, all non-excluded paths are logged
+- Route service overrides apply to the first matching pattern
+
+## Sensitive Header Filtering
+
+All adapters automatically filter these headers before including them in the wide event:
+
+- `authorization`
+- `cookie`
+- `set-cookie`
+- `x-api-key`
+- `x-auth-token`
+- `proxy-authorization`
+
+## `useLogger()` — Access from Anywhere
+
+Every adapter (except Hono) uses `AsyncLocalStorage` to propagate the logger through the async call stack. This means you can access the request-scoped logger from any function called during the request:
+
+```typescript
+// In a service function, far from the route handler:
+import { useLogger } from "@visulima/pail/middleware/express";
+
+export async function fetchUserProfile(userId: number) {
+    const log = useLogger();
+    log.set({ user: { id: userId } });
+    log.info("Fetching user profile");
+    // ...
+}
+```
+
+> **Hono** uses context-based storage instead of `AsyncLocalStorage`. Pass the Hono context to `useLogger(c)`.
+
+## Peer Dependencies
+
+The framework adapters don't import framework packages directly — they use minimal internal type definitions. However, peer dependencies are declared for documentation and compatibility signaling:
+
+```json
+{
+    "peerDependencies": {
+        "express": ">=4.0",
+        "fastify": ">=4.0",
+        "hono": ">=4.0",
+        "elysia": ">=1.0",
+        "@sveltejs/kit": ">=2.0",
+        "next": ">=14.0"
+    },
+    "peerDependenciesMeta": {
+        "express": { "optional": true },
+        "fastify": { "optional": true },
+        "hono": { "optional": true },
+        "elysia": { "optional": true },
+        "@sveltejs/kit": { "optional": true },
+        "next": { "optional": true }
+    }
+}
+```
+
+All peer dependencies are optional — only install the ones you actually use.
+
+## Next Steps
+
+- [Express](/docs/packages/pail/middleware/express) — Express middleware guide
+- [Fastify](/docs/packages/pail/middleware/fastify) — Fastify plugin guide
+- [Hono](/docs/packages/pail/middleware/hono) — Hono middleware guide
+- [Elysia](/docs/packages/pail/middleware/elysia) — Elysia plugin guide
+- [SvelteKit](/docs/packages/pail/middleware/sveltekit) — SvelteKit hooks guide
+- [Next.js](/docs/packages/pail/middleware/nextjs) — Next.js integration guide

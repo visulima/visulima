@@ -1,0 +1,11 @@
+{
+    "name": "@fixture-npm/b",
+    "version": "1.0.0",
+    "main": "index.js",
+    "files": [
+        "index.js"
+    ],
+    "dependencies": {
+        "@fixture-npm/a": "^1.0.0"
+    }
+}

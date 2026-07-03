@@ -1,0 +1,619 @@
+---
+title: "Duration"
+---
+
+# Duration Usage
+
+Learn how to format milliseconds to human-readable duration strings and parse duration strings back to milliseconds with extensive customization options.
+
+## Format Duration
+
+Convert milliseconds to human-readable duration strings.
+
+### Basic Formatting
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+duration(1000);
+// => "1 second"
+
+duration(3000);
+// => "3 seconds"
+
+duration(60000);
+// => "1 minute"
+
+duration(3600000);
+// => "1 hour"
+
+duration(97320000);
+// => "1 day, 3 hours, 2 minutes"
+```
+
+### Specify Units
+
+Control which units to display:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+const ms = 97320000; // 1 day, 3 hours, 2 minutes
+
+// Only hours and minutes
+duration(ms, { units: ["h", "m"] });
+// => "27 hours, 2 minutes"
+
+// Only minutes
+duration(ms, { units: ["m"] });
+// => "1,622 minutes"
+
+// Full precision
+duration(ms, { units: ["d", "h", "m", "s", "ms"] });
+// => "1 day, 3 hours, 2 minutes"
+```
+
+### Limit Output Units
+
+Show only the N largest units:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+const ms = 1000000000000; // Very long duration
+
+// Show all units
+duration(ms);
+// => "31 years, 8 months, 1 week, 19 hours, 46 minutes, 40 seconds"
+
+// Show only 2 largest
+duration(ms, { largest: 2 });
+// => "31 years, 8 months"
+
+// Show only 3 largest
+duration(ms, { largest: 3 });
+// => "31 years, 8 months, 1 week"
+```
+
+### Rounding
+
+Round the smallest unit for cleaner output:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+duration(1200);
+// => "1.2 seconds"
+
+duration(1200, { round: true });
+// => "1 second"
+
+duration(1600, { round: true });
+// => "2 seconds"
+
+// Rounding with multiple units
+duration(97380000, { largest: 2, round: true });
+// => "1 day, 3 hours"
+```
+
+### Decimal Precision
+
+Control the number of decimal points:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+duration(8123.456789);
+// => "8.123456789 seconds"
+
+duration(8123.456789, { maxDecimalPoints: 2 });
+// => "8.12 seconds"
+
+duration(8123.456789, { maxDecimalPoints: 3 });
+// => "8.123 seconds"
+
+// No decimals
+duration(8123.456789, { maxDecimalPoints: 0 });
+// => "8 seconds"
+```
+
+### Delimiters and Conjunctions
+
+Customize how units are joined:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+const ms = 22140000; // 6 hours, 9 minutes
+
+// Default delimiter
+duration(ms);
+// => "6 hours, 9 minutes"
+
+// Custom delimiter
+duration(ms, { delimiter: " and " });
+// => "6 hours and 9 minutes"
+
+// Conjunction before last unit
+duration(22141000, { conjunction: " and " });
+// => "6 hours, 9 minutes, and 1 second"
+
+// Without serial comma
+duration(22141000, { conjunction: " and ", serialComma: false });
+// => "6 hours, 9 minutes and 1 second"
+```
+
+### Spacer Between Count and Unit
+
+Customize spacing between numbers and unit names:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+const ms = 260040000; // 3 days, 14 minutes
+
+// Default spacer
+duration(ms);
+// => "3 days, 14 minutes"
+
+// Custom spacer
+duration(ms, { spacer: " whole " });
+// => "3 whole days, 14 whole minutes"
+
+// No spacer
+duration(ms, { spacer: "" });
+// => "3days, 14minutes"
+```
+
+### Decimal Separator
+
+Customize the decimal point character:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+duration(1200);
+// => "1.2 seconds"
+
+duration(1200, { decimal: " point " });
+// => "1 point 2 seconds"
+
+duration(1200, { decimal: "," });
+// => "1,2 seconds"
+```
+
+### Language Support
+
+Use different languages for unit names:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+import { durationLanguage as es } from "@visulima/humanizer/language/es";
+import { durationLanguage as ja } from "@visulima/humanizer/language/ja";
+
+// German
+duration(3000, { language: de });
+// => "3 Sekunden"
+
+// Spanish
+duration(3000, { language: es });
+// => "3 segundos"
+
+// Japanese
+duration(3000, { language: ja });
+// => "3 秒"
+```
+
+### Custom Unit Measures
+
+Override default unit lengths:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+// Default: Month ≈ 30.44 days
+duration(2629800000);
+// => "1 month"
+
+// Custom: Month = exactly 30 days
+duration(2629800000, {
+    unitMeasures: {
+        y: 31557600000,
+        mo: 30 * 86400000,
+        w: 604800000,
+        d: 86400000,
+        h: 3600000,
+        m: 60000,
+        s: 1000,
+        ms: 1,
+    },
+});
+// => "1 month, 10 hours, 30 minutes"
+```
+
+### Digit Replacements
+
+Use custom digits (e.g., for other numeral systems):
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+duration(1234, {
+    digitReplacements: ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
+});
+// => "One.TwoThreeFour seconds"
+
+// Arabic numerals (built into Arabic language)
+import { durationLanguage as ar } from "@visulima/humanizer/language/ar";
+
+duration(1234, { language: ar });
+// => "١٫٢٣٤ ثانية"
+```
+
+## Parse Duration
+
+Convert human-readable duration strings back to milliseconds.
+
+### Natural Language Parsing
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+
+parseDuration("1 day");
+// => 86400000
+
+parseDuration("1 day, 3 hours, 2 minutes");
+// => 97320000
+
+parseDuration("2 weeks");
+// => 1209600000
+
+parseDuration("1.5 years");
+// => 47335428000
+```
+
+### Abbreviated Format
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+
+parseDuration("2h 30m");
+// => 9000000
+
+parseDuration("1h30m45s");
+// => 5445000
+
+parseDuration("5d 3h");
+// => 442800000
+```
+
+### Colon Format (H:MM:SS or MM:SS)
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+
+// H:MM:SS format
+parseDuration("1:25:05");
+// => 5105000
+
+// MM:SS format
+parseDuration("15:30");
+// => 930000
+
+// Hours only
+parseDuration("2:00:00");
+// => 7200000
+```
+
+### ISO 8601 Duration Format
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+
+parseDuration("PT2H30M5S");
+// => 9005000
+
+parseDuration("PT1H");
+// => 3600000
+
+parseDuration("PT30M");
+// => 1800000
+
+parseDuration("PT45S");
+// => 45000
+```
+
+### Negative Durations
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+
+parseDuration("-3 weeks");
+// => -1814400000
+
+parseDuration("-2h 30m");
+// => -9000000
+
+parseDuration("-1:30:00");
+// => -5400000
+```
+
+### Numbers Only (Default Unit)
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+
+// Default unit is milliseconds
+parseDuration("1500");
+// => 1500
+
+// Specify default unit
+parseDuration("1500", { defaultUnit: "s" });
+// => 1500000
+
+parseDuration("10", { defaultUnit: "m" });
+// => 600000
+
+parseDuration("2", { defaultUnit: "h" });
+// => 7200000
+```
+
+### Localized Parsing
+
+Parse duration strings in other languages:
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+import { durationLanguage as fr } from "@visulima/humanizer/language/fr";
+
+// German
+parseDuration("3 Stunden", { language: de });
+// => 10800000
+
+// French
+parseDuration("2 jours et 5 heures", { language: fr });
+// => 190800000
+```
+
+### Invalid Input Handling
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+
+// Invalid strings return undefined
+const result = parseDuration("invalid");
+console.log(result); // undefined
+
+// Check before using
+function safeParse(input: string): number | null {
+    const ms = parseDuration(input);
+    return ms === undefined ? null : ms;
+}
+
+safeParse("2 hours"); // => 7200000
+safeParse("invalid"); // => null
+```
+
+## Practical Examples
+
+### API Timeout Configuration
+
+```typescript
+import { duration, parseDuration } from "@visulima/humanizer";
+
+interface Config {
+    timeout: string;
+}
+
+function setApiTimeout(config: Config) {
+    const timeoutMs = parseDuration(config.timeout);
+
+    if (timeoutMs === undefined) {
+        throw new Error(`Invalid timeout: ${config.timeout}`);
+    }
+
+    console.log(`Timeout set to ${duration(timeoutMs, { units: ["s", "ms"] })}`);
+    return timeoutMs;
+}
+
+setApiTimeout({ timeout: "30s" });
+// => Timeout set to 30 seconds
+
+setApiTimeout({ timeout: "2m 30s" });
+// => Timeout set to 2 minutes, 30 seconds
+```
+
+### Uptime Display
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+function displayUptime(startTime: number) {
+    const uptime = Date.now() - startTime;
+
+    return duration(uptime, {
+        units: ["d", "h", "m"],
+        largest: 3,
+        round: true,
+    });
+}
+
+const serverStart = Date.now() - 345678901;
+console.log(`Server uptime: ${displayUptime(serverStart)}`);
+// => Server uptime: 4 days, 0 hours, 1 minute
+```
+
+### Countdown Timer
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+function formatCountdown(endTime: number): string {
+    const remaining = endTime - Date.now();
+
+    if (remaining <= 0) {
+        return "Expired";
+    }
+
+    return duration(remaining, {
+        units: ["h", "m", "s"],
+        largest: 3,
+        round: true,
+    });
+}
+
+const deadline = Date.now() + 7200000; // 2 hours from now
+console.log(`Time remaining: ${formatCountdown(deadline)}`);
+// => Time remaining: 2 hours
+```
+
+### Build Time Reporter
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+function reportBuildTime(startTime: number, endTime: number) {
+    const buildTime = endTime - startTime;
+
+    return duration(buildTime, {
+        units: ["m", "s", "ms"],
+        largest: 2,
+        maxDecimalPoints: 2,
+    });
+}
+
+const start = Date.now();
+// ... build process ...
+const end = Date.now();
+
+console.log(`Build completed in ${reportBuildTime(start, end)}`);
+// => Build completed in 2 minutes, 34.56 seconds
+```
+
+### Cache TTL Display
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+interface CacheEntry {
+    key: string;
+    expiresAt: number;
+}
+
+function displayCacheStatus(entries: CacheEntry[]) {
+    const now = Date.now();
+
+    for (const entry of entries) {
+        const ttl = entry.expiresAt - now;
+
+        if (ttl <= 0) {
+            console.log(`${entry.key}: Expired`);
+        } else {
+            const ttlStr = duration(ttl, {
+                units: ["h", "m", "s"],
+                largest: 2,
+                round: true,
+            });
+            console.log(`${entry.key}: ${ttlStr} remaining`);
+        }
+    }
+}
+
+displayCacheStatus([
+    { key: "user:123", expiresAt: Date.now() + 300000 },
+    { key: "session:abc", expiresAt: Date.now() + 3600000 },
+]);
+// user:123: 5 minutes remaining
+// session:abc: 1 hour remaining
+```
+
+### Scheduling System
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+
+interface Task {
+    name: string;
+    interval: string;
+}
+
+function scheduleTask(task: Task) {
+    const intervalMs = parseDuration(task.interval);
+
+    if (intervalMs === undefined) {
+        throw new Error(`Invalid interval: ${task.interval}`);
+    }
+
+    setInterval(() => {
+        console.log(`Running task: ${task.name}`);
+    }, intervalMs);
+
+    console.log(`Scheduled "${task.name}" every ${task.interval}`);
+}
+
+scheduleTask({ name: "Cleanup", interval: "5 minutes" });
+scheduleTask({ name: "Backup", interval: "1 hour" });
+scheduleTask({ name: "Report", interval: "1 day" });
+```
+
+### Time Tracking
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+class TimeTracker {
+    private startTime: number | null = null;
+
+    start() {
+        this.startTime = Date.now();
+    }
+
+    stop(): string {
+        if (!this.startTime) {
+            return "Not started";
+        }
+
+        const elapsed = Date.now() - this.startTime;
+        this.startTime = null;
+
+        return duration(elapsed, {
+            units: ["h", "m", "s"],
+            largest: 3,
+            maxDecimalPoints: 2,
+        });
+    }
+}
+
+const tracker = new TimeTracker();
+tracker.start();
+// ... do work ...
+console.log(`Task completed in ${tracker.stop()}`);
+// => Task completed in 3 minutes, 45.67 seconds
+```
+
+### Relative Time Display
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+function relativeTime(timestamp: number): string {
+    const diff = Date.now() - timestamp;
+    const absDiff = Math.abs(diff);
+
+    const timeStr = duration(absDiff, {
+        units: ["d", "h", "m"],
+        largest: 1,
+        round: true,
+    });
+
+    return diff < 0 ? `in ${timeStr}` : `${timeStr} ago`;
+}
+
+console.log(relativeTime(Date.now() - 3600000));
+// => "1 hour ago"
+
+console.log(relativeTime(Date.now() + 7200000));
+// => "in 2 hours"
+```

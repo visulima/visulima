@@ -1,0 +1,699 @@
+---
+title: "Usage Guide"
+description: "Learn how to use @visulima/deep-clone with detailed examples"
+---
+
+# Usage Guide
+
+Learn how to use `@visulima/deep-clone` for all your cloning needs.
+
+## Basic Cloning
+
+### Clone Simple Objects
+
+Clone objects with nested properties:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = {
+    name: "John Doe",
+    age: 30,
+    address: {
+        city: "New York",
+        zipCode: "10001",
+    },
+};
+
+const cloned = deepClone(original);
+cloned.address.city = "Los Angeles";
+
+console.log(original.address.city); // "New York" (unchanged)
+console.log(cloned.address.city); // "Los Angeles"
+```
+
+### Clone Arrays
+
+Arrays and their nested contents are fully cloned:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = [{ id: 1, name: "Alice" }, { id: 2, name: "Bob" }, [1, 2, [3, 4]]];
+
+const cloned = deepClone(original);
+cloned[0].name = "Charlie";
+cloned[2][2][0] = 999;
+
+console.log(original[0].name); // "Alice" (unchanged)
+console.log(original[2][2][0]); // 3 (unchanged)
+console.log(cloned[0].name); // "Charlie"
+console.log(cloned[2][2][0]); // 999
+```
+
+### Clone Primitives
+
+Primitives are returned as-is (they're immutable):
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+console.log(deepClone(42)); // 42
+console.log(deepClone("hello")); // "hello"
+console.log(deepClone(true)); // true
+console.log(deepClone(null)); // null
+console.log(deepClone(undefined)); // undefined
+```
+
+## Cloning Built-in Types
+
+### Clone Dates
+
+Date objects are properly cloned:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = {
+    createdAt: new Date("2024-01-01"),
+    updatedAt: new Date(),
+};
+
+const cloned = deepClone(original);
+cloned.createdAt.setFullYear(2025);
+
+console.log(original.createdAt.getFullYear()); // 2024 (unchanged)
+console.log(cloned.createdAt.getFullYear()); // 2025
+```
+
+### Clone RegExp
+
+Regular expressions maintain their patterns and flags:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = {
+    emailPattern: /^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$/gi,
+    phonePattern: /^\+?[1-9]\d{1,14}$/,
+};
+
+const cloned = deepClone(original);
+
+console.log(cloned.emailPattern.source); // Same pattern
+console.log(cloned.emailPattern.flags); // "gi" (same flags)
+console.log(original.emailPattern !== cloned.emailPattern); // true (different instance)
+```
+
+### Clone Maps
+
+Map entries and their values are cloned:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = new Map([
+    ["user:1", { name: "Alice", age: 30 }],
+    ["user:2", { name: "Bob", age: 25 }],
+]);
+
+const cloned = deepClone(original);
+cloned.get("user:1").age = 31;
+
+console.log(original.get("user:1").age); // 30 (unchanged)
+console.log(cloned.get("user:1").age); // 31
+```
+
+### Clone Sets
+
+Set values are deeply cloned:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = new Set([
+    { id: 1, name: "Alice" },
+    { id: 2, name: "Bob" },
+]);
+
+const cloned = deepClone(original);
+const firstItem = Array.from(cloned)[0];
+firstItem.name = "Charlie";
+
+const originalFirst = Array.from(original)[0];
+console.log(originalFirst.name); // "Alice" (unchanged)
+console.log(firstItem.name); // "Charlie"
+```
+
+### Clone Errors
+
+Error objects including stack traces are cloned:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = new Error("Something went wrong");
+original.code = "ERR_CUSTOM";
+
+const cloned = deepClone(original);
+cloned.code = "ERR_MODIFIED";
+
+console.log(original.code); // "ERR_CUSTOM" (unchanged)
+console.log(cloned.code); // "ERR_MODIFIED"
+console.log(cloned.message); // "Something went wrong"
+console.log(cloned.stack); // Stack trace preserved
+```
+
+Works with error subtypes:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const typeError = new TypeError("Invalid type");
+const rangeError = new RangeError("Out of range");
+const syntaxError = new SyntaxError("Syntax error");
+
+const clonedType = deepClone(typeError);
+console.log(clonedType instanceof TypeError); // true
+```
+
+### Clone TypedArrays
+
+TypedArrays are properly cloned:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = {
+    bytes: new Uint8Array([1, 2, 3, 4]),
+    floats: new Float32Array([1.1, 2.2, 3.3]),
+};
+
+const cloned = deepClone(original);
+cloned.bytes[0] = 99;
+
+console.log(original.bytes[0]); // 1 (unchanged)
+console.log(cloned.bytes[0]); // 99
+```
+
+## Circular References
+
+### Handle Circular Objects
+
+Circular references are automatically detected and preserved:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const person = {
+    name: "Alice",
+    friends: [] as Array<{ name: string; bestFriend?: typeof person }>,
+};
+
+const friend = {
+    name: "Bob",
+    bestFriend: person,
+};
+
+person.friends.push(friend);
+
+const cloned = deepClone(person);
+
+// Circular reference is preserved
+console.log(cloned.friends[0].bestFriend === cloned); // true
+console.log(cloned.friends[0].bestFriend.name); // "Alice"
+```
+
+### Handle Complex Circular Structures
+
+Multiple circular references are handled correctly:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const nodeA = { id: "A", connections: [] as Array<typeof nodeA | typeof nodeB> };
+const nodeB = { id: "B", connections: [] as Array<typeof nodeA | typeof nodeB> };
+const nodeC = { id: "C", connections: [] as Array<typeof nodeA | typeof nodeB> };
+
+nodeA.connections.push(nodeB, nodeC);
+nodeB.connections.push(nodeA, nodeC);
+nodeC.connections.push(nodeA, nodeB);
+
+const cloned = deepClone(nodeA);
+
+// All circular references preserved
+console.log(cloned.connections[0].connections[0] === cloned); // true
+```
+
+## Cloning Modes
+
+### Loose Mode (Default)
+
+Fast cloning that copies enumerable properties:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const obj = {
+    visible: "I'm enumerable",
+    [Symbol("id")]: "I'm a symbol",
+};
+
+Object.defineProperty(obj, "hidden", {
+    value: "I'm non-enumerable",
+    enumerable: false,
+});
+
+const cloned = deepClone(obj);
+
+console.log(cloned.visible); // "I'm enumerable" (copied)
+console.log(cloned.hidden); // undefined (not copied)
+console.log(cloned[Symbol("id")]); // undefined (not copied)
+```
+
+### Strict Mode
+
+Clone all properties including non-enumerable and symbols:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = {
+    visible: "I'm enumerable",
+    [Symbol.for("id")]: "I'm a symbol",
+};
+
+Object.defineProperty(original, "hidden", {
+    value: "I'm non-enumerable",
+    enumerable: false,
+});
+
+const cloned = deepClone(original, { strict: true });
+
+console.log(cloned.visible); // "I'm enumerable" (copied)
+console.log(cloned.hidden); // "I'm non-enumerable" (copied!)
+console.log(cloned[Symbol.for("id")]); // "I'm a symbol" (copied!)
+```
+
+Use strict mode when you need complete property cloning:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+class User {
+    public name: string;
+    private _password: string;
+
+    constructor(name: string, password: string) {
+        this.name = name;
+        this._password = password;
+
+        // Make _password non-enumerable
+        Object.defineProperty(this, "_password", {
+            enumerable: false,
+            writable: true,
+        });
+    }
+}
+
+const user = new User("Alice", "secret123");
+
+// Loose mode skips _password
+const looseClone = deepClone(user);
+console.log(looseClone._password); // undefined
+
+// Strict mode includes _password
+const strictClone = deepClone(user, { strict: true });
+console.log(strictClone._password); // "secret123"
+```
+
+## Custom Handlers
+
+### Override Default Behavior
+
+Customize how specific types are cloned:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+import type { State } from "@visulima/deep-clone";
+
+const cloned = deepClone(originalData, {
+    handler: {
+        Date: (date: Date, _state: State) => {
+            // Always clone to current time
+            return new Date();
+        },
+        RegExp: (regexp: RegExp, _state: State) => {
+            // Return original RegExp instead of cloning
+            return regexp;
+        },
+    },
+});
+```
+
+### Handle Custom Classes
+
+Define handlers for your own classes:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+import type { State } from "@visulima/deep-clone";
+
+class Point {
+    constructor(
+        public x: number,
+        public y: number,
+    ) {}
+
+    distance(): number {
+        return Math.sqrt(this.x ** 2 + this.y ** 2);
+    }
+}
+
+const original = {
+    points: [new Point(1, 2), new Point(3, 4)],
+};
+
+const cloned = deepClone(original, {
+    handler: {
+        Object: (obj: Record<PropertyKey, unknown>, state: State) => {
+            if (obj instanceof Point) {
+                // Custom Point cloning logic
+                return new Point(obj.x * 2, obj.y * 2);
+            }
+
+            // Default object cloning
+            const copy = {} as Record<PropertyKey, unknown>;
+            for (const key in obj) {
+                copy[key] = state.clone(obj[key], state);
+            }
+            return copy;
+        },
+    },
+});
+
+console.log(cloned.points[0].x); // 2 (doubled)
+console.log(cloned.points[0].y); // 4 (doubled)
+```
+
+## Utility Functions
+
+### Copy Own Properties
+
+Copy only the immediate properties of an object:
+
+```typescript
+import { copyOwnProperties } from "@visulima/deep-clone/utils";
+
+const original = {
+    name: "Alice",
+    age: 30,
+    address: { city: "NYC" },
+};
+
+const copy = copyOwnProperties(original);
+copy.address.city = "LA";
+
+// Nested objects are still referenced
+console.log(original.address.city); // "LA" (modified!)
+
+// Use deepClone for true deep copy
+import { deepClone } from "@visulima/deep-clone";
+const deepCopy = deepClone(original);
+deepCopy.address.city = "SF";
+console.log(original.address.city); // "LA" (unchanged)
+```
+
+### Get Clean Clone
+
+Get an empty object with the same prototype:
+
+```typescript
+import { getCleanClone } from "@visulima/deep-clone/utils";
+
+class User {
+    name: string = "";
+    greet() {
+        return `Hello, ${this.name}!`;
+    }
+}
+
+const user = new User();
+user.name = "Alice";
+
+const clean = getCleanClone(user);
+
+console.log(clean.name); // "" (empty)
+console.log(clean.greet()); // "Hello, !" (method exists)
+console.log(clean instanceof User); // true (prototype preserved)
+```
+
+## Type Support
+
+### Supported Types
+
+These types are fully supported for cloning:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const data = {
+    // Primitives (returned as-is)
+    num: 42,
+    str: "hello",
+    bool: true,
+    nul: null,
+    undef: undefined,
+
+    // Objects and Arrays
+    obj: { nested: { deep: true } },
+    arr: [1, [2, [3]]],
+
+    // Built-in Types
+    date: new Date(),
+    regexp: /pattern/gi,
+    map: new Map([["key", "value"]]),
+    set: new Set([1, 2, 3]),
+    error: new Error("message"),
+
+    // Binary Data
+    buffer: Buffer.from("hello"),
+    uint8: new Uint8Array([1, 2, 3]),
+    arrayBuffer: new ArrayBuffer(8),
+    dataView: new DataView(new ArrayBuffer(8)),
+
+    // Browser APIs (if available)
+    blob: new Blob(["content"], { type: "text/plain" }),
+
+    // Functions (copied by reference)
+    func: () => console.log("hello"),
+};
+
+const cloned = deepClone(data);
+```
+
+### Unsupported Types
+
+These types throw errors or are not supported:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+// These throw TypeError:
+try {
+    deepClone(new Promise((resolve) => resolve(1)));
+} catch (error) {
+    console.log(error.message); // "Promise objects cannot be cloned"
+}
+
+try {
+    deepClone(new WeakMap());
+} catch (error) {
+    console.log(error.message); // "WeakMap objects cannot be cloned"
+}
+
+try {
+    deepClone(new WeakSet());
+} catch (error) {
+    console.log(error.message); // "WeakSet objects cannot be cloned"
+}
+
+try {
+    deepClone(new SharedArrayBuffer(8));
+} catch (error) {
+    console.log(error.message); // "SharedArrayBuffer objects cannot be cloned"
+}
+
+// DOM elements: use element.cloneNode() instead
+// Symbols: use strict mode to clone them
+```
+
+## Performance Tips
+
+### Choose the Right Mode
+
+- **Loose mode (default):** Use for standard objects and better performance
+- **Strict mode:** Only when you need non-enumerable properties or symbols
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const simple = { a: 1, b: 2, c: { d: 3 } };
+
+// Faster for standard objects
+const cloned1 = deepClone(simple);
+
+// Slower but more complete
+const cloned2 = deepClone(simple, { strict: true });
+```
+
+### Avoid Unnecessary Cloning
+
+Don't clone primitives or immutable data:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+// ❌ Unnecessary cloning
+const num = deepClone(42);
+const str = deepClone("hello");
+
+// ✅ Just use the values directly
+const num = 42;
+const str = "hello";
+
+// ✅ Only clone when needed
+const obj = { count: 42 };
+const cloned = deepClone(obj); // Clone the container, not the primitive
+```
+
+### Reuse for Similar Structures
+
+For repeated cloning of similar structures, consider the performance characteristics:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+// If cloning many similar objects, loose mode is consistently faster
+const users = [
+    /* many user objects */
+];
+const clonedUsers = users.map((user) => deepClone(user));
+```
+
+## Real-World Examples
+
+### Clone Redux State
+
+Create immutable state copies for Redux:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+interface State {
+    user: {
+        id: number;
+        name: string;
+        preferences: Record<string, unknown>;
+    };
+    cart: Array<{ id: number; quantity: number }>;
+}
+
+function reducer(state: State, action: { type: string; payload: unknown }): State {
+    const newState = deepClone(state);
+
+    switch (action.type) {
+        case "UPDATE_USER":
+            newState.user = { ...newState.user, ...(action.payload as Partial<State["user"]>) };
+            break;
+        case "ADD_TO_CART":
+            newState.cart.push(action.payload as State["cart"][0]);
+            break;
+    }
+
+    return newState;
+}
+```
+
+### Clone Form Data
+
+Clone form state for undo/redo functionality:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+class FormManager {
+    private history: unknown[] = [];
+    private current = 0;
+
+    saveState(formData: unknown): void {
+        this.history = this.history.slice(0, this.current + 1);
+        this.history.push(deepClone(formData));
+        this.current = this.history.length - 1;
+    }
+
+    undo(): unknown | null {
+        if (this.current > 0) {
+            this.current--;
+            return deepClone(this.history[this.current]);
+        }
+        return null;
+    }
+
+    redo(): unknown | null {
+        if (this.current < this.history.length - 1) {
+            this.current++;
+            return deepClone(this.history[this.current]);
+        }
+        return null;
+    }
+}
+```
+
+### Clone Configuration Objects
+
+Safely clone and modify configuration:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const baseConfig = {
+    server: {
+        host: "localhost",
+        port: 3000,
+        ssl: {
+            enabled: false,
+            cert: null,
+            key: null,
+        },
+    },
+    database: {
+        host: "localhost",
+        port: 5432,
+        name: "myapp",
+    },
+};
+
+// Create environment-specific configs
+const productionConfig = deepClone(baseConfig);
+productionConfig.server.host = "api.example.com";
+productionConfig.server.ssl.enabled = true;
+productionConfig.server.ssl.cert = "/path/to/cert";
+
+const developmentConfig = deepClone(baseConfig);
+developmentConfig.server.port = 3001;
+
+// Original remains unchanged
+console.log(baseConfig.server.ssl.enabled); // false
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with all parameters and types
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
+</Cards>

@@ -1,0 +1,122 @@
+---
+title: Mailgun
+description: Send emails using the Mailgun API with @visulima/email
+---
+
+# Mailgun Provider
+
+The Mailgun provider allows you to send emails through the [Mailgun API](https://documentation.mailgun.com/en/latest/api_reference.html), a developer-friendly email API service.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { mailgunProvider } from "@visulima/email/providers/mailgun";
+
+const mail = createMail(
+    mailgunProvider({
+        apiKey: process.env.MAILGUN_API_KEY!,
+        domain: "mg.example.com",
+    }),
+);
+```
+
+## Configuration
+
+The `MailgunConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                   | Description                                                     |
+| ---------- | --------- | -------- | ------------------------- | --------------------------------------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                         | Your Mailgun API key                                            |
+| `domain`   | `string`  | Yes      | -                         | Your Mailgun sending domain                                     |
+| `endpoint` | `string`  | No       | `https://api.mailgun.net` | API endpoint (use `https://api.eu.mailgun.net` for EU accounts) |
+| `debug`    | `boolean` | No       | `false`                   | Enable debug logging                                            |
+| `logger`   | `Console` | No       | -                         | Custom logger instance                                          |
+| `retries`  | `number`  | No       | `3`                       | Number of retry attempts on failure                             |
+| `timeout`  | `number`  | No       | `30000`                   | Request timeout in milliseconds                                 |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@mg.example.com").subject("Hello from Mailgun").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Mailgun provider supports additional options through `MailgunEmailOptions`:
+
+```typescript
+import type { MailgunEmailOptions } from "@visulima/email/providers/mailgun";
+
+const options: MailgunEmailOptions = {
+    from: { email: "sender@mg.example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    tags: ["welcome", "onboarding"],
+    clickTracking: true,
+    openTracking: true,
+    testMode: false,
+    template: "welcome-template",
+    templateVariables: { name: "John" },
+};
+```
+
+| Option                | Type                      | Description                                     |
+| --------------------- | ------------------------- | ----------------------------------------------- |
+| `tags`                | `string[]`                | Tags for categorization                         |
+| `template`            | `string`                  | Mailgun template name                           |
+| `templateVariables`   | `Record<string, unknown>` | Template variables                              |
+| `campaignId`          | `string`                  | Campaign ID for tracking                        |
+| `deliveryTime`        | `string \| number`        | Delivery time (RFC 2822 date or Unix timestamp) |
+| `clickTracking`       | `boolean`                 | Enable/disable click tracking                   |
+| `openTracking`        | `boolean`                 | Enable/disable open tracking                    |
+| `unsubscribeTracking` | `boolean`                 | Enable/disable unsubscribe tracking             |
+| `testMode`            | `boolean`                 | Test mode - emails will not actually be sent    |
+| `requireTls`          | `boolean`                 | Require TLS for delivery                        |
+| `skipVerification`    | `boolean`                 | Skip TLS certificate verification               |
+
+## EU Region
+
+For EU-based Mailgun accounts, use the EU endpoint:
+
+```typescript
+const mail = createMail(
+    mailgunProvider({
+        apiKey: process.env.MAILGUN_API_KEY!,
+        domain: "mg.example.com",
+        endpoint: "https://api.eu.mailgun.net",
+    }),
+);
+```
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |
+
+## Additional Methods
+
+### Retrieve Email
+
+Retrieve email event details by message ID:
+
+```typescript
+const provider = mailgunProvider({ apiKey: "xxx", domain: "mg.example.com" });
+const result = await provider.getEmail("message-id");
+```

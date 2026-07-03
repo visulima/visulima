@@ -1,0 +1,701 @@
+---
+title: String Manipulation
+description: Format, truncate, wrap, and align text with Unicode and ANSI support.
+---
+
+# String Manipulation
+
+Comprehensive utilities for formatting and manipulating strings with full Unicode and ANSI escape code support.
+
+## Text Truncation
+
+The `truncate` function provides intelligent string truncation with configurable positions and Unicode support.
+
+### Basic Truncation
+
+```typescript
+import { truncate } from "@visulima/string";
+
+// Truncate from the end (default)
+truncate("unicorn", 4); // 'un…'
+truncate("unicorn", 4, { position: "end" }); // 'un…'
+
+// Truncate from the start
+truncate("unicorn", 5, { position: "start" }); // '…orn'
+
+// Truncate from the middle
+truncate("unicorn", 5, { position: "middle" }); // 'un…n'
+```
+
+### Custom Ellipsis
+
+```typescript
+truncate("unicorns", 5, { ellipsis: "." }); // 'unic.'
+truncate("unicorns", 5, { ellipsis: " ." }); // 'uni .'
+truncate("unicorns", 8, { ellipsis: "..." }); // 'unico...'
+```
+
+### Smart Truncation on Spaces
+
+```typescript
+// Prefer truncation at word boundaries
+truncate("dragons are awesome", 15, {
+    position: "end",
+    preferTruncationOnSpace: true,
+});
+// 'dragons are…'
+
+truncate("unicorns rainbow dragons", 20, {
+    position: "middle",
+    preferTruncationOnSpace: true,
+});
+// 'unicorns…dragons'
+```
+
+### With ANSI Escape Codes
+
+```typescript
+const colored = "\x1b[31municorn\x1b[39m";
+truncate(colored, 4);
+// '\x1b[31mun\x1b[39m…' (preserves color codes)
+```
+
+### With Unicode Characters
+
+```typescript
+// CJK characters (width 2)
+truncate("안녕하세요", 3, {
+    width: { fullWidth: 2 },
+});
+// '안…'
+
+// Emojis
+truncate("Hello 👋 World", 8, {
+    width: { emojiWidth: 2 },
+});
+// 'Hello 👋…'
+```
+
+### Truncation Options
+
+```typescript
+import type { TruncateOptions } from "@visulima/string";
+
+interface TruncateOptions {
+    // String to append when truncation occurs
+    ellipsis?: string; // default: ''
+
+    // Width of the ellipsis (auto-calculated if not provided)
+    ellipsisWidth?: number;
+
+    // Position to truncate
+    position?: "end" | "middle" | "start"; // default: 'end'
+
+    // Truncate at whitespace if within 3 characters
+    preferTruncationOnSpace?: boolean; // default: false
+
+    // Width calculation options
+    width?: StringWidthOptions;
+}
+```
+
+## Word Wrapping
+
+The `wordWrap` function provides flexible text wrapping with multiple modes and Unicode support.
+
+### Basic Wrapping
+
+```typescript
+import { wordWrap, WrapMode } from "@visulima/string";
+
+// Default: 80 character width, preserve words
+const wrapped = wordWrap("This is a long text that will be wrapped to fit within the specified width limit.");
+
+// Custom width
+wordWrap("Long text here...", { width: 40 });
+```
+
+### Wrapping Modes
+
+```typescript
+// Preserve words (default) - keeps words intact
+wordWrap("Long words will stay intact but may exceed width", {
+    width: 20,
+    wrapMode: WrapMode.PRESERVE_WORDS,
+});
+
+// Break at characters - breaks words to fit width exactly
+wordWrap("Words will be broken at character boundaries", {
+    width: 20,
+    wrapMode: WrapMode.BREAK_AT_CHARACTERS,
+});
+
+// Strict width - forces strict adherence to width
+wordWrap("Text will be broken exactly at width limit", {
+    width: 20,
+    wrapMode: WrapMode.STRICT_WIDTH,
+});
+```
+
+### With ANSI Color Codes
+
+```typescript
+const coloredText = "\x1b[31mThis red text\x1b[0m will be wrapped";
+const wrapped = wordWrap(coloredText, { width: 20 });
+// Color codes preserved across line breaks
+```
+
+### Additional Options
+
+```typescript
+wordWrap("Text with zero-width characters", {
+    width: 30,
+    trim: false, // Don't trim whitespace (default: true)
+    removeZeroWidthCharacters: false, // Keep zero-width chars (default: true)
+});
+```
+
+## Text Alignment
+
+The `alignText` function aligns text with support for multi-line strings and ANSI codes.
+
+### Basic Alignment
+
+```typescript
+import { alignText } from "@visulima/string";
+
+const text = "First line\nSecond, much longer line";
+
+// Right alignment
+alignText(text, { align: "right" });
+// "          First line\nSecond, much longer line"
+
+// Center alignment
+alignText(text, { align: "center" });
+// "     First line     \nSecond, much longer line"
+
+// Left alignment (default)
+alignText(text, { align: "left" });
+```
+
+### Array of Strings
+
+```typescript
+const lines = ["Short", "Medium length", "A very long line"];
+
+const aligned = alignText(lines, { align: "center" });
+// Returns array with each line centered based on longest line
+```
+
+### Custom Options
+
+```typescript
+alignText("Line1*Line2*Line3", {
+    align: "center",
+    split: "*", // Custom line separator
+    pad: "-", // Custom padding character
+    stringWidthOptions: {
+        emojiWidth: 2, // Handle emoji width correctly
+    },
+});
+```
+
+### Alignment Options
+
+```typescript
+import type { AlignTextOptions } from "@visulima/string";
+
+interface AlignTextOptions {
+    // Alignment direction
+    align?: "center" | "left" | "right"; // default: 'center'
+
+    // Padding character
+    pad?: string; // default: ' '
+
+    // Line separator
+    split?: string; // default: '\n'
+
+    // String width calculation options
+    stringWidthOptions?: StringWidthOptions;
+}
+```
+
+## Text Indentation
+
+Utilities for adding, removing, and normalizing indentation in strings.
+
+### Indent
+
+Add indentation to each line in a string.
+
+```typescript
+import { indent } from "@visulima/string";
+
+// Default: 1 space
+indent("Unicorns\nRainbows"); // ' Unicorns\n Rainbows'
+
+// 4 spaces
+indent("Unicorns\nRainbows", 4); // '    Unicorns\n    Rainbows'
+
+// Custom character
+indent("Unicorns\nRainbows", 1, { indent: "♥" }); // '♥Unicorns\n♥Rainbows'
+
+// Include empty lines
+indent("Unicorns\n\nRainbows", 1, { includeEmptyLines: true });
+// ' Unicorns\n \n Rainbows'
+```
+
+### Strip Indent
+
+Remove common leading whitespace from all lines.
+
+```typescript
+import { stripIndent } from "@visulima/string";
+
+stripIndent("\n\tunicorn\n\t\tdog\n");
+// '\nunicorn\n\tdog\n'
+
+stripIndent("\n  unicorn\n    dog\n");
+// '\nunicorn\n  dog\n'
+```
+
+### Dedent
+
+Strip common indentation and trim leading/trailing blank lines.
+
+```typescript
+import { dedent } from "@visulima/string";
+
+dedent("\n\tunicorn\n\t\tdog\n");
+// 'unicorn\n\tdog'
+
+dedent("\n  unicorn\n    dog\n");
+// 'unicorn\n  dog'
+```
+
+### Redent
+
+Strip redundant indentation and re-indent with a given count.
+
+```typescript
+import { redent } from "@visulima/string";
+
+redent("\n  foo\n    bar\n", 1);
+// '\n foo\n   bar\n'
+
+redent("\n foo\n  bar\n", 5, { indent: "-" });
+// '\n-----foo\n------bar\n'
+```
+
+## Indentation Removal (Outdent)
+
+The `outdent` function removes leading indentation while preserving relative indentation.
+
+### Basic Usage
+
+```typescript
+import { outdent } from "@visulima/string";
+
+// Template literal
+const text = outdent`
+  This text will have indentation removed
+  while preserving relative indentation.
+    This line stays indented.
+`;
+// Output:
+// This text will have indentation removed
+// while preserving relative indentation.
+//   This line stays indented.
+
+// String input
+const result = outdent.string(`
+  Hello
+  World
+`);
+// "Hello\nWorld"
+```
+
+### With Interpolation
+
+```typescript
+const name = "World";
+const greeting = outdent`
+  Hello ${name}!
+  Welcome to outdent.
+`;
+// "Hello World!\nWelcome to outdent."
+```
+
+### Custom Options
+
+```typescript
+const customOutdent = outdent({
+    trimLeadingNewline: false, // Keep leading newline
+    trimTrailingNewline: false, // Keep trailing newline
+    newline: "\r\n", // Normalize to CRLF
+    cache: true, // Enable caching (default)
+});
+
+customOutdent`
+  Indented text
+`;
+```
+
+### Performance with Caching
+
+```typescript
+// Default behavior - caching enabled
+const dedent = outdent();
+
+// Disable caching if memory is a concern
+const noCacheDedent = outdent({ cache: false });
+
+// Custom cache store
+const customCache = new WeakMap();
+const customCacheDedent = outdent({ cacheStore: customCache });
+```
+
+## HTML Excerpt
+
+The `excerpt` function strips HTML tags and truncates text to a specified character limit. It's perfect for creating preview text from HTML content.
+
+### Basic Usage
+
+```typescript
+import { excerpt } from "@visulima/string";
+
+// Strip HTML and truncate
+excerpt("<p>Hello <strong>world</strong>!</p>", 10);
+// 'Hello wor…'
+
+excerpt("<div>This is a <em>long</em> text</div>", 20);
+// 'This is a long text'
+```
+
+### With Custom Ellipsis
+
+```typescript
+excerpt("<p>Hello world</p>", 5, { ellipsis: "..." });
+// 'He...'
+
+excerpt("<div>Long text here</div>", 10, { ellipsis: " →" });
+// 'Long te →'
+```
+
+### Handling HTML Entities
+
+```typescript
+// HTML entities are decoded
+excerpt("Hello&nbsp;world", 11);
+// 'Hello\u00A0world' (non-breaking space)
+
+excerpt("A &amp; B", 5);
+// 'A & B'
+
+// Note: &lt;tag&gt; decodes to <tag>, which is then stripped as HTML
+excerpt("&lt;tag&gt;", 7);
+// '' (empty string)
+```
+
+### Edge Cases
+
+```typescript
+// Empty or zero limit
+excerpt("<p>Hello</p>", 0);
+// ''
+
+excerpt("", 10);
+// ''
+
+// Nested HTML tags
+excerpt("<div><p><strong>Nested</strong> content</p></div>", 15);
+// 'Nested content'
+
+// Tags with attributes
+excerpt('<p class="test">Content</p>', 7);
+// 'Content'
+
+// Malformed HTML
+excerpt("<p>Unclosed tag", 13);
+// 'Unclosed tag'
+```
+
+### Excerpt Options
+
+```typescript
+import type { ExcerptOptions } from "@visulima/string";
+
+interface ExcerptOptions {
+    // String to append when truncation occurs
+    ellipsis?: string; // default: '…'
+
+    // All other TruncateOptions except 'position' (always 'end')
+    // See TruncateOptions for full details
+}
+```
+
+## String Slicing
+
+Unicode-aware string slicing that handles ANSI codes, emojis, and multi-byte characters.
+
+### Basic Slicing
+
+```typescript
+import { slice } from "@visulima/string";
+
+slice("hello world", 0, 5); // 'hello'
+slice("hello world", 6); // 'world'
+slice("hello world", -5); // 'world'
+```
+
+### With Unicode Characters
+
+```typescript
+// Handles emoji correctly
+slice("Hello 👋 World", 0, 7); // 'Hello 👋'
+
+// CJK characters
+slice("こんにちは", 0, 3); // 'こんに'
+```
+
+### With ANSI Codes
+
+```typescript
+const colored = "\x1b[31mRed Text\x1b[0m";
+slice(colored, 0, 3);
+// '\x1b[31mRed\x1b[0m' (preserves color codes)
+```
+
+## String Replacement with Ignore Ranges
+
+Advanced string replacement with support for ignored regions.
+
+### Basic Replacement
+
+```typescript
+import { replaceString } from "@visulima/string";
+import type { OptionReplaceArray, IntervalArray } from "@visulima/string";
+
+const source = "Replace AB and CD";
+const searches: OptionReplaceArray = [
+    ["AB", "ab"],
+    ["CD", "cd"],
+];
+
+replaceString(source, searches, []);
+// "Replace ab and cd"
+```
+
+### With Ignore Ranges
+
+```typescript
+const source = "Replace AB and ignore CD";
+const searches: OptionReplaceArray = [
+    ["AB", "ab"],
+    ["CD", "cd"],
+];
+
+// Ignore indices 19-22 (the word "ignore")
+const ignoreRanges: IntervalArray = [[19, 22]];
+
+replaceString(source, searches, ignoreRanges);
+// "Replace ab and ignore CD"
+```
+
+### With Regular Expressions
+
+```typescript
+const source = "Hello World";
+const searches: OptionReplaceArray = [[/(\w+)\s+(\w+)/, "$2, $1"]];
+
+replaceString(source, searches, []);
+// "World, Hello"
+```
+
+### Overlapping Matches
+
+```typescript
+// Longer match takes precedence
+const source = "abcde";
+const searches: OptionReplaceArray = [
+    ["abc", "123"],
+    ["abcde", "54321"], // This wins
+];
+
+replaceString(source, searches, []);
+// "54321"
+```
+
+## String Width Calculation
+
+Accurate visual width calculation with Unicode support.
+
+### Basic Width Calculation
+
+```typescript
+import { getStringWidth } from "@visulima/string";
+
+getStringWidth("hello"); // 5
+getStringWidth("👋 hello"); // 7 (emoji is width 2)
+getStringWidth("あいう"); // 6 (each char is width 2)
+```
+
+### With ANSI Codes
+
+```typescript
+// ANSI codes ignored by default
+getStringWidth("\x1b[31mRed\x1b[39m"); // 3
+
+// Include ANSI codes in width
+getStringWidth("\x1b[31mRed\x1b[39m", {
+    countAnsiEscapeCodes: true,
+}); // 11
+```
+
+### Custom Width Options
+
+```typescript
+getStringWidth("hello", {
+    regularWidth: 2, // Each regular char = 2
+}); // 10
+
+getStringWidth("你好", {
+    fullWidth: 3, // CJK chars = 3 instead of 2
+}); // 6
+```
+
+### Width with Truncation
+
+```typescript
+import { getStringTruncatedWidth } from "@visulima/string";
+
+getStringTruncatedWidth("hello world", {
+    limit: 8,
+    ellipsis: "...",
+});
+// { width: 8, truncated: true, ellipsed: true, index: 5 }
+```
+
+## Utility Functions
+
+### countOccurrences
+
+Counts occurrences of a substring in a string. Handles Unicode characters correctly and prevents infinite loops.
+
+```typescript
+import { countOccurrences } from "@visulima/string";
+
+// Basic usage
+countOccurrences("foo", "o"); // 2
+countOccurrences("fo fooo fo", "o"); // 5
+
+// Unicode support
+countOccurrences("a🤔b🤔c", "🤔"); // 2
+
+// Empty string handling
+countOccurrences("", "f"); // 0
+
+// Throws error for empty substring
+countOccurrences("test", ""); // TypeError: Expected non-empty substring
+```
+
+### direction
+
+Detects the direction of text: left-to-right, right-to-left, or neutral. Uses Unicode character ranges to identify RTL and LTR scripts.
+
+```typescript
+import { direction } from "@visulima/string";
+
+// Left-to-right languages
+direction("english"); // 'ltr'
+direction("Hello World"); // 'ltr'
+direction("Français"); // 'ltr'
+
+// Right-to-left languages
+direction("الجملة"); // 'rtl' (Arabic)
+direction("נ"); // 'rtl' (Hebrew)
+direction("الانجليزية"); // 'rtl'
+
+// Neutral (numbers, symbols, empty)
+direction("123"); // 'neutral'
+direction("!@#"); // 'neutral'
+direction(""); // 'neutral'
+direction(" "); // 'neutral'
+```
+
+### escapeRegExp
+
+Escapes special regex characters for safe use in regular expressions.
+
+```typescript
+import { escapeRegExp } from "@visulima/string";
+
+escapeRegExp("hello.world"); // 'hello\\.world'
+escapeRegExp("(test)"); // '\\(test\\)'
+escapeRegExp("$100"); // '\\$100'
+```
+
+### findStringOccurrences
+
+Finds all occurrences of multiple substrings and returns their positions.
+
+```typescript
+import { findStringOccurrences } from "@visulima/string";
+
+findStringOccurrences("hello world hello", ["hello", "world"]);
+// [[0, 4], [6, 10], [12, 16]]
+
+findStringOccurrences("abc def abc", ["abc"]);
+// [[0, 2], [8, 10]]
+```
+
+### hasChinese
+
+Checks if a string contains Chinese characters.
+
+```typescript
+import { hasChinese } from "@visulima/string";
+
+hasChinese("你好"); // true
+hasChinese("hello"); // false
+hasChinese("hello 世界"); // true
+```
+
+### hasPunctuationOrSpace
+
+Checks if a string contains punctuation or space characters.
+
+```typescript
+import { hasPunctuationOrSpace } from "@visulima/string";
+
+hasPunctuationOrSpace("hello world"); // true
+hasPunctuationOrSpace("hello,world"); // true
+hasPunctuationOrSpace("helloworld"); // false
+```
+
+### inRange
+
+Checks if a number falls within any of the specified intervals.
+
+```typescript
+import { inRange } from "@visulima/string";
+
+inRange(5, [
+    [0, 10],
+    [20, 30],
+]); // true (5 is in [0, 10])
+inRange(15, [
+    [0, 10],
+    [20, 30],
+]); // false
+inRange(25, [
+    [0, 10],
+    [20, 30],
+]); // true (25 is in [20, 30])
+```
+
+## Next Steps
+
+- [Slugification](/docs/slugification) - Create URL-friendly slugs
+- [String Width](/docs/string-width) - Detailed width calculation
+- [API Reference](/docs/api) - Complete API documentation

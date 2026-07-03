@@ -1,0 +1,408 @@
+---
+title: "Usage Guide"
+description: "Learn how to use @visulima/fmt with detailed examples"
+---
+
+# Usage Guide
+
+Learn how to format strings with @visulima/fmt.
+
+## Basic Formatting
+
+### String Formatting
+
+Format strings with the %s specifier:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const result = format("Hello %s", ["World"]);
+console.log(result); // "Hello World"
+
+// Multiple values
+const greeting = format("%s %s, welcome!", ["Hello", "Alice"]);
+console.log(greeting); // "Hello Alice, welcome!"
+```
+
+The %s specifier converts most values to strings:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+console.log(format("Number: %s", [42])); // "Number: 42"
+console.log(format("Boolean: %s", [true])); // "Boolean: true"
+console.log(format("Array: %s", [[1, 2, 3]])); // "Array: 1,2,3"
+console.log(format("Null: %s", [null])); // "Null: null"
+console.log(format("Undefined: %s", [undefined])); // "Undefined: undefined"
+```
+
+### Number Formatting
+
+Use %d for decimal numbers:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+console.log(format("Count: %d", [42])); // "Count: 42"
+console.log(format("Count: %d", ["123"])); // "Count: 123" (converted)
+console.log(format("Count: %d", [true])); // "Count: 1"
+console.log(format("Count: %d", [false])); // "Count: 0"
+console.log(format("Count: %d", ["abc"])); // "Count: NaN"
+```
+
+Use %i for integers:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+console.log(format("Integer: %i", [42.7])); // "Integer: 42" (truncated)
+console.log(format("Integer: %i", [42])); // "Integer: 42"
+```
+
+Use %f for floating-point numbers:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+console.log(format("Float: %f", [3.14159])); // "Float: 3.14159"
+console.log(format("Float: %f", [42])); // "Float: 42"
+```
+
+### JSON Formatting
+
+Use %j to serialize objects as JSON:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const user = { name: "Alice", age: 30 };
+console.log(format("User: %j", [user]));
+// User: {"name":"Alice","age":30}
+
+const config = { host: "localhost", port: 8080 };
+console.log(format("Config: %j", [config]));
+// Config: {"host":"localhost","port":8080}
+```
+
+Handles circular references:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const obj: any = { name: "circular" };
+obj.self = obj;
+
+console.log(format("Object: %j", [obj]));
+// Object: {"name":"circular","self":"[Circular]"}
+```
+
+### Object Serialization
+
+`%o` and `%O` are plain aliases of `%j` — they serialize with `JSON.stringify`,
+**not** `util.inspect`. There is no inspect-style output:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const user = { name: "Alice", age: 30 };
+console.log(format("User: %o", [user]));
+// User: {"name":"Alice","age":30}
+```
+
+`%O` does **not** include non-enumerable properties — `JSON.stringify` drops
+them, so `%O` behaves identically to `%o` and `%j`:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const obj = { visible: "yes" };
+Object.defineProperty(obj, "hidden", {
+    value: "secret",
+    enumerable: false,
+});
+
+console.log(format("Basic: %o", [obj]));
+// Basic: {"visible":"yes"}
+
+console.log(format("Detailed: %O", [obj]));
+// Detailed: {"visible":"yes"} (hidden is NOT included)
+```
+
+## CSS Styling
+
+### Add Colors and Styles
+
+Use %c to apply CSS-like styles to terminal output:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const styled = format("%cError:%c Something went wrong", [
+    "color: red; font-weight: bold",
+    "", // Reset styles
+]);
+
+console.log(styled);
+// "Error:" in bold red, then normal text
+```
+
+Multiple styled segments:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const message = format("%cSuccess%c The operation %ccompleted%c in %d ms", ["color: green; font-weight: bold", "", "font-style: italic", "", 127]);
+
+console.log(message);
+```
+
+### Supported CSS Properties
+
+The %c formatter supports these CSS properties:
+
+- `color` - Text color (e.g., "red", "#ff0000", "rgb(255,0,0)")
+- `background-color` - Background color
+- `font-weight` - bold text
+- `font-style` - italic text
+- `text-decoration` - underline, line-through
+- `text-decoration-color` - Color for decoration
+- `text-decoration-line` - Type of decoration
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const examples = [
+    format("%cRed text%c", ["color: red", ""]),
+    format("%cBold text%c", ["font-weight: bold", ""]),
+    format("%cItalic text%c", ["font-style: italic", ""]),
+    format("%cUnderline%c", ["text-decoration: underline", ""]),
+    format("%cBackground%c", ["background-color: yellow", ""]),
+];
+
+examples.forEach((ex) => console.log(ex));
+```
+
+## Custom Formatters
+
+### Build Custom Format Function
+
+Create a format function with your own placeholders:
+
+```typescript
+import { build } from "@visulima/fmt";
+
+const format = build({
+    formatters: {
+        t: (time) => new Date(time).toLocaleString(),
+        h: (hex) => `0x${hex.toString(16)}`,
+        p: (percent) => `${(percent * 100).toFixed(2)}%`,
+    },
+});
+
+console.log(format("Event at %t", [Date.now()]));
+// Event at 2/16/2026, 12:30:00 PM
+
+console.log(format("Value: %h", [255]));
+// Value: 0xff
+
+console.log(format("Complete: %p", [0.75]));
+// Complete: 75.00%
+```
+
+### Combine Standard and Custom Formatters
+
+Custom formatters work alongside standard ones:
+
+```typescript
+import { build } from "@visulima/fmt";
+
+const format = build({
+    formatters: {
+        u: (url) => new URL(url).hostname,
+    },
+});
+
+const message = format("Connecting to %u on port %d", ["https://example.com:8080/path", 8080]);
+
+console.log(message);
+// Connecting to example.com on port 8080
+```
+
+## Custom Stringify
+
+### Use Custom Serializer
+
+Replace the default JSON serializer:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const options = {
+    stringify: (obj: unknown) => {
+        if (typeof obj === "object" && obj !== null) {
+            return `<Object with ${Object.keys(obj).length} keys>`;
+        }
+        return String(obj);
+    },
+};
+
+const data = { name: "Alice", age: 30, email: "alice@example.com" };
+console.log(format("User: %j", [data], options));
+// User: <Object with 3 keys>
+```
+
+### Use fast-safe-stringify
+
+For better performance and circular reference handling:
+
+```typescript
+import { format } from "@visulima/fmt";
+import stringify from "fast-safe-stringify";
+
+const options = { stringify };
+
+const circular: any = { name: "circular" };
+circular.self = circular;
+
+console.log(format("Data: %j", [circular], options));
+// Uses fast-safe-stringify for better performance
+```
+
+## Special Cases
+
+### Literal Percent Sign
+
+Use %% to output a literal %:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+console.log(format("Progress: %d%%", [75]));
+// Progress: 75%
+
+console.log(format("Discount: %%off", []));
+// Discount: %off
+```
+
+### Missing Arguments
+
+Extra placeholders remain unchanged:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+console.log(format("Hello %s %s", ["World"]));
+// Hello World %s
+
+console.log(format("%d + %d = %d", [2, 2]));
+// 2 + 2 = %d
+```
+
+### Extra Arguments
+
+Extra arguments are appended:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+console.log(format("Hello %s", ["World", "Extra", "Args"]));
+// Hello World Extra Args
+```
+
+## Real-World Examples
+
+### Structured Logging
+
+Create a logger with formatted output:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+class Logger {
+    log(level: string, message: string, ...args: unknown[]) {
+        const timestamp = new Date().toISOString();
+        const formatted = format(message, args);
+        console.log(`[${timestamp}] [${level}] ${formatted}`);
+    }
+
+    info(message: string, ...args: unknown[]) {
+        this.log("INFO", message, ...args);
+    }
+
+    error(message: string, ...args: unknown[]) {
+        this.log("ERROR", message, ...args);
+    }
+}
+
+const logger = new Logger();
+logger.info("User %s logged in", "alice");
+logger.error("Connection failed: %j", { code: "ETIMEDOUT" });
+```
+
+### Debug Messages
+
+Format debug output with context:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+function debug(component: string, message: string, ...args: unknown[]) {
+    if (process.env.DEBUG) {
+        const formatted = format(message, args);
+        console.debug(`[${component}] ${formatted}`);
+    }
+}
+
+debug("Database", "Executing query: %s with params %j", "SELECT * FROM users", { limit: 10 });
+debug("API", "Request to %s took %dms", "/api/users", 127);
+```
+
+### Error Messages
+
+Create detailed error messages:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+class ValidationError extends Error {
+    constructor(field: string, value: unknown, constraint: string) {
+        const message = format("Validation failed for field '%s': value %j does not satisfy constraint '%s'", [field, value, constraint]);
+        super(message);
+        this.name = "ValidationError";
+    }
+}
+
+throw new ValidationError("email", "invalid-email", "must be valid email address");
+```
+
+### Template System
+
+Build a simple template system:
+
+```typescript
+import { build } from "@visulima/fmt";
+
+const format = build({
+    formatters: {
+        user: (u: { name: string; email: string }) => `${u.name} <${u.email}>`,
+        date: (d: number) => new Date(d).toLocaleDateString(),
+        money: (amount: number) => `$${amount.toFixed(2)}`,
+    },
+});
+
+const template = "Invoice for %user\nDate: %date\nAmount: %money";
+const invoice = format(template, [{ name: "Alice", email: "alice@example.com" }, Date.now(), 99.95]);
+
+console.log(invoice);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with all parameters
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
+</Cards>

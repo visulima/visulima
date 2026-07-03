@@ -1,0 +1,15 @@
+{
+    "name": "svc-46",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'svc-46 built' && sleep 0.3 && mkdir -p dist && date > dist/.stamp",
+        "dev": "echo 'svc-46 server starting on port 4046...' && echo 'Ready in 150ms' && while true; do sleep 2; echo \"[$(date +%H:%M:%S)] svc-46: request handled\"; done",
+        "lint": "echo 'svc-46 lint OK'",
+        "test": "echo 'svc-46 tests OK'"
+    },
+    "dependencies": {
+        "lib-fast-6": "1.0.0",
+        "lib-slow-21": "1.0.0"
+    }
+}

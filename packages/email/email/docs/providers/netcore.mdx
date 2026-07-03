@@ -1,0 +1,78 @@
+---
+title: Netcore
+description: Send emails using the Netcore (Pepipost) Email API with @visulima/email
+---
+
+# Netcore Provider
+
+The Netcore provider sends emails through the [Netcore Email API v5.1](https://emailapi.netcorecloud.net/) (formerly Pepipost).
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers) — uses the Fetch API.
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { netcoreProvider } from "@visulima/email/providers/netcore";
+
+const mail = createMail(
+    netcoreProvider({
+        apiKey: process.env.NETCORE_API_KEY!,
+    }),
+);
+```
+
+## Configuration
+
+The `NetcoreConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                                  | Description                                           |
+| ---------- | --------- | -------- | ---------------------------------------- | ----------------------------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                                        | Your Netcore Email API key (sent as `api_key` header) |
+| `endpoint` | `string`  | No       | `https://emailapi.netcorecloud.net/v5.1` | Custom API endpoint                                   |
+| `debug`    | `boolean` | No       | `false`                                  | Enable debug logging                                  |
+| `logger`   | `Console` | No       | -                                        | Custom logger instance                                |
+| `retries`  | `number`  | No       | `3`                                      | Number of retry attempts                              |
+| `timeout`  | `number`  | No       | `30000`                                  | Request timeout in milliseconds                       |
+
+## Basic Usage
+
+```typescript
+const result = await mail.send({
+    from: { email: "noreply@example.com", name: "My App" },
+    to: { email: "user@example.com" },
+    subject: "Hello from Netcore",
+    html: "<h1>Welcome!</h1>",
+    text: "Welcome!",
+});
+```
+
+## Provider-Specific Email Options
+
+The `NetcoreEmailOptions` interface extends `EmailOptions` with:
+
+| Option         | Type                      | Description                                          |
+| -------------- | ------------------------- | ---------------------------------------------------- |
+| `templateId`   | `string`                  | Stored template id to send instead of inline content |
+| `templateData` | `Record<string, unknown>` | Variables substituted into the Netcore template      |
+
+```typescript
+await mail.send({
+    from: { email: "noreply@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Templated email",
+    templateId: "12345",
+    templateData: { name: "Ada" },
+});
+```
+
+## Supported Features
+
+- ✅ Attachments
+- ✅ Batch sending
+- ✅ Custom headers
+- ✅ HTML & text bodies
+- ✅ Reply-To
+- ✅ Tagging
+- ✅ Templates
+- ✅ Tracking

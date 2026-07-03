@@ -1,0 +1,249 @@
+---
+title: "vis audit"
+description: "Audit installed packages for known vulnerabilities and supply-chain risk, offline-first."
+---
+
+# vis audit
+
+`vis audit` scans every installed package (resolved from the lockfile) against the OSV vulnerability database and, when configured, one or more supply-chain intelligence providers — [Socket.dev](https://socket.dev) and [Google deps.dev](https://deps.dev) (the latter ships OpenSSF Scorecard signals + GHSA advisories and needs no API token).
+
+It defaults to the local **offline OSV cache** populated by [`vis advisories sync`](./advisories.mdx) — no network access required at scan time. Falls back to the live OSV API when no cache is present.
+
+## Usage
+
+```bash
+vis audit [options]
+```
+
+## Quick examples
+
+```bash
+# Full audit (offline if a synced cache exists, otherwise OSV API)
+vis audit
+
+# Severity gate
+vis audit --severity high
+
+# CI / pipeline output
+vis audit --format json
+vis audit --format sarif          # GitHub code-scanning
+vis audit --format csaf           # Enterprise VEX pipelines
+vis audit --format cyclonedx-vex  # SBOM + VEX in one document
+vis audit --format gitlab         # GitLab CI dependency-scanning widget
+vis audit --format junit          # JUnit XML (GitLab/Actions/Jenkins test reporters)
+
+# Self-contained HTML report (auto-opens in a TTY)
+vis audit --report ./audit-report.html
+
+# Reachability filter — only flag vulns in statically-imported packages
+vis audit --usage
+
+# Fix loops (dry-run preview by default)
+vis audit --show-fixes             # print fix suggestions (no apply, no rescan)
+vis audit --fix                    # upgrade direct deps + rescan
+vis audit --fix --yes              # non-interactive (required in CI)
+vis audit --fix --allow-major      # permit major-version bumps
+vis audit --fix-transitive         # write PM-specific overrides
+
+# CI exit gates
+vis audit --exit-code              # exit 1 on any finding
+vis audit --fail-on high           # exit 1 on high/critical only
+
+# Accepted-risk handling
+vis audit --show-accepted          # include acknowledged risks
+vis audit --sync                   # mirror accepted risks to native PM config
+
+# Supply-chain policy engine
+vis audit --policies license,vulnerability  # narrow to a subset for this run
+vis audit --policies none                   # skip the policy engine entirely
+```
+
+## Options
+
+### Filtering and scope
+
+| Option               | Default | Description                                                                                                                                                                   |
+| -------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--severity <level>` | `low`   | Minimum severity to report: `low`, `medium`, `high`, `critical`.                                                                                                              |
+| `--prod-only`        | `false` | Skip devDependencies — scan production graph only.                                                                                                                            |
+| `--usage`            | `false` | Reachability filter — only report packages that are statically imported.                                                                                                      |
+| `--no-usage`         | `false` | Disable the reachability filter even if enabled in config.                                                                                                                    |
+| `--ecosystem <list>` | `npm`   | Comma-separated OSV ecosystems: `npm`, `pypi`, `crates.io` (or `cargo`), `maven`, `go`, `rubygems`. Non-npm ecosystems require `--offline` (the online OSV path is npm-only). |
+| `--show-accepted`    | `false` | Include findings already on the workspace's accepted-risk list.                                                                                                               |
+
+### Output formats
+
+| Option                   | Description                                                                                                                                                         |
+| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--format table`         | Default human-readable output.                                                                                                                                      |
+| `--format json`          | Machine-readable JSON (for CI integration).                                                                                                                         |
+| `--format sarif`         | [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/) — for GitHub / GitLab code-scanning.                                                                 |
+| `--format csaf`          | [CSAF 2.0](https://oasis-open.github.io/csaf-documentation/) `csaf_vex` profile.                                                                                    |
+| `--format cyclonedx-vex` | [CycloneDX 1.7](https://cyclonedx.org/specification/) BOM with `vulnerabilities[]` (SBOM + VEX in one document).                                                    |
+| `--format gitlab`        | [GitLab dependency-scanning report](https://docs.gitlab.com/ee/development/integrations/secure.html) v15.2.1 — picked up by the Secure stage's Dependencies widget. |
+| `--format junit`         | Surefire-flavoured JUnit XML — parsed by GitLab, GitHub Actions test-reporter, Jenkins, etc., without a plugin.                                                     |
+| `--report <path>`        | Write a self-contained HTML report to `<path>`. Auto-opens in a TTY when not in CI.                                                                                 |
+
+### Offline cache
+
+| Option        | Default                            | Description                                                     |
+| ------------- | ---------------------------------- | --------------------------------------------------------------- |
+| `--offline`   | `false`                            | Query the local OSV cache only. Errors if the cache is missing. |
+| `--db <path>` | `<cache>/vis/advisories/db.sqlite` | Override the offline advisory DB path.                          |
+
+Run [`vis advisories sync`](./advisories.mdx) to populate the cache.
+
+### Fix loops
+
+| Option             | Default | Description                                                                                                                                       |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--show-fixes`     | `false` | Print fix-suggestion lines next to each finding (no apply, no rescan).                                                                            |
+| `--fix`            | `false` | Upgrade direct deps for vulnerable packages by running the active PM update command, then rescan. Dry-run preview shown first.                    |
+| `--fix-transitive` | `false` | Write PM-specific overrides for vulnerable transitives (pnpm-workspace.yaml / package.json overrides / resolutions). Dry-run preview shown first. |
+| `--yes`            | `false` | Skip the confirmation prompt. **Required in CI for both `--fix` and `--fix-transitive`.**                                                         |
+| `--allow-major`    | `false` | Allow `--fix` to bump a direct dep across a major version when the lowest fix is outside the existing range.                                      |
+
+### CI exit gates
+
+| Option              | Default | Description                                                                          |
+| ------------------- | ------- | ------------------------------------------------------------------------------------ |
+| `--exit-code`       | `false` | Exit 1 if any actionable issue is found.                                             |
+| `--fail-on <level>` | —       | Exit 1 only when a finding is at this severity or higher.                            |
+| `--sync`            | `false` | Sync vis accepted risks to native PM config (`pnpm-workspace.yaml` / `.yarnrc.yml`). |
+
+### Supply-chain policy engine
+
+| Option               | Default                 | Description                                                                                                                                                                                                                                         |
+| -------------------- | ----------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--policies <names>` | every configured policy | Comma list of policies to evaluate this run. Pass `none` to skip the engine entirely, `all` to force every known policy. Known: `malware`, `firstSeen`, `unexpectedDeps`, `publisherChange`, `installScripts`, `score`, `vulnerability`, `license`. |
+
+### Backend selection
+
+| Option             | Default | Description                                                                                                                                                                                                                                                         |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--backend <name>` | `auto`  | Vulnerability scanner backend. `auto` delegates to `aube audit` when aube is the active installer; `aube` forces delegation (errors if `aube` is not on `PATH`); `vis` always uses the built-in OSV scanner (plus any configured providers — Socket.dev, deps.dev). |
+
+Resolution: CLI `--backend` → `VIS_AUDIT_BACKEND` env → `security.audit.backend` in `vis.config.ts` → `auto`.
+
+### AI explanations
+
+| Option                | Default | Description                                                                                                                                                                                                                                         |
+| --------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--explain [id\|idx]` | —       | Add a plain-English AI explanation to findings. Bare flag explains all findings at/above `--severity`; pass a finding index (e.g. `2`) or a CVE/GHSA id to explain just one. Auto-detects an installed AI CLI; mutually exclusive with `--offline`. |
+
+Vis-only features (`--report`, `--fix-transitive`, `--usage`, `--policies`, `--format sarif|csaf|cyclonedx-vex|gitlab|junit`, `--ecosystem` beyond `npm`) print a warning and are dropped when delegating; pass `--backend vis` if you need them.
+
+The policy engine wraps eight Socket.dev-style supply-chain gates. Each policy
+is opt-in via the corresponding `security.policies.<name>` field — leaving the
+field unset means the engine skips that policy entirely. `block`-severity
+decisions feed into `--exit-code` and `--fail-on` the same way vulnerability
+findings do.
+
+This release ships four offline-clean policies:
+
+| Policy           | What it does                                                                          |
+| ---------------- | ------------------------------------------------------------------------------------- |
+| `license`        | SPDX allow / deny lists. Deny wins on any sub-expression match in SPDX expressions.   |
+| `installScripts` | Wraps the existing `allowBuilds` / `strictDepBuilds` scan; surfaces unapproved hooks. |
+| `vulnerability`  | Surfaces OSV findings; `failOn` controls block vs. warn severity.                     |
+| `unexpectedDeps` | Allow-list of acceptable transitives + baseline lockfile diff.                        |
+
+Network-bound policies (`malware`, `firstSeen`, `publisherChange`, `score`)
+plug into the same engine in a follow-up commit.
+
+## Fix loops in depth
+
+The two fix loops are intentionally separated by surface:
+
+| Loop               | Touches                                                      | When to use                                                                          |
+| ------------------ | ------------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| `--fix`            | Direct deps in each `package.json` (every workspace member). | The vulnerable package is listed in your manifest.                                   |
+| `--fix-transitive` | PM-specific override surface (one file).                     | The vulnerable package is pulled in by a transitive — your manifest doesn't list it. |
+
+Both loops:
+
+1. Build a plan from current findings.
+2. Print a dry-run preview (which files / packages will change).
+3. Prompt for confirmation (interactive TTY) or honour `--yes` (CI).
+4. Apply, then re-scan to verify the issue is gone.
+
+In CI, `--fix-transitive` requires `--yes` **and** `security.audit.apply.transitive.enabled = true` in `vis.config.ts` — a two-lock design so you don't end up rewriting overrides on every PR by accident.
+
+## Configuration
+
+`vis.config.ts`:
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    security: {
+        audit: {
+            // Default to the offline OSV cache when present.
+            offlineByDefault: true,
+            apply: {
+                transitive: {
+                    // CI gate — required alongside `--yes` before overrides are written.
+                    enabled: false,
+                },
+            },
+        },
+        policies: {
+            vulnerability: {
+                // CI exit gate (overridable via --fail-on).
+                failOn: "high",
+                usage: {
+                    // Apply the reachability filter by default.
+                    enabled: true,
+                },
+            },
+            license: {
+                // SPDX allow / deny lists. Deny wins on any sub-expression
+                // match within an SPDX expression (`(MIT OR GPL-3.0)`
+                // is blocked when GPL-3.0 is on the deny list).
+                allow: ["MIT", "Apache-2.0", "BSD-3-Clause", "ISC"],
+                deny: ["GPL-3.0", "AGPL-3.0"],
+            },
+            installScripts: {
+                // Build-script approval surface (mirrors pnpm allowBuilds
+                // / strictDepBuilds). Strict mode blocks the install
+                // when any dep declares an unapproved lifecycle script.
+                allow: { esbuild: true, "@swc/core": true },
+                strict: true,
+            },
+            unexpectedDeps: {
+                // Net-new transitive detection. Either provide a
+                // static allow list, a baseline lockfile path, or both
+                // (intersection is enforced).
+                baselineLockfile: "./security/baseline.pnpm-lock.yaml",
+            },
+        },
+        socket: {
+            enabled: true,
+        },
+        depsDev: {
+            // No auth required. Pulls OpenSSF Scorecard signals +
+            // GHSA advisories from api.deps.dev. Heavily cached
+            // (24h project data, 7d versions + advisories).
+            enabled: true,
+        },
+        // When both providers are enabled, this controls which one's
+        // `score` wins on merge. Alerts from the secondary are still
+        // appended and deduped by `key`.
+        primaryProvider: "socket",
+        // Workspace-scoped acknowledged risks (shared across all policies).
+        acceptedRisks: {
+            "some-package": {
+                reason: "Vendor confirmed no fix available",
+                acceptedAt: "2026-01-01",
+                expiresAt: "2026-12-31",
+            },
+        },
+    },
+});
+```
+
+## Related
+
+- [`vis advisories`](./advisories.mdx) — manage the offline OSV cache.
+- [Security audit guide](../guides/security-audit.mdx) — how to wire `vis audit` into pipelines and run apply loops.

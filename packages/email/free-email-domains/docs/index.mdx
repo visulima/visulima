@@ -1,0 +1,39 @@
+---
+title: Introduction
+description: "Detect free email service providers (Gmail, Yahoo, Outlook, GMX, …) with an up-to-date list of free email domains."
+---
+
+# @visulima/free-email-domains
+
+Detect addresses from free email service providers using a comprehensive, regularly-updated list of free email domains.
+
+## Quick Start
+
+```typescript
+import { isFreeEmail } from "@visulima/free-email-domains";
+
+isFreeEmail("user@gmail.com");
+// true (free provider)
+
+isFreeEmail("ceo@my-company.com");
+// false (custom/corporate)
+```
+
+## Use Cases
+
+- **Lead Scoring** - Flag free-provider signups for sales qualification
+- **Fraud Signals** - Combine with other heuristics for risk scoring
+- **B2B Gating** - Require a corporate email for business features
+- **Data Quality** - Segment users by email provider type
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install the package
+    </Card>
+    <Card title="Usage" href="/usage">
+        Learn how to detect free providers
+    </Card>
+    <Card title="API" href="/api">
+        API documentation
+    </Card>
+</Cards>

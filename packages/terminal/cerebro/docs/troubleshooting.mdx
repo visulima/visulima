@@ -1,0 +1,282 @@
+---
+title: "Troubleshooting"
+---
+
+# Troubleshooting
+
+Common issues and solutions when working with Cerebro.
+
+## Command Not Found
+
+**Problem**: CLI reports "Command not found" for existing command
+
+```bash
+$ my-cli build
+Error: Command "build" not found
+```
+
+**Solutions**:
+
+1. Verify command is registered:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    execute: ({ logger }) => {
+        logger.log("Building...");
+    },
+});
+```
+
+2. Check for typos in command name
+3. Check nested command syntax:
+
+```bash
+$ my-cli db migrate    # Correct
+$ my-cli db-migrate    # Wrong
+```
+
+## Option Validation Errors
+
+**Problem**: Required option errors
+
+```bash
+$ my-cli deploy
+Error: Required option --environment is missing
+```
+
+**Solution**: Provide the required option:
+
+```bash
+$ my-cli deploy --environment production
+```
+
+Or make it optional with a default value:
+
+```typescript
+{
+  name: "environment",
+  type: String,
+  defaultValue: "staging",  // No longer required
+}
+```
+
+## Conflicting Options Error
+
+**Problem**: Using incompatible options together
+
+```bash
+$ my-cli test --watch --ci
+Error: Options --watch and --ci conflict
+```
+
+**Solution**: Use only one of the conflicting options:
+
+```bash
+$ my-cli test --watch
+# or
+$ my-cli test --ci
+```
+
+## Type Errors
+
+**Problem**: TypeScript errors for toolbox extensions
+
+```typescript
+cli.addCommand({
+    execute: ({ myFeature }) => {
+        // Error: Property 'myFeature' does not exist
+    },
+});
+```
+
+**Solution**: Declare the extension type:
+
+```typescript
+declare global {
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            myFeature: {
+                doSomething: () => void;
+            };
+        }
+    }
+}
+```
+
+## Plugin Initialization Issues
+
+**Problem**: Plugin not working in commands
+
+```typescript
+cli.use(myPlugin());
+
+cli.addCommand({
+    execute: ({ myFeature }) => {
+        // myFeature is undefined
+    },
+});
+```
+
+**Solutions**:
+
+1. Check plugin registration order (before commands)
+2. Verify plugin adds to toolbox:
+
+```typescript
+const myPlugin = (): Plugin => ({
+    name: "my-plugin",
+    register: async ({ toolbox }) => {
+        toolbox.myFeature = { doSomething: () => {} };
+    },
+});
+```
+
+3. Check for plugin dependencies
+
+## Environment Variable Issues
+
+**Problem**: Required environment variable not found
+
+```bash
+$ my-cli deploy
+Error: Required environment variable API_KEY is missing
+```
+
+**Solution**: Set the environment variable:
+
+```bash
+$ API_KEY=secret123 my-cli deploy
+```
+
+Or use a `.env` file:
+
+```bash
+# .env
+API_KEY=secret123
+```
+
+```typescript
+import "dotenv/config";
+import { createCerebro } from "@visulima/cerebro";
+// ...
+```
+
+## Help Text Not Showing
+
+**Problem**: `--help` doesn't display help text
+
+**Solutions**:
+
+1. Verify help command is registered (automatic by default)
+2. Add command descriptions:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    description: "Build the project", // Required for help
+    execute: ({ logger }) => {},
+});
+```
+
+3. Manually register help command:
+
+```typescript
+import { HelpCommand } from "@visulima/cerebro/command/help";
+cli.addCommand(HelpCommand);
+```
+
+## Exit Code Issues
+
+**Problem**: CLI exits with code 0 even on errors
+
+**Solution**: Use error handler plugin:
+
+```typescript
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+
+cli.use(errorHandlerPlugin({ exitOnError: true }));
+```
+
+Or manually set exit code:
+
+```typescript
+cli.addCommand({
+    name: "test",
+    execute: async ({ logger }) => {
+        try {
+            await runTests();
+        } catch (error) {
+            logger.error(error.message);
+            process.exit(1); // Exit with error code
+        }
+    },
+});
+```
+
+## Performance Issues
+
+**Problem**: CLI is slow to start
+
+**Solutions**:
+
+1. Lazy-load heavy dependencies:
+
+```typescript
+cli.addCommand({
+    name: "heavy",
+    execute: async () => {
+        // Load only when command runs
+        const { heavyFunction } = await import("./heavy-module");
+        await heavyFunction();
+    },
+});
+```
+
+2. Minimize plugin initialization work
+3. Use dynamic imports for optional features
+
+## Cross-Runtime Issues
+
+**Problem**: CLI works in Node.js but not in Deno/Bun
+
+**Solutions**:
+
+1. Avoid Node.js-specific APIs
+2. Use Cerebro's runtime abstractions:
+
+```typescript
+import { getEnv, getCwd } from "@visulima/cerebro";
+
+cli.addCommand({
+    execute: ({ logger }) => {
+        const env = getEnv(); // Works in all runtimes
+        const cwd = getCwd(); // Works in all runtimes
+        logger.log(`CWD: ${cwd}`);
+    },
+});
+```
+
+3. Test in all target runtimes
+
+## Debugging
+
+Enable debug output:
+
+```bash
+CEREBRO_OUTPUT_LEVEL=debug my-cli build
+```
+
+Add debug logging:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    execute: ({ logger }) => {
+        if (process.env.CEREBRO_OUTPUT_LEVEL === "debug") {
+            logger.log("Debug: Starting build...");
+        }
+        // Build logic
+    },
+});
+```

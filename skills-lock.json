@@ -1,0 +1,50 @@
+{
+    "version": 1,
+    "skills": {
+        "ai-seo": {
+            "source": "coreyhaines31/marketingskills",
+            "sourceType": "github",
+            "computedHash": "5f7ce5ccdb2b0dce5e1ea7f3ed8bf17070b790865e91725ca8908e6ec829e164"
+        },
+        "competitor-alternatives": {
+            "source": "coreyhaines31/marketingskills",
+            "sourceType": "github",
+            "computedHash": "bbaf0d378114c7f1581ec63218c9061da983afc1e30887af69ba6ce7ce9cd4c1"
+        },
+        "content-strategy": {
+            "source": "coreyhaines31/marketingskills",
+            "sourceType": "github",
+            "computedHash": "c07914262b7fb32e0a379fd5b8b2d0dc92078c543af2d0914006f2e1d61bc1b4"
+        },
+        "copy-editing": {
+            "source": "coreyhaines31/marketingskills",
+            "sourceType": "github",
+            "computedHash": "3c6241215420e69b36814270a47413b2de9593b5516f5942b7481092f6c63382"
+        },
+        "copywriting": {
+            "source": "coreyhaines31/marketingskills",
+            "sourceType": "github",
+            "computedHash": "2e83eda2221e97166172a0798e9b0379e34080595e107e2fc0cf580e9b3bbf7b"
+        },
+        "programmatic-seo": {
+            "source": "coreyhaines31/marketingskills",
+            "sourceType": "github",
+            "computedHash": "40b8fe29a6c9cb0606e6fa77aff227cf275e3808adf66e5ef69e02dcf60a7303"
+        },
+        "remotion-best-practices": {
+            "source": "remotion-dev/skills",
+            "sourceType": "github",
+            "computedHash": "9851afb52e1b892c43b2af973bda1776ce01fedfdfe704e0cfd70069a3a9c300"
+        },
+        "seo-audit": {
+            "source": "coreyhaines31/marketingskills",
+            "sourceType": "github",
+            "computedHash": "ec3109d213dde1747614ad1112ef0e498e04b24e464538968e156dfbfadb2121"
+        },
+        "vercel-react-best-practices": {
+            "source": "vercel-labs/agent-skills",
+            "sourceType": "github",
+            "computedHash": "3462ec83f862abb2d532953df33a4dbf87f4616849da5d4b5cc7c13601aaf997"
+        }
+    }
+}

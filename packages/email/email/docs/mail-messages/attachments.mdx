@@ -1,0 +1,228 @@
+---
+title: Attachments
+description: Learn how to add attachments and inline images to emails with @visulima/email
+---
+
+# Attachments
+
+@visulima/email provides a rich attachment API inspired by Laravel's Mail system. You can attach files from the filesystem, raw data, URLs, and embed inline images for use in HTML emails.
+
+## Attachment Types
+
+### The Attachment Interface
+
+All attachments conform to the `Attachment` interface:
+
+```typescript
+interface Attachment {
+    filename: string;
+    content?: string | Buffer | Promise<Uint8Array>;
+    contentType?: string;
+    contentDisposition?: "attachment" | "inline";
+    encoding?: string;
+    cid?: string;
+    path?: string;
+    href?: string;
+    httpHeaders?: Record<string, string>;
+    raw?: string | Buffer;
+    headers?: Record<string, string>;
+}
+```
+
+## Attaching Files from Path
+
+Use `attachFromPath()` to attach a file from the filesystem. The file is read and its MIME type is automatically detected.
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Invoice Attached").html("<h1>Your invoice is attached.</h1>");
+
+await message.attachFromPath("/path/to/invoice.pdf");
+```
+
+### With Options
+
+```typescript
+await message.attachFromPath("/path/to/document.pdf", {
+    filename: "my-invoice.pdf", // Custom filename
+    contentType: "application/pdf", // Override MIME type
+    contentDisposition: "attachment", // 'attachment' (default) or 'inline'
+    encoding: "base64", // Content transfer encoding
+    headers: { "X-Custom": "value" }, // Custom attachment headers
+});
+```
+
+The `AttachmentOptions` interface:
+
+| Option               | Type                       | Description                                    |
+| -------------------- | -------------------------- | ---------------------------------------------- |
+| `filename`           | `string`                   | Custom filename (defaults to file basename)    |
+| `contentType`        | `string`                   | MIME type (auto-detected if not provided)      |
+| `contentDisposition` | `"attachment" \| "inline"` | Disposition type (default: `"attachment"`)     |
+| `encoding`           | `string`                   | Transfer encoding (e.g., `"base64"`, `"7bit"`) |
+| `cid`                | `string`                   | Content-ID for inline attachments              |
+| `headers`            | `Record<string, string>`   | Custom headers for this attachment             |
+
+## Attaching Raw Data
+
+Use `attachData()` to attach raw string or Buffer content:
+
+```typescript
+const csvContent = "Name,Email\nJohn,john@example.com";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Report").html("<h1>Report attached</h1>");
+
+message.attachData(csvContent, {
+    filename: "report.csv",
+    contentType: "text/csv",
+});
+```
+
+### Buffer Attachments
+
+```typescript
+import { readFileSync } from "fs";
+
+const pdfBuffer = readFileSync("/path/to/file.pdf");
+
+message.attachData(pdfBuffer, {
+    filename: "document.pdf",
+    contentType: "application/pdf",
+});
+```
+
+The `AttachmentDataOptions` interface extends `AttachmentOptions` with a required `filename`:
+
+| Option     | Type     | Required | Description                 |
+| ---------- | -------- | -------- | --------------------------- |
+| `filename` | `string` | Yes      | Filename for the attachment |
+
+## Inline Attachments (Embedded Images)
+
+### Embed from Path
+
+Use `embedFromPath()` to embed an image from the filesystem as an inline attachment. It returns a Content-ID that you can use in HTML with `cid:`:
+
+```typescript
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Newsletter");
+
+const logoCid = await message.embedFromPath("/path/to/logo.png");
+
+message.html(`
+    <h1>Welcome!</h1>
+    <img src="cid:${logoCid}" alt="Logo" />
+`);
+```
+
+### Embed from Data
+
+Use `embedData()` to embed raw data as an inline attachment:
+
+```typescript
+const imageBuffer = Buffer.from("...");
+const imageCid = message.embedData(imageBuffer, "logo.png", {
+    contentType: "image/png",
+});
+
+message.html(`
+    <h1>Welcome!</h1>
+    <img src="cid:${imageCid}" alt="Logo" />
+`);
+```
+
+## Helper Functions
+
+### Detect MIME Type
+
+```typescript
+import { detectMimeType } from "@visulima/email";
+
+const mimeType = detectMimeType("document.pdf");
+// Returns: "application/pdf"
+```
+
+### Generate Content-ID
+
+```typescript
+import { generateContentId } from "@visulima/email";
+
+const cid = generateContentId("logo.png");
+// Returns something like: "logo-png-a1b2c3d@email"
+```
+
+### Read File as Buffer
+
+```typescript
+import { readFileAsBuffer } from "@visulima/email";
+
+const buffer = await readFileAsBuffer("/path/to/file.pdf");
+```
+
+## Calendar Events
+
+You can attach calendar events (ICS/iCal format) to emails:
+
+### From String
+
+```typescript
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Meeting Invite").html("<h1>You're invited!</h1>");
+
+message.icalEvent("BEGIN:VCALENDAR\nVERSION:2.0\n...", {
+    method: "REQUEST",
+});
+```
+
+### Using ical-generator
+
+```typescript
+message.icalEvent(
+    (calendar) => {
+        calendar.createEvent({
+            start: new Date("2025-01-15T10:00:00Z"),
+            end: new Date("2025-01-15T11:00:00Z"),
+            summary: "Team Meeting",
+            location: "Conference Room A",
+        });
+    },
+    { method: "REQUEST" },
+);
+```
+
+### From File
+
+```typescript
+message.icalEventFromFile("/path/to/event.ics", {
+    method: "REQUEST",
+});
+```
+
+### From URL
+
+```typescript
+message.icalEventFromUrl("https://example.com/event.ics", {
+    method: "REQUEST",
+});
+```
+
+The `CalendarEventOptions` interface:
+
+| Option            | Type     | Description                                                |
+| ----------------- | -------- | ---------------------------------------------------------- |
+| `method`          | `string` | Calendar method (e.g., `"REQUEST"`, `"CANCEL"`, `"REPLY"`) |
+| `alternativeText` | `string` | Alternative text for the calendar event                    |
+
+## Provider Support
+
+Not all providers support attachments. Check the provider documentation for attachment support:
+
+| Provider | Attachments | Inline Images |
+| -------- | ----------- | ------------- |
+| Resend   | Yes         | Yes           |
+| Brevo    | Yes         | Yes           |
+| Mailgun  | Yes         | Yes           |
+| SendGrid | Yes         | Yes           |
+| Postmark | Yes         | Yes           |
+| SMTP     | Yes         | Yes           |
+| AWS SES  | No          | No            |
+| Mock     | Yes         | Yes           |

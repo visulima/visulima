@@ -1,0 +1,218 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Cargo Test"
+
+on: # yamllint disable-line rule:truthy
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+    pull_request:
+        types: ["opened", "synchronize"]
+        paths:
+            - "packages/tooling/task-runner/native/**"
+            - "packages/terminal/tui/native/**"
+            - "packages/tooling/vis/native/**"
+            - ".github/workflows/cargo-test.yml"
+    push:
+        branches:
+            - "main"
+            - "alpha"
+        paths:
+            - "packages/tooling/task-runner/native/**"
+            - "packages/terminal/tui/native/**"
+            - "packages/tooling/vis/native/**"
+            - ".github/workflows/cargo-test.yml"
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read"
+
+env:
+    CARGO_INCREMENTAL: 0
+
+jobs:
+    files-changed:
+        name: "Detect Rust source changes"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 3
+        # dorny/paths-filter calls the GitHub API on first run, which
+        # intermittently 401s on the rotating secrets.GITHUB_TOKEN — fall back
+        # to the retry step's outputs.
+        outputs:
+            task-runner: "${{ steps.changes.outputs.task-runner || steps.changes_retry.outputs.task-runner }}"
+            tui: "${{ steps.changes.outputs.tui || steps.changes_retry.outputs.tui }}"
+            vis: "${{ steps.changes.outputs.vis || steps.changes_retry.outputs.vis }}"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+
+            - name: "Check for Rust source changes"
+              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              id: "changes"
+              continue-on-error: true
+              with:
+                  token: "${{ github.token }}"
+                  filters: |
+                      task-runner:
+                        - 'packages/tooling/task-runner/native/src/**'
+                        - 'packages/tooling/task-runner/native/fspy_seccomp/**'
+                        - 'packages/tooling/task-runner/native/Cargo.toml'
+                        - 'packages/tooling/task-runner/native/Cargo.lock'
+                      tui:
+                        - 'packages/terminal/tui/native/src/**'
+                        - 'packages/terminal/tui/native/Cargo.toml'
+                        - 'packages/terminal/tui/native/Cargo.lock'
+                      vis:
+                        - 'packages/tooling/vis/native/src/**'
+                        - 'packages/tooling/vis/native/cli/**'
+                        - 'packages/tooling/vis/native/core/**'
+                        - 'packages/tooling/vis/native/Cargo.toml'
+                        - 'packages/tooling/vis/native/Cargo.lock'
+
+            - name: "Wait before retrying path filter"
+              if: "steps.changes.outcome == 'failure'"
+              shell: "bash"
+              run: "sleep 30"
+
+            - name: "Check for Rust source changes (retry)"
+              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              id: "changes_retry"
+              if: "steps.changes.outcome == 'failure'"
+              with:
+                  token: "${{ github.token }}"
+                  filters: |
+                      task-runner:
+                        - 'packages/tooling/task-runner/native/src/**'
+                        - 'packages/tooling/task-runner/native/fspy_seccomp/**'
+                        - 'packages/tooling/task-runner/native/Cargo.toml'
+                        - 'packages/tooling/task-runner/native/Cargo.lock'
+                      tui:
+                        - 'packages/terminal/tui/native/src/**'
+                        - 'packages/terminal/tui/native/Cargo.toml'
+                        - 'packages/terminal/tui/native/Cargo.lock'
+                      vis:
+                        - 'packages/tooling/vis/native/src/**'
+                        - 'packages/tooling/vis/native/cli/**'
+                        - 'packages/tooling/vis/native/core/**'
+                        - 'packages/tooling/vis/native/Cargo.toml'
+                        - 'packages/tooling/vis/native/Cargo.lock'
+
+    test:
+        name: "Test ${{ matrix.package.name }}"
+        needs: "files-changed"
+        if: |
+            github.event_name == 'workflow_dispatch' ||
+            needs.files-changed.outputs.task-runner == 'true' ||
+            needs.files-changed.outputs.tui == 'true' ||
+            needs.files-changed.outputs.vis == 'true'
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 15
+        strategy:
+            fail-fast: false
+            matrix:
+                package:
+                    - name: "task-runner"
+                      dir: "packages/tooling/task-runner/native"
+                      changed: "${{ needs.files-changed.outputs.task-runner }}"
+                    - name: "tui"
+                      dir: "packages/terminal/tui/native"
+                      changed: "${{ needs.files-changed.outputs.tui }}"
+                    - name: "vis"
+                      dir: "packages/tooling/vis/native"
+                      changed: "${{ needs.files-changed.outputs.vis }}"
+                exclude:
+                    - package:
+                          changed: "false"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+
+            - name: "Install Rust stable toolchain"
+              uses: "dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9" # v1
+              with:
+                  toolchain: "stable"
+
+            - name: "Restore Cargo cache"
+              id: "cargo-cache"
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      ${{ matrix.package.dir }}/target
+                  key: "cargo-test-${{ matrix.package.name }}-${{ hashFiles(format('{0}/Cargo.lock', matrix.package.dir)) }}"
+                  restore-keys: |
+                      cargo-test-${{ matrix.package.name }}-
+
+            - name: "Run cargo test"
+              working-directory: "${{ matrix.package.dir }}"
+              run: "cargo test --verbose"
+
+            # vis-cli + vis-core are workspace members alongside the addon; the
+            # `cargo test` above only covers the root addon package. `-p` selects
+            # just these lean crates (no oxc), so this runs on any toolchain.
+            - name: "Run cargo test + clippy (vis-cli + vis-core)"
+              if: "matrix.package.name == 'vis'"
+              shell: "bash"
+              working-directory: "packages/tooling/vis/native"
+              run: |
+                  cargo test -p vis-cli -p vis-core --verbose
+                  cargo clippy -p vis-cli -p vis-core --all-targets -- -D warnings
+
+            # fspy_seccomp is a path-dep of task-runner-native (not a
+            # workspace member), so `cargo test` above doesn't reach
+            # it. Run its tests + perf bench separately on Linux only.
+            # The bench is `#[ignore]` so it requires --ignored.
+            - name: "Run fspy_seccomp integration tests + perf bench"
+              if: "matrix.package.name == 'task-runner' && runner.os == 'Linux'"
+              shell: "bash"
+              working-directory: "${{ matrix.package.dir }}/fspy_seccomp"
+              run: |
+                  cargo test --release --verbose
+                  cargo test --test perf --release -- --ignored --nocapture
+
+            - name: "Run cargo clippy"
+              working-directory: "${{ matrix.package.dir }}"
+              run: "cargo clippy -- -D warnings"
+              continue-on-error: true
+
+            # Only write the cache from trusted refs. PRs restore but never save,
+            # so a fork can't poison the cache for downstream runs.
+            - name: "Save Cargo cache"
+              if: "github.event_name == 'push' && steps.cargo-cache.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      ${{ matrix.package.dir }}/target
+                  key: "${{ steps.cargo-cache.outputs.cache-primary-key }}"
+
+    cargo-test-required-check:
+        name: "Cargo Test Status"
+        needs: ["files-changed", "test"]
+        if: "always()"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 1
+        steps:
+            - name: "Verify test results"
+              # No untrusted input used in this step -- only workflow result values
+              run: |
+                  if [ "$RESULT" = "failure" ]; then
+                    echo "Rust tests failed"
+                    exit 1
+                  fi
+                  echo "All Rust tests passed (or skipped)"
+              env:
+                  RESULT: "${{ needs.test.result }}"

@@ -1,0 +1,8 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "./tsconfig.json",
+    "compilerOptions": {
+        "types": ["node"]
+    },
+    "include": ["__tests__/**/*", "examples/**/*", "src/**/*", "*.d.ts", "*.js", "*.ts", "packem.config.ts"]
+}

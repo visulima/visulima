@@ -1,0 +1,8 @@
+{
+    "name": "www",
+    "$schema": "../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "web",
+    "projectType": "application",
+    "tags": ["web"],
+    "implicitDependencies": ["filesystem/path", "filesystem/fs", "error-debugging/error", "error-debugging/dev-toolbar", "error-debugging/vite-overlay"]
+}

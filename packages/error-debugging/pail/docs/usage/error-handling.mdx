@@ -1,0 +1,156 @@
+---
+title: Error Handling
+description: Self-documenting errors with PailError
+---
+
+# Error Handling
+
+Pail provides `PailError`, a self-documenting error class that extends standard errors with fields that make log entries immediately actionable. Inspired by [evlog](https://github.com/HugoRCD/evlog)'s structured error approach, these fields are particularly useful for AI-assisted log analysis and structured debugging.
+
+## PailError
+
+`PailError` extends the native `Error` class with additional context fields:
+
+- **`why`** - Explains what caused the failure
+- **`fix`** - Suggests how to resolve the issue
+- **`link`** - Points to relevant documentation or issue tracker
+- **`status`** - HTTP status code (defaults to 500)
+
+### Basic Usage
+
+```typescript
+import { PailError, createPailError } from "@visulima/pail";
+
+// Using the class directly
+throw new PailError({
+    message: "Payment processing failed",
+    status: 402,
+    why: "The customer's card was declined by the payment provider",
+    fix: "Retry with a different payment method or contact the card issuer",
+    link: "https://docs.example.com/payments/declined",
+});
+
+// Using the factory function
+throw createPailError("Connection timeout");
+
+// Simple string shorthand
+throw new PailError("Something went wrong");
+```
+
+### With Pail Logger
+
+PailError integrates naturally with Pail's error logging:
+
+```typescript
+import { createPail, PailError } from "@visulima/pail";
+
+const logger = createPail();
+
+try {
+    await connectToDatabase();
+} catch (cause) {
+    const error = new PailError({
+        message: "Database connection failed",
+        why: "Connection pool exhausted after 30s timeout",
+        fix: "Increase pool size in DATABASE_POOL_SIZE or check for connection leaks",
+        link: "https://docs.example.com/database/pool-config",
+        status: 503,
+        cause,
+    });
+
+    logger.error(error);
+    // Output includes all self-documenting fields
+}
+```
+
+### Error Chaining with `cause`
+
+PailError supports the standard `cause` property for error chaining:
+
+```typescript
+try {
+    await fetchData();
+} catch (originalError) {
+    throw new PailError({
+        message: "Failed to load user profile",
+        why: "The upstream user service returned an error",
+        fix: "Check if the user service is healthy at /health",
+        cause: originalError,
+    });
+}
+```
+
+### Serialization
+
+PailError includes a `toJSON()` method for structured logging:
+
+```typescript
+const error = new PailError({
+    message: "Auth failed",
+    status: 401,
+    why: "Token expired",
+    fix: "Refresh the authentication token",
+});
+
+console.log(JSON.stringify(error));
+// {
+//   "name": "PailError",
+//   "message": "Auth failed",
+//   "status": 401,
+//   "why": "Token expired",
+//   "fix": "Refresh the authentication token",
+//   "stack": "..."
+// }
+```
+
+The `toString()` method also includes all self-documenting fields:
+
+```typescript
+console.log(error.toString());
+// PailError [401]: Auth failed
+//   Why: Token expired
+//   Fix: Refresh the authentication token
+```
+
+### `createPailError` Factory
+
+A convenient shorthand for creating PailError instances:
+
+```typescript
+import { createPailError } from "@visulima/pail";
+
+// String shorthand
+const simple = createPailError("Something went wrong");
+
+// Full options
+const detailed = createPailError({
+    message: "Rate limit exceeded",
+    status: 429,
+    why: "Too many requests from this IP in the last minute",
+    fix: "Implement exponential backoff or reduce request frequency",
+    link: "https://docs.example.com/rate-limits",
+});
+```
+
+### Standalone Import
+
+PailError is also available as a standalone import:
+
+```typescript
+import { PailError, createPailError } from "@visulima/pail/error";
+import type { PailErrorOptions } from "@visulima/pail/error";
+```
+
+## Best Practices
+
+1. **Always include `why`** - The most useful field for debugging. Explain what went wrong in plain language.
+2. **Include `fix` for actionable errors** - When you know what the user or developer should do, tell them.
+3. **Use `link` for complex issues** - Point to documentation, runbooks, or issue trackers.
+4. **Set `status` for HTTP errors** - Makes it easy to map errors to HTTP responses.
+5. **Chain with `cause`** - Preserve the original error for full stack trace analysis.
+
+## Related
+
+- [Processors](/docs/packages/pail/concepts/processors) - Process and enrich error metadata
+- [API Reference](/docs/packages/pail/api) - Complete PailError API
+- [Examples](/docs/packages/pail/examples) - Real-world error handling examples

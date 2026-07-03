@@ -1,0 +1,327 @@
+---
+title: "Troubleshooting"
+---
+
+# Troubleshooting
+
+Common issues and solutions when working with jsdoc-open-api.
+
+## CLI Not Found
+
+**Problem**: `jsdoc-open-api: command not found`
+
+**Solutions**:
+
+1. Use npx:
+
+```bash
+npx jsdoc-open-api generate src/
+```
+
+2. Install dependencies:
+
+```bash
+npm install commander cli-progress
+```
+
+3. Check optional dependencies installed:
+
+```bash
+npm list commander cli-progress
+```
+
+## No Paths Generated
+
+**Problem**: Generated spec has empty `paths` object
+
+**Causes**:
+
+1. **JSDoc comments missing `@openapi` tag:**
+
+```javascript
+// ❌ Won't be parsed
+/**
+ * Get all users
+ */
+export function getUsers() {}
+
+// ✅ Will be parsed
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: Get all users
+ */
+export function getUsers() {}
+```
+
+2. **Wrong file paths in sources:**
+
+```javascript
+// Check your glob patterns
+{
+    sources: [
+        "./src/routes/**/*.js", // Correct path?
+    ];
+}
+```
+
+3. **Files not matching glob pattern:**
+
+```bash
+# Test your glob patterns
+npx glob "./src/routes/**/*.js"
+```
+
+## Invalid OpenAPI Specification
+
+**Problem**: Generated spec fails validation
+
+**Solution**: Validate required fields:
+
+```javascript
+{
+  definition: {
+    openapi: "3.0.0",  // Required
+    info: {
+      title: "My API",   // Required
+      version: "1.0.0",  // Required
+    },
+  },
+}
+```
+
+## Webpack Plugin Not Working
+
+**Problem**: Plugin doesn't generate spec in webpack build
+
+**Solutions**:
+
+1. **Verify webpack dependency:**
+
+```bash
+npm install webpack
+```
+
+2. **Check plugin configuration:**
+
+```javascript
+const { SwaggerCompilerPlugin } = require("@visulima/jsdoc-open-api");
+const path = require("path");
+
+new SwaggerCompilerPlugin(
+    path.join(__dirname, "public/swagger.json"), // Absolute path
+    [path.join(__dirname, "src/**/*.js")], // Absolute paths
+    {
+        /* definition */
+    },
+    { verbose: true }, // Enable logging
+);
+```
+
+3. **Server-side only in Next.js:**
+
+```javascript
+webpack: (config, { isServer }) => {
+    if (!isServer) return config; // Skip on client
+
+    config.plugins.push(new SwaggerCompilerPlugin(/* ... */));
+    return config;
+};
+```
+
+## TypeScript Errors
+
+**Problem**: TypeScript type errors with imports
+
+**Solution**: Install type definitions:
+
+```bash
+npm install --save-dev @types/swagger-jsdoc openapi-types
+```
+
+## Duplicate Paths
+
+**Problem**: Same path defined multiple times causes conflicts
+
+**Solution**: Consolidate path definitions:
+
+```javascript
+// ❌ Don't do this
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: Get users
+ */
+
+/**
+ * @openapi
+ * /users:
+ *   post:
+ *     summary: Create user
+ */
+
+// ✅ Do this
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: Get users
+ *   post:
+ *     summary: Create user
+ */
+```
+
+## Schema References Not Working
+
+**Problem**: `$ref` references not resolving
+
+**Cause**: Schema not defined in components
+
+**Solution**: Define schemas first:
+
+```javascript
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ */
+
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ */
+```
+
+## Performance Issues
+
+**Problem**: Generation is slow
+
+**Solutions**:
+
+1. **Limit source files:**
+
+```javascript
+{
+    sources: [
+        "./src/routes/**/*.js",
+        "!./src/**/*.test.js", // Exclude tests
+        "!./node_modules/**", // Exclude node_modules
+    ];
+}
+```
+
+2. **Use specific paths:**
+
+```javascript
+// ❌ Slow
+sources: ["./src/**/*.js"];
+
+// ✅ Faster
+sources: ["./src/routes/**/*.js", "./src/controllers/**/*.js"];
+```
+
+3. **Cache results:**
+
+```javascript
+let cachedSpec = null;
+
+async function getSpec() {
+    if (!cachedSpec) {
+        cachedSpec = await jsdocOpenApi({
+            /* options */
+        });
+    }
+    return cachedSpec;
+}
+```
+
+## YAML Syntax Errors
+
+**Problem**: YAML syntax errors in JSDoc comments
+
+**Common mistakes:**
+
+```javascript
+// ❌ Wrong indentation
+/**
+ * @openapi
+ * /users:
+ * get:
+ *   summary: Get users
+ */
+
+// ✅ Correct indentation (2 spaces)
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: Get users
+ */
+
+// ❌ Missing colon
+/**
+ * @openapi
+ * /users
+ *   get:
+ *     summary: Get users
+ */
+
+// ✅ Colon after path
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: Get users
+ */
+```
+
+## Debugging
+
+Enable verbose logging:
+
+```bash
+# CLI
+npx jsdoc-open-api generate -v src/
+
+# Very verbose (debugging)
+npx jsdoc-open-api generate -d src/
+```
+
+Programmatic:
+
+```javascript
+const spec = await jsdocOpenApi({
+    definition: {
+        /* ... */
+    },
+    sources: ["./src/**/*.js"],
+    verbose: true, // Enable logging
+});
+```
+
+## Validation
+
+Validate your generated spec:
+
+```bash
+# Using Swagger CLI
+npm install -g @apidevtools/swagger-cli
+swagger-cli validate swagger.json
+
+# Using online validator
+# Upload to https://editor.swagger.io/
+```

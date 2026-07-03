@@ -1,0 +1,68 @@
+---
+title: "Usage"
+---
+
+# Usage Guide
+
+## Find tsconfig.json
+
+```typescript
+import { findTsConfig } from "@visulima/tsconfig";
+
+const result = await findTsConfig();
+// => {
+//   path: "/path/to/tsconfig.json",
+//   config: { compilerOptions: { ... } }
+// }
+
+// From specific directory
+const result2 = await findTsConfig("/path/to/project");
+```
+
+## Read tsconfig.json
+
+`readTsConfig` is synchronous — it returns the resolved config directly (no `await`).
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+const config = readTsConfig("/path/to/tsconfig.json");
+
+// Match the derived defaults of a specific TypeScript version
+const config2 = readTsConfig("/path/to/tsconfig.json", {
+    tscCompatible: "5.8",
+});
+
+// Apply the unconditional defaults of the installed TypeScript
+const config3 = readTsConfig("/path/to/tsconfig.json", {
+    typescriptVersion: "auto",
+});
+```
+
+## Write tsconfig.json
+
+```typescript
+import { writeTsConfig } from "@visulima/tsconfig";
+
+await writeTsConfig({
+    compilerOptions: {
+        target: "ES2022",
+        module: "ESNext",
+        moduleResolution: "bundler",
+        strict: true,
+    },
+});
+
+// Custom path
+await writeTsConfig(config, { cwd: "./packages/app" });
+```
+
+## Extends Resolution
+
+```typescript
+import { readTsConfig } from "@visulima/tsconfig";
+
+// Automatically resolves extends
+const config = readTsConfig("/path/to/tsconfig.json");
+// Merges base configurations from extends field
+```

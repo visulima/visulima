@@ -1,0 +1,155 @@
+---
+title: Introduction
+description: "Fast and reliable deep cloning for JavaScript objects with circular reference handling"
+---
+
+# @visulima/deep-clone
+
+Fast and reliable deep cloning for JavaScript objects. Create independent copies of complex data structures including nested objects, arrays, dates, maps, sets, and more—all while handling circular references automatically.
+
+## Key Features
+
+**Performance Optimized**
+
+- Competitive performance compared to popular libraries
+- Loose mode for fast standard cloning
+- Strict mode for complete property cloning
+- Memory-efficient circular reference handling
+
+**Comprehensive Type Support**
+
+- Objects, arrays, and primitives
+- Built-in types: Date, RegExp, Map, Set, Error
+- TypedArrays and Buffers
+- Blob, ArrayBuffer, and DataView
+- Functions (copied by reference)
+
+**Advanced Capabilities**
+
+- Automatic circular reference detection
+- Custom handlers for specific types
+- Utility functions for specialized cloning
+- TypeScript type preservation
+
+## Quick Start
+
+Install the package:
+
+```bash
+npm install @visulima/deep-clone
+```
+
+Clone an object:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = {
+    name: "John",
+    age: 30,
+    address: {
+        city: "New York",
+        country: "USA",
+    },
+};
+
+const cloned = deepClone(original);
+cloned.address.city = "Los Angeles";
+
+console.log(original.address.city); // "New York" (unchanged)
+console.log(cloned.address.city); // "Los Angeles"
+```
+
+## Use Cases
+
+### Clone API Response Data
+
+Create independent copies of API responses for state management:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+async function fetchUserData(userId: string) {
+    const response = await fetch(`/api/users/${userId}`);
+    const data = await response.json();
+
+    // Clone to prevent accidental mutations
+    return deepClone(data);
+}
+
+// Use the cloned data safely
+const user = await fetchUserData("123");
+const modifiedUser = { ...user, status: "active" };
+```
+
+### Handle Circular References
+
+Clone objects with circular references safely:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const person = {
+    name: "Alice",
+    friends: [] as Array<{ name: string; friends: unknown[] }>,
+};
+
+const friend = {
+    name: "Bob",
+    friends: [person],
+};
+
+person.friends.push(friend);
+
+// Handles circular references automatically
+const cloned = deepClone(person);
+console.log(cloned.friends[0].friends[0] === cloned); // true
+```
+
+### Clone Complex Data Structures
+
+Work with Maps, Sets, and other built-in types:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const complexData = {
+    users: new Map([
+        ["alice", { name: "Alice", age: 30 }],
+        ["bob", { name: "Bob", age: 25 }],
+    ]),
+    tags: new Set(["javascript", "typescript", "node"]),
+    createdAt: new Date(),
+    pattern: /[a-z]+/gi,
+};
+
+const cloned = deepClone(complexData);
+cloned.users.set("charlie", { name: "Charlie", age: 35 });
+
+console.log(complexData.users.size); // 2 (unchanged)
+console.log(cloned.users.size); // 3
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn about installation and import methods
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore cloning modes, options, and utilities
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with all parameters
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+This package works in both Node.js and browser environments:
+
+- **Node.js:** ≥22.13 ≤25.x
+- **Browsers:** Modern browsers with ES6 support
+- **Deno/Bun:** Fully compatible
+
+Requires support for WeakMap for circular reference handling.

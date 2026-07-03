@@ -1,0 +1,31 @@
+{
+    "name": "dev_toolbar_vite-cloudflare",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b && vite build",
+        "cf:preview": "wrangler pages dev",
+        "deploy": "pnpm run build && wrangler pages deploy",
+        "dev": "vite",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
+    },
+    "devDependencies": {
+        "@cloudflare/vite-plugin": "catalog:build",
+        "@cloudflare/workers-types": "catalog:dev",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "@visulima/dev-toolbar": "workspace:*",
+        "@visulima/vite-overlay": "workspace:*",
+        "@vitejs/plugin-react": "catalog:build",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build",
+        "wrangler": "catalog:dev"
+    },
+    "peerDependencies": {},
+    "optionalDependencies": {}
+}

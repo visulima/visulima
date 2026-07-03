@@ -1,0 +1,10 @@
+{
+    "name": "command-line-args-types",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Typings smoke test fixture",
+    "type": "module",
+    "dependencies": {
+        "@visulima/command-line-args": "workspace:*"
+    }
+}

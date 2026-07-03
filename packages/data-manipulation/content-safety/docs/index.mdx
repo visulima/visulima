@@ -1,0 +1,183 @@
+---
+title: Getting Started
+description: Content safety library for detecting profanity, slurs, and inappropriate content across 19 languages with Unicode support.
+---
+
+# Getting Started
+
+@visulima/content-safety is a robust TypeScript library for detecting banned words, profanity, slurs, hate speech, and inappropriate content across multiple languages. It provides accurate, Unicode-aware text analysis with position information for censoring or highlighting.
+
+## Key Features
+
+### Multi-Language Support
+
+Comprehensive banned word detection across **19 languages**:
+
+- **European**: English, German, Spanish, French, Italian, Dutch, Polish, Portuguese, Swedish, Russian, Irish
+- **Middle Eastern**: Arabic, Persian/Farsi, Turkish, Azerbaijani
+- **Asian**: Japanese, Korean, Chinese, Hindi
+
+### Unicode-Aware
+
+Full support for international scripts and complex text:
+
+- **CJK Scripts**: Japanese, Korean, Chinese (no word boundaries required)
+- **RTL Scripts**: Arabic, Persian, Hebrew
+- **Complex Scripts**: Devanagari (Hindi), Thai, and others
+- **Unicode Normalization**: Consistent matching with NFC normalization
+
+### High Performance
+
+Optimized for production use:
+
+- **Eager Regex Compilation**: Cache built at module load (no first-call lag)
+- **Single Pass Checking**: All languages checked simultaneously
+- **Efficient Pattern Matching**: Longest phrases matched first
+
+### Precise Position Tracking
+
+Detailed match information for flexible handling:
+
+- Start and end indices for each match
+- Language attribution (which dictionary matched)
+- Support for highlighting, censoring, or rejection
+
+### Advanced Features
+
+- **Case-Insensitive**: Matches regardless of capitalization
+- **Multi-Word Phrases**: Detects compound expressions (e.g., "white trash")
+- **Leet-Speak Detection**: Includes common variants (e.g., "b1tch")
+- **Word Boundary Aware**: Prevents false positives in compound words
+- **Zero Dependencies**: Pure TypeScript, works in browser and Node.js
+
+## Quick Start
+
+### Installation
+
+```bash
+npm install @visulima/content-safety
+```
+
+```bash
+yarn add @visulima/content-safety
+```
+
+```bash
+pnpm add @visulima/content-safety
+```
+
+### Basic Usage
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+
+// Check clean text
+const result = checkBannedWords("Hello, how are you today?");
+console.log(result.hasBannedWords); // false
+console.log(result.matches); // []
+
+// Check text with banned words
+const result2 = checkBannedWords("This contains badword");
+console.log(result2.hasBannedWords); // true
+console.log(result2.matches[0]);
+// {
+//   word: "badword",
+//   startIndex: 14,
+//   endIndex: 21,
+//   language: "en"
+// }
+```
+
+## Use Cases
+
+### Content Moderation
+
+Filter user-generated content in forums, comments, and chat applications:
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+
+function moderateContent(userInput: string) {
+    const result = checkBannedWords(userInput);
+
+    if (result.hasBannedWords) {
+        return {
+            allowed: false,
+            reason: `Content contains ${result.matches.length} inappropriate word(s)`,
+        };
+    }
+
+    return { allowed: true };
+}
+```
+
+### Text Censoring
+
+Automatically censor inappropriate content:
+
+```typescript
+function censorText(text: string): string {
+    const result = checkBannedWords(text);
+
+    if (!result.hasBannedWords) {
+        return text;
+    }
+
+    let censored = text;
+    // Process in reverse to maintain indices
+    for (const match of result.matches.reverse()) {
+        const replacement = "*".repeat(match.word.length);
+        censored = censored.slice(0, match.startIndex) + replacement + censored.slice(match.endIndex);
+    }
+
+    return censored;
+}
+```
+
+### Real-Time Validation
+
+Provide instant feedback in forms and text editors:
+
+```typescript
+function validateInput(text: string) {
+    const result = checkBannedWords(text);
+
+    return {
+        isValid: !result.hasBannedWords,
+        matches: result.matches.map((m) => ({
+            position: m.startIndex,
+            length: m.word.length,
+            language: m.language,
+        })),
+    };
+}
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/docs/installation">
+        Detailed installation and setup instructions
+    </Card>
+    <Card title="Usage Guide" href="/docs/usage">
+        Learn how to use the library with examples
+    </Card>
+    <Card title="Supported Languages" href="/docs/languages">
+        View all supported languages and word lists
+    </Card>
+    <Card title="API Reference" href="/docs/api">
+        Complete API documentation
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+Works in all modern environments:
+
+- Node.js 18+
+- Browsers (Chrome, Firefox, Safari, Edge)
+- Deno
+- Bun
+- Edge Functions (Vercel, Cloudflare Workers)
+- React Native
+- Electron

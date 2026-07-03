@@ -1,0 +1,154 @@
+---
+title: "Installation"
+description: "How to install and import @visulima/deep-clone"
+---
+
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+# Installation
+
+Install the package using your preferred package manager:
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">```bash npm install @visulima/deep-clone ```</Tab>
+    <Tab value="pnpm">```bash pnpm add @visulima/deep-clone ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/deep-clone ```</Tab>
+    <Tab value="bun">```bash bun add @visulima/deep-clone ```</Tab>
+</Tabs>
+
+## Import Methods
+
+### Main Function
+
+Import the primary `deepClone` function:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const cloned = deepClone({ a: 1, b: { c: 2 } });
+```
+
+### Default Import
+
+Alternative default import:
+
+```typescript
+import deepClone from "@visulima/deep-clone";
+
+const cloned = deepClone({ a: 1, b: { c: 2 } });
+```
+
+### Utility Functions
+
+Import utility functions from submodules:
+
+```typescript
+import { copyOwnProperties, getCleanClone } from "@visulima/deep-clone/utils";
+
+const copy = copyOwnProperties({ a: 1, b: 2 });
+const clean = getCleanClone({ a: 1, b: 2 });
+```
+
+### Custom Handlers
+
+Import handlers for customization:
+
+```typescript
+import type { Options, State } from "@visulima/deep-clone";
+import { copyArrayStrict, copyObjectStrict } from "@visulima/deep-clone/handler";
+```
+
+### CommonJS
+
+For CommonJS environments:
+
+```javascript
+const { deepClone } = require("@visulima/deep-clone");
+const { copyOwnProperties } = require("@visulima/deep-clone/utils");
+```
+
+## Requirements
+
+- **Node.js:** ≥22.13 ≤25.x
+- **TypeScript:** ≥5.0 (optional, for type definitions)
+- **Browser:** ES6+ support required (WeakMap for circular references)
+
+## Verify Installation
+
+Test the installation works correctly:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = {
+    name: "test",
+    nested: { value: 42 },
+};
+
+const cloned = deepClone(original);
+cloned.nested.value = 100;
+
+console.log(original.nested.value); // 42 (unchanged)
+console.log(cloned.nested.value); // 100 (modified)
+```
+
+If the original object remains unchanged, installation was successful!
+
+## TypeScript Support
+
+The package includes comprehensive TypeScript type definitions. The generic type parameter preserves your object's types:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+interface User {
+    id: number;
+    name: string;
+    settings: {
+        theme: "light" | "dark";
+    };
+}
+
+const user: User = {
+    id: 1,
+    name: "Alice",
+    settings: { theme: "dark" },
+};
+
+// TypeScript knows the returned type is User
+const cloned: User = deepClone(user);
+```
+
+The `DeepReadwrite` utility type removes readonly modifiers, allowing you to modify the cloned object:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+interface ReadonlyUser {
+    readonly id: number;
+    readonly settings: {
+        readonly theme: string;
+    };
+}
+
+const user: ReadonlyUser = {
+    id: 1,
+    settings: { theme: "dark" },
+};
+
+// Cloned object has mutable properties
+const cloned = deepClone(user);
+cloned.id = 2; // OK! readonly is removed
+cloned.settings.theme = "light"; // OK!
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use deepClone with options and utilities
+    </Card>
+    <Card title="API Reference" href="/api">
+        Explore the complete API documentation
+    </Card>
+</Cards>

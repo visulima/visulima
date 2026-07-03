@@ -1,0 +1,19 @@
+{
+    "name": "upload_example_express-multipart-gcs",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "tsx index.ts"
+    },
+    "dependencies": {
+        "@visulima/storage": "workspace:*",
+        "cors": "catalog:prod",
+        "express": "catalog:backend",
+        "google-auth-library": "catalog:prod"
+    },
+    "devDependencies": {
+        "@types/cors": "catalog:types",
+        "@types/express": "catalog:types",
+        "tsx": "catalog:dev"
+    }
+}

@@ -1,0 +1,112 @@
+---
+title: Introduction
+description: "A CLI task runner for monorepo workspaces with task caching, dependency-aware scheduling, catalog management, and git hooks"
+---
+
+# Visulima Vis
+
+**One CLI for everything your monorepo needs** — task running, caching, dependency management, releases, security audits, and AI-agent integration. Powered by [@visulima/task-runner](https://www.npmjs.com/package/@visulima/task-runner) and [@visulima/cerebro](https://www.npmjs.com/package/@visulima/cerebro).
+
+```bash
+vis run build              # Run a target across the workspace
+vis affected test          # Test only what changed
+vis release ci release     # Ship versions, changelogs, tags
+vis ai heal                # Let Claude / Cursor fix failing tasks
+```
+
+Drop-in for Turbo and Vite Task; the breadth of Nx without the platform lock-in. See [Why vis vs. the alternatives](/guides/why-vis) for the side-by-side capability matrix.
+
+## Key Features
+
+**Built for AI agents** _(unique vs. Turbo / Nx-without-Cloud / moon / Vite Task)_
+
+- **MCP server** — `@visulima/vis-mcp` exposes 8 read-only introspection tools to Claude / Cursor / Copilot, plus a paired Claude Skill
+- **`vis ai heal`** — propose-validate-comment loop on the failing task; `/vis heal accept` lands the patch as a signed commit (GitHub Actions, GitLab CI, Buildkite)
+- **Worktree-aware shared cache** — N parallel agents in N sibling git worktrees share one cache automatically
+
+**Release management** _(matches changesets / semantic-release / release-please feature-for-feature)_
+
+- **`vis release`** — change-file authoring, channel routing, version-PR mode, auto-publish for prereleases, snapshot previews, NAPI sidecar support
+- **One-command migration** — `vis release init` detects changesets / semantic-release / bumpy and migrates in place
+- **CI drivers built-in** — `vis release ci release / snapshot / check / plan` for GitHub Actions and GitLab CI
+- See the [release guide](/guides/release) for the 5-minute quickstart
+
+**Production-grade caching**
+
+- **REAPI gRPC + HTTP backends** — drop-in support for bazel-remote, BuildBuddy, BuildBarn, EngFlow alongside Turbo-compatible HTTP; `vis cache doctor` for CI gating
+- **`vis cache why <task>`** — diff hash buckets vs. the previous run to pinpoint what rotated
+- **HMAC-SHA256 signed artifacts** — `verifyOnDownload` locks production caches against tampering
+- **Cache restoration fidelity** — preserves mtime + perms + colors; `vis cache verify` flags drift
+- **Retention controls** — `vis cache prune --keep-last/--max-age-days/--max-size`
+
+**Cross-invocation devloop**
+
+- **`vis service`** — long-lived DB / mock / devserver lifecycle that survives across `vis run` calls; auto-attached when targets declare `service:`
+- **`vis run --watch`** — Vitest-style keybinds, Windows-clean SIGINT
+- **`vis run --output-style=quiet`** — swallow stdout from successful tasks, keep failures visible
+
+**Workspace orchestration**
+
+- Workspace-aware (pnpm, npm, yarn, bun); topological scheduling with configurable parallelism
+- Affected detection with `${affected.files}` / `$AFFECTED_FILES` token forwarding
+- Conditional (`when:`) and finally (`always:`) tasks
+- Per-package `vis.task.ts` overlay + root `extends` chain
+- Inferred targets (Project Crystal-style) for 36 tools — opt-in via `inferTargets: true`
+- Plugin / fingerprint hooks via `definePlugin`
+- Strict env mode + lockfile preflight
+- Project graph in ASCII / DOT / JSON / HTML
+
+**Adjacent tooling that ships in-box**
+
+- `vis catalog check / update` — pnpm + bun catalog management
+- `vis secrets` — Rust-native secret scanning (gitleaks engine)
+- `vis audit` — OSV.dev vulnerability scanning
+- `vis docker scaffold` — lockfile pruning for pnpm / npm / yarn classic+berry / bun
+- `vis hook install / migrate` — git hooks (husky migration supported)
+- `vis staged` — built-in `lint-staged` replacement
+- `vis replay` — re-render past run summaries without re-execution
+
+**Toolchain & runtime**
+
+- Pluggable installer (aube auto-detection or pinned PM)
+- Cold-start one-liner (Linux/macOS/PowerShell)
+- `vis toolchain` delegates to proto / mise / fnm / volta
+- Built on Cerebro for help / version / shell completion
+
+## A typical day with vis
+
+```bash
+# Morning: pull, install, see what changed
+git pull
+vis install
+vis affected lint test --base=main
+
+# Build only what's affected, watch tests
+vis run build --watch
+
+# Record a version bump for the change you just made
+vis release add --packages '@scope/cerebro:minor' --message 'Add tab completion'
+
+# Push — CI handles tagging, changelogs, npm publish
+git push
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Set up vis in your workspace
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        The 10-minute walkthrough
+    </Card>
+    <Card title="Release Manager" href="/guides/release">
+        Ship versions, changelogs, and tags from change files
+    </Card>
+    <Card title="Commands" href="/commands/run">
+        Full command reference
+    </Card>
+    <Card title="Best Practices" href="/guides/best-practices">
+        Team workflows, security, and CI/CD patterns
+    </Card>
+</Cards>

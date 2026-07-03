@@ -10,16 +10,23 @@ package_json_lintable:
     - "**/package.json"
     - "package.json"
 
-markdown_lintable:
-    - "**/*.md"
-    - "**/*.mdx"
-    - "**/package.json"
-    - "pnpm-lock.yaml"
-
 yaml_lintable:
     - "**/*.yml"
     - "**/*.yaml"
     - "pnpm-lock.yaml"
+
+rust_lintable:
+    - "**/native/src/**/*.rs"
+    - "**/native/Cargo.toml"
+    - "**/native/Cargo.lock"
+    - "rustfmt.toml"
+    - "rust-toolchain.toml"
+
+vis_schemas_lintable:
+    - "packages/tooling/vis/src/config/**"
+    - "packages/tooling/vis/scripts/generate-schemas.ts"
+    - "packages/tooling/vis/schemas/**"
+    - "packages/tooling/vis/tsconfig.json"
 
 packages: &packages
     - "**/tsconfig*.json"

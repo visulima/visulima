@@ -1,0 +1,43 @@
+---
+title: Introduction
+description: "Global error handling middleware for Node.js applications with customizable formatting and logging."
+---
+
+# @visulima/error-handler
+
+Production-ready error handling middleware for Node.js applications with customizable error formatting, logging, and HTTP response generation.
+
+## Key Features
+
+- HTTP error responses
+- Error logging integration
+- Custom error formatters
+- Stack trace filtering
+- Production/development modes
+
+## Quick Start
+
+```typescript
+import { createErrorHandler } from "@visulima/error-handler";
+
+const errorHandler = createErrorHandler({
+    debug: process.env.NODE_ENV !== "production",
+});
+
+app.use(errorHandler);
+```
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started
+    </Card>
+    <Card title="Usage" href="/usage">
+        Usage guide
+    </Card>
+    <Card title="API" href="/api">
+        API docs
+    </Card>
+</Cards>

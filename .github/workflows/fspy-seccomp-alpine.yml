@@ -1,0 +1,113 @@
+# Verifies that `fspy_seccomp` actually closes the Alpine/musl gap
+# the RFC promises. Runs the crate's integration tests inside a
+# `node:alpine` container — proves the seccomp dispatch works on
+# musl, that `process_vm_readv` works with Alpine's `CAP_SYS_PTRACE`
+# default, and that the libseccomp version present in Alpine's
+# repos is recent enough for `SCMP_ACT_NOTIFY`.
+#
+# See `packages/tooling/task-runner/rfc/design-fspy-seccomp-unotify.md`.
+
+name: "fspy-seccomp Alpine validation"
+
+on: # yamllint disable-line rule:truthy
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+    pull_request:
+        types: ["opened", "synchronize"]
+        paths:
+            - "packages/tooling/task-runner/native/fspy_seccomp/**"
+            - ".github/workflows/fspy-seccomp-alpine.yml"
+    push:
+        branches:
+            - "main"
+            - "alpha"
+        paths:
+            - "packages/tooling/task-runner/native/fspy_seccomp/**"
+            - ".github/workflows/fspy-seccomp-alpine.yml"
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read"
+
+jobs:
+    alpine-cargo-test:
+        name: "cargo test fspy_seccomp on node:alpine"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 20
+        container:
+            image: "node:24-alpine"
+            # --privileged is over-broad for tests but the minimal
+            # cap our process_vm_readv needs is CAP_SYS_PTRACE,
+            # which by default isn't granted to containers.
+            options: "--privileged"
+
+        steps:
+            - name: "Git checkout"
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+              with:
+                  persist-credentials: false
+
+            - name: "Install Alpine build deps"
+              shell: "sh"
+              run: |
+                  # tar + zstd are required so actions/cache uses real GNU tar and
+                  # zstd instead of busybox tar, which corrupts/round-trips caches
+                  # unreliably inside Alpine containers.
+                  apk add --no-cache \
+                      build-base \
+                      curl \
+                      libseccomp-dev \
+                      bash \
+                      coreutils \
+                      tar \
+                      zstd
+
+            - name: "Install Rust toolchain"
+              shell: "sh"
+              run: |
+                  curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y --default-toolchain stable --profile minimal
+                  echo "$HOME/.cargo/bin" >> "$GITHUB_PATH"
+
+            # Restore downloaded crates + the release target dir so `cargo test
+            # --release` doesn't recompile every dependency from scratch each run.
+            # Keyed on the crate's Cargo.lock; restore-keys fall back to the latest
+            # cache for the same crate when the lockfile changed.
+            - name: "Restore Cargo cache"
+              id: "cargo-cache"
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      packages/tooling/task-runner/native/fspy_seccomp/target
+                  key: "fspy-seccomp-alpine-${{ hashFiles('packages/tooling/task-runner/native/fspy_seccomp/Cargo.lock') }}"
+                  restore-keys: |
+                      fspy-seccomp-alpine-
+
+            # cargo test runs the crate's full suite — openat/stat/
+            # unlink/getdents coverage plus the deep-fork-tree test.
+            # All five should pass on musl just like they do on glibc;
+            # that's the whole point of this job.
+            - name: "Run fspy_seccomp integration tests on musl"
+              shell: "sh"
+              working-directory: "packages/tooling/task-runner/native/fspy_seccomp"
+              run: "cargo test --release"
+
+            - name: "Run perf bench on musl"
+              shell: "sh"
+              working-directory: "packages/tooling/task-runner/native/fspy_seccomp"
+              run: "cargo test --test perf --release -- --ignored --nocapture"
+
+            # Only write the cache from trusted refs. PRs restore but never save,
+            # so a fork can't poison the cache for downstream runs.
+            - name: "Save Cargo cache"
+              if: "github.event_name == 'push' && steps.cargo-cache.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: |
+                      ~/.cargo/registry
+                      ~/.cargo/git
+                      packages/tooling/task-runner/native/fspy_seccomp/target
+                  key: "${{ steps.cargo-cache.outputs.cache-primary-key }}"

@@ -1,0 +1,345 @@
+---
+title: Writing plugins
+description: Build vis plugins using the typed hookable-based plugin API
+---
+
+# Writing plugins
+
+vis plugins subscribe to typed hooks that fire at run, task, and cache boundaries. The plugin API is built on [`hookable`](https://github.com/unjs/hookable) — the same library Nuxt uses — so plugins are small, async-friendly, and composable.
+
+## Quick start
+
+```typescript
+// vis.config.ts
+import { defineConfig, definePlugin } from "@visulima/vis/config";
+
+const timingPlugin = definePlugin({
+    name: "timing-logger",
+    hooks: {
+        "task:after": (task, result) => {
+            const duration = result.endTime! - result.startTime!;
+
+            console.log(`${task.id}: ${duration}ms`);
+        },
+    },
+});
+
+export default defineConfig({
+    plugins: [timingPlugin],
+});
+```
+
+Running `vis run build` now logs each task's duration as it finishes.
+
+## Hook reference
+
+Each hook is awaited sequentially; returning a promise blocks the next hook firing until it resolves.
+
+### `run:before(context)`
+
+Fires once before any task in the graph starts. Good for one-off setup (fetching env, starting a local dependency, warming a cache).
+
+```typescript
+definePlugin({
+    name: "docker-up",
+    hooks: {
+        "run:before": async () => {
+            await execa("docker", ["compose", "up", "-d"]);
+        },
+    },
+});
+```
+
+Throwing from `run:before` aborts the entire run — nothing in the task graph executes.
+
+### `run:after(results)`
+
+Fires once after all tasks complete, regardless of success or failure. `results` is a `Map<taskId, TaskResult>`.
+
+```typescript
+definePlugin({
+    name: "metrics",
+    hooks: {
+        "run:after": async (results) => {
+            const failed = [...results.values()].filter((r) => r.status === "failure");
+
+            await metricsClient.recordRun({
+                total: results.size,
+                failed: failed.length,
+                failedTasks: failed.map((r) => r.task.id),
+            });
+        },
+    },
+});
+```
+
+### `task:before(task)`
+
+Fires right before each task's command executes — after scheduling, before the executor spawns the process.
+
+### `task:after(task, result)`
+
+Fires after each task completes (success, failure, cache hit). Receives the final `TaskResult`.
+
+### `task:cacheHit(task, result)`
+
+Specialization of `task:after` — fires only when the task was served from local or remote cache.
+
+### `task:cacheMiss(task, reason)`
+
+Fires when auto-fingerprint cache diagnostics report a miss. `reason` is a human-readable string.
+
+### `task:failure(task, result)`
+
+Specialization of `task:after` — fires only when a task exited non-zero.
+
+### `task:stdout(task, chunk)` / `task:stderr(task, chunk)`
+
+Streaming hooks — fired with each output chunk as a running task emits it. Prefer these over `task:after` when shipping logs live (Slack, Datadog, S3 streaming):
+
+```typescript
+definePlugin({
+    name: "datadog-logs",
+    hooks: {
+        "task:stdout": (task, chunk) => {
+            ddLogger.info(chunk, { task: task.id, stream: "stdout" });
+        },
+        "task:stderr": (task, chunk) => {
+            ddLogger.error(chunk, { task: task.id, stream: "stderr" });
+        },
+    },
+});
+```
+
+These are fire-and-forget — handler errors are routed through the per-run error channel (warns by default) so a buggy plugin can't stall the executor's write loop.
+
+### `task:retry(task, attempt, prevExitCode)`
+
+Fires right before a failed task is re-spawned by the retry controller. `attempt` is 1-indexed and counts the retry that's about to start; `prevExitCode` is the failing exit status that triggered the retry.
+
+```typescript
+let budget = 10;
+
+definePlugin({
+    name: "retry-budget",
+    hooks: {
+        "task:retry": (task, attempt, prevExitCode) => {
+            if (--budget < 0) {
+                throw new Error(`Retry budget exhausted (last failure: ${task.id} → ${prevExitCode})`);
+            }
+        },
+    },
+});
+```
+
+The closure-scoped `budget` resets on every fresh `vis run` — for cross-invocation enforcement, persist the count to disk or a shared store inside the handler.
+
+Throwing aborts the retry — the previous failure becomes the final result. Use this to gate retries on external state (rate-limit budgets, circuit breakers, deploy windows).
+
+### `task:fingerprint(task, contributor)`
+
+Fires during fingerprint construction, after built-in inputs (filesets, runtime, env) are gathered and **before** the cache lookup runs. Use it to mix arbitrary signals into the task hash — the contributor's calls are sorted and namespaced deterministically, so registration order doesn't change the resulting hash.
+
+```typescript
+import { readFile } from "node:fs/promises";
+import { resolve } from "node:path";
+
+let workspaceRoot = process.cwd();
+
+definePlugin({
+    name: "schema-version",
+    hooks: {
+        // Cache the workspace root once; relative paths inside `task:fingerprint`
+        // would resolve against the vis invocation's cwd, not the repo root.
+        "run:before": ({ workspaceRoot: root }) => {
+            workspaceRoot = root;
+        },
+        "task:fingerprint": async (task, contributor) => {
+            // Bust cache when the GraphQL schema bumps, even though
+            // the schema file isn't an explicit `inputs` entry.
+            if (task.target.target !== "build") {
+                return;
+            }
+
+            try {
+                const schema = await readFile(resolve(workspaceRoot, "schemas/api.graphql"), "utf8");
+
+                contributor.contribute("graphql-schema", schema);
+            } catch (error) {
+                // Throwing would fail every build task; treat a missing schema
+                // as "no contribution" so unrelated tasks aren't held hostage.
+                if ((error as NodeJS.ErrnoException).code !== "ENOENT") {
+                    throw error;
+                }
+            }
+        },
+    },
+});
+```
+
+Throwing aborts hashing for the offending task — the task fails before any cache read or write. This is intentional: a buggy plugin would otherwise silently corrupt cache state.
+
+### `service:start(entry)` / `service:stop(entry)` / `service:attach(entry, taskIds)`
+
+Fired around the long-lived service registry (`vis service start`, `vis service stop`, and the auto-attach that runs at the start of every `vis run`).
+
+- **`service:start`** fires after a successful start and readiness probe.
+- **`service:stop`** fires only when an alive entry was actually terminated (no-op stops don't fire it).
+- **`service:attach`** fires once per satisfied service during `vis run`, after plugins are registered and before `run:before`. `taskIds` lists the in-graph dependents that consumed the service's `env` block.
+
+```typescript
+definePlugin({
+    name: "service-tracker",
+    hooks: {
+        "service:start": (entry) => {
+            metrics.gauge("vis.service.up", 1, { service: entry.id, slug: entry.slug });
+        },
+        "service:stop": (entry) => {
+            metrics.gauge("vis.service.up", 0, { service: entry.id, slug: entry.slug });
+        },
+        "service:attach": (entry, taskIds) => {
+            console.log(`[${entry.id}] → ${taskIds.length} dependent task(s): ${taskIds.join(", ")}`);
+        },
+    },
+});
+```
+
+## Patterns
+
+### Notifier on failure
+
+```typescript
+definePlugin({
+    name: "slack-on-failure",
+    hooks: {
+        "task:failure": async (task, result) => {
+            if (!process.env.SLACK_WEBHOOK) {
+                return;
+            }
+
+            await fetch(process.env.SLACK_WEBHOOK, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    text: `❌ \`${task.id}\` failed in ${process.env.CI_PROJECT_NAME}`,
+                    attachments: [{ text: (result.terminalOutput ?? "").slice(-4000) }],
+                }),
+            });
+        },
+    },
+});
+```
+
+### Conditional run gate
+
+```typescript
+definePlugin({
+    name: "block-release-without-changelog",
+    hooks: {
+        "run:before": async ({ tasks }) => {
+            const hasRelease = tasks.some((t) => t.target.target === "release");
+
+            if (!hasRelease) {
+                return;
+            }
+
+            const { stdout } = await execa("git", ["log", "--name-only", "-1"]);
+
+            if (!stdout.includes("CHANGELOG")) {
+                throw new Error("Refusing to run release without a CHANGELOG update in HEAD");
+            }
+        },
+    },
+});
+```
+
+### Multiple handlers per hook
+
+Pass an array — both run in order:
+
+```typescript
+definePlugin({
+    name: "multi",
+    hooks: {
+        "task:after": [(task) => console.log(`1st: ${task.id}`), (task) => console.log(`2nd: ${task.id}`)],
+    },
+});
+```
+
+### Imperative registration
+
+For `hookOnce`, `removeHook`, or `beforeEach`, use `setup`:
+
+```typescript
+definePlugin({
+    name: "once",
+    setup(hooks) {
+        // Fire only on the first task, then auto-unregister.
+        hooks.hookOnce("task:before", (task) => {
+            console.log(`warming up for ${task.id}…`);
+        });
+
+        // beforeEach runs synchronously before every hook invocation.
+        hooks.beforeEach((event) => {
+            if (event.name.startsWith("task:")) {
+                metrics.increment(`vis.hook.${event.name}`);
+            }
+        });
+    },
+});
+```
+
+## Authoring a reusable plugin
+
+Publish a plugin as its own package with a factory function:
+
+```typescript
+// packages/vis-plugin-newrelic/src/index.ts
+import type { VisPlugin } from "@visulima/vis/config";
+import { definePlugin } from "@visulima/vis/config";
+
+export interface NewRelicPluginOptions {
+    apiKey: string;
+    appName?: string;
+}
+
+export const newRelicPlugin = (options: NewRelicPluginOptions): VisPlugin =>
+    definePlugin({
+        name: "newrelic",
+        hooks: {
+            "task:after": async (task, result) => {
+                // ship to New Relic…
+            },
+        },
+    });
+```
+
+Consumers then:
+
+```typescript
+import { newRelicPlugin } from "vis-plugin-newrelic";
+
+export default defineConfig({
+    plugins: [newRelicPlugin({ apiKey: process.env.NEWRELIC_API_KEY! })],
+});
+```
+
+## Execution order & error handling
+
+- Plugins are registered in the order they appear in `config.plugins`.
+- Handlers within a hook run in registration order, each awaited before the next.
+- A handler that throws propagates out of `callHook` — if you don't want failure to abort the run, wrap the handler body in `try/catch`.
+- `HookableLifeCycle` (the internal bridge) forwards task-level events from the task runner to plugins — plugin authors never need to touch the lower-level `LifeCycleInterface`.
+
+## When to use plugins vs built-in options
+
+| Use-case                             | Prefer                        |
+| ------------------------------------ | ----------------------------- |
+| Skip a task unless `$CI` is set      | `when: "$CI"` target option   |
+| Retry a flaky task 3 times           | `retryCount: 3` target option |
+| Run `docker compose up` before build | Plugin — `run:before` hook    |
+| Post to Slack on any failure         | Plugin — `task:failure` hook  |
+| Stream metrics to Datadog            | Plugin — `task:after` hook    |
+| Early-exit when no CHANGELOG change  | Plugin — `run:before` hook    |
+
+Built-in options are stable, declarative, and appear in `vis list --json`. Plugins are strictly more powerful but require runtime to load and don't surface in static inspection. Reach for options first; graduate to a plugin when behavior can't be expressed declaratively.

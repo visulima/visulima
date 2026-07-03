@@ -1,0 +1,15 @@
+{
+    "name": "lib-slow-27",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Compiling lib-slow-27 (large package)...' && sleep 4.3 && echo 'Bundling...' && sleep 0.5 && echo 'Minifying...' && sleep 0.3 && echo 'lib-slow-27 done!' && mkdir -p dist && date > dist/.stamp",
+        "dev": "echo 'lib-slow-27 dev mode' && while true; do sleep 3; echo '[lib-slow-27] compiled successfully'; done",
+        "lint": "echo 'Checking lib-slow-27...' && sleep 0.3 && echo 'TypeScript: OK' && echo 'ESLint: OK'",
+        "test": "echo 'Test suite: lib-slow-27' && sleep 1.2 && echo '  PASS src/index.test.ts (8 tests)' && echo '  PASS src/utils.test.ts (12 tests)'"
+    },
+    "dependencies": {
+        "lib-medium-17": "1.0.0",
+        "lib-slow-26": "1.0.0"
+    }
+}

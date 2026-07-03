@@ -11,13 +11,12 @@ plop/**
 .npmignore
 .nxignore
 .prettierignore
-.prettierrc.cjs
+prettier.config.js
 .secretlintignore
 .secretlintrc.cjs
 .textlintignore
 .textlintrc
 .yamllint.yaml
-audit-ci.jsonc
 codecov.yml
 commitlint.config.cjs
 nx.json

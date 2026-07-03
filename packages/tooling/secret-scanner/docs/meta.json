@@ -1,0 +1,4 @@
+{
+    "title": "Secret Scanner",
+    "pages": ["index", "installation", "---Guides---", "configuration", "suppression", "presets", "cli", "---Reference---", "api"]
+}

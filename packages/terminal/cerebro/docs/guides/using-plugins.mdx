@@ -1,0 +1,250 @@
+---
+title: "Using Plugins"
+---
+
+# Using Plugins
+
+Learn how to use built-in and custom plugins to extend your CLI application.
+
+## Installing Plugins
+
+Built-in plugins are included with Cerebro:
+
+```typescript
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+import { runtimeVersionCheckPlugin } from "@visulima/cerebro/plugin/runtime-version-check";
+import { updateNotifierPlugin } from "@visulima/cerebro/plugin/update-notifier";
+```
+
+## Error Handler Plugin
+
+Handle errors gracefully with formatted output:
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+
+const cli = createCerebro("my-cli");
+
+cli.use(
+    errorHandlerPlugin({
+        exitOnError: true, // Exit process on error (default: true)
+        showStackTrace: false, // Show stack traces (default: false)
+        logErrors: true, // Log errors to console (default: true)
+    }),
+);
+
+cli.addCommand({
+    name: "test",
+    execute: async () => {
+        throw new Error("Something went wrong!");
+        // Error will be caught and formatted by plugin
+    },
+});
+
+await cli.run();
+```
+
+Without plugin:
+
+```
+Error: Something went wrong!
+  at execute (file:///cli.js:10:11)
+  ...full stack trace...
+```
+
+With plugin:
+
+```
+❌ Error: Something went wrong!
+```
+
+## Runtime Version Check Plugin
+
+Ensure users have the correct Node.js/Deno/Bun version:
+
+```typescript
+import { runtimeVersionCheckPlugin } from "@visulima/cerebro/plugin/runtime-version-check";
+
+cli.use(
+    runtimeVersionCheckPlugin({
+        requiredVersion: ">=18.0.0",
+        message: "This CLI requires Node.js 18 or higher. Please upgrade.",
+    }),
+);
+```
+
+If user has Node.js 16:
+
+```
+❌ This CLI requires Node.js 18 or higher. Please upgrade.
+   Current version: 16.14.0
+   Required version: >=18.0.0
+```
+
+## Update Notifier Plugin
+
+Notify users when a new version is available:
+
+```typescript
+import { updateNotifierPlugin } from "@visulima/cerebro/plugin/update-notifier";
+
+cli.use(
+    updateNotifierPlugin({
+        packageName: "my-cli",
+        packageVersion: "1.0.0",
+        checkInterval: 86400000, // Check once per day (24 hours)
+        updateMessage: "Update available: {latest} (current: {current})\nRun: npm install -g my-cli@latest",
+    }),
+);
+
+await cli.run();
+```
+
+Output when update available:
+
+```
+╭───────────────────────────────────────╮
+│                                        │
+│   Update available: 2.0.0 (1.0.0)    │
+│   Run: npm install -g my-cli@latest   │
+│                                        │
+╰───────────────────────────────────────╯
+
+... command output ...
+```
+
+## Combining Multiple Plugins
+
+Use multiple plugins together:
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+import { runtimeVersionCheckPlugin } from "@visulima/cerebro/plugin/runtime-version-check";
+import { updateNotifierPlugin } from "@visulima/cerebro/plugin/update-notifier";
+
+const cli = createCerebro("my-cli", {
+    packageName: "my-cli",
+    packageVersion: "1.0.0",
+});
+
+// Register plugins in order
+cli.use(runtimeVersionCheckPlugin({ requiredVersion: ">=18.0.0" }));
+cli.use(errorHandlerPlugin({ exitOnError: true }));
+cli.use(
+    updateNotifierPlugin({
+        packageName: "my-cli",
+        packageVersion: "1.0.0",
+    }),
+);
+
+// Add commands...
+await cli.run();
+```
+
+## Creating Custom Plugins
+
+Create your own plugins to extend functionality:
+
+```typescript
+import type { Plugin } from "@visulima/cerebro";
+
+// Type declaration
+declare global {
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            analytics: {
+                track: (event: string, data?: Record<string, any>) => void;
+            };
+        }
+    }
+}
+
+// Plugin implementation
+export const analyticsPlugin = (apiKey: string): Plugin => ({
+    name: "analytics",
+    version: "1.0.0",
+    register: async ({ toolbox, logger }) => {
+        logger.log("Initializing analytics");
+
+        toolbox.analytics = {
+            track: (event: string, data?: Record<string, any>) => {
+                // Send analytics event
+                fetch("https://analytics.example.com/track", {
+                    method: "POST",
+                    headers: {
+                        "X-API-Key": apiKey,
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({ event, data, timestamp: Date.now() }),
+                }).catch((error) => {
+                    logger.error(`Analytics error: ${error.message}`);
+                });
+            },
+        };
+    },
+});
+
+// Use plugin
+cli.use(analyticsPlugin("your-api-key"));
+
+// Track events in commands
+cli.addCommand({
+    name: "deploy",
+    execute: async ({ analytics, logger }) => {
+        analytics.track("deploy_started");
+
+        // Deploy logic...
+
+        analytics.track("deploy_completed", { duration: 1234 });
+        logger.log("Deployed!");
+    },
+});
+```
+
+## Plugin Loading Order
+
+Plugins initialize in registration order:
+
+```typescript
+cli.use(configPlugin()); // 1st: Load configuration
+cli.use(databasePlugin()); // 2nd: Connect to database (needs config)
+cli.use(analyticsPlugin()); // 3rd: Initialize analytics (needs config)
+```
+
+Dependencies between plugins:
+
+```typescript
+const databasePlugin = (): Plugin => ({
+    name: "database",
+    dependencies: ["config"], // Requires config plugin to run first
+    register: async ({ toolbox }) => {
+        const { config } = toolbox;
+        toolbox.database = connectDatabase(config.databaseUrl);
+    },
+});
+```
+
+## Testing with Plugins
+
+Test commands with plugins enabled:
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+import { myPlugin } from "./plugins/my-plugin";
+
+test("command works with plugin", async () => {
+    const cli = createCerebro("test-cli");
+    cli.use(myPlugin());
+
+    cli.addCommand({
+        name: "test",
+        execute: ({ myFeature }) => {
+            myFeature.doSomething();
+        },
+    });
+
+    await cli.run(["test"]);
+});
+```

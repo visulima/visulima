@@ -1,0 +1,211 @@
+---
+title: TypeScript Buffer Guide
+description: "TypeScript patterns for indexing, packing attributes, and writing helpers for raw-buffer rendering in @visulima/tui/core"
+---
+
+# TypeScript Buffer Guide
+
+This guide focuses on the TypeScript side of raw-buffer rendering: indexing, packing attributes, and writing helpers you can reuse in demos or games.
+
+## 1. Mental Model: Grid → Flat Array
+
+You draw to a terminal **grid** (`cols × rows`), but the renderer consumes a flat `Uint32Array`.
+
+Each cell uses 2 slots:
+
+- slot `0`: char codepoint
+- slot `1`: attr code
+
+Example for `cols = 4`, `rows = 3`:
+
+```text
+Grid cell index (y * cols + x)
+
+y=0   0   1   2   3
+y=1   4   5   6   7
+y=2   8   9  10  11
+```
+
+```text
+Flat Uint32Array slots (2 per cell)
+
+cell 0  -> slots 0,1
+cell 1  -> slots 2,3
+cell 2  -> slots 4,5
+...
+cell 11 -> slots 22,23
+```
+
+Formulas:
+
+```ts
+const cell = y * cols + x;
+const charSlot = cell * 2;
+const attrSlot = charSlot + 1;
+```
+
+Equivalent one-liner:
+
+```ts
+const base = (y * cols + x) * 2;
+```
+
+## 2. Attr Code Bit Layout
+
+`attr` is packed as:
+
+```text
+attr = (styles << 16) | (bg << 8) | fg
+```
+
+Bit view:
+
+```text
+31                     24 23          16 15           8 7            0
++------------------------+--------------+--------------+--------------+
+|        unused          |    styles    |      bg      |      fg      |
++------------------------+--------------+--------------+--------------+
+```
+
+- `fg`, `bg`: ANSI 256 color indices (`0-255`)
+- `styles`: bitmask
+
+Style bits:
+
+| Bit | Style         |
+| --- | ------------- |
+| 1   | Bold          |
+| 2   | Dim           |
+| 4   | Italic        |
+| 8   | Underline     |
+| 16  | Blink         |
+| 32  | Invert        |
+| 64  | Hidden        |
+| 128 | Strikethrough |
+
+## 3. Practical Helper Functions
+
+Use helpers so you never repeat indexing math.
+
+```ts
+function inBounds(x: number, y: number, cols: number, rows: number) {
+    return x >= 0 && x < cols && y >= 0 && y < rows;
+}
+
+function packAttr(fg = 255, bg = 255, styles = 0) {
+    return ((styles & 0xff) << 16) | ((bg & 0xff) << 8) | (fg & 0xff);
+}
+
+function setCell(buf: Uint32Array, cols: number, rows: number, x: number, y: number, ch: string, fg = 255, bg = 255, styles = 0) {
+    if (!inBounds(x, y, cols, rows)) return;
+    const base = (y * cols + x) * 2;
+    buf[base] = ch.codePointAt(0) ?? 32;
+    buf[base + 1] = packAttr(fg, bg, styles);
+}
+
+function drawText(buf: Uint32Array, cols: number, rows: number, x: number, y: number, text: string, fg = 255, bg = 255, styles = 0) {
+    let cx = x;
+    for (const ch of text) {
+        setCell(buf, cols, rows, cx, y, ch, fg, bg, styles);
+        cx++;
+    }
+}
+```
+
+## 4. Frame Loop Template
+
+```ts
+import { Renderer, TerminalGuard, terminalSize } from "@visulima/tui/core";
+
+const guard = new TerminalGuard();
+let { cols, rows } = terminalSize();
+let renderer = new Renderer(cols, rows);
+let buf = new Uint32Array(cols * rows * 2);
+let frame = 0;
+
+const timer = setInterval(() => {
+    buf.fill(0);
+
+    drawText(buf, cols, rows, 2, 1, `frame ${frame++}`, 46);
+    drawText(buf, cols, rows, 2, 3, "no react / pure ts", 51);
+
+    renderer.render(buf);
+}, 16);
+
+process.on("SIGWINCH", () => {
+    ({ cols, rows } = terminalSize());
+    renderer.resize(cols, rows);
+    buf = new Uint32Array(cols * rows * 2);
+});
+
+process.on("SIGINT", () => {
+    clearInterval(timer);
+    guard.leave();
+    process.exit(0);
+});
+```
+
+## 5. ASCII Drawing Patterns
+
+### Horizontal Line
+
+```ts
+for (let x = 0; x < cols; x++) {
+    setCell(buf, cols, rows, x, 5, "─", 244);
+}
+```
+
+### Filled Rectangle
+
+```ts
+function fillRect(buf: Uint32Array, cols: number, rows: number, x: number, y: number, w: number, h: number, ch: string, fg = 255, bg = 255) {
+    for (let yy = y; yy < y + h; yy++) {
+        for (let xx = x; xx < x + w; xx++) {
+            setCell(buf, cols, rows, xx, yy, ch, fg, bg);
+        }
+    }
+}
+```
+
+### Box Border (ASCII-friendly)
+
+```ts
+function drawBox(buf: Uint32Array, cols: number, rows: number, x: number, y: number, w: number, h: number, fg = 255) {
+    if (w < 2 || h < 2) return;
+
+    setCell(buf, cols, rows, x, y, "+", fg);
+    setCell(buf, cols, rows, x + w - 1, y, "+", fg);
+    setCell(buf, cols, rows, x, y + h - 1, "+", fg);
+    setCell(buf, cols, rows, x + w - 1, y + h - 1, "+", fg);
+
+    for (let xx = x + 1; xx < x + w - 1; xx++) {
+        setCell(buf, cols, rows, xx, y, "-", fg);
+        setCell(buf, cols, rows, xx, y + h - 1, "-", fg);
+    }
+
+    for (let yy = y + 1; yy < y + h - 1; yy++) {
+        setCell(buf, cols, rows, x, yy, "|", fg);
+        setCell(buf, cols, rows, x + w - 1, yy, "|", fg);
+    }
+}
+```
+
+## 6. Common Mistakes
+
+| Mistake                                                 | Symptom                            | Fix                                                        |
+| ------------------------------------------------------- | ---------------------------------- | ---------------------------------------------------------- |
+| Forgetting `* 2` slot stride                            | Corrupt output or random styles    | Always compute `base = (y * cols + x) * 2`                 |
+| Writing out of bounds                                   | Missing chars or runtime weirdness | Add `inBounds()` checks                                    |
+| Using `charCodeAt` on complex Unicode in loops by index | Broken emoji/surrogate rendering   | Iterate with `for (const ch of text)` and `codePointAt(0)` |
+| Not reallocating buffer on resize                       | Stretched/truncated frames         | On `SIGWINCH`, call `renderer.resize()` and recreate `buf` |
+| Forgetting `guard.leave()` on exit                      | Terminal remains in raw mode       | Always cleanup on `SIGINT`/shutdown                        |
+
+## 7. Harness vs Direct Renderer
+
+If you're inside this repo, use the helper harness at `examples-raw/harness.ts`:
+
+- `createLoop(...)`
+- `setCell(...)`
+- `fillRect(...)`
+
+If you're writing package-consumer code, use the public API directly (`Renderer`, `TerminalGuard`, `terminalSize`).

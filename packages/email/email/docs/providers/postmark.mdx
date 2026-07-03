@@ -1,0 +1,91 @@
+---
+title: Postmark
+description: Send emails using the Postmark API with @visulima/email
+---
+
+# Postmark Provider
+
+The Postmark provider allows you to send emails through the [Postmark API](https://postmarkapp.com/developer/api/email-api), a transactional email service focused on deliverability.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { postmarkProvider } from "@visulima/email/providers/postmark";
+
+const mail = createMail(
+    postmarkProvider({
+        serverToken: process.env.POSTMARK_SERVER_TOKEN!,
+    }),
+);
+```
+
+## Configuration
+
+The `PostmarkConfig` interface extends `BaseConfig` with the following options:
+
+| Option        | Type      | Required | Default                       | Description                     |
+| ------------- | --------- | -------- | ----------------------------- | ------------------------------- |
+| `serverToken` | `string`  | Yes      | -                             | Your Postmark Server API Token  |
+| `endpoint`    | `string`  | No       | `https://api.postmarkapp.com` | Custom API endpoint             |
+| `debug`       | `boolean` | No       | `false`                       | Enable debug logging            |
+| `logger`      | `Console` | No       | -                             | Custom logger instance          |
+| `retries`     | `number`  | No       | `3`                           | Number of retry attempts        |
+| `timeout`     | `number`  | No       | `30000`                       | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Postmark").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Postmark provider supports additional options through `PostmarkEmailOptions`:
+
+```typescript
+import type { PostmarkEmailOptions } from "@visulima/email/providers/postmark";
+
+const options: PostmarkEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    messageStream: "outbound",
+    trackOpens: true,
+    trackLinks: "HtmlAndText",
+    metadata: { userId: "123" },
+    inlineCss: true,
+};
+```
+
+| Option          | Type                                                  | Description                                 |
+| --------------- | ----------------------------------------------------- | ------------------------------------------- |
+| `templateId`    | `number`                                              | Postmark template ID                        |
+| `templateAlias` | `string`                                              | Postmark template alias (alternative to ID) |
+| `templateModel` | `Record<string, unknown>`                             | Template model/variables                    |
+| `messageStream` | `string`                                              | Message stream ID                           |
+| `trackOpens`    | `boolean`                                             | Enable open tracking                        |
+| `trackLinks`    | `"HtmlAndText" \| "HtmlOnly" \| "TextOnly" \| "None"` | Link tracking mode                          |
+| `metadata`      | `Record<string, string>`                              | Metadata key-value pairs                    |
+| `inlineCss`     | `boolean`                                             | Inline CSS for HTML emails                  |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

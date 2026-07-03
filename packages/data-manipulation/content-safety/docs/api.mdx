@@ -1,0 +1,481 @@
+---
+title: API Reference
+description: Complete API documentation for @visulima/content-safety.
+---
+
+# API Reference
+
+Complete TypeScript API documentation for @visulima/content-safety.
+
+## Functions
+
+### checkBannedWords()
+
+Checks text for banned words across all configured languages.
+
+```typescript
+function checkBannedWords(text: string): BannedWordsResult;
+```
+
+#### Parameters
+
+- **text** (`string`) - The text to check for banned words. Can be any length, including empty strings.
+
+#### Returns
+
+`BannedWordsResult` - Object containing:
+
+- `hasBannedWords` (`boolean`) - Whether any banned words were found
+- `matches` (`BannedWordMatch[]`) - Array of all matches with position information
+
+#### Behavior
+
+- **Case-insensitive**: Matches regardless of capitalization
+- **Unicode-normalized**: Converts text to NFC form before checking
+- **Multi-language**: Checks all 19 language dictionaries simultaneously
+- **Word boundaries**: Respects word boundaries (except CJK scripts)
+- **Empty input**: Returns empty result for empty or whitespace-only strings
+- **Performance**: Uses pre-compiled regex (no first-call penalty)
+
+#### Examples
+
+##### Basic Usage
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+
+const result = checkBannedWords("Hello world");
+console.log(result);
+// {
+//   hasBannedWords: false,
+//   matches: []
+// }
+```
+
+##### With Banned Words
+
+```typescript
+const result = checkBannedWords("This contains badword");
+console.log(result);
+// {
+//   hasBannedWords: true,
+//   matches: [
+//     {
+//       word: "badword",
+//       startIndex: 14,
+//       endIndex: 21,
+//       language: "en"
+//     }
+//   ]
+// }
+```
+
+##### Censoring Text
+
+```typescript
+const text = "This contains badword";
+const result = checkBannedWords(text);
+
+if (result.hasBannedWords) {
+    let censored = text;
+    for (const match of [...result.matches].reverse()) {
+        const replacement = "*".repeat(match.word.length);
+        censored = censored.slice(0, match.startIndex) + replacement + censored.slice(match.endIndex);
+    }
+    console.log(censored); // "This contains *******"
+}
+```
+
+##### Multi-Language Detection
+
+```typescript
+const result = checkBannedWords(`
+  English bad word
+  German bad word
+  日本語 bad word
+`);
+
+result.matches.forEach((match) => {
+    console.log(`${match.word} (${match.language})`);
+});
+```
+
+##### Case Insensitivity
+
+```typescript
+checkBannedWords("BADWORD"); // detected
+checkBannedWords("badword"); // detected
+checkBannedWords("BaDwOrD"); // detected
+```
+
+## Types
+
+### BannedWordsResult
+
+The result of checking text for banned words.
+
+```typescript
+interface BannedWordsResult {
+    hasBannedWords: boolean;
+    matches: BannedWordMatch[];
+}
+```
+
+#### Properties
+
+- **hasBannedWords** (`boolean`)
+    - `true` if one or more banned words were found
+    - `false` otherwise
+    - Convenience property to avoid checking `matches.length > 0`
+
+- **matches** (`BannedWordMatch[]`)
+    - Array of all matched banned words
+    - Empty array `[]` when no matches found
+    - Sorted by appearance order in text
+
+#### Example
+
+```typescript
+const result: BannedWordsResult = {
+    hasBannedWords: true,
+    matches: [
+        {
+            word: "badword",
+            startIndex: 0,
+            endIndex: 7,
+            language: "en",
+        },
+    ],
+};
+```
+
+---
+
+### BannedWordMatch
+
+Represents a single banned word match found in text.
+
+```typescript
+interface BannedWordMatch {
+    word: string;
+    startIndex: number;
+    endIndex: number;
+    language: string;
+}
+```
+
+#### Properties
+
+- **word** (`string`)
+    - The matched word or phrase exactly as it appears in the text
+    - Preserves original capitalization from input text
+    - Example: `"BADWORD"`, `"badword"`, `"BaDwOrD"`
+
+- **startIndex** (`number`)
+    - Zero-based start index in the original text
+    - Inclusive (points to first character of match)
+    - Example: For `"hello badword world"`, startIndex = 6
+
+- **endIndex** (`number`)
+    - Zero-based end index in the original text
+    - Exclusive (points to character after match)
+    - Example: For `"hello badword world"`, endIndex = 13
+    - Use for slicing: `text.slice(startIndex, endIndex)`
+
+- **language** (`string`)
+    - ISO 639-1 language code (2 letters)
+    - Indicates which dictionary the word was matched from
+    - Examples: `"en"`, `"de"`, `"ja"`
+    - If a word appears in multiple languages, first one alphabetically is used
+
+#### Example
+
+```typescript
+const match: BannedWordMatch = {
+    word: "badword",
+    startIndex: 10,
+    endIndex: 17,
+    language: "en",
+};
+
+// Extract matched text
+const text = "This is a badword in text";
+const extracted = text.slice(match.startIndex, match.endIndex);
+console.log(extracted); // "badword"
+```
+
+## Constants
+
+### BANNED_WORDS
+
+Comprehensive banned words dictionary organized by language code.
+
+```typescript
+const BANNED_WORDS: Record<string, readonly string[]>;
+```
+
+#### Structure
+
+Object where:
+
+- **Keys**: ISO 639-1 language codes (`string`)
+- **Values**: Read-only arrays of banned words (`readonly string[]`)
+
+#### Supported Languages
+
+- `ar` - Arabic
+- `az` - Azerbaijani
+- `de` - German
+- `en` - English
+- `es` - Spanish
+- `fa` - Persian/Farsi
+- `fr` - French
+- `ga` - Irish
+- `hi` - Hindi
+- `it` - Italian
+- `ja` - Japanese
+- `ko` - Korean
+- `nl` - Dutch
+- `pl` - Polish
+- `pt` - Portuguese
+- `ru` - Russian
+- `sv` - Swedish
+- `tr` - Turkish
+- `zh` - Chinese
+
+#### Examples
+
+##### View Available Languages
+
+```typescript
+import { BANNED_WORDS } from "@visulima/content-safety";
+
+console.log(Object.keys(BANNED_WORDS));
+// ['ar', 'az', 'de', 'en', 'es', 'fa', 'fr', 'ga', 'hi', 'it', 'ja', 'ko', 'nl', 'pl', 'pt', 'ru', 'sv', 'tr', 'zh']
+```
+
+##### Check Word Count
+
+```typescript
+console.log(BANNED_WORDS.en.length); // Number of English banned words
+console.log(BANNED_WORDS.ja.length); // Number of Japanese banned words
+```
+
+##### Check if Word is Banned
+
+```typescript
+const word = "badword";
+const isBanned = Object.values(BANNED_WORDS)
+    .flat()
+    .some((w) => w.toLowerCase() === word.toLowerCase());
+
+console.log(isBanned); // true or false
+```
+
+##### Custom Filtering
+
+```typescript
+// Get all English words starting with 'a'
+const enWordsStartingWithA = BANNED_WORDS.en.filter((w) => w.startsWith("a"));
+
+// Count total words across all languages
+const totalWords = Object.values(BANNED_WORDS).reduce((sum, words) => sum + words.length, 0);
+```
+
+#### Notes
+
+- **Read-only**: Arrays are marked as `readonly` to prevent modification
+- **Lowercase**: Most words are stored in lowercase
+- **Multi-word phrases**: Some entries contain spaces (e.g., "white trash")
+- **Variants**: Includes leet-speak and common variations
+- **Not customizable at runtime**: Word lists are compiled at build time
+
+## Usage Patterns
+
+### Pattern: Simple Validation
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+
+function isClean(text: string): boolean {
+    return !checkBannedWords(text).hasBannedWords;
+}
+```
+
+### Pattern: Detailed Validation
+
+```typescript
+import { checkBannedWords, type BannedWordsResult } from "@visulima/content-safety";
+
+interface ValidationResult {
+    valid: boolean;
+    errors: string[];
+    bannedWords?: number;
+}
+
+function validateContent(text: string): ValidationResult {
+    const result = checkBannedWords(text);
+
+    if (!result.hasBannedWords) {
+        return { valid: true, errors: [] };
+    }
+
+    return {
+        valid: false,
+        errors: ["Content contains inappropriate language"],
+        bannedWords: result.matches.length,
+    };
+}
+```
+
+### Pattern: Text Censoring
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+
+function censorText(text: string): string {
+    const result = checkBannedWords(text);
+
+    if (!result.hasBannedWords) {
+        return text;
+    }
+
+    let censored = text;
+    for (const match of [...result.matches].reverse()) {
+        const replacement = "*".repeat(match.word.length);
+        censored = censored.slice(0, match.startIndex) + replacement + censored.slice(match.endIndex);
+    }
+
+    return censored;
+}
+```
+
+### Pattern: Highlighting
+
+```typescript
+import { checkBannedWords, type BannedWordMatch } from "@visulima/content-safety";
+
+interface TextSegment {
+    text: string;
+    banned: boolean;
+    language?: string;
+}
+
+function segmentText(text: string): TextSegment[] {
+    const result = checkBannedWords(text);
+
+    if (!result.hasBannedWords) {
+        return [{ text, banned: false }];
+    }
+
+    const segments: TextSegment[] = [];
+    let lastIndex = 0;
+
+    for (const match of result.matches) {
+        // Clean text before match
+        if (match.startIndex > lastIndex) {
+            segments.push({
+                text: text.slice(lastIndex, match.startIndex),
+                banned: false,
+            });
+        }
+
+        // Banned word
+        segments.push({
+            text: match.word,
+            banned: true,
+            language: match.language,
+        });
+
+        lastIndex = match.endIndex;
+    }
+
+    // Remaining text
+    if (lastIndex < text.length) {
+        segments.push({
+            text: text.slice(lastIndex),
+            banned: false,
+        });
+    }
+
+    return segments;
+}
+```
+
+### Pattern: Analytics
+
+```typescript
+import { checkBannedWords } from "@visulima/content-safety";
+
+interface ContentAnalysis {
+    text: string;
+    clean: boolean;
+    bannedWordCount: number;
+    languagesDetected: string[];
+    severity: "none" | "low" | "medium" | "high";
+}
+
+function analyzeContent(text: string): ContentAnalysis {
+    const result = checkBannedWords(text);
+
+    const languages = [...new Set(result.matches.map((m) => m.language))];
+    const count = result.matches.length;
+
+    let severity: "none" | "low" | "medium" | "high" = "none";
+    if (count > 0) severity = "low";
+    if (count > 3) severity = "medium";
+    if (count > 10) severity = "high";
+
+    return {
+        text,
+        clean: !result.hasBannedWords,
+        bannedWordCount: count,
+        languagesDetected: languages,
+        severity,
+    };
+}
+```
+
+## TypeScript Support
+
+The library is fully typed with TypeScript:
+
+```typescript
+import type { BannedWordMatch, BannedWordsResult } from "@visulima/content-safety";
+
+// Type-safe function signatures
+function handleResult(result: BannedWordsResult): void {
+    // TypeScript knows the exact shape
+    result.hasBannedWords; // boolean
+    result.matches; // BannedWordMatch[]
+}
+
+// Type-safe match handling
+function handleMatch(match: BannedWordMatch): void {
+    match.word; // string
+    match.startIndex; // number
+    match.endIndex; // number
+    match.language; // string
+}
+```
+
+## Browser and Runtime Support
+
+The library works in all modern JavaScript environments:
+
+- Node.js 18+
+- Browsers (ES2020+)
+- Deno
+- Bun
+- Edge Functions (Vercel, Cloudflare Workers)
+- React Native
+- Electron
+
+No polyfills required.
+
+## Next Steps
+
+- [Usage Guide](/docs/usage) - Detailed usage examples
+- [Supported Languages](/docs/languages) - View language coverage
+- [Installation](/docs/installation) - Setup instructions
+- [GitHub Repository](https://github.com/visulima/visulima) - Source code and issues

@@ -1,0 +1,112 @@
+---
+title: Concurrent Process Runner
+description: Run multiple commands in parallel with native Rust performance
+---
+
+# Concurrent Process Runner
+
+The concurrent process runner executes multiple shell commands in parallel with real-time output streaming, process tree management, and signal propagation. It uses a native Rust addon (NAPI bindings) for performance, with an automatic JavaScript fallback.
+
+## Architecture
+
+```
+parseCommands(inputs)            ← optional: shortcuts, wildcards, args
+        │
+runConcurrently(commands, options)
+        │
+        ├── detectScriptShell()     ← npm script-shell config
+        │
+        ├── Native (Rust/tokio)     ← when .node binary available
+        │   ├── Process spawning    ← tokio::process::Command
+        │   ├── I/O multiplexing   ← async BufReader line-by-line
+        │   ├── Process groups     ← setsid/killpg (Unix), Job Objects (Windows)
+        │   └── Signal handling    ← SIGINT/SIGTERM/SIGHUP propagation
+        │
+        └── Fallback (JS)          ← when native unavailable
+            ├── child_process.spawn
+            ├── Line-buffered output
+            └── process.kill(-pid) / taskkill /T
+```
+
+## Native vs Fallback
+
+The runner automatically selects the implementation:
+
+| Feature           | Native (Rust)                 | Fallback (JS)                 |
+| ----------------- | ----------------------------- | ----------------------------- |
+| Process spawning  | tokio async                   | child_process.spawn           |
+| I/O multiplexing  | epoll/kqueue via tokio        | Node.js event loop            |
+| Process tree kill | setsid + killpg / Job Objects | process.kill(-pid) / taskkill |
+| Signal handling   | tokio::signal                 | process.on('SIGINT')          |
+| Output buffering  | Line-buffered async           | Line-buffered event-based     |
+
+Both implementations produce identical `ProcessEvent` streams and `ConcurrentRunResult` outputs.
+
+## Process Tree Management
+
+### Unix
+
+Each child process is spawned in a new session via `setsid()`. This creates a process group with the child as the leader. When killing, `killpg()` sends the signal to the entire group, ensuring all grandchild processes are cleaned up.
+
+### Windows
+
+Each child process is assigned to a Windows Job Object configured with `JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE`. This ensures:
+
+- All child processes in the tree are terminated when the Job Object is closed
+- If the parent process crashes, the OS automatically cleans up the children
+- `TerminateJobObject()` provides instant tree killing (no `taskkill` subprocess)
+
+## Signal Handling
+
+When the parent process receives a signal:
+
+| Signal          | Behavior                                                               |
+| --------------- | ---------------------------------------------------------------------- |
+| SIGINT (Ctrl+C) | Kill all process groups, translate exit codes to 0 (user cancellation) |
+| SIGTERM         | Kill all process groups, preserve original exit codes                  |
+| SIGHUP          | Kill all process groups, preserve original exit codes                  |
+
+The SIGINT exit code translation matches `concurrently`'s behavior: pressing Ctrl+C is not considered a failure.
+
+## Max Process Queue
+
+When `maxProcesses` is set, commands are queued and spawned as slots become available:
+
+```
+maxProcesses: 2, commands: [A, B, C, D]
+
+Time 0: Spawn A, Spawn B         (C, D queued)
+Time 1: A completes → Spawn C    (D queued)
+Time 2: B completes → Spawn D    (queue empty)
+Time 3: C completes
+Time 4: D completes → Result
+```
+
+## Success Conditions
+
+| Condition           | Meaning                                         |
+| ------------------- | ----------------------------------------------- |
+| `"all"` (default)   | All commands must exit with code 0              |
+| `"first"`           | Only the first command to complete must succeed |
+| `"last"`            | Only the last command to complete must succeed  |
+| `"command-<name>"`  | Only the named command must succeed             |
+| `"!command-<name>"` | All commands except the named one must succeed  |
+
+## Shell Configuration
+
+The runner detects the shell in this order:
+
+1. **Explicit `shellPath` option** — caller override
+2. **`npm_config_script_shell` env var** — set by npm inside `npm run` (free to check)
+3. **`npm config get script-shell`** — subprocess query, cached after first call
+4. **Platform default** — `/bin/sh` (Unix) or `cmd.exe` (Windows)
+
+Custom shells (Git Bash, zsh, fish) are invoked with POSIX-style `-c` arguments.
+
+## Stdin Modes
+
+| Mode               | Description                   | Use Case                       |
+| ------------------ | ----------------------------- | ------------------------------ |
+| `"null"` (default) | stdin closed                  | Build tasks, CI                |
+| `"pipe"`           | stdin is a writable pipe      | Programmatic input             |
+| `"inherit"`        | child reads terminal directly | Dev servers (Vite `r`/`o`/`h`) |

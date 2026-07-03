@@ -1,0 +1,55 @@
+---
+title: i18n
+description: Localize notification content with ICU MessageFormat and locale fallback
+---
+
+# i18n
+
+`@visulima/notification/i18n` localizes message content with
+[ICU MessageFormat](https://formatjs.io/docs/core-concepts/icu-syntax/) (plurals, select, number/date) and
+region → language → fallback resolution driven by the subscriber's locale. It is edge-safe and dependency-light.
+
+It requires the `intl-messageformat` peer:
+
+```sh
+npm install @visulima/notification intl-messageformat
+```
+
+## Usage
+
+```typescript
+import { createTranslator } from "@visulima/notification/i18n";
+
+const t = createTranslator({
+    fallbackLocale: "en",
+    messages: {
+        en: { likes: "{count, plural, one {# like} other {# likes}}", greeting: "Hi {name}" },
+        de_DE: { likes: "{count, plural, one {# Like} other {# Likes}}", greeting: "Hallo {name}" },
+    },
+});
+
+t.translate("de_DE", "likes", { count: 3 }); // "3 Likes"
+t.translate("en", "greeting", { name: "Ada" }); // "Hi Ada"
+t.translate("fr", "likes", { count: 1 }); // no fr table → falls back to en → "1 like"
+```
+
+## Locale resolution
+
+`translate(locale, key, values?)` resolves in order: the exact `locale`, its **language** subtag (`de-DE`/`de_DE` → `de`),
+then the `fallbackLocale` (and its language). Table keys may use `-` or `_`; the locale passed to `Intl` is normalized to
+BCP-47 internally. A missing key returns the key itself, or the result of an `onMissing(locale, key)` handler.
+
+## In templates
+
+Drive `translate` from the subscriber's locale and feed the result into a [layout](/docs/packages/notification/layouts)
+or channel payload. For a `{{t}}` helper, register `translate` with your template engine — e.g. a Handlebars helper:
+
+```typescript
+import Handlebars from "handlebars";
+
+Handlebars.registerHelper("t", (key: string, options) => t.translate(options.data.root.locale, key, options.hash));
+// template: "{{t 'greeting' name=user.name}}"
+```
+
+`has(locale, key)` reports whether a key resolves, and a bad ICU template / missing value throws an actionable
+`NotificationError` so failures surface clearly rather than rendering a broken string.

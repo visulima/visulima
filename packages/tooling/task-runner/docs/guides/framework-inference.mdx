@@ -1,0 +1,66 @@
+---
+title: Framework Inference
+description: Auto-detect framework env var prefixes for cache keys
+---
+
+# Framework Inference
+
+Framework inference automatically detects frontend frameworks in your projects and includes their public environment variable prefixes in task hashes. This ensures cache correctness when framework-specific env vars change.
+
+## Enable
+
+```typescript
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        frameworkInference: true,
+    },
+    context,
+);
+```
+
+## Detected Frameworks
+
+| Framework        | Package                               | Env Prefix       |
+| ---------------- | ------------------------------------- | ---------------- |
+| Next.js          | `next`                                | `NEXT_PUBLIC_*`  |
+| Vite             | `vite`                                | `VITE_*`         |
+| Create React App | `react-scripts`                       | `REACT_APP_*`    |
+| Gatsby           | `gatsby`                              | `GATSBY_*`       |
+| Nuxt             | `nuxt`, `nuxt3`                       | `NUXT_PUBLIC_*`  |
+| Expo             | `expo`                                | `EXPO_PUBLIC_*`  |
+| Remix            | `@remix-run/react`, `@remix-run/node` | `REMIX_PUBLIC_*` |
+| Astro            | `astro`                               | `PUBLIC_*`       |
+| SvelteKit        | `@sveltejs/kit`                       | `PUBLIC_*`       |
+| Solid Start      | `@solidjs/start`, `solid-start`       | `VITE_*`         |
+
+## How It Works
+
+1. Read each project's `package.json`
+2. Check `dependencies` and `devDependencies` for known framework packages
+3. For detected frameworks, scan `process.env` for matching prefixes
+4. Include matching env vars in the task hash
+
+## Works with Auto-Fingerprinting
+
+When both `frameworkInference` and `autoFingerprint` are enabled, the inferred env patterns are automatically merged into `fingerprintEnvPatterns`:
+
+```typescript
+{
+    autoFingerprint: true,
+    frameworkInference: true,
+    // No need to manually add fingerprintEnvPatterns for frameworks
+}
+```
+
+## Standalone Usage
+
+```typescript
+import { detectFrameworks, getFrameworkEnvVariables } from "@visulima/task-runner";
+
+const frameworks = await detectFrameworks("/path/to/package.json");
+// [{ name: "Next.js", envPrefixes: ["NEXT_PUBLIC_"] }]
+
+const envVars = await getFrameworkEnvVariables("/path/to/package.json");
+// { NEXT_PUBLIC_API_URL: "https://...", NEXT_PUBLIC_GA_ID: "G-..." }
+```

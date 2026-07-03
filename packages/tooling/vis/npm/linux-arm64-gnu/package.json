@@ -1,0 +1,37 @@
+{
+    "name": "@visulima/vis-binding-linux-arm64-gnu",
+    "version": "0.0.1",
+    "description": "Native binding for @visulima/vis (Linux ARM64 glibc)",
+    "homepage": "https://visulima.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/tooling/vis"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "main": "vis-native.linux-arm64-gnu.node",
+    "files": [
+        "vis-native-cli",
+        "vis-native.linux-arm64-gnu.node"
+    ],
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "linux"
+    ],
+    "cpu": [
+        "arm64"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "libc": [
+        "glibc"
+    ]
+}

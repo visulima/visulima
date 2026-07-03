@@ -1,6 +1,0 @@
-{
-  "type": "module",
-  "scripts": {
-    "install": "node index.js"
-  }
-}

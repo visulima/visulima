@@ -1,0 +1,690 @@
+import { stderr, stdout } from "node:process";
+
+import { InteractiveManager } from "@visulima/interactive-manager";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+
+import { PailServer } from "../../src/pail.server";
+import RawReporter from "../../src/reporter/raw/raw-reporter.server";
+
+describe("pailServerImpl", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+        vi.restoreAllMocks();
+    });
+
+    it("should log messages correctly using different log levels", () => {
+        expect.assertions(3);
+
+        const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+        const logStdoutSpy = vi.spyOn(stdout, "write");
+        const logStderrSpy = vi.spyOn(stderr, "write");
+
+        pailServer.info("Info message");
+        pailServer.warn("Warning message");
+        pailServer.error("Error message");
+
+        expect(logStdoutSpy).toHaveBeenCalledWith("Info message");
+        // RFC 5424: the "warning" level is high-severity and must route to stderr, not stdout.
+        expect(logStderrSpy).toHaveBeenCalledWith("Warning message");
+        expect(logStderrSpy).toHaveBeenCalledWith("Error message");
+    });
+
+    it("should handle interactive mode correctly", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ interactive: true, stderr, stdout });
+
+        expect(pailServer.getInteractiveManager()).toBeInstanceOf(InteractiveManager);
+    });
+
+    it("should wrap and restore console methods", () => {
+        expect.assertions(2);
+
+        const pailServer = new PailServer({ stderr, stdout });
+
+        // eslint-disable-next-line no-console
+        const originalConsoleLog = console.log;
+
+        pailServer.wrapConsole();
+
+        // eslint-disable-next-line no-console
+        expect(console.log).not.toBe(originalConsoleLog);
+
+        pailServer.restoreConsole();
+
+        // eslint-disable-next-line no-console
+        expect(console.log).toBe(originalConsoleLog);
+    });
+
+    it("should avoid infinite loop when wrapping console", () => {
+        expect.assertions(2);
+
+        const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+        // The "warning" level routes to stderr, so observe the loop guard there.
+        const logStderrSpy = vi.spyOn(stderr, "write");
+
+        pailServer.wrapConsole();
+
+        const object = {
+            get value() {
+                // eslint-disable-next-line no-console
+                console.warn(object);
+
+                return "anything";
+            },
+        };
+
+        // This should complete without hanging (no infinite loop)
+        pailServer.warn(object);
+        pailServer.restoreConsole();
+
+        // Should have at least one log call (the original warn call)
+        expect(logStderrSpy.mock.calls.length).toBeGreaterThan(0);
+        // Should not have hundreds of calls (which would indicate infinite looping)
+        expect(logStderrSpy.mock.calls.length).toBeLessThan(100);
+    });
+
+    it("should wrap and restore stdout and stderr streams", () => {
+        expect.assertions(4);
+
+        const pailServer = new PailServer({ stderr, stdout });
+
+        const originalStdoutWrite = stdout.write;
+
+        const originalStderrWrite = stderr.write;
+
+        pailServer.wrapStd();
+
+        expect(stdout.write).not.toBe(originalStdoutWrite);
+
+        expect(stderr.write).not.toBe(originalStderrWrite);
+
+        pailServer.restoreStd();
+
+        expect(stdout.write).toBe(originalStdoutWrite);
+
+        expect(stderr.write).toBe(originalStderrWrite);
+    });
+
+    it("should keep the original stream when wrapStd is called twice", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ stderr, stdout });
+
+        const originalStdoutWrite = stdout.write;
+
+        pailServer.wrapStd();
+        // Second wrap must not back up the already-installed wrapper as the original.
+        pailServer.wrapStd();
+        pailServer.restoreStd();
+
+        expect(stdout.write).toBe(originalStdoutWrite);
+    });
+
+    it("should no-op when restoreStd runs without a prior wrap", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ stderr, stdout });
+
+        const originalStdoutWrite = stdout.write;
+
+        pailServer.restoreStd();
+
+        expect(stdout.write).toBe(originalStdoutWrite);
+    });
+
+    it("should handle logging when disabled", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ disabled: true, stderr, stdout });
+        const logSpy = vi.spyOn(pailServer, "log");
+
+        pailServer.info("This should not be logged");
+
+        expect(logSpy).not.toHaveBeenCalled();
+    });
+
+    it("should handle missing or invalid stream objects", () => {
+        expect.assertions(2);
+
+        const pailServer = new PailServer({ stderr: null as unknown as NodeJS.WriteStream, stdout: null as unknown as NodeJS.WriteStream });
+
+        expect(() => {
+            pailServer.wrapStd();
+        }).not.toThrow();
+        expect(() => {
+            pailServer.restoreStd();
+        }).not.toThrow();
+    });
+
+    it("should handle empty or invalid scope names", () => {
+        expect.assertions(2);
+
+        const pailServer = new PailServer({ stderr, stdout });
+
+        expect(() => pailServer.scope()).toThrow("No scope name was defined.");
+        expect(() => pailServer.scope("validScope")).not.toThrow();
+    });
+
+    it("scope() should return a new instance without mutating the parent", () => {
+        expect.assertions(3);
+
+        const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+        const scoped = pailServer.scope("outer");
+
+        // A different instance is returned (documented behavior), not `this`.
+        expect(scoped).not.toBe(pailServer);
+
+        const logStdoutSpy = vi.spyOn(stdout, "write");
+
+        // The parent stays unscoped.
+        pailServer.log("parent message");
+
+        expect(logStdoutSpy).toHaveBeenCalledWith("parent message");
+
+        logStdoutSpy.mockClear();
+
+        // Nested scope extends rather than replaces.
+        const inner = scoped.scope("inner");
+
+        inner.log("inner message");
+
+        // The raw reporter prints "[outer > inner] inner message" — assert the scope chain nests.
+        expect(logStdoutSpy).toHaveBeenCalledWith(expect.stringContaining("inner message"));
+    });
+
+    it("wrapException()/restoreException() should add and remove process handlers idempotently", () => {
+        expect.assertions(4);
+
+        const pailServer = new PailServer({ stderr, stdout });
+
+        const before = process.listenerCount("uncaughtException");
+
+        pailServer.wrapException();
+
+        expect(process.listenerCount("uncaughtException")).toBe(before + 1);
+
+        // Repeated wrapException() must not stack a second handler.
+        pailServer.wrapException();
+
+        expect(process.listenerCount("uncaughtException")).toBe(before + 1);
+
+        pailServer.restoreException();
+
+        expect(process.listenerCount("uncaughtException")).toBe(before);
+
+        // restoreException() is safe to call when nothing is installed.
+        expect(() => {
+            pailServer.restoreException();
+        }).not.toThrow();
+    });
+
+    it("should handle logging with circular references in objects", () => {
+        expect.assertions(1);
+
+        const circularObject = {} as any;
+
+        circularObject.self = circularObject;
+
+        const pailServer = new PailServer({ stderr, stdout });
+
+        expect(() => {
+            pailServer.log(circularObject);
+        }).not.toThrow();
+    });
+
+    it("should group messages correctly", () => {
+        expect.assertions(7);
+
+        const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+        const logStdoutSpy = vi.spyOn(stdout, "write");
+        const logStderrSpy = vi.spyOn(stderr, "write");
+
+        const newLogger3 = pailServer.scope("group");
+
+        newLogger3.log("This is the outer level");
+        newLogger3.group();
+        newLogger3.log("Level 2");
+        newLogger3.info("Hello world!");
+        newLogger3.group();
+        newLogger3.log("Level 3");
+        newLogger3.warn("More of level 3");
+        newLogger3.groupEnd();
+        newLogger3.log("Back to level 2");
+        newLogger3.groupEnd();
+        newLogger3.log("Back to the outer level");
+
+        expect(logStdoutSpy).toHaveBeenCalledWith("This is the outer level");
+        expect(logStdoutSpy).toHaveBeenCalledWith("    Level 2");
+        expect(logStdoutSpy).toHaveBeenCalledWith("    Hello world!");
+        expect(logStdoutSpy).toHaveBeenCalledWith("        Level 3");
+        // warning-level output is routed to stderr (RFC 5424 severity), not stdout
+        expect(logStderrSpy).toHaveBeenCalledWith("        More of level 3");
+        expect(logStdoutSpy).toHaveBeenCalledWith("    Back to level 2");
+        expect(logStdoutSpy).toHaveBeenCalledWith("Back to the outer level");
+    });
+
+    describe("pause and resume", () => {
+        it("should queue messages when paused and flush them on resume", () => {
+            expect.assertions(3);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Pause the logger
+            pailServer.pause();
+
+            // These messages should be queued (all stdout-routed levels so the count is unambiguous)
+            pailServer.info("Message 1");
+            pailServer.info("Message 2");
+            pailServer.debug("Message 3");
+
+            // No messages should have been logged yet
+            expect(logStdoutSpy).not.toHaveBeenCalled();
+
+            // Resume the logger
+            pailServer.resume();
+
+            // All three messages should now be logged in order
+            expect(logStdoutSpy).toHaveBeenCalledTimes(3);
+            expect(logStdoutSpy).toHaveBeenCalledWith("Message 1");
+        });
+
+        it("should not queue messages when not paused", () => {
+            expect.assertions(2);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Log without pausing
+            pailServer.info("Immediate message");
+
+            // Message should be logged immediately
+            expect(logStdoutSpy).toHaveBeenCalledTimes(1);
+            expect(logStdoutSpy).toHaveBeenCalledWith("Immediate message");
+        });
+
+        it("should handle multiple pause/resume cycles", () => {
+            expect.assertions(3);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // First cycle
+            pailServer.pause();
+            pailServer.info("Queued 1");
+            pailServer.resume();
+
+            expect(logStdoutSpy).toHaveBeenCalledTimes(1);
+
+            // Second cycle
+            pailServer.pause();
+            pailServer.info("Queued 2");
+            pailServer.info("Queued 3");
+            pailServer.resume();
+
+            expect(logStdoutSpy).toHaveBeenCalledTimes(3);
+
+            // Third cycle - immediate log
+            pailServer.info("Immediate");
+
+            expect(logStdoutSpy).toHaveBeenCalledTimes(4);
+        });
+
+        it("should preserve message order when flushing queue", () => {
+            expect.assertions(4);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            pailServer.pause();
+            pailServer.info("First");
+            pailServer.info("Second");
+            pailServer.debug("Third");
+            pailServer.resume();
+
+            expect(logStdoutSpy).toHaveBeenCalledTimes(3);
+            expect(logStdoutSpy).toHaveBeenCalledWith("First");
+            expect(logStdoutSpy).toHaveBeenCalledWith("Second");
+            expect(logStdoutSpy).toHaveBeenCalledWith("Third");
+        });
+
+        it("should not output messages when disabled even if queued", () => {
+            expect.assertions(1);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            pailServer.pause();
+            pailServer.info("Queued message");
+            pailServer.disable();
+            pailServer.resume();
+
+            // Message should not be logged because logger is disabled
+            expect(logStdoutSpy).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("force", () => {
+        it("should bypass log level filter when using force methods", () => {
+            expect.assertions(2);
+
+            const pailServer = new PailServer({
+                logLevel: "warning", // Set to warning, so info/debug should be filtered
+                reporters: [new RawReporter()],
+                stderr,
+                stdout,
+            });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Normal info should not be logged (level is warn)
+            pailServer.info("This should not be logged");
+
+            expect(logStdoutSpy).not.toHaveBeenCalled();
+
+            // Force info should be logged despite level being warn
+            pailServer.force.info("This will show even if level is set to 'warn'");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("This will show even if level is set to 'warn'");
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should bypass log level filter for all log types", () => {
+            expect.assertions(5);
+
+            const pailServer = new PailServer({
+                logLevel: "warning",
+                reporters: [new RawReporter()],
+                stderr,
+                stdout,
+            });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+            const logStderrSpy = vi.spyOn(stderr, "write");
+
+            // Force methods should work for different log types
+            pailServer.force.error("Something went wrong!");
+            pailServer.force.debug("Debug message");
+            pailServer.force.trace("Trace message");
+
+            expect(logStderrSpy).toHaveBeenCalledTimes(2); // error and trace go to stderr
+            expect(logStdoutSpy).toHaveBeenCalledTimes(1); // debug goes to stdout
+            expect(logStderrSpy).toHaveBeenCalledWith("Something went wrong!");
+            expect(logStderrSpy).toHaveBeenCalledWith("Trace message");
+            expect(logStdoutSpy).toHaveBeenCalledWith("Debug message");
+
+            logStdoutSpy.mockRestore();
+            logStderrSpy.mockRestore();
+        });
+    });
+
+    describe("child", () => {
+        it("should create child logger that inherits parent settings", () => {
+            expect.assertions(2);
+
+            const parent = new PailServer({
+                logLevel: "informational",
+                reporters: [new RawReporter()],
+                stderr,
+                stdout,
+                types: {
+                    http: {
+                        label: "HTTP",
+                        logLevel: "informational",
+                    },
+                },
+            });
+
+            const child = parent.child();
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Child should inherit parent types
+            child.http("GET /api 200");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("GET /api 200");
+
+            // Child should inherit parent log level
+            child.debug("Debug message"); // Should not be logged (level is info)
+
+            expect(logStdoutSpy).toHaveBeenCalledTimes(1);
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should allow overriding parent settings in child", () => {
+            expect.assertions(2);
+
+            const parent = new PailServer({
+                logLevel: "warning",
+                reporters: [new RawReporter()],
+                stderr,
+                stdout,
+            });
+
+            const child = parent.child({ logLevel: "debug" });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Parent should use warning level
+            parent.info("Parent info"); // Should not be logged
+
+            expect(logStdoutSpy).not.toHaveBeenCalled();
+
+            // Child should use debug level
+            child.info("Child info"); // Should be logged
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("Child info");
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should merge parent and child types", () => {
+            expect.assertions(2);
+
+            const parent = new PailServer({
+                logLevel: "debug",
+                reporters: [new RawReporter()],
+                stderr,
+                stdout,
+                types: {
+                    http: {
+                        label: "HTTP",
+                        logLevel: "info",
+                    },
+                },
+            });
+
+            const child = parent.child({
+                types: {
+                    db: {
+                        label: "DB",
+                        logLevel: "info",
+                    },
+                },
+            });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            // Child should have parent types
+            child.http("GET /api 200");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("GET /api 200");
+
+            // Child should have new types
+            child.db("Query executed");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("Query executed");
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should extend the parent scope when a child scope is provided", () => {
+            expect.assertions(1);
+
+            const parent = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+
+            parent.scope("parent-scope");
+
+            const child = parent.child({ scope: "child-scope" });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            child.info("scoped child");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("scoped child");
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should build a child with its own reporters, processors, log levels, messages, scope, and streams", () => {
+            expect.assertions(2);
+
+            const parent = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+
+            let processed = 0;
+
+            const child = parent.child({
+                logLevels: { informational: 2 },
+                messages: { timerEnd: "ended", timerStart: "started" },
+                processors: [
+                    {
+                        process: (meta) => {
+                            processed += 1;
+
+                            return meta;
+                        },
+                    },
+                ],
+                reporters: [new RawReporter()],
+                scope: "child-scope",
+                stderr,
+                stdout,
+            });
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            child.info("fully overridden child");
+
+            expect(processed).toBeGreaterThan(0);
+            expect(logStdoutSpy).toHaveBeenCalledWith("fully overridden child");
+
+            logStdoutSpy.mockRestore();
+        });
+
+        it("should reuse the parent scope when the child overrides nothing", () => {
+            expect.assertions(1);
+
+            const parent = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+
+            parent.scope("parent-scope");
+
+            const child = parent.child();
+
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            child.info("inherits parent scope");
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("inherits parent scope");
+
+            logStdoutSpy.mockRestore();
+        });
+    });
+
+    describe("wrap, clear, and reporter extension", () => {
+        it("should wrap and restore all output sources", () => {
+            expect.assertions(2);
+
+            const pailServer = new PailServer({ stderr, stdout });
+
+            // eslint-disable-next-line no-console
+            const originalConsoleLog = console.log;
+
+            pailServer.wrapAll();
+
+            // eslint-disable-next-line no-console
+            expect(console.log).not.toBe(originalConsoleLog);
+
+            pailServer.restoreAll();
+
+            // eslint-disable-next-line no-console
+            expect(console.log).toBe(originalConsoleLog);
+        });
+
+        it("should clear the terminal by writing reset sequences to both streams", () => {
+            expect.assertions(2);
+
+            const pailServer = new PailServer({ stderr, stdout });
+            const stdoutSpy = vi.spyOn(stdout, "write");
+            const stderrSpy = vi.spyOn(stderr, "write");
+
+            pailServer.clear();
+
+            expect(stdoutSpy).toHaveBeenCalledTimes(1);
+            expect(stderrSpy).toHaveBeenCalledTimes(1);
+
+            stdoutSpy.mockRestore();
+            stderrSpy.mockRestore();
+        });
+
+        it("should configure stream-, logger-type-, and stringify-aware reporters", () => {
+            expect.assertions(5);
+
+            const reporter = {
+                log: vi.fn(),
+                setLoggerTypes: vi.fn(),
+                setStderr: vi.fn(),
+                setStdout: vi.fn(),
+                setStringify: vi.fn(),
+            };
+
+            const pailServer = new PailServer({ reporters: [reporter], stderr, stdout });
+
+            expect(reporter.setStdout).toHaveBeenCalledTimes(1);
+            expect(reporter.setStderr).toHaveBeenCalledTimes(1);
+            expect(reporter.setLoggerTypes).toHaveBeenCalledTimes(1);
+            expect(reporter.setStringify).toHaveBeenCalledTimes(1);
+
+            pailServer.info("configured reporter");
+
+            expect(reporter.log).toHaveBeenCalledTimes(1);
+        });
+
+        it("should route writes through the logger when the stream is wrapped", () => {
+            expect.assertions(1);
+
+            const pailServer = new PailServer({ reporters: [new RawReporter()], stderr, stdout });
+            const logStdoutSpy = vi.spyOn(stdout, "write");
+
+            pailServer.wrapStd();
+
+            stdout.write("wrapped stream message");
+
+            pailServer.restoreStd();
+
+            expect(logStdoutSpy).toHaveBeenCalledWith("wrapped stream message");
+
+            logStdoutSpy.mockRestore();
+        });
+    });
+});
+
+describe("interactive mode", () => {
+    it("should return undefined interactive manager when not in interactive mode", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ interactive: false, stderr, stdout });
+
+        expect(pailServer.getInteractiveManager()).toBeUndefined();
+    });
+
+    it("should return interactive manager when in interactive mode", () => {
+        expect.assertions(1);
+
+        const pailServer = new PailServer({ interactive: true, stderr, stdout });
+
+        expect(pailServer.getInteractiveManager()).toBeInstanceOf(InteractiveManager);
+    });
+});

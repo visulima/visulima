@@ -1,0 +1,20 @@
+{
+    "name": "inspector-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@visulima/inspector": "workspace:*",
+        "loupe": "catalog:prod",
+        "object-inspect": "catalog:prod"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "@types/object-inspect": "catalog:types",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}

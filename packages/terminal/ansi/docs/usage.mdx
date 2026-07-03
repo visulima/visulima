@@ -1,0 +1,616 @@
+---
+title: "Usage Guide"
+description: "Learn how to use @visulima/ansi with practical examples"
+---
+
+# Usage Guide
+
+Learn how to use ANSI escape codes to control your terminal output.
+
+## Cursor Control
+
+### Position Cursor
+
+Move the cursor to specific coordinates:
+
+```typescript
+import { cursorTo } from "@visulima/ansi";
+
+// Move to column 10, row 5
+process.stdout.write(cursorTo(10, 5));
+console.log("Text at position (10, 5)");
+
+// Move to column 0 (start of line)
+process.stdout.write(cursorTo(0));
+console.log("Back to line start");
+```
+
+### Move Cursor Relative
+
+Move cursor relative to current position:
+
+```typescript
+import { cursorUp, cursorDown, cursorForward, cursorBackward } from "@visulima/ansi";
+
+// Move up 3 lines
+process.stdout.write(cursorUp(3));
+
+// Move down 2 lines
+process.stdout.write(cursorDown(2));
+
+// Move forward 5 columns
+process.stdout.write(cursorForward(5));
+
+// Move backward 3 columns
+process.stdout.write(cursorBackward(3));
+```
+
+Convenience shortcuts for single movements:
+
+```typescript
+import { cursorLeft, CURSOR_UP_1, CURSOR_DOWN_1 } from "@visulima/ansi";
+
+// Move left to column 0
+process.stdout.write(cursorLeft);
+
+// Move up one line
+process.stdout.write(CURSOR_UP_1);
+
+// Move down one line
+process.stdout.write(CURSOR_DOWN_1);
+```
+
+### Save and Restore Cursor
+
+Save cursor position and restore later:
+
+```typescript
+import { cursorSave, cursorRestore, cursorTo } from "@visulima/ansi";
+
+// Save current position
+process.stdout.write(cursorSave);
+
+// Move somewhere else
+process.stdout.write(cursorTo(20, 10));
+console.log("Temporary text");
+
+// Restore original position
+process.stdout.write(cursorRestore);
+console.log("Back to saved position");
+```
+
+### Show and Hide Cursor
+
+Control cursor visibility:
+
+```typescript
+import { cursorHide, cursorShow } from "@visulima/ansi";
+
+// Hide cursor during operation
+process.stdout.write(cursorHide);
+
+// Do work...
+console.log("Processing...");
+await someLongOperation();
+
+// Show cursor again
+process.stdout.write(cursorShow);
+```
+
+### Style Cursor
+
+Change cursor appearance:
+
+```typescript
+import { setCursorStyle } from "@visulima/ansi";
+
+// Blinking block cursor
+process.stdout.write(setCursorStyle("blinking-block"));
+
+// Steady underline cursor
+process.stdout.write(setCursorStyle("steady-underline"));
+
+// Blinking bar cursor
+process.stdout.write(setCursorStyle("blinking-bar"));
+```
+
+## Screen Manipulation
+
+### Clear Screen
+
+Clear the entire screen or parts of it:
+
+```typescript
+import { clearScreen, eraseDown, eraseUp } from "@visulima/ansi";
+
+// Clear entire screen
+process.stdout.write(clearScreen);
+
+// Clear from cursor to end of screen
+process.stdout.write(eraseDown);
+
+// Clear from cursor to top of screen
+process.stdout.write(eraseUp);
+```
+
+Clear and move cursor home:
+
+```typescript
+import { clearScreenAndHomeCursor, clearScreenFromTopLeft } from "@visulima/ansi";
+
+// Clear and move to (0, 0)
+process.stdout.write(clearScreenAndHomeCursor);
+
+// Clear from top-left
+process.stdout.write(clearScreenFromTopLeft);
+```
+
+### Clear Lines
+
+Erase lines or parts of lines:
+
+```typescript
+import { eraseLine, eraseLineEnd, eraseLineStart } from "@visulima/ansi";
+
+// Erase entire current line
+process.stdout.write(eraseLine);
+
+// Erase from cursor to end of line
+process.stdout.write(eraseLineEnd);
+
+// Erase from cursor to start of line
+process.stdout.write(eraseLineStart);
+```
+
+Erase multiple lines:
+
+```typescript
+import { eraseLines } from "@visulima/ansi";
+
+// Erase 3 lines
+process.stdout.write(eraseLines(3));
+```
+
+### Alternative Screen
+
+Use alternative screen buffer (like vim/less):
+
+```typescript
+import { alternativeScreenOn, alternativeScreenOff } from "@visulima/ansi";
+
+// Switch to alternative screen
+process.stdout.write(alternativeScreenOn);
+
+// Your full-screen app here
+console.log("Full-screen interface");
+
+// Switch back to normal screen
+process.stdout.write(alternativeScreenOff);
+```
+
+### Scrolling
+
+Scroll screen regions:
+
+```typescript
+import { scrollUp, scrollDown } from "@visulima/ansi";
+
+// Scroll up 5 lines
+process.stdout.write(scrollUp(5));
+
+// Scroll down 3 lines
+process.stdout.write(scrollDown(3));
+```
+
+## Hyperlinks
+
+### Create Clickable Links
+
+Make terminal output clickable:
+
+```typescript
+import { hyperlink } from "@visulima/ansi";
+
+const link = hyperlink("https://github.com/visulima", "Visulima on GitHub");
+console.log(`Check out ${link} for more info!`);
+```
+
+With IDs for duplicate links:
+
+```typescript
+import { hyperlink } from "@visulima/ansi";
+
+const link1 = hyperlink("https://example.com", "Example 1", { id: "link-1" });
+const link2 = hyperlink("https://example.com", "Example 2", { id: "link-2" });
+
+console.log(link1);
+console.log(link2);
+```
+
+## Images (iTerm2)
+
+### Display Images
+
+Show images in iTerm2:
+
+```typescript
+import { image } from "@visulima/ansi";
+import { readFileSync } from "fs";
+
+const imageData = readFileSync("logo.png");
+
+// Display image
+process.stdout.write(
+    image(imageData, {
+        width: "50%",
+        height: "auto",
+        preserveAspectRatio: true,
+    }),
+);
+```
+
+Inline images:
+
+```typescript
+import { image } from "@visulima/ansi";
+import { readFileSync } from "fs";
+
+const icon = readFileSync("icon.png");
+
+// Display inline with text
+process.stdout.write(`Status: ${image(icon, { width: 20, height: 20, inline: true })} Complete`);
+```
+
+## Strip ANSI Codes
+
+### Remove ANSI from Strings
+
+Clean ANSI codes for logging or storage:
+
+```typescript
+import { strip } from "@visulima/ansi";
+import { cursorUp, clearScreen } from "@visulima/ansi";
+
+const withAnsi = `${clearScreen}Hello${cursorUp(2)} World`;
+const cleaned = strip(withAnsi);
+
+console.log(cleaned); // "Hello World" (no ANSI codes)
+```
+
+Useful for measuring actual text length:
+
+```typescript
+import { strip } from "@visulima/ansi";
+import { hyperlink } from "@visulima/ansi";
+
+const link = hyperlink("https://example.com", "Example");
+const textOnly = strip(link);
+
+console.log(link.length); // Long (includes ANSI codes)
+console.log(textOnly.length); // 7 (just "Example")
+```
+
+## Window Control
+
+### Set Window Title
+
+Change terminal window title:
+
+```typescript
+import { setWindowTitle, setIconName } from "@visulima/ansi";
+
+// Set window title
+process.stdout.write(setWindowTitle("My CLI App"));
+
+// Set icon name
+process.stdout.write(setIconName("CLI"));
+```
+
+Set both at once:
+
+```typescript
+import { setIconNameAndWindowTitle } from "@visulima/ansi";
+
+process.stdout.write(setIconNameAndWindowTitle("CLI App"));
+```
+
+### Window Operations
+
+Control window state (terminal support varies):
+
+```typescript
+import { minimizeWindow, maximizeWindow, raiseWindow, lowerWindow } from "@visulima/ansi";
+
+// Minimize window
+process.stdout.write(minimizeWindow);
+
+// Maximize window
+process.stdout.write(maximizeWindow);
+
+// Bring window to front
+process.stdout.write(raiseWindow);
+
+// Send window to back
+process.stdout.write(lowerWindow);
+```
+
+Move and resize window:
+
+```typescript
+import { moveWindow, resizeTextAreaChars } from "@visulima/ansi";
+
+// Move window to position (100, 100)
+process.stdout.write(moveWindow(100, 100));
+
+// Resize to 80 columns, 24 rows
+process.stdout.write(resizeTextAreaChars(80, 24));
+```
+
+## Mouse Events
+
+### Enable Mouse Tracking
+
+Track mouse events in terminal:
+
+```typescript
+import { enableNormalMouse, disableNormalMouse } from "@visulima/ansi";
+import { stdin } from "process";
+
+// Enable mouse tracking
+process.stdout.write(enableNormalMouse);
+
+// Listen for mouse events
+stdin.setRawMode(true);
+stdin.on("data", (data) => {
+    // Parse mouse event from data
+    console.log("Mouse event:", data);
+});
+
+// Disable when done
+process.on("exit", () => {
+    process.stdout.write(disableNormalMouse);
+    stdin.setRawMode(false);
+});
+```
+
+Different mouse modes:
+
+```typescript
+import { enableButtonEventMouse, enableAnyEventMouse, enableX10Mouse } from "@visulima/ansi";
+
+// Track button presses and releases
+process.stdout.write(enableButtonEventMouse);
+
+// Track all mouse movement
+process.stdout.write(enableAnyEventMouse);
+
+// Simple X10 mouse protocol
+process.stdout.write(enableX10Mouse);
+```
+
+## Terminal Modes
+
+### Control Terminal Behavior
+
+Enable and disable terminal modes:
+
+```typescript
+import { setMode, resetMode } from "@visulima/ansi";
+
+// Enable insert mode
+process.stdout.write(setMode("IRM"));
+
+// Disable insert mode
+process.stdout.write(resetMode("IRM"));
+```
+
+Common modes:
+
+```typescript
+import { SetLineFeedNewLineMode, ResetLineFeedNewLineMode } from "@visulima/ansi";
+
+// Enable line feed/new line mode
+process.stdout.write(SetLineFeedNewLineMode);
+
+// Disable it
+process.stdout.write(ResetLineFeedNewLineMode);
+```
+
+## Real-World Examples
+
+### Progress Bar
+
+Create an updating progress bar:
+
+```typescript
+import { cursorHide, cursorShow, cursorTo, eraseLine } from "@visulima/ansi";
+
+function showProgress(current: number, total: number) {
+    const percent = Math.floor((current / total) * 100);
+    const filled = Math.floor(percent / 2);
+    const bar = "█".repeat(filled) + "░".repeat(50 - filled);
+
+    process.stdout.write(cursorHide);
+    process.stdout.write(cursorTo(0));
+    process.stdout.write(eraseLine);
+    process.stdout.write(`Progress: [${bar}] ${percent}%`);
+
+    if (current === total) {
+        process.stdout.write("\n");
+        process.stdout.write(cursorShow);
+    }
+}
+
+// Use it
+for (let i = 0; i <= 100; i++) {
+    showProgress(i, 100);
+    await new Promise((resolve) => setTimeout(resolve, 50));
+}
+```
+
+### Spinner Animation
+
+Create a loading spinner:
+
+```typescript
+import { cursorHide, cursorShow, cursorBackward, eraseLine } from "@visulima/ansi";
+
+const frames = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+async function spinner(message: string, duration: number) {
+    process.stdout.write(cursorHide);
+
+    let frame = 0;
+    const interval = setInterval(() => {
+        process.stdout.write(cursorBackward(100));
+        process.stdout.write(eraseLine);
+        process.stdout.write(`${frames[frame]} ${message}`);
+        frame = (frame + 1) % frames.length;
+    }, 80);
+
+    await new Promise((resolve) => setTimeout(resolve, duration));
+
+    clearInterval(interval);
+    process.stdout.write(cursorBackward(100));
+    process.stdout.write(eraseLine);
+    process.stdout.write(cursorShow);
+}
+
+// Use it
+await spinner("Loading...", 3000);
+console.log("✓ Complete!");
+```
+
+### Interactive Menu
+
+Build a simple menu with cursor control:
+
+```typescript
+import { cursorHide, cursorShow, cursorUp, cursorTo, eraseLine } from "@visulima/ansi";
+
+const options = ["Option 1", "Option 2", "Option 3", "Exit"];
+let selected = 0;
+
+function drawMenu() {
+    console.log("\nSelect an option:");
+    options.forEach((option, index) => {
+        const prefix = index === selected ? ">" : " ";
+        console.log(`${prefix} ${option}`);
+    });
+}
+
+function updateMenu() {
+    process.stdout.write(cursorUp(options.length + 1));
+    process.stdout.write(cursorTo(0));
+
+    options.forEach((option, index) => {
+        process.stdout.write(eraseLine);
+        const prefix = index === selected ? ">" : " ";
+        console.log(`${prefix} ${option}`);
+    });
+}
+
+// Initial draw
+drawMenu();
+
+// Handle keyboard input
+process.stdin.setRawMode(true);
+process.stdin.on("data", (data) => {
+    const key = data.toString();
+
+    if (key === "\u001b[A") {
+        // Up arrow
+        selected = Math.max(0, selected - 1);
+        updateMenu();
+    } else if (key === "\u001b[B") {
+        // Down arrow
+        selected = Math.min(options.length - 1, selected + 1);
+        updateMenu();
+    } else if (key === "\r") {
+        // Enter
+        console.log(`\nYou selected: ${options[selected]}`);
+        process.exit(0);
+    } else if (key === "\u0003") {
+        // Ctrl+C
+        process.exit(0);
+    }
+});
+```
+
+### Full-Screen App
+
+Create a full-screen terminal application:
+
+```typescript
+import { alternativeScreenOn, alternativeScreenOff, clearScreen, cursorTo, cursorHide, cursorShow } from "@visulima/ansi";
+
+async function fullScreenApp() {
+    // Enter alternative screen
+    process.stdout.write(alternativeScreenOn);
+    process.stdout.write(clearScreen);
+    process.stdout.write(cursorHide);
+
+    // Draw UI
+    process.stdout.write(cursorTo(0, 0));
+    console.log("┌────────────────────────────┐");
+    console.log("│   My Full-Screen App       │");
+    console.log("└────────────────────────────┘");
+
+    // Wait for input
+    await new Promise((resolve) => {
+        process.stdin.setRawMode(true);
+        process.stdin.once("data", resolve);
+    });
+
+    // Clean up
+    process.stdout.write(cursorShow);
+    process.stdout.write(alternativeScreenOff);
+    process.stdin.setRawMode(false);
+}
+
+// Run it
+await fullScreenApp();
+```
+
+### Status Updates
+
+Update status line without scrolling:
+
+```typescript
+import { cursorSave, cursorRestore, cursorTo, eraseLine } from "@visulima/ansi";
+
+let statusLine = 0;
+
+function setStatus(message: string) {
+    process.stdout.write(cursorSave);
+    process.stdout.write(cursorTo(0, statusLine));
+    process.stdout.write(eraseLine);
+    process.stdout.write(`Status: ${message}`);
+    process.stdout.write(cursorRestore);
+}
+
+// Use it
+console.log("Starting process...");
+statusLine = 1;
+
+setStatus("Initializing...");
+await delay(1000);
+
+console.log("Doing work...");
+
+setStatus("Processing...");
+await delay(2000);
+
+setStatus("Complete!");
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="API Reference" href="/api">
+        Complete API documentation for all functions
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
+</Cards>

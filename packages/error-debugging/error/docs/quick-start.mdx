@@ -1,0 +1,59 @@
+---
+title: "Quick Start"
+---
+
+# Quick Start
+
+## Create Custom Error
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+class DatabaseError extends VisulimaError {
+    constructor(message: string) {
+        super({
+            name: "DatabaseError",
+            message,
+        });
+    }
+}
+
+throw new DatabaseError("Connection failed");
+```
+
+## Add Hints
+
+```typescript
+const error = new DatabaseError("Connection timeout");
+error.hint = "Check database connection string";
+
+throw error;
+```
+
+## Code Frame
+
+```typescript
+import { codeFrame } from "@visulima/error/code-frame";
+
+const source = "const x = 10;\nconst error = x.y;\n";
+const frame = codeFrame(source, {
+    start: { line: 2, column: 16 },
+});
+
+console.log(frame);
+//   1 | const x = 10;
+// > 2 | const error = x.y;
+//     |                ^
+```
+
+## Error Causes
+
+```typescript
+import { getErrorCauses } from "@visulima/error";
+
+const rootError = new Error("Root cause");
+const wrappedError = new Error("Wrapped", { cause: rootError });
+
+const causes = getErrorCauses(wrappedError);
+// Returns array of all errors in chain
+```

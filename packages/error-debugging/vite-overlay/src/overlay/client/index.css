@@ -1,0 +1,451 @@
+@import "tailwindcss" source("../../../");
+
+@source "../../../src/overlay/client/**/*";
+
+/* Plugins */
+@plugin "@tailwindcss/typography";
+@plugin "@tailwindcss/forms";
+
+/* workaround for tailwindcss shadowdom support @see https://github.com/tailwindlabs/tailwindcss/issues/15005 */
+:host {
+    --tw-divide-y-reverse: 0;
+    --tw-border-style: solid;
+    --tw-font-weight: initial;
+    --tw-tracking: initial;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    --tw-translate-z: 0;
+    --tw-rotate-x: rotateX(0);
+    --tw-rotate-y: rotateY(0);
+    --tw-rotate-z: rotateZ(0);
+    --tw-skew-x: skewX(0);
+    --tw-skew-y: skewY(0);
+    --tw-space-x-reverse: 0;
+    --tw-gradient-position: initial;
+    --tw-gradient-from: #0000;
+    --tw-gradient-via: #0000;
+    --tw-gradient-to: #0000;
+    --tw-gradient-stops: initial;
+    --tw-gradient-via-stops: initial;
+    --tw-gradient-from-position: 0%;
+    --tw-gradient-via-position: 50%;
+    --tw-gradient-to-position: 100%;
+    --tw-shadow: 0 0 #0000;
+    --tw-shadow-color: initial;
+    --tw-inset-shadow: 0 0 #0000;
+    --tw-inset-shadow-color: initial;
+    --tw-ring-color: initial;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-inset-ring-color: initial;
+    --tw-inset-ring-shadow: 0 0 #0000;
+    --tw-ring-inset: initial;
+    --tw-ring-offset-width: 0px;
+    --tw-ring-offset-color: #fff;
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-blur: initial;
+    --tw-brightness: initial;
+    --tw-contrast: initial: ;
+}
+
+/* ─── Brand palette ─────────────────────────────────────────────────────── */
+:host {
+    --brand-accent: #d71921;
+    --brand-white: #ffffff;
+    --brand-bg: #f5f5f5;
+    --brand-border-visible: #cccccc;
+    --brand-text-secondary: #666666;
+    --brand-surface-dark: #111111;
+    --brand-black: #000000;
+}
+
+/* ─── Design tokens — light mode ─────────────────────────────────────────── */
+:host {
+    --color-background: #f5f5f5;
+    --color-foreground: #1a1a1a;
+    --color-card: #ffffff;
+    --color-accent: #f0f0f0;
+    --color-muted: #e8e8e8;
+    --color-muted-foreground: #666666;
+    --color-primary: #d71921;
+    --color-primary-foreground: #ffffff;
+    --color-border: #e8e8e8;
+    --color-ring: #cccccc;
+    --color-destructive: #d71921;
+    --color-destructive-foreground: #ffffff;
+    --color-success: #4a9e5c;
+    --color-success-foreground: #4a9e5c;
+    --color-warning: #d4a843;
+    --color-info: #666666;
+
+    /* Semantic aliases */
+    --ono-v-bg: var(--color-background);
+    --ono-v-surface: var(--color-card);
+    --ono-v-surface-muted: var(--color-accent);
+    --ono-v-border: var(--color-border);
+    --ono-v-text: var(--color-foreground);
+    --ono-v-text-muted: var(--color-muted-foreground);
+    --ono-v-primary: var(--color-primary);
+    --ono-v-red-orange: var(--color-destructive);
+    --ono-v-link: var(--color-foreground);
+    --ono-v-chip-bg: var(--color-muted);
+    --ono-v-chip-text: var(--color-foreground);
+    --ono-v-hover-overlay: color-mix(in srgb, var(--color-foreground) 4%, transparent);
+    --ono-v-on-accent: var(--color-primary-foreground);
+    --ono-v-neutral: var(--color-muted-foreground);
+    --ono-v-neutral-bg: var(--color-muted);
+    --ono-v-success: var(--color-success);
+    --ono-v-success-bg: color-mix(in srgb, var(--color-success) 12%, transparent);
+}
+
+/* ─── Dark mode ──────────────────────────────────────────────────────────── */
+.dark {
+    --color-background: #000000;
+    --color-foreground: #e8e8e8;
+    --color-card: #111111;
+    --color-accent: #1a1a1a;
+    --color-muted: #222222;
+    --color-muted-foreground: #999999;
+    --color-primary: #d71921;
+    --color-primary-foreground: #ffffff;
+    --color-border: #222222;
+    --color-ring: #333333;
+    --color-destructive: #d71921;
+    --color-destructive-foreground: #ffffff;
+    --color-success: #4a9e5c;
+    --color-success-foreground: #4a9e5c;
+    --color-warning: #d4a843;
+    --color-info: #999999;
+
+    /* Resolve --ono-v-* aliases directly in dark context */
+    --ono-v-bg: var(--color-background);
+    --ono-v-surface: var(--color-card);
+    --ono-v-surface-muted: var(--color-accent);
+    --ono-v-border: var(--color-border);
+    --ono-v-text: var(--color-foreground);
+    --ono-v-text-muted: var(--color-muted-foreground);
+    --ono-v-primary: var(--color-primary);
+    --ono-v-red-orange: var(--color-destructive);
+    --ono-v-link: var(--color-foreground);
+    --ono-v-chip-bg: var(--color-muted);
+    --ono-v-chip-text: var(--color-foreground);
+    --ono-v-hover-overlay: color-mix(in srgb, #fff 5%, transparent);
+    --ono-v-on-accent: var(--color-primary-foreground);
+    --ono-v-neutral: var(--color-muted-foreground);
+    --ono-v-neutral-bg: var(--color-muted);
+    --ono-v-success: var(--color-success);
+    --ono-v-success-bg: color-mix(in srgb, var(--color-success) 12%, transparent);
+}
+
+/* Respect reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+@layer base {
+    button:not(:disabled),
+    [role="button"]:not(:disabled) {
+        cursor: pointer;
+    }
+
+    /* Space Grotesk (body) + Space Mono (code/labels) */
+    body,
+    :host {
+        background-color: transparent;
+        color: var(--ono-v-text);
+        font-family:
+            "Space Grotesk",
+            system-ui,
+            -apple-system,
+            sans-serif;
+        font-feature-settings: "kern" 1;
+        font-size: 14px;
+        line-height: 1.5;
+        letter-spacing: -0.01em;
+        -webkit-font-smoothing: antialiased;
+        box-sizing: border-box;
+    }
+
+    pre,
+    code {
+        font-family: "Space Mono", ui-monospace, "Cascadia Code", monospace;
+        font-feature-settings:
+            "kern" 1,
+            "zero" 1;
+    }
+
+    a {
+        color: var(--ono-v-link);
+    }
+
+    a:hover {
+        text-decoration: underline;
+    }
+
+    ::selection {
+        background: color-mix(in srgb, var(--ono-v-primary) 15%, transparent);
+    }
+
+    kbd {
+        background-color: var(--ono-v-chip-bg);
+        color: var(--ono-v-chip-text);
+        border: 1px solid var(--ono-v-border);
+        border-radius: 0;
+        padding: 0.125rem 0.375rem;
+        font-family: inherit;
+        font-size: 0.75rem;
+    }
+
+    hr {
+        border-color: var(--ono-v-border);
+    }
+}
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* Defaults hover styles on all devices */
+@custom-variant hover (&:hover);
+
+@media (min-width: 576px) {
+    :host {
+        --ono-v-dialog-max-width: 540px;
+    }
+}
+
+@media (min-width: 768px) {
+    :host {
+        --ono-v-dialog-max-width: 720px;
+    }
+}
+
+@media (min-width: 992px) {
+    :host {
+        --ono-v-dialog-max-width: 960px;
+    }
+}
+
+:host {
+    --ono-v-dialog-max-width: 960px;
+}
+
+/* Focus ring — text color (white dark / black light) */
+button:focus-visible,
+[role="tab"]:focus-visible,
+summary:focus-visible,
+select:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+[data-open-in-editor]:focus-visible,
+.js-clipboard:focus-visible {
+    outline: 1px solid var(--ono-v-text);
+    outline-offset: 2px;
+}
+
+/* ─── Utility classes ────────────────────────────────────────────────────── */
+.v-o-label {
+    font-family: "Space Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-weight: 700;
+}
+
+.v-o-loading-text {
+    font-family: "Space Mono", ui-monospace, monospace;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--ono-v-text-muted);
+    font-size: 12px;
+}
+
+/* Icon mask system */
+.dui {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    background-color: currentColor;
+    -webkit-mask-image: var(--icon);
+    -webkit-mask-repeat: no-repeat;
+    -webkit-mask-position: center;
+    -webkit-mask-size: contain;
+    mask-image: var(--icon);
+    mask-repeat: no-repeat;
+    mask-position: center;
+    mask-size: contain;
+    flex-shrink: 0;
+}
+
+.dui.hidden {
+    display: none !important;
+}
+
+/* Shiki syntax highlighting */
+.shiki {
+    @apply max-h-[300px] max-w-full overflow-auto pb-4 break-words [&_pre]:max-w-full [&_pre]:overflow-auto;
+}
+
+.dark .shiki,
+.dark .shiki span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+.shiki.has-diff .diff {
+    @apply relative;
+}
+
+.shiki.has-diff .diff.add span {
+    @apply bg-green-500/15;
+}
+
+.shiki.has-diff .diff.remove span {
+    @apply bg-red-500/15;
+}
+
+.shiki.has-diff .diff.add::before {
+    @apply pointer-events-none absolute left-3 mt-0.5 font-bold text-green-500 select-none;
+    content: "+";
+}
+
+.shiki.has-diff .diff.remove::before {
+    @apply pointer-events-none absolute left-3 mt-0.5 font-bold text-red-500 select-none;
+    content: "−";
+}
+
+.dark .shiki.has-diff .diff.add {
+    @apply !bg-green-500/20;
+}
+
+.dark .shiki.has-diff .diff.remove {
+    @apply !bg-red-500/20;
+}
+
+.dark .shiki.has-diff .diff.add::before {
+    @apply text-green-400;
+}
+
+.dark .shiki.has-diff .diff.remove::before {
+    @apply text-red-400;
+}
+
+.dark [type="checkbox"]:checked,
+.dark [type="radio"]:checked {
+    background-color: currentColor;
+}
+
+/* ─── Editor select: theme-aware colors ──────────────────────────────────── */
+/* @tailwindcss/forms injects background-color: #fff on <select> elements.
+   In Tailwind v4 with a v3-compatible @plugin, that unlayered rule can beat
+   the @layer utilities class bg-(--ono-v-surface) on the element.
+   Explicit unlayered rules here win over all layered styles. */
+select#editor-selector {
+    background-color: var(--ono-v-surface);
+    color: var(--ono-v-text);
+    border-color: var(--ono-v-border);
+    /* color-scheme tells the browser to render the native options popup in
+       the correct OS color scheme. */
+    color-scheme: light;
+}
+
+/* In dark mode: swap the @tailwindcss/forms chevron (hard-coded gray-500
+   stroke) for zinc-400 so the arrow is visible on dark backgrounds, and
+   tell the browser to render the native options popup in dark OS mode. */
+.dark select#editor-selector {
+    color-scheme: dark;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%23999999' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+}
+
+/* Accordion arrow on stack trace summary — rotates the .dui icon */
+#__v_o__stacktrace summary .dui {
+    transition: transform 0.15s ease-out;
+}
+
+#__v_o__stacktrace[open] summary .dui {
+    transform: rotate(90deg);
+}
+
+/* Prevent background scrolling when overlay is open */
+:has(#__v_o__root) {
+    overflow: hidden;
+}
+
+/* Hide balloon while the error panel is visible for server errors only.
+   Client errors (e.g. hydration) keep the balloon visible alongside the overlay. */
+#__v_o__root:not(.hidden)[data-error-type="server"] ~ #__v_o__balloon_group {
+    display: none !important;
+}
+
+/* ─── Scrollbar — thin 5px matching dev-toolbar ───────────────────────── */
+.devtools-content-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+}
+
+.devtools-content-scroll::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.devtools-content-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.devtools-content-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+}
+
+.devtools-content-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
+}
+
+/* History mode grab cursor */
+#__v_o__root.scrolling-history {
+    user-select: none;
+    -webkit-user-select: none;
+    cursor: grab;
+}
+
+#__v_o__root.scrolling-history:active {
+    cursor: grabbing;
+}
+
+/* Balloon count animation — CSS counter trick */
+@property --num {
+    syntax: "<integer>";
+    initial-value: 0;
+    inherits: false;
+}
+
+#__v_o__balloon_count {
+    counter-reset: num var(--num);
+    font-size: 13px;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    line-height: 1;
+    color: white;
+}
+
+#__v_o__balloon_count::after {
+    content: counter(num);
+}
+
+#__v_o__balloon_count.animate-count-up {
+    animation: counter-animate 0.2s ease-out forwards;
+}
+
+@keyframes counter-animate {
+    from {
+        --num: var(--num-start);
+    }
+    to {
+        --num: var(--num-end);
+    }
+}

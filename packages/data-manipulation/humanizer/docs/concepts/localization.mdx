@@ -1,0 +1,254 @@
+---
+title: "Localization"
+---
+
+# Localization
+
+@visulima/humanizer provides comprehensive localization support for both bytes and duration formatting, handling number formatting, unit names, and cultural conventions across hundreds of locales and languages.
+
+## Bytes Localization
+
+### Locale-Based Number Formatting
+
+Bytes formatting uses `Intl.NumberFormat` to format numbers according to locale conventions:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+// English (period as decimal separator)
+formatBytes(123412341, { decimals: 2, locale: "en-US" });
+// => "117.70 MB"
+
+// German (comma as decimal separator)
+formatBytes(123412341, { decimals: 2, locale: "de-DE" });
+// => "117,70 MB"
+
+// French (space as thousand separator)
+formatBytes(123412341, { decimals: 2, locale: "fr-FR" });
+// => "117,70 Mo"
+```
+
+### Parsing Localized Input
+
+The `parseBytes` function automatically handles locale-specific number formats:
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+// Parse German format (comma decimal)
+parseBytes("117,70 MB", { locale: "de-DE" });
+// => 123417395.2
+
+// Parse French format (space thousand separator)
+parseBytes("1 234,56 MB", { locale: "fr-FR" });
+// => 1294409441.28
+```
+
+### Supported Locales for Bytes
+
+formatBytes and parseBytes support **700+ locales** including:
+
+- **Major variants:** en-US, en-GB, de-DE, fr-FR, es-ES, pt-BR, zh-CN, ja-JP, ko-KR
+- **Regional variants:** en-AU, en-CA, en-IN, es-MX, pt-PT, fr-CA, zh-TW
+- **All CLDR locales:** Complete support for all Unicode CLDR locales
+
+## Duration Localization
+
+### Language Objects
+
+Duration formatting uses language objects for translating unit names and formatting rules:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+import { durationLanguage as es } from "@visulima/humanizer/language/es";
+import { durationLanguage as ja } from "@visulima/humanizer/language/ja";
+
+// German
+duration(3600000, { language: de });
+// => "1 Stunde"
+
+// Spanish
+duration(3600000, { language: es });
+// => "1 hora"
+
+// Japanese
+duration(3600000, { language: ja });
+// => "1 時間"
+```
+
+### Supported Languages for Duration
+
+Duration formatting supports **50+ languages**:
+
+| Language             | Code    | Example Output |
+| -------------------- | ------- | -------------- |
+| English              | `en`    | "3 seconds"    |
+| German               | `de`    | "3 Sekunden"   |
+| Spanish              | `es`    | "3 segundos"   |
+| French               | `fr`    | "3 secondes"   |
+| Japanese             | `ja`    | "3 秒"         |
+| Chinese (Simplified) | `zh_CN` | "3 秒"         |
+| Russian              | `ru`    | "3 секунды"    |
+| Arabic               | `ar`    | "٣ ثواني"      |
+
+See [installation guide](/installation#language-packs-duration) for the complete list.
+
+### Custom Language Objects
+
+Create custom language objects for unsupported languages or specialized formatting:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+import type { DurationLanguage } from "@visulima/humanizer";
+
+const customLanguage: DurationLanguage = {
+    y: (count) => (count === 1 ? "year" : "years"),
+    mo: (count) => (count === 1 ? "month" : "months"),
+    w: (count) => (count === 1 ? "week" : "weeks"),
+    d: (count) => (count === 1 ? "day" : "days"),
+    h: (count) => (count === 1 ? "hour" : "hours"),
+    m: (count) => (count === 1 ? "minute" : "minutes"),
+    s: (count) => (count === 1 ? "second" : "seconds"),
+    ms: (count) => (count === 1 ? "millisecond" : "milliseconds"),
+    decimal: ".",
+};
+
+duration(1000, { language: customLanguage });
+// => "1 second"
+
+duration(5000, { language: customLanguage });
+// => "5 seconds"
+```
+
+### Parsing Localized Duration Strings
+
+Use language objects with unitMap for parsing localized duration strings:
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+import { durationLanguage as ru } from "@visulima/humanizer/language/ru";
+
+// Parse German duration
+parseDuration("3 Stunden", { language: de });
+// => 10800000
+
+// Parse Russian duration
+parseDuration("5 часов, 10 минут", { language: ru });
+// => 18600000
+```
+
+## Cultural Formatting Conventions
+
+### Delimiters and Conjunctions
+
+Different languages use different delimiters and conjunctions:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+import { durationLanguage as ar } from "@visulima/humanizer/language/ar";
+
+// Arabic uses different delimiter
+duration(22140000, { language: ar });
+// => "6 ساعات ﻭ 9 دقائق"
+// (Uses " ﻭ " as delimiter instead of ", ")
+```
+
+### Digit Replacements
+
+Some languages use different numeral systems:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+import { durationLanguage as ar } from "@visulima/humanizer/language/ar";
+
+// Arabic numerals
+duration(1234, { language: ar });
+// => "١.٢٣٤ ثانية"
+// (Uses Arabic-Indic digits ١٢٣٤ instead of 1234)
+```
+
+### Decimal Separators
+
+Decimal separators vary by language:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+import { durationLanguage as en } from "@visulima/humanizer/language/en";
+
+// German uses comma
+duration(1500, { language: de });
+// => "1,5 Sekunden"
+
+// English uses period
+duration(1500, { language: en });
+// => "1.5 seconds"
+```
+
+## Best Practices
+
+### Match User Locale
+
+Always use the user's locale for the best experience:
+
+```typescript
+import { formatBytes, duration } from "@visulima/humanizer";
+
+function formatForUser(bytes: number, ms: number, userLocale: string) {
+    // Get language code from locale (e.g., "de" from "de-DE")
+    const langCode = userLocale.split("-")[0];
+
+    // Dynamically import language
+    import(`@visulima/humanizer/language/${langCode}`).then(({ durationLanguage }) => {
+        const formattedBytes = formatBytes(bytes, { locale: userLocale });
+        const formattedDuration = duration(ms, { language: durationLanguage });
+
+        console.log(`Size: ${formattedBytes}, Time: ${formattedDuration}`);
+    });
+}
+```
+
+### Fallback to English
+
+Provide a fallback to English for unsupported locales:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+import { durationLanguage as en } from "@visulima/humanizer/language/en";
+
+async function getDurationLanguage(locale: string) {
+    const langCode = locale.split("-")[0];
+
+    try {
+        const module = await import(`@visulima/humanizer/language/${langCode}`);
+        return module.durationLanguage;
+    } catch {
+        // Fallback to English
+        return en;
+    }
+}
+
+const language = await getDurationLanguage("pt-BR");
+duration(5000, { language });
+```
+
+### Test with Multiple Locales
+
+Always test your application with various locales to ensure proper formatting:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const testLocales = ["en-US", "de-DE", "fr-FR", "ja-JP", "ar-SA"];
+
+for (const locale of testLocales) {
+    console.log(`${locale}: ${formatBytes(1234567, { locale, decimals: 2 })}`);
+}
+// en-US: 1.18 MB
+// de-DE: 1,18 MB
+// fr-FR: 1,18 Mo
+// ja-JP: 1.18 MB
+// ar-SA: ١٫١٨ م.ب
+```

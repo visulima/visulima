@@ -1,0 +1,56 @@
+---
+title: "vis graph"
+description: "Visualize the project dependency graph"
+---
+
+# vis graph
+
+Visualize the project dependency graph in various formats.
+
+## Usage
+
+```bash
+vis graph [options]
+```
+
+## Examples
+
+```bash
+vis graph
+vis graph --format=ascii
+vis graph --format=dot
+vis graph --format=json --output=graph.json
+vis graph --format=html --output=graph.html
+vis graph --depth=2
+```
+
+## Options
+
+| Option     | Alias | Default       | Description                                                                                       |
+| ---------- | ----- | ------------- | ------------------------------------------------------------------------------------------------- |
+| `--format` | `-f`  | `tui`/`ascii` | Output format: `tui`, `ascii`, `dot`, `json`, `html` (default: `tui` in a TTY, `ascii` otherwise) |
+| `--output` | `-o`  | stdout        | Write output to file instead of stdout                                                            |
+| `--depth`  | `-d`  | unlimited     | Maximum dependency tree depth for ASCII output                                                    |
+
+## Output Formats
+
+### TUI / ASCII (default)
+
+In an interactive terminal `vis graph` opens an interactive TUI; when piped or redirected it falls back to a tree-style ASCII representation. Best for quick inspections.
+
+### DOT
+
+Outputs Graphviz DOT format. Render with:
+
+```bash
+vis graph --format=dot --output=graph.dot
+dot -Tpng graph.dot -o graph.png
+```
+
+### JSON
+
+Machine-readable format listing nodes and edges. Useful for custom tooling.
+
+### HTML
+
+Self-contained HTML file with an interactive graph visualization.

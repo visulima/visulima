@@ -1,0 +1,192 @@
+---
+title: "Architecture"
+---
+
+# Architecture
+
+Understand how Cerebro is structured and how its components work together.
+
+## Core Components
+
+### CLI Instance
+
+The `Cerebro` class is the main entry point. It manages commands, plugins, and the execution lifecycle:
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+
+const cli = createCerebro("my-cli", {
+    packageName: "my-cli",
+    packageVersion: "1.0.0",
+    logger: console, // Custom logger
+    cwd: process.cwd(), // Working directory
+    argv: process.argv.slice(2), // Command-line arguments
+});
+```
+
+### Command Registry
+
+Commands are stored in a hierarchical registry that supports:
+
+- Flat commands (`build`, `deploy`)
+- Nested commands (`db migrate`, `server start`)
+- Command aliases and suggestions
+
+### Plugin System
+
+Plugins extend the CLI's functionality through a lifecycle-based system:
+
+1. **Registration**: Plugins are registered with `cli.use(plugin)`
+2. **Initialization**: Plugins initialize before command execution
+3. **Toolbox Extension**: Plugins can add properties to the execution context
+4. **Lifecycle Hooks**: Plugins can hook into pre/post execution
+
+### Toolbox Context
+
+Every command receives a `toolbox` context with:
+
+```typescript
+{
+  argument: string[],      // Positional arguments
+  options: Record<string, any>, // Parsed options
+  env: Record<string, string>,  // Environment variables
+  logger: Console,         // Logger instance
+  cwd: string,             // Current working directory
+  // ... plugin extensions
+}
+```
+
+## Execution Flow
+
+```
+1. CLI Initialization
+   └─> Load configuration
+   └─> Register built-in commands
+   └─> Register plugins
+
+2. Argument Parsing
+   └─> Parse command name
+   └─> Parse options and flags
+   └─> Parse positional arguments
+
+3. Command Resolution
+   └─> Find matching command
+   └─> Suggest alternatives if not found
+   └─> Validate nested command paths
+
+4. Plugin Initialization
+   └─> Execute plugin setup
+   └─> Extend toolbox context
+   └─> Register lifecycle hooks
+
+5. Validation
+   └─> Check required options
+   └─> Validate option types
+   └─> Check conflicting options
+   └─> Validate environment variables
+
+6. Command Execution
+   └─> Prepare toolbox context
+   └─> Execute command function
+   └─> Handle errors
+   └─> Return exit code
+```
+
+## Design Principles
+
+### Zero Dependencies Core
+
+Cerebro's core has minimal dependencies, with optional peer dependencies for features:
+
+- **Core**: Command parsing, validation, execution
+- **Optional**: Boxed output, advanced logging, shell completion
+
+### Type Safety
+
+Full TypeScript support with generics for type-safe toolbox extensions:
+
+```typescript
+// Declare custom toolbox properties
+declare global {
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            http: {
+                get: <T>(url: string) => Promise<T>;
+            };
+        }
+    }
+}
+
+// Now http is fully typed in commands
+cli.addCommand({
+    name: "fetch",
+    execute: async ({ http }) => {
+        const data = await http.get<User>("/api/user");
+        // data is typed as User
+    },
+});
+```
+
+### Cross-Runtime Compatibility
+
+Cerebro works across Node.js, Deno, and Bun through runtime abstraction:
+
+- Process access (`argv`, `cwd`, `env`)
+- Exit handling
+- Exception management
+
+### Extensibility
+
+Three extension points:
+
+1. **Commands**: Add new commands
+2. **Plugins**: Extend functionality
+3. **Toolbox**: Add custom context properties
+
+## Command Hierarchy
+
+Commands can be organized in a tree structure:
+
+```
+my-cli
+├── build              # Flat command
+├── deploy            # Flat command
+└── db                # Command group
+    ├── migrate      # Nested command
+    ├── seed         # Nested command
+    └── backup       # Nested command
+```
+
+Implementation:
+
+```typescript
+cli.addCommand({
+    name: "db",
+    description: "Database commands",
+    commands: [
+        { name: "migrate", execute: ({ logger }) => {} },
+        { name: "seed", execute: ({ logger }) => {} },
+        { name: "backup", execute: ({ logger }) => {} },
+    ],
+});
+```
+
+## Error Handling
+
+Cerebro provides comprehensive error handling:
+
+- **Command Not Found**: Suggests alternatives using Levenshtein distance
+- **Validation Errors**: Clear messages for invalid options
+- **Execution Errors**: Captures and formats runtime errors
+- **Exit Codes**: Standard Unix exit codes (0 = success, 1 = error)
+
+```typescript
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+
+cli.use(
+    errorHandlerPlugin({
+        exitOnError: true,
+        showStackTrace: false,
+    }),
+);
+```

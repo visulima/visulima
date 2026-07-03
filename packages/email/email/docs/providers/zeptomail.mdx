@@ -1,0 +1,71 @@
+---
+title: Zeptomail
+description: Send emails using the Zeptomail API with @visulima/email
+---
+
+# Zeptomail Provider
+
+The Zeptomail provider allows you to send emails through the [Zeptomail API](https://www.zeptomail.com/docs/api/).
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { zeptomailProvider } from "@visulima/email/providers/zeptomail";
+
+const mail = createMail(
+    zeptomailProvider({
+        token: process.env.ZEPTOMAIL_TOKEN!,
+    }),
+);
+```
+
+## Configuration
+
+The `ZeptomailConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default | Description                     |
+| ---------- | --------- | -------- | ------- | ------------------------------- |
+| `token`    | `string`  | Yes      | -       | Your Zeptomail send mail token  |
+| `endpoint` | `string`  | No       | Auto    | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false` | Enable debug logging            |
+| `logger`   | `Console` | No       | -       | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`     | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000` | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Zeptomail").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Zeptomail provider supports additional options through `ZeptomailEmailOptions`:
+
+| Option            | Type                     | Description                                  |
+| ----------------- | ------------------------ | -------------------------------------------- |
+| `clientReference` | `string`                 | Identifier to track a particular transaction |
+| `mimeHeaders`     | `Record<string, string>` | Additional MIME headers                      |
+| `trackClicks`     | `boolean`                | Enable tracking for click events             |
+| `trackOpens`      | `boolean`                | Enable tracking for open events              |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | No        |
+| Tracking       | Yes       |

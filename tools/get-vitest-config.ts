@@ -17,13 +17,36 @@ export const getVitestConfig = (options: ViteUserConfig = {}) => {
                 provider: "v8",
                 reporter: ["clover", "cobertura", "lcov", "text", "html"],
                 include: ["src"],
-                exclude: ["__fixtures__/**", "__bench__/**", "scripts/**", "src/**/types.ts", "src/module.d.ts", "src/reset.d.ts", "e2e"],
+                exclude: [
+                    ...(coverageConfigDefaults.exclude ?? []),
+                    "__fixtures__/**",
+                    "__bench__/**",
+                    "scripts/**",
+                    "src/**/types.ts",
+                    "src/module.d.ts",
+                    "src/reset.d.ts",
+                    "e2e",
+                    "**/node_modules/**",
+                    "**/dist/**",
+                ],
             },
             environment: "node",
-            reporters: process.env.CI_PREFLIGHT ? ["default", "github-actions"] : ["default"],
+            hideSkippedTests: true,
+            // Integration tests across the monorepo spawn subprocesses (tsc, node,
+            // CLI binaries). Each is fast in isolation, but Nx runs many packages
+            // in parallel and process startup gets starved well past Vitest's 5s
+            // default, surfacing as flaky timeouts. Give them generous headroom.
+            hookTimeout: 30_000,
+            testTimeout: 30_000,
+            reporters: process.env.CI
+                ? process.env.CI_PREFLIGHT
+                    ? ["dot", "github-actions"]
+                    : ["dot"]
+                : ["default"],
             sequence: {
                 seed: VITEST_SEQUENCE_SEED,
             },
+            silent: process.env.CI ? "passed-only" : false,
             typecheck: {
                 enabled: false,
             },

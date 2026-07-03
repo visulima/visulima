@@ -1,0 +1,153 @@
+// eslint-disable-next-line import/no-extraneous-dependencies
+import ansiRegex from "ansi-regex";
+
+import { baseColors, baseStyles, styleMethods } from "./css-code";
+import type { ColorizeType } from "./types";
+
+const styles: Record<string, object> = {};
+
+// eslint-disable-next-line unicorn/no-null -- Object.setPrototypeOf requires null, not undefined
+let stylePrototype: object | null = null;
+
+const cssStringToObject = (css: string): Record<string, string> => {
+    const cssObject: Record<string, string> = {};
+
+    // eslint-disable-next-line regexp/no-super-linear-backtracking,regexp/optimal-quantifier-concatenation,unicorn/prefer-string-replace-all,sonarjs/slow-regex
+    css.replace(/(?<=^|;)\s*([^:]+)\s*:\s*([^;]+)\s*/g, (_, key: string, value: string) => {
+        cssObject[key] = value;
+
+        return value;
+    });
+
+    return cssObject;
+};
+
+type ColorizeProperties = { css: string; cssStack: string; props: ColorizeProperties };
+
+const createStyle = (
+    { props }: { props?: ColorizeProperties },
+    css: string,
+): { (strings: ArrayLike<string> | ReadonlyArray<string> | string, ...values: string[]): string[] | ""; css: string; props: ColorizeProperties } => {
+    let cssStack = css;
+
+    if (props?.cssStack) {
+        const cssObject = cssStringToObject(css);
+        const propertiesCssObject = cssStringToObject(props.cssStack);
+
+        // eslint-disable-next-line guard-for-in,no-restricted-syntax
+        for (const key in propertiesCssObject) {
+            cssObject[key] ??= propertiesCssObject[key] as string;
+        }
+
+        // eslint-disable-next-line unicorn/prefer-string-replace-all
+        cssStack = `${JSON.stringify(cssObject).replace(/["{}]/g, "").replace(/,/g, ";")};`;
+    }
+
+    const style = (
+        input: ArrayLike<string> | ReadonlyArray<string> | number | string | { raw: ArrayLike<string> | ReadonlyArray<string> },
+        ...values: string[]
+    ): string[] => {
+        if (!input) {
+            return [];
+        }
+
+        if (typeof input === "string" && input.includes("%c")) {
+            // eslint-disable-next-line sonarjs/slow-regex
+            const collectedStyles = input.match(/(?<=,).*;/g);
+
+            // eslint-disable-next-line unicorn/prefer-string-replace-all,sonarjs/slow-regex
+            const inputWithoutStyles = input.replace(/,.*;/g, "");
+
+            return [`%c${inputWithoutStyles}`, style.css, ...collectedStyles ?? []];
+        }
+
+        if (typeof input === "number" || typeof input === "string") {
+            return [`%c${String(input)}`, style.css];
+        }
+
+        if ((input as { raw?: ArrayLike<string> | ReadonlyArray<string> }).raw !== undefined && Array.isArray(values) && values.length > 0) {
+            const rawString = String.raw(input as { raw: ArrayLike<string> | ReadonlyArray<string> }, ...values);
+
+            // eslint-disable-next-line sonarjs/slow-regex
+            const collectedStyles = rawString.match(/(?<=,).*;/g);
+            // eslint-disable-next-line unicorn/prefer-string-replace-all,sonarjs/slow-regex
+            const inputWithoutStyles = rawString.replace(/,.*;/g, "");
+
+            return [`%c${inputWithoutStyles}`, style.css, ...(collectedStyles ?? []).join("").split(",").filter(Boolean)];
+        }
+
+        const [first, ...rest] = input as string[];
+
+        rest.unshift(style.css);
+
+        return [`${String(first).includes("%c") ? "" : "%c"}${String(first)}`, rest.join("")];
+    };
+
+    Object.setPrototypeOf(style, stylePrototype);
+
+    style.props = { css, cssStack, props } as ColorizeProperties;
+    style.css = cssStack;
+
+    return style;
+};
+
+// eslint-disable-next-line func-names
+const WebColorize = function () {
+    // eslint-disable-next-line unicorn/prefer-native-coercion-functions
+    const self = (string_: number | string) => String(string_);
+
+    // Strip ANSI escape codes just like the server build. The browser build styles
+    // via CSS `%c` directives rather than ANSI, but strings can still arrive with
+    // ANSI codes (e.g. forwarded server output), so this must not be a no-op.
+    self.strip = (value: string): string => value.replaceAll(ansiRegex(), "");
+
+    // eslint-disable-next-line guard-for-in,no-restricted-syntax
+    for (const name in baseColors) {
+        styles[name] = {
+            get() {
+                const style = createStyle(this, baseColors[name as keyof typeof baseColors]);
+
+                Object.defineProperty(this, name, { value: style });
+
+                return style;
+            },
+        };
+    }
+
+    // eslint-disable-next-line guard-for-in,no-restricted-syntax
+    for (const name in baseStyles) {
+        styles[name] = {
+            get() {
+                const style = createStyle(this, baseStyles[name as keyof typeof baseStyles]);
+
+                Object.defineProperty(this, name, { value: style });
+
+                return style;
+            },
+        };
+    }
+
+    // This needs to be the last thing we do, so that the prototype is fully populated.
+    stylePrototype = Object.defineProperties({}, styles);
+
+    Object.setPrototypeOf(self, stylePrototype);
+
+    return self;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as any as new () => ColorizeType;
+
+// eslint-disable-next-line guard-for-in,no-restricted-syntax
+for (const name in styleMethods) {
+    styles[name as keyof typeof styleMethods] = {
+        get() {
+            return (...arguments_: (number | string)[]) =>
+                // @ts-expect-error: TODO: fix typing of `arguments_`
+                createStyle(this, styleMethods[name as keyof typeof styleMethods](...arguments_));
+        },
+    };
+}
+
+styles.ansi256 = styles.fg as object;
+styles.bgAnsi256 = styles.bg as object;
+
+export default WebColorize;

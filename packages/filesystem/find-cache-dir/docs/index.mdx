@@ -1,0 +1,132 @@
+---
+title: Introduction
+description: "Find the common standard cache directory across platforms"
+---
+
+# @visulima/find-cache-dir
+
+Find the standard cache directory for your application across different operating systems. Automatically locates platform-specific cache locations and creates namespaced directories for your project.
+
+## Key Features
+
+**Platform-Aware**
+
+- macOS: `~/Library/Caches/`
+- Windows: `%LOCALAPPDATA%` or `%USERPROFILE%\AppData\Local\`
+- Linux: `~/.cache/` or `$XDG_CACHE_HOME`
+
+**Flexible Options**
+
+- Async and sync versions
+- Automatic directory creation
+- Custom starting directory
+- Error handling controls
+
+**Project-Scoped**
+
+- Creates `node_modules/.cache/your-app` structure
+- Follows Node.js caching conventions
+- Isolated per-project caching
+
+## Quick Start
+
+Install the package:
+
+```bash
+npm install @visulima/find-cache-dir
+```
+
+Find your cache directory:
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+
+const cacheDir = await findCacheDir("my-app");
+console.log(cacheDir);
+// macOS: /Users/username/Library/Caches/my-app
+// Linux: /home/username/.cache/my-app
+// Windows: C:\Users\username\AppData\Local\my-app
+```
+
+## Use Cases
+
+### Cache Build Artifacts
+
+Store compiled output for faster rebuilds:
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+import { writeFileSync } from "fs";
+import { join } from "path";
+
+const cacheDir = await findCacheDir("my-compiler", { create: true });
+const outputPath = join(cacheDir, "compiled.js");
+
+writeFileSync(outputPath, compiledCode);
+console.log(`Cached to: ${outputPath}`);
+```
+
+### Store Temporary Downloads
+
+Cache downloaded files between runs:
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+import { createWriteStream, existsSync } from "fs";
+import { join } from "path";
+
+async function downloadWithCache(url: string, filename: string) {
+    const cacheDir = await findCacheDir("my-downloader", { create: true });
+    const cachePath = join(cacheDir, filename);
+
+    if (existsSync(cachePath)) {
+        console.log("Using cached file");
+        return cachePath;
+    }
+
+    // Download and cache
+    const response = await fetch(url);
+    const fileStream = createWriteStream(cachePath);
+    // ... pipe response to file ...
+
+    return cachePath;
+}
+```
+
+### Share Cache Across Tools
+
+Multiple tools can share a cache namespace:
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+
+// Tool 1: Build system
+const buildCache = await findCacheDir("project-tools");
+
+// Tool 2: Test runner (shares same cache)
+const testCache = await findCacheDir("project-tools");
+
+console.log(buildCache === testCache); // true
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn how to install and import the package
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore async/sync usage and options
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+This package is designed for Node.js environments:
+
+- **Node.js:** ≥22.13 ≤25.x
+- **Browsers:** Not applicable (filesystem operations)
+- **Deno/Bun:** Compatible with filesystem APIs

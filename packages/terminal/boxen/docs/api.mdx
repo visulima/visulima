@@ -1,0 +1,443 @@
+---
+title: "API Reference"
+description: "Complete API documentation for @visulima/boxen."
+---
+
+# API Reference
+
+Complete API documentation for **@visulima/boxen**.
+
+## Import
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import type { Options, BorderStyle } from "@visulima/boxen";
+```
+
+## Main Function
+
+### `boxen(text: string, options?: Options): string`
+
+Create a box around text with customizable options.
+
+**Parameters:**
+
+- `text` (string): Content to display inside the box
+- `options` (Options, optional): Configuration options
+
+**Returns:** String containing the formatted box
+
+**Example:**
+
+```typescript
+const box = boxen("Hello!", { padding: 1 });
+console.log(box);
+```
+
+---
+
+## Options
+
+### `borderStyle`
+
+Type: `string | BorderStyleObject`
+Default: `"single"`
+
+Border style to use. Can be a built-in style name or custom border characters.
+
+**Built-in Styles:**
+
+- `"single"` - Single line border (default)
+- `"double"` - Double line border
+- `"round"` - Rounded corners
+- `"bold"` - Bold border
+- `"singleDouble"` - Single horizontal, double vertical
+- `"doubleSingle"` - Double horizontal, single vertical
+- `"classic"` - Plus and pipe characters
+- `"arrow"` - Arrow characters
+
+**Custom Border:**
+
+```typescript
+{
+    topLeft: string;
+    topRight: string;
+    bottomLeft: string;
+    bottomRight: string;
+    top: string;
+    bottom: string;
+    left: string;
+    right: string;
+}
+```
+
+**Example:**
+
+```typescript
+// Built-in style
+boxen("text", { borderStyle: "double" });
+
+// Custom border
+boxen("text", {
+    borderStyle: {
+        topLeft: "╭",
+        topRight: "╮",
+        bottomLeft: "╰",
+        bottomRight: "╯",
+        top: "─",
+        bottom: "─",
+        left: "│",
+        right: "│",
+    },
+});
+```
+
+---
+
+### `borderColor`
+
+Type: `(border: string, position: BorderPosition, length: number) => string`
+
+Function to colorize border characters. Called for each border segment.
+
+**Parameters:**
+
+- `border` (string): The border character(s)
+- `position` (BorderPosition): Position of the border
+- `length` (number): Length of the border segment
+
+**BorderPosition Type:**
+
+```typescript
+type BorderPosition = "topLeft" | "top" | "topRight" | "left" | "right" | "bottomLeft" | "bottom" | "bottomRight";
+```
+
+**Example:**
+
+```typescript
+import { red, green } from "@visulima/colorize";
+
+boxen("text", {
+    borderColor: (border, position) => {
+        if (position.includes("top")) {
+            return red(border);
+        }
+        return green(border);
+    },
+});
+```
+
+---
+
+### `padding`
+
+Type: `number | number[] | PaddingObject`
+Default: `0`
+
+Space inside the box between content and border.
+
+**Number:** Apply same padding to all sides
+
+```typescript
+{
+    padding: 1;
+}
+```
+
+**Array:**
+
+```typescript
+{
+    padding: [1, 2];
+} // top/bottom: 1, left/right: 2
+{
+    padding: [1, 2, 3];
+} // top: 1, left/right: 2, bottom: 3
+{
+    padding: [1, 2, 3, 4];
+} // top: 1, right: 2, bottom: 3, left: 4
+```
+
+**Object:**
+
+```typescript
+{
+    padding: {
+        top: 1,
+        right: 2,
+        bottom: 1,
+        left: 2,
+    }
+}
+```
+
+**Example:**
+
+```typescript
+boxen("text", { padding: 1 });
+boxen("text", { padding: [1, 2] });
+boxen("text", { padding: { top: 1, bottom: 1 } });
+```
+
+---
+
+### `margin`
+
+Type: `number | number[] | MarginObject`
+Default: `0`
+
+Space outside the box.
+
+**Number:** Apply same margin to all sides
+
+```typescript
+{
+    margin: 1;
+}
+```
+
+**Array:** Same format as padding
+
+**Object:**
+
+```typescript
+{
+    margin: {
+        top: 1,
+        right: 2,
+        bottom: 1,
+        left: 2,
+    }
+}
+```
+
+**Example:**
+
+```typescript
+boxen("text", { margin: 1 });
+boxen("text", { margin: [1, 0] }); // top/bottom only
+```
+
+---
+
+### `textAlignment`
+
+Type: `"left" | "center" | "right"`
+Default: `"left"`
+
+Horizontal alignment of text within the box.
+
+**Example:**
+
+```typescript
+boxen("Center me", { textAlignment: "center" });
+boxen("Right align", { textAlignment: "right" });
+```
+
+---
+
+### `headerText`
+
+Type: `string`
+Default: `undefined`
+
+Text to display in the top border.
+
+**Example:**
+
+```typescript
+boxen("Content", {
+    headerText: "Title",
+    headerAlignment: "center",
+});
+```
+
+---
+
+### `headerAlignment`
+
+Type: `"left" | "center" | "right"`
+Default: `"left"`
+
+Alignment of header text in the top border.
+
+**Example:**
+
+```typescript
+boxen("Content", {
+    headerText: "Status",
+    headerAlignment: "center",
+});
+```
+
+---
+
+### `footerText`
+
+Type: `string`
+Default: `undefined`
+
+Text to display in the bottom border.
+
+**Example:**
+
+```typescript
+boxen("Content", {
+    footerText: "Press Enter",
+    footerAlignment: "center",
+});
+```
+
+---
+
+### `footerAlignment`
+
+Type: `"left" | "center" | "right"`
+Default: `"left"`
+
+Alignment of footer text in the bottom border.
+
+**Example:**
+
+```typescript
+boxen("Content", {
+    footerText: "v1.0.0",
+    footerAlignment: "right",
+});
+```
+
+---
+
+### `width`
+
+Type: `number | "terminal"`
+Default: Automatic based on content
+
+Fixed width for the box. Set to `"terminal"` to use full terminal width.
+
+**Example:**
+
+```typescript
+// Fixed width (content wraps)
+boxen("Long text that will wrap", { width: 20 });
+
+// Full terminal width
+boxen("Full width", { width: "terminal" });
+```
+
+---
+
+## TypeScript Types
+
+### `Options`
+
+Complete options interface:
+
+```typescript
+interface Options {
+    borderStyle?: BorderStyle | BorderStyleObject;
+    borderColor?: (border: string, position: BorderPosition, length: number) => string;
+    padding?: number | number[] | PaddingObject;
+    margin?: number | number[] | MarginObject;
+    textAlignment?: "left" | "center" | "right";
+    headerText?: string;
+    headerAlignment?: "left" | "center" | "right";
+    footerText?: string;
+    footerAlignment?: "left" | "center" | "right";
+    width?: number | "terminal";
+}
+```
+
+### `BorderStyle`
+
+Built-in border style names:
+
+```typescript
+type BorderStyle = "single" | "double" | "round" | "bold" | "singleDouble" | "doubleSingle" | "classic" | "arrow";
+```
+
+### `BorderStyleObject`
+
+Custom border characters:
+
+```typescript
+interface BorderStyleObject {
+    topLeft: string;
+    topRight: string;
+    bottomLeft: string;
+    bottomRight: string;
+    top: string;
+    bottom: string;
+    left: string;
+    right: string;
+}
+```
+
+### `BorderPosition`
+
+Border segment positions:
+
+```typescript
+type BorderPosition = "topLeft" | "top" | "topRight" | "left" | "right" | "bottomLeft" | "bottom" | "bottomRight";
+```
+
+### `PaddingObject`
+
+Padding configuration:
+
+```typescript
+interface PaddingObject {
+    top?: number;
+    right?: number;
+    bottom?: number;
+    left?: number;
+}
+```
+
+### `MarginObject`
+
+Margin configuration:
+
+```typescript
+interface MarginObject {
+    top?: number;
+    right?: number;
+    bottom?: number;
+    left?: number;
+}
+```
+
+## Complete Example
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import type { Options } from "@visulima/boxen";
+import { green, blue } from "@visulima/colorize";
+
+const options: Options = {
+    // Border
+    borderStyle: "double",
+    borderColor: (border, position) => {
+        if (position.includes("top")) {
+            return blue(border);
+        }
+        return green(border);
+    },
+
+    // Layout
+    padding: 1,
+    margin: { top: 1, bottom: 1 },
+    width: 40,
+
+    // Text
+    textAlignment: "center",
+
+    // Header/Footer
+    headerText: "Status",
+    headerAlignment: "center",
+    footerText: "v1.0.0",
+    footerAlignment: "right",
+};
+
+console.log(boxen("All options used!", options));
+```

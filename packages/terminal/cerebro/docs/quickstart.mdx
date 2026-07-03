@@ -1,0 +1,147 @@
+---
+title: Quick Start
+description: Get started with Cerebro and build your first CLI in under 2 minutes.
+---
+
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+Get started with Cerebro and build your first CLI in under 2 minutes.
+
+<Steps>
+
+<Step>
+
+### Install Cerebro
+
+Install the package using your preferred package manager:
+
+<Tabs items={["pnpm", "npm", "yarn"]}>
+    <Tab value="pnpm">```bash pnpm add @visulima/cerebro ```</Tab>
+    <Tab value="npm">```bash npm install @visulima/cerebro ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/cerebro ```</Tab>
+</Tabs>
+
+</Step>
+
+<Step>
+
+### Create Your CLI File
+
+Create a new file `cli.js` (or `cli.ts` for TypeScript):
+
+```typescript title="cli.js"
+import { Cerebro } from "@visulima/cerebro";
+
+const cli = new Cerebro("my-app", {
+    packageName: "my-app",
+    packageVersion: "1.0.0",
+});
+
+cli.addCommand({
+    name: "hello",
+    description: "Say hello to someone",
+    argument: {
+        name: "name",
+        type: String,
+        description: "Name to greet",
+        defaultValue: "World",
+    },
+    options: [
+        {
+            name: "greeting",
+            alias: "g",
+            type: String,
+            description: "Custom greeting",
+            defaultValue: "Hello",
+        },
+    ],
+    execute: ({ argument, options, logger }) => {
+        const name = argument?.[0] || "World";
+        logger.info(`${options.greeting}, ${name}!`);
+    },
+});
+
+await cli.run();
+```
+
+</Step>
+
+<Step>
+
+### Make It Executable
+
+Add the shebang and make it executable:
+
+```bash
+chmod +x cli.js
+```
+
+Or if using TypeScript with tsx:
+
+```bash
+chmod +x cli.ts
+```
+
+</Step>
+
+<Step>
+
+### Run Your CLI
+
+Now you can run your CLI:
+
+```bash
+# Default greeting
+node cli.js hello
+# Output: Hello, World!
+
+# With a name
+node cli.js hello Alice
+# Output: Hello, Alice!
+
+# With custom greeting
+node cli.js hello Alice --greeting "Hi"
+# Output: Hi, Alice!
+
+# Using alias
+node cli.js hello Alice -g "Hey"
+# Output: Hey, Alice!
+```
+
+</Step>
+
+<Step>
+
+### TypeScript Support
+
+For TypeScript, use the same code but with `.ts` extension:
+
+```typescript title="cli.ts"
+import { Cerebro } from "@visulima/cerebro";
+
+// ... same code ...
+```
+
+Run with `tsx` or compile first:
+
+```bash
+# Using tsx
+tsx cli.ts hello Alice
+
+# Or compile and run
+tsc cli.ts && node cli.js hello Alice
+```
+
+**Congratulations!** You've created your first CLI with Cerebro. Now explore the [Commands Guide](/docs/packages/cerebro/guides/commands) to learn more about advanced features.
+
+</Step>
+
+</Steps>
+
+## What's Next?
+
+- [Commands Guide](/docs/packages/cerebro/guides/commands) - Learn about command configuration
+- [Options & Arguments](/docs/packages/cerebro/guides/options) - Handle CLI options and arguments
+- [Plugins](/docs/packages/cerebro/guides/plugins) - Extend functionality with plugins
+- [API Reference](/docs/packages/cerebro/api/cli) - Complete API documentation

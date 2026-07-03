@@ -1,0 +1,670 @@
+## @visulima/inspector [2.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.14...@visulima/inspector@2.0.0-alpha.15) (2026-06-30)
+
+### ⚠ BREAKING CHANGES
+
+* the listed packages no longer publish a CommonJS build —
+consumers must use ESM (import) or dynamic import(). @visulima/connect,
+@visulima/crud, @visulima/prisma-dmmf-transformer and @visulima/api-platform
+are removed and deprecated.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+
+### Bug Fixes
+
+* pass lint:package-json for inspector and package ([01d7c27](https://github.com/visulima/visulima/commit/01d7c275fdb18c1229a83caf1f43709731b61d61))
+* **security:** resolve CodeQL alerts on alpha→main ([541e206](https://github.com/visulima/visulima/commit/541e206517b2f78532d19638c18be95ff97e48ae)), closes [#713](https://github.com/visulima/visulima/issues/713)
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+
+### Code Refactoring
+
+* ship esm-only; remove deprecated api packages ([6e58351](https://github.com/visulima/visulima/commit/6e58351e73ac7d8f8ec88be4d77871e4de5d5405))
+
+### Build System
+
+* emit .js instead of .mjs for esm output ([c8a6026](https://github.com/visulima/visulima/commit/c8a602665a59f0441a61a5a510cdfed9353101e6))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.15
+
+## @visulima/inspector [2.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.13...@visulima/inspector@2.0.0-alpha.14) (2026-06-13)
+
+### Features
+
+* **inspector:** harden type dispatch and render binary/opaque values ([fcd68b2](https://github.com/visulima/visulima/commit/fcd68b22192857454733cde9e9abeecce21fc4b5))
+
+### Bug Fixes
+
+* **inspector:** gate ArrayBuffer contents, fix maxArrayLength separator ([bed7a8d](https://github.com/visulima/visulima/commit/bed7a8d24e2d287b35c8cf0428eaa210b100c7d1))
+
+### Performance Improvements
+
+* **inspector:** drop extra array key allocation ([faefc84](https://github.com/visulima/visulima/commit/faefc84a48c083105516155fc898ce2c2ea519bf))
+
+### Code Refactoring
+
+* **inspector:** replace for-in with Object.keys and clean up jsdoc ([c74eebe](https://github.com/visulima/visulima/commit/c74eebebf14edef88b656eb6b3cac2433c3eea97))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.14
+
+## @visulima/inspector [2.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.12...@visulima/inspector@2.0.0-alpha.13) (2026-06-04)
+
+### Features
+
+* **inspector:** chai/inspect support, match/beat loupe perf ([7313b5a](https://github.com/visulima/visulima/commit/7313b5aa0cb729c65c3f8916dcf44485da6e43bb)), closes [visulima/packem#207](https://github.com/visulima/packem/issues/207)
+
+## @visulima/inspector [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.11...@visulima/inspector@2.0.0-alpha.12) (2026-06-04)
+
+### Bug Fixes
+
+* **inspector:** 2 bug fixes ([67663e7](https://github.com/visulima/visulima/commit/67663e7d8d14b2849c924f114435ddd740e272cc))
+
+### Tests
+
+* **inspector:** cover html nodes, register apis, indent and key rendering ([668c2c1](https://github.com/visulima/visulima/commit/668c2c149d6ca7a7dbc434ee589ff3ad7c9c7b7d))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.13
+
+## @visulima/inspector [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.10...@visulima/inspector@2.0.0-alpha.11) (2026-05-27)
+
+### Bug Fixes
+
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Documentation
+
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+### Miscellaneous Chores
+
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **inspector:** fix lint errors ([980d74b](https://github.com/visulima/visulima/commit/980d74bf671af2f70581f4ac902924d3fc65c20a))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+
+### Tests
+
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Continuous Integration
+
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.12
+
+## @visulima/inspector [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.9...@visulima/inspector@2.0.0-alpha.10) (2026-04-28)
+
+### Bug Fixes
+
+* **inspector:** use default colorize import for tests ([e0fe892](https://github.com/visulima/visulima/commit/e0fe89295da36872e511a2e0fca75bf2edf27a6e))
+
+### Miscellaneous Chores
+
+* **inspector:** upgrade packem to 2.0.0-alpha.76 ([54f6186](https://github.com/visulima/visulima/commit/54f618639a554b6e4ba809187bbdd6e8e3606f29))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+
+## @visulima/inspector [2.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.8...@visulima/inspector@2.0.0-alpha.9) (2026-04-22)
+
+### Bug Fixes
+
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+
+### Miscellaneous Chores
+
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.10
+
+## @visulima/inspector [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.7...@visulima/inspector@2.0.0-alpha.8) (2026-04-21)
+
+### Bug Fixes
+
+* **inspector:** scope tsconfig to src and add node types ([44a85da](https://github.com/visulima/visulima/commit/44a85da9316553dd3d38d67487787fb1cb8ff2ca))
+
+### Miscellaneous Chores
+
+* **api-platform:** apply pending lint and source updates ([3fb0043](https://github.com/visulima/visulima/commit/3fb0043a4cf35f752ca89a09a077100ae0142da8))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* **inspector:** apply pending changes ([d1a0f43](https://github.com/visulima/visulima/commit/d1a0f4373b921c61381eae3116d4d140940d8ac0))
+
+## @visulima/inspector [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.6...@visulima/inspector@2.0.0-alpha.7) (2026-04-08)
+
+### Bug Fixes
+
+* **inspector:** properly fix eslint errors in code ([f7ff9ba](https://github.com/visulima/visulima/commit/f7ff9ba8b343dd90e9ceeed1cbb2599eed52cdef))
+
+### Miscellaneous Chores
+
+* **error-debugging:** remove empty dependency objects from package.json ([7eb7c8e](https://github.com/visulima/visulima/commit/7eb7c8eba1394e515fa77c0f56baf41c0810de2e))
+* **inspector:** add tsconfig.eslint.json for type-aware linting ([8080c1a](https://github.com/visulima/visulima/commit/8080c1a8f2bea1fbb4079d66d60e4a125a0f7516))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.8
+
+## @visulima/inspector [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.5...@visulima/inspector@2.0.0-alpha.6) (2026-03-26)
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.7
+
+## @visulima/inspector [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.4...@visulima/inspector@2.0.0-alpha.5) (2026-03-26)
+
+### Bug Fixes
+
+* **inspector:** update function toString tests for Node.js 22+ compatibility ([40750b7](https://github.com/visulima/visulima/commit/40750b730d4d4736e63bc3452fd5c2989b423fea))
+* **inspector:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([d5a8d64](https://github.com/visulima/visulima/commit/d5a8d64ee8a469a27ad3ba93128750cd10428ff2))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Miscellaneous Chores
+
+* **inspector:** update dependencies ([2db0b99](https://github.com/visulima/visulima/commit/2db0b999a83881a982fc9032df0fd871926aaf5f))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.6
+
+## @visulima/inspector [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.3...@visulima/inspector@2.0.0-alpha.4) (2026-03-06)
+
+### Bug Fixes
+
+* **inspector:** update packem to 2.0.0-alpha.54 ([2075696](https://github.com/visulima/visulima/commit/2075696cd1c5e2cfb93602b207b957aa5ac40ad9))
+
+### Documentation
+
+* **error,error-handler,ono,inspector,source-map,vite-overlay:** add comprehensive Fumadocs documentation ([a0c8c92](https://github.com/visulima/visulima/commit/a0c8c92949cff2730fc6122f717fe344c030f366))
+
+### Miscellaneous Chores
+
+* **error-debugging:** update dependencies ([6002ece](https://github.com/visulima/visulima/commit/6002ece1803b2ba8261cff42a362dd6e8ddcc3ee))
+* **inspector:** update dependencies ([0a86797](https://github.com/visulima/visulima/commit/0a86797d2bd8b6be42a0f7670994ba569ad626e2))
+* **inspector:** update dependencies ([117ba51](https://github.com/visulima/visulima/commit/117ba51bae94b5443c01a48d979ce11850f4b5ac))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.5
+
+## @visulima/inspector [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.2...@visulima/inspector@2.0.0-alpha.3) (2025-12-27)
+
+### Bug Fixes
+
+* **inspector:** update package files ([50905c0](https://github.com/visulima/visulima/commit/50905c0e18ada9dba01d4f00a16e56f9197d1872))
+
+### Miscellaneous Chores
+
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.4
+
+## @visulima/inspector [2.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/inspector@2.0.0-alpha.1...@visulima/inspector@2.0.0-alpha.2) (2025-12-11)
+
+### Bug Fixes
+
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0-alpha.3
+
+## @visulima/inspector [2.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.30...@visulima/inspector@2.0.0-alpha.1) (2025-12-07)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+
+### Miscellaneous Chores
+
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+
+## @visulima/inspector [1.0.30](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.29...@visulima/inspector@1.0.30) (2025-11-13)
+
+### Bug Fixes
+
+* bump packem, to fix minified version of the code ([2a36ceb](https://github.com/visulima/visulima/commit/2a36ceb09251b0ca1178701a26547a871ed717a7))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.29
+
+## @visulima/inspector [1.0.29](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.28...@visulima/inspector@1.0.29) (2025-11-12)
+
+### Bug Fixes
+
+* **deps:** update type-fest dependency across multiple packages ([93e13be](https://github.com/visulima/visulima/commit/93e13be5248207968a96303710db2a0604d16b9b))
+* update package configurations and TypeScript definitions ([b59aa59](https://github.com/visulima/visulima/commit/b59aa59dac1508216b944f4b917fb4a7ab1f70a4))
+
+### Miscellaneous Chores
+
+* Add jsr file to all packages for release ([#565](https://github.com/visulima/visulima/issues/565)) ([ec91652](https://github.com/visulima/visulima/commit/ec91652b4e4112adf14ba152c1239a7703ba425a))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.28
+
+## @visulima/inspector [1.0.28](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.27...@visulima/inspector@1.0.28) (2025-11-07)
+
+### Bug Fixes
+
+* update TypeScript configurations and improve linting across multiple packages ([6f25ec7](https://github.com/visulima/visulima/commit/6f25ec7841da7246f8f9166efc5292a7089d37ee))
+
+### Miscellaneous Chores
+
+* update npm and pnpm configurations for monorepo optimization ([#564](https://github.com/visulima/visulima/issues/564)) ([5512b42](https://github.com/visulima/visulima/commit/5512b42f672c216b6a3c9e39035199a4ebd9a4b8))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.27
+
+## @visulima/inspector [1.0.27](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.26...@visulima/inspector@1.0.27) (2025-11-05)
+
+### Bug Fixes
+
+* update dependencies across multiple packages ([36a47f2](https://github.com/visulima/visulima/commit/36a47f26d65d25a7b4d8371186710e7d0ab61a2b))
+* Upgraded `type-fest` to version `5.2.0` ([bd6cd53](https://github.com/visulima/visulima/commit/bd6cd5367ff102a7487372dc1ca7742a41c69ea9))
+
+### Miscellaneous Chores
+
+* update package dependencies and configurations ([7bfe7e7](https://github.com/visulima/visulima/commit/7bfe7e71869580900aab50efb064b4293994ed9a))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.26
+
+## @visulima/inspector [1.0.26](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.25...@visulima/inspector@1.0.26) (2025-10-21)
+
+### Bug Fixes
+
+* allow node v25 and updated dev deps ([8158cc5](https://github.com/visulima/visulima/commit/8158cc53ec92bd0331e8c6bd0fcbc8ab61b9320f))
+
+### Miscellaneous Chores
+
+* **deps:** update package versions and dependencies ([88d8d32](https://github.com/visulima/visulima/commit/88d8d32c4629a7a06c8770369191da2cc81087cc))
+* update license years and add validation rules ([b97811e](https://github.com/visulima/visulima/commit/b97811ed2d253d908c0d86b4579a0a6bc33673a8))
+* update package dependencies across multiple packages ([17e3f23](https://github.com/visulima/visulima/commit/17e3f2377c8a3f98e2eed2192c5adaf6e32558b5))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.25
+
+## @visulima/inspector [1.0.25](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.24...@visulima/inspector@1.0.25) (2025-10-15)
+
+### Bug Fixes
+
+* update @visulima/packem to 2.0.0-alpha.32 across multiple packages for improved compatibility ([27b346e](https://github.com/visulima/visulima/commit/27b346eaa1c0fb0e420d9a9824482028307f4249))
+* update package dependencies and improve ESLint configuration for enhanced performance ([7bf2429](https://github.com/visulima/visulima/commit/7bf24299c144f6833b48639db3894b086e33a154))
+
+### Miscellaneous Chores
+
+* **deps:** update build scripts and remove cross-env dependency ([7510e82](https://github.com/visulima/visulima/commit/7510e826b9235a0013fe61c82a7eb333bc4cbb78))
+* update package dependencies across multiple packages for improved compatibility and performance ([9567591](https://github.com/visulima/visulima/commit/9567591c415da3002f3a4fe08f8caf7ce01ca5f7))
+* update package.json and pnpm-lock.yaml to include publint@0.3.12 and adjust build/test commands to exclude shared-utils ([1f7b3c0](https://github.com/visulima/visulima/commit/1f7b3c0381d77edfeec80ea1bf57b3469e929414))
+* update type-fest dependency in package.json for inspector and tsconfig ([3a44850](https://github.com/visulima/visulima/commit/3a4485048b4a1ab760d0f05d49cde95c40b82652))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.24
+
+## @visulima/inspector [1.0.24](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.23...@visulima/inspector@1.0.24) (2025-06-04)
+
+### Styles
+
+* **inspector:** cs fixes ([5a1d0ad](https://github.com/visulima/visulima/commit/5a1d0ad860fabd9d0994b8957b5967ec8c6a1b40))
+
+### Miscellaneous Chores
+
+* update ESLint configuration and dependencies ([1cf0391](https://github.com/visulima/visulima/commit/1cf0391cf67757844387b4d98b1f28d458e7f233))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.23
+
+## @visulima/inspector [1.0.23](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.22...@visulima/inspector@1.0.23) (2025-05-31)
+
+### Bug Fixes
+
+* **inspector:** add isolated declaration transformer to packem configuration ([adf2da6](https://github.com/visulima/visulima/commit/adf2da6ce853ba7cb14ff698a84fb52954028b3e))
+* **inspector:** do not treat a NodeList as HTMLCollection ([240fd87](https://github.com/visulima/visulima/commit/240fd873105effd81e482594d88af8235a2d7aa2))
+
+## @visulima/inspector [1.0.22](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.21...@visulima/inspector@1.0.22) (2025-05-30)
+
+### Bug Fixes
+
+* **inspector:** update dependencies ([6a3473b](https://github.com/visulima/visulima/commit/6a3473b7b8d52be9ca1ebaedc8c11b77e8d85a1c))
+
+### Miscellaneous Chores
+
+* **inspector-bench:** update devDependencies ([6798bf9](https://github.com/visulima/visulima/commit/6798bf9bfcb66895bf54245a5c40af8780cddc63))
+* updated dev dependencies ([2433ed5](https://github.com/visulima/visulima/commit/2433ed5fb662e0303c37edee8ddc21b46c21263f))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.22
+
+## @visulima/inspector [1.0.21](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.20...@visulima/inspector@1.0.21) (2025-03-07)
+
+### Bug Fixes
+
+* updated @visulima/packem and other dev deps, for better bundling size ([e940581](https://github.com/visulima/visulima/commit/e9405812201594e54dd81d17ddb74177df5f3c24))
+
+### Miscellaneous Chores
+
+* **inspector:** added a test for single entry map ([7d8caaa](https://github.com/visulima/visulima/commit/7d8caaa21ad2a6fc35c217c2a39f7f13e64048c9))
+* updated dev dependencies ([487a976](https://github.com/visulima/visulima/commit/487a976932dc7c39edfc19ffd3968960ff338066))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.21
+
+## @visulima/inspector [1.0.20](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.19...@visulima/inspector@1.0.20) (2025-01-25)
+
+### Bug Fixes
+
+* fixed wrong node version range in package.json ([4ae2929](https://github.com/visulima/visulima/commit/4ae292984681c71a770e4d4560432f7b7c5a141a))
+
+### Miscellaneous Chores
+
+* fixed typescript url ([fe65a8c](https://github.com/visulima/visulima/commit/fe65a8c0296ece7ee26474c70d065b06d4d0da89))
+* updated all dev dependencies ([37fb298](https://github.com/visulima/visulima/commit/37fb298b2af7c63be64252024e54bb3af6ddabec))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.20
+
+## @visulima/inspector [1.0.19](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.18...@visulima/inspector@1.0.19) (2025-01-22)
+
+### Miscellaneous Chores
+
+* updated all dev dependencies and all dependencies in the app folder ([87f4ccb](https://github.com/visulima/visulima/commit/87f4ccbf9f7900ec5b56f3c1477bc4a0ef571bcf))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.19
+
+## @visulima/inspector [1.0.18](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.17...@visulima/inspector@1.0.18) (2025-01-13)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.18
+
+## @visulima/inspector [1.0.17](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.16...@visulima/inspector@1.0.17) (2025-01-12)
+
+### Bug Fixes
+
+* updated @visulima/packem, and all other dev dependencies ([7797a1c](https://github.com/visulima/visulima/commit/7797a1c3e6f1fc532895247bd88285a8a9883c40))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.17
+
+## @visulima/inspector [1.0.16](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.15...@visulima/inspector@1.0.16) (2025-01-08)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.16
+
+## @visulima/inspector [1.0.15](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.14...@visulima/inspector@1.0.15) (2025-01-08)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.15
+
+## @visulima/inspector [1.0.14](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.13...@visulima/inspector@1.0.14) (2024-12-31)
+
+### Styles
+
+* cs fixes ([12d0b20](https://github.com/visulima/visulima/commit/12d0b20814c6b97f48dffbdfbdb9f458222dc64b))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([9de2eab](https://github.com/visulima/visulima/commit/9de2eab91e95c8b9289d12f863a5167218770650))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.14
+
+## @visulima/inspector [1.0.13](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.12...@visulima/inspector@1.0.13) (2024-12-12)
+
+### Bug Fixes
+
+* allow node v23 ([8ca929a](https://github.com/visulima/visulima/commit/8ca929af311ce8036cbbfde68b6db05381b860a5))
+* allowed node 23, updated dev dependencies ([f99d34e](https://github.com/visulima/visulima/commit/f99d34e01f6b13be8586a1b5d37dc8b8df0a5817))
+* updated packem to v1.8.2 ([23f869b](https://github.com/visulima/visulima/commit/23f869b4120856cc97e2bffa6d508e2ae30420ea))
+* updated packem to v1.9.2 ([47bdc2d](https://github.com/visulima/visulima/commit/47bdc2dfaeca4e7014dbe7772eae2fdf8c8b35bb))
+
+### Styles
+
+* cs fixes ([46d31e0](https://github.com/visulima/visulima/commit/46d31e082e1865262bf380859c14fabd28ff456d))
+
+### Miscellaneous Chores
+
+* changed edge browser to webkit ([2164067](https://github.com/visulima/visulima/commit/216406705e097550efd7f7b8d9526792515f3323))
+* **inspector:** added test for handle circular refs in errors ([8749976](https://github.com/visulima/visulima/commit/8749976d25906a92d2e535179ffdc3f9e0721f9b))
+* **inspector:** fixed browser tests ([2ce9948](https://github.com/visulima/visulima/commit/2ce994804a2f65258414f9c75fb38b8f4ffb0240))
+* updated dev dependencies ([a916944](https://github.com/visulima/visulima/commit/a916944b888bb34c34b0c54328b38d29e4399857))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.13
+
+## @visulima/inspector [1.0.12](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.11...@visulima/inspector@1.0.12) (2024-10-05)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.12
+
+## @visulima/inspector [1.0.11](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.10...@visulima/inspector@1.0.11) (2024-10-05)
+
+### Bug Fixes
+
+* updated dev dependencies, updated packem to v1.0.7, fixed naming of some lint config files ([c071a9c](https://github.com/visulima/visulima/commit/c071a9c8e129014a962ff654a16f302ca18a5c67))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([736c6ce](https://github.com/visulima/visulima/commit/736c6ce7270b3e525a8ea9f79646a2a3fde47d4e))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.11
+
+## @visulima/inspector [1.0.10](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.9...@visulima/inspector@1.0.10) (2024-09-24)
+
+### Bug Fixes
+
+* update packem to v1 ([05f3bc9](https://github.com/visulima/visulima/commit/05f3bc960df10a1602e24f9066e2b0117951a877))
+* updated esbuild from v0.23 to v0.24 ([3793010](https://github.com/visulima/visulima/commit/3793010d0d549c0d41f85dea04b8436251be5fe8))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([05edb67](https://github.com/visulima/visulima/commit/05edb671285b1cc42875223314b24212e6a12588))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.10
+
+## @visulima/inspector [1.0.9](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.8...@visulima/inspector@1.0.9) (2024-09-11)
+
+### Bug Fixes
+
+* fixed node10 support ([f5e78d9](https://github.com/visulima/visulima/commit/f5e78d9bff8fd603967666598b34f9338a8726b5))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([28b5ee5](https://github.com/visulima/visulima/commit/28b5ee5c805ca8868536418829cde7ba8c5bb8dd))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.9
+
+## @visulima/inspector [1.0.8](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.7...@visulima/inspector@1.0.8) (2024-09-07)
+
+### Bug Fixes
+
+* fixed broken chunk splitting from packem ([1aaf277](https://github.com/visulima/visulima/commit/1aaf27779292d637923c5f8a220e18606e78caa2))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.8
+
+## @visulima/inspector [1.0.7](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.6...@visulima/inspector@1.0.7) (2024-09-07)
+
+### Bug Fixes
+
+* added types support for node10 ([604583f](https://github.com/visulima/visulima/commit/604583fa3c24b950fafad45d17e7a1333040fd76))
+
+### Styles
+
+* cs fixes ([f5c4af7](https://github.com/visulima/visulima/commit/f5c4af7cfa9fc79b6d3fa60c1e48d88bffab5a08))
+
+### Miscellaneous Chores
+
+* update dev dependencies ([0738f98](https://github.com/visulima/visulima/commit/0738f9810478bb215ce4b2571dc8874c4c503089))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.7
+
+## @visulima/inspector [1.0.6](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.5...@visulima/inspector@1.0.6) (2024-08-30)
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([45c2a76](https://github.com/visulima/visulima/commit/45c2a76bc974ecb2c6b172c3af03373d4cc6a5ce))
+* updated dev dependencies ([da46d8e](https://github.com/visulima/visulima/commit/da46d8ef8a964c086060944172f1bd931b7bde9a))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.6
+
+## @visulima/inspector [1.0.5](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.4...@visulima/inspector@1.0.5) (2024-08-04)
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.5
+
+## @visulima/inspector [1.0.4](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.3...@visulima/inspector@1.0.4) (2024-08-01)
+
+### Bug Fixes
+
+* upgraded @visulima/packem ([dc0cb57](https://github.com/visulima/visulima/commit/dc0cb5701b30f3f81404346c909fd4daf891b894))
+
+### Miscellaneous Chores
+
+* updated dev dependencies ([ac67ec1](https://github.com/visulima/visulima/commit/ac67ec1bcba16175d225958e318199f60b10d179))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.4
+
+## @visulima/inspector [1.0.3](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.2...@visulima/inspector@1.0.3) (2024-07-22)
+
+### Bug Fixes
+
+* **inspector:** don't throw when global is not defined ([daa9f94](https://github.com/visulima/visulima/commit/daa9f94cc52937e80aeaeef20a561094f242a849))
+
+### Styles
+
+* cs fixes ([ee5ed6f](https://github.com/visulima/visulima/commit/ee5ed6f31bdabcfacdb0d1abd1eff2cc6207cefc))
+* cs fixes ([cf19938](https://github.com/visulima/visulima/commit/cf199384f25cd6e97d4041317b35b6a3cc586f88))
+* cs fixes found by eslint and prettier ([69ef744](https://github.com/visulima/visulima/commit/69ef7444c0bfbf1c94763623332e06b7fffc0039))
+* fixed found code style issue with eslint and prettier ([114e9c9](https://github.com/visulima/visulima/commit/114e9c9f23518cbfa3814af6cee868233431f312))
+
+### Miscellaneous Chores
+
+* changed typescript version back to 5.4.5 ([55d28bb](https://github.com/visulima/visulima/commit/55d28bbdc103718d19f844034b38a0e8e5af798a))
+* **inspector:** added tests for printing the constructor name for non-plain objects ([65e2c47](https://github.com/visulima/visulima/commit/65e2c472bc199623b4b383227451a3cfd79985b9))
+* **inspector:** fixed wrong expected test body ([f9fe6d3](https://github.com/visulima/visulima/commit/f9fe6d331ee2537ae1e9692f53d091db645a8096))
+* updated dev dependencies ([34df456](https://github.com/visulima/visulima/commit/34df4569f2fc074823a406c44a131c8fbae2b147))
+* updated dev dependencies ([de0f8a6](https://github.com/visulima/visulima/commit/de0f8a6b9030acbc044e5bc0f78091fb1ec89a28))
+* updated dev dependencies ([c889486](https://github.com/visulima/visulima/commit/c889486f8980741f459b993648c1b6d0815e3d66))
+* updated dev dependencies and sorted the package.json ([9571572](https://github.com/visulima/visulima/commit/95715725a8ed053ca24fd1405a55205c79342ecb))
+
+## @visulima/inspector [1.0.2](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.1...@visulima/inspector@1.0.2) (2024-06-14)
+
+### Bug Fixes
+
+* **inspector:** exported missing option type ([8e27954](https://github.com/visulima/visulima/commit/8e2795435e51f5e7f27ebe936bc6484b7f713744))
+
+## @visulima/inspector [1.0.1](https://github.com/visulima/visulima/compare/@visulima/inspector@1.0.0...@visulima/inspector@1.0.1) (2024-06-13)
+
+### Miscellaneous Chores
+
+* **inspector:** update wrong changelog ([51d8fe4](https://github.com/visulima/visulima/commit/51d8fe448671acd40e3b2e6a03f6009454a9a84b))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 1.4.3
+
+## @visulima/inspector 1.0.0 (2024-06-11)
+
+### Features
+
+* **inspector:** new inspector package ([#419](https://github.com/visulima/visulima/issues/419)) ([1dc58dd](https://github.com/visulima/visulima/commit/1dc58dd97aabb8e45795274a3fc1a460c005ebbb))

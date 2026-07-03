@@ -1,0 +1,190 @@
+import { join } from "@visulima/path";
+
+import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared";
+import type { MigrateLogger, MigrationReport } from "./types";
+
+interface TurboJson {
+    extends?: string[];
+    globalDependencies?: string[];
+    globalEnv?: string[];
+    globalPassThroughEnv?: string[];
+    pipeline?: Record<string, TurboTask>;
+    remoteCache?: {
+        apiUrl?: string;
+        enabled?: boolean;
+        signature?: boolean;
+        teamId?: string;
+    };
+    tasks?: Record<string, TurboTask>;
+    ui?: "stream" | "tui";
+}
+
+interface TurboTask {
+    cache?: boolean;
+    dependsOn?: string[];
+    env?: string[];
+    inputs?: string[];
+    interactive?: boolean;
+    outputLogs?: "errors-only" | "full" | "hash-only" | "new-only" | "none";
+    outputs?: string[];
+    passThroughEnv?: string[];
+    persistent?: boolean;
+}
+
+const convertDependsOn = (deps: string[]): (string | { dependencies?: boolean; projects?: string | string[]; target: string })[] =>
+    // eslint-disable-next-line sonarjs/function-return-type -- vis dependsOn syntax accepts either a bare task name or a structured ref; preserving both shapes keeps the migration output minimal
+    deps.map((dep) => {
+        if (dep.startsWith("^")) {
+            return { dependencies: true, target: dep.slice(1) };
+        }
+
+        if (dep.includes("#")) {
+            const [project, target] = dep.split("#");
+
+            return { projects: project, target: target! };
+        }
+
+        return dep;
+    });
+
+const renderVisConfig = (turbo: TurboJson, workspaceRoot: string, useEditorconfig?: boolean): string => {
+    const turboTasks = turbo.tasks ?? turbo.pipeline ?? {};
+    const tasks: Record<string, Record<string, unknown>> = {};
+
+    for (const [taskName, task] of Object.entries(turboTasks)) {
+        if (taskName.includes("#")) {
+            continue;
+        }
+
+        const options: Record<string, unknown> = {};
+
+        if (task.persistent) {
+            options.persistent = true;
+        }
+
+        if (task.interactive) {
+            options.interactive = true;
+        }
+
+        const entry: Record<string, unknown> = {};
+
+        if (task.cache === false) {
+            entry.cache = false;
+        }
+
+        if (task.dependsOn && task.dependsOn.length > 0) {
+            entry.dependsOn = convertDependsOn(task.dependsOn);
+        }
+
+        if (task.inputs && task.inputs.length > 0) {
+            entry.inputs = task.inputs;
+        }
+
+        if (task.outputs && task.outputs.length > 0) {
+            entry.outputs = task.outputs;
+        }
+
+        if (task.env && task.env.length > 0) {
+            entry.env = task.env;
+        }
+
+        if (task.passThroughEnv && task.passThroughEnv.length > 0) {
+            entry.passThroughEnv = task.passThroughEnv;
+        }
+
+        if (Object.keys(options).length > 0) {
+            entry.options = options;
+        }
+
+        tasks[taskName] = entry;
+    }
+
+    const configObject: Record<string, unknown> = {};
+
+    if (Object.keys(tasks).length > 0) {
+        configObject.tasks = tasks;
+    }
+
+    const taskRunner: Record<string, unknown> = {};
+
+    if (turbo.globalDependencies && turbo.globalDependencies.length > 0) {
+        taskRunner.globalInputs = turbo.globalDependencies;
+    }
+
+    if (turbo.globalEnv && turbo.globalEnv.length > 0) {
+        taskRunner.globalEnv = turbo.globalEnv;
+    }
+
+    if (turbo.globalPassThroughEnv && turbo.globalPassThroughEnv.length > 0) {
+        taskRunner.globalPassThroughEnv = turbo.globalPassThroughEnv;
+    }
+
+    if (Object.keys(taskRunner).length > 0) {
+        configObject.taskRunner = taskRunner;
+    }
+
+    const serialised = serializeConfigObject(configObject, join(workspaceRoot, "vis.config.ts"), useEditorconfig);
+
+    return [
+        "// Migrated from turbo.json by `vis migrate turborepo`.",
+        "// Review the generated `tasks` block and move project-specific tasks",
+        "// into each project's project.json.",
+        "",
+        "import { defineConfig } from \"@visulima/vis/config\";",
+        "",
+        `export default defineConfig(${serialised});`,
+        "",
+    ].join("\n");
+};
+
+/**
+ * Translates a `turbo.json` into a `vis.config.ts`.
+ * @param workspaceRoot Absolute workspace root path.
+ * @param options Migration options.
+ * @param options.dryRun When true, render the config but skip writing it to disk.
+ * @param options.useEditorconfig When false, skip `.editorconfig` discovery for indent.
+ * @param logger Logger for user feedback.
+ * @param report Migration report to append manual steps and warnings.
+ */
+export const migrateTurborepo = (
+    workspaceRoot: string,
+    options: { dryRun?: boolean; useEditorconfig?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): void => {
+    const turbo = readJsonConfig<TurboJson>(workspaceRoot, "turbo.json");
+
+    if (!turbo) {
+        logger.warn("No turbo.json found in workspace root — nothing to migrate.");
+        report.warnings.push("No turbo.json at workspace root.");
+
+        return;
+    }
+
+    const rendered = renderVisConfig(turbo, workspaceRoot, options.useEditorconfig);
+
+    if (!writeVisConfig(workspaceRoot, rendered, options, logger, report)) {
+        return;
+    }
+
+    report.manualSteps.push(
+        "Review the `tasks` block in vis.config.ts — project-specific tasks (turbo's project#task syntax) were skipped and should be moved into each project's project.json.",
+    );
+    report.manualSteps.push(
+        "vis adds two task primitives turbo doesn't have: `when: { os, env, branch, ci, not.* }` for conditional execution and `always: true` for finally/teardown tasks that run even when upstream fails. See docs/guides/conditional-and-finally-tasks.mdx.",
+    );
+
+    const tasks = turbo.tasks ?? turbo.pipeline ?? {};
+
+    const hasOutputLogs = Object.values(tasks).some((t) => t.outputLogs !== undefined);
+
+    if (hasOutputLogs) {
+        report.warnings.push("`outputLogs` was found on one or more tasks but vis has no equivalent setting — review and remove.");
+    }
+
+    if (turbo.remoteCache?.enabled) {
+        report.manualSteps.push(
+            "turbo remote cache detected. vis speaks the same HTTP protocol — set taskRunner.remoteCache { url, token, teamId } in vis.config.ts, or keep your TURBO_API / TURBO_TOKEN / TURBO_TEAM env vars (vis honours them as fallbacks).",
+        );
+    }
+};

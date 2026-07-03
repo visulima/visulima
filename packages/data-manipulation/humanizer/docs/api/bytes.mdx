@@ -1,0 +1,412 @@
+---
+title: "Bytes API"
+---
+
+# Bytes API
+
+Complete API reference for bytes formatting and parsing functions.
+
+## formatBytes()
+
+Formats numeric bytes into a human-readable string.
+
+### Signature
+
+```typescript
+function formatBytes(bytes: number, options?: FormateByteOptions): string;
+```
+
+### Parameters
+
+#### bytes
+
+- **Type:** `number`
+- **Required:** Yes
+- **Description:** The byte value to format
+
+Must be a finite number. Non-finite values (Infinity, NaN) will throw a TypeError.
+
+#### options
+
+- **Type:** `FormateByteOptions`
+- **Required:** No
+- **Description:** Configuration options for formatting
+
+### Options
+
+#### decimals
+
+- **Type:** `number`
+- **Default:** `0`
+- **Description:** Number of decimal places to show
+
+```typescript
+formatBytes(1234567, { decimals: 2 });
+// => "1.18 MB"
+```
+
+#### locale
+
+- **Type:** `string`
+- **Default:** `"en-US"`
+- **Description:** Locale for number formatting (uses Intl.NumberFormat)
+
+```typescript
+formatBytes(1234567, { decimals: 2, locale: "de-DE" });
+// => "1,18 MB"
+```
+
+#### long
+
+- **Type:** `boolean`
+- **Default:** `false`
+- **Description:** Use long unit names instead of abbreviations
+
+```typescript
+formatBytes(1024, { long: true });
+// => "1 Kilobytes"
+```
+
+#### units
+
+- **Type:** `"metric" | "iec" | "metric_octet" | "iec_octet"`
+- **Default:** `"metric"`
+- **Description:** Unit system to use
+
+- **`"metric"`**: KB, MB, GB (base 10: 1000)
+- **`"iec"`**: KiB, MiB, GiB (base 2: 1024)
+- **`"metric_octet"`**: ko, Mo, Go (French, base 10)
+- **`"iec_octet"`**: Kio, Mio, Gio (French, base 2)
+
+```typescript
+formatBytes(1024, { units: "iec" });
+// => "1 KiB"
+```
+
+#### base
+
+- **Type:** `2 | 10`
+- **Default:** `2`
+- **Description:** Mathematical base for unit conversion
+
+- **`2`**: Binary (1 KB = 1024 bytes)
+- **`10`**: Decimal (1 KB = 1000 bytes)
+
+```typescript
+formatBytes(1000, { base: 10 });
+// => "1 KB"
+```
+
+#### unit
+
+- **Type:** `string` (e.g., `"KB"`, `"MB"`, `"GB"`)
+- **Default:** `undefined` (auto-detect)
+- **Description:** Force output to a specific unit
+
+```typescript
+formatBytes(1234567, { unit: "KB", decimals: 2 });
+// => "1,205.63 KB"
+```
+
+#### space
+
+- **Type:** `boolean`
+- **Default:** `true`
+- **Description:** Include space between value and unit
+
+```typescript
+formatBytes(1024, { space: false });
+// => "1KB"
+```
+
+#### Additional Intl.NumberFormat Options
+
+All standard [Intl.NumberFormat options](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl/NumberFormat/NumberFormat) are supported:
+
+- `notation`: `"standard" | "scientific" | "engineering" | "compact"`
+- `useGrouping`: `boolean`
+- `minimumFractionDigits`: `number`
+- `maximumFractionDigits`: `number`
+- And more...
+
+```typescript
+formatBytes(1234567890, {
+    unit: "KB",
+    notation: "scientific",
+});
+// => "1.234567890E6 KB"
+```
+
+### Returns
+
+- **Type:** `string`
+- **Description:** Formatted byte string
+
+### Throws
+
+- **TypeError:** If `bytes` is not a number
+- **TypeError:** If `bytes` is not finite (NaN, Infinity)
+
+### Examples
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+// Basic usage
+formatBytes(1024);
+// => "1 KB"
+
+// With decimals
+formatBytes(1234567, { decimals: 2 });
+// => "1.18 MB"
+
+// German locale
+formatBytes(1234567, { decimals: 2, locale: "de-DE" });
+// => "1,18 MB"
+
+// Long format
+formatBytes(1024, { long: true });
+// => "1 Kilobytes"
+
+// IEC units
+formatBytes(1024, { units: "iec" });
+// => "1 KiB"
+
+// Force specific unit
+formatBytes(1234567, { unit: "KB", decimals: 2 });
+// => "1,205.63 KB"
+
+// Base 10
+formatBytes(1000, { base: 10 });
+// => "1 KB"
+```
+
+---
+
+## parseBytes()
+
+Parses a human-readable byte string into a numeric value.
+
+### Signature
+
+```typescript
+function parseBytes(value: string, options?: ParseByteOptions): number;
+```
+
+### Parameters
+
+#### value
+
+- **Type:** `string`
+- **Required:** Yes
+- **Description:** The byte string to parse
+
+Examples: `"1 KB"`, `"1.5 MB"`, `"2GB"`, `"1 Megabytes"`
+
+#### options
+
+- **Type:** `ParseByteOptions`
+- **Required:** No
+- **Description:** Configuration options for parsing
+
+### Options
+
+#### locale
+
+- **Type:** `string`
+- **Default:** `"en-US"`
+- **Description:** Locale for parsing localized number formats
+
+```typescript
+parseBytes("117,70 MB", { locale: "de-DE" });
+// => 123417395.2
+```
+
+#### units
+
+- **Type:** `"metric" | "iec" | "metric_octet" | "iec_octet"`
+- **Default:** `"metric"`
+- **Description:** Unit system for parsing
+
+```typescript
+parseBytes("1 KiB", { units: "iec" });
+// => 1024
+```
+
+#### base
+
+- **Type:** `2 | 10`
+- **Default:** `2`
+- **Description:** Mathematical base for unit conversion
+
+```typescript
+parseBytes("1 KB", { base: 10 });
+// => 1000
+```
+
+### Returns
+
+- **Type:** `number`
+- **Description:** Byte value in numeric form
+- **Special Values:** Returns `NaN` for invalid input
+
+### Throws
+
+- **TypeError:** If `value` is not a string or is empty
+- **TypeError:** If `value` exceeds 100 characters
+
+### Examples
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+// Basic usage
+parseBytes("1 KB");
+// => 1024
+
+parseBytes("1.5 MB");
+// => 1572864
+
+// Case insensitive
+parseBytes("1 kb");
+// => 1024
+
+// Without space
+parseBytes("1MB");
+// => 1048576
+
+// Localized (German)
+parseBytes("117,70 MB", { locale: "de-DE" });
+// => 123417395.2
+
+// IEC units
+parseBytes("1 KiB", { units: "iec" });
+// => 1024
+
+// Base 10
+parseBytes("1 KB", { base: 10 });
+// => 1000
+
+// Invalid input
+parseBytes("invalid");
+// => NaN
+```
+
+---
+
+## Type Definitions
+
+### FormateByteOptions
+
+```typescript
+interface FormateByteOptions<T = string> {
+    /**
+     * Number of decimal places to display
+     * @default 0
+     */
+    decimals?: number;
+
+    /**
+     * Locale for number formatting
+     * @default "en-US"
+     */
+    locale?: string;
+
+    /**
+     * Use long unit names (e.g., "Megabytes" instead of "MB")
+     * @default false
+     */
+    long?: boolean;
+
+    /**
+     * Unit system to use
+     * @default "metric"
+     */
+    units?: "metric" | "iec" | "metric_octet" | "iec_octet";
+
+    /**
+     * Mathematical base for conversion (2 = binary, 10 = decimal)
+     * @default 2
+     */
+    base?: 2 | 10;
+
+    /**
+     * Force a specific unit (e.g., "KB", "MB")
+     */
+    unit?: T;
+
+    /**
+     * Include space between value and unit
+     * @default true
+     */
+    space?: boolean;
+
+    /**
+     * Additional Intl.NumberFormat options
+     */
+    notation?: "standard" | "scientific" | "engineering" | "compact";
+    useGrouping?: boolean;
+    minimumFractionDigits?: number;
+    maximumFractionDigits?: number;
+    // ... other Intl.NumberFormat options
+}
+```
+
+### ParseByteOptions
+
+```typescript
+interface ParseByteOptions {
+    /**
+     * Locale for parsing localized numbers
+     * @default "en-US"
+     */
+    locale?: string;
+
+    /**
+     * Unit system for parsing
+     * @default "metric"
+     */
+    units?: "metric" | "iec" | "metric_octet" | "iec_octet";
+
+    /**
+     * Mathematical base for conversion
+     * @default 2
+     */
+    base?: 2 | 10;
+}
+```
+
+### IntlLocale
+
+All CLDR locales are supported. Common examples:
+
+```typescript
+type IntlLocale = "en-US" | "en-GB" | "de-DE" | "fr-FR" | "es-ES" | "ja-JP" | "zh-CN";
+// ... 700+ more locales
+```
+
+---
+
+## Unit Reference
+
+### Metric Units (Base 10)
+
+| Unit      | Short | Long      | Value                 |
+| --------- | ----- | --------- | --------------------- |
+| Bytes     | B     | Bytes     | 1                     |
+| Kilobytes | KB    | Kilobytes | 1,000                 |
+| Megabytes | MB    | Megabytes | 1,000,000             |
+| Gigabytes | GB    | Gigabytes | 1,000,000,000         |
+| Terabytes | TB    | Terabytes | 1,000,000,000,000     |
+| Petabytes | PB    | Petabytes | 1,000,000,000,000,000 |
+
+### IEC Units (Base 2)
+
+| Unit      | Short | Long      | Value                 |
+| --------- | ----- | --------- | --------------------- |
+| Bytes     | B     | Bytes     | 1                     |
+| Kibibytes | KiB   | Kibibytes | 1,024                 |
+| Mebibytes | MiB   | Mebibytes | 1,048,576             |
+| Gibibytes | GiB   | Gibibytes | 1,073,741,824         |
+| Tebibytes | TiB   | Tebibytes | 1,099,511,627,776     |
+| Pebibytes | PiB   | Pebibytes | 1,125,899,906,842,624 |

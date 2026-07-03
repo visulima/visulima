@@ -1,0 +1,405 @@
+@import "tailwindcss";
+
+/*
+ * Nothing-inspired design language, aligned with the vis audit/graph reports.
+ * Monochrome canvas, typographically driven, red is the only interrupt.
+ * Tokens are plain CSS custom properties so the dashboard follows
+ * `prefers-color-scheme` by default and honors an explicit
+ * `html[data-theme]` toggle for the persisted manual choice.
+ *
+ * Light is the :root default (warm off-white "printed technical manual"),
+ * `prefers-color-scheme: dark` flips to a soft instrument-panel dark
+ * (#141414, not OLED black — keeps text contrast comfortable), and an
+ * explicit `html[data-theme]` wins over both. Accent red, fonts, and
+ * spacing are identical across modes.
+ */
+
+@layer base {
+    :root {
+        --bg: #f5f5f5;
+        --panel: #ffffff;
+        --panel2: #f0f0f0;
+        --fg: #000000;
+        /* --muted/--faint pass WCAG AA on --bg. */
+        --muted: #555555;
+        --faint: #707070;
+        --border: #e0e0e0;
+        --border2: #bdbdbd;
+        --row-hover: #f0f0f0;
+        --accent: #d71921;
+        --accent-soft: rgba(215, 25, 33, 0.05);
+        --link: #0050c0;
+        --success: #1f7a3d;
+        --warning: #8a5a00;
+
+        --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+        --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+
+        --ease-out: cubic-bezier(0.25, 0.1, 0.25, 1);
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            /* Soft dark, not OLED black — instrument-panel feel without the
+               crushed contrast of pure #000. */
+            --bg: #141414;
+            --panel: #1c1c1c;
+            --panel2: #242424;
+            --fg: #ffffff;
+            --muted: #b8b8b8;
+            --faint: #8a8a8a;
+            --border: #2e2e2e;
+            --border2: #3e3e3e;
+            --row-hover: #1f1f1f;
+            --accent: #ff4d54;
+            --accent-soft: rgba(255, 77, 84, 0.08);
+            --link: #7eb0f9;
+            --success: #6dbf80;
+            --warning: #e0b860;
+        }
+    }
+
+    html[data-theme="light"] {
+        --bg: #f5f5f5;
+        --panel: #ffffff;
+        --panel2: #f0f0f0;
+        --fg: #000000;
+        --muted: #555555;
+        --faint: #707070;
+        --border: #e0e0e0;
+        --border2: #bdbdbd;
+        --row-hover: #f0f0f0;
+        --accent: #d71921;
+        --accent-soft: rgba(215, 25, 33, 0.05);
+        --link: #0050c0;
+        --success: #1f7a3d;
+        --warning: #8a5a00;
+    }
+
+    html[data-theme="dark"] {
+        --bg: #141414;
+        --panel: #1c1c1c;
+        --panel2: #242424;
+        --fg: #ffffff;
+        --muted: #b8b8b8;
+        --faint: #8a8a8a;
+        --border: #2e2e2e;
+        --border2: #3e3e3e;
+        --row-hover: #1f1f1f;
+        --accent: #ff4d54;
+        --accent-soft: rgba(255, 77, 84, 0.08);
+        --link: #7eb0f9;
+        --success: #6dbf80;
+        --warning: #e0b860;
+    }
+
+    * {
+        box-sizing: border-box;
+        border-color: var(--border);
+    }
+
+    html {
+        -webkit-text-size-adjust: 100%;
+    }
+
+    html,
+    body {
+        font-family: var(--sans);
+        /* Dot-matrix motif: subtle uniform grid, the Nothing signature.
+           Pure CSS, no assets, no network. */
+        background-color: var(--bg);
+        background-image: radial-gradient(circle, var(--border) 0.5px, transparent 0.5px);
+        background-size: 14px 14px;
+        color: var(--fg);
+        line-height: 1.5;
+        -webkit-font-smoothing: antialiased;
+        font-feature-settings: "ss01";
+    }
+
+    ::selection {
+        background: var(--accent);
+        color: #ffffff;
+    }
+
+    *::-webkit-scrollbar {
+        width: 10px;
+        height: 10px;
+    }
+
+    *::-webkit-scrollbar-track {
+        background: transparent;
+    }
+
+    *::-webkit-scrollbar-thumb {
+        background: var(--border2);
+    }
+
+    *::-webkit-scrollbar-thumb:hover {
+        background: var(--faint);
+    }
+
+    a {
+        color: var(--link);
+        text-decoration: none;
+    }
+
+    code {
+        font-family: var(--mono);
+        font-size: 12px;
+    }
+}
+
+@theme inline {
+    --color-bg: var(--bg);
+    --color-panel: var(--panel);
+    --color-panel2: var(--panel2);
+    --color-fg: var(--fg);
+    --color-muted: var(--muted);
+    --color-faint: var(--faint);
+    --color-border: var(--border);
+    --color-border2: var(--border2);
+    --color-row-hover: var(--row-hover);
+    --color-accent: var(--accent);
+    --color-accent-soft: var(--accent-soft);
+    --color-link: var(--link);
+    --color-success: var(--success);
+    --color-warning: var(--warning);
+
+    --font-sans: var(--sans);
+    --font-mono: var(--mono);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   UTILITIES
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@utility nd-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    line-height: 1.2;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+}
+
+@utility nd-mono {
+    font-family: var(--mono);
+    font-variant-numeric: tabular-nums;
+}
+
+@utility nd-hero {
+    /* Mirrors `.verdict .vnum` from the audit report. */
+    font-family: var(--mono);
+    font-size: clamp(64px, 14vw, 148px);
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    font-variant-numeric: tabular-nums;
+}
+
+/* Brand wordmark: matches `.brand` from audit/graph. Sans, tight tracking,
+   the one place weight does the work; red slash as the sole accent. */
+@utility nd-brand {
+    font-family: var(--sans);
+    font-size: clamp(22px, 2.6vw, 30px);
+    font-weight: 600;
+    color: var(--fg);
+    line-height: 1;
+    letter-spacing: -0.01em;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   COMPONENT CLASSES — kept in CSS where var() reads or pseudo states matter
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@layer components {
+    .nd-slash {
+        color: var(--accent);
+        margin-inline: 0.12em;
+        font-weight: 300;
+    }
+
+    /* Chip + ghost button — controls look like controls; no fill, text
+       brightens on hover. */
+    .nd-chip {
+        font-family: var(--mono);
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        border: 1px solid var(--border2);
+    }
+
+    .nd-tbtn {
+        font-family: var(--mono);
+        letter-spacing: 0.08em;
+        color: var(--muted);
+        border: 1px solid var(--border2);
+        background: transparent;
+        transition:
+            border-color 0.2s var(--ease-out),
+            color 0.2s var(--ease-out);
+    }
+
+    .nd-tbtn:hover {
+        color: var(--fg);
+        border-color: var(--fg);
+    }
+
+    /* Severity / accent badge: outline only, dot + label, color on the
+       value. Matches `.badge` from audit report. */
+    .nd-badge {
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        border: 1px solid currentColor;
+    }
+
+    /* Table primitives — header row reads as an instrument-panel label. */
+    .nd-thead th {
+        font-family: var(--mono);
+        letter-spacing: 0.11em;
+        color: var(--faint);
+        background: var(--bg);
+        border-bottom: 1px solid var(--border2);
+        text-transform: uppercase;
+    }
+
+    .nd-row td {
+        border-bottom: 1px solid var(--border);
+    }
+
+    .nd-row:hover td {
+        background: var(--row-hover);
+    }
+
+    /* Masthead — mirrors `.masthead` from audit/graph reports. Brand left,
+       nav tabs centre, controls right, all sharing the same 28px control
+       height. Border-bottom only; no fill. */
+    .nd-masthead {
+        border-bottom: 1px solid var(--border);
+    }
+
+    .nd-brand-sub {
+        font-family: var(--mono);
+        letter-spacing: 0.22em;
+        color: var(--faint);
+        text-transform: uppercase;
+    }
+
+    /* Nav tab — chip-shaped technical button. Active item swaps to the
+       foreground color, no fill, no underline. */
+    .nd-navtab {
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        color: var(--muted);
+        border: 1px solid var(--border2);
+        background: transparent;
+        transition:
+            border-color 0.2s var(--ease-out),
+            color 0.2s var(--ease-out);
+    }
+
+    .nd-navtab:hover {
+        color: var(--fg);
+        border-color: var(--fg);
+    }
+
+    .nd-navtab[data-active="true"] {
+        color: var(--fg);
+        border-color: var(--fg);
+    }
+
+    .nd-navtab .nd-navtab-ord {
+        color: var(--faint);
+        margin-right: 0.6em;
+    }
+
+    .nd-navtab[data-active="true"] .nd-navtab-ord {
+        color: var(--accent);
+    }
+
+    /* Footer signature — mirrors `.sig` from audit/graph. */
+    .nd-sig {
+        font-family: var(--mono);
+        letter-spacing: 0.1em;
+        color: var(--faint);
+        border-top: 1px solid var(--border);
+    }
+
+    .nd-sig b {
+        color: var(--muted);
+        font-weight: 500;
+    }
+
+    .nd-sig-by {
+        color: var(--muted);
+    }
+
+    .anolilab-logo {
+        height: 13px;
+        width: auto;
+        fill: var(--fg);
+    }
+
+    .anolilab-accent {
+        fill: #dfff1b;
+    }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ANIMATIONS — percussive only
+   ──────────────────────────────────────────────────────────────────────────── */
+
+@keyframes nd-blink {
+    0%,
+    49% {
+        opacity: 1;
+    }
+    50%,
+    100% {
+        opacity: 0.15;
+    }
+}
+
+@keyframes nd-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.nd-blink {
+    animation: nd-blink 1.4s steps(2) infinite;
+}
+
+.nd-fade-in {
+    animation: nd-fade-in 250ms var(--ease-out) both;
+}
+
+.nd-stagger > * {
+    animation: nd-fade-in 350ms var(--ease-out) both;
+}
+
+.nd-stagger > *:nth-child(1) {
+    animation-delay: 0ms;
+}
+.nd-stagger > *:nth-child(2) {
+    animation-delay: 60ms;
+}
+.nd-stagger > *:nth-child(3) {
+    animation-delay: 120ms;
+}
+.nd-stagger > *:nth-child(4) {
+    animation-delay: 180ms;
+}
+.nd-stagger > *:nth-child(5) {
+    animation-delay: 240ms;
+}
+.nd-stagger > *:nth-child(6) {
+    animation-delay: 300ms;
+}
+.nd-stagger > *:nth-child(7) {
+    animation-delay: 360ms;
+}
+.nd-stagger > *:nth-child(8) {
+    animation-delay: 420ms;
+}

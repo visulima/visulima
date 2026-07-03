@@ -1,0 +1,36 @@
+---
+title: "Quick Start"
+---
+
+# Quick Start
+
+## Basic Table
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+table.setHeaders(["Name", "Email"]);
+table.addRow(["John", "john@example.com"]);
+table.addRow(["Jane", "jane@example.com"]);
+
+console.log(table.render());
+```
+
+## With Styling
+
+```typescript
+const table = createTable({
+    maxWidth: 80,
+    style: {
+        paddingLeft: 1,
+        paddingRight: 1,
+    },
+});
+```
+
+## Column Alignment
+
+```typescript
+table.setHeaders(["Name", { content: "Age", hAlign: "center" }, { content: "Score", hAlign: "right" }]);
+```

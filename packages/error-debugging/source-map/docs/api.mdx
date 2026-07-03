@@ -1,0 +1,24 @@
+---
+title: "API"
+---
+
+# API Reference
+
+## `SourceMapConsumer.fromSourceMap(map)`
+
+Create consumer from source map object.
+
+## `consumer.originalPositionFor(position)`
+
+Get original position from generated.
+
+**Parameters:**
+
+- `line` (number)
+- `column` (number)
+
+**Returns:** Original position object
+
+## `consumer.generatedPositionFor(position)`
+
+Get generated position from original.

@@ -1,0 +1,22 @@
+---
+title: "API"
+---
+
+# API Reference
+
+## `isAnsiColorSupported(): number`
+
+Returns color support level.
+
+**Returns:**
+
+- `0` - No colors
+- `1` - 16 colors
+- `2` - 256 colors
+- `3` - TrueColor
+
+**Example:**
+
+```typescript
+const level = isAnsiColorSupported();
+```

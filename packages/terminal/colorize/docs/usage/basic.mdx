@@ -1,0 +1,335 @@
+---
+title: "Basic Usage"
+description: "Learn the fundamental usage patterns for @visulima/colorize including colors, styles, and syntax options."
+---
+
+# Basic Usage
+
+This guide covers the fundamental usage patterns for **@visulima/colorize**.
+
+## Import Styles
+
+### Named Import (Recommended)
+
+Import specific colors and styles for the most concise code:
+
+```typescript
+import { red, green, blue, bold, italic } from "@visulima/colorize";
+
+console.log(red("Error"));
+console.log(green.bold("Success"));
+```
+
+### Default Import
+
+Use the default import for Chalk-compatible syntax:
+
+```typescript
+import colorize from "@visulima/colorize";
+
+console.log(colorize.red("Error"));
+console.log(colorize.green.bold("Success"));
+```
+
+### Combined Imports
+
+Mix default and named imports:
+
+```typescript
+import colorize, { red, strip } from "@visulima/colorize";
+
+const coloredText = red("Error");
+const plainText = colorize.strip(coloredText);
+```
+
+## Syntax Options
+
+Colorize supports three syntax styles for maximum flexibility:
+
+### 1. Function Syntax
+
+Pass strings as function arguments:
+
+```typescript
+import { red, green, blue } from "@visulima/colorize";
+
+console.log(red("Error message"));
+console.log(green("Success message"));
+console.log(blue("Information"));
+```
+
+### 2. Template Literal Syntax
+
+Use template literals for cleaner code:
+
+```typescript
+import { red, green, blue } from "@visulima/colorize";
+
+console.log(red`Error message`);
+console.log(green`Success message`);
+console.log(blue`Information`);
+```
+
+### 3. Template Literal with Variables
+
+Interpolate variables within template literals:
+
+```typescript
+import { red, blue, green } from "@visulima/colorize";
+
+const filename = "config.json";
+const line = 42;
+
+console.log(red`Error in ${filename} at line ${line}`);
+// Output: Error in config.json at line 42 (all in red)
+```
+
+## Base ANSI 16 Colors
+
+### Foreground Colors
+
+Standard terminal colors for text:
+
+```typescript
+import {
+    black,
+    red,
+    green,
+    yellow,
+    blue,
+    magenta,
+    cyan,
+    white,
+    gray, // alias: grey
+} from "@visulima/colorize";
+
+console.log(black`Black text`);
+console.log(red`Red text`);
+console.log(green`Green text`);
+console.log(yellow`Yellow text`);
+console.log(blue`Blue text`);
+console.log(magenta`Magenta text`);
+console.log(cyan`Cyan text`);
+console.log(white`White text`);
+console.log(gray`Gray text`); // or grey
+```
+
+### Bright Colors
+
+Brighter variants of standard colors:
+
+```typescript
+import { blackBright, redBright, greenBright, yellowBright, blueBright, magentaBright, cyanBright, whiteBright } from "@visulima/colorize";
+
+console.log(redBright`Bright red`);
+console.log(greenBright`Bright green`);
+console.log(blueBright`Bright blue`);
+```
+
+### Background Colors
+
+Apply colors to text background using `bg` prefix:
+
+```typescript
+import {
+    bgBlack,
+    bgRed,
+    bgGreen,
+    bgYellow,
+    bgBlue,
+    bgMagenta,
+    bgCyan,
+    bgWhite,
+    white, // for foreground
+} from "@visulima/colorize";
+
+console.log(white.bgRed`White text on red background`);
+console.log(white.bgBlue`White text on blue background`);
+console.log(bgGreen`Green background`);
+```
+
+### Bright Background Colors
+
+```typescript
+import { bgBlackBright, bgRedBright, bgGreenBright, bgYellowBright, bgBlueBright, bgMagentaBright, bgCyanBright, bgWhiteBright } from "@visulima/colorize";
+
+console.log(bgRedBright`Bright red background`);
+console.log(bgGreenBright`Bright green background`);
+```
+
+## Text Styles
+
+### Basic Styles
+
+```typescript
+import { bold, dim, italic, underline, strikethrough } from "@visulima/colorize";
+
+console.log(bold`Bold text`);
+console.log(dim`Dimmed text`);
+console.log(italic`Italic text`);
+console.log(underline`Underlined text`);
+console.log(strikethrough`Strikethrough text`); // alias: strike
+```
+
+### Special Styles
+
+```typescript
+import { inverse, hidden, visible, reset } from "@visulima/colorize";
+
+console.log(inverse`Inverted colors`);
+console.log(hidden`Hidden text`); // Text is invisible
+console.log(visible`Always visible`);
+console.log(reset`Reset all styles`);
+```
+
+## Chained Syntax
+
+Chain multiple colors and styles together:
+
+### Color + Style
+
+```typescript
+import { red, green, blue, bold, italic, underline } from "@visulima/colorize";
+
+console.log(red.bold`Bold red text`);
+console.log(green.italic`Italic green text`);
+console.log(blue.underline`Underlined blue text`);
+```
+
+### Multiple Styles
+
+```typescript
+import { red, bold, italic, underline } from "@visulima/colorize";
+
+console.log(red.bold.italic`Bold italic red`);
+console.log(bold.underline.green`Bold underlined green`);
+console.log(red.bold.underline.italic`All styles combined`);
+```
+
+### Foreground + Background
+
+```typescript
+import { white, red, green, bgRed, bgGreen } from "@visulima/colorize";
+
+console.log(white.bgRed`White text on red background`);
+console.log(red.bgGreen`Red text on green background`);
+```
+
+### Any Order
+
+Styles can be chained in any order:
+
+```typescript
+import { bold, red, underline } from "@visulima/colorize";
+
+console.log(bold.red.underline`Style order 1`);
+console.log(red.bold.underline`Style order 2`);
+console.log(underline.bold.red`Style order 3`);
+// All produce the same result
+```
+
+## Nested Styling
+
+Nest colored text within other colored text:
+
+### Basic Nesting
+
+```typescript
+import { red, blue } from "@visulima/colorize";
+
+console.log(red`Error: ${blue`file.js`} not found`);
+// Output: "Error: file.js not found" with different colors
+```
+
+### Deep Nesting
+
+```typescript
+import { green, yellow, magenta, cyan, red } from "@visulima/colorize";
+
+console.log(green`Level 1 ${yellow`Level 2 ${magenta`Level 3 ${cyan`Level 4 ${red`Level 5`}`}`}`} back to Level 1`);
+```
+
+### Nested with Styles
+
+```typescript
+import { red, blue, bold, italic, underline } from "@visulima/colorize";
+
+console.log(red`Error in ${bold.blue`file.js`} at ${italic`line 42`}`);
+console.log(bold`Important: ${underline.red`Critical error`} detected`);
+```
+
+## Handling Edge Cases
+
+Colorize handles edge cases gracefully:
+
+### Empty and Null Values
+
+```typescript
+import { red } from "@visulima/colorize";
+
+console.log(red()); // Returns: ""
+console.log(red("")); // Returns: ""
+console.log(red(undefined)); // Returns: ""
+console.log(red(null)); // Returns: ""
+```
+
+### Newlines
+
+Colors properly break at newlines:
+
+```typescript
+import { bgGreen, red } from "@visulima/colorize";
+
+console.log(bgGreen`First line
+Second line
+Third line`);
+// Each line has green background properly applied
+```
+
+## Strip ANSI Codes
+
+Remove all ANSI color codes from strings:
+
+```typescript
+import colorize, { red, green, bold } from "@visulima/colorize";
+// or
+import { strip } from "@visulima/colorize/utils";
+
+const styledText = red.bold`Error message`;
+const plainText = colorize.strip(styledText);
+
+console.log(styledText); // Output: Error message (colored and bold)
+console.log(plainText); // Output: Error message (plain text)
+```
+
+## Using ANSI Codes Directly
+
+Access raw ANSI codes for custom implementations:
+
+```typescript
+import { green, red, bold } from "@visulima/colorize";
+
+// Each style has 'open' and 'close' properties
+console.log(`Hello ${green.open}World${green.close}!`);
+
+// Define custom styles
+const myStyle = bold.italic.red.bgYellow;
+console.log(`Custom: ${myStyle.open}styled text${myStyle.close}`);
+
+console.log("Open code:", green.open); // \x1b[32m
+console.log("Close code:", green.close); // \x1b[39m
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Advanced Features" href="/advanced">
+        Explore 256 colors, TrueColor, and gradients
+    </Card>
+    <Card title="Examples" href="/examples">
+        See real-world usage examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>

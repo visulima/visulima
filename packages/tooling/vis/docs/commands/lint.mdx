@@ -1,0 +1,200 @@
+---
+title: "vis lint"
+description: "Orchestrate detected source-code linters (eslint, …) across the workspace"
+---
+
+# vis lint
+
+Runs every detected source-code linter against the workspace, normalizes their output into a shared `Finding` shape, and prints them in human, JSON, or minimal format. Designed to add new linters over time without changing the command surface.
+
+Ships with adapters for **oxlint**, **biome**, **ESLint**, **stylelint** (CSS), **ruff** (Python), **markdownlint-cli2** (Markdown), **shellcheck** (shell scripts), and **deno lint**. The orchestrator runs each one that's present in the workspace.
+
+## Usage
+
+```bash
+vis lint [files…] [options]
+```
+
+With no files, the orchestrator runs each adapter against `.` so the tool's own ignore semantics apply. Pass file paths to lint a specific subset.
+
+## Examples
+
+```bash
+# Run every detected linter
+vis lint
+
+# Apply auto-fixes where the tool supports them
+vis lint --fix
+
+# Lint a specific subset
+vis lint src/foo.ts src/bar.ts
+
+# Emit findings as JSON for CI / editor integrations
+vis lint --format json
+
+# Suppress warnings — only errors are reported
+vis lint --quiet
+
+# Treat any warning as a failure (per-adapter --max-warnings 0)
+vis lint --max-warnings 0
+
+# Only lint files changed vs the main branch
+vis lint --since main
+
+# Only lint files currently staged in the git index
+vis lint --staged
+
+# Re-run linters whenever watched files change (cache makes incremental near-free)
+vis lint --watch
+
+# Write a SARIF report to a file instead of stdout
+vis lint --format sarif --output lint.sarif
+```
+
+## Options
+
+| Option           | Default | Description                                                                                  |
+| ---------------- | ------- | -------------------------------------------------------------------------------------------- |
+| `--fix`          | `false` | Apply auto-fixes in place                                                                    |
+| `--format`       | `human` | Output format: `human`, `json`, `minimal`, `sarif`, `junit`, or `github`                     |
+| `--quiet`        | `false` | Suppress warnings — report errors only                                                       |
+| `--max-warnings` |         | Fail the run if more than N warnings are reported                                            |
+| `--since`        |         | Only lint files changed vs the given git ref (branch/tag/sha)                                |
+| `--staged`       | `false` | Only lint files currently staged in the git index                                            |
+| `--output`       |         | Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`) |
+| `--watch`        | `false` | Re-run linters whenever watched files change                                                 |
+
+### `--since`
+
+`vis lint --since <ref>` narrows the input to files that changed relative to `<ref>` — committed, staged, unstaged, and untracked all qualify. Each adapter only sees files whose extension it claims, so a CSS-only change skips ESLint and a TS-only change skips stylelint. When `<ref>` doesn't exist (or the directory isn't a git repo) the command falls back to a workspace-wide run and warns.
+
+### `--staged`
+
+`vis lint --staged` narrows the input to files currently in the git index — the same model `lint-staged` uses. Use it in a pre-commit hook to lint only what is about to be committed. Each adapter only sees staged files whose extension it claims. When nothing is staged the command exits early with a `✓ lint: no staged files` message. Outside a git repo (or with git unavailable) the command falls back to a workspace-wide run and warns.
+
+### `--watch`
+
+`vis lint --watch` keeps the command running, runs an initial cycle, and then re-runs whenever a file matching any eligible adapter's extension set changes. Events are debounced (200 ms) and coalesced — concurrent edits batch into a single follow-up run rather than queueing one per keystroke. The orchestrator's content-addressed cache means the incremental cycle only spawns the tools whose inputs actually changed. The loop watches the workspace root recursively (via Watchman when available, falling back to `node:fs.watch`) and ignores `node_modules`, `.git`, and `.vis`. Exit with Ctrl-C (SIGINT) or SIGTERM.
+
+### `--output`
+
+`vis lint --output <path>` writes the reporter payload to a file instead of stdout. The file's parent directory is created as needed; the special values `-` and `stdout` route to `process.stdout` and `stderr` routes to `process.stderr`. The flag only applies to machine-readable formats (`json`, `minimal`, `sarif`, `junit`, `github`) — combining it with the default `human` format logs a warning and is ignored.
+
+## Pre-commit integration
+
+`vis lint --staged --fix` is the recommended entry for the `staged` block in `vis.config.ts` — it auto-detects every installed linter, only sees staged files, and applies fixes in place so the commit ends up with the cleaned tree. Pair it with `vis fmt --staged` to enforce formatting alongside lint fixes.
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    staged: {
+        "*": ["vis lint --staged --fix", "vis fmt --staged"],
+    },
+});
+```
+
+`vis init` scaffolds exactly this block when pre-commit hooks are enabled; `vis hook install` then wires `.vis/hooks/pre-commit` to invoke `vis staged`. In CI, `vis ci lint test build` runs lint as part of the affected-targets pipeline — no extra plumbing required.
+
+## Caching
+
+When `vis lint` is invoked with an explicit file list or `--since`, results are cached under `<workspaceRoot>/.vis/cache/lint-fmt/<adapter>/` keyed by the adapter's config fingerprint plus a SHA-256 of every input file's bytes. A subsequent run with the same inputs replays the stored `RunResult` instead of spawning the tool.
+
+The cache is skipped for:
+
+- `--fix` runs (writes mutate the working tree)
+- workspace-wide runs that pass `.` (the file vector is unbounded)
+- runs where `VIS_NO_CACHE=1` is set
+
+Failed or killed processes are never stored. Clear the cache with `vis cache clean` or by removing the directory directly.
+
+## Detection
+
+The orchestrator probes each adapter against the workspace root and runs the ones that report themselves present. An adapter opts in when **either** a tool-native config file exists **or** the tool is declared in `package.json` (any dep field).
+
+| Adapter      | Config files probed                                                                                                   | package.json key                        |
+| ------------ | --------------------------------------------------------------------------------------------------------------------- | --------------------------------------- |
+| oxlint       | `.oxlintrc.json`, `.oxlintrc.jsonc`, `oxlint.json`, `oxlint.jsonc`                                                    | `oxlint`                                |
+| biome        | `biome.json`, `biome.jsonc`                                                                                           | `@biomejs/biome`                        |
+| eslint       | `eslint.config.{js,mjs,cjs,ts,mts}`, `.eslintrc`, `.eslintrc.{js,cjs,json,yaml,yml}`                                  | `eslint`                                |
+| stylelint    | `stylelint.config.{ts,js,mjs,cjs}`, `.stylelintrc`, `.stylelintrc.{json,js,cjs,yml,yaml}`                             | `stylelint`                             |
+| ruff-check   | `ruff.toml`, `.ruff.toml`, `pyproject.toml` with `[tool.ruff]`                                                        | `ruff`, `@astral-sh/ruff`               |
+| markdownlint | `.markdownlint.{json,jsonc,yaml,yml}`, `.markdownlintrc[.{json,yaml,yml}]`, `.markdownlint-cli2.{jsonc,yaml,cjs,mjs}` | `markdownlint-cli2`, `markdownlint-cli` |
+| shellcheck   | `.shellcheckrc` (system binary — not an npm package)                                                                  | `shellcheck`                            |
+| deno-lint    | `deno.json`, `deno.jsonc` (no npm package — `deno` is a runtime)                                                      | —                                       |
+
+When multiple lint adapters are detected, they run in this default precedence: `oxlint → biome → eslint → stylelint → ruff-check → markdownlint → shellcheck → deno-lint`. The Rust-native oxlint pass runs first as a fast pre-filter, biome handles its bespoke rule set, ESLint catches what the others don't, stylelint covers CSS/SCSS, and deno-lint runs last since deno coexists with the npm-native pipeline rather than replacing it. Override with `lint.order` in `vis.config.ts`.
+
+## Configuration
+
+`vis.config.ts` exposes a `lint` block for workspace-wide tuning. CLI flags always win over config.
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    lint: {
+        // Override the default precedence; unlisted adapters still run, appended after.
+        order: ["biome", "eslint"],
+        adapters: {
+            // Skip an adapter even when its config is detected.
+            "deno-lint": { enabled: false },
+            // Append flags verbatim to every eslint invocation.
+            eslint: { extraArgs: ["--rulesdir", "./eslint-rules"] },
+        },
+    },
+});
+```
+
+## Output formats
+
+### Human (default)
+
+Per-file blocks with `line:column severity message  ruleId`. A trailing line reports total errors and warnings.
+
+### JSON
+
+```json
+{
+    "findings": [
+        {
+            "adapter": "eslint",
+            "file": "/repo/src/a.ts",
+            "fixable": false,
+            "line": 10,
+            "column": 5,
+            "message": "...",
+            "ruleId": "no-bad",
+            "severity": "error"
+        }
+    ],
+    "runs": [{ "adapter": "eslint", "durationMs": 1234, "exitCode": 1, "findingCount": 1 }]
+}
+```
+
+### Minimal
+
+Tab-separated lines, one per finding, suitable for `awk`/`cut` pipelines:
+
+```
+eslint	src/a.ts	10	5	error	no-bad	'foo' is not defined
+```
+
+### SARIF
+
+`--format sarif` emits a [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html) document on stdout — one `run` per adapter, with `tool.driver.rules` aggregated from the findings. File paths under `workspaceRoot` are emitted relative to a `SRCROOT` `uriBaseId` so the report is portable across machines. Use this format with the [GitHub code-scanning upload action](https://github.com/github/codeql-action) or any other SARIF-aware ingestor.
+
+### JUnit
+
+`--format junit` emits a Surefire-flavoured JUnit XML report — one `<testsuite>` per adapter and one `<testcase>` per finding. Errors land as `<failure type="error">`, warnings as `<failure type="warning">`. GitLab CI, GitHub Actions test reporters, Jenkins and Bitbucket all parse this dialect without an extra plugin.
+
+### GitHub Actions
+
+`--format github` emits [workflow commands](https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions) — one `::error|warning|notice file=…,line=…,col=…,title=…::message` line per finding — so the Actions runner annotates the corresponding lines inline in the pull request. File paths are emitted relative to the workspace root so GitHub resolves them against the checked-out tree. Multi-line messages and reserved characters in property values are percent-encoded per spec.
+
+## Exit codes
+
+- `0` — no errors and every adapter exited cleanly
+- `1` — at least one error finding, or at least one adapter exited non-zero without producing any findings (process-level failure)
+
+Warnings alone do not fail the run — that's `--max-warnings`' job.

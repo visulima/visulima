@@ -1,0 +1,71 @@
+---
+title: "vis attest"
+description: "Emit and verify supply-chain attestations (in-toto SLSA provenance + Sigstore)"
+---
+
+# vis attest
+
+Outbound and inbound supply-chain attestation. Two leaves:
+
+- **`vis attest <subject>`** (emit) — build an in-toto SLSA v1 provenance statement for a
+  built artifact and keyless-sign it via Sigstore (Fulcio cert from ambient CI OIDC,
+  Rekor transparency log). Writes a serialized `.sigstore` bundle — authenticity, not
+  just integrity.
+- **`vis attest verify`** — compose the inbound provenance + registry-signature marshalls
+  over the locked dependency graph and gate on regressions (publisher dropped provenance,
+  unknown/expired key id, bad signature).
+
+## Usage
+
+```bash
+vis attest <subject> [options]    # emit
+vis attest verify [options]       # verify
+```
+
+## attest (emit)
+
+Build an in-toto SLSA v1 provenance statement for an artifact and keyless-sign it via
+Sigstore. The artifact's sha256 becomes the in-toto subject digest.
+
+```bash
+vis attest dist/app.tgz                                  # emit dist/app.tgz.sigstore (keyless-signed in CI)
+vis attest dist/app.tgz --output attest.sigstore         # write the bundle to a specific path
+vis attest dist/app.tgz --predicate slsaProvenance       # predicate type (default: slsaProvenance)
+vis attest dist/app.tgz --require-signing                # fail instead of skip-with-warn when no ambient OIDC
+vis attest dist/app.tgz --format json                    # print the signed bundle summary as JSON
+```
+
+### Options — `vis attest <subject>`
+
+| Option              | Default              | Description                                                                               |
+| ------------------- | -------------------- | ----------------------------------------------------------------------------------------- |
+| `--format`          | `table`              | Output format: `table`, `json`, or `ndjson` (json/ndjson go to stdout, logs to stderr)    |
+| `--output`          | `<subject>.sigstore` | Write the serialized Sigstore bundle here                                                 |
+| `--predicate`       | `slsaProvenance`     | Predicate type (`slsaProvenance` → https://slsa.dev/provenance/v1)                        |
+| `--require-signing` | `false`              | Error instead of skip-with-warn when no ambient OIDC token is available (i.e. outside CI) |
+
+## verify
+
+Verify inbound provenance + registry signatures across the locked dependency graph and
+gate on regressions.
+
+```bash
+vis attest verify                       # check every locked dep for provenance/signature problems
+vis attest verify --prod-only           # skip devDependencies
+vis attest verify --format json         # machine-readable findings for CI
+vis attest verify --fail-on error       # exit non-zero only on error-severity findings
+```
+
+### Options — `vis attest verify`
+
+| Option        | Default   | Description                                                                            |
+| ------------- | --------- | -------------------------------------------------------------------------------------- |
+| `--format`    | `table`   | Output format: `table`, `json`, or `ndjson` (json/ndjson go to stdout, logs to stderr) |
+| `--prod-only` | `false`   | Skip devDependencies — verify the production graph only                                |
+| `--fail-on`   | `warning` | Severity that triggers a non-zero exit: `warning` (any finding) or `error`             |
+| `--allowlist` |           | Comma-separated package names to exclude from both marshalls                           |
+
+## Related
+
+- [`vis audit`](./audit) — full supply-chain audit (the inbound marshalls `verify` composes).
+- [`vis security verify-lockfile`](./security) — lockfile-closure policy attestation.

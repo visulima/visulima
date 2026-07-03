@@ -1,0 +1,93 @@
+---
+title: Task Graph
+description: Understanding task graphs and dependency-aware scheduling
+---
+
+# Task Graph
+
+The task graph is the foundation of the task runner. It defines tasks, their dependencies, and determines execution order.
+
+## Structure
+
+A task graph consists of:
+
+- **Tasks** - Individual units of work (e.g., `app:build`, `lib:test`)
+- **Dependencies** - Edges between tasks that define execution order
+- **Roots** - Tasks with no dependencies (entry points)
+
+```typescript
+import { createTaskGraph } from "@visulima/task-runner";
+
+const taskGraph = createTaskGraph(tasks, {
+    projectGraph,
+    targetDefaults: {
+        build: { dependsOn: ["^build"] }, // Run dependency builds first
+    },
+    workspace,
+});
+```
+
+## Task IDs
+
+Tasks are identified by the format `project:target:configuration`:
+
+```typescript
+import { getTaskId, parseTaskId } from "@visulima/task-runner";
+
+const id = getTaskId({ project: "my-app", target: "build", configuration: "production" });
+// → "my-app:build:production"
+
+const parsed = parseTaskId("my-app:build");
+// → { project: "my-app", target: "build" }
+```
+
+## Dependency Resolution
+
+The `^` prefix in `dependsOn` means "run this target in dependency projects first":
+
+```typescript
+const targetDefaults = {
+    build: {
+        dependsOn: ["^build"], // Build all dependencies before this project
+    },
+    test: {
+        dependsOn: ["build"], // Build this project before testing
+    },
+};
+```
+
+## Graph Utilities
+
+```typescript
+import { findCycle, makeAcyclic, walkTaskGraph, getDependentTasks, getTransitiveDependencies } from "@visulima/task-runner";
+
+// Detect cycles
+const cycle = findCycle(taskGraph);
+
+// Remove cycle-forming edges
+const acyclicGraph = makeAcyclic(taskGraph);
+
+// Walk in topological order
+walkTaskGraph(taskGraph, (taskId) => {
+    console.log(`Processing ${taskId}`);
+});
+```
+
+## Scheduling
+
+The `TaskScheduler` handles parallel execution with priority-based ordering:
+
+1. Tasks with more dependents are scheduled first (unblocks more work)
+2. Deeper projects in the dependency graph go first
+3. Respects `maxParallel` concurrency limits
+
+```typescript
+import { TaskScheduler } from "@visulima/task-runner";
+
+const scheduler = new TaskScheduler(taskGraph, projectGraph, 4);
+
+while (!scheduler.isComplete()) {
+    const batch = scheduler.getNextBatch();
+    // Execute batch in parallel...
+}
+```

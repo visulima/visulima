@@ -1,0 +1,287 @@
+---
+title: "Building a CLI Application"
+---
+
+# Building a CLI Application
+
+Learn how to build a production-ready CLI application with Cerebro from start to finish.
+
+## Project Setup
+
+Create a new project:
+
+```bash
+mkdir my-cli && cd my-cli
+npm init -y
+npm install @visulima/cerebro @visulima/command-line-args @visulima/error
+```
+
+Create `src/cli.ts`:
+
+```typescript
+#!/usr/bin/env node
+import { createCerebro } from "@visulima/cerebro";
+
+const cli = createCerebro("my-cli", {
+    packageName: "my-cli",
+    packageVersion: "1.0.0",
+});
+
+// Commands will go here
+
+await cli.run();
+```
+
+Make it executable:
+
+```bash
+chmod +x src/cli.ts
+```
+
+## Add Commands
+
+Create command files in `src/commands/`:
+
+```typescript
+// src/commands/build.ts
+import type { Command } from "@visulima/cerebro";
+
+export const buildCommand: Command = {
+    name: "build",
+    description: "Build the project",
+    options: [
+        {
+            name: "output",
+            alias: "o",
+            description: "Output directory",
+            type: String,
+            defaultValue: "./dist",
+        },
+        {
+            name: "production",
+            alias: "p",
+            description: "Production build",
+            type: Boolean,
+        },
+    ],
+    execute: async ({ options, logger }) => {
+        logger.log(`Building project...`);
+        logger.log(`Output: ${options.output}`);
+        logger.log(`Mode: ${options.production ? "production" : "development"}`);
+
+        // Build logic here
+        await performBuild(options);
+
+        logger.log("Build complete!");
+    },
+};
+
+async function performBuild(options: any) {
+    // Your build logic
+}
+```
+
+Register commands:
+
+```typescript
+// src/cli.ts
+import { buildCommand } from "./commands/build";
+import { deployCommand } from "./commands/deploy";
+
+cli.addCommand(buildCommand);
+cli.addCommand(deployCommand);
+```
+
+## Add Plugins
+
+Install and use plugins:
+
+```bash
+npm install @visulima/fs @visulima/path
+```
+
+```typescript
+// src/cli.ts
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+import { updateNotifierPlugin } from "@visulima/cerebro/plugin/update-notifier";
+
+cli.use(errorHandlerPlugin({ exitOnError: true }));
+cli.use(
+    updateNotifierPlugin({
+        packageName: "my-cli",
+        packageVersion: "1.0.0",
+        checkInterval: 86400000, // 24 hours
+    }),
+);
+```
+
+## Configuration
+
+Create a configuration system:
+
+```typescript
+// src/config.ts
+import { resolve } from "path";
+import { readFileSync, existsSync } from "fs";
+
+export interface Config {
+    output: string;
+    minify: boolean;
+    sourcemap: boolean;
+}
+
+export function loadConfig(cwd: string): Config {
+    const configPath = resolve(cwd, "my-cli.config.json");
+
+    if (existsSync(configPath)) {
+        const content = readFileSync(configPath, "utf-8");
+        return JSON.parse(content);
+    }
+
+    return {
+        output: "./dist",
+        minify: false,
+        sourcemap: true,
+    };
+}
+
+// Use in commands
+cli.addCommand({
+    name: "build",
+    execute: async ({ cwd, logger }) => {
+        const config = loadConfig(cwd);
+        logger.log(`Config: ${JSON.stringify(config, null, 2)}`);
+    },
+});
+```
+
+## Package for Distribution
+
+Update `package.json`:
+
+```json
+{
+    "name": "my-cli",
+    "version": "1.0.0",
+    "type": "module",
+    "bin": {
+        "my-cli": "./dist/cli.js"
+    },
+    "files": ["dist"],
+    "scripts": {
+        "build": "tsc",
+        "prepublishOnly": "npm run build"
+    },
+    "dependencies": {
+        "@visulima/cerebro": "^1.0.0"
+    }
+}
+```
+
+Build and test:
+
+```bash
+npm run build
+node dist/cli.js --help
+```
+
+## Link for Local Testing
+
+Test your CLI locally:
+
+```bash
+npm link
+my-cli --help
+```
+
+## Publish to npm
+
+```bash
+npm login
+npm publish
+```
+
+Users can install and use:
+
+```bash
+npm install -g my-cli
+my-cli build --production
+```
+
+## Complete Example
+
+Here's a complete production CLI:
+
+```typescript
+#!/usr/bin/env node
+import { createCerebro } from "@visulima/cerebro";
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+
+const cli = createCerebro("project-cli", {
+    packageName: "@company/project-cli",
+    packageVersion: "2.1.0",
+});
+
+// Use plugins
+cli.use(errorHandlerPlugin({ exitOnError: true }));
+
+// Build command
+cli.addCommand({
+    name: "build",
+    description: "Build the project",
+    options: [
+        {
+            name: "output",
+            alias: "o",
+            type: String,
+            defaultValue: "./dist",
+            description: "Output directory",
+        },
+        {
+            name: "production",
+            alias: "p",
+            type: Boolean,
+            description: "Production mode",
+        },
+    ],
+    execute: async ({ options, logger }) => {
+        logger.log("Building...");
+        // Build logic
+        logger.log("Done!");
+    },
+});
+
+// Deploy command with nested commands
+cli.addCommand({
+    name: "deploy",
+    description: "Deploy application",
+    commands: [
+        {
+            name: "staging",
+            description: "Deploy to staging",
+            execute: async ({ logger }) => {
+                logger.log("Deploying to staging...");
+            },
+        },
+        {
+            name: "production",
+            description: "Deploy to production",
+            options: [
+                {
+                    name: "confirm",
+                    type: Boolean,
+                    required: true,
+                    description: "Confirm production deployment",
+                },
+            ],
+            execute: async ({ options, logger }) => {
+                if (options.confirm) {
+                    logger.log("Deploying to production...");
+                }
+            },
+        },
+    ],
+});
+
+await cli.run();
+```

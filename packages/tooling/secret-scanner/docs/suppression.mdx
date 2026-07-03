@@ -1,0 +1,108 @@
+---
+title: Suppression
+description: Skip known findings with inline comments, block regions, previous-line pragmas, or a baseline JSON.
+---
+
+# Suppression
+
+Four marker families plus a baseline file. All markers match **case-insensitively** and work regardless of the host-language comment syntax (`#`, `//`, `/* */`, `--`, `<!-- -->`, …) — the scanner looks for the marker text itself, not the delimiters.
+
+## 1. Inline comment — `gitleaks:allow` / `secret-scanner:allow` / `pragma: allowlist secret`
+
+Put the marker on the same line as the match.
+
+```typescript
+const token = "ghp_aB3dE4fG5hI6jK7lM8nO9pQ0rS1tU2vW3xY4zA5b"; // gitleaks:allow
+const other = "ghp_zY9xW8vU7tS6rQ5pO4nM3lK2jI1hG0fE9dC8bA7a"; // secret-scanner:allow
+const third = "ghp_bB4cC5dD6eE7fF8gG9hH0iI1jJ2kK3lL4mM5nN6o"; // pragma: allowlist secret
+```
+
+`pragma: allowlist secret` is the [detect-secrets](https://github.com/Yelp/detect-secrets) marker, accepted for smooth migrations. The other two are the historical gitleaks + Visulima forms.
+
+## 2. Block region — `gitleaks:allow-start` / `-end`
+
+Suppresses every finding between two markers. Use for fixture blocks, test data, migration scripts and the like.
+
+```typescript
+// gitleaks:allow-start
+const fixtures = {
+    aws: "AKIAEXAMPLEEXAMPLEEX",
+    stripe: "sk_live_fakefakefakefakefakefakefake",
+};
+// gitleaks:allow-end
+```
+
+Unpaired start markers are ignored — a stray `allow-start` never silently swallows the rest of the file.
+
+Both `gitleaks:...` and `secret-scanner:...` are accepted for every variant (inline, start, end). Case-insensitive.
+
+## 3. Previous-line pragma — `pragma: allowlist nextline secret`
+
+Covers the cases where an inline comment on the secret line is awkward (YAML block scalars) or impossible (PEM bodies, multi-line base64 blobs). Place the marker on the line **immediately before** the finding:
+
+```yaml
+# pragma: allowlist nextline secret
+token: |
+    <multi-line secret body here>
+```
+
+```python
+# pragma: allowlist nextline secret
+STRIPE_KEY = "sk_live_fakefakefakefakefakefakefake"
+```
+
+Only the immediately preceding line is checked — markers two or more lines up have no effect. For larger regions, use the `allow-start` / `allow-end` block form instead.
+
+## 4. Baseline JSON
+
+The richest form — an array of previously-triaged `Finding` objects checked into the repository.
+
+```json
+[
+    {
+        "ruleId": "aws-access-token",
+        "file": "docs/examples.md",
+        "startLine": 42,
+        "endLine": 42,
+        "startColumn": 9,
+        "endColumn": 29,
+        "match": "AKIAEXAMPLEEXAMPLEEX",
+        "secret": "AKIAEXAMPLEEXAMPLEEX",
+        "description": "AWS access key",
+        "entropy": 3.5,
+        "tags": []
+    }
+]
+```
+
+Pass it with the `baseline` option:
+
+```typescript
+import { scan } from "@visulima/secret-scanner";
+
+const findings = await scan([process.cwd()], { baseline: ".secrets-baseline.json" });
+```
+
+The fingerprint used for matching is a **content hash** — SHA-256 over `(secret, ruleId, file)` truncated to 16 hex chars. This means moving a secret up or down the file doesn't invalidate its baseline entry; edits only invalidate the entry if the secret itself, the rule that matched, or the file path changes. Legacy `<file>:<ruleID>:<startLine>` baselines are still accepted on read, so older gitleaks-style baselines keep suppressing correctly while you migrate.
+
+Malformed baselines log a stderr warning and are treated as empty — scans never fail because of a broken file.
+
+### Baseline workflow
+
+1. Run the first scan, triage what's real vs. noise.
+2. Store the noise as a baseline: `vis secrets --init` (generates `.secrets-baseline.json`) or write one by hand.
+3. Commit the baseline.
+4. CI and pre-commit hooks now only flag _new_ findings; triaged ones are silent.
+5. Update with `vis secrets --update-baseline` when more noise surfaces, or `--replace-baseline` to rewrite wholesale.
+
+### Why not `.gitleaksignore`?
+
+`.gitleaksignore` stores only fingerprints (`file:rule:line`). Baselines store full `Finding` objects — same suppression semantics but enough context to see _what_ was triaged, by whom, and which rule. The runtime only supports baseline JSON; the `vis migrate gitleaks` command converts legacy `.gitleaksignore` entries into the richer format.
+
+## What about path exclusion?
+
+Suppression hides **findings**. If you want to hide **whole paths** from the walker, that's a different concern — use `.gitignore`, `walk.excludePatterns` or `walk.excludeFromFiles`. See [Configuration](./configuration.mdx#walk--filesystem-traversal).
+
+## What about automatic false-positive filtering?
+
+The scanner ships four always-on heuristic filters that drop known-placeholder findings (lock files, UUID shapes, sequential strings, non-alphanumeric masks) before they reach you. They aren't user-driven markers like the ones on this page, so they live on the [Configuration](./configuration.mdx#heuristics--post-detection-false-positive-filters) page — toggle each with `config.heuristics.<name>: false` when you need the raw match set.

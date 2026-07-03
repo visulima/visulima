@@ -1,0 +1,15 @@
+{
+    "$schema": "https://json.schemastore.org/tsconfig",
+    "extends": "../../../tsconfig.base.json",
+    "compilerOptions": {
+        "jsx": "react-jsx",
+        "jsxImportSource": "preact",
+        "moduleResolution": "bundler",
+        "paths": {
+            "@/*": ["./src/*"],
+            "*": ["./*"]
+        },
+        "types": ["node", "@visulima/packem/files", "vite/client"]
+    },
+    "include": ["src/**/*", "*.d.ts"]
+}

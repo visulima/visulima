@@ -1,0 +1,10 @@
+{
+    "name": "prompt-app",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "deploy": "bash ./prompt.sh",
+        "lint": "echo 'Linting prompt-app...' && sleep 1 && echo 'No lint errors.'",
+        "test": "echo 'Testing prompt-app...' && sleep 1.5 && echo 'All tests passed!'"
+    }
+}

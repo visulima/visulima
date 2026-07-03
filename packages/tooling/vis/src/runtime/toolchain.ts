@@ -1,0 +1,1800 @@
+/**
+ * Toolchain detection + delegation. `vis toolchain` never installs Node
+ * itself — it detects whichever version manager the developer already has
+ * (proto, mise, fnm, volta, asdf, nvm) and shells out to it. When nothing
+ * is installed, it reports what the user needs to pin and suggests a
+ * manager to install.
+ *
+ * Compared to vite+ (which ships its own managed runtime under ~/.vite-plus),
+ * vis delegates so users stay in the ecosystem they already know. That
+ * keeps vis's binary small and avoids a parallel ~/.vis-plus directory.
+ */
+import { execFileSync } from "node:child_process";
+import { randomBytes } from "node:crypto";
+import { renameSync, unlinkSync, writeFileSync as fsWriteFileSync } from "node:fs";
+// `delimiter` must be the platform-aware PATH separator (";" on Windows):
+// @visulima/path hardcodes ":", which would split Windows drive letters
+// (e.g. "C:/tools") and break PATH scanning. node:path gets it right.
+import { delimiter } from "node:path";
+
+import { isAccessibleSync, readFileSync, readJsonSync } from "@visulima/fs";
+import { join, sep } from "@visulima/path";
+
+/**
+ * Managers vis can auto-detect and delegate to. Kept as a single source
+ * of truth so error messages and docs don't drift out of sync with the
+ * code.
+ */
+export const SUPPORTED_MANAGERS = ["proto", "mise", "fnm", "volta", "asdf", "nvm", "corepack"] as const;
+
+export type VersionManagerName = "asdf" | "corepack" | "fnm" | "mise" | "none" | "nvm" | "proto" | "self-activate" | "volta";
+
+export type RuntimeTool = "aube" | "bun" | "deno" | "go" | "node" | "npm" | "pnpm" | "python" | "ruby" | "rust" | "yarn";
+
+/**
+ * Where an expected version came from, in priority order. Higher-indexed
+ * sources win when the same tool is pinned in multiple places.
+ */
+export type PinSource = ".mise.toml" | ".node-version" | ".nvmrc" | ".prototools" | ".tool-versions" | "engines" | "packageManager" | "vis.config.ts" | "volta";
+
+export interface ToolSpec {
+    readonly source: PinSource;
+    readonly tool: RuntimeTool;
+    readonly version: string;
+}
+
+export interface DetectedManager {
+    /** Detected binary path (when the manager was found in PATH). */
+    readonly binPath?: string;
+    /** Workspace-local config files that belong to this manager. */
+    readonly configFiles: ReadonlyArray<string>;
+    /** `true` if the manager binary is available in PATH. */
+    readonly installed: boolean;
+    readonly name: VersionManagerName;
+    /** `manager --version` output, when obtainable. Not cached across runs. */
+    readonly version?: string;
+}
+
+export interface ToolchainConfig {
+    /**
+     * When a tool pin doesn't match the running version, try to fix it
+     * automatically before `vis run` / `vis ci` proceed. Defaults to
+     * `true` when {@link findInstalledManagers} reports at least one
+     * installed manager, `false` otherwise.
+     *
+     * Set to `false` to keep the doctor-style warning behaviour and
+     * make users run `vis toolchain install` themselves.
+     */
+    readonly autoInstall?: boolean;
+
+    /** Explicit manager override, useful in CI. */
+    readonly preferredManager?: VersionManagerName;
+    /** Overrides for engines/packageManager-derived pins. */
+    readonly tools?: Partial<Record<RuntimeTool, string>>;
+}
+
+/**
+ * Which manager is responsible for a given tool, and whether we can act
+ * on it right now. `self-activate` means the PM binary itself (pnpm 10+,
+ * yarn berry) will switch on next invocation from the `packageManager`
+ * field — no external manager needed.
+ */
+export interface ResolvedManager {
+    readonly installed: boolean;
+    readonly name: VersionManagerName;
+    /** Human-readable reason when installed === false (e.g. "not on PATH"). */
+    readonly note?: string;
+}
+
+export interface ToolStatus {
+    /** What is actually running in this process (node) or on PATH (others). */
+    readonly actual?: string;
+    readonly expected: ToolSpec;
+    /** Which manager vis would delegate to for this specific tool. */
+    readonly manager: ResolvedManager;
+    /** `true` when `actual` satisfies `expected.version`. */
+    readonly matches: boolean;
+}
+
+export interface ToolchainStatus {
+    /** Every manager we found (installed or referenced by config). */
+    readonly detected: ReadonlyArray<DetectedManager>;
+    readonly tools: ReadonlyArray<ToolStatus>;
+}
+
+/**
+ * Managers we try to auto-detect. `self-activate` isn't detected — it's
+ * the pnpm/yarn binary handling `packageManager` itself, so it appears
+ * only as a per-tool resolution, never as a workspace-level manager.
+ */
+type DetectableManager = Exclude<VersionManagerName, "none" | "self-activate">;
+
+/**
+ * Tools each manager is capable of installing. Drives per-tool
+ * resolution in {@link resolveManagerFor}. Corepack is scoped to pnpm/
+ * yarn/npm; fnm / nvm are Node-only; volta is Node + JS package managers;
+ * proto / mise / asdf are catch-all.
+ */
+const MANAGER_CAPABILITIES: Record<DetectableManager, ReadonlyArray<RuntimeTool>> = {
+    // npm / pnpm / yarn are available via community asdf plugins; users
+    // who haven't installed those plugins won't have asdf reach for
+    // them in resolveManagerFor (the manager just won't have a config
+    // file referencing them), so listing them here is safe and matches
+    // the "asdf is catch-all" docstring above.
+    asdf: ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
+    corepack: ["npm", "pnpm", "yarn"],
+    fnm: ["node"],
+    // mise installs aube via the official `aube` registry entry (the
+    // recommended install path per the aube docs). proto/asdf don't have
+    // a published plugin yet — list mise only.
+    mise: ["aube", "bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
+    nvm: ["node"],
+    proto: ["bun", "deno", "go", "node", "npm", "pnpm", "python", "ruby", "rust", "yarn"],
+    volta: ["node", "npm", "pnpm", "yarn"],
+};
+
+const MANAGER_ORDER: ReadonlyArray<DetectableManager> = ["proto", "mise", "fnm", "volta", "asdf", "nvm", "corepack"];
+
+const MANAGER_CONFIG_FILES: Record<DetectableManager, ReadonlyArray<string>> = {
+    asdf: [".tool-versions"],
+    // Corepack's config is the `packageManager` field in package.json; we
+    // detect that separately in `corepackConfigFiles`.
+    corepack: [] as const,
+    fnm: [".nvmrc", ".node-version"],
+    mise: [".mise.toml", ".config/mise.toml", "mise.toml"],
+    nvm: [".nvmrc"],
+    proto: [".prototools"],
+    volta: [] as const,
+};
+
+/**
+ * Per-process memoisation for {@link isOnPath} results. PATH lookups
+ * end up running 30-50 times per `vis toolchain status` invocation
+ * (every manager probe + every tool resolution), and stat'ing the
+ * cartesian product of PATH × PATHEXT is the bottleneck. Cleared by
+ * {@link clearToolchainCache}.
+ */
+const onPathCache = new Map<string, string | undefined>();
+
+/**
+ * Reads `PATH` and returns the resolved absolute path for `binary` if
+ * any entry on PATH contains it (with or without one of the PATHEXT
+ * extensions on Windows). Cheaper than spawning `which` because we
+ * only stat candidate paths.
+ *
+ * On Windows we test the bare name first (so binaries like a git-bash
+ * or Cygwin `node` with no extension still resolve), then iterate
+ * PATHEXT. Surrounding single/double quotes on a PATH entry are
+ * stripped — Windows installers occasionally emit `PATH="C:\Tools\..."`
+ * which strict string-match would skip.
+ *
+ * Exported for testing; most callers use {@link findInstalledManagers}
+ * or {@link resolveToolBinary} instead.
+ */
+export const isOnPath = (binary: string): string | undefined => {
+    const cached = onPathCache.get(binary);
+
+    if (cached !== undefined || onPathCache.has(binary)) {
+        return cached;
+    }
+
+    const pathEnv = process.env["PATH"];
+
+    if (!pathEnv) {
+        onPathCache.set(binary, undefined);
+
+        return undefined;
+    }
+
+    const isWindows = process.platform === "win32";
+    // "" first so a bare-name binary is found before trying PATHEXT
+    // suffixes — matters on Windows where Cygwin / git-bash drop
+    // extensions from POSIX-y binaries.
+    const exts = isWindows ? ["", ...(process.env["PATHEXT"] ?? ".COM;.EXE;.BAT;.CMD").split(";")] : [""];
+
+    for (const rawDir of pathEnv.split(delimiter)) {
+        // Strip surrounding quotes some installers leave behind, and
+        // skip empty segments produced by leading/trailing delimiters.
+        const dir = rawDir.replaceAll(/^["']|["']$/g, "").trim();
+
+        if (dir === "") {
+            continue;
+        }
+
+        for (const ext of exts) {
+            const candidate = `${dir}${sep}${binary}${ext}`;
+
+            if (isAccessibleSync(candidate)) {
+                onPathCache.set(binary, candidate);
+
+                return candidate;
+            }
+        }
+    }
+
+    onPathCache.set(binary, undefined);
+
+    return undefined;
+};
+
+/**
+ * Asks `&lt;binary> --version` for its version string. Returns undefined
+ * when the binary doesn't exist, exits non-zero, or prints something
+ * unparseable. Runs with a short timeout so a wedged binary cannot
+ * stall `vis run`.
+ */
+const queryManagerVersion = (binary: string, args: ReadonlyArray<string> = ["--version"]): string | undefined => {
+    try {
+        const output = execFileSync(binary, args as string[], {
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "ignore"],
+            timeout: 2000,
+        });
+
+        const match = /\d+\.\d+(?:\.\d+)?/.exec(output);
+
+        return match ? match[0] : output.trim() || undefined;
+    } catch {
+        return undefined;
+    }
+};
+
+/**
+ * Volta and corepack both read package.json instead of a sidecar config
+ * file. Volta looks at `volta.&lt;tool>`; corepack looks at `packageManager`.
+ */
+const pkgFieldConfigFiles = (workspaceRoot: string, field: "packageManager" | "volta"): ReadonlyArray<string> => {
+    const pkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        return [];
+    }
+
+    try {
+        const pkg = readJsonSync(pkgPath) as Record<string, unknown>;
+        const value = pkg[field];
+
+        if (field === "volta" && typeof value === "object" && value !== null && Object.keys(value).length > 0) {
+            return ["package.json"];
+        }
+
+        if (field === "packageManager" && typeof value === "string" && value.length > 0) {
+            return ["package.json"];
+        }
+    } catch {
+        // ignore
+    }
+
+    return [];
+};
+
+/**
+ * Walks the configured manager order and records which ones are (a)
+ * installed and (b) have workspace-local config files.
+ */
+const configFilesFor = (name: DetectableManager, workspaceRoot: string): ReadonlyArray<string> => {
+    if (name === "volta") {
+        return pkgFieldConfigFiles(workspaceRoot, "volta");
+    }
+
+    if (name === "corepack") {
+        return pkgFieldConfigFiles(workspaceRoot, "packageManager");
+    }
+
+    return MANAGER_CONFIG_FILES[name].filter((file) => isAccessibleSync(join(workspaceRoot, file)));
+};
+
+/**
+ * Cache keyed by workspace root. Each detection runs `isOnPath` 7× and
+ * spawns up to 7 `--version` subprocesses (each with a 2s timeout), so
+ * repeating the work within a single vis invocation adds noticeable
+ * latency — especially to `status`, which calls
+ * `getToolchainStatus` + `resolveManagerFor` + `executeDetect`.
+ *
+ * The cache lives for the lifetime of the process. Callers that need a
+ * fresh scan (e.g. a future `--refresh` flag, or tests that mutate PATH
+ * between calls on the same workspace root) can pass
+ * `{ refresh: true }` or call {@link clearToolchainCache}.
+ */
+const detectionCache = new Map<string, ReadonlyArray<DetectedManager>>();
+
+/** Clears the memoised detection cache. Useful in tests. */
+export const clearToolchainCache = (): void => {
+    detectionCache.clear();
+    onPathCache.clear();
+};
+
+/**
+ * Walks {@link MANAGER_ORDER} and returns every manager that's either
+ * installed (binary on PATH or shell function present) or referenced
+ * by a workspace-local config file. Memoised per `workspaceRoot`;
+ * pass `{ refresh: true }` to force a fresh scan, or call
+ * {@link clearToolchainCache} between invocations.
+ * @param workspaceRoot Absolute path to the workspace root.
+ * @param options `{ refresh: true }` skips the cache.
+ * @param options.refresh When true, bypass the per-`workspaceRoot` cache.
+ */
+export const findInstalledManagers = (workspaceRoot: string, options?: { refresh?: boolean }): ReadonlyArray<DetectedManager> => {
+    if (!options?.refresh) {
+        const cached = detectionCache.get(workspaceRoot);
+
+        if (cached) {
+            return cached;
+        }
+    }
+
+    const results: DetectedManager[] = [];
+    // pnpm / yarn self-activate from the `packageManager` field, so if
+    // either binary is on PATH we don't need corepack to satisfy that
+    // pin. Used below to decide whether listing corepack as "missing"
+    // is actionable or just noise.
+    const pnpmOrYarnOnPath = Boolean(isOnPath("pnpm")) || Boolean(isOnPath("yarn"));
+
+    for (const name of MANAGER_ORDER) {
+        const binary = name === "nvm" ? undefined : isOnPath(name);
+        // nvm is a shell function, not a real binary — treat it as
+        // installed when $NVM_DIR exists.
+        const nvmInstalled = name === "nvm" && Boolean(process.env["NVM_DIR"]);
+
+        const configFiles = configFilesFor(name, workspaceRoot);
+        const installed = Boolean(binary) || nvmInstalled;
+
+        // Corepack's "config file" is a `packageManager` field in
+        // package.json — which virtually every modern pnpm/yarn
+        // workspace has. Listing it as a detected manager just because
+        // that field exists produces noisy "corepack — referenced but
+        // not installed" warnings on workspaces that don't actually
+        // use corepack (pnpm 10+ self-activates).
+        //
+        // Surface corepack when:
+        //   (a) the binary is genuinely on PATH, OR
+        //   (b) `packageManager` is pinned AND self-activate can't help
+        //       — i.e. no pnpm/yarn binary is installed yet, so the
+        //       user needs corepack (or a manual install) to resolve it.
+        //
+        // Case (b) is the "CI container with only Node" scenario where
+        // corepack really is the missing piece.
+        if (name === "corepack" && !installed) {
+            const hasPackageManagerPin = configFiles.length > 0;
+
+            if (!hasPackageManagerPin || pnpmOrYarnOnPath) {
+                continue;
+            }
+        }
+
+        if (!installed && configFiles.length === 0) {
+            continue;
+        }
+
+        results.push({
+            binPath: binary,
+            configFiles,
+            installed,
+            name,
+            version: binary ? queryManagerVersion(binary) : undefined,
+        });
+    }
+
+    const frozen = Object.freeze(results);
+
+    detectionCache.set(workspaceRoot, frozen);
+
+    return frozen;
+};
+
+/**
+ * Picks the "primary" manager for the workspace — the one `vis toolchain
+ * detect` names and the one used as a display hint in the status view.
+ * Priority:
+ *
+ *   1. `config.preferredManager` (explicit user override). Reported as
+ *      `installed: false` when the named manager isn't on PATH.
+ *   2. First detected manager that is installed AND has a workspace-local
+ *      config file.
+ *   3. First installed manager — even without a local config file.
+ *   4. First manager referenced by a local config file, installed or not
+ *      (so we can still point the user at an installer).
+ *   5. `{ name: "none", ... }` — nothing recognised.
+ *
+ * For per-tool delegation use {@link resolveManagerFor}; this helper is
+ * only useful when the CLI needs a single name to show.
+ */
+export const pickPrimaryManager = (workspaceRoot: string, config?: ToolchainConfig, detected?: ReadonlyArray<DetectedManager>): DetectedManager => {
+    const found = detected ?? findInstalledManagers(workspaceRoot);
+
+    if (config?.preferredManager && config.preferredManager !== "none") {
+        return found.find((d) => d.name === config.preferredManager) ?? { configFiles: [], installed: false, name: config.preferredManager };
+    }
+
+    return (
+        found.find((d) => d.installed && d.configFiles.length > 0)
+        ?? found.find((d) => d.installed)
+        ?? found.find((d) => d.configFiles.length > 0) ?? { configFiles: [], installed: false, name: "none" }
+    );
+};
+
+interface RootPackageJson {
+    engines?: Partial<Record<RuntimeTool, string>>;
+    packageManager?: string;
+    volta?: Partial<Record<RuntimeTool, string>>;
+}
+
+/**
+ * Reads `.nvmrc` / `.node-version` at the workspace root.
+ */
+const readVersionFile = (workspaceRoot: string, names: ReadonlyArray<string>): { name: string; value: string } | undefined => {
+    for (const name of names) {
+        const path = join(workspaceRoot, name);
+
+        if (!isAccessibleSync(path)) {
+            continue;
+        }
+
+        try {
+            const content = readFileSync(path).trim();
+
+            if (content !== "") {
+                return { name, value: content.replace(/^v/, "") };
+            }
+        } catch {
+            // ignore
+        }
+    }
+
+    return undefined;
+};
+
+const PROTO_LINE_RE = /^([a-z][\w-]*)\s*=\s*"?([^"\n#]+?)"?\s*(?:#.*)?$/i;
+
+/**
+ * Parses `.prototools` (TOML-ish key/value). We don't pull in a TOML
+ * parser — the subset proto uses is simple enough to recognise with a
+ * regex per line. Only top-level keys are honoured; sections are
+ * skipped.
+ */
+const parsePrototools = (workspaceRoot: string): ToolSpec[] => {
+    const path = join(workspaceRoot, ".prototools");
+
+    if (!isAccessibleSync(path)) {
+        return [];
+    }
+
+    const content = readFileSync(path);
+    const specs: ToolSpec[] = [];
+    let inSection = false;
+
+    for (const rawLine of content.split(/\r?\n/)) {
+        const line = rawLine.trim();
+
+        if (line === "" || line.startsWith("#")) {
+            continue;
+        }
+
+        if (line.startsWith("[")) {
+            inSection = true;
+            continue;
+        }
+
+        if (inSection) {
+            continue;
+        }
+
+        const match = PROTO_LINE_RE.exec(line);
+
+        if (!match) {
+            continue;
+        }
+
+        const [, rawTool, version] = match;
+
+        const normalizedTool = normalizeToolName(rawTool!);
+
+        if (normalizedTool) {
+            specs.push({ source: ".prototools", tool: normalizedTool, version: version!.trim() });
+        }
+    }
+
+    return specs;
+};
+
+const MISE_TOOL_HEADER_RE = /^\[tools\]\s*$/i;
+const MISE_LINE_RE = /^([a-z][\w-]*)\s*=\s*"?([^"\n#]+?)"?\s*(?:#.*)?$/i;
+
+/**
+ * Parses the `[tools]` section of `.mise.toml`. Same "no TOML parser"
+ * trade-off as `parsePrototools` — mise tool pins are strings.
+ */
+const parseMiseToml = (workspaceRoot: string): ToolSpec[] => {
+    for (const candidate of MANAGER_CONFIG_FILES.mise) {
+        const path = join(workspaceRoot, candidate);
+
+        if (!isAccessibleSync(path)) {
+            continue;
+        }
+
+        const specs: ToolSpec[] = [];
+        const content = readFileSync(path);
+        let inToolsSection = false;
+
+        for (const rawLine of content.split(/\r?\n/)) {
+            const line = rawLine.trim();
+
+            if (line === "" || line.startsWith("#")) {
+                continue;
+            }
+
+            if (line.startsWith("[")) {
+                inToolsSection = MISE_TOOL_HEADER_RE.test(line);
+                continue;
+            }
+
+            if (!inToolsSection) {
+                continue;
+            }
+
+            const match = MISE_LINE_RE.exec(line);
+
+            if (!match) {
+                continue;
+            }
+
+            const [, rawTool, version] = match;
+            const normalizedTool = normalizeToolName(rawTool!);
+
+            if (normalizedTool) {
+                specs.push({ source: ".mise.toml", tool: normalizedTool, version: version!.trim() });
+            }
+        }
+
+        if (specs.length > 0) {
+            return specs;
+        }
+    }
+
+    return [];
+};
+
+/**
+ * Parses `.tool-versions` (asdf / rtx / mise compat). One line per tool.
+ */
+const parseToolVersions = (workspaceRoot: string): ToolSpec[] => {
+    const path = join(workspaceRoot, ".tool-versions");
+
+    if (!isAccessibleSync(path)) {
+        return [];
+    }
+
+    const content = readFileSync(path);
+    const specs: ToolSpec[] = [];
+
+    for (const rawLine of content.split(/\r?\n/)) {
+        const line = rawLine.trim();
+
+        if (line === "" || line.startsWith("#")) {
+            continue;
+        }
+
+        const parts = line.split(/\s+/);
+
+        if (parts.length < 2) {
+            continue;
+        }
+
+        const [rawTool, ...versions] = parts;
+        const normalizedTool = normalizeToolName(rawTool!);
+
+        if (normalizedTool && versions[0]) {
+            specs.push({ source: ".tool-versions", tool: normalizedTool, version: versions[0] });
+        }
+    }
+
+    return specs;
+};
+
+/**
+ * Tools we know how to track. Accepts common aliases (`nodejs` → `node`).
+ */
+const normalizeToolName = (raw: string): RuntimeTool | undefined => {
+    const lower = raw.toLowerCase();
+
+    switch (lower) {
+        case "aube": {
+            return "aube";
+        }
+        case "bun": {
+            return "bun";
+        }
+        case "deno": {
+            return "deno";
+        }
+        case "go":
+        case "golang": {
+            return "go";
+        }
+        case "node":
+        case "nodejs": {
+            return "node";
+        }
+        case "npm": {
+            return "npm";
+        }
+        case "pnpm": {
+            return "pnpm";
+        }
+        case "python":
+        case "python3": {
+            return "python";
+        }
+        case "ruby": {
+            return "ruby";
+        }
+        case "rust":
+        case "rustc": {
+            return "rust";
+        }
+        case "yarn": {
+            return "yarn";
+        }
+        default: {
+            return undefined;
+        }
+    }
+};
+
+/**
+ * Parses a `packageManager` string from package.json. Strips any
+ * SHA checksum (`pnpm@10.0.0+sha...`).
+ */
+const parsePackageManagerField = (field: string): ToolSpec | undefined => {
+    const [nameAndVersion] = field.split("+", 1);
+    const match = /^(pnpm|yarn|npm|bun)@(.+)$/.exec(nameAndVersion ?? "");
+
+    if (!match) {
+        return undefined;
+    }
+
+    const normalizedTool = normalizeToolName(match[1]!);
+
+    if (!normalizedTool) {
+        return undefined;
+    }
+
+    return { source: "packageManager", tool: normalizedTool, version: match[2]! };
+};
+
+/**
+ * Collects every tool pin vis can find, merged by source priority.
+ * Later sources overwrite earlier ones so `vis.config.ts` wins over
+ * `.nvmrc` which wins over `engines.node`.
+ */
+export const parseExpectedTools = (workspaceRoot: string, config?: ToolchainConfig): ReadonlyArray<ToolSpec> => {
+    const merged = new Map<RuntimeTool, ToolSpec>();
+    const add = (spec: ToolSpec): void => {
+        merged.set(spec.tool, spec);
+    };
+
+    const pkgPath = join(workspaceRoot, "package.json");
+    let rootPkg: RootPackageJson = {};
+
+    try {
+        if (isAccessibleSync(pkgPath)) {
+            rootPkg = readJsonSync(pkgPath) as RootPackageJson;
+        }
+    } catch {
+        // ignore
+    }
+
+    if (rootPkg.engines) {
+        for (const [rawTool, version] of Object.entries(rootPkg.engines)) {
+            const normalizedTool = normalizeToolName(rawTool);
+
+            if (normalizedTool && typeof version === "string") {
+                add({ source: "engines", tool: normalizedTool, version });
+            }
+        }
+    }
+
+    if (rootPkg.packageManager) {
+        const pmSpec = parsePackageManagerField(rootPkg.packageManager);
+
+        if (pmSpec) {
+            add(pmSpec);
+        }
+    }
+
+    if (rootPkg.volta) {
+        for (const [rawTool, version] of Object.entries(rootPkg.volta)) {
+            const normalizedTool = normalizeToolName(rawTool);
+
+            if (normalizedTool && typeof version === "string") {
+                add({ source: "volta", tool: normalizedTool, version });
+            }
+        }
+    }
+
+    const nodeFile = readVersionFile(workspaceRoot, [".nvmrc", ".node-version"]);
+
+    if (nodeFile) {
+        add({
+            source: nodeFile.name === ".nvmrc" ? ".nvmrc" : ".node-version",
+            tool: "node",
+            version: nodeFile.value,
+        });
+    }
+
+    for (const spec of parseToolVersions(workspaceRoot)) {
+        add(spec);
+    }
+
+    for (const spec of parseMiseToml(workspaceRoot)) {
+        add(spec);
+    }
+
+    for (const spec of parsePrototools(workspaceRoot)) {
+        add(spec);
+    }
+
+    if (config?.tools) {
+        for (const [rawTool, version] of Object.entries(config.tools)) {
+            const normalizedTool = normalizeToolName(rawTool);
+
+            if (normalizedTool && typeof version === "string") {
+                add({ source: "vis.config.ts", tool: normalizedTool, version });
+            }
+        }
+    }
+
+    return [...merged.values()];
+};
+
+/**
+ * Per-tool lookup for `&lt;tool> --version`-style queries. Most tools
+ * follow the `&lt;tool> --version` convention, but a few don't:
+ *
+ *   - `go` uses `go version` (no `--version`).
+ *   - `rust` is queried via the `rustc` binary (since the source
+ *     pin name is the language, not the compiler binary).
+ *   - `python` is `python --version` on most systems but `python3`
+ *     on others — try both before giving up.
+ */
+const TOOL_VERSION_QUERY: Record<RuntimeTool, { args: ReadonlyArray<string>; binaries: ReadonlyArray<string> }> = {
+    aube: { args: ["--version"], binaries: ["aube"] },
+    bun: { args: ["--version"], binaries: ["bun"] },
+    deno: { args: ["--version"], binaries: ["deno"] },
+    go: { args: ["version"], binaries: ["go"] },
+    node: { args: ["--version"], binaries: ["node"] },
+    npm: { args: ["--version"], binaries: ["npm"] },
+    pnpm: { args: ["--version"], binaries: ["pnpm"] },
+    python: { args: ["--version"], binaries: ["python", "python3"] },
+    ruby: { args: ["--version"], binaries: ["ruby"] },
+    rust: { args: ["--version"], binaries: ["rustc"] },
+    yarn: { args: ["--version"], binaries: ["yarn"] },
+};
+
+/**
+ * Returns the version of a runtime tool on PATH. For `node` we prefer
+ * `node --version` via the PATH-resolved binary over
+ * `process.versions.node` — after a user runs `vis toolchain install`,
+ * the shim may point at a newer Node than the one vis itself is running
+ * on, and the status report should reflect what *subsequent* shell
+ * invocations will see. `process.versions.node` is only the fallback
+ * when there's no `node` on PATH (rare; vis needs one to have booted).
+ */
+const queryToolVersion = (tool: RuntimeTool): string | undefined => {
+    const lookup = TOOL_VERSION_QUERY[tool];
+
+    for (const candidate of lookup.binaries) {
+        const binary = isOnPath(candidate);
+
+        if (binary) {
+            return queryManagerVersion(binary, lookup.args);
+        }
+    }
+
+    if (tool === "node") {
+        return process.versions.node;
+    }
+
+    return undefined;
+};
+
+/**
+ * Minimal semver/range compare. We re-use the same subset as
+ * `runtime-check.ts` — this is NOT a full semver implementation. Unknown
+ * range shapes return `true` so we don't spam warnings.
+ */
+export const satisfies = (actual: string, range: string): boolean => {
+    const normalized = range.trim();
+
+    if (normalized === "" || normalized === "*" || normalized === "latest") {
+        return true;
+    }
+
+    // Pure exact match ("10.32.1")
+    if (/^\d[\d.]*$/.test(normalized)) {
+        return actual === normalized || actual.startsWith(`${normalized}.`);
+    }
+
+    const parse = (version: string): number[] => version.split(/[.\-+]/).map((part) => Number.parseInt(part, 10) || 0);
+    const compare = (a: string, b: string): number => {
+        const aParts = parse(a);
+        const bParts = parse(b);
+        const len = Math.max(aParts.length, bParts.length);
+
+        for (let index = 0; index < len; index++) {
+            const ai = aParts[index] ?? 0;
+            const bi = bParts[index] ?? 0;
+
+            if (ai !== bi) {
+                return ai - bi;
+            }
+        }
+
+        return 0;
+    };
+
+    /**
+     * Evaluate a single AND-group: every space-separated clause must
+     * pass for the group to pass. Used by both single-range and `||`
+     * alternatives below.
+     */
+    const matchesAll = (clauses: ReadonlyArray<string>): boolean => {
+        for (const clause of clauses) {
+            if (clause.startsWith(">=")) {
+                if (compare(actual, clause.slice(2).trim()) < 0) {
+                    return false;
+                }
+            } else if (clause.startsWith("<=")) {
+                if (compare(actual, clause.slice(2).trim()) > 0) {
+                    return false;
+                }
+            } else if (clause.startsWith(">")) {
+                if (compare(actual, clause.slice(1).trim()) <= 0) {
+                    return false;
+                }
+            } else if (clause.startsWith("<")) {
+                if (compare(actual, clause.slice(1).trim()) >= 0) {
+                    return false;
+                }
+            } else if (clause.startsWith("^") || clause.startsWith("~")) {
+                const target = clause.slice(1).trim();
+                const [targetMajor, targetMinor] = parse(target);
+                const [actualMajor, actualMinor] = parse(actual);
+
+                if (actualMajor !== targetMajor) {
+                    return false;
+                }
+
+                if (clause.startsWith("~") && actualMinor !== targetMinor) {
+                    return false;
+                }
+
+                if (compare(actual, target) < 0) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    };
+
+    // Split on `||` first — common npm engines patterns like
+    // `^20 || ^22` mean "any major matches". Then each alternative is
+    // an AND-group of whitespace-separated clauses. Without this, the
+    // OR alternatives would be flattened into AND and never pass.
+    const alternatives = normalized
+        .split("||")
+        .map((alternative) => alternative.trim().split(/\s+/).filter(Boolean))
+        .filter((clauses) => clauses.length > 0);
+
+    if (alternatives.length === 0) {
+        return true;
+    }
+
+    return alternatives.some((clauses) => matchesAll(clauses));
+};
+
+/**
+ * Which managers, in preferred order, could satisfy a pin from the given
+ * source. Drives {@link resolveManagerFor}. The source tells us a lot
+ * about intent — e.g. a `.prototools` entry means the user wants proto,
+ * a `packageManager` field for pnpm/yarn means "let the PM self-activate"
+ * first.
+ */
+const preferenceFor = (source: PinSource, tool: RuntimeTool): ReadonlyArray<VersionManagerName> => {
+    switch (source) {
+        case ".mise.toml": {
+            return ["mise"];
+        }
+        case ".node-version":
+        case ".nvmrc": {
+            return ["fnm", "nvm", "volta", "proto", "mise", "asdf"];
+        }
+        case ".prototools": {
+            return ["proto"];
+        }
+        case ".tool-versions": {
+            // mise reads asdf-format .tool-versions too.
+            return ["asdf", "mise"];
+        }
+        case "packageManager": {
+            if (tool === "pnpm" || tool === "yarn") {
+                // pnpm 10+ and yarn berry self-activate from this field.
+                return ["self-activate", "volta", "proto", "mise", "corepack"];
+            }
+
+            if (tool === "npm") {
+                return ["volta", "proto", "mise", "asdf", "corepack"];
+            }
+
+            if (tool === "aube") {
+                // aube has no corepack support today; mise is the recommended
+                // path per its docs, with brew/npm-global as alternatives.
+                return ["mise"];
+            }
+
+            if (tool === "bun") {
+                return ["proto", "mise", "asdf"];
+            }
+
+            return ["volta", "proto", "mise"];
+        }
+        case "volta": {
+            return ["volta"];
+        }
+        // Catch-all pins (`engines`, `vis.config.ts`, anything else) —
+        // walk every capable manager.
+        default: {
+            return ["proto", "mise", "fnm", "volta", "asdf", "nvm", "corepack"];
+        }
+    }
+};
+
+/**
+ * Picks the manager vis should delegate to for a specific tool pin.
+ * Walks `preferenceFor(source, tool)` and returns the first candidate
+ * that is installed AND capable. Falls back to the first capable
+ * manager (installed or not) so the status report can still name
+ * something. Returns `{ name: "none" }` when truly nothing can help.
+ */
+export const resolveManagerFor = (spec: ToolSpec, detected: ReadonlyArray<DetectedManager>, config?: ToolchainConfig): ResolvedManager => {
+    if (config?.preferredManager && config.preferredManager !== "none" && canHandle(config.preferredManager, spec.tool)) {
+        const override = detected.find((d) => d.name === config.preferredManager);
+
+        // If the user pinned a preferred manager but it isn't on
+        // PATH yet, surface a synthetic uninstalled entry so status
+        // reports `→ <preferredManager> (missing)` instead of
+        // silently falling through to the auto-pick. Mirrors the
+        // contract of `pickPrimaryManager`.
+        return override
+            ? { installed: override.installed, name: override.name }
+            : {
+                installed: false,
+                name: config.preferredManager,
+                note: `${config.preferredManager} is the preferred manager but isn't on PATH`,
+            };
+    }
+
+    const preference = preferenceFor(spec.source, spec.tool);
+
+    for (const name of preference) {
+        if (name === "self-activate") {
+            // Only meaningful for pnpm/yarn when PM binary is installed.
+            if ((spec.tool === "pnpm" || spec.tool === "yarn") && isOnPath(spec.tool)) {
+                return {
+                    installed: true,
+                    name: "self-activate",
+                    note: `${spec.tool} will activate ${spec.version} from the packageManager field on next invocation`,
+                };
+            }
+
+            continue;
+        }
+
+        if (!canHandle(name, spec.tool)) {
+            continue;
+        }
+
+        const match = detected.find((d) => d.name === name);
+
+        if (match?.installed) {
+            return { installed: true, name };
+        }
+    }
+
+    // Fallback: first capable manager, even if uninstalled, so we can at
+    // least suggest it.
+    for (const name of preference) {
+        if (name === "self-activate" || !canHandle(name, spec.tool)) {
+            continue;
+        }
+
+        return { installed: false, name, note: `${name} can install ${spec.tool} — run \`vis toolchain install\` after adding it to PATH` };
+    }
+
+    return { installed: false, name: "none", note: "No manager knows how to install this tool" };
+};
+
+const canHandle = (name: VersionManagerName, tool: RuntimeTool): boolean => {
+    if (name === "none") {
+        return false;
+    }
+
+    if (name === "self-activate") {
+        return tool === "pnpm" || tool === "yarn";
+    }
+
+    return MANAGER_CAPABILITIES[name].includes(tool);
+};
+
+/**
+ * Cross-references every workspace tool pin (engines, packageManager,
+ * .nvmrc, .prototools, .mise.toml, .tool-versions, volta field,
+ * vis.config.ts) against the actual versions on PATH and the
+ * available managers. Drives `vis toolchain status`.
+ * @param workspaceRoot Absolute path to the workspace root.
+ * @param config Resolved toolchain section of vis.config.ts.
+ * @returns A {@link ToolchainStatus} with detected managers and a
+ * per-tool list with each tool's actual / expected versions
+ * and the manager vis would delegate to for `install` / `use`.
+ */
+export const getToolchainStatus = (workspaceRoot: string, config?: ToolchainConfig): ToolchainStatus => {
+    const detected = findInstalledManagers(workspaceRoot);
+    const expectedTools = parseExpectedTools(workspaceRoot, config);
+
+    const tools: ToolStatus[] = expectedTools.map((expected) => {
+        const actual = queryToolVersion(expected.tool);
+        const matches = actual !== undefined && satisfies(actual, expected.version);
+        const manager = resolveManagerFor(expected, detected, config);
+
+        return { actual, expected, manager, matches };
+    });
+
+    return { detected, tools };
+};
+
+export interface InstallInvocation {
+    readonly args: ReadonlyArray<string>;
+    readonly bin: string;
+    readonly hint?: string;
+}
+
+/**
+ * Translates a tool pin into a `&lt;manager> install` invocation. `nvm` is
+ * a shell function, so we emit a hint instead of a runnable command.
+ * Returns `undefined` when we have no mapping for that manager/tool.
+ */
+export const buildInstallInvocation = (manager: VersionManagerName, spec?: ToolSpec): InstallInvocation | undefined => {
+    switch (manager) {
+        case "asdf": {
+            // Refuse the spec-less form: bare `asdf install` reads
+            // .tool-versions and silently succeeds with nothing
+            // installed when that file is absent. Callers must pass a
+            // pin so we can install it explicitly.
+            if (!spec) {
+                return undefined;
+            }
+
+            return { args: ["install", spec.tool, spec.version], bin: "asdf" };
+        }
+        case "corepack": {
+            if (!spec) {
+                // `corepack install` (no args) is corepack 0.22+ (Node
+                // 20.7+). Use `prepare --activate` which is universal
+                // and behaves the same — reads packageManager and
+                // activates the resolved version.
+                return { args: ["prepare", "--activate"], bin: "corepack", hint: "reads the packageManager field in package.json" };
+            }
+
+            // For an explicit pin we prepare+activate so the shim works
+            // immediately.
+            return {
+                args: ["prepare", `${spec.tool}@${spec.version}`, "--activate"],
+                bin: "corepack",
+            };
+        }
+        case "fnm": {
+            // fnm only handles Node, and bare `fnm install` reads
+            // .nvmrc which may not exist — silent no-op. Always
+            // require an explicit version.
+            if (spec?.tool !== "node") {
+                return undefined;
+            }
+
+            return { args: ["install", spec.version], bin: "fnm" };
+        }
+        case "mise": {
+            // Refuse the spec-less form: bare `mise install` reads
+            // .mise.toml / .tool-versions and silently succeeds when
+            // those don't exist. Callers must pass a pin.
+            if (!spec) {
+                return undefined;
+            }
+
+            return { args: ["install", `${spec.tool}@${spec.version}`], bin: "mise" };
+        }
+        case "none": {
+            return undefined;
+        }
+        case "nvm": {
+            return {
+                args: [],
+                bin: "nvm",
+                hint: "nvm is a shell function — run `nvm install` / `nvm use` from your shell",
+            };
+        }
+        case "proto": {
+            // Refuse the spec-less form: bare `proto install` reads
+            // .prototools and silently succeeds when that file isn't
+            // present. Callers must pass a pin.
+            if (!spec) {
+                return undefined;
+            }
+
+            return { args: ["install", spec.tool, spec.version], bin: "proto" };
+        }
+        case "self-activate": {
+            // pnpm 10+ / yarn berry activate from the packageManager field
+            // on next invocation. There's nothing for vis to run — the
+            // next `pnpm <anything>` does the switch. We emit an empty
+            // invocation so the caller knows it's a no-op.
+            return {
+                args: [],
+                bin: spec?.tool ?? "pnpm",
+                hint: `${spec?.tool ?? "pnpm"} will self-activate on next invocation — no install needed`,
+            };
+        }
+        case "volta": {
+            if (!spec) {
+                return { args: ["install", "node@lts"], bin: "volta", hint: "volta pins per-tool; specify <tool>@<version>" };
+            }
+
+            return { args: ["install", `${spec.tool}@${spec.version}`], bin: "volta" };
+        }
+        default: {
+            const exhaustive: never = manager;
+
+            throw new Error(`Unknown manager: ${exhaustive as string}`);
+        }
+    }
+};
+
+export interface UseInvocation {
+    readonly args: ReadonlyArray<string>;
+    readonly bin: string;
+    readonly configChange?: { file: string; hint: string };
+}
+
+/**
+ * Translates `vis toolchain use &lt;tool>@&lt;version>` into the manager-
+ * native equivalent. Also reports which config file the change will
+ * end up in, so the user can commit it.
+ */
+export const buildUseInvocation = (manager: VersionManagerName, spec: ToolSpec): UseInvocation | undefined => {
+    switch (manager) {
+        case "asdf": {
+            return {
+                args: ["local", spec.tool, spec.version],
+                bin: "asdf",
+                configChange: { file: ".tool-versions", hint: `Pins ${spec.tool} ${spec.version}` },
+            };
+        }
+        case "corepack": {
+            if (spec.tool !== "npm" && spec.tool !== "pnpm" && spec.tool !== "yarn") {
+                return undefined;
+            }
+
+            return {
+                args: ["use", `${spec.tool}@${spec.version}`],
+                bin: "corepack",
+                configChange: { file: "package.json", hint: `Writes packageManager: "${spec.tool}@${spec.version}"` },
+            };
+        }
+        case "fnm": {
+            if (spec.tool === "node") {
+                return { args: ["use", spec.version], bin: "fnm" };
+            }
+
+            return undefined;
+        }
+        case "mise": {
+            return {
+                args: ["use", "--", `${spec.tool}@${spec.version}`],
+                bin: "mise",
+                configChange: { file: ".mise.toml", hint: `Pins ${spec.tool} ${spec.version}` },
+            };
+        }
+        case "none": {
+            return undefined;
+        }
+        case "nvm": {
+            if (spec.tool === "node") {
+                return {
+                    args: [],
+                    bin: "nvm",
+                    configChange: { file: ".nvmrc", hint: "Write version to .nvmrc manually (nvm doesn't persist)." },
+                };
+            }
+
+            return undefined;
+        }
+        case "proto": {
+            return {
+                args: ["pin", spec.tool, spec.version],
+                bin: "proto",
+                configChange: { file: ".prototools", hint: `Pins ${spec.tool} ${spec.version}` },
+            };
+        }
+        case "self-activate": {
+            // Edit the packageManager field directly — pnpm/yarn pick it
+            // up on their next run. Returning an invocation with no args
+            // tells the caller to fall back to writing package.json.
+            return {
+                args: [],
+                bin: spec.tool,
+                configChange: {
+                    file: "package.json",
+                    hint: `Set packageManager: "${spec.tool}@${spec.version}" — ${spec.tool} will self-activate on next invocation`,
+                },
+            };
+        }
+        case "volta": {
+            return {
+                args: ["pin", `${spec.tool}@${spec.version}`],
+                bin: "volta",
+                configChange: { file: "package.json", hint: `Writes volta.${spec.tool}` },
+            };
+        }
+        default: {
+            const exhaustive: never = manager;
+
+            throw new Error(`Unknown manager: ${exhaustive as string}`);
+        }
+    }
+};
+
+/**
+ * Walks the same alias list as {@link queryToolVersion} (so
+ * `findOnPathByAlias("rust")` resolves through `rustc`,
+ * `findOnPathByAlias("python")` falls back to `python3`, etc.) and
+ * returns the first hit. Useful for callers that have a `RuntimeTool`
+ * but no manager handle — e.g. `vis toolchain which` when the resolved
+ * manager is `self-activate` / `none`.
+ * @returns the absolute binary path, or undefined when no alias is on PATH.
+ */
+export const findOnPathByAlias = (tool: RuntimeTool): string | undefined => {
+    for (const alias of TOOL_VERSION_QUERY[tool].binaries) {
+        const binary = isOnPath(alias);
+
+        if (binary) {
+            return binary;
+        }
+    }
+
+    return undefined;
+};
+
+/**
+ * Helper for commands: runs `&lt;manager> which &lt;tool>` when available,
+ * returning the resolved binary path. Falls back to PATH lookup,
+ * walking the same alias list as {@link queryToolVersion} so `rust`
+ * resolves via `rustc`, `python` falls back to `python3`, etc.
+ */
+export const resolveToolBinary = (manager: DetectedManager, tool: RuntimeTool): string | undefined => {
+    const aliases = TOOL_VERSION_QUERY[tool].binaries;
+
+    if (
+        manager.installed
+        && manager.binPath // proto/mise/asdf expose `which`; volta has `volta which`; fnm
+        // prints to stdout from `fnm which`. Try each alias in order so
+        // `mise which rust` (which doesn't know "rust") falls back to
+        // `mise which rustc`.
+        && (manager.name === "proto" || manager.name === "mise" || manager.name === "asdf" || manager.name === "volta" || manager.name === "fnm")
+    ) {
+        for (const alias of aliases) {
+            try {
+                const output = execFileSync(manager.binPath, ["which", alias], {
+                    encoding: "utf8",
+                    stdio: ["ignore", "pipe", "ignore"],
+                    timeout: 2000,
+                });
+
+                const trimmed = output.trim();
+
+                if (trimmed) {
+                    return trimmed;
+                }
+            } catch {
+                // try the next alias
+            }
+        }
+    }
+
+    for (const alias of aliases) {
+        const binary = isOnPath(alias);
+
+        if (binary) {
+            return binary;
+        }
+    }
+
+    return undefined;
+};
+
+/**
+ * Writes `body` to `path` atomically — write a sibling temp file,
+ * fsync the bytes (writeFileSync does this), then rename over the
+ * destination. On POSIX rename is atomic, so a concurrent reader
+ * always sees either the old body or the new one, never a half-written
+ * file. On Windows, rename onto an existing path requires the
+ * destination to be writable; that's universally true for files we
+ * own (package.json, .nvmrc).
+ *
+ * Used for `package.json` updates so two `vis toolchain use` runs
+ * racing against each other can't produce a corrupted JSON body.
+ */
+const atomicWrite = (path: string, body: string): void => {
+    // Random suffix avoids collisions when the same workspace is
+    // touched by parallel vis invocations (rare but possible in CI).
+    const tmp = `${path}.${process.pid}.${randomBytes(6).toString("hex")}.tmp`;
+
+    fsWriteFileSync(tmp, body);
+
+    try {
+        renameSync(tmp, path);
+    } catch (error: unknown) {
+        // Best-effort cleanup. If rename failed, the tmp file is still
+        // sitting on disk; if rename succeeded, the unlink is a no-op.
+        try {
+            unlinkSync(tmp);
+        } catch {
+            // ignore
+        }
+
+        throw error;
+    }
+};
+
+/**
+ * Inserts `pkg.packageManager` at a stable position when the field
+ * doesn't yet exist: before `dependencies` / `devDependencies` if
+ * present, otherwise at the end. Reduces noise in code review when
+ * vis adds the field for the first time.
+ */
+const insertPackageManagerKey = (pkg: Record<string, unknown>, value: string): Record<string, unknown> => {
+    if ("packageManager" in pkg) {
+        // Existing field — keep its position; just update the value.
+        pkg.packageManager = value;
+
+        return pkg;
+    }
+
+    const ordered: Record<string, unknown> = {};
+    let inserted = false;
+
+    for (const [key, fieldValue] of Object.entries(pkg)) {
+        if (!inserted && (key === "dependencies" || key === "devDependencies" || key === "peerDependencies" || key === "optionalDependencies")) {
+            ordered.packageManager = value;
+            inserted = true;
+        }
+
+        ordered[key] = fieldValue;
+    }
+
+    if (!inserted) {
+        ordered.packageManager = value;
+    }
+
+    return ordered;
+};
+
+/**
+ * Writes `&lt;spec.tool>@&lt;spec.version>` into `package.json`'s
+ * `packageManager` field. Used by the self-activate path of
+ * `vis toolchain use &lt;pnpm|yarn>@&lt;version>` — pnpm 10+ and yarn berry
+ * read this field on their next invocation and switch to the pinned
+ * version without any external manager.
+ *
+ * Preserves existing indentation and trailing newline so diffs stay
+ * clean. When the field doesn't already exist, inserts it before the
+ * dependency-related fields rather than appending at the end.
+ *
+ * **Strict JSON only**: this function uses `JSON.parse`, so JSONC /
+ * JSON5 inputs (comments, trailing commas) will throw. We surface a
+ * file-path-prefixed error in that case. If you need format-preserving
+ * edits over JSONC, use a structure-preserving editor like
+ * `@npmcli/package-json`.
+ * @returns the `&lt;pm>@&lt;version>` string that was written, or undefined
+ * if the tool isn't a JS package manager (we refuse to write
+ * non-PM tools into the packageManager field).
+ */
+export const writePackageManagerField = (workspaceRoot: string, spec: ToolSpec): string | undefined => {
+    if (spec.tool !== "pnpm" && spec.tool !== "yarn" && spec.tool !== "npm" && spec.tool !== "bun") {
+        return undefined;
+    }
+
+    const pkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        throw new Error(`Cannot pin ${spec.tool}: ${pkgPath} does not exist.`);
+    }
+
+    const raw = readFileSync(pkgPath);
+    const indentMatch = /\n([ \t]+)/.exec(raw);
+    // Default to 2 spaces — the JS-ecosystem norm, and what
+    // `sort-package-json` / prettier both emit. Only fall back to this
+    // when the current file has no detectable indent (e.g. `{}` on one
+    // line).
+    const indent = indentMatch?.[1] ?? "  ";
+
+    let pkg: Record<string, unknown>;
+
+    try {
+        pkg = JSON.parse(raw) as Record<string, unknown>;
+    } catch (error: unknown) {
+        // JSON.parse throws SyntaxError with a useless "Unexpected
+        // token X at position Y" — prepend the file path and hint so
+        // the user can act on it instead of getting a bare stack.
+        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`, {
+            cause: error,
+        });
+    }
+
+    const value = `${spec.tool}@${spec.version}`;
+    const updated = insertPackageManagerKey(pkg, value);
+
+    const trailingNewline = raw.endsWith("\n") ? "\n" : "";
+
+    atomicWrite(pkgPath, `${JSON.stringify(updated, undefined, indent)}${trailingNewline}`);
+
+    return value;
+};
+
+/**
+ * Updates `engines.&lt;tool>` in package.json **only when the field
+ * already exists**. The reasoning: if a project never authored an
+ * engines field, vis shouldn't add one — it might be intentional for
+ * libraries that want to leave the choice to consumers. But if the
+ * field is there, keeping it in sync with the manager-specific pin is
+ * almost always what the user wants (and it's the only durable pin
+ * many CI providers actually check).
+ *
+ * Returns the new value when an update happened, `undefined` when the
+ * field didn't exist (and we left things alone).
+ */
+export const updateEnginesField = (workspaceRoot: string, spec: ToolSpec): string | undefined => {
+    const pkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        return undefined;
+    }
+
+    const raw = readFileSync(pkgPath);
+    let pkg: Record<string, unknown> & { engines?: Record<string, string> };
+
+    try {
+        pkg = JSON.parse(raw) as typeof pkg;
+    } catch (error: unknown) {
+        throw new Error(`${pkgPath} is not valid JSON — fix it before running \`vis toolchain use\`. Underlying error: ${(error as Error).message}`, {
+            cause: error,
+        });
+    }
+
+    if (pkg.engines?.[spec.tool] === undefined) {
+        // Don't synthesise an engines field; that's an editorial choice
+        // for the project owner.
+        return undefined;
+    }
+
+    if (pkg.engines[spec.tool] === spec.version) {
+        return undefined;
+    }
+
+    pkg.engines[spec.tool] = spec.version;
+
+    const indentMatch = /\n([ \t]+)/.exec(raw);
+    const indent = indentMatch?.[1] ?? "  ";
+    const trailingNewline = raw.endsWith("\n") ? "\n" : "";
+
+    atomicWrite(pkgPath, `${JSON.stringify(pkg, undefined, indent)}${trailingNewline}`);
+
+    return spec.version;
+};
+
+/**
+ * Parses `&lt;tool>@&lt;version>` as typed in `vis toolchain use node@22.13.0`.
+ * Returns `undefined` when the shape is wrong or the tool is unknown.
+ */
+export const parseUseArgument = (raw: string): ToolSpec | undefined => {
+    const match = /^([a-z][\w-]*)@(.+)$/i.exec(raw.trim());
+
+    if (!match) {
+        return undefined;
+    }
+
+    const normalizedTool = normalizeToolName(match[1]!);
+
+    if (!normalizedTool) {
+        return undefined;
+    }
+
+    return { source: "vis.config.ts", tool: normalizedTool, version: match[2]! };
+};
+
+export interface EnsureToolchainResult {
+    /** Tools that vis tried to install on the user's behalf. */
+    readonly attempted: ReadonlyArray<ToolSpec>;
+    /** Tools whose install failed (or was unsupported). Caller decides what to do. */
+    readonly failed: ReadonlyArray<{ error: string; spec: ToolSpec }>;
+    /** True when nothing needed doing — fast path. */
+    readonly upToDate: boolean;
+}
+
+export interface EnsureToolchainLogger {
+    error: (message: string) => void;
+    info: (message: string) => void;
+    warn: (message: string) => void;
+}
+
+/**
+ * Pre-flight check for `vis run` / `vis ci`. Compares actual vs expected
+ * tool versions; if `config.autoInstall` is true (default when a manager
+ * is detected) and any pin is unsatisfied, runs the appropriate
+ * manager install for each mismatched tool.
+ *
+ * Returns without error in three cases:
+ *   - everything matches
+ *   - autoInstall is disabled (caller may still warn separately)
+ *   - the install succeeds
+ *
+ * For shim-based managers (proto, mise, asdf, volta) the new versions
+ * are picked up by subsequent subprocess spawns automatically, since
+ * the shim binaries on PATH resolve the active version on each call.
+ *
+ * For fnm/nvm — which require a shell-side activation step — vis can
+ * install but cannot transparently switch the current process. We
+ * surface a clear hint and continue with the old version rather than
+ * blocking.
+ */
+export const ensureToolchain = async (
+    workspaceRoot: string,
+    config: ToolchainConfig | undefined,
+    logger: EnsureToolchainLogger,
+): Promise<EnsureToolchainResult> => {
+    const status = getToolchainStatus(workspaceRoot, config);
+    const mismatches = status.tools.filter((t) => !t.matches);
+
+    if (mismatches.length === 0) {
+        return { attempted: [], failed: [], upToDate: true };
+    }
+
+    const hasManager = status.detected.some((d) => d.installed);
+    const autoInstall = config?.autoInstall ?? hasManager;
+
+    if (!autoInstall) {
+        // Caller (typically `vis run` / `vis ci`) decides whether to
+        // surface this as a warning. ensureToolchain stays quiet so it
+        // can be a no-op when the user has explicitly opted out.
+        return { attempted: [], failed: [], upToDate: false };
+    }
+
+    const attempted: ToolSpec[] = [];
+    const failed: { error: string; spec: ToolSpec }[] = [];
+
+    // Group mismatches by resolved manager so proto/mise/asdf only run
+    // their bulk-install command once.
+    const byManager = new Map<VersionManagerName, ToolStatus[]>();
+
+    for (const tool of mismatches) {
+        const bucket = byManager.get(tool.manager.name);
+
+        if (bucket) {
+            bucket.push(tool);
+        } else {
+            byManager.set(tool.manager.name, [tool]);
+        }
+    }
+
+    for (const [managerName, tools] of byManager) {
+        // `preferenceFor` only emits `self-activate` for source ===
+        // "packageManager", so the field is already set; pnpm/yarn
+        // pick it up on next invocation. Nothing to spawn — just log.
+        if (managerName === "self-activate") {
+            for (const { expected } of tools) {
+                logger.info(`toolchain: ${expected.tool} ${expected.version} will self-activate on next ${expected.tool} invocation`);
+                attempted.push(expected);
+            }
+
+            continue;
+        }
+
+        if (managerName === "none") {
+            for (const { expected } of tools) {
+                failed.push({
+                    error: `no manager can install ${expected.tool} — install one of ${SUPPORTED_MANAGERS.join(", ")}`,
+                    spec: expected,
+                });
+            }
+
+            continue;
+        }
+
+        const manager = status.detected.find((d) => d.name === managerName);
+
+        if (!manager?.installed) {
+            for (const { expected } of tools) {
+                failed.push({ error: `${managerName} is not on PATH`, spec: expected });
+            }
+
+            continue;
+        }
+
+        // Pair each invocation with the tool that produced it so we
+        // record success/failure against the actual tool that ran,
+        // not the whole bucket. Previously a single failed invocation
+        // marked every tool in the bucket as failed even though only
+        // one was attempted, distorting the result counts callers see.
+        // Always invoke per-tool with an explicit spec so proto/mise/
+        // asdf install the exact pin instead of falling back to a
+        // workspace config that may not exist.
+        const pairs = tools
+            .map((tool) => {
+                return { invocation: buildInstallInvocation(managerName, tool.expected), tool };
+            })
+            .filter((pair): pair is { invocation: InstallInvocation; tool: ToolStatus } => pair.invocation !== undefined);
+
+        for (const { invocation, tool } of pairs) {
+            const { expected } = tool;
+
+            if (invocation.bin === "nvm" && invocation.args.length === 0) {
+                // nvm can't be activated for us from a child process — it's a
+                // shell function, not a binary. But the version already on
+                // PATH (the Node running vis, typically) often satisfies the
+                // pin anyway, which is the common case on CI where the right
+                // toolchain is pre-activated. Don't emit a warning that reads
+                // like an error and noises up every task; record success and
+                // move on. Only warn when the active runtime genuinely can't
+                // satisfy the requirement.
+                const active = queryToolVersion(expected.tool);
+
+                if (active !== undefined && satisfies(active, expected.version)) {
+                    logger.info(`toolchain: ${expected.tool} ${active} already satisfies ${expected.version}; skipping nvm shell activation`);
+                    attempted.push(expected);
+                    continue;
+                }
+
+                logger.warn(
+                    `toolchain: nvm requires a shell-side activation for ${expected.tool} ${expected.version}. Run \`nvm install\` / \`nvm use\` manually.`,
+                );
+                failed.push({ error: "nvm requires shell-side activation", spec: expected });
+                continue;
+            }
+
+            logger.info(`toolchain: $ ${invocation.bin} ${invocation.args.join(" ")}`);
+
+            try {
+                execFileSync(invocation.bin, invocation.args as string[], {
+                    cwd: workspaceRoot,
+                    stdio: "inherit",
+                });
+
+                attempted.push(expected);
+
+                // fnm needs PATH-side activation — even after `fnm
+                // install`, the subprocesses we'll spawn next inherit
+                // the current PATH and won't see the new version.
+                // Eval `fnm env` and merge into process.env so
+                // subsequent task subprocesses pick up the new node.
+                if (managerName === "fnm") {
+                    activateFnmEnv(invocation.bin, logger);
+                }
+            } catch (error: unknown) {
+                failed.push({ error: (error as Error).message, spec: expected });
+                break;
+            }
+        }
+    }
+
+    // Drop the cache so the next call re-detects (e.g. corepack just
+    // got installed).
+    clearToolchainCache();
+
+    return { attempted, failed, upToDate: false };
+};
+
+/**
+ * Convenience wrapper that `vis run` and `vis ci` both call: invoke
+ * {@link ensureToolchain} and surface every failure as a logger.warn
+ * line. Always returns; never throws. Skips the call entirely when
+ * `skip` is `true` so callers can do
+ *
+ *     await runToolchainPreflight(workspaceRoot, config, logger, options.skipToolchain);
+ *
+ * without an extra branch around the call site.
+ */
+export const runToolchainPreflight = async (
+    workspaceRoot: string,
+    config: ToolchainConfig | undefined,
+    logger: EnsureToolchainLogger,
+    skip: boolean = false,
+): Promise<void> => {
+    if (skip) {
+        return;
+    }
+
+    const result = await ensureToolchain(workspaceRoot, config, logger);
+
+    for (const failure of result.failed) {
+        logger.warn(`toolchain: ${failure.spec.tool} ${failure.spec.version} — ${failure.error}`);
+    }
+};
+
+/**
+ * Eval `fnm env` and merge its PATH/FNM_* exports into `process.env` so
+ * subsequent subprocesses (the actual tasks `vis run` will spawn) see
+ * the freshly-installed Node. Best-effort — failures are logged and
+ * swallowed.
+ */
+const activateFnmEnv = (fnmBin: string, logger: EnsureToolchainLogger): void => {
+    // Pick a shell argument that matches the host so we get parseable
+    // output:
+    //   - bash:        `export NAME="value"`
+    //   - powershell:  `$env:NAME = "value"`
+    //   - cmd:         `set "NAME=value"`
+    const shell = process.platform === "win32" ? "powershell" : "bash";
+
+    try {
+        const output = execFileSync(fnmBin, ["env", "--shell", shell], {
+            encoding: "utf8",
+            stdio: ["ignore", "pipe", "ignore"],
+            timeout: 2000,
+        });
+
+        // The chosen shell determines the line format we expect, but
+        // older fnm builds and shell-style overrides can emit a
+        // different format than requested. The three parsers below are
+        // intentionally redundant — whichever line format `output`
+        // actually contains, we'll parse it. Keeps the activation
+        // working when fnm changes its default emit format between
+        // versions.
+
+        for (const line of output.split(/\r?\n/)) {
+            const trimmed = line.trim();
+
+            if (trimmed === "") {
+                continue;
+            }
+
+            // PowerShell:  `$env:NAME = "value"`  or  `$env:NAME="value"`
+            const psMatch = /^\$env:([A-Z_]\w*)\s*=\s*(.+)$/i.exec(trimmed);
+
+            if (psMatch) {
+                const [, name, rawValue] = psMatch;
+
+                process.env[name!] = rawValue!.replaceAll(/^["']|["']$/g, "");
+                continue;
+            }
+
+            // cmd:  `set "NAME=value"`  or  `set NAME=value`
+            const cmdMatch = /^set\s+"?([A-Z_]\w*)=(.*?)"?$/i.exec(trimmed);
+
+            if (cmdMatch) {
+                const [, name, value] = cmdMatch;
+
+                process.env[name!] = value!;
+                continue;
+            }
+
+            // bash:  `export NAME=value`  or bare `NAME=value`
+            const bashMatch = /^(?:export\s+)?([A-Z_]\w*)=(.+)$/i.exec(trimmed);
+
+            if (bashMatch) {
+                const [, name, rawValue] = bashMatch;
+
+                process.env[name!] = rawValue!.replaceAll(/^["']|["']$/g, "");
+            }
+        }
+    } catch (error: unknown) {
+        logger.warn(`toolchain: could not activate fnm env (${(error as Error).message}). Subsequent tasks may use the previous Node version.`);
+    }
+};

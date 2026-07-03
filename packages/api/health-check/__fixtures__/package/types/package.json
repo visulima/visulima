@@ -1,0 +1,10 @@
+{
+    "name": "health-check-types",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Typings smoke test fixture",
+    "type": "module",
+    "dependencies": {
+        "@visulima/health-check": "workspace:*"
+    }
+}

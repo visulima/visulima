@@ -1,0 +1,15 @@
+{
+    "name": "app-35",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Building app app-35...' && sleep 3.5 && echo 'Webpack: compiled successfully' && echo 'app-35 ready!' && mkdir -p dist && date > dist/.stamp",
+        "dev": "echo 'app-35 started on http://localhost:8005' && while true; do sleep 1; echo '[app-35] GET / 200 12ms'; done",
+        "lint": "echo 'Linting app-35...' && sleep 0.2 && echo 'All good!'",
+        "test": "echo 'E2E tests for app-35...' && sleep 0.8 && echo '  12 tests passed, 0 failed'"
+    },
+    "dependencies": {
+        "lib-fast-5": "1.0.0",
+        "lib-slow-15": "1.0.0"
+    }
+}

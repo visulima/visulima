@@ -1,0 +1,121 @@
+---
+title: Express
+description: Request-scoped wide event logging middleware for Express
+---
+
+# Express Middleware
+
+The Express adapter attaches a request-scoped [Wide Event](/docs/packages/pail/usage/wide-events) to every request. The event auto-emits when the response finishes.
+
+## Setup
+
+```typescript
+import express from "express";
+import { createPail } from "@visulima/pail";
+import { pailMiddleware } from "@visulima/pail/middleware/express";
+
+const app = express();
+const logger = createPail();
+
+app.use(pailMiddleware({ pail: logger }));
+```
+
+## Accessing the Logger
+
+### Via `req.log`
+
+```typescript
+app.get("/api/users", (req, res) => {
+    req.log.set({ user: { id: 1 } });
+    req.log.info("Fetched user list");
+    res.json({ ok: true });
+});
+```
+
+### Via `useLogger()`
+
+Access the logger from anywhere in the async call stack — no need to pass `req` around:
+
+```typescript
+import { useLogger } from "@visulima/pail/middleware/express";
+
+// In a service function:
+async function processOrder(orderId: number) {
+    const log = useLogger();
+    log.set({ order: { id: orderId } });
+    log.info("Processing order");
+    // ...
+}
+```
+
+```typescript
+app.post("/api/orders", async (req, res) => {
+    req.log.set({ user: { id: req.userId } });
+    await processOrder(req.body.orderId); // useLogger() works here
+    res.json({ ok: true });
+});
+```
+
+## How It Works
+
+1. On each request, the middleware creates a `WideEvent` with the request method, path, headers, and a request ID
+2. The logger is attached to `req.log` and stored in `AsyncLocalStorage`
+3. When the response `"finish"` event fires, the event is emitted with the response status code
+4. If the route is excluded, `next()` is called immediately with no logging overhead
+
+## Request ID
+
+The middleware reads `x-request-id` from incoming headers. If not present, it generates a UUID via `crypto.randomUUID()`. The request ID is included in the emitted wide event data.
+
+## Route Exclusion
+
+```typescript
+app.use(
+    pailMiddleware({
+        pail: logger,
+        exclude: ["/health", "/ready", "/_next/**"],
+        include: ["/api/**"],
+    }),
+);
+```
+
+## Service Names
+
+```typescript
+app.use(
+    pailMiddleware({
+        pail: logger,
+        service: "api-gateway",
+        routes: {
+            "/api/auth/**": { service: "auth-service" },
+            "/api/billing/**": { service: "billing-service" },
+        },
+    }),
+);
+```
+
+## TypeScript
+
+The middleware exports types for use in your route handlers:
+
+```typescript
+import type { PailRequest, PailResponse, PailNextFunction } from "@visulima/pail/middleware/express";
+
+const handler = (req: PailRequest, res: PailResponse, next: PailNextFunction) => {
+    req.log?.set({ user: { id: 1 } });
+    res.json({ ok: true });
+};
+```
+
+## Exported Types
+
+| Export                     | Description                                   |
+| -------------------------- | --------------------------------------------- |
+| `pailMiddleware`           | Factory function returning Express middleware |
+| `useLogger`                | Retrieve logger from `AsyncLocalStorage`      |
+| `PailRequest`              | Express request with `log?: WideEvent`        |
+| `PailResponse`             | Express response type                         |
+| `PailNextFunction`         | Express next function type                    |
+| `PailExpressMiddleware`    | The middleware function signature             |
+| `ExpressMiddlewareOptions` | Options type for `pailMiddleware()`           |
+| `WideEvent`                | Re-exported `WideEvent` class                 |

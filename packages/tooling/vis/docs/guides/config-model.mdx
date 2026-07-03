@@ -1,0 +1,222 @@
+---
+title: Config Model
+description: "Mental model for vis's three config layers, six precedence levels, and how to pick the right place for each setting"
+---
+
+# Config Model
+
+vis splits configuration across three files with different responsibilities. Knowing which file owns which setting saves a lot of refactoring later — and makes it obvious where to look when a value isn't behaving the way you expected.
+
+This page is the narrative companion to [Configuration](/configuration). The reference page documents every field; this page explains how the layers fit together and how to choose between them.
+
+## The three files
+
+| File            | Lives in                   | Owns                                                                                                                                                                       | Touched by                          |
+| --------------- | -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------- |
+| `vis.config.ts` | Workspace root             | Workspace-wide policy: tasks, scoped tasks, file groups, named inputs, security, constraints, codeowners, secrets, update rules.                                           | Workspace lead / platform team      |
+| `project.json`  | Each project root          | Per-project **metadata** (`name`, `projectType`, `tags`, `layer`, `stack`, `language`, `owners`, `implicitDependencies`, `sourceRoot`) plus optional per-target overrides. | Project owners                      |
+| `vis.task.ts`   | Each project root (opt-in) | Per-project **typed** task overlay — same shape as `project.json#targets` but with full TypeScript inference, autocomplete, and access to runtime helpers.                 | Project owners who want type safety |
+
+`package.json#scripts` is the fourth, implicit layer: any script vis doesn't find a target for is still runnable as a fallback. You almost never need to edit it for vis's sake — leave it for `npm run` ergonomics.
+
+## What goes where — a decision flow
+
+Start at the top. The first match wins.
+
+1. **Is this a project-specific deviation** (a single project does something different)?
+   → `project.json#targets` for static config, or `vis.task.ts#tasks` for type-safe / dynamic config.
+2. **Should this apply to a subset of projects** matched by tag / layer / stack / language / projectType?
+   → `vis.config.ts#scopedTasks` (scoped block).
+3. **Should this apply to every project** that has a matching target name (e.g. every `build`, every `test`)?
+   → `vis.config.ts#tasks` (flat block).
+4. **Is it workspace-wide policy** (security, codeowners, constraints, secrets, update rules)?
+   → Top-level fields in `vis.config.ts`.
+
+If you find yourself writing the same per-project override in two or more `project.json`s, that's the signal to promote it — step (1) becomes step (2) or step (3).
+
+## Precedence stack
+
+Eight layers feed into the final config a target runs with. Later layers override earlier ones (`later wins`), with one exception: arrays use **wholesale replace by default**, and `"@inherit"` opts a single array entry into "splice the parent's values inline here." See [`@inherit` array sentinel](/configuration#inherit-array-sentinel) for the mechanic.
+
+1. `extends` chain — flattened depth-first, left-to-right
+2. Root `vis.config.ts` values (e.g. `namedInputs`, `fileGroups`)
+3. `vis.config.ts#tasks` (flat, applies universally)
+4. `vis.config.ts#scopedTasks` blocks — in declaration order; only blocks whose `match` resolves against the project apply
+5. `project.json#targets`
+6. `vis.task.ts#tasks`
+7. `package.json#scripts` — fallback only; fills `command` when nothing above set it
+8. Preset (e.g. `preset: "server"`) — expanded last so it never clobbers explicit fields
+
+If a target isn't doing what you expect, run [`vis task-why`](/commands/task-why) — it traces every layer that contributed to a target and shows which rule pulled in each `dependsOn`, `inputs`, and `outputs` entry.
+
+## Picking a defaults tool
+
+Four mechanisms share target config across projects. Use the smallest one that fits — they compose.
+
+### `tasks` — universal per target name
+
+When every project's `build` should declare the same `dependsOn` and `outputs`, that goes here. One block per target name.
+
+```typescript
+// vis.config.ts
+export default defineConfig({
+    tasks: {
+        build: {
+            dependsOn: ["^build"],
+            outputs: ["{projectRoot}/dist/**"],
+            cache: true,
+        },
+        test: {
+            dependsOn: ["build"],
+            cache: true,
+        },
+    },
+});
+```
+
+**Reach for it when:** every project that exposes a target by this name should behave the same way. **Skip it when:** the rule only applies to a subset — use `scopedTasks` instead.
+
+### `scopedTasks` — scoped to project metadata
+
+Same shape as `tasks`, but each block carries an optional `match` predicate matched against the project's `tags` / `projectType` / `layer` / `stack` / `language`. Blocks evaluate in declaration order; later matching blocks override earlier ones.
+
+```typescript
+export default defineConfig({
+    scopedTasks: [
+        {
+            match: { tags: ["frontend"] },
+            tasks: {
+                build: { command: "vite build", outputs: ["dist/**"] },
+            },
+        },
+        {
+            match: { projectType: "library", language: "typescript" },
+            tasks: {
+                build: { command: "tsc --build" },
+            },
+        },
+    ],
+});
+```
+
+**Reach for it when:** frontends build with Vite but libraries build with tsc — the _target name_ is the same (`build`) but the _command_ differs by project shape. **Skip it when:** the rule applies universally (use `tasks`) or only to one project (override in that project's `project.json`).
+
+### `taskGroups` — named dependency bundles
+
+A reusable bundle that any target's `dependsOn` can pull in via `{ group: "name" }`. Groups expand recursively; cycles throw at load.
+
+```typescript
+export default defineConfig({
+    taskGroups: {
+        lint: ["eslint", "prettier", "types"],
+        "pre-build": [{ group: "lint" }, "codegen"],
+    },
+    tasks: {
+        build: {
+            // expands to: ["eslint", "prettier", "types", "codegen"]
+            dependsOn: [{ group: "pre-build" }],
+        },
+    },
+});
+```
+
+**Reach for it when:** the same three-or-more-entry `dependsOn` array repeats across **two or more** targets. The indirection earns its keep at the second use site. **Skip it when:** the bundle only appears once — inlining is clearer.
+
+### `@inherit` — additive per-project override
+
+The sentinel string `"@inherit"` inside a child array splices in the parent's entries instead of replacing them. Works inside `dependsOn`, `inputs`, `outputs`, and `aliases`.
+
+```typescript
+// vis.config.ts
+tasks: {
+    build: { dependsOn: ["^build"] },
+}
+
+// packages/api/crud/vis.task.ts
+tasks: {
+    build: { dependsOn: ["@inherit", "^proto-gen"] }, // → ["^build", "^proto-gen"]
+}
+```
+
+**Reach for it when:** one project needs an extra entry on top of the default — codegen-before-build, fixtures-in-test-inputs, second-artefact-in-outputs. **Skip it when:** you see the same `@inherit` addition in two or more projects — promote the addition into `scopedTasks` (scoped) or `tasks` (universal).
+
+An empty array (`dependsOn: []`) is a deliberate reset. An array without `@inherit` is a wholesale replace. Use `@inherit` to be explicit when you mean "extend, not replace."
+
+## When to use which file for an override
+
+Same setting, three places it could live. Pick by **blast radius** — the narrowest scope that satisfies the requirement.
+
+```
+                       blast radius (narrowest → widest)
+                       ─────────────────────────────────────────────────
+one project only       project.json#targets  /  vis.task.ts#tasks
+project subset         vis.config.ts#scopedTasks  (with match)
+every project          vis.config.ts#tasks
+```
+
+`project.json` vs. `vis.task.ts` for per-project overrides:
+
+- **Use `project.json`** when the override is static JSON — commands, paths, simple options. JSON is friendlier to migration tools (`vis migrate`), generators (`vis generate`), and `vis sync`.
+- **Use `vis.task.ts`** when the override needs TypeScript: computed values, conditional logic, type-safe references to your `vis.config.ts` types, runtime helpers. The overlay is opt-in and merges over `project.json#targets`.
+
+## Project metadata vs. target config
+
+`project.json` carries two distinct kinds of data — keep them clean:
+
+- **Metadata** (`name`, `projectType`, `tags`, `layer`, `stack`, `language`, `owners`, `implicitDependencies`, `sourceRoot`, `project`) describes _what the project is_. It's read by `vis query`, `vis sync codeowners`, scoped `scopedTasks`, and the constraint engine. `name` is optional and falls back to `package.json#name` — see [Project name](/configuration#project-name).
+- **Targets** (`targets`) describes _what the project builds_. It's read by `vis run`.
+
+Putting `tags: ["frontend"]` in `project.json` lets a `scopedTasks` block target it without naming the project explicitly — that's the leverage. The more projects you tag, the more your defaults stay declarative instead of project-list-driven.
+
+## Workspace-wide policy lives at the top
+
+These don't belong in `tasks` or `scopedTasks` because they don't run as part of a target — they're enforced by other commands:
+
+| Field         | Read by                                                                        |
+| ------------- | ------------------------------------------------------------------------------ |
+| `security`    | `vis audit`, `vis add`, `vis install`, `vis update`, `vis check`, `vis doctor` |
+| `policy`      | `vis deps`                                                                     |
+| `constraints` | `vis run` (graph build), `vis check`                                           |
+| `codeowners`  | `vis sync codeowners`                                                          |
+| `secrets`     | `vis secrets`                                                                  |
+| `update`      | `vis update`, `vis outdated`                                                   |
+| `staged`      | `vis staged` (git pre-commit)                                                  |
+| `install`     | `vis install`, `vis add`, `vis remove`, `vis update`, `vis ci`                 |
+| `toolchain`   | `vis toolchain`, version-manager activation                                    |
+
+Treat these as top-level workspace policy — one place, one source of truth, edited rarely. Per-command flags always win over config, so CI workflows can override without rewriting `vis.config.ts`.
+
+## Shared config via `extends`
+
+For monorepos managed by a platform team, hoist common config into a shared preset and `extends` it from every workspace:
+
+```typescript
+// vis.config.ts
+export default defineConfig({
+    extends: ["@myorg/vis-preset", "./shared/security.config.ts"],
+    // workspace-specific overrides go below; they always win
+    tasks: {
+        build: { outputs: ["dist/**"] },
+    },
+});
+```
+
+Entries resolve left-to-right (later wins) and the consumer's own values override anything pulled in from `extends`. Cycles raise `VisConfigCycleError` at load.
+
+## Inferred targets — the layer underneath
+
+`inferTargets` (off by default) auto-generates targets from detected config files: a `vite.config.ts` synthesizes `build` / `dev` / `preview`; a `vitest.config.ts` synthesizes `test` / `test:watch`; and so on across ~36 tools. See the [`inferTargets` reference](/configuration#inferred-targets) for the full detector list.
+
+Inferred targets sit **below** everything in the precedence stack — anything explicit in `package.json#scripts`, `project.json#targets`, or `vis.task.ts` wins per-key. Turning inference on never overrides existing setups; it only fills gaps.
+
+**Reach for it when:** you want to delete `"build": "vite build"` from `package.json#scripts` across 40 projects and let vis derive it. **Skip it when:** your commands are non-standard or the inferred default would be misleading.
+
+## Migrating from another tool?
+
+`vis migrate` rewrites the source tool's vocabulary onto vis's schema — it's not a pass-through. See [`vis migrate`](/commands/migrate) for the full per-tool mapping. The short version:
+
+- **turborepo** — `tasks` / `pipeline` → `tasks`; `^build` → `{ dependencies: true, target: "build" }`; `globalDependencies` → `taskRunner.globalInputs`.
+- **nx** — `namedInputs` carries over verbatim; `targetDefaults` → `tasks`; namespaced executors are dropped with hints.
+- **moon** — `tasks` → `tasks`; `deps` → `dependsOn`; `implicitInputs` → `namedInputs.default`; scoped `.moon/tasks/<scope>.yml` → `scopedTasks` with a `match` block.
+
+Per-project `project.json` (nx) and `moon.yml` (moon) are field-compatible enough that vis reads them natively — nx's stay untouched; moon's are flagged for manual conversion since the field names already match (`targets`, `tags`, `layer`, `stack`, `language`, `owners`).

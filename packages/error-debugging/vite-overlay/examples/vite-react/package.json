@@ -1,0 +1,30 @@
+{
+    "name": "vite_overlay_vite-react",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b && vite build",
+        "dev": "vite",
+        "lint": "eslint . --cache --concurrency auto",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
+    },
+    "devDependencies": {
+        "@eslint/js": "catalog:lint",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "@visulima/vite-overlay": "workspace:*",
+        "@vitejs/plugin-react": "catalog:build",
+        "eslint": "catalog:lint",
+        "eslint-plugin-react-hooks": "catalog:lint",
+        "eslint-plugin-react-refresh": "catalog:lint",
+        "globals": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "typescript-eslint": "catalog:lint",
+        "vite": "catalog:build"
+    }
+}

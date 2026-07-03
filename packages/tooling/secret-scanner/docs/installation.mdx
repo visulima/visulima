@@ -1,0 +1,58 @@
+---
+title: Installation
+description: Install and set up the secret scanner in your project.
+---
+
+# Installation
+
+## Package Managers
+
+### npm
+
+```bash
+npm install @visulima/secret-scanner
+```
+
+### yarn
+
+```bash
+yarn add @visulima/secret-scanner
+```
+
+### pnpm
+
+```bash
+pnpm add @visulima/secret-scanner
+```
+
+The right prebuilt native binary is pulled in automatically via `optionalDependencies`.
+
+## Supported platforms
+
+| OS      | Arch  | libc         |
+| ------- | ----- | ------------ |
+| macOS   | x64   | —            |
+| macOS   | arm64 | —            |
+| Linux   | x64   | glibc / musl |
+| Linux   | arm64 | glibc / musl |
+| Windows | x64   | MSVC         |
+| Windows | arm64 | MSVC         |
+
+## Requirements
+
+- **Node.js**: 22.13 or higher.
+- No Go / gitleaks / Rust toolchain required at install time — the platform-matched prebuilt binary is downloaded from npm.
+
+## First scan
+
+```typescript
+import { scan } from "@visulima/secret-scanner";
+
+const findings = await scan([process.cwd()]);
+
+if (findings.length > 0) {
+    console.warn(`Found ${String(findings.length)} potential secret(s).`);
+}
+```
+
+If you prefer a CLI, install [`@visulima/vis`](../vis/index.mdx) and run `vis secrets`.

@@ -1,0 +1,26 @@
+{
+    "name": "storage-client-nextjs-example",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "build": "next build",
+        "dev": "next dev",
+        "lint": "next lint",
+        "start": "next start"
+    },
+    "dependencies": {
+        "@visulima/storage": "workspace:*",
+        "@visulima/storage-client": "workspace:*",
+        "next": "catalog:prod",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
+    },
+    "devDependencies": {
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "eslint": "catalog:lint",
+        "eslint-config-next": "catalog:lint",
+        "typescript": "catalog:tsc"
+    }
+}

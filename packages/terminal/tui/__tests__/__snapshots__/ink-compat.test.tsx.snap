@@ -1,0 +1,162 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ink compatibility - aria > should match snapshot 1`] = `
+"Press spacebar to toggle the checkbox.
+
+[ ]
+
+This text is hidden from screen readers."
+`;
+
+exports[`ink compatibility - borders > should match snapshot 1`] = `
+"
+
+  ┌──────┐  ╔══════╗  ╭─────╮  ┏━━━━┓
+  │single│  ║double║  │round│  ┃bold┃
+  └──────┘  ╚══════╝  ╰─────╯  ┗━━━━┛
+
+  ╓────────────╖  ╒════════════╕  +-------+
+  ║singleDouble║  │doubleSingle│  |classic|
+  ╙────────────╜  ╘════════════╛  +-------+"
+`;
+
+exports[`ink compatibility - box-backgrounds > should match snapshot 1`] = `
+"Box Background Examples:
+
+Hello
+
+
+
+╭──────────╮
+│Border    │
+│          │
+╰──────────╯
+
+
+ Padding
+
+
+
+    Centered
+
+
+
+Inherited Override Back to inherited"
+`;
+
+exports[`ink compatibility - chat > should match snapshot 1`] = `
+"
+
+ Enter your message:"
+`;
+
+exports[`ink compatibility - incremental-rendering > should match snapshot 1`] = `
+"╭──────────────────────────────────────────────────────────╮
+│                                                          │
+│  Incremental Rendering Demo                              │
+│                                                          │
+╰──────────────────────────────────────────────────────────╯
+
+┌──────────────────────────────────────────────────────────┐
+│                                                          │
+│  > Server Authentication Module                          │
+│    Database Connection Pool                              │
+│    API Gateway Service                                   │
+│                                                          │
+└──────────────────────────────────────────────────────────┘"
+`;
+
+exports[`ink compatibility - justify-content > should match snapshot 1`] = `
+"[XY                  ] flex-start
+[                  XY] flex-end
+[         XY         ] center
+[     X         Y    ] space-around
+[X                  Y] space-between
+[      X      Y      ] space-evenly"
+`;
+
+exports[`ink compatibility - nested boxes > should match snapshot 1`] = `
+"┌─┐ ┌─┐
+│A│ │B│
+└─┘ └─┘
+
+Below"
+`;
+
+exports[`ink compatibility - spacer > should match snapshot 1`] = `"Left                               Right"`;
+
+exports[`ink compatibility - static component > should match snapshot 1`] = `
+"✔Test #1
+✔Test #2
+✔Test #3
+
+Completed tests:3"
+`;
+
+exports[`ink compatibility - stress-test > should match snapshot 1`] = `
+"╭──────────────────╮
+│  Stress test     │
+╰──────────────────╯
+
+█░●◇▒▫◆▓▪○█░●◇▒▫◆▓▪○
+○█░●◇▒▫◆▓▪○█░●◇▒▫◆▓▪
+▪○█░●◇▒▫◆▓▪○█░●◇▒▫◆▓
+▓▪○█░●◇▒▫◆▓▪○█░●◇▒▫◆
+◆▓▪○█░●◇▒▫◆▓▪○█░●◇▒▫"
+`;
+
+exports[`ink compatibility - terminal-resize > should match snapshot 1`] = `
+"
+ Terminal Size
+ Columns: 80
+ Rows: 24"
+`;
+
+exports[`ink compatibility - use-focus > should match snapshot 1`] = `
+"
+ Press Tab to focus next element
+
+ First
+ Second
+ Third"
+`;
+
+exports[`ink compatibility - use-focus-with-id > should match snapshot 1`] = `
+"
+ Press 1/2/3 to focus by ID
+
+ Press 1 to focus
+ Press 2 to focus
+ Press 3 to focus"
+`;
+
+exports[`ink compatibility - use-input > should match snapshot 1`] = `
+"Use arrow keys to move the face. Press "q" to exit.
+
+ ^_^"
+`;
+
+exports[`ink compatibility - use-stdout > should match snapshot 1`] = `
+"
+  Terminal dimensions:
+
+  Width:
+  Height:"
+`;
+
+exports[`ink compatibility - use-transition > should match snapshot 1`] = `
+"useTransition Demo
+Search: (type something)
+
+Results (showing first 10):
+Item 1: Apple
+Item 2: Banana
+Item 3: Cherry
+Item 4: Date
+Item 5: Elderberry
+Item 6: Apple
+Item 7: Banana
+Item 8: Cherry
+Item 9: Date
+Item 10: Elderberry"
+`;

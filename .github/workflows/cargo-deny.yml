@@ -1,0 +1,115 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Cargo Deny"
+
+on: # yamllint disable-line rule:truthy
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+    pull_request:
+        types: ["opened", "synchronize"]
+        paths:
+            - "packages/tooling/task-runner/native/Cargo.lock"
+            - "packages/tooling/task-runner/native/deny.toml"
+            - "packages/terminal/tui/native/Cargo.lock"
+            - "packages/terminal/tui/native/deny.toml"
+            - "packages/tooling/vis/native/Cargo.lock"
+            - "packages/tooling/vis/native/deny.toml"
+            - ".github/workflows/cargo-deny.yml"
+    push:
+        branches:
+            - "main"
+        paths:
+            - "packages/tooling/task-runner/native/Cargo.lock"
+            - "packages/tooling/task-runner/native/deny.toml"
+            - "packages/terminal/tui/native/Cargo.lock"
+            - "packages/terminal/tui/native/deny.toml"
+            - "packages/tooling/vis/native/Cargo.lock"
+            - "packages/tooling/vis/native/deny.toml"
+            - ".github/workflows/cargo-deny.yml"
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.sha }}"
+    cancel-in-progress: true
+
+permissions: {}
+
+jobs:
+    files-changed:
+        name: "Detect Cargo Deny changes"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 3
+        outputs:
+            task-runner: "${{ steps.changes.outputs.task-runner }}"
+            tui: "${{ steps.changes.outputs.tui }}"
+            vis: "${{ steps.changes.outputs.vis }}"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+              with:
+                  persist-credentials: false
+
+            - name: "Check for file changes"
+              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              id: "changes"
+              with:
+                  filters: |
+                      task-runner:
+                        - 'packages/tooling/task-runner/native/Cargo.lock'
+                        - 'packages/tooling/task-runner/native/deny.toml'
+                      tui:
+                        - 'packages/terminal/tui/native/Cargo.lock'
+                        - 'packages/terminal/tui/native/deny.toml'
+                      vis:
+                        - 'packages/tooling/vis/native/Cargo.lock'
+                        - 'packages/tooling/vis/native/deny.toml'
+
+    deny:
+        name: "Cargo Deny (${{ matrix.package.name }})"
+        needs: "files-changed"
+        if: |
+            github.event_name == 'workflow_dispatch' ||
+            needs.files-changed.outputs.task-runner == 'true' ||
+            needs.files-changed.outputs.tui == 'true' ||
+            needs.files-changed.outputs.vis == 'true'
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        strategy:
+            fail-fast: false
+            matrix:
+                package:
+                    - name: "task-runner"
+                      dir: "packages/tooling/task-runner/native"
+                      changed: "${{ needs.files-changed.outputs.task-runner }}"
+                    - name: "tui"
+                      dir: "packages/terminal/tui/native"
+                      changed: "${{ needs.files-changed.outputs.tui }}"
+                    - name: "vis"
+                      dir: "packages/tooling/vis/native"
+                      changed: "${{ needs.files-changed.outputs.vis }}"
+                exclude:
+                    - package:
+                          changed: "false"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+              with:
+                  persist-credentials: false
+
+            - name: "Install Rust toolchain"
+              uses: "oxc-project/setup-rust@3d6fb132fbe7cdcb66bf8ec193911c2945369d12" # v1.0.17
+              with:
+                  restore-cache: false
+                  tools: "cargo-deny"
+
+            - name: "Run cargo deny"
+              run: "cargo deny check"
+              working-directory: "${{ matrix.package.dir }}"

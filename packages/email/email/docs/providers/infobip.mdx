@@ -1,0 +1,75 @@
+---
+title: Infobip
+description: Send emails using the Infobip API with @visulima/email
+---
+
+# Infobip Provider
+
+The Infobip provider allows you to send emails through the [Infobip Email API](https://www.infobip.com/docs/api/channels/email/send-email), a global communication platform.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { infobipProvider } from "@visulima/email/providers/infobip";
+
+const mail = createMail(
+    infobipProvider({
+        apiKey: process.env.INFOBIP_API_KEY!,
+        baseUrl: "https://api.infobip.com",
+    }),
+);
+```
+
+## Configuration
+
+The `InfobipConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                   | Description                     |
+| ---------- | --------- | -------- | ------------------------- | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                         | Your Infobip API key            |
+| `baseUrl`  | `string`  | No       | `https://api.infobip.com` | Infobip base URL                |
+| `endpoint` | `string`  | No       | `{baseUrl}/email/3/send`  | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                   | Enable debug logging            |
+| `logger`   | `Console` | No       | -                         | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                       | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                   | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Infobip").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Infobip provider supports additional options through `InfobipEmailOptions`:
+
+| Option               | Type                      | Description                              |
+| -------------------- | ------------------------- | ---------------------------------------- |
+| `templateId`         | `number`                  | Infobip template ID                      |
+| `templateVariables`  | `Record<string, unknown>` | Template variables                       |
+| `sendAt`             | `number`                  | Send at (Unix timestamp in milliseconds) |
+| `intermediateReport` | `boolean`                 | Request delivery status updates          |
+| `notifyUrl`          | `string`                  | URL for delivery notifications           |
+| `trackingUrl`        | `string`                  | URL for click tracking                   |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

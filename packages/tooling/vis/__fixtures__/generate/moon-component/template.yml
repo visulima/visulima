@@ -1,0 +1,14 @@
+"title": "Component"
+"description": "Scaffold a React component"
+"variables":
+    "name":
+        "type": "string"
+        "required": true
+        "prompt": "Component name?"
+    "withTest":
+        "type": "boolean"
+        "default": true
+    "style":
+        "type": "enum"
+        "values": ["primary", "secondary"]
+        "default": "primary"

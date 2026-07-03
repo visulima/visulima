@@ -1,0 +1,21 @@
+{
+    "name": "redact-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@qiwi/masker": "catalog:prod",
+        "@visulima/redact": "workspace:*",
+        "fast-redact": "catalog:prod",
+        "fast-unset": "catalog:prod",
+        "unset-value": "catalog:prod"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}

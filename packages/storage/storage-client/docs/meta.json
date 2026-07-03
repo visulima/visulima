@@ -1,0 +1,4 @@
+{
+    "title": "Storage Client",
+    "pages": ["introduction", "installation", "api", "---Frameworks---", "react", "nextjs", "vue", "svelte", "solid", "solid-start", "tanstack-start"]
+}

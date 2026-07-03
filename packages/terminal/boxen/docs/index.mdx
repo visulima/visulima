@@ -1,0 +1,291 @@
+---
+title: Introduction
+description: "Create beautiful boxes in the terminal with customizable borders, padding, and alignment for CLI applications."
+---
+
+# @visulima/boxen
+
+Create beautiful boxes in the terminal with customizable borders, padding, and alignment. Perfect for highlighting messages, creating banners, and improving CLI application aesthetics.
+
+## Why @visulima/boxen?
+
+Terminal boxes make your CLI output more professional and easier to read. **@visulima/boxen** provides:
+
+- **Multiple border styles** - Single, double, round, bold, and more
+- **Custom coloring** - Color different parts of the border independently
+- **Flexible layout** - Configure padding, margins, and text alignment
+- **Headers and footers** - Add labeled sections to your boxes
+- **TypeScript support** - Full type definitions included
+- **Cross-platform** - Works on Windows, macOS, and Linux
+
+## Key Features
+
+**Border Styles**
+
+- **8 built-in styles** - single, double, round, bold, and mixed styles
+- **Custom borders** - Define your own border characters
+- **Position-based coloring** - Different colors for each border section
+
+**Layout Control**
+
+- **Padding** - Add space inside the box (top, right, bottom, left)
+- **Margins** - Add space outside the box
+- **Text alignment** - left, center, or right alignment
+- **Fixed width** - Set maximum box width
+
+**Headers & Footers**
+
+- **Header text** - Add labeled headers with alignment
+- **Footer text** - Add labeled footers with alignment
+- **Custom positioning** - Align headers and footers independently
+
+**Advanced Features**
+
+- **Gradient borders** - Create colorful gradient effects
+- **Multi-line support** - Automatic handling of multi-line text
+- **Width calculation** - Automatic sizing based on content
+
+## Quick Start
+
+### Installation
+
+```bash npm2yarn
+npm install @visulima/boxen
+```
+
+### Basic Usage
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+// Simple box
+console.log(boxen("Hello, World!"));
+// Output:
+// ┌─────────────┐
+// │Hello, World!│
+// └─────────────┘
+
+// With padding
+console.log(boxen("unicorn", { padding: 1 }));
+// Output:
+// ┌─────────────┐
+// │             │
+// │   unicorn   │
+// │             │
+// └─────────────┘
+```
+
+## Use Cases
+
+### CLI Messages
+
+Highlight important messages in your CLI applications:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { green, red, yellow } from "@visulima/colorize";
+
+// Success message
+console.log(
+    boxen(green("✓ Build completed successfully!"), {
+        padding: 1,
+        borderStyle: "round",
+        borderColor: () => green("─"),
+    }),
+);
+
+// Error message
+console.log(
+    boxen(red("✗ Build failed: Missing configuration"), {
+        padding: 1,
+        borderStyle: "double",
+        borderColor: () => red("═"),
+    }),
+);
+
+// Warning message
+console.log(
+    boxen(yellow("⚠ Deprecated API usage detected"), {
+        padding: 1,
+        borderStyle: "bold",
+    }),
+);
+```
+
+### Application Banners
+
+Create eye-catching banners for your CLI tools:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { cyan, bold } from "@visulima/colorize";
+
+const banner = boxen(bold(cyan("MyApp CLI v2.0.0\n")) + "Build amazing applications\n" + "https://myapp.com", {
+    padding: 1,
+    margin: 1,
+    borderStyle: "double",
+    textAlignment: "center",
+});
+
+console.log(banner);
+```
+
+### Update Notifications
+
+Display update notifications with clear formatting:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { yellow, green } from "@visulima/colorize";
+
+console.log(
+    boxen(yellow("Update available: ") + "v2.0.0 → " + green("v2.1.0") + "\n" + "Run " + green("npm install -g myapp") + " to update", {
+        padding: 1,
+        margin: 1,
+        borderStyle: "round",
+        headerText: "Update Notification",
+        headerAlignment: "center",
+    }),
+);
+```
+
+### Configuration Summaries
+
+Display configuration or status information:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { gray, cyan } from "@visulima/colorize";
+
+const config = [
+    `${gray("Environment:")} ${cyan("production")}`,
+    `${gray("Port:")} ${cyan("3000")}`,
+    `${gray("Database:")} ${cyan("postgres://localhost:5432")}`,
+    `${gray("Cache:")} ${cyan("enabled")}`,
+].join("\n");
+
+console.log(
+    boxen(config, {
+        padding: 1,
+        headerText: "Server Configuration",
+        headerAlignment: "center",
+        footerText: "Press Ctrl+C to stop",
+        footerAlignment: "center",
+    }),
+);
+```
+
+## Visual Examples
+
+### Border Styles
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+// Single border (default)
+boxen("single", { borderStyle: "single" });
+// ┌──────┐
+// │single│
+// └──────┘
+
+// Double border
+boxen("double", { borderStyle: "double" });
+// ╔══════╗
+// ║double║
+// ╚══════╝
+
+// Round corners
+boxen("round", { borderStyle: "round" });
+// ╭─────╮
+// │round│
+// ╰─────╯
+
+// Bold border
+boxen("bold", { borderStyle: "bold" });
+// ┏━━━━┓
+// ┃bold┃
+// ┗━━━━┛
+```
+
+### With Padding and Margins
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+// Padding adds space inside
+boxen("padded", { padding: 1 });
+// ┌────────┐
+// │        │
+// │ padded │
+// │        │
+// └────────┘
+
+// Margins add space outside
+boxen("margin", { margin: 1 });
+//
+//   ┌──────┐
+//   │margin│
+//   └──────┘
+//
+```
+
+### Text Alignment
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+// Left aligned (default)
+boxen("Left\nAligned\nText", { textAlignment: "left" });
+
+// Center aligned
+boxen("Center\nAligned\nText", { textAlignment: "center" });
+
+// Right aligned
+boxen("Right\nAligned\nText", { textAlignment: "right" });
+```
+
+## Comparison
+
+### vs. boxen (original)
+
+| Feature                 | @visulima/boxen | boxen |
+| ----------------------- | --------------- | ----- |
+| Border styles           | ✅              | ✅    |
+| Custom colors           | ✅              | ✅    |
+| Headers/footers         | ✅              | ✅    |
+| TypeScript native       | ✅              | ⚠️    |
+| Position-based coloring | ✅              | ❌    |
+| Gradient borders        | ✅              | ❌    |
+| Modern ESM              | ✅              | ⚠️    |
+| Active maintenance      | ✅              | ⚠️    |
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn how to install and set up boxen
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Create your first terminal box in 5 minutes
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all border styles and options
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+### Node.js
+
+- ✅ Node.js 22.13 - 25.x
+- ✅ ESM and CommonJS support
+
+### Operating Systems
+
+- ✅ Windows (including Command Prompt and PowerShell)
+- ✅ macOS
+- ✅ Linux
+- ✅ Any terminal with Unicode support

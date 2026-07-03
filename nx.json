@@ -44,14 +44,16 @@
             "cache": true
         },
         "test": {
-            "dependsOn": ["^build"],
             "inputs": ["testing", "^production", "{projectRoot}/vite.config.ts", "{projectRoot}/tools/get-vitest-config.ts"],
             "cache": true
         },
         "test:coverage": {
-            "dependsOn": ["^build"],
             "inputs": ["testing", "^production", "{projectRoot}/vite.config.ts", "{projectRoot}/tools/get-vitest-config.ts"],
             "outputs": ["{projectRoot}/coverage"],
+            "cache": true
+        },
+        "test:bench": {
+            "inputs": ["default", "^production", "{projectRoot}/vitest.config.ts"],
             "cache": true
         },
         "build-storybook": {
@@ -81,15 +83,10 @@
             "!{workspaceRoot}/.storybook/**/*",
             "!{workspaceRoot}/**/*.stories.@(js|jsx|ts|tsx|mdx)"
         ],
-        "sharedGlobals": [
-            "{workspaceRoot}/.nvmrc",
-            "{workspaceRoot}/package.json",
-            "{workspaceRoot}/tsup.config.ts",
-            "{workspaceRoot}/tsconfig.json",
-            "{workspaceRoot}/tsconfig.base.json"
-        ]
+        "sharedGlobals": ["{workspaceRoot}/.nvmrc", "{workspaceRoot}/package.json", "{workspaceRoot}/tsconfig.json", "{workspaceRoot}/tsconfig.base.json"]
     },
     "parallel": 5,
     "defaultBase": "main",
-    "$schema": "./node_modules/nx/schemas/nx-schema.json"
+    "$schema": "./node_modules/nx/schemas/nx-schema.json",
+    "analytics": false
 }

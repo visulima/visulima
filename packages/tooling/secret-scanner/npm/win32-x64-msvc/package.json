@@ -1,0 +1,33 @@
+{
+    "name": "@visulima/secret-scanner-binding-win32-x64-msvc",
+    "version": "0.0.0-alpha.0",
+    "description": "Native binding for @visulima/secret-scanner (Windows x64)",
+    "homepage": "https://visulima.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/tooling/secret-scanner"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "main": "secret-scanner-native.win32-x64-msvc.node",
+    "files": [
+        "secret-scanner-native.win32-x64-msvc.node"
+    ],
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "win32"
+    ],
+    "cpu": [
+        "x64"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

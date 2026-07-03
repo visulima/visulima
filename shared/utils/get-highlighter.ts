@@ -1,92 +1,91 @@
 import type { Highlighter, LanguageInput, ShikiTransformer } from "shiki";
 
+import { LANGUAGE_IMPORT_MAP } from "./get-language-import";
+
 let highlighterPromise: Promise<Highlighter> | undefined;
 let disposeFn: (() => void) | undefined;
 
-const createSingletonHighlighter = async (langs: LanguageInput[] = []): Promise<Highlighter> => {
-    // Try fine-grained modules first for better perf and bundle size
-    try {
-        const [coreMod, engineMod] = await Promise.all([import("shiki/core"), import("shiki/engine/javascript")]);
-        const { createHighlighterCore } = coreMod as any;
-        const { createJavaScriptRegexEngine } = engineMod as any;
+const createSingletonHighlighter = async (): Promise<Highlighter> => {
+    const [coreMod, engineMod] = await Promise.all([import("shiki/core"), import("shiki/engine/javascript")]);
+    const { createHighlighterCore } = coreMod as any;
+    const { createJavaScriptRegexEngine } = engineMod as any;
 
-        const highlighterCore: unknown = await createHighlighterCore({
-            // Defer loading of themes/langs to the core loader
-            themes: [import("@shikijs/themes/github-dark-default"), import("@shikijs/themes/github-light")],
-            // TODO: move this into ono and vite-overlay and add it based on the file extension
-            langs: [
-                import("@shikijs/langs/javascript"),
-                import("@shikijs/langs/typescript"),
-                import("@shikijs/langs/jsx"),
-                import("@shikijs/langs/tsx"),
-                import("@shikijs/langs/json"),
-                import("@shikijs/langs/jsonc"),
-                import("@shikijs/langs/xml"),
-                import("@shikijs/langs/sql"),
-                import("@shikijs/langs/bash"),
-                import("@shikijs/langs/shell"),
-                import("@shikijs/langs/markdown"),
-                import("@shikijs/langs/mdx"),
-                import("@shikijs/langs/html"),
-                import("@shikijs/langs/css"),
-                import("@shikijs/langs/scss"),
-                import("@shikijs/langs/less"),
-                import("@shikijs/langs/sass"),
-                import("@shikijs/langs/stylus"),
-                import("@shikijs/langs/styl"),
-                ...langs,
-            ],
-            engine: createJavaScriptRegexEngine(),
-        });
+    const highlighterCore: unknown = await createHighlighterCore({
+        // Defer loading of themes/langs to the core loader
+        themes: [import("@shikijs/themes/min-dark"), import("@shikijs/themes/min-light")],
+        langs: [],
+        engine: createJavaScriptRegexEngine(),
+    });
 
-        const highlighter = highlighterCore as Highlighter;
+    const highlighter = highlighterCore as Highlighter;
 
-        disposeFn = () => {
-            try {
-                (highlighterCore as any)?.dispose?.();
-            } catch {}
-            highlighterPromise = undefined;
-        };
+    disposeFn = () => {
+        try {
+            (highlighterCore as any)?.dispose?.();
+        } catch {}
+        highlighterPromise = undefined;
+    };
 
-        return highlighter;
-    } catch {
-        // Fallback to the monolithic build to preserve current behavior
-        const { createHighlighter } = await import("shiki");
-        const highlighter: unknown = await createHighlighter({
-            langs: [
-                "javascript",
-                "typescript",
-                "jsx",
-                "tsx",
-                "json",
-                "jsonc",
-                "xml",
-                "sql",
-                "bash",
-                "shell",
-                "markdown",
-                "mdx",
-            ],
-            themes: ["github-dark-default", "github-light"],
-        });
+    return highlighter;
+};
 
-        disposeFn = () => {
-            try {
-                (highlighter as any)?.dispose?.();
-            } catch {}
-            highlighterPromise = undefined;
-        };
+/**
+ * Loads a language dynamically if it's not already loaded.
+ * @param highlighter - The Shiki highlighter instance
+ * @param langName - The language name to load
+ */
+const ensureLanguageLoaded = async (highlighter: Highlighter, langName: string): Promise<void> => {
+    // Skip "text" language as it's handled separately
+    if (langName === "text") {
+        return;
+    }
 
-        return highlighter as Highlighter;
+    const normalizedLangName = langName.toLowerCase();
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const loadedLanguages: string[] = (highlighter as any).getLoadedLanguages?.() ?? (highlighter as any).getLanguages?.() ?? [];
+
+    if (!loadedLanguages.includes(normalizedLangName)) {
+        const importer = LANGUAGE_IMPORT_MAP[normalizedLangName];
+
+        if (importer) {
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            await highlighter.loadLanguage?.(await importer() as any);
+        }
     }
 };
 
-const getHighlighter = async (langs: LanguageInput[] = []): Promise<Highlighter> => {
+/**
+ * Gets or creates a singleton highlighter instance.
+ * Languages are loaded dynamically on-demand using Shiki's loadLanguage() method.
+ * @param langNamesOrInputs - Optional array of language names (strings) or LanguageInput objects
+ * @returns Promise resolving to the highlighter instance
+ */
+const getHighlighter = async (langNamesOrInputs: (string | LanguageInput)[] = []): Promise<Highlighter> => {
+    // Create highlighter if it doesn't exist
     if (!highlighterPromise) {
-        highlighterPromise = createSingletonHighlighter(langs);
+        highlighterPromise = createSingletonHighlighter();
     }
 
-    return highlighterPromise;
+    const highlighter = await highlighterPromise;
+
+    // Extract language names and load them dynamically
+    const langNames: string[] = [];
+
+    for (const item of langNamesOrInputs) {
+        if (typeof item === "string") {
+            langNames.push(item.toLowerCase());
+        } else {
+            const langName = (item as any).name;
+            if (langName) {
+                langNames.push(langName.toLowerCase());
+            }
+        }
+    }
+
+    // Load all requested languages
+    await Promise.all(langNames.map((langName) => ensureLanguageLoaded(highlighter, langName)));
+
+    return highlighter;
 };
 
 export const disposeHighlighter = async (): Promise<void> => {
@@ -112,11 +111,11 @@ export const transformerCompactLineOptions = (
         name: '@shikijs/transformers:compact-line-options',
         line(node, line) {
             const lineOption = lineOptions.find((o) => o.line === line);
-        
+
             if (lineOption?.classes) {
                 this.addClassToHast(node, lineOption.classes);
             }
-        
+
             return node;
         },
     } as ShikiTransformer;

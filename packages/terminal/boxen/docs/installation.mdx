@@ -1,0 +1,206 @@
+---
+title: "Installation"
+description: "How to install and set up @visulima/boxen in your project."
+---
+
+# Installation
+
+## Package Manager
+
+Install **@visulima/boxen** using your preferred package manager:
+
+```bash npm2yarn
+npm install @visulima/boxen
+```
+
+## Requirements
+
+- **Node.js:** 22.13 or higher
+- **TypeScript:** 5.0+ (optional, for TypeScript projects)
+- **Terminal:** Unicode support recommended for best visual results
+
+## Import Methods
+
+### Node.js (ESM)
+
+```typescript
+// Named import (recommended)
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("Hello, World!"));
+```
+
+### Node.js (CommonJS)
+
+```javascript
+// CommonJS import
+const { boxen } = require("@visulima/boxen");
+
+console.log(boxen("Hello, World!"));
+```
+
+### TypeScript
+
+TypeScript definitions are included automatically:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import type { Options } from "@visulima/boxen";
+
+const options: Options = {
+    padding: 1,
+    borderStyle: "double",
+};
+
+console.log(boxen("Typed!", options));
+```
+
+## Optional: Color Support
+
+For colored borders, install **@visulima/colorize**:
+
+```bash npm2yarn
+npm install @visulima/colorize
+```
+
+Then use colors in your boxes:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { green, blue } from "@visulima/colorize";
+
+console.log(
+    boxen(green("Success!"), {
+        borderColor: () => green("─"),
+    }),
+);
+```
+
+## Verification
+
+Verify your installation works correctly:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+console.log(
+    boxen("Installation successful!", {
+        padding: 1,
+        borderStyle: "double",
+    }),
+);
+// Output:
+// ╔═══════════════════════════╗
+// ║                           ║
+// ║ Installation successful!  ║
+// ║                           ║
+// ╚═══════════════════════════╝
+```
+
+If you see a box similar to above, installation is successful!
+
+## Terminal Compatibility
+
+### Unicode Support
+
+For best results, use a terminal with full Unicode support:
+
+**Recommended Terminals:**
+
+- ✅ Windows Terminal (Windows 10+)
+- ✅ iTerm2 (macOS)
+- ✅ Terminal.app (macOS)
+- ✅ GNOME Terminal (Linux)
+- ✅ Konsole (Linux)
+- ✅ Hyper
+- ✅ Alacritty
+
+**Limited Support:**
+
+- ⚠️ Windows Command Prompt (Windows 10+ with Unicode enabled)
+- ⚠️ PowerShell (works with PowerShell 7+)
+
+### Fallback for Limited Terminals
+
+If your terminal doesn't support Unicode box-drawing characters, use ASCII-only border styles:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+// Custom ASCII border
+console.log(
+    boxen("ASCII only", {
+        borderStyle: {
+            topLeft: "+",
+            topRight: "+",
+            bottomLeft: "+",
+            bottomRight: "+",
+            top: "-",
+            bottom: "-",
+            left: "|",
+            right: "|",
+        },
+    }),
+);
+// Output:
+// +----------+
+// |ASCII only|
+// +----------+
+```
+
+## Troubleshooting
+
+### Characters Not Displaying Correctly
+
+If box characters appear as question marks or squares:
+
+1. **Check terminal encoding:**
+
+    ```bash
+    echo $LANG
+    # Should show UTF-8 (e.g., en_US.UTF-8)
+    ```
+
+2. **Set UTF-8 encoding:**
+
+    ```bash
+    export LANG=en_US.UTF-8
+    export LC_ALL=en_US.UTF-8
+    ```
+
+3. **Use a different terminal** with better Unicode support
+
+### Module Not Found
+
+If you see `Cannot find module '@visulima/boxen'`:
+
+```bash npm2yarn
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### TypeScript Errors
+
+Ensure your `tsconfig.json` includes:
+
+```json
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "module": "ES2020"
+    }
+}
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Quick Start" href="/quick-start">
+        Create your first box in 5 minutes
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Learn about all available options
+    </Card>
+</Cards>

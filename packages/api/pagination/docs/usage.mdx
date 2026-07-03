@@ -1,0 +1,42 @@
+---
+title: "Usage"
+---
+
+# Usage Guide
+
+## Offset Pagination
+
+```typescript
+import { paginate } from "@visulima/pagination";
+
+const result = await paginate(items, {
+    page: 1,
+    limit: 20,
+});
+
+// result.data - paginated items
+// result.metadata.total
+// result.metadata.pages
+// result.metadata.hasMore
+```
+
+## Cursor Pagination
+
+```typescript
+import { cursorPaginate } from "@visulima/pagination";
+
+const result = await cursorPaginate(query, {
+    cursor: "eyJpZCI6MTAwfQ==",
+    limit: 20,
+});
+
+// result.data
+// result.metadata.nextCursor
+// result.metadata.hasMore
+```
+
+## With Prisma
+
+```typescript
+const result = await paginate(await prisma.user.findMany(), { page: 1, limit: 10 });
+```

@@ -1,0 +1,31 @@
+{
+    "name": "vite_overlay_vite-ssr-react",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "npm run build:client && npm run build:server",
+        "build:client": "vite build --outDir dist/client",
+        "build:server": "vite build --ssr src/entry-server.tsx --outDir dist/server",
+        "dev": "node server",
+        "preview": "cross-env NODE_ENV=production node server"
+    },
+    "dependencies": {
+        "compression": "catalog:prod",
+        "express": "catalog:backend",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend",
+        "sirv": "catalog:prod"
+    },
+    "devDependencies": {
+        "@types/express": "catalog:types",
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "@visulima/vite-overlay": "workspace:*",
+        "@vitejs/plugin-react": "catalog:build",
+        "cross-env": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build"
+    }
+}

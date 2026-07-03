@@ -1,0 +1,10 @@
+{
+    "name": "free-email-domains-types",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Typings smoke test fixture",
+    "type": "module",
+    "dependencies": {
+        "@visulima/free-email-domains": "workspace:*"
+    }
+}

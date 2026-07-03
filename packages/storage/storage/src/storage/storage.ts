@@ -1,0 +1,1292 @@
+import { Readable } from "node:stream";
+import { setInterval } from "node:timers";
+import { inspect } from "node:util";
+
+import { parseBytes } from "@visulima/humanizer";
+import { isAbsolute, normalize } from "@visulima/path";
+import typeis from "type-is";
+
+import NoOpMetrics from "../metrics/no-op-metrics";
+import type { Cache } from "../utils/cache";
+import { NoOpCache } from "../utils/cache";
+// @ts-expect-error - UploadError is used for type checking in error handling
+import type { ErrorResponses, UploadError } from "../utils/errors";
+import { ErrorMap, ERRORS, throwErrorCode } from "../utils/errors";
+import Locker from "../utils/locker";
+import toMilliseconds from "../utils/primitives/to-milliseconds";
+import type { RetryConfig } from "../utils/retry";
+import { retry } from "../utils/retry";
+import type { HttpError, Metrics, ValidatorConfig } from "../utils/types";
+// @ts-expect-error - ValidationError is used for type checking in error handling
+import ValidationError from "../utils/validation-error";
+import { Validator } from "../utils/validator";
+import type MetaStorage from "./meta-storage";
+import type { BaseStorageOptions, BatchOperationResponse, OperationOptions, PurgeList } from "./types";
+import type { File, FileInit, FilePart, FileQuery } from "./utils/file";
+import { isExpired, updateMetadata } from "./utils/file";
+import type { FileReturn } from "./utils/file/types";
+
+const SECRET_KEY_PATTERN = /(secret|password|passwd|pwd|token|api[_-]?key|credential|authorization|sas|signature|sessiontoken|connectionstring)/i;
+
+/**
+ * Returns a shallow copy of `config` with any credential-bearing fields
+ * replaced by `"[REDACTED]"`. Used for the constructor debug log so adapter
+ * configs (S3 keys, Vercel tokens, Azure SAS, Netlify tokens, etc.) never
+ * end up in plaintext log output.
+ */
+const redactSecrets = (config: Record<string, unknown>): Record<string, unknown> => {
+    const out: Record<string, unknown> = {};
+
+    for (const [key, value] of Object.entries(config)) {
+        if (typeof value === "string" && SECRET_KEY_PATTERN.test(key)) {
+            out[key] = "[REDACTED]";
+        } else if (value && typeof value === "object" && !Array.isArray(value) && value.constructor === Object) {
+            out[key] = redactSecrets(value as Record<string, unknown>);
+        } else {
+            out[key] = value;
+        }
+    }
+
+    return out;
+};
+
+const defaults: BaseStorageOptions = {
+    allowMIME: ["*/*"],
+    filename: ({ id }: File): string => id,
+    maxMetadataSize: "8MB",
+    maxUploadSize: "5TB",
+    onComplete: () => {
+        // No return value needed - hook modifies response in place
+    },
+    onCreate: () => {
+        // No return value needed - hook is for side effects only
+    },
+    onDelete: () => {
+        // No return value needed - hook is for side effects only
+    },
+    onError: () => {
+        // No return value needed - hook modifies error in place
+    },
+    onUpdate: () => {
+        // No return value needed - hook is for side effects only
+    },
+    useRelativeLocation: false,
+    validation: {},
+};
+
+/**
+ * Default filename validation for cloud storage platforms.
+ * Permissive validation that only blocks dangerous patterns (path traversal, null bytes).
+ * Cloud storage platforms (S3, Azure, GCS) accept most special characters and handle URL encoding automatically.
+ */
+export const defaultCloudStorageFileNameValidation = (name: string): boolean => {
+    if (!name || name.length < 3 || name.length > 255 || isAbsolute(name)) {
+        return false;
+    }
+
+    const upperCase = name.toUpperCase();
+
+    // Block path traversal and null bytes
+    return !(upperCase.includes("../") || name.includes("\0"));
+};
+
+/**
+ * Default filename validation for local filesystems.
+ * Stricter validation that blocks filesystem-incompatible characters.
+ */
+export const defaultFilesystemFileNameValidation = (name: string): boolean => {
+    if (!name || name.length < 3 || name.length > 255 || isAbsolute(name)) {
+        return false;
+    }
+
+    const upperCase = name.toUpperCase();
+    const filesystemInvalidChars = ['"', "*", ":", "<", ">", "?", "\\", "|", "../", "\0"];
+
+    return !filesystemInvalidChars.some((char) => upperCase.includes(char));
+};
+
+/**
+ * Abstract base class for all storage backends.
+ * @template TFile The file type used by this storage backend.
+ * @template TFileReturn The return type for file retrieval operations.
+ * @remarks
+ * ## Error Handling
+ *
+ * All storage operations follow consistent error handling patterns:
+ * - Operations throw `UploadError` with specific error codes (see ERRORS enum)
+ * - Common error codes: FILE_NOT_FOUND, GONE (expired), FILE_LOCKED, STORAGE_BUSY
+ * - Errors are normalized with storage class context via `normalizeError()`
+ * - Batch operations capture individual failures without stopping the batch
+ *
+ * ## Retry Behavior
+ *
+ * Storage implementations handle retries differently:
+ *
+ * ### Cloud Storage (S3, GCS, Azure, Netlify Blob)
+ * - Use configurable retry wrappers via `retryConfig` option
+ * - Default retryable status codes: 408, 429, 500, 502, 503, 504
+ * - Retry logic handles transient network errors and rate limiting
+ * - Custom `shouldRetry` functions can be provided for advanced retry logic
+ *
+ * ### Local Storage (DiskStorage)
+ * - No automatic retries (filesystem operations are typically immediate)
+ * - Errors are thrown directly for immediate feedback
+ *
+ * ## Operation Instrumentation
+ *
+ * All public operations are automatically instrumented via `instrumentOperation()`:
+ * - Metrics are recorded for operation count, duration, and errors
+ * - File sizes are tracked for operations that return file objects
+ * - Error metrics include error messages for debugging
+ *
+ * ## Metadata Caching
+ *
+ * File metadata is automatically cached to reduce storage API calls:
+ * - Cache is updated on save, delete, and get operations
+ * - Cache is invalidated when metadata is deleted
+ * - Implementations can override caching behavior if needed
+ */
+export abstract class BaseStorage<TFile extends File = File, TFileReturn extends FileReturn = FileReturn> {
+    /**
+     * Hook called when a new file is created.
+     * @param file The newly created file object.
+     * @remarks This hook is called after file metadata is saved but before returning the file.
+     * Can be used for side effects like logging, notifications, or custom processing.
+     */
+    public onCreate: (file: TFile) => Promise<void> | void;
+
+    /**
+     * Hook called when file metadata is updated.
+     * @param file The updated file object.
+     * @remarks This hook is called after metadata is updated and saved.
+     * Can be used for side effects like logging or custom processing.
+     */
+    public onUpdate: (file: TFile) => Promise<void> | void;
+
+    /**
+     * Hook called when a file upload is completed.
+     * @param file The completed file object.
+     * @param response The response object that can be modified in place (headers, statusCode, body).
+     * @param request Optional request object for additional context.
+     * @remarks This hook is called when file status becomes "completed".
+     * The response object can be modified directly to add headers or change the status code.
+     */
+    public onComplete: (file: TFile, response: unknown, request?: unknown) => Promise<void> | void;
+
+    /**
+     * Hook called when a file is deleted.
+     * @param file The deleted file object.
+     * @remarks This hook is called after the file is deleted but before returning.
+     * Can be used for side effects like cleanup or logging.
+     */
+    public onDelete: (file: TFile) => Promise<void> | void;
+
+    /**
+     * Hook called when an error occurs during storage operations.
+     * @param error The HTTP error object that can be modified in place.
+     * @remarks This hook allows customizing error responses by modifying the error object.
+     * The error object can be modified to change headers, statusCode, or body properties.
+     * Error formatting happens in handlers after this hook is called.
+     */
+    public onError: (error: HttpError) => Promise<void> | void;
+
+    public isReady = true;
+
+    public errorResponses = {} as ErrorResponses;
+
+    public cache: Cache<string, TFile>;
+
+    public readonly logger?: Console;
+
+    public readonly metrics: Metrics;
+
+    public readonly genericConfig: BaseStorageOptions<TFile>;
+
+    public maxMetadataSize: number;
+
+    public checksumTypes: string[] = [];
+
+    /**
+     * Adapter capability flag: when `true`, the adapter honours
+     * `OperationOptions.range` on {@link BaseStorage.get} and
+     * {@link BaseStorage.getStream}, returning only the requested byte slice.
+     * The `Files` facade gates `download({ range })` on this flag and throws
+     * `METHOD_NOT_ALLOWED` for adapters that haven't opted in.
+     */
+    public readonly supportsRange: boolean = false;
+
+    /**
+     * Adapter capability flag: when `true`, the adapter persists user-supplied
+     * key/value metadata alongside the object and returns it on `get`/`head`.
+     * Defaults to `true` — most backends carry metadata. Adapters that drop or
+     * ignore custom metadata override this to `false`; the `Files` facade reads
+     * it via {@link Files.capabilities} so callers can fail fast instead of
+     * silently losing metadata.
+     */
+    public readonly supportsMetadata: boolean = true;
+
+    /**
+     * Adapter capability flag: when `true`, the adapter honours an object
+     * `cacheControl` directive on write. Defaults to `false` — most backends
+     * have no cache-control concept. Exposed through {@link Files.capabilities}.
+     */
+    public readonly supportsCacheControl: boolean = false;
+
+    /**
+     * Adapter capability flag: when `true`, the adapter implements
+     * {@link BaseStorage.listDirectory} so the provider collapses keys into
+     * common prefixes server-side. The `Files` facade prefers this native path
+     * for `list({ delimiter })`; adapters that leave it `false` fall back to
+     * synthesizing the directory view from a full listing in the facade.
+     */
+    public readonly supportsDelimiter: boolean = false;
+
+    /**
+     * Adapter capability flag: when `true`, the adapter reports its own
+     * byte-level `onProgress` events during `write`. The `Files` facade skips
+     * its coarse "start/done" emission for adapters that report progress
+     * natively, so callers see one consistent stream of events.
+     */
+    public readonly reportsUploadProgress: boolean = false;
+
+    public maxUploadSize: number;
+
+    protected expiration?: { maxAge?: string | number; purgeInterval?: string | number; rolling?: boolean };
+
+    protected locker: Locker;
+
+    protected namingFunction: (file: TFile) => string;
+
+    protected validation: Validator<TFile> = new Validator<TFile>();
+
+    protected abstract meta: MetaStorage<TFile>;
+
+    protected assetFolder: string | undefined = undefined;
+
+    /**
+     * Limits the number of concurrent upload requests
+     */
+    protected concurrency?: number;
+
+    protected constructor(config: BaseStorageOptions<TFile>) {
+        const options = { ...defaults, ...config } as Required<BaseStorageOptions<TFile>>;
+
+        this.onCreate = options.onCreate;
+        this.onUpdate = options.onUpdate;
+        this.onComplete = options.onComplete;
+        this.onDelete = options.onDelete;
+        this.onError = options.onError;
+        this.namingFunction = options.filename;
+        this.maxUploadSize = typeof options.maxUploadSize === "string" ? parseBytes(options.maxUploadSize) : options.maxUploadSize;
+        this.maxMetadataSize = typeof options.maxMetadataSize === "string" ? parseBytes(options.maxMetadataSize) : options.maxMetadataSize;
+        this.expiration = options.expiration;
+
+        // Initialize generic configuration
+        this.genericConfig = options;
+
+        if (options.assetFolder !== undefined) {
+            this.assetFolder = normalize(options.assetFolder);
+        }
+
+        this.locker = new Locker({
+            max: 1000,
+            ttl: 30_000,
+            ttlAutopurge: true,
+        });
+
+        this.cache = (options.cache ?? new NoOpCache()) as Cache<string, TFile>;
+
+        this.logger = options.logger;
+        this.metrics = options.metrics ?? new NoOpMetrics();
+        this.logger?.debug(`${this.constructor.name} config: ${inspect(redactSecrets({ ...config, logger: this.logger.constructor }))}`);
+
+        const purgeInterval = toMilliseconds(options.expiration?.purgeInterval);
+
+        if (purgeInterval) {
+            this.startAutoPurge(purgeInterval);
+        }
+
+        const size: Required<ValidatorConfig<TFile>> = {
+            isValid(file) {
+                // Allow undefined size for creation-defer-length extension
+                if (file.size === undefined) {
+                    return true;
+                }
+
+                const fileSizeValue = (file as { size?: unknown }).size;
+
+                if (fileSizeValue === undefined || fileSizeValue === null) {
+                    return false;
+                }
+
+                const fileSize = typeof fileSizeValue === "number" ? fileSizeValue : Number(fileSizeValue);
+
+                // Reject negative sizes or NaN
+                if (Number.isNaN(fileSize) || fileSize < 0) {
+                    return false;
+                }
+
+                const maxSize = typeof this.value === "number" ? this.value : Number(this.value);
+
+                return !Number.isNaN(maxSize) && fileSize <= maxSize;
+            },
+            response: ErrorMap.RequestEntityTooLarge,
+            value: this.maxUploadSize,
+        };
+
+        const mime: Required<ValidatorConfig<TFile>> = {
+            isValid(file) {
+                return !!typeis.is(file.contentType, this.value as string[]);
+            },
+            // @TODO: add better error handling for mime types
+            response: ErrorMap.UnsupportedMediaType,
+            value: options.allowMIME,
+        };
+
+        // Use provided fileNameValidation or default to cloud storage validation
+        const fileNameValidation = options.fileNameValidation ?? defaultCloudStorageFileNameValidation;
+
+        const filename: ValidatorConfig<TFile> = {
+            isValid(file) {
+                return fileNameValidation(file.name);
+            },
+            response: ErrorMap.InvalidFileName,
+        };
+
+        this.validation.add({ filename, mime, size });
+        this.validation.add({ ...options.validation });
+    }
+
+    /**
+     * Escape hatch returning the underlying native client (S3Client, BlobServiceClient, etc.)
+     * for provider-specific operations not covered by the unified API.
+     * Returns `undefined` when no native client is available (e.g. DiskStorage).
+     */
+    // eslint-disable-next-line class-methods-use-this
+    public get raw(): unknown {
+        return undefined;
+    }
+
+    /**
+     * Returns a presigned URL for downloading the object at `key`.
+     * Throws `ERRORS.METHOD_NOT_ALLOWED` when the adapter has no native presign support.
+     * @param _key Storage key.
+     * @param _options Optional expiry and response overrides.
+     */
+    public async getReadUrl(
+        _key: string,
+        _options?: OperationOptions & { expiresIn?: number; responseContentDisposition?: string; responseContentType?: string },
+    ): Promise<string> {
+        return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not implement getReadUrl()`);
+    }
+
+    /**
+     * Returns a presigned URL for uploading a single object to `key`.
+     * Throws `ERRORS.METHOD_NOT_ALLOWED` when the adapter has no native presign support.
+     * @param _key Storage key.
+     * @param _options Optional content type, expiry, and content length hints, plus per-call signal/timeout/retries.
+     */
+    public async getUploadUrl(
+        _key: string,
+        _options?: OperationOptions & { contentLength?: number; contentType?: string; expiresIn?: number },
+    ): Promise<string> {
+        return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not implement getUploadUrl()`);
+    }
+
+    public get tusExtension(): string[] {
+        const extensions = ["creation", "creation-with-upload", "termination", "checksum", "creation-defer-length", "concatenation"];
+
+        if (this.expiration) {
+            extensions.push("expiration");
+        }
+
+        return extensions;
+    }
+
+    /**
+     * Validates a file against configured validation rules.
+     * @param file File object to validate.
+     * @returns Promise resolving to undefined if file is valid, throws ValidationError otherwise.
+     * @throws {ValidationError} If validation fails
+     */
+    public async validate(file: TFile): Promise<void> {
+        await this.validation.verify(file);
+    }
+
+    /**
+     * Checks if a file exists by querying its metadata.
+     * @param query File query containing the file ID to check.
+     * @param query.id File ID to check.
+     * @returns Promise resolving to true if file exists, false otherwise.
+     * @remarks This method does not throw errors - it returns false if the file is not found.
+     */
+    public async exists(query: FileQuery, options?: OperationOptions): Promise<boolean> {
+        return this.instrumentOperation("exists", async () => {
+            try {
+                await this.getMeta(query.id, options);
+
+                return true;
+            } catch {
+                return false;
+            }
+        });
+    }
+
+    /**
+     * Normalizes errors with storage-specific context.
+     * @param error The error to normalize.
+     * @returns Normalized HTTP error with storage class context added to the message.
+     * @remarks Errors are enhanced with the storage class name for better debugging.
+     */
+    public normalizeError(error: Error): HttpError {
+        // Create base error structure
+        const baseError: HttpError = {
+            code: error.name,
+            message: error.message,
+            name: error.name,
+            statusCode: 500,
+        };
+
+        // Add storage class context to errors
+        return {
+            ...baseError,
+            message: `[${this.constructor.name}] ${baseError.message}`,
+        };
+    }
+
+    /**
+     * Gets the storage configuration.
+     * @returns The current storage configuration options.
+     */
+    public get config(): BaseStorageOptions<TFile> {
+        return this.genericConfig;
+    }
+
+    /**
+     * Saves upload metadata to the metadata storage.
+     * @param file File object containing metadata to save.
+     * @returns Promise resolving to the saved file object.
+     * @remarks Updates timestamps and caches the file metadata.
+     * @throws {UploadError} If `file.id` contains path-traversal sequences, null bytes, or is an absolute path — patterns that could let a local MetaStorage implementation write outside its directory.
+     */
+    public async saveMeta(file: TFile): Promise<TFile> {
+        BaseStorage.assertSafeId(file.id);
+        this.updateTimestamps(file);
+
+        this.cache.set(file.id, file);
+
+        return this.meta.save(file.id, file);
+    }
+
+    /**
+     * Rejects ids containing `..` segments, null bytes, or absolute paths — defense-in-depth
+     * so any MetaStorage / facade / handler that uses `id` as part of a filesystem path or
+     * cross-bucket lookup can't be escaped. Public so the `Files` facade and Fetch handlers
+     * can validate user-supplied keys before any adapter call.
+     */
+    public static assertSafeId(id: string): void {
+        // Reject Windows-style drive letters explicitly — node:path's isAbsolute is platform-aware
+        // and won't catch "C:\\foo" when this process is running on Linux.
+        if (
+            !id ||
+            typeof id !== "string" ||
+            id.includes("\0") ||
+            id.includes("../") ||
+            id.includes("..\\") ||
+            id === ".." ||
+            id.startsWith("../") ||
+            id.startsWith("..\\") ||
+            isAbsolute(id) ||
+            /^[A-Z]:[/\\]/i.test(id)
+        ) {
+            throwErrorCode(ERRORS.INVALID_FILE_NAME, `Invalid file id: "${id}"`);
+        }
+    }
+
+    /**
+     * Deletes upload metadata from the metadata storage.
+     * @param id File ID whose metadata should be deleted.
+     * @returns Promise resolving when metadata is deleted.
+     * @remarks Also removes the file from the cache.
+     */
+    public async deleteMeta(id: string): Promise<void> {
+        this.cache.delete(id);
+
+        return this.meta.delete(id);
+    }
+
+    /**
+     * Retrieves upload metadata by file ID.
+     * @param id File ID to retrieve metadata for.
+     * @returns Promise resolving to the file metadata object.
+     * @throws {UploadError} If the file metadata cannot be found (ERRORS.FILE_NOT_FOUND).
+     * @remarks Caches the retrieved metadata for faster subsequent access.
+     */
+    public async getMeta(id: string, _options?: OperationOptions): Promise<TFile> {
+        try {
+            const file = await this.meta.get(id);
+
+            this.cache.set(file.id, file);
+
+            return { ...file };
+        } catch (error: unknown) {
+            const httpError = this.normalizeError(error instanceof Error ? error : new Error(String(error)));
+
+            await this.onError(httpError);
+
+            return throwErrorCode(ERRORS.FILE_NOT_FOUND);
+        }
+    }
+
+    /**
+     * Checks if a file has expired and deletes it if so.
+     * @param file File object to check for expiration.
+     * @returns Promise resolving to the file object if not expired.
+     * @throws {UploadError} If the file has expired (ERRORS.GONE).
+     * @remarks If the file is expired, it is automatically deleted and the metadata is removed.
+     */
+    public async checkIfExpired(file: TFile): Promise<TFile> {
+        if (isExpired(file)) {
+            // Fire-and-forget deletion operations
+            this.delete(file).catch(() => undefined);
+            this.deleteMeta(file.id).catch(() => undefined);
+
+            return throwErrorCode(ERRORS.GONE);
+        }
+
+        return file;
+    }
+
+    /**
+     * Searches for and purges expired uploads.
+     * @param maxAge Maximum age of files to keep (files older than this will be purged).
+     * Can be a number (milliseconds) or string (e.g., "1h", "30m", "7d").
+     * If not provided, uses the expiration.maxAge from configuration.
+     * @returns Promise resolving to a list of purged files.
+     * @remarks
+     * Errors during individual file deletions are logged but do not stop the purge process.
+     * Files with corrupted metadata are skipped with a warning.
+     * Uses rolling expiration if configured (based on modifiedAt) or fixed expiration (based on createdAt).
+     */
+    public async purge(maxAge?: number | string): Promise<PurgeList> {
+        return this.instrumentOperation("purge", async () => {
+            const maxAgeMs = toMilliseconds(maxAge || this.expiration?.maxAge);
+            const purged = { items: [], maxAgeMs } as PurgeList;
+
+            if (maxAgeMs) {
+                const before = Date.now() - maxAgeMs;
+                const list = await this.list();
+                const expired = list.filter(
+                    (item) => Number(new Date((this.expiration?.rolling ? item.modifiedAt || item.createdAt : item.createdAt) as number | string)) < before,
+                );
+
+                for await (const { id, ...rest } of expired) {
+                    try {
+                        const deleted = await this.delete({ id });
+
+                        purged.items.push({ ...deleted, ...rest });
+                    } catch (error: unknown) {
+                        // If delete fails (e.g., corrupted metadata, file already deleted),
+                        // log the error but continue purging other files
+                        this.logger?.warn(`Failed to delete file ${id} during purge: ${error instanceof Error ? error.message : String(error)}`);
+                    }
+                }
+
+                if (purged.items.length > 0) {
+                    this.logger?.info(`Purge: removed ${purged.items.length} uploads`);
+                    // Record purge count as a gauge
+                    this.metrics.gauge("storage.operations.purge.items_count", purged.items.length, {
+                        storage: this.constructor.name.toLowerCase().replace("storage", ""),
+                    });
+                }
+            }
+
+            return purged;
+        });
+    }
+
+    /**
+     * Gets an uploaded file by ID.
+     * @param query File query containing the file ID to retrieve.
+     * @param query.id File ID to retrieve.
+     * @param options Optional per-call signal/timeout/retries.
+     * @returns Promise resolving to the file data including content.
+     * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
+     * @remarks This method loads the entire file content into memory. For large files, use getStream() instead.
+     */
+    public abstract get({ id }: FileQuery, options?: OperationOptions): Promise<TFileReturn>;
+
+    /**
+     * Gets an uploaded file as a readable stream for efficient large file handling.
+     * @param query File query containing the file ID to stream.
+     * @param query.id File ID to stream.
+     * @param options Optional per-call signal/timeout/retries (and, on range-capable adapters, a `range`).
+     * @returns Promise resolving to an object containing the stream, headers, and size.
+     * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND) or has expired (ERRORS.GONE).
+     * @remarks
+     * Default implementation falls back to get() and creates a stream from the buffer.
+     * Storage implementations should override this for better streaming performance.
+     * Headers include Content-Type, Content-Length, ETag, and Last-Modified.
+     */
+    public async getStream({ id }: FileQuery, options?: OperationOptions): Promise<{ headers?: Record<string, string>; size?: number; stream: Readable }> {
+        return this.instrumentOperation("getStream", async () => {
+            // Default implementation falls back to get() and creates a stream from the buffer
+            // Storage implementations can override this for better streaming performance
+            const file = await this.get({ id }, options);
+            const stream = Readable.from(file.content);
+
+            return {
+                headers: {
+                    "Content-Length": String(file.size),
+                    "Content-Type": file.contentType,
+                    ...(file.ETag && { ETag: file.ETag }),
+                    ...(file.modifiedAt && { "Last-Modified": file.modifiedAt.toString() }),
+                },
+                size: typeof file.size === "number" ? file.size : undefined,
+                stream,
+            };
+        });
+    }
+
+    /**
+     * Retrieves a list of uploaded files.
+     * @param _limit Maximum number of files to return (default: 1000).
+     * @returns Promise resolving to an array of file metadata objects.
+     * @throws {Error} If not implemented by the storage backend.
+     * @remarks Storage implementations must override this method.
+     */
+    public async list(_limit = 1000, _options?: OperationOptions): Promise<TFile[]> {
+        return this.instrumentOperation("list", async () => {
+            throw new Error("Not implemented");
+        });
+    }
+
+    /**
+     * Directory-style listing: collapse keys that share a path segment into common prefixes,
+     * server-side, instead of returning every object. Adapters that can push the `delimiter` down to
+     * the provider (S3 family, GCS, Azure) override this and set
+     * {@link BaseStorage.supportsDelimiter} to `true`; the default throws so the `Files` facade knows
+     * to fall back to synthesizing the view from {@link BaseStorage.list}.
+     * @param _options Listing options — `delimiter` (required), plus optional `prefix`/`limit` and the usual per-call signal/timeout/retries.
+     * @returns Direct-child files and the common prefixes one delimiter level below `prefix`.
+     * @throws {UploadError} `METHOD_NOT_ALLOWED` when the adapter has no native delimiter support.
+     */
+    public async listDirectory(
+        _options?: OperationOptions & { delimiter: string; limit?: number; prefix?: string },
+    ): Promise<{ files: TFile[]; prefixes: string[] }> {
+        return throwErrorCode(ERRORS.METHOD_NOT_ALLOWED, `${this.constructor.name} does not implement listDirectory()`);
+    }
+
+    /**
+     * Updates file metadata with user-provided key-value pairs.
+     * @param query File query containing the file ID to update.
+     * @param query.id File ID to update.
+     * @param metadata Partial file object containing fields to update.
+     * @returns Promise resolving to the updated file object.
+     * @throws {UploadError} If the file cannot be found (ERRORS.FILE_NOT_FOUND).
+     * @remarks
+     * Supports TTL (time-to-live) option: if metadata contains a 'ttl' field,
+     * it will be converted to an 'expiredAt' timestamp.
+     * TTL can be a number (milliseconds) or string (e.g., "1h", "30m", "7d").
+     */
+    public async update({ id }: FileQuery, metadata: Partial<File>): Promise<TFile> {
+        return this.instrumentOperation("update", async () => {
+            const file = await this.getMeta(id);
+
+            // Handle TTL option in metadata
+            const processedMetadata = { ...metadata };
+
+            if ("ttl" in processedMetadata && processedMetadata.ttl !== undefined) {
+                const ttlValue = processedMetadata.ttl;
+                const ttlMs = typeof ttlValue === "string" ? toMilliseconds(ttlValue) : ttlValue;
+
+                if (ttlMs !== undefined) {
+                    processedMetadata.expiredAt = Date.now() + (ttlMs as number);
+                }
+
+                delete (processedMetadata as Record<string, unknown>).ttl;
+            }
+
+            updateMetadata(file as File, processedMetadata);
+
+            await this.saveMeta(file);
+
+            const updatedFile = { ...file, status: "updated" } as TFile;
+
+            await this.onUpdate(updatedFile);
+
+            return updatedFile;
+        });
+    }
+
+    /**
+     * Creates a new upload and saves its metadata.
+     * @param file File initialization configuration.
+     * @param options Optional per-call signal/timeout/retries.
+     * @returns Promise resolving to the created file object.
+     */
+    public abstract create(file: FileInit, options?: OperationOptions): Promise<TFile>;
+
+    /**
+     * Writes part and/or returns status of an upload.
+     * @param part File part, query, or full file object to write.
+     * @param options Optional per-call signal/timeout/retries.
+     * @returns Promise resolving to the updated file object.
+     */
+    public abstract write(part: FilePart | FileQuery | TFile, options?: OperationOptions): Promise<TFile>;
+
+    /**
+     * Deletes an upload and its metadata.
+     * @param query File query containing the file ID to delete.
+     * @param query.id File ID to delete.
+     * @param options Optional per-call signal/timeout/retries.
+     * @returns Promise resolving to the deleted file object with status: "deleted".
+     * @throws {UploadError} If the file metadata cannot be found.
+     */
+    public abstract delete(query: FileQuery, options?: OperationOptions): Promise<TFile>;
+
+    /**
+     * Copies an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @param options Optional copy options including storage class plus per-call signal/timeout/retries.
+     * @returns Promise resolving to the copied file object.
+     * @throws {UploadError} If the source file cannot be found.
+     */
+    public abstract copy(name: string, destination: string, options?: OperationOptions & { storageClass?: string }): Promise<TFile>;
+
+    /**
+     * Moves an upload file to a new location.
+     * @param name Source file name/ID.
+     * @param destination Destination file name/ID.
+     * @param options Optional per-call signal/timeout/retries.
+     * @returns Promise resolving to the moved file object.
+     * @throws {UploadError} If the source file cannot be found.
+     */
+    public abstract move(name: string, destination: string, options?: OperationOptions): Promise<TFile>;
+
+    /**
+     * Deletes multiple files in a single batch operation.
+     * @param ids Array of file IDs to delete.
+     * @returns Promise resolving to batch operation response with successful and failed deletions.
+     * @remarks
+     * Processes all deletions in parallel using Promise.allSettled.
+     * Individual failures do not stop the batch operation.
+     * Each deletion is wrapped in error handling to capture failures.
+     * Metrics are recorded for the batch operation and individual failures.
+     * Returns both successful and failed operations with detailed error information.
+     */
+    public async deleteBatch(ids: string[], options?: OperationOptions): Promise<BatchOperationResponse<TFile>> {
+        const startTime = Date.now();
+        const storageType = this.constructor.name.toLowerCase().replace("storage", "");
+
+        this.metrics.increment("storage.operations.batch.delete.count", 1, {
+            batch_size: ids.length,
+            storage: storageType,
+        });
+
+        const successful: TFile[] = [];
+        const failed: { error: string; id: string }[] = [];
+
+        // Process all deletions in parallel using Promise.allSettled
+        const deletePromises = ids.map(async (id) => {
+            try {
+                const file = await this.delete({ id }, options);
+
+                return { file, id, success: true as const };
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : "Delete failed";
+
+                this.metrics.increment("storage.operations.delete.error.count", 1, {
+                    error: errorMessage,
+                    storage: storageType,
+                });
+
+                return { error: errorMessage, id, success: false as const };
+            }
+        });
+
+        const results = await Promise.allSettled(deletePromises);
+
+        for (const result of results) {
+            if (result.status === "fulfilled") {
+                if (result.value.success) {
+                    successful.push(result.value.file);
+                } else {
+                    failed.push({ error: result.value.error, id: result.value.id });
+                }
+            } else {
+                // Promise rejected - shouldn't happen but handle it
+                failed.push({ error: result.reason?.message || "Delete failed", id: "" });
+            }
+        }
+
+        const duration = Date.now() - startTime;
+
+        this.metrics.timing("storage.operations.batch.delete.duration", duration, {
+            batch_size: ids.length,
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.delete.success_count", successful.length, {
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.delete.failed_count", failed.length, {
+            storage: storageType,
+        });
+
+        return {
+            failed,
+            failedCount: failed.length,
+            successful,
+            successfulCount: successful.length,
+        };
+    }
+
+    /**
+     * Copies multiple files in a single batch operation.
+     * @param operations Array of copy operations, each containing:
+     * source: Source file ID.
+     * destination: Destination file ID or path.
+     * options: Optional copy options including storage class.
+     * @returns Promise resolving to batch operation response with successful and failed copies.
+     * @remarks
+     * Processes all copies in parallel using Promise.allSettled.
+     * Individual failures do not stop the batch operation.
+     * Each copy operation is wrapped in error handling to capture failures.
+     * Metrics are recorded for the batch operation and individual failures.
+     * Returns both successful and failed operations with detailed error information.
+     */
+    public async copyBatch(operations: { destination: string; options?: { storageClass?: string }; source: string }[]): Promise<BatchOperationResponse<TFile>> {
+        const startTime = Date.now();
+        const storageType = this.constructor.name.toLowerCase().replace("storage", "");
+
+        this.metrics.increment("storage.operations.batch.copy.count", 1, {
+            batch_size: operations.length,
+            storage: storageType,
+        });
+
+        const successful: TFile[] = [];
+        const failed: { error: string; id: string }[] = [];
+
+        // Process all copies in parallel using Promise.allSettled
+        const copyPromises = operations.map(async ({ destination, options, source }) => {
+            try {
+                const copiedFile = await this.copy(source, destination, options);
+
+                return { file: copiedFile, id: destination, success: true as const };
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : "Copy failed";
+
+                this.metrics.increment("storage.operations.copy.error.count", 1, {
+                    error: errorMessage,
+                    storage: storageType,
+                });
+
+                return { error: errorMessage, id: destination, success: false as const };
+            }
+        });
+
+        const results = await Promise.allSettled(copyPromises);
+
+        for (const result of results) {
+            if (result.status === "fulfilled") {
+                if (result.value.success && result.value.file) {
+                    successful.push(result.value.file);
+                } else {
+                    failed.push({ error: result.value.error || "Copy failed", id: result.value.id });
+                }
+            } else {
+                // Promise rejected - shouldn't happen but handle it
+                failed.push({ error: result.reason?.message || "Copy failed", id: "" });
+            }
+        }
+
+        const duration = Date.now() - startTime;
+
+        this.metrics.timing("storage.operations.batch.copy.duration", duration, {
+            batch_size: operations.length,
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.copy.success_count", successful.length, {
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.copy.failed_count", failed.length, {
+            storage: storageType,
+        });
+
+        return {
+            failed,
+            failedCount: failed.length,
+            successful,
+            successfulCount: successful.length,
+        };
+    }
+
+    /**
+     * Moves multiple files in a single batch operation.
+     * @param operations Array of move operations, each containing:
+     * source: Source file ID.
+     * destination: Destination file ID or path.
+     * @returns Promise resolving to batch operation response with successful and failed moves.
+     * @remarks
+     * Processes all moves in parallel using Promise.allSettled.
+     * Individual failures do not stop the batch operation.
+     * Each move operation is wrapped in error handling to capture failures.
+     * Metrics are recorded for the batch operation and individual failures.
+     * Returns both successful and failed operations with detailed error information.
+     */
+    public async moveBatch(operations: { destination: string; source: string }[]): Promise<BatchOperationResponse<TFile>> {
+        const startTime = Date.now();
+        const storageType = this.constructor.name.toLowerCase().replace("storage", "");
+
+        this.metrics.increment("storage.operations.batch.move.count", 1, {
+            batch_size: operations.length,
+            storage: storageType,
+        });
+
+        const successful: TFile[] = [];
+        const failed: { error: string; id: string }[] = [];
+
+        // Process all moves in parallel using Promise.allSettled
+        const movePromises = operations.map(async ({ destination, source }) => {
+            try {
+                // Move the file - move() returns the moved file
+                const movedFile = await this.move(source, destination);
+
+                return { file: movedFile, id: destination, success: true as const };
+            } catch (error: unknown) {
+                const errorMessage = error instanceof Error ? error.message : "Move failed";
+
+                this.metrics.increment("storage.operations.move.error.count", 1, {
+                    error: errorMessage,
+                    storage: storageType,
+                });
+
+                return { error: errorMessage, id: destination, success: false as const };
+            }
+        });
+
+        const results = await Promise.allSettled(movePromises);
+
+        for (const result of results) {
+            if (result.status === "fulfilled") {
+                if (result.value.success && result.value.file) {
+                    successful.push(result.value.file);
+                } else {
+                    failed.push({ error: result.value.error || "Move failed", id: result.value.id });
+                }
+            } else {
+                // Promise rejected - shouldn't happen but handle it
+                failed.push({ error: result.reason?.message || "Move failed", id: result.reason?.id || "" });
+            }
+        }
+
+        const duration = Date.now() - startTime;
+
+        this.metrics.timing("storage.operations.batch.move.duration", duration, {
+            batch_size: operations.length,
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.move.success_count", successful.length, {
+            storage: storageType,
+        });
+
+        this.metrics.gauge("storage.operations.batch.move.failed_count", failed.length, {
+            storage: storageType,
+        });
+
+        return {
+            failed,
+            failedCount: failed.length,
+            successful,
+            successfulCount: successful.length,
+        };
+    }
+
+    /**
+     * Prevent upload from being accessed by multiple requests.
+     * Returns a unique token that must be passed back to `unlock()` so a caller whose lock TTL'd
+     * out cannot accidentally release a newly-acquired lock held by another request.
+     */
+
+    protected async lock(key: string): Promise<string> {
+        // Avoid materializing every lock key on the hot upload path: `has`/`size` answer both
+        // questions in O(1) without the per-acquisition array allocation `[...keys()]` incurred.
+        if (this.locker.has(key)) {
+            return throwErrorCode(ERRORS.FILE_LOCKED);
+        }
+
+        if (this.config.concurrency && typeof this.config.concurrency === "number" && this.config.concurrency <= this.locker.size) {
+            return throwErrorCode(ERRORS.STORAGE_BUSY);
+        }
+
+        return this.locker.lock(key);
+    }
+
+    protected async unlock(key: string, token?: string): Promise<void> {
+        if (token === undefined) {
+            // Legacy path: delete unconditionally. Newer callers should pass the token returned by lock().
+            this.locker.delete(key);
+
+            return;
+        }
+
+        this.locker.unlock(key, token);
+    }
+
+    /**
+     * Run a function while holding the lock for `key`. The lock is released even if `fn` throws,
+     * and only released when the caller still owns the lock (token-verified). Public so that
+     * handlers can serialize cross-call read-modify-write sequences on the same upload (e.g.
+     * appending to `_chunks` during chunked PATCH).
+     */
+    public async withLock<R>(key: string, function_: () => Promise<R>): Promise<R> {
+        const token = await this.lock(key);
+
+        try {
+            return await function_();
+        } finally {
+            await this.unlock(key, token);
+        }
+    }
+
+    protected isUnsupportedChecksum(algorithm = ""): boolean {
+        return !!algorithm && !this.checksumTypes.includes(algorithm);
+    }
+
+    protected startAutoPurge(purgeInterval: number): void {
+        if (purgeInterval >= 2_147_483_647) {
+            throw new Error("“purgeInterval” must be less than 2147483647 ms");
+        }
+
+        setInterval(() => {
+            this.purge().catch((error) => this.logger?.error(error));
+        }, purgeInterval);
+    }
+
+    protected updateTimestamps(file: TFile): TFile {
+        file.createdAt ??= new Date().toISOString();
+
+        const maxAgeMs = toMilliseconds(this.expiration?.maxAge);
+
+        if (maxAgeMs && !file.expiredAt) {
+            file.expiredAt = this.expiration?.rolling ? Date.now() + maxAgeMs : +new Date(file.createdAt) + maxAgeMs;
+        }
+
+        return file;
+    }
+
+    /**
+     * Backend-resolved retry configuration that {@link runOperation} layers
+     * per-call overrides on top of. Subclasses that build a `RetryConfig`
+     * (S3, Azure, Netlify, …) override this; the default (`undefined`) makes
+     * `runOperation` fall back to the retry engine's own defaults.
+     */
+    // eslint-disable-next-line class-methods-use-this
+    protected getRetryConfig(): RetryConfig | undefined {
+        return undefined;
+    }
+
+    /**
+     * Runs a backend SDK call with per-operation cancellation, timeout and
+     * retry handling.
+     *
+     * The provided `signal` is the merge of the caller's `options.signal` and
+     * a fresh per-attempt `options.timeout` deadline (via `AbortSignal.any` /
+     * `AbortSignal.timeout`). Pass it to the underlying SDK so the provider
+     * request is actually cancelled rather than merely abandoned.
+     *
+     * Aborted or timed-out calls are never retried. Pass
+     * `{ replayable: false }` for operations whose body is a one-shot stream —
+     * a consumed `Readable`/`ReadableStream` cannot be safely re-sent, so the
+     * retry count is forced to zero.
+     * @param options Per-call overrides (`signal`, `timeout`, `retries`).
+     * @param function_ Receives the merged abort signal for the attempt.
+     * @param operationConfig `replayable: false` disables retries for non-replayable bodies.
+     */
+    protected runOperation<T>(
+        options: OperationOptions | undefined,
+        function_: (signal: AbortSignal | undefined) => Promise<T>,
+        operationConfig?: { replayable?: boolean },
+    ): Promise<T> {
+        let perCall: RetryConfig | undefined;
+
+        if (typeof options?.retries === "number") {
+            perCall = { maxRetries: options.retries };
+        } else if (options?.retries) {
+            perCall = options.retries;
+        }
+
+        const retryConfig: RetryConfig = { ...this.getRetryConfig(), ...perCall };
+
+        // A consumed stream body cannot be replayed; a retry would re-send an
+        // already-drained source and silently upload truncated/empty data.
+        if (operationConfig?.replayable === false) {
+            retryConfig.maxRetries = 0;
+        }
+
+        // Instance-level defaults are combined with the per-call options:
+        // the default signal is merged (either source aborts), while a
+        // per-call timeout — including `0`/negative to explicitly disable —
+        // takes precedence over the instance default.
+        const callerSignals: AbortSignal[] = [];
+
+        if (this.genericConfig.defaultSignal) {
+            callerSignals.push(this.genericConfig.defaultSignal);
+        }
+
+        if (options?.signal) {
+            callerSignals.push(options.signal);
+        }
+
+        let callerSignal: AbortSignal | undefined;
+
+        if (callerSignals.length === 1) {
+            [callerSignal] = callerSignals;
+        } else if (callerSignals.length > 1) {
+            callerSignal = AbortSignal.any(callerSignals);
+        }
+
+        const requestedTimeout = typeof options?.timeout === "number" ? options.timeout : this.genericConfig.defaultTimeout;
+        const timeoutMs = typeof requestedTimeout === "number" && requestedTimeout > 0 ? requestedTimeout : undefined;
+
+        // Never retry once the caller's signal is aborted, or once an attempt
+        // has been normalized to an AbortError (caller cancel or per-attempt
+        // timeout). Layered over (not replacing) any user shouldRetry.
+        const userShouldRetry = retryConfig.shouldRetry;
+
+        retryConfig.shouldRetry = (error: unknown): boolean => {
+            if (callerSignal?.aborted) {
+                return false;
+            }
+
+            if (error instanceof Error && error.name === "AbortError") {
+                return false;
+            }
+
+            return userShouldRetry ? userShouldRetry(error) : false;
+        };
+
+        const toAbortError = (cause: unknown): Error => {
+            if (cause instanceof Error && cause.name === "AbortError") {
+                return cause;
+            }
+
+            const message = cause instanceof Error && cause.message ? cause.message : "The operation was aborted";
+            const aborted = new Error(message, { cause });
+
+            aborted.name = "AbortError";
+
+            return aborted;
+        };
+
+        return retry(async () => {
+            if (callerSignal?.aborted) {
+                throw toAbortError(callerSignal.reason);
+            }
+
+            // Fresh per-attempt timeout: each retry gets the full `timeout`
+            // budget rather than the leftover after earlier attempts and
+            // their backoff sleeps. The caller's signal persists across
+            // attempts; the per-attempt deadline does not. The backoff sleep
+            // sits outside this closure, so the cleared timer never counts
+            // against the next attempt's budget.
+            let timer: ReturnType<typeof setTimeout> | undefined;
+            let signal: AbortSignal | undefined;
+
+            if (timeoutMs === undefined) {
+                signal = callerSignal;
+            } else {
+                const timeoutController = new AbortController();
+
+                timer = setTimeout(() => {
+                    timeoutController.abort(new DOMException(`The operation timed out after ${timeoutMs}ms`, "TimeoutError"));
+                }, timeoutMs);
+
+                signal = callerSignal ? AbortSignal.any([callerSignal, timeoutController.signal]) : timeoutController.signal;
+            }
+
+            try {
+                return await function_(signal);
+            } catch (error) {
+                // The provider may surface our deadline/cancellation as its own
+                // timeout or transport error. Normalize to a non-retryable
+                // AbortError so isRetryableError's network heuristics can't
+                // resurrect a call the caller already cancelled (or that blew
+                // its per-attempt deadline).
+                if (signal?.aborted) {
+                    throw toAbortError(error);
+                }
+
+                throw error;
+            } finally {
+                if (timer) {
+                    clearTimeout(timer);
+                }
+            }
+        }, retryConfig);
+    }
+
+    /**
+     * Instruments a storage operation with metrics and error tracking.
+     * @param operation Operation name (e.g., "create", "delete", "copy").
+     * @param function_ The operation function to execute.
+     * @param attributes Additional attributes to include in metrics.
+     * @returns Promise resolving to the operation result.
+     * @throws Re-throws any errors from the operation function.
+     * @remarks
+     * Records operation count, duration, and error metrics.
+     * Tracks file sizes for operations returning file objects.
+     * Error metrics include error messages for debugging.
+     * All public methods should use this wrapper for consistent instrumentation.
+     */
+    protected async instrumentOperation<T>(operation: string, function_: () => Promise<T>, attributes?: Record<string, string | number>): Promise<T> {
+        const startTime = Date.now();
+        const storageType = this.constructor.name.toLowerCase().replace("storage", "");
+
+        const baseAttributes = {
+            storage: storageType,
+            ...attributes,
+        };
+
+        try {
+            this.metrics.increment(`storage.operations.${operation}.count`, 1, baseAttributes);
+
+            const result = await function_();
+
+            const duration = Date.now() - startTime;
+
+            this.metrics.timing(`storage.operations.${operation}.duration`, duration, baseAttributes);
+
+            // If result is a file, record file size
+            if (result && typeof result === "object" && "size" in result && typeof result.size === "number") {
+                this.metrics.gauge("storage.files.size", result.size, {
+                    ...baseAttributes,
+                    operation,
+                });
+            }
+
+            return result;
+        } catch (error: unknown) {
+            const duration = Date.now() - startTime;
+            const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+            this.metrics.timing(`storage.operations.${operation}.duration`, duration, {
+                ...baseAttributes,
+                error: "true",
+            });
+
+            this.metrics.increment(`storage.operations.${operation}.error.count`, 1, {
+                ...baseAttributes,
+                error: errorMessage,
+            });
+
+            throw error;
+        }
+    }
+}

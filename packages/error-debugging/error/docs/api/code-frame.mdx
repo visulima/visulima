@@ -1,0 +1,40 @@
+---
+title: "Code Frame API"
+---
+
+# Code Frame API
+
+## `codeFrame(source, location, options?)`
+
+Generate code frame showing error location.
+
+**Parameters:**
+
+- `source` (string): Source code
+- `location` (object): Error location
+    - `start.line` (number): Start line
+    - `start.column` (number): Start column
+    - `end` (object, optional): End location
+- `options` (object, optional):
+    - `linesAbove` (number): Lines above error
+    - `linesBelow` (number): Lines below error
+    - `message` (string): Error message
+
+**Returns:** Formatted code frame string
+
+**Example:**
+
+```typescript
+const frame = codeFrame(
+    source,
+    {
+        start: { line: 2, column: 10 },
+        end: { line: 2, column: 15 },
+    },
+    {
+        linesAbove: 2,
+        linesBelow: 2,
+        message: "Unexpected token",
+    },
+);
+```

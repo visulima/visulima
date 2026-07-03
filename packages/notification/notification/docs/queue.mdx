@@ -1,0 +1,61 @@
+---
+title: Queue
+description: Durable queue and a retrying worker
+---
+
+# Queue & worker
+
+Decouple enqueue from delivery. The default queue is in-process; back it with unstorage for durability.
+
+```typescript
+import { MemoryQueue, createQueueWorker } from "@visulima/notification/queue";
+
+const queue = new MemoryQueue();
+
+queue.enqueue({ sms: { to: "+15555550100", text: "Hi" } });
+queue.enqueue({ chat: { text: "Hello" } }, { scheduledAt: Date.now() + 60_000 }); // delayed
+
+const worker = createQueueWorker(queue, notify, {
+    maxAttempts: 5,
+    backoff: (attempt) => Math.min(30_000, 1000 * 2 ** (attempt - 1)),
+    onDrop: (job, receipts) => console.error("dropped", job.id, receipts),
+});
+
+worker.start(); // poll continuously
+// or
+await worker.drain(); // process all currently-due jobs once, then resolve
+```
+
+A job is retried (with backoff) when any channel fails, and dropped after `maxAttempts`.
+
+## Durable queue (unstorage)
+
+```typescript
+import { UnstorageQueue } from "@visulima/notification/queue/unstorage";
+import { createStorage } from "unstorage";
+import redisDriver from "unstorage/drivers/redis";
+
+const queue = new UnstorageQueue(createStorage({ driver: redisDriver({ base: "notify" }) }));
+```
+
+`UnstorageQueue` implements the same `NotificationQueue` interface, so the worker is identical. Any unstorage driver
+(Redis, filesystem, Cloudflare KV, …) works.
+
+## Durable adapters (Node-only)
+
+Ready-made adapters for the common backends. These need Node built-ins / SDKs, so they are **not** Cloudflare-safe (use
+`MemoryQueue` or `UnstorageQueue` on the edge).
+
+```typescript
+import { createBullMqQueue } from "@visulima/notification/queue/bullmq"; // Redis (optional peer: bullmq)
+import { createPgBossQueue } from "@visulima/notification/queue/pg-boss"; // Postgres (optional peer: pg-boss)
+import { createSqsQueue } from "@visulima/notification/queue/sqs"; // AWS SQS (optional peer: @aws-sdk/client-sqs)
+
+const queue = createBullMqQueue(bullQueue); // pass a configured client instance
+```
+
+Each implements the same `NotificationQueue` interface, so the worker is identical.
+
+## Custom queue
+
+Implement `NotificationQueue` (`enqueue` / `reserve` / `ack` / `retry` / `size`) to integrate any other store.

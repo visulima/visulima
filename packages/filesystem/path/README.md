@@ -1,0 +1,121 @@
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="path" />
+
+</a>
+
+<h3 align="center">Drop-in replacement of the Node.js path module.</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<br />
+
+<div align="center">
+
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
+
+</div>
+
+---
+
+<div align="center">
+    <p>
+        <sup>
+            Daniel Bannert's open source work is supported by the community on <a href="https://github.com/sponsors/prisis">GitHub Sponsors</a>
+        </sup>
+    </p>
+</div>
+
+---
+
+## Why
+
+For [historical reasons](https://docs.microsoft.com/en-us/archive/blogs/larryosterman/why-is-the-dos-path-character), windows followed MS-DOS and using backslash for separating paths rather than slash used for macOS, Linux, and other Posix operating systems. Nowadays, [Windows](https://docs.microsoft.com/en-us/windows/win32/fileio/naming-a-file?redirectedfrom=MSDN) supports both Slash and Backslash for paths. [Node.js's built in `path` module](https://nodejs.org/api/path.html) in the default operation of the path module varies based on the operating system on which a Node.js application is running. Specifically, when running on a Windows operating system, the path module will assume that Windows-style paths are being used. **This makes inconsistent code behavior between Windows and POSIX.**
+
+Compared to popular [upath](https://github.com/anodynos/upath), `@visulima/path` provides **identical exports** to Node.js with normalization on **all operations**, is written in modern **ESM/TypeScript**, and has **no runtime dependencies**!
+
+## Install
+
+```sh
+npm install @visulima/path
+```
+
+```sh
+yarn add @visulima/path
+```
+
+```sh
+pnpm add @visulima/path
+```
+
+## Usage
+
+This package is **ESM-only** (`"type": "module"`). Import it with `import`:
+
+```js
+// ESM / TypeScript
+import { resolve } from "@visulima/path";
+// or
+import path from "@visulima/path";
+```
+
+> Check https://nodejs.org/api/path.html about the exported functions.
+> Note: `path.win32` and `path.posix` are both exported, but they are **aliased to the same POSIX implementation** — they exist only so that `import path from "@visulima/path"` works as a drop-in `node:path` shim. Do not rely on `path.win32` for Windows-style (backslash) output; every operation is normalized to POSIX.
+
+### Extra utilities
+
+`@visulima/path` exports some extra utilities that do not exist in standard Node.js [path module](https://nodejs.org/api/path.html).
+In order to use them, you can import from `@visulima/path/utils` subpath:
+
+```js
+// ESM / TypeScript
+import { filename, normalizeAliases, resolveAlias, reverseResolveAlias, isRelative, isBinaryPath, toPath, isWindows } from "@visulima/path/utils";
+```
+
+## Related
+
+- [upath](https://github.com/anodynos/upath) - A proxy to `path`, replacing `\` with `/` for all results & methods to add, change, default, trim file extensions.
+- [pathe](https://github.com/unjs/pathe) - 🛣️ Drop-in replacement of the Node.js's path module, module that ensures paths are normalized.
+
+## Supported Node.js Versions
+
+Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
+Here’s [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
+
+## Contributing
+
+If you would like to help take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](.github/CONTRIBUTING.md) guidelines.
+
+> **Note:** please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
+
+## Credits
+
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
+
+## License
+
+The visulima path is open-sourced software licensed under the [MIT][license]
+
+<!-- badges -->
+
+[license-badge]: https://img.shields.io/npm/l/@visulima/path?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/path?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/path
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/

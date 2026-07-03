@@ -1,0 +1,38 @@
+---
+title: Installation
+description: "Install and set up @visulima/find-ai-runner in your project"
+---
+
+# Installation
+
+## Quick Start (no install)
+
+Use directly via `npx`:
+
+```bash
+npx @visulima/find-ai-runner list
+```
+
+## Package Install
+
+Install using your preferred package manager:
+
+```bash npm2yarn
+npm install @visulima/find-ai-runner
+```
+
+## Requirements
+
+- **Node.js**: 20.19 or higher
+
+## Import
+
+```typescript
+import { detectAllProviders, detectAvailableProviders, detectProvider, buildCliArgs, runProvider, PROVIDERS, PROVIDER_NAMES } from "@visulima/find-ai-runner";
+```
+
+### Type Imports
+
+```typescript
+import type { AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult } from "@visulima/find-ai-runner";
+```

@@ -1,0 +1,402 @@
+---
+title: "Advanced Features"
+description: "Explore advanced features including 256 colors, TrueColor, gradients, and tagged template literals."
+---
+
+# Advanced Features
+
+This guide covers advanced capabilities of **@visulima/colorize** including ANSI 256 colors, TrueColor support, gradients, and tagged template literals.
+
+## ANSI 256 Colors
+
+Access the extended 256-color palette for more color options.
+
+### Color Ranges
+
+The 256-color palette is divided into ranges:
+
+| Range   | Description                              |
+| ------- | ---------------------------------------- |
+| 0-7     | Standard colors (same as base 16)        |
+| 8-15    | Bright colors (same as base 16)          |
+| 16-231  | 6×6×6 RGB cube (216 colors)              |
+| 232-255 | Grayscale from black to white (24 steps) |
+
+### Foreground Colors
+
+Use `ansi256()` or its alias `fg()` for 256 foreground colors:
+
+```typescript
+import { ansi256, fg } from "@visulima/colorize";
+
+// Using ansi256()
+console.log(ansi256(196)`Bright red`); // Color code 196
+console.log(ansi256(21)`Deep blue`); // Color code 21
+console.log(ansi256(226)`Yellow`); // Color code 226
+
+// Using fg() alias (shorter)
+console.log(fg(196)`Bright red`);
+console.log(fg(21)`Deep blue`);
+console.log(fg(226)`Yellow`);
+```
+
+### Background Colors
+
+Use `bgAnsi256()` or its alias `bg()` for 256 background colors:
+
+```typescript
+import { bgAnsi256, bg, white } from "@visulima/colorize";
+
+// Using bgAnsi256()
+console.log(white.bgAnsi256(196)`White on red`);
+console.log(white.bgAnsi256(21)`White on blue`);
+
+// Using bg() alias (shorter)
+console.log(white.bg(196)`White on red`);
+console.log(white.bg(21)`White on blue`);
+```
+
+### Chaining with 256 Colors
+
+Combine 256 colors with styles and other colors:
+
+```typescript
+import { ansi256, bg, bold, italic } from "@visulima/colorize";
+
+console.log(ansi256(196).bold`Bold bright red`);
+console.log(bold.ansi256(21).italic`Bold italic blue`);
+console.log(ansi256(226).bg(21)`Yellow text on blue background`);
+```
+
+### Grayscale Colors
+
+Use grayscale range (232-255) for subtle effects:
+
+```typescript
+import { ansi256 } from "@visulima/colorize";
+
+// Darker grays
+console.log(ansi256(232)`Darkest gray`);
+console.log(ansi256(237)`Dark gray`);
+console.log(ansi256(242)`Medium gray`);
+console.log(ansi256(248)`Light gray`);
+console.log(ansi256(255)`Lightest gray (almost white)`);
+```
+
+## TrueColor (16 Million Colors)
+
+Use RGB or HEX values for precise color control with 24-bit TrueColor.
+
+### HEX Colors
+
+Define colors using hexadecimal notation:
+
+```typescript
+import { hex, bgHex } from "@visulima/colorize";
+
+// Foreground colors
+console.log(hex("#FF6B6B")`Coral red`);
+console.log(hex("#4ECDC4")`Turquoise`);
+console.log(hex("#FFE66D")`Sunshine yellow`);
+console.log(hex("#95E1D3")`Mint green`);
+
+// Short hex notation
+console.log(hex("#F00")`Red`);
+console.log(hex("#0F0")`Green`);
+console.log(hex("#00F")`Blue`);
+
+// Background colors
+console.log(bgHex("#FF6B6B")`Coral background`);
+console.log(bgHex("#4ECDC4")`Turquoise background`);
+```
+
+### RGB Colors
+
+Define colors using RGB values (0-255):
+
+```typescript
+import { rgb, bgRgb } from "@visulima/colorize";
+
+// Foreground colors
+console.log(rgb(255, 107, 107)`Coral red`);
+console.log(rgb(78, 205, 196)`Turquoise`);
+console.log(rgb(255, 230, 109)`Sunshine yellow`);
+
+// Background colors
+console.log(bgRgb(255, 107, 107)`Coral background`);
+console.log(bgRgb(78, 205, 196)`Turquoise background`);
+```
+
+### Chaining TrueColor
+
+Combine TrueColor with styles and other colors:
+
+```typescript
+import { hex, bgHex, bold, italic } from "@visulima/colorize";
+
+console.log(hex("#FF6B6B").bold`Bold coral`);
+console.log(bold.hex("#4ECDC4").italic`Bold italic turquoise`);
+console.log(hex("#FF6B6B").bgHex("#4ECDC4")`Coral on turquoise`);
+```
+
+### Brand Colors
+
+Define brand colors as constants:
+
+```typescript
+import { hex } from "@visulima/colorize";
+
+const brandColors = {
+    primary: hex("#007AFF"),
+    success: hex("#34C759"),
+    warning: hex("#FF9500"),
+    danger: hex("#FF3B30"),
+    info: hex("#5856D6"),
+};
+
+console.log(brandColors.primary`Primary color text`);
+console.log(brandColors.success`Success message`);
+console.log(brandColors.warning`Warning message`);
+console.log(brandColors.danger`Error message`);
+```
+
+## Color Fallback
+
+Colorize automatically falls back to supported color spaces:
+
+```
+TrueColor → ANSI 256 → ANSI 16 → No colors
+```
+
+If a terminal doesn't support TrueColor:
+
+- TrueColor is converted to the nearest 256-color
+- If 256 colors aren't supported, it converts to base 16 colors
+- If no colors are supported, ANSI codes are stripped
+
+No configuration needed - fallback is automatic!
+
+## Gradients
+
+Create beautiful color gradients for text.
+
+### Single-Line Gradients
+
+Apply gradients to single-line text:
+
+```typescript
+import { gradient } from "@visulima/colorize/gradient";
+
+// Two-color gradient
+console.log(gradient("red", "blue")("Hello World"));
+
+// Three-color gradient
+console.log(gradient("red", "yellow", "green")("Rainbow text"));
+
+// Using hex colors
+console.log(gradient("#FF6B6B", "#4ECDC4")("Custom gradient"));
+
+// Using RGB colors
+console.log(gradient("rgb(255,0,0)", "rgb(0,0,255)")("RGB gradient"));
+```
+
+### Multi-Line Gradients
+
+Apply gradients across multiple lines with vertical alignment:
+
+```typescript
+import { multilineGradient } from "@visulima/colorize/gradient";
+
+const asciiArt = `
+ ██████╗  ██████╗ ██╗      ██████╗ ██████╗ ██╗███████╗███████╗
+██╔════╝ ██╔═══██╗██║     ██╔═══██╗██╔══██╗██║╚══███╔╝██╔════╝
+██║      ██║   ██║██║     ██║   ██║██████╔╝██║  ███╔╝ █████╗
+██║      ██║   ██║██║     ██║   ██║██╔══██╗██║ ███╔╝  ██╔══╝
+╚██████╗ ╚██████╔╝███████╗╚██████╔╝██║  ██║██║███████╗███████╗
+ ╚═════╝  ╚═════╝ ╚══════╝ ╚═════╝ ╚═╝  ╚═╝╚═╝╚══════╝╚══════╝
+`;
+
+console.log(multilineGradient(["cyan", "magenta"])(asciiArt));
+```
+
+### Gradient Examples
+
+```typescript
+import { gradient, multilineGradient } from "@visulima/colorize/gradient";
+
+// Sunrise gradient
+console.log(gradient("purple", "orange", "yellow")("=== Sunrise ==="));
+
+// Ocean gradient
+console.log(gradient("#001F3F", "#0074D9", "#7FDBFF")("~~~ Ocean ~~~"));
+
+// Fire gradient
+console.log(gradient("red", "orange", "yellow", "white")("🔥 FIRE 🔥"));
+
+// Multi-line with color alignment
+const duck = `
+     __
+   <(o )___
+    ( ._> /
+     \`---'
+`;
+console.log(multilineGradient(["orange", "yellow"])(duck));
+```
+
+## Tagged Template Literals
+
+Use tagged template literals for complex string interpolation with colors.
+
+### Basic Template Usage
+
+```typescript
+import template from "@visulima/colorize/template";
+
+const cpu = { totalPercent: 45 };
+const ram = { used: 8, total: 16 };
+const disk = { used: 120, total: 256 };
+
+console.log(template`
+CPU:  {red ${cpu.totalPercent}%}
+RAM:  {green ${((ram.used / ram.total) * 100).toFixed(1)}%}
+DISK: {blue ${((disk.used / disk.total) * 100).toFixed(1)}%}
+`);
+```
+
+### Chained Styles in Templates
+
+Chain styles just like regular colorize:
+
+```typescript
+import template from "@visulima/colorize/template";
+
+console.log(template`
+Status: {green.bold Success}
+Error: {red.bold.underline Critical}
+Info: {blue.italic Note}
+`);
+```
+
+### TrueColor in Templates
+
+Use RGB and hex colors in templates:
+
+```typescript
+import template from "@visulima/colorize/template";
+
+console.log(template`
+{rgb(255,107,107) Custom red color}
+{hex(#4ECDC4) Custom teal color}
+`);
+```
+
+### Hex Shorthand
+
+Use shorthand hex notation in templates:
+
+```typescript
+import template from "@visulima/colorize/template";
+
+console.log(template`
+{#FF0000 Red foreground}
+{#:00FF00 Green background}
+{#FF0000:00FF00 Red on green}
+`);
+```
+
+### Complex Templates
+
+```typescript
+import template from "@visulima/colorize/template";
+
+const miles = 18;
+const calculateFeet = (miles: number) => miles * 5280;
+
+console.log(template`
+    There are {bold 5280 feet} in a mile.
+    In {bold ${miles} miles}, there are {green.bold ${calculateFeet(miles)} feet}.
+`);
+```
+
+## Browser Usage
+
+### Basic Browser Support
+
+```typescript
+import { red, green, blue } from "@visulima/colorize/browser";
+
+// Note the spread operator
+console.log(...red("Error message"));
+console.log(...green("Success message"));
+console.log(...blue("Information"));
+```
+
+### Browser Return Format
+
+Browser version returns arrays for console `%c` syntax:
+
+```typescript
+import { red } from "@visulima/colorize/browser";
+
+const result = red("Error");
+// Returns: ['%cError', 'color: red']
+
+console.log(...result); // Correctly styled in browser console
+```
+
+### Browser Compatibility
+
+| Browser     | Version  | Colors Supported |
+| ----------- | -------- | ---------------- |
+| **Chrome**  | **69+**  | TrueColor (16M)  |
+| **Safari**  | **10+**  | TrueColor (16M)  |
+| **Edge**    | **79+**  | TrueColor (16M)  |
+| **Opera**   | **56+**  | TrueColor (16M)  |
+| **Brave**   | **1.0+** | TrueColor (16M)  |
+| **Vivaldi** | **2.0+** | TrueColor (16M)  |
+| **Firefox** | All      | Fallback to `%c` |
+
+### Console Hack (Optional)
+
+Override console for transparent usage (removes line numbers):
+
+```typescript
+import { red, green } from "@visulima/colorize/browser";
+
+let consoleOverwritten = false;
+
+if (typeof window !== "undefined" && !consoleOverwritten) {
+    ["error", "log", "warn", "info"].forEach((method) => {
+        const original = console[method];
+
+        console[method] = (...args: any[]) => {
+            if (Array.isArray(args[0]) && args[0][0]?.includes("%c")) {
+                original(...args[0]);
+            } else {
+                original(...args);
+            }
+        };
+    });
+
+    consoleOverwritten = true;
+}
+
+// Now can use without spread
+console.log(red("Error")); // Works without ...
+```
+
+**Warning:** This hack removes file paths and line numbers from console output.
+
+## Next Steps
+
+<Cards>
+    <Card title="Examples" href="/examples">
+        See real-world usage examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+    <Card title="Troubleshooting" href="/troubleshooting">
+        Common issues and solutions
+    </Card>
+</Cards>

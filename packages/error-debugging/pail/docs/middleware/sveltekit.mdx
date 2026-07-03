@@ -1,0 +1,147 @@
+---
+title: SvelteKit
+description: Request-scoped wide event logging hooks for SvelteKit
+---
+
+# SvelteKit Hooks
+
+The SvelteKit adapter provides `handle` and `handleError` hooks that attach a request-scoped [Wide Event](/docs/packages/pail/usage/wide-events) to every request. The event auto-emits when the response is sent or an error occurs.
+
+## Setup
+
+### Using `createPailHooks` (recommended)
+
+```typescript
+// src/hooks.server.ts
+import { createPail } from "@visulima/pail";
+import { createPailHooks } from "@visulima/pail/middleware/sveltekit";
+
+const logger = createPail();
+const { handle, handleError } = createPailHooks({ pail: logger });
+
+export { handle, handleError };
+```
+
+### Using individual hooks
+
+```typescript
+// src/hooks.server.ts
+import { createPail } from "@visulima/pail";
+import { pailHandle, pailHandleError } from "@visulima/pail/middleware/sveltekit";
+
+const logger = createPail();
+
+export const handle = pailHandle({ pail: logger });
+export const handleError = pailHandleError();
+```
+
+## Accessing the Logger
+
+### Via `event.locals.log`
+
+In server load functions, actions, and API routes:
+
+```typescript
+// src/routes/api/users/+server.ts
+import type { RequestHandler } from "./$types";
+
+export const GET: RequestHandler = async ({ locals }) => {
+    locals.log.set({ user: { id: 1 } });
+    locals.log.info("Fetched user list");
+    return new Response(JSON.stringify({ ok: true }));
+};
+```
+
+```typescript
+// src/routes/+page.server.ts
+import type { PageServerLoad } from "./$types";
+
+export const load: PageServerLoad = async ({ locals }) => {
+    locals.log.set({ page: "home" });
+    return { title: "Home" };
+};
+```
+
+### Via `useLogger()`
+
+Access the logger from anywhere in the async call stack:
+
+```typescript
+import { useLogger } from "@visulima/pail/middleware/sveltekit";
+
+async function fetchUser(id: number) {
+    const log = useLogger();
+    log.set({ user: { id } });
+    log.info("Querying database");
+    // ...
+}
+```
+
+## How It Works
+
+### `pailHandle`
+
+1. Creates a `WideEvent` with the request method, pathname, headers, and request ID
+2. Attaches the logger to `event.locals.log`
+3. Enters `AsyncLocalStorage` context via `storage.run()`
+4. Calls `resolve(event)` to handle the request
+5. On success: emits with `response.status`
+6. On error: emits with the error, then re-throws
+
+### `pailHandleError`
+
+Records errors to the wide event logger if one exists on `event.locals.log`. This ensures errors caught by SvelteKit's error boundary are included in the wide event.
+
+## Route Configuration
+
+```typescript
+const { handle, handleError } = createPailHooks({
+    pail: logger,
+    service: "web-app",
+    exclude: ["/health", "/_app/**"],
+    include: ["/api/**", "/dashboard/**"],
+    routes: {
+        "/api/auth/**": { service: "auth-service" },
+    },
+});
+```
+
+## TypeScript
+
+For typed `event.locals.log`, augment SvelteKit's `App.Locals`:
+
+```typescript
+// src/app.d.ts
+import type { WideEvent } from "@visulima/pail/middleware/sveltekit";
+
+declare global {
+    namespace App {
+        interface Locals {
+            log: WideEvent;
+        }
+    }
+}
+```
+
+Use the exported types for custom hook compositions:
+
+```typescript
+import type { PailSvelteKitEvent, PailSvelteKitHandle } from "@visulima/pail/middleware/sveltekit";
+```
+
+## Exported Types
+
+| Export                          | Description                              |
+| ------------------------------- | ---------------------------------------- |
+| `pailHandle`                    | Create a SvelteKit `handle` hook         |
+| `pailHandleError`               | Create a SvelteKit `handleError` hook    |
+| `createPailHooks`               | Create both hooks at once                |
+| `useLogger`                     | Retrieve logger from `AsyncLocalStorage` |
+| `PailSvelteKitEvent`            | SvelteKit event with `locals.log`        |
+| `PailSvelteKitHandle`           | Handle hook function type                |
+| `PailSvelteKitHandleError`      | HandleError hook function type           |
+| `PailSvelteKitHandleInput`      | Input for the handle hook                |
+| `PailSvelteKitHandleErrorInput` | Input for the handleError hook           |
+| `PailSvelteKitResolve`          | SvelteKit resolve function type          |
+| `SvelteKitHandleOptions`        | Options type for `pailHandle()`          |
+| `WideEvent`                     | Re-exported `WideEvent` class            |

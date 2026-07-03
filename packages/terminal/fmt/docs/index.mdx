@@ -1,0 +1,127 @@
+---
+title: Introduction
+description: "Fast printf-style string formatting with custom formatters and CSS styling support"
+---
+
+# @visulima/fmt
+
+Fast, flexible string formatting utility inspired by Node.js's `util.format`. Format strings with printf-style placeholders, add custom formatters, and even apply CSS-like styling to terminal output—all with better performance than the standard library.
+
+## Key Features
+
+**printf-Style Formatting**
+
+- Familiar %s, %d, %i, %f placeholders
+- JSON serialization with %j
+- %o and %O as JSON aliases of %j (not util.inspect-style)
+- Automatic type conversion
+
+**CSS Styling Support**
+
+- Apply terminal colors with CSS syntax
+- %c placeholder for inline styles
+- Supports color, background, text decoration
+
+**Customizable**
+
+- Build custom format functions
+- Add your own format specifiers
+- Custom stringify functions
+- Fast and optimized
+
+## Quick Start
+
+Install the package:
+
+```bash
+npm install @visulima/fmt
+```
+
+Format a string:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const result = format("Hello %s, you have %d new messages", ["Alice", 5]);
+console.log(result); // "Hello Alice, you have 5 new messages"
+```
+
+## Use Cases
+
+### Format Log Messages
+
+Create structured log messages with dynamic values:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+function log(level: string, message: string, ...args: unknown[]) {
+    const formatted = format(message, args);
+    console.log(`[${level}] ${formatted}`);
+}
+
+log("INFO", "User %s logged in from %s", "alice", "192.168.1.1");
+// [INFO] User alice logged in from 192.168.1.1
+
+log("ERROR", "Failed to connect to database: %j", { host: "localhost", port: 5432 });
+// [ERROR] Failed to connect to database: {"host":"localhost","port":5432}
+```
+
+### Styled Terminal Output
+
+Add colors and styles using CSS syntax:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const styled = format("%cSuccess!%c Operation completed in %dms", ["color: green; font-weight: bold", "", 127]);
+
+console.log(styled);
+// Outputs "Success!" in bold green, then normal text
+```
+
+### Custom Date Formatter
+
+Build a formatter with custom placeholders:
+
+```typescript
+import { build } from "@visulima/fmt";
+
+const format = build({
+    formatters: {
+        t: (time) => new Date(time).toLocaleString(),
+        T: (time) => new Date(time).toISOString(),
+    },
+});
+
+const message = format("Event occurred at %t (ISO: %T)", [Date.now(), Date.now()]);
+console.log(message);
+// Event occurred at 2/16/2026, 12:30:00 PM (ISO: 2026-02-16T11:30:00.000Z)
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn how to install and import the package
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all format specifiers and options
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+This package works in both Node.js and browser environments:
+
+- **Node.js:** ≥22.13 ≤25.x (full support)
+- **Browsers:** Compatible with ES6+ browsers
+- **Deno/Bun:** Fully compatible
+
+Note: by default CSS styling (%c) is emitted only when `globalThis.window` is
+`undefined` (i.e. outside a browser-like global). This is a plain environment
+gate, not real terminal color detection; use `options.colors` to force it on or
+off.

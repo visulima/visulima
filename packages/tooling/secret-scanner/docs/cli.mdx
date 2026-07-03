@@ -1,0 +1,246 @@
+---
+title: CLI
+description: Run the scanner through the vis secrets command.
+---
+
+# CLI
+
+The scanner doesn't ship its own CLI. It's consumed by [`@visulima/vis`](../vis/index.mdx) as `vis secrets`, which adds workspace-aware flags (`--staged`, `--since`, `--affected`), baseline tooling, SARIF rendering, opt-in rule presets, live provider validation, and migrations from competing tools.
+
+The full reference — modes, exit codes, workspace config, CI recipe — lives in [`vis secrets`](../vis/commands/secrets.mdx). This page focuses on the flags surfaced by the underlying scanner.
+
+## Install
+
+```bash
+pnpm add -D @visulima/vis
+```
+
+## Common commands
+
+```bash
+# Scan the workspace (grouped, colourised output)
+vis secrets
+
+# Pre-commit mode — scan only staged files
+vis secrets --staged
+
+# Scan files changed since a ref
+vis secrets --since main
+
+# Scan projects affected by the current branch
+vis secrets --affected
+
+# Scaffold an initial .secrets-baseline.json
+vis secrets --init
+
+# Print all bundled detection rules
+vis secrets --list-rules
+
+# Print non-HTTP validators referenced by the ruleset (install hints for peer-deps)
+vis secrets --list-validators
+
+# Enable opt-in rule groups additively — defaults still fire
+vis secrets --enable-rule tag:preset:weak-passwords --enable-rule tag:preset:password-manager
+
+# Restrict output to one opt-in group only (whitelist)
+vis secrets --include-rule tag:preset:password-manager
+
+# Rule filters
+vis secrets --include-rule stripe-access-token
+vis secrets --exclude-rule generic-api-key
+
+# Raise the confidence floor — drop unlabeled + low-confidence rules
+vis secrets --min-confidence high
+
+# Live-verify findings against provider APIs, then fail CI on unverified matches
+vis secrets --validate --only-verified
+
+# Extra walker exclusions on top of .gitignore
+vis secrets --exclude 'dist/**' --exclude-from .secretsignore
+
+# Baseline suppression + diff
+vis secrets --baseline .secrets-baseline.json
+
+# Merge current findings into the baseline
+vis secrets --update-baseline
+
+# SARIF for GitHub / GitLab code scanning
+vis secrets --format sarif > report.sarif
+```
+
+## Full flag list
+
+### Input selection
+
+| Flag                    | Type       | Default | Description                                                      |
+| ----------------------- | ---------- | ------- | ---------------------------------------------------------------- |
+| `--staged`              | boolean    | `false` | Scan only files staged for commit. Requires git.                 |
+| `--since <ref>`         | string     | —       | Scan only files changed since a git ref (e.g. `main`).           |
+| `--affected`            | boolean    | `false` | Scan only projects affected by the current branch (`$VIS_BASE`). |
+| `--exclude <pattern>`   | `string[]` | —       | Gitignore-syntax pattern to exclude from the walk. Repeatable.   |
+| `--exclude-from <path>` | `string[]` | —       | Gitignore-shaped file the walker should honor. Repeatable.       |
+| `--include-hidden`      | boolean    | `false` | Visit dotfiles.                                                  |
+| `--no-gitignore`        | boolean    | `false` | Do not respect `.gitignore`.                                     |
+| `--max-size <bytes>`    | number     | 10 MiB  | Skip files larger than this.                                     |
+
+### Rule selection
+
+| Flag                     | Type       | Default | Description                                                                                         |
+| ------------------------ | ---------- | ------- | --------------------------------------------------------------------------------------------------- |
+| `--config <path>`        | string     | —       | Path to a JSON config (gitleaks-compatible shape).                                                  |
+| `--no-extend-bundled`    | boolean    | `false` | With `--config`, replace the bundled ruleset instead of merging on top.                             |
+| `--enable-rule <spec>`   | `string[]` | —       | Additive enablement for opt-in rules. Rule id or `tag:<name>`. Doesn't restrict output. Repeatable. |
+| `--include-rule <spec>`  | `string[]` | —       | Whitelist — only emit matching findings. Rule id or `tag:<name>`. Implies enablement. Repeatable.   |
+| `--exclude-rule <spec>`  | `string[]` | —       | Blacklist — drop matching findings. Rule id or `tag:<name>`. Repeatable.                            |
+| `--min-confidence <lvl>` | string     | `low`   | Drop rules below this author-declared confidence: `low`, `medium`, `high`. See below.               |
+| `--list-rules`           | boolean    | `false` | Print all bundled detection rules and exit.                                                         |
+| `--list-validators`      | boolean    | `false` | Print non-HTTP validators referenced by the ruleset + peer-dep install hints.                       |
+
+**Opt-in rule groups shipped today:** `tag:preset:weak-passwords` (low-entropy credentials complementing `generic-api-key`), `tag:preset:password-manager` (1Password / Bitwarden / LastPass / KeePass / browser-CSV export detection). Both are `defaultEnabled: false` inside every bundled ruleset.
+
+### Validation
+
+| Flag                | Type    | Default | Description                                                                                 |
+| ------------------- | ------- | ------- | ------------------------------------------------------------------------------------------- |
+| `--validate`        | boolean | `false` | Live-verify each finding against its provider. Off by default — scans stay offline-safe.    |
+| `--only-verified`   | boolean | `false` | With `--validate`, drop every finding whose validation is not `verified`.                   |
+| `--list-validators` | boolean | `false` | Print non-HTTP validator types referenced by the ruleset, with install hints for peer-deps. |
+
+### Output
+
+| Flag                | Type    | Default | Description                                            |
+| ------------------- | ------- | ------- | ------------------------------------------------------ |
+| `--format <fmt>`    | string  | `text`  | Output format: `text`, `json`, `sarif`.                |
+| `--redact`          | boolean | `false` | Mask secret values in output.                          |
+| `--quiet`           | boolean | `false` | Suppress all progress output (only emit findings).     |
+| `--verbose`         | boolean | `false` | Print diagnostic info to stderr (skipped rules, etc.). |
+| `--concurrency <n>` | number  | auto    | Rayon worker threads (`0` / omit = auto).              |
+
+### Baseline
+
+| Flag                 | Type    | Default | Description                                                |
+| -------------------- | ------- | ------- | ---------------------------------------------------------- |
+| `--baseline <path>`  | string  | —       | Path to a baseline JSON of previously-triaged findings.    |
+| `--init`             | boolean | `false` | Scaffold a baseline from current findings.                 |
+| `--dry-run`          | boolean | `false` | With `--init`, preview the baseline without writing files. |
+| `--update-baseline`  | boolean | `false` | Merge current findings into the baseline and exit `0`.     |
+| `--replace-baseline` | boolean | `false` | With `--update-baseline`, replace rather than merge.       |
+
+## `--min-confidence`
+
+Every rule may carry an author-declared `confidence` field (`low`, `medium`, `high`). `--min-confidence` drops rules below the supplied floor:
+
+| Floor    | Drops                                                          |
+| -------- | -------------------------------------------------------------- |
+| `low`    | Nothing (the default).                                         |
+| `medium` | Rules declared `low`, **plus** every rule with no declaration. |
+| `high`   | Rules declared `low` or `medium`, plus every unlabeled rule.   |
+
+Rules without an explicit label are treated as `low`. That's every bundled gitleaks rule today — the stock ruleset needs explicit labels before `--min-confidence high` is useful. Use it when you've curated a precision-tuned config of your own, or when you pull in an opt-in preset that ships labels (e.g. a future `weak-passwords-v2`).
+
+## `--validate` and `--only-verified`
+
+`--validate` turns every finding into a live verification request against the provider's own API. Only [Kingfisher-style HTTP validators](https://github.com/mongodb/kingfisher/blob/main/docs/RULES.md) with `StatusMatch` / `WordMatch` response matchers are supported today; other kinds (gRPC, multi-step HTTP, checksum) mark the finding as `validation=skipped` and pass through unfiltered.
+
+- One HTTP request per finding.
+- Per-host concurrency capped at 4; global cap at 8.
+- `--only-verified` drops any finding whose `validation` is not `verified` — ideal for CI gating.
+- Non-HTTP validators may require optional peer-deps (e.g. AWS / GCP / MySQL drivers). Run `vis secrets --list-validators` to see which are referenced by the current ruleset.
+
+> **Warning:** `--validate` sends the candidate secret to the provider. Some providers page their security team on failed auth attempts. Only enable on repos you own or have explicit authorisation to test.
+
+## `--list-validators`
+
+Prints every non-HTTP validator type referenced by the currently-loaded ruleset, together with the npm peer-dep users need to install before `--validate` can verify findings from those rules. Non-HTTP validators are optional — HTTP / JWT are built in — so skip this unless you opt in to validator-heavy presets.
+
+Example output:
+
+```text
+2 non-HTTP validator type(s) referenced by the current ruleset:
+
+AWS Secret Key (aws, 3 rules)
+  STS GetCallerIdentity challenge.
+  install: npm add @aws-sdk/client-sts
+
+MongoDB Connection String (mongodb, 1 rule)
+  Attempts an authenticated handshake against the cluster.
+  install: npm add mongodb
+```
+
+An empty list means the ruleset only references HTTP / JWT validators and no extra dependencies are required.
+
+## Workspace config — `vis.config.ts`
+
+The same grouped `ScanOptions` shape is available under `secrets` in `vis.config.ts`, so teams can commit the defaults once:
+
+```typescript
+export default {
+    secrets: {
+        baseline: ".secrets-baseline.json",
+        config: {
+            extendBundled: true,
+            minConfidence: "medium",
+            onlyVerified: false,
+            validate: false,
+        },
+        rules: {
+            enable: ["tag:preset:weak-passwords"],
+            exclude: ["generic-api-key"],
+        },
+        walk: {
+            excludeFromFiles: [".secretsignore"],
+            excludePatterns: ["dist/**", "coverage/**"],
+        },
+    },
+};
+```
+
+CLI flags always take precedence over the config file. See the [configuration reference](./configuration.mdx) for every field.
+
+## SARIF output
+
+`--format sarif` emits SARIF v2.1.0 with `file://` URIs, a `tool.driver.rules[]` cross-reference, and `result.level`. Compatible with GitHub code scanning and GitLab security dashboards.
+
+```yaml
+# .github/workflows/secrets.yml
+name: Secrets
+on: [push, pull_request]
+jobs:
+    scan:
+        runs-on: ubuntu-latest
+        permissions: { security-events: write, contents: read }
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - run: pnpm install
+            - run: pnpm vis secrets --format sarif > report.sarif
+              continue-on-error: true
+            - uses: github/codeql-action/upload-sarif@v3
+              with: { sarif_file: report.sarif }
+```
+
+## Exit codes
+
+| Code | Meaning                                                          |
+| ---- | ---------------------------------------------------------------- |
+| `0`  | No findings after suppression, or `--update-baseline` succeeded. |
+| `1`  | One or more findings emitted.                                    |
+| `2`  | Usage / configuration error.                                     |
+
+## Migrations
+
+`vis migrate` can port existing tools to `vis secrets`:
+
+```bash
+vis migrate gitleaks     # keeps gitleaks.toml, rewrites scripts / hooks
+vis migrate secretlint   # removes @secretlint/*, rewrites scripts / hooks
+vis migrate verify       # sanity-check the migration
+```
+
+## Pre-commit hook
+
+```bash
+vis hook add secrets
+```
+
+Appends a managed block to `.husky/pre-commit` (or creates one) that runs `vis secrets --staged --quiet`. Remove the block or delete the file to disable.

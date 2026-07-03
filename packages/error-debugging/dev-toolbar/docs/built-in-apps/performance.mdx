@@ -1,0 +1,87 @@
+---
+title: Performance
+description: Monitor Web Vitals, resource timing, and navigation metrics directly in the toolbar without leaving your browser tab.
+---
+
+**App ID:** `dev-toolbar:performance`
+
+The Performance app surfaces real-time performance data from the browser's [Performance API](https://developer.mozilla.org/en-US/docs/Web/API/Performance_API) and the [Web Vitals](https://web.dev/vitals/) specification. No external libraries, no DevTools tab switching — key metrics are available the moment you open the panel.
+
+## Features
+
+- **Core Web Vitals** — LCP, FID/INP, CLS with pass/fail thresholds
+- **Paint timings** — FCP, TTFB
+- **Resource timing** — breakdown of assets loaded on the page, grouped by type
+- **Navigation timing** — DNS, connection, request, response, DOM parse, load phases
+- **Tooltip summary** — shows a traffic-light status in the toolbar button without opening the panel
+
+## Tooltip
+
+The Performance tooltip shows a high-level health summary:
+
+- Green indicator — all measured Web Vitals within "Good" thresholds
+- Yellow indicator — at least one metric in "Needs improvement"
+- Red indicator — at least one metric "Poor"
+
+Hover the Performance button in the toolbar to see the current status without opening the full panel.
+
+## Panel Sections
+
+### Web Vitals
+
+Displays the Core Web Vitals collected from `PerformanceObserver` entries since the page loaded:
+
+| Metric                              | Good     | Needs Improvement | Poor      |
+| ----------------------------------- | -------- | ----------------- | --------- |
+| **LCP** — Largest Contentful Paint  | ≤ 2.5 s  | 2.5–4.0 s         | > 4.0 s   |
+| **INP** — Interaction to Next Paint | ≤ 200 ms | 200–500 ms        | > 500 ms  |
+| **CLS** — Cumulative Layout Shift   | ≤ 0.1    | 0.1–0.25          | > 0.25    |
+| **FCP** — First Contentful Paint    | ≤ 1.8 s  | 1.8–3.0 s         | > 3.0 s   |
+| **TTFB** — Time to First Byte       | ≤ 800 ms | 800–1800 ms       | > 1800 ms |
+
+Each metric shows the current value, a colour-coded badge, and the threshold boundaries for context.
+
+### Resource Timing
+
+A filterable table of all resources loaded by the page (scripts, stylesheets, fonts, images, XHR/fetch):
+
+- **URL** — truncated to the path with full URL on hover
+- **Type** — inferred from the `initiatorType`
+- **Duration** — total transfer time in milliseconds
+- **Size** — transfer size in KB
+
+Sort by duration to find the slowest assets.
+
+### Navigation Timing
+
+A waterfall breakdown of the page's navigation lifecycle:
+
+| Phase          | Description                              |
+| -------------- | ---------------------------------------- |
+| DNS Lookup     | `domainLookupEnd - domainLookupStart`    |
+| TCP Connection | `connectEnd - connectStart`              |
+| SSL/TLS        | `connectEnd - secureConnectionStart`     |
+| Request        | `responseStart - requestStart`           |
+| Response       | `responseEnd - responseStart`            |
+| DOM Processing | `domContentLoadedEventEnd - responseEnd` |
+| Load Event     | `loadEventEnd - loadEventStart`          |
+
+## Configuration
+
+### Enable via Plugin
+
+The Performance app is disabled by default. Enable it in your Vite config:
+
+```ts title="vite.config.ts"
+devToolbar({
+    apps: {
+        performance: true,
+    },
+});
+```
+
+## Notes
+
+- Web Vitals are measured from the current page load. Refresh the page to reset measurements.
+- LCP and CLS are finalized only after user interaction or page visibility changes; the displayed values update live.
+- The Performance panel reads from `window.performance` — no data is sent to any external service.

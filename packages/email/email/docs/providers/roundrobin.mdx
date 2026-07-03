@@ -1,0 +1,62 @@
+---
+title: Round Robin
+description: Load balance email sending across multiple providers with @visulima/email
+---
+
+# Round Robin Provider
+
+The Round Robin provider distributes email sending across multiple providers in a round-robin fashion, providing load balancing for high-volume email sending.
+
+**Runtime Support:** Depends on the wrapped providers
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { roundRobinProvider } from "@visulima/email/providers/roundrobin";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { sendGridProvider } from "@visulima/email/providers/sendgrid";
+
+const mail = createMail(
+    roundRobinProvider({
+        mailers: [resendProvider({ apiKey: process.env.RESEND_API_KEY! }), sendGridProvider({ apiKey: process.env.SENDGRID_API_KEY! })],
+    }),
+);
+```
+
+## Configuration
+
+The `RoundRobinConfig` interface extends `BaseConfig` with the following options:
+
+| Option       | Type        | Required | Default | Description                                                                 |
+| ------------ | ----------- | -------- | ------- | --------------------------------------------------------------------------- |
+| `mailers`    | `unknown[]` | Yes      | -       | Array of provider instances or provider factory functions                   |
+| `retryAfter` | `number`    | No       | `60`    | Time in milliseconds to wait before retrying with next unavailable provider |
+| `debug`      | `boolean`   | No       | `false` | Enable debug logging                                                        |
+| `logger`     | `Console`   | No       | -       | Custom logger instance                                                      |
+
+## How It Works
+
+1. Each email is sent using the next provider in the rotation.
+2. If a provider is unavailable, the round robin moves to the next available provider.
+3. The rotation continues cyclically through all providers.
+4. If all providers are unavailable, an error is returned.
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+// First email goes to provider 1
+await mail.send(new MailMessage().to("a@example.com").from("sender@example.com").subject("Email 1").html("<h1>1</h1>"));
+
+// Second email goes to provider 2
+await mail.send(new MailMessage().to("b@example.com").from("sender@example.com").subject("Email 2").html("<h1>2</h1>"));
+
+// Third email goes back to provider 1
+await mail.send(new MailMessage().to("c@example.com").from("sender@example.com").subject("Email 3").html("<h1>3</h1>"));
+```
+
+## Supported Features
+
+The round robin provider supports whatever features the underlying providers support. Feature availability depends on which provider is selected for a given email.

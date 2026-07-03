@@ -1,0 +1,71 @@
+---
+title: "Installation & Quick Start"
+description: "Install and start using @visulima/redact"
+---
+
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+# Installation & Quick Start
+
+## Installation
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">```bash npm install @visulima/redact ```</Tab>
+    <Tab value="pnpm">```bash pnpm add @visulima/redact ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/redact ```</Tab>
+    <Tab value="bun">```bash bun add @visulima/redact ```</Tab>
+</Tabs>
+
+## Import
+
+```typescript
+import { redact, stringAnonymize } from "@visulima/redact";
+```
+
+## Quick Examples
+
+### Redact Object Properties
+
+```typescript
+import { redact } from "@visulima/redact";
+
+const data = {
+    username: "alice",
+    password: "secret123",
+    email: "alice@example.com",
+};
+
+const safe = redact(data, ["password"]);
+// { username: "alice", password: "<PASSWORD>", email: "alice@example.com" }
+```
+
+### Anonymize Text
+
+```typescript
+import { stringAnonymize } from "@visulima/redact";
+
+const text = "My email is john@example.com";
+const anonymous = stringAnonymize(text);
+// "My email is <EMAIL>"
+```
+
+### Custom Replacement
+
+```typescript
+import { redact } from "@visulima/redact";
+
+const safe = redact(data, ["ssn"], {
+    replacement: "[REDACTED]",
+});
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Detailed usage examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>

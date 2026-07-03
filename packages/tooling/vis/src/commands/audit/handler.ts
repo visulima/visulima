@@ -1,0 +1,1622 @@
+import { spawnSync } from "node:child_process";
+import { createInterface } from "node:readline";
+
+import type { CerebroFs, CommandExecute, Toolbox } from "@visulima/cerebro";
+import { cyan, dim, magenta, red, yellow } from "@visulima/colorize";
+import { resolve as resolvePath } from "@visulima/path";
+import isInCi from "is-in-ci";
+
+import { whichBin } from "#native";
+
+import { explainFindings, explainKey, selectTargets } from "../../ai/audit-explain";
+import { isAdvisoryExcluded, isPackageExcluded, readNativeAuditExclusions, syncAcceptedRisksToNativeConfig } from "../../config/audit-config";
+import type { VisConfig } from "../../config/workspace";
+import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
+import { pail } from "../../io/logger";
+import { detectPm, runAdd } from "../../pm/pm-runner";
+import { buildAuditReport } from "../../report/audit/build-report";
+import { emitAuditHtml } from "../../report/audit/html";
+import { emitCsaf } from "../../report/csaf";
+import { emitCycloneDxVex } from "../../report/cyclonedx-vex";
+import { emitGitlabDepScan } from "../../report/gitlab-dep-scan";
+import { emitJUnitAudit } from "../../report/junit-audit";
+import { emitSarif } from "../../report/sarif";
+import { buildCycloneDxBom } from "../../sbom/cyclonedx";
+import { startScanProgress } from "../../scan/scan-progress";
+import { AdvisoryDbNotFoundError, queryAdvisories, resolveAdvisoryDbPath } from "../../security/advisories";
+import type { DirectApplyPlan } from "../../security/apply-direct";
+import { buildDirectApplyPlan, formatDirectApplyPlan } from "../../security/apply-direct";
+import type { DependencyPath } from "../../security/dependency-paths";
+import { buildDependencyPaths } from "../../security/dependency-paths";
+import { findDuplicateDependencies, loadLockfileGraph, lockedPackages } from "../../security/dependency-scan";
+import { readNodeModulesManifests } from "../../security/manifests";
+import { isMarshallDisabled } from "../../security/marshalls/registry";
+import { canonicalEcosystem, lockedPackagesForEcosystem } from "../../security/multi-eco-lockfiles";
+import { loadOsvBloomHandle, OsvBloomCacheMissError, probeOsvBloomBatch } from "../../security/osv-bloom";
+import type { PolicyDecision } from "../../security/policies";
+import { evaluatePolicies, getRegisteredPolicyNames, parsePoliciesFlag } from "../../security/policies";
+import { computeReachableVulnerablePackages } from "../../security/reachability";
+import { buildEnabledProviders, fetchAllReports } from "../../security/registry";
+import type { SeverityFilter } from "../../security/severity";
+import { compareFindingsForDisplay, severityPassesFilter } from "../../security/severity";
+import type { AcceptedRisk, PackageReportData } from "../../security/socket-security";
+import { DEFAULT_LOW_SCORE_THRESHOLD, findAcceptedRisk, getFullPackageName, scoreLabel } from "../../security/socket-security";
+import { applyOverridePlan, buildOverridePlanFromFindings, planOverrideWrite } from "../../security/transitive-fix";
+import type { SecurityVulnerability } from "../../util/catalog";
+import { fetchVulnerabilities } from "../../util/catalog";
+import type { AuditOptions } from "./index";
+
+interface AuditEntry {
+    acceptedRisk?: AcceptedRisk;
+    name: string;
+    socketReport?: PackageReportData;
+    version: string;
+    vulnerabilities: SecurityVulnerability[];
+}
+
+const SOCKET_ALERT_COLORS: Record<string, (s: string) => string> = {
+    critical: red,
+    high: magenta,
+    low: cyan,
+    medium: yellow,
+};
+
+//
+// `--ecosystem npm,pypi,maven,...` accepts a comma list. Each ecosystem
+// has its own Rust range matcher and lockfile reader; unknown values
+// (or ones whose matcher hasn't landed yet) get a non-fatal warning so
+// CI invocations stay stable as more ecosystems land.
+const SUPPORTED_ECOSYSTEMS = new Set(["cargo", "crates.io", "go", "maven", "npm", "pypi", "rubygems"]);
+
+// Parses `--ecosystem` (comma-separated) into the canonical list plus any
+// entries that don't match SUPPORTED_ECOSYSTEMS — the handler emits a
+// non-fatal warning for unsupported names instead of failing.
+const parseEcosystems = (raw: string | undefined): { all: string[]; unsupported: string[] } => {
+    const list = (raw ?? "npm")
+        .split(",")
+        .map((s) => s.trim())
+        .filter((s) => s.length > 0);
+
+    const all = list.length > 0 ? list : ["npm"];
+    const unsupported = all.filter((eco) => !SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()));
+
+    return { all, unsupported };
+};
+
+const SEVERITY_COLOR_FN: Record<string, (s: string) => string> = {
+    CRITICAL: red,
+    HIGH: magenta,
+    LOW: cyan,
+    MODERATE: yellow,
+    UNKNOWN: dim,
+};
+
+const formatVulnLine = (name: string, version: string, vuln: SecurityVulnerability, isAccepted: boolean): string => {
+    const colorFunction = SEVERITY_COLOR_FN[vuln.severity] ?? dim;
+    const badge = isAccepted ? ` ${dim("[acknowledged]")}` : "";
+    const fixedVersions = vuln.fixedVersions ?? [];
+    const fixed = fixedVersions.length > 0 ? ` (fix: ${fixedVersions.join(", ")})` : "";
+
+    return `  ${colorFunction(vuln.severity)} ${vuln.id} — ${name}@${version}${badge}\n    ${vuln.summary}${fixed}`;
+};
+
+const formatSocketLine = (report: PackageReportData, isAccepted: boolean): string => {
+    const name = getFullPackageName(report);
+    const pct = `${String(Math.round(report.score.overall * 100))}%`;
+    const badge = isAccepted ? ` ${dim("[acknowledged]")}` : "";
+    const alerts = report.alerts.length > 0 ? `, ${String(report.alerts.length)} alert${report.alerts.length === 1 ? "" : "s"}` : "";
+
+    return `  ${pct} ${name}@${report.version} (${scoreLabel(report.score.overall)}${alerts})${badge}`;
+};
+
+export type AuditBackend = "aube" | "auto" | "vis";
+
+const AUDIT_BACKEND_VALUES: ReadonlySet<AuditBackend> = new Set<AuditBackend>(["aube", "auto", "vis"]);
+
+const isAuditBackend = (value: string | undefined): value is AuditBackend => value !== undefined && AUDIT_BACKEND_VALUES.has(value as AuditBackend);
+
+/**
+ * Resolve which scanner runs for `vis audit`. Precedence (highest first):
+ *
+ *   1. CLI `--backend` flag
+ *   2. `VIS_AUDIT_BACKEND` env var
+ *   3. `security.audit.backend` config value
+ *   4. `auto` — delegate to aube only when the active installer is aube
+ *      AND the binary is on PATH; otherwise vis runs its own scanner.
+ *
+ * The auto branch checks `visConfig.install.backend` first (declarative),
+ * then `VIS_INSTALLER` (per-shell override). Either set to `"aube"` plus
+ * `whichBin("aube") !== null` triggers delegation. Bare `auto` with no
+ * installer hint never delegates — silent delegation surprises users
+ * whose workspace pins pnpm even if they happen to have aube installed
+ * globally.
+ */
+export const resolveAuditBackend = (
+    optionBackend: string | undefined,
+    configBackend: string | undefined,
+    visConfig: { install?: { backend?: string } } | undefined,
+): "aube" | "vis" => {
+    if (optionBackend !== undefined && !isAuditBackend(optionBackend)) {
+        throw new Error(`Invalid --backend value '${optionBackend}'. Expected one of: aube, auto, vis.`);
+    }
+
+    const envRaw = process.env.VIS_AUDIT_BACKEND;
+
+    if (envRaw !== undefined && envRaw !== "" && !isAuditBackend(envRaw)) {
+        throw new Error(`Invalid VIS_AUDIT_BACKEND value '${envRaw}'. Expected one of: aube, auto, vis.`);
+    }
+
+    const envBackend = isAuditBackend(envRaw) ? envRaw : undefined;
+    const configValue = isAuditBackend(configBackend) ? configBackend : undefined;
+    const optionValue = isAuditBackend(optionBackend) ? optionBackend : undefined;
+    const requested: AuditBackend = optionValue ?? envBackend ?? configValue ?? "auto";
+
+    if (requested === "aube") {
+        return "aube";
+    }
+
+    if (requested === "vis") {
+        return "vis";
+    }
+
+    const installer = visConfig?.install?.backend ?? process.env.VIS_INSTALLER;
+
+    if (installer === "aube" && whichBin("aube") !== null) {
+        return "aube";
+    }
+
+    return "vis";
+};
+
+/**
+ * Translate vis's severity vocabulary into aube's. Aube uses the npm
+ * audit naming (`moderate` instead of `medium`); the other levels match
+ * one-to-one. Returns `undefined` when the caller didn't set a severity
+ * filter so the aube CLI keeps its own default.
+ */
+export const mapSeverityToAube = (severity: SeverityFilter | undefined): string | undefined => {
+    if (severity === undefined) {
+        return undefined;
+    }
+
+    switch (severity) {
+        case "critical": {
+            return "critical";
+        }
+
+        case "high": {
+            return "high";
+        }
+
+        case "low": {
+            return "low";
+        }
+
+        case "medium": {
+            return "moderate";
+        }
+
+        default: {
+            const exhaustive: never = severity;
+
+            return exhaustive;
+        }
+    }
+};
+
+/**
+ * Spawn `aube audit` with the subset of vis options aube understands.
+ * Vis-only flags (offline, sarif/csaf/cyclonedx-vex output, --usage, etc.)
+ * are surfaced via a single warning so the user knows which features are
+ * skipped when delegating.
+ */
+const runAubeAudit = (workspaceRoot: string, options: Record<string, unknown>, _visConfig: VisConfig | undefined): number => {
+    const args: string[] = ["audit"];
+
+    const severity = mapSeverityToAube(options.severity as SeverityFilter | undefined);
+
+    if (severity !== undefined) {
+        args.push("--audit-level", severity);
+    }
+
+    if (options.prodOnly === true || options.prod === true) {
+        args.push("--prod");
+    }
+
+    if (options.json === true || options.format === "json") {
+        args.push("--json");
+    }
+
+    const wantsFix = options.fix === true;
+    const wantsFixTransitive = options["fix-transitive"] === true || options.fixTransitive === true;
+
+    if (wantsFixTransitive) {
+        args.push("--fix=override");
+    } else if (wantsFix) {
+        args.push("--fix=update");
+    }
+
+    const skipped: string[] = [];
+
+    if (options.offline === true) {
+        skipped.push("--offline (aube has its own offline cache)");
+    }
+
+    if (
+        options.format === "sarif"
+        || options.format === "csaf"
+        || options.format === "cyclonedx"
+        || options.format === "cyclonedx-vex"
+        || options.format === "gitlab"
+        || options.format === "junit"
+    ) {
+        skipped.push(`--format=${String(options.format)} (only json/text is forwarded to aube)`);
+    }
+
+    if (skipped.length > 0) {
+        pail.warn(`Delegating to 'aube audit'. Skipping vis-only flags: ${skipped.join(", ")}`);
+    }
+
+    const result = spawnSync("aube", args, { cwd: workspaceRoot, stdio: "inherit" });
+
+    if (result.error) {
+        const { code } = result.error as NodeJS.ErrnoException;
+
+        if (code === "ENOENT") {
+            pail.error("Backend 'aube' selected but the 'aube' binary was not found on PATH. Install aube or run with --backend vis.");
+        } else {
+            pail.error(`Failed to spawn aube: ${result.error.message}`);
+        }
+
+        return 1;
+    }
+
+    return result.status ?? 1;
+};
+
+const executeAudit = async (
+    fs: CerebroFs,
+    workspaceRoot: string,
+    options: Record<string, unknown>,
+    visConfig: VisConfig | undefined,
+    _logger: Console,
+): Promise<void> => {
+    const backend = resolveAuditBackend(options.backend as string | undefined, visConfig?.security?.audit?.backend, visConfig);
+
+    if (backend === "aube") {
+        process.exitCode = runAubeAudit(workspaceRoot, options, visConfig);
+
+        return;
+    }
+
+    const severityFilter = (options.severity as SeverityFilter | undefined) ?? "low";
+    const format = (options.format as string | undefined) ?? "table";
+    const isSarif = format === "sarif";
+    const isCsaf = format === "csaf";
+    const isCycloneDxVex = format === "cyclonedx-vex" || format === "cyclonedx";
+    const isGitlab = format === "gitlab";
+    const isJunit = format === "junit";
+    const isJson = format === "json" || Boolean(options.json);
+    const reportPath = options.report as string | undefined;
+    const auditConfig = visConfig?.security?.audit;
+    const policies = visConfig?.security?.policies;
+    const isOffline = options.offline === undefined ? Boolean(auditConfig?.offlineByDefault) : Boolean(options.offline);
+    const dbPath = options.db as string | undefined;
+    const ecosystems = parseEcosystems(options.ecosystem as string | undefined);
+    const prodOnly = Boolean(options.prodOnly);
+    const failOn = (options.failOn as SeverityFilter | undefined) ?? policies?.vulnerability?.failOn;
+    const showFixes = Boolean(options.showFixes);
+    const showAccepted = Boolean(options.showAccepted);
+    const acceptedRisks = visConfig?.security?.acceptedRisks;
+    // --no-usage wins over --usage and config; otherwise --usage flag, else config default.
+    const usageConfig = policies?.vulnerability?.usage;
+    const usageEnabled = options.noUsage ? false : options.usage === undefined ? Boolean(usageConfig?.enabled) : Boolean(options.usage);
+    const quietHeader = isJson || isSarif || isCsaf || isCycloneDxVex || isGitlab || isJunit;
+
+    // `--explain` opts in. command-line-args yields `null` for a bare flag
+    // and omits the key entirely when absent, so `!== undefined` is the
+    // presence test (same contract the severity/db/ecosystem opts rely on).
+    const explainRaw = options.explain as boolean | null | string | undefined;
+    const wantsExplain = explainRaw !== undefined;
+    // Explanations only surface in the human / JSON / HTML paths — the
+    // machine formats (SARIF/CSAF/CycloneDX-VEX) have no field for them.
+    const explainSupported = wantsExplain && !isSarif && !isCsaf && !isCycloneDxVex && !isGitlab && !isJunit;
+
+    if (wantsExplain && isOffline) {
+        pail.error("`--explain` needs network access and cannot run in offline mode (--offline or security.audit.offlineByDefault).");
+        process.exitCode = 1;
+
+        return;
+    }
+
+    if (wantsExplain && !explainSupported) {
+        pail.warn(`\`--explain\` has no effect with --format=${format}; explanations are only rendered in table, json, and HTML output.`);
+    }
+
+    // Read native PM audit exclusions
+    const pm = detectPm(workspaceRoot);
+    const nativeExclusions = readNativeAuditExclusions(workspaceRoot, pm.name);
+
+    // Offline mode requires a local DB. Fail early with a clear message instead
+    // of silently degrading to "no findings" — the latter is exactly the
+    // network-flakiness footgun this whole flow is meant to avoid.
+    if (isOffline) {
+        const resolvedDb = dbPath ?? resolveAdvisoryDbPath(workspaceRoot);
+        const dbExists = await fs
+            .access(resolvedDb)
+            .then(() => true)
+            .catch(() => false);
+
+        if (!dbExists) {
+            const error = new AdvisoryDbNotFoundError(resolvedDb);
+
+            if (quietHeader) {
+                process.stderr.write(`${error.message}\n`);
+            } else {
+                pail.error(error.message);
+            }
+
+            process.exitCode = 1;
+
+            return;
+        }
+    }
+
+    if (!quietHeader && (nativeExclusions.ignoredAdvisories.length > 0 || nativeExclusions.excludedPackages.length > 0)) {
+        pail.info(
+            `Loaded ${String(nativeExclusions.ignoredAdvisories.length)} ignored advisor${nativeExclusions.ignoredAdvisories.length === 1 ? "y" : "ies"} and ${String(nativeExclusions.excludedPackages.length)} excluded package${nativeExclusions.excludedPackages.length === 1 ? "" : "s"} from ${pm.name} config.`,
+        );
+    }
+
+    if (!quietHeader && ecosystems.unsupported.length > 0) {
+        pail.warn(
+            `Ecosystems ${ecosystems.unsupported.map((e) => `'${e}'`).join(", ")} are not yet supported by the audit matcher. `
+            + "Supported: npm, pypi, crates.io, cargo, maven, go, rubygems.",
+        );
+    }
+
+    // 1. Discover installed packages from the lockfile (single parse,
+    // no recursive node_modules walk). `--prod-only` will filter dev
+    // packages via the lockedPackages includeDev flag in Phase 1.7.
+    const installed = lockedPackages(workspaceRoot, pm.name, { includeDev: !prodOnly });
+
+    if (installed.length === 0) {
+        pail.info(`No ${pm.name} lockfile entries found. Run ${pm.name} install first.`);
+
+        return;
+    }
+
+    if (!quietHeader) {
+        const scope = prodOnly ? "production-only packages" : "installed packages";
+
+        pail.info(`Scanning ${String(installed.length)} ${scope}${isOffline ? " (offline)" : ""}…`);
+    }
+
+    // 2. Fetch vulnerability and security data in parallel
+    const packagesToScan = installed.map((p) => {
+        return { name: p.name, version: p.version };
+    });
+
+    // 2a. Bloom prefilter for OSV MAL-* advisories. Cheap pre-pass that
+    // surfaces likely-malicious packages early (cold-start protection on
+    // ephemeral CI runners). Hits are confirmed downstream by the existing
+    // advisory query path — bloom is informational, never authoritative.
+    const bloomConfig = visConfig?.security?.audit?.advisories?.bloom;
+    const bloomMode = bloomConfig?.mode ?? "off";
+    let bloomHits: { name: string; version: string }[] = [];
+
+    if (bloomMode !== "off") {
+        try {
+            const handle = await loadOsvBloomHandle(workspaceRoot, { softFail: bloomMode === "on" });
+
+            if (handle) {
+                bloomHits = probeOsvBloomBatch(handle, packagesToScan).map((hit) => {
+                    return { name: hit.name, version: hit.version };
+                });
+
+                if (!quietHeader && bloomHits.length > 0) {
+                    pail.warn(
+                        `osv-bloom prefilter flagged ${String(bloomHits.length)} package${bloomHits.length === 1 ? "" : "s"} as possibly malicious (MAL-*). `
+                        + `Confirming via the advisory query path…`,
+                    );
+
+                    const MAX_BLOOM_LOG = 10;
+
+                    for (const hit of bloomHits.slice(0, MAX_BLOOM_LOG)) {
+                        pail.warn(`  ${red("[bloom]")} ${hit.name}@${hit.version}`);
+                    }
+
+                    if (bloomHits.length > MAX_BLOOM_LOG) {
+                        pail.warn(`  …and ${String(bloomHits.length - MAX_BLOOM_LOG)} more (full list in --format json output)`);
+                    }
+                }
+            } else if (!quietHeader) {
+                pail.info(dim("osv-bloom cache absent — skipping prefilter (run `vis advisories bloom sync` to enable)."));
+            }
+        } catch (error) {
+            if (error instanceof OsvBloomCacheMissError && bloomMode === "required") {
+                const message = `${error.message} (security.audit.advisories.bloom.mode = "required")`;
+
+                if (quietHeader) {
+                    process.stderr.write(`${message}\n`);
+                } else {
+                    pail.error(message);
+                }
+
+                process.exitCode = 1;
+
+                return;
+            }
+
+            const message = error instanceof Error ? error.message : String(error);
+
+            if (bloomMode === "required") {
+                if (quietHeader) {
+                    process.stderr.write(`osv-bloom prefilter failed: ${message}\n`);
+                } else {
+                    pail.error(`osv-bloom prefilter failed: ${message}`);
+                }
+
+                process.exitCode = 1;
+
+                return;
+            }
+
+            if (!quietHeader) {
+                pail.warn(`osv-bloom prefilter failed (continuing): ${message}`);
+            }
+        }
+    }
+
+    // Offline mode skips every network-bound source. MARSHALL_DISABLE_SOCKET
+    // (and future MARSHALL_DISABLE_DEPS_DEV) are the per-provider env-var
+    // escape hatches.
+    const disabledProviders = new Set<string>();
+
+    if (isOffline) {
+        disabledProviders.add("socket").add("deps-dev");
+    } else {
+        if (isMarshallDisabled("socket")) {
+            disabledProviders.add("socket");
+        }
+
+        if (isMarshallDisabled("depsDev")) {
+            disabledProviders.add("deps-dev");
+        }
+    }
+
+    const securityProviders = buildEnabledProviders(visConfig?.security, {
+        disabled: disabledProviders,
+        minimumScore: policies?.score?.minimum,
+    });
+    const hasSecurityProviders = securityProviders.length > 0;
+    // Human-readable label for the progress row — "Socket.dev + deps.dev" etc.
+    const providerLabel = securityProviders.map((p) => p.displayName).join(" + ");
+    // Resolve the effective low-score threshold once so every filter site below
+    // honours `security.policies.score.minimum` (or its default).
+    const scoreMinimum = policies?.score?.minimum ?? DEFAULT_LOW_SCORE_THRESHOLD;
+
+    // findDuplicateDependencies is synchronous — hoist it outside Promise.all
+    // so the async fan-out only contains genuine async work.
+    const duplicates = findDuplicateDependencies(workspaceRoot, pm.name);
+
+    // Live progress: one row per network-bound scan. JSON/SARIF consumers
+    // get no progress UI (it would corrupt the output stream).
+    const progressTasks = [
+        { id: "vulnerabilities", label: isOffline ? "Known vulnerabilities (offline OSV cache)" : "Known vulnerabilities (OSV)" },
+        ...(hasSecurityProviders ? [{ id: "security", label: `Supply-chain reports (${providerLabel})` }] : []),
+    ];
+    const progress = startScanProgress(progressTasks, { live: !quietHeader });
+    const startedAt = Date.now();
+    const fmtElapsed = (start: number): string => {
+        const ms = Date.now() - start;
+
+        return ms >= 1000 ? `${(ms / 1000).toFixed(1)}s` : `${String(Math.round(ms))}ms`;
+    };
+
+    let vulnMap: Awaited<ReturnType<typeof fetchVulnerabilities>>;
+    let socketReports: Map<string, PackageReportData>;
+
+    try {
+        const vulnStart = Date.now();
+        const securityStart = Date.now();
+
+        progress.start("vulnerabilities");
+
+        if (hasSecurityProviders) {
+            progress.start("security");
+        }
+
+        const vulnPromise = isOffline
+            ? Promise.resolve()
+                .then(() =>
+                    queryAdvisories(packagesToScan, {
+                        dbPath,
+                        ecosystem: ecosystems.all.find((e) => SUPPORTED_ECOSYSTEMS.has(e.toLowerCase())) ?? "npm",
+                        workspaceRoot,
+                    }),
+                )
+                .then((map) => {
+                    let count = 0;
+
+                    for (const list of map.values()) {
+                        count += list.length;
+                    }
+
+                    progress.finish(
+                        "vulnerabilities",
+                        count > 0 ? "warn" : "ok",
+                        count > 0 ? `${String(count)} found · ${fmtElapsed(vulnStart)}` : `none found · ${fmtElapsed(vulnStart)}`,
+                    );
+
+                    return map;
+                })
+                .catch((error: unknown) => {
+                    const message = error instanceof Error ? error.message : String(error);
+
+                    progress.finish("vulnerabilities", "error", message);
+
+                    if (error instanceof AdvisoryDbNotFoundError) {
+                        // surface up — the command should exit non-zero
+                        throw error;
+                    }
+
+                    return new Map<string, SecurityVulnerability[]>();
+                })
+            : fetchVulnerabilities(packagesToScan)
+                .then((map) => {
+                    let count = 0;
+
+                    for (const list of map.values()) {
+                        count += list.length;
+                    }
+
+                    progress.finish(
+                        "vulnerabilities",
+                        count > 0 ? "warn" : "ok",
+                        count > 0 ? `${String(count)} found · ${fmtElapsed(vulnStart)}` : `none found · ${fmtElapsed(vulnStart)}`,
+                    );
+
+                    return map;
+                })
+                .catch((error: unknown) => {
+                    const message = error instanceof Error ? error.message : String(error);
+
+                    progress.finish("vulnerabilities", "error", message);
+
+                    return new Map<string, SecurityVulnerability[]>();
+                });
+
+        [vulnMap, socketReports] = await Promise.all([
+            vulnPromise,
+            hasSecurityProviders
+                ? fetchAllReports(securityProviders, packagesToScan)
+                    .then((reports) => {
+                        let alerts = 0;
+                        let low = 0;
+
+                        for (const report of reports.values()) {
+                            alerts += report.alerts.length;
+
+                            if (report.score.overall < scoreMinimum) {
+                                low += 1;
+                            }
+                        }
+
+                        const total = alerts + low;
+
+                        progress.finish(
+                            "security",
+                            total > 0 ? "warn" : "ok",
+                            total > 0
+                                ? `${String(alerts)} alert${alerts === 1 ? "" : "s"}, ${String(low)} low-score · ${fmtElapsed(securityStart)}`
+                                : `clean · ${fmtElapsed(securityStart)}`,
+                        );
+
+                        return reports;
+                    })
+                    .catch((error: unknown) => {
+                        const message = error instanceof Error ? error.message : String(error);
+
+                        progress.finish("security", "error", message);
+
+                        return new Map<string, PackageReportData>();
+                    })
+                : Promise.resolve(new Map<string, PackageReportData>()),
+        ]);
+    } finally {
+        progress.stop();
+    }
+
+    if (!isJson) {
+        pail.info(dim(`Scan completed in ${fmtElapsed(startedAt)}`));
+    }
+
+    // 3. Build audit entries
+    const entries: AuditEntry[] = [];
+
+    for (const pkg of installed) {
+        // Skip packages excluded by native PM config (yarn npmAuditExcludePackages)
+        if (isPackageExcluded(pkg.name, nativeExclusions)) {
+            continue;
+        }
+
+        const vulns = vulnMap.get(pkg.name) ?? [];
+        const report = socketReports.get(`${pkg.name}@${pkg.version}`);
+        const accepted = findAcceptedRisk(pkg.name, pkg.version, acceptedRisks);
+
+        const hasVulns = vulns.length > 0;
+        const hasLowScore = report ? report.score.overall < scoreMinimum : false;
+        const hasAlerts = report ? report.alerts.length > 0 : false;
+
+        if (hasVulns || hasLowScore || hasAlerts) {
+            entries.push({
+                acceptedRisk: accepted,
+                name: pkg.name,
+                socketReport: report,
+                version: pkg.version,
+                vulnerabilities: vulns,
+            });
+        }
+    }
+
+    // 3b. Non-npm ecosystems (offline-only — the online catalog path is
+    // npm-only today). Each ecosystem owns its own lockfile reader and
+    // queries the same shared advisory DB with the right ecosystem tag.
+    if (isOffline) {
+        const nonNpmEcosystems = ecosystems.all.filter((eco) => SUPPORTED_ECOSYSTEMS.has(eco.toLowerCase()) && eco.toLowerCase() !== "npm");
+
+        for (const eco of nonNpmEcosystems) {
+            const canonical = canonicalEcosystem(eco);
+            const ecoPackages = lockedPackagesForEcosystem(workspaceRoot, canonical);
+
+            if (ecoPackages.length === 0) {
+                continue;
+            }
+
+            if (!quietHeader) {
+                pail.info(dim(`Scanning ${String(ecoPackages.length)} ${canonical} packages…`));
+            }
+
+            try {
+                const ecoVulnMap = queryAdvisories(
+                    ecoPackages.map((p) => {
+                        return { name: p.name, version: p.version };
+                    }),
+                    { dbPath, ecosystem: canonical, workspaceRoot },
+                );
+
+                for (const pkg of ecoPackages) {
+                    const vulns = ecoVulnMap.get(pkg.name) ?? [];
+
+                    if (vulns.length === 0) {
+                        continue;
+                    }
+
+                    entries.push({
+                        acceptedRisk: findAcceptedRisk(pkg.name, pkg.version, acceptedRisks),
+                        name: pkg.name,
+                        version: pkg.version,
+                        vulnerabilities: vulns,
+                    });
+                }
+            } catch (error) {
+                const message = error instanceof Error ? error.message : String(error);
+
+                pail.warn(`Failed to scan ${canonical}: ${message}`);
+            }
+        }
+    }
+
+    // 4. Filter by severity
+    let filtered = entries.filter((entry) => {
+        const vulnPasses = entry.vulnerabilities.some((v) => severityPassesFilter(v.severity, severityFilter));
+        const socketPasses = entry.socketReport?.alerts.some((a) =>
+            severityPassesFilter(a.severity === "medium" ? "MODERATE" : a.severity.toUpperCase(), severityFilter),
+        );
+        const lowScorePasses = entry.socketReport && entry.socketReport.score.overall < scoreMinimum;
+
+        return vulnPasses || socketPasses || lowScorePasses;
+    });
+
+    // 4a. Unified policy engine. The four offline-clean policies
+    // (license, install_scripts, vulnerability, unexpected_deps baseline
+    // mode) run here; network-bound policies join in Phase 3. The
+    // engine receives the same OSV map + Socket reports the handler
+    // already built, so it never refetches anything.
+    const policiesFlag = options.policies as string | undefined;
+    const unknownPolicyTokens: string[] = [];
+    const policyDecisions: PolicyDecision[] = await (async () => {
+        const registered = getRegisteredPolicyNames();
+        const registeredList = registered.map((n) => `'${n}'`).join(", ");
+        const enabledPolicies = parsePoliciesFlag(policiesFlag, (unknown) => {
+            unknownPolicyTokens.push(unknown);
+
+            const message = `Unknown policy '${unknown}' — ignoring. Available: ${registeredList}.`;
+
+            if (quietHeader) {
+                // Machine-readable formats can't carry warnings inline (sarif/csaf/cyclonedx-vex
+                // are schema-bound). Always emit to stderr so CI logs surface typos that
+                // would otherwise silently disable enforcement.
+                process.stderr.write(`vis audit: ${message}\n`);
+            } else {
+                pail.warn(message);
+            }
+        });
+
+        if (enabledPolicies?.size === 0) {
+            // `--policies none`: explicit bypass.
+            return [];
+        }
+
+        // `license` is currently the only policy that reads node_modules manifests.
+        // Skip the walk (thousands of `package.json` reads in a large monorepo) when
+        // it isn't both configured *and* enabled.
+        const licenseConfig = visConfig?.security?.policies?.license;
+        const licenseConfigured = Boolean(licenseConfig && ((licenseConfig.allow?.length ?? 0) > 0 || (licenseConfig.deny?.length ?? 0) > 0));
+        const licenseEnabled = enabledPolicies === undefined || enabledPolicies.has("license");
+        const manifestData = licenseConfigured && licenseEnabled ? readNodeModulesManifests(workspaceRoot) : undefined;
+
+        return evaluatePolicies(
+            {
+                manifestData,
+                offline: isOffline,
+                osvFindings: vulnMap,
+                packageManager: pm.name,
+                packages: installed,
+                socketReports,
+                workspaceRoot,
+            },
+            "audit",
+            { enabledPolicies, visConfig: visConfig ?? {} },
+        );
+    })();
+
+    // 4b. Reachability filter (`--usage` / `security.audit.usage.enabled`).
+    // Drop entries whose vulnerable package isn't statically imported anywhere
+    // in the workspace. `alwaysAssumeUsed` is the escape hatch for build-time
+    // loaders that the regex scan can't see.
+    if (usageEnabled) {
+        const vulnerableNames = new Set(filtered.filter((e) => e.vulnerabilities.length > 0).map((e) => e.name));
+        const reachResult = computeReachableVulnerablePackages({
+            alwaysAssumeUsed: usageConfig?.alwaysAssumeUsed,
+            vulnerablePackages: vulnerableNames,
+            workspaceRoot,
+        });
+
+        filtered = filtered.filter((entry) => {
+            // Keep socket-only entries — reachability is a vulnerability-scoped filter.
+            if (entry.vulnerabilities.length === 0) {
+                return true;
+            }
+
+            return reachResult.reachable.has(entry.name);
+        });
+
+        if (!quietHeader) {
+            pail.info(
+                dim(
+                    `Reachability filter: ${String(reachResult.reachable.size)}/${String(vulnerableNames.size)} vulnerable packages reachable (${String(reachResult.filesScanned)} files scanned).`,
+                ),
+            );
+        }
+    }
+
+    // Compute root → vulnerable resolution paths from the lockfile graph
+    // once per filtered entry. The path-walker is bounded (`maxPathsPerTarget`
+    // capped at 5 by default) so a pathological lockfile can't blow up the
+    // audit run. Threaded through `findingsForReport` so every downstream
+    // surface (SARIF, CSAF, VEX, HTML, JSON) sees the same paths.
+    const lockfileGraph = loadLockfileGraph(workspaceRoot, pm.name);
+    const filteredWithPaths = lockfileGraph
+        ? filtered.map((entry) => {
+            const paths: DependencyPath[] = buildDependencyPaths(lockfileGraph, { name: entry.name, version: entry.version });
+
+            return { ...entry, dependencyPaths: paths };
+        })
+        : filtered.map((entry) => {
+            return { ...entry, dependencyPaths: [] as DependencyPath[] };
+        });
+
+    const findingsForReport = (): {
+        acknowledged: boolean;
+        dependencyPaths: DependencyPath[];
+        packageName: string;
+        packageVersion: string;
+        vulnerability: SecurityVulnerability;
+    }[] =>
+        filteredWithPaths.flatMap((entry) =>
+            entry.vulnerabilities.map((vuln) => {
+                return {
+                    acknowledged: Boolean(entry.acceptedRisk) || isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases),
+                    dependencyPaths: entry.dependencyPaths,
+                    packageName: entry.name,
+                    packageVersion: entry.version,
+                    vulnerability: vuln,
+                };
+            }),
+        );
+
+    const wantsFix = Boolean(options.fix);
+    const wantsFixTransitive = Boolean(options.fixTransitive);
+    const yes = Boolean(options.yes);
+    const allowMajor = Boolean(options.allowMajor);
+
+    if (wantsFix || wantsFixTransitive) {
+        // Strip acknowledged findings before planning — accepted risks
+        // should not silently auto-bump or override.
+        const actionableFindings = findingsForReport().filter((f) => !f.acknowledged);
+
+        if (wantsFix) {
+            const directExit = await runApplyDirect({
+                actionableFindings,
+                allowMajor,
+                pm,
+                visConfig,
+                workspaceRoot,
+                yes,
+            });
+
+            if (directExit !== undefined) {
+                process.exitCode = directExit;
+
+                return;
+            }
+        }
+
+        if (wantsFixTransitive) {
+            const transitiveExit = await runApplyTransitive({
+                actionableFindings,
+                pm,
+                visConfig,
+                workspaceRoot,
+                yes,
+            });
+
+            if (transitiveExit !== undefined) {
+                process.exitCode = transitiveExit;
+
+                return;
+            }
+        }
+    }
+
+    // AI explanations are fetched here — after the --fix early-returns — so a
+    // run that exits before rendering never spends an AI call. The map is
+    // keyed by `explainKey` and consumed by the table / JSON / HTML paths.
+    const explanations = new Map<string, string>();
+
+    if (explainSupported) {
+        // Sort into the same severity order every surface renders, so a
+        // numeric `--explain <n>` selects the finding the user sees at that
+        // position rather than an arbitrary scan-order one.
+        const explainTargets = selectTargets(
+            findingsForReport()
+                .filter((finding) => !finding.acknowledged)
+                .map((finding) => {
+                    return {
+                        packageName: finding.packageName,
+                        packageVersion: finding.packageVersion,
+                        vulnerability: finding.vulnerability,
+                    };
+                })
+                .sort(compareFindingsForDisplay),
+            explainRaw,
+        );
+
+        const fetched = await explainFindings(explainTargets, visConfig?.ai, {
+            info: (message: string): void => {
+                pail.info(message);
+            },
+            warn: (message: string): void => {
+                pail.warn(message);
+            },
+        });
+
+        for (const [key, value] of fetched) {
+            explanations.set(key, value);
+        }
+    }
+
+    // 5a. SARIF output (CI code-scanning uploads)
+    if (isSarif) {
+        const sarif = emitSarif({
+            findings: findingsForReport(),
+            policyDecisions,
+            tool: { informationUri: "https://github.com/visulima/visulima", name: "vis-audit", version: "alpha" },
+            workspaceRoot,
+        });
+
+        process.stdout.write(`${JSON.stringify(sarif, undefined, 2)}\n`);
+
+        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn, policyDecisions);
+
+        return;
+    }
+
+    // 5b. CSAF 2.0 output (enterprise vuln-management pipelines)
+    if (isCsaf) {
+        const csaf = emitCsaf({
+            findings: findingsForReport(),
+            tool: { informationUri: "https://github.com/visulima/visulima", name: "vis-audit", version: "alpha" },
+            workspaceRoot,
+        });
+
+        process.stdout.write(`${JSON.stringify(csaf, undefined, 2)}\n`);
+
+        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn, policyDecisions);
+
+        return;
+    }
+
+    // 5c. CycloneDX 1.7 + VEX (SBOM + vulnerability statement in one document)
+    if (isCycloneDxVex) {
+        const { packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig);
+        const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
+
+        const bom = buildCycloneDxBom({
+            includeDev: !prodOnly,
+            projectGraph,
+            workspace,
+            workspaceRoot,
+        });
+
+        const vex = emitCycloneDxVex({ bom, findings: findingsForReport() });
+
+        process.stdout.write(`${JSON.stringify(vex, undefined, 2)}\n`);
+
+        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn, policyDecisions);
+
+        return;
+    }
+
+    // 5d. GitLab dependency-scanning report (Secure stage ingest)
+    if (isGitlab) {
+        const gitlab = emitGitlabDepScan({
+            findings: findingsForReport(),
+            policyDecisions,
+            tool: { informationUri: "https://github.com/visulima/visulima", name: "vis-audit", version: "alpha" },
+            workspaceRoot,
+        });
+
+        process.stdout.write(`${JSON.stringify(gitlab, undefined, 2)}\n`);
+
+        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn, policyDecisions);
+
+        return;
+    }
+
+    // 5e. JUnit XML (Surefire-compatible — GitLab/Actions/Jenkins test reporters)
+    if (isJunit) {
+        const junit = emitJUnitAudit({
+            findings: findingsForReport(),
+            policyDecisions,
+        });
+
+        process.stdout.write(junit);
+
+        applyExitGate(filtered, nativeExclusions, options.exitCode, failOn, policyDecisions);
+
+        return;
+    }
+
+    // Single canonical report drives both `--format json` and the HTML
+    // payload — keeps machine-readable surfaces in lockstep with the
+    // human-facing one. See `src/report/audit/build-report.ts`.
+    const auditReportTool = { informationUri: "https://github.com/visulima/visulima", name: "vis-audit", version: "alpha" } as const;
+    const auditReport = buildAuditReport({
+        bloomHits,
+        duplicates,
+        explanations,
+        filtered: filteredWithPaths,
+        packagesScanned: installed.length,
+        policyDecisions,
+        tool: auditReportTool,
+        unknownPolicyTokens,
+        workspaceRoot,
+    });
+
+    // 5f. HTML report — writes to disk, optionally also continues the table flow below.
+    if (reportPath) {
+        const html = emitAuditHtml({
+            findings: findingsForReport().map((finding) => {
+                const explanation = explanations.get(
+                    explainKey({ packageName: finding.packageName, packageVersion: finding.packageVersion, vulnerability: finding.vulnerability }),
+                );
+
+                return explanation ? { ...finding, explanation } : finding;
+            }),
+            packagesScanned: installed.length,
+            policyDecisions,
+            report: auditReport,
+            tool: { name: auditReportTool.name, version: auditReportTool.version },
+            workspaceRoot,
+        });
+
+        const outPath = resolvePath(workspaceRoot, reportPath);
+
+        await fs.writeFile(outPath, html, "utf8");
+
+        if (!quietHeader) {
+            pail.success(`HTML report written to ${outPath}`);
+        }
+    }
+
+    // 5. JSON output
+    if (isJson) {
+        process.stdout.write(`${JSON.stringify(auditReport, undefined, 2)}\n`);
+
+        if (options.exitCode && (auditReport.summary.issues > 0 || auditReport.summary.policyBlocks > 0)) {
+            process.exitCode = 1;
+        }
+
+        applyFailOnGate(filtered, nativeExclusions, failOn, policyDecisions);
+
+        return;
+    }
+
+    // 6. Human-readable output
+    if (filtered.length === 0) {
+        pail.success(`No security issues found across ${String(installed.length)} packages.`);
+
+        return;
+    }
+
+    // Group vulnerabilities by severity
+    const vulnsBySeverity: Record<string, { entry: AuditEntry; vuln: SecurityVulnerability }[]> = {
+        CRITICAL: [],
+        HIGH: [],
+        LOW: [],
+        MODERATE: [],
+    };
+
+    for (const entry of filtered) {
+        for (const vuln of entry.vulnerabilities) {
+            if (severityPassesFilter(vuln.severity, severityFilter)) {
+                const key = vuln.severity === "UNKNOWN" ? "LOW" : vuln.severity;
+
+                vulnsBySeverity[key]?.push({ entry, vuln });
+            }
+        }
+    }
+
+    // Print vulnerabilities
+    let totalVulns = 0;
+    let acknowledgedVulns = 0;
+
+    for (const severity of ["CRITICAL", "HIGH", "MODERATE", "LOW"] as const) {
+        const items = vulnsBySeverity[severity];
+
+        if (!items || items.length === 0) {
+            continue;
+        }
+
+        pail.info(`\n── ${severity} (${String(items.length)}) ──`);
+
+        for (const { entry, vuln } of items) {
+            const isExcluded = Boolean(entry.acceptedRisk) || isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases);
+
+            if (isExcluded) {
+                acknowledgedVulns++;
+
+                if (!showAccepted) {
+                    continue;
+                }
+            }
+
+            totalVulns++;
+            pail.info(formatVulnLine(entry.name, entry.version, vuln, isExcluded));
+
+            if (showFixes && (vuln.fixedVersions ?? []).length > 0) {
+                pail.notice(`    Fix: update to ${vuln.fixedVersions.at(-1)}`);
+            }
+
+            const explanation = explanations.get(explainKey({ packageName: entry.name, packageVersion: entry.version, vulnerability: vuln }));
+
+            if (explanation) {
+                for (const line of explanation.split("\n")) {
+                    pail.info(`    ${line}`);
+                }
+            }
+        }
+    }
+
+    // Print Socket.dev supply chain issues
+    const socketIssues = filtered.filter((e) => e.socketReport && (e.socketReport.score.overall < scoreMinimum || e.socketReport.alerts.length > 0));
+
+    if (socketIssues.length > 0) {
+        pail.info(`\n── Socket.dev Supply Chain (${String(socketIssues.length)}) ──`);
+
+        for (const entry of socketIssues) {
+            if (!entry.socketReport) {
+                continue;
+            }
+
+            const isExcluded = Boolean(entry.acceptedRisk);
+
+            if (isExcluded && !showAccepted) {
+                continue;
+            }
+
+            pail.info(formatSocketLine(entry.socketReport, isExcluded));
+
+            for (const alert of entry.socketReport.alerts) {
+                const alertColorFunction = SOCKET_ALERT_COLORS[alert.severity] ?? dim;
+
+                pail.info(`    ${alertColorFunction(`[${alert.severity.toUpperCase()}]`)} ${alert.type} — ${alert.category}`);
+            }
+        }
+    }
+
+    // Print duplicate dependencies
+    if (duplicates.length > 0) {
+        pail.info(`\n── Duplicate Dependencies (${String(duplicates.length)}) ──`);
+
+        for (const dup of duplicates) {
+            const versionList = dup.versions.join(", ");
+
+            pail.info(`  ${dup.name} — ${String(dup.versions.length)} versions: ${yellow(versionList)}`);
+        }
+    }
+
+    // Print policy decisions. Non-vulnerability policies always render here.
+    // Vulnerability-policy decisions normally appear in the vulnerability
+    // section above (avoiding double reporting), BUT when --severity hides a
+    // finding while --fail-on still gates on it, the user would otherwise
+    // exit 1 with no visible explanation. Surface block-severity vuln
+    // policy decisions here so the gate is always visible.
+    const shownVulnIds = new Set<string>();
+
+    for (const severity of ["CRITICAL", "HIGH", "MODERATE", "LOW"] as const) {
+        const items = vulnsBySeverity[severity];
+
+        if (!items) {
+            continue;
+        }
+
+        for (const { vuln } of items) {
+            shownVulnIds.add(vuln.id);
+        }
+    }
+
+    const renderablePolicyDecisions = policyDecisions.filter((d) => {
+        if (d.policy !== "vulnerability") {
+            return true;
+        }
+
+        // Surface vulnerability blocks that were masked by --severity.
+        const advisoryId = typeof d.data?.advisoryId === "string" ? d.data.advisoryId : undefined;
+
+        return d.severity === "block" && advisoryId !== undefined && !shownVulnIds.has(advisoryId);
+    });
+
+    if (renderablePolicyDecisions.length > 0) {
+        pail.info(`\n── Policy Decisions (${String(renderablePolicyDecisions.length)}) ──`);
+
+        for (const decision of renderablePolicyDecisions) {
+            const isAccepted = Boolean(decision.acceptedRisk);
+
+            if (isAccepted && !showAccepted) {
+                continue;
+            }
+
+            const colorFunction = decision.severity === "block" ? red : decision.severity === "warn" ? yellow : dim;
+            const badge = isAccepted ? ` ${dim("[acknowledged]")}` : "";
+
+            pail.info(`  ${colorFunction(`[${decision.severity}]`)} ${decision.policy} — ${decision.reason}${badge}`);
+        }
+    }
+
+    // Summary
+    const isEntryExcluded = (e: AuditEntry): boolean =>
+        Boolean(e.acceptedRisk) || (e.vulnerabilities.length > 0 && e.vulnerabilities.every((v) => isAdvisoryExcluded(v.id, nativeExclusions, v.aliases)));
+    const unacknowledgedCount = filtered.filter((e) => !isEntryExcluded(e)).length;
+
+    pail.info("");
+    pail.info(`─ Audit Summary`);
+    pail.info(`  ${String(installed.length)} packages scanned`);
+
+    if (nativeExclusions.ignoredAdvisories.length > 0) {
+        pail.info(
+            `  ${String(nativeExclusions.ignoredAdvisories.length)} ${pm.name} audit exclusion${nativeExclusions.ignoredAdvisories.length === 1 ? "" : "s"} applied`,
+        );
+    }
+
+    if (totalVulns > 0) {
+        const critCount = vulnsBySeverity.CRITICAL?.filter((i) => !isEntryExcluded(i.entry)).length ?? 0;
+        const highCount = vulnsBySeverity.HIGH?.filter((i) => !isEntryExcluded(i.entry)).length ?? 0;
+
+        pail.error(`  ${String(totalVulns)} vulnerabilit${totalVulns === 1 ? "y" : "ies"} found`);
+
+        if (critCount > 0) {
+            pail.error(`    ${String(critCount)} critical`);
+        }
+
+        if (highCount > 0) {
+            pail.warn(`    ${String(highCount)} high`);
+        }
+    } else {
+        pail.success("  No vulnerabilities found");
+    }
+
+    if (socketIssues.length > 0) {
+        const unacknowledgedSocket = socketIssues.filter((e) => !isEntryExcluded(e)).length;
+
+        pail.warn(`  ${String(unacknowledgedSocket)} package${unacknowledgedSocket === 1 ? "" : "s"} with Socket.dev supply chain issues`);
+    }
+
+    if (duplicates.length > 0) {
+        pail.warn(`  ${String(duplicates.length)} package${duplicates.length === 1 ? "" : "s"} with duplicate versions`);
+        pail.notice("  Run 'vis dedupe' or your package manager's dedupe command to reduce duplicates.");
+    }
+
+    const blockingPolicyDecisions = policyDecisions.filter((d) => d.severity === "block" && !d.acceptedRisk);
+
+    if (blockingPolicyDecisions.length > 0) {
+        pail.error(`  ${String(blockingPolicyDecisions.length)} policy block${blockingPolicyDecisions.length === 1 ? "" : "s"}`);
+    }
+
+    if (acknowledgedVulns > 0) {
+        pail.info(`  ${String(acknowledgedVulns)} acknowledged (accepted risks)`);
+
+        if (!showAccepted) {
+            pail.notice("  Use --show-accepted to see acknowledged issues.");
+        }
+    }
+
+    if (unacknowledgedCount === 0) {
+        pail.success("\n  All issues are acknowledged. No action required.");
+    }
+
+    // Sync accepted risks to native PM config
+    if (options.sync && acceptedRisks) {
+        // Collect CVE/GHSA IDs from ALL accepted entries (not just severity-filtered)
+        const idSet = new Set<string>();
+
+        for (const entry of entries) {
+            if (entry.acceptedRisk) {
+                for (const vuln of entry.vulnerabilities) {
+                    if (vuln.id.startsWith("CVE-") || vuln.id.startsWith("GHSA-")) {
+                        idSet.add(vuln.id);
+                    }
+
+                    // Also include aliases (CVE/GHSA variants)
+                    if (vuln.aliases) {
+                        for (const alias of vuln.aliases) {
+                            if (alias.startsWith("CVE-") || alias.startsWith("GHSA-")) {
+                                idSet.add(alias);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        const advisoryIds = [...idSet];
+
+        if (advisoryIds.length > 0) {
+            pail.info("");
+            const actions = syncAcceptedRisksToNativeConfig(pm.name, workspaceRoot, advisoryIds);
+
+            for (const action of actions) {
+                pail.success(`  ${action}`);
+            }
+        } else {
+            pail.info("\nNo advisory IDs to sync to native PM config.");
+        }
+    }
+
+    if (options.exitCode && (unacknowledgedCount > 0 || blockingPolicyDecisions.length > 0)) {
+        process.exitCode = 1;
+    }
+
+    applyFailOnGate(filtered, nativeExclusions, failOn, policyDecisions);
+};
+
+const hasBlockingPolicy = (decisions: PolicyDecision[] | undefined): boolean => {
+    if (!decisions || decisions.length === 0) {
+        return false;
+    }
+
+    return decisions.some((d) => d.severity === "block" && !d.acceptedRisk);
+};
+
+const applyFailOnGate = (
+    filtered: AuditEntry[],
+    nativeExclusions: ReturnType<typeof readNativeAuditExclusions>,
+    failOn: SeverityFilter | undefined,
+    policyDecisions?: PolicyDecision[],
+): void => {
+    if (hasBlockingPolicy(policyDecisions)) {
+        process.exitCode = 1;
+    }
+
+    if (!failOn) {
+        return;
+    }
+
+    const triggered = filtered.some((entry) =>
+        entry.vulnerabilities.some((vuln) => {
+            if (Boolean(entry.acceptedRisk) || isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases)) {
+                return false;
+            }
+
+            return severityPassesFilter(vuln.severity, failOn);
+        }),
+    );
+
+    if (triggered) {
+        process.exitCode = 1;
+    }
+};
+
+const applyExitGate = (
+    filtered: AuditEntry[],
+    nativeExclusions: ReturnType<typeof readNativeAuditExclusions>,
+    exitCode: unknown,
+    failOn: SeverityFilter | undefined,
+    policyDecisions?: PolicyDecision[],
+): void => {
+    if (exitCode) {
+        const unacknowledged = filtered.filter(
+            (entry) => !entry.acceptedRisk && entry.vulnerabilities.some((vuln) => !isAdvisoryExcluded(vuln.id, nativeExclusions, vuln.aliases)),
+        );
+
+        if (unacknowledged.length > 0 || hasBlockingPolicy(policyDecisions)) {
+            process.exitCode = 1;
+        }
+    }
+
+    applyFailOnGate(filtered, nativeExclusions, failOn, policyDecisions);
+};
+
+type ApplyPmInfo = ReturnType<typeof detectPm>;
+
+interface ActionableFinding {
+    acknowledged: boolean;
+    packageName: string;
+    packageVersion: string;
+    vulnerability: SecurityVulnerability;
+}
+
+// Reads a yes/no answer from stdin. In non-TTY contexts (CI, piped stdin)
+// the prompt is skipped and `defaultYes` is returned so apply loops behave
+// the same as if the user had pressed Enter.
+const promptYesNo = async (question: string, defaultYes: boolean): Promise<boolean> => {
+    if (!process.stdin.isTTY) {
+        return defaultYes;
+    }
+
+    const rl = createInterface({ input: process.stdin, output: process.stderr });
+
+    try {
+        const hint = defaultYes ? "[Y/n]" : "[y/N]";
+        const answer: string = await new Promise((resolve) => {
+            rl.question(`${question} ${dim(hint)} `, (a) => {
+                resolve(a.trim());
+            });
+        });
+
+        if (answer.length === 0) {
+            return defaultYes;
+        }
+
+        return answer.toLowerCase().startsWith("y");
+    } finally {
+        rl.close();
+    }
+};
+
+const isTransitiveOnlyPm = (pmName: string): pmName is "bun" | "npm" | "pnpm" | "yarn" =>
+    pmName === "pnpm" || pmName === "npm" || pmName === "yarn" || pmName === "bun";
+
+interface RunApplyDirectArguments {
+    actionableFindings: ActionableFinding[];
+    allowMajor: boolean;
+    pm: ApplyPmInfo;
+    visConfig: VisConfig | undefined;
+    workspaceRoot: string;
+    yes: boolean;
+}
+
+// Drives the `--fix` workflow: builds an upgrade plan for vulnerable
+// direct dependencies, renders a dry-run preview, prompts for confirmation
+// (or honours `--yes` in CI), then runs the package manager add command
+// per workspace. Returns an exit code when the loop short-circuits, or
+// undefined to continue with the post-fix rescan.
+const runApplyDirect = async (arguments_: RunApplyDirectArguments): Promise<number | undefined> => {
+    const plan: DirectApplyPlan = buildDirectApplyPlan({
+        allowMajor: arguments_.allowMajor,
+        findings: arguments_.actionableFindings,
+        workspaceRoot: arguments_.workspaceRoot,
+    });
+
+    pail.info("");
+    pail.info("─ Apply (direct deps)");
+    pail.info(formatDirectApplyPlan(plan));
+
+    if (plan.apply.length === 0) {
+        pail.info("Nothing to apply for direct deps.");
+
+        return undefined;
+    }
+
+    if (isInCi && !arguments_.yes) {
+        pail.error("Refusing to run --fix in CI without --yes. Re-run with --yes once the plan above looks right.");
+
+        return 1;
+    }
+
+    if (!arguments_.yes) {
+        const ok = await promptYesNo("Apply these direct-dep upgrades?", false);
+
+        if (!ok) {
+            pail.info("Aborted — no changes made.");
+
+            return 0;
+        }
+    }
+
+    // Group fixes by workspace name so we can dispatch one update per workspace.
+    const byWorkspace = new Map<string, typeof plan.apply>();
+
+    for (const fix of plan.apply) {
+        const key = fix.workspaceName ?? "";
+        const list = byWorkspace.get(key);
+
+        if (list) {
+            list.push(fix);
+        } else {
+            byWorkspace.set(key, [fix]);
+        }
+    }
+
+    for (const [workspaceName, fixes] of byWorkspace) {
+        const packages = fixes.map((f) => `${f.packageName}@${f.targetSpec}`);
+        const filter = workspaceName.length > 0 ? [workspaceName] : [];
+
+        pail.info(`Running ${arguments_.pm.name} add ${packages.join(" ")}${workspaceName.length > 0 ? ` --filter ${workspaceName}` : ""}`);
+
+        const exit = runAdd(
+            arguments_.pm,
+            {
+                exact: false,
+                filter,
+                global: false,
+                optional: false,
+                packages,
+                peer: false,
+                saveDev: false,
+                workspace: false,
+                workspaceRoot: false,
+            },
+            arguments_.workspaceRoot,
+            console,
+        );
+
+        if (exit !== 0) {
+            pail.error(`${arguments_.pm.name} add exited ${String(exit)} — aborting before rescan.`);
+
+            return exit;
+        }
+    }
+
+    pail.success("Direct-dep upgrades applied. Re-run `vis audit` to confirm the fixes landed.");
+
+    return 0;
+};
+
+interface RunApplyTransitiveArguments {
+    actionableFindings: ActionableFinding[];
+    pm: ApplyPmInfo;
+    visConfig: VisConfig | undefined;
+    workspaceRoot: string;
+    yes: boolean;
+}
+
+// Drives the `--fix-transitive` workflow: builds an override plan for the
+// vulnerable transitives, enforces the CI two-lock gate (`--yes` plus
+// `security.audit.apply.transitive.enabled`), renders the dry-run preview,
+// prompts the user, then writes the PM-specific override surface. Returns
+// an exit code when the loop short-circuits, or undefined to continue.
+const runApplyTransitive = async (arguments_: RunApplyTransitiveArguments): Promise<number | undefined> => {
+    if (!isTransitiveOnlyPm(arguments_.pm.name)) {
+        pail.error(`--fix-transitive is not supported for package manager "${arguments_.pm.name}". Use pnpm, npm, yarn, or bun.`);
+
+        return 1;
+    }
+
+    const transitiveEnabled = Boolean(arguments_.visConfig?.security?.audit?.apply?.transitive?.enabled);
+
+    if (isInCi && (!arguments_.yes || !transitiveEnabled)) {
+        pail.error(
+            "Refusing to run --fix-transitive in CI without both --yes and security.audit.apply.transitive.enabled = true. "
+            + "Overrides have a higher blast radius than direct bumps — gate on config.",
+        );
+
+        return 1;
+    }
+
+    // Only plan overrides for findings whose package isn't a direct dep.
+    const directlyDeclared = new Set(
+        buildDirectApplyPlan({
+            findings: arguments_.actionableFindings,
+            workspaceRoot: arguments_.workspaceRoot,
+        }).apply.map((f) => f.packageName),
+    );
+
+    const transitiveFindings = arguments_.actionableFindings.filter((f) => !directlyDeclared.has(f.packageName));
+    const plan = buildOverridePlanFromFindings(transitiveFindings);
+
+    if (plan.entries.length === 0) {
+        pail.info("");
+        pail.info("─ Apply transitive (overrides)");
+        pail.info("Nothing to override — all vulnerable packages are direct deps or have no fixed version.");
+
+        return undefined;
+    }
+
+    const planResult = planOverrideWrite(arguments_.workspaceRoot, plan, { name: arguments_.pm.name, version: arguments_.pm.version });
+
+    pail.info("");
+    pail.info("─ Apply transitive (overrides)");
+    pail.info(`Target: ${planResult.filePath} (${planResult.surface})`);
+
+    for (const entry of planResult.entries) {
+        const tag = entry.status === "added" ? "+" : entry.status === "updated" ? "~" : "·";
+
+        const previous = entry.previousSpec ? ` (was ${entry.previousSpec})` : "";
+
+        pail.info(`  ${tag} ${entry.packageName}: ${entry.spec}${previous}`);
+    }
+
+    if (!planResult.changed) {
+        pail.info("No changes — overrides already match the plan.");
+
+        return undefined;
+    }
+
+    if (!arguments_.yes) {
+        if (isInCi) {
+            // Already gated above, but double-belt.
+            return 1;
+        }
+
+        const ok = await promptYesNo("Write these overrides?", false);
+
+        if (!ok) {
+            pail.info("Aborted — no changes made.");
+
+            return 0;
+        }
+    }
+
+    try {
+        applyOverridePlan(planResult);
+    } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+
+        pail.error(`Failed to write overrides: ${message}`);
+
+        return 1;
+    }
+
+    pail.success(
+        `Wrote ${String(planResult.entries.filter((e) => e.status !== "unchanged").length)} override${
+            planResult.entries.length === 1 ? "" : "s"
+        }. Run \`${arguments_.pm.name} install\` then re-run \`vis audit\` to confirm the fixes landed.`,
+    );
+
+    return 0;
+};
+
+const execute = async ({ fs, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, AuditOptions>): Promise<void> => {
+    if (!wsRoot) {
+        throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
+    }
+
+    await executeAudit(fs, wsRoot, options, visConfig, logger);
+};
+
+// fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
+export default execute as CommandExecute<Toolbox>;

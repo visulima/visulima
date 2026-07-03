@@ -1,0 +1,56 @@
+---
+title: Introduction
+description: "Parse command-line arguments with type safety, validation, and flexible configuration for Node.js CLI applications."
+---
+
+# @visulima/command-line-args
+
+A mature, feature-complete library to parse command-line options with TypeScript support, automatic type conversion, and intuitive API.
+
+## Key Features
+
+- **Type-safe parsing** - Automatic conversion to String, Number, Boolean
+- **Multiple values** - Array support for repeated options
+- **Aliases** - Short (-v) and long (--verbose) option names
+- **Default values** - Fallback values when options not provided
+- **Positional arguments** - Capture non-option arguments
+- **Flexible parsing** - Partial parsing, stop-early modes
+- **TypeScript native** - Full type definitions included
+
+## Quick Start
+
+```typescript
+import { parseArgs } from "@visulima/command-line-args";
+
+const options = parseArgs([
+    { name: "file", alias: "f", type: String },
+    { name: "verbose", alias: "v", type: Boolean },
+    { name: "count", alias: "c", type: Number },
+]);
+
+// Usage: node script.js --file input.txt -v --count 5
+console.log(options);
+// { file: "input.txt", verbose: true, count: 5 }
+```
+
+## Use Cases
+
+**CLI Tools:** Build professional command-line interfaces
+**Build Scripts:** Parse configuration flags
+**Development Tools:** Create flexible dev tooling
+**Automation:** Script with configurable parameters
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install and set up the package
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Parse your first CLI arguments
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all parsing features
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>

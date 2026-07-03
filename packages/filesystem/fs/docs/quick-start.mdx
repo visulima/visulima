@@ -1,0 +1,355 @@
+---
+title: "Quick Start"
+description: "Get started with @visulima/fs in 5 minutes."
+---
+
+# Quick Start
+
+Learn the essentials of **@visulima/fs** in 5 minutes.
+
+## Installation
+
+```bash npm2yarn
+npm install @visulima/fs
+```
+
+## Read and Write JSON
+
+The most common operations - reading and writing JSON files:
+
+```typescript
+import { readJson, readJsonSync, writeJson, writeJsonSync } from "@visulima/fs";
+
+// Async - Read JSON
+const config = await readJson("config.json");
+console.log(config);
+
+// Async - Write JSON (creates parent directories automatically)
+await writeJson("data/output.json", { result: "success" }, { spaces: 2 });
+
+// Sync versions
+const data = readJsonSync("package.json");
+writeJsonSync("output.json", data);
+```
+
+## Ensure Directories
+
+Create directories safely, including parent directories:
+
+```typescript
+import { ensureDir, ensureDirSync } from "@visulima/fs";
+
+// Async - Creates parent directories if they don't exist
+await ensureDir("src/components/ui");
+
+// Sync version
+ensureDirSync("dist/assets/images");
+```
+
+## Check Empty Directory
+
+Determine if a directory is empty:
+
+```typescript
+import { emptyDir, emptyDirSync } from "@visulima/fs";
+
+// Async
+const isEmpty = await emptyDir("temp");
+if (isEmpty) {
+    console.log("Directory is empty");
+}
+
+// Sync version
+const isEmptySync = emptyDirSync("cache");
+```
+
+## Walk Directory Trees
+
+Recursively traverse directories:
+
+```typescript
+import { walk, walkSync } from "@visulima/fs";
+
+// Async - Walk all files
+for await (const entry of walk("src")) {
+    console.log(entry.path);
+    // entry.isFile, entry.isDirectory, entry.isSymlink available
+}
+
+// Sync version
+for (const entry of walkSync("src")) {
+    if (entry.isFile) {
+        console.log("File:", entry.path);
+    }
+}
+```
+
+### Walk with Filters
+
+Filter files by extension or pattern:
+
+```typescript
+import { walk } from "@visulima/fs";
+
+// Only TypeScript files
+for await (const entry of walk("src", {
+    extensions: [".ts", ".tsx"],
+})) {
+    console.log(entry.path);
+}
+
+// Exclude test files
+for await (const entry of walk("src", {
+    skip: ["**/*.test.ts", "**/node_modules/**"],
+})) {
+    console.log(entry.path);
+}
+
+// Include specific patterns
+for await (const entry of walk("src", {
+    match: ["**/components/**/*.tsx"],
+})) {
+    console.log(entry.path);
+}
+```
+
+## Find Files Upward
+
+Search for files by walking up parent directories:
+
+```typescript
+import { findUp, findUpSync } from "@visulima/fs";
+
+// Async - Find nearest package.json
+const packagePath = await findUp("package.json");
+console.log(packagePath); // '/project/package.json'
+
+// Find with multiple possible names
+const configPath = await findUp([".config.json", ".config.yml", "config.json"]);
+
+// Sync version
+const gitRoot = findUpSync(".git");
+```
+
+### Find with Custom Matcher
+
+Use a function to find directories or files:
+
+```typescript
+import { findUp } from "@visulima/fs";
+import { basename } from "node:path";
+
+// Find directory ending with specific name
+const nodeModules = await findUp((dir) => {
+    return basename(dir) === "node_modules";
+});
+
+// Find file with specific content
+const readme = await findUp(async (dir, file) => {
+    if (file === "README.md") {
+        const content = await readFile(join(dir, file), "utf-8");
+        return content.includes("visulima");
+    }
+    return false;
+});
+```
+
+## Ensure Files
+
+Create files with their parent directories:
+
+```typescript
+import { ensureFile, ensureFileSync } from "@visulima/fs";
+
+// Async - Creates all parent directories
+await ensureFile("logs/app/2024/error.log");
+
+// Sync version
+ensureFileSync("cache/temp/data.txt");
+```
+
+## Create Symbolic Links
+
+Safely create symbolic and hard links:
+
+```typescript
+import { ensureLink, ensureSymlink } from "@visulima/fs";
+
+// Hard link
+await ensureLink("source.txt", "hardlink.txt");
+
+// Symbolic link
+await ensureSymlink("target/directory", "link-to-directory", "dir");
+await ensureSymlink("target/file.txt", "link-to-file.txt", "file");
+```
+
+## Read and Write YAML
+
+Install the optional `yaml` dependency first:
+
+```bash npm2yarn
+npm install yaml
+```
+
+Then use YAML functions:
+
+```typescript
+import { readYaml, readYamlSync, writeYaml, writeYamlSync } from "@visulima/fs/yaml";
+
+// Async - Read YAML
+const config = await readYaml("config.yml");
+console.log(config);
+
+// Async - Write YAML
+await writeYaml("output.yml", { name: "project", version: "1.0.0" });
+
+// Sync versions
+const data = readYamlSync("data.yaml");
+writeYamlSync("output.yaml", data);
+```
+
+## File Size Utilities
+
+Calculate file sizes with compression support:
+
+```typescript
+import { getFileSize, getCompressedSize } from "@visulima/fs/size";
+
+// Get file size in bytes
+const size = await getFileSize("large-file.json");
+console.log(`${size} bytes`);
+
+// Get compressed size (gzip)
+const compressed = await getCompressedSize("large-file.json", "gzip");
+console.log(`${compressed} bytes (gzipped)`);
+
+// Brotli compression
+const brotli = await getCompressedSize("bundle.js", "brotli");
+```
+
+## EOL Detection
+
+Detect and normalize line endings:
+
+```typescript
+import { detectEOL, normalizeEOL } from "@visulima/fs/eol";
+
+// Detect line ending style
+const eol = await detectEOL("source.txt");
+console.log(eol); // '\n' or '\r\n' or '\r'
+
+// Normalize to Unix line endings
+const content = await normalizeEOL("windows-file.txt", "\n");
+```
+
+## Common Patterns
+
+### Build Script
+
+```typescript
+import { ensureDir, emptyDir, writeJson } from "@visulima/fs";
+
+async function build() {
+    // Prepare output directory
+    await ensureDir("dist");
+    await emptyDir("dist");
+
+    // ... build process ...
+
+    // Write build manifest
+    await writeJson("dist/manifest.json", {
+        version: "1.0.0",
+        buildTime: new Date().toISOString(),
+    });
+}
+```
+
+### Find Project Root
+
+```typescript
+import { findUp, readJson } from "@visulima/fs";
+import { dirname } from "node:path";
+
+async function getProjectRoot() {
+    const packagePath = await findUp("package.json");
+    if (!packagePath) {
+        throw new Error("Not in a Node.js project");
+    }
+    return dirname(packagePath);
+}
+
+const projectRoot = await getProjectRoot();
+const packageJson = await readJson(`${projectRoot}/package.json`);
+```
+
+### Process All Source Files
+
+```typescript
+import { walk } from "@visulima/fs";
+
+async function processSourceFiles() {
+    const files: string[] = [];
+
+    for await (const entry of walk("src", {
+        extensions: [".ts", ".tsx"],
+        skip: ["**/*.test.ts", "**/__tests__/**"],
+    })) {
+        if (entry.isFile) {
+            files.push(entry.path);
+            // Process file...
+        }
+    }
+
+    return files;
+}
+```
+
+### Configuration Manager
+
+```typescript
+import { readJson, writeJson, findUp } from "@visulima/fs";
+import { readYaml, writeYaml } from "@visulima/fs/yaml";
+
+async function loadConfig() {
+    // Try JSON first
+    const jsonPath = await findUp("config.json");
+    if (jsonPath) {
+        return { path: jsonPath, data: await readJson(jsonPath) };
+    }
+
+    // Fall back to YAML
+    const yamlPath = await findUp("config.yml");
+    if (yamlPath) {
+        return { path: yamlPath, data: await readYaml(yamlPath) };
+    }
+
+    throw new Error("No config file found");
+}
+```
+
+## Sync vs. Async
+
+Every function has both async and sync versions:
+
+```typescript
+// Async (recommended for I/O operations)
+const data = await readJson("data.json");
+await writeJson("output.json", data);
+
+// Sync (useful in scripts or when needed)
+const dataSynce = readJsonSync("data.json");
+writeJsonSync("output.json", dataSync);
+```
+
+**Recommendation:** Use async versions in applications and servers. Use sync versions in build scripts and CLI tools where simplicity is preferred.
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Explore all file system utilities in detail
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>

@@ -1,0 +1,235 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Scan source files for Tailwind classes */
+@source "../../**";
+
+/* Custom dark mode variant — zero-specificity, targets .dark itself and all descendants */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* workaround for tailwindcss shadowdom support @see https://github.com/tailwindlabs/tailwindcss/issues/15005 */
+/* `:root` is also included so these vars are available in PiP windows (regular document, no :host) */
+:root,
+:host {
+    --tw-divide-y-reverse: 0;
+    --tw-border-style: solid;
+    --tw-font-weight: initial;
+    --tw-tracking: initial;
+    --tw-translate-x: 0;
+    --tw-translate-y: 0;
+    --tw-translate-z: 0;
+    --tw-rotate-x: rotateX(0);
+    --tw-rotate-y: rotateY(0);
+    --tw-rotate-z: rotateZ(0);
+    --tw-skew-x: skewX(0);
+    --tw-skew-y: skewY(0);
+    --tw-space-x-reverse: 0;
+    --tw-gradient-position: initial;
+    --tw-gradient-from: #0000;
+    --tw-gradient-via: #0000;
+    --tw-gradient-to: #0000;
+    --tw-gradient-stops: initial;
+    --tw-gradient-via-stops: initial;
+    --tw-gradient-from-position: 0%;
+    --tw-gradient-via-position: 50%;
+    --tw-gradient-to-position: 100%;
+    --tw-shadow: 0 0 #0000;
+    --tw-shadow-color: initial;
+    --tw-inset-shadow: 0 0 #0000;
+    --tw-inset-shadow-color: initial;
+    --tw-ring-color: initial;
+    --tw-ring-shadow: 0 0 #0000;
+    --tw-inset-ring-color: initial;
+    --tw-inset-ring-shadow: 0 0 #0000;
+    --tw-ring-inset: initial;
+    --tw-ring-offset-width: 0px;
+    --tw-ring-offset-color: #fff;
+    --tw-ring-offset-shadow: 0 0 #0000;
+    --tw-blur: initial;
+    --tw-brightness: initial;
+    --tw-contrast: initial;
+}
+
+/* ─── Brand palette ──────────────────────────────────────────────────────── */
+/* Reference-only — not used directly by Tailwind utilities.                 */
+:root,
+:host {
+    --brand-violet: #7c3aed;
+    --brand-violet-light: #c4b5fd;
+    --brand-white: #ffffff;
+    --brand-frost: #f2f2f2;
+    --brand-silver: #d8d8d8;
+    --brand-graphite: #6b6b6b;
+    --brand-iron: #3c3c3c;
+    --brand-charcoal: #212121;
+    --brand-black: #000000;
+}
+
+/* ─── Color tokens — light mode ──────────────────────────────────────────── */
+/* Static values in @theme so Tailwind generates all bg-*, text-*, etc.      */
+/* Dark mode overrides --color-* directly in .dark below.                    */
+/* All foreground/background pairs verified to meet WCAG AA (4.5:1+).        */
+@theme {
+    /* Custom text size below xs */
+    --text-xxs: 0.625rem; /* 10px */
+    --text-xxs--line-height: 1rem;
+
+    --color-background: #f2f2f2;
+    --color-foreground: #18181b; /* zinc-900  — 15.6:1 on background ✅ */
+    --color-card: #ffffff; /* elevated surface */
+    --color-card-foreground: #18181b;
+    --color-popover: #ffffff;
+    --color-popover-foreground: #18181b;
+    --color-primary: #7c3aed; /* violet-600 — 5.6:1 on white ✅ WCAG AA */
+    --color-primary-foreground: #ffffff; /* white on violet — 5.6:1 ✅ WCAG AA */
+    --color-secondary: #e4e4e7; /* zinc-200 */
+    --color-secondary-foreground: #18181b;
+    --color-muted: #e4e4e7; /* zinc-200 */
+    --color-muted-foreground: #52525b; /* zinc-600  — 6.7:1 on background ✅ */
+    --color-accent: #e4e4e7; /* zinc-200 */
+    --color-accent-foreground: #18181b;
+    --color-destructive: oklch(0.55 0.22 25);
+    --color-destructive-foreground: oklch(0.98 0.01 25);
+    --color-border: #d4d4d8; /* zinc-300 */
+    --color-input: #d4d4d8;
+    --color-ring: #71717a; /* zinc-500 */
+
+    /* Semantic status colors */
+    --color-info: oklch(0.45 0.2 240);
+    --color-info-foreground: oklch(0.35 0.2 240);
+    --color-success: oklch(0.48 0.18 155);
+    --color-success-foreground: oklch(0.38 0.17 155);
+    --color-warning: oklch(0.58 0.18 65);
+    --color-warning-foreground: oklch(0.45 0.16 65);
+
+    /* Toolbar pill shadow — light mode: flat border precision */
+    --shadow-pill: 0 4px 20px rgba(0, 0, 0, 0.12), 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+/* ─── Dark mode overrides ─────────────────────────────────────────────────── */
+/* Layered zinc-950 palette: background(950) < card(900) < secondary(800)    */
+/* All foreground/background pairs verified to meet WCAG AA (4.5:1+).        */
+.dark {
+    --color-background: #212121; /* zinc-950 — deep base layer */
+    --color-foreground: #fafafa; /* zinc-50   — 17.6:1 on background ✅ */
+    --color-card: #18181b; /* zinc-900  — elevated surface */
+    --color-card-foreground: #fafafa;
+    --color-popover: #18181b;
+    --color-popover-foreground: #fafafa;
+    --color-primary: #c4b5fd; /* violet-300 — 5.7:1 on #212121 ✅ WCAG AA */
+    --color-primary-foreground: #09090b; /* near-black on light violet — 11:1 ✅ WCAG AAA */
+    --color-secondary: #27272a; /* zinc-800 */
+    --color-secondary-foreground: #fafafa;
+    --color-muted: #27272a; /* zinc-800 */
+    --color-muted-foreground: #a1a1aa; /* zinc-400  — 8.3:1 on background ✅ */
+    --color-accent: #18181b; /* zinc-900  — sidebar/panel chrome */
+    --color-accent-foreground: #fafafa;
+    --color-destructive: oklch(0.65 0.2 25);
+    --color-destructive-foreground: oklch(0.98 0.01 25);
+    --color-border: oklch(1 0 0 / 10%); /* visible but subtle white hairline */
+    --color-input: oklch(1 0 0 / 14%);
+    --color-ring: #71717a; /* zinc-500 */
+    --color-info: oklch(0.62 0.2 240);
+    --color-info-foreground: oklch(0.75 0.18 240);
+    --color-success: oklch(0.65 0.17 155);
+    --color-success-foreground: oklch(0.78 0.15 155);
+    --color-warning: oklch(0.78 0.16 65);
+    --color-warning-foreground: oklch(0.88 0.15 65);
+
+    /* Toolbar pill shadow — dark mode: depth only, no ring */
+    --shadow-pill: 0 6px 24px rgba(0, 0, 0, 0.7), 0 2px 8px rgba(0, 0, 0, 0.5);
+}
+
+@layer base {
+    * {
+        @apply border-border outline-ring/50;
+    }
+}
+
+/* ─── Custom utilities ────────────────────────────────────────────────────── */
+/* Multi-property transitions can't be expressed as @theme tokens; @utility   */
+/* wraps them as first-class Tailwind classes (transition-pill, transition-panel). */
+@utility transition-pill {
+    transition:
+        all 0.6s ease,
+        max-width 0.6s ease,
+        padding 0.5s ease,
+        transform 0.4s ease,
+        opacity 0.2s ease;
+}
+
+@utility transition-panel {
+    /* opacity + transform for inline-style centering; translate+scale for Tailwind v4 individual props */
+    /* width animates the container↔wide toggle — same easing as material motion */
+    /* clip-path animates the fullscreen expand/collapse */
+    transition:
+        opacity 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+        transform 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+        translate 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+        scale 0.4s cubic-bezier(0.23, 1, 0.32, 1),
+        width 0.35s cubic-bezier(0.4, 0, 0.2, 1),
+        clip-path 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Subtle CRT scan-line texture — terminal HUD atmosphere */
+@utility scanlines {
+    background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.025) 3px, rgba(0, 0, 0, 0.025) 4px);
+}
+
+/* Thin scrollbar matching the border color token */
+@utility scrollbar-thin-border {
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border) transparent;
+}
+
+/* JetBrains Mono font stack + programming ligatures — too complex for a single Tailwind class */
+@utility toolbar-font {
+    /* JetBrains Mono (if installed locally) → Geist Mono → system monospace */
+    font-family: "JetBrains Mono", "Geist Mono", ui-monospace, "Cascadia Code", "Fira Code", monospace;
+    /* Contextual alternates + kerning + programming ligatures */
+    font-feature-settings:
+        "kern" 1,
+        "liga" 1,
+        "calt" 1,
+        "zero" 1;
+    font-optical-sizing: auto;
+}
+
+/* ─── Scrollbar — requires ::pseudo-elements, impossible in Tailwind ─────── */
+.devtools-content-scroll::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+.devtools-content-scroll::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.devtools-content-scroll::-webkit-scrollbar-thumb {
+    background: var(--color-border);
+    border-radius: 3px;
+}
+
+.devtools-content-scroll::-webkit-scrollbar-thumb:hover {
+    background: var(--color-muted-foreground);
+}
+
+/* ─── Public API badge class — used by external apps rendered in shadow DOM ─ */
+.dev-toolbar-badge {
+    position: absolute;
+    top: -0.25rem;
+    right: -0.375rem;
+    width: 0.5rem;
+    height: 0.5rem;
+    border-radius: 50%;
+}
+
+.dev-toolbar-badge.info {
+    background: var(--color-info);
+}
+.dev-toolbar-badge.warning {
+    background: var(--color-warning);
+}
+.dev-toolbar-badge.error {
+    background: var(--color-destructive);
+}

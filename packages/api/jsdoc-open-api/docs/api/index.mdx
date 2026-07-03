@@ -1,0 +1,291 @@
+---
+title: "API Reference"
+---
+
+# API Reference
+
+Complete API documentation for jsdoc-open-api.
+
+## jsdocOpenApi()
+
+Main function to generate OpenAPI specification.
+
+```typescript
+function jsdocOpenApi(options: Options): Promise<OpenAPIObject>;
+```
+
+**Parameters:**
+
+- `options` - Configuration options
+
+**Returns:** Promise resolving to OpenAPI specification object
+
+**Example:**
+
+```javascript
+import jsdocOpenApi from "@visulima/jsdoc-open-api";
+
+const spec = await jsdocOpenApi({
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: "1.0.0",
+        },
+    },
+    sources: ["./src/**/*.js"],
+    output: "./swagger.json",
+});
+```
+
+## Options
+
+Configuration options interface.
+
+```typescript
+interface Options {
+    definition: BaseDefinition;
+    sources: string[];
+    output?: string | false;
+    verbose?: boolean;
+}
+```
+
+### definition
+
+Base OpenAPI definition object.
+
+```typescript
+interface BaseDefinition {
+    openapi: string;
+    info: InfoObject;
+    servers?: ServerObject[];
+    security?: SecurityRequirementObject[];
+    tags?: TagObject[];
+    externalDocs?: ExternalDocumentationObject;
+    components?: ComponentsObject;
+}
+```
+
+### sources
+
+Array of glob patterns for source files.
+
+- **Type**: `string[]`
+- **Required**: Yes
+
+**Example:**
+
+```javascript
+{
+    sources: ["./src/routes/**/*.js", "./src/api/**/*.ts", "!./src/**/*.test.js"];
+}
+```
+
+### output
+
+Output file path or `false` to skip file writing.
+
+- **Type**: `string | false`
+- **Default**: `false`
+
+**Example:**
+
+```javascript
+{
+    output: "./public/swagger.json"; // Write to file
+}
+
+{
+    output: false; // Don't write file
+}
+```
+
+### verbose
+
+Enable verbose logging.
+
+- **Type**: `boolean`
+- **Default**: `false`
+
+## SwaggerCompilerPlugin
+
+Webpack plugin for automatic generation.
+
+```typescript
+class SwaggerCompilerPlugin {
+    constructor(outputPath: string, sources: string[], definition: BaseDefinition, options?: { verbose?: boolean });
+}
+```
+
+**Parameters:**
+
+- `outputPath` - Absolute path for output file
+- `sources` - Array of absolute source paths
+- `definition` - Base OpenAPI definition
+- `options` - Plugin options
+
+**Example:**
+
+```javascript
+import { SwaggerCompilerPlugin } from "@visulima/jsdoc-open-api";
+
+const plugin = new SwaggerCompilerPlugin(
+    "/path/to/output/swagger.json",
+    ["/path/to/src/**/*.js"],
+    {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: "1.0.0",
+        },
+    },
+    { verbose: true },
+);
+
+// Add to webpack config
+module.exports = {
+    plugins: [plugin],
+};
+```
+
+## SpecBuilder
+
+Low-level API for building specifications.
+
+```typescript
+class SpecBuilder {
+    constructor(definition: BaseDefinition);
+
+    addPath(path: string, method: string, operation: OperationObject): void;
+    addSchema(name: string, schema: SchemaObject): void;
+    addSecurityScheme(name: string, scheme: SecuritySchemeObject): void;
+    addTag(tag: TagObject): void;
+
+    build(): OpenAPIObject;
+}
+```
+
+**Example:**
+
+```javascript
+import { SpecBuilder } from "@visulima/jsdoc-open-api";
+
+const builder = new SpecBuilder({
+    openapi: "3.0.0",
+    info: {
+        title: "My API",
+        version: "1.0.0",
+    },
+});
+
+builder.addPath("/users", "get", {
+    summary: "Get users",
+    responses: {
+        200: { description: "Success" },
+    },
+});
+
+const spec = builder.build();
+```
+
+## parseFile()
+
+Parse a single file for JSDoc comments.
+
+```typescript
+function parseFile(filePath: string): Promise<ParsedComment[]>;
+```
+
+**Parameters:**
+
+- `filePath` - Absolute path to file
+
+**Returns:** Array of parsed JSDoc comments
+
+**Example:**
+
+```javascript
+import { parseFile } from "@visulima/jsdoc-open-api";
+
+const comments = await parseFile("./src/routes/users.js");
+console.log(comments);
+```
+
+## jsDocumentCommentsToOpenApi()
+
+Convert JSDoc comments to OpenAPI paths.
+
+```typescript
+function jsDocumentCommentsToOpenApi(comments: ParsedComment[]): OpenAPIObject;
+```
+
+**Parameters:**
+
+- `comments` - Array of parsed comments
+
+**Returns:** OpenAPI object with paths
+
+## Type Definitions
+
+### OpenAPIObject
+
+Complete OpenAPI specification.
+
+```typescript
+interface OpenAPIObject {
+    openapi: string;
+    info: InfoObject;
+    servers?: ServerObject[];
+    paths?: PathsObject;
+    components?: ComponentsObject;
+    security?: SecurityRequirementObject[];
+    tags?: TagObject[];
+    externalDocs?: ExternalDocumentationObject;
+}
+```
+
+### InfoObject
+
+API information.
+
+```typescript
+interface InfoObject {
+    title: string;
+    version: string;
+    description?: string;
+    termsOfService?: string;
+    contact?: ContactObject;
+    license?: LicenseObject;
+}
+```
+
+### ServerObject
+
+Server information.
+
+```typescript
+interface ServerObject {
+    url: string;
+    description?: string;
+    variables?: Record<string, ServerVariableObject>;
+}
+```
+
+### OperationObject
+
+API operation (endpoint).
+
+```typescript
+interface OperationObject {
+    summary?: string;
+    description?: string;
+    operationId?: string;
+    tags?: string[];
+    parameters?: ParameterObject[];
+    requestBody?: RequestBodyObject;
+    responses: ResponsesObject;
+    security?: SecurityRequirementObject[];
+    deprecated?: boolean;
+}
+```

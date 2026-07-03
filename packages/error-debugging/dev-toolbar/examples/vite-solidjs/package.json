@@ -1,0 +1,23 @@
+{
+    "name": "dev_toolbar_vite-solidjs",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b && vite build",
+        "dev": "vite",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "solid-js": "catalog:frontend"
+    },
+    "devDependencies": {
+        "@visulima/dev-toolbar": "workspace:*",
+        "@visulima/vite-overlay": "workspace:*",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build",
+        "vite-plugin-solid": "catalog:build"
+    },
+    "peerDependencies": {},
+    "optionalDependencies": {}
+}

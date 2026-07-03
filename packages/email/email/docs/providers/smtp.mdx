@@ -1,0 +1,151 @@
+---
+title: SMTP
+description: Send emails using the SMTP protocol with @visulima/email
+---
+
+# SMTP Provider
+
+The SMTP provider allows you to send emails using the standard [SMTP protocol (RFC 5321)](https://tools.ietf.org/html/rfc5321) with a built-in SMTP client. No external library is required.
+
+**Runtime Support:** Node.js only (requires `node:net` and `node:tls`)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { smtpProvider } from "@visulima/email/providers/smtp";
+
+const mail = createMail(
+    smtpProvider({
+        host: "smtp.example.com",
+        port: 587,
+        secure: false,
+        user: process.env.SMTP_USER!,
+        password: process.env.SMTP_PASSWORD!,
+    }),
+);
+```
+
+## Configuration
+
+The `SmtpConfig` interface extends `BaseConfig` with the following options:
+
+| Option               | Type                                           | Required | Default | Description                           |
+| -------------------- | ---------------------------------------------- | -------- | ------- | ------------------------------------- |
+| `host`               | `string`                                       | Yes      | -       | SMTP server hostname                  |
+| `port`               | `number`                                       | Yes      | -       | SMTP server port (25, 465, 587, etc.) |
+| `secure`             | `boolean`                                      | No       | `false` | Use TLS (true for port 465)           |
+| `user`               | `string`                                       | No       | -       | SMTP username                         |
+| `password`           | `string`                                       | No       | -       | SMTP password                         |
+| `authMethod`         | `"LOGIN" \| "PLAIN" \| "CRAM-MD5" \| "OAUTH2"` | No       | -       | Authentication method                 |
+| `pool`               | `boolean`                                      | No       | `false` | Enable connection pooling             |
+| `maxConnections`     | `number`                                       | No       | -       | Maximum pool connections              |
+| `rejectUnauthorized` | `boolean`                                      | No       | -       | Reject unauthorized TLS certificates  |
+| `dkim`               | `object`                                       | No       | -       | DKIM signing configuration            |
+| `oauth2`             | `object`                                       | No       | -       | OAuth2 authentication configuration   |
+| `debug`              | `boolean`                                      | No       | `false` | Enable debug logging                  |
+| `logger`             | `Console`                                      | No       | -       | Custom logger instance                |
+| `retries`            | `number`                                       | No       | `3`     | Number of retry attempts              |
+| `timeout`            | `number`                                       | No       | `30000` | Request timeout in milliseconds       |
+
+### DKIM Configuration
+
+```typescript
+const mail = createMail(
+    smtpProvider({
+        host: "smtp.example.com",
+        port: 587,
+        user: "user",
+        password: "pass",
+        dkim: {
+            domainName: "example.com",
+            keySelector: "default",
+            privateKey: "-----BEGIN PRIVATE KEY-----\n...",
+        },
+    }),
+);
+```
+
+### OAuth2 Authentication
+
+```typescript
+const mail = createMail(
+    smtpProvider({
+        host: "smtp.gmail.com",
+        port: 465,
+        secure: true,
+        authMethod: "OAUTH2",
+        oauth2: {
+            user: "user@gmail.com",
+            clientId: "client-id",
+            clientSecret: "client-secret",
+            refreshToken: "refresh-token",
+            accessToken: "access-token",
+        },
+    }),
+);
+```
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello via SMTP").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The SMTP provider supports additional options through `SmtpEmailOptions`:
+
+```typescript
+import type { SmtpEmailOptions } from "@visulima/email/providers/smtp";
+
+const options: SmtpEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    priority: "high",
+    inReplyTo: "<original-message-id@example.com>",
+    references: ["<message-1@example.com>", "<message-2@example.com>"],
+    listUnsubscribe: "https://example.com/unsubscribe",
+    useDkim: true,
+    dsn: {
+        success: true,
+        failure: true,
+        delay: false,
+    },
+    googleMailHeaders: {
+        category: "primary",
+        feedbackId: "feedback-123",
+        promotionalContent: false,
+    },
+};
+```
+
+| Option              | Type                          | Description                                    |
+| ------------------- | ----------------------------- | ---------------------------------------------- |
+| `priority`          | `"high" \| "normal" \| "low"` | Message priority                               |
+| `inReplyTo`         | `string`                      | Reference to a previous message ID (threading) |
+| `references`        | `string \| string[]`          | References to related message IDs              |
+| `listUnsubscribe`   | `string \| string[]`          | List-Unsubscribe header                        |
+| `useDkim`           | `boolean`                     | Sign the email with DKIM                       |
+| `dsn`               | `object`                      | Delivery Status Notification options           |
+| `googleMailHeaders` | `object`                      | Google Mail-specific headers                   |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | No        |
+| Templates      | No        |
+| Tracking       | No        |

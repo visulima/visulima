@@ -1,0 +1,375 @@
+---
+title: "JSDoc Comment Syntax"
+---
+
+# JSDoc Comment Syntax
+
+Learn the two main syntaxes for defining OpenAPI specifications in JSDoc comments.
+
+## Standard OpenAPI Syntax
+
+Use full OpenAPI YAML/JSON syntax within JSDoc comments.
+
+### Basic Endpoint
+
+```javascript
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     summary: Get all users
+ *     description: Retrieve a list of users from the database
+ *     tags:
+ *       - Users
+ *     responses:
+ *       200:
+ *         description: Success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ */
+export function getUsers(req, res) {}
+```
+
+### With Parameters
+
+```javascript
+/**
+ * @openapi
+ * /users/{id}:
+ *   get:
+ *     summary: Get user by ID
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         description: User ID
+ *         schema:
+ *           type: integer
+ *       - name: include
+ *         in: query
+ *         description: Include related data
+ *         schema:
+ *           type: string
+ *           enum: [posts, comments, profile]
+ *     responses:
+ *       200:
+ *         description: User found
+ *       404:
+ *         description: User not found
+ */
+export function getUserById(req, res) {}
+```
+
+### With Request Body
+
+```javascript
+/**
+ * @openapi
+ * /users:
+ *   post:
+ *     summary: Create user
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *               - password
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               password:
+ *                 type: string
+ *                 minLength: 8
+ *               name:
+ *                 type: string
+ *     responses:
+ *       201:
+ *         description: User created
+ *       400:
+ *         description: Validation error
+ */
+export function createUser(req, res) {}
+```
+
+## Short Syntax
+
+Concise notation for common API definitions.
+
+### Basic Endpoint
+
+```javascript
+/**
+ * GET /users
+ * @summary Get all users
+ * @description Retrieve a list of users
+ * @tags Users
+ * @response 200 - Success
+ */
+export function getUsers(req, res) {}
+```
+
+### With Parameters
+
+```javascript
+/**
+ * GET /users/{id}
+ * @summary Get user by ID
+ * @tags Users
+ * @pathparam {integer} id.required - User ID
+ * @queryparam {string} include - Include related data
+ * @response 200 - User found
+ * @response 404 - User not found
+ */
+export function getUserById(req, res) {}
+```
+
+### With Request Body
+
+```javascript
+/**
+ * POST /users
+ * @summary Create user
+ * @tags Users
+ * @bodyparam {string} email.required - User email
+ * @bodyparam {string} password.required - User password (min 8 chars)
+ * @bodyparam {string} name - User full name
+ * @response 201 - User created
+ * @response 400 - Validation error
+ */
+export function createUser(req, res) {}
+```
+
+## Schema Definitions
+
+Define reusable schemas.
+
+### Component Schemas
+
+```javascript
+/**
+ * @openapi
+ * components:
+ *   schemas:
+ *     User:
+ *       type: object
+ *       required:
+ *         - id
+ *         - email
+ *       properties:
+ *         id:
+ *           type: integer
+ *         email:
+ *           type: string
+ *           format: email
+ *         name:
+ *           type: string
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *
+ *     Post:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: integer
+ *         title:
+ *           type: string
+ *         content:
+ *           type: string
+ *         authorId:
+ *           type: integer
+ */
+```
+
+### Referencing Schemas
+
+```javascript
+/**
+ * @openapi
+ * /users:
+ *   post:
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *     responses:
+ *       201:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ */
+export function createUser(req, res) {}
+```
+
+## Security Schemes
+
+Define authentication methods.
+
+### API Key
+
+```javascript
+/**
+ * @openapi
+ * components:
+ *   securitySchemes:
+ *     ApiKey:
+ *       type: apiKey
+ *       in: header
+ *       name: X-API-Key
+ */
+
+/**
+ * @openapi
+ * /admin/users:
+ *   get:
+ *     security:
+ *       - ApiKey: []
+ *     responses:
+ *       200:
+ *         description: Success
+ *       401:
+ *         description: Unauthorized
+ */
+export function getAdminUsers(req, res) {}
+```
+
+### Bearer Token
+
+```javascript
+/**
+ * @openapi
+ * components:
+ *   securitySchemes:
+ *     BearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ */
+
+/**
+ * @openapi
+ * /profile:
+ *   get:
+ *     security:
+ *       - BearerAuth: []
+ *     summary: Get user profile
+ */
+export function getProfile(req, res) {}
+```
+
+## Tags and Groups
+
+Organize endpoints with tags.
+
+```javascript
+/**
+ * @openapi
+ * tags:
+ *   - name: Users
+ *     description: User management endpoints
+ *   - name: Posts
+ *     description: Blog post endpoints
+ *   - name: Admin
+ *     description: Administrative endpoints
+ */
+
+/**
+ * @openapi
+ * /users:
+ *   get:
+ *     tags:
+ *       - Users
+ *     summary: Get all users
+ */
+export function getUsers(req, res) {}
+```
+
+## Multiple HTTP Methods
+
+Document multiple methods on same path.
+
+```javascript
+/**
+ * @openapi
+ * /users/{id}:
+ *   get:
+ *     summary: Get user
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *   put:
+ *     summary: Update user
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
+ *   delete:
+ *     summary: Delete user
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: integer
+ */
+export function handleUser(req, res) {}
+```
+
+## Response Examples
+
+Add example responses.
+
+```javascript
+/**
+ * @openapi
+ * /users/{id}:
+ *   get:
+ *     responses:
+ *       200:
+ *         description: User found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/User'
+ *             examples:
+ *               user:
+ *                 value:
+ *                   id: 1
+ *                   email: user@example.com
+ *                   name: John Doe
+ *                   createdAt: "2024-01-01T00:00:00Z"
+ */
+export function getUserById(req, res) {}
+```
+
+## Comparison
+
+| Feature        | Standard Syntax            | Short Syntax        |
+| -------------- | -------------------------- | ------------------- |
+| Verbosity      | More verbose               | Concise             |
+| Flexibility    | Full control               | Limited options     |
+| Learning curve | OpenAPI knowledge required | Easier to learn     |
+| Best for       | Complex APIs               | Simple endpoints    |
+| Examples       | Full schema definitions    | Quick documentation |
+
+Choose the syntax that best fits your needs - or mix both in the same project!

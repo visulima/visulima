@@ -1,0 +1,41 @@
+---
+title: Spinner
+description: 109 terminal spinner animations for Node.js
+icon: Zap
+sidebar_position: 1
+---
+
+A terminal spinner library with 109 animations, styling support, multi-spinner management, and interactive terminal integration via `@visulima/interactive-manager`.
+
+## Features
+
+- **109 Spinners** - Curated animations from cli-spinners, Rattles, and unicode-animations
+- **Styling** - Declarative `SpinnerStyle` objects or custom `(text) => string` functions
+- **MultiSpinner** - Display and manage multiple spinners concurrently
+- **Interactive Terminal** - Coordinates with `@visulima/interactive-manager` for dynamic output
+- **Pause/Resume** - Pause and resume spinner animation
+- **Custom Icons** - Configure success, failure, warning, and info icons
+- **TypeScript** - Full type support out of the box
+
+## Quick Example
+
+```typescript
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
+import { Spinner } from "@visulima/spinner";
+
+const stdoutHook = new InteractiveStreamHook(process.stdout);
+const stderrHook = new InteractiveStreamHook(process.stderr);
+const manager = new InteractiveManager(stdoutHook, stderrHook);
+
+const spinner = new Spinner({ name: "dots" }, manager);
+
+spinner.start("Loading...");
+await doSomething();
+spinner.succeed("Done!");
+```
+
+## Next Steps
+
+- [Getting Started](/docs/spinner/getting-started) - Install and use in 30 seconds
+- [Usage Guide](/docs/spinner/usage) - Learn the Spinner API
+- [Spinner Reference](/docs/spinner/spinners) - Explore all 109 spinners

@@ -1,0 +1,36 @@
+---
+title: Affected Detection
+description: Only run tasks for packages changed since the base branch
+---
+
+# Affected Detection
+
+Affected detection uses `git diff` to determine which packages have changed since a base branch, then filters the task graph to only include tasks for those packages and their dependents.
+
+## Usage
+
+```typescript
+import { getChangedFiles, getAffectedProjects, filterAffectedTasks } from "@visulima/task-runner";
+
+// Detect affected projects (uses git diff internally)
+const affected = await getAffectedProjects({
+    base: "main",
+    head: "HEAD",
+    projectGraph,
+    projects,
+    workspaceRoot,
+});
+
+// Filter task IDs to only affected projects
+const filteredTaskIds = filterAffectedTasks(taskIds, new Set(affected.affectedProjects));
+```
+
+## Transitive Expansion
+
+If package A depends on package B, and B changes, then A is also affected. The affected detection expands transitively through the project dependency graph.
+
+## CI Integration
+
+```typescript
+const results = await defaultTaskRunner(filterAffectedTasks(taskIds, new Set(affected.affectedProjects)), options, context);
+```

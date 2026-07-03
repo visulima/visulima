@@ -1,0 +1,210 @@
+---
+title: Release comparison
+description: "How vis release stacks up against changesets, semantic-release, release-please, and bumpy — and which one to pick."
+---
+
+# Release comparison
+
+`vis release` borrows the best parts of a handful of well-known tools:
+
+- **changesets'** authoring model — hand-curated change files reviewed in PRs.
+- **semantic-release's** CI integration — channels, dist-tags, automated publishing.
+- **bumpy's** strict trust model for custom commands — no implicit shell injection surface.
+- And adds first-class snapshot previews, in-CLI integration, NAPI sidecar support, and a workspace-wide planner.
+
+This page lays out the tradeoffs against the four most-asked-about alternatives.
+
+> 💡 **In a hurry? Skip to [When to pick what](#when-to-pick-what).**
+
+## At a glance
+
+| Feature                                                  | vis release                                                                                                                                                 | changesets                  | semantic-release                                                                                  | release-please            | bumpy                                                                                      |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------- | ------------------------------------------------------------------------------------------------- | ------------------------- | ------------------------------------------------------------------------------------------ |
+| Authoring model                                          | Change files                                                                                                                                                | Change files                | Commit-message convention                                                                         | Commit-message convention | Change files                                                                               |
+| Monorepo aware                                           | ✅ first-class (cf. semantic-release [#193](https://github.com/semantic-release/semantic-release/issues/193): 330 reactions, 157 comments, open since 2016) | ✅ first-class              | ⚠ via multi-semantic-release                                                                      | ✅                        | ✅                                                                                         |
+| Independent versioning is the default (not a retrofit)   | ✅ since day 1                                                                                                                                              | ✅                          | ❌ (see [#193](https://github.com/semantic-release/semantic-release/issues/193))                  | ⚠ partial                 | ⚠ recent v22 regressions ([nx#34211](https://github.com/nrwl/nx/issues/34211) and related) |
+| First-class TypeScript types (CLI + plugin API)          | ✅ TS-first; typed plugin API                                                                                                                               | ⚠ partial (DefinitelyTyped) | ❌ (see [#952](https://github.com/semantic-release/semantic-release/issues/952), open since 2018) | ⚠ partial                 | ✅ (nx release)                                                                            |
+| Independent versioning                                   | ✅                                                                                                                                                          | ✅                          | ✅                                                                                                | ✅                        | ✅                                                                                         |
+| Fixed / linked groups                                    | ✅                                                                                                                                                          | ✅                          | ❌                                                                                                | ❌                        | ✅                                                                                         |
+| Cascade rules (cross-package)                            | ✅                                                                                                                                                          | ⚠ limited                   | ❌                                                                                                | ❌                        | ✅                                                                                         |
+| Version-PR mode                                          | ✅                                                                                                                                                          | ✅                          | ❌                                                                                                | ✅                        | ✅                                                                                         |
+| Auto-publish mode                                        | ✅                                                                                                                                                          | ⚠ via 3rd-party action      | ✅                                                                                                | ❌                        | ✅                                                                                         |
+| Snapshot / PR-preview publishing                         | ✅ (pkg-pr-new + registry)                                                                                                                                  | ⚠ via snapshots action      | ❌                                                                                                | ❌                        | ✅                                                                                         |
+| Channels (per-branch dist-tag)                           | ✅                                                                                                                                                          | ⚠ workarounds               | ✅                                                                                                | ⚠                         | ✅                                                                                         |
+| Maintenance branches (`1.x`)                             | ✅ (`range: "match"`)                                                                                                                                       | ⚠ manual                    | ✅                                                                                                | ❌                        | ✅                                                                                         |
+| NAPI / native sidecar packages                           | ✅ (`versionActions: "native-addon"`)                                                                                                                       | ❌                          | ⚠ custom plugin                                                                                   | ❌                        | ✅                                                                                         |
+| Pre-publish guards (secrets, audit)                      | ✅ built-in                                                                                                                                                 | ⚠ external                  | ⚠ via plugins                                                                                     | ❌                        | ✅                                                                                         |
+| Trust gate for custom commands                           | ✅ (`allowCustomCommands`)                                                                                                                                  | ❌                          | ❌                                                                                                | ❌                        | ✅                                                                                         |
+| OIDC / trusted publishing                                | ✅                                                                                                                                                          | ✅                          | ✅                                                                                                | ✅                        | ✅                                                                                         |
+| Trusted-publishing bootstrap (placeholder + `npm trust`) | ✅ (`vis release pretrust`)                                                                                                                                 | ❌                          | ❌                                                                                                | ❌                        | ❌                                                                                         |
+| Implicit (heading-depth) changelogs                      | ✅                                                                                                                                                          | ❌                          | ❌                                                                                                | ❌                        | ❌                                                                                         |
+| Replay changelogs (re-emit at a future milestone)        | ✅                                                                                                                                                          | ❌                          | ❌                                                                                                | ❌                        | ❌                                                                                         |
+| Shared group tag + aggregate release (`syncGitTag`)      | ✅                                                                                                                                                          | ❌                          | ❌                                                                                                | ❌                        | ❌                                                                                         |
+| Lifecycle plugins (`willPublish` / `afterPublish` …)     | ✅                                                                                                                                                          | ⚠ limited                   | ✅                                                                                                | ❌                        | ⚠                                                                                          |
+| Git-tracked publish lock (ephemeral-runner resume)       | ✅ (`publish.lockInGit`)                                                                                                                                    | ❌                          | ❌                                                                                                | ❌                        | ❌                                                                                         |
+| `await using` draft (programmatic apply-on-dispose)      | ✅                                                                                                                                                          | ❌                          | ❌                                                                                                | ❌                        | ❌                                                                                         |
+| Migration tooling                                        | ✅ (`vis release init`)                                                                                                                                     | —                           | —                                                                                                 | —                         | —                                                                                          |
+
+### Inspection & dry-run
+
+How easy is it to see what _would_ happen before you cut a release? semantic-release [#753](https://github.com/semantic-release/semantic-release/issues/753), [#1647](https://github.com/semantic-release/semantic-release/issues/1647), [#2232](https://github.com/semantic-release/semantic-release/issues/2232) ("dry-run shouldn't test push permissions"), [#1890](https://github.com/semantic-release/semantic-release/issues/1890) ("dry-run does nothing useful") and changesets [#614](https://github.com/changesets/changesets/issues/614) are all open issues asking for this — vis ships it out of the box.
+
+| Capability                                       | vis release                   | changesets              | semantic-release                                                               | release-please |
+| ------------------------------------------------ | ----------------------------- | ----------------------- | ------------------------------------------------------------------------------ | -------------- |
+| Print next version without publishing            | ✅ `vis release next-version` | ⚠ via `status --output` | ⚠ `--dry-run` (noisy)                                                          | ⚠ from PR body |
+| Render release notes / changelog preview         | ✅ `vis release changelog`    | ❌                      | ⚠ `--dry-run`                                                                  | ⚠ from PR body |
+| Inspect the plan (JSON + interactive)            | ✅ `vis release plan`         | ⚠ `status`              | ❌                                                                             | ❌             |
+| Human-readable status table                      | ✅ `vis release status`       | ✅ `status`             | ❌                                                                             | ❌             |
+| `--dry-run` available per command                | ✅                            | ⚠ partial               | ✅                                                                             | ❌             |
+| Dry-run / preview works without push credentials | ✅ read-only by design        | ✅                      | ❌ ([#2232](https://github.com/semantic-release/semantic-release/issues/2232)) | ✅             |
+
+> 📝 **Note:** vis's `plan`, `next-version`, `changelog`, and `status` are read-only by design — they run from any branch (including PRs from forks) without push credentials, so contributors can preview a release locally.
+
+### Forges
+
+Where can the version-PR and tag/release creation live? Tracks changesets [#879](https://github.com/changesets/changesets/issues/879) and release-please [#1021](https://github.com/googleapis/release-please/issues/1021).
+
+| Forge             | vis release                                | changesets | semantic-release | release-please |
+| ----------------- | ------------------------------------------ | ---------- | ---------------- | -------------- |
+| GitHub            | ✅                                         | ✅         | ✅               | ✅             |
+| GitLab            | ✅ (`provider: "gitlab"` + `glab` adapter) | ❌         | ✅               | ❌             |
+| Bitbucket / Gitea | ❌                                         | ❌         | ✅ (Gitea)       | ❌             |
+
+### Registries
+
+Which package registries can each tool publish to natively?
+
+| Registry             | vis release                         | changesets                                                             | semantic-release    | release-please |
+| -------------------- | ----------------------------------- | ---------------------------------------------------------------------- | ------------------- | -------------- |
+| npm                  | ✅                                  | ✅                                                                     | ✅                  | ⚠ via wiring   |
+| JSR (Deno)           | ✅ (`versionActions: "jsr"`)        | ❌ (see [#1318](https://github.com/changesets/changesets/issues/1318)) | ⚠ via custom plugin | ❌             |
+| Maven (JVM packages) | ✅ ([guide](./release-maven.mdx))   | ❌                                                                     | ⚠ via custom plugin | ⚠ partial      |
+| Native addons (NAPI) | ✅ (auto-detected via `napi` field) | ❌                                                                     | ⚠ custom plugin     | ❌             |
+
+### Commit-history hygiene
+
+Tracks release-please [#296](https://github.com/googleapis/release-please/issues/296) (open and `needs design` since 2020).
+
+| Capability                                             | vis release                                                                                                                                                                                                                            | changesets              | semantic-release        | release-please |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | ----------------------- | -------------- |
+| Reverted commits dropped from version calc / changelog | ✅ handles `revert: <subject>`, `Revert "<subject>"`, and revert-of-revert chains ([`conventional-commits.ts`](https://github.com/visulima/visulima/blob/main/packages/tooling/vis/src/release/core/generate/conventional-commits.ts)) | N/A (no commit parsing) | ⚠ relies on each plugin | ❌             |
+
+### Lockfile sync
+
+Tracks changesets [#1139](https://github.com/changesets/changesets/issues/1139) (lockfile not updated after `version`).
+
+| Capability                                    | vis release                                                               | changesets | semantic-release | release-please |
+| --------------------------------------------- | ------------------------------------------------------------------------- | ---------- | ---------------- | -------------- |
+| Automatic lockfile refresh after version bump | ✅ via [`postVersionCommand`](./release.mdx#keeping-the-lockfile-in-sync) | ❌         | ⚠ via plugin     | ❌             |
+
+### Post-release notifications
+
+Once a wave publishes, vis walks every PR / issue referenced in the changelog entries and posts a sticky "released in X.Y.Z" comment plus a `released` label. Tracks release-it [#1119](https://github.com/release-it/release-it/issues/1119) and mirrors semantic-release's `successComment` + `releasedLabels`.
+
+| Capability                                                          | vis release                              | changesets | semantic-release | release-please |
+| ------------------------------------------------------------------- | ---------------------------------------- | ---------- | ---------------- | -------------- |
+| Comment on every shipped issue / PR                                 | ✅ via success-walk (sticky, idempotent) | ❌         | ✅ via plugin    | ⚠ via PR body  |
+| Add `released` label                                                | ✅                                       | ❌         | ✅ via plugin    | ❌             |
+| Cross-repo URL guardrail (won't comment on pasted competitor links) | ✅                                       | n/a        | ❌               | n/a            |
+
+## vs. changesets
+
+**Same DNA.** Change files in `.vis/release/*.md` are frontmatter-compatible with `.changeset/*.md` — `vis release init` copies the directory verbatim.
+
+**Where vis goes further**
+
+- **Channels.** changesets has no native concept of branch → dist-tag mapping; you wire it up with `@changesets/cli pre enter` + `pre exit`, or sidestep with a custom action. vis treats channels as a first-class config and resolves them via branch detection.
+- **Snapshots.** changesets has snapshots, but they require a separate command and external action wiring. vis includes both the snapshot command and the CI driver, and supports the [pkg-pr-new](https://pkg-pr-new.com) backend natively.
+- **Cascade rules.** changesets' dep-bump rules apply only to `out-of-range` updates; vis lets you configure per-dep-kind triggers (`{ trigger, bumpAs }`) and source-side `cascadeTo` blocks for cross-package fan-out.
+- **Trust model for custom commands.** changesets executes whatever `publishConfig.publishCommand` you set. vis requires explicit opt-in via `allowCustomCommands` and shell-quotes every interpolated value to make injection impossible.
+
+**Where changesets wins**
+
+- Ecosystem maturity — more existing plugins and Stack Overflow answers.
+- Public Slack + steady-state release cadence.
+
+## vs. semantic-release
+
+**Different philosophy.** semantic-release derives bumps from commit messages (conventional-commits). vis derives bumps from change files. Both have champions; the practical difference is review surface area:
+
+- With conventional-commits, the release is implied by the commits in the PR — there's nothing extra to review.
+- With change files, the release is an artefact in the PR — explicit, diff-able, and easy to override.
+
+vis can still derive change files from commits: `vis release generate` parses conventional-commits when present and falls back to a path-based heuristic.
+
+**Where vis goes further**
+
+- **Monorepo support.** `multi-semantic-release` exists, but it's a wrapper that re-runs the whole pipeline per package. vis treats the workspace as the unit and plans the whole wave in one pass.
+- **Version-PR mode.** semantic-release publishes inline; there's no review gate.
+- **Snapshots.** semantic-release has no built-in PR-preview pathway.
+- **Pre-publish guards.** vis bakes in the secret scanner, exports-exist check, lifecycle-script gate, and `npm audit` integration. With semantic-release you assemble these from plugins.
+
+**Where semantic-release wins**
+
+- The "your commits are your spec" philosophy is hard to beat if you already enforce conventional-commits strictly.
+- More forge integrations (GitHub, GitLab, Gitea, Bitbucket).
+
+## vs. release-please
+
+**Different scope.** release-please is Google's PR-bot. It maintains a rolling release-PR (the "Release Please PR") whose body is the changelog preview, and on merge it tags + creates a GitHub release. It does **not** publish to npm — that's a separate step you wire up after.
+
+**Where vis overlaps**
+
+- Both maintain a rolling version-PR (vis calls it the "Versioned release" PR).
+- Both write CHANGELOG entries from a deterministic source (release-please from commits; vis from change files).
+
+**Where vis goes further**
+
+- **Publishing is bundled.** vis's `ci release` covers the whole pipeline — version-PR maintenance, publish on merge, tag push, release creation. release-please stops at the tag.
+- **Snapshots.** Not in release-please's scope.
+- **Workspace-wide planning.** release-please handles monorepos via a `release-type: node-yoshi-multi` manifest; vis treats fixed / linked groups and cascade rules as primary config.
+
+**Where release-please wins**
+
+- Multi-language. release-please supports Java, Python, Rust, Go, Ruby, … vis is JS / TypeScript only.
+- Used at massive scale by Google's OSS projects, so the edge cases are well-trodden.
+
+## vs. bumpy
+
+**Same lineage.** vis release is the in-tree successor to `bumpy` — the change-file shape, the trust gate (`allowCustomCommands`), the channels model, and the NAPI publishing strategy are all carried over. `vis release init` migrates a bumpy repo with a directory rename.
+
+**Where vis differs**
+
+- **First-party in the vis CLI.** No separate install / config; release is one of the verbs.
+- **Updated dep bumps.** vis uses `out-of-range` semantics by default (the same as nx / changesets ≥2.27).
+- **Tighter CI integration.** `vis release ci release`, `ci snapshot`, `ci check`, `ci plan`, and `ci setup` are first-party CLI commands rather than runner scripts.
+- **Programmatic API.** Importing `@visulima/vis/release` exposes the full release pipeline as a TypeScript API (`releaseVersion`, `releasePublish`, `releaseSnapshot`, …).
+
+## When to pick what
+
+| Your situation                                                                | Pick                                                                              |
+| ----------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| **Conventional-commits is the source of truth, and you like it that way**     | semantic-release — or `vis release generate` if you want change files as artefact |
+| **Multi-language monorepo (JS + Python + Rust + …)**                          | release-please                                                                    |
+| **JS/TS monorepo with established changesets workflow that works fine**       | changesets — no reason to switch                                                  |
+| **JS/TS monorepo with cascade rules, NAPI sidecars, or PR snapshot previews** | vis release                                                                       |
+| **Coming from bumpy**                                                         | vis release — same DNA, first-party in the vis CLI, `vis release init` migrates   |
+| **You want one tool that does releases + tasks + caching + everything else**  | vis release (you're already on vis)                                               |
+
+## Migration
+
+`vis release init` auto-detects an existing tool and previews the migration in place. Re-run with `--apply` once you're happy with the preview to actually write the files:
+
+```bash
+vis release init                                  # Auto-detect; preview only
+vis release init --from-changesets                # Force changesets migration; preview
+vis release init --from-semantic-release          # Force semantic-release migration; preview
+vis release init --from-bumpy                     # Force bumpy migration; preview
+vis release init --from-semantic-release --apply  # Actually perform the writes
+vis release init --fresh                          # Skip migration; start clean
+vis release init --dry-run                        # Print what would happen and exit
+vis release init --workflows                      # Scaffold CI workflows too
+```
+
+Migration paths:
+
+- **changesets** — copies `.changeset/*.md` → `.vis/release/*.md` (frontmatter-compatible).
+- **semantic-release** / **multi-semantic-release** — extracts `branches` from `.releaserc` into `release.channels`, removes the dependency.
+- **bumpy** — directory rename, same shape.
+
+`init` also adds `"vis-release": { "managed": true }` to each detected publishable package's `package.json`. See the [release guide](./release.mdx) and [CI guide](./release-ci.mdx) for next steps.

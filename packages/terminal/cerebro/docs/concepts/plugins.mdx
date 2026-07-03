@@ -1,0 +1,324 @@
+---
+title: "Plugins"
+---
+
+# Plugins
+
+Extend Cerebro's functionality with plugins that hook into the CLI lifecycle and add custom features to the toolbox.
+
+## Plugin Structure
+
+A plugin is a function that returns a plugin definition:
+
+```typescript
+import type { Plugin } from "@visulima/cerebro";
+
+const myPlugin = (): Plugin => ({
+    name: "my-plugin",
+    version: "1.0.0",
+    register: async (context) => {
+        // Initialize plugin
+        context.toolbox.myFeature = {
+            doSomething: () => console.log("Doing something!"),
+        };
+    },
+});
+```
+
+## Plugin Lifecycle
+
+### Registration
+
+Plugins are registered with the CLI instance:
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+
+const cli = createCerebro("my-cli");
+cli.use(myPlugin());
+```
+
+### Initialization
+
+Plugins initialize before command execution and receive a context object:
+
+```typescript
+{
+  register: async (context: PluginContext) => {
+    const { toolbox, cli, logger } = context;
+
+    // Extend toolbox for commands
+    toolbox.http = {
+      get: async (url) => { /* ... */ },
+      post: async (url, data) => { /* ... */ },
+    };
+
+    // Access CLI instance
+    const commands = cli.getCommands();
+
+    // Use logger
+    logger.log("Plugin initialized");
+  },
+}
+```
+
+### Toolbox Extension
+
+Plugins extend the toolbox that commands receive:
+
+```typescript
+// In plugin
+toolbox.database = {
+    connect: async () => {
+        /* ... */
+    },
+    query: async (sql) => {
+        /* ... */
+    },
+};
+
+// In command
+cli.addCommand({
+    name: "query",
+    execute: async ({ database, logger }) => {
+        await database.connect();
+        const result = await database.query("SELECT * FROM users");
+        logger.log(result);
+    },
+});
+```
+
+## Type-Safe Extensions
+
+Declare custom toolbox properties for full type safety:
+
+```typescript
+// Extend the Cerebro namespace
+declare global {
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            http: {
+                get: <T>(url: string) => Promise<T>;
+                post: <T>(url: string, data: unknown) => Promise<T>;
+            };
+            database: {
+                connect: () => Promise<void>;
+                query: <T>(sql: string) => Promise<T[]>;
+            };
+        }
+    }
+}
+
+// Create plugin
+const databasePlugin = (): Plugin => ({
+    name: "database",
+    register: async ({ toolbox }) => {
+        toolbox.database = {
+            connect: async () => {
+                /* ... */
+            },
+            query: async (sql) => {
+                /* ... */
+            },
+        };
+    },
+});
+
+// Use in commands with full autocomplete
+cli.addCommand({
+    name: "users",
+    execute: async ({ database }) => {
+        // ✅ Full type safety and autocomplete
+        await database.connect();
+        const users = await database.query<User>("SELECT * FROM users");
+    },
+});
+```
+
+## Built-in Plugins
+
+### Error Handler Plugin
+
+Graceful error handling with formatted output:
+
+```typescript
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+
+cli.use(
+    errorHandlerPlugin({
+        exitOnError: true, // Exit process on error
+        showStackTrace: false, // Hide stack traces
+        logErrors: true, // Log errors to console
+    }),
+);
+```
+
+### Runtime Version Check Plugin
+
+Check Node.js/Deno/Bun version requirements:
+
+```typescript
+import { runtimeVersionCheckPlugin } from "@visulima/cerebro/plugin/runtime-version-check";
+
+cli.use(
+    runtimeVersionCheckPlugin({
+        requiredVersion: ">=18.0.0", // Minimum Node.js version
+        message: "Please upgrade to Node.js 18 or higher",
+    }),
+);
+```
+
+### Update Notifier Plugin
+
+Notify users of available updates:
+
+```typescript
+import { updateNotifierPlugin } from "@visulima/cerebro/plugin/update-notifier";
+
+cli.use(
+    updateNotifierPlugin({
+        packageName: "my-cli",
+        packageVersion: "1.0.0",
+        checkInterval: 86400000, // Check once per day
+        updateMessage: "Update available: {latest} (current: {current})",
+    }),
+);
+```
+
+## Custom Plugin Example
+
+Create a plugin that adds HTTP utilities:
+
+```typescript
+import type { Plugin } from "@visulima/cerebro";
+
+// Type declaration
+declare global {
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            http: {
+                get: <T>(url: string) => Promise<T>;
+                post: <T>(url: string, data: unknown) => Promise<T>;
+            };
+        }
+    }
+}
+
+// Plugin implementation
+export const httpPlugin = (): Plugin => ({
+    name: "http",
+    version: "1.0.0",
+    register: async ({ toolbox, logger }) => {
+        logger.log("Initializing HTTP plugin");
+
+        toolbox.http = {
+            get: async <T>(url: string): Promise<T> => {
+                const response = await fetch(url);
+                return response.json() as Promise<T>;
+            },
+
+            post: async <T>(url: string, data: unknown): Promise<T> => {
+                const response = await fetch(url, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify(data),
+                });
+                return response.json() as Promise<T>;
+            },
+        };
+    },
+});
+
+// Usage
+cli.use(httpPlugin());
+
+cli.addCommand({
+    name: "fetch-user",
+    argument: {
+        name: "id",
+        type: String,
+    },
+    execute: async ({ argument, http, logger }) => {
+        const user = await http.get<User>(`/api/users/${argument[0]}`);
+        logger.log(`User: ${user.name}`);
+    },
+});
+```
+
+## Plugin Dependencies
+
+Plugins can depend on other plugins:
+
+```typescript
+const databasePlugin = (): Plugin => ({
+    name: "database",
+    dependencies: ["config"], // Requires config plugin
+    register: async ({ toolbox }) => {
+        const { config } = toolbox;
+        toolbox.database = createDatabase(config.databaseUrl);
+    },
+});
+```
+
+## Plugin Best Practices
+
+### Keep Plugins Focused
+
+Each plugin should have a single responsibility:
+
+```typescript
+// ✅ Good: Focused plugin
+const configPlugin = (): Plugin => ({
+    name: "config",
+    register: async ({ toolbox }) => {
+        toolbox.config = loadConfig();
+    },
+});
+
+// ❌ Bad: Plugin does too much
+const megaPlugin = (): Plugin => ({
+    name: "mega",
+    register: async ({ toolbox }) => {
+        toolbox.config = loadConfig();
+        toolbox.database = connectDatabase();
+        toolbox.cache = createCache();
+        toolbox.logger = createLogger();
+    },
+});
+```
+
+### Handle Errors Gracefully
+
+Plugins should not crash the CLI:
+
+```typescript
+const plugin = (): Plugin => ({
+    name: "my-plugin",
+    register: async ({ toolbox, logger }) => {
+        try {
+            toolbox.feature = await initializeFeature();
+        } catch (error) {
+            logger.error(`Failed to initialize feature: ${error.message}`);
+            // Provide fallback
+            toolbox.feature = createFallback();
+        }
+    },
+});
+```
+
+### Document Type Extensions
+
+Always provide type declarations for toolbox extensions:
+
+```typescript
+// ✅ Good: Type-safe extension
+declare global {
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            myFeature: {
+                doSomething: () => void;
+            };
+        }
+    }
+}
+```

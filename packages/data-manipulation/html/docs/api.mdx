@@ -1,0 +1,677 @@
+---
+title: "API Reference"
+---
+
+# API Reference
+
+Complete API documentation for all functions in @visulima/html.
+
+## escapeHtml()
+
+Fast HTML escaping for content and attributes.
+
+### Signature
+
+```typescript
+function escapeHtml(value: string | null | undefined, isAttributeValue?: boolean): string;
+```
+
+### Parameters
+
+- **value** (`string | null | undefined`) - The string to escape
+- **isAttributeValue** (`boolean`, optional) - If true, escapes for HTML attributes (including quotes)
+
+### Returns
+
+- `string` - Escaped HTML string. Returns empty string for null/undefined.
+
+### Examples
+
+```typescript
+import { escapeHtml } from "@visulima/html";
+
+// Content escaping (default)
+escapeHtml("<script>alert('xss')</script>");
+// => '&lt;script>alert('xss')&lt;/script>'
+
+// Attribute escaping
+escapeHtml('value="test"', true);
+// => 'value=&quot;test&quot;'
+
+// Handles null/undefined
+escapeHtml(null);
+// => ''
+```
+
+---
+
+## html()
+
+Template tag for XSS-safe HTML with automatic escaping of interpolated values.
+
+### Signature (Template Tag)
+
+```typescript
+function html(strings: TemplateStringsArray, ...values: unknown[]): string;
+```
+
+### Signature (Function)
+
+```typescript
+function html(value: string, escape?: boolean): string;
+```
+
+### Parameters (Template Tag)
+
+- **strings** (`TemplateStringsArray`) - Template string literals
+- **values** (`unknown[]`) - Interpolated values (automatically escaped)
+
+### Parameters (Function)
+
+- **value** (`string`) - HTML string
+- **escape** (`boolean`, optional) - If true, escapes the HTML. Default: false
+
+### Returns
+
+- `string` - HTML string with escaped interpolations (template tag) or processed HTML (function)
+
+### Examples
+
+```typescript
+import { html } from "@visulima/html";
+
+// Template tag
+const name = "Alice";
+const comment = "<script>bad</script>";
+html`<div>${name}: ${comment}</div>`;
+// => '<div>Alice: &lt;script&gt;bad&lt;/script&gt;</div>'
+
+// Function mode
+html("<div>Safe HTML</div>", false);
+// => '<div>Safe HTML</div>'
+```
+
+---
+
+## escapeCss()
+
+Escape strings for safe CSS interpolation.
+
+### Signature
+
+```typescript
+function escapeCss(value: string): string;
+```
+
+### Parameters
+
+- **value** (`string`) - The CSS string to escape
+
+### Returns
+
+- `string` - Escaped CSS string safe for interpolation
+
+### Examples
+
+```typescript
+import { escapeCss } from "@visulima/html";
+
+const userColor = "red; } body { display: none; ";
+escapeCss(userColor);
+// => Escaped CSS preventing injection
+```
+
+---
+
+## css()
+
+Template tag and function for CSS strings with object support.
+
+### Signature (Template Tag)
+
+```typescript
+function css(strings: TemplateStringsArray, ...values: unknown[]): string;
+```
+
+### Signature (Function - String)
+
+```typescript
+function css(value: string, escape?: boolean): string;
+```
+
+### Signature (Function - Object)
+
+```typescript
+function css(styles: Properties, escape?: boolean): string;
+```
+
+### Parameters
+
+- **strings/value/styles** - CSS template, string, or object
+- **escape** (`boolean`, optional) - If true, escapes the CSS. Default: false
+
+### Returns
+
+- `string` - CSS string
+
+### Examples
+
+```typescript
+import { css } from "@visulima/html";
+
+// Template tag
+const color = "red";
+css`
+    .theme {
+        color: ${color};
+    }
+`;
+
+// CSS object with TypeScript autocomplete
+css({ padding: "10px", marginTop: "20px" });
+// => 'padding: 10px; margin-top: 20px;'
+
+// Function mode
+css(":where(.test) { color: red; }", false);
+```
+
+---
+
+## escapeJs()
+
+Escape JavaScript for safe script tag interpolation.
+
+### Signature
+
+```typescript
+function escapeJs(value: string): string;
+```
+
+### Parameters
+
+- **value** (`string`) - JavaScript string to escape
+
+### Returns
+
+- `string` - Escaped JavaScript safe for `<script>` tags
+
+### Examples
+
+```typescript
+import { escapeJs } from "@visulima/html";
+
+const userData = { name: "</script><script>alert(1)" };
+const safe = escapeJs(JSON.stringify(userData));
+const html = `<script>window.user = ${safe};</script>`;
+```
+
+---
+
+## isValidCustomElementName()
+
+Validate custom element names per HTML specification.
+
+### Signature
+
+```typescript
+function isValidCustomElementName(name: string): boolean;
+```
+
+### Parameters
+
+- **name** (`string`) - Element name to validate
+
+### Returns
+
+- `boolean` - True if valid custom element name, false otherwise
+
+### Rules
+
+- Must contain a hyphen (`-`)
+- Must start with ASCII lowercase letter
+- Cannot be a standard HTML tag
+- Cannot start with reserved prefixes
+
+### Examples
+
+```typescript
+import { isValidCustomElementName } from "@visulima/html";
+
+isValidCustomElementName("my-element");
+// => true
+
+isValidCustomElementName("myElement");
+// => false (no hyphen)
+```
+
+---
+
+## encode()
+
+Encode HTML entities with multiple modes and standards.
+
+### Signature
+
+```typescript
+function encode(text: string, options?: EncodeOptions): string;
+```
+
+### Options
+
+```typescript
+interface EncodeOptions {
+    level?: "html5" | "html4" | "xml" | "all";
+    mode?: "specialChars" | "nonAscii" | "nonAsciiPrintable" | "nonAsciiPrintableOnly" | "extensive";
+    numeric?: "decimal" | "hexadecimal";
+}
+```
+
+### Parameters
+
+- **text** (`string`) - Text to encode
+- **options** (`EncodeOptions`, optional) - Encoding configuration
+
+### Returns
+
+- `string` - Encoded HTML string
+
+### Examples
+
+```typescript
+import { encode } from "@visulima/html";
+
+// Default (special chars only)
+encode("< > \" ' & ©");
+// => '&lt; &gt; &quot; &apos; &amp; ©'
+
+// Encode non-ASCII
+encode("< ©", { mode: "nonAscii" });
+// => '&lt; &copy;'
+
+// XML with hex
+encode("©", { level: "xml", mode: "nonAscii", numeric: "hexadecimal" });
+// => '&#xa9;'
+```
+
+---
+
+## decode()
+
+Decode HTML entities with scope control.
+
+### Signature
+
+```typescript
+function decode(html: string, options?: DecodeOptions): string;
+```
+
+### Options
+
+```typescript
+interface DecodeOptions {
+    level?: "html5" | "html4" | "xml" | "all";
+    scope?: "body" | "attribute" | "strict";
+}
+```
+
+### Parameters
+
+- **html** (`string`) - HTML to decode
+- **options** (`DecodeOptions`, optional) - Decoding configuration
+
+### Returns
+
+- `string` - Decoded string
+
+### Examples
+
+```typescript
+import { decode } from "@visulima/html";
+
+// Default (HTML5, body scope)
+decode("&lt; &gt; &copy;");
+// => '< > ©'
+
+// Strict scope (requires semicolon)
+decode("&lt &gt", { scope: "strict" });
+// => '&lt &gt'
+```
+
+---
+
+## decodeEntity()
+
+Decode a single HTML entity.
+
+### Signature
+
+```typescript
+function decodeEntity(entity: string, options?: DecodeEntityOptions): string;
+```
+
+### Options
+
+```typescript
+interface DecodeEntityOptions {
+    level?: "html5" | "html4" | "xml" | "all";
+}
+```
+
+### Parameters
+
+- **entity** (`string`) - Single entity to decode
+- **options** (`DecodeEntityOptions`, optional) - Decoding level
+
+### Returns
+
+- `string` - Decoded character
+
+### Examples
+
+```typescript
+import { decodeEntity } from "@visulima/html";
+
+decodeEntity("&lt;");
+// => '<'
+
+decodeEntity("&copy;");
+// => '©'
+```
+
+---
+
+## sanitizeHtml()
+
+Clean user-submitted HTML.
+
+### Signature
+
+```typescript
+function sanitizeHtml(dirty: string, options?: SanitizeOptions): string;
+```
+
+### Key Options
+
+```typescript
+interface SanitizeOptions {
+    allowedTags?: string[];
+    allowedAttributes?: Record<string, string[]>;
+    allowedSchemes?: string[];
+    allowedIframeHostnames?: string[];
+    selfClosing?: string[];
+    transformTags?: Record<string, TransformFunction>;
+    textFilter?: (text: string) => string;
+    // ... more options
+}
+```
+
+### Parameters
+
+- **dirty** (`string`) - Unsanitized HTML
+- **options** (`SanitizeOptions`, optional) - Sanitization configuration
+
+### Returns
+
+- `string` - Sanitized HTML
+
+### Examples
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+// Basic
+sanitizeHtml("<p>Hello <script>bad</script></p>");
+// => '<p>Hello </p>'
+
+// Custom config
+sanitizeHtml(html, {
+    allowedTags: ["p", "a", "b"],
+    allowedAttributes: {
+        a: ["href"],
+    },
+});
+```
+
+### Default Configuration
+
+Access defaults via `sanitizeHtml.defaults`:
+
+```typescript
+const defaults = sanitizeHtml.defaults;
+// {
+//   allowedTags: ['h3', 'h4', 'h5', ...],
+//   allowedAttributes: { a: ['href', 'name', 'target'], ... },
+//   allowedSchemes: ['http', 'https', 'ftp', 'mailto'],
+//   ...
+// }
+```
+
+---
+
+## stripHtml()
+
+Remove HTML tags and extract plain text.
+
+### Signature
+
+```typescript
+function stripHtml(html: string, options?: StripOptions): StripResult;
+```
+
+### Options
+
+```typescript
+interface StripOptions {
+    stripTogetherWithTheirContents?: string[];
+    // ... additional options from string-strip-html
+}
+```
+
+### Result
+
+```typescript
+interface StripResult {
+    result: string;
+    // ... additional metadata
+}
+```
+
+### Parameters
+
+- **html** (`string`) - HTML to strip
+- **options** (`StripOptions`, optional) - Stripping configuration
+
+### Returns
+
+- `StripResult` - Object containing `result` (plain text) and metadata
+
+### Examples
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+// Basic stripping
+stripHtml("<div>Hello <b>World</b></div>").result;
+// => 'Hello World'
+
+// Strip with content
+stripHtml("Text <script>bad</script> more", {
+    stripTogetherWithTheirContents: ["script", "style"],
+}).result;
+// => 'Text more'
+```
+
+---
+
+## htmlTags
+
+Array of all standard HTML tags.
+
+### Type
+
+```typescript
+const htmlTags: readonly string[];
+```
+
+### Usage
+
+```typescript
+import { htmlTags } from "@visulima/html";
+
+console.log(htmlTags);
+// => ['a', 'abbr', 'address', ...]
+
+htmlTags.includes("div");
+// => true
+```
+
+---
+
+## voidHtmlTags
+
+Array of void/self-closing HTML tags.
+
+### Type
+
+```typescript
+const voidHtmlTags: readonly string[];
+```
+
+### Usage
+
+```typescript
+import { voidHtmlTags } from "@visulima/html";
+
+console.log(voidHtmlTags);
+// => ['area', 'base', 'br', 'col', ...]
+
+voidHtmlTags.includes("br");
+// => true
+```
+
+---
+
+## Type Definitions
+
+### Properties (CSS)
+
+CSS properties type from `csstype` for TypeScript autocomplete in `css()` function:
+
+```typescript
+import type { Properties } from "@visulima/html";
+
+const styles: Properties = {
+    padding: "10px",
+    marginTop: "20px",
+    backgroundColor: "blue",
+    // Full autocomplete for all CSS properties!
+};
+```
+
+### EncodeOptions
+
+```typescript
+interface EncodeOptions {
+    /**
+     * Encoding standard
+     * @default "html5"
+     */
+    level?: "html5" | "html4" | "xml" | "all";
+
+    /**
+     * Which characters to encode
+     * @default "specialChars"
+     */
+    mode?: "specialChars" | "nonAscii" | "nonAsciiPrintable" | "nonAsciiPrintableOnly" | "extensive";
+
+    /**
+     * Numeric entity format
+     * @default "decimal"
+     */
+    numeric?: "decimal" | "hexadecimal";
+}
+```
+
+### DecodeOptions
+
+```typescript
+interface DecodeOptions {
+    /**
+     * Decoding standard
+     * @default "html5"
+     */
+    level?: "html5" | "html4" | "xml" | "all";
+
+    /**
+     * How to handle entities without semicolon
+     * @default "body"
+     */
+    scope?: "body" | "attribute" | "strict";
+}
+```
+
+### SanitizeOptions
+
+See [sanitize-html documentation](https://github.com/apostrophecms/sanitize-html#what-are-the-default-options) for complete options.
+
+### StripOptions
+
+See [string-strip-html documentation](https://codsen.com/os/string-strip-html/) for complete options.
+
+---
+
+## Constants
+
+### Default Encode Options
+
+```typescript
+{
+    level: "html5",
+    mode: "specialChars",
+    numeric: "decimal"
+}
+```
+
+### Default Decode Options
+
+```typescript
+{
+    level: "html5",
+    scope: "body"
+}
+```
+
+### Default Sanitize Tags
+
+```typescript
+[
+    "h3",
+    "h4",
+    "h5",
+    "h6",
+    "blockquote",
+    "p",
+    "a",
+    "ul",
+    "ol",
+    "nl",
+    "li",
+    "b",
+    "i",
+    "strong",
+    "em",
+    "strike",
+    "code",
+    "hr",
+    "br",
+    "div",
+    "table",
+    "thead",
+    "caption",
+    "tbody",
+    "tr",
+    "th",
+    "td",
+    "pre",
+];
+```

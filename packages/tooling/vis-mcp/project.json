@@ -1,0 +1,8 @@
+{
+    "name": "tooling/vis-mcp",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/tooling/vis-mcp/src",
+    "projectType": "library",
+    "tags": ["vis-mcp", "type:package", "category:dev-tools"],
+    "implicitDependencies": ["vis"]
+}

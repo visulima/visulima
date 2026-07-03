@@ -1,0 +1,165 @@
+---
+title: "vis docker"
+description: "Docker integration — scaffold/prune a context, generate or lint a Dockerfile, or build a .dockerignore"
+---
+
+# vis docker
+
+Helpers for building efficient Docker images from monorepos. Keeps the install layer cache-friendly by copying only manifests first, then source code — plus a Dockerfile generator, a hadolint-powered linter, and a `.dockerignore` builder.
+
+## Usage
+
+```bash
+vis docker scaffold --focus=<project> [options]
+vis docker prune --context=<path> [options]
+vis docker init [path] [options]
+vis docker lint [file...] [options]
+```
+
+> The `.dockerignore` generator moved to its own command — see [`vis ignore`](./ignore) (`vis ignore --target=docker`).
+
+## Subcommands
+
+### scaffold
+
+Copies the minimum files needed for a Docker `COPY` + `pnpm install` layer:
+
+```bash
+vis docker scaffold --focus=my-app
+vis docker scaffold --focus=my-app,my-lib --include-sources
+vis docker scaffold --focus=my-app --out=.docker
+```
+
+Creates two directories inside `--out` (default `.vis/docker`):
+
+- **`workspace/`** — Root manifests (`pnpm-workspace.yaml`, `vis.config.ts`, `.npmrc`, `package.json`) + per-project `package.json` / `project.json` for the focus project and all its transitive dependencies, plus a **rewritten lockfile** containing only the entries the focus closure needs.
+- **`sources/`** — Full source trees for the focus project(s) only (when `--include-sources` is set).
+
+Also writes a `vis-docker-manifest.json` listing the focus closure for the prune step.
+
+#### Lockfile pruning
+
+`scaffold` rewrites the workspace lockfile so it carries only entries reachable from the focus closure. This drops dependencies that belong exclusively to unfocused projects and shrinks `pnpm install` time inside Docker accordingly. Supported package managers:
+
+| Lockfile            | Manager      | Notes                                                                          |
+| ------------------- | ------------ | ------------------------------------------------------------------------------ |
+| `pnpm-lock.yaml`    | pnpm         | v6 and v9 (separate `snapshots` block) supported                               |
+| `package-lock.json` | npm          | v3+ path-keyed `packages` map; nested `node_modules` resolution preserved      |
+| `yarn.lock`         | yarn classic | Seeded from each project's `package.json` (no workspace block in the lockfile) |
+| `yarn.lock`         | yarn berry   | Detected via `__metadata` block; uses `@workspace:` resolutions                |
+| `bun.lock`          | bun          | JSONC (comments stripped); package-name-keyed graph walked from workspace deps |
+| `bun.lockb`         | bun          | Binary; copied verbatim with a hint to run `bun install --save-text-lockfile`  |
+
+Per-lockfile pruning summaries are emitted at `info` level (`pnpm-lock.yaml: kept 124/812 packages and 4 importers (dropped 688 packages, 12 importers)`). Pass `--no-prune-lockfile` to copy lockfiles verbatim instead — useful for lockfile parser edge cases or when shipping the full graph is intentional.
+
+### prune
+
+Strips unfocused projects from the workspace after installing dependencies:
+
+```bash
+vis docker prune --context=.vis/docker
+```
+
+Reads `vis-docker-manifest.json` from the context directory and removes every project directory not in the focus closure.
+
+### init
+
+Generates a multi-stage Dockerfile wired to the `scaffold` / `prune` flow, using the package manager detected from your lockfile (pnpm, npm, yarn, bun) with BuildKit cache mounts for the install layer:
+
+```bash
+vis docker init                       # write ./Dockerfile for the detected package manager
+vis docker init --focus=my-app        # target a specific project's build
+vis docker init --node=24             # pin a different Node base image
+vis docker init apps/web/Dockerfile   # custom output path
+vis docker init --dry-run             # print the Dockerfile instead of writing it
+```
+
+`init` is **create-only**: if a `Dockerfile` already exists it prompts before overwriting (default **No**). Pass `--force` to overwrite without asking, or `--dry-run` to print to stdout. In a non-interactive shell (no TTY) it refuses to overwrite and exits non-zero unless `--force` is given.
+
+The generated runtime stage ends with a placeholder `CMD` and a `# TODO` — point it at your app's entrypoint. To improve an existing Dockerfile, use [`lint --fix`](#lint) rather than `init`.
+
+### lint
+
+Lints a Dockerfile with [hadolint](https://github.com/hadolint/hadolint), the standard Dockerfile linter (60+ `DL` rules plus embedded ShellCheck `SC` rules for `RUN` scripts):
+
+```bash
+vis docker lint                       # lint ./Dockerfile
+vis docker lint apps/web/Dockerfile   # lint a specific file
+vis docker lint --fix                 # apply safe autofixes, then report what remains
+vis docker lint --install --json      # auto-download hadolint, emit JSON
+```
+
+hadolint is a static binary that vis **downloads on demand** the first time you run `lint` (it is not bundled). If it is not found on your `PATH`, vis asks for confirmation before downloading the pinned version into `~/.vis/cache/hadolint/`; the download is checksum-verified. Pass `--install` to skip the prompt (e.g. in CI), or install hadolint yourself and vis will use the copy on your `PATH`.
+
+#### `--fix`
+
+hadolint itself only reports issues, so vis applies its own line-precise autofixes for the mechanically-safe rules, then re-lints:
+
+| Rule     | Fix                                                |
+| -------- | -------------------------------------------------- |
+| `DL3015` | add `--no-install-recommends` to `apt-get install` |
+| `DL3014` | add `-y` to `apt-get install`                      |
+| `DL3020` | rewrite `ADD` → `COPY` for plain files/dirs        |
+| `DL3027` | rewrite `apt` → `apt-get`                          |
+
+Every other finding (e.g. `DL3007` unpinned `:latest`) stays reported — fixes that require a judgement call are never applied automatically. `lint` exits non-zero when **error**-level findings remain.
+
+## Example Dockerfile
+
+```dockerfile
+FROM node:22-slim AS deps
+WORKDIR /app
+
+# 1. Scaffold — only manifests
+RUN corepack enable
+COPY .vis/docker/workspace/ ./
+RUN pnpm install --frozen-lockfile
+
+# 2. Sources — only the focus project
+FROM deps AS build
+COPY .vis/docker/sources/ ./
+COPY .vis/docker/vis-docker-manifest.json .vis/docker/
+RUN pnpm --filter my-app build
+RUN vis docker prune --context=.vis/docker
+
+# 3. Production image
+FROM node:22-slim
+WORKDIR /app
+COPY --from=build /app/packages/my-app/dist ./dist
+CMD ["node", "dist/index.js"]
+```
+
+## Options
+
+### scaffold
+
+| Option                | Default       | Description                                                  |
+| --------------------- | ------------- | ------------------------------------------------------------ |
+| `--focus`             | _required_    | Project name(s) to focus on, comma-separated                 |
+| `--out`               | `.vis/docker` | Output directory for scaffold                                |
+| `--include-sources`   | `false`       | Also copy focus project source trees                         |
+| `--no-prune-lockfile` | _off_         | Copy the workspace lockfile verbatim instead of rewriting it |
+
+### prune
+
+| Option      | Default       | Description             |
+| ----------- | ------------- | ----------------------- |
+| `--context` | `.vis/docker` | Scaffold root for prune |
+
+### init
+
+| Option      | Default | Description                                          |
+| ----------- | ------- | ---------------------------------------------------- |
+| `--focus`   | _none_  | Focus project name for the build filter              |
+| `--node`    | `22`    | Node.js version tag for the base image               |
+| `--force`   | `false` | Overwrite an existing Dockerfile without prompting   |
+| `--dry-run` | `false` | Print the Dockerfile to stdout instead of writing it |
+
+### lint
+
+| Option      | Default | Description                                          |
+| ----------- | ------- | ---------------------------------------------------- |
+| `--fix`     | `false` | Apply safe autofixes, then re-lint and report        |
+| `--install` | `false` | Download hadolint without prompting if it is missing |
+| `--config`  | _none_  | Path to a hadolint config (`.hadolint.yaml`)         |
+| `--json`    | `false` | Emit findings as JSON                                |

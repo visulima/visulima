@@ -1,0 +1,190 @@
+---
+title: "vis create"
+description: "Scaffold a new project from built-in templates, npm packages, or git repositories"
+---
+
+# vis create
+
+Create a new project from a template. Supports built-in templates, npm `create-*` packages, and git repository templates from GitHub, GitLab, Bitbucket, and Sourcehut.
+
+When run without arguments in a terminal, launches an interactive wizard.
+
+## Usage
+
+```bash
+vis create [template] [name] [-- template-args...]
+```
+
+## Examples
+
+```bash
+# Interactive mode (guided wizard)
+vis create
+
+# Built-in templates
+vis create vis:monorepo my-workspace
+vis create vis:app my-app
+vis create vis:library my-lib
+vis create vis:generator my-gen
+
+# npm create-* packages
+vis create vite my-app
+vis create vite my-app -- --template react-ts
+vis create next-app my-app
+vis create svelte my-app
+
+# Git repositories
+vis create user/repo my-project
+vis create github:user/repo
+vis create gitlab:company/templates/node-service
+vis create bitbucket:team/starter
+vis create https://github.com/user/repo/tree/main/packages/template
+
+# Show available templates
+vis create --list
+```
+
+## Options
+
+| Option             | Default | Description                                   |
+| ------------------ | ------- | --------------------------------------------- |
+| `--list`           | `false` | Show available templates and config aliases   |
+| `--editor`         |         | Generate editor configs (`vscode`)            |
+| `--git-init`       | `false` | Initialize a git repository after scaffolding |
+| `--no-interactive` | `false` | Skip interactive prompts                      |
+
+## Built-in Templates
+
+| Template        | Description                                              |
+| --------------- | -------------------------------------------------------- |
+| `vis:monorepo`  | Full pnpm workspace with `apps/` and `packages/` dirs    |
+| `vis:app`       | Application scaffold via `create-vite`                   |
+| `vis:library`   | TypeScript library with exports, vitest, and tsconfig    |
+| `vis:generator` | Code generator with `bin/` entry point and `src/` layout |
+
+## Git Repository Templates
+
+Templates can be downloaded from any git host using [giget](https://github.com/unjs/giget):
+
+| Format              | Example                                        |
+| ------------------- | ---------------------------------------------- |
+| GitHub shorthand    | `user/repo`                                    |
+| GitHub with branch  | `user/repo#dev`                                |
+| GitHub subdirectory | `user/repo/tree/main/packages/template`        |
+| GitLab              | `gitlab:group/repo`                            |
+| Bitbucket           | `bitbucket:team/repo`                          |
+| Sourcehut           | `sourcehut:~user/repo`                         |
+| SSH                 | `git:git@github.com:user/repo`                 |
+| Full URL            | `https://github.com/user/repo`                 |
+| Tarball URL         | `https://example.com/templates/starter.tar.gz` |
+
+### Private Repositories
+
+Set environment variables to authenticate with private repos:
+
+```bash
+# GitHub
+export GITHUB_TOKEN=ghp_...
+
+# GitLab
+export GITLAB_TOKEN=glpat-...
+
+# Bitbucket
+export BITBUCKET_TOKEN=...
+```
+
+Or pass a token inline via URL:
+
+```bash
+vis create https://ghp_token@github.com/private-org/template
+```
+
+## Template Arguments
+
+Arguments after `--` are forwarded to the template runner:
+
+```bash
+vis create vite my-app -- --template react-ts
+vis create next-app my-app -- --typescript --eslint
+```
+
+## Interactive Mode
+
+When run without arguments in a TTY, an interactive wizard guides you through:
+
+1. **Template selection** — choose from built-in templates or enter a custom one
+2. **Project name** — with a random suggestion and npm validation
+3. **Target directory** — with conflict detection and overwrite confirmation
+4. **Package manager** — pnpm, npm, yarn, bun, or deno (standalone projects only)
+5. **Git init** — initialize a git repository (standalone only)
+6. **Editor config** — generate VS Code settings and extensions
+
+## Post-Creation Tasks
+
+After scaffolding, vis automatically:
+
+1. **Editor config** — Creates `.vscode/settings.json` and `extensions.json` (when `--editor=vscode`)
+2. **AI instructions** — Creates `.ai/instructions` (skipped if already provided by template)
+3. **Git init** — Runs `git init` (when `--git-init`, standalone projects only)
+4. **Install dependencies** — Runs the detected package manager's install command
+
+## Configuration
+
+Configure defaults in `vis.config.ts`:
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    create: {
+        // Skip the PM prompt — always use pnpm
+        defaultPm: "pnpm",
+
+        // Auto-generate VS Code config
+        defaultEditor: "vscode",
+
+        // Auto-init git for standalone projects
+        gitInit: true,
+
+        // Disable automatic dependency installation
+        install: false,
+
+        // Prefer cached templates (faster, works offline)
+        preferOffline: true,
+
+        // Auth token for private repository templates
+        auth: "ghp_...",
+
+        // Custom template registry
+        registry: "https://my-registry.example.com",
+
+        // Named aliases for quick access
+        templates: {
+            react: "github:vitejs/vite/packages/create-vite/template-react-ts",
+            lib: "github:my-org/lib-template",
+            internal: "gitlab:company/templates/node-service",
+        },
+    },
+});
+```
+
+### Template Aliases
+
+When `create.templates` is configured, use alias names directly:
+
+```bash
+vis create react my-app     # → github:vitejs/vite/packages/create-vite/template-react-ts
+vis create internal my-svc  # → gitlab:company/templates/node-service
+
+# Show all aliases
+vis create --list
+```
+
+## Monorepo Awareness
+
+When run inside an existing monorepo workspace:
+
+- **vis:monorepo** is hidden from the interactive template list (prevents nesting)
+- Applications are placed in `apps/` and libraries in `packages/` automatically
+- The package manager prompt is skipped (uses the workspace PM)
+- Git init is skipped (the workspace already has git)

@@ -1,0 +1,295 @@
+---
+title: "Installation"
+description: "How to install and set up @visulima/fs in your project."
+---
+
+# Installation
+
+## Package Manager
+
+Install **@visulima/fs** using your preferred package manager:
+
+```bash npm2yarn
+npm install @visulima/fs
+```
+
+## Optional Dependencies
+
+### YAML Support
+
+If you need to read or write YAML files, install the `yaml` peer dependency:
+
+```bash npm2yarn
+npm install yaml
+```
+
+After installing `yaml`, you can use YAML functions:
+
+```typescript
+import { readYaml, writeYaml } from "@visulima/fs/yaml";
+
+const data = await readYaml("config.yml");
+await writeYaml("output.yml", data);
+```
+
+## Requirements
+
+- **Node.js:** 22.13 or higher
+- **TypeScript:** 5.0+ (optional, for TypeScript projects)
+
+## Import Methods
+
+### Node.js (ESM)
+
+```typescript
+// Main module - common file operations
+import { readJson, writeJson, emptyDir, ensureDir, walk, findUp } from "@visulima/fs";
+
+// YAML support
+import { readYaml, writeYaml } from "@visulima/fs/yaml";
+
+// Size utilities
+import { getFileSize, getCompressedSize } from "@visulima/fs/size";
+
+// EOL utilities
+import { detectEOL, normalizeEOL } from "@visulima/fs/eol";
+
+// Error types
+import { FileSystemError } from "@visulima/fs/error";
+
+// Additional utilities
+import {} from /* ... */ "@visulima/fs/utils";
+```
+
+### Node.js (CommonJS)
+
+```javascript
+// Main module
+const { readJson, writeJson, emptyDir, ensureDir } = require("@visulima/fs");
+
+// YAML support
+const { readYaml, writeYaml } = require("@visulima/fs/yaml");
+
+// Size utilities
+const { getFileSize } = require("@visulima/fs/size");
+
+// EOL utilities
+const { detectEOL } = require("@visulima/fs/eol");
+```
+
+### TypeScript
+
+TypeScript definitions are included automatically:
+
+```typescript
+import type { WalkEntry, WalkOptions, FindUpOptions } from "@visulima/fs";
+
+// Fully typed APIs
+const entries: WalkEntry[] = [];
+for await (const entry of walk("src")) {
+    entries.push(entry);
+}
+```
+
+## Subpath Exports
+
+The package provides several subpath exports for different functionality:
+
+| Export               | Purpose                     |
+| -------------------- | --------------------------- |
+| `@visulima/fs`       | Core file system operations |
+| `@visulima/fs/yaml`  | YAML parsing and writing    |
+| `@visulima/fs/size`  | File size calculations      |
+| `@visulima/fs/eol`   | End-of-line detection       |
+| `@visulima/fs/error` | Error types                 |
+| `@visulima/fs/utils` | Additional utilities        |
+
+## Verification
+
+Verify your installation works correctly:
+
+```typescript
+import { readJson, writeJson, emptyDir } from "@visulima/fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
+// Test write
+const testPath = join(tmpdir(), "visulima-test.json");
+await writeJson(testPath, { test: true });
+
+// Test read
+const data = await readJson(testPath);
+console.log("✓ Installation successful:", data);
+```
+
+## Common Setup Patterns
+
+### In a Build Script
+
+```typescript
+// build.ts
+import { ensureDir, emptyDir, writeJson } from "@visulima/fs";
+import { readYaml } from "@visulima/fs/yaml";
+
+// Load config
+const config = await readYaml("build.config.yml");
+
+// Prepare output directory
+await ensureDir("dist");
+await emptyDir("dist");
+
+// Write manifest
+await writeJson("dist/manifest.json", {
+    version: config.version,
+    buildTime: new Date().toISOString(),
+});
+```
+
+### In a CLI Tool
+
+```typescript
+#!/usr/bin/env node
+import { findUp, readJson } from "@visulima/fs";
+
+// Find project root
+const packageJsonPath = await findUp("package.json");
+if (!packageJsonPath) {
+    console.error("Not in a Node.js project");
+    process.exit(1);
+}
+
+const packageJson = await readJson(packageJsonPath);
+console.log(`Project: ${packageJson.name}@${packageJson.version}`);
+```
+
+### In a Configuration Manager
+
+```typescript
+// config.ts
+import { readJson, writeJson } from "@visulima/fs";
+import { readYaml, writeYaml } from "@visulima/fs/yaml";
+import { findUp } from "@visulima/fs";
+
+export async function loadConfig() {
+    // Try multiple config formats
+    const jsonPath = await findUp([".config.json", "config.json"]);
+    if (jsonPath) {
+        return readJson(jsonPath);
+    }
+
+    const yamlPath = await findUp([".config.yml", "config.yaml"]);
+    if (yamlPath) {
+        return readYaml(yamlPath);
+    }
+
+    throw new Error("No configuration file found");
+}
+```
+
+### In a Project Analyzer
+
+```typescript
+// analyzer.ts
+import { walk } from "@visulima/fs";
+import { extname } from "node:path";
+
+export async function analyzeProject(dir: string) {
+    const stats = {
+        total: 0,
+        byExtension: new Map<string, number>(),
+    };
+
+    for await (const entry of walk(dir, {
+        extensions: [".js", ".ts", ".jsx", ".tsx"],
+        skip: ["**/node_modules/**", "**/dist/**"],
+    })) {
+        if (entry.isFile) {
+            stats.total++;
+            const ext = extname(entry.path);
+            stats.byExtension.set(ext, (stats.byExtension.get(ext) || 0) + 1);
+        }
+    }
+
+    return stats;
+}
+```
+
+## Troubleshooting
+
+### Module Not Found
+
+If you see `Cannot find module '@visulima/fs'`:
+
+```bash npm2yarn
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### YAML Functions Not Available
+
+If YAML functions throw errors:
+
+```bash npm2yarn
+# Install the yaml peer dependency
+npm install yaml
+```
+
+### TypeScript Errors
+
+Ensure your `tsconfig.json` includes:
+
+```json
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "module": "ES2020",
+        "target": "ES2020"
+    }
+}
+```
+
+### Permission Errors
+
+If you encounter EACCES errors:
+
+```typescript
+import { ensureDir } from "@visulima/fs";
+
+try {
+    await ensureDir("/protected/path");
+} catch (error) {
+    if (error.code === "EACCES") {
+        console.error("Permission denied");
+    }
+    throw error;
+}
+```
+
+### Subpath Not Resolved
+
+If subpaths like `@visulima/fs/yaml` don't work:
+
+```bash
+# Verify Node.js version (requires 22.13+)
+node --version
+
+# Update Node.js if needed
+nvm install 22.13
+nvm use 22.13
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Quick Start" href="/quick-start">
+        Get started with common operations
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Learn about all available utilities
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>

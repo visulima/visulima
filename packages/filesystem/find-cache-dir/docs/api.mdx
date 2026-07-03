@@ -1,0 +1,397 @@
+---
+title: "API Reference"
+description: "Complete API documentation for @visulima/find-cache-dir"
+---
+
+# API Reference
+
+Complete reference for all functions in the `@visulima/find-cache-dir` package.
+
+## Functions
+
+### findCacheDir
+
+Find the cache directory asynchronously.
+
+**Signature:**
+
+```typescript
+function findCacheDir(name: string, options?: Options): Promise<string | undefined>;
+```
+
+**Parameters:**
+
+- `name` (`string`, required) - Application name (should match your package name)
+- `options` (`Options`, optional) - Configuration options
+
+**Returns:** `Promise<string | undefined>` - Path to cache directory, or `undefined` if not found
+
+**Example:**
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+
+const cacheDir = await findCacheDir("my-app");
+console.log(cacheDir);
+// macOS: /Users/username/Library/Caches/my-app
+// Linux: /home/username/.cache/my-app
+// Windows: C:\Users\username\AppData\Local\my-app
+```
+
+---
+
+### findCacheDirSync
+
+Find the cache directory synchronously.
+
+**Signature:**
+
+```typescript
+function findCacheDirSync(name: string, options?: Options): string | undefined;
+```
+
+**Parameters:**
+
+- `name` (`string`, required) - Application name (should match your package name)
+- `options` (`Options`, optional) - Configuration options
+
+**Returns:** `string | undefined` - Path to cache directory, or `undefined` if not found
+
+**Example:**
+
+```typescript
+import { findCacheDirSync } from "@visulima/find-cache-dir";
+
+const cacheDir = findCacheDirSync("my-app");
+console.log(cacheDir);
+```
+
+---
+
+## Options
+
+### Options Interface
+
+Configuration options for cache directory lookup.
+
+**Type Definition:**
+
+```typescript
+interface Options {
+    cwd?: string;
+    create?: boolean;
+    throwError?: boolean;
+}
+```
+
+**Properties:**
+
+#### cwd
+
+Starting directory for searching.
+
+- **Type:** `string`
+- **Default:** `process.cwd()`
+- **Description:** Directory to start searching for `package.json`
+
+**Example:**
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+
+const cacheDir = await findCacheDir("my-app", {
+    cwd: "/path/to/project",
+});
+```
+
+---
+
+#### create
+
+Create the directory if it doesn't exist.
+
+- **Type:** `boolean`
+- **Default:** `false`
+- **Description:** Automatically create the cache directory
+
+**Example:**
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+
+const cacheDir = await findCacheDir("my-app", {
+    create: true,
+});
+// Directory is guaranteed to exist
+```
+
+---
+
+#### throwError
+
+Throw an error if cache directory not found.
+
+- **Type:** `boolean`
+- **Default:** `false`
+- **Description:** Throw error instead of returning `undefined`
+
+**Example:**
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+
+try {
+    const cacheDir = await findCacheDir("my-app", {
+        throwError: true,
+    });
+    console.log("Found:", cacheDir);
+} catch (error) {
+    console.error("Cache directory not found");
+}
+```
+
+---
+
+## Cache Directory Locations
+
+### Platform-Specific Paths
+
+The package finds platform-specific cache directories:
+
+**macOS:**
+
+```
+~/Library/Caches/<name>
+/Users/username/Library/Caches/my-app
+```
+
+**Linux:**
+
+```
+~/.cache/<name>
+/home/username/.cache/my-app
+
+# Or if XDG_CACHE_HOME is set:
+$XDG_CACHE_HOME/<name>
+```
+
+**Windows:**
+
+```
+%LOCALAPPDATA%\<name>
+C:\Users\username\AppData\Local\my-app
+
+# Fallback:
+%USERPROFILE%\AppData\Local\<name>
+```
+
+### Project-Local Cache
+
+If in a Node.js project with `node_modules`, uses:
+
+```
+<project>/node_modules/.cache/<name>
+```
+
+---
+
+## Environment Variables
+
+### CACHE_DIR
+
+Override the cache directory location:
+
+```bash
+CACHE_DIR=/tmp/custom-cache node script.js
+```
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+
+// Will use /tmp/custom-cache/<name> if CACHE_DIR is set
+const cacheDir = await findCacheDir("my-app");
+```
+
+**Use Cases:**
+
+- Testing environments
+- CI/CD pipelines
+- Docker containers
+- Custom deployment scenarios
+
+---
+
+## Return Values
+
+### Success
+
+Returns absolute path to cache directory:
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+
+const cacheDir = await findCacheDir("my-app");
+// "/Users/username/Library/Caches/my-app"
+```
+
+### Not Found (default)
+
+Returns `undefined` if no cache directory found:
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+
+const cacheDir = await findCacheDir("my-app");
+if (cacheDir === undefined) {
+    console.log("No cache directory available");
+}
+```
+
+### Not Found (with throwError)
+
+Throws error if cache directory not found:
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+
+try {
+    const cacheDir = await findCacheDir("my-app", { throwError: true });
+} catch (error) {
+    console.error(error.message);
+    // "Could not find cache directory"
+}
+```
+
+---
+
+## TypeScript Types
+
+### Type Exports
+
+```typescript
+import type { Options } from "@visulima/find-cache-dir";
+
+const options: Options = {
+    cwd: process.cwd(),
+    create: true,
+    throwError: false,
+};
+```
+
+### Type Definitions
+
+```typescript
+// Function signatures
+type FindCacheDir = (name: string, options?: Options) => Promise<string | undefined>;
+
+type FindCacheDirSync = (name: string, options?: Options) => string | undefined;
+
+// Options
+interface Options {
+    cwd?: string;
+    create?: boolean;
+    throwError?: boolean;
+}
+```
+
+---
+
+## Error Handling
+
+### Common Error Scenarios
+
+**No package.json found:**
+
+```typescript
+const cacheDir = await findCacheDir("my-app", { throwError: true });
+// Error: Could not find package.json
+```
+
+**No cache directory available:**
+
+```typescript
+const cacheDir = await findCacheDir("my-app", { throwError: true });
+// Error: Could not determine cache directory
+```
+
+**Permission denied:**
+
+```typescript
+const cacheDir = await findCacheDir("my-app", { create: true });
+// Error: EACCES: permission denied
+```
+
+### Best Practices
+
+Handle errors gracefully:
+
+```typescript
+import { findCacheDir } from "@visulima/find-cache-dir";
+import { tmpdir } from "os";
+import { join } from "path";
+
+async function getCacheDir(name: string): Promise<string> {
+    try {
+        const cacheDir = await findCacheDir(name, { create: true });
+        if (cacheDir) return cacheDir;
+    } catch (error) {
+        console.warn("Failed to find cache directory:", error);
+    }
+
+    // Fallback to temp directory
+    return join(tmpdir(), name);
+}
+```
+
+---
+
+## Function Comparison
+
+### Async vs Sync
+
+| Feature            | `findCacheDir`        | `findCacheDirSync` |
+| ------------------ | --------------------- | ------------------ |
+| **Execution**      | Async (Promise)       | Sync (blocking)    |
+| **Use Case**       | Modern async code     | Legacy sync code   |
+| **Performance**    | Non-blocking          | Blocking           |
+| **Error Handling** | try/catch or .catch() | try/catch          |
+
+**When to use async:**
+
+```typescript
+// In async functions
+async function build() {
+    const cache = await findCacheDir("builder");
+    // ...
+}
+
+// In Promise chains
+findCacheDir("app").then((cache) => {
+    // Use cache
+});
+```
+
+**When to use sync:**
+
+```typescript
+// In synchronous initialization
+const cache = findCacheDirSync("app");
+
+// In scripts without async context
+function setupCache() {
+    return findCacheDirSync("tool", { create: true });
+}
+```
+
+---
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use the package with examples
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
+</Cards>

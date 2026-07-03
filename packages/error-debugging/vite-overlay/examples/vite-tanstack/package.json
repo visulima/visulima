@@ -1,0 +1,34 @@
+{
+    "name": "vite_overlay_vite-tanstack",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build && tsc",
+        "dev": "vite",
+        "serve": "vite preview",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@tailwindcss/vite": "catalog:build",
+        "@tanstack/react-router": "catalog:frontend",
+        "@tanstack/react-router-devtools": "catalog:frontend",
+        "@tanstack/router-plugin": "catalog:prod",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend",
+        "tailwindcss": "catalog:style"
+    },
+    "devDependencies": {
+        "@testing-library/dom": "catalog:test",
+        "@testing-library/react": "catalog:test",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "@visulima/vite-overlay": "workspace:*",
+        "@vitejs/plugin-react": "catalog:build",
+        "jsdom": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build",
+        "vitest": "catalog:test",
+        "web-vitals": "catalog:dev"
+    }
+}

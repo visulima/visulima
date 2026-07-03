@@ -1,0 +1,4 @@
+# data.txt is read verbatim by the ts-loader ".txt" test, which asserts the raw
+# string with LF newlines. Pin it to LF so Windows checkouts (core.autocrlf)
+# don't rewrite it to CRLF and break the assertion.
+data.txt text eol=lf

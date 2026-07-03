@@ -1,0 +1,143 @@
+// @visulima/secret-scanner — entry module.
+//
+// Only responsibilities here:
+//   1. Public surface re-exports (types, fingerprint, ruleset helpers, …).
+//   2. The three top-level scan orchestrators — `scan`, `scanFiles`,
+//      `scanString` — that thread `prepareScan` → native binding →
+//      `postProcess`.
+//
+// Everything else lives in a dedicated module. Keep this file thin so
+// consumers see the public surface at a glance and contributors know where
+// to go for each concern (`baseline.ts`, `pipeline.ts`, `validator/`, …).
+
+import { binding } from "./binding";
+import { resolveConfig } from "./config-loader";
+import { warnOnSkippedRules } from "./diagnostics";
+import { buildIgnoreMatcher, filterIgnoredFiles } from "./ignore-matcher";
+import { postProcess } from "./pipeline";
+import { prepareScan } from "./prepare-scan";
+import type { ValidatorReport } from "./transports";
+import { reportValidators } from "./transports";
+import type { Finding, RuleInfo, ScanOptions, SkippedRule } from "./types";
+
+/** Return any rules from the given config that failed to compile, with the reason. */
+export const inspectRuleset = async (options?: ScanOptions): Promise<SkippedRule[]> => {
+    const prepared = prepareScan(options);
+
+    return binding.inspectRuleset(prepared.nativeOptions);
+};
+
+/** Return metadata for every compiled rule in the effective config. */
+export const listRules = async (options?: ScanOptions): Promise<RuleInfo[]> => {
+    const prepared = prepareScan(options);
+
+    return binding.listRules(prepared.nativeOptions) as RuleInfo[];
+};
+
+/**
+ * Discover every tag (preset/category) present in the effective ruleset, with
+ * the number of rules carrying each. Lets a CLI build a `--list-presets` /
+ * `--list-tags` UX without hand-rolling the aggregation, and mirrors the tags
+ * accepted by the `tag:&lt;name>` selectors in `rules.enable`/`include`/`exclude`.
+ * Sorted by descending rule count, then tag name for stable output.
+ *
+ * Derived from the resolved gitleaks-shaped config (the same source
+ * `tag:` selectors expand against) — not the native `listRules()`, whose
+ * `RuleInfo.tags` is not populated for the bundled set.
+ */
+export const listTags = (options?: ScanOptions): { count: number; tag: string }[] => {
+    const resolved = resolveConfig({
+        config: options?.config?.inline,
+        configPath: options?.config?.path,
+        extendBundled: options?.config?.extendBundled,
+    });
+    const counts = new Map<string, number>();
+
+    for (const rule of resolved.rules ?? []) {
+        // eslint-disable-next-line sonarjs/different-types-comparison -- Defensive: `rule` is typed `GitleaksRule` but the underlying config holds `unknown` at runtime; guard against `null` slipping through.
+        if (typeof rule !== "object" || rule === null) {
+            continue;
+        }
+
+        const { tags } = rule as { tags?: unknown };
+
+        if (!Array.isArray(tags)) {
+            continue;
+        }
+
+        for (const tag of tags) {
+            if (typeof tag === "string") {
+                counts.set(tag, (counts.get(tag) ?? 0) + 1);
+            }
+        }
+    }
+
+    return [...counts.entries()]
+        .map(([tag, count]) => {
+            return { count, tag };
+        })
+        .toSorted((a, b) => b.count - a.count || a.tag.localeCompare(b.tag));
+};
+
+/**
+ * Report every non-HTTP validator type that appears in the current ruleset,
+ * along with the optional peer-dep users need to install to verify findings
+ * from those rules. Returns an empty array when the ruleset has no validators
+ * beyond HTTP/JWT (the built-ins). Ideal for a `--list-validators` CLI pass
+ * or a CI pre-flight check.
+ */
+export const listRequiredValidators = async (options?: ScanOptions): Promise<ValidatorReport[]> => {
+    const resolved = resolveConfig({
+        config: options?.config?.inline,
+        configPath: options?.config?.path,
+        extendBundled: options?.config?.extendBundled,
+    });
+    // eslint-disable-next-line sonarjs/different-types-comparison -- Defensive: `rule` is typed `GitleaksRule` but the underlying array holds `unknown` at runtime; guard against `null` slipping through.
+    const rulesArray = (resolved.rules ?? []).filter((rule): rule is { validation?: unknown } => typeof rule === "object" && rule !== null);
+
+    return reportValidators(rulesArray);
+};
+
+/** Scan the given paths for secrets. Runs the detector on a Rust thread pool. */
+export const scan = async (paths: string[], options?: ScanOptions): Promise<Finding[]> => {
+    const prepared = prepareScan(options);
+
+    if (options?.verbose) {
+        await warnOnSkippedRules(prepared.nativeOptions);
+    }
+
+    const raw = (await binding.scan(paths, prepared.nativeOptions)) as Finding[];
+
+    return postProcess(raw, prepared, options);
+};
+
+/**
+ * Scan a fixed list of files (e.g. output of `git diff --name-only`). Bypasses
+ * the native walker, so `walk.excludePatterns` / `walk.excludeFromFiles` are
+ * honoured here in JS via the `ignore` package.
+ */
+export const scanFiles = async (files: string[], options?: ScanOptions): Promise<Finding[]> => {
+    const prepared = prepareScan(options);
+
+    if (options?.verbose) {
+        await warnOnSkippedRules(prepared.nativeOptions);
+    }
+
+    const matcher = buildIgnoreMatcher(options);
+    const filteredFiles = filterIgnoredFiles(files, matcher, process.cwd());
+
+    const raw = (await binding.scanFiles(filteredFiles, prepared.nativeOptions)) as Finding[];
+
+    return postProcess(raw, prepared, options);
+};
+
+export { buildBaselineSet, createBaseline, loadBaselineSet, resolveBaselineSet, writeBaseline } from "./baseline";
+export { bundledConfigPath, type GitleaksConfig } from "./config-loader";
+export { fingerprint, legacyFingerprint } from "./fingerprint";
+export { type GitCommitInfo, type GitFinding, type GitScanOptions, scanGitHistory } from "./git-scan";
+export { isLockFile, isNotAlphanumericString, isPotentialUuid, isSequentialString } from "./heuristics";
+export { type SarifLog, toSarif, type ToSarifOptions } from "./sarif";
+export { scanString } from "./scan-string";
+export { transformYamlBlockScalars } from "./transformers/yaml";
+export type { ValidatorReport } from "./transports";
+export type { Confidence, Finding, RuleInfo, ScanOptions, SkippedRule, ValidationStatus } from "./types";

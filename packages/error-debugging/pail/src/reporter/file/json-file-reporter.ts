@@ -1,0 +1,89 @@
+import type { Options as RfsOptions } from "rotating-file-stream";
+
+import type { AbstractJsonReporterOptions } from "../json/abstract-json-reporter";
+import { AbstractJsonReporter } from "../json/abstract-json-reporter";
+import RotatingFileStream from "./utils/rotating-file-stream";
+
+/**
+ * Options for configuring the JsonFileReporter.
+ */
+export type FileReporterOptions = AbstractJsonReporterOptions
+    & RfsOptions & {
+        /** Path to the log file */
+        filePath: string;
+        /** Whether to write immediately to disk instead of buffering */
+        writeImmediately?: boolean;
+    };
+
+/**
+ * JSON File Reporter.
+ *
+ * A reporter that writes structured JSON log entries to rotating files on disk.
+ * Supports automatic file rotation based on size, time intervals, and compression.
+ * @template L - The log level type
+ * @example
+ * ```typescript
+ * const reporter = new JsonFileReporter({
+ *   filePath: "/var/log/app.log",
+ *   interval: "1d", // Rotate daily
+ *   size: "10M",   // Rotate when file reaches 10MB
+ *   compress: "gzip"
+ * });
+ *
+ * logger.registerReporters([reporter]);
+ * ```
+ */
+export class JsonFileReporter<L extends string = string> extends AbstractJsonReporter<L> {
+    /** The rotating file stream instance */
+    protected stream: RotatingFileStream;
+
+    /**
+     * Creates a new JsonFileReporter instance.
+     * @param options Configuration options for file rotation and JSON formatting
+     */
+    public constructor(options: FileReporterOptions) {
+        super();
+
+        const { filePath, writeImmediately = false, ...rfsOptions } = options;
+
+        this.stream = new RotatingFileStream(filePath, writeImmediately, {
+            compress: "gzip", // compress rotated files
+            interval: "1d", // rotate daily
+            size: "10M", // rotate every 10 MegaBytes written,
+            ...rfsOptions,
+        });
+    }
+
+    /**
+     * Closes the underlying rotating file stream.
+     *
+     * Ends the buffered stream so any queued writes are flushed to disk before the
+     * process exits. Without this the tail of the log can be lost on a short-lived
+     * process. After calling `close()` no further writes should be made (unless
+     * `writeImmediately` was enabled, in which case each write owns its own stream).
+     * @example
+     * ```typescript
+     * process.on("beforeExit", () => reporter.close());
+     * ```
+     */
+    public close(): void {
+        this.stream.end();
+    }
+
+    /**
+     * Alias for {@link close} to match common transport `dispose` conventions.
+     */
+    public dispose(): void {
+        this.close();
+    }
+
+    /**
+     * Writes a JSON message to the rotating file stream.
+     * @param message The JSON-formatted log message to write
+     * @protected
+     */
+    // eslint-disable-next-line no-underscore-dangle
+    protected override _log(message: string): void {
+        this.stream.write(`${message}\n`);
+    }
+}

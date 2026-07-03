@@ -1,0 +1,71 @@
+---
+title: MailCrab
+description: Use MailCrab for local email development and testing with @visulima/email
+---
+
+# MailCrab Provider
+
+The MailCrab provider wraps the SMTP provider to send emails to a [MailCrab](https://mailcrab.app/) instance, a local development email testing tool. MailCrab captures all emails sent to it and provides a web interface for viewing them.
+
+**Runtime Support:** Node.js only (wraps the SMTP provider which requires `node:net` and `node:tls`)
+
+## Setup
+
+First, start MailCrab locally (e.g., via Docker):
+
+```bash
+docker run -p 1080:1080 -p 1025:1025 marlonb/mailcrab
+```
+
+Then configure the provider:
+
+```typescript
+import { createMail } from "@visulima/email";
+import { mailCrabProvider } from "@visulima/email/providers/mailcrab";
+
+const mail = createMail(
+    mailCrabProvider({
+        host: "localhost",
+        port: 1025,
+    }),
+);
+```
+
+## Configuration
+
+The `MailCrabConfig` interface extends `BaseConfig` with the following options:
+
+| Option   | Type      | Required | Default     | Description            |
+| -------- | --------- | -------- | ----------- | ---------------------- |
+| `host`   | `string`  | No       | `localhost` | MailCrab SMTP host     |
+| `port`   | `number`  | No       | `1025`      | MailCrab SMTP port     |
+| `secure` | `boolean` | No       | `false`     | Use secure connection  |
+| `debug`  | `boolean` | No       | `false`     | Enable debug logging   |
+| `logger` | `Console` | No       | -           | Custom logger instance |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Test email via MailCrab").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+// View the email at http://localhost:1080
+```
+
+## Supported Features
+
+Since MailCrab wraps the SMTP provider, it supports the same features as SMTP:
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | No        |
+| Templates      | No        |
+| Tracking       | No        |

@@ -1,0 +1,428 @@
+<!-- START_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<a href="https://www.anolilab.com/open-source" align="center">
+
+  <img src="__assets__/package-og.svg" alt="error-handler" />
+
+</a>
+
+<h3 align="center">Error handlers for use in development and production environments.</h3>
+
+<!-- END_PACKAGE_OG_IMAGE_PLACEHOLDER -->
+
+<br />
+
+<div align="center">
+
+[![typescript-image][typescript-badge]][typescript-url]
+[![mit licence][license-badge]][license]
+[![npm downloads][npm-downloads-badge]][npm-downloads]
+[![Chat][chat-badge]][chat]
+[![PRs Welcome][prs-welcome-badge]][prs-welcome]
+
+</div>
+
+---
+
+<div align="center">
+    <p>
+        <sup>
+            Daniel Bannert's open source work is supported by the community on <a href="https://github.com/sponsors/prisis">GitHub Sponsors</a>
+        </sup>
+    </p>
+</div>
+
+---
+
+## Install
+
+```sh
+npm install @visulima/error-handler
+```
+
+```sh
+yarn add @visulima/error-handler
+```
+
+```sh
+pnpm add @visulima/error-handler
+```
+
+## Features
+
+- **Content Negotiation** - Automatically serves HTML, JSON, Problem JSON, or JSON:API based on `Accept` header
+- **Framework Agnostic** - Works with Node.js HTTP, Express, Fastify, Koa, Hono, and any Fetch-based runtime
+- **Production Ready** - Configurable error pages, trace control, and custom handlers
+- **TypeScript Support** - Full type safety with comprehensive TypeScript definitions
+- **Extensible** - Custom error handlers via regex matching on Accept headers
+- **CSP Support** - Built-in Content Security Policy nonce support for inline styles
+
+## Quick Start
+
+### Node.js HTTP Server
+
+`httpHandler(error, options?)` is synchronous and returns the `(req, res)`
+request handler — there is no need to `await` it.
+
+```ts
+import { createServer } from "node:http";
+import httpHandler from "@visulima/error-handler/handler/http/node";
+
+const server = createServer(async (req, res) => {
+    try {
+        // your app logic...
+        throw new Error("Boom!");
+    } catch (error) {
+        const handler = httpHandler(error as Error, {
+            showTrace: process.env.NODE_ENV !== "production",
+        });
+        await handler(req, res);
+    }
+});
+
+server.listen(3000);
+```
+
+### Express Setup
+
+Prefer the one-line error middleware instead of wrapping every route in
+`try/catch`. Register `createErrorMiddleware` once and Express will route any
+error (thrown synchronously or passed to `next(error)`) through it:
+
+```ts
+import express from "express";
+import { createErrorMiddleware } from "@visulima/error-handler";
+
+const app = express();
+app.use(express.json());
+
+app.get("/", () => {
+    throw new Error("Example error");
+});
+
+// Must be registered last, after your routes.
+app.use(
+    createErrorMiddleware({
+        showTrace: process.env.NODE_ENV !== "production",
+    }),
+);
+
+app.listen(3000);
+```
+
+> `createErrorMiddleware` is also available as a subpath import:
+> `import createErrorMiddleware from "@visulima/error-handler/handler/middleware";`.
+> If the response has already started streaming (`res.headersSent`) it delegates
+> to `next(error)` so it never double-writes.
+
+### Hono (Fetch Runtime)
+
+```ts
+import { serve } from "@hono/node-server";
+import { Hono } from "hono";
+import fetchHandler from "@visulima/error-handler/handler/fetch";
+
+const app = new Hono();
+
+app.get("/", (c) => c.text("OK"));
+app.get("/error", () => {
+    throw new Error("Boom from Hono");
+});
+
+app.onError(async (error, c) => {
+    const handler = fetchHandler(error as Error, {
+        showTrace: process.env.NODE_ENV !== "production",
+    });
+    return handler(c.req.raw);
+});
+
+serve({ fetch: app.fetch, port: 3000 });
+```
+
+### Fetch-based Runtimes
+
+```ts
+// Cloudflare Workers
+import fetchHandler from "@visulima/error-handler/handler/fetch";
+
+export default {
+    async fetch(request: Request): Promise<Response> {
+        try {
+            throw new Error("Boom");
+        } catch (error) {
+            const handler = fetchHandler(error as Error, {
+                showTrace: process.env.NODE_ENV !== "production",
+            });
+            return handler(request);
+        }
+    },
+};
+```
+
+```ts
+// Deno
+import fetchHandler from "@visulima/error-handler/handler/fetch";
+
+Deno.serve(async (request: Request) => {
+    try {
+        throw new Error("Boom");
+    } catch (error) {
+        const handler = fetchHandler(error as Error, {
+            showTrace: process.env.NODE_ENV !== "production",
+        });
+        return handler(request);
+    }
+});
+```
+
+## Content Negotiation
+
+The error handler automatically serves different content types based on the `Accept` header:
+
+- `text/html` → HTML error page
+- `application/problem+json` → Problem JSON (RFC 7807)
+- `application/json` → Simple JSON response
+- `application/vnd.api+json` → JSON:API format
+- `text/plain` → Plain text
+- `application/javascript` → JavaScript error throw
+
+### Custom Handlers
+
+Add custom handlers for specific content types:
+
+```ts
+import httpHandler from "@visulima/error-handler/handler/http/node";
+
+const handler = httpHandler(error, {
+    extraHandlers: [
+        {
+            regex: /application\/yaml/u,
+            handler: (error, req, res) => {
+                res.setHeader("content-type", "application/yaml");
+                res.end(`error: ${error.message}`);
+            },
+        },
+    ],
+});
+```
+
+## API
+
+### httpHandler(error, options?) => (req, res) => Promise<void>
+
+Node.js HTTP handler for Express, Connect, Fastify, Koa, and similar frameworks.
+The factory is synchronous and returns the `(req, res)` request handler — do not
+`await` it.
+
+**Parameters:**
+
+- `error: Error` - The error to handle
+- `options?: HtmlErrorHandlerOptions & { showTrace?: boolean; extraHandlers?: ErrorHandlers }`
+
+**Options:**
+
+- `showTrace?: boolean` - Include stack trace in responses (default: `process.env.NODE_ENV !== "production"`)
+- `extraHandlers?: ErrorHandlers` - Custom handlers for specific Accept headers
+- `errorPage?: string | ((params) => string | Promise<string>)` - Custom HTML error page
+- `cspNonce?: string` - Content Security Policy nonce for inline styles
+- `onError?: (error, request, response) => void | Promise<void>` - Callback for custom error logging
+
+### fetchHandler(error, options?) => (request) => Promise<Response>
+
+Fetch API handler for Cloudflare Workers, Deno, Bun, and other Fetch-based runtimes.
+Like `httpHandler`, the factory is synchronous — do not `await` it.
+
+**Parameters:**
+
+- `error: Error` - The error to handle
+- `options?: HtmlErrorHandlerOptions & { showTrace?: boolean; extraHandlers?: FetchErrorHandlers }`
+
+**Options:**
+
+- Same as `httpHandler` but uses `FetchErrorHandlers` for custom handlers
+- `onError?: (error, request, response) => void | Promise<void>` - Callback for custom error logging
+
+### Error Handler Types
+
+```ts
+type ErrorHandlers = {
+    handler: ErrorHandler;
+    regex: RegExp;
+}[];
+
+type FetchErrorHandlers = {
+    handler: FetchErrorHandler;
+    regex: RegExp;
+}[];
+
+type HtmlErrorHandlerOptions = {
+    errorPage?:
+        | string
+        | ((params: {
+              error: Error;
+              request: IncomingMessage;
+              response: ServerResponse;
+              reasonPhrase: string;
+              statusCode: number;
+          }) => string | Promise<string>);
+    cspNonce?: string;
+    onError?: (error: Error, request: IncomingMessage, response: ServerResponse) => void | Promise<void>;
+};
+```
+
+## Content Negotiation Examples
+
+### Basic Usage
+
+```ts
+import { createServer } from "node:http";
+import httpHandler from "@visulima/error-handler/handler/http/node";
+
+const server = createServer(async (req, res) => {
+    try {
+        throw new Error("Test error");
+    } catch (error) {
+        const handler = httpHandler(error as Error, {
+            showTrace: process.env.NODE_ENV !== "production",
+        });
+        return handler(req, res);
+    }
+}).listen(3000);
+```
+
+### With Custom HTML Error Page
+
+```ts
+import httpHandler from "@visulima/error-handler/handler/http/node";
+
+const handler = httpHandler(error, {
+    errorPage: ({ error, statusCode }) =>
+        `<!DOCTYPE html>
+        <html>
+        <head><title>Error ${statusCode}</title></head>
+        <body>
+            <h1>Error ${statusCode}</h1>
+            <p>${error.message}</p>
+        </body>
+        </html>`,
+    showTrace: false,
+});
+```
+
+### With CSP Nonce Support
+
+```ts
+import httpHandler from "@visulima/error-handler/handler/http/node";
+
+const handler = httpHandler(error, {
+    cspNonce: "nonce-abc123", // Will be added to <style> tags
+    showTrace: process.env.NODE_ENV !== "production",
+});
+```
+
+### With Custom Error Logging
+
+```ts
+import httpHandler from "@visulima/error-handler/handler/http/node";
+
+const handler = httpHandler(error, {
+    onError: (error, request, response) => {
+        // Log to your preferred logging service
+        console.error(`[${new Date().toISOString()}] ${request.method} ${request.url} - ${error.message}`);
+
+        // Or send to external logging service
+        // logToService({ error: error.message, url: request.url, method: request.method });
+    },
+    showTrace: process.env.NODE_ENV !== "production",
+});
+```
+
+## Additional Exports
+
+This package provides additional exports for different use cases:
+
+### Runtime-Specific Handlers
+
+For convenience, you can also import runtime-specific handlers:
+
+```ts
+// Deno
+import fetchHandler from "@visulima/error-handler/handler/http/deno";
+
+// Bun
+import fetchHandler from "@visulima/error-handler/handler/http/bun";
+
+// Cloudflare Workers
+import fetchHandler from "@visulima/error-handler/handler/http/cloudflare";
+
+// Edge Runtime
+import fetchHandler from "@visulima/error-handler/handler/http/edge";
+
+// Hono
+import fetchHandler from "@visulima/error-handler/handler/http/hono";
+
+// CLI applications
+import cliHandler from "@visulima/error-handler/handler/cli";
+```
+
+### Individual Error Handlers
+
+You can also import individual error handlers for specific content types:
+
+```ts
+import { htmlErrorHandler } from "@visulima/error-handler/error-handler/html";
+import { problemErrorHandler } from "@visulima/error-handler/error-handler/problem";
+import { jsonErrorHandler } from "@visulima/error-handler/error-handler/json";
+import { jsonapiErrorHandler } from "@visulima/error-handler/error-handler/jsonapi";
+import { textErrorHandler } from "@visulima/error-handler/error-handler/text";
+import { jsonpErrorHandler } from "@visulima/error-handler/error-handler/jsonp";
+import { xmlErrorHandler } from "@visulima/error-handler/error-handler/xml";
+```
+
+### Main Export
+
+```ts
+import { createNegotiatedErrorHandler } from "@visulima/error-handler";
+```
+
+## Related
+
+- [@visulima/flare](https://github.com/visulima/visulima/tree/main/packages/flare) - Full-featured error overlay with inspector
+- [@visulima/error](https://github.com/visulima/visulima/tree/main/packages/error) - Error utilities and solution finders
+
+## Supported Node.js Versions
+
+Libraries in this ecosystem make the best effort to track [Node.js’ release schedule](https://github.com/nodejs/release#release-schedule).
+Here’s [a post on why we think this is important](https://medium.com/the-node-js-collection/maintainers-should-consider-following-node-js-release-schedule-ab08ed4de71a).
+
+## Contributing
+
+If you would like to help take a look at the [list of issues](https://github.com/visulima/visulima/issues) and check our [Contributing](.github/CONTRIBUTING.md) guidelines.
+
+> **Note:** please note that this project is released with a Contributor Code of Conduct. By participating in this project you agree to abide by its terms.
+
+## Credits
+
+- [Daniel Bannert](https://github.com/prisis)
+- [All Contributors](https://github.com/visulima/visulima/graphs/contributors)
+
+## Made with ❤️ at Anolilab
+
+This is an open source project and will always remain free to use. If you think it's cool, please star it 🌟. [Anolilab](https://www.anolilab.com/open-source) is a Development and AI Studio. Contact us at [hello@anolilab.com](mailto:hello@anolilab.com) if you need any help with these technologies or just want to say hi!
+
+## License
+
+The visulima error-handler is open-sourced software licensed under the [MIT][license]
+
+<!-- badges -->
+
+[license-badge]: https://img.shields.io/npm/l/@visulima/error-handler?style=for-the-badge
+[license]: https://github.com/visulima/visulima/blob/main/LICENSE
+[npm-downloads-badge]: https://img.shields.io/npm/dm/@visulima/error-handler?style=for-the-badge
+[npm-downloads]: https://www.npmjs.com/package/@visulima/error-handler
+[prs-welcome-badge]: https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=for-the-badge
+[prs-welcome]: https://github.com/visulima/visulima/blob/main/.github/CONTRIBUTING.md
+[chat-badge]: https://img.shields.io/discord/932323359193186354.svg?style=for-the-badge
+[chat]: https://discord.gg/TtFJY8xkFK
+[typescript-badge]: https://img.shields.io/badge/Typescript-294E80.svg?style=for-the-badge&logo=typescript
+[typescript-url]: https://www.typescriptlang.org/

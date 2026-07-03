@@ -1,0 +1,73 @@
+---
+title: Postal
+description: Send emails using a self-hosted Postal server with @visulima/email
+---
+
+# Postal Provider
+
+The Postal provider allows you to send emails through a self-hosted [Postal](https://postal.atech.media/docs/developer/sending) email server.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { postalProvider } from "@visulima/email/providers/postal";
+
+const mail = createMail(
+    postalProvider({
+        apiKey: process.env.POSTAL_API_KEY!,
+        host: "postal.example.com",
+    }),
+);
+```
+
+## Configuration
+
+The `PostalConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                 | Description                     |
+| ---------- | --------- | -------- | ----------------------- | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                       | Your Postal server API key      |
+| `host`     | `string`  | Yes      | -                       | Your Postal server host         |
+| `endpoint` | `string`  | No       | `https://{host}/api/v1` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                 | Enable debug logging            |
+| `logger`   | `Console` | No       | -                       | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                     | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                 | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Postal").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Postal provider supports additional options through `PostalEmailOptions`:
+
+| Option              | Type                      | Description                    |
+| ------------------- | ------------------------- | ------------------------------ |
+| `tags`              | `string[]`                | Tags for categorization        |
+| `templateId`        | `number`                  | Postal template ID             |
+| `templateVariables` | `Record<string, unknown>` | Template variables             |
+| `postalMessageId`   | `string`                  | Postal message ID for tracking |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | No        |

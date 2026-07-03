@@ -1,0 +1,130 @@
+---
+title: "Wrap your package manager"
+description: "Shadow npm / pnpm / yarn / bun with vis so every install runs through the marshall pipeline."
+---
+
+# Wrap your package manager
+
+`vis install` and `vis add` pass unknown subcommands straight through to the detected package manager (npm, pnpm, yarn, bun) but run the marshall pipeline first — typosquats, downloads, archived repos, expired domains, dist signatures, provenance, the s1ngularity compromised-publish shape, new bin scripts, metadata, and author/publisher heuristics. The cleanest way to get that protection on every install is to alias your package manager to vis.
+
+## Bash / Zsh
+
+Add to `~/.bashrc` or `~/.zshrc`:
+
+```bash
+alias npm='vis'
+alias pnpm='vis'
+alias yarn='vis'
+alias bun='vis'
+```
+
+Reload (`source ~/.bashrc`) and your existing muscle memory keeps working — `npm install`, `pnpm add foo`, `yarn upgrade`, etc., all flow through vis.
+
+## Fish
+
+`~/.config/fish/config.fish`:
+
+```fish
+alias npm 'vis'
+alias pnpm 'vis'
+alias yarn 'vis'
+alias bun 'vis'
+```
+
+## Per-project (mise / direnv / nix-shell)
+
+Drop a one-line wrapper script into a tools directory you already shim onto `PATH`. For [mise](https://mise.jdx.dev):
+
+```toml
+# .mise.toml
+[hooks]
+enter = "alias npm='vis' && alias pnpm='vis' && alias yarn='vis' && alias bun='vis'"
+```
+
+For [direnv](https://direnv.net):
+
+```bash
+# .envrc
+alias npm='vis'
+alias pnpm='vis'
+alias yarn='vis'
+alias bun='vis'
+```
+
+## What passes through
+
+`vis install <args…>` and `vis add <args…>` are the integration points:
+
+- **Marshalls fire first.** Each pre-install marshall (see below) runs against the named packages. Errors abort the install; warnings show a 15-second countdown you can cancel with Ctrl-C.
+- **Then vis hands off** to the detected package manager with the original args. `vis install --frozen-lockfile --prod` becomes `pnpm install --frozen-lockfile --prod` (or `npm ci --omit=dev`, etc.) when `pnpm` is the detected PM.
+
+The detection cascades: explicit `packageManager` field in `package.json` → lockfile → corepack → `$PATH`. Override with `--pm`.
+
+## Skipping checks
+
+Per-invocation:
+
+```bash
+vis add lodash --no-typosquat-check          # skip the typosquat marshall only
+VIS_DISABLE_AUTO_CONTINUE=1 vis add lodash   # require explicit y/N on warnings
+MARSHALL_DISABLE_ALL=1 vis add lodash         # disable every marshall (emergency escape hatch)
+```
+
+Per-marshall, by environment variable:
+
+| Marshall        | Env var                               |
+| --------------- | ------------------------------------- |
+| typosquats      | `MARSHALL_DISABLE_TYPOSQUATS=1`       |
+| installScripts  | `MARSHALL_DISABLE_INSTALL_SCRIPTS=1`  |
+| firstSeen       | `MARSHALL_DISABLE_FIRST_SEEN=1`       |
+| publisherChange | `MARSHALL_DISABLE_PUBLISHER_CHANGE=1` |
+| score           | `MARSHALL_DISABLE_SCORE=1`            |
+| malware         | `MARSHALL_DISABLE_MALWARE=1`          |
+| vulnerability   | `MARSHALL_DISABLE_VULNERABILITY=1`    |
+| license         | `MARSHALL_DISABLE_LICENSE=1`          |
+| unexpectedDeps  | `MARSHALL_DISABLE_UNEXPECTED_DEPS=1`  |
+| author          | `MARSHALL_DISABLE_AUTHOR=1`           |
+| expiredDomains  | `MARSHALL_DISABLE_EXPIRED_DOMAINS=1`  |
+| signatures      | `MARSHALL_DISABLE_SIGNATURES=1`       |
+| provenance      | `MARSHALL_DISABLE_PROVENANCE=1`       |
+| s1ngularity     | `MARSHALL_DISABLE_S1NGULARITY=1`      |
+| newBin          | `MARSHALL_DISABLE_NEW_BIN=1`          |
+| downloads       | `MARSHALL_DISABLE_DOWNLOADS=1`        |
+| metadata        | `MARSHALL_DISABLE_METADATA=1`         |
+| archivedRepo    | `MARSHALL_DISABLE_ARCHIVED_REPO=1`    |
+
+Per-project, in `vis.config.ts`:
+
+```ts
+export default {
+    security: {
+        author: { enabled: false },
+        expiredDomains: { allowDomains: ["legacy-corp.example"] },
+        downloads: { allowlist: ["@myorg/private-pkg"], warnThreshold: 1000 },
+    },
+};
+```
+
+## Pre-flight without installing
+
+For one-off vetting, `vis inspect` runs the marshall pipeline against a package without touching the lockfile:
+
+```bash
+vis inspect express
+vis inspect lodash@4.17.21
+vis inspect express --json | jq '.findings[]'
+vis inspect express --strict      # exit non-zero on warnings too
+vis inspect express --only author,downloads
+```
+
+Use it in code review (`vis inspect <new-dep>` before merging a PR that adds a dependency) or in CI for vetting third-party additions.
+
+## Verifying the alias
+
+```bash
+which npm           # → alias to vis
+vis --version
+vis inspect lodash  # smoke test that the pipeline runs
+```
+
+If `which npm` still shows the real npm binary, your alias wasn't sourced — check the alias is in the correct shell config and that you've re-opened your shell.

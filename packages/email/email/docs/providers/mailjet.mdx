@@ -1,0 +1,95 @@
+---
+title: Mailjet
+description: Send emails using the Mailjet API with @visulima/email
+---
+
+# Mailjet Provider
+
+The Mailjet provider allows you to send emails through the [Mailjet Send API v3.1](https://dev.mailjet.com/email/guides/send-api-v31/).
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { mailjetProvider } from "@visulima/email/providers/mailjet";
+
+const mail = createMail(
+    mailjetProvider({
+        apiKey: process.env.MAILJET_API_KEY!,
+        apiSecret: process.env.MAILJET_API_SECRET!,
+    }),
+);
+```
+
+## Configuration
+
+The `MailjetConfig` interface extends `BaseConfig` with the following options:
+
+| Option      | Type      | Required | Default                   | Description                     |
+| ----------- | --------- | -------- | ------------------------- | ------------------------------- |
+| `apiKey`    | `string`  | Yes      | -                         | Your Mailjet API key            |
+| `apiSecret` | `string`  | Yes      | -                         | Your Mailjet API secret         |
+| `endpoint`  | `string`  | No       | `https://api.mailjet.com` | Custom API endpoint             |
+| `debug`     | `boolean` | No       | `false`                   | Enable debug logging            |
+| `logger`    | `Console` | No       | -                         | Custom logger instance          |
+| `retries`   | `number`  | No       | `3`                       | Number of retry attempts        |
+| `timeout`   | `number`  | No       | `30000`                   | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Mailjet").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Mailjet provider supports additional options through `MailjetEmailOptions`:
+
+```typescript
+import type { MailjetEmailOptions } from "@visulima/email/providers/mailjet";
+
+const options: MailjetEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    templateId: 12345,
+    templateLanguage: true,
+    templateVariables: { name: "John" },
+    customId: "campaign-123",
+    priority: 2,
+};
+```
+
+| Option                | Type                      | Description                          |
+| --------------------- | ------------------------- | ------------------------------------ |
+| `templateId`          | `number`                  | Mailjet template ID                  |
+| `templateLanguage`    | `boolean`                 | Enable template language processing  |
+| `templateVariables`   | `Record<string, unknown>` | Template variables                   |
+| `customId`            | `string`                  | Custom ID for tracking               |
+| `campaign`            | `string`                  | Custom campaign name                 |
+| `deduplicateCampaign` | `boolean`                 | Prevent duplicate emails in campaign |
+| `priority`            | `number`                  | Priority (1-5, where 1 is highest)   |
+| `deliveryTime`        | `number`                  | Delivery time (Unix timestamp)       |
+| `eventPayload`        | `string`                  | Event payload for webhooks           |
+| `urlTags`             | `Record<string, string>`  | URL tags for tracking                |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

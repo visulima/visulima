@@ -1,0 +1,65 @@
+---
+title: "Usage Guide"
+---
+
+# Usage Guide
+
+## Creating Tables
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable({
+    maxWidth: 100,
+    showHeader: true,
+    wordWrap: true,
+});
+```
+
+## Headers
+
+```typescript
+// Simple headers
+table.setHeaders(["Col1", "Col2", "Col3"]);
+
+// With alignment
+table.setHeaders(["Name", { content: "Age", hAlign: "center" }, { content: "Score", hAlign: "right" }]);
+```
+
+## Adding Rows
+
+```typescript
+// Single row
+table.addRow(["Value1", "Value2", "Value3"]);
+
+// Multiple rows
+table.addRows([
+    ["A", "B", "C"],
+    ["D", "E", "F"],
+]);
+```
+
+## Column Spanning
+
+```typescript
+table.addRow([{ colSpan: 2, content: "Spans 2 columns" }, "Normal cell"]);
+```
+
+## Styling
+
+```typescript
+const table = createTable({
+    style: {
+        paddingLeft: 1,
+        paddingRight: 1,
+        borderStyle: "double",
+    },
+});
+```
+
+## Rendering
+
+```typescript
+const output = table.render();
+console.log(output);
+```

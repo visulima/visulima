@@ -1,0 +1,893 @@
+---
+title: Configuration
+description: "Full reference for vis.config.ts and project.json configuration"
+---
+
+# Configuration
+
+vis uses two configuration layers:
+
+- **`vis.config.ts`** — workspace-wide settings (target defaults, security, constraints, codeowners, updates)
+- **`project.json`** — per-project overrides (targets, tags, layer, owners)
+
+## vis.config.ts
+
+Create a `vis.config.ts` in your workspace root:
+
+```typescript
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    // All sections are optional — secure defaults are applied automatically
+});
+```
+
+Supported file names (checked in order): `vis.config.ts`, `.mts`, `.cts`, `.js`, `.mjs`, `.cjs`.
+
+### Target Defaults
+
+Apply default configuration to all projects that have a matching target.
+
+#### Picking a defaults tool
+
+vis ships four mechanisms for sharing target configuration. Use the smallest one that fits — they compose, so you can mix.
+
+| Tool                | Reach for it when…                                                                                                             | Section                                              |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------- |
+| `tasks`             | One target name should behave the same in **every** project (e.g. `build` always declares `^build`).                           | This section                                         |
+| `scopedTasks`       | Defaults need to apply to a **subset** of projects matched by `tags` / `projectType` / `layer` / `stack` / `language`.         | [Scoped Tasks](#scoped-tasks)                        |
+| `taskGroups`        | The same multi-entry `dependsOn` array repeats across **two or more** targets — name the bundle once, reuse.                   | [Task Groups](#task-groups)                          |
+| `@inherit` sentinel | A single project needs to **extend** an inherited array (`dependsOn`, `inputs`, `outputs`, `aliases`) instead of replacing it. | [`@inherit` array sentinel](#inherit-array-sentinel) |
+
+Per-target `project.json#targets` (and `vis.task.ts` overlays) override everything above — use them only for project-specific deviations, not as the default home for shared config.
+
+```typescript
+export default defineConfig({
+    tasks: {
+        build: {
+            dependsOn: ["^build"],
+            outputs: ["{projectRoot}/dist/**"],
+            inputs: ["{projectRoot}/src/**"],
+            cache: true,
+            type: "build",
+        },
+        test: {
+            dependsOn: ["build"],
+            cache: true,
+        },
+        dev: {
+            preset: "server",
+        },
+    },
+});
+```
+
+| Property      | Type                         | Description                                             |
+| ------------- | ---------------------------- | ------------------------------------------------------- |
+| `command`     | `string`                     | Shell command (overrides package.json script)           |
+| `dependsOn`   | `(string \| object)[]`       | Dependencies. `^build` = run on dep projects first      |
+| `outputs`     | `string[]`                   | Output patterns (`{projectRoot}` placeholder supported) |
+| `inputs`      | `(string \| object)[]`       | Input patterns for cache invalidation                   |
+| `cache`       | `boolean`                    | Whether cacheable (default depends on `type`)           |
+| `parallelism` | `boolean`                    | Whether supports parallel execution                     |
+| `type`        | `"build" \| "test" \| "run"` | Semantic type (affects cache default)                   |
+| `preset`      | `"server" \| "utility"`      | Preset bundle of options                                |
+| `options`     | `object`                     | See [target options](/commands/run#target-options)      |
+
+### File Groups
+
+Named glob collections reusable from target `inputs` via `@filegroup:<name>`:
+
+```typescript
+export default defineConfig({
+    fileGroups: {
+        sources: ["src/**/*.ts", "!src/**/*.test.ts"],
+        tests: ["**/*.test.ts", "**/*.spec.ts"],
+        configs: ["tsconfig.json", "vis.config.ts"],
+    },
+    tasks: {
+        build: {
+            inputs: ["@filegroup:sources", "@filegroup:configs"],
+        },
+        test: {
+            inputs: ["@filegroup:sources", "@filegroup:tests"],
+        },
+    },
+});
+```
+
+### Input Forms
+
+`inputs` accepts three interchangeable string forms — the URI form is sugar over the object form, so all three hash identically and produce the same cache keys:
+
+| Form            | Example                                     | Equivalent object form                               |
+| --------------- | ------------------------------------------- | ---------------------------------------------------- |
+| Bare glob       | `"src/**/*.ts"`, `"!{projectRoot}/dist/**"` | `{ fileset: "src/**/*.ts" }`                         |
+| `file://`       | `"file://tsconfig.json"`                    | `{ fileset: "tsconfig.json" }`                       |
+| `glob://`       | `"glob://{projectRoot}/src/**/*"`           | `{ fileset: "{projectRoot}/src/**/*" }`              |
+| `env://`        | `"env://NODE_ENV"`                          | `{ env: "NODE_ENV" }`                                |
+| `func://`       | `"func://node --version"`                   | `{ runtime: "node --version" }`                      |
+| `dep://`        | `"dep://typescript,vitest"`                 | `{ externalDependencies: ["typescript", "vitest"] }` |
+| `@filegroup:`   | `"@filegroup:sources"`                      | (expanded inline from `fileGroups.sources`)          |
+| Named-input ref | `"production"`                              | (expanded inline from `namedInputs.production`)      |
+
+Negation (`!`) works for fileset forms only: `!file://...`, `!glob://...`, `!{projectRoot}/dist/**`. Negating env/func/dep throws at config load — there is no semantic for "not this env var".
+
+```typescript
+export default defineConfig({
+    tasks: {
+        build: {
+            inputs: [
+                "glob://{projectRoot}/src/**/*", // fileset
+                "file://{workspaceRoot}/tsconfig.base.json",
+                "env://NODE_ENV", // env-var fingerprint
+                "func://node --version", // runtime-command fingerprint
+                "dep://typescript,vitest", // external-dep fingerprint
+            ],
+        },
+    },
+});
+```
+
+Unknown URI schemes (e.g. `gob://**` typo) throw `InvalidInputUriError` at config load rather than degrading silently into a glob — silent fallback would mask cache-correctness bugs.
+
+### Layered Configuration
+
+`vis.config.ts` can `extends` other config files, and each project can ship a `vis.task.ts` overlay. Both are opt-in — projects without them behave identically to before.
+
+#### `extends` chain
+
+`extends` accepts a single string or an array. Each entry is either a relative path (`./` / `../`) resolved against the file declaring `extends`, or an npm package name resolved via Node.js module resolution. Absolute paths are rejected.
+
+```typescript
+// vis.config.ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    extends: [
+        "@acme/vis-preset", // npm package
+        "./shared/security.config.ts", // relative path
+    ],
+    security: { allowBuilds: { esbuild: true } },
+});
+```
+
+Entries are processed left-to-right (later entries win). The consumer file always overrides anything pulled in from `extends`. Cycles raise `VisConfigCycleError`; missing entries raise `VisConfigNotFoundError`. Both errors include the full chain of files for debugging deep `extends` graphs.
+
+By default the consumer's arrays replace inherited arrays wholesale. Use the [`@inherit` array sentinel](#inherit-array-sentinel) when you want to extend an array from `extends` (or from `tasks`) instead of replacing it.
+
+#### Per-package `vis.task.ts`
+
+Drop a `vis.task.ts` in a project to override its targets with full type-safety. `project.json` stays the canonical home for static metadata (`tags`, `layer`, `stack`, `language`, `owners`, `projectType`); `vis.task.ts` is the canonical home for dynamic, type-checked target overrides.
+
+```typescript
+// packages/api/crud/vis.task.ts
+import { defineTaskConfig } from "@visulima/vis/config";
+
+export default defineTaskConfig({
+    tasks: {
+        build: {
+            inputs: ["@inherit", "src/proto/**/*.proto"],
+            outputs: ["dist/**/*"],
+        },
+        test: {
+            when: { not: { ci: true } }, // skip locally on CI
+        },
+    },
+});
+```
+
+#### Merge precedence
+
+Lowest to highest priority — later overrides earlier:
+
+1. `extends` chain (flattened depth-first, left-to-right)
+2. Root `vis.config.ts` values
+3. `scopedTasks` blocks (in declaration order)
+4. `project.json#targets`
+5. **`vis.task.ts#tasks`**
+6. `package.json#scripts` _(fallback only — fills `command` if still undefined)_
+7. Preset
+8. `defaultCacheForType`
+
+#### `@inherit` array sentinel
+
+By default, child arrays replace parent arrays. To extend instead, use `"@inherit"` — every occurrence is replaced inline by the parent's entries:
+
+```typescript
+// vis.config.ts tasks
+tasks: {
+    build: { dependsOn: ["^build"] },
+}
+
+// packages/api/crud/vis.task.ts overlay
+tasks: {
+    build: { dependsOn: ["@inherit", "^proto-gen"] }, // → ["^build", "^proto-gen"]
+}
+```
+
+Applies to `dependsOn`, `inputs`, `outputs`, and `aliases`. An empty array (`dependsOn: []`) is a deliberate reset; an array without `@inherit` is a wholesale replace.
+
+**When to reach for `@inherit`:** one project needs an extra dependency, input, or output on top of the inherited defaults — not as a replacement. Common cases: a package that generates code before its build (`["@inherit", "^proto-gen"]`), a test target that also needs fixtures (`inputs: ["@inherit", "{projectRoot}/__fixtures__/**"]`), or an output target that emits a second artefact (`outputs: ["@inherit", "{projectRoot}/types/**"]`).
+
+If you find yourself writing `@inherit` in two or more projects with the same addition, that's the signal to move the addition into `scopedTasks` (scoped) or `tasks` (universal) instead, and drop the per-project overlay.
+
+### Scoped Tasks
+
+Apply target defaults conditionally based on project metadata:
+
+```typescript
+export default defineConfig({
+    scopedTasks: [
+        {
+            match: { tags: ["frontend"] },
+            tasks: {
+                build: { command: "vite build", outputs: ["dist/**"] },
+            },
+        },
+        {
+            match: { projectType: "library", language: "typescript" },
+            tasks: {
+                build: { command: "tsc --build" },
+            },
+        },
+        {
+            match: { layer: ["tool", "automation"] },
+            tasks: {
+                test: { options: { retryCount: 2 } },
+            },
+        },
+    ],
+});
+```
+
+Match fields (all optional, must all match):
+
+| Field         | Type                         | Description                         |
+| ------------- | ---------------------------- | ----------------------------------- |
+| `tags`        | `string[]`                   | Project must have any of these tags |
+| `projectType` | `"library" \| "application"` | Project type match                  |
+| `layer`       | `string \| string[]`         | Layer match                         |
+| `stack`       | `string \| string[]`         | Stack match                         |
+| `language`    | `string \| string[]`         | Language match                      |
+
+### Inferred Targets
+
+Project Crystal-style inference: vis can synthesize default targets (`build`, `test`, `dev`, `lint`, `format`, …) for each project by sniffing config files and `package.json` dependencies. Off by default.
+
+```typescript
+export default defineConfig({
+    inferTargets: true,
+});
+```
+
+Inferred targets are the **lowest-priority layer** in the merge chain — `package.json` scripts, `project.json`, and per-package `vis.task.ts` always win on a per-target-name basis. Add `"build": "vite build --mode foo"` to `package.json` and that script overrides whatever the Vite detector would have generated; everything else (e.g. `dev`, `preview`) keeps the inferred value.
+
+Run `vis list --inferred` to see exactly what was synthesized in each project.
+
+#### Per-detector opt-in / opt-out
+
+Use the object form to disable individual detectors. Detectors omitted from the object stay enabled:
+
+```typescript
+export default defineConfig({
+    inferTargets: {
+        // Drop Jest tests in favour of an explicit script
+        jest: false,
+        // Drop the legacy webpack detector workspace-wide
+        webpack: false,
+    },
+});
+```
+
+To opt **in** to only specific detectors, set the rest to `false` — there is no implicit allow-list. (For most workspaces `true` plus a handful of overrides is the right shape.)
+
+#### Detector coverage
+
+| Category          | Detectors (target names)                                                                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App frameworks    | `nuxt`, `next`, `remix`, `astro`, `gatsby`, `docusaurus` — emit `build`, `dev`, `start`/`preview`/`serve`, plus framework-specific (`generate`, `develop`, …) |
+| Bundlers          | `vite`, `rolldown`, `tsdown`, `tsup`, `packem`, `rollup`, `webpack` — emit `build` (and `dev`/`preview` where the tool supports it)                           |
+| Server frameworks | `nest` — emits `build`, `dev`, `start`                                                                                                                        |
+| Test runners      | `vitest`, `jest`, `bun`, `deno`, `playwright`, `cypress` — emit `test`, `test:watch`, `test:e2e`, `cypress:open`                                              |
+| Stories           | `storybook` — emits `storybook`, `build-storybook`                                                                                                            |
+| Typecheck / docs  | `typescript` (→ `typecheck`), `typedoc` (→ `docs`), `vitepress` (→ `docs:dev`, `docs:build`, `docs:preview`)                                                  |
+| Lint / format     | `eslint`, `prettier`, `biome`, `oxlint`, `oxfmt`, `stylelint` (→ `lint:css`), `knip` (→ `knip`)                                                               |
+| DB tooling        | `prisma`, `drizzle` — emit `db:generate`, `db:migrate`, `db:push`, `db:studio`                                                                                |
+| Release plumbing  | `graphql-codegen` (→ `codegen`), `api-extractor` (→ `api-extract`), `changeset` (→ `changeset:status`, `changeset:version`, `changeset:publish`)              |
+
+When two detectors would emit the same target name, the earlier one in the registry wins. Practical conflicts:
+
+- `build`: nuxt > next > remix > astro > gatsby > docusaurus > vite > nest > rolldown > tsdown > tsup > packem > rollup > webpack
+- `test`: vitest > jest > bun > deno
+- `test:e2e`: playwright > cypress
+- `lint`: eslint > biome > oxlint > deno
+- `format` / `format:check`: prettier > biome > oxfmt
+- `db:*`: prisma > drizzle
+
+Stylelint and knip use distinct names (`lint:css`, `knip`) so they coexist with the primary linter. Mutating commands (`prettier --write`, `oxfmt`, `deno fmt`) deliberately omit `type` so the cache won't skip a re-format the user expected.
+
+#### Trigger surface
+
+Most detectors fire when **either** a config file or a known dependency is present. Tools that frequently appear as transitive deps require a config file to avoid phantom targets — currently: `vite`, `rolldown`, `rollup`, `webpack`, `storybook`, `nest`, `remix`, `vitepress`, `bun`, `deno`, `changeset`. Detectors with a `fallbackDependency` (e.g. `vitest`) work even with the tool's default config (no `vitest.config.ts` needed).
+
+### Constraints
+
+Enforce dependency rules across the workspace:
+
+```typescript
+export default defineConfig({
+    constraints: {
+        enforceLayerRelationships: true,
+        typeBoundaries: {
+            enforceApplicationBoundary: true,
+            allowedDependencyTypes: {
+                application: ["library"],
+            },
+        },
+        tagRelationships: {
+            frontend: ["shared", "frontend"],
+            backend: ["shared", "backend"],
+        },
+        dependencyKindRules: {
+            noDevDependencyOnProductionDep: true,
+            noProductionDependencyOnApplication: true,
+        },
+    },
+});
+```
+
+#### Layer Hierarchy
+
+When `enforceLayerRelationships: true`, projects may only depend on projects at the same or lower layer:
+
+```
+configuration < library < scaffolding < tool < automation < application
+```
+
+### Version Constraint
+
+Enforce a minimum vis CLI version for the workspace:
+
+```typescript
+export default defineConfig({
+    versionConstraint: ">=1.0.0",
+});
+```
+
+When the running vis binary is older than the constraint, vis exits with an actionable error before executing any command. Accepts semver range syntax (`>=1.0.0`, `^1.2.0`, `>=1.0.0 <2.0.0`).
+
+### CODEOWNERS
+
+Configure `vis sync codeowners` output:
+
+```typescript
+export default defineConfig({
+    codeowners: {
+        orderBy: "project-id", // or "file-source" (default)
+        provider: "github",
+        globalPaths: {
+            "/.github/**": ["@myorg/platform"],
+        },
+    },
+});
+```
+
+### Security
+
+Supply-chain security settings (secure defaults applied automatically):
+
+```typescript
+export default defineConfig({
+    security: {
+        strictDepBuilds: true,
+        trustPolicy: "no-downgrade",
+        blockExoticSubdeps: true,
+        // Package names exempt from blockExoticSubdeps. Bare names and a
+        // trailing `*` glob (`@scope/*`) are supported.
+        exoticSubdepsAllow: ["@myorg/legacy", "internal-*"],
+        // Re-verify the entire resolved lockfile closure (not just newly
+        // added packages) against these policies. See `vis security
+        // verify-lockfile`.
+        policies: {
+            firstSeen: { minutes: 1440 }, // block versions published < 24h ago
+            publisherChange: { mode: "no-downgrade" }, // block provenance downgrades
+        },
+        minimumReleaseAge: 1440, // 24 hours; `vis init` writes 2880 by default
+        minimumReleaseAgeExclude: ["@types/node"],
+        socket: { enabled: true, minimumScore: 0.4 },
+        // Optional second supply-chain provider (no auth, OpenSSF Scorecard + GHSA).
+        // Off by default. Enable to cross-check Socket findings or replace them.
+        depsDev: { enabled: true },
+        // When both providers are enabled, the "primary" wins score conflicts;
+        // alerts always dedupe by id. Defaults to "socket".
+        primaryProvider: "socket",
+        allowBuilds: { esbuild: true, "@prisma/client": true },
+        // Optional: match allowBuilds keys as `name@version`. A version bump
+        // drops the entry until you re-approve it. See `vis security list`
+        // or `vis approve-builds` for the "Version drift" suggestions.
+        pinVersions: false,
+        // Silence bin-name conflicts (two packages exposing the same bin).
+        // Bare names bless every package owning the bin; `pkg#bin` targets one.
+        allowBins: { tsc: true, "left#eslint": true },
+    },
+});
+```
+
+Key knobs introduced with the build-script triage and drift checker:
+
+- `allowBuilds` — the canonical allowlist. Wildcards (`@scope/*`, `name@*`) and version pins (`name@1.2.3`, requires `pinVersions: true`) are accepted.
+- `minimumReleaseAge` — gating window in **minutes**. `vis init` writes `2880` (2 days) by default; `vis security sync` mirrors the value into the PM's native config (pnpm `minimumReleaseAge`, bun seconds, npm `min-release-age`, yarn `npmMinimalAgeGate`).
+- `minimumReleaseAgeExclude` — package names exempt from the gate. Synced into pnpm and bun (the only PMs with a native excludes list).
+- `pinVersions` — opt-in version-aware allowlist matching, ported from LavaMoat allow-scripts.
+- `allowBins` — opt-in suppression for bin-name shadowing (LavaMoat allow-scripts parity). `vis security list` flags collisions when two or more installed packages declare the same bin name (e.g. both `typescript` and `competitor-ts` shipping `tsc`). Bare keys (`tsc: true`) silence every package owning that bin; qualified keys (`typescript#tsc: true`) only bless one — every other owner must also be blessed, or the conflict still surfaces.
+- `blockExoticSubdeps` / `exoticSubdepsAllow` — flag transitive dependency edges resolving from a git repo or a direct remote tarball instead of the registry. pnpm enforces this natively (vis mirrors the knob into `pnpm-workspace.yaml`); the scanner closes the equivalent gap for **npm / yarn / bun**, whose lockfiles preserve the raw specifier on every edge. `exoticSubdepsAllow` exempts package names (bare or trailing-`*` glob) legitimately published as a git/tarball dependency.
+- `policies.firstSeen` / `policies.publisherChange` — closure-verification policies. Unlike the pre-install marshalls (which only inspect packages being _added_), these re-validate the **entire resolved lockfile closure** every run, so a tampered/poisoned lockfile is caught even on npm/yarn/bun and even when nothing is being added. `firstSeen.minutes` blocks any locked version published less than N minutes ago (lockfile-side counterpart to pnpm's `minimumReleaseAge`); `publisherChange.mode: "no-downgrade"` blocks a locked version that dropped a provenance attestation a prior version carried. Both are network-bound and skipped under `--offline`. Run them on demand with [`vis security verify-lockfile`](./commands/security.mdx#verify-lockfile).
+
+After install/update commands vis automatically prints a **drift report** when `vis.config` and the PM-native config disagree. Run `vis security sync` to push vis-config values to the native config; run `vis security list` to inspect the full triage (approved / unapproved / stale / version-drift).
+
+### Task Runner
+
+```typescript
+export default defineConfig({
+    taskRunner: {
+        parallel: 5,
+        smartLockfileHashing: true,
+        frameworkInference: true,
+        autoEnvVars: true, // auto-fingerprint $VAR refs in command text
+        remoteCache: {
+            url: "https://cache.example.com",
+            token: "my-token",
+            teamId: "my-team",
+            compression: "brotli", // or "gzip" (default, Turborepo-compatible)
+        },
+    },
+});
+```
+
+Notable options:
+
+- `autoEnvVars` — when `true`, every task's command text is scanned for `$VAR` / `${VAR}` references and those env vars are automatically added to the cache fingerprint. Catches common mistakes like `curl ${VERCEL_URL}/api` that would otherwise silently return stale cached output.
+- `remoteCache.compression` — `"gzip"` (default) keeps Turborepo protocol compatibility; `"brotli"` reduces upload size at the cost of lock-in to vis clients on both ends.
+- `remoteCache.attestation` — keyless-sign artifacts with Sigstore in CI and pin the signer identity on download (provenance on top of the HMAC `signing` integrity layer). See the [Attested remote cache](./guides/attested-cache.mdx) guide.
+
+### Strict env
+
+```ts
+export default defineConfig({
+    strictEnv: true, // default: false
+});
+```
+
+When `true`, every task's command is scanned for `${VAR}` / `$VAR` references before spawn. If any reference resolves to neither the task's effective env (envFile + service env + per-task `env` + `process.env`) nor an inline default (`${VAR:-fallback}`), the task fails with an actionable error naming the missing variable — no silent empty-string substitution. Override per-run with `--strict-env` / `--no-strict-env`. Override per target with `options.strictEnv`. Pairs naturally with `autoEnvVars` (fingerprint the references) — strict env catches references with no value at all, autoEnvVars catches stale cache hits when the value changed.
+
+### Task Groups
+
+Named bundles of target dependencies, referenceable from any task's `dependsOn`. Groups expand recursively; cycles throw with a clear error.
+
+```typescript
+export default defineConfig({
+    taskGroups: {
+        lint: ["eslint", "prettier", "types"],
+        "pre-build": [{ group: "lint" }, "codegen"],
+    },
+    tasks: {
+        build: {
+            // Expands to: ["eslint", "prettier", "types", "codegen"]
+            dependsOn: [{ group: "pre-build" }],
+        },
+    },
+});
+```
+
+Use groups when the same three-or-more-entry `dependsOn` array repeats across targets — the indirection is worth it once you have it in two or more places.
+
+### Plugins
+
+Typed plugin API built on [`hookable`](https://github.com/unjs/hookable). Each plugin registers handlers that fire at run / task / cache boundaries.
+
+```typescript
+import { defineConfig, definePlugin } from "@visulima/vis/config";
+
+const slackNotifier = definePlugin({
+    name: "slack-notifier",
+    hooks: {
+        "task:failure": async (task, result) => {
+            await fetch(process.env.SLACK_WEBHOOK!, {
+                method: "POST",
+                body: JSON.stringify({
+                    text: `❌ ${task.id} failed (exit ${result.code})`,
+                }),
+            });
+        },
+        "run:after": async (results) => {
+            const failed = [...results.values()].filter((r) => r.status === "failure").length;
+            // aggregate summary…
+        },
+    },
+});
+
+export default defineConfig({
+    plugins: [slackNotifier],
+});
+```
+
+Available hooks:
+
+| Hook             | Arguments                          | When                                                   |
+| ---------------- | ---------------------------------- | ------------------------------------------------------ |
+| `run:before`     | `{ tasks, workspaceRoot }`         | Once, before any task starts. Throwing aborts the run. |
+| `run:after`      | `results: Map<taskId, TaskResult>` | Once, after all tasks complete (success or failure).   |
+| `task:before`    | `task: Task`                       | Before each task's command runs.                       |
+| `task:after`     | `task, result: TaskResult`         | After each task completes (any status).                |
+| `task:cacheHit`  | `task, result: TaskResult`         | Task served from local or remote cache.                |
+| `task:cacheMiss` | `task, reasons: string`            | Auto-fingerprint cache miss with diagnostic reason.    |
+| `task:failure`   | `task, result: TaskResult`         | Task exited non-zero.                                  |
+
+For advanced cases (`hookOnce`, `removeHook`, `beforeEach`), use the imperative form:
+
+```typescript
+definePlugin({
+    name: "once",
+    setup(hooks) {
+        hooks.hookOnce("run:before", async () => {
+            // runs only on the first invocation
+        });
+    },
+});
+```
+
+Handlers run in registration order, awaited sequentially. A handler that throws propagates out of `callHook` — wrap in try/catch inside the handler if failure shouldn't abort the run.
+
+### Update Defaults
+
+```typescript
+export default defineConfig({
+    update: {
+        target: "minor",
+        exclude: ["legacy-*"],
+        packageMode: { typescript: "minor" },
+    },
+});
+```
+
+### Installer Backend
+
+Pin which package manager runs `vis install`, `vis add`, `vis remove`, `vis update`, `vis dlx`, `vis exec`, and friends. Useful for opting a workspace into [aube](https://github.com/endevco/aube) — a Rust-native PM that reads/writes pnpm/npm/yarn/bun lockfiles in place — without forcing every team member to remember CLI flags.
+
+```typescript
+export default defineConfig({
+    install: {
+        backend: "auto", // "auto" | "aube" | "pnpm" | "npm" | "yarn" | "bun" | "deno"
+    },
+});
+```
+
+| Value                                              | Behavior                                                                                                       |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------------------------------- |
+| `"auto"` _(default)_                               | Use `aube` when it's on `PATH`, otherwise fall back to the lockfile-detected PM                                |
+| `"aube"`                                           | Always use aube. Errors with an actionable message when the binary is missing instead of silently falling back |
+| `"pnpm"` / `"npm"` / `"yarn"` / `"bun"` / `"deno"` | Pin to the named PM regardless of what's on PATH                                                               |
+
+#### Resolution precedence
+
+Highest first:
+
+1. CLI flag — `vis install --installer <name>` (or `--no-aube` to force the lockfile-detected PM for one run)
+2. Environment variable — `VIS_INSTALLER=<name>`
+3. This `install.backend` field
+4. Auto-detect
+
+#### Aube installation
+
+`vis` does not bundle aube. Install it once via your tool of choice:
+
+```bash
+npm install -g @endevco/aube
+# or
+mise use -g aube
+# or
+brew install endevco/tap/aube
+```
+
+#### Lockfile drift
+
+Aube reuses pnpm/npm/yarn/bun lockfile formats but its serialized output isn't byte-identical to the original tool's. The first install on a workspace whose lockfile was written by another PM produces a one-time churn diff in git, and teams that mix tools on the same lockfile see ongoing drift. `vis install` warns when this is about to happen — pin `install.backend` here to keep the team consistent.
+
+#### Catalogs
+
+Aube supports the pnpm `catalog:` and `catalog:<name>` protocol from `pnpm-workspace.yaml`, including walk-up resolution from subpackages. No additional configuration needed.
+
+### AI
+
+Configures provider selection, cache TTL, and the allow-list for `vis ai heal accept`.
+
+```typescript
+export default defineConfig({
+    ai: {
+        // Optional: pin to a specific provider; otherwise vis auto-detects.
+        provider: "claude",
+        // Optional: override default provider priority (higher = preferred).
+        priority: { claude: 80, gemini: 50 },
+        // Optional: override the AI response cache TTL (ms).
+        cacheTtl: 3_600_000,
+        heal: {
+            // Allow-list for `vis ai heal accept`. Empty = auto-commit disabled.
+            // GitHub/GitLab: platform usernames (no leading `@`).
+            // Buildkite: BUILDKITE_UNBLOCKER_EMAIL value (preferred) or BUILDKITE_UNBLOCKER username.
+            // List both shapes for any maintainer who accepts patches across providers.
+            allowedActors: ["ada-lovelace", "maintainer@example.com"],
+        },
+    },
+});
+```
+
+| Field                   | Default                            | Description                                                                                   |
+| ----------------------- | ---------------------------------- | --------------------------------------------------------------------------------------------- |
+| `ai.provider`           | auto-detect                        | Pin a specific AI runner (`"claude"`, `"gemini"`, etc.). Skips detection.                     |
+| `ai.priority`           | built-in order                     | Override the per-provider priority. Higher numbers win when multiple are detected.            |
+| `ai.cacheTtl`           | 1 h (30 min for security analyses) | AI response cache TTL in milliseconds.                                                        |
+| `ai.heal.allowedActors` | `[]`                               | Usernames/emails authorised to trigger `vis ai heal accept`. Empty list disables auto-commit. |
+
+The allow-list is the only gate between an AI proposal and a real commit, so vendoring `vis.config.ts` in a shared preset is the recommended way to manage it. A mismatched entry yields a provider-aware refusal that names the env var checked (`BUILDKITE_UNBLOCKER_EMAIL` on Buildkite, comment-author login on GitHub/GitLab) so the operator can fix the right thing. See the [AI integration guide](/guides/ai-integration#acceptance-vis-ai-heal-accept) for the full per-provider trigger flow.
+
+### Post-command notices
+
+vis prints two opt-out notices on stderr after a successful command completes — never on failure, never in CI, never on non-TTY shells. Each is rate-limited to once every 14 days per machine.
+
+```typescript
+export default defineConfig({
+    sponsor: { enabled: false },
+    mcpPromote: { enabled: false },
+});
+```
+
+| Field                | Default | Description                                                                                                                                                                                                                                               |
+| -------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `sponsor.enabled`    | `true`  | One-line "consider sponsoring visulima" notice.                                                                                                                                                                                                           |
+| `mcpPromote.enabled` | `true`  | One-line tip pointing at `@visulima/vis-mcp` install when an AI CLI (Claude Code, Cursor, Windsurf, Continue, Zed, Cline) is installed locally but vis-mcp is not yet wired into its config. Suppressed during `ai` / `mcp` / help / version invocations. |
+
+Each notice has an equivalent env-var opt-out — useful when a single invocation should stay quiet without touching the config file:
+
+| Env var                | Effect                                                  |
+| ---------------------- | ------------------------------------------------------- |
+| `VIS_NO_SPONSOR=1`     | Suppresses the sponsor notice for this invocation.      |
+| `VIS_NO_MCP_PROMOTE=1` | Suppresses the vis-mcp install tip for this invocation. |
+
+The MCP nudge never writes to your AI CLI's config — it prints a copy-paste command. Staying out of the trust chain is intentional.
+
+### Generator
+
+Points `vis generate` at extra template directories beyond the defaults (`.vis/templates/`, `.moon/templates/`) and the bundled builtins.
+
+```typescript
+export default defineConfig({
+    generator: {
+        templates: ["./tools/generators", "./packages/scaffolding/templates"],
+        // Optional: token forwarded to giget for `git://` / `npm://` remote
+        // templates. Falls back to GIGET_AUTH / GITHUB_TOKEN / GH_TOKEN.
+        auth: process.env.PRIVATE_TEMPLATES_TOKEN,
+        // Optional: prefer locally-cached remote templates over re-downloading.
+        preferOffline: false,
+    },
+});
+```
+
+| Field                     | Default | Description                                                                                                                             |
+| ------------------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| `generator.templates`     | `[]`    | Extra directories to scan. Each is checked for both native templates (`<name>.ts`) and moon-format directories (`<name>/template.yml`). |
+| `generator.auth`          |         | Auth token for downloading private remote templates via giget. Falls back to `GIGET_AUTH` / `GITHUB_TOKEN` / `GH_TOKEN` env vars.       |
+| `generator.preferOffline` | `false` | Prefer the giget cache over re-downloading. Override per-invocation with `--prefer-offline`.                                            |
+
+Discovery and override semantics — including how to vendor a customised copy of a builtin (e.g. `buildkite-ci`) at `.vis/templates/<name>/` — are in the [`vis generate` reference](/commands/generate#discovery).
+
+---
+
+## project.json
+
+Place a `project.json` in each workspace package for per-project configuration. Enable editor autocomplete with the `$schema` field:
+
+```json
+{
+    "$schema": "https://unpkg.com/@visulima/vis/schemas/project.schema.json",
+    "name": "my-library",
+    "projectType": "library",
+    "layer": "library",
+    "stack": "frontend",
+    "language": "typescript",
+    "tags": ["frontend", "shared"],
+    "sourceRoot": "src",
+    "implicitDependencies": ["@myorg/config"],
+    "owners": [{ "path": "src/**", "owners": ["@myorg/core-team"] }],
+    "project": {
+        "title": "My Library",
+        "description": "Shared utilities",
+        "owner": "@myorg/core-team"
+    },
+    "targets": {
+        "build": {
+            "command": "tsc --build",
+            "type": "build",
+            "outputs": ["dist/**"]
+        },
+        "dev": {
+            "command": "vite dev",
+            "preset": "server"
+        }
+    }
+}
+```
+
+### Fields
+
+| Field                  | Type       | Description                                                                                                                                 |
+| ---------------------- | ---------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| `$schema`              | `string`   | JSON Schema for editor autocomplete                                                                                                         |
+| `name`                 | `string`   | Project identity in the workspace graph and CLI filters. Falls back to `package.json#name` when omitted (see [Project name](#project-name)) |
+| `projectType`          | `string`   | `"library"` or `"application"`                                                                                                              |
+| `layer`                | `string`   | `configuration`, `library`, `scaffolding`, `tool`, `automation`, `application`                                                              |
+| `stack`                | `string`   | `backend`, `frontend`, `data`, `infrastructure`, `systems`                                                                                  |
+| `language`             | `string`   | Primary language (e.g. `typescript`, `rust`)                                                                                                |
+| `tags`                 | `string[]` | Filterable tags for queries and constraints                                                                                                 |
+| `sourceRoot`           | `string`   | Source root directory (default: `src`)                                                                                                      |
+| `implicitDependencies` | `string[]` | Projects this project implicitly depends on                                                                                                 |
+| `owners`               | `object[]` | Code ownership declarations (see [vis sync](/commands/sync))                                                                                |
+| `project`              | `object`   | Human-readable metadata (title, description, owner)                                                                                         |
+| `targets`              | `object`   | Target definitions (see [vis run](/commands/run#target-options))                                                                            |
+
+### Project name
+
+`project.json#name`, when set, becomes the project's identity in the workspace graph — it's what shows up in `vis list`, what `vis run <name>:build` matches, and the key the project graph uses internally. If omitted, vis falls back to `package.json#name`, matching the historic behaviour, so existing workspaces keep working without change.
+
+Use it when:
+
+- The npm name and the project name should differ — e.g. publish as `@myorg/web` but address it as `web` from the CLI.
+- You're migrating from Nx — Nx workspaces declare project names in `project.json` and vis now reads them natively.
+
+A `package.json` is still required alongside `project.json` — `name`-only projects without a `package.json` aren't supported.
+
+Cross-project dependency edges still resolve through `package.json#dependencies` by their **npm name**, so an aliased project remains reachable from sibling packages without rewriting their dependency lists.
+
+### Implicit Dependencies
+
+`implicitDependencies` declares project edges that don't exist in `package.json`. Use it when project A needs to rebuild whenever project B changes, but A doesn't actually `import` B — so the package-manager graph wouldn't pick it up.
+
+```json
+{
+    "$schema": "https://unpkg.com/@visulima/vis/schemas/project.schema.json",
+    "projectType": "application",
+    "implicitDependencies": ["@myorg/eslint-config", "@myorg/tsconfig"]
+}
+```
+
+Common triggers:
+
+- **Shared config packages** — your `eslint-config` / `tsconfig` / `prettier-config` package isn't `import`ed at runtime, but every consumer needs its `build` to run first.
+- **Codegen sources** — a `.proto` package or schema-generator that emits files into a sibling project. The consumer doesn't `import` the generator; it consumes its output.
+- **Docs / fixture packages** — your `docs` app reads MDX from a sibling package via filesystem globs, not imports.
+- **Composite-tsconfig roots** — TypeScript project references already imply rebuild ordering, but only if `tsc --build` runs; for cache invalidation in vis, declare the edge explicitly.
+
+If two projects already have a `package.json` dependency edge (`"dependencies": { "@myorg/lib": "workspace:*" }`), vis picks that up automatically — don't duplicate it here. `implicitDependencies` is the escape hatch for the cases where the dep graph misses what the build graph needs.
+
+Add the same project name to multiple consumers' `implicitDependencies` to fan it out; vis deduplicates during graph construction.
+
+### Targets in project.json
+
+Target definitions in `project.json` are merged on top of package.json scripts. If a target has a `command`, it overrides the script. If not, the package.json script is used as the command.
+
+Targets support all fields from [target options](/commands/run#target-options) including `type`, `preset`, and `options`.
+
+### Conditional execution (`when:`)
+
+`when:` gates a task on the current environment. The orchestrator evaluates it just before launch; tasks that don't match are marked **skipped** (not failed) and the reason is reported in the run summary.
+
+```json
+{
+    "targets": {
+        "deploy": {
+            "command": "pnpm run deploy",
+            "when": {
+                "branch": ["main", "alpha"],
+                "ci": true,
+                "env": { "name": "DEPLOY_TOKEN", "exists": true }
+            }
+        }
+    }
+}
+```
+
+Clauses are AND-ed; an array inside a clause is OR-ed.
+
+| Clause   | Type                        | Meaning                                                                            |
+| -------- | --------------------------- | ---------------------------------------------------------------------------------- |
+| `os`     | `string \| string[]`        | Match `process.platform`. `"windows"` is sugar for `"win32"`.                      |
+| `env`    | `string \| object \| array` | String form: var must be set+non-empty. Object form: `{ name, equals?, exists? }`. |
+| `branch` | `string \| string[]`        | Current git branch (HEAD). Empty when not in a repo or on detached HEAD.           |
+| `ci`     | `boolean`                   | `true` → only inside CI; `false` → only outside. Detected via `CI` env var.        |
+| `not.*`  | mirrors of all of the above | Task runs only when _every_ `not.*` clause **fails** to match.                     |
+
+```json
+// "macOS or Linux, only when running on a release branch, never in CI"
+"when": {
+    "os": ["darwin", "linux"],
+    "branch": ["main", "next"],
+    "not": { "ci": true }
+}
+```
+
+### Finally tasks (`always:`)
+
+Set `always: true` to pull a task out of the dependency graph and run it after the main run completes — **even when upstream tasks fail**. Useful for cleanup, teardown, notifications, or anything that must fire regardless of build outcome.
+
+```json
+{
+    "targets": {
+        "test": { "command": "vitest run" },
+        "stop-db": {
+            "command": "docker compose down",
+            "always": true
+        }
+    }
+}
+```
+
+Always-tasks:
+
+- never block the main graph (they don't appear as dependencies of other tasks)
+- run sequentially after the main run, in declaration order
+- are **not cached** (cleanup must always fire)
+- are **skipped on SIGINT** (the user asked to stop — don't keep going)
+
+### Affected-files tokens
+
+Tasks that should only act on files affected by the current change set can interpolate `${affected.files}` (or its alias `${changed_files}`) into the command string. Vis populates the values from `git diff --name-only` against the affected base.
+
+```json
+{
+    "targets": {
+        "lint": { "command": "eslint ${affected.files}" },
+        "format": { "command": "prettier --write ${affected.files}" }
+    }
+}
+```
+
+Use the `| flag` variant when a tool needs the flag repeated per file:
+
+```json
+{
+    "targets": {
+        "stylelint": { "command": "stylelint ${changed_files | flag '--file'}" }
+    }
+}
+```
+
+Paths are workspace-relative by default and are shell-quoted so paths with spaces or quotes survive the shell. Files outside the project root are filtered out automatically — token interpolation only emits paths the task can act on.
+
+When the affected set is empty the token expands to nothing, so chain a guard if you want to skip rather than run with no arguments:
+
+```json
+{
+    "targets": {
+        "lint": {
+            "command": "test -z \"${affected.files}\" || eslint ${affected.files}"
+        }
+    }
+}
+```
+
+Tokens are **complementary** to the `affectedFiles` target option (`"args"` / `"env"` / `"both"`) — tokens are explicit and embed paths exactly where you want them; the option is implicit and forwards paths to every invocation. Pick whichever matches the tool's expected interface.
+
+Escape with a leading backslash (`\${affected.files}`) to emit the literal token without expansion.
+
+For an end-to-end walkthrough including CI examples, see [Conditional and finally tasks](/guides/conditional-and-finally-tasks).
+
+---
+
+## Workspace Discovery
+
+vis automatically discovers your workspace structure:
+
+1. **pnpm** — Reads `pnpm-workspace.yaml` for package patterns
+2. **npm/yarn/bun** — Falls back to the `workspaces` field in root `package.json`
+3. **Project metadata** — Reads `project.json` files for targets, tags, layer, stack, language, owners
+4. **Dependency graph** — Built from `dependencies`, `devDependencies`, and `peerDependencies` in each project's `package.json`

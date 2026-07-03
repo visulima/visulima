@@ -1,0 +1,467 @@
+---
+title: "Usage Guide"
+description: "Complete guide to all file system utilities in @visulima/fs."
+---
+
+# Usage Guide
+
+Complete guide to using **@visulima/fs** file system utilities.
+
+## JSON Operations
+
+### Read JSON Files
+
+```typescript
+import { readJson, readJsonSync } from "@visulima/fs";
+
+// Async
+const config = await readJson("config.json");
+
+// Sync
+const packageJson = readJsonSync("package.json");
+
+// With error handling
+try {
+    const data = await readJson("data.json");
+} catch (error) {
+    if (error.code === "ENOENT") {
+        console.error("File not found");
+    }
+}
+```
+
+### Write JSON Files
+
+```typescript
+import { writeJson, writeJsonSync } from "@visulima/fs";
+
+// Async with formatting
+await writeJson(
+    "output.json",
+    { key: "value" },
+    {
+        spaces: 2, // 2-space indentation
+    },
+);
+
+// Sync
+writeJsonSync("data.json", { items: [1, 2, 3] });
+
+// Compact (no spaces)
+await writeJson("compact.json", data, { spaces: 0 });
+
+// Creates parent directories automatically
+await writeJson("deeply/nested/path/file.json", data);
+```
+
+## YAML Operations
+
+Requires `yaml` peer dependency:
+
+```bash npm2yarn
+npm install yaml
+```
+
+### Read YAML Files
+
+```typescript
+import { readYaml, readYamlSync } from "@visulima/fs/yaml";
+
+// Async
+const config = await readYaml("config.yml");
+
+// Sync
+const data = readYamlSync("data.yaml");
+```
+
+### Write YAML Files
+
+```typescript
+import { writeYaml, writeYamlSync } from "@visulima/fs/yaml";
+
+// Async
+await writeYaml("output.yml", {
+    name: "project",
+    version: "1.0.0",
+    dependencies: ["package1", "package2"],
+});
+
+// Sync
+writeYamlSync("config.yaml", configuration);
+```
+
+## Directory Walking
+
+### Basic Walking
+
+```typescript
+import { walk, walkSync } from "@visulima/fs";
+
+// Async - All entries
+for await (const entry of walk("src")) {
+    console.log(entry.path);
+    console.log("Is file:", entry.isFile);
+    console.log("Is directory:", entry.isDirectory);
+    console.log("Is symlink:", entry.isSymlink);
+}
+
+// Sync
+for (const entry of walkSync("src")) {
+    console.log(entry.path);
+}
+```
+
+### Filter by Extension
+
+```typescript
+import { walk } from "@visulima/fs";
+
+// Only TypeScript files
+for await (const entry of walk("src", {
+    extensions: [".ts", ".tsx"],
+})) {
+    console.log(entry.path);
+}
+
+// Multiple extensions
+for await (const entry of walk("src", {
+    extensions: [".js", ".jsx", ".ts", ".tsx"],
+})) {
+    console.log(entry.path);
+}
+```
+
+### Pattern Matching
+
+```typescript
+import { walk } from "@visulima/fs";
+
+// Include patterns (glob or regex)
+for await (const entry of walk("src", {
+    match: ["**/components/**/*.tsx", "**/pages/**/*.tsx"],
+})) {
+    console.log("Component or page:", entry.path);
+}
+
+// Exclude patterns
+for await (const entry of walk("src", {
+    skip: ["**/*.test.ts", "**/*.spec.ts", "**/node_modules/**", "**/dist/**"],
+})) {
+    console.log(entry.path);
+}
+
+// Combine include and exclude
+for await (const entry of walk(".", {
+    match: ["**/*.ts"],
+    skip: ["**/node_modules/**", "**/dist/**"],
+})) {
+    console.log(entry.path);
+}
+```
+
+### Control Depth
+
+```typescript
+import { walk } from "@visulima/fs";
+
+// Limit depth (1 = only immediate children)
+for await (const entry of walk("src", {
+    maxDepth: 1,
+})) {
+    console.log(entry.path);
+}
+
+// Only 2 levels deep
+for await (const entry of walk("src", {
+    maxDepth: 2,
+})) {
+    console.log(entry.path);
+}
+```
+
+### Filter Entry Types
+
+```typescript
+import { walk } from "@visulima/fs";
+
+// Only files
+for await (const entry of walk("src", {
+    includeFiles: true,
+    includeDirs: false,
+    includeSymlinks: false,
+})) {
+    console.log("File:", entry.path);
+}
+
+// Only directories
+for await (const entry of walk("src", {
+    includeFiles: false,
+    includeDirs: true,
+})) {
+    console.log("Directory:", entry.path);
+}
+```
+
+### Follow Symlinks
+
+```typescript
+import { walk } from "@visulima/fs";
+
+// Follow symbolic links
+for await (const entry of walk("src", {
+    followSymlinks: true,
+})) {
+    console.log(entry.path);
+}
+
+// Don't follow symlinks (default)
+for await (const entry of walk("src", {
+    followSymlinks: false,
+    includeSymlinks: true, // But include them in results
+})) {
+    if (entry.isSymlink) {
+        console.log("Symlink:", entry.path);
+    }
+}
+```
+
+## Finding Files Upward
+
+### Find Single File
+
+```typescript
+import { findUp, findUpSync } from "@visulima/fs";
+
+// Async - Find nearest package.json
+const packagePath = await findUp("package.json");
+if (packagePath) {
+    console.log("Found at:", packagePath);
+}
+
+// Sync
+const gitPath = findUpSync(".git");
+```
+
+### Find Multiple Possible Files
+
+```typescript
+import { findUp } from "@visulima/fs";
+
+// Try multiple filenames in order
+const configPath = await findUp([".config.json", ".config.yml", "config.json", "config.yml"]);
+```
+
+### Find with Custom Matcher
+
+```typescript
+import { findUp } from "@visulima/fs";
+import { basename, join } from "node:path";
+import { readFile } from "node:fs/promises";
+
+// Find by directory name
+const nodeModules = await findUp((dir) => {
+    return basename(dir) === "node_modules";
+});
+
+// Find by file content
+const packageWithName = await findUp(async (dir, file) => {
+    if (file === "package.json") {
+        const content = await readFile(join(dir, file), "utf-8");
+        const pkg = JSON.parse(content);
+        return pkg.name === "my-package";
+    }
+    return false;
+});
+```
+
+### Custom Search Options
+
+```typescript
+import { findUp } from "@visulima/fs";
+
+// Start from specific directory
+const found = await findUp("config.json", {
+    cwd: "/specific/start/directory",
+});
+
+// Stop at specific directory
+const foundWithStop = await findUp("file.txt", {
+    stopAt: "/home/user", // Don't search above this
+});
+
+// Search up to root
+const foundAtRoot = await findUp(".git", {
+    type: "directory",
+});
+```
+
+## Ensuring Files and Directories
+
+### Ensure Directory
+
+Creates directory and all parent directories:
+
+```typescript
+import { ensureDir, ensureDirSync } from "@visulima/fs";
+
+// Async
+await ensureDir("src/components/ui/buttons");
+
+// Sync
+ensureDirSync("dist/assets/images/thumbnails");
+
+// Returns existing directory path if it already exists
+const dirPath = await ensureDir("existing/directory");
+```
+
+### Ensure File
+
+Creates file and all parent directories:
+
+```typescript
+import { ensureFile, ensureFileSync } from "@visulima/fs";
+
+// Async
+await ensureFile("logs/app/2024/01/error.log");
+
+// Sync
+ensureFileSync("cache/temp/data.txt");
+
+// Creates empty file if it doesn't exist
+// Does nothing if file already exists
+await ensureFile("path/to/new/file.txt");
+```
+
+### Ensure Link (Hard Link)
+
+```typescript
+import { ensureLink, ensureLinkSync } from "@visulima/fs";
+
+// Async - Create hard link
+await ensureLink("source.txt", "hardlink.txt");
+
+// Sync
+ensureLinkSync("original.dat", "link.dat");
+```
+
+### Ensure Symlink
+
+```typescript
+import { ensureSymlink, ensureSymlinkSync } from "@visulima/fs";
+
+// File symlink
+await ensureSymlink("target/file.txt", "link-to-file.txt", "file");
+
+// Directory symlink
+await ensureSymlink("target/directory", "link-to-dir", "dir");
+
+// Sync versions
+ensureSymlinkSync("source.txt", "link.txt", "file");
+```
+
+## Directory Utilities
+
+### Check Empty Directory
+
+```typescript
+import { emptyDir, emptyDirSync } from "@visulima/fs";
+
+// Async
+const isEmpty = await emptyDir("temp");
+if (isEmpty) {
+    console.log("Directory is empty or doesn't exist");
+}
+
+// Sync
+if (emptyDirSync("cache")) {
+    console.log("Cache is empty");
+}
+```
+
+## File Size Utilities
+
+### Get File Size
+
+```typescript
+import { getFileSize, getFileSizeSync } from "@visulima/fs/size";
+
+// Async
+const bytes = await getFileSize("large-file.json");
+console.log(`File size: ${bytes} bytes`);
+
+// Sync
+const size = getFileSizeSync("image.png");
+console.log(`Size: ${(size / 1024).toFixed(2)} KB`);
+```
+
+### Get Compressed Size
+
+Calculate file size after compression:
+
+```typescript
+import { getCompressedSize, getCompressedSizeSync } from "@visulima/fs/size";
+
+// Gzip compression
+const gzipSize = await getCompressedSize("bundle.js", "gzip");
+console.log(`Gzipped: ${gzipSize} bytes`);
+
+// Brotli compression
+const brotliSize = await getCompressedSize("bundle.js", "brotli");
+console.log(`Brotli: ${brotliSize} bytes`);
+
+// Sync versions
+const sizeGzip = getCompressedSizeSync("file.txt", "gzip");
+const sizeBrotli = getCompressedSizeSync("file.txt", "brotli");
+
+// Compare sizes
+const original = await getFileSize("bundle.js");
+const gzip = await getCompressedSize("bundle.js", "gzip");
+const brotli = await getCompressedSize("bundle.js", "brotli");
+
+console.log(`Original: ${original} bytes`);
+console.log(`Gzip: ${gzip} bytes (${((gzip / original) * 100).toFixed(1)}%)`);
+console.log(`Brotli: ${brotli} bytes (${((brotli / original) * 100).toFixed(1)}%)`);
+```
+
+## EOL (End of Line) Utilities
+
+### Detect Line Endings
+
+```typescript
+import { detectEOL, detectEOLSync } from "@visulima/fs/eol";
+
+// Async
+const eol = await detectEOL("source.txt");
+console.log(eol); // '\n' (Unix), '\r\n' (Windows), or '\r' (old Mac)
+
+// Sync
+const lineEnding = detectEOLSync("file.txt");
+if (lineEnding === "\r\n") {
+    console.log("Windows line endings");
+} else if (lineEnding === "\n") {
+    console.log("Unix line endings");
+}
+```
+
+### Normalize Line Endings
+
+```typescript
+import { normalizeEOL, normalizeEOLSync } from "@visulima/fs/eol";
+
+// Async - Convert to Unix line endings
+await normalizeEOL("source.txt", "\n");
+
+// Convert to Windows line endings
+await normalizeEOL("source.txt", "\r\n");
+
+// Sync version
+normalizeEOLSync("file.txt", "\n");
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with all parameters
+    </Card>
+</Cards>

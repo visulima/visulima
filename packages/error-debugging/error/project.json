@@ -1,0 +1,8 @@
+{
+    "name": "error-debugging/error",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/error-debugging/error/src",
+    "projectType": "library",
+    "tags": ["error", "type:package", "flame", "category:error-handling"],
+    "implicitDependencies": ["filesystem/path"]
+}

@@ -1,0 +1,69 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`border option > border style (bold) 1`] = `
+"┏━━━┓
+┃foo┃
+┗━━━┛"
+`;
+
+exports[`border option > border style (classic) 1`] = `
+"+---+
+|foo|
++---+"
+`;
+
+exports[`border option > border style (custom ascii style) 1`] = `
+"1---2
+|foo!
+3___4"
+`;
+
+exports[`border option > border style (double) 1`] = `
+"╔═══╗
+║foo║
+╚═══╝"
+`;
+
+exports[`border option > border style (doubleSingle) 1`] = `
+"╒═══╕
+│foo│
+╘═══╛"
+`;
+
+exports[`border option > border style (none) 1`] = `"foo"`;
+
+exports[`border option > border style (retro vertical + horizontal shorthand) 1`] = `
+"1---2
+|foo|
+3---4"
+`;
+
+exports[`border option > border style (round) 1`] = `
+"╭───╮
+│foo│
+╰───╯"
+`;
+
+exports[`border option > border style (single) 1`] = `
+"┌───┐
+│foo│
+└───┘"
+`;
+
+exports[`border option > border style (singleDouble) 1`] = `
+"╓───╖
+║foo║
+╙───╜"
+`;
+
+exports[`border option > should support border color (red) 1`] = `
+"[31m┌[39m[31m───[39m[31m┐[39m
+[31m│[39mfoo[31m│[39m
+[31m└[39m[31m───[39m[31m┘[39m"
+`;
+
+exports[`border option > should support multi border color (red) 1`] = `
+"[34m┌[39m[31m───[39m[34m┐[39m
+[33m│[39mfoo[32m│[39m
+[34m└[39m[34m───[39m[34m┘[39m"
+`;

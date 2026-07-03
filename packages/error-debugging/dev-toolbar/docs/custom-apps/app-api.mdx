@@ -1,0 +1,334 @@
+---
+title: App API Reference
+description: Complete type reference for DevToolbarApp, AppComponentProps, and related interfaces.
+---
+
+## `DevToolbarApp`
+
+The interface that describes a dev toolbar app. Pass instances of this to `customApps` in the plugin options, or to `registerApp()` on the global API.
+
+```ts
+interface DevToolbarApp {
+    /**
+     * Unique identifier for this app.
+     * Recommended format: "your-package:app-name"
+     * Must not conflict with built-in IDs (see table below).
+     */
+    id: string;
+
+    /**
+     * Display name shown in the toolbar tooltip and panel header.
+     */
+    name: string;
+
+    /**
+     * Raw SVG string for the toolbar button icon.
+     * Use an import with ?raw to get the SVG source:
+     *   import myIcon from "./icon.svg?raw";
+     */
+    icon: string;
+
+    /**
+     * The main Preact component rendered in the panel when the app is open.
+     * Must accept AppComponentProps.
+     */
+    component: ComponentType<AppComponentProps>;
+
+    /**
+     * Optional compact Preact component rendered in the tooltip on button hover.
+     * Receives the same AppComponentProps as the main component.
+     */
+    tooltip?: ComponentType<AppComponentProps>;
+
+    /**
+     * Optional rendering mode. Defaults to inline (Shadow DOM).
+     * Set to { type: "iframe", src: "..." } to load a URL in a full-size iframe.
+     * When view is set, component and init are ignored.
+     */
+    view?: AppView;
+}
+```
+
+### Reserved App IDs
+
+Do not use these IDs for custom apps:
+
+| ID                         | App           |
+| -------------------------- | ------------- |
+| `dev-toolbar:a11y`         | Accessibility |
+| `dev-toolbar:annotations`  | Annotations   |
+| `dev-toolbar:assets`       | Assets        |
+| `dev-toolbar:inspector`    | Inspector     |
+| `dev-toolbar:module-graph` | Module Graph  |
+| `dev-toolbar:performance`  | Performance   |
+| `dev-toolbar:seo`          | SEO           |
+| `dev-toolbar:settings`     | Settings      |
+| `dev-toolbar:tailwind`     | Tailwind      |
+| `dev-toolbar:timeline`     | Timeline      |
+| `dev-toolbar:vite-config`  | Vite Config   |
+
+---
+
+## `AppView`
+
+Controls how the app content is rendered inside the panel.
+
+```ts
+type AppView =
+    | {
+          /** Render the app inline in the Shadow DOM (default). */
+          type: "inline";
+      }
+    | {
+          /** Load a URL in a full-size iframe. */
+          type: "iframe";
+          /** The URL to load. */
+          src: string;
+      };
+```
+
+When `view` is omitted, the toolbar defaults to `{ type: "inline" }` and renders the `component` (or calls `init`) inside the panel's Shadow DOM.
+
+When `view: { type: "iframe", src }` is set:
+
+- `component` and `init` are ignored.
+- The panel renders a borderless `<iframe>` that fills the content area.
+- The toolbar chrome (resize handles, fullscreen, PiP) works as normal.
+
+---
+
+## `AppComponentProps`
+
+Props passed to every app component (both main panel and tooltip):
+
+```ts
+interface AppComponentProps {
+    /**
+     * Helper object providing access to server-side RPC functions.
+     *
+     * Cast to your typed interface for full type safety:
+     *   const rpc = helpers.rpc as unknown as MyServerFunctions;
+     */
+    helpers: {
+        rpc: ServerFunctions & Record<string, (...args: any[]) => Promise<any>>;
+    };
+}
+```
+
+---
+
+## `ServerFunctions`
+
+The built-in server functions available via `helpers.rpc`:
+
+```ts
+interface ServerFunctions {
+    /**
+     * Returns the resolved Vite configuration (serializable subset).
+     */
+    getViteConfig(): Promise<{
+        mode: string;
+        root: string;
+        base: string;
+        server: Record<string, unknown>;
+        build: Record<string, unknown>;
+        resolve: Record<string, unknown>;
+    }>;
+
+    /**
+     * Returns the current Vite module graph as a flat array.
+     */
+    getModuleGraph(): Promise<
+        Array<{
+            id: string;
+            url: string;
+            importerCount: number;
+            importerUrls: string[];
+        }>
+    >;
+
+    /**
+     * Returns the resolved Tailwind CSS design tokens. Returns null if no Tailwind config found.
+     */
+    getTailwindConfig(): Promise<Record<string, unknown> | null>;
+
+    /**
+     * Reads a file relative to the project root and returns its UTF-8 content.
+     */
+    readFile(path: string): Promise<string>;
+
+    /**
+     * Opens a file in the configured editor.
+     * Respects the LAUNCH_EDITOR environment variable; defaults to VS Code.
+     */
+    openInEditor(file: string, line?: number, column?: number): Promise<void>;
+
+    /**
+     * Returns all annotations from .devtoolbar/annotations.json.
+     */
+    getAnnotations(): Promise<Annotation[]>;
+
+    /**
+     * Creates a new annotation. Server generates id and timestamps.
+     */
+    createAnnotation(data: CreateAnnotationData): Promise<Annotation>;
+
+    /**
+     * Updates an existing annotation.
+     */
+    updateAnnotation(id: string, data: UpdateAnnotationData): Promise<Annotation>;
+
+    /**
+     * Deletes an annotation and its screenshot.
+     */
+    deleteAnnotation(id: string): Promise<void>;
+
+    /**
+     * Returns a screenshot as a base64 data URL.
+     */
+    getScreenshot(annotationId: string): Promise<string>;
+
+    /**
+     * Saves a screenshot from a data URL. Returns the relative file path.
+     */
+    saveScreenshot(annotationId: string, dataUrl: string): Promise<string>;
+}
+```
+
+---
+
+## `TimelineEvent`
+
+Events emitted to the Timeline app:
+
+```ts
+interface TimelineEvent {
+    /** Unique event ID */
+    id: string;
+
+    /** Short display title */
+    title: string;
+
+    /** Optional subtitle (component name, route, etc.) */
+    subtitle?: string;
+
+    /** Unix timestamp in milliseconds */
+    time: number;
+
+    /** Optional duration for span events (milliseconds) */
+    duration?: number;
+
+    /** Arbitrary data payload, displayed as JSON in the detail pane */
+    data?: Record<string, unknown>;
+
+    /** Severity level for colour coding */
+    level?: "info" | "warning" | "error";
+}
+```
+
+---
+
+## `DevToolbarHook`
+
+The global hook interface — available at `window.__DEV_TOOLBAR_HOOK__`:
+
+```ts
+interface DevToolbarHook {
+    /**
+     * Subscribe to a hook event. Returns an unsubscribe function.
+     */
+    on<T extends keyof HookEvents>(event: T, handler: HookEvents[T]): () => void;
+
+    /**
+     * Subscribe to a hook event once.
+     */
+    once<T extends keyof HookEvents>(event: T, handler: HookEvents[T]): void;
+
+    /**
+     * Unsubscribe from a hook event.
+     */
+    off<T extends keyof HookEvents>(event: T, handler?: HookEvents[T]): void;
+
+    /**
+     * Emit a hook event.
+     */
+    emit<T extends keyof HookEvents>(event: T, ...args: Parameters<HookEvents[T]>): void;
+
+    /**
+     * Register an app via the hook (equivalent to customApps in plugin options).
+     * Safe to call before the toolbar has initialized — buffered and replayed.
+     */
+    registerApp(app: DevToolbarApp): void;
+
+    /**
+     * Add an event to the Timeline app.
+     * Safe to call before the toolbar has initialized — buffered and replayed.
+     */
+    addTimelineEvent(groupId: string, event: TimelineEvent): void;
+}
+```
+
+---
+
+## `HookEvents`
+
+Events available on the hook system:
+
+```ts
+interface HookEvents {
+    /** Fired once when the toolbar has mounted and is ready */
+    "devtools:init": () => void;
+
+    /** Fired when an app panel is opened */
+    "devtools:open": (appId: string) => void;
+
+    /** Fired when the panel is closed */
+    "devtools:close": () => void;
+
+    /** Fired when an app component throws an unhandled error */
+    "app:error": (error: Error, appId?: string) => void;
+
+    /** Fired when a timeline event is added */
+    "timeline:event": (event: TimelineEvent) => void;
+
+    /** Custom events — any string key is valid */
+    [key: string]: (...args: any[]) => void;
+}
+```
+
+---
+
+## Global DevTools API
+
+Available at `window.__VISULIMA_DEVTOOLS__`. See the [Global API](/docs/dev-toolbar/custom-apps/global-api) page for full documentation.
+
+```ts
+interface VisulimaDevToolsAPI {
+    // Visibility
+    show(): void;
+    hide(): void;
+    toggle(): void;
+
+    // App management
+    openApp(id: string): Promise<void>;
+    closeApp(): void;
+    getActiveApp(): DevToolbarApp | null;
+    registerApp(app: DevToolbarApp, isCore?: boolean): void;
+    unregisterApp(id: string): void;
+    getApps(): DevToolbarApp[];
+
+    // Notifications
+    notify(appId: string, type: "info" | "warning" | "error"): void;
+    clearNotification(appId: string): void;
+
+    // Settings
+    getSettings(): DevToolsFrameState;
+    updateSettings(patch: Partial<DevToolsFrameState>): void;
+
+    // RPC
+    rpc: ServerFunctions;
+
+    // Hook
+    hook: DevToolbarHook;
+}
+```

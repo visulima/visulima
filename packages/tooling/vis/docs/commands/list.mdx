@@ -1,0 +1,134 @@
+---
+title: "vis list"
+description: "List workspace projects with metadata, or per-target rows with type, cache status, and description"
+---
+
+# vis list
+
+List all workspace projects with their type, layer, tags, and target counts. Add `--targets` for one row per `(project, target)` with cache status and description.
+
+## Usage
+
+```bash
+vis list [options]
+```
+
+## Examples
+
+```bash
+vis list                                 # all projects with type, layer, tags, targets
+vis list --targets                       # per-target rows
+vis list --deps                          # human-readable dep-instance table
+vis list --deps --internal-only          # only workspace deps
+vis list --deps --format=ndjson          # stream every dep-instance as NDJSON for jq pipelines
+vis list --deps --format=json --pretty   # single pretty-printed JSON array
+vis list --format=json                   # machine-readable project listing
+vis list --query "tag=frontend"          # filter by query
+vis list --targets --format=json         # per-target rows as JSON
+```
+
+## Options
+
+| Option            | Default | Description                                                                                         |
+| ----------------- | ------- | --------------------------------------------------------------------------------------------------- |
+| `--format`        | `table` | Output format: `table`, `json` (single document), or `ndjson` (one record per line; `--deps` only)  |
+| `--pretty`        | `false` | Pretty-print with 2-space indent (only meaningful with `--format=json` in `--deps` mode)            |
+| `--query`         |         | Filter projects by query (see below)                                                                |
+| `--targets`       | `false` | Show per-target rows (type, cache, description)                                                     |
+| `--inferred`      | `false` | Filter target rows to only inferred targets (implies `--targets`)                                   |
+| `--deps`          | `false` | Render a dep-instance view (table by default; use `--format=ndjson`/`json` for jq-friendly streams) |
+| `--dep-type`      |         | With `--deps`: restrict to specific dep blocks. Repeatable.                                         |
+| `--internal-only` | `false` | With `--deps`: only show internal/workspace deps                                                    |
+| `--external-only` | `false` | With `--deps`: only show external/registry deps                                                     |
+| `--include`       |         | With `--deps`: glob of declaring package names to keep. Repeatable.                                 |
+| `--exclude`       |         | With `--deps`: glob of declaring package names to drop. Repeatable.                                 |
+
+## `--deps` columns
+
+When `--deps` is set, the table shows one row per `(declaring package, dep block, dep name)`:
+
+| Column      | Description                                                                         |
+| ----------- | ----------------------------------------------------------------------------------- |
+| `Package`   | `package.json#name` of the declaring package (or directory when no name)            |
+| `Block`     | Dep block: `dependencies`, `devDependencies`, `peerDependencies`, `pnpm.overrides`… |
+| `Dep`       | Dependency name (with scope)                                                        |
+| `Specifier` | Verbatim version string as written in `package.json`                                |
+| `Internal`  | `yes` when the dep resolves to another workspace package, otherwise `no`            |
+| `Path`      | Workspace-relative path of the source `package.json` (or `pnpm-workspace.yaml`)     |
+
+## `--deps --format=ndjson` record shape
+
+Each NDJSON line (or array entry under `--format=json`) has the same shape:
+
+```json
+{
+    "packageName": "@my/app",
+    "packageDir": "apps/app",
+    "packageJsonPath": "apps/app/package.json",
+    "depType": "dependencies",
+    "depName": "react",
+    "specifier": "^18.2.0",
+    "isInternal": false
+}
+```
+
+`packageJsonPath` is workspace-relative for portability across CI runners. `isInternal: true` indicates the dep name resolves to another workspace package. `pnpm-workspace.yaml#overrides` (pnpm v9+ moved `pnpm.overrides` from `package.json` into the workspace config) surfaces under `depType: "pnpm.overrides"` with `packageJsonPath` pointing at `pnpm-workspace.yaml`.
+
+### `jq` recipes
+
+Count how many packages declare each dep:
+
+```bash
+vis list --deps --format=ndjson | jq -r '.depName' | sort | uniq -c | sort -rn | head
+```
+
+List every package that pins a specific dep:
+
+```bash
+vis list --deps --format=ndjson | jq -r 'select(.depName == "react") | "\(.packageName)\t\(.specifier)"'
+```
+
+Find specifier drift for a single dep (alternative to `vis deps --workspace-versions --dep <name>`):
+
+```bash
+vis list --deps --format=ndjson | jq -r 'select(.depName == "react") | .specifier' | sort -u
+```
+
+Audit which packages still declare a banned dep before turning on `vis deps --banned-deps`:
+
+```bash
+vis list --deps --format=ndjson | jq -r 'select(.depName | IN("left-pad","request","moment")) | "\(.packageName)\t\(.depName)"'
+```
+
+## Default columns
+
+| Column    | Source                                                    |
+| --------- | --------------------------------------------------------- |
+| `Project` | `package.json#name`                                       |
+| `Type`    | `project.json#projectType` (defaults to `library`)        |
+| `Layer`   | `project.json#layer`                                      |
+| `Tags`    | `project.json#tags`                                       |
+| `Targets` | Comma list of target names (truncated to 4 + total count) |
+
+## `--targets` columns
+
+When `--targets` is set, the table shows one row per `(project, target)`:
+
+| Column        | Description                                                                                             |
+| ------------- | ------------------------------------------------------------------------------------------------------- |
+| `Project`     | `package.json#name`                                                                                     |
+| `Target`      | Target name from `project.json#targets` (alphabetical)                                                  |
+| `Type`        | Target's semantic `type` (`build` / `test` / `run`); `—` when unset                                     |
+| `Cache`       | `yes` when `cache: true`, `no` when `cache: false`, `default` when unset (the runtime picks per `type`) |
+| `Description` | The target's `description` field surfaced from `project.json` / `vis.task.ts`; `—` when unset           |
+
+The footer reports the row count and the number of distinct projects.
+
+## Query filter
+
+`--query` accepts the same syntax as [`vis run --query`](./run#query-language) — clauses joined by `&&` (all match) or `||` (any matches), filtered against project metadata fields (`tag`, `layer`, `language`, `stack`, `type`, etc.).
+
+```bash
+vis list --query "language=typescript && tag=lib"
+vis list --targets --query "tag=frontend"
+```

@@ -1,0 +1,97 @@
+---
+title: "vis inspect"
+description: "Dry-run every marshall against a package without installing it."
+---
+
+# vis inspect
+
+`vis inspect <pkg>[@<spec>]` runs the pre-install marshall pipeline against a single package and reports its findings without touching the lockfile or `node_modules`. Use it to vet a third-party dependency before a `vis add`, or in code review to surface red flags on a proposed addition.
+
+## Usage
+
+```bash
+vis inspect <package>[@<spec>] [options]
+```
+
+`<spec>` may be a version (`1.2.3`), a semver range (`^18`), or a dist-tag (`latest`, `next`). Defaults to `latest` when omitted.
+
+## Quick examples
+
+```bash
+vis inspect express                       # latest dist-tag
+vis inspect lodash@4.17.21                # exact pin
+vis inspect react@^18                     # resolve range, inspect best match
+vis inspect express --json                # JSON for CI integration
+vis inspect express --strict              # exit non-zero on warnings too
+vis inspect express --only author,downloads
+vis inspect express --only signatures     # signatures are off by default; opt in here
+```
+
+## Marshalls
+
+Every marshall is identical to the one run during `vis add` / `vis install` / `vis update`:
+
+| Marshall         | What it checks                                                                                                                            |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- |
+| `author`         | Recent version + new-publisher + dormant-maintainer heuristics from the packument `time`.                                                 |
+| `provenance`     | Regression: prior version had `dist.attestations`, current version dropped them.                                                          |
+| `s1ngularity`    | Composite: a version that both changed an install hook AND dropped provenance vs. the prior stable (the Aug 2025 s1ngularity / Nx shape). |
+| `newBin`         | The new version introduces additional bin scripts not present in the immediately prior one.                                               |
+| `metadata`       | README/license/repository presence, repo URL validity, placeholder README detection.                                                      |
+| `downloads`      | Monthly downloads below a configurable warn/error threshold (npm stats API).                                                              |
+| `expiredDomains` | Maintainer email domains whose authoritative NS records return NXDOMAIN/ENOTFOUND.                                                        |
+| `signatures`     | ECDSA P-256 verification of `dist.signatures` against `/-/npm/v1/keys`.                                                                   |
+| `archivedRepo`   | The package's GitHub repo is archived (no longer maintained) or returns 404.                                                              |
+
+## Options
+
+### `--json`
+
+Emit findings as a JSON document instead of the human-readable table:
+
+```bash
+vis inspect express --json | jq '.findings[] | select(.severity == "error")'
+```
+
+The schema is:
+
+```ts
+{
+    errors: MarshallFinding[];
+    warnings: MarshallFinding[];
+    findings: MarshallFinding[];        // errors + warnings, stable order
+    summary: { errorCount: number; warningCount: number };
+}
+```
+
+### `--strict`
+
+Exit non-zero on any finding — warnings included. Default behavior exits 0 when only warnings fire, mirroring the auto-continue countdown semantics on the install path.
+
+### `--only <list>`
+
+Run only the listed marshalls (comma-separated). Known names: `author`, `provenance`, `s1ngularity`, `newBin`, `metadata`, `downloads`, `expiredDomains`, `signatures`, `archivedRepo`.
+
+```bash
+vis inspect lodash --only author,signatures
+```
+
+**Signatures are opt-in.** When `--only` is omitted, `signatures` is skipped — matching the pre-install pipeline default in `vis add` / `vis update`. npm's signing-key coverage still produces noisy warnings on legitimate packages, so the marshall only runs when you explicitly request it via `--only signatures`.
+
+## Exit codes
+
+| Code | Meaning                                                                |
+| ---- | ---------------------------------------------------------------------- |
+| 0    | No error findings (warnings allowed unless `--strict`).                |
+| 1    | At least one error finding (or any finding with `--strict`).           |
+| 2    | Package not found, or `<spec>` did not resolve to a published version. |
+
+## Environment variables
+
+Every `MARSHALL_DISABLE_*` toggle and `MARSHALL_DISABLE_ALL` documented in [Wrap your package manager](../guides/shell-alias.mdx) applies here as well.
+
+## See also
+
+- [`vis add`](./add.mdx) — pre-install pipeline that includes these marshalls.
+- [`vis audit`](./audit.mdx) — installed-set vulnerability scan.
+- [Wrap your package manager](../guides/shell-alias.mdx) — alias your PM through vis.

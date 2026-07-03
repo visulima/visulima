@@ -1,0 +1,74 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`height option > drops vertical padding when it overflows a small height 1`] = `
+"┌───┐
+│foo│
+└───┘"
+`;
+
+exports[`height option > height option with border style (none) 1`] = `
+"foo
+   
+   "
+`;
+
+exports[`height option > height option with padding + margin 1`] = `
+"
+
+      ┌─────────┐
+      │         │
+      │   foo   │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      │         │
+      └─────────┘
+
+"
+`;
+
+exports[`height option > height option with width + padding + margin 1`] = `
+"
+
+      ┌──────────────────┐
+      │                  │
+      │   foo            │
+      │                  │
+      └──────────────────┘
+
+"
+`;
+
+exports[`height option > height option with width 1`] = `
+"┌──────────────────┐
+│foo               │
+│                  │
+│                  │
+└──────────────────┘"
+`;
+
+exports[`height option > height option works > height 3 1`] = `
+"┌───────┐
+│foo bar│
+└───────┘"
+`;
+
+exports[`height option > height option works > height 5 1`] = `
+"┌───┐
+│foo│
+│   │
+│   │
+└───┘"
+`;

@@ -1,0 +1,29 @@
+{
+    "name": "storage-client-react-example",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc && vite build",
+        "dev": "vite",
+        "lint": "eslint .",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@visulima/storage-client": "workspace:*",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
+    },
+    "devDependencies": {
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "@typescript-eslint/eslint-plugin": "catalog:lint",
+        "@typescript-eslint/parser": "catalog:lint",
+        "@vitejs/plugin-react": "catalog:build",
+        "eslint": "catalog:lint",
+        "eslint-plugin-react-hooks": "catalog:lint",
+        "eslint-plugin-react-refresh": "catalog:lint",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build"
+    }
+}

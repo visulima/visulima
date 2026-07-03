@@ -1,0 +1,178 @@
+---
+title: Introduction
+description: "Comprehensive ANSI escape codes for terminal control, cursor manipulation, and screen formatting"
+---
+
+# @visulima/ansi
+
+Comprehensive ANSI escape codes for terminal control. Take full control of your terminal output with cursor positioning, screen clearing, hyperlinks, images, and much more—all through simple, composable functions.
+
+## Key Features
+
+**Cursor Control**
+
+- Position cursor anywhere on screen
+- Move cursor in any direction
+- Show, hide, and style cursor
+- Save and restore cursor position
+
+**Screen Manipulation**
+
+- Clear screen or parts of it
+- Alternative screen buffer support
+- Scroll regions up and down
+- Erase lines and characters
+
+**Advanced Terminal Features**
+
+- Clickable hyperlinks in terminal
+- Display images (iTerm2 support)
+- Mouse event tracking
+- Terminal mode management
+- Foreground/background/cursor color control (OSC 10/11/12)
+- Shell integration (OSC 7 working directory, OSC 133 FinalTerm marks)
+- Desktop notifications (OSC 9 / OSC 99 / urxvt OSC 777)
+- Focus events, bracketed paste, keypad and character-set selection
+- Sixel and Kitty graphics sequence wrappers
+
+**Window and Title Control**
+
+- Set window and icon titles
+- Window operations (minimize, maximize, etc.)
+- Report window state and position
+- Status reporting
+
+**Utility Functions**
+
+- Strip ANSI codes from strings
+- tmux passthrough support
+- Terminal capability queries
+- Cross-platform compatibility
+
+## Quick Start
+
+Install the package:
+
+```bash
+npm install @visulima/ansi
+```
+
+Control the cursor:
+
+```typescript
+import { cursorUp, cursorLeft, cursorTo } from "@visulima/ansi";
+
+// Move cursor up 2 rows and to the left
+process.stdout.write(cursorUp(2) + cursorLeft);
+// => '\u001B[2A\u001B[1000D'
+
+// Move cursor to column 10, row 5
+process.stdout.write(cursorTo(10, 5));
+```
+
+Clear the screen:
+
+```typescript
+import { clearScreen, eraseDown } from "@visulima/ansi";
+
+// Clear entire screen
+process.stdout.write(clearScreen);
+
+// Clear from cursor to end of screen
+process.stdout.write(eraseDown);
+```
+
+## Use Cases
+
+### Build Interactive CLI Applications
+
+Create dynamic terminal UIs with precise cursor control:
+
+```typescript
+import { cursorTo, eraseLine, cursorHide, cursorShow } from "@visulima/ansi";
+
+function updateProgress(percent: number) {
+    process.stdout.write(cursorHide);
+    process.stdout.write(cursorTo(0));
+    process.stdout.write(eraseLine);
+    process.stdout.write(`Progress: [${"=".repeat(percent / 2)}${" ".repeat(50 - percent / 2)}] ${percent}%`);
+
+    if (percent === 100) {
+        process.stdout.write("\n");
+        process.stdout.write(cursorShow);
+    }
+}
+
+// Simulate progress
+for (let i = 0; i <= 100; i += 10) {
+    updateProgress(i);
+    await new Promise((resolve) => setTimeout(resolve, 200));
+}
+```
+
+### Create Clickable Terminal Links
+
+Add hyperlinks that work in modern terminals:
+
+```typescript
+import { hyperlink } from "@visulima/ansi";
+
+const link = hyperlink("https://github.com/visulima", "Visit Visulima on GitHub");
+console.log(link);
+// Displays: Visit Visulima on GitHub (clickable in supported terminals)
+```
+
+### Display Images in Terminal
+
+Show images directly in iTerm2:
+
+```typescript
+import { image } from "@visulima/ansi";
+import { readFileSync } from "fs";
+
+const imageData = readFileSync("logo.png");
+process.stdout.write(
+    image(imageData, {
+        width: "50%",
+        height: "auto",
+    }),
+);
+```
+
+### Clean ANSI Codes from Strings
+
+Strip ANSI codes for logging or processing:
+
+```typescript
+import { strip } from "@visulima/ansi";
+import { cursorUp, cursorLeft } from "@visulima/ansi";
+
+const withAnsi = `Hello ${cursorUp(2)}${cursorLeft} World`;
+const cleaned = strip(withAnsi);
+
+console.log(cleaned); // "Hello  World" (no ANSI codes)
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn about installation and import methods
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore ANSI codes organized by category
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation for all functions
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+This package is designed for Node.js terminal applications:
+
+- **Node.js:** ≥22.13 ≤25.x (full support)
+- **Browsers:** Not applicable (terminal-specific functionality)
+- **Deno/Bun:** Compatible with terminal-supporting runtimes
+
+Requires a terminal that supports ANSI escape codes (most modern terminals).

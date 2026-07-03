@@ -1,0 +1,132 @@
+---
+title: Introduction
+description: "Utility functions to make dealing with Uint8Arrays easier in Node.js and browsers"
+---
+
+# @visulima/bytes
+
+Utility functions to make dealing with Uint8Arrays easier. Work with binary data like a pro—concatenate, copy, search, and convert between Uint8Arrays, Buffers, strings, and more.
+
+## Key Features
+
+**Array Operations**
+
+- Concatenate multiple byte arrays into one
+- Copy bytes between arrays with offset support
+- Repeat byte sequences any number of times
+- Compare byte arrays for equality
+
+**Search and Pattern Matching**
+
+- Find sequences within byte arrays (first/last occurrence)
+- Check if arrays start or end with specific patterns
+- Determine if byte sequences contain specific needles
+
+**Type Conversion**
+
+- Convert between Node.js Buffers and Uint8Arrays
+- Transform ASCII/UTF-8 strings to byte arrays
+- Universal converter for multiple data types
+- Type-safe checks for Uint8Array instances
+
+## Quick Start
+
+Install the package:
+
+```bash
+npm install @visulima/bytes
+```
+
+Concatenate byte arrays:
+
+```typescript
+import { concat } from "@visulima/bytes";
+
+const a = new Uint8Array([0, 1, 2]);
+const b = new Uint8Array([3, 4, 5]);
+const result = concat([a, b]);
+
+console.log(result); // Uint8Array([0, 1, 2, 3, 4, 5])
+```
+
+## Use Cases
+
+### Processing Binary Data in APIs
+
+Handle binary data from HTTP requests or file uploads:
+
+```typescript
+import { concat, toUint8Array } from "@visulima/bytes";
+
+async function processBinaryUpload(chunks: unknown[]) {
+    // Convert all chunks to Uint8Arrays
+    const arrays = chunks.map((chunk) => toUint8Array(chunk));
+
+    // Combine into single array
+    const combined = concat(arrays);
+
+    return combined;
+}
+```
+
+### Search Binary Protocols
+
+Find specific byte sequences in protocol data:
+
+```typescript
+import { indexOfNeedle, startsWith } from "@visulima/bytes";
+
+const data = new Uint8Array([0x00, 0x01, 0xff, 0xaa, 0xbb, 0x01, 0xff]);
+const header = new Uint8Array([0x00, 0x01]);
+const pattern = new Uint8Array([0x01, 0xff]);
+
+// Check protocol header
+if (startsWith(data, header)) {
+    console.log("Valid protocol header");
+}
+
+// Find pattern position
+const position = indexOfNeedle(data, pattern);
+console.log(`Pattern found at position: ${position}`); // 1
+```
+
+### Convert Between Text and Binary
+
+Work with string encodings in Node.js:
+
+```typescript
+import { utf8ToUint8Array, asciiToUint8Array } from "@visulima/bytes";
+
+// UTF-8 encoding (supports emojis and international characters)
+const utf8Data = utf8ToUint8Array("Hello 世界 🌍");
+
+// ASCII encoding (fast, but only 0-255 range)
+const asciiData = asciiToUint8Array("Hello World");
+
+console.log(utf8Data); // Uint8Array with UTF-8 bytes
+console.log(asciiData); // Uint8Array([72, 101, 108, 108, 111, ...])
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn how to install and import the package
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all functions with detailed examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with parameters and types
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+This package works in both Node.js and browser environments:
+
+- **Node.js:** Full support including Buffer conversion utilities
+- **Browsers:** Core Uint8Array operations (Buffer-specific functions require polyfills)
+- **Deno/Bun:** Compatible with all modern JavaScript runtimes
+
+Requires Node.js ≥22.13 for full functionality.

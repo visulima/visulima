@@ -1,0 +1,523 @@
+title = "exposed-files"
+description = "Detect committed files that should never live in a repo or build artefact: VCS metadata, environment files, cloud credential stores, private keys, database dumps, editor backups, IDE workspace files, build-output hygiene problems. Inspired by ProjectDiscovery's nuclei-templates `exposures/` collection but reimplemented as static path/content patterns. Intended as an additive overlay on top of the default ruleset; opt in via `rules.enable: [\"tag:preset:exposed-files\"]` (or via `secrets.config.presets: [\"exposed-files\"]` in vis.config.ts) before it ships any findings."
+
+# ---------------------------------------------------------------------------
+# Version control system metadata. Shipped `.git/` (or sibling) directories leak
+# commit history and may include credentials embedded in remote URLs. Common
+# in misconfigured deploys (rsync without `--exclude`, Docker images that copy
+# the whole working tree).
+
+[[rules]]
+id = "exposed-git-directory"
+description = "Git working-copy metadata (.git/config, HEAD, refs) found in build output or deploy artefact — exposes commit history and may leak credentials embedded in remote URLs."
+path = '''(?i)(?:^|/)\.git/(?:config|HEAD|index|FETCH_HEAD|packed-refs|logs/HEAD|refs/heads/[\w./-]+)$'''
+tags = [
+  "exposure",
+  "vcs",
+  "git"
+]
+
+[[rules]]
+id = "exposed-svn-directory"
+description = "Subversion working-copy metadata (.svn/entries, wc.db) shipped in deploy output. Exposes repository internals and committer identities."
+path = '''(?i)(?:^|/)\.svn/(?:entries|wc\.db|format|all-wcprops)$'''
+tags = [
+  "exposure",
+  "vcs",
+  "svn"
+]
+
+[[rules]]
+id = "exposed-mercurial-directory"
+description = "Mercurial working-copy metadata (.hg/hgrc, store/data/) found in deploy output."
+path = '''(?i)(?:^|/)\.hg/(?:hgrc|requires|store/data/)'''
+tags = [
+  "exposure",
+  "vcs",
+  "mercurial"
+]
+
+[[rules]]
+id = "exposed-bzr-directory"
+description = "Bazaar working-copy metadata (.bzr/branch, .bzr/repository) found in deploy output."
+path = '''(?i)(?:^|/)\.bzr/(?:branch|repository|checkout)/'''
+tags = [
+  "exposure",
+  "vcs",
+  "bazaar"
+]
+
+# ---------------------------------------------------------------------------
+# Environment files. `.env` and friends should never reach a deploy artefact
+# or a public repo. Allowlist documented placeholder variants (`.example`,
+# `.sample`, `.template`, `.dist`).
+
+[[rules]]
+id = "exposed-env-file"
+description = "Environment file (.env, .env.production, …) found at a path where it should not be deployed. Excludes example/sample/template variants."
+path = '''(?i)(?:^|/)\.env(?:\.[\w-]+)?$'''
+# Empty `keywords` keeps the rule as an always-active candidate; the path
+# filter is what actually narrows it down. The regex matches a single
+# `KEY=value` assignment so the allowlist code path runs (path-only rules
+# bypass allowlist evaluation in the detector).
+regex = '''(?m)^\s*[A-Za-z_]\w*\s*=\s*\S'''
+tags = [
+  "exposure",
+  "env"
+]
+
+[[rules.allowlists]]
+description = "Documented placeholders that are safe to commit."
+paths = [
+  '''(?i)(?:^|/)\.env\.(?:example|sample|template|dist|defaults?|local\.example)$''',
+  '''(?i)(?:^|/)\.env\.example\.[\w-]+$''',
+]
+
+[[rules]]
+id = "exposed-rails-environment-rb"
+description = "Rails config/environment.rb file containing credential or secret_key_base assignments shipped to a public location."
+path = '''(?i)(?:^|/)config/environment\.rb$'''
+regex = '''(?i)(?:secret_key_base|secret_token|password|api_key)\s*=\s*["'][^"']{12,}["']'''
+keywords = [
+  "secret_key_base",
+  "secret_token"
+]
+tags = [
+  "exposure",
+  "rails"
+]
+
+# ---------------------------------------------------------------------------
+# Cloud / SDK credential stores. Always the user's home dir in normal use; if
+# they appear inside a repo the credentials almost certainly leaked.
+
+[[rules]]
+id = "exposed-aws-credentials-file"
+description = "AWS shared credentials file (~/.aws/credentials) committed to the workspace. Holds long-lived access keys."
+path = '''(?i)(?:^|/)\.aws/credentials$'''
+regex = '''(?im)^\s*\[[^\]]+\]|^\s*aws_access_key_id\s*='''
+keywords = [
+  "aws_access_key_id",
+  "[default]"
+]
+tags = [
+  "exposure",
+  "aws",
+  "cloud"
+]
+
+[[rules]]
+id = "exposed-aws-config-file"
+description = "AWS shared config file (~/.aws/config) committed to the workspace. Reveals roles, regions, and SSO endpoints."
+path = '''(?i)(?:^|/)\.aws/config$'''
+regex = '''(?im)^\s*\[(?:default|profile\s+[^\]]+)\]'''
+keywords = [
+  "[profile ",
+  "[default]"
+]
+tags = [
+  "exposure",
+  "aws",
+  "cloud"
+]
+
+[[rules]]
+id = "exposed-gcloud-credentials"
+description = "Google Cloud SDK credential store or application-default credentials found in workspace. Holds OAuth refresh tokens."
+path = '''(?i)(?:^|/)(?:gcloud/credentials\.db|application_default_credentials\.json|legacy_credentials/)'''
+tags = [
+  "exposure",
+  "gcp",
+  "cloud"
+]
+
+[[rules]]
+id = "exposed-azure-credentials"
+description = "Azure CLI credential cache (.azure/accessTokens.json or azureProfile.json) committed to workspace."
+path = '''(?i)(?:^|/)\.azure/(?:accessTokens|azureProfile|TokenCache\.dat)\.json$'''
+tags = [
+  "exposure",
+  "azure",
+  "cloud"
+]
+
+[[rules]]
+id = "exposed-doctl-config"
+description = "DigitalOcean CLI config (doctl) containing API tokens."
+path = '''(?i)(?:^|/)\.config/doctl/(?:config\.yaml|auth-context)$'''
+tags = [
+  "exposure",
+  "digitalocean",
+  "cloud"
+]
+
+[[rules]]
+id = "exposed-netrc-credentials"
+description = ".netrc file containing machine-scoped credentials (heroku, github, artifactory, …)."
+path = '''(?i)(?:^|/)\.netrc$'''
+regex = '''(?im)^\s*machine\s+\S+\s+(?:login|password)\s+\S+'''
+keywords = [
+  "machine",
+  "login",
+  "password"
+]
+tags = [
+  "exposure",
+  "credentials"
+]
+
+# ---------------------------------------------------------------------------
+# SSH / TLS / PGP private keys. The default `private-key` rule catches PEM
+# bodies regardless of filename, but a conventionally-named key file (`id_rsa`,
+# `*_ed25519`, `*.pem`) is itself an exposure even before content review.
+
+[[rules]]
+id = "exposed-private-key-named-file"
+description = "Conventionally-named SSH/OpenSSL private key file (id_rsa, id_ed25519, …) found in workspace."
+path = '''(?i)(?:^|/)(?:id_(?:rsa|dsa|ecdsa|ed25519)|[\w.-]+_(?:rsa|dsa|ecdsa|ed25519))(?<!\.pub)$'''
+regex = '''-----BEGIN (?:RSA |DSA |EC |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY(?:\s+BLOCK)?-----'''
+keywords = [
+  "BEGIN",
+  "PRIVATE KEY"
+]
+tags = [
+  "exposure",
+  "key",
+  "ssh"
+]
+
+[[rules]]
+id = "exposed-pem-private-key-file"
+description = "PEM-format private key (.pem, .key, .p12, .pfx) containing a PRIVATE KEY block."
+path = '''(?i)\.(?:pem|key|p12|pfx)$'''
+regex = '''-----BEGIN (?:RSA |DSA |EC |OPENSSH |ENCRYPTED |PGP )?PRIVATE KEY(?:\s+BLOCK)?-----'''
+keywords = [
+  "BEGIN",
+  "PRIVATE KEY"
+]
+tags = [
+  "exposure",
+  "key",
+  "tls"
+]
+
+[[rules.allowlists]]
+description = "Public-key counterpart files have the .pub.pem convention in some toolchains."
+paths = [ '''(?i)\.pub\.pem$''' ]
+
+[[rules]]
+id = "exposed-ssh-config-file"
+description = "User SSH metadata (~/.ssh/config, known_hosts, authorized_keys) committed to a project."
+path = '''(?i)(?:^|/)\.ssh/(?:config|known_hosts|authorized_keys)$'''
+tags = [
+  "exposure",
+  "ssh"
+]
+
+[[rules]]
+id = "exposed-pgp-private-keyring"
+description = "GnuPG / PGP secret keyring (secring.gpg, secring.pgp) committed to workspace."
+path = '''(?i)(?:^|/)(?:secring\.(?:gpg|pgp)|private-keys-v1\.d/)'''
+tags = [
+  "exposure",
+  "key",
+  "pgp"
+]
+
+# ---------------------------------------------------------------------------
+# Database dumps & snapshots. SQL dumps and binary DB files routinely show up
+# in build output (forgotten test setup) or deploy archives (snapshot tooling
+# misconfigured). Allowlist migration / seed scripts and test fixtures.
+
+[[rules]]
+id = "exposed-mysql-dump"
+description = "MySQL/MariaDB SQL dump shipped in deploy output. Detects via canonical dump headers; allowlists migrations and seed scripts."
+path = '''(?i)\.sql(?:\.(?:gz|bz2|xz))?$'''
+regex = '''(?i)(?:-- MySQL dump|-- MariaDB dump|^/\*!\d{5} SET|CREATE DATABASE\s+`?\w+`?|INSERT INTO\s+`?\w+`?\s+VALUES)'''
+keywords = [
+  "MySQL dump",
+  "MariaDB dump",
+  "INSERT INTO",
+  "CREATE DATABASE"
+]
+tags = [
+  "exposure",
+  "database",
+  "mysql"
+]
+
+[[rules.allowlists]]
+description = "Migration / seed / fixture SQL scripts are intentional."
+paths = [
+  '''(?i)(?:^|/)(?:db/)?(?:migrations?|seeds?|fixtures?|schema|sql/(?:migrations?|seeds?))/[^/]+\.sql(?:\.(?:gz|bz2|xz))?$''',
+  '''(?i)(?:^|/)__fixtures__/.+\.sql$''',
+  '''(?i)(?:^|/)tests?/.+\.sql$''',
+  '''(?i)(?:^|/)prisma/migrations?/.+\.sql$''',
+]
+
+[[rules]]
+id = "exposed-pg-dump"
+description = "PostgreSQL pg_dump archive (custom or plain format) committed to workspace."
+path = '''(?i)\.(?:dump|pgdump|psql)$|(?:^|/)pg_dump(?:\.\w+)?$'''
+regex = '''(?:PGDMP|^--\s+PostgreSQL database dump|COPY public\.\w+\s+\(|CREATE TABLE public\.)'''
+keywords = [
+  "PGDMP",
+  "PostgreSQL database dump",
+  "COPY public."
+]
+tags = [
+  "exposure",
+  "database",
+  "postgres"
+]
+
+[[rules]]
+id = "exposed-sqlite-database"
+description = "SQLite database file (.sqlite, .sqlite3, .db) found in workspace."
+# SQLite files are binary so they short-circuit the scanner before allowlists
+# run. Suppress test-fixture noise via `walk.excludePatterns` or a per-finding
+# inline marker — the path regex is intentionally broad.
+path = '''(?i)\.(?:sqlite3?|db)$'''
+tags = [
+  "exposure",
+  "database",
+  "sqlite"
+]
+
+[[rules]]
+id = "exposed-redis-rdb-snapshot"
+description = "Redis RDB snapshot file (dump.rdb) committed to workspace."
+path = '''(?i)(?:^|/)dump\.rdb$'''
+tags = [
+  "exposure",
+  "database",
+  "redis"
+]
+
+# ---------------------------------------------------------------------------
+# Editor / OS metadata. Backup files and IDE workspace dumps slip into deploys
+# constantly; they don't always leak secrets but they're a strong signal of
+# missing build hygiene.
+
+[[rules]]
+id = "exposed-backup-file-suffix"
+description = "Source file with backup suffix (.bak, .backup, .old, .orig, .save, .swp) shipped in workspace. Strong signal that an editor or hotfix copy was committed."
+path = '''(?i)\.(?:bak|backup|old|orig|save|swp|swo)$'''
+tags = [
+  "exposure",
+  "backup"
+]
+
+[[rules.allowlists]]
+paths = [ '''(?:^|/)(?:public|static|__fixtures__)/''', ]
+
+[[rules]]
+id = "exposed-tilde-backup"
+description = "Editor auto-save file (filename ending in `~`) committed to the workspace. Common with vim and emacs."
+path = '''(?i)[^/]~$'''
+tags = [
+  "exposure",
+  "backup",
+  "editor"
+]
+
+[[rules]]
+id = "exposed-jetbrains-workspace"
+description = "JetBrains IDE workspace metadata (.idea/workspace.xml, dataSources.xml) committed to repo. Often contains DB connection strings and run-config secrets."
+path = '''(?i)(?:^|/)\.idea/(?:workspace|tasks|dataSources?|webResources)\.xml$'''
+tags = [
+  "exposure",
+  "ide",
+  "jetbrains"
+]
+
+[[rules]]
+id = "exposed-vscode-secrets"
+description = "VS Code workspace JSON (settings, launch, sftp) containing credential-shaped values."
+path = '''(?i)(?:^|/)\.vscode/(?:settings|launch|sftp)\.json$'''
+regex = '''(?i)"(?:password|token|api[-_]?key|secret|access[-_]?key)"\s*:\s*"[^"\s]{8,}"'''
+keywords = [
+  "password",
+  "token",
+  "apiKey",
+  "secret"
+]
+tags = [
+  "exposure",
+  "ide",
+  "vscode"
+]
+
+[[rules]]
+id = "exposed-sublime-workspace"
+description = "Sublime Text workspace file committed to repo. May contain recently-opened paths and project secrets."
+path = '''(?i)\.sublime-workspace$'''
+tags = [
+  "exposure",
+  "ide",
+  "sublime"
+]
+
+[[rules]]
+id = "exposed-ds-store"
+description = "macOS Finder metadata (.DS_Store) shipped in deploy output. Reveals directory listings and original folder layout."
+path = '''(?i)(?:^|/)\.DS_Store$'''
+tags = [
+  "exposure",
+  "os",
+  "macos"
+]
+
+[[rules]]
+id = "exposed-thumbs-db"
+description = "Windows thumbnail cache (Thumbs.db) shipped in deploy output."
+path = '''(?i)(?:^|/)Thumbs\.db$'''
+tags = [
+  "exposure",
+  "os",
+  "windows"
+]
+
+# ---------------------------------------------------------------------------
+# Web / auth configuration. .htpasswd holds hashed credentials; .htaccess with
+# auth declarations frequently points to a sibling .htpasswd path.
+
+[[rules]]
+id = "exposed-htpasswd"
+description = "Apache .htpasswd file containing hashed credentials."
+# No `keywords`: keep the rule always-active so the path filter is the
+# discriminator. Apache hash markers ($apr1$, {SHA}) make poor keywords —
+# they vary across implementations and short prefixes inflate AC scans.
+path = '''(?i)(?:^|/)\.htpasswd$'''
+regex = '''(?m)^[\w.@-]+:(?:\$(?:apr1|2[ayb]|5|6)\$|\{SHA\}|[A-Za-z0-9./]{13})'''
+tags = [
+  "exposure",
+  "apache"
+]
+
+[[rules]]
+id = "exposed-htaccess-with-auth"
+description = "Apache .htaccess declaring HTTP Basic auth — pairs with .htpasswd and frequently leaks the credentials path."
+path = '''(?i)(?:^|/)\.htaccess$'''
+regex = '''(?im)^\s*(?:AuthUserFile|AuthName|AuthType\s+Basic|Require\s+valid-user)'''
+keywords = [
+  "AuthUserFile",
+  "AuthType Basic"
+]
+tags = [
+  "exposure",
+  "apache"
+]
+
+# ---------------------------------------------------------------------------
+# Build hygiene. Files that belong at the repo root (lockfiles) or in source
+# (.tsbuildinfo, source maps with sourcesContent, test directories) should
+# never appear under `dist/`, `build/`, `out/`.
+
+[[rules]]
+id = "exposed-lockfile-in-build-output"
+description = "Package-manager lockfile shipped under a build-output directory (dist/, build/, out/, .next/standalone/). Lockfiles belong at the repo root, not in deployable artefacts."
+path = '''(?i)(?:^|/)(?:dist|build|out|public|\.next/standalone|\.nuxt/dist)/(?:[^/]+/)*(?:package-lock\.json|pnpm-lock\.ya?ml|yarn\.lock|bun\.lockb?|npm-shrinkwrap\.json)$'''
+tags = [
+  "exposure",
+  "build-hygiene"
+]
+
+[[rules]]
+id = "exposed-tsconfig-buildinfo"
+description = "TypeScript incremental build info (.tsbuildinfo) shipped in deploy artefact. Reveals source-file paths and tsc internals."
+path = '''(?i)\.tsbuildinfo$'''
+tags = [
+  "exposure",
+  "build-hygiene",
+  "typescript"
+]
+
+[[rules]]
+id = "exposed-source-map-with-sources"
+description = "Source map (.js.map / .css.map) embedding original source content (`sourcesContent`). Reveals proprietary code; usually fine for OSS, sensitive otherwise."
+path = '''(?i)\.(?:js|mjs|cjs|css)\.map$'''
+regex = '''"sourcesContent"\s*:\s*\['''
+keywords = [ "sourcesContent" ]
+tags = [
+  "exposure",
+  "build-hygiene"
+]
+
+[[rules]]
+id = "exposed-tests-in-build-output"
+description = "Test directory shipped under a build-output path (dist/, build/, out/). Wastes payload and exposes internal test data."
+path = '''(?i)(?:^|/)(?:dist|build|out|public)/(?:[^/]+/)*(?:__(?:tests?|mocks?|fixtures?|snapshots?)__|spec|tests?)/'''
+tags = [
+  "exposure",
+  "build-hygiene"
+]
+
+# ---------------------------------------------------------------------------
+# Misc — Docker compose with inline secrets, debug logs, vagrant keys.
+
+[[rules]]
+id = "exposed-docker-compose-secrets"
+description = "docker-compose YAML containing inline credential values. Excludes obvious placeholders."
+path = '''(?i)(?:^|/)docker-compose(?:\.[\w-]+)?\.ya?ml$'''
+regex = '''(?im)^\s*(?:[A-Z_]+_)?(?:PASSWORD|TOKEN|API[-_]?KEY|SECRET|ACCESS[-_]?KEY)\s*[:=]\s*["']?([^"'$\s][\w@.!#%^&*+\-]{7,})["']?\s*$'''
+secretGroup = 1
+keywords = [
+  "password",
+  "token",
+  "secret",
+  "api_key",
+  "apikey"
+]
+tags = [
+  "exposure",
+  "docker"
+]
+
+[[rules.allowlists]]
+description = "Obvious placeholders / env-var indirection are intentional."
+regexTarget = "secret"
+stopwords = [
+  "changeme",
+  "example",
+  "fake",
+  "password",
+  "placeholder",
+  "secret",
+  "your-",
+  "your_",
+  "redacted",
+  "REPLACE",
+  "INSERT",
+  "TYPE_",
+  "ENTER_",
+]
+
+[[rules]]
+id = "exposed-npm-debug-log"
+description = "npm debug log committed to workspace. May leak environment variables and registry tokens."
+path = '''(?i)(?:^|/)npm-debug\.log(?:\.\d+)?$'''
+tags = [
+  "exposure",
+  "log"
+]
+
+[[rules]]
+id = "exposed-firebase-debug-log"
+description = "Firebase CLI debug log (firebase-debug.log) committed to workspace. Reveals project IDs and CLI invocation details."
+path = '''(?i)(?:^|/)firebase-debug\.log$'''
+tags = [
+  "exposure",
+  "log",
+  "firebase"
+]
+
+[[rules]]
+id = "exposed-vagrant-private-key"
+description = "Vagrant per-machine private key (.vagrant/machines/<name>/<provider>/private_key) committed to workspace."
+path = '''(?i)(?:^|/)\.vagrant/machines/[^/]+/[^/]+/private_key$'''
+tags = [
+  "exposure",
+  "key",
+  "vagrant"
+]

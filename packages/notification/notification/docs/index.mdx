@@ -1,0 +1,56 @@
+---
+title: Introduction
+description: Get started with @visulima/notification, a reusable, edge-ready multi-channel notification library
+---
+
+# Notification
+
+**Reusable, ESM-only, edge-ready multi-channel notifications**
+
+`@visulima/notification` is the multi-channel sibling of [`@visulima/email`](/docs/packages/email). One typed facade
+drives many channel providers — SMS, push, chat, in-app and webhook — while the email channel delegates straight to
+`@visulima/email`, reusing its 29 providers, templates and deliverability tooling.
+
+## Why @visulima/notification?
+
+- **Infra-free** - No Redis, Mongo, dashboard or SaaS account. `npm install` and send.
+- **Edge-ready** - Every native provider is built on `fetch` with zero Node built-ins, so it runs unmodified on
+  Cloudflare Workers, Vercel Edge, Deno and Bun.
+- **Tree-shakeable** - Providers are imported from their own subpaths (`@visulima/notification/providers/<name>`); you
+  only ship what you use.
+- **Type-safe** - Per-channel payloads are typed end to end.
+- **Multi-channel routing** - Channel-sequence fallback (`best-of`), broadcast (`all`), per-channel provider failover and
+  round-robin.
+- **Batteries included** - Middleware (retry, rate-limit, circuit-breaker, dedupe, logging), an event bus, a durable
+  queue with a retrying worker, an in-app inbox store and subscriber preferences.
+
+## How it positions
+
+The notification ecosystem splits into SaaS platforms (Knock, Courier — not self-hostable) and one heavy OSS platform
+(Novu — needs a 6-service cluster). `@visulima/notification` fills the gap between them: a maintained, typed, edge-ready,
+infra-free **send primitive**. It deliberately does not ship a hosted dashboard or visual workflow builder.
+
+## Quick example
+
+```typescript
+import { createNotification } from "@visulima/notification";
+import { twilioProvider } from "@visulima/notification/providers/twilio";
+import { slackProvider } from "@visulima/notification/providers/slack";
+
+const notify = createNotification({
+    sms: twilioProvider({ accountSid: "AC…", authToken: "…", from: "+15555550100" }),
+    chat: slackProvider({ token: "xoxb-…", defaultChannel: "C123" }),
+});
+
+const receipts = await notify.send({
+    sms: { to: "+15555550100", text: "Your code is 123" },
+    chat: { text: "🚀 Deploy finished" },
+});
+```
+
+## Next steps
+
+- [Installation](/docs/packages/notification/installation)
+- [Getting Started](/docs/packages/notification/getting-started/introduction)
+- [Channels](/docs/packages/notification/channels)
+- [Providers](/docs/packages/notification/providers)

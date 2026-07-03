@@ -1,0 +1,65 @@
+---
+title: Introduction
+description: "Package management utilities for monorepos, package detection, and package.json parsing"
+---
+
+# @visulima/package
+
+Comprehensive package management utilities for finding monorepo roots, detecting package managers, and parsing package.json, package.yaml, and package.json5 files.
+
+## Key Features
+
+- **Monorepo Detection** - Find monorepo roots (pnpm, npm, yarn, Lerna, Turborepo)
+- **Package Detection** - Locate package roots and package.json files
+- **Multi-Format Support** - Parse package.json, package.yaml, and package.json5
+- **Catalog Resolution** - Resolve pnpm catalog dependencies
+- **Package Manager Detection** - Identify which package manager is used
+- **TypeScript** - Full type definitions
+
+## Quick Start
+
+```typescript
+import { findMonorepoRoot, findPackageJson } from "@visulima/package";
+
+// Find monorepo root
+const monorepo = await findMonorepoRoot();
+console.log(monorepo.strategy); // "pnpm" | "npm" | "yarn" | "lerna"
+
+// Find and parse package.json
+const pkg = await findPackageJson();
+console.log(pkg.packageJson.name);
+```
+
+## Use Cases
+
+```typescript
+// Monorepo tooling
+import { findMonorepoRoot } from "@visulima/package";
+
+async function setupMonorepo() {
+    const root = await findMonorepoRoot();
+    if (root) {
+        console.log(`Found ${root.strategy} monorepo at ${root.path}`);
+    }
+}
+
+// Build tools
+import { findPackageJson } from "@visulima/package";
+
+const { packageJson } = await findPackageJson();
+const version = packageJson.version;
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install and import
+    </Card>
+    <Card title="Usage" href="/usage">
+        Usage guide
+    </Card>
+    <Card title="API" href="/api">
+        API reference
+    </Card>
+</Cards>

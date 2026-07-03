@@ -1,0 +1,4 @@
+{
+    "title": "Short",
+    "pages": ["authentication", "describing-parameters", "describing-request-body", "describing-responses"]
+}

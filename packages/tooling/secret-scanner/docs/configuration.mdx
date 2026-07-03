@@ -1,0 +1,168 @@
+---
+title: Configuration
+description: Full reference for all ScanOptions fields.
+---
+
+# Configuration
+
+Every entry point (`scan`, `scanFiles`, `scanString`, `listRules`, `inspectRuleset`) accepts the same grouped `ScanOptions` object. Keys are namespaced by concern — `config`, `walk`, `rules`, `baseline` — plus a few truly cross-cutting flags at the root.
+
+## Shape
+
+```typescript
+export interface ScanOptions {
+    baseline?: string;
+    concurrency?: number;
+
+    config?: {
+        extendBundled?: boolean;
+        heuristics?: {
+            lockFile?: boolean;
+            notAlphanumericString?: boolean;
+            potentialUuid?: boolean;
+            sequentialString?: boolean;
+        };
+        inline?: GitleaksConfig;
+        minConfidence?: "low" | "medium" | "high";
+        onlyVerified?: boolean;
+        path?: string;
+        validate?: boolean;
+    };
+
+    redact?: boolean;
+
+    rules?: {
+        enable?: string[];
+        exclude?: string[];
+        include?: string[];
+    };
+
+    verbose?: boolean;
+
+    walk?: {
+        excludeFromFiles?: string[];
+        excludePatterns?: string[];
+        gitignore?: boolean;
+        includeHidden?: boolean;
+        maxFileSize?: number;
+    };
+}
+```
+
+## Root-level
+
+| Option        | Type      | Default | Description                                                                       |
+| ------------- | --------- | ------- | --------------------------------------------------------------------------------- |
+| `baseline`    | `string`  | —       | Path to a JSON array of `Finding` objects. Matches are suppressed by fingerprint. |
+| `concurrency` | `number`  | auto    | Rayon worker threads. `0` or `undefined` uses rayon's global pool.                |
+| `redact`      | `boolean` | `false` | Mask the `match` and `secret` strings in every emitted finding.                   |
+| `verbose`     | `boolean` | `false` | Print skipped-rule diagnostics to stderr on the first call.                       |
+
+## `config` — rule source + validation
+
+| Option          | Type                          | Default | Description                                                                                                               |
+| --------------- | ----------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `extendBundled` | `boolean`                     | `true`  | Layer the user ruleset on top of the bundled set. `false` replaces it entirely.                                           |
+| `heuristics`    | `object`                      | all on  | Toggle post-detection false-positive filters. See [heuristics](#heuristics--post-detection-false-positive-filters) below. |
+| `inline`        | `GitleaksConfig`              | —       | Pre-parsed config object. Fastest path, no file IO.                                                                       |
+| `path`          | `string`                      | —       | Path to a JSON file (gitleaks-compatible shape). Parsed once and cached.                                                  |
+| `minConfidence` | `"low" \| "medium" \| "high"` | —       | Drop rules below this author-declared confidence floor. See [Confidence](#minconfidence) below.                           |
+| `validate`      | `boolean`                     | `false` | Live-verify each finding against its provider's API after detection.                                                      |
+| `onlyVerified`  | `boolean`                     | `false` | With `validate: true`, drop every finding whose validation is not `"verified"`.                                           |
+
+### Precedence
+
+1. `config.inline` wins when both `inline` and `path` are set.
+2. The resulting user config layers on top of the bundled ruleset unless `extendBundled: false`.
+3. Opt-in rule bundles (e.g. `tag:preset:weak-passwords`) ship disabled-by-default inside every ruleset; `rules.include` is the only gate.
+
+### `minConfidence`
+
+Every rule may carry an optional `confidence` field (`"low"`, `"medium"`, `"high"`). Rules without an explicit label are treated as `"low"`. Setting `minConfidence` drops rules below the floor:
+
+| Floor      | Drops                                                            |
+| ---------- | ---------------------------------------------------------------- |
+| unset      | Nothing — every loaded rule fires.                               |
+| `"low"`    | Nothing (equivalent to unset).                                   |
+| `"medium"` | Rules declared `"low"`, **plus** every rule with no declaration. |
+| `"high"`   | Rules declared `"low"` or `"medium"`, plus every unlabeled rule. |
+
+Every bundled gitleaks rule ships unlabeled, so `"medium"` or `"high"` drops the entire stock ruleset. Use this flag against a curated config of your own, or when you opt into a preset that ships labels.
+
+### `heuristics` — post-detection false-positive filters
+
+Four heuristics (ported from [detect-secrets](https://github.com/Yelp/detect-secrets)) run after rule detection and drop high-confidence placeholders before returning. All four default to **on**; set the individual key to `false` when you need the raw match set — typical only when scanning a curated fixture that legitimately contains UUID-shaped or all-dash values.
+
+| Key                     | Default | Drops findings where …                                                                                                                                                                                                                                                                    |
+| ----------------------- | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `lockFile`              | `true`  | file basename is a known lock file (28 entries: `yarn.lock`, `pnpm-lock.yaml`, `Cargo.lock`, `go.sum`, `flake.lock`, `gradle.lockfile`, `.terraform.lock.hcl`, …). Lock files are regenerated from manifests and churn constantly; scanning them almost always produces noise, not leaks. |
+| `sequentialString`      | `true`  | the secret is a substring of a standard character sequence (`abcdefgh`, `12345678`) or a single repeating character (`AAAAAAAA`, `00000000`). Short secrets (<6 chars) are always allowed.                                                                                                |
+| `potentialUuid`         | `true`  | the secret matches the canonical 8-4-4-4-12 UUID shape. In practice UUIDs are object identifiers (trace, request, user) rather than credentials.                                                                                                                                          |
+| `notAlphanumericString` | `true`  | the secret contains zero ASCII alphanumerics (`*****`, `------`, `//////`) — almost always a masked-out placeholder captured by a greedy regex.                                                                                                                                           |
+
+```typescript
+// Keep UUID-shaped findings when auditing a system that uses UUIDs as API keys.
+const findings = await scan([process.cwd()], {
+    config: { heuristics: { potentialUuid: false } },
+});
+```
+
+The filters are intentionally conservative: every entry has to be wrong in a very specific way before it drops. If you hit a false negative you suspect a heuristic caused, toggle the one you suspect off and compare.
+
+For help detecting secrets that span multiple lines in YAML (where the raw scan never sees the full value), see the complementary [`transformYamlBlockScalars`](./api.mdx#transformyamlblockscalarscontent) helper — it's opt-in because it requires reading files in JS rather than through the Rust walker.
+
+### `validate` and `onlyVerified`
+
+`validate` turns on live verification — every finding whose rule declares an HTTP validator is checked against the provider's own API after detection. Cost: one HTTP request per finding (per-host concurrency capped at 4, global at 8). Default `false`, so scans stay offline-safe.
+
+Supported today: Kingfisher-style HTTP validators with `StatusMatch` / `WordMatch` response matchers. Other kinds (gRPC, multi-step HTTP, checksum) surface as `validation: "skipped"` on the finding and pass through unfiltered. Non-HTTP validators (AWS STS, MongoDB, MySQL / Postgres, …) require optional peer-deps — call `listRequiredValidators()` (or `vis secrets --list-validators`) to see which the current ruleset references.
+
+`onlyVerified: true` then filters the emitted set down to findings whose `validation === "verified"` — useful for CI gating where a suspect match that can't be verified is not a blocker.
+
+> **Warning:** `validate: true` sends the candidate secret to the provider. Some providers page their security team on failed auth attempts. Only enable on repos you own or have explicit authorisation to test.
+
+## `walk` — filesystem traversal
+
+| Option             | Type       | Default | Description                                                                                                         |
+| ------------------ | ---------- | ------- | ------------------------------------------------------------------------------------------------------------------- |
+| `excludeFromFiles` | `string[]` | `[]`    | Paths to `.gitignore`-syntax files to honor in addition to `.gitignore` (for example `.secretsignore`).             |
+| `excludePatterns`  | `string[]` | `[]`    | Inline gitignore-syntax lines layered on top of `.gitignore`. Supports negation, directory markers and leading `/`. |
+| `gitignore`        | `boolean`  | `true`  | Respect `.gitignore`, `.ignore` and global excludes via the `ignore` crate.                                         |
+| `includeHidden`    | `boolean`  | `false` | Visit dotfiles and hidden directory entries.                                                                        |
+| `maxFileSize`      | `number`   | 10 MiB  | Skip files larger than this (in bytes). Files above the threshold never enter the detector.                         |
+
+Only `scan()` runs the walker. `scanFiles()` takes a fixed list and bypasses it; there the JS wrapper applies `excludePatterns` / `excludeFromFiles` via the `ignore` npm package so the two code paths behave the same.
+
+## `rules` — id + tag filters
+
+| Option    | Type       | Default | Description                                                                                                            |
+| --------- | ---------- | ------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `enable`  | `string[]` | —       | **Additive.** Turn on opt-in rules (e.g. `tag:preset:weak-passwords`) without restricting output. Defaults still fire. |
+| `include` | `string[]` | —       | **Whitelist.** Only emit findings matching these ids/tags. Implies enablement for opt-in rules referenced here.        |
+| `exclude` | `string[]` | —       | **Blacklist.** Drop findings matching these ids/tags. Doesn't enable anything.                                         |
+
+`tag:<name>` entries expand to every rule carrying that tag at config-load time. An unknown tag throws with a list of known tags — catches typos at the boundary. Common tags: `tag:preset:weak-passwords`, `tag:preset:password-manager`.
+
+**Pick the right knob:**
+
+- "enable the weak-passwords rules alongside my normal scan" → `rules.enable: ["tag:preset:weak-passwords"]`
+- "scan **only** for password-manager exports" → `rules.include: ["tag:preset:password-manager"]`
+- "keep defaults but mute `generic-api-key`" → `rules.exclude: ["generic-api-key"]`
+
+## `baseline` — fingerprint suppression
+
+Set `baseline` to the path of a JSON array of `Finding` objects. Any finding whose content-hash fingerprint — SHA-256 over `(secret, ruleId, file)` truncated to 16 hex chars — already appears in the baseline is suppressed. Because the fingerprint hashes content rather than position, the entry survives line shifts inside the file; it only invalidates when the secret itself, the rule, or the file path changes.
+
+Legacy gitleaks-style baselines using the `<file>:<ruleID>:<startLine>` form keep suppressing correctly on read, so migrating to the content-hash form can happen at your own pace via `vis secrets --update-baseline`.
+
+A missing file is treated as an empty baseline; a malformed file is ignored with a stderr warning — scans never fail because of a broken baseline.
+
+## Gitleaks-compatible schema extensions
+
+The config shape mirrors gitleaks' TOML schema. A few fields are ours (safe additions):
+
+| Field             | Scope     | Description                                                                                                     |
+| ----------------- | --------- | --------------------------------------------------------------------------------------------------------------- |
+| `priority`        | Rule      | Integer (default `0`). When two rules match the same byte span, the higher priority wins (`#1997`).             |
+| `preRegexReplace` | Rule      | Ordered `[{ from, to }, …]` regex replacements applied to the scan buffer before the rule's main regex runs.    |
+| `targetRules`     | Allowlist | When non-empty, the allowlist only applies to findings whose rule id is in this list (gitleaks schema `#1919`). |

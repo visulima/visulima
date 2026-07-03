@@ -1,0 +1,26 @@
+{
+    "name": "svelte",
+    "version": "0.0.1",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+        "check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+        "dev": "vite dev",
+        "prepare": "svelte-kit sync || echo ''",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "@visulima/storage-client": "workspace:*"
+    },
+    "devDependencies": {
+        "@sveltejs/adapter-auto": "catalog:dev",
+        "@sveltejs/kit": "catalog:dev",
+        "@sveltejs/vite-plugin-svelte": "catalog:build",
+        "svelte": "catalog:frontend",
+        "svelte-check": "catalog:frontend",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build"
+    }
+}

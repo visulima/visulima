@@ -1,0 +1,317 @@
+---
+title: "vis toolchain"
+description: "Inspect and delegate to the workspace's version managers (proto, mise, fnm, volta, asdf, nvm, corepack)"
+---
+
+# vis toolchain
+
+Inspects the repository's tool pins (`engines.node`, `.nvmrc`, `.node-version`, `packageManager`, `.prototools`, `.mise.toml`, `.tool-versions`, `volta` field) and delegates to whichever version managers the developer already has installed. Resolution is **per-tool**, not per-workspace: fnm handles Node, corepack handles npm, pnpm and yarn self-activate from the `packageManager` field — one pin at a time, best manager wins.
+
+Unlike [vite+](https://viteplus.dev/guide/env), which ships its own managed Node.js runtime under `~/.vite-plus`, vis does not try to be a version manager. It keeps the binary small and fits into whatever ecosystem (proto, mise, fnm, volta, asdf, nvm, corepack) you already use.
+
+## Usage
+
+```bash
+vis toolchain <subcommand> [options]
+```
+
+## Subcommands
+
+| Subcommand                       | Purpose                                                                                                                |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `vis toolchain status`           | Show every detected manager plus expected-vs-actual versions. Each tool lists the manager vis would use to install it. |
+| `vis toolchain detect`           | Print the primary manager's name (useful for shell scripts).                                                           |
+| `vis toolchain install`          | Install pinned versions. Groups tools by manager and invokes each one appropriately.                                   |
+| `vis toolchain use <tool>@<ver>` | Pin a tool version through the best manager for that specific tool.                                                    |
+| `vis toolchain which <tool>`     | Resolve the binary path the manager would launch. Falls back to `PATH`.                                                |
+
+## Examples
+
+```bash
+# Read every pin and report drift
+vis toolchain status
+
+# Install everything — per-tool delegation
+vis toolchain install
+
+# Pin node 22.13.0 via the best runtime manager (fnm/volta/proto/...)
+vis toolchain use node@22.13.0
+
+# Pin pnpm via the packageManager field — pnpm 10+ self-activates
+vis toolchain use pnpm@10.32.1
+
+# Where would `node` actually run from?
+vis toolchain which node
+
+# Name of the primary manager — pipe-friendly
+vis toolchain detect       # prints "proto" / "mise" / "fnm" / ... / "none"
+```
+
+## Options
+
+| Option         | Subcommand(s)    | Description                                                                                                          |
+| -------------- | ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `--json`       | `status`         | Emit a machine-readable JSON payload instead of the formatted status report.                                         |
+| `--exit-code`  | `status`         | Exit with code 1 when any tool mismatches. Useful in CI preflight jobs.                                              |
+| `--dry-run`    | `install`, `use` | Print the command that would run but don't execute it.                                                               |
+| `--no-engines` | `use`            | Skip mirroring the pinned version into `engines.<tool>`. By default `use` updates that field when it already exists. |
+
+## How detection works
+
+1. Walk `PATH` for `proto`, `mise`, `fnm`, `volta`, `asdf`, `corepack`. `nvm` is a shell function, so vis treats `$NVM_DIR` as the install marker.
+2. Check for workspace-local config files: `.prototools`, `.mise.toml`, `.tool-versions`, `.nvmrc` / `.node-version`, a `volta` field in `package.json`, or a `packageManager` field in `package.json` (corepack).
+3. Record every manager found (installed or referenced) in `status.detected`.
+4. For each tool pin, `resolveManagerFor(spec)` walks a **source-aware preference list** and picks the first installed manager that can handle that specific tool.
+
+## Per-tool resolution
+
+vis picks a manager **per tool**, not per workspace. Preference depends on where the pin came from:
+
+| Pin source                 | Preference order                               |
+| -------------------------- | ---------------------------------------------- |
+| `.prototools`              | proto                                          |
+| `.mise.toml`               | mise                                           |
+| `.tool-versions`           | asdf, mise (mise reads asdf format)            |
+| `.nvmrc` / `.node-version` | fnm, nvm, volta, proto, mise, asdf (node only) |
+| `volta` field              | volta                                          |
+| `packageManager` — pnpm    | self-activate, volta, proto, mise, corepack    |
+| `packageManager` — yarn    | self-activate, volta, proto, mise, corepack    |
+| `packageManager` — npm     | volta, proto, mise, asdf, corepack             |
+| `packageManager` — bun     | proto, mise, asdf                              |
+| `engines.*` / `vis.config` | proto, mise, fnm, volta, asdf, nvm, corepack   |
+
+The first installed + capable manager wins. If nothing is installed, vis names the first capable manager as a "suggested install." `self-activate` is a pseudo-manager that means _the pnpm/yarn binary itself will switch versions from the `packageManager` field on next invocation_ — no external manager required.
+
+## Tool pin priority (when the same tool is pinned in multiple places)
+
+**Later entries override earlier ones** — read top-to-bottom, the bottom wins. `toolchain.tools` in `vis.config.ts` overrides `.prototools`, which overrides `.mise.toml`, and so on down to `engines.*`.
+
+1. `engines.*` in `package.json`
+2. `packageManager` in `package.json`
+3. `volta.<tool>` in `package.json`
+4. `.nvmrc` / `.node-version`
+5. `.tool-versions`
+6. `.mise.toml` (`[tools]`)
+7. `.prototools`
+8. `toolchain.tools` in `vis.config.ts`
+
+That matches what each manager reads at runtime — so `vis toolchain status` ends up reporting the same version the manager itself resolves.
+
+## Configuration
+
+```typescript
+// vis.config.ts
+import { defineConfig } from "@visulima/vis";
+
+export default defineConfig({
+    toolchain: {
+        // Explicit override. Does NOT include "self-activate" — that's
+        // resolved automatically for pnpm/yarn packageManager pins.
+        preferredManager: "proto",
+
+        // Overrides engines/packageManager-derived pins.
+        tools: {
+            node: ">=22.13",
+            pnpm: "10.32.1",
+        },
+    },
+});
+```
+
+## Manager compatibility
+
+| Manager       | Handles                                          | `install` command                               | `use` command                                  | Config file touched                   |
+| ------------- | ------------------------------------------------ | ----------------------------------------------- | ---------------------------------------------- | ------------------------------------- |
+| proto         | node, bun, deno, go, python, ruby, rust, all PMs | `proto install`                                 | `proto pin <tool> <ver>`                       | `.prototools`                         |
+| mise          | everything                                       | `mise install`                                  | `mise use -- <tool>@<ver>`                     | `.mise.toml`                          |
+| fnm           | node only                                        | `fnm install [<ver>]`                           | `fnm use <ver>` (Node only)                    | `.nvmrc` / `.node-version`            |
+| volta         | node, npm, pnpm, yarn                            | `volta install <tool>@<ver>`                    | `volta pin <tool>@<ver>`                       | `package.json` (`volta.<tool>` field) |
+| asdf          | node, bun, deno, go, python, ruby, rust          | `asdf install`                                  | `asdf local <tool> <ver>`                      | `.tool-versions`                      |
+| nvm           | node only                                        | (manual — shell function, run `nvm install`)    | writes `.nvmrc`, then prompts to run `nvm use` | `.nvmrc`                              |
+| corepack      | npm, pnpm, yarn                                  | `corepack prepare <tool>@<ver> --activate`      | `corepack use <tool>@<ver>`                    | `package.json` (`packageManager`)     |
+| self-activate | pnpm 10+, yarn berry                             | (no-op — runs on next `pnpm`/`yarn` invocation) | edit `packageManager` field                    | `package.json` (`packageManager`)     |
+
+For most managers vis shells out to the manager itself (`proto pin`, `volta pin`, `mise use`, etc.) so the change integrates with shell hooks and caches the way each manager expects. The exceptions are **nvm** (a shell function — vis writes `.nvmrc` directly and prompts you to run `nvm use`) and **self-activate** (vis writes the `packageManager` field directly so pnpm/yarn pick it up on next invocation).
+
+## A note on corepack
+
+Corepack [is no longer shipped with Node.js 25+](https://socket.dev/blog/node-js-tsc-votes-to-stop-distributing-corepack). Users who need it must install it explicitly via `npm install -g corepack`. vis detects corepack on `PATH` like any other manager.
+
+Most teams using `packageManager: "pnpm@X"` don't need corepack at all — **pnpm 10+ and yarn berry read the field natively and self-switch** on the next invocation. vis models this as the `self-activate` pseudo-manager, which is the default pick for pnpm/yarn pins and is always a no-op install.
+
+Corepack remains useful for **npm version pinning** (npm itself doesn't self-switch) and in containers where pnpm/yarn aren't pre-installed.
+
+## Cold start — no Node, no manager
+
+`vis` is a Node CLI, so a truly empty machine can't run it until something installs Node. Two bootstrap scripts cover the cold-start flow.
+
+### Linux & macOS (and WSL)
+
+```bash
+curl -fsSL https://visulima.com/install.sh | bash
+```
+
+The script:
+
+1. Checks whether `node` is on PATH.
+2. If not, installs **the latest Node LTS directly by default** — the OS package manager (Homebrew / apt / dnf-yum NodeSource) when it can provide it, otherwise the official, SHA256-verified nodejs.org tarball into `~/.vis/node`. A version manager (`proto`, `fnm`, `mise`, or `volta`) is offered as an opt-in alternative, not forced.
+3. Installs `@visulima/vis` globally via pnpm (if present) or npm.
+4. If the current directory has workspace pin files (`.nvmrc`, `.prototools`, etc.), runs `vis toolchain install` to match them.
+
+> **Note on piping.** When you run `curl … | bash`, stdin isn't a TTY and the
+> interactive picker is skipped — the script installs **the latest Node LTS directly**.
+> Pass `--manager=proto|fnm|mise|volta` (or set `VIS_MANAGER`) to take the
+> version-manager path instead, or `VIS_NODE_MAJOR` to install a different
+> Node major.
+
+### Windows (PowerShell 5.1+)
+
+```powershell
+irm https://visulima.com/install.ps1 | iex
+```
+
+Same flow as the POSIX script. By default it installs **the latest Node LTS directly** via winget / Chocolatey / scoop, falling back to the official, SHA256-verified nodejs.org zip into `%USERPROFILE%\.vis\node`. The opt-in version managers use Windows-native installers:
+
+- `proto` via `irm https://moonrepo.dev/install/proto.ps1 | iex` (vendor PowerShell installer)
+- `fnm` via `winget install Schniz.fnm` (or `scoop install fnm`)
+- `volta` via `winget install Volta.Volta` (or `scoop install volta`)
+
+`mise` and the Unix `nvm` are not supported on native Windows — use WSL with `install.sh` for those.
+
+### Passing arguments
+
+The pipe-into-shell form doesn't pass arguments. Use the scriptblock form to pass flags:
+
+```bash
+# bash
+curl -fsSL <url>/install.sh | bash -s -- --yes --manager=proto --no-toolchain-install
+```
+
+```powershell
+# PowerShell
+& ([scriptblock]::Create((irm '<url>/install.ps1'))) -Yes -Manager proto -NoToolchainInstall
+```
+
+### Docker / CI examples
+
+```dockerfile
+# Linux / macOS images
+RUN curl -fsSL https://visulima.com/install.sh \
+    | bash -s -- --yes --manager=proto --no-toolchain-install
+```
+
+```dockerfile
+# Windows images (PowerShell)
+RUN powershell -Command "& ([scriptblock]::Create((irm 'https://visulima.com/install.ps1'))) -Yes -Manager proto -NoToolchainInstall"
+```
+
+### Already have Node?
+
+If Node is on PATH both scripts skip the manager install step and go straight to `npm install -g @visulima/vis`. In that case you can also just run that command directly — the install scripts are a convenience, not a requirement.
+
+### Verifying the script before piping it into your shell
+
+Each script has a SHA256 sidecar at `<script>.sha256`. To verify before executing:
+
+```bash
+curl -fsSL https://visulima.com/install.sh -o install.sh
+curl -fsSL https://visulima.com/install.sh.sha256 | sha256sum -c -
+# install.sh: OK
+bash install.sh
+```
+
+```powershell
+# Windows
+$body = irm https://visulima.com/install.ps1
+$expected = (irm https://visulima.com/install.ps1.sha256).Split(" ")[0]
+$actual = (Get-FileHash -Algorithm SHA256 -InputStream ([IO.MemoryStream]::new([Text.Encoding]::UTF8.GetBytes($body)))).Hash.ToLower()
+if ($actual -ne $expected) { throw "SHA256 mismatch" }
+$body | iex
+```
+
+The script body has a `# vis-install <version>` banner near the top, so once you've run it you can confirm which release you got. The banner is intentionally content-stable across rebuilds (no per-build timestamp) so the SHA256 only changes when the script body or vis version actually changes.
+
+### Pinning to a specific version of the install script
+
+Versioned aliases let tutorials pin to a major version so a breaking flag rename in v2 doesn't silently break copy-paste:
+
+```bash
+# Pinned — body matches /install.sh today, won't follow breaking v2 changes.
+curl -fsSL https://visulima.com/install/v1.sh | bash
+```
+
+```powershell
+irm https://visulima.com/install/v1.ps1 | iex
+```
+
+The non-versioned URLs (`https://visulima.com/install.sh` and `…/install.ps1`) are the rolling latest.
+
+## CI / CD recipes
+
+`vis ci` calls `ensureToolchain()` automatically as its first step, so the simplest CI is:
+
+### GitHub Actions
+
+```yaml
+# .github/workflows/ci.yml
+name: CI
+on: [push, pull_request]
+
+jobs:
+    ci:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - name: Bootstrap vis (installs proto + Node from .prototools / engines.node)
+              run: curl -fsSL https://visulima.com/install/v1.sh | bash -s -- --yes --manager=proto
+            - name: Lint, test, build (affected)
+              run: vis ci lint,test,build
+```
+
+### GitLab CI
+
+```yaml
+# .gitlab-ci.yml
+ci:
+    image: ubuntu:22.04
+    before_script:
+        - apt-get update && apt-get install -y curl bash
+        - curl -fsSL https://visulima.com/install/v1.sh | bash -s -- --yes --manager=proto
+    script:
+        - vis ci lint,test,build
+```
+
+### Skipping the toolchain pre-flight
+
+When the CI image already has the right Node version baked in (and you trust that), pass `--skip-toolchain` to short-circuit the pre-flight:
+
+```bash
+vis ci lint,test,build --skip-toolchain
+```
+
+Or set `toolchain.autoInstall: false` in `vis.config.ts` for a workspace-wide opt-out.
+
+## Migrating from another version manager
+
+| Coming from  | What changes                                                                                                                                                                                                                                                                                                                                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Volta**    | Nothing immediate — vis reads your existing `volta` field in package.json and routes pnpm/yarn/npm/node pins to `volta install`. New pins from `vis toolchain use` write to the same field.                                                                                                                                                                                                                  |
+| **nvm**      | Keep your `.nvmrc`. `vis toolchain status` reads it; `vis toolchain use node@22.13.0` rewrites it. nvm-the-shell-function still owns activation (run `nvm use` to switch the shell).                                                                                                                                                                                                                         |
+| **fnm**      | Keep your `.nvmrc` / `.node-version`. fnm continues to handle Node; vis runs `fnm use <ver>` to switch the current shell but does **not** persist the change to `.nvmrc`. If you also want vis to write `.nvmrc` on `vis toolchain use node@<ver>`, set `toolchain.preferredManager: "nvm"` in `vis.config.ts` (and ensure nvm is installed) — vis will then write `.nvmrc` and prompt you to run `nvm use`. |
+| **proto**    | Native fit. `.prototools` is the source of truth, `vis toolchain install` runs `proto install`, `vis toolchain use <tool>@<ver>` runs `proto pin`.                                                                                                                                                                                                                                                           |
+| **mise**     | Same as proto — `.mise.toml` is the config, vis maps `install` and `use` to `mise install` / `mise use`.                                                                                                                                                                                                                                                                                                     |
+| **asdf**     | `.tool-versions` is the config. vis maps to `asdf install` / `asdf local <tool> <ver>`.                                                                                                                                                                                                                                                                                                                      |
+| **corepack** | If you only used corepack to pin pnpm/yarn via the `packageManager` field, you can drop corepack on most projects: pnpm 10+ and yarn berry **self-activate** from that field on next invocation. vis surfaces this as the `self-activate` pseudo-manager. corepack is still needed when you want to pin **npm** itself (which doesn't self-switch).                                                          |
+
+You don't have to migrate anything: vis runs alongside whatever manager you have. The benefits of explicit migration are smaller config drift and the ability to use `vis toolchain use` to update pins from the CLI.
+
+## Why not embed a runtime manager?
+
+Most developers already have `fnm`, `volta`, `mise`, or `proto` installed. Shipping another ~20 MB binary would violate the principle of least surprise and duplicate behaviour the OS-level manager already handles (PATH shims, global caches, shell activation). Delegation keeps vis small and portable.
+
+When no manager is installed, `vis toolchain status` still reports the pinned versions and their sources — the same information `vis doctor` surfaces — plus names a manager that _could_ install each tool, so the user can install it and re-run.
+
+## Related
+
+- [`vis doctor`](./doctor) — broader health check; surfaces `engines.node` mismatches but does not install anything.
+- [`vis ci`](./ci) — runs `install + affected` in one step; picks up toolchain pins automatically when `autoInstall` is on.

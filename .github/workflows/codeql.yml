@@ -1,9 +1,9 @@
 name: "CodeQL"
 on:
     push:
-        branches: ["main", "alpha"]
+        branches: ["main", "alpha", "next", "beta"]
     pull_request:
-        branches: ["main", "alpha"]
+        branches: ["main", "alpha", "next", "beta"]
     schedule:
         - cron: "0 0 * * 1"
 permissions: {}
@@ -13,7 +13,7 @@ jobs:
             security-events: "write"
             actions: "read"
             contents: "read"
-        uses: "anolilab/workflows/.github/workflows/codeql.yml@045a2d464dad0661a570c8a3c19f4b32bf9efad9" # v15.3.0+
+        uses: "anolilab/workflows/.github/workflows/codeql.yml@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4
         with:
-            languages: '["javascript-typescript"]'
-            branches: '["main", "alpha"]'
+            languages: "[\"javascript-typescript\"]"
+            branches: "[\"main\", \"alpha\", \"next\", \"beta\"]"

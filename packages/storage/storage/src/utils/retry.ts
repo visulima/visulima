@@ -1,0 +1,253 @@
+/**
+ * Default retry configuration
+ */
+const defaultRetryConfig: Required<Omit<RetryConfig, "calculateDelay" | "onRetry">> & {
+    calculateDelay?: RetryConfig["calculateDelay"];
+    onRetry?: RetryConfig["onRetry"];
+} = {
+    backoffMultiplier: 2,
+    calculateDelay: undefined,
+    initialDelay: 1000,
+    maxDelay: 30_000,
+    maxRetries: 3,
+    onRetry: undefined,
+    retryableStatusCodes: [408, 429, 500, 502, 503, 504],
+    // Default to `false` so the retry decision falls through to `isRetryableError`, which knows
+    // about the network/AWS/Azure patterns. The previous `() => true` short-circuited that and
+    // forced retries on every error — including 4xx client failures (auth, 404, validation)
+    // where retrying just wastes attempts and amplifies the failure.
+    shouldRetry: () => false,
+};
+
+/**
+ * Calculate exponential backoff delay with full jitter
+ * @param attempt Current retry attempt (0-indexed)
+ * @param initialDelay Initial delay in milliseconds
+ * @param backoffMultiplier Multiplier for exponential backoff
+ * @param maxDelay Maximum delay in milliseconds
+ * @returns Delay in milliseconds, randomized within [0, exponential bound] to prevent
+ * thundering-herd retries from many concurrent clients hitting the same back-end at once.
+ */
+const calculateExponentialBackoff = (attempt: number, initialDelay: number, backoffMultiplier: number, maxDelay: number): number => {
+    const ceiling = Math.min(initialDelay * backoffMultiplier ** attempt, maxDelay);
+
+    // eslint-disable-next-line sonarjs/pseudo-random -- Math.random is used for jitter to prevent thundering-herd retries, not for security
+    return Math.floor(Math.random() * ceiling);
+};
+
+/**
+ * Sleep for a specified number of milliseconds
+ * @param ms Milliseconds to sleep
+ */
+const sleep = (ms: number): Promise<void> =>
+    new Promise((resolve) => {
+        setTimeout(resolve, ms);
+    });
+
+/**
+ * Retry configuration options for storage operations
+ */
+export interface RetryConfig {
+    /**
+     * Multiplier for exponential backoff (e.g., 2 means delays double each retry)
+     * @default 2
+     */
+    backoffMultiplier?: number;
+
+    /**
+     * Custom function to calculate delay for a specific retry attempt
+     * @param attempt The current retry attempt (0-indexed)
+     * @param error The error that occurred
+     * @returns Delay in milliseconds, or undefined to use default exponential backoff
+     */
+    calculateDelay?: (attempt: number, error: unknown) => number | undefined;
+
+    /**
+     * Initial delay in milliseconds before first retry
+     * @default 1000
+     */
+    initialDelay?: number;
+
+    /**
+     * Maximum delay in milliseconds between retries
+     * @default 30000
+     */
+    maxDelay?: number;
+
+    /**
+     * Maximum number of retry attempts
+     * @default 3
+     */
+    maxRetries?: number;
+
+    /**
+     * Fire-and-forget hook invoked **before** each retry attempt's backoff sleep.
+     * `attempt` is 1-based (1 = first retry, i.e. after the initial call failed).
+     * Exceptions thrown by this callback are swallowed so an observability hook
+     * can never fail the underlying operation.
+     */
+    onRetry?: (attempt: number, error: unknown) => void;
+
+    /**
+     * HTTP status codes that should trigger a retry
+     * @default [408, 429, 500, 502, 503, 504]
+     */
+    retryableStatusCodes?: number[];
+
+    /**
+     * Custom function to determine if an error should be retried
+     * @param error The error that occurred
+     * @returns true if the error should be retried, false otherwise
+     */
+    shouldRetry?: (error: unknown) => boolean;
+}
+
+/**
+ * Determines if an error is retryable based on common patterns
+ * @param error The error to check
+ * @param retryableStatusCodes HTTP status codes that should trigger retry
+ * @returns true if the error is retryable
+ */
+export const isRetryableError = (error: unknown, retryableStatusCodes: number[] = defaultRetryConfig.retryableStatusCodes): boolean => {
+    // Network errors (ECONNRESET, ETIMEDOUT, etc.)
+    if (error instanceof Error) {
+        const errorWithCode = error as { code?: string };
+        const errorCode = errorWithCode.code;
+        const errorName = error.name;
+
+        // An aborted operation must never be retried: the cancellation that
+        // produced this error still applies to a replay. `runOperation`
+        // normalizes per-call signal/deadline aborts to `AbortError` before
+        // they reach here. Note we deliberately do NOT block `TimeoutError`:
+        // an SDK socket/network timeout (no abort signal involved) is a
+        // transient failure that should still be retried.
+        if (errorName === "AbortError" || errorCode === "ABORT_ERR") {
+            return false;
+        }
+
+        // Network-related errors
+        if (
+            errorCode === "ECONNRESET" ||
+            errorCode === "ETIMEDOUT" ||
+            errorCode === "ENOTFOUND" ||
+            errorCode === "ECONNREFUSED" ||
+            errorCode === "EAI_AGAIN" ||
+            errorName === "NetworkError" ||
+            errorName === "TimeoutError"
+        ) {
+            return true;
+        }
+
+        // AWS SDK errors
+        const errorWithMetadata = error as { $fault?: string; $metadata?: { httpStatusCode?: number }; retryable?: boolean; statusCode?: number };
+
+        if (errorWithMetadata.$metadata) {
+            const statusCode = errorWithMetadata.$metadata.httpStatusCode;
+
+            if (statusCode && retryableStatusCodes.includes(statusCode)) {
+                return true;
+            }
+
+            // AWS SDK v3 retryable flag
+            if (errorWithMetadata.$fault === "server") {
+                return true;
+            }
+        }
+
+        // Azure Storage errors
+        if (errorWithMetadata.statusCode && retryableStatusCodes.includes(errorWithMetadata.statusCode)) {
+            return true;
+        }
+
+        // Check for retryable flag in error (AWS SDK v2 and other errors)
+        const { retryable } = errorWithMetadata;
+
+        if (retryable === true) {
+            return true;
+        }
+
+        if (typeof retryable === "string" && retryable === "true") {
+            return true;
+        }
+
+        return false;
+    }
+
+    return false;
+};
+
+/**
+ * Retry an async operation with exponential backoff
+ * @param fn The async function to retry
+ * @param config Retry configuration
+ * @returns The result of the function
+ * @throws The last error if all retries are exhausted
+ */
+export const retry = async <T>(function_: () => Promise<T>, config: RetryConfig = {}): Promise<T> => {
+    const {
+        backoffMultiplier = defaultRetryConfig.backoffMultiplier,
+        calculateDelay = defaultRetryConfig.calculateDelay,
+        initialDelay = defaultRetryConfig.initialDelay,
+        maxDelay = defaultRetryConfig.maxDelay,
+        maxRetries = defaultRetryConfig.maxRetries,
+        onRetry,
+        retryableStatusCodes = defaultRetryConfig.retryableStatusCodes,
+        shouldRetry = defaultRetryConfig.shouldRetry,
+    } = config;
+
+    let lastError: unknown;
+
+    // Sequential retries are intentional - we want to wait between attempts
+
+    for (let attempt = 0; attempt <= maxRetries; attempt += 1) {
+        try {
+            return await function_();
+        } catch (error: unknown) {
+            lastError = error;
+
+            // Don't retry if we've exhausted all attempts
+            if (attempt >= maxRetries) {
+                break;
+            }
+
+            // Check if error is retryable
+            const isRetryable = shouldRetry(error) || isRetryableError(error, retryableStatusCodes);
+
+            if (!isRetryable) {
+                throw error;
+            }
+
+            // Calculate delay for this retry attempt
+            const delay = calculateDelay ? calculateDelay(attempt, error) : calculateExponentialBackoff(attempt, initialDelay, backoffMultiplier, maxDelay);
+
+            // Fire-and-forget retry hook. Invoked once per *retry* attempt — never for the
+            // first try. `attempt` is 1-based for observability consumers. Throws are
+            // swallowed so a hook can never fail the operation it observes.
+            if (onRetry) {
+                try {
+                    onRetry(attempt + 1, error);
+                } catch {
+                    // hook contract: fire-and-forget
+                }
+            }
+
+            if (delay !== undefined && delay > 0) {
+                // Sequential delay is intentional for retry logic
+
+                await sleep(delay);
+            }
+        }
+    }
+
+    throw lastError;
+};
+
+/**
+ * Create a retry wrapper function with pre-configured settings.
+ * @param config Retry configuration
+ * @returns A function that wraps async operations with retry logic
+ */
+export const createRetryWrapper =
+    (config: RetryConfig = {}) =>
+    <T>(function_: () => Promise<T>): Promise<T> =>
+        retry(function_, config);

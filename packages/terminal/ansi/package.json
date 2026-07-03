@@ -1,0 +1,265 @@
+{
+    "name": "@visulima/ansi",
+    "version": "4.0.0-alpha.18",
+    "description": "ANSI escape codes for some terminal swag.",
+    "keywords": [
+        "alternative-screen",
+        "ansi",
+        "clear",
+        "cli",
+        "code",
+        "codes",
+        "command-line",
+        "console",
+        "control",
+        "cursor",
+        "erase",
+        "escape",
+        "escapes",
+        "formatting",
+        "hyperlink",
+        "image",
+        "iterm",
+        "iterm2",
+        "link",
+        "log",
+        "logging",
+        "screen",
+        "scroll",
+        "scrollback",
+        "sequence",
+        "shell",
+        "string",
+        "strip",
+        "strip-ansi",
+        "terminal",
+        "text",
+        "tty",
+        "visulima",
+        "vt100",
+        "xterm"
+    ],
+    "homepage": "https://visulima.com/packages/ansi",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/terminal/ansi"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./alternative-screen": {
+            "types": "./dist/alternative-screen.d.ts",
+            "default": "./dist/alternative-screen.js"
+        },
+        "./background": {
+            "types": "./dist/background.d.ts",
+            "default": "./dist/background.js"
+        },
+        "./charset": {
+            "types": "./dist/charset.d.ts",
+            "default": "./dist/charset.js"
+        },
+        "./clear": {
+            "types": "./dist/clear.d.ts",
+            "default": "./dist/clear.js"
+        },
+        "./clipboard": {
+            "types": "./dist/clipboard.d.ts",
+            "default": "./dist/clipboard.js"
+        },
+        "./constants": {
+            "types": "./dist/constants.d.ts",
+            "default": "./dist/constants.js"
+        },
+        "./cursor": {
+            "types": "./dist/cursor.d.ts",
+            "default": "./dist/cursor.js"
+        },
+        "./cwd": {
+            "types": "./dist/cwd.d.ts",
+            "default": "./dist/cwd.js"
+        },
+        "./erase": {
+            "types": "./dist/erase.d.ts",
+            "default": "./dist/erase.js"
+        },
+        "./finalterm": {
+            "types": "./dist/finalterm.d.ts",
+            "default": "./dist/finalterm.js"
+        },
+        "./focus": {
+            "types": "./dist/focus.d.ts",
+            "default": "./dist/focus.js"
+        },
+        "./image": {
+            "types": "./dist/image.d.ts",
+            "default": "./dist/image.js"
+        },
+        "./hyperlink": {
+            "types": "./dist/hyperlink.d.ts",
+            "default": "./dist/hyperlink.js"
+        },
+        "./scroll": {
+            "types": "./dist/scroll.d.ts",
+            "default": "./dist/scroll.js"
+        },
+        "./sixel": {
+            "types": "./dist/sixel.d.ts",
+            "default": "./dist/sixel.js"
+        },
+        "./strip": {
+            "types": "./dist/strip.d.ts",
+            "default": "./dist/strip.js"
+        },
+        "./termcap": {
+            "types": "./dist/termcap.d.ts",
+            "default": "./dist/termcap.js"
+        },
+        "./title": {
+            "types": "./dist/title.d.ts",
+            "default": "./dist/title.js"
+        },
+        "./urxvt": {
+            "types": "./dist/urxvt.d.ts",
+            "default": "./dist/urxvt.js"
+        },
+        "./window-ops": {
+            "types": "./dist/window-ops.d.ts",
+            "default": "./dist/window-ops.js"
+        },
+        "./xterm": {
+            "types": "./dist/xterm.d.ts",
+            "default": "./dist/xterm.js"
+        },
+        "./iterm2": {
+            "types": "./dist/iterm2.d.ts",
+            "default": "./dist/iterm2.js"
+        },
+        "./keypad": {
+            "types": "./dist/keypad.d.ts",
+            "default": "./dist/keypad.js"
+        },
+        "./kitty-graphics": {
+            "types": "./dist/kitty-graphics.d.ts",
+            "default": "./dist/kitty-graphics.js"
+        },
+        "./mode": {
+            "types": "./dist/mode.d.ts",
+            "default": "./dist/mode.js"
+        },
+        "./mouse": {
+            "types": "./dist/mouse.d.ts",
+            "default": "./dist/mouse.js"
+        },
+        "./notification": {
+            "types": "./dist/notification.d.ts",
+            "default": "./dist/notification.js"
+        },
+        "./passthrough": {
+            "types": "./dist/passthrough.d.ts",
+            "default": "./dist/passthrough.js"
+        },
+        "./paste": {
+            "types": "./dist/paste.d.ts",
+            "default": "./dist/paste.js"
+        },
+        "./progress": {
+            "types": "./dist/progress.d.ts",
+            "default": "./dist/progress.js"
+        },
+        "./reset": {
+            "types": "./dist/reset.d.ts",
+            "default": "./dist/reset.js"
+        },
+        "./screen": {
+            "types": "./dist/screen.d.ts",
+            "default": "./dist/screen.js"
+        },
+        "./status": {
+            "types": "./dist/status.d.ts",
+            "default": "./dist/status.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "lint:attw": "attw --pack --profile esm-only",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@total-typescript/ts-reset": "catalog:dev",
+        "@types/node": "catalog:types",
+        "@visulima/packem": "catalog:dev",
+        "@visulima/path": "3.0.0-alpha.13",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "fallow": "catalog:lint",
+        "jiti": "catalog:dev",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "restore-cursor": "catalog:dev",
+        "rimraf": "catalog:node",
+        "secretlint": "catalog:lint",
+        "semantic-release": "catalog:cli",
+        "type-fest": "catalog:prod",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

@@ -1,0 +1,352 @@
+---
+title: Library Integration
+description: Add zero-dependency DevTools support to your library. Users get devtools automatically when they install the Visulima Dev Toolbar — no extra configuration required.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+
+If you are building a library (a state manager, data fetcher, router, etc.), you can integrate with the Visulima Dev Toolbar without taking a hard dependency on `@visulima/dev-toolbar`. Your library checks for the global hook at runtime — when the toolbar is present, devtools appear; when it is absent, nothing happens.
+
+This is the same pattern used by React Query DevTools, Pinia DevTools, and Vue Router DevTools.
+
+## The Global Hook
+
+The toolbar exposes `window.__DEV_TOOLBAR_HOOK__` as soon as it initializes. Libraries can interact with it to:
+
+- Register a custom app panel
+- Add events to the Timeline
+- Subscribe to toolbar lifecycle events
+
+The hook is **buffered** — calls made before the toolbar has mounted are queued and replayed once it initializes. This means you can safely call `__DEV_TOOLBAR_HOOK__` as soon as your library starts, without worrying about load order.
+
+---
+
+## Quick Integration
+
+The minimum integration registers an app and emits timeline events:
+
+```ts title="my-library/src/devtools.ts"
+function initDevTools(myLibraryInstance: MyLibrary): void {
+    if (typeof window === "undefined") return;
+
+    const hook = (window as any).__DEV_TOOLBAR_HOOK__;
+
+    if (!hook) return;
+
+    // Register a devtools panel for your library
+    hook.registerApp({
+        id: "my-library:devtools",
+        name: "My Library",
+        icon: myLibraryIconSvg, // raw SVG string
+        component: MyLibraryPanel, // Preact component
+        tooltip: MyLibraryTooltip, // optional
+    });
+
+    // Emit timeline events as things happen
+    myLibraryInstance.on("query:start", (query) => {
+        hook.addTimelineEvent("my-library", {
+            id: crypto.randomUUID(),
+            title: `Query: ${query.name}`,
+            time: Date.now(),
+            level: "info",
+            data: query,
+        });
+    });
+}
+```
+
+Call this function from your library's dev-mode initialization:
+
+```ts title="my-library/src/index.ts"
+export function createMyLibrary(options: Options): MyLibrary {
+    const instance = new MyLibrary(options);
+
+    // Only initialize devtools in development
+    if (process.env.NODE_ENV !== "production") {
+        initDevTools(instance);
+    }
+
+    return instance;
+}
+```
+
+---
+
+## Full Step-by-Step Guide
+
+<Steps>
+
+<Step>
+
+### Create the Devtools Panel Component
+
+Build a Preact component for your library's devtools panel. The component receives `helpers.rpc` for any server-side needs, but library devtools often only need in-memory state:
+
+```tsx title="my-library/src/devtools/panel.tsx"
+/** @jsxImportSource preact */
+import type { ComponentChildren } from "preact";
+import { useEffect, useState } from "preact/hooks";
+import type { AppComponentProps } from "@visulima/dev-toolbar";
+import { myLibraryStore } from "../store";
+
+const MyLibraryPanel = (_props: AppComponentProps): ComponentChildren => {
+    const [state, setState] = useState(myLibraryStore.getSnapshot());
+
+    useEffect(() => {
+        return myLibraryStore.subscribe(() => {
+            setState(myLibraryStore.getSnapshot());
+        });
+    }, []);
+
+    return (
+        <div class="p-5 space-y-4">
+            <h2 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">// My Library State</h2>
+            <pre class="text-xs font-mono text-foreground/80 bg-foreground/5 border border-border p-4 overflow-auto">{JSON.stringify(state, null, 2)}</pre>
+        </div>
+    );
+};
+
+export default MyLibraryPanel;
+```
+
+</Step>
+
+<Step>
+
+### (Optional) Create a Tooltip
+
+A tooltip shows a compact summary on hover without opening the full panel:
+
+```tsx title="my-library/src/devtools/tooltip.tsx"
+/** @jsxImportSource preact */
+import type { ComponentChildren } from "preact";
+import { useEffect, useState } from "preact/hooks";
+import type { AppComponentProps } from "@visulima/dev-toolbar";
+import { myLibraryStore } from "../store";
+
+const MyLibraryTooltip = (_props: AppComponentProps): ComponentChildren => {
+    const [count, setCount] = useState(myLibraryStore.getCount());
+
+    useEffect(() => {
+        return myLibraryStore.subscribe(() => {
+            setCount(myLibraryStore.getCount());
+        });
+    }, []);
+
+    return (
+        <div class="p-3 space-y-1 min-w-32">
+            <div class="text-xs font-bold text-muted-foreground uppercase tracking-widest">My Library</div>
+            <div class="text-sm font-mono text-foreground">{count} items tracked</div>
+        </div>
+    );
+};
+
+export default MyLibraryTooltip;
+```
+
+</Step>
+
+<Step>
+
+### Register with the Hook
+
+```ts title="my-library/src/devtools/index.ts"
+import myIcon from "./icon.svg?raw";
+import MyLibraryPanel from "./panel";
+import MyLibraryTooltip from "./tooltip";
+import type { MyLibrary } from "../types";
+
+export function installDevtools(instance: MyLibrary): void {
+    if (typeof window === "undefined") return;
+
+    const hook = (window as any).__DEV_TOOLBAR_HOOK__;
+
+    if (!hook) return;
+
+    // Register the app panel
+    hook.registerApp({
+        id: "my-library:devtools",
+        name: "My Library",
+        icon: myIcon,
+        component: MyLibraryPanel,
+        tooltip: MyLibraryTooltip,
+    });
+
+    // Emit timeline events
+    instance.on("action", (action) => {
+        hook.addTimelineEvent("my-library", {
+            id: crypto.randomUUID(),
+            title: action.type,
+            subtitle: action.payload ? JSON.stringify(action.payload).slice(0, 40) : undefined,
+            time: Date.now(),
+            level: "info",
+            data: action,
+        });
+    });
+
+    // Subscribe to toolbar events
+    hook.on("devtools:init", () => {
+        console.log("[my-library] DevTools initialized");
+    });
+}
+```
+
+</Step>
+
+<Step>
+
+### Call from Your Library Entry Point
+
+```ts title="my-library/src/index.ts"
+import { installDevtools } from "./devtools";
+
+export function createMyLibrary(options: Options): MyLibrary {
+    const instance = new MyLibrary(options);
+
+    if (process.env.NODE_ENV !== "production") {
+        installDevtools(instance);
+    }
+
+    return instance;
+}
+```
+
+</Step>
+
+</Steps>
+
+---
+
+## Hook API Reference
+
+```ts
+interface DevToolbarHook {
+    on(event: string, handler: (...args: any[]) => void): () => void;
+    once(event: string, handler: (...args: any[]) => void): void;
+    off(event: string, handler?: (...args: any[]) => void): void;
+    emit(event: string, ...args: any[]): void;
+    registerApp(app: DevToolbarApp): void;
+    addTimelineEvent(groupId: string, event: TimelineEvent): void;
+}
+```
+
+### Hook Events
+
+| Event            | Payload                          | Description                      |
+| ---------------- | -------------------------------- | -------------------------------- |
+| `devtools:init`  | —                                | Toolbar has mounted and is ready |
+| `devtools:open`  | `appId: string`                  | An app panel was opened          |
+| `devtools:close` | —                                | The panel was closed             |
+| `app:error`      | `(error: Error, appId?: string)` | An app component threw an error  |
+| `timeline:event` | `(groupId, event)`               | A timeline event was added       |
+
+---
+
+## Timeline Events
+
+Use timeline events to give users a chronological view of your library's activity:
+
+```ts
+hook.addTimelineEvent("my-library", {
+    id: crypto.randomUUID(),
+    title: "Cache invalidated",
+    subtitle: "/api/users",
+    time: Date.now(),
+    level: "warning",
+    data: {
+        reason: "stale-while-revalidate",
+        age: 31000,
+    },
+});
+```
+
+Timeline groups are automatically created from the `groupId` string. Users can filter events by group in the [Timeline app](/docs/dev-toolbar/built-in-apps/timeline).
+
+---
+
+## No Dependency Required
+
+Your library does not need to add `@visulima/dev-toolbar` as a dependency. The integration is entirely runtime-based:
+
+```ts
+// ✅ No import from @visulima/dev-toolbar
+const hook = (window as any).__DEV_TOOLBAR_HOOK__;
+if (hook) {
+    /* ... */
+}
+```
+
+If your library ships TypeScript types and you want to type the hook, use a `declare global`:
+
+```ts title="my-library/src/devtools/types.ts"
+declare global {
+    interface Window {
+        __DEV_TOOLBAR_HOOK__?: {
+            registerApp(app: { id: string; name: string; icon: string; component: unknown; tooltip?: unknown }): void;
+            addTimelineEvent(
+                groupId: string,
+                event: {
+                    id: string;
+                    title: string;
+                    time: number;
+                    level?: "info" | "warning" | "error";
+                    data?: Record<string, unknown>;
+                },
+            ): void;
+            on(event: string, handler: (...args: any[]) => void): () => void;
+        };
+    }
+}
+```
+
+<Callout type="info">
+    The hook is initialized before user code runs. The toolbar script is injected into `<head>` with `prepend` priority. Even so, calls before `devtools:init` are safely buffered and replayed.
+</Callout>
+
+---
+
+## Real-World Pattern
+
+Here is a complete minimal integration modeled on how popular libraries wire up devtools:
+
+```ts title="my-library/src/devtools.ts"
+let installed = false;
+
+export function tryInstallDevTools(instance: MyLibrary): void {
+    // Avoid double-installing (e.g. if createMyLibrary is called twice)
+    if (installed) return;
+    if (typeof window === "undefined") return;
+    if (process.env.NODE_ENV === "production") return;
+
+    const hook = (window as any).__DEV_TOOLBAR_HOOK__;
+    if (!hook) return;
+
+    installed = true;
+
+    hook.registerApp({
+        id: "my-library:panel",
+        name: "My Library",
+        icon: ICON_SVG,
+        component: Panel,
+        tooltip: Tooltip,
+    });
+
+    // Timeline integration
+    instance.subscribe((event) => {
+        hook.addTimelineEvent("my-library", {
+            id: crypto.randomUUID(),
+            title: event.type,
+            time: Date.now(),
+            level: event.error ? "error" : "info",
+            data: event,
+        });
+    });
+
+    // Badge notification when errors occur
+    instance.on("error", () => {
+        const api = (window as any).__VISULIMA_DEVTOOLS__;
+        api?.notify("my-library:panel", "error");
+    });
+}
+```

@@ -1,0 +1,189 @@
+{
+    "packem": {
+        "displayName": "Packem",
+        "npmName": "@visulima/packem",
+        "category": "Bundling",
+        "description": "A fast and modern bundler for Node.js and TypeScript. Supports multiple runtimes, shared modules, server components, dynamic import, wasm, css, and more.",
+        "features": ["Tree shaking for ESM and CJS", "Multiple transformers (esbuild, swc, oxc, sucrase)", "Library and application bundling", "TypeScript declarations"]
+    },
+    "cerebro": {
+        "displayName": "Cerebro",
+        "features": ["Flag and argument parsing", "Auto-generated help docs", "Terminal autocompletion", "Plugin system"]
+    },
+    "pail": {
+        "displayName": "Pail",
+        "features": ["Pretty and JSON output", "Built-in timers and stack traces", "Spam prevention and throttling", "Cross-platform support"]
+    },
+    "command-line-args": {
+        "displayName": "Command Line Args",
+        "features": ["Type-safe argument parsing", "Validation and defaults", "Subcommand support", "Auto-generated usage text"]
+    },
+    "boxen": {
+        "displayName": "Boxen",
+        "features": ["Multiple border styles", "Padding and margin control", "Text alignment", "Title and footer support"]
+    },
+    "tabular": {
+        "displayName": "Tabular",
+        "features": ["Multiple table styles", "Column alignment", "Unicode support", "Responsive column widths"]
+    },
+    "ansi": {
+        "displayName": "ANSI",
+        "features": ["Cursor manipulation", "Screen control", "Text formatting", "Color support"]
+    },
+    "colorize": {
+        "displayName": "Colorize",
+        "features": ["256 and TrueColor support", "Nested styling", "Cross-runtime", "Auto color detection"]
+    },
+    "is-ansi-color-supported": {
+        "displayName": "Is ANSI Color Supported",
+        "features": ["ANSI detection", "256-color detection", "TrueColor detection", "Cross-platform"]
+    },
+    "fmt": {
+        "displayName": "Fmt",
+        "features": ["Printf-style formatting", "Custom formatters", "CSS styling support", "High performance"]
+    },
+    "string": {
+        "displayName": "String",
+        "features": ["Case conversion (camel, snake, kebab, etc.)", "Unicode and CJK support", "String width calculation", "Slugification and similarity"]
+    },
+    "object": {
+        "displayName": "Object",
+        "features": ["Dot notation access", "Deep key operations", "Object filtering", "Type-safe utilities"]
+    },
+    "deep-clone": {
+        "displayName": "Deep Clone",
+        "features": ["Circular reference handling", "All JS types supported", "High performance", "Zero dependencies"]
+    },
+    "bytes": {
+        "displayName": "Bytes",
+        "features": ["Uint8Array utilities", "Browser and Node.js", "Encoding and decoding", "Comparison helpers"]
+    },
+    "humanizer": {
+        "displayName": "Humanizer",
+        "features": ["Byte size formatting", "Duration humanization", "Multi-locale support", "Configurable unit systems"]
+    },
+    "redact": {
+        "displayName": "Redact",
+        "features": ["GDPR-compliant redaction", "Deep object traversal", "NLP text masking", "Custom redaction rules"]
+    },
+    "content-safety": {
+        "displayName": "Content Safety",
+        "features": ["19 language support", "Unicode-aware detection", "Configurable sensitivity", "Custom word lists"]
+    },
+    "fs": {
+        "displayName": "FS",
+        "features": ["Directory walking", "File finding with globs", "JSON/YAML/TOML reading", "Atomic file writes"]
+    },
+    "path": {
+        "displayName": "Path",
+        "features": ["Cross-platform consistency", "Path normalization", "Extension handling", "Windows and POSIX"]
+    },
+    "find-cache-dir": {
+        "displayName": "Find Cache Dir",
+        "features": ["XDG-compliant paths", "Cross-platform support", "Configurable fallbacks", "Lightweight"]
+    },
+    "package": {
+        "displayName": "Package",
+        "features": ["Monorepo detection", "Package.json parsing", "Workspace resolution", "Lock file analysis"]
+    },
+    "tsconfig": {
+        "displayName": "TSConfig",
+        "features": ["Extends resolution", "Path alias handling", "Config validation", "Workspace support"]
+    },
+    "health-check": {
+        "displayName": "Health Check",
+        "features": ["Readiness checks", "Liveness probes", "Custom health indicators", "Middleware integration"]
+    },
+    "jsdoc-open-api": {
+        "displayName": "JSDoc OpenAPI",
+        "features": ["JSDoc to OpenAPI", "Multiple syntax support", "CLI and build tools", "Swagger UI generation"]
+    },
+    "pagination": {
+        "displayName": "Pagination",
+        "features": ["Cursor-based pagination", "Offset pagination", "Page metadata", "Framework agnostic"]
+    },
+    "html": {
+        "displayName": "HTML",
+        "features": ["XSS prevention", "Entity encoding", "Safe templates", "Sanitization"]
+    },
+    "error": {
+        "displayName": "Error",
+        "features": ["Stacktrace parsing", "Code frame display", "AI-powered solutions", "Source map support"]
+    },
+    "error-handler": {
+        "displayName": "Error Handler",
+        "features": ["Global error catching", "Custom formatters", "Logging integration", "Middleware support"]
+    },
+    "ono": {
+        "displayName": "Ono",
+        "features": ["Error chaining", "Formatted messages", "Custom error types", "Stack trace preservation"]
+    },
+    "source-map": {
+        "displayName": "Source Map",
+        "features": ["Source map parsing", "Map generation", "Stack trace mapping", "VLQ encoding"]
+    },
+    "inspector": {
+        "displayName": "Inspector",
+        "features": ["Pretty-printing", "Circular reference handling", "Custom formatters", "Syntax highlighting"]
+    },
+    "vite-overlay": {
+        "displayName": "Vite Overlay",
+        "features": ["Vite plugin", "Enhanced stack traces", "Source map integration", "Customizable UI"]
+    },
+    "iso-locale": {
+        "displayName": "ISO Locale",
+        "features": ["Country data (ISO 3166)", "Currency data (ISO 4217)", "Timezone support", "BCP 47 locale tags"]
+    },
+    "disposable-email-domains": {
+        "displayName": "Disposable Email Domains",
+        "features": ["Disposable domain detection", "Regular updates", "Custom blocklists", "Lightweight"]
+    },
+    "dev-toolbar": {
+        "displayName": "Dev Toolbar",
+        "features": ["Accessibility auditing", "Performance monitoring", "SEO inspection", "Extensible app system"]
+    },
+    "email": {
+        "displayName": "Email",
+        "features": ["Multiple providers", "Template engines & i18n", "Inbound parsing & webhooks", "Deliverability tooling", "Middleware pipeline", "Queue & batch sending"]
+    },
+    "email-provider-mx": {
+        "displayName": "Email Provider MX",
+        "features": ["MX host classification", "Mailbox, free & SEG types", "Secure Email Gateway detection", "Zero network, pure lookup"]
+    },
+    "email-verifier": {
+        "displayName": "Email Verifier",
+        "features": ["Syntax, domain & SMTP checks", "Catch-all & mailbox-full detection", "Disposable, free & role flags", "Typo suggestions & name parsing", "0–100 quality score", "Mailer-free"]
+    },
+    "free-email-domains": {
+        "displayName": "Free Email Domains",
+        "features": ["Free provider detection", "Regular updates", "Custom allowlists", "Lightweight"]
+    },
+    "notification": {
+        "displayName": "Notification",
+        "features": ["SMS, push, chat, in-app", "Edge-ready fetch providers", "Failover & routing", "Preferences & gating", "Middleware pipeline", "Queue & worker"]
+    },
+    "storage": {
+        "displayName": "Storage",
+        "features": ["S3, Azure, GCS backends", "Image scaling and rotation", "Local filesystem support", "Simplified upload API"]
+    },
+    "storage-client": {
+        "displayName": "Storage Client",
+        "features": ["React support", "Vue support", "Solid and Svelte support", "Easy file uploads"]
+    },
+    "vis": {
+        "displayName": "Vis",
+        "features": ["Task running with caching", "Dependency graph visualization", "Affected project detection", "Git hooks management"]
+    },
+    "task-runner": {
+        "displayName": "Task Runner",
+        "features": ["Native Rust performance", "File and task hashing", "Graph-based scheduling", "Remote caching support"]
+    },
+    "find-ai-runner": {
+        "displayName": "Find AI Runner",
+        "features": ["AI runner discovery", "Multiple provider support", "Configuration detection", "CLI integration"]
+    },
+    "workflow": {
+        "displayName": "Workflow",
+        "features": ["Code-first durable workflows", "Resumable steps & replay", "Delays & external-event waits", "Edge-ready (fetch + Web Crypto)", "Pluggable store contract", "Standard Schema payloads"]
+    }
+}

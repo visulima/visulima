@@ -1,0 +1,10 @@
+{
+    "name": "pagination-types",
+    "version": "0.0.0",
+    "private": true,
+    "description": "Typings smoke test fixture",
+    "type": "module",
+    "dependencies": {
+        "@visulima/pagination": "workspace:*"
+    }
+}

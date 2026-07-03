@@ -1,0 +1,144 @@
+---
+title: "API Reference"
+---
+
+# API Reference
+
+## findMonorepoRoot()
+
+Find monorepo root directory and strategy.
+
+**Signature:**
+
+```typescript
+function findMonorepoRoot(cwd?: string): Promise<{ path: string; strategy: string } | null>;
+```
+
+**Strategies:** `pnpm`, `npm`, `yarn`, `lerna`, `turborepo`
+
+## findPackageRoot()
+
+Find package root directory.
+
+**Signature:**
+
+```typescript
+function findPackageRoot(cwd?: string): Promise<{ path: string; strategy: string } | null>;
+```
+
+## findPackageJson()
+
+Find and parse package.json/yaml/json5.
+
+**Signature:**
+
+```typescript
+function findPackageJson(
+    cwd?: string,
+    options?: Options,
+): Promise<{
+    packageJson: PackageJson;
+    path: string;
+} | null>;
+```
+
+**Options:**
+
+- `yaml` - Enable package.yaml support
+- `json5` - Enable package.json5 support
+- `resolveCatalog` - Resolve pnpm catalog dependencies
+
+## readPackageJson()
+
+Read and parse package.json file.
+
+**Signature:**
+
+```typescript
+function readPackageJson(path: string, options?: Options): Promise<PackageJson>;
+```
+
+## detectPackageManager()
+
+Detect which package manager is used.
+
+**Signature:**
+
+```typescript
+function detectPackageManager(cwd?: string): Promise<"pnpm" | "npm" | "yarn" | null>;
+```
+
+## Lockfile parsers
+
+Subpath: `@visulima/package/lockfile` (also re-exported from the root).
+
+Covers `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock` (Classic v1 and Berry v2+), and `bun.lock`. Each entry is returned as a package-manager-agnostic `LockFileEntry` — name, resolved version, decoded SRI integrity (where available), and the declared `dependencies` / `peerDependencies` / `optionalDependencies` specifier maps.
+
+### parseLockFile() / parseLockFileSync()
+
+Walks up from `cwd` to find the nearest supported lockfile, reads it, and parses it in one call.
+
+**Signature:**
+
+```typescript
+function parseLockFile(cwd?: URL | string): Promise<LockFileParseResult>;
+function parseLockFileSync(cwd?: URL | string): LockFileParseResult;
+
+interface LockFileParseResult {
+    entries: LockFileEntry[];
+    path: string;
+    type: "bun" | "npm" | "pnpm" | "yarn";
+}
+```
+
+### parseLockFileContent()
+
+Pure dispatcher — parses raw lockfile content of the given type.
+
+**Signature:**
+
+```typescript
+function parseLockFileContent(content: string, type: LockFileType): LockFileEntry[];
+```
+
+### LockFileEntry shape
+
+```typescript
+interface LockFileEntry {
+    name: string;
+    version: string;
+    integrity?: { algorithm: "sha256" | "sha384" | "sha512"; hex: string };
+    dependencies?: Record<string, string>;
+    peerDependencies?: Record<string, string>;
+    optionalDependencies?: Record<string, string>;
+}
+```
+
+### Format support matrix
+
+| Lockfile          | Detected filename             | Name / version | SRI integrity | Per-entry edges |
+| ----------------- | ----------------------------- | -------------- | ------------- | --------------- |
+| npm               | `package-lock.json` (v2 / v3) | ✅             | ✅            | ✅              |
+| pnpm              | `pnpm-lock.yaml` (v6 – v9)    | ✅             | ✅            | ✅              |
+| Yarn Classic (v1) | `yarn.lock`                   | ✅             | ✅            | ✅              |
+| Yarn Berry (v2+)  | `yarn.lock`                   | ✅             | ❌ see below  | ✅              |
+| Bun               | `bun.lock`                    | ✅             | ✅            | ✅              |
+
+**Yarn Berry integrity is not supported.** Berry records `checksum: 10c0/…` (XXH64), which is not a cryptographic hash and is outside the CycloneDX 1.7 `HashAlgorithm` enum. Berry entries come out of the parser with `integrity: undefined`. Callers that need Berry integrity must read `yarn.lock` directly.
+
+**Binary `bun.lockb`** (Bun ≤ 1.0) is also unsupported; only the text `bun.lock` (Bun 1.1+) is recognised.
+
+### Low-level parsers
+
+Individual parsers are exported for callers that already have the raw content and don't need find-up:
+
+```typescript
+function parseNpmLockFile(content: string): LockFileEntry[];
+function parsePnpmLockFile(content: string): LockFileEntry[];
+function parseYarnLockFile(content: string): LockFileEntry[];
+function parseBunLockFile(content: string): LockFileEntry[];
+
+function decodeSriIntegrity(sri: string): LockFileIntegrity | undefined;
+```
+
+`decodeSriIntegrity` caps input at 1 KiB to avoid pathological `Buffer.from(…, "base64")` allocations.

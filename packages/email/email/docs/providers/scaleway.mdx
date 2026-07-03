@@ -1,0 +1,72 @@
+---
+title: Scaleway
+description: Send emails using the Scaleway Transactional Email API with @visulima/email
+---
+
+# Scaleway Provider
+
+The Scaleway provider allows you to send emails through the [Scaleway Transactional Email API](https://www.scaleway.com/en/docs/messaging-and-queuing/transactional-email/api-reference/), a European cloud provider email service.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { scalewayProvider } from "@visulima/email/providers/scaleway";
+
+const mail = createMail(
+    scalewayProvider({
+        apiKey: process.env.SCALEWAY_API_KEY!,
+        region: "fr-par",
+    }),
+);
+```
+
+## Configuration
+
+The `ScalewayConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                                                 | Description                                |
+| ---------- | --------- | -------- | ------------------------------------------------------- | ------------------------------------------ |
+| `apiKey`   | `string`  | Yes      | -                                                       | Your Scaleway API key                      |
+| `region`   | `string`  | Yes      | -                                                       | Scaleway region (e.g., `fr-par`, `nl-ams`) |
+| `endpoint` | `string`  | No       | `https://api.scaleway.com/transactional-email/v1alpha1` | Custom API endpoint                        |
+| `debug`    | `boolean` | No       | `false`                                                 | Enable debug logging                       |
+| `logger`   | `Console` | No       | -                                                       | Custom logger instance                     |
+| `retries`  | `number`  | No       | `3`                                                     | Number of retry attempts                   |
+| `timeout`  | `number`  | No       | `30000`                                                 | Request timeout in milliseconds            |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Scaleway").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Scaleway provider supports additional options through `ScalewayEmailOptions`:
+
+| Option              | Type                      | Description          |
+| ------------------- | ------------------------- | -------------------- |
+| `templateId`        | `string`                  | Scaleway template ID |
+| `templateVariables` | `Record<string, unknown>` | Template variables   |
+| `projectId`         | `string`                  | Scaleway project ID  |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | No        |

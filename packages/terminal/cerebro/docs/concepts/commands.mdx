@@ -1,0 +1,385 @@
+---
+title: "Commands"
+---
+
+# Commands
+
+Learn about Cerebro's command system and how to create powerful CLI commands.
+
+## Command Structure
+
+A command is defined by its metadata and either an inline `execute` function
+or a `loader` that defers handler import until invocation:
+
+```typescript
+{
+  name: string,              // Command name
+  description: string,       // Help text description
+  argument?: ArgumentDef,    // Positional argument
+  options?: OptionDef[],     // Named options/flags
+  env?: EnvDef,              // Environment variables
+  commandPath?: string[],    // Path for nested subcommands
+  // Exactly one of:
+  execute?: (toolbox) => void,                    // Inline handler
+  loader?: () => Promise<{ default: handler }>,   // Lazy-imported handler
+}
+```
+
+## Basic Commands
+
+Simple command with no arguments:
+
+```typescript
+cli.addCommand({
+    name: "hello",
+    description: "Say hello",
+    execute: ({ logger }) => {
+        logger.log("Hello!");
+    },
+});
+```
+
+## Arguments
+
+Positional arguments that come after the command name:
+
+```typescript
+cli.addCommand({
+    name: "greet",
+    description: "Greet someone",
+    argument: {
+        name: "name",
+        description: "Person to greet",
+        type: String,
+        required: true,
+    },
+    execute: ({ argument, logger }) => {
+        logger.log(`Hello, ${argument[0]}!`);
+    },
+});
+```
+
+Usage:
+
+```bash
+$ my-cli greet Alice
+Hello, Alice!
+```
+
+## Options
+
+Named options with values or flags:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    description: "Build project",
+    options: [
+        {
+            name: "output",
+            alias: "o",
+            description: "Output directory",
+            type: String,
+            defaultValue: "./dist",
+        },
+        {
+            name: "production",
+            alias: "p",
+            description: "Production build",
+            type: Boolean,
+        },
+        {
+            name: "minify",
+            description: "Minify output",
+            type: Boolean,
+            defaultValue: true,
+        },
+    ],
+    execute: ({ options, logger }) => {
+        logger.log(`Building to ${options.output}`);
+        logger.log(`Production: ${options.production}`);
+        logger.log(`Minify: ${options.minify}`);
+    },
+});
+```
+
+Usage:
+
+```bash
+$ my-cli build --output ./build --production
+Building to ./build
+Production: true
+Minify: true
+```
+
+## Option Types
+
+Cerebro supports multiple option types:
+
+### String Options
+
+```typescript
+{
+  name: "config",
+  type: String,
+  defaultValue: "config.json",
+}
+```
+
+### Boolean Flags
+
+```typescript
+{
+  name: "verbose",
+  type: Boolean,
+}
+```
+
+### Number Options
+
+```typescript
+{
+  name: "port",
+  type: Number,
+  defaultValue: 3000,
+}
+```
+
+### Negatable Options
+
+Options that can be negated with `--no-` prefix:
+
+```typescript
+{
+  name: "color",
+  type: Boolean,
+  defaultValue: true,
+  negatable: true, // Allows --no-color
+}
+```
+
+Usage:
+
+```bash
+$ my-cli build --color      # color = true
+$ my-cli build --no-color   # color = false
+```
+
+## Required Options
+
+Mark options as required:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    description: "Deploy application",
+    options: [
+        {
+            name: "environment",
+            alias: "e",
+            description: "Target environment",
+            type: String,
+            required: true, // Must be provided
+        },
+    ],
+    execute: ({ options, logger }) => {
+        logger.log(`Deploying to ${options.environment}`);
+    },
+});
+```
+
+Error if not provided:
+
+```bash
+$ my-cli deploy
+Error: Required option --environment is missing
+```
+
+## Conflicting Options
+
+Prevent incompatible options:
+
+```typescript
+cli.addCommand({
+    name: "test",
+    description: "Run tests",
+    options: [
+        {
+            name: "watch",
+            type: Boolean,
+            conflicts: ["ci"], // Can't use with --ci
+        },
+        {
+            name: "ci",
+            type: Boolean,
+            conflicts: ["watch"], // Can't use with --watch
+        },
+    ],
+    execute: ({ options }) => {
+        // ...
+    },
+});
+```
+
+## Implied Options
+
+Set default values for other options:
+
+```typescript
+{
+  name: "production",
+  type: Boolean,
+  implies: {
+    minify: true,    // Sets minify to true
+    sourcemap: false, // Sets sourcemap to false
+  },
+}
+```
+
+## Environment Variables
+
+Access typed environment variables:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    description: "Deploy application",
+    env: {
+        API_KEY: {
+            description: "API authentication key",
+            required: true,
+        },
+        API_URL: {
+            description: "API endpoint URL",
+            required: false,
+            defaultValue: "https://api.example.com",
+        },
+    },
+    execute: ({ env, logger }) => {
+        logger.log(`Deploying to ${env.API_URL}`);
+        logger.log(`Using key: ${env.API_KEY}`);
+    },
+});
+```
+
+## Nested Commands
+
+Create command hierarchies for better organization:
+
+```typescript
+cli.addCommand({
+    name: "database",
+    alias: "db",
+    description: "Database management",
+    commands: [
+        {
+            name: "migrate",
+            description: "Run migrations",
+            options: [
+                {
+                    name: "rollback",
+                    type: Boolean,
+                    description: "Rollback migrations",
+                },
+            ],
+            execute: ({ options, logger }) => {
+                if (options.rollback) {
+                    logger.log("Rolling back migrations...");
+                } else {
+                    logger.log("Running migrations...");
+                }
+            },
+        },
+        {
+            name: "seed",
+            description: "Seed database",
+            execute: ({ logger }) => {
+                logger.log("Seeding database...");
+            },
+        },
+    ],
+});
+```
+
+Usage:
+
+```bash
+$ my-cli db migrate
+$ my-cli db migrate --rollback
+$ my-cli db seed
+```
+
+## Default Commands
+
+Set a default command when no command is specified:
+
+```typescript
+cli.setDefaultCommand("help");
+
+// or with options
+cli.addCommand({
+    name: "serve",
+    description: "Start server",
+    isDefault: true,
+    execute: ({ logger }) => {
+        logger.log("Starting server...");
+    },
+});
+```
+
+## Command Sections
+
+Organize help output with sections:
+
+```typescript
+cli.addCommandSection({
+    name: "Database",
+    description: "Database management commands",
+    commands: ["db:migrate", "db:seed", "db:backup"],
+});
+```
+
+## Lazy Commands
+
+For CLIs with many subcommands or heavy per-command dependencies, defer
+importing each handler until the command is actually invoked. Declare
+metadata inline and point `loader` at a dynamic `import()`:
+
+```typescript
+// commands/build/index.ts
+const build: Command = {
+    name: "build",
+    description: "Build the project",
+    options: [{ name: "output", alias: "o", type: String }],
+    loader: () => import("./handler"),
+};
+export default build;
+
+// commands/build/handler.ts
+export default ({ logger, options }) => {
+    logger.info(`Building to ${options.output ?? "dist"}`);
+};
+```
+
+`loader` is a zero-argument function that returns a promise resolving to
+a module with a default-exported handler. Help, completion, and option
+validation work entirely from the metadata you declared on `addCommand`
+and never trigger the loader. The first invocation imports the module;
+subsequent calls reuse the cached handler.
+
+A command must declare either `execute` or `loader`, but not both. If a
+loader rejects or returns a module without a default-exported function, a
+`CommandLoaderError` is thrown.
+
+For modules that export multiple subcommand handlers as named exports,
+use the `lazyNamed` helper:
+
+```typescript
+import { lazyNamed } from "@visulima/cerebro";
+
+cli.addCommand({
+    name: "list",
+    commandPath: ["cache"],
+    loader: lazyNamed(() => import("./cache.handlers"), "cacheList"),
+});
+```

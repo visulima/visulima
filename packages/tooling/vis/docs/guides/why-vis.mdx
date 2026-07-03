@@ -1,0 +1,90 @@
+---
+title: Why vis vs. Vite Task / Turbo / Nx / moon
+description: "Side-by-side capability matrix comparing vis with Vite Task (Vite+ alpha), Turborepo, Nx, and moon"
+---
+
+# Why vis vs. Vite Task / Turbo / Nx / moon
+
+Every monorepo task runner caches builds and schedules dependencies. The differences live a layer deeper — in remote-cache backends, AI-agent integration, cross-invocation services, and operational ergonomics. This page is a fast read on where vis pulls ahead.
+
+## At a glance
+
+|                                                                   |                                                   vis                                                    |           Vite Task            | Turbo 2.6  |   Nx 22 (no Cloud)    |               moon 2.0               |
+| ----------------------------------------------------------------- | :------------------------------------------------------------------------------------------------------: | :----------------------------: | :--------: | :-------------------: | :----------------------------------: |
+| Local content-addressed cache                                     |                                                    ✅                                                    |               ✅               |     ✅     |          ✅           |                  ✅                  |
+| Affected detection                                                |                                                    ✅                                                    |               ❌               |     ✅     |          ✅           |                  ✅                  |
+| HTTP remote cache (Turbo-compat)                                  |                                                    ✅                                                    |               ❌               |     ✅     |   community plugins   |                  ✅                  |
+| **REAPI gRPC remote cache** (bazel-remote / BuildBuddy / EngFlow) |                                                    ✅                                                    |               ❌               |     ❌     |          ❌           |                  ✅                  |
+| **HMAC-signed cache artifacts**                                   |                                                    ✅                                                    |               ❌               | ✅ (HMAC)  |          ❌           |                  ❌                  |
+| **`cache why <task>` hash diff**                                  |                                                    ✅                                                    |               ❌               |     ❌     |          ❌           |                  ❌                  |
+| **Cache restoration fidelity** (mtime / perms)                    |                                                    ✅                                                    |         ⚠ open issues          |  partial   |        partial        |               partial                |
+| Cache retention (`--keep-last` / `--max-age` / `--max-size`)      |                                                    ✅                                                    |            ❌ open             |     ❌     |          ❌           |          `--lifetime` only           |
+| Worktree-aware shared cache                                       |                                                    ✅                                                    |               ❌               |     ❌     |      ✅ (22.7+)       |                  ❌                  |
+| **MCP server for AI agents**                                      |                                               ✅ (8 tools)                                               |               ❌               | skill only | ✅ (docs + workspace) |         ✅ (7 tools, v1.37+)         |
+| **`ai heal` self-healing CI**                                     |                                           ✅ (GH/GL/Buildkite)                                           |               ❌               |     ❌     |     ✅ Cloud-only     |                  ❌                  |
+| **`vis service` cross-invocation registry**                       |                                                    ✅                                                    |               ❌               |     ❌     |          ❌           |                  ❌                  |
+| Watch mode                                                        |                                                    ✅                                                    |            ❌ open             |     ✅     |          ✅           |                  ❌                  |
+| Conditional + finally / always tasks                              |                                           `when:` + `always:`                                            |               ❌               |     ❌     |        partial        | partial (`os`/`runInCI`, no finally) |
+| Plugin / fingerprint hooks                                        |                                              ✅ (14 hooks)                                               |               ❌               |     ❌     |          ✅           |      ❌ (WASM toolchains only)       |
+| Strict env mode                                                   |                                                    ✅                                                    |               ❌               |     ✅     |          ❌           |                  ❌                  |
+| Lockfile preflight                                                |                                              ✅ (warn/fail)                                              |               ❌               |     ❌     |          ❌           |        auto-install on drift         |
+| Inferred targets (Project Crystal)                                |                                              ✅ (36 tools)                                               |               ❌               |     ❌     |          ✅           |                  ❌                  |
+| Docker scaffold w/ lockfile prune                                 |                                                    ✅                                                    |               ❌               |     ✅     |          ❌           |                  ✅                  |
+| Run replay (no re-execution)                                      |                                                    ✅                                                    |   partial (`--last-details`)   |     ❌     |          ❌           |                  ❌                  |
+| Output styles (quiet-on-success)                                  |                                                    ✅                                                    |               ❌               |     ❌     |          ❌           |          ✅ (`outputStyle`)          |
+| Auto syscall input tracing                                        | ❌ ([roadmap](https://github.com/visulima/visulima/blob/alpha/packages/tooling/vis/priority-roadmap.md)) |           ✅ (fspy)            |     ❌     |          ❌           |                  ❌                  |
+| Bundled linter / formatter / bundler                              |                                            ❌ (orchestrator)                                             | ✅ (Oxlint / Oxfmt / Rolldown) |     ❌     |        partial        |                  ❌                  |
+| Catalog management (pnpm / bun)                                   |                                                    ✅                                                    |            wraps PM            |     ❌     |          ❌           |                  ❌                  |
+| Built-in secret scanner                                           |                                        ✅ (gitleaks engine, Rust)                                        |               ❌               |     ❌     |          ❌           |                  ❌                  |
+| OSV vulnerability scan                                            |                                                    ✅                                                    |               ❌               |     ❌     |          ❌           |                  ❌                  |
+
+Status sources: [Vite Task open issues](https://github.com/voidzero-dev/vite-task/issues), [Turborepo docs](https://turborepo.dev/docs), [Turborepo AI integration](https://turborepo.dev/docs/guides/ai), [Nx docs](https://nx.dev) + [Nx MCP reference](https://nx.dev/docs/reference/nx-mcp), [moon docs](https://moonrepo.dev/docs) + [moon MCP guide](https://moonrepo.dev/docs/guides/mcp), [moon 2.0 release notes](https://moonrepo.dev/blog/moon-v2.0), and [monorepo.tools comparison](https://monorepo.tools/compare). vis state mirrors `priority-roadmap.md` in the same directory.
+
+## When to pick vis
+
+**You're running AI coding agents against the workspace.** vis ships an MCP server (`@visulima/vis-mcp`) with eight read-only introspection tools — projects, targets, templates, run logs, `cache why`, `cache hash` — plus a paired Claude Skill. moon (v1.37+) ships seven tools; Nx ships docs + workspace analysis but gates CI / self-healing behind Nx Cloud. vis adds `vis ai heal`: propose patch → validate → comment to PR/MR (GitHub, GitLab, Buildkite) → land as a signed commit on `/vis heal accept` from an allow-listed maintainer. Self-healing is the differentiator — neither moon nor open-source Nx ships it; Nx requires Cloud.
+
+**Your remote cache is bazel-remote, BuildBuddy, BuildBarn, or EngFlow.** vis speaks REAPI over gRPC natively. Turbo and Nx (without paid Cloud / a custom plugin) only do their proprietary HTTP wire format.
+
+**You hate restarting Postgres between every test run.** `vis service start postgres` registers a long-lived service in `~/.vis-services/`. Targets that declare `service: { id: "postgres" }` auto-attach when alive, error with a useful diagnostic when dead. The service survives across `vis run` calls within your shell session — and across them.
+
+**You debug cache misses for a living.** `vis cache why <task>` reads the prior run's `hashDetails` and tells you which bucket (`command` / `nodes` / `runtime` / `implicitDeps`) rotated the hash. `vis cache verify` flags drift between the cached archive and the live workspace. `vis replay <runId>` renders any past summary without re-executing.
+
+**You signed up for Turbo's promise but want HMAC-signed cache without Vercel.** vis's HMAC-SHA256 signing is config-only (no CLI flag — typos can't disable it on a production cache); `verifyOnDownload` rejects tampered or unsigned artifacts.
+
+**You want `lint-staged` + git hooks + secret scanning + OSV audit + Docker lockfile pruning + catalog management, all without composing six tools.** vis ships them in-box.
+
+## When to pick something else
+
+**Your monorepo is Vite-centric and you want the toolchain unified.** [Vite+ alpha](https://viteplus.dev) bundles Vite + Vitest + Oxlint + Oxfmt + Rolldown + tsdown + Vite Task in one binary. The Oxc-speed defaults (~50–100× ESLint, ~30× Prettier) are real. vis is the orchestrator; you'd still wire each tool yourself.
+
+**You need real-time distributed agents at PR scale.** Nx Cloud's Agents auto-scale based on PR size. vis's "shared cache + Redis lock" Cobuilds-style pattern handles the same load for most teams, but if you need the auto-scaling and per-PR resource telemetry, Nx Cloud is the answer.
+
+**Your shop is Bazel/Buck2/Pants and you want first-class polyglot.** vis is JS-first (Rust-augmented). For Gradle / Maven / .NET / Python parity, Bazel-family tools or Nx (with the polyglot plugins) fit better.
+
+**You want zero-config caching with no declared `inputs`.** Vite Task's syscall-traced inputs (via `fspy`) are qualitatively different from declared-inputs hashing. vis hashes declared `inputs` (or Project Crystal-inferred ones); a syscall-trace alternative hash mode is on the priority roadmap (item 32) but not shipped.
+
+## Migration notes
+
+- **From Turbo:** vis's HTTP backend honours `TURBO_API` / `TURBO_TOKEN` / `TURBO_TEAM` as fallbacks when `taskRunner.remoteCache.{url,token,teamId}` is unset, so an existing Turbo CI environment keeps working unchanged. `vis migrate turbo` (when shipped) will rewrite `turbo.json` into `vis-config.ts` + per-package `vis.task.ts`. Today, declare targets in `vis-config.ts` and keep the Turbo cache running side-by-side during cutover.
+- **From Nx:** `project.json` is read directly — no migration needed for the project graph. Targets defined in `project.json` work as-is; vis adds `vis.task.ts` overlay for per-package tweaks.
+- **From moon:** Moon's `tasks.yml` syntax is close enough that hand-porting a project takes minutes. `vis generate buildkite-ci` and friends already use moon's template format (Tera + frontmatter), so generators carry over.
+- **From `lint-staged` + `husky` + `gitleaks` + `secretlint`:** `vis migrate gitleaks`, `vis migrate secretlint`, and `vis hook install` collapse all four into vis. `vis staged` is a drop-in for `lint-staged`'s config shape.
+
+## Honest gaps
+
+vis isn't ahead on everything:
+
+- **Auto-tracked inputs.** Vite Task's fspy approach eliminates the "I forgot to add this to inputs" pain. vis requires declared inputs (or `inferTargets` Crystal inference). Roadmap item 32 covers it.
+- **Compound-command sub-task splitting.** Vite Task auto-splits `cmd1 && cmd2` so each segment caches independently. vis caches the whole script. Roadmap item 33 covers it.
+- **Single-config-everything.** Vite+ keeps Vite + Vitest + lint + fmt + run + staged config in one `vite.config.ts`. vis already supports a single `vis-config.ts`, but it's an orchestrator — the linter, formatter, and bundler stay separate tools you wire yourself.
+- **Distributed real-time agents.** vis ships shared-cache cobuilds, not Nx-Cloud-style auto-scaling agents.
+
+## Further reading
+
+- [REAPI remote caching guide](../../task-runner/concepts/remote-caching) (in `@visulima/task-runner`)
+- [`vis cache` command reference](../commands/cache)
+- [`vis service` command reference](../commands/service)
+- [`vis ai heal` flow](./ai-integration)
+- [Plugin API](./plugins)
+- [CI/CD presets](./ci-cd)

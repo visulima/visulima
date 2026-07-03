@@ -1,0 +1,230 @@
+---
+title: Getting Started
+description: Install and configure the Visulima Dev Toolbar in your Vite project in under two minutes.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+**Prerequisites:** Vite 6, 7, or 8 · Node.js 22.21+
+
+<Steps>
+
+<Step>
+
+## Install
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">```bash npm install -D @visulima/dev-toolbar ```</Tab>
+    <Tab value="pnpm">```bash pnpm add -D @visulima/dev-toolbar ```</Tab>
+    <Tab value="yarn">```bash yarn add -D @visulima/dev-toolbar ```</Tab>
+    <Tab value="bun">```bash bun add -d @visulima/dev-toolbar ```</Tab>
+</Tabs>
+
+<Callout type="info">
+    The package is a development-only tool. It is automatically excluded from production builds — the Vite plugin no-ops when `command !== 'serve'`.
+</Callout>
+
+</Step>
+
+<Step>
+
+## Add the Vite Plugin
+
+Open your `vite.config.ts` and add the `devToolbar` plugin:
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+export default defineConfig({
+    plugins: [devToolbar()],
+});
+```
+
+That's it. Start your dev server and press **`Alt`+`Shift`+`D`** to open the toolbar.
+
+</Step>
+
+<Step>
+
+## Open the Toolbar
+
+A small pill appears at the bottom-center of your page. Click any app icon to open its panel, or use the keyboard shortcut:
+
+| Action                    | Shortcut          |
+| ------------------------- | ----------------- |
+| Toggle toolbar open/close | `Alt`+`Shift`+`D` |
+| Close active app / panel  | `Escape`          |
+
+</Step>
+
+</Steps>
+
+## Minimal Configuration
+
+By default only the **Vite Config** and **Settings** apps are shown. Enable whichever optional apps you need:
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+export default defineConfig({
+    plugins: [
+        devToolbar({
+            // Toolbar placement
+            placement: "bottom-right",
+
+            // Opt-in to the apps you want
+            apps: {
+                inspector: true,
+                performance: true,
+                seo: true,
+            },
+
+            // Change the default keyboard shortcuts
+            keybindings: {
+                toggle: "Alt+Shift+D",
+                close: "Escape",
+            },
+        }),
+    ],
+});
+```
+
+## Using with SSR Frameworks
+
+SSR frameworks such as **TanStack Start**, **Nuxt**, and **SvelteKit** render the full HTML document server-side.
+Vite's `transformIndexHtml` hook — which the toolbar normally uses to inject its `<script>` — is never called on those server-rendered responses.
+
+### TanStack Start (auto-detected)
+
+The plugin automatically detects TanStack Start and injects the toolbar via the module graph (targeting `router.tsx`) — no extra configuration needed:
+
+```ts title="vite.config.ts"
+import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+import viteReact from "@vitejs/plugin-react";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+    plugins: [tanstackStart(), viteReact(), devToolbar()],
+});
+```
+
+<Callout type="info">
+    Because TanStack Start renders on the server, any `window.__DEV_TOOLBAR_HOOK__` calls must be placed inside a `useEffect` to ensure they only run in the browser:
+
+    ```tsx
+    React.useEffect(() => {
+        if (typeof window !== "undefined" && window.__DEV_TOOLBAR_HOOK__) {
+            window.__DEV_TOOLBAR_HOOK__.addTimelineEvent("custom", { /* ... */ });
+        }
+    }, []);
+    ```
+
+</Callout>
+
+### Other SSR / Non-HTML Setups
+
+For any project without a static `index.html` entry point that is not auto-detected, use the `appendTo` option to inject the toolbar via the JavaScript module graph instead of the HTML pipeline.
+The `transform` hook that powers `appendTo` automatically skips SSR builds (`transformOptions.ssr === true`), so the import is only added to the client bundle.
+
+Point `appendTo` at a module that is guaranteed to run client-side only:
+
+```ts title="vite.config.ts"
+devToolbar({
+    appendTo: "src/main.ts",
+});
+```
+
+## Framework Examples
+
+<Tabs items={["React", "Vue", "Svelte", "Vanilla", "TanStack Start"]}>
+    <Tab value="React">
+        ```ts title="vite.config.ts"
+        import { defineConfig } from "vite";
+        import react from "@vitejs/plugin-react";
+        import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+        export default defineConfig({
+            plugins: [
+                react(),
+                devToolbar(),
+            ],
+        });
+        ```
+    </Tab>
+    <Tab value="Vue">
+        ```ts title="vite.config.ts"
+        import { defineConfig } from "vite";
+        import vue from "@vitejs/plugin-vue";
+        import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+        export default defineConfig({
+            plugins: [
+                vue(),
+                devToolbar(),
+            ],
+        });
+        ```
+    </Tab>
+    <Tab value="Svelte">
+        ```ts title="vite.config.ts"
+        import { defineConfig } from "vite";
+        import { svelte } from "@sveltejs/vite-plugin-svelte";
+        import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+        export default defineConfig({
+            plugins: [
+                svelte(),
+                devToolbar(),
+            ],
+        });
+        ```
+    </Tab>
+    <Tab value="Vanilla">
+        ```ts title="vite.config.ts"
+        import { defineConfig } from "vite";
+        import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+        export default defineConfig({
+            plugins: [
+                devToolbar(),
+            ],
+        });
+        ```
+    </Tab>
+    <Tab value="TanStack Start">
+        ```ts title="vite.config.ts"
+        import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+        import { devToolbar } from "@visulima/dev-toolbar/vite";
+        import viteReact from "@vitejs/plugin-react";
+        import { defineConfig } from "vite";
+
+        export default defineConfig({
+            resolve: {
+                tsconfigPaths: true,
+            },
+            plugins: [
+                tanstackStart(),
+                viteReact(),
+                // TanStack Start is auto-detected — no appendTo needed.
+                devToolbar(),
+            ],
+        });
+        ```
+    </Tab>
+
+</Tabs>
+
+## Next Steps
+
+- [Full configuration reference](/docs/dev-toolbar/configuration) — every plugin option explained
+- [Built-in apps](/docs/dev-toolbar/built-in-apps/accessibility) — learn what each app does
+- [Inspector](/docs/dev-toolbar/built-in-apps/inspector) — click any element to jump to source
+- [Annotations](/docs/dev-toolbar/built-in-apps/annotations) — visually annotate elements with rich context
+- [MCP integration](/docs/dev-toolbar/integrations/mcp) — connect AI agents to your annotations
+- [Creating custom apps](/docs/dev-toolbar/custom-apps/creating-apps) — build your own devtools panel
+- [Library integration](/docs/dev-toolbar/integrations/library-integration) — add devtools support to your library

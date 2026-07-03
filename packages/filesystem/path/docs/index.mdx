@@ -1,0 +1,230 @@
+---
+title: Introduction
+description: "Cross-platform path manipulation with consistent behavior across Windows and POSIX systems."
+---
+
+# @visulima/path
+
+Drop-in replacement for Node.js `path` module with consistent cross-platform behavior. No more path separator headaches between Windows and POSIX systems.
+
+## Why @visulima/path?
+
+### The Problem with Node.js `path`
+
+Node.js's built-in `path` module behaves differently on Windows vs. macOS/Linux:
+
+```javascript
+// On Windows
+const path = require("node:path");
+path.join("C:", "Users", "John"); // 'C:\\Users\\John'
+
+// On macOS/Linux
+const path = require("node:path");
+path.join("C:", "Users", "John"); // 'C:/Users/John'
+```
+
+This creates **inconsistent code behavior** across operating systems, leading to bugs that only appear on specific platforms.
+
+### The Solution
+
+**@visulima/path** normalizes all path operations to use forward slashes (`/`) consistently across all platforms, while maintaining full compatibility with Node.js `path` API.
+
+```javascript
+import { join } from "@visulima/path";
+
+// Works consistently on ALL platforms
+join("C:", "Users", "John"); // 'C:/Users/John'
+join("/home", "user", "docs"); // '/home/user/docs'
+```
+
+## Key Features
+
+**Cross-Platform Consistency**
+
+- **Normalized paths** - Always uses forward slashes (`/`) regardless of OS
+- **Predictable behavior** - Same output on Windows, macOS, and Linux
+- **No surprises** - Write once, works everywhere
+
+**Drop-in Replacement**
+
+- **100% compatible** with Node.js `path` API
+- **No code changes** required for migration
+- **Same function signatures** as Node.js path module
+
+**Modern & Lightweight**
+
+- **Written in TypeScript** with full type definitions
+- **ESM and CommonJS** support
+- **No Node.js dependency** - Works in any JavaScript runtime
+- **Zero dependencies** (except for binary detection)
+
+**Extra Utilities**
+
+- **Alias resolution** - Resolve path aliases like TypeScript/Webpack
+- **Binary detection** - Check if a path points to a binary file
+- **Relative path checking** - Determine if a path is relative
+- **File extension utilities** - Extract filename without extension
+
+## Quick Start
+
+### Installation
+
+```bash npm2yarn
+npm install @visulima/path
+```
+
+### Basic Usage
+
+```typescript
+import { resolve, join, basename, dirname } from "@visulima/path";
+
+// Join paths
+const configPath = join("src", "config", "app.json");
+// Result: 'src/config/app.json' (on ALL platforms)
+
+// Resolve absolute path
+const absolutePath = resolve("docs", "guide.md");
+// Result: '/current/working/dir/docs/guide.md'
+
+// Get filename
+const filename = basename("/home/user/document.pdf");
+// Result: 'document.pdf'
+
+// Get directory
+const directory = dirname("/home/user/document.pdf");
+// Result: '/home/user'
+```
+
+### With Extra Utilities
+
+```typescript
+import { filename, resolveAlias, isBinaryPath } from "@visulima/path/utils";
+
+// Get filename without extension
+const name = filename("/home/user/document.pdf");
+// Result: 'document'
+
+// Resolve TypeScript-style aliases
+const aliases = { "@/*": "./src/*" };
+const resolved = resolveAlias("@/components/Button", aliases);
+// Result: './src/components/Button'
+
+// Check if path is binary
+const isBinary = isBinaryPath("image.png");
+// Result: true
+```
+
+## Use Cases
+
+### Build Tools & Bundlers
+
+Ensure consistent path handling in build scripts across developer machines:
+
+```typescript
+import { join, resolve } from "@visulima/path";
+
+const srcDir = resolve("src");
+const distDir = resolve("dist");
+const entryPoint = join(srcDir, "index.ts");
+
+// Always produces forward slashes, regardless of OS
+console.log(entryPoint); // '/project/src/index.ts'
+```
+
+### File System Operations
+
+Handle paths consistently when working with files:
+
+```typescript
+import { join, dirname, basename, extname } from "@visulima/path";
+import { readFile } from "node:fs/promises";
+
+async function processFile(filePath: string) {
+    const dir = dirname(filePath);
+    const name = basename(filePath, extname(filePath));
+    const outputPath = join(dir, "processed", `${name}.out`);
+
+    // Paths work consistently on all platforms
+    const content = await readFile(filePath, "utf-8");
+    // ... process content
+}
+```
+
+### TypeScript Path Aliases
+
+Resolve TypeScript path aliases at runtime:
+
+```typescript
+import { resolveAlias, normalizeAliases } from "@visulima/path/utils";
+
+const tsConfig = {
+    "@/*": "./src/*",
+    "@components/*": "./src/components/*",
+    "@utils/*": "./src/utils/*",
+};
+
+const aliases = normalizeAliases(tsConfig);
+
+// Resolve imports
+const resolved = resolveAlias("@/config/app", aliases);
+// Result: './src/config/app'
+```
+
+## Comparison with Alternatives
+
+### vs. Node.js `path`
+
+| Feature                    | @visulima/path | Node.js path |
+| -------------------------- | -------------- | ------------ |
+| Cross-platform consistency | ✅             | ❌           |
+| Forward slash everywhere   | ✅             | ❌           |
+| Drop-in replacement        | ✅             | N/A          |
+| TypeScript support         | ✅             | ✅           |
+| Extra utilities            | ✅             | ❌           |
+| No Node.js dependency      | ✅             | ❌           |
+
+### vs. upath
+
+| Feature             | @visulima/path | upath |
+| ------------------- | -------------- | ----- |
+| Modern ESM          | ✅             | ❌    |
+| TypeScript          | ✅             | ⚠️    |
+| Maintained          | ✅             | ⚠️    |
+| Extra utilities     | ✅             | ✅    |
+| Runtime independent | ✅             | ❌    |
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn how to install and import the package
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all path methods and utilities
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+### Node.js
+
+- ✅ Node.js 22.13 - 25.x
+- ✅ ESM and CommonJS support
+
+### Runtimes
+
+- ✅ Node.js
+- ✅ Deno
+- ✅ Bun
+- ✅ Browser (with bundler)
+- ✅ Edge runtimes (Cloudflare Workers, Vercel Edge)
+
+### Operating Systems
+
+- ✅ Windows
+- ✅ macOS
+- ✅ Linux
+- ✅ Any POSIX-compliant OS

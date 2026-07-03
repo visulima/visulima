@@ -1,0 +1,21 @@
+{
+    "name": "upload_example_hono",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx index.ts"
+    },
+    "dependencies": {
+        "@hono/node-server": "catalog:backend",
+        "@hono/swagger-ui": "catalog:backend",
+        "@hono/zod-openapi": "catalog:backend",
+        "@visulima/storage": "workspace:*",
+        "hono": "catalog:backend",
+        "sharp": "catalog:prod"
+    },
+    "devDependencies": {
+        "@types/node": "catalog:types",
+        "tsx": "catalog:dev"
+    }
+}

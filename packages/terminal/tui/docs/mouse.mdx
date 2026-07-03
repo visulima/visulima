@@ -1,0 +1,335 @@
+---
+title: Mouse Support
+description: "Mouse tracking, hover detection, click handling, and element hit-testing for Ink-compatible components in @visulima/tui"
+---
+
+# Mouse Support
+
+Provides mouse position tracking, hover detection, click handling, drag tracking, and element hit-testing for Ink-compatible components.
+
+Ported from [`@zenobius/ink-mouse`](https://github.com/zenobi-us/ink-mouse) by Zeno Jiricek (Apache-2.0), rewritten to integrate with the ink input pipeline.
+
+## Features
+
+- Mouse position tracking across the terminal
+- Hover detection on specific elements
+- Click detection on specific elements
+- Drag tracking
+- Scroll wheel events
+- Element position and dimension tracking
+- Hit-test utility for custom intersection logic
+
+## Quick Start
+
+Wrap your app with `<MouseProvider>` and use the hooks inside child components.
+
+> **Note:** You must also use `useInput` to prevent raw escape sequences from being printed to the terminal during mouse movements.
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import { render } from "@visulima/tui";
+import { Fullscreen, MouseProvider, useMousePosition, useOnMouseClick, useOnMouseHover, useOnMouseState } from "@visulima/tui";
+import React, { useMemo, useRef, useState } from "react";
+import type { ComponentProps, RefObject } from "react";
+import type { DOMElement } from "@visulima/tui";
+function App() {
+    return (
+        <MouseProvider>
+            <Demo />
+        </MouseProvider>
+    );
+}
+
+function Demo() {
+    const position = useMousePosition();
+    const [count, setCount] = useState(0);
+
+    // Consume escape sequences so they don't print to the terminal
+    useInput(() => {});
+
+    return (
+        <Box gap={1} flexDirection="column" width={40} height={10} borderStyle="round" padding={1}>
+            <Box gap={1}>
+                <Button label="Click me" onClick={() => setCount((c) => c + 1)} />
+            </Box>
+            <Box flexDirection="column" gap={1}>
+                <Text>
+                    Mouse: {position.x}, {position.y}
+                </Text>
+                <Text>Clicked: {count} times</Text>
+            </Box>
+        </Box>
+    );
+}
+
+function Button({ label, onClick }: { label: string; onClick?: () => void }) {
+    const ref = useRef<DOMElement | null>(null);
+    const [hovering, setHovering] = useState(false);
+    const [clicking, setClicking] = useState(false);
+
+    useOnMouseClick(ref, (event) => {
+        setClicking(event);
+        if (event && onClick) {
+            onClick();
+        }
+    });
+    useOnMouseHover(ref, setHovering);
+
+    const border = useMemo((): ComponentProps<typeof Box>["borderStyle"] => {
+        if (clicking) return "double";
+        if (hovering) return "singleDouble";
+        return "single";
+    }, [clicking, hovering]);
+
+    return (
+        <Box gap={1} paddingX={1} ref={ref} borderStyle={border}>
+            <Text>{label}</Text>
+        </Box>
+    );
+}
+
+render(<App />);
+```
+
+## Components
+
+### `<MouseProvider>`
+
+Wraps the component tree to enable mouse tracking. Listens on ink's input pipeline for SGR mouse sequences and provides mouse state to all descendant hooks via context.
+
+Mouse tracking ANSI codes are enabled on mount and disabled on unmount.
+
+```tsx
+<MouseProvider>
+    <YourApp />
+</MouseProvider>
+```
+
+### `<Fullscreen>`
+
+A convenience component that fills the entire terminal. Uses `useWindowSize` to track terminal dimensions.
+
+```tsx
+<MouseProvider>
+    <Fullscreen>
+        <YourApp />
+    </Fullscreen>
+</MouseProvider>
+```
+
+## Hooks
+
+All hooks below must be used inside a `<MouseProvider>`.
+
+### `useMouseContext()`
+
+Returns the full mouse context object. Useful for accessing the internal event emitter directly.
+
+```tsx
+const mouse = useMouseContext();
+// mouse.position  - { x, y }
+// mouse.button    - "left" | "middle" | "right" | null
+// mouse.click     - "press" | "release" | null
+// mouse.scroll    - "scrollup" | "scrolldown" | null
+// mouse.drag      - "dragging" | null
+// mouse.events    - EventEmitter (position, click, scroll, drag events)
+```
+
+### `useMousePosition()`
+
+Returns reactive mouse coordinates. Re-renders the component on every mouse move.
+
+```tsx
+const { x, y } = useMousePosition();
+```
+
+### `useMouseAction()`
+
+Returns the most recent mouse action (click, scroll, or drag).
+
+```tsx
+const action = useMouseAction();
+// "press" | "release" | "scrollup" | "scrolldown" | "dragging" | null
+```
+
+### `useOnMouseClick(ref, onChange, options?)`
+
+Fires `onChange(true, button)` when the mouse clicks inside the element, `onChange(false)` otherwise. Supports left, middle, and right mouse buttons.
+
+```tsx
+const ref = useRef<DOMElement | null>(null);
+
+// Respond to any button
+useOnMouseClick(ref, (isClicking, button) => {
+    if (isClicking) {
+        console.log(`${button} click!`);
+    }
+});
+
+// Respond to right-click only
+useOnMouseClick(
+    ref,
+    (isClicking) => {
+        if (isClicking) showContextMenu();
+    },
+    { button: "right" },
+);
+
+return <Box ref={ref}>...</Box>;
+```
+
+| Argument   | Type                                                |
+| ---------- | --------------------------------------------------- |
+| `ref`      | `RefObject<DOMElement \| null>`                     |
+| `onChange` | `(clicking: boolean, button?: MouseButton) => void` |
+| `options?` | `{ button?: MouseButton }`                          |
+
+When `options.button` is set, the hook only fires for that specific button.
+
+### `useOnMouseHover(ref, onChange)`
+
+Fires `onChange(true)` when the mouse enters the element, `onChange(false)` when it leaves.
+
+```tsx
+const ref = useRef<DOMElement | null>(null);
+
+useOnMouseHover(ref, (isHovering) => {
+    setHighlighted(isHovering);
+});
+
+return <Box ref={ref}>...</Box>;
+```
+
+| Argument   | Type                            |
+| ---------- | ------------------------------- |
+| `ref`      | `RefObject<DOMElement \| null>` |
+| `onChange` | `(hovering: boolean) => void`   |
+
+### `useOnMouseState(ref)`
+
+Combines click and hover detection into a single hook.
+
+```tsx
+const ref = useRef<DOMElement | null>(null);
+const { hovering, clicking } = useOnMouseState(ref);
+
+return (
+    <Box ref={ref} borderStyle={clicking ? "double" : hovering ? "bold" : "single"}>
+        <Text>{hovering ? "Hovered!" : "Move mouse here"}</Text>
+    </Box>
+);
+```
+
+Returns `{ hovering: boolean, clicking: boolean }`.
+
+### `useElementPosition(ref, deps?)`
+
+Returns the absolute position of the element by walking the Yoga layout tree.
+
+```tsx
+const ref = useRef<DOMElement | null>(null);
+const { left, top } = useElementPosition(ref);
+```
+
+Terminal coordinates are 1-indexed. Pass optional `deps` array to recompute on specific changes.
+
+### `useElementDimensions(ref, deps?)`
+
+Returns the computed dimensions of the element.
+
+```tsx
+const ref = useRef<DOMElement | null>(null);
+const { width, height } = useElementDimensions(ref);
+```
+
+## Utilities
+
+### `isIntersecting({ mouse, element })`
+
+Hit-test utility. Returns `true` if the mouse position falls within the element bounds.
+
+```tsx
+import { isIntersecting } from "@visulima/tui";
+const hit = isIntersecting({
+    mouse: { x: 10, y: 5 },
+    element: { left: 8, top: 3, width: 20, height: 10 },
+});
+// true
+```
+
+## Types
+
+```tsx
+import type {
+    MouseButton,
+    MousePosition,
+    MouseClickAction,
+    MouseScrollAction,
+    MouseDragAction,
+    MouseAction,
+    MouseContextShape,
+    MouseEvents,
+    SgrMouseEvent,
+} from "@visulima/tui";
+```
+
+| Type                | Definition                                    |
+| ------------------- | --------------------------------------------- |
+| `MouseButton`       | `"left" \| "middle" \| "right"`               |
+| `MousePosition`     | `{ x: number; y: number }`                    |
+| `MouseClickAction`  | `"press" \| "release" \| null`                |
+| `MouseScrollAction` | `"scrollup" \| "scrolldown" \| null`          |
+| `MouseDragAction`   | `"dragging" \| null`                          |
+| `MouseAction`       | `MouseClickAction \| MouseScrollAction`       |
+| `MouseContextShape` | Full context value shape (includes `button`)  |
+| `MouseEvents`       | `EventEmitter` for position/click/scroll/drag |
+| `SgrMouseEvent`     | Discriminated union from `parseSgrMouse()`    |
+
+## Architecture
+
+The mouse module integrates with ink's existing input pipeline rather than attaching a separate stdin listener:
+
+```
+Terminal stdin
+    |
+    v
+Ink App.tsx (reads stdin, parses escape sequences)
+    |
+    v
+internal_eventEmitter.emit("input", sequence)
+    |
+    +---> useInput (keyboard)
+    |
+    +---> MouseProvider (detects SGR mouse sequences)
+              |
+              v
+          EventEmitter (position/click/scroll/drag)
+              |
+              +---> useMousePosition()
+              +---> useMouseAction()
+              +---> useOnMouseClick(ref)
+              +---> useOnMouseHover(ref)
+              +---> useOnMouseState(ref)
+```
+
+This avoids competing stdin listeners and keeps mouse events in sync with keyboard input.
+
+### `parseSgrMouse(input)`
+
+Low-level utility to parse an SGR 1006 mouse escape sequence. Returns a discriminated union or `null`.
+
+```tsx
+import { parseSgrMouse } from "@visulima/tui";
+const event = parseSgrMouse("\x1b[<0;10;20M");
+// { type: "click", button: "left", action: "press", x: 10, y: 20 }
+```
+
+Event types: `"click"`, `"drag"`, `"move"`, `"scroll"`. Modifier bits (shift, meta, ctrl) are automatically stripped from the button code.
+
+## Known Limitations
+
+- Overlapping elements both receive click/hover events (no z-order handling)
+- Drag examples are limited
+- Windows CMD.exe has limited ANSI support; Windows Terminal works

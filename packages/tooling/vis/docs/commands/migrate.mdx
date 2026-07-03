@@ -1,0 +1,337 @@
+---
+title: "vis migrate"
+description: "Migrate from other tools (turborepo, nx, moon, husky, lint-staged, nano-staged, gitleaks, kingfisher, secretlint, syncpack, sherif) to vis, and verify the migration preserved the task graph"
+---
+
+# vis migrate
+
+Translates configuration from competing monorepo tools into vis format. Non-destructive — original config files are left in place for review.
+
+## Usage
+
+```bash
+vis migrate              # interactive TUI — pick which migrations to run
+vis migrate <type> [options]
+```
+
+Running `vis migrate` with no subcommand opens an interactive terminal UI that
+auto-detects every migration applicable to the current workspace, lets you
+toggle each one on or off, and shows a per-migration preview of what will
+change before you apply.
+
+## Migration Types
+
+### turborepo
+
+Reads `turbo.json` and writes `vis.config.ts` with equivalent `tasks`:
+
+```bash
+vis migrate turborepo
+vis migrate turborepo --dry-run    # Preview without writing
+```
+
+Translates:
+
+- `tasks` / `pipeline` entries → `tasks`
+- `^build` dependsOn → `{ dependencies: true, target: "build" }`
+- `project#task` → `{ projects: "project", target: "task" }`
+- `globalDependencies` → `taskRunner.globalInputs`
+- `globalEnv` → `taskRunner.globalEnv`
+- `persistent` / `interactive` → `options.persistent` / `options.interactive`
+
+Remote cache is flagged in the migration report (vis uses the same Turborepo HTTP protocol).
+
+### nx
+
+Reads `nx.json` and writes `vis.config.ts`:
+
+```bash
+vis migrate nx
+vis migrate nx --dry-run
+```
+
+Translates:
+
+- `namedInputs` → `namedInputs`
+- `targetDefaults` → `tasks`
+
+Per-project `project.json` files are **left untouched** — vis reads them natively (targets, tags, implicitDependencies, sourceRoot).
+
+### moon
+
+Reads `.moon/tasks.yml` (or the first file in `.moon/tasks/`) and writes `vis.config.ts`:
+
+```bash
+vis migrate moon
+vis migrate moon --dry-run
+```
+
+Translates:
+
+- `tasks` → `tasks` (command + args merged, deps, inputs, outputs, type, preset, options)
+- `fileGroups` → `fileGroups`
+- `implicitInputs` → `namedInputs.default`
+
+Per-project `moon.yml` files should be manually converted to `project.json` — the field names match (targets, tags, layer, stack, language, owners).
+
+### deps
+
+Migrates package dependencies and scripts (husky → vis hooks):
+
+```bash
+vis migrate deps
+```
+
+### lint-staged
+
+Merges lint-staged config into `vis.config.ts` staged block:
+
+```bash
+vis migrate lint-staged
+```
+
+### nano-staged
+
+Same surface as `lint-staged` but for [nano-staged](https://github.com/usmanyunusov/nano-staged). Detects any of `.nano-staged.json`, `.nanostagedrc`, `.nano-staged.{js,cjs,mjs}`, `nano-staged.config.{js,cjs,mjs,ts,cts,mts}`, or a `nano-staged` block in `package.json`, and inlines the patterns into the `staged` field of `vis.config.ts`:
+
+```bash
+vis migrate nano-staged
+vis migrate nano-staged --dry-run
+```
+
+JSON-format configs and `package.json#nano-staged` are auto-migrated; TS/JS configs are flagged with a manual step (no sandboxed evaluator). The `nano-staged` dependency and any `\bnano-staged\b` scripts are stripped (the latter is folded into `vis staged` by `vis migrate deps`).
+
+### gitleaks
+
+Converts a [gitleaks](https://github.com/gitleaks/gitleaks) setup into `vis secrets`:
+
+```bash
+vis migrate gitleaks
+vis migrate gitleaks --dry-run
+```
+
+**Detects:**
+
+- Config: `gitleaks.toml` / `.gitleaks.toml`
+- Ignore file: `.gitleaksignore`
+- Baseline: `gitleaks-report.json` / `.gitleaks-report.json` / `baseline.json`
+
+**Auto-migrated:**
+
+- The baseline JSON is converted to vis's allowlist shape and written into `vis.config.ts` (`secrets.allowlist`).
+- `.gitleaksignore` fingerprints (`file:rule:line`) are translated to allowlist entries.
+- Scripts matching `\bgitleaks\b` are rewritten to `vis secrets` invocations (with the original line preserved as a manual step when the mapping is ambiguous).
+- Pre-commit hooks (`.husky/pre-commit`, `.vis/hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `gitleaks` are rewritten to call `vis secrets`.
+
+**Routed to manual steps:**
+
+- `gitleaks.toml` (the rule definitions) is left in place — vis ships its own rule set, so the original config is preserved for reviewer comparison rather than translated.
+- Custom regex rules: review and re-add them via `secrets.extraRules` in `vis.config.ts` if needed.
+
+### kingfisher
+
+Converts a [Kingfisher](https://github.com/mongodb/kingfisher) (MongoDB's secret scanner) setup into `vis secrets`:
+
+```bash
+vis migrate kingfisher
+vis migrate kingfisher --dry-run
+```
+
+**Detects:**
+
+- Baseline: `kingfisher-baseline.{yaml,yml}` / `.kingfisher-baseline.{yaml,yml}`
+- Custom rules: `kingfisher-rules.{yaml,yml}` / `.kingfisher-rules.{yaml,yml}`
+
+**Auto-migrated:**
+
+- The YAML baseline is parsed and converted to vis allowlist entries (one per finding); each entry is annotated with a placeholder so reviewers can fill in the matched rule's vis equivalent.
+- Scripts matching `kingfisher (scan|validate|rules|update|manage-baseline|report|github|gitlab|bitbucket)` are rewritten to `vis secrets` invocations.
+- Pre-commit hooks referencing `kingfisher` are rewritten.
+
+**Routed to manual steps:**
+
+- `kingfisher-rules.{yaml,yml}` is flagged but **not auto-translated** — Kingfisher's rule DSL doesn't have a direct vis equivalent. Review the rules and add the ones you still need to `secrets.extraRules`.
+- Baseline entries that the migrator can't map cleanly include a placeholder `// TODO: review` comment.
+
+### secretlint
+
+Replaces a [secretlint](https://github.com/secretlint/secretlint) setup with `vis secrets`:
+
+```bash
+vis migrate secretlint
+vis migrate secretlint --dry-run
+```
+
+**Detects:**
+
+- Config: `.secretlintrc[.{json,js,mjs,cjs,yml,yaml}]`
+- Ignore file: `.secretlintignore`
+
+**Auto-migrated:**
+
+- Active rule IDs are extracted from JSON/YAML configs and surfaced in the migration report so reviewers see what they had enabled.
+- Scripts matching `\bsecretlint\b` are rewritten to `vis secrets` invocations.
+- Pre-commit hooks referencing `secretlint` are rewritten.
+- `.secretlintignore` is converted to vis allowlist entries.
+- `secretlint` and `@secretlint/*` are removed from `dependencies` / `devDependencies`.
+- `.secretlintrc.{json,yml,yaml}` is backed up (`.bak`) and removed.
+
+**Routed to manual steps:**
+
+- `.secretlintrc.{js,mjs,cjs}` configs are flagged but not auto-removed — `vis migrate` does not load executable config (no sandboxed evaluator). Convert to JSON or YAML first, or apply manually.
+- Custom rule packages (`@secretlint/secretlint-rule-*`) are listed for the reviewer; vis bundles its own rule set, so the user decides whether each upstream rule is still needed.
+
+### syncpack
+
+Translates the parts of a [syncpack](https://jamiemason.github.io/syncpack/) config that vis can act on today, strips the `syncpack` dependency / scripts, and routes the rest into `manualSteps` so reviewers see what's still pending:
+
+```bash
+vis migrate syncpack
+vis migrate syncpack --dry-run
+```
+
+**Detects** (in priority order):
+
+- `package.json#syncpack`
+- `.syncpackrc` (parsed as JSON, falling back to YAML)
+- `.syncpackrc.json`
+- `.syncpackrc.yaml` / `.syncpackrc.yml`
+
+**Auto-migrated:**
+
+- `customTypes` (record) → `policy.customTypes.extraTypes` (array). Entries colliding with vis built-ins (`engines`, `volta`, `packageManager`, `devEngines.runtime`, `devEngines.packageManager`) are dropped with a warning — vis already lints those surfaces natively.
+- `versionGroups[].isBanned: true` → `policy.bannedDeps`. Entries with a `packages` scope translate to the scoped object form (`{ packages, reason }`); unscoped entries become the string form. Conflicts (two banned groups targeting the same dep) keep the first match and warn.
+- `syncpack` removed from `dependencies` / `devDependencies`.
+- Any `scripts` matching `\bsyncpack\b` are deleted.
+- `.syncpackrc{,.json,.yaml,.yml}` is backed up (`.bak`) and removed.
+- The `syncpack` block inside `package.json` is removed.
+- `syncpack` is stripped from catalog protocol locations: `pnpm-workspace.yaml#catalog`/`catalogs.<name>` and bun's `package.json#workspaces.catalog`/`workspaces.catalogs.<name>` (and the top-level `package.json#catalog`).
+
+**Routed to manual steps:**
+
+- Removed scripts are surfaced individually (one manual step each) with their full original text — mixed commands like `syncpack lint && eslint .` would otherwise lose the non-syncpack half silently.
+- `versionGroups` (non-banned) and `semverGroups` — `pinVersion`, `snapTo`, `policy: "sameRange"`, and the broader DSL surface are deferred to [issue #622](https://github.com/visulima/visulima/issues/622).
+- `dependencyTypes`, `specifierTypes`, `filter` — no direct vis equivalent today; reviewer is prompted to recreate them with `policy.*` filters.
+- `source` (workspace globs) — vis derives these from `pnpm-workspace.yaml` / `package.json#workspaces`; reviewer is asked to verify they match.
+- Pre-commit hooks (`.husky/pre-commit`, `.vis/hooks/pre-commit`, `.git/hooks/pre-commit`) referencing `syncpack` are flagged but **not auto-rewritten** — `syncpack lint` ≈ `vis deps` and `syncpack format` ≈ `vis sort-package-json`, but `fix-mismatches` / `set-semver-ranges` have no 1:1 mapping. The reviewer makes the call.
+- CI workflow files (`.github/workflows/*.yml`, `.gitlab-ci.yml`, `.circleci/config.yml`, `.woodpecker.yml`, `.drone.yml`) referencing `syncpack` are flagged with a manual step — YAML rewriting is too brittle to automate.
+
+**Superseded (no migration needed):**
+
+- `sortAz`, `sortFirst`, `sortExports`, `sortPackages`, `formatBugs`, `formatRepository` — handled by `vis sort-package-json`.
+- `lintFormatting`, `lintSemverRanges`, `lintVersions` — covered by `vis deps` by default.
+- `indent` — vis honors `.editorconfig` (when `editorconfig: true`), so explicit indent config is unnecessary.
+
+**Not supported in v1:**
+
+TS/JS configs (`.syncpackrc.{cjs,js,mjs,ts}`, `syncpack.config.{cjs,js,mjs,ts}`) are flagged with a manual step — `vis migrate` does not load executable config (no sandboxed evaluator). Convert them to `.syncpackrc.json` first, then re-run. Tracked in [#622](https://github.com/visulima/visulima/issues/622).
+
+### sherif
+
+Strips the `sherif` dep / scripts / `package.json#sherif` block and surfaces a positive `vis deps --<rule>` command suggestion (vis has no global rule-disable, so the migration translates sherif's `ignore-rules` into the explicit "rules to keep enabled" form):
+
+```bash
+vis migrate sherif
+vis migrate sherif --dry-run
+```
+
+**Detects:**
+
+- `package.json#sherif`
+- `sherif` in `dependencies` / `devDependencies`
+- Any `scripts` matching `\bsherif\b`
+
+**Auto-migrated:**
+
+- `sherif` removed from `dependencies` / `devDependencies`.
+- Any `scripts` matching `\bsherif\b` are deleted (raw text preserved as a manual step so mixed commands aren't lost silently).
+- The `sherif` block inside `package.json` is removed.
+- A `.bak` of `package.json` is created before mutation.
+
+**Sherif → vis deps mapping:**
+
+| Sherif rule (in `ignore-rules`) | vis deps flag                                        |
+| ------------------------------- | ---------------------------------------------------- |
+| `empty-dependencies`            | `--empty-deps`                                       |
+| `multiple-dependency-versions`  | `--workspace-versions`                               |
+| `non-existant-packages`         | `--dead-workspace-patterns`                          |
+| `packages-without-package-json` | `--missing-package-json`                             |
+| `root-package-dependencies`     | `--root-deps`                                        |
+| `root-package-manager-field`    | `--root-package-manager`                             |
+| `root-package-private-field`    | `--root-private`                                     |
+| `types-in-dependencies`         | `--types-in-deps`                                    |
+| `unsync-similar-dependencies`   | `--similar-deps`                                     |
+| `unordered-dependencies`        | _no equivalent_ — covered by `vis sort-package-json` |
+
+**Routed to manual steps:**
+
+- `ignore-rules` (when set) → suggested replacement script: `vis deps --<rule> --<rule> ...` listing every covered rule _except_ the disabled ones.
+- `ignore-dependencies` → mirror in `vis.config.ts` under `policy.workspaceVersions.ignore`, `policy.customTypes.ignore`, `policy.typesInDeps.ignore`, `policy.redefineRoot.ignore` (per-rule scoping in vis vs. global in sherif).
+- `ignore-packages` / `ignore-paths` → flagged for review; vis has no global package/path-skip yet (only per-rule scoping via `policy.bannedDeps.{packages,paths}`).
+- Pre-commit hooks and CI workflows referencing `sherif` are flagged but not auto-rewritten — the reviewer chooses the right `vis deps` flag set.
+
+### self
+
+Rewrites an existing `vis.config.ts` / `vis.task.ts` (and any `extends` chain) to use the current field names after a vis hard-break rename. Run after upgrading vis when `VisConfigDeprecatedKeyError` fires at load time.
+
+```bash
+vis migrate self
+vis migrate self --dry-run    # Preview without writing
+```
+
+**Current rename table** (vis 1.x → 2.0):
+
+| Previous                      | New                      |
+| ----------------------------- | ------------------------ |
+| `VisConfig.targetDefaults`    | `VisConfig.tasks`        |
+| `VisConfig.taskDefaults`      | `VisConfig.scopedTasks`  |
+| `VisConfig.taskRunnerOptions` | `VisConfig.taskRunner`   |
+| `ScopedTasksBlock.scope`      | `ScopedTasksBlock.match` |
+| `ScopedTasksBlock.targets`    | `ScopedTasksBlock.tasks` |
+| `VisTaskConfig.targets`       | `VisTaskConfig.tasks`    |
+
+Rewrites `vis.config.{ts,mts,cts,js,mjs,cjs}` at the workspace root and every `vis.task.{ts,mts,cts,js,mjs,cjs}` overlay found beneath it (`node_modules`, `.git`, `.vis/`, and common build output directories are skipped). Source files are rewritten only when they contain an old key; a `.bak` is created next to each modified file. `--dry-run` lists which files would change without touching disk.
+
+JSON configs and files referenced via `extends` are out of scope — rewrite those by hand (the rename table above is the full diff).
+
+### verify
+
+Read-only audit that exits non-zero if it finds any leftover `gitleaks`, `secretlint`, `sherif`, or `syncpack` references. Scans `package.json` scripts/devDependencies/`#sherif` block, pre-commit hooks, stale config files, CI workflow files, and catalog protocol entries (pnpm-workspace.yaml + bun catalog). Useful as a CI gate after a migration.
+
+```bash
+vis migrate verify
+```
+
+### verify-graph
+
+Proves a `turbo` / `nx` / `moon` → vis migration preserved the task graph and the cache-key surface. Migration coverage is not migration correctness — `verify-graph` reads the original source config and the migrated `vis.config.*` side by side, normalizes both into a tool-agnostic task graph, and reports every divergence. "Adopt risk-free" is only credible when you can prove the migration kept semantics; this is that proof, and it is CI-gateable.
+
+```bash
+vis migrate verify-graph                              # auto-detect source tool, diff vs vis.config.*
+vis migrate verify-graph --from turbo --format json   # machine-readable report on stdout
+vis migrate verify-graph --fail-on warning            # also gate on additive/extra-target warnings
+```
+
+The source tool is auto-detected when exactly one of `turbo.json`, `nx.json`, or `.moon/` is present; pass `--from turbo|nx|moon` to disambiguate. Each task is compared across six axes:
+
+| Axis         | Meaning                                                          |
+| ------------ | ---------------------------------------------------------------- |
+| `target-set` | A task present in the source is missing from the migrated config |
+| `dependsOn`  | Dependency edges (normalized across `^`/`#`/`^:`/`~:` dialects)  |
+| `inputs`     | Cache-key input globs                                            |
+| `outputs`    | Declared output globs                                            |
+| `env`        | Environment variables that participate in the cache key          |
+| `cache`      | The cache enable/disable flag                                    |
+
+A dropped task, a lost dependency edge, or a narrowed input/output/env set is an **error** (exit 1). A purely additive change in the migrated config (an extra task, a widened input set) is a **warning** and does not fail by default. Turbo `project#task` overrides that the migrator deliberately folds into a base task are reported as a non-fatal `warning` ("skipped by design"). Pass `--fail-on warning` to gate CI on warnings too.
+
+`--format` selects the report shape: `table` (default, human-readable, written to the logger), `json` (a single deterministic object), or `ndjson` (one finding per line). `json` and `ndjson` are written to **stdout only** and are byte-stable across runs, so they can be diffed or piped into other tooling.
+
+## Options
+
+| Option      | Default         | Applies to        | Description                                                |
+| ----------- | --------------- | ----------------- | ---------------------------------------------------------- |
+| `--dry-run` | `false`         | all but verifiers | Preview changes without writing to disk                    |
+| `--from`    | _auto-detected_ | `verify-graph`    | Source tool to compare against (`turbo` \| `nx` \| `moon`) |
+| `--format`  | `table`         | `verify-graph`    | Report format (`table` \| `json` \| `ndjson`)              |
+| `--fail-on` | `error`         | `verify-graph`    | Exit non-zero on `error` (default) or also on `warning`    |

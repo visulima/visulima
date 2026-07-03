@@ -1,0 +1,60 @@
+---
+title: Installation
+description: "Install and set up vis in your monorepo workspace"
+---
+
+# Installation
+
+Install vis using your preferred package manager:
+
+```bash npm2yarn
+npm install @visulima/vis
+```
+
+> 💡 **In a new repo?** vis works in single-package repos too, but it shines on monorepos. If you're starting fresh, scaffold the workspace first (`pnpm init`, add `pnpm-workspace.yaml`, then install vis).
+
+## Requirements
+
+- **Node.js**: 20.19 or higher
+- **Workspace**: A monorepo using pnpm, npm, yarn, bun, deno, or [aube](https://github.com/endevco/aube) workspaces
+
+## Optional: aube as the installer backend
+
+`vis install` (and the rest of the PM commands) can use [aube](https://github.com/endevco/aube) — a Rust-native package manager that reads and writes pnpm/npm/yarn/bun lockfiles in place — instead of the lockfile-detected PM. Aube supports pnpm catalogs, including walk-up resolution from subpackages, so visulima-style monorepos work transparently.
+
+`vis` does not bundle aube. Install it separately:
+
+```bash
+npm install -g @endevco/aube
+# or
+mise use -g aube
+# or
+brew install endevco/tap/aube
+```
+
+By default, `vis` auto-detects aube on `PATH` and uses it; pass `--no-aube` to bypass it for one run, or set `install.backend` in `vis.config.ts` to pin the choice across the team. See [Configuration → Installer Backend](/configuration#installer-backend) for the full resolution chain and the lockfile-drift caveat.
+
+## Binary Commands
+
+After installation, two binary commands are available:
+
+- `vis` — Full command name
+- `v` — Short alias
+
+Both point to the same CLI entry point.
+
+## Verification
+
+Verify your installation by running:
+
+```bash
+vis --help
+```
+
+You should see the list of available commands — `run`, `affected`, `graph`, `check`, `update`, `hook`, `release`, and more.
+
+## Next steps
+
+- **[Quick Start](/quick-start)** — the 10-minute walkthrough of everyday commands
+- **[Configuration](/configuration)** — set up `vis.config.ts` for your workspace
+- **[Release manager](/guides/release)** — wire up automated releases with change files

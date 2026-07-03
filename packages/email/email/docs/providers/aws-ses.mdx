@@ -1,0 +1,102 @@
+---
+title: AWS SES
+description: Send emails using Amazon Simple Email Service with @visulima/email
+---
+
+# AWS SES Provider
+
+The AWS SES provider allows you to send emails through [Amazon Simple Email Service](https://docs.aws.amazon.com/ses/latest/APIReference-V2/Welcome.html) using native Node.js APIs with AWS Signature V4 signing. No AWS SDK dependency is required.
+
+**Runtime Support:** Node.js only (requires `node:crypto` for AWS Signature V4 signing)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { awsSesProvider } from "@visulima/email/providers/aws-ses";
+
+const mail = createMail(
+    awsSesProvider({
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+        region: "us-east-1",
+    }),
+);
+```
+
+## Configuration
+
+The `AwsSesConfig` interface extends `BaseConfig` with the following options:
+
+| Option            | Type      | Required | Default       | Description                                                  |
+| ----------------- | --------- | -------- | ------------- | ------------------------------------------------------------ |
+| `accessKeyId`     | `string`  | Yes      | -             | AWS access key ID                                            |
+| `secretAccessKey` | `string`  | Yes      | -             | AWS secret access key                                        |
+| `region`          | `string`  | Yes      | `us-east-1`   | AWS region                                                   |
+| `sessionToken`    | `string`  | No       | -             | AWS session token (for temporary credentials)                |
+| `apiVersion`      | `string`  | No       | `2010-12-01`  | AWS SES API version                                          |
+| `endpoint`        | `string`  | No       | Auto-resolved | Custom endpoint (defaults to `email.{region}.amazonaws.com`) |
+| `maxAttempts`     | `number`  | No       | `3`           | Maximum request attempts                                     |
+| `debug`           | `boolean` | No       | `false`       | Enable debug logging                                         |
+| `logger`          | `Console` | No       | -             | Custom logger instance                                       |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from AWS SES").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The AWS SES provider supports additional options through `AwsSesEmailOptions`:
+
+```typescript
+import type { AwsSesEmailOptions } from "@visulima/email/providers/aws-ses";
+
+const options: AwsSesEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    configurationSetName: "my-config-set",
+    messageTags: {
+        Environment: "production",
+        Application: "my-app",
+    },
+    sourceArn: "arn:aws:ses:us-east-1:123456789:identity/example.com",
+    returnPath: "bounce@example.com",
+    returnPathArn: "arn:aws:ses:us-east-1:123456789:identity/example.com",
+};
+```
+
+| Option                 | Type                     | Description                          |
+| ---------------------- | ------------------------ | ------------------------------------ |
+| `configurationSetName` | `string`                 | Configuration set name               |
+| `messageTags`          | `Record<string, string>` | Message tags as key-value pairs      |
+| `sourceArn`            | `string`                 | Source ARN for sending authorization |
+| `returnPath`           | `string`                 | Return path email address            |
+| `returnPathArn`        | `string`                 | Return path ARN                      |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | No        |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | No        |
+| Scheduling     | No        |
+| Tagging        | No        |
+| Templates      | No        |
+| Tracking       | No        |
+
+## Important Notes
+
+- This provider uses the `SendRawEmail` API action, which generates a full MIME message internally.
+- Unsupported fields (attachments, priority, tags, replyTo) will cause an error if provided, rather than being silently ignored.
+- The provider uses native `node:crypto` for AWS Signature V4 signing and does not require the AWS SDK.

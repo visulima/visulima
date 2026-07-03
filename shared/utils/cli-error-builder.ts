@@ -15,16 +15,23 @@ type CliLogger = {
 
 const sanitizeTitle = (title: string): string => title.replace(/^\s*#+\s*/, "").trim();
 
-const runSolutionFinders = async (error: Error, solutionFinders: SolutionFinder[], debug: boolean = false): Promise<Solution | undefined> => {
-    const candidates = [...solutionFinders, ruleBasedFinder, errorHintFinder];
+const runSolutionFinders = async (
+    error: Error,
+    solutionFinders: SolutionFinder[],
+    debug: boolean = false,
+    logger?: CliLogger,
+): Promise<Solution | undefined> => {
+    const candidates = [...solutionFinders, ruleBasedFinder, errorHintFinder].sort((a, b) => a.priority - b.priority);
 
     const firstTrace = (parseStacktrace(error, { frameLimit: 1 })[0] ?? {}) as { file?: string; line?: number };
 
-    for await (const handler of candidates.sort((a, b) => a.priority - b.priority)) {
-        const { handle, name: _name } = handler;
+    const snippet = firstTrace.file ? await getFileSource(firstTrace.file) : "";
+
+    for (const handler of candidates) {
+        const { handle, name } = handler;
 
         if (debug) {
-            // Debug: Running solution finder: ${name}
+            (logger ?? console).log(`[solution-finder] running: ${name ?? "anonymous"}`);
         }
 
         if (typeof handle !== "function") {
@@ -35,10 +42,14 @@ const runSolutionFinders = async (error: Error, solutionFinders: SolutionFinder[
             file: firstTrace.file ?? "",
             language: findLanguageBasedOnExtension(firstTrace.file ?? ""),
             line: firstTrace.line ?? 0,
-            snippet: firstTrace.file ? await getFileSource(firstTrace.file) : "",
+            snippet,
         });
 
         if (hint) {
+            if (debug) {
+                (logger ?? console).log(`[solution-finder] matched: ${name ?? "anonymous"}`);
+            }
+
             return hint;
         }
     }
@@ -65,7 +76,11 @@ export type BaseCliOptions = {
 
 export type CliHandlerOptions = BaseCliOptions & { logger?: CliLogger };
 
-export const buildOutput = async (error: Error, options: BaseCliOptions): Promise<{ errorAnsi: string; solutionBox: undefined | string }> => {
+export const buildOutput = async (
+    error: Error,
+    options: BaseCliOptions,
+    logger?: CliLogger,
+): Promise<{ errorAnsi: string; solutionBox: undefined | string }> => {
     const { solutionFinders = [], solutionTitle, color, debug = false, ...renderOptions } = options;
 
     const errorAnsi = renderError(error, {
@@ -73,7 +88,7 @@ export const buildOutput = async (error: Error, options: BaseCliOptions): Promis
         ...color?.codeFrame,
     } as Partial<RenderErrorOptions>);
 
-    const hint = await runSolutionFinders(error, solutionFinders, debug);
+    const hint = await runSolutionFinders(error, solutionFinders, debug, logger);
 
     if (!hint) {
         return { errorAnsi, solutionBox: undefined };
@@ -100,7 +115,7 @@ export const buildOutput = async (error: Error, options: BaseCliOptions): Promis
 export const terminalOutput = async (error: Error, options: CliHandlerOptions = {}): Promise<void> => {
     const { logger = console, ...rest } = options;
 
-    const { errorAnsi, solutionBox } = await buildOutput(error, rest);
+    const { errorAnsi, solutionBox } = await buildOutput(error, rest, logger);
 
     logger.error(errorAnsi);
     

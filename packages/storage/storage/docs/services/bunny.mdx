@@ -1,0 +1,110 @@
+# Bunny Storage
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage and Bunny-specific limitations (no presigned PUT, no signed-read URL).
+
+## Overview
+
+The Bunny Storage adapter wraps `@bunny.net/storage-sdk`. Writes go through the Storage API with an `AccessKey` header; reads go through `BunnyStorageSDK.file.get(...).data()` for server-side fetches or, when a Pull Zone hostname is configured via `publicBaseUrl`, through that public origin.
+
+Bunny Storage does not expose presigned upload URLs or signed-read URL primitives, so this adapter follows the same pattern as UploadThing: public reads via a configured CDN base URL, server-side writes via the SDK.
+
+## Installation
+
+```sh
+npm install @bunny.net/storage-sdk
+```
+
+```sh
+yarn add @bunny.net/storage-sdk
+```
+
+```sh
+pnpm add @bunny.net/storage-sdk
+```
+
+## Usage
+
+```ts
+import { BunnyStorage } from "@visulima/storage/provider/bunny";
+
+const storage = new BunnyStorage({
+    zone: process.env.BUNNY_STORAGE_ZONE!,
+    accessKey: process.env.BUNNY_STORAGE_ACCESS_KEY!,
+    region: "de", // BunnyStorageSDK.regions.StorageRegion.*
+    publicBaseUrl: "https://cdn.example.com",
+});
+```
+
+## Configuration
+
+### Credentials
+
+| Option      | Env (visulima)             | Env (SDK alias)      |
+| ----------- | -------------------------- | -------------------- |
+| `zone`      | `BUNNY_STORAGE_ZONE`       | `STORAGE_ZONE`       |
+| `accessKey` | `BUNNY_STORAGE_ACCESS_KEY` | `STORAGE_ACCESS_KEY` |
+| `region`    | `BUNNY_STORAGE_REGION`     | `STORAGE_REGION`     |
+
+`BUNNY_ACCESS_KEY` is also accepted as an alias for `accessKey`. Region must be one of the values in `BunnyStorageSDK.regions.StorageRegion` (e.g. `"de"`, `"uk"`, `"ny"`, `"la"`, `"sg"`, `"se"`, `"br"`, `"jh"`, `"syd"`).
+
+### Pre-built client
+
+```ts
+import * as BunnyStorageSDK from "@bunny.net/storage-sdk";
+import { BunnyStorage } from "@visulima/storage/provider/bunny";
+
+const client = BunnyStorageSDK.zone.connect_with_accesskey(
+    BunnyStorageSDK.regions.StorageRegion.Falkenstein,
+    process.env.BUNNY_STORAGE_ZONE!,
+    process.env.BUNNY_STORAGE_ACCESS_KEY!,
+);
+
+const storage = new BunnyStorage({
+    client,
+    publicBaseUrl: "https://cdn.example.com",
+});
+```
+
+When `client` is passed, `zone`, `accessKey`, and `region` are ignored.
+
+### `publicBaseUrl`
+
+`getReadUrl()` joins `publicBaseUrl` with the object key. Without `publicBaseUrl`, the adapter throws `METHOD_NOT_ALLOWED` from `getReadUrl()` — the raw Storage API URL requires an `AccessKey` header and cannot be handed out to clients.
+
+Configure a Bunny Pull Zone (or any CDN/proxy fronting the Storage Zone) and pass its hostname:
+
+```ts
+new BunnyStorage({
+    /* … */
+    publicBaseUrl: "https://my-pull-zone.b-cdn.net",
+});
+```
+
+## URL Generation
+
+### `getReadUrl(key, options?)`
+
+- Returns `${publicBaseUrl}/${key}` when `publicBaseUrl` is set.
+- Throws `METHOD_NOT_ALLOWED` when `publicBaseUrl` is unset.
+- Throws `METHOD_NOT_ALLOWED` when `responseContentDisposition` is supplied — Bunny Storage and Pull Zone URLs have no equivalent override.
+- `expiresIn` is accepted but not consumed by the adapter; downstream Pull-Zone token-signing (if any) is the caller's responsibility.
+
+### `getUploadUrl(key)`
+
+Throws `METHOD_NOT_ALLOWED`. Bunny Storage has no presigned PUT primitive — writes must go through the Storage API with an `AccessKey` header. Upload server-side via `storage.write()` or proxy through your application.
+
+## Features
+
+- **SHA256 checksum hint** — when `part.checksum` is provided with `checksumAlgorithm: "sha256"`, it is forwarded as `sha256Checksum` to the Bunny SDK so the server can verify the upload.
+- **Soft delete** — `delete()` swallows `FILE_NOT_FOUND` errors so removing a missing key is idempotent.
+- **Public-URL minting** — `getReadUrl()` joins `publicBaseUrl + key` synchronously when a Pull Zone is configured.
+- **`raw` escape hatch** — `storage.raw` exposes the connected `StorageZone` for advanced SDK calls (`BunnyStorageSDK.file.list`, etc.).
+
+## Limitations
+
+- No native server-side `copy()` — implemented as download + re-upload.
+- No presigned upload URLs (`getUploadUrl()` throws `METHOD_NOT_ALLOWED`).
+- No signed-read URLs — `getReadUrl()` requires `publicBaseUrl` and ignores `expiresIn`.
+- No `responseContentDisposition` override — Bunny Storage / Pull Zone URLs cannot bind a Content-Disposition response header.
+- `list()` paginates client-side over a flat directory listing — large prefixes round-trip the full directory.
+- Custom `metadata` and `cacheControl` upload options are not supported (configure cache behavior on the Pull Zone instead).

@@ -1,0 +1,246 @@
+---
+title: String Width API
+description: Complete API reference for string width calculation functions in @visulima/string.
+---
+
+# String Width API
+
+Detailed API reference for visual string width calculation and truncation functions.
+
+## getStringWidth
+
+Calculate the visual width of a string, taking into account Unicode characters, emojis, ANSI escape codes, combining marks, and East Asian width properties.
+
+```typescript
+function getStringWidth(input: string, options?: StringWidthOptions): number;
+```
+
+**Import:**
+
+```typescript
+import { getStringWidth } from "@visulima/string/get-string-width";
+```
+
+**Parameters:**
+
+| Parameter | Type                 | Description                                   |
+| --------- | -------------------- | --------------------------------------------- |
+| `input`   | `string`             | The string to calculate the width for.        |
+| `options` | `StringWidthOptions` | Optional configuration for width calculation. |
+
+**Returns:** `number` -- The calculated visual width of the string.
+
+**Examples:**
+
+```typescript
+// Basic ASCII
+getStringWidth("hello"); // 5
+
+// CJK characters (width 2 each)
+getStringWidth("你好"); // 4
+getStringWidth("あいう"); // 6
+
+// Emojis (width 2 each)
+getStringWidth("👋"); // 2
+getStringWidth("👨‍👩‍👧‍👦"); // 2 (ZWJ family emoji)
+
+// ANSI escape codes (ignored by default)
+getStringWidth("\x1b[31mRed\x1b[39m"); // 3
+
+// Combining characters
+getStringWidth("e\u0301"); // 1 (e with combining acute accent)
+getStringWidth("\u0e01\u0e31"); // 1 (Thai character with vowel mark)
+
+// Mixed content
+getStringWidth("Hello 世界"); // 9
+
+// Custom widths
+getStringWidth("hello", { regularWidth: 2 }); // 10
+getStringWidth("👋👋", { emojiWidth: 1 }); // 2
+```
+
+**How it works:** Internally, `getStringWidth` delegates to `getStringTruncatedWidth` with `limit: Infinity` and no ellipsis, returning only the `width` field from the result.
+
+---
+
+## StringWidthOptions
+
+Configuration options for string width calculation. This type excludes truncation-related options.
+
+```typescript
+type StringWidthOptions = Omit<StringTruncatedWidthOptions, "ellipsis" | "ellipsisWidth" | "limit">;
+```
+
+Effective properties:
+
+| Property               | Type      | Default | Description                                                                                                                        |
+| ---------------------- | --------- | ------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `ambiguousIsNarrow`    | `boolean` | `false` | Treat [ambiguous width characters](https://www.unicode.org/reports/tr11/#Ambiguous) as narrow (width 1) instead of wide (width 2). |
+| `ansiWidth`            | `number`  | `0`     | Width assigned to ANSI escape sequences.                                                                                           |
+| `controlWidth`         | `number`  | `0`     | Width assigned to control characters.                                                                                              |
+| `countAnsiEscapeCodes` | `boolean` | `false` | Whether to count ANSI escape code characters in width calculation.                                                                 |
+| `emojiWidth`           | `number`  | `2`     | Width assigned to emoji characters.                                                                                                |
+| `fullWidth`            | `number`  | `2`     | Width assigned to full-width characters.                                                                                           |
+| `halfWidth`            | `number`  | `1`     | Width assigned to half-width characters.                                                                                           |
+| `regularWidth`         | `number`  | `1`     | Width assigned to regular ASCII characters.                                                                                        |
+| `tabWidth`             | `number`  | `8`     | Width assigned to tab characters.                                                                                                  |
+| `wideWidth`            | `number`  | `2`     | Width assigned to wide characters (CJK).                                                                                           |
+
+---
+
+## getStringTruncatedWidth
+
+Calculate the visual width of a string with optional truncation support. Handles various Unicode character types including combining marks, emoji sequences, ANSI escape codes, and East Asian characters.
+
+```typescript
+function getStringTruncatedWidth(input: string, options?: StringTruncatedWidthOptions): StringTruncatedWidthResult;
+```
+
+**Import:**
+
+```typescript
+import { getStringTruncatedWidth } from "@visulima/string/get-string-truncated-width";
+```
+
+**Parameters:**
+
+| Parameter | Type                          | Description                                                  |
+| --------- | ----------------------------- | ------------------------------------------------------------ |
+| `input`   | `string`                      | The string to calculate the width for.                       |
+| `options` | `StringTruncatedWidthOptions` | Optional configuration for width calculation and truncation. |
+
+**Returns:** `StringTruncatedWidthResult` -- An object containing width, truncation status, and index information.
+
+**Examples:**
+
+```typescript
+// Basic width calculation
+getStringTruncatedWidth("hello");
+// { width: 5, truncated: false, ellipsed: false, index: 5 }
+
+// With truncation limit
+getStringTruncatedWidth("hello world", { limit: 8 });
+// { width: 8, truncated: true, ellipsed: false, index: 8 }
+
+// With truncation and ellipsis
+getStringTruncatedWidth("hello world", {
+    limit: 8,
+    ellipsis: "...",
+});
+// { width: 8, truncated: true, ellipsed: true, index: 5 }
+
+// CJK with truncation
+getStringTruncatedWidth("あいうえお", {
+    limit: 6,
+    ellipsis: "...",
+});
+// { width: 6, truncated: true, ellipsed: true, index: ... }
+
+// Empty string
+getStringTruncatedWidth("");
+// { width: 0, truncated: false, ellipsed: false, index: 0 }
+```
+
+---
+
+## StringTruncatedWidthOptions
+
+Full configuration options for width calculation and truncation.
+
+```typescript
+interface StringTruncatedWidthOptions {
+    /** Treat ambiguous width characters as narrow. @default false */
+    ambiguousIsNarrow?: boolean;
+
+    /** Width of ANSI escape sequences. @default 0 */
+    ansiWidth?: number;
+
+    /** Width of control characters. @default 0 */
+    controlWidth?: number;
+
+    /** Whether to count ANSI escape codes in width. @default false */
+    countAnsiEscapeCodes?: boolean;
+
+    /** Text appended to the string when it is truncated. @default '' */
+    ellipsis?: string;
+
+    /** Width of the ellipsis string. Auto-calculated if not provided. */
+    ellipsisWidth?: number;
+
+    /** Width of emoji characters. @default 2 */
+    emojiWidth?: number;
+
+    /** Width of full-width characters. @default 2 */
+    fullWidth?: number;
+
+    /** Width of half-width characters. @default 1 */
+    halfWidth?: number;
+
+    /** Maximum width limit for the string. @default Infinity */
+    limit?: number;
+
+    /** Width of regular characters. @default 1 */
+    regularWidth?: number;
+
+    /** Width of tab characters. @default 8 */
+    tabWidth?: number;
+
+    /** Width of wide characters. @default 2 */
+    wideWidth?: number;
+}
+```
+
+---
+
+## StringTruncatedWidthResult
+
+Result object returned by `getStringTruncatedWidth`.
+
+```typescript
+interface StringTruncatedWidthResult {
+    /** The calculated visual width of the string. */
+    width: number;
+
+    /** Whether the string was truncated. */
+    truncated: boolean;
+
+    /** Whether an ellipsis was added. */
+    ellipsed: boolean;
+
+    /** The index at which truncation occurred, or the full string length if not truncated. */
+    index: number;
+}
+```
+
+**Interpreting the result:**
+
+- When `truncated` is `false`: `width` is the full visual width and `index` equals the string length.
+- When `truncated` is `true` and `ellipsed` is `true`: `width` equals the `limit` value, and `index` is the position in the original string where truncation occurred (before the ellipsis).
+- When `truncated` is `true` and `ellipsed` is `false`: the string exceeded the limit but no ellipsis was configured.
+
+---
+
+## Character Width Rules
+
+The width calculation uses these rules in order of priority:
+
+1. **ANSI escape sequences**: Width `0` by default (or character count if `countAnsiEscapeCodes` is `true`).
+2. **OSC 8 hyperlinks**: Only the display text within the hyperlink contributes to width.
+3. **Zero-width characters**: Zero-width space (U+200B), zero-width non-joiner (U+200C), zero-width joiner (U+200D), and word joiner (U+2060) have width `0`.
+4. **Tab characters**: Width of `tabWidth` (default 8).
+5. **Latin characters** (U+0020-U+007E, U+00A0-U+00FF): Width of `regularWidth` (default 1).
+6. **Control characters**: Width of `controlWidth` (default 0).
+7. **Emoji sequences**: Width of `emojiWidth` (default 2), including complex ZWJ sequences.
+8. **Combining characters**: Width `0` (combining diacritical marks, variation selectors, Indic vowel signs, etc.).
+9. **CJK/wide characters**: Width of `wideWidth` (default 2). Includes Hangul, Hiragana, Katakana, CJK ideographs, and full-width forms.
+10. **Ambiguous characters**: Width of `wideWidth` or `regularWidth` depending on the `ambiguousIsNarrow` option.
+11. **All other characters**: Width of `regularWidth` (default 1).
+
+---
+
+## Notes
+
+- For strings longer than 10,000 characters, the implementation uses a character width cache for improved performance.
+- The Box Drawing block (U+2500-U+257F) is treated as width 1, not as wide characters.
+- The horizontal ellipsis (U+2026) is treated as width 1.
+- When `ellipsisWidth` is not provided but `ellipsis` is, the ellipsis width is auto-calculated by recursively calling `getStringTruncatedWidth` on the ellipsis string.

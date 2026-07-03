@@ -1,0 +1,22 @@
+{
+    "name": "upload_example_express-rest-gcs",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx index.ts"
+    },
+    "dependencies": {
+        "@visulima/storage": "workspace:*",
+        "cors": "catalog:prod",
+        "dotenv": "catalog:prod",
+        "express": "catalog:backend",
+        "google-auth-library": "catalog:prod",
+        "winston": "catalog:prod"
+    },
+    "devDependencies": {
+        "@types/cors": "catalog:types",
+        "@types/express": "catalog:types",
+        "tsx": "catalog:dev"
+    }
+}

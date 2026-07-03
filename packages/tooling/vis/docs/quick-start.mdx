@@ -1,0 +1,171 @@
+---
+title: Quick Start
+description: "Get up and running with vis in your monorepo"
+---
+
+# Quick Start
+
+This guide walks you through the workflows you'll touch every day. Stops at "you can ship code with vis"; for the deeper picture, follow the links at each section's end.
+
+> 💡 **Already installed?** Skip to [Running Tasks](#running-tasks). New here? Start with [Installation](/installation).
+
+## Running Tasks
+
+Run a target across all workspace projects in dependency order:
+
+```bash
+vis run build
+```
+
+Run with increased parallelism:
+
+```bash
+vis run build --parallel=5
+```
+
+Run only specific projects:
+
+```bash
+vis run test --projects=@my/app,@my/lib
+```
+
+Preview what would run without executing:
+
+```bash
+vis run build --dry-run
+```
+
+## Affected Detection
+
+Only run tasks for projects changed since a git ref:
+
+```bash
+vis affected test --base=main
+```
+
+Compare specific git refs:
+
+```bash
+vis affected lint --base=HEAD~5 --head=HEAD
+```
+
+## Checking for Outdated Dependencies
+
+For pnpm or bun workspaces with catalogs, check which dependencies are outdated:
+
+```bash
+vis check
+```
+
+Check only specific packages:
+
+```bash
+vis check react typescript
+```
+
+Only show minor and patch updates:
+
+```bash
+vis check --target minor
+```
+
+## Updating Dependencies
+
+Update catalog dependencies interactively:
+
+```bash
+vis update --interactive
+```
+
+Update only patch versions (safe for production):
+
+```bash
+vis update --target patch
+```
+
+Preview changes without applying:
+
+```bash
+vis update --dry-run
+```
+
+Rollback if something goes wrong:
+
+```bash
+vis update --rollback
+```
+
+## Visualizing the Dependency Graph
+
+View your project dependency graph:
+
+```bash
+vis graph
+```
+
+Export as DOT format for Graphviz:
+
+```bash
+vis graph --format=dot --output=graph.dot
+```
+
+## Managing Git Hooks
+
+Install git hooks:
+
+```bash
+vis hook install
+```
+
+Migrate from husky:
+
+```bash
+vis hook migrate
+```
+
+## Releasing a version
+
+Set up the release subsystem and migrate from an existing tool if you have one:
+
+```bash
+vis release init --workflows
+```
+
+Record a version bump for the change you just made:
+
+```bash
+vis release add --packages '@scope/cerebro:minor' --message 'Add tab completion'
+```
+
+Commit the resulting `.vis/release/<slug>.md` alongside your code and push. CI takes care of opening the **"Versioned release" PR**, publishing on merge, tagging, and creating GitHub / GitLab releases.
+
+See the [release guide](/guides/release) for the full walkthrough — change files, channels, snapshots, and CI setup.
+
+## Configuration
+
+Create a `vis.json` in your workspace root for persistent configuration:
+
+```json
+{
+    "tasks": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["{projectRoot}/dist/**"],
+            "cache": true
+        }
+    },
+    "update": {
+        "target": "minor",
+        "exclude": ["legacy-*"]
+    }
+}
+```
+
+See the [Configuration](/configuration) page for all available options.
+
+## Where to next
+
+- **[Release manager](/guides/release)** — ship versions, changelogs, and tags from change files
+- **[Why vis](/guides/why-vis)** — side-by-side capability matrix vs. Turbo / Nx / moon / Vite Task
+- **[Best practices](/guides/best-practices)** — team workflows, security, CI/CD patterns
+- **[Commands](/commands/run)** — full per-command reference

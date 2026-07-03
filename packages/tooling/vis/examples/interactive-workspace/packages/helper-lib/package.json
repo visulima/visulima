@@ -1,0 +1,10 @@
+{
+    "name": "helper-lib",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "deploy": "echo 'Deploying helper-lib...' && sleep 3 && echo 'helper-lib deployed!'",
+        "lint": "echo 'Linting helper-lib...' && sleep 0.5 && echo 'Clean.'",
+        "test": "echo 'Testing helper-lib...' && sleep 1 && echo 'Passed.'"
+    }
+}

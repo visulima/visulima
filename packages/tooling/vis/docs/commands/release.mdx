@@ -1,0 +1,727 @@
+---
+title: "vis release"
+description: "Per-command reference for the vis release subsystem — what each subcommand does, when to reach for it, and every flag."
+---
+
+# vis release
+
+The release subsystem ships package versions, changelogs, git tags, and registry uploads from change files committed alongside your code. The mental model and recipes live in the [release guide](../guides/release.mdx) — this page is the per-command reference.
+
+> ⚠ **Unstable.** Set `release.acknowledgeUnstable: true` in `vis.config.ts` (or `VIS_RELEASE_SUPPRESS_UNSTABLE=1`) to silence the warning.
+
+## Which command do I need?
+
+| You want to…                                           | Command                                                   |
+| ------------------------------------------------------ | --------------------------------------------------------- |
+| Set up vis release for the first time                  | [`vis release init`](#vis-release-init)                   |
+| Record a version bump for a change you just made       | [`vis release add`](#vis-release-add)                     |
+| Auto-generate the change file from your commit history | [`vis release generate`](#vis-release-generate)           |
+| See what's about to release                            | [`vis release status`](#vis-release-status)               |
+| See just the next version of each package              | [`vis release next-version`](#vis-release-next-version)   |
+| Override individual bumps before shipping              | [`vis release plan -i`](#vis-release-plan)                |
+| Preview changelog entries without writing              | [`vis release changelog`](#vis-release-changelog)         |
+| Gate that every changed package has a change file      | [`vis release check`](#vis-release-check)                 |
+| Diagnose a broken setup                                | [`vis release doctor`](#vis-release-doctor)               |
+| Apply pending bumps to disk (run locally — rare)       | [`vis release version`](#vis-release-version)             |
+| Publish to npm (run locally — rare)                    | [`vis release publish`](#vis-release-publish)             |
+| Ship an ephemeral PR preview install                   | [`vis release snapshot`](#vis-release-snapshot)           |
+| Bootstrap npm trusted publishing for new packages      | [`vis release pretrust`](#vis-release-pretrust)           |
+| Enter / exit a prerelease sprint mode                  | [`vis release pre`](#vis-release-pre)                     |
+| Manage npm staged-publish records                      | [`vis release stage`](#vis-release-stage)                 |
+| Dry-run a configured notification destination          | [`vis release notifications`](#vis-release-notifications) |
+| Run the whole pipeline in CI                           | [`vis release ci release`](#vis-release-ci-release)       |
+| Publish snapshots from CI and comment on the PR        | [`vis release ci snapshot`](#vis-release-ci-snapshot)     |
+| Sticky-comment the release plan on a PR                | [`vis release ci check`](#vis-release-ci-check)           |
+| Branch a workflow on whether anything is about to ship | [`vis release ci plan`](#vis-release-ci-plan)             |
+| Get the secrets / permissions checklist for CI         | [`vis release ci setup`](#vis-release-ci-setup)           |
+| Keep an open version-PR rebased on its base branch     | [`vis release ci rebase-pr`](#vis-release-ci-rebase-pr)   |
+
+> 💡 **Tip:** Most release commands accept `--print-config[=debug]` to dump the resolved config and exit. Use it when something looks wrong and you want to see exactly what merged config CI sees. The flag is available on every command except `init`, `add`, `pre`, `stage`, `notifications`, `ci setup`, and `ci rebase-pr`.
+
+---
+
+## vis release init
+
+```bash
+vis release init [flags]
+```
+
+Scaffold `.vis/release/` and migrate from an existing tool when detected.
+
+**When to use.** Once per repo, after installing `@visulima/vis`. Re-run with `--workflows` if you add a new CI provider later.
+
+```bash
+vis release init
+vis release init --from-semantic-release
+vis release init --from-changesets
+vis release init --fresh
+vis release init --dry-run
+vis release init --from-semantic-release --apply
+vis release init --workflows
+```
+
+**What it does**
+
+1. Auto-detects an existing release tool (`changesets` / `semantic-release` / `multi-semantic-release` / `bumpy`) and copies / converts artefacts.
+2. Creates `.vis/release/` with a sample change file and `.gitignore` entries.
+3. With `--workflows`, generates a GitHub Actions or GitLab CI workflow for the active provider.
+
+**Options**
+
+| Option                     | Type    | Description                                                                                                               |
+| -------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `--from-semantic-release`  | boolean | Force migration from semantic-release / multi-semantic-release                                                            |
+| `--from-changesets`        | boolean | Force migration from changesets                                                                                           |
+| `--from-bumpy`             | boolean | Force migration from bumpy                                                                                                |
+| `--fresh`                  | boolean | Skip migration; start clean                                                                                               |
+| `--dry-run`                | boolean | Print what would happen without writing files (default for migration runs)                                                |
+| `--apply`                  | boolean | Actually perform the migration writes (opt out of the implicit dry-run)                                                   |
+| `--yes`, `-y`              | boolean | Auto-confirm prompts (CI-safe)                                                                                            |
+| `--workflows`              | boolean | Generate CI workflow files for the active provider                                                                        |
+| `--package-manager <name>` | string  | Override the package manager used in generated workflows (npm / pnpm / yarn / bun)                                        |
+| `--agent`                  | boolean | Append an idempotent "Releasing with vis" section to `AGENTS.md` so AI agents author change files instead of hand-bumping |
+
+---
+
+## vis release add
+
+```bash
+vis release add [flags]
+```
+
+Author a change file — interactive by default, scriptable with `--packages`.
+
+**When to use.** Every time you change a package. Run it before committing, and commit the resulting file alongside your code change.
+
+```bash
+vis release add
+vis release add --packages '@scope/cerebro:minor,@scope/string:patch' --message 'Add tab completion'
+vis release add --empty
+vis release add --name fix-tab-completion
+vis release add --from-bot-pr
+```
+
+**Options**
+
+| Option             | Type    | Description                                                                                           |
+| ------------------ | ------- | ----------------------------------------------------------------------------------------------------- |
+| `--packages <csv>` | string  | `@scope/a:minor,@scope/b:patch` — non-interactive package + bump pairs                                |
+| `--message <text>` | string  | Changelog body                                                                                        |
+| `--name <slug>`    | string  | Filename slug (default: random animal name)                                                           |
+| `--empty`          | boolean | Author an empty change file (satisfies non-strict `check`)                                            |
+| `--none`           | boolean | Author a `none`-bump file (acknowledged but no direct bump)                                           |
+| `--from-bot-pr`    | boolean | Inspect the current PR via `gh pr view` and author a change file from its Dependabot / Renovate title |
+
+---
+
+## vis release generate
+
+```bash
+vis release generate [flags]
+```
+
+Auto-derive a change file from branch commits.
+
+**When to use.** If you'd rather not hand-write change files. Uses the [conventional-commits](https://www.conventionalcommits.org) parser with a path-based fallback for repos that don't enforce them.
+
+```bash
+vis release generate
+vis release generate --from origin/main
+vis release generate --dry-run
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                                |
+| ------------------------ | ------- | -------------------------------------------------------------------------- |
+| `--from <ref>`           | string  | Git ref to compare against (default: merge-base with `release.baseBranch`) |
+| `--name <slug>`          | string  | Filename slug (default: random animal name)                                |
+| `--dry-run`              | boolean | Print the would-be content without writing                                 |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                 |
+
+---
+
+## vis release status
+
+```bash
+vis release status [flags]
+```
+
+Print the pending plan in a human-readable table.
+
+**When to use.** Anytime you want to check "what's queued up to release?". Safe to run on any branch — read-only.
+
+```bash
+vis release status
+vis release status --json
+vis release status --bump major,minor
+vis release status --filter '@scope/*'
+```
+
+**Options**
+
+| Option                   | Type    | Description                                |
+| ------------------------ | ------- | ------------------------------------------ |
+| `--json`                 | boolean | Machine-readable JSON                      |
+| `--filter <glob>`        | string  | Filter by package name (single glob)       |
+| `--bump <levels>`        | string  | Filter by bump level (`major,minor,patch`) |
+| `--channel <name>`       | string  | Override branch-detected channel           |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit |
+
+---
+
+## vis release next-version
+
+```bash
+vis release next-version [flags]
+```
+
+Print just the next computed version for each package in the plan. Read-only; no mutations.
+
+**When to use.** When a downstream script only needs `pkg → newVersion` and the full `status` output is too verbose, or when you want to assert a specific package's next version in a hook.
+
+```bash
+vis release next-version
+vis release next-version --package=@scope/a
+vis release next-version --json
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                                                |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------ |
+| `--package <name>`       | string  | Limit output to a single package                                                           |
+| `--json`                 | boolean | Emit a `{ name: { from, to } }` map instead of pretty `pkg old -> new` lines               |
+| `--channel <name>`       | string  | Override branch-detected channel                                                           |
+| `--first-release`        | boolean | Bootstrap mode: preview without registry / tag lookups (matches `version --first-release`) |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                                 |
+
+---
+
+## vis release plan
+
+```bash
+vis release plan [flags]
+```
+
+Programmatic plan output and, with `--interactive`, a walkthrough that lets you override each bump.
+
+**When to use.** When you need to override a specific bump (e.g. promote a patch to a minor) before CI ships it.
+
+```bash
+vis release plan                       # JSON
+vis release plan --interactive         # Walk each release, accept or override
+vis release plan -i --write            # Same, plus persist overrides as a new change file
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                                |
+| ------------------------ | ------- | -------------------------------------------------------------------------- |
+| `--filter <glob>`        | string  | Filter by package name                                                     |
+| `--channel <name>`       | string  | Override branch-detected channel                                           |
+| `-i`, `--interactive`    | boolean | Step through pending releases; accept or override each bump                |
+| `--write`                | boolean | With `--interactive`, write the chosen overrides to `.vis/release/<id>.md` |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                 |
+
+---
+
+## vis release changelog
+
+```bash
+vis release changelog [flags]
+```
+
+Render the would-be changelog entries without writing to disk.
+
+**When to use.** To preview what the next CHANGELOG.md will look like, or to pipe into release-notes tooling.
+
+```bash
+vis release changelog
+vis release changelog --json
+vis release changelog --filter '@scope/*'
+```
+
+**Options**
+
+| Option                   | Type    | Description                                |
+| ------------------------ | ------- | ------------------------------------------ |
+| `--json`                 | boolean | Emit `ChangelogResult` JSON                |
+| `--filter <glob>`        | string  | Filter by package name (CSV)               |
+| `--channel <name>`       | string  | Override branch-detected channel           |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit |
+
+---
+
+## vis release check
+
+```bash
+vis release check [flags]
+```
+
+Verify that pending change files cover the packages that changed.
+
+**When to use.** As a `pre-commit` / `pre-push` hook, or as a CI gate that fails the PR if someone forgot a change file.
+
+```bash
+vis release check
+vis release check --strict             # Every changed package must have its own file
+vis release check --hook pre-commit    # Run as a husky hook
+vis release check --no-fail            # Warnings only, exit 0
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                                     |
+| ------------------------ | ------- | ------------------------------------------------------------------------------- |
+| `--strict`               | boolean | Require every changed package to have its own non-empty change file             |
+| `--hook <name>`          | string  | Hook context (`pre-commit`, `pre-push`) — affects which file states are counted |
+| `--no-fail`              | boolean | Always exit 0; warnings still print to stderr                                   |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                      |
+
+---
+
+## vis release doctor
+
+```bash
+vis release doctor [flags]
+```
+
+Run read-only preflight diagnostics: `config-loads`, `workspace-discovered`, `pm-version`, `branch-channel`, `gh-cli-available`, `oidc-available`, and per-package `napi-*` checks (sidecar platforms + version alignment + optionalDependencies wiring).
+
+**When to use.** First port of call when something looks broken. Each check is tagged `error` / `warn` / `info`; exits non-zero on any error.
+
+```bash
+vis release doctor
+vis release doctor --json
+vis release doctor --first-release
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                                          |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------ |
+| `--json`                 | boolean | Emit a machine-readable report                                                       |
+| `--first-release`        | boolean | Bootstrap mode: assert the workspace has no release tags and no package is published |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                           |
+
+---
+
+## vis release version
+
+```bash
+vis release version [flags]
+```
+
+Apply the plan to disk: write `package.json` bumps, rewrite `workspace:` / `catalog:` ranges, prepend `CHANGELOG.md` entries, sync the lockfile, delete consumed change files.
+
+**When to use.** Rarely run by hand — `vis release ci release` calls it for you. Run it locally only when you want to inspect the diff before pushing.
+
+```bash
+vis release version
+vis release version --dry-run
+vis release version --channel alpha
+vis release version --commit
+vis release version --first-release    # Greenfield monorepo, no prior tags
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                                              |
+| ------------------------ | ------- | ---------------------------------------------------------------------------------------- |
+| `--dry-run`              | boolean | Print the diff and exit; no writes                                                       |
+| `--channel <name>`       | string  | Override branch-detected channel                                                         |
+| `--filter <glob>`        | string  | Limit to packages matching the glob (CSV)                                                |
+| `--commit`               | boolean | Auto-commit after applying                                                               |
+| `--check-only`           | boolean | Run preflight checks (config + workspace + plan) and exit. No mutations.                 |
+| `--first-release`        | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag-collision checks |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                               |
+
+---
+
+## vis release publish
+
+```bash
+vis release publish [flags]
+```
+
+Pack each managed package, publish the tarball, create + push git tags, then create GitHub / GitLab releases.
+
+**When to use.** Rarely run by hand — `vis release ci release` calls it. Run locally only for emergency manual releases or when recovering from a failed CI run with `--resume`.
+
+```bash
+vis release publish
+vis release publish --dry-run
+vis release publish --tag alpha
+vis release publish --filter '@scope/*'
+vis release publish --resume
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                                              |
+| ------------------------ | ------- | ---------------------------------------------------------------------------------------- |
+| `--dry-run`              | boolean | Skip uploads; print what would happen                                                    |
+| `--tag <name>`           | string  | Override the npm dist-tag                                                                |
+| `--filter <glob>`        | string  | Limit to packages matching the glob (CSV)                                                |
+| `--no-push`              | boolean | Skip `git push --tags` after publish                                                     |
+| `--otp <code>`           | string  | 2FA token                                                                                |
+| `--channel <name>`       | string  | Override branch-detected channel                                                         |
+| `--resume`               | boolean | Resume from a previous run's state file (skips already-published packages)               |
+| `--check-only`           | boolean | Preflight checks (config + workspace + plan + auth) and exit. No mutations.              |
+| `--first-release`        | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag-collision checks |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                               |
+
+---
+
+## vis release snapshot
+
+```bash
+vis release snapshot --tag <name> [flags]
+```
+
+Publish ephemeral `0.0.0-<tag>-<sha>` versions of every affected package. Defaults to the active npm registry; point at [pkg-pr-new](https://pkg-pr-new.com) or another preview host via `--registry` or `release.snapshot.registry`.
+
+**When to use.** Locally when you want a colleague to try a branch without merging — share the install command and they install it like any other version.
+
+```bash
+vis release snapshot --tag pr-1234
+vis release snapshot --tag canary --filter '@scope/*'
+vis release snapshot --tag pr-1234 --dry-run
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                       |
+| ------------------------ | ------- | ----------------------------------------------------------------- |
+| `--tag <name>`           | string  | Required: dist-tag for the snapshot release                       |
+| `--registry <url>`       | string  | Override the registry (falls back to `release.snapshot.registry`) |
+| `--filter <glob>`        | string  | Limit to packages matching the glob (CSV)                         |
+| `--dry-run`              | boolean | Print what would publish without uploading                        |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                        |
+
+---
+
+## vis release pretrust
+
+```bash
+vis release pretrust [flags]
+```
+
+npm — unlike PyPI — refuses to configure a Trusted Publisher (OIDC) for a package that does not exist yet, so the **first** OIDC publish of a brand-new package fails. `pretrust` breaks that chicken-and-egg: for every managed package missing from the registry it publishes a minimal, explicitly non-functional placeholder, then runs `npm trust` to configure the Trusted Publisher automatically.
+
+**When to use.** Once, before the first release of new packages (locally, by a maintainer who can clear the npm 2FA prompt). After it runs, `vis release publish` can publish those packages over OIDC. Mirrors [`azu/setup-npm-trusted-publish`](https://github.com/azu/setup-npm-trusted-publish).
+
+```bash
+vis release pretrust                       # placeholder + trust for every not-yet-published package
+vis release pretrust --dry-run             # preview, no upload
+vis release pretrust --filter '@scope/*'   # limit to a glob
+vis release pretrust --no-trust            # publish placeholders only, configure trust manually
+```
+
+**What it does**
+
+1. Skips packages that already exist on the registry (override with `--force`).
+2. Publishes a README-only placeholder under a dedicated dist-tag (default `placeholder`, so `latest` stays unset and `npm install` keeps failing until the real release).
+3. On a successful publish, runs `npm trust <provider> <pkg> --file <workflow> --allow-publish` (npm CLI ≥ 11.5.1). The provider, repo, and workflow file are auto-detected from the git remote and `.github/workflows`; override with `--provider`/`--repo`/`--workflow`/`--env`.
+4. The first `npm trust` call may require a 2FA OTP — a failure there is reported per package (not fatal) with the `https://www.npmjs.com/package/<name>/access` URL as a manual fallback.
+
+**Options**
+
+| Option                   | Type    | Description                                                                           |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------- |
+| `--filter <glob>`        | string  | Limit to packages matching the glob (CSV)                                             |
+| `--tag <name>`           | string  | dist-tag for the placeholder (default `placeholder`)                                  |
+| `--version <semver>`     | string  | Placeholder version (default `0.0.0`)                                                 |
+| `--access <level>`       | string  | `public` or `restricted` (default `public`)                                           |
+| `--registry <url>`       | string  | Override the registry                                                                 |
+| `--force`                | boolean | Publish a placeholder even if the package already exists                              |
+| `--no-trust`             | boolean | Skip the `npm trust` step (publish placeholders only)                                 |
+| `--provider <name>`      | string  | Trust claim provider: `github` or `gitlab` (default: auto-detect from the git remote) |
+| `--repo <slug>`          | string  | Trust claim: `owner/repo` (github) or `group/project` (gitlab); default auto-detected |
+| `--workflow <file>`      | string  | Trust claim: workflow/pipeline filename (`npm trust --file`); default auto-detected   |
+| `--env <name>`           | string  | Trust claim: restrict to a deployment environment                                     |
+| `--allow-stage-publish`  | boolean | Trust claim: also grant the staged-publish permission                                 |
+| `--dry-run`              | boolean | Print what would publish without uploading                                            |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                            |
+
+---
+
+## vis release pre
+
+```bash
+vis release pre <enter|exit|status> [flags]
+```
+
+Enter / exit a prerelease sprint mode. Changesets-compatible — while active, every `vis release version` produces a prerelease bump (`1.2.0-alpha.0`, `1.2.0-alpha.1`, …) instead of the usual stable bump. Independent of channel-derived prerelease handling.
+
+**When to use.** When you need to sustain an alpha / RC line on a branch where channels don't naturally produce one (e.g. on `main` for a few weeks while a major feature stabilises).
+
+```bash
+vis release pre enter alpha     # snapshot every package's version; future bumps are prerelease
+vis release pre status          # check whether pre-mode is on / exit-pending / off
+vis release pre exit            # mark for exit; the NEXT `version` consolidates + deletes pre.json
+
+# Local triage without auto-committing the tracked pre.json:
+vis release pre enter alpha --no-commit
+vis release pre exit --no-push
+```
+
+**Positional**
+
+- `<enter|exit|status>` — the action (default: `status`)
+- `<tag>` — required for `enter`; the prerelease tag (e.g. `alpha`, `beta`, `rc`)
+
+**Options**
+
+| Option        | Type    | Default | Description                                   |
+| ------------- | ------- | ------- | --------------------------------------------- |
+| `--no-commit` | boolean | commit  | Skip auto-committing `pre.json` after writing |
+| `--no-push`   | boolean | push    | Skip pushing the commit                       |
+
+State lives in `.vis/release/pre.json` (tracked in git so CI sees the same mode across runs). Auto-committed with `[skip ci]` on every transition.
+
+---
+
+## vis release stage
+
+```bash
+vis release stage <list|approve|reject> [stage-ids...] [flags]
+```
+
+List, approve, or reject npm staged-publish records. `approve` and `reject` require 2FA on the npm side.
+
+**When to use.** When you use npm staged publishes (publish-then-promote) and need to confirm a stage from the command line instead of the npm UI. `list` is also useful for auditing — it merges the local `.vis/release/staged.json` registry with the live npm staging endpoint.
+
+```bash
+vis release stage list                          # All staged versions (npm + local registry)
+vis release stage list @scope/pkg               # Staged versions for one package
+vis release stage list --json                   # Machine-readable
+vis release stage approve <stage-id>            # Promote + drain from staged.json, commit + push
+vis release stage approve --all                 # Approve every pending stage in staged.json
+vis release stage reject <stage-id>             # Permanent — re-stage to retry
+vis release stage approve <stage-id> --no-push  # Approve, commit locally, skip the push
+vis release stage approve <stage-id> --no-commit # Approve and update registry only
+```
+
+**Positional**
+
+- `<list|approve|reject>` — the action (default: `list`)
+- `<stage-ids...>` — one or more stage IDs (only meaningful for `approve` / `reject`)
+
+**Options**
+
+| Option            | Type    | Default | Description                                                       |
+| ----------------- | ------- | ------- | ----------------------------------------------------------------- |
+| `--all`           | boolean |         | Approve every pending stage tracked in `.vis/release/staged.json` |
+| `--filter <name>` | string  |         | Package name filter for `list`                                    |
+| `--json`          | boolean |         | Emit machine-readable JSON                                        |
+| `--no-commit`     | boolean | commit  | Update `staged.json` but skip the auto-commit                     |
+| `--no-push`       | boolean | push    | Skip pushing the registry commit to the remote                    |
+
+---
+
+## vis release notifications
+
+```bash
+vis release notifications test [flags]
+```
+
+Dry-run the configured notification channels (`slack` / `discord` / `webhook` / plugins) with a synthetic release context. Lets operators verify a destination is wired up _before_ relying on it for a real release.
+
+**When to use.** Once after configuring `release.notifications` in `vis.config.ts`, and again whenever you rotate a webhook secret.
+
+```bash
+vis release notifications test                                  # All configured channels
+vis release notifications test --channel=slack                  # Every Slack channel only
+vis release notifications test --channel=slack:eng              # The Slack channel with id=eng only
+vis release notifications test --custom-context=./fake.json     # Use an operator-supplied context
+vis release notifications test --json                           # Machine-readable results
+```
+
+**Positional**
+
+- `<test>` — the action (default: `test`; only `test` is implemented today)
+
+**Options**
+
+| Option                    | Type    | Description                                                                                                 |
+| ------------------------- | ------- | ----------------------------------------------------------------------------------------------------------- |
+| `--channel <kind[:id]>`   | string  | Restrict dispatch to a single channel kind (`slack`, `discord`, `webhook`) or an id'd channel (`slack:eng`) |
+| `--custom-context <file>` | string  | Path to a JSON file containing a `NotificationContext` to use instead of the synthetic default              |
+| `--json`                  | boolean | Emit machine-readable JSON instead of a per-channel report                                                  |
+
+Exit 0 iff every dispatched channel succeeded.
+
+---
+
+## vis release ci release
+
+```bash
+vis release ci release [flags]
+```
+
+The main CI driver. Behaviour depends on the channel's `mode`:
+
+- `version-pr` (default for `main` / `next`) — open or update a rolling **"Versioned release" PR**; publish only when the PR merges.
+- `auto-publish` (default for `alpha` / `beta`) — version + publish inline on every push.
+
+Force the auto-publish path with `--auto-publish` regardless of channel config.
+
+**When to use.** In your release workflow's main job step. This is the command CI calls; you almost never invoke it by hand.
+
+```bash
+vis release ci release
+vis release ci release --auto-publish
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                                    |
+| ------------------------ | ------- | ------------------------------------------------------------------------------ |
+| `--auto-publish`         | boolean | Skip the version-PR; version + publish inline                                  |
+| `--branch <name>`        | string  | Override the version-PR branch (default: `vis-release/version-packages`)       |
+| `--channel <name>`       | string  | Override branch-detected channel                                               |
+| `--first-release`        | boolean | Bootstrap mode: force `currentVersionResolver=disk` and skip remote tag checks |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                     |
+
+**Tokens**
+
+- `GH_TOKEN` / `GITHUB_TOKEN` — comments and reads (default `${{ github.token }}`).
+- `VIS_GH_TOKEN` — force-push the version-PR branch (the default `github.token` is anti-recursion-locked so it can't trigger downstream workflows).
+
+See [the CI guide](../guides/release-ci.mdx) for end-to-end workflow examples.
+
+---
+
+## vis release ci snapshot
+
+```bash
+vis release ci snapshot [flags]
+```
+
+Publish snapshots in CI and post a sticky PR comment with the install snippet.
+
+**When to use.** In a PR workflow. The default tag is `pr-<PR_NUMBER>`; override only if you want a different naming scheme (e.g. `canary` for `main`-targeted PRs).
+
+```bash
+vis release ci snapshot                # tag defaults to pr-<PR_NUMBER>
+vis release ci snapshot --tag canary
+vis release ci snapshot --on-close     # Clean up the snapshot when the PR closes (where supported)
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                                                                                                                                         |
+| ------------------------ | ------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--tag <name>`           | string  | Override the dist-tag (default: `pr-<PR_NUMBER>`)                                                                                                                                   |
+| `--on-close`             | boolean | PR-close cleanup mode — enumerates the closed PR's commit SHAs (via `gh api`, **GitHub-only**) and removes their snapshot tags from the registry (when the backend supports DELETE) |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                                                                                                                                          |
+
+---
+
+## vis release ci check
+
+```bash
+vis release ci check [flags]
+```
+
+Sticky-comment with the pending release plan for the PR. Same logic as `vis release check`, but posts the result instead of failing the build.
+
+**When to use.** In a PR workflow when you want reviewers to see what's about to release in a comment rather than just a build status.
+
+```bash
+vis release ci check
+vis release ci check --strict
+```
+
+**Options**
+
+| Option                   | Type    | Description                                                  |
+| ------------------------ | ------- | ------------------------------------------------------------ |
+| `--strict`               | boolean | Require every changed package to be covered by a change file |
+| `--no-fail`              | boolean | Always exit 0 (warnings still print)                         |
+| `--print-config[=debug]` | string  | Print the resolved release config and exit                   |
+
+---
+
+## vis release ci plan
+
+```bash
+vis release ci plan [flags]
+```
+
+Emit a JSON plan and write `{ mode, packages, json }` to `$GITHUB_OUTPUT` so downstream workflow steps can gate on whether anything is about to release.
+
+**When to use.** When you want a workflow step to run only if a release is queued — e.g. preparing release notes, notifying Slack, smoke-testing the bumped packages.
+
+```bash
+vis release ci plan
+```
+
+```yaml
+- id: plan
+  run: pnpm exec vis release ci plan
+
+- if: steps.plan.outputs.packages != ''
+  run: pnpm run prepare-release-notes
+```
+
+**Options**
+
+| Option                   | Type   | Description                                |
+| ------------------------ | ------ | ------------------------------------------ |
+| `--print-config[=debug]` | string | Print the resolved release config and exit |
+
+---
+
+## vis release ci setup
+
+```bash
+vis release ci setup
+```
+
+Print the recommended secrets, OIDC trust, and workflow-permission checklist for your detected provider.
+
+**When to use.** After `vis release init --workflows`, to make sure the runtime side (secrets in Settings → Secrets, OIDC trust on the npm package page, etc.) is configured.
+
+```bash
+vis release ci setup
+```
+
+This command takes no flags.
+
+---
+
+## vis release ci rebase-pr
+
+```bash
+vis release ci rebase-pr [flags]
+```
+
+Fetch base, rebase the version-PR branch on top, and force-push. Idempotent — when the PR branch is already up to date, the command exits 0 without pushing.
+
+**When to use.** As a scheduled CI job (cron / `schedule:` trigger) when the version-PR stays open for long periods and other PRs land on the base branch in the meantime. Without periodic rebases the version-PR's diff drifts and eventually merges with unrelated noise.
+
+Rebase conflicts abort cleanly — the working tree is restored and the command exits non-zero. Resolve manually or rerun `vis release ci release` to recompute the PR from scratch.
+
+```bash
+vis release ci rebase-pr                       # rebase onto release.baseBranch
+vis release ci rebase-pr --base develop        # override base
+vis release ci rebase-pr --branch release/version  # override the version-PR branch
+```
+
+**Options**
+
+| Option            | Type   | Description                                                              |
+| ----------------- | ------ | ------------------------------------------------------------------------ |
+| `--branch <name>` | string | Override the version-PR branch (default: `vis-release/version-packages`) |
+| `--base <name>`   | string | Override the base branch (default: `release.baseBranch`)                 |
+
+---
+
+## Where to next
+
+- [Release guide](../guides/release.mdx) — recipes, change files, channels, configuration
+- [Release CI guide](../guides/release-ci.mdx) — full workflow examples for GitHub Actions + GitLab CI
+- [Release comparison](../guides/release-comparison.mdx) — vs changesets / semantic-release / release-please

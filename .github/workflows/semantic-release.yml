@@ -13,14 +13,100 @@ on: # yamllint disable-line rule:truthy
             - "beta"
     workflow_dispatch: # yamllint disable-line rule:empty-values
 
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: true
+
 permissions:
     contents: "read" # for checkout
 
 jobs:
+    # Wait runs in its own job so the prerequisite check-run polling can't eat
+    # into the release job's 30-minute budget. Previously a single job did
+    # both, and on a slow Build Native + CodSpeed run the wait would consume
+    # 20+ minutes — leaving the full monorepo `build:packages:prod`, tests,
+    # codecov upload and multi-semantic-release with too little time to finish
+    # before the job timeout cancelled the entire workflow.
+    wait-for-tests:
+        name: "Wait for tests to succeed"
+        # Skip when a promotion merge (e.g. alpha -> main) lands carrying the
+        # `[skip release]` marker: those merges only graduate already-published
+        # pre-releases onto main and must NOT cut a fresh stable release.
+        # `head_commit` is null on workflow_dispatch, so manual runs are unaffected.
+        if: "github.repository == 'visulima/visulima' && !contains(github.event.head_commit.message, '[skip release]')"
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        permissions:
+            contents: "read"
+
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Wait for tests to succeed"
+              # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
+              # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
+              # Plain shell + gh api waits for every check-run on the commit
+              # except this job, the release job, and the ignore list to terminate in success.
+              timeout-minutes: 30
+              shell: "bash"
+              env:
+                  GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+                  REF: "${{ github.event.pull_request.head.sha || github.sha }}"
+                  REPO: "${{ github.repository }}"
+                  SELF_CHECK_NAME: "Wait for tests to succeed"
+                  IGNORE_CHECKS: "[\"Semantic Release\",\"lock-closed / lock-closed\",\"Socket Security: Pull Request Alerts\",\"Dependabot\",\"CodSpeed Performance Analysis\",\"Discover affected benches\",\"Bench: boxen-bench\",\"Bench: cerebro-bench\",\"Bench: colorize-bench\",\"Bench: command-line-args-bench\",\"Bench: deep-clone-bench\",\"Bench: fmt-bench\",\"Bench: fs-bench\",\"Bench: inspector-bench\",\"Bench: pail-bench\",\"Bench: redact-bench\",\"Bench: string-bench\",\"Bench: tabular-bench\",\"Bench: task-runner-bench\",\"Bench: tui-bench\"]"
+              run: |
+                  set -euo pipefail
+                  deadline=$(( $(date +%s) + 1680 ))
+                  while :; do
+                      runs=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" --paginate --jq '.check_runs[] | [.name, .status, .conclusion // ""] | @tsv')
+                      pending=0
+                      failed=""
+                      while IFS=$'\t' read -r name status conclusion; do
+                          [ -z "${name:-}" ] && continue
+                          if [ "$name" = "$SELF_CHECK_NAME" ]; then continue; fi
+                          if jq -e --arg n "$name" --argjson list "$IGNORE_CHECKS" 'any($list[]; . == $n)' <<<"{}" >/dev/null; then continue; fi
+                          if [ "$status" != "completed" ]; then
+                              pending=$((pending + 1))
+                              continue
+                          fi
+                          case "$conclusion" in
+                              success|skipped|neutral) ;;
+                              *) failed+="$name:$conclusion "$'\n' ;;
+                          esac
+                      done <<< "$runs"
+                      if [ -n "$failed" ]; then
+                          echo "Failed checks:"
+                          printf '%s' "$failed"
+                          exit 1
+                      fi
+                      if [ "$pending" -eq 0 ]; then
+                          echo "All checks completed successfully"
+                          exit 0
+                      fi
+                      echo "$pending checks still pending, waiting 30s..."
+                      if [ "$(date +%s)" -ge "$deadline" ]; then
+                          echo "Timed out after 28 minutes"
+                          exit 1
+                      fi
+                      sleep 30
+                  done
+
     semantic-release:
         name: "Semantic Release"
-        if: "github.repository == 'visulima/visulima'"
+        needs: "wait-for-tests"
+        if: "github.repository == 'visulima/visulima' && !contains(github.event.head_commit.message, '[skip release]')"
         runs-on: "ubuntu-latest"
+        # No explicit timeout: multi-semantic-release walks ~50 packages and
+        # commits/tags/publishes each one. A 30-minute cap previously cancelled
+        # the run partway through. GitHub's default job timeout (6h) is the
+        # safety net.
+        # Gate npm publishing behind a GitHub Environment so secrets are scoped and
+        # required-reviewer rules (configured in repo settings) can apply.
+        environment: "release"
         permissions:
             contents: "write" # to be able to publish a GitHub release
             issues: "write" # to be able to comment on released issues
@@ -33,52 +119,117 @@ jobs:
               with:
                   egress-policy: "audit"
 
-            - name: "Wait for tests to succeed"
-              uses: "lewagon/wait-on-check-action@9312864dfbc9fd208e9c0417843430751c042800" # v1.7.0
-              timeout-minutes: 20
-              with:
-                  ref: "${{ github.event.pull_request.head.sha || github.sha }}"
-                  repo-token: "${{ secrets.GITHUB_TOKEN }}"
-                  wait-interval: 60 # seconds
-                  running-workflow-name: "Semantic Release" # wait for all other checks to complete
-                  allowed-conclusions: "success,skipped,neutral" # all other checks must pass, being skipped or cancelled is not sufficient
-                  ignore-checks: "lock-closed / lock-closed, Socket Security: Pull Request Alerts, Dependabot"
-
-            - name: "Git checkout"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+            # Persist credentials so multi-semantic-release can push tags/commits with
+            # the explicitly-passed SEMANTIC_RELEASE_GITHUB_TOKEN.
+            - name: "Git checkout" # zizmor: ignore[artipacked]
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
                   fetch-depth: 0
-                  persist-credentials: false
+                  token: "${{ secrets.SEMANTIC_RELEASE_GITHUB_TOKEN }}"
               env:
                   GIT_COMMITTER_NAME: "GitHub Actions Shell"
                   GIT_AUTHOR_NAME: "GitHub Actions Shell"
                   EMAIL: "github-actions[bot]@users.noreply.github.com"
 
+            - name: "Derive appropriate SHAs for base and head for `nx affected` commands"
+              id: "setSHAs"
+              uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
+
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/setup@main"
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
               with:
-                  node-version: "22.x"
+                  node-version: "22"
+                  install-node-gyp: "true"
                   cache-prefix: "semantic-release"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+                  run-signatures-audit: false
+                  run-npm-audit: false
+
+            - name: "Download native build artifacts"
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.sha }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "fail"
+                  allow_forks: false
+
+            - name: "Download NAPI loader artifacts"
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
+              with:
+                  workflow: "build-native.yml"
+                  commit: "${{ github.sha }}"
+                  name: "loader-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "fail"
+                  allow_forks: false
+
+            - name: "Distribute native artifacts to platform packages"
+              shell: "bash"
+              run: |
+                  # Loaders: overwrite committed index.js / index.d.ts with the
+                  # ones napi build emitted for this commit. Guarantees the published
+                  # types match the Rust signatures of the .node binaries below.
+                  # The version string baked into index.js is patched to nextRelease.version
+                  # later by scripts/semantic-release-native-addons.mjs.
+                  cp artifacts/loader-task-runner/index.js packages/tooling/task-runner/index.js
+                  cp artifacts/loader-task-runner/index.d.ts packages/tooling/task-runner/index.d.ts
+                  cp artifacts/loader-tui/index.js packages/terminal/tui/index.js
+                  cp artifacts/loader-tui/index.d.ts packages/terminal/tui/index.d.ts
+                  cp artifacts/loader-vis/index.js packages/tooling/vis/index.js
+                  cp artifacts/loader-vis/index.d.ts packages/tooling/vis/index.d.ts
+                  cp artifacts/loader-secret-scanner/index.js packages/tooling/secret-scanner/index.js
+                  cp artifacts/loader-secret-scanner/index.d.ts packages/tooling/secret-scanner/index.d.ts
+
+                  # task-runner: move matching .node files and distribute to npm packages
+                  find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \;
+                  cd packages/tooling/task-runner && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
+                  # tui: move matching .node files and distribute to npm packages
+                  find artifacts -name "tui-native.*.node" -exec mv {} packages/terminal/tui/ \;
+                  cd packages/terminal/tui && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
+                  # vis: move matching .node files and distribute to npm packages
+                  find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \;
+                  cd packages/tooling/vis && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
+                  # vis: place the CLI front-end binary into its platform
+                  # packages. napi artifacts only distributes .node files, so this
+                  # sidecar binary is copied explicitly. install -m 0755 restores
+                  # the exec bit that the artifact round-trip drops.
+                  find artifacts -path "*/bindings-vis-*/npm/*/vis-native-cli*" -print0 2>/dev/null | while IFS= read -r -d "" f; do
+                      binding="$(basename "$(dirname "$f")")"
+                      mkdir -p "packages/tooling/vis/npm/$binding"
+                      install -m 0755 "$f" "packages/tooling/vis/npm/$binding/$(basename "$f")" 2>/dev/null || true
+                  done
+
+                  # secret-scanner: move matching .node files and distribute to npm packages
+                  find artifacts -name "secret-scanner-native.*.node" -exec mv {} packages/tooling/secret-scanner/ \;
+                  cd packages/tooling/secret-scanner && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
+                  rm -rf artifacts/
 
             - name: "Build Production"
               run: "pnpm run build:packages:prod"
 
             - name: "test and coverage"
-              run: "pnpm run test:coverage"
-              env:
-                  # This is needed for the colorize integration test
-                  TEST_PROD_BUILD: "true"
+              run: "pnpm run test:affected:coverage"
 
-            - name: "Prepare nx cache"
-              shell: "bash"
-              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
-
+            # Upload per-package coverage via the shared local composite action
+            # (see .github/actions/codecov-upload). `continue-on-error` keeps any
+            # transient Codecov/keyserver hiccup from blocking the `Semantic
+            # Release` publish below (which gates on `success()`) — a soft-failed
+            # step keeps `success()` true.
             - name: "Upload code coverage to codecov"
-              uses: "anolilab/workflows/step/codecov@main"
+              continue-on-error: true
+              uses: "./.github/actions/codecov-upload"
               with:
-                  run-lint: "false"
-                  codecov-token: "${{ secrets.CODECOV_TOKEN }}"
+                  token: "${{ secrets.CODECOV_TOKEN }}"
+                  run-id: "${{ github.run_id }}"
 
             - name: "Semantic Release"
               if: "success()"
@@ -89,4 +240,29 @@ jobs:
                   GIT_AUTHOR_EMAIL: "github-actions[bot]@users.noreply.github.com"
                   GIT_COMMITTER_NAME: "github-actions-shell"
                   GIT_COMMITTER_EMAIL: "github-actions[bot]@users.noreply.github.com"
-              run: "pnpm exec multi-semantic-release"
+              run: "pnpm exec multi-semantic-release --ignore-packages='packages/tooling/task-runner/npm/**,packages/terminal/tui/npm/**,packages/tooling/vis/npm/**,packages/tooling/secret-scanner/npm/**'"
+
+            # multi-semantic-release pushes per-package `chore(release)` commits that
+            # bump each package.json (and any cross-package dependency ranges), but
+            # @semantic-release/git only stages per-package assets — pnpm-lock.yaml
+            # lives at the root and drifts. Frozen-lockfile installs on the next push
+            # then fail with ERR_PNPM_OUTDATED_LOCKFILE. Refresh here.
+            - name: "Refresh pnpm-lock.yaml against released manifests"
+              if: "success()"
+              shell: "bash"
+              # --no-frozen-lockfile is intentional here: this step exists precisely to
+              # regenerate pnpm-lock.yaml after multi-semantic-release bumps versions.
+              # --ignore-scripts prevents any postinstall from running with the release
+              # token in env — --lockfile-only means no install happens anyway, but
+              # belt-and-suspenders for the security scanner.
+              run: "pnpm install --lockfile-only --no-frozen-lockfile --ignore-scripts"
+
+            - name: "Commit refreshed lockfile"
+              if: "success()"
+              uses: "stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9" # v7.1.0
+              with:
+                  file_pattern: "pnpm-lock.yaml"
+                  commit_message: "chore(deps): sync pnpm-lock.yaml with released manifests [skip ci]"
+                  commit_user_name: "github-actions-shell"
+                  commit_user_email: "github-actions[bot]@users.noreply.github.com"
+                  commit_author: "github-actions-shell <github-actions[bot]@users.noreply.github.com>"

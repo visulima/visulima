@@ -1,0 +1,6 @@
+# Pinned gitleaks upstream reference for rule imports.
+# Bump by editing both lines and running: pnpm --filter @visulima/secret-scanner run build:rules
+# Review the resulting diff on data/gitleaks.json before committing.
+# Upstream: https://github.com/gitleaks/gitleaks
+ref=v8.30.1
+sha=83d9cd684c87d95d656c1458ef04895a7f1cbd8e

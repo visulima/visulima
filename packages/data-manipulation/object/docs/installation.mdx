@@ -1,0 +1,105 @@
+---
+title: "Installation & Quick Start"
+description: "How to install @visulima/object and get started quickly"
+---
+
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+# Installation & Quick Start
+
+## Installation
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">```bash npm install @visulima/object ```</Tab>
+    <Tab value="pnpm">```bash pnpm add @visulima/object ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/object ```</Tab>
+    <Tab value="bun">```bash bun add @visulima/object ```</Tab>
+</Tabs>
+
+## Import
+
+```typescript
+import { getProperty, setProperty, deleteProperty, hasProperty, pick, omit, deepKeys, isPlainObject } from "@visulima/object";
+```
+
+## Quick Start Examples
+
+### Access Nested Properties
+
+```typescript
+import { getProperty, setProperty } from "@visulima/object";
+
+const data = { user: { profile: { name: "Alice" } } };
+
+// Get
+const name = getProperty(data, "user.profile.name"); // "Alice"
+
+// Set
+setProperty(data, "user.profile.age", 30);
+```
+
+### Filter Objects
+
+```typescript
+import { pick, omit } from "@visulima/object";
+
+const user = { id: 1, name: "Alice", password: "secret", email: "alice@example.com" };
+
+// Keep only specific fields
+const publicUser = pick(user, ["id", "name", "email"]);
+
+// Remove sensitive fields
+const safeUser = omit(user, ["password"]);
+```
+
+### Check Property Existence
+
+```typescript
+import { hasProperty } from "@visulima/object";
+
+const config = { api: { key: "abc123" } };
+
+if (hasProperty(config, "api.key")) {
+    console.log("API key configured");
+}
+```
+
+## TypeScript Support
+
+Full TypeScript support with type inference:
+
+```typescript
+import { getProperty, pick } from "@visulima/object";
+
+interface User {
+    id: number;
+    profile: {
+        name: string;
+        settings: {
+            theme: "light" | "dark";
+        };
+    };
+}
+
+const user: User = {
+    /* ... */
+};
+
+// Type-safe access
+const theme = getProperty(user, "profile.settings.theme");
+// Type: "light" | "dark"
+
+// Type-safe filtering
+const filtered = pick(user, ["id", "profile.name"]);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Explore all functions with detailed examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>

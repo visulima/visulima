@@ -1,0 +1,190 @@
+---
+title: Introduction
+description: "Security-focused HTML utilities for escaping, sanitization, entity encoding, and safe template rendering"
+---
+
+# @visulima/html
+
+Security-focused HTML utilities providing fast escaping, sanitization, entity encoding/decoding, and safe template rendering. Protect against XSS attacks, CSS injection, and JavaScript injection with comprehensive HTML processing tools.
+
+## Key Features
+
+### Security & XSS Protection
+
+- **Fast HTML escaping** - Optimized escaping from Svelte for content and attributes
+- **HTML template tags** - Automatic XSS protection for template literals
+- **CSS/JS escaping** - Prevent injection attacks in styles and scripts
+- **Sanitization** - Clean user-submitted HTML while preserving safe elements
+- **Multiple protection layers** - Escaping, sanitization, and validation working together
+
+### HTML Processing
+
+- **Entity encoding/decoding** - Fastest HTML entity library with multiple standards
+- **Tag stripping** - Extract plain text while preserving legitimate brackets
+- **Custom element validation** - Validate HTML custom element names
+- **Tag lists** - Standard and void HTML tags for validation
+
+### Developer Experience
+
+- **TypeScript support** - Full type definitions with CSS property autocomplete
+- **Template literal tags** - `html` and `css` template functions
+- **Multiple encoding modes** - specialChars, nonAscii, extensive, and more
+- **Flexible APIs** - Both function and template tag interfaces
+
+## Quick Start
+
+```typescript
+import { escapeHtml, sanitizeHtml, encode, stripHtml } from "@visulima/html";
+
+// Escape user input
+const safe = escapeHtml('<script>alert("xss")</script>');
+// => '&lt;script>alert("xss")&lt;/script>'
+
+// Sanitize HTML content
+const clean = sanitizeHtml("<p>Hello <script>bad()</script>World</p>");
+// => '<p>Hello World</p>'
+
+// Encode entities
+const encoded = encode("< > \" ' & ©");
+// => '&lt; &gt; &quot; &apos; &amp; ©'
+
+// Strip HTML tags
+const text = stripHtml("<div>Hello <b>World</b></div>").result;
+// => 'Hello World'
+```
+
+## Use Cases
+
+### Prevent XSS in User Content
+
+```typescript
+import { escapeHtml, html } from "@visulima/html";
+
+function renderComment(username: string, comment: string) {
+    // Escape user input to prevent XSS
+    return html`
+        <div class="comment">
+            <strong>${escapeHtml(username)}</strong>
+            <p>${escapeHtml(comment)}</p>
+        </div>
+    `;
+}
+
+renderComment("Alice", '<script>alert("xss")</script>');
+// Safe output with escaped script tags
+```
+
+### Sanitize Rich Text Content
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+function saveUserPost(htmlContent: string) {
+    // Allow safe HTML formatting while removing dangerous elements
+    const clean = sanitizeHtml(htmlContent, {
+        allowedTags: ["p", "b", "i", "em", "strong", "a", "ul", "ol", "li"],
+        allowedAttributes: {
+            a: ["href", "title"],
+        },
+    });
+
+    return database.posts.create({ content: clean });
+}
+```
+
+### Extract Plain Text from HTML
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+function generateEmailPreview(htmlEmail: string): string {
+    // Remove all HTML for plain text email clients
+    const plainText = stripHtml(htmlEmail, {
+        stripTogetherWithTheirContents: ["script", "style"],
+    }).result;
+
+    return plainText.substring(0, 200) + "...";
+}
+```
+
+### Safe CSS and JavaScript Injection
+
+```typescript
+import { escapeCss, escapeJs, css } from "@visulima/html";
+
+function renderDynamicStyles(userColor: string) {
+    // Prevent CSS injection
+    return css`
+        .user-theme {
+            background-color: ${escapeCss(userColor)};
+        }
+    `;
+}
+
+function renderConfig(userData: unknown) {
+    // Prevent JavaScript injection
+    return `<script>window.config = ${escapeJs(JSON.stringify(userData))};</script>`;
+}
+```
+
+## Security Best Practices
+
+### Escaping vs Sanitization
+
+**Use escaping when:**
+
+- Inserting plain text into HTML
+- The content should be displayed as-is
+- Maximum performance is needed
+- Building HTML strings manually
+
+**Use sanitization when:**
+
+- Users submit HTML content
+- Rich text formatting should be preserved
+- Fine-grained control over allowed elements is needed
+
+**Never:**
+
+- Render user input without escaping or sanitization
+- Use sanitization on already-escaped content
+- Trust client-side validation alone
+
+### Defense in Depth
+
+```typescript
+import { escapeHtml, sanitizeHtml } from "@visulima/html";
+
+// Layer 1: Sanitize on input
+const sanitized = sanitizeHtml(userInput);
+
+// Layer 2: Escape on output
+const safe = escapeHtml(sanitized, true); // attribute mode
+
+// Layer 3: Use Content Security Policy headers
+// Content-Security-Policy: default-src 'self'
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install and import HTML utilities
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started with escaping and sanitization
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Learn all HTML processing features
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+- **Node.js:** 22.13 or higher
+- **Browser:** Modern browsers with standard HTML APIs
+- **Dependencies:** sanitize-html, csstype
+- **TypeScript:** Full type definitions included

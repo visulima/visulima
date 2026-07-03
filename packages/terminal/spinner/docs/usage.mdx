@@ -1,0 +1,314 @@
+---
+title: Usage Guide
+description: Complete API reference for the Spinner and MultiSpinner classes
+sidebar_position: 3
+---
+
+## Constructor
+
+```typescript
+import { Spinner } from "@visulima/spinner";
+
+const spinner = new Spinner(options?, interactiveManager?);
+```
+
+### Options
+
+| Option       | Type                                       | Default       | Description                |
+| ------------ | ------------------------------------------ | ------------- | -------------------------- |
+| `name`       | `SpinnerName`                              | `"dots"`      | Spinner animation name     |
+| `prefixText` | `string`                                   | `""`          | Text before the spinner    |
+| `style`      | `SpinnerStyle \| (text: string) => string` | —             | Style for frames and icons |
+| `icons`      | `SpinnerIcons`                             | Default icons | Custom completion icons    |
+| `verbose`    | `boolean`                                  | `true`        | Whether to output spinner  |
+
+### SpinnerStyle Object
+
+When passing a `SpinnerStyle` object, Node.js `util.styleText` is used:
+
+```typescript
+const spinner = new Spinner(
+    {
+        name: "dots",
+        style: {
+            bold: true,
+            dim: false,
+            italic: false,
+            underline: false,
+            strikethrough: false,
+            color: "blue", // e.g., "red", "green", "cyan"
+            bgColor: "bgWhite", // e.g., "bgRed", "bgBlue"
+        },
+    },
+    manager,
+);
+```
+
+### Style Function
+
+For full control, pass a function:
+
+```typescript
+import colorize from "@visulima/colorize";
+
+const spinner = new Spinner(
+    {
+        name: "dots",
+        style: (text) => colorize.bold.blue(text),
+    },
+    manager,
+);
+```
+
+### SpinnerIcons
+
+```typescript
+const spinner = new Spinner(
+    {
+        icons: {
+            success: "✓", // default
+            error: "✖", // default
+            warning: "⚠", // default
+            info: "ℹ", // default
+        },
+    },
+    manager,
+);
+```
+
+## Properties
+
+### text (get/set)
+
+Get or set the spinner text. Setting text while spinning triggers a re-render.
+
+```typescript
+spinner.text = "New message";
+console.log(spinner.getText); // "New message"
+```
+
+### prefixText (get/set)
+
+Get or set the prefix text.
+
+```typescript
+spinner.prefixText = "[STEP 2]";
+console.log(spinner.getPrefixText); // "[STEP 2]"
+```
+
+### isRunning (get)
+
+Whether the spinner is currently active.
+
+```typescript
+if (spinner.isRunning) {
+    // spinner is animating
+}
+```
+
+### elapsedTime (get)
+
+Milliseconds since the spinner was started.
+
+```typescript
+console.log(spinner.elapsedTime); // 1234
+```
+
+## Methods
+
+### start(text?, options?)
+
+Start the spinner. Returns `this` for chaining.
+
+```typescript
+spinner.start();
+spinner.start("Loading...");
+spinner.start("Loading...", { prefixText: "[INFO]" });
+```
+
+### succeed(text?)
+
+Stop with success icon and optional message.
+
+```typescript
+spinner.succeed();
+spinner.succeed("Operation completed!");
+```
+
+### failed(text?)
+
+Stop with error icon and optional message.
+
+```typescript
+spinner.failed();
+spinner.failed("Something went wrong");
+```
+
+### warn(text?)
+
+Stop with warning icon and optional message.
+
+```typescript
+spinner.warn();
+spinner.warn("Proceed with caution");
+```
+
+### info(text?)
+
+Stop with info icon and optional message.
+
+```typescript
+spinner.info();
+spinner.info("FYI: 42 items processed");
+```
+
+### pause()
+
+Pause the animation without stopping the spinner. The spinner remains in "running" state.
+
+```typescript
+spinner.pause();
+```
+
+### resume()
+
+Resume a paused spinner.
+
+```typescript
+spinner.resume();
+```
+
+## MultiSpinner
+
+Manage multiple spinners concurrently with coordinated rendering.
+
+### Constructor
+
+```typescript
+import { MultiSpinner } from "@visulima/spinner";
+
+const multi = new MultiSpinner(options?, interactiveManager?);
+```
+
+Options are the same as `SpinnerOptions` — they serve as defaults for all created spinners.
+
+### create(text?, options?)
+
+Create a new spinner within the multi-spinner manager. Options override the defaults.
+
+```typescript
+const spinner1 = multi.create("Task 1");
+const spinner2 = multi.create("Task 2", { name: "line" });
+```
+
+### remove(spinner)
+
+Remove a spinner from the manager.
+
+```typescript
+multi.remove(spinner1); // returns true if found
+```
+
+### stop()
+
+Stop all spinners (calls `succeed()` on each) and unhook the interactive manager.
+
+```typescript
+multi.stop();
+```
+
+### clear()
+
+Succeed all spinners and clear the internal map, but don't unhook.
+
+```typescript
+multi.clear();
+```
+
+## Patterns
+
+### Sequential Tasks
+
+```typescript
+const spinner = new Spinner({ name: "dots" }, manager);
+
+spinner.start("Task 1...");
+await task1();
+spinner.succeed("Task 1 done");
+
+spinner.start("Task 2...");
+await task2();
+spinner.succeed("Task 2 done");
+```
+
+### Parallel Tasks with MultiSpinner
+
+```typescript
+const multi = new MultiSpinner({ name: "dots" }, manager);
+
+const s1 = multi.create("Downloading...");
+const s2 = multi.create("Compiling...");
+const s3 = multi.create("Testing...");
+
+s1.start();
+s2.start();
+s3.start();
+
+await Promise.all([download().then(() => s1.succeed("Downloaded")), compile().then(() => s2.succeed("Compiled")), test().then(() => s3.succeed("Tested"))]);
+
+multi.stop();
+```
+
+### Helper Function
+
+```typescript
+async function withSpinner<T>(text: string, fn: () => Promise<T>, manager: InteractiveManager, name: SpinnerName = "dots"): Promise<T> {
+    const spinner = new Spinner({ name }, manager);
+
+    spinner.start(text);
+    try {
+        const result = await fn();
+        spinner.succeed();
+        return result;
+    } catch (error) {
+        spinner.failed(error instanceof Error ? error.message : "Failed");
+        throw error;
+    }
+}
+
+await withSpinner("Building...", build, manager, "line");
+```
+
+## Utility Functions
+
+### getSpinner(name)
+
+Get spinner definition by name.
+
+```typescript
+import { getSpinner } from "@visulima/spinner";
+
+const spinner = getSpinner("dots");
+// Returns: { frames: [...], interval: 80 }
+```
+
+### getSpinnerNames()
+
+Get array of all available spinner names.
+
+```typescript
+import { getSpinnerNames } from "@visulima/spinner";
+
+const names = getSpinnerNames();
+console.log(names.length); // 109
+```
+
+### getRandomSpinner()
+
+Get a random spinner definition.
+
+```typescript
+import { getRandomSpinner } from "@visulima/spinner";
+
+const randomSpinner = getRandomSpinner();
+```

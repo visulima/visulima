@@ -1,8 +1,0 @@
-{
-    "name": "deep-clone",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/deep-clone/src",
-    "projectType": "library",
-    "tags": ["deep-clone", "type:package"],
-    "implicitDependencies": []
-}

@@ -1,9 +1,0 @@
-{
-    "name": "@visulima/deep-clone",
-    "version": "3.0.5",
-    "exports": {
-        ".": "./src/index.ts",
-        "./handler": "./src/handler.ts",
-        "./utils": "./src/utils.ts"
-    }
-}

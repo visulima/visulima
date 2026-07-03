@@ -1,0 +1,531 @@
+---
+title: Annotations
+description: Visually annotate elements on the page, capture rich context, and collaborate with AI agents through the Model Context Protocol.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+**App ID:** `dev-toolbar:annotations`
+
+The Annotations app lets you mark elements on a rendered page with visual annotations — capturing intent, severity, screenshots, component context, and accessibility data. Annotations persist to the filesystem and can be consumed by AI agents via [MCP](/docs/dev-toolbar/integrations/mcp).
+
+## Why Annotations?
+
+Traditional bug reporting loses context. A screenshot in a ticket doesn't carry the CSS class, the React component name, or the exact source file. Annotations capture all of that automatically — and expose it to AI coding agents so they can find and fix the issue without asking you to explain where the code lives.
+
+```mermaid
+sequenceDiagram
+    participant D as Developer (Browser)
+    participant S as .devtoolbar/
+    participant A as AI Agent (MCP)
+
+    D->>S: Click element → Create annotation
+    D->>S: Add comment, intent, severity
+    Note over S: annotations.json updated
+    A->>S: get_pending_annotations()
+    S-->>A: Returns element, source, styles, comment
+    A->>A: Reads context, fixes code
+    A->>S: acknowledge_annotation()
+    Note over D: Marker shows "acknowledged"
+    A->>S: resolve_annotation()
+    Note over D: Marker disappears
+```
+
+## Features
+
+- **Intent tagging** — mark annotations as `fix`, `change`, `approve`, or `question`
+- **Severity levels** — `blocking`, `important`, or `suggestion`
+- **Status lifecycle** — `pending` → `acknowledged` → `resolved` or `dismissed`
+
+```mermaid
+stateDiagram-v2
+    [*] --> pending: Created
+    pending --> acknowledged: Agent starts work
+    pending --> resolved: Human or agent fixes
+    pending --> dismissed: Not actionable
+    acknowledged --> resolved: Fix complete
+    acknowledged --> dismissed: Not actionable
+    resolved --> [*]
+    dismissed --> [*]
+```
+
+- **Rich metadata capture** — bounding box, CSS classes, computed styles, accessibility attributes, framework component info, DOM path, nearby elements, selected text
+- **Screenshot capture** — pixel-perfect screenshots via the Screen Capture API
+- **Source file linking** — automatically captures `file:line:col` from `data-vdt-source` attributes
+- **Multi-select** — drag to annotate multiple elements at once
+- **Conversation threads** — each annotation has a thread for human/agent dialogue
+- **Markdown export** — export annotations at four detail levels for pasting into issues or agent prompts
+- **Filesystem persistence** — annotations stored in `.devtoolbar/annotations.json`, screenshots in `.devtoolbar/screenshots/`
+
+## How it Works
+
+### Inspector Toolbar
+
+When the Inspector is active, a floating toolbar appears at the bottom of the viewport with these controls:
+
+| Button         | Shortcut | Description                                                      |
+| -------------- | -------- | ---------------------------------------------------------------- |
+| **Inspect**    | —        | Inspect mode — click to view source, a11y info, open in editor   |
+| **Annotate**   | —        | Annotate mode — click to create an annotation at the click point |
+| **Freeze**     | `P`      | Pause/resume all animations, timers, and videos                  |
+| **Visibility** | `H`      | Toggle annotation markers visible/hidden                         |
+| **Copy**       | `C`      | Copy all annotations as Markdown to clipboard                    |
+| **Clear**      | `X`      | Delete all annotations (with confirmation)                       |
+| **Close**      | `Esc`    | Close the inspector                                              |
+
+The toolbar is draggable — grab anywhere that isn't a button to reposition it.
+
+### Creating an Annotation
+
+1. Open the toolbar and activate the **Inspector** app (cursor icon)
+2. Switch to **Annotate mode** (the message bubble icon in the floating toolbar)
+3. Hover over an element — the inspector overlay highlights it with a label
+4. Click the element — a **pending marker** appears at the click point and the annotation form opens nearby with:
+    - Element preview with source file and framework component info
+    - **Computed styles** (collapsible section)
+    - **Intent** selector (fix / change / approve / question)
+    - **Severity** selector (blocking / important / suggestion)
+    - **Screenshot capture** button
+    - **Comment** text field
+5. Submit — the annotation is saved to disk and a permanent numbered marker replaces the pending marker
+
+The overlay highlight **stays frozen** on the selected element while the form is open — hovering other elements won't change it.
+
+### Selection Modes
+
+**Single element click** — click any element to annotate it. In annotate mode, the marker is placed at the exact click point.
+
+**Area selection** — drag anywhere on the page (on non-text elements) to draw a selection rectangle. If elements are found within the rectangle, a multi-select annotation is created. If no elements are found, an **area selection** annotation is created with a green dashed outline.
+
+**Cmd+Shift+Click multi-select** — hold Cmd/Ctrl+Shift and click elements one by one to build a selection group. Elements toggle in/out of the selection. Selected elements are highlighted with outlines (green for 2+ elements). Release the modifier keys to commit the selection.
+
+**Text selection** — selected text (`window.getSelection()`) is automatically captured when clicking to annotate. The selected text is included in the annotation.
+
+**Deep select (Cmd+hover)** — hold Cmd (Mac) or Ctrl (Windows) while hovering to pierce through invisible overlays, animation wrappers, and empty container divs. The highlight switches to a dashed border to indicate deep select is active. Useful with frameworks like Framer Motion or Remotion that render empty divs on top of content.
+
+### Marker Interactions
+
+- **Hover** — marker scales up and shows an edit pencil icon. The original element is highlighted on the page.
+- **Click** — configurable: show detail popup (default), edit annotation, or delete (see Settings).
+- **Right-click** — always the opposite action (edit if click=delete, detail if click=edit).
+- **Hover highlight** — for area selections, the stored bounding box region is shown with a dashed border.
+
+### Managing Annotations
+
+Open the **Annotations** panel from the toolbar to see all annotations for the current page. Each annotation card shows:
+
+- Numbered marker with intent colour
+- Comment text and severity badge
+- Source file location (if available)
+- Status indicator
+- Actions: view detail, edit, resolve, delete
+
+### Annotation Detail
+
+Click any annotation marker or card to open the detail popup:
+
+| Field             | Description                                   |
+| ----------------- | --------------------------------------------- |
+| **Comment**       | Your annotation text                          |
+| **Intent**        | fix / change / approve / question             |
+| **Severity**      | blocking / important / suggestion             |
+| **Status**        | pending / acknowledged / resolved / dismissed |
+| **Element**       | Tag name, classes, and human-readable label   |
+| **Source**        | `file:line:col` from JSX source injection     |
+| **Screenshot**    | Visual capture of the annotated element       |
+| **Component**     | React/Vue/Svelte component name and stack     |
+| **Accessibility** | ARIA role, label, describedby, tabindex       |
+| **Styles**        | Key computed CSS properties                   |
+| **DOM Path**      | Full ancestry path with shadow DOM markers    |
+
+## Markdown Export
+
+Press **C** on the inspector toolbar or click **Copy** in an annotation detail popup to export annotations as structured markdown. Four detail levels are available — configure the default in the Annotations panel settings.
+
+### When to use each format
+
+| Format       | Best for                          | Includes                                                   |
+| ------------ | --------------------------------- | ---------------------------------------------------------- |
+| **Compact**  | Quick fix lists, Slack messages   | Element + comment (one line per annotation)                |
+| **Standard** | Bug reports, PR descriptions      | + source location, selector, component info, selected text |
+| **Detailed** | Thorough reviews, complex layouts | + CSS classes, DOM path, nearby text context               |
+| **Forensic** | AI agents, debugging style issues | + computed styles, accessibility, nearby elements          |
+
+### Output examples
+
+<Tabs items={["Compact", "Standard", "Detailed", "Forensic"]}>
+    <Tab value="Compact">
+        Minimal output — one line per annotation. Good for quick issue lists or pasting into Slack.
+
+        ```markdown
+        # Annotations (3)
+
+        - **button "Submit":** Fix the padding on mobile — text is clipped
+        - **h1 "Welcome":** Change heading to "Get Started" (re: "Welcome to...")
+        - **input[email]:** Add validation error state for invalid emails
+        ```
+    </Tab>
+    <Tab value="Standard">
+        Balanced detail for most use cases. Includes source file, selector, and component context so agents can find the code.
+
+        ```markdown
+        # Annotations
+
+        > 3 annotation(s)
+
+        ## 1. [FIX] important — button "Submit"
+
+        **Status:** pending
+        **URL:** http://localhost:5173/dashboard
+        **Selector:** `button.submit-btn`
+        **Source:** `src/components/SubmitButton.tsx:42:10`
+        **Component:** SubmitButton (react)
+        **Stack:** App > Dashboard > Form > SubmitButton
+        **File:** `src/components/SubmitButton.tsx:42`
+
+        Fix the padding on mobile — text is clipped
+
+        ---
+
+        ## 2. [CHANGE] suggestion — h1 "Welcome"
+
+        **Status:** pending
+        **URL:** http://localhost:5173/
+        **Selector:** `h1.hero-heading`
+        **Source:** `src/pages/Home.tsx:18:6`
+        **Selected:** "Welcome to..."
+
+        Change heading to "Get Started"
+
+        ---
+        ```
+    </Tab>
+    <Tab value="Detailed">
+        Full context with classes, DOM path, and nearby text. Good for thorough reviews where the reviewer needs spatial context.
+
+        ```markdown
+        # Annotations
+
+        > 2 annotation(s)
+
+        ## 1. [FIX] blocking — button "Submit"
+
+        **Status:** pending
+        **URL:** http://localhost:5173/dashboard
+        **Selector:** `button.submit-btn`
+        **Source:** `src/components/SubmitButton.tsx:42:10`
+        **Component:** SubmitButton (react)
+        **Stack:** App > Dashboard > Form > SubmitButton
+        **File:** `src/components/SubmitButton.tsx:42`
+        **Classes:** `flex items-center gap-2 px-4 py-2 bg-primary`
+        **Context:** Submit your application
+        **DOM Path:** `body > main > form > div > button`
+
+        Fix the padding on mobile — text is clipped on iPhone SE
+
+        ---
+        ```
+    </Tab>
+    <Tab value="Forensic">
+        Maximum detail including computed styles, accessibility attributes, and nearby elements. Use when AI agents need every possible signal to locate and fix an issue.
+
+        ```markdown
+        # Annotations
+
+        > 1 annotation(s)
+
+        ## 1. [FIX] blocking — button "Submit"
+
+        **Status:** pending
+        **URL:** http://localhost:5173/dashboard
+        **Selector:** `button.submit-btn`
+        **Source:** `src/components/SubmitButton.tsx:42:10`
+        **Component:** SubmitButton (react)
+        **Stack:** App > Dashboard > Form > SubmitButton
+        **File:** `src/components/SubmitButton.tsx:42`
+        **Classes:** `flex items-center gap-2 px-4 py-2 bg-primary`
+        **Context:** Submit your application
+        **DOM Path:** `body > main > form > div > button`
+        **Role:** button
+        **Nearby:** input, label, div, span
+        **Styles:** `display: flex; padding: 8px 16px; font-size: 14px; color: rgb(255, 255, 255); background-color: rgb(99, 102, 241)`
+
+        Fix the padding on mobile — text is clipped on iPhone SE.
+        The bounding box overlaps the adjacent input on viewports below 375px.
+
+        ---
+        ```
+    </Tab>
+
+</Tabs>
+
+### Customizing output
+
+The copied markdown is plain text. Edit it before pasting into your agent prompt:
+
+- **Add context** — prepend with "I'm working on the dashboard page, fix these issues:"
+- **Prioritize** — reorder annotations by importance
+- **Remove noise** — delete annotations that aren't relevant
+- **Add instructions** — append "Fix these and run `pnpm test` when done"
+
+### Source file detection
+
+In development mode, the annotation system automatically detects source files via `data-vdt-source` attributes injected by the Vite plugin's Babel/SWC transform. This works with any JSX framework (React, Vue JSX, Solid, etc.) and enables agents to jump directly to the right file:line:col instead of searching.
+
+### Framework component detection
+
+Component names and stacks are included when detected. The level of detail adapts to your output format:
+
+| Format       | React                       | Vue            | Svelte         |
+| ------------ | --------------------------- | -------------- | -------------- |
+| **Compact**  | omitted                     | omitted        | omitted        |
+| **Standard** | Component name + stack      | Component name | Component name |
+| **Detailed** | + source file               | + source file  | + source file  |
+| **Forensic** | + full stack, all ancestors | + parent chain | + file path    |
+
+## Annotation Settings
+
+Open the **Annotations** panel and click the **Settings** button in the toolbar to access annotation settings:
+
+| Setting                | Options                                                               | Default     |
+| ---------------------- | --------------------------------------------------------------------- | ----------- |
+| **Output detail**      | `compact`, `standard`, `detailed`, `forensic`                         | `standard`  |
+| **Marker colour**      | Indigo, Blue, Cyan, Green, Yellow, Orange, Red (solid filled)         | Indigo      |
+| **Marker click**       | What happens when clicking a marker: Show Detail, Edit, or Delete     | Show Detail |
+| **Block interactions** | Prevent clicks on buttons, links, inputs from firing while inspecting | `true`      |
+
+Settings are saved to `localStorage` under `__vdt_annotation_settings`.
+
+## Live Sync (SSE)
+
+When the Vite dev server is running, annotations sync in real-time between the browser and MCP agents via Server-Sent Events. The dev server watches `.devtoolbar/annotations.json` for changes and pushes `annotations.changed` events to connected browsers.
+
+This means:
+
+- When an agent resolves or acknowledges an annotation via MCP, the browser **automatically updates** markers and removes resolved annotations — no manual refresh needed.
+- When you create an annotation in the browser, the MCP agent can detect it immediately via `watch_annotations`.
+
+## Animation Freeze Mode
+
+When annotating, you can freeze all page animations to precisely target moving elements:
+
+- **CSS animations** — paused via `animation-play-state: paused`
+- **CSS transitions** — temporarily removed
+- **JavaScript timers** — `setTimeout` and `setInterval` callbacks queued until unfreeze
+- **requestAnimationFrame** — callbacks queued until unfreeze
+- **Web Animations API** — running animations paused
+- **Video elements** — paused
+
+The toolbar itself is never frozen — elements with the `__vdt_` prefix are excluded.
+
+## Framework Detection
+
+The annotation system automatically detects framework components:
+
+| Framework  | Detection Method                       | Captured Data                   |
+| ---------- | -------------------------------------- | ------------------------------- |
+| **React**  | Fiber tree (`__reactFiber$`)           | Component name, component stack |
+| **Vue**    | `__vue_app__` / `__vueParentComponent` | Component name                  |
+| **Svelte** | `__svelte_meta`                        | Component name                  |
+
+## Storage
+
+Annotations are stored on the filesystem, not in the browser:
+
+```
+.devtoolbar/
+├── annotations.json          # All annotations (JSON array)
+└── screenshots/
+    ├── {uuid}.png
+    ├── {uuid}.jpg
+    └── {uuid}.webp
+```
+
+The store includes file locking to prevent concurrent write races and path validation to prevent directory traversal.
+
+<Callout type="info">
+    Add `.devtoolbar/` to your `.gitignore` if you don't want to commit annotations. Alternatively, commit them to share annotation context with your team.
+</Callout>
+
+## Configuration
+
+### Enable via Plugin
+
+Both the Inspector and Annotations apps must be enabled:
+
+```ts title="vite.config.ts"
+devToolbar({
+    apps: {
+        inspector: true, // Required — provides the annotation overlay
+        annotations: true, // Shows the annotation management panel
+    },
+    injectSource: {
+        enabled: true, // Recommended — enables source file linking
+    },
+    editor: "code", // Optional — editor for "open in source"
+});
+```
+
+### AI Agent Integration
+
+Annotations are designed to be consumed by AI agents via the [MCP server](/docs/dev-toolbar/integrations/mcp). See the MCP integration page for setup instructions.
+
+## Annotation Schema
+
+Every annotation is stored as a JSON object in `.devtoolbar/annotations.json`. The schema is designed to carry enough context for an AI agent to locate, understand, and fix an issue without asking the developer for clarification.
+
+### Core Fields
+
+These fields are always present on every annotation.
+
+| Field        | Type                                                       | Description                                                                        |
+| ------------ | ---------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `id`         | `string`                                                   | Unique identifier (UUID v4)                                                        |
+| `comment`    | `string`                                                   | Human feedback text                                                                |
+| `intent`     | `"fix" \| "change" \| "question" \| "approve"`             | What the developer wants — fix a bug, request a change, ask a question, or approve |
+| `severity`   | `"blocking" \| "important" \| "suggestion"`                | Priority level — blocking issues are addressed first                               |
+| `status`     | `"pending" \| "acknowledged" \| "resolved" \| "dismissed"` | Lifecycle state                                                                    |
+| `elementTag` | `string`                                                   | HTML tag name (e.g. `button`, `div`, `img`)                                        |
+| `url`        | `string`                                                   | Page URL where the annotation was created                                          |
+| `x`          | `number`                                                   | Click position as percentage of viewport width (0-100)                             |
+| `y`          | `number`                                                   | Click position as pixels from document top (or viewport top if `isFixed`)          |
+| `createdAt`  | `string`                                                   | ISO 8601 creation timestamp                                                        |
+| `updatedAt`  | `string`                                                   | ISO 8601 last-updated timestamp                                                    |
+
+### Element Context
+
+These optional fields provide rich context about the annotated element for AI agents and code search.
+
+| Field            | Type          | Description                                                                                    |
+| ---------------- | ------------- | ---------------------------------------------------------------------------------------------- |
+| `elementLabel`   | `string`      | Human-readable label (e.g. `button "Submit"`, `link "Home" to /`, `input[email]`)              |
+| `elementPath`    | `string`      | Unique CSS selector for the element                                                            |
+| `cssClasses`     | `string`      | Space-separated class list (CSS module hashes cleaned)                                         |
+| `fullPath`       | `string`      | Full DOM ancestry path (e.g. `body > main > article > p`) with shadow DOM markers (`⟨shadow⟩`) |
+| `nearbyText`     | `string`      | Visible text in/around the element (up to 120 chars)                                           |
+| `nearbyElements` | `string`      | Sibling elements for spatial context                                                           |
+| `selectedText`   | `string`      | Text the user had selected when annotating (up to 80 chars)                                    |
+| `computedStyles` | `string`      | Key CSS properties: display, position, color, font-size, padding, etc.                         |
+| `source`         | `string`      | Source file location from `data-vdt-source` (e.g. `src/App.tsx:42:10`)                         |
+| `boundingBox`    | `BoundingBox` | Element position and dimensions at annotation time                                             |
+
+### Framework Component Context
+
+The `frameworkContext` field captures component information from React, Vue, or Svelte — not limited to any single framework.
+
+| Field                             | Type       | Description                                                            |
+| --------------------------------- | ---------- | ---------------------------------------------------------------------- |
+| `frameworkContext.framework`      | `string`   | Framework identifier: `"react"`, `"vue"`, or `"svelte"`                |
+| `frameworkContext.componentName`  | `string`   | Nearest user-land component name                                       |
+| `frameworkContext.componentStack` | `string[]` | Full component ancestry (e.g. `["App", "Layout", "Header", "Button"]`) |
+| `frameworkContext.sourceFile`     | `string`   | Component source file path                                             |
+| `frameworkContext.sourceLine`     | `number`   | Source line number                                                     |
+
+### Accessibility
+
+The `accessibility` field captures ARIA attributes as a structured object.
+
+| Field                           | Type      | Description                                  |
+| ------------------------------- | --------- | -------------------------------------------- |
+| `accessibility.role`            | `string`  | ARIA role (explicit or implicit)             |
+| `accessibility.ariaLabel`       | `string`  | `aria-label` value                           |
+| `accessibility.ariaDescribedBy` | `string`  | Resolved text from `aria-describedby` target |
+| `accessibility.focusable`       | `boolean` | Whether the element is keyboard-focusable    |
+| `accessibility.tabindex`        | `number`  | `tabindex` value                             |
+
+### Multi-select & Position
+
+| Field                  | Type            | Description                                                               |
+| ---------------------- | --------------- | ------------------------------------------------------------------------- |
+| `isMultiSelect`        | `boolean`       | True if created via drag selection or Cmd+Shift+Click                     |
+| `isFixed`              | `boolean`       | True if the element has fixed/sticky positioning (Y is viewport-relative) |
+| `elementBoundingBoxes` | `BoundingBox[]` | Individual bounding boxes for each element in a multi-select annotation   |
+
+### Resolution & Threading
+
+| Field                | Type              | Description                                                     |
+| -------------------- | ----------------- | --------------------------------------------------------------- |
+| `resolvedAt`         | `string`          | ISO 8601 timestamp when resolved or dismissed                   |
+| `resolvedBy`         | `string`          | Who resolved it: `"human"`, `"agent"`, or a specific agent name |
+| `screenshot`         | `string`          | Relative path to screenshot file (e.g. `screenshots/uuid.png`)  |
+| `thread`             | `ThreadMessage[]` | Conversation thread between human and AI agent                  |
+| `thread[].id`        | `string`          | Unique message ID (server-generated)                            |
+| `thread[].role`      | `string`          | Message author: `"human"` or `"agent"`                          |
+| `thread[].content`   | `string`          | Message text                                                    |
+| `thread[].timestamp` | `string`          | ISO 8601 timestamp (server-generated)                           |
+
+### TypeScript Types
+
+```ts
+interface Annotation {
+    id: string;
+    comment: string;
+    intent: "approve" | "change" | "fix" | "question";
+    severity: "blocking" | "important" | "suggestion";
+    status: "acknowledged" | "dismissed" | "pending" | "resolved";
+    elementTag: string;
+    elementLabel?: string;
+    elementPath?: string;
+    boundingBox?: BoundingBox;
+    elementBoundingBoxes?: BoundingBox[];
+    accessibility?: AccessibilityInfo;
+    frameworkContext?: FrameworkContext;
+    computedStyles?: string;
+    cssClasses?: string;
+    fullPath?: string;
+    nearbyElements?: string;
+    nearbyText?: string;
+    selectedText?: string;
+    screenshot?: string;
+    source?: string;
+    isFixed?: boolean;
+    isMultiSelect?: boolean;
+    url: string;
+    x: number;
+    y: number;
+    createdAt: string;
+    updatedAt: string;
+    resolvedAt?: string;
+    resolvedBy?: string;
+    thread?: ThreadMessage[];
+}
+
+interface ThreadMessage {
+    id?: string;
+    role: string;
+    content: string;
+    timestamp: string;
+}
+
+interface BoundingBox {
+    x: number;
+    y: number;
+    width: number;
+    height: number;
+}
+
+interface FrameworkContext {
+    framework: string;
+    componentName?: string;
+    componentStack?: string[];
+    sourceFile?: string;
+    sourceLine?: number;
+    data?: Record<string, unknown>;
+}
+
+interface AccessibilityInfo {
+    role?: string;
+    ariaLabel?: string;
+    ariaDescribedBy?: string;
+    focusable: boolean;
+    tabindex?: number;
+}
+```
+
+## Limitations
+
+- **Screenshot capture** requires the Screen Capture API and a user gesture (browser permission prompt). Not available in all browsers or headless environments.
+- **Framework detection** is best-effort — minified production builds strip component names. Works reliably in development mode.
+- **Cross-origin iframes** cannot be inspected due to browser security restrictions. Same-origin iframes are fully supported.
+- **Shadow DOM piercing** works for open shadow roots only. Closed shadow roots are opaque.

@@ -1,0 +1,159 @@
+---
+title: Timeline
+description: A chronological event log that captures events from your application and any integrated libraries, with filtering and detail inspection.
+---
+
+**App ID:** `dev-toolbar:timeline`
+
+The Timeline app provides a chronological log of events emitted during your application's lifecycle. Your code and any libraries that integrate with the dev toolbar can push events to the timeline; the Timeline app displays them grouped, filterable, and with full detail inspection.
+
+## Features
+
+- **Real-time event stream** — events appear as they happen
+- **Group filtering** — show/hide events from specific libraries or application areas
+- **Severity levels** — `info`, `warning`, `error` with colour coding
+- **Detail inspection** — click any event to expand its full data payload
+- **Clear** — wipe the timeline to start fresh
+
+## Event Structure
+
+Each timeline event has the following shape:
+
+```ts
+interface TimelineEvent {
+    /** Unique identifier for the event */
+    id: string;
+
+    /** Short display title */
+    title: string;
+
+    /** Optional subtitle (e.g. component name, route) */
+    subtitle?: string;
+
+    /** Unix timestamp in milliseconds */
+    time: number;
+
+    /** Duration in milliseconds (for span events) */
+    duration?: number;
+
+    /** Arbitrary data payload shown in the detail pane */
+    data?: Record<string, unknown>;
+
+    /** Severity level */
+    level?: "info" | "warning" | "error";
+}
+```
+
+Events are organized into **groups**:
+
+```ts
+interface TimelineGroup {
+    /** Unique group identifier (e.g. "my-library") */
+    id: string;
+
+    /** Display label for the group */
+    label: string;
+
+    /** Optional accent colour (CSS colour string) */
+    color?: string;
+}
+```
+
+## Emitting Events
+
+### From Your Application
+
+Use the global hook to emit events from anywhere in your application:
+
+```ts
+const hook = (window as any).__DEV_TOOLBAR_HOOK__;
+
+if (hook) {
+    hook.addTimelineEvent("my-app", {
+        id: crypto.randomUUID(),
+        title: "User signed in",
+        subtitle: "auth",
+        time: Date.now(),
+        level: "info",
+        data: {
+            userId: "user_123",
+            method: "oauth",
+        },
+    });
+}
+```
+
+### From a Library
+
+Libraries that integrate with the dev toolbar via the hook system get timeline access automatically. See [Library Integration](/docs/dev-toolbar/integrations/library-integration) for the full integration pattern.
+
+```ts
+// In your library's dev-mode initialization
+if (typeof window !== "undefined" && (window as any).__DEV_TOOLBAR_HOOK__) {
+    const hook = (window as any).__DEV_TOOLBAR_HOOK__;
+
+    // Register a group for your library's events
+    hook.addTimelineGroup?.("my-library", {
+        label: "My Library",
+        color: "#6366f1",
+    });
+
+    // Emit events as things happen
+    myEmitter.on("query:start", (query) => {
+        hook.addTimelineEvent("my-library", {
+            id: `query-${query.id}`,
+            title: `Query: ${query.name}`,
+            time: Date.now(),
+            level: "info",
+            data: query,
+        });
+    });
+}
+```
+
+## Panel Walkthrough
+
+### Event List
+
+The main area shows all events in reverse-chronological order (newest at the top). Each row shows:
+
+- **Level indicator** — coloured left border (blue = info, yellow = warning, red = error)
+- **Title** and optional **subtitle**
+- **Group badge** — identifies which library/area emitted the event
+- **Timestamp** — relative time from page load
+
+### Group Filter
+
+A row of toggle chips at the top of the panel lets you show/hide events from each group. Active groups are highlighted; click to toggle.
+
+### Event Detail
+
+Click any event row to open a detail pane on the right showing:
+
+- Full title and subtitle
+- Absolute timestamp
+- Duration (for span events)
+- Pretty-printed `data` payload as JSON
+
+### Clearing the Timeline
+
+Click **Clear** in the panel header to remove all events from the in-memory store. This does not prevent new events from appearing.
+
+## Configuration
+
+### Enable via Plugin
+
+The Timeline app is disabled by default. Enable it in your Vite config:
+
+```ts title="vite.config.ts"
+devToolbar({
+    apps: {
+        timeline: true,
+    },
+});
+```
+
+## Notes
+
+- Events are stored in memory only — they are lost on page reload.
+- The timeline store is shared with the global API. Events emitted via `window.__DEV_TOOLBAR_HOOK__` before the toolbar has initialized are buffered and replayed once the toolbar mounts.

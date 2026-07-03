@@ -1,0 +1,14 @@
+{
+    "name": "lib-fast-3",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Building lib-fast-3...' && sleep .2 && echo 'lib-fast-3 built!' && mkdir -p dist && date > dist/.stamp",
+        "dev": "echo 'lib-fast-3 dev server on port 3003' && while true; do sleep 1; echo '[lib-fast-3] heartbeat'; done",
+        "lint": "echo 'Linting lib-fast-3... OK'",
+        "test": "echo 'Testing lib-fast-3... 3 tests passed'"
+    },
+    "dependencies": {
+        "lib-fast-1": "1.0.0"
+    }
+}

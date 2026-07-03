@@ -1,0 +1,57 @@
+---
+title: Channels
+description: The delivery channels and their payloads
+---
+
+# Channels
+
+`@visulima/notification` ships six channels. Each has a typed payload.
+
+## SMS
+
+```typescript
+{ to: "+15555550100" | ["+1…", "+1…"], text: "…", from?: "…", mediaUrls?: ["https://…"] }
+```
+
+Providers: `twilio`, `vonage`, `plivo`, `messagebird`, `telnyx`.
+
+## Push
+
+```typescript
+{ to: "token" | ["t1", "t2"], title?: "…", body: "…", data?: {}, imageUrl?: "…", badge?: 1, sound?: "default" }
+```
+
+Providers: `fcm`, `expo`.
+
+## Chat
+
+```typescript
+{ text: "…", to?: "channel-id", blocks?: <provider-specific>, threadId?: "…" }
+```
+
+Providers: `slack`, `discord`, `msteams`, `telegram`.
+
+## In-app
+
+```typescript
+{ to: "subscriber-id", title?: "…", body: "…", data?: {}, actions?: [{ label: "Open", url: "…" }] }
+```
+
+Provider: `inAppProvider` from `@visulima/notification/channels/inapp`. See [Providers](/docs/packages/notification/providers).
+
+## Webhook
+
+```typescript
+{ body: <json>, url?: "https://…", method?: "POST", headers?: {} }
+```
+
+Provider: `webhook`.
+
+## Email
+
+```typescript
+{ from?: "…", to: "…", subject: "…", html?: "…", text?: "…", cc?, bcc?, replyTo?, attachments? }
+```
+
+The email channel delegates to a `@visulima/email` `Mail` instance via `emailChannel(mail)`. See
+[Providers](/docs/packages/notification/providers#email).

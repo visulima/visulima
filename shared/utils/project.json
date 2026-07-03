@@ -1,7 +1,7 @@
 {
     "name": "shared-utils",
     "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "shared/utils/src",
+    "sourceRoot": "shared/utils",
     "projectType": "library",
     "tags": ["shared", "type:shared"],
     "implicitDependencies": ["boxen", "error"]

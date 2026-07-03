@@ -1,0 +1,33 @@
+---
+title: "vis self-update"
+description: "Update vis itself to the latest version"
+---
+
+# vis self-update
+
+Self-update the `vis` binary. With no argument, installs the latest published version; pass an explicit version (`vis self-update 2.0.0`) to pin. Use `--check` to print the available upgrade without applying it.
+
+> The command name registered with the CLI is `self-update` — `upgrade` is the source-tree directory name only.
+
+## Usage
+
+```bash
+vis self-update [version] [options]
+```
+
+## Examples
+
+```bash
+vis self-update
+vis self-update 2.0.0
+vis self-update --check
+vis self-update --force
+```
+
+## Options
+
+| Option     | Default | Description                          |
+| ---------- | ------- | ------------------------------------ |
+| `--check`  | `false` | Check for updates without installing |
+| `--force`  | `false` | Reinstall even if already current    |
+| `--silent` | `false` | Suppress output (CI mode)            |

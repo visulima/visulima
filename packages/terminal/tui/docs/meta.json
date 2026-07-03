@@ -1,0 +1,21 @@
+{
+    "pages": [
+        "index",
+        "getting-started",
+        "package-map",
+        "quickstart-react",
+        "quickstart-raw-buffer",
+        "components",
+        "hooks",
+        "mouse",
+        "scroll",
+        "rendering-modes",
+        "raw-buffer",
+        "ts-buffer-guide",
+        "ink-compat",
+        "testing",
+        "i18n",
+        "examples",
+        "troubleshooting"
+    ]
+}

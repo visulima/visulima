@@ -1,0 +1,8 @@
+{
+    "name": "terminal/colorize",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/terminal/colorize/src",
+    "projectType": "library",
+    "tags": ["type:package", "colorize", "category:cli-terminal"],
+    "implicitDependencies": ["terminal/is-ansi-color-supported", "filesystem/path"]
+}

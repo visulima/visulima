@@ -1,0 +1,63 @@
+---
+title: "API Reference"
+---
+
+# API Reference
+
+## Countries
+
+### getByAlpha2(code: string)
+
+Get country by ISO 3166-1 alpha-2 code.
+
+### getAllCountries()
+
+Get all countries.
+
+### getEmoji(code: string)
+
+Get flag emoji for country.
+
+## Currencies
+
+### getByCode(code: string)
+
+Get currency by ISO 4217 code.
+
+### getSymbol(code: string)
+
+Get currency symbol.
+
+### getByCountry(code: string)
+
+Get currencies for a country.
+
+## Regions
+
+### getRegionsForCountry(code: string)
+
+Get continent and subregion.
+
+### getCountriesInContinent(continent: string)
+
+Get all countries in continent.
+
+## Timezones
+
+### getTimezonesByCountry(code: string)
+
+Get IANA timezones for country.
+
+### getPrimaryTimezone(code: string)
+
+Get primary timezone.
+
+## Locale
+
+### parseBCP47Tag(tag: string)
+
+Parse BCP 47 language tag.
+
+### generateBCP47Tag(lang: string, country: string)
+
+Generate BCP 47 tag.

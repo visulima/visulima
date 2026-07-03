@@ -1,0 +1,34 @@
+{
+    "name": "@visulima/task-runner-binding-darwin-x64",
+    "version": "1.0.0-alpha.3",
+    "description": "Native binding for @visulima/task-runner (macOS x64)",
+    "homepage": "https://visulima.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/tooling/task-runner"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "main": "task-runner-native.darwin-x64.node",
+    "files": [
+        "fspy-macos.dylib",
+        "task-runner-native.darwin-x64.node"
+    ],
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "darwin"
+    ],
+    "cpu": [
+        "x64"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

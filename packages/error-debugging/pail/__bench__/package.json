@@ -1,0 +1,27 @@
+{
+    "name": "pail-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@dynamicabot/signales": "catalog:prod",
+        "@ogma/logger": "catalog:prod",
+        "@visulima/pail": "workspace:*",
+        "bunyan": "catalog:prod",
+        "consola": "catalog:prod",
+        "diary": "catalog:prod",
+        "pino": "catalog:prod",
+        "roarr": "catalog:prod",
+        "rslog": "catalog:prod",
+        "tslog": "catalog:prod",
+        "winston": "catalog:prod"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}

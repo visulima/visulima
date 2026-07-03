@@ -1,0 +1,137 @@
+---
+title: "vis cache"
+description: "Inspect, prune, and explain the local task cache"
+---
+
+# vis cache
+
+Manage the local task cache: list entries, prune old ones, print sizes, and diagnose why a task missed.
+
+## Subcommands
+
+| Command                   | Description                                                            |
+| ------------------------- | ---------------------------------------------------------------------- |
+| `vis cache list`          | List every cache entry                                                 |
+| `vis cache size`          | Print on-disk footprint                                                |
+| `vis cache clean`         | Remove every cache entry                                               |
+| `vis cache prune`         | Evict by age, size, or count                                           |
+| `vis cache hash <task>`   | Print the recorded hash + per-bucket breakdown                         |
+| `vis cache why <task>`    | Diff the task's hash inputs against the previous run to explain a miss |
+| `vis cache verify <task>` | Diff the cached entry against the live workspace to detect drift       |
+| `vis cache doctor`        | Probe the configured remote cache (HTTP / REAPI) and report capability |
+
+All subcommands accept `--cache-dir <path>` to point at a non-default cache location.
+
+## Cache scope and worktrees
+
+The task cache lives at `<workspaceRoot>/node_modules/.cache/vis` by default — deliberately **not** under `.vis/`, which also holds tracked source (`.vis/templates`, `.vis/hooks`). Keeping the cache out of the source-bearing directory means a CI step that caches it can never sweep tracked files into the GH Actions cache (a stale restore used to resurrect deleted templates). It is gitignored for free via `node_modules`.
+
+When the workspace is a linked git worktree (created with `git worktree add`), vis defaults to a **shared** cache at `<mainWorktreeRoot>/node_modules/.cache/vis`. Sibling worktrees driven by parallel agents then share one cache instead of rebuilding the same hash N times. Single-checkout repos behave exactly as before.
+
+Toggle the behaviour from `vis.config.ts`:
+
+```ts
+export default {
+    sharedWorktreeCache: false, // default: true
+};
+```
+
+`vis cache list`, `vis cache size`, and `vis cache prune` accept `--scope`:
+
+| Value              | Cache directory                                                             |
+| ------------------ | --------------------------------------------------------------------------- |
+| `shared` (default) | The main worktree's cache (or this checkout when not in a linked worktree). |
+| `worktree`         | This checkout's local `node_modules/.cache/vis`, never the main one.         |
+| `all`              | Operate on both directories (skipped when they resolve to the same path).   |
+
+```bash
+vis cache list --scope=worktree   # only entries owned by this checkout
+vis cache prune --scope=all       # garbage-collect both stores
+vis cache size --scope=shared     # default; explicit for scripts
+```
+
+Explicit cache paths win over scope: `--cache-dir <path>`, `taskRunner.cacheDirectory` in `vis.config.ts`, and the `VIS_CACHE_DIRECTORY` env var (parity with `NX_CACHE_DIRECTORY`) all skip worktree remapping.
+
+`vis cache clean` always nukes the directory the resolver picked. From a linked worktree without an explicit override, that's the _main_ worktree's cache — so `clean` requires `--force` (or interactive confirmation) before deleting it because the path is outside the current `workspaceRoot`.
+
+## `vis cache why <task>`
+
+When a task you expected to be cached re-ran, ask vis what changed:
+
+```bash
+vis cache why @myorg/app:build
+```
+
+Reads `.vis/last-summary.json` (always written after each non-aborted run), finds the task, and diffs its `hashDetails` (`command`, `nodes`, `runtime`, `implicitDeps`) against the previous run. Output highlights which bucket rotated and which keys inside it were added, changed, or removed.
+
+```bash
+vis cache why @myorg/app:build --json     # machine-readable, stable shape for CI
+vis cache why @myorg/app:build --run <id> # diff against a specific historical run
+```
+
+Diff requires a prior run to compare against. Past runs only land in `.vis/runs/` when invoked with `--summarize`, so for reliable diffs add `--summarize` to the runs you might want to inspect later (or set it as a default in CI).
+
+## `vis cache hash <task>`
+
+Print the resolved hash and the contributing inputs without diffing:
+
+```bash
+vis cache hash @myorg/app:build
+vis cache hash @myorg/app:build --json
+vis cache hash @myorg/app:build --run <id>
+```
+
+Useful as a low-noise sanity check — e.g. confirming two runs produced the same hash, or piping into `jq` to extract a single bucket.
+
+## `vis cache prune`
+
+Evict cache entries by any combination of age, total size, or count:
+
+```bash
+vis cache prune --max-age-days=7              # drop entries older than a week
+vis cache prune --max-size=2GB                # evict oldest until under 2GB
+vis cache prune --keep-last=30                # keep only the 30 newest entries
+vis cache prune --keep-last=30 --max-age-days=14   # combine: 30-newest floor, then age cap
+```
+
+`--keep-last` runs first as a hard floor on count (newest-first by mtime), then `--max-age-days` and `--max-size` apply in sequence. Negative or non-integer values for `--keep-last` exit 1 rather than silently dropping the cache.
+
+## `vis cache list` / `vis cache size`
+
+```bash
+vis cache list                  # human-friendly table
+vis cache list --format=json    # array of { hash, sizeBytes, mtime, … }
+vis cache size --format=json    # { totalBytes, entryCount }
+```
+
+## `vis cache clean`
+
+Removes every entry. Prompts for confirmation when the cache directory is outside the workspace; pass `--force` to skip the prompt (useful in CI). `--dry-run` previews without deleting.
+
+`--type` scopes the wipe: `task` (the workspace task cache), `ai` (AI-response cache used by `vis ai`), `socket` (Socket.dev report cache used by `vis audit`), `deps-dev` (deps.dev report cache used by `vis audit`), or `all` (default).
+
+## `vis cache verify <task>`
+
+Catches the "cache restored, but the workspace doesn't match" class of bugs. Extracts the cached entry into a tmp directory and diffs each output file's content, mode, and mtime against the live workspace.
+
+```bash
+vis cache verify @myorg/app:build
+vis cache verify @myorg/app:build --format=json     # { status: "ok" | "drift", entries: [...] }
+vis cache verify @myorg/app:build --cache-dir=.alt  # verify against a non-default cache
+vis cache verify @myorg/app:build --scope=all       # search shared + worktree caches
+```
+
+Exits 1 on any drift (changed content, mode, or mtime) or if a cached output is missing from the workspace. Pairs with the cache-restoration fidelity work (timestamps, permissions, deterministic ordering) — use this in CI on a hot path to catch regressions in the archive layer.
+
+## `vis cache doctor`
+
+Probe the configured remote cache and report reachability, latency, and negotiated capabilities. HTTP backends get a HEAD probe; REAPI backends get a `Capabilities` RPC and report digests + max batch size.
+
+```bash
+vis cache doctor                                                # uses remoteCache from vis.config.ts
+vis cache doctor --url=grpcs://cache.example.com:443 --backend=reapi  # ad-hoc override
+vis cache doctor --json                                         # machine-readable for CI gating
+vis cache doctor --timeout=10000                                # bump probe timeout (default 5s)
+```
+
+Useful as a CI step before relying on a remote cache: a non-zero exit means the run will silently fall back to local-only caching, so failing fast is usually cheaper than a slow build.

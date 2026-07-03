@@ -1,0 +1,277 @@
+---
+title: "Configuration"
+---
+
+# Configuration
+
+Configure jsdoc-open-api using configuration files or programmatic options.
+
+## Configuration File
+
+Create `.openapirc.js` in your project root:
+
+```javascript
+module.exports = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: "1.0.0",
+            description: "API documentation",
+            contact: {
+                name: "API Support",
+                email: "support@example.com",
+            },
+            license: {
+                name: "MIT",
+                url: "https://opensource.org/licenses/MIT",
+            },
+        },
+        servers: [
+            {
+                url: "https://api.example.com/v1",
+                description: "Production server",
+            },
+            {
+                url: "https://staging-api.example.com/v1",
+                description: "Staging server",
+            },
+            {
+                url: "http://localhost:3000",
+                description: "Development server",
+            },
+        ],
+    },
+    sources: ["./src/routes/**/*.js", "./src/controllers/**/*.js"],
+    output: "./public/swagger.json",
+    verbose: false,
+};
+```
+
+## Programmatic Configuration
+
+Pass options to the function:
+
+```javascript
+import jsdocOpenApi from "@visulima/jsdoc-open-api";
+
+const spec = await jsdocOpenApi({
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: "1.0.0",
+        },
+    },
+    sources: ["./src/**/*.js"],
+    output: "./swagger.json",
+    verbose: true,
+});
+```
+
+## Definition Options
+
+### info
+
+API metadata:
+
+```javascript
+{
+  info: {
+    title: "My API",                      // Required
+    version: "1.0.0",                     // Required
+    description: "API documentation",
+    termsOfService: "https://example.com/terms",
+    contact: {
+      name: "API Support",
+      url: "https://example.com/support",
+      email: "support@example.com",
+    },
+    license: {
+      name: "MIT",
+      url: "https://opensource.org/licenses/MIT",
+    },
+  },
+}
+```
+
+### servers
+
+API servers:
+
+```javascript
+{
+  servers: [
+    {
+      url: "https://api.example.com",
+      description: "Production",
+      variables: {
+        version: {
+          default: "v1",
+          enum: ["v1", "v2"],
+        },
+      },
+    },
+  ],
+}
+```
+
+### security
+
+Global security:
+
+```javascript
+{
+  definition: {
+    security: [
+      {
+        BearerAuth: [],
+      },
+    ],
+    components: {
+      securitySchemes: {
+        BearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+        },
+      },
+    },
+  },
+}
+```
+
+## Source Patterns
+
+Specify files to parse:
+
+```javascript
+{
+  sources: [
+    "./src/routes/**/*.js",       // All JS files in routes
+    "./src/api/**/*.ts",           // All TS files in api
+    "./lib/controllers/*.{js,ts}", // JS or TS in controllers
+    "!./src/**/*.test.js",         // Exclude test files
+  ],
+}
+```
+
+## Output Options
+
+### File Output
+
+```javascript
+{
+  output: "./public/swagger.json",  // Write to file
+}
+```
+
+### No File Output
+
+```javascript
+{
+  output: false,  // Don't write file, only return spec
+}
+```
+
+## Verbosity
+
+Enable logging:
+
+```javascript
+{
+  verbose: true,  // Enable verbose logging
+}
+```
+
+## Environment-Based Configuration
+
+Use environment variables:
+
+```javascript
+module.exports = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: process.env.npm_package_version || "1.0.0",
+        },
+        servers: [
+            {
+                url: process.env.API_URL || "http://localhost:3000",
+            },
+        ],
+    },
+    sources: ["./src/**/*.js"],
+    output: process.env.SWAGGER_OUTPUT || "./swagger.json",
+    verbose: process.env.VERBOSE === "true",
+};
+```
+
+## TypeScript Configuration
+
+For TypeScript projects:
+
+```javascript
+// .openapirc.js
+module.exports = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "TypeScript API",
+            version: "1.0.0",
+        },
+    },
+    sources: ["./src/**/*.ts", "!./src/**/*.test.ts", "!./src/**/*.spec.ts"],
+    output: "./docs/api-spec.json",
+};
+```
+
+## Multiple Configurations
+
+Create environment-specific configs:
+
+```javascript
+// config/openapi.prod.js
+module.exports = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Production API",
+            version: "1.0.0",
+        },
+        servers: [
+            {
+                url: "https://api.example.com",
+            },
+        ],
+    },
+    sources: ["./dist/**/*.js"],
+    output: "./public/swagger.json",
+};
+
+// config/openapi.dev.js
+module.exports = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Development API",
+            version: "1.0.0-dev",
+        },
+        servers: [
+            {
+                url: "http://localhost:3000",
+            },
+        ],
+    },
+    sources: ["./src/**/*.ts"],
+    output: "./dev-swagger.json",
+    verbose: true,
+};
+```
+
+Use with CLI:
+
+```bash
+npx jsdoc-open-api generate --config ./config/openapi.prod.js
+```

@@ -1,11 +1,21 @@
 name: "Preview Release"
 
 on: # yamllint disable-line rule:truthy
-    # eslint-disable-next-line yml/no-empty-mapping-value
-    pull_request: # yamllint disable-line rule:empty-values
+    pull_request:
+        branches:
+            - "main"
+            - "alpha"
+            - "next"
+            - "beta"
 
 permissions:
     contents: "read" # to fetch code (actions/checkout)
+
+# Preview builds wait on Build Native and can run for many minutes; a new push
+# to the same PR should supersede the in-flight preview rather than stack on it.
+concurrency:
+    group: "${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}"
+    cancel-in-progress: true
 
 env:
     NX_BRANCH: "${{ github.event.number }}"
@@ -18,8 +28,13 @@ jobs:
         name: "Preview Release"
         if: "github.repository == 'visulima/visulima'"
         runs-on: "ubuntu-latest"
+        # Wait-for-Build-Native can burn up to 55 min when runner queues
+        # back up; the publish step is fast (~3 min). 75 absorbs both
+        # with cushion.
+        timeout-minutes: 115
         permissions:
-            contents: "write"
+            # pkg-pr-new publish only writes a PR comment — it does not push commits.
+            contents: "read"
             issues: "write"
             checks: "write"
             pull-requests: "write"
@@ -31,8 +46,9 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
               with:
+                  persist-credentials: false
                   # Number of commits to fetch. 0 indicates all history for all branches and tags.
                   # Pulls all commits (needed for NX)
                   fetch-depth: 0
@@ -47,32 +63,118 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/setup@main"
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
               with:
-                  node-version: "22.x"
+                  node-version: "22"
+                  install-node-gyp: "true"
                   cache-prefix: "preview-release"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+                  run-signatures-audit: false
+                  run-npm-audit: false
 
-            # Temporary solution until Nx solve this https://github.com/nrwl/nx/issues/22259
-            - name: "Get changed files"
-              id: "files"
-              uses: "tj-actions/changed-files@9426d40962ed5378910ee2e21d5f8c6fcbf2dd96" # v47.0.6
+            - name: "Wait for Build Native workflow"
+              # Replaces lewagon/wait-on-check-action: its bundler Gemfile.lock pins
+              # darwin-24/25 only, so macOS runners on darwin-23 fail bundle install.
+              # Plain shell + gh api works on every runner without Ruby.
+              # GitHub-hosted runner queue depth occasionally pushes the
+              # gate job's start time 30+ minutes past the last build
+              # completion — and on bad days the build matrix itself stays
+              # queued long enough that the old 50-min deadline timed out
+              # mid-build (check still in_progress). 85-min step ceiling +
+              # 80-min internal deadline rides out those spikes; the gate
+              # still exits in ~minutes in the common case, so the higher
+              # ceiling only costs wall-clock when the runner pool is saturated.
+              timeout-minutes: 85
+              shell: "bash"
+              env:
+                  GH_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+                  REF: "${{ github.event.pull_request.head.sha }}"
+                  REPO: "${{ github.repository }}"
+              run: |
+                  set -euo pipefail
+                  check_name="Check Native Build"
+                  deadline=$(( $(date +%s) + 4800 ))
+                  while :; do
+                      # Transient HTTP 401s on secrets.GITHUB_TOKEN happen
+                      # mid-poll (the token gets briefly rotated by Actions).
+                      # `set -e` would then kill the whole job before the next
+                      # iteration can retry — swallow the exit so the loop
+                      # keeps going.
+                      if ! payload=$(gh api -X GET "repos/${REPO}/commits/${REF}/check-runs" -f check_name="$check_name" --jq '.check_runs[0] // empty' 2>&1); then
+                          echo "Transient gh api error, retrying in 15s: $payload"
+                          payload=""
+                      fi
+                      if [ -n "$payload" ]; then
+                          status=$(printf '%s' "$payload" | jq -r '.status')
+                          conclusion=$(printf '%s' "$payload" | jq -r '.conclusion // ""')
+                          if [ "$status" = "completed" ]; then
+                              case "$conclusion" in
+                                  success|skipped|neutral)
+                                      echo "Check '$check_name' completed: $conclusion"
+                                      exit 0
+                                      ;;
+                                  *)
+                                      echo "Check '$check_name' failed: $conclusion"
+                                      exit 1
+                                      ;;
+                              esac
+                          fi
+                          echo "Check '$check_name' status=$status, waiting 15s..."
+                      else
+                          echo "Check '$check_name' not yet registered, waiting 15s..."
+                      fi
+                      if [ "$(date +%s)" -ge "$deadline" ]; then
+                          echo "Timed out waiting for '$check_name' after 80 minutes"
+                          exit 1
+                      fi
+                      sleep 15
+                  done
+
+            - name: "Download native build artifacts"
+              id: "native-artifacts"
+              # Token flakes (HTTP 401) on `secrets.GITHUB_TOKEN` mid-download
+              # would otherwise abort the whole job; downstream step is already
+              # gated on outcome == 'success' and tolerates a missing prebuild.
+              continue-on-error: true
+              uses: "dawidd6/action-download-artifact@b6e2e70617bc3265edd6dab6c906732b2f1ae151" # v21
               with:
-                  files_ignore_from_source_file: ".github/ignore-files-for-nx-affected.yml"
-                  base_sha: "${{ steps.setSHAs.outputs.base }}"
-                  separator: ","
+                  workflow: "build-native.yml"
+                  pr: "${{ github.event.pull_request.number }}"
+                  name: "bindings-(.+)"
+                  name_is_regexp: true
+                  path: "artifacts"
+                  if_no_artifact_found: "ignore"
+                  allow_forks: false
 
-            - name: "Build"
+            - name: "Distribute native artifacts to platform packages"
+              if: "${{ steps.native-artifacts.outcome == 'success' }}"
               shell: "bash"
               run: |
-                  files="${{ steps.files.outputs.all_changed_files }}";
-                  pnpm run build:affected:prod:packages --files=${files//\\/\/}
+                  # task-runner: move matching .node files and distribute to npm packages
+                  find artifacts -name "task-runner-native.*.node" -exec mv {} packages/tooling/task-runner/ \;
+                  cd packages/tooling/task-runner && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
 
-            - name: "Prepare nx cache"
-              shell: "bash"
-              run: "tar -cf - .nx/cache | lz4 > /tmp/nx_cache.tar.lz4" # compress nx cache
+                  # tui: move matching .node files and distribute to npm packages
+                  find artifacts -name "tui-native.*.node" -exec mv {} packages/terminal/tui/ \;
+                  cd packages/terminal/tui && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
+                  # vis: move matching .node files and distribute to npm packages
+                  find artifacts -name "vis-native.*.node" -exec mv {} packages/tooling/vis/ \;
+                  cd packages/tooling/vis && pnpm exec napi artifacts --output-dir . --npm-dir npm && rm -f *.node && cd ../../..
+
+                  # vis: place the CLI front-end binary into its platform packages
+                  # (napi artifacts only distributes .node files). install -m 0755
+                  # restores the exec bit that the artifact round-trip drops.
+                  find artifacts -path "*/bindings-vis-*/npm/*/vis-native-cli*" -print0 2>/dev/null | while IFS= read -r -d "" f; do
+                      binding="$(basename "$(dirname "$f")")"
+                      mkdir -p "packages/tooling/vis/npm/$binding"
+                      install -m 0755 "$f" "packages/tooling/vis/npm/$binding/$(basename "$f")" 2>/dev/null || true
+                  done
+
+                  rm -rf artifacts/
+
+            - name: "Build"
+              run: "pnpm run build:affected:prod:packages"
 
             - name: "Preview Release"
-              shell: "bash"
               run: "node ./scripts/publish-preview-release.js"
-              env:
-                  CHANGED_FILES: "${{ steps.files.outputs.all_changed_files }}"

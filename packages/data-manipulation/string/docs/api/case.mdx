@@ -1,0 +1,691 @@
+---
+title: Case Conversion API
+description: Complete API reference for all case conversion functions in @visulima/string.
+---
+
+# Case Conversion API
+
+Detailed API reference for all case conversion functions, their signatures, options, and return types.
+
+## camelCase
+
+Converts a string to camelCase format.
+
+```typescript
+function camelCase<T extends string = string>(value?: T, options?: CaseOptions): CamelCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { camelCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import camelCase from "@visulima/string/case/camel-case";
+```
+
+**Parameters:**
+
+| Parameter | Type               | Description                                                         |
+| --------- | ------------------ | ------------------------------------------------------------------- |
+| `value`   | `T extends string` | The string to convert. Returns `""` if `undefined` or not a string. |
+| `options` | `CaseOptions`      | Optional configuration for case conversion.                         |
+
+**Returns:** `CamelCase<T>` -- The string converted to camelCase.
+
+**Examples:**
+
+```typescript
+camelCase("foo bar"); // 'fooBar'
+camelCase("foo-bar"); // 'fooBar'
+camelCase("foo_bar"); // 'fooBar'
+camelCase("XMLHttpRequest"); // 'xmlHttpRequest'
+camelCase("AJAXRequest"); // 'ajaxRequest'
+camelCase("QueryXML123String"); // 'queryXml123String'
+camelCase(undefined); // ''
+```
+
+---
+
+## pascalCase
+
+Converts a string to PascalCase format.
+
+```typescript
+function pascalCase<T extends string = string>(value?: T, options?: CaseOptions): PascalCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { pascalCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import pascalCase from "@visulima/string/case/pascal-case";
+```
+
+**Parameters:**
+
+| Parameter | Type               | Description             |
+| --------- | ------------------ | ----------------------- |
+| `value`   | `T extends string` | The string to convert.  |
+| `options` | `CaseOptions`      | Optional configuration. |
+
+**Returns:** `PascalCase<T>` -- The string converted to PascalCase.
+
+**Examples:**
+
+```typescript
+pascalCase("foo bar"); // 'FooBar'
+pascalCase("foo-bar"); // 'FooBar'
+pascalCase("foo_bar"); // 'FooBar'
+pascalCase("XMLHttpRequest"); // 'XmlHttpRequest'
+```
+
+---
+
+## snakeCase
+
+Converts a string to snake_case format.
+
+```typescript
+function snakeCase<T extends string = string>(value?: T, options?: CaseOptions): SnakeCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { snakeCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import snakeCase from "@visulima/string/case/snake-case";
+```
+
+**Parameters:**
+
+| Parameter | Type               | Description             |
+| --------- | ------------------ | ----------------------- |
+| `value`   | `T extends string` | The string to convert.  |
+| `options` | `CaseOptions`      | Optional configuration. |
+
+**Returns:** `SnakeCase<T>` -- The string converted to snake_case.
+
+**Examples:**
+
+```typescript
+snakeCase("fooBar"); // 'foo_bar'
+snakeCase("foo bar"); // 'foo_bar'
+snakeCase("foo-bar"); // 'foo_bar'
+snakeCase("XMLHttpRequest"); // 'xml_http_request'
+```
+
+---
+
+## kebabCase
+
+Converts a string to kebab-case format.
+
+```typescript
+function kebabCase<T extends string = string>(value?: T, options?: KebabCaseOptions): KebabCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { kebabCase } from "@visulima/string/case";
+// or (named export from per-file subpath)
+import { kebabCase } from "@visulima/string/case/kebab-case";
+```
+
+**Parameters:**
+
+| Parameter | Type               | Description             |
+| --------- | ------------------ | ----------------------- |
+| `value`   | `T extends string` | The string to convert.  |
+| `options` | `KebabCaseOptions` | Optional configuration. |
+
+**Returns:** `KebabCase<T>` -- The string converted to kebab-case.
+
+**Examples:**
+
+```typescript
+kebabCase("fooBar"); // 'foo-bar'
+kebabCase("foo bar"); // 'foo-bar'
+kebabCase("foo_bar"); // 'foo-bar'
+kebabCase("XMLHttpRequest"); // 'xml-http-request'
+```
+
+### KebabCaseOptions
+
+Extends `CaseOptions` with additional options:
+
+```typescript
+interface KebabCaseOptions extends CaseOptions {
+    /** String used to join words. @default "-" */
+    joiner?: string;
+
+    /** Whether to convert the result to uppercase. @default false */
+    toUpperCase?: boolean;
+}
+```
+
+---
+
+## constantCase
+
+Converts a string to CONSTANT_CASE format.
+
+```typescript
+function constantCase<T extends string = string>(value?: T, options?: CaseOptions): ConstantCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { constantCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import constantCase from "@visulima/string/case/constant-case";
+```
+
+**Parameters:**
+
+| Parameter | Type               | Description             |
+| --------- | ------------------ | ----------------------- |
+| `value`   | `T extends string` | The string to convert.  |
+| `options` | `CaseOptions`      | Optional configuration. |
+
+**Returns:** `ConstantCase<T>` -- The string converted to CONSTANT_CASE.
+
+**Examples:**
+
+```typescript
+constantCase("foo bar"); // 'FOO_BAR'
+constantCase("foo-bar"); // 'FOO_BAR'
+constantCase("XMLHttpRequest"); // 'XML_HTTP_REQUEST'
+```
+
+---
+
+## dotCase
+
+Converts a string to dot.case format.
+
+```typescript
+function dotCase<T extends string = string>(value?: T, options?: CaseOptions): DotCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { dotCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import dotCase from "@visulima/string/case/dot-case";
+```
+
+**Examples:**
+
+```typescript
+dotCase("foo bar"); // 'foo.bar'
+dotCase("XMLHttpRequest"); // 'xml.http.request'
+```
+
+---
+
+## pathCase
+
+Converts a string to path/case format.
+
+```typescript
+function pathCase<T extends string = string>(value?: T, options?: CaseOptions): PathCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { pathCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import pathCase from "@visulima/string/case/path-case";
+```
+
+**Examples:**
+
+```typescript
+pathCase("foo bar"); // 'foo/bar'
+pathCase("XMLHttpRequest"); // 'xml/http/request'
+```
+
+---
+
+## titleCase
+
+Converts a string to Title Case format.
+
+```typescript
+function titleCase<T extends string = string>(value?: T, options?: CaseOptions): TitleCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { titleCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import titleCase from "@visulima/string/case/title-case";
+```
+
+**Examples:**
+
+```typescript
+titleCase("this-IS-aTitle"); // 'This Is A Title'
+titleCase("XMLHttpRequest"); // 'Xml Http Request'
+```
+
+---
+
+## sentenceCase
+
+Converts a string to Sentence case format.
+
+```typescript
+function sentenceCase<T extends string = string>(value?: T, options?: CaseOptions): SentenceCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { sentenceCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import sentenceCase from "@visulima/string/case/sentence-case";
+```
+
+**Examples:**
+
+```typescript
+sentenceCase("foo bar"); // 'Foo bar'
+sentenceCase("XMLHttpRequest"); // 'Xml http request'
+```
+
+---
+
+## capitalCase
+
+Converts a string to Capital Case format (each word capitalized, separated by spaces).
+
+```typescript
+function capitalCase<T extends string = string>(value?: T, options?: CaseOptions): CapitalCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { capitalCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import capitalCase from "@visulima/string/case/capital-case";
+```
+
+**Examples:**
+
+```typescript
+capitalCase("foo bar"); // 'Foo Bar'
+capitalCase("foo-bar"); // 'Foo Bar'
+```
+
+---
+
+## flatCase
+
+Converts a string to flatcase format (no separators, all lowercase).
+
+```typescript
+function flatCase<T extends string = string>(value?: T, options?: CaseOptions): FlatCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { flatCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import flatCase from "@visulima/string/case/flat-case";
+```
+
+**Examples:**
+
+```typescript
+flatCase("foo bar"); // 'foobar'
+flatCase("foo-bar"); // 'foobar'
+```
+
+---
+
+## trainCase
+
+Converts a string to Train-Case format (each word capitalized, hyphen-separated).
+
+```typescript
+function trainCase<T extends string = string>(value?: T, options?: CaseOptions): TrainCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { trainCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import trainCase from "@visulima/string/case/train-case";
+```
+
+**Examples:**
+
+```typescript
+trainCase("foo bar"); // 'Foo-Bar'
+trainCase("XMLHttpRequest"); // 'Xml-Http-Request'
+```
+
+---
+
+## pascalSnakeCase
+
+Converts a string to Pascal_Snake_Case format (each word capitalized, underscore-separated).
+
+```typescript
+function pascalSnakeCase<T extends string = string>(value?: T, options?: CaseOptions): PascalSnakeCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { pascalSnakeCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import pascalSnakeCase from "@visulima/string/case/pascal-snake-case";
+```
+
+**Examples:**
+
+```typescript
+pascalSnakeCase("foo bar"); // 'Foo_Bar'
+pascalSnakeCase("XMLHttpRequest"); // 'Xml_Http_Request'
+```
+
+---
+
+## noCase
+
+Removes all case styling, converting to lowercase with spaces.
+
+```typescript
+function noCase<T extends string = string>(value?: T, options?: CaseOptions): NoCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { noCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import noCase from "@visulima/string/case/no-case";
+```
+
+**Examples:**
+
+```typescript
+noCase("camelCase"); // 'camel case'
+noCase("PascalCase"); // 'pascal case'
+noCase("snake_case"); // 'snake case'
+```
+
+---
+
+## flipCase
+
+Inverts the case of each character in a string.
+
+```typescript
+function flipCase<T extends string = string>(value?: T, options?: FlipOptions): FlipCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { flipCase } from "@visulima/string/case";
+// or (named export from per-file subpath)
+import { flipCase } from "@visulima/string/case/flip-case";
+```
+
+**Parameters:**
+
+| Parameter | Type               | Description                                                                                                            |
+| --------- | ------------------ | ---------------------------------------------------------------------------------------------------------------------- |
+| `value`   | `T extends string` | The string to flip case. Returns `""` if undefined or empty.                                                           |
+| `options` | `FlipOptions`      | Optional configuration. Same as `CaseOptions` except `handleEmoji` is not available (emojis are preserved by default). |
+
+**Returns:** `FlipCase<T>` -- The string with inverted character cases.
+
+**Examples:**
+
+```typescript
+flipCase("FooBar"); // 'fOObAR'
+flipCase("foobar"); // 'FOOBAR'
+flipCase("FOOBAR"); // 'foobar'
+flipCase("Hello World"); // 'hELLO wORLD'
+flipCase("XMLHttpRequest"); // 'xmlhTTPrEQUEST'
+```
+
+### FlipOptions
+
+```typescript
+type FlipOptions = Omit<CaseOptions, "handleEmoji">;
+```
+
+---
+
+## upperFirst
+
+Converts the first character of a string to uppercase.
+
+```typescript
+function upperFirst<T extends string = string>(value?: T, options?: LocaleOptions): UpperFirst<T>;
+```
+
+**Import:**
+
+```typescript
+import { upperFirst } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import upperFirst from "@visulima/string/case/upper-first";
+```
+
+**Examples:**
+
+```typescript
+upperFirst("hello"); // 'Hello'
+upperFirst("hello world"); // 'Hello world'
+```
+
+---
+
+## lowerFirst
+
+Converts the first character of a string to lowercase.
+
+```typescript
+function lowerFirst<T extends string = string>(value?: T, options?: LocaleOptions): LowerFirst<T>;
+```
+
+**Import:**
+
+```typescript
+import { lowerFirst } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import lowerFirst from "@visulima/string/case/lower-first";
+```
+
+**Examples:**
+
+```typescript
+lowerFirst("Hello"); // 'hello'
+lowerFirst("HELLO"); // 'hELLO'
+```
+
+---
+
+## identifyCase
+
+Identifies the case style of a string.
+
+```typescript
+function identifyCase<T extends string = string>(value?: T): IdentifyCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { identifyCase } from "@visulima/string/case";
+// or (default export from per-file subpath)
+import identifyCase from "@visulima/string/case/identify-case";
+```
+
+**Parameters:**
+
+| Parameter | Type               | Description                                                 |
+| --------- | ------------------ | ----------------------------------------------------------- |
+| `value`   | `T extends string` | The string to identify. Throws `TypeError` if not a string. |
+
+**Returns:** One of: `'camel'`, `'pascal'`, `'snake'`, `'kebab'`, `'upper_snake'`, `'lower'`, `'upper'`, `'title'`, `'sentence'`, `'mixed'`, or `'unknown'`.
+
+**Examples:**
+
+```typescript
+identifyCase("helloWorld"); // 'camel'
+identifyCase("HelloWorld"); // 'pascal'
+identifyCase("hello_world"); // 'snake'
+identifyCase("HELLO_WORLD"); // 'upper_snake'
+identifyCase("hello-world"); // 'kebab'
+identifyCase("foo"); // 'lower'
+identifyCase("FOO"); // 'upper'
+identifyCase("Hello World"); // 'title'
+identifyCase("Hello world"); // 'sentence'
+identifyCase("FooBAR"); // 'mixed'
+identifyCase("123"); // 'unknown'
+identifyCase(""); // 'unknown'
+```
+
+**Throws:** `TypeError` if input is not a string.
+
+---
+
+## splitByCase
+
+Splits a string into segments based on case transitions, separators, Unicode scripts, ANSI codes, and emojis.
+
+```typescript
+function splitByCase<T extends string = string>(input: T, options?: SplitOptions): SplitByCase<T>;
+```
+
+**Import:**
+
+```typescript
+import { splitByCase } from "@visulima/string/case";
+// or (named export from per-file subpath)
+import { splitByCase } from "@visulima/string/case/split-by-case";
+```
+
+**Parameters:**
+
+| Parameter | Type               | Description                                    |
+| --------- | ------------------ | ---------------------------------------------- |
+| `input`   | `T extends string` | The string to split.                           |
+| `options` | `SplitOptions`     | Optional configuration for splitting behavior. |
+
+**Returns:** `SplitByCase<T>` -- An array of string segments.
+
+**Examples:**
+
+```typescript
+splitByCase("fooBarBaz"); // ['foo', 'Bar', 'Baz']
+splitByCase("foo_bar-baz"); // ['foo', 'bar', 'baz']
+splitByCase("HTMLElement"); // ['HTML', 'Element']
+splitByCase("XMLHttpRequest"); // ['XML', 'Http', 'Request']
+
+// With locale
+splitByCase("ひらがなカタカナABC", { locale: "ja" });
+// ['ひらがな', 'カタカナ', 'ABC']
+
+// With emoji handling
+splitByCase("hello🌍world", { handleEmoji: true });
+// ['hello', '🌍', 'world']
+```
+
+### SplitOptions
+
+```typescript
+interface SplitOptions extends LocaleOptions {
+    /** Whether to handle ANSI escape sequences. @default false */
+    handleAnsi?: boolean;
+
+    /** Whether to handle emoji sequences. @default false */
+    handleEmoji?: boolean;
+
+    /** A list of known acronyms to preserve casing for. */
+    knownAcronyms?: ReadonlyArray<string>;
+
+    /** Whether to normalize case. @default false */
+    normalize?: boolean;
+
+    /** List of additional separators to split on. */
+    separators?: ReadonlyArray<string> | RegExp;
+
+    /** Whether to strip ANSI escape sequences. @default false */
+    stripAnsi?: boolean;
+
+    /** Whether to strip emoji sequences. @default false */
+    stripEmoji?: boolean;
+}
+```
+
+---
+
+## CaseOptions
+
+Common options shared by all case conversion functions.
+
+```typescript
+interface CaseOptions extends LocaleOptions {
+    /** Uses a shared LRU cache with a fixed size. @default false */
+    cache?: boolean;
+
+    /** A custom cache store for this specific case function. */
+    cacheStore?: LRUCache<string, string>;
+
+    /** Whether to handle ANSI escape sequences. @default false */
+    handleAnsi?: boolean;
+
+    /** Whether to handle emoji sequences. @default false */
+    handleEmoji?: boolean;
+
+    /** A list of known acronyms to preserve casing for. */
+    knownAcronyms?: ReadonlyArray<string>;
+
+    /** Whether to normalize case. */
+    normalize?: boolean;
+
+    /** Whether to strip ANSI escape sequences. @default false */
+    stripAnsi?: boolean;
+
+    /** Whether to strip emoji sequences. @default false */
+    stripEmoji?: boolean;
+}
+```
+
+### LocaleOptions
+
+```typescript
+interface LocaleOptions {
+    /** The locale to use for case conversion (e.g. 'en', 'de', 'tr', 'ja'). */
+    locale?: NodeLocale;
+}
+```
+
+The `NodeLocale` type covers standard locale codes including `'en'`, `'de'`, `'fr'`, `'ja'`, `'ko'`, `'zh'`, `'tr'`, `'el'`, `'ru'`, `'ar'`, `'he'`, and many more.
+
+---
+
+## Notes
+
+- All case conversion functions return `""` when the input is `undefined` or not a string.
+- Caching uses an internal LRU cache with a default capacity of 1000 entries. Provide your own `cacheStore` to control cache size per function.
+- Acronym handling via `knownAcronyms` preserves the original casing of known acronyms during splitting. Acronyms are matched longest-first.
+- Locale support enables script-aware splitting for CJK, Cyrillic, Greek, Arabic, Hebrew, Indic, and other scripts.

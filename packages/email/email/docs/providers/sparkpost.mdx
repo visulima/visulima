@@ -1,0 +1,82 @@
+---
+title: SparkPost
+description: Send emails using the SparkPost Transmissions API with @visulima/email
+---
+
+# SparkPost Provider
+
+The SparkPost provider sends emails through the [SparkPost Transmissions API](https://developers.sparkpost.com/api/transmissions/).
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers) — uses the Fetch API.
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { sparkpostProvider } from "@visulima/email/providers/sparkpost";
+
+const mail = createMail(
+    sparkpostProvider({
+        apiKey: process.env.SPARKPOST_API_KEY!,
+    }),
+);
+```
+
+## Configuration
+
+The `SparkPostConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                            | Description                                                          |
+| ---------- | --------- | -------- | ---------------------------------- | -------------------------------------------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                                  | Your SparkPost API key (sent as the `Authorization` header)          |
+| `endpoint` | `string`  | No       | `https://api.sparkpost.com/api/v1` | Custom API endpoint. Use `https://api.eu.sparkpost.com/api/v1` (EU). |
+| `debug`    | `boolean` | No       | `false`                            | Enable debug logging                                                 |
+| `logger`   | `Console` | No       | -                                  | Custom logger instance                                               |
+| `retries`  | `number`  | No       | `3`                                | Number of retry attempts                                             |
+| `timeout`  | `number`  | No       | `30000`                            | Request timeout in milliseconds                                      |
+
+## Basic Usage
+
+```typescript
+const result = await mail.send({
+    from: { email: "noreply@example.com", name: "My App" },
+    to: { email: "user@example.com" },
+    subject: "Hello from SparkPost",
+    html: "<h1>Welcome!</h1>",
+    text: "Welcome!",
+});
+```
+
+## Provider-Specific Email Options
+
+The `SparkPostEmailOptions` interface extends `EmailOptions` with:
+
+| Option        | Type      | Description                                          |
+| ------------- | --------- | ---------------------------------------------------- |
+| `campaignId`  | `string`  | Campaign id applied to the transmission              |
+| `templateId`  | `string`  | Stored template id to send instead of inline content |
+| `trackOpens`  | `boolean` | Whether open tracking is enabled                     |
+| `trackClicks` | `boolean` | Whether click tracking is enabled                    |
+
+```typescript
+await mail.send({
+    from: { email: "noreply@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Campaign email",
+    html: "<p>Hello</p>",
+    campaignId: "summer-2026",
+    trackOpens: true,
+    trackClicks: true,
+});
+```
+
+## Supported Features
+
+- ✅ Attachments
+- ✅ Batch sending
+- ✅ Custom headers
+- ✅ HTML & text bodies
+- ✅ Reply-To
+- ✅ Tagging
+- ✅ Templates
+- ✅ Open/click tracking

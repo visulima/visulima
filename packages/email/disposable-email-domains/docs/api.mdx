@@ -1,0 +1,33 @@
+---
+title: "API"
+---
+
+# API Reference
+
+## `isDisposableEmail(email: string): boolean`
+
+Check if email is from a disposable domain.
+
+**Parameters:**
+
+- `email` (string): Email address to check
+
+**Returns:** `true` if disposable, `false` otherwise
+
+**Example:**
+
+```typescript
+isDisposableEmail("user@tempmail.com"); // true
+isDisposableEmail("user@gmail.com"); // false
+```
+
+## `disposableDomains: string[]`
+
+Array of all known disposable email domains.
+
+**Example:**
+
+```typescript
+console.log(disposableDomains.length);
+// 12000+
+```

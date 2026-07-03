@@ -1,0 +1,294 @@
+---
+title: Creating Custom Apps
+description: Build your own DevTools panel using Preact components, register it via the Vite plugin, and optionally add a tooltip and RPC functions.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+Custom apps let you embed any developer tool inside the toolbar panel. Each app appears as a button in the toolbar pill; clicking it opens your component in the resizable panel. Apps can also have a **tooltip** — a compact preview that appears on hover without opening the full panel.
+
+## Quick Example
+
+```tsx title="my-app.tsx"
+/** @jsxImportSource preact */
+import type { ComponentChildren } from "preact";
+import type { AppComponentProps } from "@visulima/dev-toolbar";
+
+const MyApp = ({ helpers }: AppComponentProps): ComponentChildren => {
+    return (
+        <div style={{ padding: "20px" }}>
+            <h2>Hello from My App!</h2>
+        </div>
+    );
+};
+
+export default MyApp;
+```
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+import myIconSvg from "./my-icon.svg?raw";
+import MyApp from "./my-app";
+
+export default defineConfig({
+    plugins: [
+        devToolbar({
+            customApps: [
+                {
+                    id: "my-package:my-app",
+                    name: "My App",
+                    icon: myIconSvg, // raw SVG string
+                    component: MyApp,
+                },
+            ],
+        }),
+    ],
+});
+```
+
+<Callout type="info">
+    App components are Preact components rendered inside the Shadow DOM. The JSX pragma `/** @jsxImportSource preact */` can be added per `.tsx` file, or set
+    globally in `tsconfig.json` via `"jsxImportSource": "preact"`.
+</Callout>
+
+## Step-by-Step Guide
+
+<Steps>
+
+<Step>
+
+### Define the App Component
+
+Create a Preact component that receives `AppComponentProps`:
+
+```tsx title="src/devtools/my-app.tsx"
+/** @jsxImportSource preact */
+import type { ComponentChildren } from "preact";
+import { useState } from "preact/hooks";
+import type { AppComponentProps } from "@visulima/dev-toolbar";
+
+const MyApp = ({ helpers }: AppComponentProps): ComponentChildren => {
+    const [data, setData] = useState<string | null>(null);
+
+    const load = async (): Promise<void> => {
+        // Call a server-side RPC function
+        const result = await (helpers.rpc as any).myCustomFunction();
+        setData(JSON.stringify(result, null, 2));
+    };
+
+    return (
+        <div class="p-4 space-y-4">
+            <button class="px-3 py-1.5 border border-border text-sm cursor-pointer bg-transparent text-foreground" onClick={load} type="button">
+                Load Data
+            </button>
+            {data && <pre class="text-xs font-mono text-foreground/80 bg-foreground/5 p-4 overflow-auto">{data}</pre>}
+        </div>
+    );
+};
+
+export default MyApp;
+```
+
+</Step>
+
+<Step>
+
+### (Optional) Add a Tooltip
+
+A tooltip shows a compact summary when the user hovers the app button — without opening the full panel:
+
+```tsx title="src/devtools/my-tooltip.tsx"
+/** @jsxImportSource preact */
+import type { ComponentChildren } from "preact";
+import type { AppComponentProps } from "@visulima/dev-toolbar";
+
+const MyTooltip = (_props: AppComponentProps): ComponentChildren => {
+    return (
+        <div class="p-3 text-sm text-foreground">
+            <p>Quick summary goes here</p>
+        </div>
+    );
+};
+
+export default MyTooltip;
+```
+
+</Step>
+
+<Step>
+
+### Register in `vite.config.ts`
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+import myIconSvg from "./src/devtools/my-icon.svg?raw";
+import MyApp from "./src/devtools/my-app";
+import MyTooltip from "./src/devtools/my-tooltip";
+
+export default defineConfig({
+    plugins: [
+        devToolbar({
+            customApps: [
+                {
+                    id: "my-package:my-app", // must be unique
+                    name: "My App", // shown in tooltip and panel header
+                    icon: myIconSvg, // raw SVG string
+                    component: MyApp,
+                    tooltip: MyTooltip, // optional
+                },
+            ],
+        }),
+    ],
+});
+```
+
+</Step>
+
+<Step>
+
+### (Optional) Add Server RPC Functions
+
+If your app needs to talk to Node.js (read files, call APIs, inspect the build), add server RPC functions. See the [RPC documentation](/docs/dev-toolbar/custom-apps/rpc) for details.
+
+</Step>
+
+</Steps>
+
+## App Component Props
+
+```ts
+interface AppComponentProps {
+    /**
+     * RPC helper — provides access to server-side functions.
+     * Cast to your typed interface for full type safety.
+     */
+    helpers: {
+        rpc: ServerFunctions & Record<string, (...args: any[]) => Promise<any>>;
+    };
+}
+```
+
+## App Definition
+
+```ts
+interface DevToolbarApp {
+    /** Unique identifier. Use a namespaced format: "my-lib:my-app" */
+    id: string;
+
+    /** Display name shown in the toolbar and panel header */
+    name: string;
+
+    /** Raw SVG string for the toolbar button icon */
+    icon: string;
+
+    /** Main panel component */
+    component: ComponentType<AppComponentProps>;
+
+    /** Optional compact tooltip component shown on hover */
+    tooltip?: ComponentType<AppComponentProps>;
+}
+```
+
+## Styling
+
+App components are rendered inside Shadow DOM with Tailwind CSS v4 available. Use Tailwind utility classes directly. The design system uses CSS custom properties for theming:
+
+| Token                   | Usage                         |
+| ----------------------- | ----------------------------- |
+| `text-foreground`       | Primary text                  |
+| `text-muted-foreground` | Secondary/disabled text       |
+| `bg-background`         | Panel background              |
+| `bg-card`               | Card/section background       |
+| `bg-primary`            | Brand accent (lime `#caff00`) |
+| `text-primary`          | Brand accent text             |
+| `border-border`         | Standard border colour        |
+
+For example:
+
+```tsx
+<div class="p-5 space-y-4">
+    <h2 class="text-xs font-bold uppercase tracking-widest text-muted-foreground">// My Section</h2>
+    <div class="border border-border bg-card p-4">
+        <p class="text-sm text-foreground">Content goes here</p>
+    </div>
+</div>
+```
+
+## Iframe Apps
+
+Instead of a Preact component, you can load any URL inside the panel using `view: { type: "iframe", src: "..." }`. The URL is rendered in a full-size `<iframe>` that fills the panel area — useful for embedding existing web pages, Storybook, Swagger UI, or any standalone dev tool.
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+import myIconSvg from "./my-icon.svg?raw";
+
+export default defineConfig({
+    plugins: [
+        devToolbar({
+            customApps: [
+                {
+                    id: "my-package:storybook",
+                    name: "Storybook",
+                    icon: myIconSvg,
+                    view: {
+                        type: "iframe",
+                        src: "http://localhost:6006",
+                    },
+                },
+            ],
+        }),
+    ],
+});
+```
+
+Iframe apps:
+
+- Do **not** use a `component` or `init` — set only `view`.
+- Cannot access `helpers.rpc` from inside the iframe (different origin).
+- The toolbar header, resize handles, and fullscreen/PiP controls all work normally.
+
+## Dynamic Registration
+
+Apps can also be registered at runtime via the [Global API](/docs/dev-toolbar/custom-apps/global-api):
+
+```ts
+const api = (window as any).__VISULIMA_DEVTOOLS__;
+
+if (api) {
+    api.registerApp({
+        id: "my-package:dynamic-app",
+        name: "Dynamic App",
+        icon: svgString,
+        component: MyDynamicApp,
+    });
+}
+```
+
+## App ID Conventions
+
+Use a namespaced format to avoid collisions with built-in apps and other libraries:
+
+```
+your-package:app-name
+```
+
+Built-in app IDs use the `dev-toolbar:` prefix — do not use this prefix for custom apps.
+
+| Reserved                   | Reason   |
+| -------------------------- | -------- |
+| `dev-toolbar:a11y`         | Built-in |
+| `dev-toolbar:annotations`  | Built-in |
+| `dev-toolbar:assets`       | Built-in |
+| `dev-toolbar:inspector`    | Built-in |
+| `dev-toolbar:module-graph` | Built-in |
+| `dev-toolbar:performance`  | Built-in |
+| `dev-toolbar:seo`          | Built-in |
+| `dev-toolbar:settings`     | Built-in |
+| `dev-toolbar:tailwind`     | Built-in |
+| `dev-toolbar:timeline`     | Built-in |
+| `dev-toolbar:vite-config`  | Built-in |

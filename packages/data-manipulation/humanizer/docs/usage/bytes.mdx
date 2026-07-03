@@ -1,0 +1,473 @@
+---
+title: "Bytes"
+---
+
+# Bytes Usage
+
+Learn how to format bytes to human-readable strings and parse strings back to bytes with extensive customization options.
+
+## Format Bytes
+
+Convert numeric byte values to human-readable strings.
+
+### Basic Formatting
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+formatBytes(0);
+// => "0 B"
+
+formatBytes(1024);
+// => "1 KB"
+
+formatBytes(1048576);
+// => "1 MB"
+
+formatBytes(1073741824);
+// => "1 GB"
+```
+
+### Decimal Precision
+
+Control the number of decimal places:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const bytes = 1234567;
+
+formatBytes(bytes);
+// => "1 MB"
+
+formatBytes(bytes, { decimals: 1 });
+// => "1.2 MB"
+
+formatBytes(bytes, { decimals: 2 });
+// => "1.18 MB"
+
+formatBytes(bytes, { decimals: 3 });
+// => "1.177 MB"
+```
+
+### Long Format
+
+Display full unit names instead of abbreviations:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+formatBytes(1024, { long: true });
+// => "1 Kilobytes"
+
+formatBytes(1048576, { long: true });
+// => "1 Megabytes"
+
+formatBytes(1073741824, { long: true });
+// => "1 Gigabytes"
+
+// IEC units with long format
+formatBytes(1024, { long: true, units: "iec" });
+// => "1 Kibibytes"
+```
+
+### Unit System Selection
+
+Choose between metric, IEC, and octet variants:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const bytes = 1073741824;
+
+// Metric (default)
+formatBytes(bytes, { units: "metric" });
+// => "1 GB"
+
+// IEC binary prefixes
+formatBytes(bytes, { units: "iec" });
+// => "1 GiB"
+
+// Metric octet (French)
+formatBytes(bytes, { units: "metric_octet" });
+// => "1 Go"
+
+// IEC octet (French)
+formatBytes(bytes, { units: "iec_octet" });
+// => "1 Gio"
+```
+
+### Base Conversion
+
+Switch between base 2 (1024) and base 10 (1000):
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const bytes = 1073741824;
+
+// Base 2 (binary, default)
+formatBytes(bytes, { base: 2, decimals: 2 });
+// => "1.00 GB"
+
+// Base 10 (decimal)
+formatBytes(bytes, { base: 10, decimals: 2 });
+// => "1.07 GB"
+
+// Practical example: Show both values
+console.log(`Binary: ${formatBytes(bytes, { base: 2, units: "iec" })}`);
+console.log(`Decimal: ${formatBytes(bytes, { base: 10, units: "metric" })}`);
+// Binary: 1 GiB
+// Decimal: 1.07 GB
+```
+
+### Specific Unit
+
+Force output to a specific unit:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const bytes = 123412341;
+
+// Force KB
+formatBytes(bytes, { unit: "KB", decimals: 2 });
+// => "120,519.86 KB"
+
+// Force GB
+formatBytes(bytes, { unit: "GB", decimals: 3 });
+// => "0.115 GB"
+
+// Force MB with long format
+formatBytes(bytes, { unit: "MB", decimals: 2, long: true });
+// => "117.70 Megabytes"
+```
+
+### Localized Formatting
+
+Use locale-specific number formatting:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const bytes = 123412341;
+
+// English (US)
+formatBytes(bytes, { decimals: 2, locale: "en-US" });
+// => "117.70 MB"
+
+// German (comma decimal)
+formatBytes(bytes, { decimals: 2, locale: "de-DE" });
+// => "117,70 MB"
+
+// French (space thousand separator)
+formatBytes(bytes, { decimals: 2, locale: "fr-FR" });
+// => "117,70 Mo"
+
+// Japanese
+formatBytes(bytes, { decimals: 2, locale: "ja-JP" });
+// => "117.70 MB"
+```
+
+### Remove Spacing
+
+Control spacing between value and unit:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+// With space (default)
+formatBytes(1024);
+// => "1 KB"
+
+// Without space
+formatBytes(1024, { space: false });
+// => "1KB"
+```
+
+### Advanced Number Formatting
+
+Pass additional Intl.NumberFormat options:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const bytes = 1234567890;
+
+// Use grouping (thousand separators)
+formatBytes(bytes, {
+    unit: "KB",
+    decimals: 2,
+    useGrouping: true,
+});
+// => "1,205,632.71 KB"
+
+// Scientific notation
+formatBytes(bytes, {
+    unit: "B",
+    notation: "scientific",
+});
+// => "1.234567890E9 B"
+```
+
+## Parse Bytes
+
+Convert human-readable strings back to numeric byte values.
+
+### Basic Parsing
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+parseBytes("1 KB");
+// => 1024
+
+parseBytes("1 MB");
+// => 1048576
+
+parseBytes("1 GB");
+// => 1073741824
+
+parseBytes("1 TB");
+// => 1099511627776
+```
+
+### Decimal Values
+
+Parse strings with decimal values:
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+parseBytes("1.5 MB");
+// => 1572864
+
+parseBytes("2.25 GB");
+// => 2415919104
+
+parseBytes("0.5 TB");
+// => 549755813888
+```
+
+### Case Insensitive
+
+Parsing is case insensitive:
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+parseBytes("1 kb");
+// => 1024
+
+parseBytes("1 KB");
+// => 1024
+
+parseBytes("1 Kb");
+// => 1024
+
+parseBytes("1 kB");
+// => 1024
+```
+
+### Flexible Formatting
+
+Parse various input formats:
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+// With space
+parseBytes("1 MB");
+// => 1048576
+
+// Without space
+parseBytes("1MB");
+// => 1048576
+
+// With period
+parseBytes("1.5MB");
+// => 1572864
+
+// Spelled out
+parseBytes("1 Megabytes");
+// => 1048576
+```
+
+### Localized Parsing
+
+Parse locale-specific number formats:
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+// German format (comma decimal)
+parseBytes("117,70 MB", { locale: "de-DE" });
+// => 123417395.2
+
+// French format (space thousand separator)
+parseBytes("1 234,56 MB", { locale: "fr-FR" });
+// => 1294409441.28
+
+// English format (period decimal)
+parseBytes("117.70 MB", { locale: "en-US" });
+// => 123417395.2
+```
+
+### Unit System for Parsing
+
+Specify the unit system for parsing:
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+// Metric (default)
+parseBytes("1 KB", { units: "metric" });
+// => 1024
+
+// IEC
+parseBytes("1 KiB", { units: "iec" });
+// => 1024
+
+// Metric octet
+parseBytes("1 ko", { units: "metric_octet" });
+// => 1024
+```
+
+### Base Selection
+
+Choose the base for parsing:
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+// Base 2 (1024, default)
+parseBytes("1 KB", { base: 2 });
+// => 1024
+
+// Base 10 (1000)
+parseBytes("1 KB", { base: 10 });
+// => 1000
+```
+
+### Error Handling
+
+Handle invalid input:
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+try {
+    parseBytes("");
+    // Throws: "Value is not a string or is empty."
+} catch (error) {
+    console.error(error.message);
+}
+
+// Invalid format returns NaN
+const result = parseBytes("invalid");
+console.log(Number.isNaN(result)); // true
+
+// Check for valid result
+function safeParse(input: string): number | null {
+    const bytes = parseBytes(input);
+    return Number.isNaN(bytes) ? null : bytes;
+}
+
+safeParse("1 MB"); // => 1048576
+safeParse("invalid"); // => null
+```
+
+## Practical Examples
+
+### File Size Display
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+interface FileInfo {
+    name: string;
+    size: number;
+}
+
+function displayFiles(files: FileInfo[]) {
+    for (const file of files) {
+        const sizeStr = formatBytes(file.size, { decimals: 2 });
+        console.log(`${file.name.padEnd(30)} ${sizeStr.padStart(12)}`);
+    }
+}
+
+displayFiles([
+    { name: "document.pdf", size: 2458624 },
+    { name: "photo.jpg", size: 5242880 },
+    { name: "video.mp4", size: 157286400 },
+]);
+// document.pdf                       2.34 MB
+// photo.jpg                          5.00 MB
+// video.mp4                        150.00 MB
+```
+
+### User Input Validation
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+function validateUploadSize(userInput: string, maxBytes: number): boolean {
+    const bytes = parseBytes(userInput);
+
+    if (Number.isNaN(bytes)) {
+        throw new Error(`Invalid size format: ${userInput}`);
+    }
+
+    if (bytes > maxBytes) {
+        throw new Error(`Size ${formatBytes(bytes)} exceeds maximum ${formatBytes(maxBytes)}`);
+    }
+
+    return true;
+}
+
+const maxSize = 50 * 1024 * 1024; // 50 MB
+
+validateUploadSize("25 MB", maxSize); // true
+validateUploadSize("100 MB", maxSize); // Error: exceeds maximum
+```
+
+### Storage Calculator
+
+```typescript
+import { formatBytes, parseBytes } from "@visulima/humanizer";
+
+function calculateRemainingStorage(totalStr: string, usedStr: string): { remaining: string; percentUsed: string } {
+    const total = parseBytes(totalStr);
+    const used = parseBytes(usedStr);
+    const remaining = total - used;
+    const percentUsed = ((used / total) * 100).toFixed(1);
+
+    return {
+        remaining: formatBytes(remaining, { decimals: 2 }),
+        percentUsed: `${percentUsed}%`,
+    };
+}
+
+const stats = calculateRemainingStorage("500 GB", "327 GB");
+console.log(stats);
+// { remaining: "173.00 GB", percentUsed: "65.4%" }
+```
+
+### Bandwidth Monitor
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+function displayBandwidth(bytesPerSecond: number) {
+    // Show in appropriate unit for the speed
+    const formatted = formatBytes(bytesPerSecond, {
+        base: 10, // Network uses base 10
+        decimals: 2,
+    });
+
+    console.log(`Download speed: ${formatted}/s`);
+}
+
+displayBandwidth(1250000); // => "Download speed: 1.25 MB/s"
+displayBandwidth(125000000); // => "Download speed: 125.00 MB/s"
+```

@@ -1,0 +1,93 @@
+---
+title: OpenTelemetry
+description: Add observability to email sending with OpenTelemetry instrumentation in @visulima/email
+---
+
+# OpenTelemetry Provider
+
+The OpenTelemetry provider wraps any other provider with [OpenTelemetry](https://opentelemetry.io/docs/) instrumentation, adding distributed tracing and metrics to your email sending operations.
+
+**Runtime Support:** Depends on the wrapped provider
+
+## Prerequisites
+
+Install OpenTelemetry packages:
+
+```bash
+npm install @opentelemetry/api @opentelemetry/sdk-trace-base
+```
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { opentelemetryProvider } from "@visulima/email/providers/opentelemetry";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(
+    opentelemetryProvider({
+        provider: resendProvider({ apiKey: process.env.RESEND_API_KEY! }),
+        serviceName: "my-email-service",
+        recordContent: false,
+    }),
+);
+```
+
+## Configuration
+
+The `OpenTelemetryConfig` interface extends `BaseConfig` with the following options:
+
+| Option          | Type                          | Required | Default   | Description                               |
+| --------------- | ----------------------------- | -------- | --------- | ----------------------------------------- |
+| `provider`      | `Provider \| ProviderFactory` | Yes      | -         | The provider to wrap with instrumentation |
+| `serviceName`   | `string`                      | No       | `"email"` | Service name for OpenTelemetry spans      |
+| `recordContent` | `boolean`                     | No       | `false`   | Whether to record email content in spans  |
+| `tracer`        | `Tracer`                      | No       | Global    | Custom OpenTelemetry tracer instance      |
+| `debug`         | `boolean`                     | No       | `false`   | Enable debug logging                      |
+| `logger`        | `Console`                     | No       | -         | Custom logger instance                    |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello with Tracing").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+// Spans will be created automatically for the send operation
+```
+
+## Custom Tracer
+
+You can provide a custom tracer instance:
+
+```typescript
+import { trace } from "@opentelemetry/api";
+
+const tracer = trace.getTracer("my-app", "1.0.0");
+
+const mail = createMail(
+    opentelemetryProvider({
+        provider: resendProvider({ apiKey: "re_xxx" }),
+        tracer,
+        serviceName: "email-service",
+    }),
+);
+```
+
+## Recording Content
+
+By default, email content is not recorded in spans for privacy reasons. Enable it for debugging:
+
+```typescript
+const mail = createMail(
+    opentelemetryProvider({
+        provider: resendProvider({ apiKey: "re_xxx" }),
+        recordContent: true, // Records email content in spans
+    }),
+);
+```
+
+## Supported Features
+
+The OpenTelemetry provider supports whatever features the underlying provider supports. It transparently proxies all operations while adding instrumentation.

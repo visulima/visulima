@@ -1,0 +1,25 @@
+{
+    "name": "dev_toolbar_vite-svelte",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "vite build",
+        "check": "svelte-check --tsconfig ./tsconfig.app.json && tsc -p tsconfig.node.json",
+        "dev": "vite",
+        "preview": "vite preview"
+    },
+    "dependencies": {},
+    "devDependencies": {
+        "@sveltejs/vite-plugin-svelte": "catalog:build",
+        "@tsconfig/svelte": "catalog:frontend",
+        "@visulima/dev-toolbar": "workspace:*",
+        "@visulima/vite-overlay": "workspace:*",
+        "svelte": "catalog:frontend",
+        "svelte-check": "catalog:frontend",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build"
+    },
+    "peerDependencies": {},
+    "optionalDependencies": {}
+}

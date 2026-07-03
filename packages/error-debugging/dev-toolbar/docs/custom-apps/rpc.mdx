@@ -1,0 +1,292 @@
+---
+title: RPC Functions
+description: Type-safe bidirectional communication between the browser and Vite's Node.js process. Call server functions from your app component, and push updates from the server to the client.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+The RPC (Remote Procedure Call) layer provides type-safe communication between the browser (client) and Vite's Node.js dev server (server). Built-in RPC functions cover common tasks like reading the Vite config, walking the module graph, and opening files in an editor. You can also add your own server functions.
+
+## Built-in Server Functions
+
+These functions are available on `helpers.rpc` in every app component:
+
+### `getViteConfig()`
+
+Returns the resolved Vite configuration as a plain serializable object.
+
+```ts
+const config = await (helpers.rpc as any).getViteConfig();
+// { mode: "development", root: "/path/to/project", server: { ... }, ... }
+```
+
+### `getModuleGraph()`
+
+Returns the current Vite module graph as an array of module entries.
+
+```ts
+const modules = await (helpers.rpc as any).getModuleGraph();
+// [{ id: "/src/main.ts", url: "/src/main.ts", importerCount: 0, importerUrls: [] }, ...]
+```
+
+Each module entry:
+
+```ts
+interface ModuleEntry {
+    id: string;
+    url: string;
+    importerCount: number;
+    importerUrls: string[];
+}
+```
+
+### `getTailwindConfig()`
+
+Returns the resolved Tailwind CSS design tokens from the project's CSS. Returns `null` when no Tailwind config is found.
+
+```ts
+const tokens = await (helpers.rpc as any).getTailwindConfig();
+// { colors: { primary: "#...", ... }, spacing: { ... }, ... } | null
+```
+
+### `readFile(path)`
+
+Reads a file relative to the project root (or absolute) and returns its UTF-8 content.
+
+```ts
+const content = await (helpers.rpc as any).readFile("package.json");
+```
+
+### `openInEditor(file, line?, column?)`
+
+Opens a file in the configured editor using [`launch-editor`](https://github.com/yyx990803/launch-editor), which knows the right CLI flags for each editor (`--goto` for VS Code, `-l` for vim, etc.).
+
+The editor is auto-detected from the `EDITOR` / `VISUAL` environment variables or by scanning running IDE processes. Override it project-wide with the [`editor`](/docs/dev-toolbar/configuration#editor) plugin option.
+
+```ts
+await (helpers.rpc as any).openInEditor("/absolute/path/to/file.ts", 10, 5);
+// Opens file.ts at line 10, column 5
+```
+
+### `getAnnotations()`
+
+Returns all annotations stored in `.devtoolbar/annotations.json`.
+
+```ts
+const annotations = await (helpers.rpc as any).getAnnotations();
+// [{ id: "abc", comment: "Fix alignment", intent: "fix", status: "pending", ... }]
+```
+
+### `createAnnotation(data)`
+
+Creates a new annotation. The server generates the `id`, `createdAt`, and `updatedAt` fields.
+
+```ts
+await (helpers.rpc as any).createAnnotation({
+    comment: "Fix this button alignment",
+    intent: "fix",
+    severity: "important",
+    elementTag: "button",
+    url: window.location.href,
+    x: 50,
+    y: 200,
+});
+```
+
+### `updateAnnotation(id, data)`
+
+Updates an existing annotation's comment, intent, severity, status, or adds a thread message.
+
+```ts
+await (helpers.rpc as any).updateAnnotation("abc123", {
+    status: "resolved",
+    resolvedBy: "human",
+});
+```
+
+### `deleteAnnotation(id)`
+
+Deletes an annotation and its associated screenshot file.
+
+```ts
+await (helpers.rpc as any).deleteAnnotation("abc123");
+```
+
+### `getScreenshot(annotationId)`
+
+Returns the screenshot for an annotation as a base64 data URL.
+
+```ts
+const dataUrl = await (helpers.rpc as any).getScreenshot("abc123");
+// "data:image/png;base64,iVBOR..."
+```
+
+### `saveScreenshot(annotationId, dataUrl)`
+
+Saves a screenshot from a data URL. Returns the relative file path.
+
+```ts
+const path = await (helpers.rpc as any).saveScreenshot("abc123", dataUrl);
+// "screenshots/abc123.png"
+```
+
+## Custom Server Functions
+
+Add your own Node.js functions by passing them to the plugin's `serverFunctions` option:
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+import fs from "node:fs/promises";
+
+export default defineConfig({
+    plugins: [
+        devToolbar({
+            serverFunctions: {
+                async getPackageJson() {
+                    const raw = await fs.readFile("package.json", "utf8");
+                    return JSON.parse(raw);
+                },
+
+                async listRoutes() {
+                    // Return application routes, read from the filesystem, etc.
+                    const files = await fs.readdir("src/pages");
+                    return files.map((f) => `/${f.replace(/\.(tsx?|jsx?)$/, "")}`);
+                },
+            },
+        }),
+    ],
+});
+```
+
+Then call them from your app component:
+
+```tsx title="my-app.tsx"
+/** @jsxImportSource preact */
+import { useEffect, useState } from "preact/hooks";
+import type { AppComponentProps } from "@visulima/dev-toolbar";
+
+const MyApp = ({ helpers }: AppComponentProps) => {
+    const [routes, setRoutes] = useState<string[]>([]);
+
+    useEffect(() => {
+        (helpers.rpc as any).listRoutes().then(setRoutes);
+    }, []);
+
+    return (
+        <ul class="p-4 space-y-1">
+            {routes.map((route) => (
+                <li key={route} class="text-sm font-mono text-foreground/80">
+                    {route}
+                </li>
+            ))}
+        </ul>
+    );
+};
+```
+
+## Type-Safe RPC
+
+For full TypeScript type safety, define an interface for your server functions and use it on both sides:
+
+```ts title="src/devtools/rpc-types.ts"
+export interface MyServerFunctions {
+    getPackageJson(): Promise<Record<string, unknown>>;
+    listRoutes(): Promise<string[]>;
+    readEnvVars(): Promise<Record<string, string>>;
+}
+```
+
+```ts title="vite.config.ts"
+import type { MyServerFunctions } from "./src/devtools/rpc-types";
+
+devToolbar({
+    serverFunctions: {
+        async getPackageJson() { ... },
+        async listRoutes() { ... },
+        async readEnvVars() { ... },
+    } satisfies MyServerFunctions,
+})
+```
+
+```tsx title="my-app.tsx"
+/** @jsxImportSource preact */
+import { useEffect, useState } from "preact/hooks";
+import type { AppComponentProps } from "@visulima/dev-toolbar";
+import type { MyServerFunctions } from "./rpc-types";
+
+const MyApp = ({ helpers }: AppComponentProps) => {
+    const [routes, setRoutes] = useState<string[]>([]);
+    const rpc = helpers.rpc as unknown as MyServerFunctions;
+
+    useEffect(() => {
+        rpc.listRoutes().then(setRoutes); // fully typed!
+    }, []);
+
+    return (
+        <ul class="p-4 space-y-1">
+            {routes.map((route) => (
+                <li key={route} class="text-sm font-mono text-foreground/80">
+                    {route}
+                </li>
+            ))}
+        </ul>
+    );
+};
+```
+
+## How RPC Works
+
+Under the hood, the RPC layer uses Vite's HMR WebSocket channel:
+
+1. The client calls `helpers.rpc.functionName(args)` — this sends a message over the Vite HMR WebSocket
+2. The Vite plugin receives the message, calls the matching server function, and serializes the result
+3. The result is sent back over the WebSocket and resolves the promise on the client
+
+<Callout type="info">
+    RPC calls only work during development with an active Vite dev server. In production builds, the toolbar and its RPC layer are not present.
+</Callout>
+
+## Error Handling
+
+RPC calls return promises. If the server function throws, the promise rejects with the error message:
+
+```ts
+try {
+    const config = await (helpers.rpc as any).getViteConfig();
+} catch (err) {
+    console.error("RPC failed:", err instanceof Error ? err.message : String(err));
+}
+```
+
+For UI error states, display a retry button:
+
+```tsx
+const [error, setError] = useState<string | null>(null);
+
+const load = async (): Promise<void> => {
+    try {
+        const data = await (helpers.rpc as any).myFunction();
+        setData(data);
+    } catch (err) {
+        setError(err instanceof Error ? err.message : "Failed to load");
+    }
+};
+
+if (error) {
+    return (
+        <div class="p-8 text-center">
+            <p class="text-sm text-destructive">{error}</p>
+            <button onClick={load} type="button">
+                Retry
+            </button>
+        </div>
+    );
+}
+```
+
+## Limitations
+
+- RPC function arguments and return values must be JSON-serializable (no `Function`, `Symbol`, `undefined` values, circular references, etc.)
+- Server functions run in Vite's Node.js context — they have access to the filesystem and Node.js APIs, but not to the browser DOM
+- Each RPC call is a round-trip over the WebSocket; avoid calling RPC inside tight loops

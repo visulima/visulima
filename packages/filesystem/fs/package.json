@@ -1,0 +1,252 @@
+{
+    "name": "@visulima/fs",
+    "version": "5.0.0-alpha.33",
+    "description": "Human friendly file system utilities for Node.js",
+    "keywords": [
+        "anolilab",
+        "brotli",
+        "detect-newline",
+        "dir",
+        "directory",
+        "empty-dir",
+        "ensure",
+        "ensure-dir",
+        "ensure-file",
+        "ensure-link",
+        "ensure-symlink",
+        "eol",
+        "file",
+        "files",
+        "filesystem",
+        "find",
+        "find-up",
+        "findup",
+        "folder",
+        "fs",
+        "fs-safe",
+        "gzip",
+        "ini",
+        "json",
+        "json5",
+        "jsonc",
+        "jsonc-parser",
+        "look",
+        "look-up",
+        "match",
+        "package",
+        "parent",
+        "parents",
+        "path",
+        "read",
+        "read-file",
+        "read-json",
+        "read-yaml",
+        "resolve",
+        "safe",
+        "search",
+        "size",
+        "smol-toml",
+        "standard",
+        "std",
+        "toml",
+        "up",
+        "visulima",
+        "walk",
+        "walking",
+        "write",
+        "write-dir",
+        "write-file",
+        "write-safe",
+        "yaml"
+    ],
+    "homepage": "https://visulima.com/packages/fs/",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/filesystem/fs"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./utils": {
+            "types": "./dist/utils.d.ts",
+            "default": "./dist/utils.js"
+        },
+        "./error": {
+            "types": "./dist/error.d.ts",
+            "default": "./dist/error.js"
+        },
+        "./yaml": {
+            "types": "./dist/yaml.d.ts",
+            "default": "./dist/yaml.js"
+        },
+        "./toml": {
+            "types": "./dist/toml.d.ts",
+            "default": "./dist/toml.js"
+        },
+        "./jsonc": {
+            "types": "./dist/jsonc.d.ts",
+            "default": "./dist/jsonc.js"
+        },
+        "./json5": {
+            "types": "./dist/json5.d.ts",
+            "default": "./dist/json5.js"
+        },
+        "./ini": {
+            "types": "./dist/ini.d.ts",
+            "default": "./dist/ini.js"
+        },
+        "./size": {
+            "types": "./dist/size.d.ts",
+            "default": "./dist/size.js"
+        },
+        "./eol": {
+            "types": "./dist/eol.d.ts",
+            "default": "./dist/eol.js"
+        },
+        "./glob": {
+            "types": "./dist/glob.d.ts",
+            "default": "./dist/glob.js"
+        },
+        "./glob-parent": {
+            "types": "./dist/glob-parent.d.ts",
+            "default": "./dist/glob-parent.js"
+        },
+        "./is-glob": {
+            "types": "./dist/is-glob.d.ts",
+            "default": "./dist/is-glob.js"
+        },
+        "./match": {
+            "types": "./dist/match.d.ts",
+            "default": "./dist/match.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "lint:attw": "attw --pack --profile esm-only",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@visulima/path": "3.0.0-alpha.13"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@types/glob-parent": "^5.1.3",
+        "@types/ini": "catalog:types",
+        "@types/is-glob": "^4.0.4",
+        "@types/node": "catalog:types",
+        "@types/picomatch": "^4.0.3",
+        "@visulima/error": "6.0.0-alpha.35",
+        "@visulima/packem": "catalog:dev",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "detect-indent": "catalog:dev",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "fallow": "catalog:lint",
+        "fast-safe-stringify": "catalog:dev",
+        "glob-parent": "^6.0.2",
+        "ini": "catalog:dev",
+        "is-fs-case-sensitive": "catalog:dev",
+        "is-glob": "^4.0.3",
+        "json5": "catalog:dev",
+        "jsonc-parser": "catalog:dev",
+        "picomatch": "^4.0.4",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "redos-detector": "catalog:dev",
+        "rimraf": "catalog:node",
+        "safe-regex2": "catalog:dev",
+        "semantic-release": "catalog:cli",
+        "smol-toml": "catalog:dev",
+        "tempy": "catalog:dev",
+        "tinyglobby": "^0.2.17",
+        "type-fest": "catalog:prod",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test",
+        "yaml": "catalog:dev"
+    },
+    "peerDependencies": {
+        "ini": "catalog:peer",
+        "json5": "catalog:peer",
+        "jsonc-parser": "catalog:peer",
+        "smol-toml": "catalog:peer",
+        "yaml": "catalog:peer"
+    },
+    "peerDependenciesMeta": {
+        "ini": {
+            "optional": true
+        },
+        "json5": {
+            "optional": true
+        },
+        "jsonc-parser": {
+            "optional": true
+        },
+        "smol-toml": {
+            "optional": true
+        },
+        "yaml": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

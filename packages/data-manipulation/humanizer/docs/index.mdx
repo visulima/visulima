@@ -1,0 +1,140 @@
+---
+title: Introduction
+description: "Transform data into human-readable formats with extensive localization support for bytes and duration"
+---
+
+# @visulima/humanizer
+
+Transform data into human-readable formats with extensive localization support. Convert bytes to readable sizes (1024 → 1KB), format durations ("3 seconds", "1 day, 3 hours"), and parse human-written values back to numbers - all with support for 700+ locales and 50+ languages.
+
+## Key Features
+
+### Bytes Conversion
+
+- **Bidirectional conversion** - Format bytes to strings and parse strings to bytes
+- **700+ locale support** - Localized number formatting (117,70 MB in German)
+- **Multiple unit systems** - Metric, IEC, and octet variants
+- **Flexible units** - KB, KiB, MB, MiB, GB, GiB, and beyond
+
+### Duration Formatting
+
+- **Time humanization** - 97320000ms → "1 day, 3 hours, 2 minutes"
+- **50+ languages** - Full localization for unit names and formatting
+- **Bidirectional parsing** - Parse "2h 30min", "1:25:05", or "PT2H30M5S"
+- **Customizable output** - Control units, rounding, delimiters, and more
+
+### Localization & Internationalization
+
+- **CLDR-based formatting** - Uses Intl.NumberFormat for accurate localization
+- **Custom language objects** - Create your own translations and unit maps
+- **RTL support** - Handles right-to-left languages correctly
+- **Decimal/separator handling** - Respects locale-specific number formats
+
+## Quick Start
+
+```typescript
+import { formatBytes, parseBytes, duration, parseDuration } from "@visulima/humanizer";
+
+// Bytes formatting
+formatBytes(123412341, { decimals: 2 });
+// => "117.70 MB"
+
+// Duration formatting
+duration(97320000);
+// => "1 day, 3 hours, 2 minutes"
+
+// Parsing back to numbers
+parseBytes("117.70 MB");
+// => 123417395.2
+
+parseDuration("1 day, 3 hours, 2 minutes");
+// => 97320000
+```
+
+## Use Cases
+
+### Log File Size Display
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+function displayLogStats(logFiles: { name: string; size: number }[]) {
+    for (const file of logFiles) {
+        console.log(`${file.name}: ${formatBytes(file.size, { decimals: 1 })}`);
+    }
+}
+
+displayLogStats([
+    { name: "error.log", size: 2458624 },
+    { name: "access.log", size: 15728640 },
+]);
+// Output:
+// error.log: 2.3 MB
+// access.log: 15.0 MB
+```
+
+### API Rate Limit Messages
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+function getRateLimitMessage(resetTime: number, locale: string) {
+    const timeUntilReset = resetTime - Date.now();
+    const waitTime = duration(timeUntilReset, {
+        units: ["h", "m", "s"],
+        largest: 2,
+    });
+
+    return `Rate limit exceeded. Try again in ${waitTime}.`;
+}
+
+console.log(getRateLimitMessage(Date.now() + 3723000, "en"));
+// => "Rate limit exceeded. Try again in 1 hour, 2 minutes."
+```
+
+### User Input Processing
+
+```typescript
+import { parseBytes, parseDuration } from "@visulima/humanizer";
+
+function processUploadLimit(userInput: string): number | null {
+    const bytes = parseBytes(userInput);
+    return Number.isNaN(bytes) ? null : bytes;
+}
+
+processUploadLimit("50 MB"); // => 52428800
+processUploadLimit("2 GB"); // => 2147483648
+processUploadLimit("invalid"); // => null
+
+function parseTimeoutValue(userInput: string): number | null {
+    const ms = parseDuration(userInput);
+    return ms === undefined ? null : ms;
+}
+
+parseTimeoutValue("30 seconds"); // => 30000
+parseTimeoutValue("2h 30m"); // => 9000000
+parseTimeoutValue("1:30:00"); // => 5400000
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install and import the humanizer package
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started with bytes and duration in 5 minutes
+    </Card>
+    <Card title="Concepts" href="/concepts/localization">
+        Understand localization and unit systems
+    </Card>
+    <Card title="API Reference" href="/api/bytes">
+        Complete API documentation for all functions
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+- **Node.js:** 22.13 or higher
+- **Browser:** Modern browsers with Intl.NumberFormat support
+- **Edge cases:** Handles locale-specific decimal separators, thousand separators, and number formatting

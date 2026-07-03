@@ -1,0 +1,56 @@
+---
+title: Smart Lockfile Hashing
+description: Only bust cache for packages affected by lockfile changes
+---
+
+# Smart Lockfile Hashing
+
+By default, lockfiles (package-lock.json, pnpm-lock.yaml, yarn.lock) are included in the global hash. This means **any** lockfile change invalidates **every** task's cache.
+
+Smart lockfile hashing parses the lockfile and only hashes the resolved versions of each package's actual dependencies. A lockfile change only busts cache for affected packages.
+
+## Enable
+
+```typescript
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        smartLockfileHashing: true,
+    },
+    context,
+);
+```
+
+## How It Works
+
+1. **Parse lockfile** - Reads package-lock.json, pnpm-lock.yaml, or yarn.lock
+2. **Read package.json** - Gets each project's declared dependencies
+3. **Filter** - Extract only the resolved versions relevant to each project
+4. **Hash** - Include filtered versions in the task hash as `__lockfile__` implicit dep
+
+## Supported Lockfile Formats
+
+- **package-lock.json** - npm v1, v2, v3
+- **pnpm-lock.yaml** - pnpm v6+
+- **yarn.lock** - Yarn Classic (v1) and Berry (v2+)
+
+## Example
+
+Given a monorepo with packages A (depends on lodash) and B (depends on express):
+
+- Updating lodash in the lockfile → only package A's cache is busted
+- Updating express in the lockfile → only package B's cache is busted
+- Updating both → both caches are busted
+
+## Standalone Usage
+
+```typescript
+import { LockfileHasher } from "@visulima/task-runner";
+
+const hasher = new LockfileHasher("/path/to/workspace");
+const result = await hasher.hashForPackage("packages/my-app/package.json");
+
+console.log(result?.hash); // SHA-256 hash of resolved deps
+console.log(result?.dependencies); // [{ name: "lodash", version: "4.17.21" }]
+console.log(hasher.lockfileType); // "npm" | "pnpm" | "yarn"
+```

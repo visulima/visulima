@@ -1,0 +1,15 @@
+{
+    "name": "lib-medium-12",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Compiling lib-medium-12...' && sleep .9 && echo 'Generating types...' && sleep 0.2 && echo 'lib-medium-12 ready!' && mkdir -p dist && date > dist/.stamp",
+        "dev": "echo 'lib-medium-12 watching...' && while true; do sleep 2; echo '[lib-medium-12] rebuilt in 45ms'; done",
+        "lint": "echo 'ESLint: lib-medium-12...' && sleep 0.1 && echo 'No warnings.'",
+        "test": "echo 'Running lib-medium-12 tests...' && sleep .3 && echo '  Suite: unit - 5 passed' && echo '  Suite: integration - 3 passed'"
+    },
+    "dependencies": {
+        "lib-fast-2": "1.0.0",
+        "lib-fast-3": "1.0.0"
+    }
+}

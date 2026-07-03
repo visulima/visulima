@@ -1,0 +1,28 @@
+{
+    "name": "pail-nextjs-edge-example",
+    "version": "0.1.0",
+    "private": true,
+    "scripts": {
+        "build": "next build --turbopack",
+        "dev": "next dev --turbopack",
+        "lint": "eslint",
+        "start": "next start"
+    },
+    "dependencies": {
+        "@visulima/pail": "workspace:*",
+        "next": "catalog:prod",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
+    },
+    "devDependencies": {
+        "@eslint/eslintrc": "catalog:lint",
+        "@tailwindcss/postcss": "catalog:frontend",
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "eslint": "catalog:lint",
+        "eslint-config-next": "catalog:lint",
+        "tailwindcss": "catalog:style",
+        "typescript": "catalog:tsc"
+    }
+}

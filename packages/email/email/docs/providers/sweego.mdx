@@ -1,0 +1,70 @@
+---
+title: Sweego
+description: Send emails using the Sweego API with @visulima/email
+---
+
+# Sweego Provider
+
+The Sweego provider allows you to send emails through the [Sweego API](https://api.sweego.com/docs), an email delivery service.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { sweegoProvider } from "@visulima/email/providers/sweego";
+
+const mail = createMail(
+    sweegoProvider({
+        apiKey: process.env.SWEEGO_API_KEY!,
+    }),
+);
+```
+
+## Configuration
+
+The `SweegoConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                  | Description                     |
+| ---------- | --------- | -------- | ------------------------ | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                        | Your Sweego API key             |
+| `endpoint` | `string`  | No       | `https://api.sweego.com` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                  | Enable debug logging            |
+| `logger`   | `Console` | No       | -                        | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                      | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                  | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Sweego").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Sweego provider supports additional options through `SweegoEmailOptions`:
+
+| Option              | Type                      | Description             |
+| ------------------- | ------------------------- | ----------------------- |
+| `tags`              | `string[]`                | Tags for categorization |
+| `templateId`        | `string`                  | Sweego template ID      |
+| `templateVariables` | `Record<string, unknown>` | Template variables      |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | No        |

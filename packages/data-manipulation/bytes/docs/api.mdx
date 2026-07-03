@@ -1,0 +1,510 @@
+---
+title: "API Reference"
+description: "Complete API documentation for @visulima/bytes"
+---
+
+# API Reference
+
+Complete reference for all functions in the `@visulima/bytes` package.
+
+## Array Operations
+
+### concat
+
+Concatenates an array of byte slices into a single slice.
+
+**Signature:**
+
+```typescript
+function concat(arrays: Uint8Array[]): Uint8Array;
+```
+
+**Parameters:**
+
+- `arrays` (`Uint8Array[]`) - Array of Uint8Arrays to concatenate
+
+**Returns:** `Uint8Array` - A new Uint8Array containing all bytes from the input arrays
+
+**Example:**
+
+```typescript
+import { concat } from "@visulima/bytes";
+
+const result = concat([new Uint8Array([0, 1, 2]), new Uint8Array([3, 4, 5])]);
+console.log(result); // Uint8Array([0, 1, 2, 3, 4, 5])
+```
+
+---
+
+### copy
+
+Copies bytes from the source array to the destination array and returns the number of bytes copied.
+
+**Signature:**
+
+```typescript
+function copy(src: Uint8Array, dst: Uint8Array, offset?: number): number;
+```
+
+**Parameters:**
+
+- `src` (`Uint8Array`) - Source array to copy from
+- `dst` (`Uint8Array`) - Destination array to copy into
+- `offset` (`number`, optional) - Position in destination to start copying to. Default: `0`
+
+**Returns:** `number` - Number of bytes copied
+
+**Example:**
+
+```typescript
+import { copy } from "@visulima/bytes";
+
+const src = new Uint8Array([9, 8, 7]);
+const dst = new Uint8Array([0, 1, 2, 3, 4, 5]);
+
+const copied = copy(src, dst);
+console.log(copied); // 3
+console.log(dst); // Uint8Array([9, 8, 7, 3, 4, 5])
+```
+
+---
+
+### equals
+
+Checks if two byte slices are equal.
+
+**Signature:**
+
+```typescript
+function equals(a: Uint8Array, b: Uint8Array): boolean;
+```
+
+**Parameters:**
+
+- `a` (`Uint8Array`) - First array to compare
+- `b` (`Uint8Array`) - Second array to compare
+
+**Returns:** `boolean` - `true` if arrays are equal, `false` otherwise
+
+**Example:**
+
+```typescript
+import { equals } from "@visulima/bytes";
+
+const a = new Uint8Array([1, 2, 3]);
+const b = new Uint8Array([1, 2, 3]);
+
+console.log(equals(a, b)); // true
+```
+
+---
+
+### repeat
+
+Returns a new byte slice composed of count repetitions of the source array.
+
+**Signature:**
+
+```typescript
+function repeat(source: Uint8Array, count: number): Uint8Array;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to repeat
+- `count` (`number`) - Number of times to repeat (must be ≥ 0)
+
+**Returns:** `Uint8Array` - New array with repeated bytes
+
+**Example:**
+
+```typescript
+import { repeat } from "@visulima/bytes";
+
+const result = repeat(new Uint8Array([0, 1, 2]), 3);
+console.log(result); // Uint8Array([0, 1, 2, 0, 1, 2, 0, 1, 2])
+```
+
+---
+
+## Search Functions
+
+### indexOfNeedle
+
+Returns the index of the first occurrence of the needle array in the source array, or -1 if not present.
+
+**Signature:**
+
+```typescript
+function indexOfNeedle(source: Uint8Array, needle: Uint8Array, start?: number): number;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to search in
+- `needle` (`Uint8Array`) - Sequence to search for
+- `start` (`number`, optional) - Index to start searching from. Default: `0`
+
+**Returns:** `number` - Index of first occurrence, or `-1` if not found
+
+**Example:**
+
+```typescript
+import { indexOfNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(indexOfNeedle(source, needle)); // 1
+console.log(indexOfNeedle(source, needle, 2)); // 3
+```
+
+---
+
+### lastIndexOfNeedle
+
+Returns the index of the last occurrence of the needle array in the source array, or -1 if not present.
+
+**Signature:**
+
+```typescript
+function lastIndexOfNeedle(source: Uint8Array, needle: Uint8Array, start?: number): number;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to search in
+- `needle` (`Uint8Array`) - Sequence to search for
+- `start` (`number`, optional) - Index to search backwards from. Default: `source.length - 1`
+
+**Returns:** `number` - Index of last occurrence, or `-1` if not found
+
+**Example:**
+
+```typescript
+import { lastIndexOfNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(lastIndexOfNeedle(source, needle)); // 5
+```
+
+---
+
+### includesNeedle
+
+Determines whether the source array contains the needle array.
+
+**Signature:**
+
+```typescript
+function includesNeedle(source: Uint8Array, needle: Uint8Array, start?: number): boolean;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to search in
+- `needle` (`Uint8Array`) - Sequence to search for
+- `start` (`number`, optional) - Index to start searching from. Default: `0`
+
+**Returns:** `boolean` - `true` if needle is found, `false` otherwise
+
+**Example:**
+
+```typescript
+import { includesNeedle } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const needle = new Uint8Array([1, 2]);
+
+console.log(includesNeedle(source, needle)); // true
+```
+
+---
+
+### startsWith
+
+Returns true if the prefix array appears at the start of the source array, false otherwise.
+
+**Signature:**
+
+```typescript
+function startsWith(source: Uint8Array, prefix: Uint8Array): boolean;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to check
+- `prefix` (`Uint8Array`) - Prefix to look for
+
+**Returns:** `boolean` - `true` if source starts with prefix, `false` otherwise
+
+**Example:**
+
+```typescript
+import { startsWith } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const prefix = new Uint8Array([0, 1, 2]);
+
+console.log(startsWith(source, prefix)); // true
+```
+
+---
+
+### endsWith
+
+Returns true if the suffix array appears at the end of the source array, false otherwise.
+
+**Signature:**
+
+```typescript
+function endsWith(source: Uint8Array, suffix: Uint8Array): boolean;
+```
+
+**Parameters:**
+
+- `source` (`Uint8Array`) - Array to check
+- `suffix` (`Uint8Array`) - Suffix to look for
+
+**Returns:** `boolean` - `true` if source ends with suffix, `false` otherwise
+
+**Example:**
+
+```typescript
+import { endsWith } from "@visulima/bytes";
+
+const source = new Uint8Array([0, 1, 2, 1, 2, 1, 2, 3]);
+const suffix = new Uint8Array([1, 2, 3]);
+
+console.log(endsWith(source, suffix)); // true
+```
+
+---
+
+## Type Conversion
+
+### bufferToUint8Array
+
+Converts a Node.js Buffer to a Uint8Array. Creates a new Uint8Array view on the Buffer's underlying ArrayBuffer, ensuring correct byteOffset and length.
+
+**Signature:**
+
+```typescript
+function bufferToUint8Array(buf: Buffer): Uint8Array;
+```
+
+**Parameters:**
+
+- `buf` (`Buffer`) - The Buffer to convert
+
+**Returns:** `Uint8Array` - A Uint8Array view of the Buffer
+
+**Example:**
+
+```typescript
+import { bufferToUint8Array } from "@visulima/bytes";
+import { Buffer } from "node:buffer";
+
+const buffer = Buffer.from("Hello");
+const result = bufferToUint8Array(buffer);
+
+console.log(result); // Uint8Array([72, 101, 108, 108, 111])
+```
+
+---
+
+### isUint8Array
+
+Checks if a value is a Uint8Array or, in a Node.js environment, a Buffer.
+
+**Signature:**
+
+```typescript
+function isUint8Array(x: unknown): x is Uint8Array;
+```
+
+**Parameters:**
+
+- `x` (`unknown`) - The value to check
+
+**Returns:** `boolean` - `true` if x is a Uint8Array or Buffer, `false` otherwise
+
+**Example:**
+
+```typescript
+import { isUint8Array } from "@visulima/bytes";
+import { Buffer } from "node:buffer";
+
+console.log(isUint8Array(new Uint8Array([1, 2]))); // true
+console.log(isUint8Array(Buffer.from("test"))); // true (in Node.js)
+console.log(isUint8Array([1, 2])); // false
+```
+
+---
+
+### asciiToUint8Array
+
+Converts an ASCII string, array of strings, or template literal to a Uint8Array. Each character is converted to its ASCII byte value (0-255). Characters outside this range will be truncated.
+
+**Signature:**
+
+```typescript
+function asciiToUint8Array(txt: TemplateStringsArray | string | [string]): Uint8Array;
+```
+
+**Parameters:**
+
+- `txt` (`TemplateStringsArray | string | [string]`) - Input string or template literal
+
+**Returns:** `Uint8Array` - ASCII encoded byte array
+
+**Example:**
+
+```typescript
+import { asciiToUint8Array } from "@visulima/bytes";
+
+const result = asciiToUint8Array("Hello!");
+console.log(result); // Uint8Array([72, 101, 108, 108, 111, 33])
+
+// Template literal
+const name = "World";
+const result2 = asciiToUint8Array(`Hello ${name}`);
+console.log(result2); // Uint8Array([72, 101, 108, 108, 111, 32, 87, 111, 114, 108, 100])
+```
+
+---
+
+### utf8ToUint8Array
+
+Converts a UTF-8 string, array of strings, or template literal to a Uint8Array. Requires Node.js Buffer support.
+
+**Signature:**
+
+```typescript
+function utf8ToUint8Array(txt: TemplateStringsArray | [string] | string): Uint8Array;
+```
+
+**Parameters:**
+
+- `txt` (`TemplateStringsArray | [string] | string`) - Input string or template literal
+
+**Returns:** `Uint8Array` - UTF-8 encoded byte array
+
+**Example:**
+
+```typescript
+import { utf8ToUint8Array } from "@visulima/bytes";
+
+// ASCII string
+const result1 = utf8ToUint8Array("Hello!");
+console.log(result1); // Uint8Array([72, 101, 108, 108, 111, 33])
+
+// Multi-byte UTF-8 characters
+const result2 = utf8ToUint8Array("你好");
+console.log(result2); // Uint8Array([228, 189, 160, 229, 165, 189])
+
+// Emoji
+const result3 = utf8ToUint8Array("🌍");
+console.log(result3); // Uint8Array([240, 159, 140, 141])
+```
+
+---
+
+### toUint8Array
+
+Attempts to convert various data types to a Uint8Array. Supports Uint8Array (returns as is), ArrayBuffer, Array of numbers, and in Node.js also supports Buffer and strings.
+
+**Signature:**
+
+```typescript
+function toUint8Array(data: unknown): Uint8Array;
+```
+
+**Parameters:**
+
+- `data` (`unknown`) - The data to convert
+
+**Returns:** `Uint8Array` - Converted byte array
+
+**Throws:** `Error` with message `'UINT8ARRAY_INCOMPATIBLE'` if the data cannot be converted
+
+**Example:**
+
+```typescript
+import { toUint8Array } from "@visulima/bytes";
+import { Buffer } from "node:buffer";
+
+// From Uint8Array
+console.log(toUint8Array(new Uint8Array([1, 2, 3])));
+// Uint8Array([1, 2, 3])
+
+// From ArrayBuffer
+const buffer = new ArrayBuffer(3);
+console.log(toUint8Array(buffer));
+// Uint8Array([0, 0, 0])
+
+// From Array of numbers
+console.log(toUint8Array([4, 5, 6]));
+// Uint8Array([4, 5, 6])
+
+// From Node.js Buffer
+console.log(toUint8Array(Buffer.from("Node")));
+// Uint8Array([78, 111, 100, 101])
+
+// From string (in Node.js)
+console.log(toUint8Array("String"));
+// Uint8Array([83, 116, 114, 105, 110, 103])
+
+// Incompatible types throw error
+try {
+    toUint8Array(123);
+} catch (error) {
+    console.log(error.message);
+    // "UINT8ARRAY_INCOMPATIBLE: Cannot convert data to Uint8Array"
+}
+```
+
+---
+
+## Function Summary
+
+| Function             | Category         | Description                       |
+| -------------------- | ---------------- | --------------------------------- |
+| `concat`             | Array Operations | Concatenate multiple byte arrays  |
+| `copy`               | Array Operations | Copy bytes between arrays         |
+| `equals`             | Array Operations | Compare arrays for equality       |
+| `repeat`             | Array Operations | Repeat byte sequence              |
+| `indexOfNeedle`      | Search           | Find first occurrence of sequence |
+| `lastIndexOfNeedle`  | Search           | Find last occurrence of sequence  |
+| `includesNeedle`     | Search           | Check if array contains sequence  |
+| `startsWith`         | Search           | Check if array starts with prefix |
+| `endsWith`           | Search           | Check if array ends with suffix   |
+| `bufferToUint8Array` | Conversion       | Convert Buffer to Uint8Array      |
+| `isUint8Array`       | Conversion       | Type check for Uint8Array         |
+| `asciiToUint8Array`  | Conversion       | Convert ASCII string to bytes     |
+| `utf8ToUint8Array`   | Conversion       | Convert UTF-8 string to bytes     |
+| `toUint8Array`       | Conversion       | Universal converter to Uint8Array |
+
+## TypeScript Types
+
+The package exports TypeScript types for all functions. All functions have full type safety:
+
+```typescript
+import type { Uint8Array } from "@visulima/bytes";
+
+// All functions are strongly typed
+const arrays: Uint8Array[] = [new Uint8Array([1, 2]), new Uint8Array([3, 4])];
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use these functions with detailed examples
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
+</Cards>

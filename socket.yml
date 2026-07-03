@@ -1,0 +1,23 @@
+version: 2
+
+# Socket scans every manifest in the repository. The vis CLI's lint / release /
+# benchmark suites ship throwaway package.json + lockfile fixtures (sherif-lint,
+# release-tool detection, the create-t3-app bench snapshot, …) that declare
+# deliberately old or fake packages — react@1.0.0, minimist@0.0.10, next@1.2.3,
+# the full create-t3-app dependency graph, etc. — purely as parser input. They
+# are never installed, so their transitive CVEs / "malware" must not surface as
+# project alerts. Exclude every test/fixture/bench manifest directory (gitignore
+# semantics, matched at any depth).
+projectIgnorePaths:
+    - "__fixtures__/"
+    - "__bench__/"
+    - "__tests__/"
+    - "__mocks__/"
+    - "fixtures/"
+
+# No issueRules overrides: every supply-chain heuristic — including
+# obfuscatedFile — stays enabled so genuinely new threats still alert. The
+# current obfuscatedFile hits are false positives on trusted, widely-used
+# packages (cargo tokio/zerocopy/rusqlite/libc, npm msw/@electric-sql/pglite/…)
+# and are triaged per-alert in the Socket dashboard instead of disabling the
+# rule wholesale.

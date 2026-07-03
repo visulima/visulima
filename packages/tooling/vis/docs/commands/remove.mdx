@@ -1,0 +1,33 @@
+---
+title: "vis remove"
+description: "Remove packages using the detected package manager"
+---
+
+# vis remove
+
+Uninstall packages from the current project (or a filtered workspace package). Aliased as `vis rm`, `vis un`, `vis uninstall`.
+
+## Usage
+
+```bash
+vis remove <packages...> [options]
+```
+
+## Examples
+
+```bash
+vis remove lodash
+vis rm old-package
+vis remove --filter app react      # remove from a specific workspace package
+vis remove -g typescript           # remove a global package
+```
+
+## Options
+
+| Option             | Alias | Default | Description                                   |
+| ------------------ | ----- | ------- | --------------------------------------------- |
+| `--save-dev`       | `-D`  | `false` | Remove from devDependencies                   |
+| `--global`         | `-g`  | `false` | Remove a global package                       |
+| `--recursive`      | `-r`  | `false` | Remove from all workspace packages            |
+| `--workspace-root` | `-w`  | `false` | Remove from workspace root                    |
+| `--filter`         | `-F`  |         | Filter by workspace package name (repeatable) |

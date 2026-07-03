@@ -1,0 +1,76 @@
+# Storj
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage — pick that path when you're hosting an upload server.
+
+## Overview
+
+Storj is a decentralized, S3-compatible object storage service. Data is encrypted client-side and erasure-coded across thousands of independent storage nodes worldwide. The `storj` client targets the public Storj S3 Gateway (`gateway.storjshare.io`) by default; self-hosted gateways can override the endpoint.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+```
+
+## Usage
+
+Storj is S3-compatible via its S3 Gateway:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { storj } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = storj({
+    accessKeyId: process.env.STORJ_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.STORJ_SECRET_ACCESS_KEY!,
+});
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+## Configuration
+
+### Generating credentials
+
+The `accessKeyId` / `secretAccessKey` pair is derived from a Storj **access grant**, using either the [Storj web console](https://www.storj.io/) or the `uplink share --register` CLI. Each grant scopes the resulting S3 credentials to a set of buckets and operations.
+
+### Environment Variables
+
+```typescript
+process.env.STORJ_ACCESS_KEY_ID = "your-access-key";
+process.env.STORJ_SECRET_ACCESS_KEY = "your-secret-key";
+process.env.STORJ_ENDPOINT = "https://gateway.storjshare.io"; // Optional
+
+const clientConfig = storj(); // Uses environment variables
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+### With Explicit Parameters
+
+```typescript
+const clientConfig = storj({
+    accessKeyId: "your-access-key",
+    secretAccessKey: "your-secret-key",
+    endpoint: "https://gateway.eu1.storjshare.io", // Optional region-specific gateway
+});
+```
+
+## Features
+
+- **End-to-end encryption**: Data is encrypted client-side before upload
+- **Decentralized**: Erasure-coded across thousands of independent nodes
+- **S3-Compatible**: Works with the AWS S3 SDK via the Storj S3 Gateway
+- **Pay-as-you-go**: Per-GB storage and egress pricing
+
+## Best Practices
+
+1. **Scope your access grants** — generate per-environment grants restricted to specific buckets / prefixes
+2. **Rotate grants** instead of long-lived root credentials
+3. **Self-host the gateway** for sensitive workloads to keep the encryption boundary in your trust zone
+4. **Pick a regional gateway** (e.g. `gateway.eu1.storjshare.io`) closer to your compute

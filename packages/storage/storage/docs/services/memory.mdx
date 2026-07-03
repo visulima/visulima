@@ -1,0 +1,96 @@
+# In-Memory Storage
+
+> **Just need a quick in-memory store for tests?** Wrap `MemoryStorage` in the [`Files` facade](../files-facade.mdx) for a one-liner API. The adapter implements the full `BaseStorage` surface, so any framework that takes a `BaseStorage` works with it unchanged.
+
+## Overview
+
+`MemoryStorage` is a `BaseStorage` adapter backed by an in-process `Map<string, MemoryEntry>`. Nothing is persisted; everything lives in the Node.js heap for the lifetime of the process. It implements the full surface — `create`, `write`, `get`, `getStream`, `head`, `exists`, `delete`, `copy`, `move`, `list`, `getReadUrl`, `getUploadUrl` — and supports ranged reads (`supportsRange: true`).
+
+Use it for:
+
+- **Unit and integration tests** — no temp directories, no cleanup, deterministic state.
+- **Ephemeral environments** — preview deployments, smoke tests, ad-hoc scripts.
+- **Reference implementation** — the simplest possible adapter to read when authoring your own.
+
+## Installation
+
+No additional dependencies — the adapter ships with `@visulima/storage`.
+
+## Usage
+
+```typescript
+import { Files } from "@visulima/storage";
+import MemoryStorage from "@visulima/storage/provider/memory";
+
+const files = new Files({ adapter: new MemoryStorage() });
+
+await files.upload("k.txt", "hello");
+const { body } = await files.download("k.txt");
+```
+
+## Seed the store
+
+Pass `initial` to pre-populate the backing map with `key → bytes` entries. Each entry creates a `File` metadata record so subsequent `head`, `download`, `delete` look up by the same key.
+
+```typescript
+const adapter = new MemoryStorage({
+    initial: {
+        "users/1.json": '{"id":1}',
+        "users/2.json": Buffer.from([0x01, 0x02, 0x03]),
+    },
+});
+
+const files = new Files({ adapter });
+
+await files.head("users/1.json"); // → FileObject for the seeded entry
+```
+
+`initial` values can be `Buffer`, `Uint8Array`, or `string` (UTF-8 encoded).
+
+## Inspecting and resetting
+
+The adapter exposes its backing `Map` via `raw`, so tests can assert on internal state directly:
+
+```typescript
+const adapter = new MemoryStorage();
+const files = new Files({ adapter });
+
+await files.upload("k.txt", "x");
+
+expect(adapter.raw.size).toBe(1);
+expect(adapter.raw.has("k.txt")).toBe(true);
+
+adapter.raw.clear(); // wipe everything between tests
+```
+
+The `Files` facade also forwards `raw`:
+
+```typescript
+files.raw.clear();
+```
+
+## Sharing metadata between facades
+
+Pass a shared `metaStorage` to point a second `MemoryStorage` instance at the same `MemoryMetaStorage`. Rarely needed, but useful for testing meta-only flows.
+
+```typescript
+import MemoryMetaStorage from "@visulima/storage/provider/memory/meta-storage";
+
+const meta = new MemoryMetaStorage();
+const a = new MemoryStorage({ metaStorage: meta });
+const b = new MemoryStorage({ metaStorage: meta });
+```
+
+## Returned URLs
+
+`getReadUrl(key)` and `getUploadUrl(key)` return a synthetic `memory://${key}` URL. There's no network behind the scheme — it's a marker that the object is in-process. Consumers that distinguish "private" vs. "public" stores can detect memory by the protocol.
+
+## Caveats
+
+- **Process-local** — the store dies when the process exits. Use `DiskStorage` if you need durability between runs.
+- **Unbounded growth** — there is no eviction. Track your test sizes or call `raw.clear()` between cases.
+- **Single-process** — fan-out across workers won't see each other's writes. Use `DiskStorage` or a real provider for multi-process tests.
+
+## When in doubt
+
+The adapter is small (~370 lines) and a useful reference. Skim `packages/storage/storage/src/storage/memory/memory-storage.ts` to see the minimum surface every adapter must implement.

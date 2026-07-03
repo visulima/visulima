@@ -1,0 +1,11 @@
+{
+    "name": "path-cjs",
+    "version": "0.0.0",
+    "private": true,
+    "description": "CommonJS version",
+    "type": "commonjs",
+    "dependencies": {
+        "@visulima/path": "workspace:*"
+    },
+    "devDependencies": {}
+}

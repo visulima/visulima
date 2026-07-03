@@ -1,0 +1,44 @@
+---
+title: Introduction
+description: "Flexible pagination utilities for cursor and offset-based pagination"
+---
+
+# @visulima/pagination
+
+Flexible pagination utilities supporting both cursor-based and offset-based pagination with metadata generation.
+
+## Key Features
+
+- **Cursor Pagination** - Efficient for large datasets
+- **Offset Pagination** - Traditional page-based pagination
+- **Metadata** - Total count, page info, has more
+- **Framework Agnostic** - Works with any framework
+- **TypeScript** - Full type definitions
+
+## Quick Start
+
+```typescript
+import { paginate } from "@visulima/pagination";
+
+const result = await paginate(query, {
+    page: 1,
+    limit: 10,
+});
+
+console.log(result.data);
+console.log(result.metadata);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install and setup
+    </Card>
+    <Card title="Usage" href="/usage">
+        Pagination patterns
+    </Card>
+    <Card title="API" href="/api">
+        API reference
+    </Card>
+</Cards>

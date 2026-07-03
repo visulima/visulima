@@ -1,0 +1,108 @@
+---
+title: "Installation"
+---
+
+# Installation
+
+```bash npm2yarn
+npm install @visulima/html
+```
+
+## Import
+
+### Main Functions
+
+```typescript
+import { escapeHtml, escapeCss, escapeJs, html, css, isValidCustomElementName } from "@visulima/html";
+```
+
+### Entity Encoding
+
+```typescript
+import { encode, decode, decodeEntity } from "@visulima/html";
+```
+
+### HTML Processing
+
+```typescript
+import { sanitizeHtml, stripHtml } from "@visulima/html";
+```
+
+### HTML Tag Lists
+
+```typescript
+import { htmlTags, voidHtmlTags } from "@visulima/html";
+```
+
+### TypeScript Types
+
+```typescript
+import type { Properties } from "@visulima/html"; // CSS properties type
+```
+
+## Requirements
+
+- **Node.js:** 22.13 or higher
+- **TypeScript:** 5.0 or higher (if using TypeScript)
+- **ECMAScript:** ES2020 or higher
+
+## Dependencies
+
+The package includes:
+
+- **sanitize-html** - HTML sanitization
+- **csstype** - CSS property types for TypeScript autocomplete
+
+## Verification
+
+Verify installation by running a simple example:
+
+```typescript
+import { escapeHtml, sanitizeHtml } from "@visulima/html";
+
+// Test escaping
+console.log(escapeHtml("<script>test</script>"));
+// => '&lt;script>test&lt;/script>'
+
+// Test sanitization
+console.log(sanitizeHtml("<p>Hello <script>bad</script>World</p>"));
+// => '<p>Hello World</p>'
+```
+
+## Browser Usage
+
+For browser environments, import from the ESM bundle:
+
+```html
+<script type="module">
+    import { escapeHtml } from "@visulima/html";
+
+    const safe = escapeHtml(userInput);
+</script>
+```
+
+## Bundler Configuration
+
+### Vite
+
+No special configuration needed:
+
+```typescript
+// vite.config.ts
+export default {
+    // @visulima/html works out of the box
+};
+```
+
+### Webpack
+
+Ensure proper ESM handling:
+
+```javascript
+// webpack.config.js
+module.exports = {
+    resolve: {
+        fullySpecified: false,
+    },
+};
+```

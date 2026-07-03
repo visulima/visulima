@@ -1,0 +1,76 @@
+---
+title: "API Reference"
+---
+
+# API Reference
+
+## findTsConfig() / findTsConfigSync()
+
+Find a tsconfig.json file by searching upward (falling back to jsconfig.json). `findTsConfig` is asynchronous; `findTsConfigSync` is the synchronous variant. Throws when no config file is found.
+
+**Signature:**
+
+```typescript
+function findTsConfig(cwd?: URL | string, options?: FindTsConfigOptions): Promise<TsConfigResult>;
+
+function findTsConfigSync(cwd?: URL | string, options?: FindTsConfigOptions): TsConfigResult;
+```
+
+**Options (`FindTsConfigOptions`, extends `ReadTsConfigOptions`):**
+
+- `configFileName` - Name of the file to search for. Defaults to `"tsconfig.json"`. Supplying a custom name disables the `jsconfig.json` fallback.
+- `cache` - `boolean | Map<string, TsConfigResult>`. `true` uses a process-wide cache; pass a `Map` for a caller-owned cache. Keys embed the file mtime, so on-disk edits invalidate cached entries automatically.
+- `tscCompatible`, `typescriptVersion` - forwarded to `readTsConfig`.
+
+> Only the upward file search is async. Parsing (including the full `extends` chain) is synchronous.
+
+## readTsConfig()
+
+Read and parse a tsconfig.json file. **This function is synchronous** — it returns the resolved config object directly (no `await`).
+
+**Signature:**
+
+```typescript
+function readTsConfig(
+    tsconfigPath: string,
+    options?: {
+        tscCompatible?: "5.4" | "5.5" | "5.6" | "5.7" | "5.8" | "5.9" | "6.0" | true;
+        typescriptVersion?: "auto" | false | string;
+    },
+): TsConfigJsonResolved;
+```
+
+**Options:**
+
+- `tscCompatible` - Synthesize the _derived_ defaults TypeScript would imply from other options for the given version (e.g. `module: nodenext` ⇒ `moduleResolution: nodenext`). `true` targets the latest supported version. Default `undefined`.
+- `typescriptVersion` - Apply the _unconditional_ compiler-option defaults of a TypeScript version. `"auto"` detects the installed version (including Yarn PnP); a string pins an explicit version; `false` (default) applies none. Can be combined with `tscCompatible`.
+
+## writeTsConfig() / writeTsConfigSync()
+
+Write the provided TypeScript configuration object to a tsconfig.json file. `writeTsConfig` is asynchronous; `writeTsConfigSync` is the synchronous variant.
+
+**Signature:**
+
+```typescript
+function writeTsConfig(tsConfig: TsConfigJson, options?: WriteJsonOptions & { cwd?: URL | string }): Promise<void>;
+
+function writeTsConfigSync(tsConfig: TsConfigJson, options?: WriteJsonOptions & { cwd?: URL | string }): void;
+```
+
+**Options:**
+
+- `cwd` - Directory to write tsconfig.json (plus any `@visulima/fs` `WriteJsonOptions`).
+
+## TsConfig Type
+
+```typescript
+interface TsConfig {
+    extends?: string | string[];
+    compilerOptions?: CompilerOptions;
+    include?: string[];
+    exclude?: string[];
+    files?: string[];
+    references?: ProjectReference[];
+    // ... all TypeScript config options
+}
+```

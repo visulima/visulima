@@ -1,0 +1,66 @@
+---
+title: Introduction
+description: "Find and parse TypeScript configuration files with extends resolution and validation"
+---
+
+# @visulima/tsconfig
+
+Find, read, and parse TypeScript configuration files with full extends resolution, comment support, and validation against TypeScript's schema.
+
+## Key Features
+
+- **Find tsconfig.json** - Search from any directory
+- **Parse with Comments** - Supports comments and trailing commas
+- **Resolve Extends** - Automatically resolves extends paths
+- **Validate** - Validates configuration against TypeScript schema
+- **Write Config** - Write tsconfig.json files
+- **TypeScript Compatible** - Tested against TypeScript for correctness
+- **Fully Typed** - Complete TypeScript definitions
+
+## Quick Start
+
+```typescript
+import { findTsConfig, readTsConfig } from "@visulima/tsconfig";
+
+// Find tsconfig.json
+const result = await findTsConfig();
+console.log(result.config.compilerOptions);
+
+// Read specific tsconfig (synchronous — no await)
+const config = readTsConfig("/path/to/tsconfig.json");
+```
+
+## Use Cases
+
+```typescript
+// Build tools
+import { findTsConfig } from "@visulima/tsconfig";
+
+const { config } = await findTsConfig();
+const outDir = config.compilerOptions?.outDir || "dist";
+
+// Config generation
+import { writeTsConfig } from "@visulima/tsconfig";
+
+await writeTsConfig({
+    compilerOptions: {
+        target: "ES2020",
+        module: "ESNext",
+        strict: true,
+    },
+});
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install and import
+    </Card>
+    <Card title="Usage" href="/usage">
+        Usage guide
+    </Card>
+    <Card title="API" href="/api">
+        API reference
+    </Card>
+</Cards>

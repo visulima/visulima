@@ -1,0 +1,83 @@
+# Yandex Object Storage
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage — pick that path when you're hosting an upload server.
+
+## Overview
+
+Yandex Object Storage is an S3-compatible object storage service. It serves a single global endpoint (`https://storage.yandexcloud.net`) and routes internally, so it works with `S3Storage` plus the bundled `yandex` client preset.
+
+## Installation
+
+```sh
+npm install @aws-sdk/client-s3 @aws-sdk/credential-providers @aws-sdk/s3-request-presigner @aws-sdk/signature-v4-crt aws-crt @aws-sdk/types
+```
+
+## Usage
+
+Yandex Object Storage is S3-compatible, so use `S3Storage` with the `yandex` client preset:
+
+```typescript
+import { S3Storage } from "@visulima/storage/provider/aws";
+import { yandex } from "@visulima/storage/provider/aws/s3/clients";
+
+const clientConfig = yandex({
+    accessKeyId: process.env.YANDEX_ACCESS_KEY_ID!,
+    secretAccessKey: process.env.YANDEX_SECRET_ACCESS_KEY!,
+});
+
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+Yandex serves a single global endpoint, so the region is only the SigV4 signing scope and defaults to `ru-central1`. Pass `endpoint` (or set `YANDEX_ENDPOINT`) to override the endpoint.
+
+## Configuration
+
+### Environment Variables
+
+```typescript
+process.env.YANDEX_ACCESS_KEY_ID = "your-access-key";
+process.env.YANDEX_SECRET_ACCESS_KEY = "your-secret-key";
+// Optional — defaults to "ru-central1"
+process.env.YANDEX_REGION = "ru-central1";
+
+const clientConfig = yandex(); // Uses environment variables
+const storage = new S3Storage({
+    bucket: "my-bucket",
+    ...clientConfig,
+});
+```
+
+The `AWS_ACCESS_KEY_ID` / `AWS_SECRET_ACCESS_KEY` / `AWS_REGION` variables are also accepted as fallbacks. Because the region does not drive the endpoint here, falling back to `AWS_REGION` is safe.
+
+### With Explicit Parameters
+
+```typescript
+const clientConfig = yandex({
+    accessKeyId: "your-access-key",
+    secretAccessKey: "your-secret-key",
+    region: "ru-central1",
+});
+```
+
+## Regions
+
+Yandex Object Storage uses a single global endpoint; `region` only sets the SigV4 signing scope:
+
+- `ru-central1` - Russia (Central) — default
+
+## Features
+
+- **S3-Compatible**: Works through the S3-compatible endpoint
+- **Single Global Endpoint**: No per-region endpoint to configure
+- **Lifecycle Management**: Automatic tiering and expiration policies
+- **Presigned URLs**: Direct browser uploads and downloads
+
+## Best Practices
+
+1. **Leave region as default** unless you have a specific signing requirement
+2. **Use lifecycle policies** - automatically transition or expire objects
+3. **Configure CORS** - set up CORS for browser-based uploads
+4. **Use a separate metafiles bucket** - keep upload metadata isolated for resumable uploads

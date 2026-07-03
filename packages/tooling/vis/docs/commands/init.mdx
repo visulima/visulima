@@ -1,0 +1,63 @@
+---
+title: "vis init"
+description: "Initialize vis.config.ts with best-practice security defaults"
+---
+
+# vis init
+
+Initialize a `vis.config.ts` configuration file with best-practice security defaults. In interactive mode, guides you through setting up supply-chain providers (Socket.dev and/or deps.dev), build script approval, git hooks, and PM config sync.
+
+## Usage
+
+```bash
+vis init [options]
+```
+
+## Examples
+
+```bash
+# Interactive setup wizard
+vis init
+
+# Create minimal config without prompts
+vis init --no-interactive
+
+# Overwrite existing config
+vis init --force
+
+# Also sync to native PM config files
+vis init --sync-native
+
+# Print the workspace-relative $schema refs to paste into project.json / vis.config.ts
+vis init --schema
+```
+
+## Options
+
+| Option             | Default | Description                                                                                |
+| ------------------ | ------- | ------------------------------------------------------------------------------------------ |
+| `--force`          | `false` | Overwrite existing config file                                                             |
+| `--no-interactive` | `false` | Skip interactive prompts                                                                   |
+| `--sync-native`    | `false` | Sync settings to native PM config files                                                    |
+| `--schema`         | `false` | Print workspace-relative `$schema` paths for `project.json` and `vis.config.ts`, then exit |
+
+## Interactive Wizard
+
+The wizard walks through:
+
+1. **Socket.dev** — Enable supply-chain security scanning (Basic-auth token; opt-in)
+2. **deps.dev** — Enable Google's OpenSSF Scorecard + GHSA advisory provider (no auth; opt-in). Can run alongside Socket — the two providers merge results, deduped by alert id.
+3. **Build scripts** — Scan and approve packages with build scripts
+4. **Minimum release age** — Optionally block freshly-published versions. Defaults to **2880 minutes (2 days)** when accepted.
+5. **Git hooks** — Set up pre-commit hooks with lint-staged
+6. **PM sync** — Sync security settings (allowBuilds + minimumReleaseAge) into the native PM config files (pnpm `pnpm-workspace.yaml`, bun `bunfig.toml`/`package.json`, npm `.npmrc`, yarn berry `.yarnrc.yml`)
+7. **Migration detection** — Detect competing monorepo tools (Nx, Turbo) and offer migration
+
+## Static (non-interactive) defaults
+
+`vis init --no-interactive` writes a config with `security.minimumReleaseAge: 2880` plus the secure defaults applied automatically by `defineConfig()`. When combined with `--sync-native` the value is also mirrored into the active package manager's native config.
+
+## Related
+
+- `vis security sync` — re-push the current `vis.config` values to the PM-native config after editing.
+- `vis security list` — inspect the build-script triage and the drift report.

@@ -1,8 +1,0 @@
-{
-    "name": "cerebro",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/cerebro/src",
-    "projectType": "library",
-    "tags": ["cerebro", "type:package"],
-    "implicitDependencies": ["command-line-args"]
-}

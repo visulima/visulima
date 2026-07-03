@@ -1,0 +1,71 @@
+---
+title: Plunk
+description: Send emails using the Plunk API with @visulima/email
+---
+
+# Plunk Provider
+
+The Plunk provider allows you to send emails through the [Plunk API](https://docs.useplunk.com/api-reference), a modern email platform built on AWS SES.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { plunkProvider } from "@visulima/email/providers/plunk";
+
+const mail = createMail(
+    plunkProvider({
+        apiKey: process.env.PLUNK_API_KEY!,
+    }),
+);
+```
+
+## Configuration
+
+The `PlunkConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default | Description                     |
+| ---------- | --------- | -------- | ------- | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -       | Your Plunk API key              |
+| `endpoint` | `string`  | No       | Auto    | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false` | Enable debug logging            |
+| `logger`   | `Console` | No       | -       | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`     | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000` | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Plunk").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Plunk provider supports additional options through `PlunkEmailOptions`:
+
+| Option         | Type                      | Description                                                    |
+| -------------- | ------------------------- | -------------------------------------------------------------- |
+| `templateId`   | `string`                  | Template ID for template-based emails                          |
+| `data`         | `Record<string, unknown>` | Data to pass to the email template                             |
+| `subscriber`   | `string`                  | Subscriber email for tracking (defaults to first `to` address) |
+| `subscriberId` | `string`                  | Optional subscriber identifier                                 |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | No        |

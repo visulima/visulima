@@ -1,0 +1,310 @@
+{
+    "name": "@visulima/vis",
+    "version": "1.0.0-alpha.47",
+    "description": "A monorepo dev toolkit — task runner, remote caching, security scanning, git hooks, and AI agent integrations — powered by @visulima/task-runner",
+    "keywords": [
+        "build",
+        "cache",
+        "cli",
+        "monorepo",
+        "task-runner",
+        "vis",
+        "visulima",
+        "workspace"
+    ],
+    "homepage": "https://visulima.com/packages/vis",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/tooling/vis"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "imports": {
+        "#native": {
+            "types": "./index.d.ts",
+            "default": "./index.js"
+        }
+    },
+    "exports": {
+        "./bin": {
+            "default": "./dist/bin.js"
+        },
+        "./config": {
+            "types": "./dist/config/index.d.ts",
+            "default": "./dist/config/index.js"
+        },
+        "./generate": {
+            "types": "./dist/generate/index.d.ts",
+            "default": "./dist/generate/index.js"
+        },
+        "./native": {
+            "types": "./index.d.ts",
+            "default": "./index.js"
+        },
+        "./runtime/preload": {
+            "types": "./dist/runtime/preload.d.ts",
+            "default": "./dist/runtime/preload.js"
+        },
+        "./release": {
+            "types": "./dist/release/index.d.ts",
+            "default": "./dist/release/index.js"
+        },
+        "./release/types": {
+            "types": "./dist/release/types.d.ts",
+            "default": "./dist/release/types.js"
+        },
+        "./release/presets": {
+            "types": "./dist/release/presets.d.ts",
+            "default": "./dist/release/presets.js"
+        },
+        "./release/plugin-sdk": {
+            "types": "./dist/release/plugin-sdk.d.ts",
+            "default": "./dist/release/plugin-sdk.js"
+        },
+        "./release/version-actions": {
+            "types": "./dist/release/core/version-actions/index.d.ts",
+            "default": "./dist/release/core/version-actions/index.js"
+        },
+        "./release/changelog": {
+            "types": "./dist/release/core/changelog/index.d.ts",
+            "default": "./dist/release/core/changelog/index.js"
+        },
+        "./release/package-managers": {
+            "types": "./dist/release/core/package-managers/index.d.ts",
+            "default": "./dist/release/core/package-managers/index.js"
+        },
+        "./schemas/project.schema.json": "./schemas/project.schema.json",
+        "./schemas/vis-config.schema.json": "./schemas/vis-config.schema.json",
+        "./schemas/vis-release-config.schema.json": "./schemas/vis-release-config.schema.json",
+        "./package.json": "./package.json"
+    },
+    "bin": {
+        "v": "./bin/vis.mjs",
+        "vis": "./bin/vis.mjs",
+        "visx": "./dist/binx.js",
+        "vx": "./dist/binx.js"
+    },
+    "files": [
+        "dist/**",
+        "bin/**",
+        "dashboard/dist/**",
+        "schemas/**",
+        "skills/**",
+        "templates/**",
+        "index.js",
+        "index.d.ts",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "bench": "vitest bench __bench__",
+        "bench:native": "cargo bench --manifest-path native/Cargo.toml",
+        "build": "pnpm --filter @visulima/vis-dashboard run build && packem build --development",
+        "build:native": "napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
+        "build:native:cli": "cargo build --release -p vis-cli --manifest-path native/Cargo.toml && node scripts/copy-cli-binary.mjs release",
+        "build:native:cli:debug": "cargo build -p vis-cli --manifest-path native/Cargo.toml && node scripts/copy-cli-binary.mjs debug",
+        "build:native:debug": "napi build --platform --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
+        "build:prod": "pnpm --filter @visulima/vis-dashboard run build && packem build --production",
+        "check:schemas-drift": "node scripts/generate-schemas.ts && git diff --exit-code -- schemas",
+        "clean": "rimraf node_modules dist .eslintcache *.node",
+        "dev": "pnpm run build --watch",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "generate:schemas": "node scripts/generate-schemas.ts",
+        "lint:attw": "attw --pack --profile esm-only",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:bench": "vitest bench --config vitest.bench.config.ts",
+        "test:coverage": "vitest run --coverage",
+        "test:perf": "vitest run __bench__/audit-offline.test.ts",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@visulima/error": "6.0.0-alpha.35",
+        "@visulima/secret-scanner": "1.0.0-alpha.8",
+        "@visulima/source-map": "3.0.0-alpha.12",
+        "@visulima/tabular": "4.0.0-alpha.14",
+        "@visulima/task-runner": "1.0.0-alpha.26",
+        "@visulima/tui": "1.0.0-alpha.27",
+        "module-replacements": "^2.11.0",
+        "module-replacements-codemods": "^2.0.1",
+        "react": "catalog:frontend",
+        "react-reconciler": ">=0.33.0"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@bomb.sh/tab": "catalog:dev",
+        "@codspeed/vitest-plugin": "catalog:test",
+        "@eslint-react/eslint-plugin": "catalog:lint",
+        "@eslint/css": "1.3.0",
+        "@floating-ui/core": "1.7.5",
+        "@floating-ui/dom": "1.7.6",
+        "@gitbeaker/rest": "^43.8.0",
+        "@hono/node-server": "catalog:backend",
+        "@napi-rs/cli": "catalog:dev",
+        "@nkzw/safe-word-list": "^3.1.2",
+        "@octokit/rest": "^22.0.1",
+        "@opentelemetry/api": "catalog:dev",
+        "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@semantic-release/exec": "catalog:dev",
+        "@shared/xxh3": "workspace:*",
+        "@socketsecurity/registry": "^2.0.2",
+        "@tailwindcss/forms": "catalog:frontend",
+        "@tailwindcss/node": "catalog:frontend",
+        "@tailwindcss/oxide": "catalog:frontend",
+        "@tailwindcss/typography": "catalog:style",
+        "@total-typescript/ts-reset": "catalog:dev",
+        "@types/jstoxml": "catalog:types",
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-reconciler": "catalog:types",
+        "@types/semver": "^7.7.1",
+        "@types/validate-npm-package-name": "^4.0.2",
+        "@visulima/ansi": "4.0.0-alpha.18",
+        "@visulima/cerebro": "3.0.0-alpha.33",
+        "@visulima/colorize": "2.0.0-alpha.15",
+        "@visulima/error": "6.0.0-alpha.35",
+        "@visulima/find-ai-runner": "1.0.0-alpha.9",
+        "@visulima/find-cache-dir": "3.0.0-alpha.12",
+        "@visulima/fs": "5.0.0-alpha.33",
+        "@visulima/humanizer": "3.0.0-alpha.15",
+        "@visulima/interactive-manager": "1.0.0-alpha.5",
+        "@visulima/package": "5.0.0-alpha.32",
+        "@visulima/packem": "catalog:dev",
+        "@visulima/pail": "4.0.0-alpha.23",
+        "@visulima/path": "3.0.0-alpha.13",
+        "@visulima/redact": "3.0.0-alpha.14",
+        "@visulima/source-map": "3.0.0-alpha.12",
+        "@visulima/spinner": "1.0.0-alpha.4",
+        "@visulima/string": "3.0.0-alpha.18",
+        "@visulima/tsconfig": "3.0.0-alpha.32",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "@yarnpkg/parsers": "^3.0.3",
+        "ajv": "catalog:dev",
+        "ajv-formats": "catalog:dev",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "conventional-commits-parser": "^6.2.0",
+        "cssnano": "catalog:dev",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "eslint-plugin-jsx-a11y": "6.10.2",
+        "eslint-plugin-react": "7.37.5",
+        "eslint-plugin-react-hooks": "7.1.1",
+        "eslint-plugin-react-perf": "3.3.3",
+        "eslint-plugin-react-refresh": "0.5.2",
+        "eslint-plugin-react-you-might-not-need-an-effect": "1.0.0",
+        "eslint-plugin-validate-jsx-nesting": "0.1.1",
+        "fallow": "catalog:lint",
+        "giget": "^3.3.0",
+        "graphology": "0.26.0",
+        "graphology-layout-forceatlas2": "0.10.1",
+        "graphology-types": "0.24.8",
+        "happy-dom": "catalog:dev",
+        "hono": "catalog:backend",
+        "hookable": "^6.1.1",
+        "ignore": "^7.0.5",
+        "is-in-ci": "2.0.0",
+        "jstoxml": "catalog:prod",
+        "prettier": "catalog:lint",
+        "prettier-plugin-tailwindcss": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "secretlint": "catalog:lint",
+        "semantic-release": "catalog:cli",
+        "semver": "^7.8.4",
+        "sigma": "3.0.3",
+        "sigstore": "^5.0.0",
+        "smol-toml": "catalog:prod",
+        "tailwind-csstree": "catalog:dev",
+        "tailwindcss": "catalog:style",
+        "tinyexec": "catalog:dev",
+        "ts-json-schema-generator": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "undici": "catalog:prod",
+        "validate-npm-package-name": "^8.0.0",
+        "vitest": "catalog:test",
+        "yaml": "catalog:prod",
+        "zeptomatch": "catalog:dev"
+    },
+    "peerDependencies": {
+        "@gitbeaker/rest": ">=43.8.0",
+        "@octokit/rest": ">=22.0.1",
+        "fb-watchman": ">=2.0.0",
+        "sigstore": ">=3.0.0"
+    },
+    "peerDependenciesMeta": {
+        "@gitbeaker/rest": {
+            "optional": true
+        },
+        "@octokit/rest": {
+            "optional": true
+        },
+        "fb-watchman": {
+            "optional": true
+        },
+        "sigstore": {
+            "optional": true
+        }
+    },
+    "optionalDependencies": {
+        "@visulima/vis-binding-darwin-arm64": "workspace:*",
+        "@visulima/vis-binding-darwin-x64": "workspace:*",
+        "@visulima/vis-binding-linux-arm64-gnu": "workspace:*",
+        "@visulima/vis-binding-linux-arm64-musl": "workspace:*",
+        "@visulima/vis-binding-linux-x64-gnu": "workspace:*",
+        "@visulima/vis-binding-linux-x64-musl": "workspace:*",
+        "@visulima/vis-binding-win32-arm64-msvc": "workspace:*",
+        "@visulima/vis-binding-win32-x64-msvc": "workspace:*"
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "napi": {
+        "binaryName": "vis-native",
+        "packageName": "@visulima/vis-binding",
+        "targets": [
+            "x86_64-apple-darwin",
+            "aarch64-apple-darwin",
+            "x86_64-unknown-linux-gnu",
+            "x86_64-unknown-linux-musl",
+            "aarch64-unknown-linux-gnu",
+            "aarch64-unknown-linux-musl",
+            "x86_64-pc-windows-msvc",
+            "aarch64-pc-windows-msvc"
+        ]
+    }
+}

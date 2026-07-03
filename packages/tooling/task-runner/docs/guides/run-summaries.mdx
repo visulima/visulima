@@ -1,0 +1,115 @@
+---
+title: Run Summaries
+description: Generate detailed JSON reports for debugging cache behavior
+---
+
+# Run Summaries
+
+Run summaries generate a detailed JSON report after execution, capturing task inputs, hashes, timings, cache status, and environment info. Useful for debugging cache misses and comparing runs.
+
+## Enable
+
+```typescript
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        summarize: true,
+    },
+    context,
+);
+```
+
+## Output
+
+Summary files are written to `.task-runner/runs/{run-id}.json`:
+
+```json
+{
+    "id": "2026-03-21T18-00-00-000Z_abc123",
+    "startTime": "2026-03-21T18:00:00.000Z",
+    "endTime": "2026-03-21T18:00:05.000Z",
+    "duration": 5000,
+    "tasks": [
+        {
+            "taskId": "app:build",
+            "target": { "project": "app", "target": "build" },
+            "hash": "a1b2c3d4...",
+            "hashDetails": {
+                "command": "...",
+                "nodes": { "src/index.ts": "..." },
+                "runtime": { "env:NODE_ENV": "..." }
+            },
+            "cacheStatus": "MISS",
+            "exitCode": 0,
+            "duration": 3000,
+            "dependencies": ["lib:build"],
+            "cacheable": true
+        }
+    ],
+    "taskGraph": {
+        "dependencies": {
+            "app:build": ["lib:build"],
+            "lib:build": []
+        },
+        "roots": ["lib:build"]
+    },
+    "stats": {
+        "total": 5,
+        "succeeded": 3,
+        "failed": 0,
+        "cached": 2,
+        "skipped": 0
+    },
+    "environment": {
+        "nodeVersion": "v22.0.0",
+        "platform": "linux",
+        "arch": "x64"
+    }
+}
+```
+
+## Cache Status Values
+
+- **HIT** - Local cache hit
+- **REMOTE_HIT** - Remote cache hit
+- **MISS** - No cache, task executed
+- **SKIPPED** - Dry-run mode
+
+## Standalone Usage
+
+```typescript
+import { generateRunSummary, writeRunSummary } from "@visulima/task-runner";
+
+const summary = generateRunSummary(results, taskGraph, startTime);
+const filePath = await writeRunSummary(summary, workspaceRoot);
+```
+
+## Last-run replay (`last-summary.json`)
+
+The orchestrator writes a `.task-runner/last-summary.json` after every completed run regardless of whether `summarize` is enabled. It's a single overwritten file — always the most-recent run — designed for CLIs that want to show "last run details" without re-executing.
+
+```typescript
+import { readLastRunSummary } from "@visulima/task-runner";
+
+const previous = await readLastRunSummary(workspaceRoot);
+
+if (previous) {
+    console.log(`Last run: ${previous.stats.succeeded} succeeded, ${previous.stats.failed} failed`);
+}
+```
+
+`readLastRunSummary` returns `undefined` when no previous run exists or the file can't be parsed. Treat it as an informational lookup, not a hard dependency.
+
+Interrupted runs (Ctrl-C) are not persisted — the incomplete snapshot would mislead callers.
+
+## Chrome Tracing Profile
+
+For visual timeline analysis, convert a summary to Chrome Tracing JSON:
+
+```typescript
+import { writeChromeTrace } from "@visulima/task-runner";
+
+await writeChromeTrace(summary, "trace.json");
+```
+
+Open the file in `chrome://tracing` or [Perfetto](https://ui.perfetto.dev) to see a gantt of task execution with dependency arrows. Parallel tasks are packed into separate lanes automatically — useful for spotting over-serialized `dependsOn` chains.

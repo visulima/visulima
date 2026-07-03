@@ -1,0 +1,81 @@
+---
+title: "API Reference"
+description: "Complete API documentation for @visulima/command-line-args."
+---
+
+# API Reference
+
+## Functions
+
+### `parseArgs(definitions, options?)`
+
+Parse command-line arguments.
+
+**Parameters:**
+
+- `definitions` (OptionDefinition[]): Option definitions
+- `options` (ParseOptions, optional): Parsing options
+
+**Returns:** Parsed options object
+
+### `commandLineArgs(definitions, options?)`
+
+Alias for `parseArgs()` (backward compatibility).
+
+## Types
+
+### `OptionDefinition`
+
+```typescript
+interface OptionDefinition {
+    name: string; // Option name
+    alias?: string; // Short alias
+    type?: TypeConstructor; // String, Number, Boolean
+    defaultValue?: any; // Default value
+    multiple?: boolean; // Allow multiple values
+    defaultOption?: boolean; // Capture positional args
+}
+```
+
+### `ParseOptions`
+
+```typescript
+interface ParseOptions {
+    partial?: boolean; // Preserve unknown options
+    stopAtFirstUnknown?: boolean; // Stop at unknown option
+    camelCase?: boolean; // Convert to camelCase
+    argv?: string[]; // Custom argv array
+}
+```
+
+## Examples
+
+**Basic:**
+
+```typescript
+parseArgs([{ name: "file", type: String }]);
+```
+
+**With alias:**
+
+```typescript
+parseArgs([{ name: "verbose", alias: "v", type: Boolean }]);
+```
+
+**Multiple values:**
+
+```typescript
+parseArgs([{ name: "include", type: String, multiple: true }]);
+```
+
+**Default value:**
+
+```typescript
+parseArgs([{ name: "port", type: Number, defaultValue: 3000 }]);
+```
+
+**Positional:**
+
+```typescript
+parseArgs([{ name: "files", type: String, multiple: true, defaultOption: true }]);
+```

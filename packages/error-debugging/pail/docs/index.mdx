@@ -1,0 +1,55 @@
+---
+title: Introduction
+description: Get started with Pail, a highly configurable logging library for Node.js, Edge, and Browser
+---
+
+import { Cards, Card } from "fumadocs-ui/components/card";
+import { Callout } from "fumadocs-ui/components/callout";
+
+Pail is a powerful, flexible logging library for Node.js, Edge, and Browser environments. It gives you structured logging with pretty or JSON output, scoped loggers, built-in timers, and a pluggable processor/reporter architecture — all with full TypeScript support.
+
+## Features at a Glance
+
+- **Structured and pretty output** — JSON, formatted console, simple text, and rotating file reporters
+- **Pluggable architecture** — Custom processors and reporters to fit any workflow
+- **Scoped loggers and timers** — Organize logs by context with built-in performance timing
+- **Interactive terminal UI** — Progress bars, spinners, and interactive managers
+- **Production-ready** — Log sampling, throttling, sensitive data redaction, and environment detection
+- **Wide events and framework middleware** — Request-scoped logging for Express, Fastify, Hono, Elysia, SvelteKit, and Next.js
+- **Cross-platform** — Works in Node.js, Bun, Edge runtimes, and browsers (ESM-only, Node.js ≥ 20.19)
+
+## Quick Start
+
+```npm
+npm i @visulima/pail
+```
+
+```typescript
+import { pail } from "@visulima/pail";
+
+pail.success("Operation successful");
+pail.debug("Hello", "from", "L59");
+pail.pending("Write release notes for %s", "1.2.0");
+pail.critical(new Error("Unable to acquire lock"));
+```
+
+## Core Concepts
+
+Pail is built around three pillars: **log levels** following [RFC 5424](https://datatracker.ietf.org/doc/html/rfc5424) (extended with `trace`), **reporters** that write to different destinations (console, files, JSON), and **processors** that enrich or transform log metadata before it reaches reporters.
+
+<Callout title="Extensible by design">
+    Every part of the pipeline — from message formatting to output — can be replaced or extended with your own processors and reporters. See the [Processors
+    guide](/docs/packages/pail/concepts/processors) to get started.
+</Callout>
+
+## What's Next?
+
+<Cards>
+    <Card title="Installation" description="Set up Pail in your project" href="/docs/packages/pail/installation" />
+    <Card title="Basic Usage" description="Start logging with simple examples" href="/docs/packages/pail/usage/basic" />
+    <Card title="Wide Events" description="Structured request-scoped logging" href="/docs/packages/pail/usage/wide-events" />
+    <Card title="Framework Middleware" description="Auto-logging for Express, Fastify, Hono, and more" href="/docs/packages/pail/middleware/overview" />
+    <Card title="Configuration" description="Customize Pail to your needs" href="/docs/packages/pail/configuration" />
+    <Card title="Comparison" description="How Pail compares to Pino, Winston, Consola" href="/docs/packages/pail/comparison" />
+    <Card title="API Reference" description="Complete API documentation" href="/docs/packages/pail/api" />
+</Cards>

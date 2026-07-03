@@ -1,0 +1,34 @@
+{
+    "name": "@visulima/vis-binding-darwin-arm64",
+    "version": "0.0.1",
+    "description": "Native binding for @visulima/vis (macOS ARM64)",
+    "homepage": "https://visulima.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/tooling/vis"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "main": "vis-native.darwin-arm64.node",
+    "files": [
+        "vis-native-cli",
+        "vis-native.darwin-arm64.node"
+    ],
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "darwin"
+    ],
+    "cpu": [
+        "arm64"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

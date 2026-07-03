@@ -1,0 +1,52 @@
+---
+title: Introduction
+description: "Create beautiful ASCII tables and grids with customizable borders, padding, and alignment for CLI applications."
+---
+
+# @visulima/tabular
+
+Create beautiful ASCII tables and grids with full Unicode support, ANSI colors, and flexible configuration options.
+
+## Key Features
+
+- **ASCII Tables** - Create formatted tables with headers and rows
+- **Unicode Support** - Handle CJK characters and emojis correctly
+- **ANSI Colors** - Full support for colored table content
+- **Flexible Styling** - Customizable borders, padding, alignment
+- **Column Spanning** - rowSpan and colSpan support
+- **Word Wrapping** - Automatic content wrapping
+- **TypeScript** - Full type definitions included
+
+## Quick Start
+
+```typescript
+import { createTable } from "@visulima/tabular";
+
+const table = createTable();
+table.setHeaders(["Name", "Age", "City"]);
+table.addRow(["John Doe", "30", "New York"]);
+table.addRow(["Jane Smith", "25", "Los Angeles"]);
+
+console.log(table.render());
+// ┌───────────┬─────┬─────────────┐
+// │ Name      │ Age │ City        │
+// ├───────────┼─────┼─────────────┤
+// │ John Doe  │ 30  │ New York    │
+// │ Jane Smith│ 25  │ Los Angeles │
+// └───────────┴─────┴─────────────┘
+```
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install the package
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Create your first table
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all features
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API docs
+    </Card>
+</Cards>

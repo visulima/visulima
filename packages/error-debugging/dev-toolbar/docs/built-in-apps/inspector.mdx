@@ -1,0 +1,176 @@
+---
+title: Inspector
+description: Click any element on the page to jump to its JSX source in your editor, or create rich annotations with context for AI agents.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+**App ID:** `dev-toolbar:inspector`
+
+The Inspector app lets you interact with any element on the rendered page. Click an element to open its source in your editor, or create an annotation that captures rich context — CSS classes, component names, accessibility attributes, and a screenshot — for bug reports or AI agent consumption.
+
+## How it Works
+
+1. Open the toolbar and activate the **Inspector** app (the cursor icon).
+2. A floating toolbar appears with mode buttons and tool controls.
+3. In **Inspect mode** (default): hover to highlight elements, click to see source/a11y info and action buttons.
+4. In **Annotate mode**: hover to highlight, click to create an annotation directly.
+
+### Inspect Mode (default)
+
+Click an element — a popup appears with:
+
+- **Open in editor** — jumps to the JSX source in your configured editor
+- **Copy HTML** — copies the element's outer HTML to the clipboard
+- **Copy path** — copies the `file:line:col` source path
+- **Copy A11y** — copies accessibility attributes as text
+
+### Annotate Mode
+
+Click an element — the annotation form opens directly at the click point. See the [Annotations app](/docs/dev-toolbar/built-in-apps/annotations) for details.
+
+### Keyboard Shortcuts
+
+| Key                            | Action                                        |
+| ------------------------------ | --------------------------------------------- |
+| `P`                            | Toggle animation freeze                       |
+| `H`                            | Toggle marker visibility                      |
+| `C`                            | Copy annotations as Markdown                  |
+| `X`                            | Clear all annotations                         |
+| `Esc`                          | Close inspector (or clear multi-select first) |
+| `Cmd`/`Ctrl` + hover           | Deep select (pierce overlays)                 |
+| `Cmd`/`Ctrl` + `Shift` + click | Multi-select toggle                           |
+
+Shortcuts are disabled when focused on an input, textarea, or select.
+
+Press **Escape** or click the Inspector button again to deactivate.
+
+## Element Inspection
+
+The Inspector captures detailed information about each hovered element:
+
+| Data                | Source                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| **Element label**   | Human-readable name (e.g. `button "Submit"`, `link "Home" to /`, `input[email]`)            |
+| **Source location** | `file:line:col` from `data-vdt-source` attributes                                           |
+| **CSS classes**     | Class list with CSS module hashes cleaned (e.g. `class_abc123` → `class`)                   |
+| **CSS selector**    | Unique selector generated for the element (ID → unique class → nth-of-type)                 |
+| **Computed styles** | Key CSS properties: display, position, colors, fonts, spacing                               |
+| **Accessibility**   | ARIA role, label, describedby, tabindex, focusable state                                    |
+| **Component**       | React/Vue/Svelte component name and stack (see [Framework Detection](#framework-detection)) |
+| **DOM path**        | Full ancestry including shadow DOM boundaries (e.g. `body > main > button ⟨shadow⟩`)        |
+
+### Shadow DOM Piercing
+
+The Inspector recursively pierces open shadow roots and same-origin iframes to find the actual element under your cursor. This means you can inspect elements inside web components and embedded frames.
+
+### Deep Select
+
+Hold **Cmd** (Mac) or **Ctrl** (Windows/Linux) while hovering to activate deep select. This skips through invisible overlays, animation wrappers, and empty container divs to reach the actual content element underneath. The highlight border switches to **dashed** to indicate deep select is active. Uses a two-pass algorithm: text content first, then smallest visible element.
+
+## JSX Source Injection
+
+The Inspector relies on `data-vdt-source` attributes injected into every JSX opening element at build time by the `inject-source` Vite plugin (part of `@visulima/dev-toolbar/vite`).
+
+Source injection is **enabled by default** in development mode and is skipped entirely in production builds.
+
+Configure it via the [`injectSource`](/docs/dev-toolbar/configuration#injectsource) plugin option:
+
+```ts
+devToolbar({
+    injectSource: {
+        enabled: true,
+        ignore: {
+            files: ["**/generated/**"],
+            components: ["StrictMode"],
+        },
+    },
+});
+```
+
+<Callout type="info">
+    Source injection reads the original file from disk before transforming, so both SSR and client builds produce identical `data-vdt-source` values. This
+    prevents React hydration mismatches in SSR frameworks.
+</Callout>
+
+## Configuring the Editor
+
+By default, `launch-editor` auto-detects the running editor (WebStorm, VS Code, etc.) from the OS process list.
+
+**Per-user override (Settings app):** open the Settings app and choose your editor from the **"Preferred editor"** dropdown. The selection is saved to `localStorage` and takes priority over the plugin-level default.
+
+**Project-level default:** set the [`editor`](/docs/dev-toolbar/configuration#editor) plugin option in your Vite config — this seeds the initial value for all users who haven't made a personal selection:
+
+```ts
+devToolbar({
+    editor: "webstorm",
+});
+```
+
+## Animation Freeze Mode
+
+When the Inspector is active, you can freeze all page animations to precisely target moving elements. This is particularly useful when annotating elements that are mid-animation or transition.
+
+When frozen:
+
+- CSS animations pause via `animation-play-state: paused`
+- CSS transitions are temporarily removed
+- `setTimeout` / `setInterval` callbacks are queued and replayed on unfreeze
+- `requestAnimationFrame` callbacks are queued
+- Web Animations API (WAAPI) animations pause
+- Video elements pause
+
+The toolbar itself is never frozen — elements with the `__vdt_` prefix are excluded. Freeze mode survives Vite HMR updates.
+
+## Framework Detection
+
+The Inspector automatically detects framework components when hovering elements:
+
+| Framework  | Detection Method                       | What's Captured                 |
+| ---------- | -------------------------------------- | ------------------------------- |
+| **React**  | Fiber tree (`__reactFiber$`)           | Component name, component stack |
+| **Vue**    | `__vue_app__` / `__vueParentComponent` | Component name                  |
+| **Svelte** | `__svelte_meta`                        | Component name                  |
+
+Component names are most accurate in development mode. Minified production builds strip component names.
+
+## Multi-select
+
+Two ways to select multiple elements:
+
+**Drag selection** — drag anywhere (on non-text elements) to draw a rectangle. All elements within are captured as a single annotation. If no elements are found, an "Area selection" annotation is created for the region. The selection samples points within the rectangle, queries nearby elements via CSS selectors, and crosses same-origin iframe boundaries.
+
+**Cmd+Shift+Click** — hold Cmd/Ctrl+Shift and click elements one by one. Each click toggles the element in/out of the selection group. Selected elements show colored outlines (green for 2+ elements). Release the modifier keys to commit the selection and open the annotation form.
+
+## Enabling the Inspector
+
+The Inspector is disabled by default. Enable it in your Vite config:
+
+```ts
+devToolbar({
+    apps: {
+        inspector: true,
+    },
+});
+```
+
+To also enable annotations (recommended):
+
+```ts
+devToolbar({
+    apps: {
+        inspector: true,
+        annotations: true,
+    },
+    injectSource: {
+        enabled: true,
+    },
+});
+```
+
+## Limitations
+
+- **Cross-origin iframes** cannot be inspected due to browser security restrictions. Same-origin iframes are fully supported.
+- **Closed shadow roots** are opaque — only open shadow roots can be pierced.
+- **Framework detection** is best-effort in production builds where component names are minified.
+- **Screenshot capture** requires the Screen Capture API and a user gesture (permission prompt).

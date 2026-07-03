@@ -1,0 +1,26 @@
+{
+    "name": "express_uploads_tus_s3_example",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "dev": "tsnd -r dotenv/config index"
+    },
+    "dependencies": {
+        "@aws-sdk/abort-controller": "catalog:prod",
+        "@aws-sdk/client-s3": "catalog:prod",
+        "@aws-sdk/credential-providers": "catalog:prod",
+        "@aws-sdk/s3-request-presigner": "catalog:prod",
+        "@aws-sdk/types": "catalog:prod",
+        "@visulima/storage": "workspace:*",
+        "copy-file": "catalog:prod",
+        "cors": "catalog:prod",
+        "dotenv": "catalog:prod",
+        "express": "catalog:backend",
+        "winston": "catalog:prod"
+    },
+    "devDependencies": {
+        "@types/cors": "catalog:types",
+        "@types/express": "catalog:types",
+        "ts-node-dev": "catalog:dev"
+    }
+}
