@@ -1,3 +1,18 @@
+## @visulima/find-ai-runner [1.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.9...@visulima/find-ai-runner@1.0.0-alpha.10) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* **find-ai-runner:** AiSessionInfo.variable renamed to signal and gains
+a required `type` field; AiSessionMarkerConfig is now a union. Alpha
+only; no in-repo consumers affected.
+
+Co-Authored-By: Claude Opus 4.8 <noreply@anthropic.com>
+Claude-Session: https://claude.ai/code/session_01FJxgwfyxML7Lod1pHx3KRo
+
+### Features
+
+* **find-ai-runner:** expand ai session detection ([ec43f1c](https://github.com/visulima/visulima/commit/ec43f1c125e5e48f6b279378f91fb46663d94942))
+
 ## @visulima/find-ai-runner [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.8...@visulima/find-ai-runner@1.0.0-alpha.9) (2026-07-03)
 
 ### Features
