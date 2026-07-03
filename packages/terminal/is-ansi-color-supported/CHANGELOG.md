@@ -1,3 +1,105 @@
+## @visulima/is-ansi-color-supported [3.0.0](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.3.5...@visulima/is-ansi-color-supported@3.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* the listed packages no longer publish a CommonJS build —
+consumers must use ESM (import) or dynamic import(). @visulima/connect,
+@visulima/crud, @visulima/prisma-dmmf-transformer and @visulima/api-platform
+are removed and deprecated.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+* change min node version to 22.13
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **is-ansi-color-supported:** 2 bug fixes ([0e1fd0c](https://github.com/visulima/visulima/commit/0e1fd0cba80160781b8136d44506afd7f3219dd8))
+* **is-ansi-color-supported:** add node types for process global ([ac91525](https://github.com/visulima/visulima/commit/ac915251cb0390ca930c2ffef42cf20be98231b8))
+* **is-ansi-color-supported:** correct release method property type ([a7b940c](https://github.com/visulima/visulima/commit/a7b940c78590c65ea141d5be671383695e85c44e))
+* **is-ansi-color-supported:** lazily resolve os.release to avoid bundler getBuiltinModule shim crash ([8c551ad](https://github.com/visulima/visulima/commit/8c551ada86b1164b143faf144602bb5602e6a784))
+* **is-ansi-color-supported:** repair windows detection and add createIsColorSupported ([b6a4706](https://github.com/visulima/visulima/commit/b6a470628045a895ecafdca004de7f374e9ee07b))
+* **is-ansi-color-supported:** resolve eslint errors ([0dc2a10](https://github.com/visulima/visulima/commit/0dc2a10efb727473fa108979c6171098a3cefacb))
+* **is-ansi-color-supported:** update package files ([83a7a52](https://github.com/visulima/visulima/commit/83a7a52760135c66ea5275df5b5de05841f094bb))
+* **is-ansi-color-supported:** update packem to 2.0.0-alpha.54 ([1ca2c4c](https://github.com/visulima/visulima/commit/1ca2c4c8b8f316a6e77aad1f8569ec4b9dae51b0))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* resolve failing tests across multiple packages ([2b4b6f0](https://github.com/visulima/visulima/commit/2b4b6f04169b60fdc4cf77b293015436a272c0fb))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **boxen,command-line-args,tabular,is-ansi-color-supported,disposable-email-domains:** add comprehensive Fumadocs documentation ([95e0578](https://github.com/visulima/visulima/commit/95e057833978dfeeb9f2768269e36862572539db))
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* **is-ansi-color-supported:** add tsconfig.eslint.json for type-aware linting ([81cc05a](https://github.com/visulima/visulima/commit/81cc05abf7ef84398d8b90816f9802580ca3a639))
+* **is-ansi-color-supported:** apply prettier formatting ([9efa94d](https://github.com/visulima/visulima/commit/9efa94d0a4f392857665ffc010e41f86a92d3dc0))
+* **is-ansi-color-supported:** housekeeping cleanup ([b47f21c](https://github.com/visulima/visulima/commit/b47f21c5b55a7b976d9cfc052657b740ae57a142))
+* **is-ansi-color-supported:** migrate .prettierrc.cjs to prettier.config.js ([b25b9c9](https://github.com/visulima/visulima/commit/b25b9c9c4858f6c562b4952eb6d0862b56de98b6))
+* **is-ansi-color-supported:** migrate deps to pnpm catalogs ([426b1cc](https://github.com/visulima/visulima/commit/426b1cc246a502c29180d2340ef2f1edc4e345dd))
+* **is-ansi-color-supported:** update dependencies ([9e61102](https://github.com/visulima/visulima/commit/9e61102fda7078094f88f9ccadd2965ad7816231))
+* **is-ansi-color-supported:** update dependencies ([624b623](https://github.com/visulima/visulima/commit/624b623b5aec3d7b159a2779553e5dd8667e9ff9))
+* **is-ansi-color-supported:** update dependencies ([92c254e](https://github.com/visulima/visulima/commit/92c254e8773e1b5b8daaa50e206a1330f4de2c90))
+* **is-ansi-color-supported:** upgrade packem to 2.0.0-alpha.76 ([9bdb5a9](https://github.com/visulima/visulima/commit/9bdb5a93391c5af6536b09ac4baf6af92785e8ce))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* refresh generated license bundles and disposable-domain stats ([a389f38](https://github.com/visulima/visulima/commit/a389f38484788aafa8ba9b698e2dd5805a982d98))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.1 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@2.3.5...@visulima/is-ansi-color-supported@3.0.0-alpha.1) (2025-12-04) ([a017246](https://github.com/visulima/visulima/commit/a017246f2994a8b829e534d06b50f008af519fa4))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.10 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.9...@visulima/is-ansi-color-supported@3.0.0-alpha.10) (2026-04-22) ([3627ff4](https://github.com/visulima/visulima/commit/3627ff4091f597cc9102b9dccdab8a5aa9d203de))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.11 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.10...@visulima/is-ansi-color-supported@3.0.0-alpha.11) (2026-05-27) ([36bef2c](https://github.com/visulima/visulima/commit/36bef2c8610eb7627dd44595803fb3c37f47f409))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.12 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.11...@visulima/is-ansi-color-supported@3.0.0-alpha.12) (2026-06-04) ([dbacabe](https://github.com/visulima/visulima/commit/dbacabeb68f4b5a64cb1aa931bc379429cd20ee2))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.13 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.12...@visulima/is-ansi-color-supported@3.0.0-alpha.13) (2026-06-13) ([1b2cdc4](https://github.com/visulima/visulima/commit/1b2cdc49a4f358f515962262cfd7c587fe47f9d9))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.14 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.13...@visulima/is-ansi-color-supported@3.0.0-alpha.14) (2026-06-30) ([881e227](https://github.com/visulima/visulima/commit/881e22789ca9e0240b106ca51662d488382868c3))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.2 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.1...@visulima/is-ansi-color-supported@3.0.0-alpha.2) (2025-12-06) ([666fdd3](https://github.com/visulima/visulima/commit/666fdd37659aba4cb6a4be12dcb8e6ff2956c38e))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.3 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.2...@visulima/is-ansi-color-supported@3.0.0-alpha.3) (2025-12-11) ([7dbfc05](https://github.com/visulima/visulima/commit/7dbfc05f1e59a4c5b806f8244aad2a2c0a5ad2b4))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.4 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.3...@visulima/is-ansi-color-supported@3.0.0-alpha.4) (2025-12-27) ([41132d8](https://github.com/visulima/visulima/commit/41132d87860ae0d85caecf938e8326058e560811))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.5 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.4...@visulima/is-ansi-color-supported@3.0.0-alpha.5) (2026-03-06) ([602a6d0](https://github.com/visulima/visulima/commit/602a6d0528597f47a1add72f485a91d4d7b23e95))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.6 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.5...@visulima/is-ansi-color-supported@3.0.0-alpha.6) (2026-03-26) ([0f077d4](https://github.com/visulima/visulima/commit/0f077d48700662f35055ab3bb7e1386576787c72))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.7 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.6...@visulima/is-ansi-color-supported@3.0.0-alpha.7) (2026-03-26) ([6dc6cef](https://github.com/visulima/visulima/commit/6dc6cef5dbc7be9d8b7cbd7a2ef9f65b69c54e7c))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.8 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.7...@visulima/is-ansi-color-supported@3.0.0-alpha.8) (2026-04-08) ([90b54ca](https://github.com/visulima/visulima/commit/90b54cac0feeac39563fdaa33ebef5d77b07cbde))
+* **release:** @visulima/is-ansi-color-supported@3.0.0-alpha.9 [skip ci]\n\n## @visulima/is-ansi-color-supported [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.8...@visulima/is-ansi-color-supported@3.0.0-alpha.9) (2026-04-15) ([167e4a3](https://github.com/visulima/visulima/commit/167e4a3069e3907745cbf32e5f8a03abb34dd96c))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update homepage URLs to visulima.com/packages/ format ([be42968](https://github.com/visulima/visulima/commit/be42968129df85fb074224435e33135ff44cab91))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* ship esm-only; remove deprecated api packages ([6e58351](https://github.com/visulima/visulima/commit/6e58351e73ac7d8f8ec88be4d77871e4de5d5405))
+
+### Tests
+
+* **is-ansi-color-supported:** cover edge-light runtime, browser userAgentData, and server ci/term paths ([8633292](https://github.com/visulima/visulima/commit/863329255aaa41530e741808b197bebd8f63b70d))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Build System
+
+* emit .js instead of .mjs for esm output ([c8a6026](https://github.com/visulima/visulima/commit/c8a602665a59f0441a61a5a510cdfed9353101e6))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
 ## @visulima/is-ansi-color-supported [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/is-ansi-color-supported@3.0.0-alpha.13...@visulima/is-ansi-color-supported@3.0.0-alpha.14) (2026-06-30)
 
 ### ⚠ BREAKING CHANGES
