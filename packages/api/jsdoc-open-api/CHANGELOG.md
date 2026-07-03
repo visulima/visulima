@@ -1,3 +1,154 @@
+## @visulima/jsdoc-open-api [3.0.0](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.95...@visulima/jsdoc-open-api@3.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* the listed packages no longer publish a CommonJS build —
+consumers must use ESM (import) or dynamic import(). @visulima/connect,
+@visulima/crud, @visulima/prisma-dmmf-transformer and @visulima/api-platform
+are removed and deprecated.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+* change min node version to 22.13
+
+### Features
+
+* **jsdoc-open-api:** harden merge, fix error paths, add yaml/stdout/watch output ([abd6a1a](https://github.com/visulima/visulima/commit/abd6a1ae6be8060515f8a61a1469b8ae652bf58a))
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **api:** resolve eslint and type-safety issues across api packages ([3601491](https://github.com/visulima/visulima/commit/3601491261de56b5cfad87c97daafd458e4ee3b6))
+* **jsdoc-open-api:** 3 bug fixes ([1336b87](https://github.com/visulima/visulima/commit/1336b870964f2645505efbf2720218ddb5aaa18d))
+* **jsdoc-open-api:** combine name and description for path-based YAML parsing ([68e7d23](https://github.com/visulima/visulima/commit/68e7d2395ab97de3221892afe03da27688df7569))
+* **jsdoc-open-api:** drop redundant String() conversion in init-command ([1b2384e](https://github.com/visulima/visulima/commit/1b2384e917687beaf464e18e24595c7d4214c94e))
+* **jsdoc-open-api:** relax type overrides for parser code, preserve JSON roundtrip for undefined stripping ([be896e2](https://github.com/visulima/visulima/commit/be896e2e724396bcb74fbbd3161d29213a9984d6))
+* **jsdoc-open-api:** update package files ([323a059](https://github.com/visulima/visulima/commit/323a059bf14193e847d9cfbca969342405045d42))
+* **jsdoc-open-api:** use String.raw for mime-type backslash literal ([e55977d](https://github.com/visulima/visulima/commit/e55977d804ec2cb26b077f51bd2ce9cc6677d5ac))
+* **jsdoc-open-api:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([4f97e12](https://github.com/visulima/visulima/commit/4f97e125a8f84a5e8b9691b72e2f9c56c5d3a69b))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* resolve eslint errors in fmt, jsdoc-open-api, vis ([43bf450](https://github.com/visulima/visulima/commit/43bf45081e46b042a08b555c3fcb60391b82d06f))
+* **security:** resolve CodeQL alerts on alpha→main ([541e206](https://github.com/visulima/visulima/commit/541e206517b2f78532d19638c18be95ff97e48ae)), closes [#713](https://github.com/visulima/visulima/issues/713)
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **cerebro,prisma-dmmf-transformer,jsdoc-open-api:** add comprehensive Fumadocs documentation ([891b308](https://github.com/visulima/visulima/commit/891b308a34bca2765a4a97ea450648d20d90e0cf))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* **api:** remove empty peerDependencies and optionalDependencies ([85142fa](https://github.com/visulima/visulima/commit/85142fa76729c238a59ac48265b5e33e31183abb))
+* **api:** update dependencies ([f3b6f7c](https://github.com/visulima/visulima/commit/f3b6f7c956e8ae2c0da67773b3790f159c07de29))
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* **jsdoc-open-api:** add tsconfig.eslint.json for type-aware linting ([dd9a888](https://github.com/visulima/visulima/commit/dd9a88810a864e5ef8ee9a1cdf3cf742a4549cb3))
+* **jsdoc-open-api:** apply formatter sweep ([6852218](https://github.com/visulima/visulima/commit/6852218fe4d8099771d12499cba090d73034b3c3))
+* **jsdoc-open-api:** apply formatter updates ([57231bd](https://github.com/visulima/visulima/commit/57231bd235fa16768802306aa6e906a4558c579c))
+* **jsdoc-open-api:** apply pending lint and source updates ([0669fd3](https://github.com/visulima/visulima/commit/0669fd3d46ad0787ef6709cc8cad67b7ff7495f7))
+* **jsdoc-open-api:** apply prettier and eslint quote-style auto-fix ([2e9b8d0](https://github.com/visulima/visulima/commit/2e9b8d0cdccaa94f22627e5e5f11153c71b689bd))
+* **jsdoc-open-api:** apply prettier formatting ([25dae1b](https://github.com/visulima/visulima/commit/25dae1bd4d911921c1926c0212751cf4179087aa))
+* **jsdoc-open-api:** enforce curly braces and apply lint fixes ([606641f](https://github.com/visulima/visulima/commit/606641f7a29eaa5707ae27c57ed02a91adf950b5))
+* **jsdoc-open-api:** housekeeping cleanup ([de52abe](https://github.com/visulima/visulima/commit/de52abea6d81abc06a8afc14c70ea2a5aabcd30e))
+* **jsdoc-open-api:** migrate .prettierrc.cjs to prettier.config.js ([cbe2931](https://github.com/visulima/visulima/commit/cbe2931b52a65fcb2e86960acdc31c8ebc3c9c74))
+* **jsdoc-open-api:** migrate deps to pnpm catalogs ([9a673ca](https://github.com/visulima/visulima/commit/9a673ca0d8235d0ff28a6fe9b150cf2ee37e78a4))
+* **jsdoc-open-api:** update dependencies ([5a1248f](https://github.com/visulima/visulima/commit/5a1248f8fa408fc81bb07a5bf9ce8430b89c1f57))
+* **jsdoc-open-api:** update dependencies ([f5d2a31](https://github.com/visulima/visulima/commit/f5d2a31a8fd163c321915a779c661b758b3e6f73))
+* **jsdoc-open-api:** update tests, docs, and source formatting ([9526ec8](https://github.com/visulima/visulima/commit/9526ec8ebb3e0e506d50b2f6035faf0cbcaca205))
+* **jsdoc-open-api:** upgrade packem to 2.0.0-alpha.76 ([a3b3549](https://github.com/visulima/visulima/commit/a3b3549a68e22970a39904d2d654b65c6047d7cf))
+* jsr.json update and lock file ([73fce38](https://github.com/visulima/visulima/commit/73fce38c7cb4603f3fffb88609b1b18e2feb4937))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.1 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@2.0.95...@visulima/jsdoc-open-api@3.0.0-alpha.1) (2025-12-07) ([32ea9c8](https://github.com/visulima/visulima/commit/32ea9c80dd58cf8b6d5e9564e27e0bfe1c4b1e2c))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.10 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.9...@visulima/jsdoc-open-api@3.0.0-alpha.10) (2026-04-21) ([0b7940e](https://github.com/visulima/visulima/commit/0b7940e569b81ad62f80c43dff37c6f259b97466))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.11 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.10...@visulima/jsdoc-open-api@3.0.0-alpha.11) (2026-04-22) ([2c9a9ac](https://github.com/visulima/visulima/commit/2c9a9ac0241a30387136a16f9ac43497d80b724d))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.12 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.11...@visulima/jsdoc-open-api@3.0.0-alpha.12) (2026-05-04) ([1786a50](https://github.com/visulima/visulima/commit/1786a50f9ba3da4a3974c8afe81ed5b9a81e4b17))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.13 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.12...@visulima/jsdoc-open-api@3.0.0-alpha.13) (2026-05-06) ([a19e596](https://github.com/visulima/visulima/commit/a19e5960b144c808603157d0020e57a46850c525))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.14 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.13...@visulima/jsdoc-open-api@3.0.0-alpha.14) (2026-05-06) ([7764682](https://github.com/visulima/visulima/commit/77646822f0e837bb9eb5e0597fd1919317738446))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.15 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.14...@visulima/jsdoc-open-api@3.0.0-alpha.15) (2026-05-07) ([93692af](https://github.com/visulima/visulima/commit/93692af0df335a8260718ec6fca823530732f14d))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.16 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.15...@visulima/jsdoc-open-api@3.0.0-alpha.16) (2026-05-07) ([87188b5](https://github.com/visulima/visulima/commit/87188b50b5764b0af9cb3b440ccfe798ed4863ba))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.17 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.16...@visulima/jsdoc-open-api@3.0.0-alpha.17) (2026-05-10) ([867a009](https://github.com/visulima/visulima/commit/867a0094ffd68a1ad244b95b9f016427cf8a8a57))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.18 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.17...@visulima/jsdoc-open-api@3.0.0-alpha.18) (2026-05-10) ([71199fd](https://github.com/visulima/visulima/commit/71199fd73acbe2bac89c882c03bcd46859e1a199))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.19 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.18...@visulima/jsdoc-open-api@3.0.0-alpha.19) (2026-05-11) ([f62356e](https://github.com/visulima/visulima/commit/f62356e2934ac6dd50d657c16bd2c8f1f9630345))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.2 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.1...@visulima/jsdoc-open-api@3.0.0-alpha.2) (2025-12-11) ([01c1775](https://github.com/visulima/visulima/commit/01c17759e07b186c30c0f84b033ca2ab2951f604))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.20 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.19...@visulima/jsdoc-open-api@3.0.0-alpha.20) (2026-05-11) ([a047ea4](https://github.com/visulima/visulima/commit/a047ea481c61e047966e7c5dec5addcc2435b039))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.21 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.20...@visulima/jsdoc-open-api@3.0.0-alpha.21) (2026-05-14) ([9705055](https://github.com/visulima/visulima/commit/97050556e6d6a0bf9a6303a269ab2a8fee8e66f8))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.22 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.21...@visulima/jsdoc-open-api@3.0.0-alpha.22) (2026-05-16) ([6befcb6](https://github.com/visulima/visulima/commit/6befcb694831acf8924a21e6ef7e830e07f08d97))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.23 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.22...@visulima/jsdoc-open-api@3.0.0-alpha.23) (2026-05-19) ([58619d0](https://github.com/visulima/visulima/commit/58619d0074f9a6d19a241dcda484211a98616b5b))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.24 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.23...@visulima/jsdoc-open-api@3.0.0-alpha.24) (2026-05-20) ([5c1fb59](https://github.com/visulima/visulima/commit/5c1fb592e73281bf53a926830637cfe1d5160bd6))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.25 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.24...@visulima/jsdoc-open-api@3.0.0-alpha.25) (2026-05-26) ([1d88770](https://github.com/visulima/visulima/commit/1d887707cadbf30a947cfd3fdcdfd0a26677c22d))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.26 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.25...@visulima/jsdoc-open-api@3.0.0-alpha.26) (2026-05-27) ([d48094b](https://github.com/visulima/visulima/commit/d48094befd5efec2b01c65784a911a44370ef0d9))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.27 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.26...@visulima/jsdoc-open-api@3.0.0-alpha.27) (2026-06-02) ([489afe2](https://github.com/visulima/visulima/commit/489afe28f51c1eb24213f02b31aae5fed01177a8))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.28 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.27...@visulima/jsdoc-open-api@3.0.0-alpha.28) (2026-06-04) ([78a6db9](https://github.com/visulima/visulima/commit/78a6db99fa8ae143a8a4936271f438814d24ade7))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.29 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.28...@visulima/jsdoc-open-api@3.0.0-alpha.29) (2026-06-04) ([cbabc14](https://github.com/visulima/visulima/commit/cbabc1477b4b48c0390e777688ed32dcc0054172))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.3 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.2...@visulima/jsdoc-open-api@3.0.0-alpha.3) (2025-12-27) ([99ee48a](https://github.com/visulima/visulima/commit/99ee48a35e57a3c0ef6f7e64bf913d5317e4d044))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.30 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.29...@visulima/jsdoc-open-api@3.0.0-alpha.30) (2026-06-13) ([ba07f94](https://github.com/visulima/visulima/commit/ba07f949af840b8a5b2688e95e9a5444280599c2))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.31 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.30...@visulima/jsdoc-open-api@3.0.0-alpha.31) (2026-06-19) ([a95a760](https://github.com/visulima/visulima/commit/a95a760da13f06fa255b433082306464b6836593))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.32 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.31...@visulima/jsdoc-open-api@3.0.0-alpha.32) (2026-06-19) ([60f5761](https://github.com/visulima/visulima/commit/60f5761b1d053fb0c1377b13ae853d5fdd3cf4d1))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.33 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.32...@visulima/jsdoc-open-api@3.0.0-alpha.33) (2026-06-19) ([c0a5e5a](https://github.com/visulima/visulima/commit/c0a5e5a3667abf4a7c55e7fcfb8ee025aef1f6b1))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.34 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.33...@visulima/jsdoc-open-api@3.0.0-alpha.34) (2026-06-20) ([ac52ae3](https://github.com/visulima/visulima/commit/ac52ae3e69b7f5238999d1f9ef91808eb38bc7e9))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.35 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.34...@visulima/jsdoc-open-api@3.0.0-alpha.35) (2026-06-20) ([b619abd](https://github.com/visulima/visulima/commit/b619abdbdaf8940cc26a7d371b0e5fe5e4e7a438))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.36 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.36](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.35...@visulima/jsdoc-open-api@3.0.0-alpha.36) (2026-06-23) ([90627ec](https://github.com/visulima/visulima/commit/90627ec47ce12758b8f92e6aa3efb9219c330362))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.37 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.37](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.36...@visulima/jsdoc-open-api@3.0.0-alpha.37) (2026-06-23) ([8d6887f](https://github.com/visulima/visulima/commit/8d6887fcb60f8a8c88af5c8fdf6738adb36b6fc0))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.38 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.38](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.37...@visulima/jsdoc-open-api@3.0.0-alpha.38) (2026-06-30) ([a7b0b96](https://github.com/visulima/visulima/commit/a7b0b9651dd14451848375ff0f6ea0a5285cabd9))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.39 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.39](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.38...@visulima/jsdoc-open-api@3.0.0-alpha.39) (2026-07-01) ([5d65f98](https://github.com/visulima/visulima/commit/5d65f985dd0ad48bdf70141ed789fc190ba6ec4a))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.4 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.3...@visulima/jsdoc-open-api@3.0.0-alpha.4) (2026-01-17) ([a9de2f8](https://github.com/visulima/visulima/commit/a9de2f84250a153d71e937465fa81d47d8c6de27))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.40 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.40](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.39...@visulima/jsdoc-open-api@3.0.0-alpha.40) (2026-07-03) ([4407f2d](https://github.com/visulima/visulima/commit/4407f2d12b692e1f9ac3b2901670f23d37c6bead))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.41 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.41](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.40...@visulima/jsdoc-open-api@3.0.0-alpha.41) (2026-07-03) ([b8f463d](https://github.com/visulima/visulima/commit/b8f463d1cb15f8a2f9b5e2c561805ceec09e84c1))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.5 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.4...@visulima/jsdoc-open-api@3.0.0-alpha.5) (2026-03-26) ([9ca5160](https://github.com/visulima/visulima/commit/9ca51608729d9610fb3a974410e1a596af38d122))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.6 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.5...@visulima/jsdoc-open-api@3.0.0-alpha.6) (2026-03-26) ([93df07f](https://github.com/visulima/visulima/commit/93df07f211b9a52b0015dab4f47b1729da744e13))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.7 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.6...@visulima/jsdoc-open-api@3.0.0-alpha.7) (2026-04-08) ([14ce2b2](https://github.com/visulima/visulima/commit/14ce2b218f8fda5eb3023649733ff026e076d4fc))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.8 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.7...@visulima/jsdoc-open-api@3.0.0-alpha.8) (2026-04-21) ([5532cdd](https://github.com/visulima/visulima/commit/5532cdd2ad9d33ee5adb86d0093dda569ae716e0))
+* **release:** @visulima/jsdoc-open-api@3.0.0-alpha.9 [skip ci]\n\n## @visulima/jsdoc-open-api [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.8...@visulima/jsdoc-open-api@3.0.0-alpha.9) (2026-04-21) ([bc7b15d](https://github.com/visulima/visulima/commit/bc7b15d6a1caa7ee8a714e148ba681acbfc45e16))
+* **repo:** apply eslint --fix and prettier --fix across packages ([#650](https://github.com/visulima/visulima/issues/650)) ([2e26a84](https://github.com/visulima/visulima/commit/2e26a84774f218f21345e9a8ecd68236b6542743)), closes [#620](https://github.com/visulima/visulima/issues/620)
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* sorting package.json ([430ed68](https://github.com/visulima/visulima/commit/430ed683d3e38e4c5c5530f787ca832f083b17e4))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update homepage URLs to visulima.com/packages/ format ([be42968](https://github.com/visulima/visulima/commit/be42968129df85fb074224435e33135ff44cab91))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* **jsdoc-open-api:** replace read-pkg-up with @visulima/fs and migrate to packem ([be668e4](https://github.com/visulima/visulima/commit/be668e4dc21a3394bcdb22aecf416f9c27e08e0d))
+* ship esm-only; remove deprecated api packages ([6e58351](https://github.com/visulima/visulima/commit/6e58351e73ac7d8f8ec88be4d77871e4de5d5405))
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **jsdoc-open-api:** assert each file is parsed once ([b285496](https://github.com/visulima/visulima/commit/b28549623e984cc65a8c645a149406c546461e93))
+* **jsdoc-open-api:** cover cli commands, webpack plugin errors, loaders, and swagger merge paths ([22cff56](https://github.com/visulima/visulima/commit/22cff56740cc473cad3ad45ab3749cfff8ff36d8))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+* **repo:** cover bin entry points in dist integration suite ([7479ef1](https://github.com/visulima/visulima/commit/7479ef113cf5ccef25692619082afb1b6a0eecab))
+
+### Build System
+
+* emit .js instead of .mjs for esm output ([c8a6026](https://github.com/visulima/visulima/commit/c8a602665a59f0441a61a5a510cdfed9353101e6))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0
+
 ## @visulima/jsdoc-open-api [3.0.0-alpha.41](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.40...@visulima/jsdoc-open-api@3.0.0-alpha.41) (2026-07-03)
 
 ## @visulima/jsdoc-open-api [3.0.0-alpha.40](https://github.com/visulima/visulima/compare/@visulima/jsdoc-open-api@3.0.0-alpha.39...@visulima/jsdoc-open-api@3.0.0-alpha.40) (2026-07-03)
