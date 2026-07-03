@@ -1,3 +1,69 @@
+## @visulima/interactive-manager 1.0.0 (2026-07-03)
+
+### Features
+
+* **interactive-manager:** add interactive terminal output manager package ([91dde37](https://github.com/visulima/visulima/commit/91dde372b5bcb14fd6c87077e2f7d3bca3f3f763))
+
+### Bug Fixes
+
+* **interactive-manager:** 2 bug fixes + 1 perf ([e7d9871](https://github.com/visulima/visulima/commit/e7d98710254f1d784c5c1f2a8d95eddec92f01d4))
+* **interactive-manager:** count wrapped visual lines and add tty fallback ([d330e81](https://github.com/visulima/visulima/commit/d330e81e50323c6321cb86f941e6123928a80a13))
+* **interactive-manager:** resolve eslint and formatting issues ([cf0d47c](https://github.com/visulima/visulima/commit/cf0d47c1b55467b2074057eb73ba3df6b33e4557))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+
+### Documentation
+
+* **interactive-manager:** fix CHANGELOG bullet style ([b0489ab](https://github.com/visulima/visulima/commit/b0489ab03b861fc2fc81e51fca6f44adc0ef909e))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* **interactive-manager:** apply pending changes ([7b3ba9b](https://github.com/visulima/visulima/commit/7b3ba9b3381a9ca7cb066e864287473bcd599a8b))
+* **interactive-manager:** housekeeping cleanup ([7bfd667](https://github.com/visulima/visulima/commit/7bfd66710540b573318a6548e9ede01b74236d80))
+* **interactive-manager:** upgrade packem to 2.0.0-alpha.76 ([34e5e82](https://github.com/visulima/visulima/commit/34e5e82588b82c8031b2e1075d936b5b543ed2b3))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **release:** @visulima/interactive-manager@1.0.0-alpha.1 [skip ci]\n\n## @visulima/interactive-manager 1.0.0-alpha.1 (2026-04-21) ([9d53009](https://github.com/visulima/visulima/commit/9d530092d67b8ab5e2c3affec20af8bc8350d98d))
+* **release:** @visulima/interactive-manager@1.0.0-alpha.2 [skip ci]\n\n## @visulima/interactive-manager [1.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/interactive-manager@1.0.0-alpha.1...@visulima/interactive-manager@1.0.0-alpha.2) (2026-04-22) ([f08d22e](https://github.com/visulima/visulima/commit/f08d22e79010ce07eb32b8fa95b26f301f63cf1e))
+* **release:** @visulima/interactive-manager@1.0.0-alpha.3 [skip ci]\n\n## @visulima/interactive-manager [1.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/interactive-manager@1.0.0-alpha.2...@visulima/interactive-manager@1.0.0-alpha.3) (2026-05-27) ([29f7171](https://github.com/visulima/visulima/commit/29f71716a819db9083efa5c9fc07a0421f7eff77))
+* **release:** @visulima/interactive-manager@1.0.0-alpha.4 [skip ci]\n\n## @visulima/interactive-manager [1.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/interactive-manager@1.0.0-alpha.3...@visulima/interactive-manager@1.0.0-alpha.4) (2026-06-04) ([14032f0](https://github.com/visulima/visulima/commit/14032f0d20578da968321a94204add7d4d28643d))
+* **release:** @visulima/interactive-manager@1.0.0-alpha.5 [skip ci]\n\n## @visulima/interactive-manager [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/interactive-manager@1.0.0-alpha.4...@visulima/interactive-manager@1.0.0-alpha.5) (2026-06-13) ([63a6c78](https://github.com/visulima/visulima/commit/63a6c780355ed62c9e42e98334f528580659e203))
+* **repo:** apply eslint --fix and prettier --fix across packages ([#650](https://github.com/visulima/visulima/issues/650)) ([2e26a84](https://github.com/visulima/visulima/commit/2e26a84774f218f21345e9a8ecd68236b6542743)), closes [#620](https://github.com/visulima/visulima/issues/620)
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* **terminal:** apply prettier and eslint formatting sweep ([15fd89c](https://github.com/visulima/visulima/commit/15fd89c677eea60866e08e4fd5f5a6bc8f3bd2e5))
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+
+### Tests
+
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **interactive-manager:** cover viewport overflow and scroll clamp paths ([1ec80f6](https://github.com/visulima/visulima/commit/1ec80f633b42f1db00227cf5eeb5c314027aea4e))
+* **interactive-manager:** erase visual line count ([c4fc35d](https://github.com/visulima/visulima/commit/c4fc35dc0f1ad764ce630a0838ac0d4180ce1e4c))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Build System
+
+* **deps:** update interactive-manager dependencies ([abef695](https://github.com/visulima/visulima/commit/abef69568ea23a4dd63a5a8212261e58557a8c8a))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+* **lint:** raise eslint job timeout and cache slow per-package eslint runs ([#717](https://github.com/visulima/visulima/issues/717)) ([c93878d](https://github.com/visulima/visulima/commit/c93878dbfa1888cc834704448ae6eefd3098597e)), closes [#713](https://github.com/visulima/visulima/issues/713)
+
+
+### Dependencies
+
+* **@visulima/ansi:** upgraded to 4.0.0
+* **@visulima/string:** upgraded to 3.0.0
+
 ## @visulima/interactive-manager [1.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/interactive-manager@1.0.0-alpha.4...@visulima/interactive-manager@1.0.0-alpha.5) (2026-06-13)
 
 ### Bug Fixes
