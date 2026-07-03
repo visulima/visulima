@@ -1019,7 +1019,7 @@ describe(cacheVerifyExecute, () => {
         await cacheVerifyExecute({
             argument: [],
             logger: logger as unknown as Console,
-            options: { "cache-dir": cacheDirectory, format: undefined, scope: undefined },
+            options: { cacheDir: cacheDirectory, format: undefined, scope: undefined },
             visConfig: undefined,
             workspaceRoot,
         } as never);
@@ -1035,7 +1035,7 @@ describe(cacheVerifyExecute, () => {
         await cacheVerifyExecute({
             argument: ["app:build"],
             logger: logger as unknown as Console,
-            options: { "cache-dir": cacheDirectory, format: "json", scope: undefined },
+            options: { cacheDir: cacheDirectory, format: "json", scope: undefined },
             visConfig: undefined,
             workspaceRoot,
         } as never);
@@ -1058,7 +1058,7 @@ describe(cacheVerifyExecute, () => {
         await cacheVerifyExecute({
             argument: ["app:build"],
             logger: logger as unknown as Console,
-            options: { "cache-dir": cacheDirectory, format: "json", scope: undefined },
+            options: { cacheDir: cacheDirectory, format: "json", scope: undefined },
             visConfig: undefined,
             workspaceRoot,
         } as never);
@@ -1087,7 +1087,7 @@ describe(cacheVerifyExecute, () => {
         await cacheVerifyExecute({
             argument: ["app:build"],
             logger: logger as unknown as Console,
-            options: { "cache-dir": cacheDirectory, format: "json", scope: undefined },
+            options: { cacheDir: cacheDirectory, format: "json", scope: undefined },
             visConfig: undefined,
             workspaceRoot,
         } as never);
@@ -1113,7 +1113,7 @@ describe(cacheVerifyExecute, () => {
         await cacheVerifyExecute({
             argument: ["app:build"],
             logger: logger as unknown as Console,
-            options: { "cache-dir": cacheDirectory, format: "json", scope: undefined },
+            options: { cacheDir: cacheDirectory, format: "json", scope: undefined },
             visConfig: undefined,
             workspaceRoot,
         } as never);
