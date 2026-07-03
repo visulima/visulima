@@ -195,7 +195,14 @@ export const createTarGz = async (sourceDirectory: string, outputPath: string): 
 /** tar + gzip extract, with path-traversal validation. */
 export const extractTarGz = async (archivePath: string, destinationDirectory: string, options?: ExtractOptions): Promise<void> => {
     const tarBuffer = await decompressBuffer(archivePath, createGunzip());
-    const entries = nanoParseTar(tarBuffer);
+    // nanotar's `parseTar` indexes the tar header from the typed array's
+    // *underlying* ArrayBuffer and ignores `byteOffset`. Node 24.18 hands back
+    // pooled Buffers with a non-zero `byteOffset` from the decompression
+    // stream, so parsing then reads from the wrong offset and returns
+    // garbage/empty entries — surfacing on restore as `ENOENT` (skipped
+    // entry) or `RangeError: mode NaN`. Copy into a fresh offset-0 Uint8Array
+    // first. (Corrupted real cache restores on node >=24.18, not just tests.)
+    const entries = nanoParseTar(new Uint8Array(tarBuffer));
 
     await writeTarEntries(entries, destinationDirectory, options);
 };
@@ -215,7 +222,14 @@ export const createTarBrotli = async (sourceDirectory: string, outputPath: strin
 /** Inverse of {@link createTarBrotli}, with path-traversal validation. */
 export const extractTarBrotli = async (archivePath: string, destinationDirectory: string, options?: ExtractOptions): Promise<void> => {
     const tarBuffer = await decompressBuffer(archivePath, createBrotliDecompress());
-    const entries = nanoParseTar(tarBuffer);
+    // nanotar's `parseTar` indexes the tar header from the typed array's
+    // *underlying* ArrayBuffer and ignores `byteOffset`. Node 24.18 hands back
+    // pooled Buffers with a non-zero `byteOffset` from the decompression
+    // stream, so parsing then reads from the wrong offset and returns
+    // garbage/empty entries — surfacing on restore as `ENOENT` (skipped
+    // entry) or `RangeError: mode NaN`. Copy into a fresh offset-0 Uint8Array
+    // first. (Corrupted real cache restores on node >=24.18, not just tests.)
+    const entries = nanoParseTar(new Uint8Array(tarBuffer));
 
     await writeTarEntries(entries, destinationDirectory, options);
 };
