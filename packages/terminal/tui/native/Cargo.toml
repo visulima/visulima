@@ -1,6 +1,7 @@
 [package]
 authors = [ "visulima" ]
 edition = "2021"
+license = "MIT"
 name = "visulima-tui-native"
 version = "0.1.0"
 
