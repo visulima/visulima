@@ -1,3 +1,17 @@
+## @visulima/find-ai-runner [1.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.8...@visulima/find-ai-runner@1.0.0-alpha.9) (2026-07-03)
+
+### Features
+
+* **find-ai-runner:** detect the AI agent session driving a process ([#720](https://github.com/visulima/visulima/issues/720)) ([bca575d](https://github.com/visulima/visulima/commit/bca575dc38d0dc1c1120951774f14fbb1d46e11c))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
 ## @visulima/find-ai-runner [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/find-ai-runner@1.0.0-alpha.7...@visulima/find-ai-runner@1.0.0-alpha.8) (2026-06-13)
 
 ### Features
