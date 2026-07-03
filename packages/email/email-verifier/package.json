@@ -1,6 +1,6 @@
 {
     "name": "@visulima/email-verifier",
-    "version": "1.0.0-alpha.1",
+    "version": "1.0.0",
     "description": "Mailer-free email address verification and enrichment: syntax, MX/SMTP probing, disposable/free/role detection, catch-all, provider & secure-email-gateway classification, typo suggestions, and a 0–100 quality score.",
     "keywords": [
         "accept-all",
@@ -127,9 +127,9 @@
         "test:watch": "vitest"
     },
     "dependencies": {
-        "@visulima/disposable-email-domains": "1.0.0-alpha.18",
-        "@visulima/email-provider-mx": "1.0.0-alpha.1",
-        "@visulima/free-email-domains": "1.0.0-alpha.1",
+        "@visulima/disposable-email-domains": "1.0.0",
+        "@visulima/email-provider-mx": "1.0.0",
+        "@visulima/free-email-domains": "1.0.0",
         "lru-cache": "catalog:prod"
     },
     "devDependencies": {
