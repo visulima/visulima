@@ -1,0 +1,248 @@
+---
+title: "vis doctor"
+description: "Run a full project health check (outdated, security, duplicates, optimizations)"
+---
+
+# vis doctor
+
+`vis doctor` is a one-command project health check. It runs every diagnostic scan in parallel and prints a single dashboard with actionable next steps.
+
+```bash
+vis doctor
+```
+
+> **Not the same as `vis deps --custom-types`.** `vis doctor` verifies the _installed_ runtime matches `engines.node` on this machine. `vis deps --custom-types` verifies that every package.json in the workspace _declares_ the same `engines.node`. Run doctor locally; run `vis deps --custom-types` in CI. See [`vis deps`](./deps.mdx#overlap-with-vis-doctor) for the workspace-side check.
+
+## Usage
+
+```bash
+vis doctor [options]
+```
+
+## Examples
+
+```bash
+# Full project health check
+vis doctor
+
+# Auto-apply safe fixes (security overrides + codemods, SIGTERM orphans)
+vis doctor --fix
+
+# Same as --fix, but SIGKILL orphans that don't respond to SIGTERM
+vis doctor --fix --fix-force
+
+# Machine-readable output for CI
+vis doctor --format json
+vis doctor --json                # shorthand for --format json
+
+# Run only the security scans (skips outdated, duplicates, optimization, runtime)
+vis doctor --only security
+
+# Skip the slowest optional scans
+vis doctor --skip optimization,runtime
+
+# Summary only (no per-section breakdown), still shows the live progress UI
+vis doctor --quiet
+
+# Disable the live progress UI (forces sequential plain logs)
+vis doctor --no-progress
+
+# Exit with code 1 if security issues found
+vis doctor --exit-code
+
+# Strict mode: fail on any issue (outdated, duplicates, runtime warnings, etc.)
+vis doctor --exit-code --strict
+```
+
+## Options
+
+| Option          | Default | Description                                                                                                                                               |
+| --------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--format`      | `table` | Output format: `table` or `json`                                                                                                                          |
+| `--json`        | `false` | Shorthand for `--format json`                                                                                                                             |
+| `--only`        |         | Comma-separated sections to run: `dependencies`, `security`, `optimization`, `runtime`                                                                    |
+| `--skip`        |         | Comma-separated sections to skip                                                                                                                          |
+| `--quiet`       | `false` | Suppress per-section detail; print summary only                                                                                                           |
+| `--no-progress` | `false` | Disable live progress UI (forces sequential logs)                                                                                                         |
+| `--exit-code`   | `false` | Exit with code 1 if security issues are found                                                                                                             |
+| `--fix`         | `false` | Auto-apply safe fixes (Socket overrides + codemods, then re-install). Also SIGTERMs orphaned `vis` / `task-runner` processes the runtime check found.     |
+| `--fix-force`   | `false` | With `--fix`: escalate orphan cleanup to `SIGKILL` (or `taskkill /F` on Windows). Use when SIGTERM is ignored — Windows child trees, blocked event loops. |
+| `--strict`      | `false` | With `--exit-code`, also fail on outdated deps, duplicates, runtime warnings                                                                              |
+| `--no-cache`    | `false` | Bypass the doctor result cache (`~/.vis/cache/doctor`)                                                                                                    |
+| `--filter`      |         | Comma-separated package name patterns to scope findings (supports `*` globs, e.g. `'@types/*,react'`)                                                     |
+
+### Live progress
+
+By default `vis doctor` shows a live multi-line spinner — one row per network-bound scan (outdated catalog deps, OSV vulnerability lookup, security-provider reports (Socket.dev, deps.dev), codemod availability under `--fix`). Each row finishes with its own status icon (`✓` ok, `⚠` warn, `✗` error) and elapsed time so you can spot the slow scan at a glance.
+
+The progress UI auto-disables in any of these cases:
+
+- non-TTY stdout (CI, piped output)
+- `--json` / `--format json`
+- `--no-progress` flag
+
+In those modes, every scan still emits a single completion line so the log stays useful.
+
+## What It Checks
+
+The dashboard is grouped into four diagnostic sections plus a static **Supply Chain** posture block. The four sections (`dependencies`, `security`, `optimization`, `runtime`) are gated by `--only` / `--skip`; the supply-chain block is config-only and always runs.
+
+### Supply Chain
+
+A static snapshot of the workspace's hardening posture, derived from `security.*` in `vis.config.ts`. The block lists each knob and flags the unset / permissive ones so you discover them before you need them.
+
+| Setting                                 | What it does                                                                                       | Severity when unset / permissive                                                 |
+| --------------------------------------- | -------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `minimumReleaseAge`                     | Block packages published in the last N minutes (mitigates same-day supply-chain compromises).      | `warn` when unset or `0`.                                                        |
+| `trustPolicy`                           | Block when a package's trust level decreases (e.g. OIDC-published → token-published).              | `warn` when unset or `off`. `no-downgrade` is the recommended hardened value.    |
+| `blockExoticSubdeps`                    | Disallow git/tarball URLs in transitive deps.                                                      | `warn` when unset or `false`.                                                    |
+| `allowBuilds`                           | Explicit allowlist of packages permitted to run lifecycle scripts (vis blocks scripts by default). | `warn` when empty — the block-by-default still applies, but nothing runs at all. |
+| `strictDepBuilds` + empty `allowBuilds` | Active misconfiguration: every package with a build script will be blocked.                        | `error` — run `vis approve-builds` to populate the allowlist.                    |
+| `patchedDependencies`                   | Validate every entry in your PM-native patch map points at a real `.patch` file on disk.           | `error` when a referenced file is missing — the next install will fail.          |
+
+A doctor run with no `security` block at all surfaces a single warning pointing at `defineConfig()` from `@visulima/vis/config`.
+
+`patchedDependencies` is read from `pnpm-workspace.yaml` (pnpm) or `package.json` (bun); npm and yarn use different formats and are skipped silently. The check resolves each entry's path relative to the workspace root and only reports problems — when every patch file resolves, the section adds a single `ok` finding with the entry count.
+
+When [aube](https://github.com/endevco/aube) is the active installer, doctor also surfaces aube's effective security posture next to vis's `security.policies.*` findings. The block reads `aube-workspace.yaml` (falling back to `pnpm-workspace.yaml`) and reports on `paranoid`, `trustPolicy`, `blockExoticSubdeps`, `jailBuilds`, `strictDepBuilds`, `minimumReleaseAge`, and `allowBuilds`. Aube's defaults are already hardened, so most entries render as `ok`; the section only escalates to `warn` when a hardening knob is explicitly relaxed (e.g. `trustPolicy: off`, `blockExoticSubdeps: false`, `minimumReleaseAge: 0`).
+
+### Dependencies
+
+- Total installed packages and detected workspaces.
+- Outdated entries from `pnpm-workspace.yaml` catalogs (counts grouped by `major` / `minor` / `patch`).
+- Duplicate package versions across the lockfile.
+
+### Security
+
+- Known CVEs (OSV.dev) for both outdated and currently installed packages.
+- Optional security-provider alerts and low-score packages when Socket.dev or deps.dev is configured (see [`vis audit`](./audit)).
+
+### Optimization
+
+- Replaceable native APIs (e.g. `chalk` → `node:util.styleText`).
+- Lighter alternatives flagged by [e18e](https://e18e.dev).
+- Trivial micro-utilities that can be inlined.
+- `@socketregistry` overrides available for known-bad packages.
+
+Run [`vis optimize`](./optimize) for an interactive picker, or pass `--fix` to apply non-interactively.
+
+### Runtime
+
+The runtime block surfaces watch / signal subsystem state that silently breaks `vis run --watch` when misconfigured.
+
+| Check      | Platform   | What it reports                                                                                                                                                                                                                                                                                                             |
+| ---------- | ---------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `inotify`  | Linux only | Reads `/proc/sys/fs/inotify/max_user_watches`. Warns when the limit is below `65536` — large monorepos can exhaust this and `fs.watch` will silently miss events.                                                                                                                                                           |
+| `tty`      | All        | Confirms an interactive TTY is present so [watch keybinds](./run#keybinds) work. Reports `skip` in CI / piped mode (keybinds disabled, file-change reruns still fire).                                                                                                                                                      |
+| `watchman` | All        | Detects whether Facebook's `watchman` binary is on `PATH`. When present, [`vis run --watch`](./run#watch-mode) transparently uses the Watchman backend, which scales recursive watching far past `fs.watch` on large trees. Reports `skip` (with an install hint) when absent — the native watcher is still used.           |
+| `git-lfs`  | All        | Reads `.gitattributes` (relative to the workspace root, so it is found from subdirectories). Warns when LFS-tracked patterns exist but the `git lfs` binary is missing — checkouts would contain pointer files instead of real content. `ok` when LFS is configured and installed, `skip` when no LFS patterns are tracked. |
+| `orphans`  | All        | Looks for stray `vis run` / task-runner processes left over from prior crashes. Up to two are reported as informational; three or more become a warning with a `kill` snippet. Pass `--fix` to send SIGTERM (or `taskkill` on Windows) to the matched PIDs automatically.                                                   |
+
+When the inotify warning fires, the suggested fix is:
+
+```bash
+sudo sysctl fs.inotify.max_user_watches=524288
+```
+
+(VS Code and IntelliJ recommend the same value; persist it via `/etc/sysctl.d/`.)
+
+The `inotify`, `watchman`, and `git-lfs` checks together form the **VCS-scaling
+posture** — they tell you whether watch mode and large checkouts will hold up as
+the monorepo grows:
+
+```mermaid
+flowchart TD
+    A["vis doctor (runtime)"] --> B["inotify capacity\n(Linux watch ceiling)"]
+    A --> C["watchman on PATH?"]
+    A --> D[".gitattributes LFS patterns?"]
+    B -- "< 65536" --> B1["warn: bump max_user_watches"]
+    C -- present --> C1["ok: vis run --watch uses\nWatchman daemon backend"]
+    C -- absent --> C2["skip: native fs.watch fallback\n(install hint)"]
+    D -- "LFS tracked + git-lfs missing" --> D1["warn: checkouts get\npointer files, not content"]
+    D -- "LFS tracked + git-lfs present" --> D2["ok"]
+    D -- "no LFS patterns" --> D3["skip"]
+```
+
+Upstream references for the tools these checks probe:
+[inotify (`man 7 inotify`)](https://man7.org/linux/man-pages/man7/inotify.7.html),
+[Watchman](https://facebook.github.io/watchman/), and
+[Git LFS](https://git-lfs.com/).
+
+Runtime warnings flip the exit code to `1` only under `--strict`, since none of them indicate a security issue.
+
+The `orphans` warning is the only runtime check `--fix` can resolve. The auto-recover step shares its matcher with the diagnostic — what got warned about is exactly what gets killed — and treats `ESRCH` (process already exited) as success so a benign race doesn't surface as a failure. Failures are reported per PID with their `errno` so the user knows whether to escalate privileges (`EPERM`) or investigate.
+
+`--fix` sends SIGTERM by default so the orphan can flush buffered output and tear down its child tree gracefully. Add `--fix-force` to escalate to SIGKILL (or `taskkill /F` on Windows) for processes that ignore SIGTERM — most commonly Windows child trees that hold open console handles, or processes with a blocked event loop. The doctor re-enumerates the process table on each `--fix` run rather than reusing the cached PIDs from the diagnostic, since the orphan set can change between the scan and the recovery step (a `vis run` in another terminal could exit, or a fresh crash could leave a new orphan).
+
+## JSON Output
+
+`--format json` (or `--json`) emits a stable schema suitable for CI:
+
+```json
+{
+    "status": "warn",
+    "elapsedMs": 3420,
+    "dependencies": { "status": "warn", "installed": 1230, "outdated": 4, "duplicates": 0 },
+    "security": { "status": "ok", "vulnerabilities": 0, "alerts": 0, "lowScorePackages": 0 },
+    "optimizations": { "status": "warn", "total": 3, "native": 1, "preferred": 1, "microUtilities": 0, "socket": 1 },
+    "supplyChain": {
+        "status": "warn",
+        "findings": [
+            { "label": "minimumReleaseAge: 1440 minutes", "severity": "ok" },
+            {
+                "label": "trustPolicy: not set",
+                "severity": "warn",
+                "detail": "Packages whose trust level has decreased will not be blocked. Consider 'no-downgrade'."
+            },
+            { "label": "blockExoticSubdeps: true", "severity": "ok" },
+            { "label": "allowBuilds: 3 entries", "severity": "ok" }
+        ]
+    },
+    "runtimeStatus": "warn",
+    "runtime": [
+        {
+            "id": "inotify",
+            "status": "warn",
+            "message": "inotify watcher limit is 8192 — large monorepos can exhaust this. Bump now with `sudo sysctl fs.inotify.max_user_watches=524288` and persist via `/etc/sysctl.d/99-vis.conf` so it survives reboot.",
+            "detail": { "maxWatches": 8192 }
+        },
+        { "id": "tty", "status": "skip", "message": "No TTY on stdin/stdout — running in CI / piped mode (keybinds disabled)." },
+        {
+            "id": "watchman",
+            "status": "skip",
+            "message": "Watchman not found — `vis` uses native fs.watch (fine for small repos). Install Watchman + `fb-watchman` to scale watch mode on large monorepos."
+        },
+        { "id": "git-lfs", "status": "skip", "message": "No Git LFS tracking declared in .gitattributes." },
+        { "id": "orphans", "status": "ok", "message": "No orphaned vis/task-runner processes detected." }
+    ],
+    "packageManager": "pnpm",
+    "workspaces": 44
+}
+```
+
+The top-level `status` rolls up the four diagnostic sections **and** `supplyChain.status` — a permissive supply-chain config can flip the overall result to `warn` even when every other section is `ok`.
+
+Status fields:
+
+- Top-level `status` and each section's `status` is one of `ok`, `warn`, `error`, or `skip`. The top-level value escalates over the section values (`error` > `warn` > `ok`).
+- `skip` indicates the section was filtered out via `--only` / `--skip` — distinguishes "scanned clean" from "didn't run".
+- `runtime[*].status` is one of `ok`, `skip`, or `warn`. The `detail` field is optional and varies per check.
+- `elapsedMs` is the wall-clock time of the scan phase (excludes banner / dashboard rendering).
+
+## Exit Codes
+
+| Mode                    | Fails when                                                                                    |
+| ----------------------- | --------------------------------------------------------------------------------------------- |
+| `--exit-code` (default) | Vulnerabilities or provider alerts present                                                    |
+| `--exit-code --strict`  | Any of: vulnerabilities, provider alerts, outdated deps, duplicate versions, runtime warnings |
+
+Without `--exit-code`, doctor always exits `0` so it stays usable as an informational command.
+
+## Related
+
+- [`vis audit`](./audit) — detailed security analysis (Socket.dev, deps.dev, advisories).
+- [`vis optimize`](./optimize) — interactive optimization picker (codemods, overrides).
+- [`vis update`](./update) — update outdated dependencies.
+- [`vis toolchain`](./toolchain) — Node / package-manager version pinning.
+- [`vis run --watch`](./run#watch-mode) — uses the inotify capacity surfaced by the `inotify` runtime check and the Watchman backend surfaced by the `watchman` check.
+- [`vis affected --sparse-checkout`](./affected#sparse-checkout-cone---sparse-checkout) — pairs with the `git-lfs` runtime check for keeping large checkouts fast.

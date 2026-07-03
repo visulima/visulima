@@ -1,0 +1,128 @@
+---
+title: Resend
+description: Send emails using the Resend API with @visulima/email
+---
+
+# Resend Provider
+
+The Resend provider allows you to send emails through the [Resend API](https://resend.com/docs/api-reference/emails/send-email), a modern email API for developers.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { resendProvider } from "@visulima/email/providers/resend";
+
+const mail = createMail(
+    resendProvider({
+        apiKey: process.env.RESEND_API_KEY!,
+    }),
+);
+```
+
+## Configuration
+
+The `ResendConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                  | Description                             |
+| ---------- | --------- | -------- | ------------------------ | --------------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                        | Your Resend API key (starts with `re_`) |
+| `endpoint` | `string`  | No       | `https://api.resend.com` | Custom API endpoint                     |
+| `debug`    | `boolean` | No       | `false`                  | Enable debug logging                    |
+| `logger`   | `Console` | No       | -                        | Custom logger instance                  |
+| `retries`  | `number`  | No       | `3`                      | Number of retry attempts on failure     |
+| `timeout`  | `number`  | No       | `30000`                  | Request timeout in milliseconds         |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Resend").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Resend provider supports additional options through `ResendEmailOptions`:
+
+### Tags
+
+Tags can be used for categorizing emails. Tag names and values must only contain ASCII letters, numbers, underscores, or dashes. Tag names have a max length of 256 characters.
+
+```typescript
+import type { ResendEmailOptions } from "@visulima/email/providers/resend";
+
+const options: ResendEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Tagged email",
+    html: "<h1>Hello</h1>",
+    tags: [
+        { name: "category", value: "welcome" },
+        { name: "environment", value: "production" },
+    ],
+};
+```
+
+### Scheduled Sending
+
+```typescript
+const options: ResendEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Scheduled email",
+    html: "<h1>Hello</h1>",
+    scheduledAt: new Date("2025-01-15T10:00:00Z"),
+};
+```
+
+### Template-Based Emails
+
+```typescript
+const options: ResendEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Template email",
+    html: "",
+    templateId: "tmpl_xxx",
+    templateData: {
+        name: "John",
+        company: "Acme",
+    },
+};
+```
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |
+
+## Additional Methods
+
+### Retrieve Email
+
+You can retrieve email details by ID:
+
+```typescript
+const provider = resendProvider({ apiKey: "re_xxx" });
+const result = await provider.getEmail("email-id");
+```
+
+### Validate Credentials
+
+```typescript
+const isValid = await provider.validateCredentials();
+```

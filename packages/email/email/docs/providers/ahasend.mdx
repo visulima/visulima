@@ -1,0 +1,69 @@
+---
+title: AhaSend
+description: Send emails using the AhaSend API with @visulima/email
+---
+
+# AhaSend Provider
+
+The AhaSend provider allows you to send emails through the [AhaSend API](https://api.ahasend.com/docs), an email delivery service.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { ahaSendProvider } from "@visulima/email/providers/ahasend";
+
+const mail = createMail(
+    ahaSendProvider({
+        apiKey: process.env.AHASEND_API_KEY!,
+    }),
+);
+```
+
+## Configuration
+
+The `AhaSendConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                   | Description                     |
+| ---------- | --------- | -------- | ------------------------- | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                         | Your AhaSend API key            |
+| `endpoint` | `string`  | No       | `https://api.ahasend.com` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                   | Enable debug logging            |
+| `logger`   | `Console` | No       | -                         | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                       | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                   | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from AhaSend").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The AhaSend provider supports additional options through `AhaSendEmailOptions`:
+
+| Option              | Type                      | Description         |
+| ------------------- | ------------------------- | ------------------- |
+| `templateId`        | `string`                  | AhaSend template ID |
+| `templateVariables` | `Record<string, unknown>` | Template variables  |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | No        |

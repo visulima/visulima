@@ -1,0 +1,442 @@
+---
+title: Examples
+description: Real-world usage examples for @visulima/string functions.
+---
+
+# Examples
+
+Practical, real-world examples demonstrating how to use @visulima/string in common scenarios.
+
+## API Key Naming Conventions
+
+Convert between naming conventions when working with APIs that use different styles.
+
+```typescript
+import { camelCase, snakeCase, kebabCase } from "@visulima/string/case";
+
+// Convert API response keys from snake_case to camelCase
+const apiResponse = {
+    user_name: "John",
+    email_address: "john@example.com",
+    phone_number: "555-1234",
+};
+
+const camelCaseKeys = Object.fromEntries(Object.entries(apiResponse).map(([key, value]) => [camelCase(key), value]));
+// { userName: 'John', emailAddress: 'john@example.com', phoneNumber: '555-1234' }
+
+// Convert camelCase to snake_case for API requests
+const requestBody = {
+    userName: "Jane",
+    emailAddress: "jane@example.com",
+};
+
+const snakeCaseKeys = Object.fromEntries(Object.entries(requestBody).map(([key, value]) => [snakeCase(key), value]));
+// { user_name: 'Jane', email_address: 'jane@example.com' }
+```
+
+## CSS Class Name Generation
+
+Generate CSS class names from component props.
+
+```typescript
+import { kebabCase } from "@visulima/string/case";
+
+function generateClassName(component: string, modifiers: Record<string, boolean>): string {
+    const base = kebabCase(component);
+    const activeModifiers = Object.entries(modifiers)
+        .filter(([, active]) => active)
+        .map(([name]) => `${base}--${kebabCase(name)}`);
+
+    return [base, ...activeModifiers].join(" ");
+}
+
+generateClassName("UserProfile", {
+    isActive: true,
+    hasAvatar: true,
+    isDisabled: false,
+});
+// 'user-profile user-profile--is-active user-profile--has-avatar'
+```
+
+## Environment Variable Mapping
+
+Map configuration objects to environment variable names.
+
+```typescript
+import { constantCase } from "@visulima/string/case";
+
+function configToEnvVars(config: Record<string, string>, prefix: string = "APP"): Record<string, string> {
+    return Object.fromEntries(Object.entries(config).map(([key, value]) => [`${prefix}_${constantCase(key)}`, value]));
+}
+
+configToEnvVars({
+    databaseUrl: "postgres://localhost",
+    redisHost: "127.0.0.1",
+    apiSecret: "my-secret",
+});
+// {
+//   APP_DATABASE_URL: 'postgres://localhost',
+//   APP_REDIS_HOST: '127.0.0.1',
+//   APP_API_SECRET: 'my-secret',
+// }
+```
+
+## Blog Post URL Generation
+
+Generate SEO-friendly URLs from article titles.
+
+```typescript
+import { slugify } from "@visulima/string/slugify";
+
+function generatePostUrl(title: string, date: Date): string {
+    const slug = slugify(title);
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+
+    return `/blog/${year}/${month}/${slug}`;
+}
+
+generatePostUrl("My First Blog Post!", new Date("2024-03-15"));
+// '/blog/2024/03/my-first-blog-post'
+
+generatePostUrl("Internationalization: 国际化 and i18n", new Date("2024-06-01"));
+// '/blog/2024/06/internationalization-guo-ji-hua-and-i18n'
+
+// With custom options for a filename
+function generateFilename(title: string): string {
+    return slugify(title, {
+        separator: "_",
+        allowedChars: "a-zA-Z0-9_.",
+    });
+}
+
+generateFilename("My Document (Final) v2.pdf");
+// 'my_document_final_v2.pdf'
+```
+
+## CLI Command Suggestions
+
+Suggest the correct command when users make typos.
+
+```typescript
+import { closestString } from "@visulima/string/closest-string";
+import { wordSimilaritySort } from "@visulima/string/word-similarity-sort";
+
+const commands = ["init", "build", "dev", "start", "test", "lint", "format", "deploy", "publish"];
+
+function suggestCommand(input: string): string {
+    const match = closestString(input, commands);
+
+    if (!match) {
+        return `Unknown command: ${input}. Run --help to see available commands.`;
+    }
+
+    return `Did you mean: ${match}?`;
+}
+
+suggestCommand("biuld"); // 'Did you mean: build?'
+suggestCommand("tset"); // 'Did you mean: test?'
+suggestCommand("publsh"); // 'Did you mean: publish?'
+
+// Show multiple suggestions
+function suggestCommands(input: string, count: number = 3): string[] {
+    return wordSimilaritySort(input, commands).slice(0, count);
+}
+
+suggestCommands("sta");
+// ['start', 'init', 'test']
+```
+
+## Terminal Table Formatting
+
+Build aligned columns in terminal output using string width.
+
+```typescript
+import { getStringWidth } from "@visulima/string/get-string-width";
+
+function formatTable(headers: string[], rows: string[][], padding: number = 2): string {
+    // Calculate column widths
+    const colWidths = headers.map((header, colIndex) => {
+        const cellWidths = rows.map((row) => getStringWidth(row[colIndex] ?? ""));
+        return Math.max(getStringWidth(header), ...cellWidths);
+    });
+
+    // Format a row
+    const formatRow = (cells: string[]): string =>
+        cells
+            .map((cell, i) => {
+                const width = getStringWidth(cell);
+                const pad = " ".repeat((colWidths[i] ?? 0) - width + padding);
+                return cell + pad;
+            })
+            .join("");
+
+    // Build table
+    const headerLine = formatRow(headers);
+    const separator = colWidths.map((w) => "-".repeat(w + padding)).join("");
+    const bodyLines = rows.map((row) => formatRow(row));
+
+    return [headerLine, separator, ...bodyLines].join("\n");
+}
+
+const table = formatTable(
+    ["Name", "Country", "City"],
+    [
+        ["John", "USA", "New York"],
+        ["Tanaka", "Japan", "Tokyo"],
+        ["Ahmed", "Egypt", "Cairo"],
+    ],
+);
+
+console.log(table);
+// Name      Country   City
+// --------------------------------
+// John      USA       New York
+// Tanaka    Japan     Tokyo
+// Ahmed     Egypt     Cairo
+```
+
+## Search Autocomplete
+
+Build a fuzzy search with ranked results.
+
+```typescript
+import { wordSimilaritySort } from "@visulima/string/word-similarity-sort";
+import { distance } from "@visulima/string";
+
+const products = ["iPhone 15 Pro", "iPhone 15 Pro Max", "Samsung Galaxy S24", "Samsung Galaxy S24 Ultra", "Google Pixel 8", "Google Pixel 8 Pro", "OnePlus 12"];
+
+function searchProducts(query: string, maxResults: number = 5): string[] {
+    if (query.length < 2) return [];
+
+    // Sort by similarity, then filter out poor matches
+    const sorted = wordSimilaritySort(query, products, {
+        caseSensitive: false,
+    });
+
+    // Only return results with reasonable distance
+    return sorted
+        .filter((product) => {
+            const d = distance(query.toLowerCase(), product.toLowerCase());
+            // Allow distance up to half the query length
+            return d <= Math.max(query.length * 0.6, 3);
+        })
+        .slice(0, maxResults);
+}
+
+searchProducts("iphone");
+// ['iPhone 15 Pro', 'iPhone 15 Pro Max']
+
+searchProducts("pixel");
+// ['Google Pixel 8', 'Google Pixel 8 Pro']
+```
+
+## Truncating Terminal Output
+
+Truncate strings to fit terminal width while preserving Unicode and ANSI codes.
+
+```typescript
+import { getStringTruncatedWidth } from "@visulima/string/get-string-truncated-width";
+import { getStringWidth } from "@visulima/string/get-string-width";
+
+function truncateForTerminal(text: string, maxWidth: number, ellipsis: string = "..."): string {
+    const width = getStringWidth(text);
+
+    if (width <= maxWidth) {
+        return text;
+    }
+
+    const result = getStringTruncatedWidth(text, {
+        limit: maxWidth,
+        ellipsis,
+    });
+
+    return text.slice(0, result.index) + (result.ellipsed ? ellipsis : "");
+}
+
+truncateForTerminal("Hello, World!", 10);
+// 'Hello, ...'
+
+truncateForTerminal("你好世界 - Hello World", 12);
+// '你好世界 ...'
+
+// Preserve ANSI colors
+truncateForTerminal("\x1b[31mError: Something went wrong\x1b[0m", 15);
+// Truncates the visible text, not the escape codes
+```
+
+## Detecting Text Direction
+
+Handle bidirectional text in your application.
+
+```typescript
+import { direction } from "@visulima/string";
+
+function wrapWithDirection(text: string): string {
+    const dir = direction(text);
+
+    if (dir === "rtl") {
+        return `<span dir="rtl">${text}</span>`;
+    }
+
+    return text;
+}
+
+wrapWithDirection("Hello"); // 'Hello'
+wrapWithDirection("مرحبا"); // '<span dir="rtl">مرحبا</span>'
+```
+
+## Testing Colored CLI Output
+
+Test that your CLI produces correctly colored output.
+
+```typescript
+import { expect, describe, it } from "vitest";
+import { toEqualAnsi } from "@visulima/string/test/vitest";
+import { formatAnsiString, compareAnsiStrings } from "@visulima/string/test/utils";
+
+expect.extend({ toEqualAnsi });
+
+describe("CLI formatter", () => {
+    it("should format errors in red", () => {
+        const output = formatError("File not found");
+
+        // Exact ANSI comparison
+        expect(output).toEqualAnsi("\x1b[31mError: File not found\x1b[39m");
+    });
+
+    it("should format warnings with yellow text", () => {
+        const output = formatWarning("Deprecated API");
+        const formatted = formatAnsiString(output);
+
+        // Test visible content
+        expect(formatted.stripped).toBe("Warning: Deprecated API");
+
+        // Verify ANSI codes are present
+        expect(formatted.lengthDifference).toBeGreaterThan(0);
+    });
+
+    it("should compare two formatted strings", () => {
+        const v1Output = formatV1("message");
+        const v2Output = formatV2("message");
+
+        const comparison = compareAnsiStrings(v1Output, v2Output);
+
+        // They should display the same text
+        expect(comparison.strippedEqual).toBe(true);
+    });
+});
+```
+
+## Case Identification for Input Validation
+
+Validate that user input follows expected naming conventions.
+
+```typescript
+import { identifyCase } from "@visulima/string/case";
+
+function validateVariableName(name: string): {
+    valid: boolean;
+    caseStyle: string;
+    suggestion?: string;
+} {
+    const caseStyle = identifyCase(name);
+
+    if (caseStyle === "camel") {
+        return { valid: true, caseStyle };
+    }
+
+    return {
+        valid: false,
+        caseStyle,
+        suggestion: `Expected camelCase but got ${caseStyle}`,
+    };
+}
+
+validateVariableName("myVariable");
+// { valid: true, caseStyle: 'camel' }
+
+validateVariableName("my_variable");
+// { valid: false, caseStyle: 'snake', suggestion: 'Expected camelCase but got snake' }
+
+validateVariableName("MyVariable");
+// { valid: false, caseStyle: 'pascal', suggestion: 'Expected camelCase but got pascal' }
+```
+
+## Multi-Language Content Processing
+
+Process content in multiple languages using locale-aware splitting.
+
+```typescript
+import { splitByCase, camelCase } from "@visulima/string/case";
+
+// Split mixed-script content
+const japaneseMixed = "ひらがなカタカナABC";
+splitByCase(japaneseMixed, { locale: "ja" });
+// ['ひらがな', 'カタカナ', 'ABC']
+
+// Case conversion with locale support
+camelCase("Straße nach Berlin", { locale: "de" });
+// Handles German eszett correctly
+
+// Korean mixed text
+splitByCase("한글Text", { locale: "ko" });
+// ['한글', 'Text']
+```
+
+## Building a Spell Checker
+
+Use string similarity to suggest corrections for misspelled words.
+
+```typescript
+import { closestString } from "@visulima/string/closest-string";
+import { closestN } from "@visulima/string";
+
+const dictionary = [
+    "hello",
+    "world",
+    "computer",
+    "program",
+    "algorithm",
+    "function",
+    "variable",
+    "constant",
+    "interface",
+    "abstract",
+    "implement",
+    "typescript",
+];
+
+function spellCheck(word: string): {
+    correct: boolean;
+    suggestions: (string | undefined)[];
+} {
+    const lowerWord = word.toLowerCase();
+
+    if (dictionary.includes(lowerWord)) {
+        return { correct: true, suggestions: [] };
+    }
+
+    return {
+        correct: false,
+        suggestions: closestN(lowerWord, dictionary, 3),
+    };
+}
+
+spellCheck("algorythm");
+// { correct: false, suggestions: ['algorithm', ...] }
+
+spellCheck("typscript");
+// { correct: false, suggestions: ['typescript', ...] }
+
+spellCheck("function");
+// { correct: true, suggestions: [] }
+```
+
+## Next Steps
+
+- [Case Conversion](/docs/case-conversion) -- Guide to case conversion
+- [Slugification](/docs/slugification) -- Guide to slugification and transliteration
+- [String Width](/docs/string-width) -- Guide to string width calculation
+- [String Similarity](/docs/string-similarity) -- Guide to string similarity
+- [API Reference](/docs/api) -- Complete API documentation

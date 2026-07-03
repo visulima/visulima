@@ -1,0 +1,143 @@
+---
+title: "vis advisories"
+description: "Manage the local OSV advisory cache that powers offline vulnerability scanning."
+---
+
+# vis advisories
+
+`vis advisories` manages the local OSV advisory database that powers [`vis audit --offline`](./audit.mdx). All sub-commands share a single SQLite cache resolved via [`@visulima/find-cache-dir`](https://www.npmjs.com/package/@visulima/find-cache-dir) — typically `<workspace>/node_modules/.cache/vis/advisories/db.sqlite`.
+
+## Sub-commands
+
+| Command                       | Description                                                                            |
+| ----------------------------- | -------------------------------------------------------------------------------------- |
+| `vis advisories sync`         | Download and ingest one or more OSV ecosystem dumps.                                   |
+| `vis advisories status`       | Print the DB summary: path, schema version, per-ecosystem row counts, last sync, ETag. |
+| `vis advisories prune`        | Delete the local DB.                                                                   |
+| `vis advisories bloom sync`   | Fetch and verify the `endevco/osv-bloom` MAL-\* prefilter into the local cache.        |
+| `vis advisories bloom status` | Print the local osv-bloom cache freshness (built-at, size, m/k params, set digest).    |
+
+## `vis advisories sync`
+
+Downloads `https://osv-vulnerabilities.storage.googleapis.com/<ecosystem>/all.zip` (or a configured mirror) and ingests it into the cache.
+
+### Examples
+
+```bash
+# Sync the npm ecosystem (default)
+vis advisories sync
+
+# Explicit ecosystem
+vis advisories sync --ecosystem npm
+
+# Several ecosystems in one pass
+vis advisories sync --ecosystem npm,PyPI
+
+# Force re-download even when the ETag matches
+vis advisories sync --force
+
+# Use a corporate OSV mirror (must be in security.audit.advisories.allowedHosts)
+vis advisories sync --source https://mirror.example.com
+```
+
+### Options
+
+| Option               | Default                            | Description                                                                     |
+| -------------------- | ---------------------------------- | ------------------------------------------------------------------------------- |
+| `--ecosystem <list>` | `npm`                              | Comma-separated list of ecosystems to sync.                                     |
+| `--force`            | `false`                            | Re-download and re-ingest even if the upstream ETag is unchanged.               |
+| `--source <url>`     | OSV.dev                            | Override the advisory source URL. Must be HTTPS and resolve to an allowed host. |
+| `--db <path>`        | `<cache>/vis/advisories/db.sqlite` | Override the cache DB path.                                                     |
+| `--format <fmt>`     | `table`                            | `table` (default) or `json`.                                                    |
+
+### Allowed sources
+
+Only HTTPS sources resolving to hosts in the built-in allowlist (or `security.audit.advisories.allowedHosts`) will be fetched. This protects you from environment-variable injection of arbitrary mirrors at runtime.
+
+## `vis advisories status`
+
+```bash
+vis advisories status
+vis advisories status --format json
+```
+
+Outputs the DB path, schema version, file size, and per-ecosystem rows:
+
+```
+DB: /workspace/node_modules/.cache/vis/advisories/db.sqlite
+Schema: v2   Size: 12 MB
+
+Ecosystem    Advisories   Last sync           ETag
+──────────   ──────────   ─────────────────   ──────
+npm                5,432  2026-05-11T08:14:00Z (2h ago)   "abc123"
+```
+
+Use the JSON form in CI to check staleness:
+
+```bash
+vis advisories status --format json | jq '.ecosystems[0].lastSyncIso'
+```
+
+## `vis advisories prune`
+
+Deletes the DB. The next `vis audit --offline` will fail until you re-sync.
+
+```bash
+vis advisories prune          # confirm and delete
+vis advisories prune --force  # delete without confirmation
+```
+
+## `vis advisories bloom`
+
+The `bloom` sub-commands manage the [`endevco/osv-bloom`](https://github.com/endevco/osv-bloom) MAL-\* bloom prefilter — a compact probabilistic filter that lets `vis audit` cheaply skip packages with no malicious-advisory match before hitting the full DB. Cached under `<cache>/vis/osv-bloom/`.
+
+### `vis advisories bloom sync`
+
+```bash
+vis advisories bloom sync                                      # fetch from the default upstream
+vis advisories bloom sync --force                             # re-download even when the set digest matches
+vis advisories bloom sync --source https://bloom.example.com  # use an internal mirror (must be in allowedHosts)
+```
+
+| Option              | Default                  | Description                                                                 |
+| ------------------- | ------------------------ | --------------------------------------------------------------------------- |
+| `--force`           | `false`                  | Re-download and re-verify even when the upstream set digest is unchanged    |
+| `--source <url>`    | osv-bloom upstream       | Override the bloom source URL. Must be HTTPS and resolve to an allowed host |
+| `--cache-dir <dir>` | `<cache>/vis/osv-bloom/` | Override the bloom cache directory                                          |
+| `--format <fmt>`    | `table`                  | `table` (default) or `json`                                                 |
+
+### `vis advisories bloom status`
+
+```bash
+vis advisories bloom status
+vis advisories bloom status --format json
+```
+
+| Option              | Default                  | Description                        |
+| ------------------- | ------------------------ | ---------------------------------- |
+| `--cache-dir <dir>` | `<cache>/vis/osv-bloom/` | Override the bloom cache directory |
+| `--format <fmt>`    | `table`                  | `table` (default) or `json`        |
+
+## Configuration
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    security: {
+        audit: {
+            advisories: {
+                // Used by `vis advisories sync` unless `--source` overrides.
+                source: "https://osv-vulnerabilities.storage.googleapis.com",
+                // Extra mirror hosts permitted beyond the built-in allowlist.
+                allowedHosts: ["mirror.corp.example.com"],
+            },
+        },
+    },
+});
+```
+
+## Related
+
+- [`vis audit`](./audit.mdx) — the consumer of this cache.
+- [Security audit guide](../guides/security-audit.mdx).

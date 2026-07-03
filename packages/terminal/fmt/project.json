@@ -1,0 +1,8 @@
+{
+    "name": "terminal/fmt",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/terminal/fmt/src",
+    "projectType": "library",
+    "tags": ["type:package", "fmt", "category:cli-terminal"],
+    "implicitDependencies": []
+}

@@ -1,0 +1,561 @@
+---
+title: "Duration API"
+---
+
+# Duration API
+
+Complete API reference for duration formatting and parsing functions.
+
+## duration()
+
+Formats milliseconds into a human-readable duration string.
+
+### Signature
+
+```typescript
+function duration(milliseconds: number, options?: DurationOptions): string;
+```
+
+### Parameters
+
+#### milliseconds
+
+- **Type:** `number`
+- **Required:** Yes
+- **Description:** The duration in milliseconds to format
+
+Must be a valid number. NaN will throw a TypeError.
+
+#### options
+
+- **Type:** `DurationOptions`
+- **Required:** No
+- **Description:** Configuration options for formatting
+
+### Options
+
+#### units
+
+- **Type:** `DurationUnitName[]`
+- **Default:** `["w", "d", "h", "m", "s"]`
+- **Description:** Array of units to use in output, in descending order
+
+Valid units: `"y"`, `"mo"`, `"w"`, `"d"`, `"h"`, `"m"`, `"s"`, `"ms"`
+
+```typescript
+duration(97320000, { units: ["h", "m"] });
+// => "27 hours, 2 minutes"
+```
+
+#### largest
+
+- **Type:** `number`
+- **Default:** `Infinity`
+- **Description:** Maximum number of units to display
+
+```typescript
+duration(1000000000000, { largest: 2 });
+// => "31 years, 8 months"
+```
+
+#### round
+
+- **Type:** `boolean`
+- **Default:** `false`
+- **Description:** Round the smallest unit to the nearest integer
+
+```typescript
+duration(1600, { round: true });
+// => "2 seconds"
+```
+
+#### delimiter
+
+- **Type:** `string`
+- **Default:** `", "` (or language-specific)
+- **Description:** String to display between units
+
+```typescript
+duration(22140000, { delimiter: " and " });
+// => "6 hours and 9 minutes"
+```
+
+#### spacer
+
+- **Type:** `string`
+- **Default:** `" "`
+- **Description:** String to display between count and unit name
+
+```typescript
+duration(260040000, { spacer: " whole " });
+// => "3 whole days, 14 whole minutes"
+```
+
+#### decimal
+
+- **Type:** `string`
+- **Default:** `"."` (or language-specific)
+- **Description:** Decimal separator for fractional units
+
+```typescript
+duration(1200, { decimal: "," });
+// => "1,2 seconds"
+```
+
+#### conjunction
+
+- **Type:** `string`
+- **Default:** `""`
+- **Description:** String to include before the final unit
+
+```typescript
+duration(22141000, { conjunction: " and " });
+// => "6 hours, 9 minutes, and 1 second"
+```
+
+#### serialComma
+
+- **Type:** `boolean`
+- **Default:** `true`
+- **Description:** Include comma before conjunction
+
+```typescript
+duration(22141000, { conjunction: " and ", serialComma: false });
+// => "6 hours, 9 minutes and 1 second"
+```
+
+#### maxDecimalPoints
+
+- **Type:** `number`
+- **Default:** `undefined` (no limit)
+- **Description:** Maximum decimal points to show
+
+```typescript
+duration(8123.456789, { maxDecimalPoints: 2 });
+// => "8.12 seconds"
+```
+
+#### digitReplacements
+
+- **Type:** `string[]` (array of 10 strings for digits 0-9)
+- **Default:** `undefined` (or language-specific)
+- **Description:** Custom digit characters
+
+```typescript
+duration(1234, {
+    digitReplacements: ["Zero", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine"],
+});
+// => "One.TwoThreeFour seconds"
+```
+
+#### language
+
+- **Type:** `DurationLanguage`
+- **Default:** English language object
+- **Description:** Language object for localization
+
+```typescript
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+
+duration(3000, { language: de });
+// => "3 Sekunden"
+```
+
+#### unitMeasures
+
+- **Type:** `DurationUnitMeasures`
+- **Default:** See table below
+- **Description:** Custom unit lengths in milliseconds
+
+```typescript
+duration(2629800000, {
+    unitMeasures: {
+        y: 31557600000,
+        mo: 30 * 86400000, // 30 days exactly
+        w: 604800000,
+        d: 86400000,
+        h: 3600000,
+        m: 60000,
+        s: 1000,
+        ms: 1,
+    },
+});
+// => "1 month, 10 hours, 30 minutes"
+```
+
+**Default Unit Measures:**
+
+| Unit | Milliseconds   | Description                               |
+| ---- | -------------- | ----------------------------------------- |
+| `y`  | 31,556,952,000 | 365.2425 days (accounting for leap years) |
+| `mo` | 2,629,746,000  | 30.436875 days (365.2425 / 12)            |
+| `w`  | 604,800,000    | 7 days                                    |
+| `d`  | 86,400,000     | 24 hours                                  |
+| `h`  | 3,600,000      | 60 minutes                                |
+| `m`  | 60,000         | 60 seconds                                |
+| `s`  | 1,000          | 1000 milliseconds                         |
+| `ms` | 1              | Base unit                                 |
+
+### Returns
+
+- **Type:** `string`
+- **Description:** Formatted duration string
+
+### Throws
+
+- **TypeError:** If `milliseconds` is NaN
+- **TypeError:** If `milliseconds` is not a number
+
+### Examples
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+// Basic usage
+duration(3000);
+// => "3 seconds"
+
+duration(97320000);
+// => "1 day, 3 hours, 2 minutes"
+
+// Specific units
+duration(97320000, { units: ["h", "m"] });
+// => "27 hours, 2 minutes"
+
+// Limit output
+duration(1000000000000, { largest: 2 });
+// => "31 years, 8 months"
+
+// Rounding
+duration(1600, { round: true });
+// => "2 seconds"
+
+// Custom delimiter
+duration(22140000, { delimiter: " and " });
+// => "6 hours and 9 minutes"
+
+// Conjunction
+duration(22141000, { conjunction: " and " });
+// => "6 hours, 9 minutes, and 1 second"
+
+// German language
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+duration(3000, { language: de });
+// => "3 Sekunden"
+```
+
+---
+
+## parseDuration()
+
+Parses a human-readable duration string into milliseconds.
+
+### Signature
+
+```typescript
+function parseDuration(value: string, options?: ParseDurationOptions): number | undefined;
+```
+
+### Parameters
+
+#### value
+
+- **Type:** `string`
+- **Required:** Yes
+- **Description:** The duration string to parse
+
+Supported formats:
+
+- **Natural language:** `"1 day, 3 hours, 2 minutes"`
+- **Abbreviated:** `"2h 30m"`
+- **Colon format:** `"1:25:05"` (H:MM:SS or MM:SS)
+- **ISO 8601:** `"PT2H30M5S"`
+- **Numeric:** `"1500"` (uses defaultUnit)
+
+#### options
+
+- **Type:** `ParseDurationOptions`
+- **Required:** No
+- **Description:** Configuration options for parsing
+
+### Options
+
+#### defaultUnit
+
+- **Type:** `DurationUnit` (`"y" | "mo" | "w" | "d" | "h" | "m" | "s" | "ms"`)
+- **Default:** `"ms"`
+- **Description:** Unit to assume for numeric-only input
+
+```typescript
+parseDuration("1500");
+// => 1500 (defaults to ms)
+
+parseDuration("1500", { defaultUnit: "s" });
+// => 1500000
+```
+
+#### language
+
+- **Type:** `DurationLanguage`
+- **Default:** English language object
+- **Description:** Language object with unitMap for localized parsing
+
+```typescript
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+
+parseDuration("3 Stunden", { language: de });
+// => 10800000
+```
+
+### Returns
+
+- **Type:** `number | undefined`
+- **Description:** Duration in milliseconds, or `undefined` if parsing fails
+
+### Examples
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+
+// Natural language
+parseDuration("1 day, 3 hours, 2 minutes");
+// => 97320000
+
+// Abbreviated
+parseDuration("2h 30m");
+// => 9000000
+
+// Colon format
+parseDuration("1:25:05");
+// => 5105000
+
+parseDuration("15:30");
+// => 930000
+
+// ISO 8601
+parseDuration("PT2H30M5S");
+// => 9005000
+
+// Negative duration
+parseDuration("-3 weeks");
+// => -1814400000
+
+// Numeric with default unit
+parseDuration("1500");
+// => 1500
+
+parseDuration("1500", { defaultUnit: "s" });
+// => 1500000
+
+// Localized (German)
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+parseDuration("3 Stunden", { language: de });
+// => 10800000
+
+// Invalid input
+parseDuration("invalid");
+// => undefined
+```
+
+---
+
+## Type Definitions
+
+### DurationOptions
+
+```typescript
+interface DurationOptions {
+    /**
+     * Units to use in output (must be in descending order)
+     * @default ["w", "d", "h", "m", "s"]
+     */
+    units?: DurationUnitName[];
+
+    /**
+     * Maximum number of units to display
+     * @default Infinity
+     */
+    largest?: number;
+
+    /**
+     * Round the smallest unit
+     * @default false
+     */
+    round?: boolean;
+
+    /**
+     * Delimiter between units
+     * @default ", "
+     */
+    delimiter?: string;
+
+    /**
+     * Spacer between count and unit
+     * @default " "
+     */
+    spacer?: string;
+
+    /**
+     * Decimal separator
+     * @default "."
+     */
+    decimal?: string;
+
+    /**
+     * Conjunction before final unit
+     * @default ""
+     */
+    conjunction?: string;
+
+    /**
+     * Include comma before conjunction
+     * @default true
+     */
+    serialComma?: boolean;
+
+    /**
+     * Maximum decimal points
+     */
+    maxDecimalPoints?: number;
+
+    /**
+     * Custom digit replacements (0-9)
+     */
+    digitReplacements?: DurationDigitReplacements;
+
+    /**
+     * Language object for localization
+     */
+    language?: DurationLanguage;
+
+    /**
+     * Custom unit measures in milliseconds
+     */
+    unitMeasures?: DurationUnitMeasures;
+}
+```
+
+### ParseDurationOptions
+
+```typescript
+interface ParseDurationOptions {
+    /**
+     * Default unit for numeric-only input
+     * @default "ms"
+     */
+    defaultUnit?: DurationUnit;
+
+    /**
+     * Language object with unitMap for localized parsing
+     */
+    language?: DurationLanguage;
+}
+```
+
+### DurationUnitName
+
+```typescript
+type DurationUnitName = "y" | "mo" | "w" | "d" | "h" | "m" | "s" | "ms";
+```
+
+### DurationUnit
+
+```typescript
+type DurationUnit = DurationUnitName;
+```
+
+### DurationUnitMeasures
+
+```typescript
+interface DurationUnitMeasures {
+    y: number; // Years in milliseconds
+    mo: number; // Months in milliseconds
+    w: number; // Weeks in milliseconds
+    d: number; // Days in milliseconds
+    h: number; // Hours in milliseconds
+    m: number; // Minutes in milliseconds
+    s: number; // Seconds in milliseconds
+    ms: number; // Milliseconds
+}
+```
+
+### DurationLanguage
+
+```typescript
+interface DurationLanguage {
+    y: ((count: number) => string) | string;
+    mo: ((count: number) => string) | string;
+    w: ((count: number) => string) | string;
+    d: ((count: number) => string) | string;
+    h: ((count: number) => string) | string;
+    m: ((count: number) => string) | string;
+    s: ((count: number) => string) | string;
+    ms: ((count: number) => string) | string;
+
+    decimal?: string;
+    delimiter?: string;
+    unitMap?: Record<string, DurationUnitName>;
+    // ... additional language-specific properties
+}
+```
+
+### DurationDigitReplacements
+
+```typescript
+type DurationDigitReplacements = [
+    string, // 0
+    string, // 1
+    string, // 2
+    string, // 3
+    string, // 4
+    string, // 5
+    string, // 6
+    string, // 7
+    string, // 8
+    string, // 9
+];
+```
+
+### DurationPiece
+
+```typescript
+interface DurationPiece {
+    unitCount: number;
+    unitName: DurationUnitName;
+}
+```
+
+---
+
+## Supported Languages
+
+The following languages are available as language packs:
+
+| Language             | Code    | Import                               |
+| -------------------- | ------- | ------------------------------------ |
+| English              | `en`    | `@visulima/humanizer/language/en`    |
+| German               | `de`    | `@visulima/humanizer/language/de`    |
+| Spanish              | `es`    | `@visulima/humanizer/language/es`    |
+| French               | `fr`    | `@visulima/humanizer/language/fr`    |
+| Japanese             | `ja`    | `@visulima/humanizer/language/ja`    |
+| Chinese (Simplified) | `zh_CN` | `@visulima/humanizer/language/zh_CN` |
+| Russian              | `ru`    | `@visulima/humanizer/language/ru`    |
+| Arabic               | `ar`    | `@visulima/humanizer/language/ar`    |
+| Portuguese           | `pt`    | `@visulima/humanizer/language/pt`    |
+| Italian              | `it`    | `@visulima/humanizer/language/it`    |
+
+See the [README](https://github.com/visulima/visulima/tree/main/packages/data-manipulation/humanizer#supported-languages) for the complete list of 50+ supported languages.
+
+### Example Usage
+
+```typescript
+import { duration } from "@visulima/humanizer";
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+import { durationLanguage as es } from "@visulima/humanizer/language/es";
+
+duration(3000, { language: de });
+// => "3 Sekunden"
+
+duration(3000, { language: es });
+// => "3 segundos"
+```

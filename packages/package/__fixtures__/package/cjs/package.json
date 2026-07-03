@@ -1,9 +1,0 @@
-{
-    "name": "package-cjs",
-    "description": "CommonJS version",
-    "private": true,
-    "type": "commonjs",
-    "dependencies": {
-        "@visulima/package": "workspace:*"
-    }
-}

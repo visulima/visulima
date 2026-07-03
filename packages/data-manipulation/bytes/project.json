@@ -1,0 +1,8 @@
+{
+    "name": "data-manipulation/bytes",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/data-manipulation/bytes/src",
+    "projectType": "library",
+    "tags": ["bytes", "type:package", "category:data"],
+    "implicitDependencies": []
+}

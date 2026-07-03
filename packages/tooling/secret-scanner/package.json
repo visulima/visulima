@@ -1,0 +1,189 @@
+{
+    "name": "@visulima/secret-scanner",
+    "version": "1.0.0-alpha.8",
+    "description": "Fast secret and credential scanner — a Rust port of gitleaks detection, exposed via NAPI",
+    "keywords": [
+        "credentials",
+        "gitleaks",
+        "leaks",
+        "napi",
+        "pre-commit",
+        "rust",
+        "scanner",
+        "secret",
+        "secrets",
+        "security",
+        "visulima"
+    ],
+    "homepage": "https://visulima.com/packages/secret-scanner",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/tooling/secret-scanner"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "data/ruleset.json",
+        "data/LICENSE-GITLEAKS",
+        "data/LICENSE-KINGFISHER",
+        "data/NOTICE-KINGFISHER",
+        "dist/**",
+        "index.js",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "pnpm run build:rules && packem build --development",
+        "build:native": "pnpm --config.verify-deps-before-run=false run build:rules:prod && napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
+        "build:native:debug": "pnpm --config.verify-deps-before-run=false run build:rules && napi build --platform --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
+        "build:prod": "pnpm run build:rules:prod && packem build --production",
+        "build:rules": "node scripts/build-rules.mjs",
+        "build:rules:prod": "node scripts/build-rules.mjs --minify",
+        "clean": "rimraf node_modules dist .eslintcache *.node",
+        "dev": "pnpm run build --watch",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "lint:attw": "attw --pack --profile esm-only",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:parity": "SECRET_SCANNER_PARITY=1 vitest run __tests__/parity.test.ts",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "ignore": "^7.0.5"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@aws-sdk/client-sts": "3.1067.0",
+        "@azure/storage-blob": "12.32.0",
+        "@grpc/grpc-js": "1.14.4",
+        "@napi-rs/cli": "catalog:dev",
+        "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@semantic-release/exec": "catalog:dev",
+        "@total-typescript/ts-reset": "catalog:dev",
+        "@types/node": "catalog:types",
+        "@visulima/find-cache-dir": "3.0.0-alpha.12",
+        "@visulima/fs": "5.0.0-alpha.33",
+        "@visulima/packem": "catalog:dev",
+        "@visulima/path": "3.0.0-alpha.13",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "fallow": "catalog:lint",
+        "google-auth-library": "10.7.0",
+        "mongodb": "7.3.0",
+        "mysql2": "3.22.5",
+        "pg": "8.21.0",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "secretlint": "catalog:lint",
+        "semantic-release": "catalog:cli",
+        "smol-toml": "^1.6.1",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test",
+        "yaml": "catalog:dev"
+    },
+    "peerDependencies": {
+        "@aws-sdk/client-sts": "*",
+        "@azure/storage-blob": "*",
+        "@grpc/grpc-js": "*",
+        "google-auth-library": "*",
+        "mongodb": "*",
+        "mysql2": "*",
+        "pg": "*"
+    },
+    "peerDependenciesMeta": {
+        "@aws-sdk/client-sts": {
+            "optional": true
+        },
+        "@azure/storage-blob": {
+            "optional": true
+        },
+        "@grpc/grpc-js": {
+            "optional": true
+        },
+        "google-auth-library": {
+            "optional": true
+        },
+        "mongodb": {
+            "optional": true
+        },
+        "mysql2": {
+            "optional": true
+        },
+        "pg": {
+            "optional": true
+        }
+    },
+    "optionalDependencies": {
+        "@visulima/secret-scanner-binding-darwin-arm64": "workspace:*",
+        "@visulima/secret-scanner-binding-darwin-x64": "workspace:*",
+        "@visulima/secret-scanner-binding-linux-arm64-gnu": "workspace:*",
+        "@visulima/secret-scanner-binding-linux-arm64-musl": "workspace:*",
+        "@visulima/secret-scanner-binding-linux-x64-gnu": "workspace:*",
+        "@visulima/secret-scanner-binding-linux-x64-musl": "workspace:*",
+        "@visulima/secret-scanner-binding-win32-arm64-msvc": "workspace:*",
+        "@visulima/secret-scanner-binding-win32-x64-msvc": "workspace:*"
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "napi": {
+        "binaryName": "secret-scanner-native",
+        "packageName": "@visulima/secret-scanner-binding",
+        "targets": [
+            "x86_64-apple-darwin",
+            "aarch64-apple-darwin",
+            "x86_64-unknown-linux-gnu",
+            "x86_64-unknown-linux-musl",
+            "aarch64-unknown-linux-gnu",
+            "aarch64-unknown-linux-musl",
+            "x86_64-pc-windows-msvc",
+            "aarch64-pc-windows-msvc"
+        ]
+    }
+}

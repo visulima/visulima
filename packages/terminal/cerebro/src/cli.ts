@@ -1,0 +1,1426 @@
+import { access, mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
+
+import type { CommandLineOptions } from "@visulima/command-line-args";
+
+import { VERBOSITY_DEBUG, VERBOSITY_NORMAL, VERBOSITY_QUIET, VERBOSITY_VERBOSE } from "./constants";
+import defaultOptions from "./default-options";
+import CerebroError from "./errors/cerebro-error";
+import CommandNotFoundError from "./errors/command-not-found-error";
+import ConflictingOptionsError from "./errors/conflicting-options-error";
+import UnknownOptionError from "./errors/unknown-option-error";
+import PluginManager from "./plugin-manager";
+import type { Cli as ICli, CliRunOptions, CommandSection as ICommandSection, RunCommandOptions } from "./types/cli";
+import type { Command as ICommand, CommandExecute, OptionDefinition } from "./types/command";
+import type { Plugin } from "./types/plugin";
+import type { CerebroFs, CerebroProcess } from "./types/runtime";
+import type { Toolbox as IToolbox } from "./types/toolbox";
+import mapOptionTypeLabel from "./util/arg-processing/map-option-type-label";
+import commandLineCommands from "./util/command-line-commands";
+import { executeCommand, loadLazyHandler, prepareToolbox, processCommandArgs } from "./util/command-processing/command-processor";
+import { validateChoices, validateConflictingOptions, validateDuplicateOptions, validateRequiredOptions } from "./util/command-processing/command-validation";
+import { getCommandPathKey, getFullCommandPath, parseNestedCommand } from "./util/command-processing/nested-command-parser";
+import { addNegatableOptions, mapImpliedOptions, mapNegatableOptions, processOptionNames } from "./util/command-processing/option-processor";
+import findAlternatives from "./util/general/find-alternatives";
+import parseRawCommand from "./util/general/parse-raw-command";
+import registerExceptionHandler from "./util/general/register-exception-handler";
+import {
+    exitProcess,
+    getArch as getRuntimeArch,
+    getArgv as getRuntimeArgv,
+    getCwd as getRuntimeCwd,
+    getEnv,
+    getExecArgv,
+    getExecPath,
+    getPlatform as getRuntimePlatform,
+} from "./util/general/runtime-process";
+import { validateCommandName, validateNonEmptyString, validateObject, validateStringArray } from "./util/general/validate-input";
+import { sanitizeArguments } from "./util/security";
+
+// eslint-disable-next-line regexp/no-unused-capturing-group
+const OPTION_REGEX_SHORT: RegExp = /^-([^\d-])$/;
+// eslint-disable-next-line regexp/no-unused-capturing-group
+const OPTION_REGEX_LONG: RegExp = /^--(\S+)/;
+// eslint-disable-next-line regexp/no-unused-capturing-group
+const OPTION_REGEX_COMBINED: RegExp = /^-([^\d-]{2,})$/;
+
+const isOption = (argument: string): boolean => OPTION_REGEX_SHORT.test(argument) || OPTION_REGEX_LONG.test(argument) || OPTION_REGEX_COMBINED.test(argument);
+
+/**
+ * Default filesystem adapter wrapping `node:fs/promises`. Replaced when
+ * `CliOptions.fs` is provided. Defined once at module load to avoid repeated
+ * dynamic imports.
+ */
+const defaultFs: CerebroFs = {
+    access: (path, mode) => access(path, mode),
+    mkdir: (path, options) => mkdir(path, options),
+    readdir: (path) => readdir(path),
+    readFile: (async (path: string, encoding?: BufferEncoding) => {
+        if (encoding === undefined) {
+            return readFile(path);
+        }
+
+        return readFile(path, encoding);
+    }) as CerebroFs["readFile"],
+    rm: (path, options) => rm(path, options),
+    stat: (path) => stat(path),
+    writeFile: (path, data, encoding) => writeFile(path, data, encoding),
+};
+
+/**
+ * Strict-mode guard: when `CliOptions.strictOptions` is enabled, reject unknown
+ * long options (`--typo`) that were supplied *before* a `--` passthrough
+ * separator. Tokens after `--` are intentional passthrough and always remain in
+ * `toolbox.rawUnknown`.
+ * @param command The command being executed (used for did-you-mean suggestions).
+ * @param commandArguments The raw argv slice handed to the parser.
+ * @param rawUnknown The parser's leftover (unmatched) tokens.
+ * @throws {UnknownOptionError} When an unknown long option precedes the `--` separator.
+ */
+const enforceStrictOptions = <C extends Console>(
+    command: ICommand<OptionDefinition<unknown>, C>,
+    commandArguments: ReadonlyArray<string>,
+    rawUnknown: ReadonlyArray<string>,
+): void => {
+    const separatorIndex = commandArguments.indexOf("--");
+    const passthrough = separatorIndex === -1 ? new Set<string>() : new Set(commandArguments.slice(separatorIndex + 1));
+
+    const unknownOptions = rawUnknown.filter((token) => token.startsWith("--") && token !== "--" && !passthrough.has(token));
+
+    if (unknownOptions.length === 0) {
+        return;
+    }
+
+    const knownNames = (command.options ?? []).map((option) => option.name);
+    const suggestions = unknownOptions.flatMap((token) => findAlternatives(token.slice("--".length), knownNames).map((alternative) => `--${alternative}`));
+
+    throw new UnknownOptionError(unknownOptions, suggestions);
+};
+
+export type CliOptions<T extends Console = Console> = {
+    argv?: ReadonlyArray<string>;
+    cwd?: string;
+
+    /**
+     * Process environment variables exposed to commands via `toolbox.process.env`.
+     * Defaults to the runtime's process environment. Override to provide a
+     * captured snapshot in tests so commands don't read mutating host state.
+     */
+    env?: Record<string, string | undefined>;
+
+    /**
+     * Function called when a command invokes `toolbox.process.exit(code)`.
+     * Defaults to the runtime-agnostic exit helper that terminates the process.
+     * Override with a `vi.fn()` in tests to capture exit codes without killing
+     * the test runner.
+     */
+    exit?: (code?: number) => void;
+
+    /**
+     * Filesystem adapter exposed via `toolbox.fs`. Defaults to `node:fs/promises`.
+     * Override with an in-memory or sandboxed adapter for tests and embedded
+     * runtimes (MCP, JustBash).
+     */
+    fs?: CerebroFs;
+    logger?: T;
+
+    /**
+     * Maximum number of argv tokens accepted before {@link Cli} rejects the
+     * invocation. Defaults to a generous cap (`DEFAULT_MAX_ARGS`) that never
+     * trips real-world glob expansions; set to `Number.POSITIVE_INFINITY` to
+     * disable the guard entirely.
+     */
+    maxArguments?: number;
+
+    packageName?: string;
+    packageVersion?: string;
+
+    /**
+     * Buffered stdin content exposed via `toolbox.process.stdin`. Empty string
+     * by default. Useful for tests and sandboxed runtimes where wiring real
+     * stdin is impractical.
+     */
+    stdin?: string;
+
+    /**
+     * When enabled, unknown long options (`--typo`) that appear before any `--`
+     * passthrough separator cause the run to fail with an `UnknownOptionError`
+     * (with did-you-mean suggestions) instead of being silently routed to
+     * `toolbox.rawUnknown`. Tokens after `--` are always preserved as
+     * passthrough. Off by default to preserve existing behavior.
+     */
+    strictOptions?: boolean;
+};
+
+export class Cli<T extends Console = Console> implements ICli<T> {
+    readonly #logger: T;
+
+    readonly #options: CliOptions<T>;
+
+    #argv?: ReadonlyArray<string>;
+
+    readonly #cwd: string;
+
+    readonly #cliName: string;
+
+    readonly #packageVersion: string | undefined;
+
+    readonly #packageName: string | undefined;
+
+    readonly #fs?: CerebroFs;
+
+    readonly #exit?: (code?: number) => void;
+
+    readonly #envOverride?: Record<string, string | undefined>;
+
+    readonly #stdin: string;
+
+    readonly #maxArguments?: number;
+
+    readonly #strictOptions: boolean;
+
+    /**
+     * Per-instance verbosity level. Authoritative source of truth so two `Cli`
+     * instances (e.g. an original and its `clone`) never stomp each
+     * other's verbosity through shared process env. Mirrored into the instance's
+     * env (`CliOptions.env` override when present, otherwise the live process
+     * env) as `CEREBRO_OUTPUT_LEVEL` so plugins/external readers stay in sync.
+     */
+    #verbosityLevel: number = VERBOSITY_NORMAL;
+
+    #pluginManager?: PluginManager<T>;
+
+    readonly #commands: Map<string, ICommand<OptionDefinition<unknown>, T>>;
+
+    /** Map of command path keys to full command paths for nested command lookup */
+    readonly #commandPaths: Map<string, string[]>;
+
+    /**
+     * Map of commands keyed by their full path string (e.g., "deploy staging")
+     * This allows correct resolution when different paths share the same leaf name
+     */
+    readonly #commandsByPath: Map<string, ICommand<OptionDefinition<unknown>, T>>;
+
+    #defaultCommand: string;
+
+    #commandSection: ICommandSection;
+
+    #pluginsInitialized = false;
+
+    #exceptionHandlerCleanup?: () => void;
+
+    #exceptionHandlerRegistered = false;
+
+    #cachedCommandPathKeys?: string[];
+
+    #cachedCommandNames?: string[];
+
+    #cachedAllCommandPaths?: string[];
+
+    readonly #customGlobalOptions: OptionDefinition<unknown>[] = [];
+
+    /**
+     * Gets all command path keys (cached for performance).
+     * @returns Array of command path keys
+     */
+    #getCommandPathKeys(): string[] {
+        if (this.#cachedCommandPathKeys === undefined) {
+            this.#cachedCommandPathKeys = [...this.#commandPaths.keys()];
+        }
+
+        return this.#cachedCommandPathKeys;
+    }
+
+    /**
+     * Gets all command names (cached for performance).
+     * @returns Array of command names
+     */
+    #getCommandNames(): string[] {
+        if (this.#cachedCommandNames === undefined) {
+            this.#cachedCommandNames = [...this.#commands.keys()];
+        }
+
+        return this.#cachedCommandNames;
+    }
+
+    /**
+     * Gets all command paths combined (cached for performance).
+     * @returns Array of all command paths
+     */
+    #getAllCommandPaths(): string[] {
+        if (this.#cachedAllCommandPaths === undefined) {
+            this.#cachedAllCommandPaths = [...this.#getCommandPathKeys(), ...this.#getCommandNames()];
+        }
+
+        return this.#cachedAllCommandPaths;
+    }
+
+    /**
+     * Gets all global options (built-in + custom).
+     */
+    #getAllGlobalOptions(): OptionDefinition<unknown>[] {
+        if (this.#customGlobalOptions.length === 0) {
+            return defaultOptions;
+        }
+
+        return [...(defaultOptions as OptionDefinition<unknown>[]), ...this.#customGlobalOptions];
+    }
+
+    /**
+     * Invalidates cached command arrays (call when commands are added/removed).
+     */
+    #invalidateCommandCache(): void {
+        this.#cachedCommandPathKeys = undefined;
+        this.#cachedCommandNames = undefined;
+        this.#cachedAllCommandPaths = undefined;
+    }
+
+    /**
+     * Gets parsed argv.
+     * @returns Parsed and sanitized argv array
+     */
+    #getArgv(): ReadonlyArray<string> {
+        if (this.#argv === undefined) {
+            const rawArgv = parseRawCommand(this.#options.argv as string[]);
+
+            this.#argv = sanitizeArguments(rawArgv, { maxArguments: this.#maxArguments });
+
+            this.#setVerbosityLevel();
+        }
+
+        return this.#argv;
+    }
+
+    /**
+     * Returns the env record this instance should read/write verbosity through:
+     * the `CliOptions.env` override when supplied, otherwise the live process
+     * env. Using the override (when present) keeps clones with their own env
+     * isolated instead of stomping the shared process env.
+     */
+    #getInstanceEnv(): Record<string, string | undefined> {
+        return this.#envOverride ?? getEnv();
+    }
+
+    /**
+     * Updates the per-instance verbosity level and mirrors it into the instance
+     * env so plugins/external readers (which read `CEREBRO_OUTPUT_LEVEL`) stay
+     * in sync.
+     */
+    #updateVerbosityLevel(level: number): void {
+        this.#verbosityLevel = level;
+        this.#getInstanceEnv().CEREBRO_OUTPUT_LEVEL = String(level);
+    }
+
+    /**
+     * Reads the current verbosity level for this instance. Prefers the
+     * per-instance field; falls back to the instance env (covers callers that
+     * set `CEREBRO_OUTPUT_LEVEL` directly).
+     */
+    #getVerbosityLevel(): number {
+        const fromEnv = this.#getInstanceEnv().CEREBRO_OUTPUT_LEVEL;
+        const parsed = fromEnv === undefined ? Number.NaN : Number(fromEnv);
+
+        return Number.isNaN(parsed) ? this.#verbosityLevel : parsed;
+    }
+
+    /**
+     * Sets verbosity level from argv flags.
+     */
+    #setVerbosityLevel(): void {
+        if (!this.#argv) {
+            return;
+        }
+
+        let verbositySet = false;
+
+        for (const argument of this.#argv) {
+            if (argument === "--quiet" || argument === "-q") {
+                this.#updateVerbosityLevel(VERBOSITY_QUIET);
+                verbositySet = true;
+                break;
+            }
+
+            if (argument === "--verbose" || argument === "-v") {
+                this.#updateVerbosityLevel(VERBOSITY_VERBOSE);
+                verbositySet = true;
+                break;
+            }
+
+            if (argument === "--debug") {
+                this.#updateVerbosityLevel(VERBOSITY_DEBUG);
+                verbositySet = true;
+                break;
+            }
+        }
+
+        if (!verbositySet) {
+            this.#updateVerbosityLevel(Object.hasOwn(this.#getInstanceEnv(), "DEBUG") ? VERBOSITY_DEBUG : VERBOSITY_NORMAL);
+        }
+    }
+
+    /**
+     * Registers exception handlers.
+     */
+    #ensureExceptionHandlers(): void {
+        if (!this.#exceptionHandlerRegistered) {
+            this.#exceptionHandlerCleanup = registerExceptionHandler(this.#logger);
+            this.#exceptionHandlerRegistered = true;
+        }
+    }
+
+    /**
+     * Builds the `CerebroProcess` snapshot attached to each command's toolbox.
+     * Honors `CliOptions.exit`, `CliOptions.env`, `CliOptions.stdin`, and falls
+     * back to the runtime-agnostic getters for cwd / argv / platform / arch.
+     */
+    #buildProcessContext(): CerebroProcess {
+        return {
+            arch: getRuntimeArch(),
+            argv: this.#getArgv(),
+            cwd: this.#cwd,
+            env: this.#envOverride ?? getEnv(),
+            exit: this.#exit ?? ((code?: number) => exitProcess(code ?? 0)),
+            platform: getRuntimePlatform(),
+            stdin: this.#stdin,
+        };
+    }
+
+    /**
+     * Common command execution logic shared between run() and runCommand().
+     */
+    #executeCommandInternal(
+        command: ICommand<OptionDefinition<unknown>, T>,
+        commandArguments: string[],
+        extraOptions: Record<string, unknown>,
+        pathKey: string,
+    ): {
+        arguments_: ReturnType<typeof processCommandArgs>["arguments_"];
+        booleanValues: Record<string, unknown>;
+        commandArgs: CommandLineOptions;
+        parsedArgs: CommandLineOptions;
+        toolbox: IToolbox<T>;
+    } {
+        // Gate the eager template/.join() construction on verbosity so custom
+        // loggers (which don't self-gate `debug`) don't pay the cost on every run.
+        if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
+            this.#logger.debug(`command '${pathKey}' found, parsing command args: ${commandArguments.join(", ")}`);
+        }
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        const { arguments_, booleanValues, parsedArgs } = processCommandArgs(command, commandArguments, this.#getAllGlobalOptions());
+
+        const hasBooleanValues = Object.keys(booleanValues).length > 0;
+
+        let commandArgs = parsedArgs;
+
+        if (hasBooleanValues) {
+            // eslint-disable-next-line no-underscore-dangle
+            commandArgs = { ...parsedArgs, _all: { ...(parsedArgs._all as Record<string, unknown>), ...booleanValues } };
+        }
+
+        validateRequiredOptions(arguments_, commandArgs, command);
+
+        const toolbox = prepareToolbox<OptionDefinition<unknown>, T>(command, parsedArgs, booleanValues, extraOptions);
+
+        toolbox.runtime = this;
+        toolbox.argv = this.#getArgv();
+        toolbox.fs = this.#fs ?? defaultFs;
+        toolbox.process = this.#buildProcessContext();
+        // `console` is an alias for `logger` so commands can write portable
+        // `({ console }) => console.log(...)` code without grabbing the global.
+        // The logger plugin overwrites `toolbox.logger` during lifecycle, so we
+        // also re-point `console` from that plugin to keep the two in sync if
+        // a custom logger plugin reassigns logger.
+        toolbox.console = this.#logger;
+
+        const hasOptions = command.options && command.options.length > 0;
+
+        // Check for conflicts between negated and non-negated options before mapping
+        if (hasOptions && command.options) {
+            const negatedOptions = command.options.filter((option) => option.name.startsWith("no-"));
+
+            for (const negatedOption of negatedOptions) {
+                const nonNegatedName = negatedOption.name.slice("no-".length);
+                const negatedFlag = `--${negatedOption.name}`;
+                const nonNegatedFlag = `--${nonNegatedName}`;
+
+                // Check if both flags are present in the raw command arguments
+                const hasNegatedFlag = commandArguments.includes(negatedFlag);
+                const hasNonNegatedFlag = commandArguments.includes(nonNegatedFlag);
+
+                if (hasNegatedFlag && hasNonNegatedFlag) {
+                    throw new ConflictingOptionsError(nonNegatedName, negatedOption.name);
+                }
+            }
+        }
+
+        if (hasOptions) {
+            mapNegatableOptions(toolbox, command);
+            mapImpliedOptions(toolbox, command);
+        }
+
+        validateConflictingOptions(arguments_, toolbox.options, command);
+        validateChoices(toolbox.options, command);
+
+        if (this.#strictOptions) {
+            enforceStrictOptions(command, commandArguments, toolbox.rawUnknown);
+        }
+
+        if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
+            this.#logger.debug("command options parsed from options:");
+            // eslint-disable-next-line unicorn/no-null
+            this.#logger.debug(JSON.stringify(toolbox.options, null, 2));
+            this.#logger.debug("command argument parsed from argument:");
+            // eslint-disable-next-line unicorn/no-null
+            this.#logger.debug(JSON.stringify(toolbox.argument, null, 2));
+        }
+
+        return { arguments_, booleanValues, commandArgs, parsedArgs, toolbox };
+    }
+
+    /**
+     * Create a new CLI instance.
+     * @param cliName
+     * @param options The options for the CLI.
+     * @param options.argv The command line arguments.
+     * @param options.cwd The current working directory.
+     * @param options.logger The logger to use.
+     * @param options.packageName
+     * @param options.packageVersion
+     */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    public constructor(cliName: string, options: CliOptions<T> = {}) {
+        if (typeof cliName !== "string" || cliName.trim().length === 0) {
+            throw new CerebroError("CLI name must be a non-empty string", "INVALID_INPUT", { cliName });
+        }
+
+        this.#cliName = cliName.trim();
+
+        const argv = options.argv ?? getRuntimeArgv();
+        const cwd = options.cwd ?? getRuntimeCwd();
+
+        this.#options = { ...options, argv, cwd };
+
+        if (this.#options.argv && !Array.isArray(this.#options.argv)) {
+            throw new CerebroError("CLI argv option must be an array of strings", "INVALID_INPUT", { argv: this.#options.argv });
+        }
+
+        if (this.#options.cwd && typeof this.#options.cwd !== "string") {
+            throw new CerebroError("CLI cwd option must be a string", "INVALID_INPUT", { cwd: this.#options.cwd });
+        }
+
+        if (this.#options.packageName && typeof this.#options.packageName !== "string") {
+            throw new CerebroError("CLI packageName option must be a string", "INVALID_INPUT", { packageName: this.#options.packageName });
+        }
+
+        if (this.#options.packageVersion && typeof this.#options.packageVersion !== "string") {
+            throw new CerebroError("CLI packageVersion option must be a string", "INVALID_INPUT", { packageVersion: this.#options.packageVersion });
+        }
+
+        if (typeof this.#options.logger === "object") {
+            const requiredMethods = ["debug", "error", "info", "log", "warn"] as const;
+            const missingMethods: string[] = [];
+            const logger = this.#options.logger as Record<string, unknown>;
+
+            for (const method of requiredMethods) {
+                if (typeof logger[method] !== "function") {
+                    missingMethods.push(method);
+                }
+            }
+
+            if (missingMethods.length > 0) {
+                throw new CerebroError(`Logger object is missing required methods: ${missingMethods.join(", ")}`, "INVALID_INPUT", {
+                    logger: this.#options.logger,
+                    missingMethods,
+                });
+            }
+
+            this.#logger = this.#options.logger;
+        } else {
+            this.#logger = {
+                ...console,
+                debug: (...args: unknown[]) => {
+                    if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
+                        // eslint-disable-next-line no-console
+                        console.debug(...args);
+                    }
+                },
+            } as T;
+        }
+
+        this.#packageVersion = this.#options.packageVersion;
+        this.#packageName = this.#options.packageName;
+        this.#cwd = this.#options.cwd as string;
+        this.#defaultCommand = "help";
+        this.#commandSection = {};
+
+        // Runtime guards below use `unknown` casts so they survive ESLint's
+        // type-narrowing rules — JS callers can still pass wrong types past
+        // TS, and we'd rather throw a clear CerebroError than crash deep
+        // inside a command handler later.
+        const rawFs = options.fs as unknown;
+
+        if (rawFs !== undefined && (typeof rawFs !== "object" || rawFs === null)) {
+            throw new CerebroError("CLI fs option must be an object implementing the CerebroFs interface", "INVALID_INPUT", { fs: options.fs });
+        }
+
+        const rawExit = options.exit as unknown;
+
+        if (rawExit !== undefined && typeof rawExit !== "function") {
+            throw new CerebroError("CLI exit option must be a function", "INVALID_INPUT", { exit: options.exit });
+        }
+
+        const rawEnv = options.env as unknown;
+
+        if (rawEnv !== undefined && (typeof rawEnv !== "object" || rawEnv === null)) {
+            throw new CerebroError("CLI env option must be a record of string keys", "INVALID_INPUT", { env: options.env });
+        }
+
+        const rawStdin = options.stdin as unknown;
+
+        if (rawStdin !== undefined && typeof rawStdin !== "string") {
+            throw new CerebroError("CLI stdin option must be a string", "INVALID_INPUT", { stdin: options.stdin });
+        }
+
+        this.#fs = options.fs;
+        this.#exit = options.exit;
+        this.#envOverride = options.env;
+        this.#stdin = options.stdin ?? "";
+        this.#maxArguments = options.maxArguments;
+        this.#strictOptions = options.strictOptions ?? false;
+
+        // Seed the per-instance verbosity (and mirror into the instance env) now
+        // that the env override is known. Re-derived from argv flags lazily in
+        // #setVerbosityLevel once argv is parsed.
+        this.#updateVerbosityLevel(VERBOSITY_NORMAL);
+
+        this.#commands = new Map<string, ICommand<OptionDefinition<unknown>, T>>();
+        this.#commandPaths = new Map<string, string[]>();
+        this.#commandsByPath = new Map<string, ICommand<OptionDefinition<unknown>, T>>();
+    }
+
+    /**
+     * Sets the command section configuration for help display.
+     *
+     * This affects how the CLI name and version are displayed in help output.
+     * @param commandSection The command section configuration
+     * @returns The CLI instance for method chaining
+     * @example
+     * ```typescript
+     * cli.setCommandSection({
+     *   header: 'My App v2.0.0',
+     *   footer: 'For more info, visit https://example.com'
+     * });
+     * ```
+     */
+    public setCommandSection(commandSection: ICommandSection): this {
+        this.#commandSection = commandSection;
+
+        return this;
+    }
+
+    /**
+     * Gets the current command section configuration.
+     * @returns The command section configuration
+     */
+    public getCommandSection(): ICommandSection {
+        if (!this.#commandSection.header) {
+            this.#commandSection.header = `${this.#cliName}${this.#packageVersion ? ` v${this.#packageVersion}` : ""}`;
+        }
+
+        return this.#commandSection;
+    }
+
+    /**
+     * Sets the default command to run when no command is specified.
+     *
+     * By default, this is set to 'help'. The command must already be registered
+     * with the CLI instance.
+     * @param commandName The command name to use as the default
+     * @returns The CLI instance for method chaining
+     * @example
+     * ```typescript
+     * cli.setDefaultCommand('start');
+     * ```
+     */
+    public setDefaultCommand(commandName: string): this {
+        this.#defaultCommand = commandName;
+
+        return this;
+    }
+
+    /**
+     * Gets the current default command.
+     * @returns The name of the default command
+     */
+    public get defaultCommand(): string {
+        return this.#defaultCommand;
+    }
+
+    /**
+     * Adds a command to the CLI.
+     *
+     * Commands define the available operations that users can execute.
+     * Each command can have options, arguments, aliases, and custom execution logic.
+     * @template OD - The option definition type for the command
+     * @param command The command configuration object
+     * @returns The CLI instance for method chaining
+     * @throws {CerebroError} If the command name already exists or validation fails
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: 'build',
+     *   description: 'Build the project',
+     *   options: [
+     *     {
+     *       name: 'output',
+     *       alias: 'o',
+     *       type: String,
+     *       description: 'Output directory'
+     *     }
+     *   ],
+     *   execute: ({ options }) => {
+     *     console.log(`Building to ${options.output || 'dist'}`);
+     *   }
+     * });
+     * ```
+     */
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    public addCommand<OD extends OptionDefinition<unknown> = OptionDefinition<unknown>>(command: ICommand<OD, T>): this {
+        // Validate command input
+        validateObject(command, "Command");
+        validateCommandName(command.name);
+
+        const hasExecute = typeof command.execute === "function";
+        const hasLoader = typeof command.loader === "function";
+
+        if (hasExecute && hasLoader) {
+            throw new CerebroError(`Command "${command.name}" cannot define both "execute" and "loader" — choose one`, "INVALID_COMMAND", {
+                commandName: command.name,
+            });
+        }
+
+        if (!hasExecute && !hasLoader) {
+            throw new CerebroError(`Command "${command.name}" must define either "execute" or "loader"`, "INVALID_COMMAND", { commandName: command.name });
+        }
+
+        if (command.alias) {
+            if (typeof command.alias === "string") {
+                validateCommandName(command.alias);
+            } else {
+                validateStringArray(command.alias, "Command alias").forEach((alias) => validateCommandName(alias));
+            }
+        }
+
+        if (command.argument) {
+            validateObject(command.argument, "Command argument");
+        }
+
+        if (command.options) {
+            validateObject(command.options, "Command options");
+        }
+
+        if (command.commandPath) {
+            validateStringArray(command.commandPath, "Command commandPath");
+            command.commandPath.forEach((segment) => {
+                validateCommandName(segment);
+            });
+        }
+
+        const fullPath = getFullCommandPath(command.name, command.commandPath);
+        const pathKey = getCommandPathKey(fullPath);
+
+        if (this.#commandPaths.has(pathKey)) {
+            throw new CerebroError(`Command with path "${pathKey}" already exists`, "DUPLICATE_COMMAND", {
+                commandName: command.name,
+                commandPath: command.commandPath,
+            });
+        }
+
+        const newIsNested = Array.isArray(command.commandPath) && command.commandPath.length > 0;
+        const existingByName = this.#commands.get(command.name);
+        const existingIsFlat = existingByName !== undefined && (existingByName.commandPath === undefined || existingByName.commandPath.length === 0);
+
+        // Two flat commands with the same name are a true duplicate. Nested
+        // commands sharing a leaf name with a flat command (or with each other)
+        // are disambiguated by their full path, so they are allowed.
+        if (!newIsNested && existingIsFlat) {
+            throw new CerebroError(`Command with name "${command.name}" already exists`, "DUPLICATE_COMMAND", { commandName: command.name });
+        }
+
+        if (command.options) {
+            for (const option of command.options) {
+                mapOptionTypeLabel<OD>(option);
+            }
+        }
+
+        validateDuplicateOptions(command as unknown as ICommand);
+        addNegatableOptions(command);
+        processOptionNames(command);
+
+        if (command.options) {
+            // eslint-disable-next-line no-param-reassign,no-underscore-dangle
+            command.__conflictingOptions__ = command.options.filter((option) => option.conflicts !== undefined);
+            // eslint-disable-next-line no-param-reassign,no-underscore-dangle
+            command.__requiredOptions__ = command.options.filter((option) => option.required === true);
+        }
+
+        // The name-keyed map is the canonical lookup for bare leaf names.
+        // A flat command should win this slot over any nested namesake, since
+        // `cli foo` (with no parent) can only mean the flat one. When a flat
+        // command already owns the leaf-name slot, register the nested command
+        // under its full path key so iteration (help listings, alternatives)
+        // still sees every command.
+        if (newIsNested && existingByName !== undefined) {
+            this.#commands.set(pathKey, command);
+        } else {
+            // If a nested namesake currently owns the name slot (registered
+            // before this flat one), preserve it by re-keying it under its
+            // full path before the flat takes over. Otherwise iteration over
+            // `#commands.values()` would lose the nested entry.
+            if (!newIsNested && existingByName !== undefined && !existingIsFlat) {
+                const existingFullPath = getFullCommandPath(existingByName.name, existingByName.commandPath);
+
+                this.#commands.set(getCommandPathKey(existingFullPath), existingByName);
+            }
+
+            this.#commands.set(command.name, command);
+        }
+
+        this.#commandPaths.set(pathKey, fullPath);
+        this.#commandsByPath.set(pathKey, command);
+
+        this.#invalidateCommandCache();
+
+        if (command.alias !== undefined) {
+            const aliases = typeof command.alias === "string" ? [command.alias] : command.alias;
+
+            for (const alias of aliases) {
+                if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
+                    this.#logger.debug("adding alias", alias);
+                }
+
+                if (this.#commands.has(alias)) {
+                    throw new CerebroError(`Command alias "${alias}" conflicts with existing command`, "DUPLICATE_COMMAND", {
+                        alias,
+                        commandName: command.name,
+                    });
+                }
+
+                this.#commands.set(alias, command);
+            }
+        }
+
+        return this;
+    }
+
+    /**
+     * Adds a global option available to all commands.
+     *
+     * Global options are parsed alongside command-specific options and displayed
+     * in the help output under the "Global Options" section.
+     * @param option The option definition
+     * @returns The CLI instance for method chaining
+     * @example
+     * ```typescript
+     * cli.addGlobalOption({
+     *   name: 'cwd',
+     *   type: String,
+     *   description: 'Override working directory',
+     * });
+     * ```
+     */
+    public addGlobalOption<V = unknown>(option: OptionDefinition<V>): this {
+        const optionDefinition = option as OptionDefinition<unknown>;
+
+        // Check for conflicts with built-in global options
+        const builtInNames = new Set((defaultOptions as OptionDefinition<unknown>[]).map((o) => o.name));
+        const builtInAliases = new Set((defaultOptions as OptionDefinition<unknown>[]).map((o) => o.alias).filter(Boolean));
+
+        if (builtInNames.has(optionDefinition.name)) {
+            throw new CerebroError(`Cannot add global option "--${optionDefinition.name}": it conflicts with a built-in global option`, "DUPLICATE_OPTION", {
+                optionName: optionDefinition.name,
+            });
+        }
+
+        if (optionDefinition.alias && builtInAliases.has(optionDefinition.alias)) {
+            throw new CerebroError(
+                `Cannot add global option with alias "-${optionDefinition.alias}": it conflicts with a built-in global option alias`,
+                "DUPLICATE_OPTION",
+                { alias: optionDefinition.alias, optionName: optionDefinition.name },
+            );
+        }
+
+        // Check for conflicts with previously added custom global options
+        const existingNames = new Set(this.#customGlobalOptions.map((o) => o.name));
+
+        if (existingNames.has(optionDefinition.name)) {
+            throw new CerebroError(`Global option "--${optionDefinition.name}" has already been added`, "DUPLICATE_OPTION", {
+                optionName: optionDefinition.name,
+            });
+        }
+
+        optionDefinition.group = "global";
+
+        mapOptionTypeLabel(optionDefinition);
+
+        this.#customGlobalOptions.push(optionDefinition);
+
+        return this;
+    }
+
+    /**
+     * Gets all global options (built-in + custom).
+     * @returns Array of all global option definitions
+     */
+    public getGlobalOptions(): OptionDefinition<unknown>[] {
+        return this.#getAllGlobalOptions();
+    }
+
+    /**
+     * Adds a plugin to extend the CLI functionality.
+     *
+     * Plugins can hook into various lifecycle events and modify the toolbox
+     * to provide additional functionality to commands.
+     * @param plugin The plugin to register
+     * @returns The CLI instance for method chaining
+     * @example
+     * ```typescript
+     * cli.addPlugin({
+     *   name: 'logger',
+     *   execute: (toolbox) => {
+     *     toolbox.logger = createCustomLogger();
+     *   }
+     * });
+     * ```
+     */
+    public addPlugin(plugin: Plugin<T>): this {
+        this.getPluginManager().register(plugin);
+
+        return this;
+    }
+
+    /**
+     * Gets the plugin manager instance for advanced plugin management.
+     * @returns The plugin manager instance
+     */
+    public getPluginManager(): PluginManager<T> {
+        if (this.#pluginManager) {
+            return this.#pluginManager;
+        }
+
+        this.#pluginManager = new PluginManager(this.#logger);
+        this.#pluginManager.register({
+            description: "Attaches the logger to the toolbox",
+            execute: (toolbox) => {
+                // eslint-disable-next-line no-param-reassign
+                toolbox.logger = this.#logger;
+                // Mirror the current logger reference so `toolbox.console ===
+                // toolbox.logger` holds even if an earlier user plugin
+                // reassigned `toolbox.logger`.
+                // eslint-disable-next-line no-param-reassign
+                toolbox.console = toolbox.logger;
+            },
+            name: "logger",
+        });
+
+        return this.#pluginManager;
+    }
+
+    /**
+     * Gets the CLI application name.
+     */
+    public getCliName(): string {
+        return this.#cliName;
+    }
+
+    /**
+     * Gets the package version if configured.
+     * @returns The package version or undefined
+     */
+    public getPackageVersion(): string | undefined {
+        return this.#packageVersion;
+    }
+
+    /**
+     * Gets the package name if configured.
+     * @returns The package name or undefined
+     */
+    public getPackageName(): string | undefined {
+        return this.#packageName;
+    }
+
+    /**
+     * Gets all registered commands.
+     * @returns A map of command names to command definitions
+     */
+    public getCommands(): Map<string, ICommand<OptionDefinition<unknown>, T>> {
+        return this.#commands;
+    }
+
+    /**
+     * Gets the current working directory.
+     * @returns The current working directory path
+     */
+    // fallow-ignore-next-line unused-class-member -- public API declared on the Cli interface (types/cli.ts); kept for backward compatibility
+    public getCwd(): string {
+        return this.#cwd;
+    }
+
+    /**
+     * Disposes the CLI instance and cleans up resources.
+     *
+     * This method removes event listeners and performs cleanup to prevent memory leaks.
+     * Call this method when the CLI instance is no longer needed, especially in long-running
+     * processes or when creating multiple CLI instances.
+     * @example
+     * ```typescript
+     * const cli = new Cerebro('my-app');
+     * // ... use the cli
+     * cli.dispose(); // Clean up when done
+     * ```
+     */
+    public dispose(): void {
+        this.#exceptionHandlerCleanup?.();
+    }
+
+    /**
+     * Runs the CLI application.
+     *
+     * This method parses command line arguments, executes the appropriate command,
+     * and handles the complete CLI lifecycle including plugin initialization,
+     * error handling, process termination, and automatic cleanup.
+     * @param extraOptions Additional options to pass to commands
+     * @param extraOptions.shouldExitProcess Whether to exit the process after execution (default: true)
+     * @param extraOptions.autoDispose Whether to automatically cleanup/dispose resources after execution (default: true)
+     * @returns A promise that resolves when execution completes
+     * @throws {CommandNotFoundError} If the specified command doesn't exist
+     * @throws {Error} If command arguments are invalid or conflicting options are provided
+     * @example
+     * ```typescript
+     * // Run with default behavior (exits process and auto-disposes)
+     * await cli.run();
+     *
+     * // Run without exiting (for testing)
+     * await cli.run({ shouldExitProcess: false });
+     *
+     * // Run without auto-disposing (for reuse)
+     * await cli.run({ autoDispose: false });
+     * ```
+     */
+
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+    public async run(extraOptions: CliRunOptions = {}): Promise<void> {
+        const { autoDispose = true, shouldExitProcess = true, ...otherExtraOptions } = extraOptions;
+
+        if (!this.#commands.has("help")) {
+            const { default: HelpCommand } = await import("./commands/help-command");
+
+            this.addCommand(new HelpCommand<T>(this.#commands));
+        }
+
+        const commandNames = this.#getCommandNames();
+        const commandPathMap = this.#commandPaths;
+
+        this.#ensureExceptionHandlers();
+
+        const argv = this.#getArgv();
+
+        let parsedCommandPath: string[] | undefined;
+        let remainingArgv: string[] = [...argv];
+
+        // Gate the runtime-process probes + eager string construction on
+        // verbosity; these are diagnostics only and otherwise run every command.
+        if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
+            this.#logger.debug(`process.execPath: ${getExecPath()}`);
+            this.#logger.debug(`process.execArgv: ${getExecArgv().join(" ")}`);
+            this.#logger.debug(`process.argv: ${getRuntimeArgv().join(" ")}`);
+        }
+
+        const nestedResult = parseNestedCommand(commandPathMap, [...argv]);
+
+        if (nestedResult.commandPath) {
+            parsedCommandPath = nestedResult.commandPath;
+            remainingArgv = nestedResult.argv;
+        } else {
+            if (argv.length > 1 && argv[0] && argv[1] && !isOption(argv[0]) && !isOption(argv[1])) {
+                const attemptedPath: string[] = [];
+                let i = 0;
+
+                while (i < argv.length) {
+                    const argument = argv[i];
+
+                    if (!argument || isOption(argument)) {
+                        break;
+                    }
+
+                    attemptedPath.push(argument);
+                    i += 1;
+                }
+
+                const attemptedPathKey = getCommandPathKey(attemptedPath);
+
+                if (attemptedPath[0] && !commandNames.includes(attemptedPath[0])) {
+                    const allCommandPaths = this.#getAllCommandPaths();
+                    const alternatives = findAlternatives(attemptedPathKey, allCommandPaths);
+
+                    throw new CommandNotFoundError(attemptedPathKey, alternatives);
+                }
+            }
+
+            let parsedArguments: { argv: string[]; command: string | null | undefined };
+
+            try {
+                // eslint-disable-next-line unicorn/no-null
+                parsedArguments = commandLineCommands([null, ...commandNames], [...argv]);
+            } catch (error) {
+                if (error instanceof Error && error.name === "INVALID_COMMAND" && "command" in error) {
+                    const invalidCommand = (error as { command: string }).command;
+                    const allCommandPaths = this.#getAllCommandPaths();
+                    const alternatives = findAlternatives(invalidCommand, allCommandPaths);
+
+                    throw new CommandNotFoundError(invalidCommand, alternatives);
+                }
+
+                throw error;
+            }
+
+            if (parsedArguments.command) {
+                parsedCommandPath = [parsedArguments.command];
+                remainingArgv = parsedArguments.argv;
+            }
+        }
+
+        if (!parsedCommandPath) {
+            if (this.#defaultCommand) {
+                parsedCommandPath = [this.#defaultCommand];
+            } else {
+                const allCommandPaths = this.#getAllCommandPaths();
+
+                throw new CommandNotFoundError("", allCommandPaths);
+            }
+        }
+
+        const pathKey = getCommandPathKey(parsedCommandPath);
+        const storedPath = this.#commandPaths.get(pathKey);
+
+        let command: ICommand<OptionDefinition<unknown>, T> | undefined;
+
+        if (storedPath) {
+            command = this.#commandsByPath.get(pathKey);
+
+            if (!command || getCommandPathKey(storedPath) !== pathKey) {
+                const allCommandPaths = this.#getAllCommandPaths();
+                const alternatives = findAlternatives(pathKey, allCommandPaths);
+
+                throw new CommandNotFoundError(pathKey, alternatives);
+            }
+        } else {
+            const commandName = parsedCommandPath.at(-1);
+
+            command = commandName ? this.#commands.get(commandName) : undefined;
+
+            if (!command) {
+                const allCommandPaths = this.#getAllCommandPaths();
+                const alternatives = findAlternatives(pathKey, allCommandPaths);
+
+                throw new CommandNotFoundError(pathKey, alternatives);
+            }
+        }
+
+        if (typeof command.execute !== "function" && typeof command.loader !== "function") {
+            this.#logger.error(`Command "${command.name}" has no function to execute.`);
+
+            return shouldExitProcess ? exitProcess(1) : undefined;
+        }
+
+        const commandArguments = remainingArgv;
+
+        let commandArgs: CommandLineOptions;
+        let toolbox: IToolbox<T>;
+
+        try {
+            ({ commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, otherExtraOptions, pathKey));
+        } catch (error) {
+            // Conflict / required-option / negation errors are thrown from
+            // #executeCommandInternal before the plugin manager's try/catch
+            // below can pick them up. Render them through the logger and
+            // re-throw so the caller sees a non-zero exit code.
+            this.#logger.error(error);
+
+            if (shouldExitProcess) {
+                return exitProcess(1);
+            }
+
+            throw error;
+        }
+
+        const pluginManager = this.getPluginManager();
+
+        try {
+            if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
+                await pluginManager.init({
+                    cli: this,
+                    cwd: this.#cwd,
+                    logger: this.#logger,
+                });
+
+                this.#pluginsInitialized = true;
+            }
+
+            await pluginManager.executeLifecycle("execute", toolbox);
+
+            await pluginManager.executeLifecycle("beforeCommand", toolbox);
+
+            let result: unknown;
+
+            const globalOptions = commandArgs.global as Record<string, unknown> | undefined;
+
+            if (globalOptions?.help) {
+                const helpCommand = this.#commands.get("help");
+
+                if (!helpCommand) {
+                    throw new CerebroError("Help command not found", "COMMAND_NOT_FOUND");
+                }
+
+                result = await executeCommand(helpCommand, toolbox, commandArgs);
+            } else if (globalOptions?.version ?? globalOptions?.V) {
+                const versionCommand = this.#commands.get("version");
+
+                if (!versionCommand) {
+                    throw new CerebroError("Version command not found", "COMMAND_NOT_FOUND");
+                }
+
+                result = await executeCommand(versionCommand, toolbox, commandArgs);
+            } else {
+                result = await executeCommand(command, toolbox, commandArgs);
+            }
+
+            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
+
+            return shouldExitProcess ? exitProcess(0) : undefined;
+        } catch (error) {
+            await pluginManager.executeErrorHandlers(error as Error, toolbox);
+
+            throw error;
+        } finally {
+            if (autoDispose) {
+                this.dispose();
+            }
+        }
+    }
+
+    /**
+     * Runs a command programmatically from within another command.
+     *
+     * This method allows commands to call other commands during execution,
+     * enabling composition of commands and reusable command logic.
+     * @param commandName The name of the command to execute
+     * @param options Optional options including argv and other command options
+     * @returns A promise that resolves with the command's result
+     * @throws {CommandNotFoundError} If the specified command doesn't exist
+     * @throws {CerebroError} If command validation fails
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: 'deploy',
+     *   execute: async ({ runtime, logger }) => {
+     *     logger.info('Building...');
+     *     await runtime.runCommand('build', { argv: ['--production'] });
+     *
+     *     logger.info('Testing...');
+     *     await runtime.runCommand('test', { argv: ['--coverage'] });
+     *   }
+     * });
+     * ```
+     */
+    public async runCommand(commandName: string, options: RunCommandOptions = {}): Promise<unknown> {
+        const { argv: providedArgv = [], ...extraOptions } = options;
+
+        validateNonEmptyString(commandName, "Command name");
+
+        const commandPath = commandName.split(" ").filter(Boolean);
+        const pathKey = getCommandPathKey(commandPath);
+        const storedPath = this.#commandPaths.get(pathKey);
+
+        const command: ICommand<OptionDefinition<unknown>, T> | undefined = storedPath ? this.#commandsByPath.get(pathKey) : this.#commands.get(commandName);
+
+        if (!command) {
+            const allCommandPaths = this.#getAllCommandPaths();
+            const alternatives = findAlternatives(pathKey || commandName, allCommandPaths);
+
+            throw new CommandNotFoundError(commandName, alternatives);
+        }
+
+        if (typeof command.execute !== "function" && typeof command.loader !== "function") {
+            throw new CerebroError(`Command "${command.name}" has no function to execute`, "INVALID_COMMAND", { commandName: command.name });
+        }
+
+        const sanitizedArgv = sanitizeArguments(providedArgv, { maxArguments: this.#maxArguments });
+        const commandArguments = [...sanitizedArgv];
+
+        if (this.#getVerbosityLevel() === VERBOSITY_DEBUG) {
+            this.#logger.debug(`running command '${commandName}' programmatically with args: ${commandArguments.join(", ")}`);
+        }
+
+        const { commandArgs, toolbox } = this.#executeCommandInternal(command, commandArguments, extraOptions, pathKey || commandName);
+
+        const pluginManager = this.getPluginManager();
+
+        try {
+            if (!this.#pluginsInitialized && pluginManager.hasPlugins()) {
+                await pluginManager.init({
+                    cli: this,
+                    cwd: this.#cwd,
+                    logger: this.#logger,
+                });
+
+                this.#pluginsInitialized = true;
+            }
+
+            await pluginManager.executeLifecycle("execute", toolbox);
+
+            await pluginManager.executeLifecycle("beforeCommand", toolbox);
+
+            let result: unknown;
+
+            const runGlobalOptions = commandArgs.global as Record<string, unknown> | undefined;
+
+            if (runGlobalOptions?.help) {
+                const helpCommand = this.#commands.get("help");
+
+                if (!helpCommand) {
+                    throw new CerebroError("Help command not found", "COMMAND_NOT_FOUND");
+                }
+
+                result = await executeCommand(helpCommand, toolbox, commandArgs);
+            } else if (runGlobalOptions?.version ?? runGlobalOptions?.V) {
+                const versionCommand = this.#commands.get("version");
+
+                if (!versionCommand) {
+                    throw new CerebroError("Version command not found", "COMMAND_NOT_FOUND");
+                }
+
+                result = await executeCommand(versionCommand, toolbox, commandArgs);
+            } else {
+                result = await executeCommand(command, toolbox, commandArgs);
+            }
+
+            await pluginManager.executeLifecycle("afterCommand", toolbox, result);
+
+            return result;
+        } catch (error) {
+            await pluginManager.executeErrorHandlers(error as Error, toolbox);
+
+            throw error;
+        }
+    }
+
+    /**
+     * Creates a shallow copy of the CLI with optional `CliOptions` overrides.
+     *
+     * The clone shares the underlying command definitions (the same `Command`
+     * objects are reused), but has its own commands map, global-options list,
+     * default-command setting, command-section configuration, and a freshly
+     * initialized plugin manager. Mutating one CLI's commands after cloning
+     * does not affect the other.
+     *
+     * Primarily useful in tests to run the same CLI definition with different
+     * argv / stdout / exit / fs overrides without rebuilding the command tree.
+     * @param overrides Optional `CliOptions` to merge over the clone's existing options
+     * @returns A new `Cli` instance with the same commands and merged options
+     * @example
+     * ```typescript
+     * const cli = new Cerebro("acme");
+     * cli.addCommand({ name: "build", execute: ({ console }) => console.log("building") });
+     *
+     * // In tests: clone with mocked exit + captured stdout
+     * const exitSpy = vi.fn();
+     * const isolated = cli.clone({ argv: ["build"], exit: exitSpy });
+     * await isolated.run({ shouldExitProcess: false });
+     * ```
+     */
+    public clone(overrides?: CliOptions<T>): Cli<T> {
+        const merged: CliOptions<T> = { ...this.#options, ...overrides };
+        const cloned = new Cli<T>(this.#cliName, merged);
+
+        // Share command objects but with a separate map so adding/removing on
+        // the clone does not mutate the original.
+        for (const [key, command] of this.#commands) {
+            cloned.#commands.set(key, command);
+        }
+
+        for (const [key, path] of this.#commandPaths) {
+            cloned.#commandPaths.set(key, [...path]);
+        }
+
+        for (const [key, command] of this.#commandsByPath) {
+            cloned.#commandsByPath.set(key, command);
+        }
+
+        for (const option of this.#customGlobalOptions) {
+            cloned.#customGlobalOptions.push(option);
+        }
+
+        cloned.#defaultCommand = this.#defaultCommand;
+        cloned.#commandSection = { ...this.#commandSection };
+
+        cloned.#invalidateCommandCache();
+
+        return cloned;
+    }
+
+    /**
+     * Returns the resolved `execute` function for a registered command.
+     *
+     * For lazy-loaded commands (defined via `loader`), the loader is awaited
+     * and its module's default export is returned. The result is cached on the
+     * command for subsequent calls. Supports space-separated nested command
+     * paths (e.g. `"git remote add"`).
+     *
+     * Primarily useful in tests to invoke a command's handler directly with a
+     * synthesized toolbox, without going through argv parsing or the full
+     * `run()` lifecycle.
+     * @param commandName The command name or space-separated nested path
+     * @returns A promise resolving to the command's handler function
+     * @throws {CommandNotFoundError} If no command matches the given name
+     * @throws {CerebroError} If the command has neither `execute` nor `loader`
+     * @example
+     * ```typescript
+     * const cli = new Cerebro("acme");
+     * cli.addCommand({
+     *   name: "deploy",
+     *   execute: ({ console, options }) => console.log("deploying to", options.env),
+     * });
+     *
+     * // In tests: call the action directly with a mocked toolbox
+     * const action = await cli.getAction("deploy");
+     * await action({ console: fakeConsole, options: { env: "staging" } } as never);
+     * ```
+     */
+    public async getAction(commandName: string): Promise<CommandExecute<IToolbox<T>>> {
+        validateNonEmptyString(commandName, "Command name");
+
+        const commandPath = commandName.split(" ").filter(Boolean);
+        const pathKey = getCommandPathKey(commandPath);
+        const storedPath = this.#commandPaths.get(pathKey);
+
+        const command: ICommand<OptionDefinition<unknown>, T> | undefined = storedPath ? this.#commandsByPath.get(pathKey) : this.#commands.get(commandName);
+
+        if (!command) {
+            const allCommandPaths = this.#getAllCommandPaths();
+            const alternatives = findAlternatives(pathKey || commandName, allCommandPaths);
+
+            throw new CommandNotFoundError(commandName, alternatives);
+        }
+
+        if (typeof command.execute === "function") {
+            return command.execute;
+        }
+
+        if (typeof command.loader === "function") {
+            return loadLazyHandler(command);
+        }
+
+        throw new CerebroError(`Command "${command.name}" has no execute or loader defined`, "INVALID_COMMAND", { commandName: command.name });
+    }
+}

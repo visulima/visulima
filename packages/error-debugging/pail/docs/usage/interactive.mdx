@@ -1,0 +1,177 @@
+---
+title: Interactive Mode
+description: Use progress bars and spinners with pail's interactive terminal output
+---
+
+# Interactive Mode
+
+Interactive mode enables dynamic terminal UI by coordinating stdout/stderr streams. **Server only.**
+
+> **Breaking Change:** Spinners and progress bars have been extracted into separate packages.
+> Use `@visulima/spinner` and `@visulima/progress-bar` directly with pail's interactive manager.
+
+## Setup
+
+Enable interactive mode when creating a logger:
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail({
+    interactive: true,
+});
+```
+
+## Using Spinners
+
+Install `@visulima/spinner`:
+
+```bash
+pnpm add @visulima/spinner
+```
+
+Use pail's interactive manager with the spinner:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { Spinner } from "@visulima/spinner";
+
+const logger = createPail({ interactive: true });
+const manager = logger.getInteractiveManager();
+
+const spinner = new Spinner({ name: "dots" }, manager);
+
+spinner.start("Loading...");
+// ... do work ...
+spinner.succeed("Done!");
+```
+
+### Spinner with Colorize Styling
+
+```typescript
+import colorize from "@visulima/colorize";
+import { Spinner } from "@visulima/spinner";
+
+const spinner = new Spinner(
+    {
+        name: "dots",
+        style: (text) => colorize.bold.blue(text),
+    },
+    manager,
+);
+```
+
+### Multiple Spinners
+
+```typescript
+import { MultiSpinner } from "@visulima/spinner";
+
+const multi = new MultiSpinner({ name: "dots" }, manager);
+
+const s1 = multi.create("Loading users");
+const s2 = multi.create("Loading posts");
+
+s1.start();
+s2.start();
+
+s1.succeed("Users loaded");
+s2.succeed("Posts loaded");
+
+multi.stop();
+```
+
+## Using Progress Bars
+
+Install `@visulima/progress-bar`:
+
+```bash
+pnpm add @visulima/progress-bar
+```
+
+Use pail's interactive manager with the progress bar:
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { ProgressBar } from "@visulima/progress-bar";
+
+const logger = createPail({ interactive: true });
+const manager = logger.getInteractiveManager();
+
+const bar = new ProgressBar(
+    {
+        total: 100,
+        format: "Downloading [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}",
+    },
+    manager,
+);
+
+bar.start();
+
+for (let i = 0; i <= 100; i++) {
+    bar.update(i);
+    await sleep(50);
+}
+
+bar.stop();
+```
+
+### Multiple Progress Bars
+
+```typescript
+import { MultiProgressBar } from "@visulima/progress-bar";
+
+const multi = new MultiProgressBar({}, manager);
+
+const bar1 = multi.create(100);
+const bar2 = multi.create(200);
+
+bar1.update(50);
+bar2.update(100);
+
+multi.stop();
+```
+
+## Interactive Manager
+
+Access the interactive manager directly for custom use:
+
+```typescript
+const logger = createPail({ interactive: true });
+const manager = logger.getInteractiveManager();
+
+if (manager) {
+    manager.hook();
+    manager.update("stdout", ["Custom output line 1", "Custom output line 2"]);
+    manager.unhook();
+}
+```
+
+## Migration from Previous Versions
+
+The `createSpinner()`, `createMultiSpinner()`, `createProgressBar()`, and `createMultiProgressBar()` methods have been removed from pail.
+
+**Before (old API):**
+
+```typescript
+const logger = createPail({ interactive: true });
+const spinner = logger.createSpinner({ name: "dots" });
+spinner.start("Loading...");
+```
+
+**After (new API):**
+
+```typescript
+import { createPail } from "@visulima/pail";
+import { Spinner } from "@visulima/spinner";
+
+const logger = createPail({ interactive: true });
+const spinner = new Spinner({ name: "dots" }, logger.getInteractiveManager());
+spinner.start("Loading...");
+```
+
+## Related
+
+- [`@visulima/spinner`](/docs/spinner) - Spinner package documentation
+- [`@visulima/progress-bar`](/docs/progress-bar) - Progress bar package documentation
+- [`@visulima/interactive-manager`](/docs/interactive-manager) - Interactive manager documentation
+- [Basic Usage](/docs/packages/pail/usage/basic) - Basic logging operations

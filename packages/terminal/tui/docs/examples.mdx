@@ -1,0 +1,181 @@
+---
+title: Examples
+description: "Runnable demo apps for @visulima/tui React mode and raw-buffer mode"
+---
+
+# Examples
+
+All examples in this page are part of this repository.
+
+Run from repository root:
+
+```bash
+node --import @oxc-node/core/register examples/<name>.tsx
+node --import @oxc-node/core/register examples-raw/<name>.ts
+```
+
+## React Mode (`examples/`)
+
+### Basics
+
+| File                  | What it demonstrates                                          |
+| --------------------- | ------------------------------------------------------------- |
+| `counter.tsx`         | `useState` + `useInput` minimal app                           |
+| `use-input.tsx`       | Key parsing: arrows, ctrl/meta combos, special keys           |
+| `borders.tsx`         | Border styles: `single`, `double`, `round`, `bold`, `classic` |
+| `box-slices.tsx`      | All 16 permutations of per-side border toggles                |
+| `box-backgrounds.tsx` | Background colors                                             |
+| `justify-content.tsx` | Flex alignment and spacing                                    |
+| `terminal-resize.tsx` | `useWindowSize` with live resize behavior                     |
+| `htop.tsx`            | htop-style system monitor (Unix-like; uses `ps aux`)          |
+
+### Input and Interaction
+
+| File                            | What it demonstrates                              |
+| ------------------------------- | ------------------------------------------------- |
+| `cursor-input/cursor-input.tsx` | Declarative `<Cursor />` inline text input        |
+| `cursor-ime.tsx`                | `useCursor()` with IME and wide character support |
+| `use-focus.tsx`                 | `useFocus` + Tab cycling                          |
+| `use-focus-with-id.tsx`         | Named focus targets + `focus(id)`                 |
+| `use-mouse.tsx`                 | `useMouse` buttons, wheel, modifiers              |
+| `use-paste.tsx`                 | `usePaste` routing vs `useInput` fallback         |
+| `use-clipboard.tsx`             | `useClipboard` OSC 52 copy-to-clipboard           |
+
+### Layout and Composition
+
+| File                 | What it demonstrates                              |
+| -------------------- | ------------------------------------------------- |
+| `use-scrollable.tsx` | `useScrollable` viewport state + sliced rendering |
+| `static.tsx`         | `<Static>` append-only output                     |
+| `chat.tsx`           | Chat-style history + live input                   |
+
+### Components
+
+| File                 | What it demonstrates                                    |
+| -------------------- | ------------------------------------------------------- |
+| `code.tsx`           | `<Code>` syntax highlighting with line numbers          |
+| `markdown.tsx`       | `<Markdown>` full markdown rendering in terminal        |
+| `diff-view.tsx`      | `<DiffView>` unified and split diff views               |
+| `spinner.tsx`        | `<Spinner>` defaults + custom frames                    |
+| `progress-bar.tsx`   | `<ProgressBar>` states and options                      |
+| `text-input.tsx`     | `<TextInput>` typing, placeholder, submit               |
+| `confirm-input.tsx`  | `<ConfirmInput>` Y/N confirmation prompt                |
+| `multi-select.tsx`   | `<MultiSelect>` checkbox selection with keyboard nav    |
+| `select-input.tsx`   | `<SelectInput>` single-choice list with separators      |
+| `badge.tsx`          | `<Badge>` colored status labels                         |
+| `status-message.tsx` | `<StatusMessage>` variant icons (success/error/warning) |
+| `alert.tsx`          | `<Alert>` bordered alert boxes with title support       |
+| `unordered-list.tsx` | `<UnorderedList>` nested bullet lists                   |
+| `ordered-list.tsx`   | `<OrderedList>` nested numbered lists                   |
+| `slider.tsx`         | `<Slider>` horizontal/vertical range inputs             |
+| `textarea.tsx`       | `<Textarea>` multi-line editor with undo, selection     |
+| `tabs.tsx`           | `<Tabs>` tabbed navigation with keyboard switching      |
+| `timer.tsx`          | `<Timer>` countdown with start/stop/reset controls      |
+| `stopwatch.tsx`      | `<Stopwatch>` with lap capture                          |
+| `help.tsx`           | `<Help>` keybinding bar with `useKeyBindings`           |
+| `paginator.tsx`      | `<Paginator>` paginated list with dot/numeric styles    |
+| `file-picker.tsx`    | `<FilePicker>` file system browser                      |
+| `kitchen-sink.tsx`   | Multi-feature demo in one app                           |
+
+### Form controls & disclosure
+
+| File                | What it demonstrates                                                         |
+| ------------------- | ---------------------------------------------------------------------------- |
+| `form-controls.tsx` | `<Button>`, `<Checkbox>`, `<Switch>`, `<RadioGroup>`, `<Divider>`            |
+| `disclosure.tsx`    | `<Accordion>` and `<Collapsible>` with keyboard navigation                   |
+| `feedback.tsx`      | `<Stepper>`, `<Toast>` (auto-dismiss), `<Placeholder>` skeleton              |
+| `form.tsx`          | `<Form>` + `useForm` + `<MaskedInput>` + `<SearchInput>` + `<ConfirmDialog>` |
+
+### Layout & content
+
+| File                    | What it demonstrates                                                                         |
+| ----------------------- | -------------------------------------------------------------------------------------------- |
+| `layout-components.tsx` | `<Card>`, `<Heading>`, `<Paragraph>`, `<Kbd>`, `<Tag>`, `<Breadcrumb>`, `<LoadingIndicator>` |
+| `definition-list.tsx`   | `<DefinitionList>` inline + stacked layouts                                                  |
+| `sparkline.tsx`         | `<Sparkline>` live inline mini-chart                                                         |
+
+### Navigation
+
+| File                  | What it demonstrates                                       |
+| --------------------- | ---------------------------------------------------------- |
+| `navigation.tsx`      | `<Menu>`, `<Tooltip>`, `<ContentSwitcher>`, `<OptionList>` |
+| `command-palette.tsx` | `<CommandPalette>` fuzzy finder with ranked results        |
+| `date-picker.tsx`     | `<Calendar>` and `<DatePicker>`                            |
+
+### AI widgets
+
+| File             | What it demonstrates                                                                                                                                         |
+| ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ai-widgets.tsx` | `<OperationTree>`, `<MessageBubble>`, `<StreamingText>`, `<ApprovalPrompt>`, `<CommandBlock>`, `<ShimmerText>`, `<ModelBadge>`, `<BlinkDot>`, `<StatusLine>` |
+
+### Animation
+
+| File                | What it demonstrates                                                |
+| ------------------- | ------------------------------------------------------------------- |
+| `use-animation.tsx` | `useAnimation` multi-speed demo: rainbow unicorn, sparkles, spinner |
+| `animation.tsx`     | `<Transition>` presets and `<AnimatePresence>` list orchestration   |
+
+### Charts & canvas
+
+| File         | What it demonstrates                                                                               |
+| ------------ | -------------------------------------------------------------------------------------------------- |
+| `charts.tsx` | `<BarChart>`, `<LineChart>`, `<AreaChart>`, `<ScatterPlot>`, `<Histogram>`, `<Heatmap>`, `<Gauge>` |
+| `canvas.tsx` | Imperative `<Canvas>` drawing API with custom visualizations                                       |
+
+### Hooks
+
+| File                       | What it demonstrates                          |
+| -------------------------- | --------------------------------------------- |
+| `use-interval.tsx`         | `useInterval` pausable periodic callback      |
+| `use-timeout.tsx`          | `useTimeout` one-shot timer with cancel/reset |
+| `use-hotkey.tsx`           | `useHotkey` string + descriptor shortcuts     |
+| `use-key-chord.tsx`        | `useKeyChord` multi-key sequences (vim-style) |
+| `use-persistent-state.tsx` | `usePersistentState` with pluggable storage   |
+
+### Async and React Features
+
+| File                        | What it demonstrates          |
+| --------------------------- | ----------------------------- |
+| `suspense.tsx`              | Suspense with async data      |
+| `concurrent-suspense.tsx`   | Concurrent rendering behavior |
+| `use-transition.tsx`        | `useTransition`               |
+| `incremental-rendering.tsx` | Frequent partial updates      |
+| `sierpinski.tsx`            | Fiber-heavy animated tree     |
+
+### Internationalization
+
+| File       | What it demonstrates                                     |
+| ---------- | -------------------------------------------------------- |
+| `i18n.tsx` | `react-i18next` locale switching, plurals, env detection |
+
+See [i18n](/i18n) for the full guide.
+
+### Inline Mode
+
+| File                 | What it demonstrates           |
+| -------------------- | ------------------------------ |
+| `inline-minimal.tsx` | Minimal `renderInline()` usage |
+| `inline-picker.tsx`  | Inline picker UI               |
+
+### Native Renderer Demos
+
+| File              | What it demonstrates                       |
+| ----------------- | ------------------------------------------ |
+| `logo.tsx`        | `onBeforeFlush` direct buffer overlays     |
+| `rattata.tsx`     | Streaming fake-assistant demo              |
+| `stress-test.tsx` | ~700 FPS sustained full-terminal animation |
+
+## Raw-Buffer Mode (`examples-raw/`)
+
+| File               | What it demonstrates                        |
+| ------------------ | ------------------------------------------- |
+| `ascii-3d.ts`      | Spinning ASCII-shaded 3D cube with z-buffer |
+| `matrix.ts`        | Matrix rain                                 |
+| `conway.ts`        | Conway's Game of Life                       |
+| `plasma.ts`        | Plasma effect                               |
+| `fire.ts`          | Fire effect                                 |
+| `jitter.ts`        | Frame-time oscilloscope                     |
+| `scope.ts`         | Multi-harmonic oscilloscope                 |
+| `inline-picker.ts` | Inline picker without React                 |
+
+All raw examples use `examples-raw/harness.ts`.

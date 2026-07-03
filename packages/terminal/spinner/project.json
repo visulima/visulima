@@ -1,0 +1,7 @@
+{
+    "name": "spinner",
+    "sourceRoot": "packages/terminal/spinner/src",
+    "prefix": "",
+    "tags": ["type:package", "category:cli-terminal"],
+    "projectType": "library"
+}

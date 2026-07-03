@@ -1,0 +1,39 @@
+---
+title: Introduction
+description: "Throw better errors with formatted messages, error types, and proper error chaining."
+---
+
+# @visulima/ono
+
+Create and throw errors with better formatting, type checking, and error chaining support.
+
+## Key Features
+
+- Formatted error messages
+- Error type utilities
+- Error wrapping/chaining
+- TypeScript support
+
+## Quick Start
+
+```typescript
+import { ono } from "@visulima/ono";
+
+throw ono("Something went wrong");
+throw ono(new Error("Original"), "Additional context");
+```
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started
+    </Card>
+    <Card title="Usage" href="/usage">
+        Usage guide
+    </Card>
+    <Card title="API" href="/api">
+        API docs
+    </Card>
+</Cards>

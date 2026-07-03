@@ -1,0 +1,39 @@
+---
+title: "Installation"
+---
+
+# Installation
+
+```bash npm2yarn
+npm install @visulima/email-verifier
+```
+
+## Import
+
+The top-level orchestrator runs every check and aggregates one report:
+
+```typescript
+import { verifyEmail } from "@visulima/email-verifier";
+```
+
+Every individual check and enrichment is also exported on its own subpath, so a
+bundle only includes what it imports:
+
+```typescript
+import { validateSyntax } from "@visulima/email-verifier/checks/syntax";
+import { checkMxRecords } from "@visulima/email-verifier/checks/mx";
+import { verifySmtp } from "@visulima/email-verifier/checks/smtp";
+import { isRoleAccount, isNoReply } from "@visulima/email-verifier/checks/role";
+import { enrichProvider } from "@visulima/email-verifier/enrich/provider";
+import { suggestEmailTypo } from "@visulima/email-verifier/enrich/typo";
+import { parseName } from "@visulima/email-verifier/enrich/name";
+import { scoreReport } from "@visulima/email-verifier/score";
+```
+
+## Network caveat
+
+SMTP verification connects to the recipient's mail server on port 25. Many
+networks block outbound 25 and many servers tarpit or refuse verification
+probes, so treat a `deferred` / `unknown` result as inconclusive rather than
+undeliverable. Pass `{ offline: true }` to skip all network checks and produce a
+syntax + heuristic-only report.

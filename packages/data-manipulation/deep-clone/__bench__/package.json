@@ -1,0 +1,29 @@
+{
+    "name": "deep-clone-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@mfederczuk/deeptools": "catalog:prod",
+        "@ungap/structured-clone": "catalog:prod",
+        "@visulima/deep-clone": "workspace:*",
+        "clone-deep": "catalog:prod",
+        "deep-copy": "catalog:prod",
+        "fast-copy": "catalog:prod",
+        "lodash.clonedeep": "catalog:prod",
+        "nano-copy": "catalog:prod",
+        "nanoclone": "catalog:prod",
+        "plain-object-clone": "catalog:prod",
+        "ramda": "catalog:prod",
+        "rfdc": "catalog:prod"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "@types/lodash.clonedeep": "catalog:types",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}

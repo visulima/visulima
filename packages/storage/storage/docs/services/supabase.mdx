@@ -1,0 +1,117 @@
+# Supabase Storage
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage — pick that path when you're hosting an upload server.
+
+## Overview
+
+The Supabase adapter wraps `@supabase/storage-js`'s `StorageClient` with the `BaseStorage` contract. Each adapter instance is bound to a single bucket — for multi-bucket apps, instantiate one adapter per bucket. Both `getReadUrl()` (signed URLs) and `getUploadUrl()` (signed upload URLs) are natively supported.
+
+## Installation
+
+```sh
+npm install @supabase/storage-js
+```
+
+```sh
+yarn add @supabase/storage-js
+```
+
+```sh
+pnpm add @supabase/storage-js
+```
+
+## Usage
+
+```ts
+import SupabaseStorage from "@visulima/storage/provider/supabase";
+
+const storage = new SupabaseStorage({
+    url: process.env.SUPABASE_URL!,
+    serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    bucket: "avatars",
+});
+```
+
+## Configuration
+
+### Environment variables
+
+```ts
+// Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY)
+process.env.SUPABASE_URL = "https://xyz.supabase.co";
+process.env.SUPABASE_SERVICE_ROLE_KEY = "eyJ...";
+
+const storage = new SupabaseStorage({ bucket: "avatars" });
+```
+
+The adapter normalizes the URL: pass either `https://xyz.supabase.co` or `https://xyz.supabase.co/storage/v1`.
+
+### Pre-built client
+
+```ts
+import { StorageClient } from "@supabase/storage-js";
+
+const storageClient = new StorageClient(/* … */);
+const storage = new SupabaseStorage({ client: storageClient, bucket: "avatars" });
+```
+
+### Custom fetch
+
+For environments without a global `fetch` or with custom transport requirements:
+
+```ts
+const storage = new SupabaseStorage({
+    url: process.env.SUPABASE_URL!,
+    serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    bucket: "avatars",
+    fetch: customFetch,
+});
+```
+
+### Default URL lifetime
+
+```ts
+new SupabaseStorage({
+    /* … */
+    defaultUrlExpiresIn: 3600, // seconds; capped at 7 days (604_800)
+});
+```
+
+## URL Generation
+
+### `getReadUrl(key, options?)`
+
+Calls `bucket.createSignedUrl(key, expiresIn, { download })`. `expiresIn` is clamped to the Supabase 7-day max. `responseContentDisposition` translates to Supabase's `download` option:
+
+- `attachment; filename=report.pdf` (or quoted, or RFC 5987 `filename*=UTF-8''…`) → `download: "report.pdf"` (filename round-trips to the browser)
+- `attachment` (no filename) → `download: true` (browser saves under the bucket key)
+- `inline` or omitted → `download: undefined` (browser renders inline)
+
+```ts
+const url = await storage.getReadUrl("avatar.png", { expiresIn: 600 });
+const downloadUrl = await storage.getReadUrl("doc.pdf", {
+    responseContentDisposition: 'attachment; filename="Q1 Report.pdf"',
+});
+```
+
+### `getUploadUrl(key)`
+
+Calls `bucket.createSignedUploadUrl(key)`. The returned URL accepts a `PUT` from the browser with the file body — no Authorization header needed.
+
+```ts
+const url = await storage.getUploadUrl("avatar.png");
+// PUT this URL from the browser
+```
+
+## Features
+
+- **Native signed URLs** — both read and write, no extra plumbing.
+- **Service-role auth** — set the key once; the adapter wires it into every request as `Authorization: Bearer …` and `apikey: …`.
+- **Bucket-scoped** — each adapter instance targets a single bucket; multi-bucket apps run multiple adapters.
+- **Auto upsert** — `write()` calls Supabase's `upload` with `upsert: true`, so re-writing a key replaces the object.
+
+## Limitations
+
+- Single-shot uploads — Supabase's TUS endpoint exists but the JS SDK uses `POST` with the full body. For large files use `getUploadUrl()` and stream the `PUT` from the client.
+- Signed URLs cap at 7 days.
+- `list()` always lists the bucket root with the configured page limit (default 1000). For deep prefixes or pagination, drop to `storage.raw`.

@@ -1,0 +1,99 @@
+---
+title: Mandrill
+description: Send emails using Mailchimp Transactional Email (Mandrill) with @visulima/email
+---
+
+# Mandrill Provider
+
+The Mandrill provider allows you to send emails through [Mailchimp Transactional Email (Mandrill)](https://mailchimp.com/developer/transactional/api/messages/send-new-message/).
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { mandrillProvider } from "@visulima/email/providers/mandrill";
+
+const mail = createMail(
+    mandrillProvider({
+        apiKey: process.env.MANDRILL_API_KEY!,
+    }),
+);
+```
+
+## Configuration
+
+The `MandrillConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                           | Description                     |
+| ---------- | --------- | -------- | --------------------------------- | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                                 | Your Mandrill API key           |
+| `endpoint` | `string`  | No       | `https://mandrillapp.com/api/1.0` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                           | Enable debug logging            |
+| `logger`   | `Console` | No       | -                                 | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                               | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                           | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Mandrill").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Mandrill provider supports additional options through `MandrillEmailOptions`:
+
+```typescript
+import type { MandrillEmailOptions } from "@visulima/email/providers/mandrill";
+
+const options: MandrillEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello {{name}}</h1>",
+    tags: ["welcome", "onboarding"],
+    globalMergeVars: [{ name: "company", content: "Acme Corp" }],
+    mergeVars: [
+        {
+            rcpt: "user@example.com",
+            vars: [{ name: "name", content: "John" }],
+        },
+    ],
+    metadata: { campaign: "onboarding-2025" },
+    subaccount: "client-123",
+};
+```
+
+| Option                    | Type                                                             | Description                     |
+| ------------------------- | ---------------------------------------------------------------- | ------------------------------- |
+| `tags`                    | `string[]`                                                       | Tags for categorization         |
+| `templateName`            | `string`                                                         | Mandrill template name          |
+| `templateContent`         | `{ name: string; content: string }[]`                            | Template content blocks         |
+| `templateVariables`       | `{ name: string; content: unknown }[]`                           | Template variables (merge vars) |
+| `globalMergeVars`         | `{ name: string; content: unknown }[]`                           | Global merge variables          |
+| `mergeVars`               | `{ rcpt: string; vars: { name: string; content: unknown }[] }[]` | Per-recipient merge variables   |
+| `metadata`                | `Record<string, string>`                                         | Metadata key-value pairs        |
+| `sendAt`                  | `string`                                                         | Send at timestamp (ISO 8601)    |
+| `subaccount`              | `string`                                                         | Subaccount ID                   |
+| `googleAnalyticsCampaign` | `string`                                                         | Google Analytics campaign name  |
+| `googleAnalyticsDomains`  | `string[]`                                                       | Google Analytics domains        |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

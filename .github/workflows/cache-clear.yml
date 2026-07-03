@@ -4,9 +4,17 @@ on: # yamllint disable-line rule:truthy
     pull_request:
         types:
             - "closed"
+        branches:
+            - "main"
+            - "next"
+            - "alpha"
+            - "beta"
+
+permissions:
+    contents: "read"
 
 jobs:
     cleanup-branch-cache:
-        uses: "anolilab/workflows/.github/workflows/cleanup-branch-cache.yaml@main"
+        uses: "anolilab/workflows/.github/workflows/cleanup-branch-cache.yaml@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
         with:
             target-repo: "visulima/visulima"

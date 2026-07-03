@@ -1,0 +1,45 @@
+---
+title: Introduction
+description: "Health check endpoints for monitoring application status"
+---
+
+# @visulima/health-check
+
+Create health check endpoints to monitor application status, dependencies, and readiness for production deployments.
+
+## Key Features
+
+- **Health Endpoints** - /health and /ready endpoints
+- **Custom Checks** - Add database, cache, API checks
+- **Kubernetes Ready** - Compatible with K8s liveness/readiness probes
+- **Graceful Degradation** - Report partial failures
+- **TypeScript** - Full type definitions
+
+## Quick Start
+
+```typescript
+import { createHealthCheck } from "@visulima/health-check";
+
+const health = createHealthCheck({
+    checks: {
+        database: async () => await db.ping(),
+        redis: async () => await redis.ping(),
+    },
+});
+
+app.get("/health", health.handler());
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install and setup
+    </Card>
+    <Card title="Usage" href="/usage">
+        Create health checks
+    </Card>
+    <Card title="API" href="/api">
+        API reference
+    </Card>
+</Cards>

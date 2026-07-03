@@ -1,0 +1,11 @@
+{
+    "name": "humanizer-cjs",
+    "version": "0.0.0",
+    "private": true,
+    "description": "CommonJS version",
+    "type": "commonjs",
+    "dependencies": {
+        "@visulima/humanizer": "workspace:*"
+    },
+    "devDependencies": {}
+}

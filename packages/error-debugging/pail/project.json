@@ -1,0 +1,8 @@
+{
+    "name": "error-debugging/pail",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/error-debugging/pail/src",
+    "projectType": "library",
+    "tags": ["type:package", "pail", "category:cli-terminal"],
+    "implicitDependencies": ["terminal/fmt", "terminal/colorize", "terminal/is-ansi-color-supported"]
+}

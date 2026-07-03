@@ -1,0 +1,90 @@
+# Box
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, OAuth wiring, and Box-specific key-to-fileId resolution.
+
+## Overview
+
+The Box adapter wraps `box-typescript-sdk-gen`'s `BoxClient` with the `BaseStorage` contract. It supports developer tokens, OAuth refresh tokens (handled natively by the SDK's `BoxOAuth`), or a pre-built client. Operations are rooted at a configurable `rootFolderId`, and the adapter resolves virtual keys to Box file ids on every read.
+
+## Installation
+
+```sh
+npm install box-typescript-sdk-gen
+```
+
+```sh
+yarn add box-typescript-sdk-gen
+```
+
+```sh
+pnpm add box-typescript-sdk-gen
+```
+
+## Usage
+
+```ts
+import BoxStorage from "@visulima/storage/provider/box";
+
+const storage = new BoxStorage({
+    developerToken: process.env.BOX_DEVELOPER_TOKEN!,
+    rootFolderId: "0", // "0" is the All Files root
+});
+```
+
+## Configuration
+
+### Auth precedence
+
+1. `client` — pre-built `BoxClient`.
+2. `developerToken` — single-token dev/test auth.
+3. `oauth` — `{ clientId, clientSecret, refreshToken }` for OAuth refresh-token flow (handled by `BoxOAuth`).
+4. Env fallback: `BOX_DEVELOPER_TOKEN`.
+
+```ts
+const storage = new BoxStorage({
+    oauth: {
+        clientId: process.env.BOX_CLIENT_ID!,
+        clientSecret: process.env.BOX_CLIENT_SECRET!,
+        refreshToken: process.env.BOX_REFRESH_TOKEN!,
+    },
+});
+```
+
+### Root folder
+
+```ts
+new BoxStorage({
+    developerToken: process.env.BOX_DEVELOPER_TOKEN!,
+    rootFolderId: "1234567890", // pre-existing Box folder id
+});
+```
+
+All uploads land in this folder; sub-paths in virtual keys are flattened into the file name. To preserve hierarchy, drop to `storage.raw` and use the Box folders API directly.
+
+## URL Generation
+
+### `getReadUrl(key, options?)`
+
+Creates (or returns the existing) shared link via `createSharedLinkForFile` / `getSharedLinkForFile`. Recovers from "shared link already exists" by reading back the current one. `responseContentDisposition` is not supported.
+
+```ts
+const url = await storage.getReadUrl("avatar.png");
+// → https://app.box.com/s/<token>
+```
+
+### `getUploadUrl(key)`
+
+Throws `METHOD_NOT_ALLOWED`. Box doesn't expose presigned PUT URLs — uploads go through the SDK or the `POST /files/content` REST endpoint with `Authorization: Bearer …`.
+
+## Features
+
+- **Three auth strategies** — developer token, OAuth (BoxOAuth), or bring-your-own client.
+- **Shared-link conflict recovery** — re-uses the existing public link when create fails with "already exists".
+- **404 / not-found tolerance** — `delete()` is idempotent against Box's standard not-found responses.
+- **Native token refresh** — OAuth flow delegates token caching/refresh to the Box SDK, no per-request plumbing.
+
+## Limitations
+
+- Single-shot writes only — for files larger than 50 MB use `storage.raw.uploads.startCreateFileUploadSessionForExistingFile`.
+- No native presigned upload URLs.
+- Sub-paths in keys are not converted to folder hierarchy — all files land in `rootFolderId`.

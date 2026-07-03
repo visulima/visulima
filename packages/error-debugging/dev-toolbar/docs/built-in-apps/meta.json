@@ -1,0 +1,4 @@
+{
+    "title": "Built-in Apps",
+    "pages": ["accessibility", "annotations", "assets", "inspector", "module-graph", "performance", "seo", "settings", "tailwind", "timeline", "vite-config"]
+}

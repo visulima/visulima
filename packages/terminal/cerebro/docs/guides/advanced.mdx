@@ -1,0 +1,761 @@
+---
+title: Advanced Features
+description: Learn about advanced Cerebro features for building complex CLIs.
+---
+
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+Learn about advanced Cerebro features for building complex CLIs.
+
+## Command Composition
+
+Call commands from within other commands using `runtime.runCommand()`:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    execute: async ({ runtime, logger }) => {
+        logger.info("Building...");
+        await runtime.runCommand("build", {
+            argv: ["--production"],
+        });
+
+        logger.info("Testing...");
+        await runtime.runCommand("test", {
+            argv: ["--coverage"],
+        });
+
+        logger.info("Deploying...");
+    },
+});
+```
+
+### Passing Arguments
+
+Pass arguments to called commands:
+
+```typescript
+await runtime.runCommand("copy", {
+    argv: ["file1.txt", "file2.txt"],
+});
+```
+
+### Passing Options
+
+Pass options to called commands:
+
+```typescript
+await runtime.runCommand("build", {
+    argv: ["--production", "--output", "dist"],
+});
+```
+
+### Merging Options
+
+Merge additional options:
+
+```typescript
+await runtime.runCommand("build", {
+    argv: ["--production"],
+    customOption: "value",
+});
+```
+
+### Getting Return Values
+
+Commands can return values:
+
+```typescript
+cli.addCommand({
+    name: "calculate",
+    execute: () => {
+        return 42;
+    },
+});
+
+cli.addCommand({
+    name: "use-calculation",
+    execute: async ({ runtime }) => {
+        const result = await runtime.runCommand("calculate");
+        console.log(`Result: ${result}`); // 42
+    },
+});
+```
+
+## Custom CLI Configuration
+
+Configure your CLI instance:
+
+```typescript
+const cli = new Cerebro("my-app", {
+    packageName: "my-app",
+    packageVersion: "1.0.0",
+    cwd: "/custom/path",
+    logger: customLogger,
+    argv: process.argv.slice(2), // Custom argv
+});
+```
+
+### Custom Logger
+
+Provide a custom logger:
+
+```typescript
+const customLogger = {
+    info: (...args) => console.log("[INFO]", ...args),
+    error: (...args) => console.error("[ERROR]", ...args),
+    warn: (...args) => console.warn("[WARN]", ...args),
+    debug: (...args) => console.debug("[DEBUG]", ...args),
+};
+
+const cli = new Cerebro("my-app", {
+    logger: customLogger,
+});
+```
+
+## Command Sections
+
+Customize help output:
+
+```typescript
+cli.setCommandSection({
+    header: "My Awesome CLI v1.0.0",
+    footer: "For more info, visit https://example.com",
+});
+```
+
+## Default Command
+
+Set a default command when none is provided:
+
+```typescript
+cli.setDefaultCommand("help"); // Shows help by default
+cli.setDefaultCommand("start"); // Runs start command by default
+```
+
+## Lazy Command Loading
+
+For CLIs with many commands or heavy per-command dependencies, the
+combined startup cost of evaluating every command's module at import
+time can dominate `--help` and short-running commands. Cerebro lets you
+defer the handler import until the command is actually invoked.
+
+### When to use it
+
+You'll see a meaningful win when:
+
+- You have **10+ commands** registered.
+- Most commands pull in heavy transitive deps (rendering libs, AI clients,
+  database drivers, …) that aren't needed for `--help` or unrelated
+  commands.
+- Startup time matters — interactive CLIs, frequently-invoked dev tools,
+  serverless contexts.
+
+For a tiny CLI with two subcommands and minimal deps, the difference is
+noise — leave them eager.
+
+### How it works
+
+Replace `execute` with `loader: () => import("./handler")`. The loader
+returns a promise resolving to a module whose **default export** is the
+handler:
+
+```typescript
+// commands/build.ts
+const build: Command = {
+    name: "build",
+    description: "Build the project",
+    options: [{ name: "output", type: String, alias: "o" }],
+    loader: () => import("./build.handler"),
+};
+export default build;
+
+// commands/build.handler.ts
+export default async ({ logger, options }) => {
+    logger.info(`Building to ${options.output ?? "dist"}`);
+};
+```
+
+Help, completion, and option validation iterate metadata only — they
+never trigger loaders. The first invocation of the command imports the
+handler module; the resolved handler is memoised on the command for
+subsequent calls within the same process.
+
+### Typed handlers
+
+Co-locate the option type with the metadata using `CreateOptions<T>`:
+
+```typescript
+// commands/build.ts
+import type { Command, CreateOptions } from "@visulima/cerebro";
+
+export type BuildOptions = CreateOptions<{
+    output: string | undefined;
+    production: boolean | undefined;
+}>;
+
+const build: Command = {
+    name: "build",
+    options: [
+        { name: "output", type: String },
+        { name: "production", type: Boolean },
+    ],
+    loader: () => import("./build.handler"),
+};
+export default build;
+
+// commands/build.handler.ts
+import type { Toolbox } from "@visulima/cerebro";
+import type { BuildOptions } from "./index";
+
+export default async ({ options }: Toolbox<Console, BuildOptions>) => {
+    // options.output: string | undefined
+    // options.production: boolean | undefined
+};
+```
+
+### Shared handler modules
+
+When several subcommands of a parent share helpers, put their handlers
+together as **named exports** in one module and load each via `lazyNamed`:
+
+```typescript
+// commands/cache.handlers.ts
+export const cacheList: CommandExecute<Toolbox> = async (toolbox) => {
+    /* … */
+};
+export const cacheClean: CommandExecute<Toolbox> = async (toolbox) => {
+    /* … */
+};
+
+// commands/cache.ts
+import { lazyNamed, type Command } from "@visulima/cerebro";
+
+const cacheList: Command = {
+    name: "list",
+    commandPath: ["cache"],
+    loader: lazyNamed(() => import("./cache.handlers"), "cacheList"),
+};
+const cacheClean: Command = {
+    name: "clean",
+    commandPath: ["cache"],
+    loader: lazyNamed(() => import("./cache.handlers"), "cacheClean"),
+};
+```
+
+The shared module is imported once (when any cache subcommand runs); each
+subcommand resolves to its own named export.
+
+### Recommended layout
+
+For each command, two files in a directory:
+
+```
+commands/
+  build/
+    index.ts     # metadata stub (cheap import: only types + the loader)
+    handler.ts   # heavy imports + default-exported handler
+  ...
+```
+
+Node's module resolution maps `import build from "./commands/build"` to
+`./commands/build/index.ts`, so existing `cli.addCommand(buildCommand)`
+calls keep working unchanged.
+
+### Errors
+
+If `loader()` rejects, or the resolved module has no default-exported
+function, cerebro throws a `CommandLoaderError`. The original error is
+attached as `cause`.
+
+```typescript
+import { CommandLoaderError } from "@visulima/cerebro";
+
+try {
+    await cli.run({ shouldExitProcess: false });
+} catch (error) {
+    if (error instanceof CommandLoaderError) {
+        console.error(`Failed to load ${error.commandName}:`, error.cause);
+    }
+}
+```
+
+## Running Without Exiting
+
+For testing or programmatic use:
+
+```typescript
+await cli.run({
+    shouldExitProcess: false, // Don't exit process
+    autoDispose: false, // Don't cleanup automatically
+});
+```
+
+## Error Handling
+
+### Custom Error Handling
+
+Use plugins for custom error handling:
+
+```typescript
+cli.addPlugin({
+    name: "error-handler",
+    onError: async (error, toolbox) => {
+        // Custom error formatting
+        console.error(`❌ Error in ${toolbox.commandName}:`);
+        console.error(error.message);
+
+        // Log to file
+        await logErrorToFile(error, toolbox);
+
+        // Send to monitoring
+        await sendToMonitoring(error);
+    },
+});
+```
+
+### Error Types
+
+Cerebro provides specific error types:
+
+```typescript
+import { CommandNotFoundError, CommandValidationError } from "@visulima/cerebro";
+
+// Handle specific errors
+try {
+    await cli.run();
+} catch (error) {
+    if (error instanceof CommandNotFoundError) {
+        console.error(`Command not found: ${error.command}`);
+        console.error(`Did you mean: ${error.alternatives.join(", ")}?`);
+    } else if (error instanceof CommandValidationError) {
+        console.error(`Validation error: ${error.message}`);
+    }
+}
+```
+
+## Shell Completions
+
+Enable shell autocompletions for your CLI.
+
+### Installation
+
+Install the required dependency:
+
+<Tabs items={["pnpm", "npm", "yarn"]}>
+    <Tab value="pnpm">```bash pnpm add @bomb.sh/tab ```</Tab>
+    <Tab value="npm">```bash npm install @bomb.sh/tab ```</Tab>
+    <Tab value="yarn">```bash yarn add @bomb.sh/tab ```</Tab>
+</Tabs>
+
+### Setup
+
+Add the completion command to your CLI:
+
+```typescript
+import completionCommand from "@visulima/cerebro/command/completion";
+
+cli.addCommand(completionCommand);
+```
+
+Then generate completions:
+
+```bash
+cli completion --shell=zsh > ~/.zshrc
+cli completion --shell=bash > ~/.bashrc
+cli completion --shell=fish > ~/.config/fish/completions/cli.fish
+cli completion --shell=powershell > cli.ps1
+```
+
+## README Generation
+
+Generate comprehensive README documentation for your CLI commands automatically.
+
+### Installation
+
+First, install the required dependency:
+
+<Tabs items={["pnpm", "npm", "yarn"]}>
+    <Tab value="pnpm">```bash pnpm add github-slugger ```</Tab>
+    <Tab value="npm">```bash npm install github-slugger ```</Tab>
+    <Tab value="yarn">```bash yarn add github-slugger ```</Tab>
+</Tabs>
+
+### Setup
+
+Add the readme command to your CLI:
+
+```typescript
+import readmeCommand from "@visulima/cerebro/command/readme-generator";
+
+cli.addCommand(readmeCommand);
+```
+
+### Basic Usage
+
+Generate a README with all your commands:
+
+```bash
+cli readme
+```
+
+This will:
+
+- Read or create a `README.md` file
+- Generate usage examples
+- List all commands with descriptions
+- Create a table of contents
+- Replace content between special tags: `<!-- usage -->`, `<!-- commands -->`, `<!-- toc -->`
+
+### README Template
+
+The command uses special HTML comment tags to mark sections:
+
+```markdown
+# My CLI
+
+<!-- usage -->
+<!-- usagestop -->
+
+<!-- commands -->
+<!-- commandsstop -->
+
+<!-- toc -->
+<!-- tocstop -->
+```
+
+The `readme` command will replace content between these tags.
+
+### Options
+
+#### `--readme-path`
+
+Specify a custom README file path:
+
+```bash
+cli readme --readme-path=DOCS.md
+```
+
+#### `--output-dir`
+
+Set output directory for multi-file mode (default: `docs`):
+
+```bash
+cli readme --multi --output-dir=documentation
+```
+
+#### `--multi`
+
+Generate multi-file documentation grouped by command groups:
+
+```bash
+cli readme --multi
+```
+
+This creates separate markdown files for each command group in the output directory.
+
+#### `--aliases`
+
+Include command aliases in the command list:
+
+```bash
+cli readme --aliases
+```
+
+#### `--dry-run`
+
+Preview what would be generated without writing files:
+
+```bash
+cli readme --dry-run
+```
+
+#### `--version`
+
+Specify a custom version for the generated documentation:
+
+```bash
+cli readme --version=2.0.0
+```
+
+#### `--nested-topics-depth`
+
+Control maximum depth for nested topics in multi-file mode:
+
+```bash
+cli readme --multi --nested-topics-depth=2
+```
+
+### Example Workflow
+
+1. **Create a README template** with the special tags:
+
+```markdown
+# My Awesome CLI
+
+<!-- usage -->
+<!-- usagestop -->
+
+<!-- commands -->
+<!-- commandsstop -->
+
+<!-- toc -->
+<!-- tocstop -->
+```
+
+2. **Add the readme command** to your CLI:
+
+```typescript
+import readmeCommand from "@visulima/cerebro/command/readme-generator";
+
+cli.addCommand(readmeCommand);
+```
+
+3. **Generate the README**:
+
+```bash
+cli readme
+```
+
+4. **The README will be updated** with:
+    - Installation and usage instructions
+    - Complete command list with descriptions
+    - Command documentation with options and examples
+    - Table of contents
+
+### Multi-File Documentation
+
+For larger CLIs, use multi-file mode to organize documentation:
+
+```bash
+cli readme --multi --output-dir=docs
+```
+
+This creates:
+
+- `docs/Build.md` - Commands in the "Build" group
+- `docs/Deploy.md` - Commands in the "Deploy" group
+- And updates `README.md` with links to these files
+
+### Cross-Platform Line Endings
+
+The `readme` command automatically handles different line ending formats (LF, CRLF, CR) and normalizes them to LF for consistent output across platforms.
+
+## Verbosity Levels
+
+Control output verbosity:
+
+```typescript
+// In your CLI options
+{
+  name: "verbose",
+  type: Boolean,
+  description: "Verbose output"
+}
+
+// Or use environment variable
+process.env.CEREBRO_OUTPUT_LEVEL = "64"; // VERBOSITY_VERBOSE
+```
+
+Available levels:
+
+- `VERBOSITY_QUIET` (16) - Minimal output
+- `VERBOSITY_NORMAL` (32) - Normal output
+- `VERBOSITY_VERBOSE` (64) - Verbose output
+- `VERBOSITY_DEBUG` (128) - Debug output
+
+## Command Groups
+
+Organize commands:
+
+```typescript
+cli.addCommand({
+    name: "build",
+    group: "Development",
+    execute: () => {},
+});
+
+cli.addCommand({
+    name: "test",
+    group: "Development",
+    execute: () => {},
+});
+
+cli.addCommand({
+    name: "deploy",
+    group: "Production",
+    execute: () => {},
+});
+```
+
+Help output will group commands accordingly.
+
+## Multiple Commands
+
+Register multiple commands efficiently:
+
+```typescript
+const commands = [
+    {
+        name: "build",
+        execute: () => {},
+    },
+    {
+        name: "test",
+        execute: () => {},
+    },
+    {
+        name: "deploy",
+        execute: () => {},
+    },
+];
+
+commands.forEach((cmd) => cli.addCommand(cmd));
+```
+
+## TypeScript Best Practices
+
+### Extending Toolbox Type
+
+```typescript
+declare global {
+    namespace Cerebro {
+        interface ExtensionOverrides {
+            myFeature: () => void;
+            api: {
+                get: (url: string) => Promise<unknown>;
+            };
+        }
+    }
+}
+```
+
+### Typed Commands
+
+```typescript
+interface BuildOptions {
+    production: boolean;
+    output: string;
+}
+
+cli.addCommand({
+    name: "build",
+    options: [
+        { name: "production", type: Boolean },
+        { name: "output", type: String },
+    ],
+    execute: ({ options }: { options: BuildOptions }) => {
+        // TypeScript knows the options structure
+    },
+});
+```
+
+## Performance Helpers
+
+Cerebro ships with two standalone helpers that run **before** the CLI framework loads.
+Call them at the very top of your entry point — before `createCerebro()` and any heavy imports.
+
+```typescript
+// bin.ts
+import enableCompileCache from "@visulima/cerebro/compile-cache";
+import { applyHeapTuning } from "@visulima/cerebro/heap-tuning";
+
+// 1. Tune V8 heap (may re-spawn the process and never return)
+applyHeapTuning();
+
+// 2. Enable compile cache for faster subsequent startups
+enableCompileCache();
+
+// Now load the rest of your CLI
+import { createCerebro } from "@visulima/cerebro";
+const cli = createCerebro("my-cli");
+// ...
+```
+
+### Heap Tuning
+
+`applyHeapTuning()` computes optimal `--max-old-space-size` and `--max-semi-space-size`
+V8 flags based on system memory. Because these flags can only be set at process startup,
+the helper re-spawns the current process with the computed flags when they are missing.
+After re-spawn, the flags are already present and the call becomes a no-op.
+
+**How it works:**
+
+- Allocates a percentage of total system RAM to V8's old-space (default: 75%)
+- Applies tiered semi-space sizing for the young generation:
+
+| Old-space (MiB) | Semi-space (MiB) |
+| --------------- | ---------------- |
+| &le; 512        | 4                |
+| &le; 1024       | 8                |
+| &le; 2048       | 16               |
+| &le; 4096       | 32               |
+| &le; 8192       | 64               |
+| &gt; 8192       | log2-scaled      |
+
+- Respects existing flags — if the user sets `NODE_OPTIONS="--max-old-space-size=4096"`, their value is kept
+
+**Custom allocation:**
+
+```typescript
+// Use 50% of RAM instead of the default 75%
+applyHeapTuning({ maxOldSpacePercent: 0.5 });
+```
+
+### Compile Cache
+
+`enableCompileCache()` enables V8's compile cache so that subsequent runs of your CLI
+skip re-parsing and re-compiling JavaScript source files. This can reduce startup time
+by 30–70% for large CLI tools.
+
+**How it works:**
+
+1. Tries `module.enableCompileCache()` — a native Node.js 22.8+ API that stores compiled
+   bytecode alongside source files for instant reuse
+2. Falls back to the [`v8-compile-cache`](https://www.npmjs.com/package/v8-compile-cache) npm
+   package on older Node.js versions (must be installed as a dependency)
+3. If neither is available, silently does nothing
+
+## Performance Tips
+
+1. **Use the performance helpers above** - Heap tuning and compile cache make the biggest difference
+2. **Lazy load plugins** - Only load plugins when needed
+3. **Use command groups** - Organize commands for faster lookups
+4. **Cache expensive operations** - Cache results in plugin `init`
+5. **Minimize toolbox extensions** - Only add what's needed
+
+## Testing
+
+Test your CLI commands:
+
+```typescript
+import { describe, it, expect } from "vitest";
+import { Cerebro } from "@visulima/cerebro";
+
+describe("CLI", () => {
+    it("should execute command", async () => {
+        const cli = new Cerebro("test-cli", {
+            argv: ["hello", "World"],
+        });
+
+        const execute = vi.fn();
+        cli.addCommand({
+            name: "hello",
+            execute,
+        });
+
+        await cli.run({ shouldExitProcess: false });
+
+        expect(execute).toHaveBeenCalled();
+    });
+});
+```
+
+## Best Practices
+
+1. **Use command composition** - Break complex operations into smaller commands
+2. **Handle errors gracefully** - Use error hooks and provide helpful messages
+3. **Document commands** - Always include descriptions and examples
+4. **Type everything** - Use TypeScript for better DX
+5. **Test your CLI** - Write tests for your commands
+6. **Follow CLI conventions** - Use standard option names and patterns

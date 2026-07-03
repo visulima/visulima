@@ -1,0 +1,70 @@
+name: "Data Sync"
+
+on: # yamllint disable-line rule:truthy
+    schedule:
+        - cron: "0 0 * * *" # At 00:00 UTC every day
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+
+permissions:
+    contents: "read" # for checkout
+
+jobs:
+    sync:
+        name: "Sync Data Sources"
+        if: "github.repository == 'visulima/visulima'"
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        permissions:
+            contents: "write"
+
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            # Persist credentials so the downstream git-auto-commit-action can push
+            # using the explicitly-passed SEMANTIC_RELEASE_GITHUB_TOKEN.
+            - name: "Git checkout" # zizmor: ignore[artipacked]
+              uses: "actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0" # v7.0.0
+              with:
+                  token: "${{ secrets.SEMANTIC_RELEASE_GITHUB_TOKEN }}"
+              env:
+                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
+                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
+                  EMAIL: "github-actions[bot]@users.noreply.github.com"
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              with:
+                  node-version: "22"
+                  install-node-gyp: "true"
+                  cache-prefix: "data-sync"
+                  install-packages: "true"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+                  run-npm-audit: false
+
+            - name: "Sync disposable email domains"
+              if: "success()"
+              working-directory: "packages/email/disposable-email-domains"
+              run: "pnpm run --filter disposable-email-domains generate:domains"
+
+            - name: "Sync typosquats blocklist"
+              if: "success()"
+              working-directory: "packages/tooling/vis"
+              run: "npx tsx scripts/sync-blocklist.ts"
+
+            - name: "Commit data updates"
+              if: "success()"
+              uses: "stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9" # v7.1.0
+              with:
+                  file_pattern: |
+                      packages/email/disposable-email-domains/dist/domains.json
+                      packages/email/disposable-email-domains/README.md
+                      packages/tooling/vis/data/typosquats.json
+                  commit_message: "fix: sync data sources (disposable email domains, typosquats blocklist)"
+                  commit_user_name: "github-actions-shell"
+                  commit_user_email: "github-actions[bot]@users.noreply.github.com"
+                  commit_author: "github-actions-shell <github-actions[bot]@users.noreply.github.com>"
+                  skip_dirty_check: "true"

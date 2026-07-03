@@ -1,0 +1,187 @@
+---
+title: Git Hooks
+description: "Set up and manage git hooks with vis for your team"
+---
+
+# Git Hooks
+
+vis provides built-in git hook management as a lightweight alternative to tools like husky.
+
+## Getting Started
+
+### Installing Hooks
+
+```bash
+vis hook install
+```
+
+This configures `core.hooksPath` to point to your hooks directory (`.vis/hooks` by default).
+
+### Creating a Hook
+
+Create executable scripts in the hooks directory:
+
+```bash
+echo '#!/bin/sh
+pnpm run lint-staged' > .vis/hooks/pre-commit
+
+chmod +x .vis/hooks/pre-commit
+```
+
+### Commit the Hooks Directory
+
+Add the hooks directory to version control so the entire team shares the same hooks:
+
+```bash
+git add .vis/hooks/
+git commit -m "chore: add git hooks"
+```
+
+## Migrating from Husky
+
+If your project currently uses husky, vis can automatically migrate your hooks:
+
+```bash
+vis hook migrate
+```
+
+The migration:
+
+1. Detects your husky directory (`.husky` or `.husky/_`)
+2. Copies all hook scripts to the vis hooks directory
+3. Prompts for confirmation before making changes
+4. Removes the husky directory after migration
+
+## Migrating from prek / pre-commit
+
+If your project uses [prek](https://github.com/j178/prek) (a Rust reimplementation of the Python pre-commit framework) or pre-commit itself, the same command detects a `.pre-commit-config.yaml` and converts the eligible hooks to plain shell scripts:
+
+```bash
+vis hook migrate
+```
+
+vis hook scripts are plain shell, so anything that needs a managed toolchain still has to run via prek. The migrator covers everything else:
+
+1. Parses `.pre-commit-config.yaml`, `.pre-commit-config.yml`, or `prek.toml` (YAML takes precedence when both are present).
+2. For each `local` hook with `language: system`, `script`, or `fail`, writes one shell script per stage (e.g. `.vis/hooks/pre-commit`, `.vis/hooks/commit-msg`). Multiple hooks in the same stage are concatenated in declaration order.
+3. Preserves `files`/`exclude` regex and `types`/`types_or`/`exclude_types` filters by routing the invocation through a bundled Node helper (`.vis/hooks/.builtins/prek-runner.mjs`) that replicates pre-commit's file-selection semantics. User strings pass via argv — never interpolated into the shell — so even hostile regex patterns can't break out.
+4. Translates a curated set of remote hooks from `pre-commit/pre-commit-hooks` to bundled builtins so prek doesn't need to stay installed just for them: `trailing-whitespace`, `end-of-file-fixer`, `check-merge-conflict`, `check-json`, `mixed-line-ending`. Each is a faithful JavaScript port of the upstream Python implementation.
+5. Merges each hook's `additional_dependencies` into the project's `package.json` `devDependencies`. Pip-style pins (`name==x.y.z`) are surfaced as a manual step instead of written to the manifest.
+6. Forwards `"$@"` for stages where git passes an argument (`commit-msg`, `prepare-commit-msg`, `pre-rebase`, `post-*`) when `pass_filenames` is truthy.
+7. Prepends `set -e` to each script when top-level `fail_fast: true` is set.
+8. Backs up the original config as `.pre-commit-config.yaml.bak` (or `.yml.bak` / `prek.toml.bak`), removes the original, and runs `prek uninstall` if the binary is on your PATH.
+
+Anything that can't be translated is surfaced as a warning:
+
+- Remote repo entries that aren't in the bundled dictionary — keep prek installed for those, or reimplement the hook as a local `system` entry.
+- Local hooks with toolchain-managed languages (`python`, `node`, `golang`, `rust`, `ruby`, `docker`, `pygrep`, ...).
+- `types` entries that aren't in the runner's built-in pygments-derived extension map (`javascript`, `typescript`, `jsx`, `tsx`, `json`, `yaml`, `markdown`, `html`, `css`, `shell`, `toml`, `python`). The filter is still applied for supported types; unsupported ones are ignored with a warning.
+
+TOML configs (`prek.toml`) are parsed via `@visulima/fs/toml` (which wraps `smol-toml`), so both formats work out of the box.
+
+Commit `.vis/hooks/.builtins/` along with the rest of the hooks directory so teammates get the same runner and builtin implementations.
+
+## Running hooks manually
+
+Hooks don't only fire at commit time. `vis hook run` replays the same stage script against any file set, which is handy for CI and for one-off checks:
+
+```bash
+vis hook run pre-commit                                 # default — staged files
+vis hook run pre-commit --all-files                     # everything tracked by git
+vis hook run pre-commit --from-ref=main --to-ref=HEAD   # files changed between refs
+vis hook run pre-commit --last-commit                   # shortcut for --from-ref HEAD~1 --to-ref HEAD
+```
+
+These flags map to env vars (`VIS_HOOK_ALL_FILES`, `VIS_HOOK_FROM_REF`, `VIS_HOOK_TO_REF`) that the bundled runner picks up to swap `git diff --cached` for `git ls-files` or `git diff <from> <to>`. `--all-files` takes precedence if combined with a ref-range flag.
+
+## Listing + validating hooks
+
+- `vis hook list` — prints each stage's hook blocks with their first command line. Useful when you forget what's installed.
+- `vis hook validate` — checks `core.hooksPath`, dispatcher scripts, per-stage shell syntax (`sh -n`), executable bits, and the bundled runner (`node --check`) if any script references it. Exits non-zero on errors.
+
+## Disabling Hooks
+
+Temporarily disable hooks using the environment variable:
+
+```bash
+VIS_GIT_HOOKS=0 git commit -m "skip hooks"
+```
+
+For debugging hook issues:
+
+```bash
+VIS_GIT_HOOKS=2 git commit -m "debug hooks"
+```
+
+## Skipping hooks in CI
+
+Automated commits in CI — release bots bumping versions, merge commits, changelog updates — shouldn't re-run your local hooks. The same checks (commitlint, secret scanning, lint-staged) usually run as dedicated CI jobs already, so firing them again on a generated commit just trips the pipeline (a release commit failing `commitlint` is the classic case).
+
+Set `skipInCI` in `.vis/hooks/config.json` to skip **all** hooks whenever a non-empty `CI` environment variable is present (every major CI provider sets it):
+
+```json
+{
+    "version": 1,
+    "skipInCI": true,
+    "stages": {}
+}
+```
+
+```bash
+vis hook install   # regenerate the dispatcher so the guard takes effect
+```
+
+`vis hook install` bakes the guard into the generated `_/` dispatcher, so it fires **before the hook body runs** — even for a hook that calls a tool directly (e.g. a raw `commitlint` `commit-msg`) instead of going through `vis hook run`. Because it lives in the dispatcher, **re-run `vis hook install` after changing `skipInCI`** to regenerate it.
+
+Need hooks to run in one specific CI job (say, a lint job that _wants_ commitlint)? Force them back on for that job only:
+
+```bash
+VIS_GIT_HOOKS=1 git commit -m "feat: …"   # overrides skipInCI
+```
+
+This is the portable, repo-tracked equivalent of setting `core.hooksPath=/dev/null` in a single job — `skipInCI` is the default for CI, `VIS_GIT_HOOKS=1` is the per-job exception, and both travel with the repo.
+
+## Common Hook Recipes
+
+### Lint Staged Files
+
+```bash
+#!/bin/sh
+# .vis/hooks/pre-commit
+pnpm run lint-staged
+```
+
+### Validate Commit Messages
+
+```bash
+#!/bin/sh
+# .vis/hooks/commit-msg
+pnpm run commitlint --edit "$1"
+```
+
+### Run Type Checks Before Push
+
+```bash
+#!/bin/sh
+# .vis/hooks/pre-push
+pnpm run typecheck
+```
+
+### Check Dependencies Before Commit
+
+```bash
+#!/bin/sh
+# .vis/hooks/pre-commit
+vis check --exit-code --format minimal || {
+  echo "Outdated dependencies detected. Run 'vis check' for details."
+  exit 1
+}
+```
+
+## Uninstalling
+
+To remove vis hooks and reset git's `core.hooksPath`:
+
+```bash
+vis hook uninstall
+```

@@ -1,0 +1,33 @@
+{
+    "name": "@visulima/tui-binding-darwin-x64",
+    "version": "0.0.1",
+    "description": "Native binding for @visulima/tui (macOS x64)",
+    "homepage": "https://visulima.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/terminal/tui"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "main": "tui-native.darwin-x64.node",
+    "files": [
+        "tui-native.darwin-x64.node"
+    ],
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "darwin"
+    ],
+    "cpu": [
+        "x64"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

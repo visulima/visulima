@@ -1,0 +1,126 @@
+---
+title: "API Overview"
+---
+
+# API Overview
+
+Complete API reference for Cerebro CLI framework.
+
+## Core API
+
+### createCerebro()
+
+Create a new CLI instance:
+
+```typescript
+function createCerebro<T extends Console = Console>(name: string, options?: CliOptions<T>): Cerebro<T>;
+```
+
+**Parameters:**
+
+- `name` - CLI application name
+- `options` - Configuration options (optional)
+
+**Returns:** Configured Cerebro instance
+
+**Example:**
+
+```typescript
+const cli = createCerebro("my-cli", {
+    packageName: "my-cli",
+    packageVersion: "1.0.0",
+});
+```
+
+### Cerebro Class
+
+Main CLI class with the following methods:
+
+#### addCommand()
+
+Register a command:
+
+```typescript
+cli.addCommand(command: Command): void
+```
+
+#### use()
+
+Register a plugin:
+
+```typescript
+cli.use(plugin: Plugin): void
+```
+
+#### run()
+
+Execute the CLI:
+
+```typescript
+await cli.run(argv?: string[]): Promise<void>
+```
+
+#### setDefaultCommand()
+
+Set default command:
+
+```typescript
+cli.setDefaultCommand(name: string): void
+```
+
+#### getCommands()
+
+Get all registered commands:
+
+```typescript
+cli.getCommands(): Map<string, Command>
+```
+
+## Built-in Commands
+
+- `HelpCommand` - Display help text
+- `VersionCommand` - Show version
+- `CompletionCommand` - Shell completion
+- `ReadmeCommand` - Generate README
+
+## Built-in Plugins
+
+- `errorHandlerPlugin` - Error handling
+- `runtimeVersionCheckPlugin` - Version validation
+- `updateNotifierPlugin` - Update notifications
+
+## Type Definitions
+
+- `Command` - Command definition interface (supports `execute` or `loader`)
+- `CommandExecute` - Handler signature shared by `execute` and `loader`
+- `LazyCommandModule` - Module shape returned by a command `loader`
+- `Plugin` - Plugin definition interface
+- `Toolbox` - Execution context interface
+- `CliOptions` - CLI configuration options
+- `OptionDefinition` - Option definition interface
+- `ArgumentDefinition` - Argument definition interface
+- `EnvDefinition` - Environment variable definition
+- `CreateOptions` - Derive a typed options object from a kebab-case input
+- `CreateEnv` - Derive a typed env object from an UPPER_SNAKE_CASE input
+- `OptionNameToCamelCase` - String type that converts `output-dir` → `outputDir`
+
+## Helpers
+
+- `lazyNamed(load, key)` - Builds a `loader` for handlers exported as named entries from a shared module
+- `createCerebro(name, options)` - Factory function for a `Cerebro` instance
+
+## Errors
+
+- `CerebroError` - Base error class
+- `CommandNotFoundError` - Command lookup failed
+- `CommandValidationError` - Command failed validation (e.g. missing required option)
+- `CommandLoaderError` - `loader` rejected or returned no default-exported function
+- `ConflictingOptionsError` - Two options that conflict were both passed
+- `PluginError` - A plugin threw during a lifecycle hook
+
+## Constants
+
+- `VERBOSITY_QUIET` - Quiet output level
+- `VERBOSITY_NORMAL` - Normal output level
+- `VERBOSITY_VERBOSE` - Verbose output level
+- `VERBOSITY_DEBUG` - Debug output level

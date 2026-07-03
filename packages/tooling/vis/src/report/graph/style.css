@@ -1,0 +1,169 @@
+@import "tailwindcss" source("../../../");
+
+@source "../../../src/report/graph/**/*";
+
+/*
+ * Project-graph report styling. The CSS file is intentionally thin: design
+ * tokens (light + dark variables) live here so sigma can read them via
+ * getComputedStyle, and a single multi-selector rule controls the theme
+ * toggle icons. Everything else is expressed as inline Tailwind v4
+ * utilities on the elements themselves — the colors below are exposed
+ * through `@theme inline` so utilities like `bg-panel` and `text-fg`
+ * resolve to the live CSS variables and switch with the theme.
+ */
+@theme inline {
+    --color-bg: var(--bg);
+    --color-panel: var(--panel);
+    --color-panel2: var(--panel2);
+    --color-fg: var(--fg);
+    --color-muted: var(--muted);
+    --color-faint: var(--faint);
+    --color-border: var(--border);
+    --color-border2: var(--border2);
+    --color-row-hover: var(--row-hover);
+    --color-accent: var(--accent);
+    --color-accent-soft: var(--accent-soft);
+    --color-link: var(--link);
+    --color-node-app: var(--node-app);
+    --color-node-lib: var(--node-lib);
+    --color-edge: var(--edge);
+    --color-edge-faint: var(--edge-faint);
+    --font-mono: var(--mono);
+    --font-sans: var(--sans);
+}
+
+@layer base {
+    :root {
+        --bg: #f5f5f5;
+        --panel: #ffffff;
+        --panel2: #f0f0f0;
+        --fg: #000000;
+        --muted: #555555;
+        --faint: #707070;
+        --border: #e0e0e0;
+        --border2: #bdbdbd;
+        --row-hover: #f0f0f0;
+        --accent: #d71921;
+        --accent-soft: rgba(215, 25, 33, 0.05);
+        --link: #0050c0;
+        --node-app: #000000;
+        --node-lib: #707070;
+        --edge: #bdbdbd;
+        --edge-faint: #e0e0e0;
+        --mono: ui-monospace, "SF Mono", "JetBrains Mono", "Cascadia Mono", "Roboto Mono", Menlo, Consolas, monospace;
+        --sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root {
+            --bg: #141414;
+            --panel: #1c1c1c;
+            --panel2: #242424;
+            --fg: #ffffff;
+            --muted: #b8b8b8;
+            --faint: #8a8a8a;
+            --border: #2e2e2e;
+            --border2: #3e3e3e;
+            --row-hover: #1f1f1f;
+            --accent: #ff4d54;
+            --accent-soft: rgba(255, 77, 84, 0.08);
+            --link: #7eb0f9;
+            --node-app: #ffffff;
+            --node-lib: #8a8a8a;
+            --edge: #3e3e3e;
+            --edge-faint: #2e2e2e;
+        }
+    }
+
+    html[data-theme="light"] {
+        --bg: #f5f5f5;
+        --panel: #ffffff;
+        --panel2: #f0f0f0;
+        --fg: #000000;
+        --muted: #555555;
+        --faint: #707070;
+        --border: #e0e0e0;
+        --border2: #bdbdbd;
+        --row-hover: #f0f0f0;
+        --accent: #d71921;
+        --accent-soft: rgba(215, 25, 33, 0.05);
+        --link: #0050c0;
+        --node-app: #000000;
+        --node-lib: #707070;
+        --edge: #bdbdbd;
+        --edge-faint: #e0e0e0;
+    }
+
+    html[data-theme="dark"] {
+        --bg: #141414;
+        --panel: #1c1c1c;
+        --panel2: #242424;
+        --fg: #ffffff;
+        --muted: #b8b8b8;
+        --faint: #8a8a8a;
+        --border: #2e2e2e;
+        --border2: #3e3e3e;
+        --row-hover: #1f1f1f;
+        --accent: #ff4d54;
+        --accent-soft: rgba(255, 77, 84, 0.08);
+        --link: #7eb0f9;
+        --node-app: #ffffff;
+        --node-lib: #8a8a8a;
+        --edge: #3e3e3e;
+        --edge-faint: #2e2e2e;
+    }
+
+    body {
+        background-image: radial-gradient(circle, var(--border) 0.5px, transparent 0.5px);
+        background-size: 14px 14px;
+        font-feature-settings: "ss01";
+    }
+}
+
+@layer components {
+    /* Theme-icon visibility. Default = light → show moon. Dark = show sun.
+       Explicit data-theme always wins over prefers-color-scheme. Inline
+       Tailwind variants can't easily express this chain so it stays here. */
+    .tbtn-theme [data-icon="moon"] {
+        display: inline-flex;
+    }
+    .tbtn-theme [data-icon="sun"] {
+        display: none;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        .tbtn-theme [data-icon="moon"] {
+            display: none;
+        }
+        .tbtn-theme [data-icon="sun"] {
+            display: inline-flex;
+        }
+    }
+
+    html[data-theme="light"] .tbtn-theme [data-icon="moon"] {
+        display: inline-flex;
+    }
+    html[data-theme="light"] .tbtn-theme [data-icon="sun"] {
+        display: none;
+    }
+    html[data-theme="dark"] .tbtn-theme [data-icon="moon"] {
+        display: none;
+    }
+    html[data-theme="dark"] .tbtn-theme [data-icon="sun"] {
+        display: inline-flex;
+    }
+
+    /* Anolilab wordmark — brand color pair (fg + lime). The glyph paths
+       inherit `fill` from the root svg (.anolilab-logo); the two diagonal
+       accent strokes opt out via .anolilab-accent. No hover swap — the
+       mark is a stable brand object. */
+    .anolilab-logo {
+        height: 13px;
+        width: auto;
+        fill: var(--fg);
+    }
+
+    .anolilab-accent {
+        fill: #dfff1b;
+    }
+}

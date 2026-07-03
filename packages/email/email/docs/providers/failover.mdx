@@ -1,0 +1,79 @@
+---
+title: Failover
+description: Automatic failover between multiple email providers with @visulima/email
+---
+
+# Failover Provider
+
+The Failover provider automatically falls back to the next provider when the current one fails. This ensures high availability for email sending.
+
+**Runtime Support:** Depends on the wrapped providers
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { failoverProvider } from "@visulima/email/providers/failover";
+import { resendProvider } from "@visulima/email/providers/resend";
+import { sendGridProvider } from "@visulima/email/providers/sendgrid";
+import { smtpProvider } from "@visulima/email/providers/smtp";
+
+const mail = createMail(
+    failoverProvider({
+        mailers: [
+            resendProvider({ apiKey: process.env.RESEND_API_KEY! }),
+            sendGridProvider({ apiKey: process.env.SENDGRID_API_KEY! }),
+            smtpProvider({ host: "smtp.example.com", port: 587 }),
+        ],
+    }),
+);
+```
+
+## Configuration
+
+The `FailoverConfig` interface extends `BaseConfig` with the following options:
+
+| Option       | Type        | Required | Default | Description                                                  |
+| ------------ | ----------- | -------- | ------- | ------------------------------------------------------------ |
+| `mailers`    | `unknown[]` | Yes      | -       | Array of provider instances or provider factory functions    |
+| `retryAfter` | `number`    | No       | `60`    | Time in milliseconds to wait before trying the next provider |
+| `debug`      | `boolean`   | No       | `false` | Enable debug logging                                         |
+| `logger`     | `Console`   | No       | -       | Custom logger instance                                       |
+
+## How It Works
+
+1. The failover provider tries to send the email using the first provider in the `mailers` array.
+2. If the first provider fails, it tries the second provider, and so on.
+3. If all providers fail, the error from the last provider is returned.
+4. The `retryAfter` option controls the delay between retries.
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello with Failover").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Mixing Runtimes
+
+When using failover in non-Node.js environments, ensure all providers support your runtime:
+
+```typescript
+// Safe for Cloudflare Workers
+const mail = createMail(
+    failoverProvider({
+        mailers: [
+            resendProvider({ apiKey: "re_xxx" }),
+            sendGridProvider({ apiKey: "SG.xxx" }),
+            // Do NOT include smtpProvider here - it requires Node.js
+        ],
+    }),
+);
+```
+
+## Supported Features
+
+The failover provider supports whatever features the underlying providers support. Feature availability depends on which provider ultimately sends the email.

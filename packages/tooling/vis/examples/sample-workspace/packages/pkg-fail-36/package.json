@@ -1,0 +1,13 @@
+{
+    "name": "pkg-fail-36",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Compiling pkg-fail-36...' && sleep 0.5 && echo 'ERROR: Cannot find module ./missing' >&2 && exit 1",
+        "lint": "echo 'pkg-fail-36 lint OK'",
+        "test": "echo 'pkg-fail-36 tests OK'"
+    },
+    "dependencies": {
+        "lib-fast-1": "1.0.0"
+    }
+}

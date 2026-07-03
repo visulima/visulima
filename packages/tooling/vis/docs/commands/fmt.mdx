@@ -1,0 +1,183 @@
+---
+title: "vis fmt"
+description: "Orchestrate detected formatters (prettier, …) across the workspace"
+---
+
+# vis fmt
+
+Runs every detected formatter against the workspace. Defaults to write mode (`--fix`); pass `--check` for a dry-run that lists files that would change without modifying them. Designed to add more formatters over time without changing the command surface.
+
+Ships with adapters for **oxfmt**, **biome**, **dprint**, **Prettier**, **ruff format** (Python), and **deno fmt**. The orchestrator runs each one that's present in the workspace; when multiple are present, files are routed by extension.
+
+## Usage
+
+```bash
+vis fmt [files…] [options]
+```
+
+With no files, each adapter runs against `.` so its native ignore semantics apply. Pass file paths to format a specific subset; each file is routed to the adapter that owns its extension.
+
+## Examples
+
+```bash
+# Apply formatting in place using every detected formatter
+vis fmt
+
+# Report files that would change without writing (CI-friendly)
+vis fmt --check
+
+# Format a specific subset
+vis fmt src/foo.ts src/bar.ts
+
+# Emit findings as JSON for CI / editor integrations
+vis fmt --format json
+
+# Suppress per-file logs
+vis fmt --quiet
+
+# Only format files changed vs the main branch
+vis fmt --since main
+
+# Re-run formatters whenever watched files change
+vis fmt --watch
+
+# Write a SARIF report to a file instead of stdout
+vis fmt --check --format sarif --output fmt.sarif
+```
+
+## Options
+
+| Option     | Default | Description                                                                                  |
+| ---------- | ------- | -------------------------------------------------------------------------------------------- |
+| `--check`  | `false` | Report files that would change without writing                                               |
+| `--format` | `human` | Output format: `human`, `json`, `minimal`, `sarif`, `junit`, or `github`                     |
+| `--quiet`  | `false` | Suppress per-file logs                                                                       |
+| `--since`  |         | Only format files changed vs the given git ref (branch/tag/sha)                              |
+| `--staged` | `false` | Only format files currently staged in the git index                                          |
+| `--output` |         | Write formatted output to a file path instead of stdout (also accepts `-`/`stdout`/`stderr`) |
+| `--watch`  | `false` | Re-run formatters whenever watched files change                                              |
+
+### `--since`
+
+`vis fmt --since <ref>` narrows the input to files that changed relative to `<ref>` — committed, staged, unstaged, and untracked all qualify. Each file is routed to the formatter that owns its extension. When `<ref>` doesn't exist (or the directory isn't a git repo) the command falls back to a workspace-wide run and warns.
+
+### `--staged`
+
+`vis fmt --staged` narrows the input to files currently in the git index — the same model `lint-staged` uses. Use it in a pre-commit hook to format only what is about to be committed. When no files are staged the command exits early with a `✓ fmt: no staged files` message. Outside a git repo (or with git unavailable) the command falls back to a workspace-wide run and warns.
+
+### `--watch`
+
+`vis fmt --watch` keeps the command running, runs an initial cycle, and then re-runs whenever a file matching any eligible adapter's extension set changes. Events are debounced (200 ms) and coalesced. Combine with `--check` to keep a "would change" report live while editing — the orchestrator's cache means each incremental cycle only respawns formatters whose inputs actually changed. The loop watches the workspace root recursively (Watchman when available, `node:fs.watch` otherwise) and ignores `node_modules`, `.git`, and `.vis`. Exit with Ctrl-C (SIGINT) or SIGTERM.
+
+### `--output`
+
+`vis fmt --output <path>` writes the reporter payload to a file instead of stdout. The file's parent directory is created as needed; the special values `-` and `stdout` route to `process.stdout` and `stderr` routes to `process.stderr`. The flag only applies to machine-readable formats (`json`, `minimal`, `sarif`, `junit`, `github`) — combining it with the default `human` format logs a warning and is ignored.
+
+## Pre-commit integration
+
+`vis fmt --staged` is the recommended entry for the `staged` block in `vis.config.ts` — it auto-detects every installed formatter, only sees staged files, and writes formatting fixes in place so the commit captures the formatted tree. Pair it with `vis lint --staged --fix` to enforce lint alongside formatting.
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    staged: {
+        "*": ["vis lint --staged --fix", "vis fmt --staged"],
+    },
+});
+```
+
+`vis init` scaffolds exactly this block when pre-commit hooks are enabled; `vis hook install` then wires `.vis/hooks/pre-commit` to invoke `vis staged`. For CI gating that fails on unformatted files, run `vis fmt --check` (optionally `--since <base>`) as a separate target alongside lint.
+
+## Caching
+
+`vis fmt --check` runs cache their results under `<workspaceRoot>/.vis/cache/lint-fmt/<adapter>/` keyed by the adapter's config fingerprint plus a SHA-256 of every input file's bytes. A subsequent `--check` with the same inputs replays the stored result without spawning the formatter.
+
+The cache is skipped for:
+
+- write mode (the default — fixing mutates the working tree)
+- workspace-wide runs that pass `.` (the file vector is unbounded)
+- runs where `VIS_NO_CACHE=1` is set
+
+Failed or killed processes are never stored. Clear the cache with `vis cache clean` or by removing the directory directly.
+
+## Detection
+
+The orchestrator probes each adapter against the workspace root and runs the ones that report themselves present. An adapter opts in when **either** a tool-native config file exists **or** the tool is declared in `package.json`.
+
+| Adapter  | Config files probed                                                                               | package.json key          |
+| -------- | ------------------------------------------------------------------------------------------------- | ------------------------- |
+| oxfmt    | `.oxfmtrc[.{json,jsonc,ts,mts,cts,js,mjs,cjs}]`, `oxfmt.config.{ts,mts,js,mjs}`                   | `oxfmt`                   |
+| biome    | `biome.json`, `biome.jsonc`                                                                       | `@biomejs/biome`          |
+| dprint   | `dprint.json`, `dprint.jsonc`, `.dprint.json`, `.dprint.jsonc`                                    | `dprint`                  |
+| prettier | `.prettierrc`, `.prettierrc.{json,yaml,yml,js,cjs,mjs,ts}`, `prettier.config.{js,cjs,mjs,mts,ts}` | `prettier`                |
+| ruff-fmt | `ruff.toml`, `.ruff.toml`, `pyproject.toml` with `[tool.ruff]`                                    | `ruff`, `@astral-sh/ruff` |
+| deno-fmt | `deno.json`, `deno.jsonc` (no npm package — `deno` is a runtime)                                  | —                         |
+
+When multiple fmt adapters are detected, files are routed by extension via the registry's `routeFilesByExtension` helper. The default precedence inside the registry favours Rust-native formatters (`oxfmt` → `biome` → `dprint` → `prettier` → `deno-fmt`) so a `.ts` file owned by both oxfmt and prettier goes to oxfmt. `deno-fmt` ranks last so it only owns extensions no other adapter claims — deno coexists with the npm-native pipeline rather than replacing it. Override per-extension routing through `fmt.extensionOverrides` in `vis.config.ts` (e.g. send `.md` to `dprint` even when `prettier` also handles it).
+
+## Configuration
+
+`vis.config.ts` exposes a `fmt` block for workspace-wide tuning. CLI flags always win over config.
+
+```ts
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    fmt: {
+        // Override the default adapter precedence; unlisted adapters still run, appended after.
+        order: ["biome", "prettier"],
+        // Pin specific extensions to a specific adapter.
+        extensionOverrides: { md: "dprint" },
+        adapters: {
+            // Skip an adapter even when its config is detected.
+            "deno-fmt": { enabled: false },
+            // Append flags verbatim to every prettier invocation.
+            prettier: { extraArgs: ["--cache-strategy", "content"] },
+        },
+    },
+});
+```
+
+## Output formats
+
+### Human (default)
+
+Lists changed (or "would change") files grouped by adapter, with a friendly summary.
+
+### JSON
+
+```json
+{
+    "mode": "check",
+    "findings": [{ "adapter": "prettier", "file": "/repo/src/a.ts", "fixable": true, "severity": "info", "message": "Code style issues would be auto-fixed" }],
+    "runs": [{ "adapter": "prettier", "durationMs": 87, "exitCode": 1, "findingCount": 1 }]
+}
+```
+
+### Minimal
+
+Tab-separated lines, one per file, suitable for `awk`/`cut` pipelines:
+
+```
+prettier	src/a.ts
+```
+
+### SARIF
+
+`vis fmt --check --format sarif` emits a [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/os/sarif-v2.1.0-os.html) document — one `run` per formatter that participated. File-level "would change" findings appear as `note`-level results so SARIF-aware ingestors don't flag formatting churn as code-scanning errors.
+
+### JUnit
+
+`vis fmt --check --format junit` emits a Surefire-flavoured JUnit XML report — one `<testsuite>` per formatter and one `<testcase>` per file that would change. Suitable for CI dashboards that already render JUnit artefacts.
+
+### GitHub Actions
+
+`vis fmt --check --format github` emits [workflow commands](https://docs.github.com/en/actions/reference/workflow-commands-for-github-actions) — `::notice file=…::message` lines (formatter findings are `info`-severity, so they annotate as notices rather than errors). File paths are emitted relative to the workspace root so GitHub anchors annotations correctly against the checked-out tree.
+
+## Exit codes
+
+- `0` — nothing to change, or every change was successfully written in fix mode
+- `1` — at least one file would change (in `--check`), or at least one adapter exited non-zero without producing any findings (process-level failure)
+
+In fix mode, "would change" findings don't fail the run — the tool just wrote them. Use `--check` in CI to assert a clean tree.

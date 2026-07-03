@@ -1,0 +1,25 @@
+---
+title: "vis task-why"
+description: "Explain why a task is included in the graph by walking its dependency chain to a root"
+---
+
+# vis task-why
+
+Trace a task back to whatever requested it. Useful when a `vis run` execution graph contains an unexpected task and you need to know which `dependsOn` / `^build` / target-default rule pulled it in.
+
+## Usage
+
+```bash
+vis task-why <taskId>
+```
+
+## Examples
+
+```bash
+vis task-why @myorg/app:build
+vis task-why lib-a:test
+```
+
+## Options
+
+This command takes no flags — output is a textual chain from the requested task to its root cause.

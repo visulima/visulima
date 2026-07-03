@@ -1,0 +1,101 @@
+---
+title: Mock
+description: Use the Mock provider for testing email sending with @visulima/email
+---
+
+# Mock Provider
+
+The Mock provider is an in-memory email provider designed for testing. It stores sent emails in memory and allows you to inspect them, simulate failures, and add artificial delays.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { mockProvider } from "@visulima/email/providers/mock";
+
+const mock = mockProvider();
+const mail = createMail(mock);
+```
+
+## Configuration
+
+The `MockConfig` interface extends `BaseConfig` with the following options:
+
+| Option             | Type                           | Required | Default | Description                                    |
+| ------------------ | ------------------------------ | -------- | ------- | ---------------------------------------------- |
+| `simulateFailure`  | `boolean`                      | No       | `false` | When true, `sendEmail` always returns an error |
+| `failureRate`      | `number`                       | No       | `0`     | Failure rate (0-1) for random failures         |
+| `delay`            | `number`                       | No       | `0`     | Delay in milliseconds before resolving         |
+| `randomDelayRange` | `{ min: number; max: number }` | No       | -       | Random delay range in milliseconds             |
+| `defaultResponse`  | `Receipt`                      | No       | -       | Default response to return for send operations |
+| `debug`            | `boolean`                      | No       | `false` | Enable debug logging                           |
+| `logger`           | `Console`                      | No       | -       | Custom logger instance                         |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Test email").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+
+if (result.success) {
+    console.log("Mock email sent:", result.data?.messageId);
+}
+```
+
+## Testing Scenarios
+
+### Simulate Failures
+
+```typescript
+const mock = mockProvider({
+    simulateFailure: true,
+});
+
+const mail = createMail(mock);
+const result = await mail.send(message);
+// result.success will be false
+```
+
+### Random Failure Rate
+
+```typescript
+const mock = mockProvider({
+    failureRate: 0.3, // 30% of sends will fail
+});
+```
+
+### Artificial Delays
+
+```typescript
+// Fixed delay
+const mock = mockProvider({
+    delay: 500, // 500ms delay
+});
+
+// Random delay range
+const mock = mockProvider({
+    randomDelayRange: {
+        min: 100,
+        max: 1000,
+    },
+});
+```
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | No        |
+| Tracking       | No        |

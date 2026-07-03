@@ -1,0 +1,146 @@
+{
+    "name": "@visulima/html",
+    "version": "1.0.0-alpha.20",
+    "description": "Functions for HTML, such as escaping or unescaping HTML entities",
+    "keywords": [
+        "css",
+        "custom-element",
+        "entities",
+        "escape",
+        "escape-css",
+        "escape-html",
+        "escape-js",
+        "escaping",
+        "html",
+        "html-entities",
+        "javascript",
+        "js",
+        "sanitization",
+        "sanitize",
+        "sanitize-html",
+        "security",
+        "strip",
+        "strip-html",
+        "template",
+        "template-tag",
+        "typescript",
+        "validation",
+        "visulima",
+        "xss"
+    ],
+    "homepage": "https://visulima.com/packages/html",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/data-manipulation/html"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./css": {
+            "types": "./dist/css.d.ts",
+            "default": "./dist/css.js"
+        },
+        "./escape": {
+            "types": "./dist/escape.d.ts",
+            "default": "./dist/escape.js"
+        },
+        "./html": {
+            "types": "./dist/html.d.ts",
+            "default": "./dist/html.js"
+        },
+        "./sanitize": {
+            "types": "./dist/sanitize.d.ts",
+            "default": "./dist/sanitize.js"
+        },
+        "./strip": {
+            "types": "./dist/strip.d.ts",
+            "default": "./dist/strip.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "lint:attw": "attw --pack --profile esm-only --ignore-rules internal-resolution-error no-resolution",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit --project tsconfig.json",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "csstype": "catalog:prod",
+        "sanitize-html": "catalog:prod"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@std/html": "jsr:@std/html@1.0.5",
+        "@total-typescript/ts-reset": "catalog:dev",
+        "@types/node": "catalog:types",
+        "@types/sanitize-html": "catalog:types",
+        "@visulima/packem": "catalog:dev",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "eslint": "catalog:lint",
+        "fallow": "catalog:lint",
+        "html-entities": "catalog:dev",
+        "html-tags": "catalog:dev",
+        "is-html": "catalog:dev",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "secretlint": "catalog:lint",
+        "semantic-release": "catalog:cli",
+        "string-strip-html": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

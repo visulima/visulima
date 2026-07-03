@@ -1,0 +1,32 @@
+---
+title: "vis unlink"
+description: "Unlink a previously linked package"
+---
+
+# vis unlink
+
+Reverse a previous [`vis link`](./link). With no argument, unregisters the current package's global symlink. With package names, removes those packages' symlinks from the current project.
+
+## Usage
+
+```bash
+vis unlink [packages...] [options]
+```
+
+## Examples
+
+```bash
+vis unlink
+vis unlink react
+vis unlink -r           # unlink in every workspace package
+```
+
+## Options
+
+| Option        | Alias | Default | Description                      |
+| ------------- | ----- | ------- | -------------------------------- |
+| `--recursive` | `-r`  | `false` | Unlink in all workspace packages |
+
+## Deno
+
+Deno has no `unlink` equivalent — vis falls back to `deno remove` for the named packages and emits a warning. To undo an import-map override, edit `deno.json` directly.

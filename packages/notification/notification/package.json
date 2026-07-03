@@ -1,0 +1,338 @@
+{
+    "name": "@visulima/notification",
+    "version": "1.0.0-alpha.7",
+    "description": "A reusable, ESM-only, edge-ready multi-channel notification library with SMS, push, chat, in-app and webhook providers",
+    "keywords": [
+        "notification",
+        "notifications",
+        "multi-channel",
+        "sms",
+        "push",
+        "chat",
+        "in-app",
+        "webhook",
+        "twilio",
+        "vonage",
+        "plivo",
+        "aws-sns",
+        "sns",
+        "messagebird",
+        "fcm",
+        "apns",
+        "expo",
+        "web-push",
+        "vapid",
+        "opentelemetry",
+        "handlebars",
+        "liquid",
+        "slack",
+        "discord",
+        "ms-teams",
+        "telegram",
+        "failover",
+        "roundrobin",
+        "middleware",
+        "queue",
+        "visulima"
+    ],
+    "homepage": "https://visulima.com/packages/notification",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/notification/notification"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./providers/mock": {
+            "types": "./dist/providers/mock/index.d.ts",
+            "default": "./dist/providers/mock/index.js"
+        },
+        "./providers/twilio": {
+            "types": "./dist/providers/sms/twilio/index.d.ts",
+            "default": "./dist/providers/sms/twilio/index.js"
+        },
+        "./providers/vonage": {
+            "types": "./dist/providers/sms/vonage/index.d.ts",
+            "default": "./dist/providers/sms/vonage/index.js"
+        },
+        "./providers/plivo": {
+            "types": "./dist/providers/sms/plivo/index.d.ts",
+            "default": "./dist/providers/sms/plivo/index.js"
+        },
+        "./providers/messagebird": {
+            "types": "./dist/providers/sms/messagebird/index.d.ts",
+            "default": "./dist/providers/sms/messagebird/index.js"
+        },
+        "./providers/telnyx": {
+            "types": "./dist/providers/sms/telnyx/index.d.ts",
+            "default": "./dist/providers/sms/telnyx/index.js"
+        },
+        "./providers/slack": {
+            "types": "./dist/providers/chat/slack/index.d.ts",
+            "default": "./dist/providers/chat/slack/index.js"
+        },
+        "./providers/discord": {
+            "types": "./dist/providers/chat/discord/index.d.ts",
+            "default": "./dist/providers/chat/discord/index.js"
+        },
+        "./providers/msteams": {
+            "types": "./dist/providers/chat/msteams/index.d.ts",
+            "default": "./dist/providers/chat/msteams/index.js"
+        },
+        "./providers/telegram": {
+            "types": "./dist/providers/chat/telegram/index.d.ts",
+            "default": "./dist/providers/chat/telegram/index.js"
+        },
+        "./providers/expo": {
+            "types": "./dist/providers/push/expo/index.d.ts",
+            "default": "./dist/providers/push/expo/index.js"
+        },
+        "./providers/fcm": {
+            "types": "./dist/providers/push/fcm/index.d.ts",
+            "default": "./dist/providers/push/fcm/index.js"
+        },
+        "./providers/failover": {
+            "types": "./dist/providers/failover/index.d.ts",
+            "default": "./dist/providers/failover/index.js"
+        },
+        "./providers/roundrobin": {
+            "types": "./dist/providers/roundrobin/index.d.ts",
+            "default": "./dist/providers/roundrobin/index.js"
+        },
+        "./providers/webhook": {
+            "types": "./dist/providers/webhook/index.d.ts",
+            "default": "./dist/providers/webhook/index.js"
+        },
+        "./channels/email": {
+            "types": "./dist/channels/email/index.d.ts",
+            "default": "./dist/channels/email/index.js"
+        },
+        "./channels/inapp": {
+            "types": "./dist/channels/inapp/index.d.ts",
+            "default": "./dist/channels/inapp/index.js"
+        },
+        "./preferences": {
+            "types": "./dist/preferences/index.d.ts",
+            "default": "./dist/preferences/index.js"
+        },
+        "./middleware": {
+            "types": "./dist/middleware/index.d.ts",
+            "default": "./dist/middleware/index.js"
+        },
+        "./routing": {
+            "types": "./dist/routing/index.d.ts",
+            "default": "./dist/routing/index.js"
+        },
+        "./events": {
+            "types": "./dist/events/index.d.ts",
+            "default": "./dist/events/index.js"
+        },
+        "./queue": {
+            "types": "./dist/queue/index.d.ts",
+            "default": "./dist/queue/index.js"
+        },
+        "./queue/unstorage": {
+            "types": "./dist/queue/unstorage-queue.d.ts",
+            "default": "./dist/queue/unstorage-queue.js"
+        },
+        "./queue/bullmq": {
+            "types": "./dist/queue/bullmq-queue.d.ts",
+            "default": "./dist/queue/bullmq-queue.js"
+        },
+        "./queue/pg-boss": {
+            "types": "./dist/queue/pg-boss-queue.d.ts",
+            "default": "./dist/queue/pg-boss-queue.js"
+        },
+        "./queue/sqs": {
+            "types": "./dist/queue/sqs-queue.d.ts",
+            "default": "./dist/queue/sqs-queue.js"
+        },
+        "./providers/sns": {
+            "types": "./dist/providers/sms/sns/index.d.ts",
+            "default": "./dist/providers/sms/sns/index.js"
+        },
+        "./providers/web-push": {
+            "types": "./dist/providers/push/web-push/index.d.ts",
+            "default": "./dist/providers/push/web-push/index.js"
+        },
+        "./providers/apns": {
+            "types": "./dist/providers/push/apns/index.d.ts",
+            "default": "./dist/providers/push/apns/index.js"
+        },
+        "./providers/opentelemetry": {
+            "types": "./dist/providers/opentelemetry/index.d.ts",
+            "default": "./dist/providers/opentelemetry/index.js"
+        },
+        "./webhooks": {
+            "types": "./dist/webhooks/index.d.ts",
+            "default": "./dist/webhooks/index.js"
+        },
+        "./template/string": {
+            "types": "./dist/template-engines/string.d.ts",
+            "default": "./dist/template-engines/string.js"
+        },
+        "./template/handlebars": {
+            "types": "./dist/template-engines/handlebars.d.ts",
+            "default": "./dist/template-engines/handlebars.js"
+        },
+        "./template/liquid": {
+            "types": "./dist/template-engines/liquid.d.ts",
+            "default": "./dist/template-engines/liquid.js"
+        },
+        "./utils/result": {
+            "types": "./dist/utils/result.d.ts",
+            "default": "./dist/utils/result.js"
+        },
+        "./workflow": {
+            "types": "./dist/workflow/index.d.ts",
+            "default": "./dist/workflow/index.js"
+        },
+        "./digest": {
+            "types": "./dist/digest/index.d.ts",
+            "default": "./dist/digest/index.js"
+        },
+        "./layouts": {
+            "types": "./dist/layouts/index.d.ts",
+            "default": "./dist/layouts/index.js"
+        },
+        "./i18n": {
+            "types": "./dist/i18n/index.d.ts",
+            "default": "./dist/i18n/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "lint:attw": "attw --pack --profile esm-only",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit --project tsconfig.json",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@opentelemetry/api": "catalog:dev",
+        "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@total-typescript/ts-reset": "catalog:dev",
+        "@types/node": "catalog:types",
+        "@visulima/email": "1.0.0-alpha.47",
+        "@visulima/error": "6.0.0-alpha.35",
+        "@visulima/packem": "catalog:dev",
+        "@visulima/workflow": "1.0.0-alpha.2",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "croner": "^10.0.1",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "fallow": "catalog:lint",
+        "handlebars": "catalog:dev",
+        "intl-messageformat": "^11.0.0",
+        "liquidjs": "^10.27.0",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "secretlint": "catalog:lint",
+        "semantic-release": "catalog:cli",
+        "typescript": "catalog:tsc",
+        "unstorage": "^1.17.5",
+        "vitest": "catalog:test"
+    },
+    "peerDependencies": {
+        "@aws-sdk/client-sqs": "^3.0.0",
+        "@opentelemetry/api": "^1.0.0 || ^2.0.0",
+        "@visulima/email": "1.0.0-alpha.47",
+        "@visulima/workflow": "1.0.0-alpha.2",
+        "bullmq": "^5.0.0",
+        "croner": "^10.0.1",
+        "handlebars": "catalog:peer",
+        "intl-messageformat": "^11.0.0",
+        "liquidjs": "^10.0.0",
+        "pg-boss": "^10.0.0",
+        "unstorage": "^1.13.0"
+    },
+    "peerDependenciesMeta": {
+        "@aws-sdk/client-sqs": {
+            "optional": true
+        },
+        "@opentelemetry/api": {
+            "optional": true
+        },
+        "@visulima/email": {
+            "optional": true
+        },
+        "@visulima/workflow": {
+            "optional": true
+        },
+        "bullmq": {
+            "optional": true
+        },
+        "croner": {
+            "optional": true
+        },
+        "handlebars": {
+            "optional": true
+        },
+        "intl-messageformat": {
+            "optional": true
+        },
+        "liquidjs": {
+            "optional": true
+        },
+        "pg-boss": {
+            "optional": true
+        },
+        "unstorage": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

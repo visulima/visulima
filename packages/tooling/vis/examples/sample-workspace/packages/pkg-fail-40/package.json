@@ -1,0 +1,14 @@
+{
+    "name": "pkg-fail-40",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'pkg-fail-40 built' && sleep 0.3",
+        "lint": "echo 'pkg-fail-40 lint OK'",
+        "test": "echo 'Running pkg-fail-40 tests...' && sleep 0.4 && echo '  FAIL src/auth.test.ts' >&2 && echo '    Expected: 200' >&2 && echo '    Received: 401' >&2 && exit 1"
+    },
+    "dependencies": {
+        "lib-slow-23": "1.0.0",
+        "pkg-fail-37": "1.0.0"
+    }
+}

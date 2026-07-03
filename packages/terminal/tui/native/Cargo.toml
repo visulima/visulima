@@ -1,0 +1,23 @@
+[package]
+authors = [ "visulima" ]
+edition = "2021"
+name = "visulima-tui-native"
+version = "0.1.0"
+
+[lib]
+crate-type = [ "cdylib" ]
+
+[dependencies]
+crossterm = "0.29.0"
+napi = "3"
+napi-derive = "3"
+unicode-width = "0.2.0"
+
+[build-dependencies]
+napi-build = "2"
+
+[profile.release]
+lto = true
+codegen-units = 1
+opt-level = 3
+strip = "symbols"

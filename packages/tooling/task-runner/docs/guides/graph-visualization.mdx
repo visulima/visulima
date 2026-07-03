@@ -1,0 +1,65 @@
+---
+title: Graph Visualization
+description: Visualize task and project graphs in multiple formats
+---
+
+# Graph Visualization
+
+The task runner provides multiple output formats for visualizing task graphs and project dependency graphs.
+
+## Formats
+
+### DOT (Graphviz)
+
+```typescript
+import { toGraphvizDot } from "@visulima/task-runner";
+
+const dot = toGraphvizDot(taskGraph, {
+    focusedTasks: ["app:build"], // Highlight specific tasks
+    taskStatuses: taskStatusMap, // Color by execution status
+    groupByProject: true, // Group tasks by project
+});
+
+// Render with: dot -Tpng graph.dot -o graph.png
+```
+
+### JSON
+
+```typescript
+import { toGraphJson } from "@visulima/task-runner";
+
+const json = toGraphJson(taskGraph);
+// { nodes: [...], edges: [...] }
+```
+
+### HTML (Self-contained)
+
+```typescript
+import { toGraphHtml } from "@visulima/task-runner";
+
+const html = toGraphHtml(taskGraph);
+// Self-contained HTML page with embedded visualization
+```
+
+### ASCII
+
+```typescript
+import { toGraphAscii } from "@visulima/task-runner";
+
+const ascii = toGraphAscii(taskGraph);
+// app:build
+//   ├── lib-a:build
+//   │   └── shared:build
+//   └── lib-b:build
+//       └── shared:build (*)
+```
+
+### Project Graph
+
+```typescript
+import { projectGraphToDot } from "@visulima/task-runner";
+
+const dot = projectGraphToDot(projectGraph);
+// Generates DOT with different colors for applications vs libraries
+// and dashed edges for implicit dependencies
+```

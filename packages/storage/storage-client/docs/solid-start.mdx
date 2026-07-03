@@ -1,0 +1,498 @@
+---
+title: Solid Start
+description: Use the storage client with Solid Start
+---
+
+# Solid Start
+
+Use `@visulima/storage-client` with Solid Start for full-stack SolidJS applications with server-side file handling and client-side uploads.
+
+## Installation
+
+```bash
+npm install @visulima/storage-client @tanstack/solid-query solid-js @solidjs/start
+```
+
+## Setup QueryClient Provider
+
+Configure the TanStack Solid Query provider in your root layout:
+
+```tsx
+// src/app.tsx
+import { QueryClient, QueryClientProvider } from "@tanstack/solid-query";
+import { Router } from "@solidjs/router";
+import { FileRoutes } from "@solidjs/start/router";
+
+const queryClient = new QueryClient();
+
+export default function App() {
+    return (
+        <QueryClientProvider client={queryClient}>
+            <Router root={(props) => <>{props.children}</>}>
+                <FileRoutes />
+            </Router>
+        </QueryClientProvider>
+    );
+}
+```
+
+## Upload Component
+
+Create a page with file upload functionality:
+
+```tsx
+// src/routes/index.tsx
+import { createUpload } from "@visulima/storage-client/solid";
+import { createSignal } from "solid-js";
+
+export default function Home() {
+    const [file, setFile] = createSignal<File | null>(null);
+    let fileInputRef: HTMLInputElement | undefined;
+
+    const { error, isUploading, progress, result, upload, reset } = createUpload({
+        endpointMultipart: "/api/upload/multipart",
+        endpointTus: "/api/upload/tus",
+        onSuccess: (result) => {
+            console.log("Upload successful:", result);
+            setFile(null);
+            if (fileInputRef) {
+                fileInputRef.value = "";
+            }
+        },
+        onError: (error_) => {
+            console.error("Upload error:", error_);
+        },
+    });
+
+    const handleFileChange = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        const selectedFile = target.files?.[0];
+        setFile(selectedFile || null);
+    };
+
+    const handleUpload = async () => {
+        const currentFile = file();
+        if (currentFile) {
+            try {
+                await upload(currentFile);
+            } catch (error_) {
+                console.error("Upload failed:", error_);
+            }
+        }
+    };
+
+    const handleReset = () => {
+        reset();
+        setFile(null);
+        if (fileInputRef) {
+            fileInputRef.value = "";
+        }
+    };
+
+    return (
+        <main style={{ margin: "0 auto", "max-width": "800px", padding: "2rem" }}>
+            <h1>Storage Client - Solid Start Example</h1>
+            <p>Upload files using @visulima/storage-client with Solid Start</p>
+
+            <div style={{ "margin-top": "2rem" }}>
+                <input disabled={isUploading()} onChange={handleFileChange} ref={fileInputRef} type="file" />
+                <button disabled={!file() || isUploading()} onClick={handleUpload} style={{ "margin-left": "1rem" }}>
+                    {isUploading() ? `Uploading... ${progress()}%` : "Upload"}
+                </button>
+                <button disabled={isUploading()} onClick={handleReset} style={{ "margin-left": "0.5rem" }}>
+                    Reset
+                </button>
+            </div>
+
+            {isUploading() && (
+                <div style={{ "margin-top": "1rem" }}>
+                    <div>Progress: {progress()}%</div>
+                    <progress max={100} value={progress()} style={{ width: "100%", "max-width": "400px" }} />
+                </div>
+            )}
+
+            {error() && <div style={{ color: "red", "margin-top": "1rem" }}>Error: {error()?.message}</div>}
+
+            {result() && (
+                <div style={{ color: "green", "margin-top": "1rem" }}>
+                    <div>Upload complete!</div>
+                    <div>File ID: {result()?.id}</div>
+                    {result()?.filename && <div>Filename: {result()?.filename}</div>}
+                    {result()?.url && (
+                        <div>
+                            URL:{" "}
+                            <a href={result()?.url} target="_blank" rel="noopener noreferrer">
+                                {result()?.url}
+                            </a>
+                        </div>
+                    )}
+                </div>
+            )}
+        </main>
+    );
+}
+```
+
+## Server API Routes
+
+### Multipart Upload Endpoint
+
+```tsx
+// src/routes/api/upload/multipart.ts
+import type { APIEvent } from "@solidjs/start/server";
+import { createHandler } from "@visulima/storage/handler/http/fetch";
+import { storage } from "~/lib/storage";
+
+const handler = createHandler({ storage, type: "multipart" });
+
+export async function POST(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function DELETE(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function GET(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function OPTIONS(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+```
+
+### TUS Upload Endpoint
+
+```tsx
+// src/routes/api/upload/tus.ts
+import type { APIEvent } from "@solidjs/start/server";
+import { createHandler } from "@visulima/storage/handler/http/fetch";
+import { storage } from "~/lib/storage";
+
+const handler = createHandler({ storage, type: "tus" });
+
+export async function POST(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function PATCH(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function HEAD(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function OPTIONS(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+```
+
+### TUS Upload by ID Endpoint
+
+```tsx
+// src/routes/api/upload/tus/[id].ts
+import type { APIEvent } from "@solidjs/start/server";
+import { createHandler } from "@visulima/storage/handler/http/fetch";
+import { storage } from "~/lib/storage";
+
+const handler = createHandler({ storage, type: "tus" });
+
+export async function PATCH(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function HEAD(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function DELETE(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function OPTIONS(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+```
+
+### Chunked REST Upload Endpoint
+
+```tsx
+// src/routes/api/upload/chunked-rest.ts
+import type { APIEvent } from "@solidjs/start/server";
+import { createHandler } from "@visulima/storage/handler/http/fetch";
+import { storage } from "~/lib/storage";
+
+const handler = createHandler({ storage, type: "rest" });
+
+export async function POST(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function OPTIONS(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+```
+
+```tsx
+// src/routes/api/upload/chunked-rest/[id].ts
+import type { APIEvent } from "@solidjs/start/server";
+import { createHandler } from "@visulima/storage/handler/http/fetch";
+import { storage } from "~/lib/storage";
+
+const handler = createHandler({ storage, type: "rest" });
+
+export async function PUT(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function PATCH(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function HEAD(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+
+export async function OPTIONS(event: APIEvent) {
+    return handler.fetch(event.request);
+}
+```
+
+## Storage Configuration
+
+Create a shared storage instance:
+
+```tsx
+// src/lib/storage.ts
+import { DiskStorage } from "@visulima/storage";
+
+export const storage = new DiskStorage({
+    directory: "./uploads",
+});
+```
+
+## TUS Resumable Upload Example
+
+For large file uploads with pause/resume support:
+
+```tsx
+// src/routes/upload-large.tsx
+import { createTusUpload } from "@visulima/storage-client/solid";
+import { createSignal } from "solid-js";
+
+export default function LargeFileUpload() {
+    const [file, setFile] = createSignal<File | null>(null);
+
+    const { upload, pause, resume, progress, isUploading, isPaused, offset, error, result, reset } = createTusUpload({
+        endpoint: "/api/upload/tus",
+        chunkSize: 1024 * 1024, // 1MB chunks
+        onSuccess: (result) => {
+            console.log("Upload complete:", result);
+        },
+    });
+
+    const handleFileChange = (e: Event) => {
+        const target = e.target as HTMLInputElement;
+        setFile(target.files?.[0] || null);
+    };
+
+    const handleUpload = async () => {
+        const currentFile = file();
+        if (currentFile) {
+            await upload(currentFile);
+        }
+    };
+
+    return (
+        <main style={{ padding: "2rem" }}>
+            <h1>Large File Upload (TUS)</h1>
+            <input type="file" onChange={handleFileChange} disabled={isUploading()} />
+            <button onClick={handleUpload} disabled={!file() || isUploading()}>
+                Upload
+            </button>
+
+            {isUploading() && (
+                <div style={{ "margin-top": "1rem" }}>
+                    <progress max={100} value={progress()} style={{ width: "100%" }} />
+                    <div>
+                        Progress: {progress()}% ({offset()} bytes uploaded)
+                    </div>
+                    {isPaused() ? <button onClick={resume}>Resume</button> : <button onClick={pause}>Pause</button>}
+                </div>
+            )}
+
+            {error() && <div style={{ color: "red" }}>Error: {error()?.message}</div>}
+            {result() && <div style={{ color: "green" }}>Upload complete! ID: {result()?.id}</div>}
+        </main>
+    );
+}
+```
+
+## Batch Upload with Drag and Drop
+
+```tsx
+// src/routes/batch-upload.tsx
+import { createBatchUpload, createFileInput } from "@visulima/storage-client/solid";
+
+export default function BatchUploadPage() {
+    const {
+        files,
+        inputRef,
+        handleFileChange,
+        handleDrop,
+        handleDragOver,
+        openFileDialog,
+        reset: resetFiles,
+    } = createFileInput({
+        multiple: true,
+    });
+
+    const {
+        uploadBatch,
+        progress,
+        isUploading,
+        completedCount,
+        errorCount,
+        items,
+        reset: resetUpload,
+    } = createBatchUpload({
+        endpoint: "/api/upload/multipart",
+        onSuccess: (results) => {
+            console.log("Batch complete:", results);
+        },
+    });
+
+    const handleUpload = () => {
+        const currentFiles = files();
+        if (currentFiles.length > 0) {
+            uploadBatch(currentFiles);
+        }
+    };
+
+    return (
+        <main style={{ padding: "2rem" }}>
+            <h1>Batch Upload</h1>
+
+            <div
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                style={{
+                    border: "2px dashed #ccc",
+                    padding: "2rem",
+                    "text-align": "center",
+                    "border-radius": "8px",
+                }}
+            >
+                <input ref={inputRef} type="file" multiple onChange={handleFileChange} style={{ display: "none" }} />
+                <p>Drag and drop files here or</p>
+                <button onClick={openFileDialog}>Select Files</button>
+            </div>
+
+            {files().length > 0 && (
+                <div style={{ "margin-top": "1rem" }}>
+                    <p>Selected: {files().length} files</p>
+                    <button onClick={handleUpload} disabled={isUploading()}>
+                        {isUploading() ? "Uploading..." : "Upload All"}
+                    </button>
+                </div>
+            )}
+
+            {isUploading() && (
+                <div style={{ "margin-top": "1rem" }}>
+                    <progress max={100} value={progress()} style={{ width: "100%" }} />
+                    <div>Progress: {progress()}%</div>
+                    <div>
+                        Completed: {completedCount()} / {items().length}
+                    </div>
+                    <div>Errors: {errorCount()}</div>
+                </div>
+            )}
+        </main>
+    );
+}
+```
+
+## File Management
+
+### Listing and Deleting Files
+
+```tsx
+// src/routes/files.tsx
+import { createGetFileList, createDeleteFile, createBatchDeleteFiles } from "@visulima/storage-client/solid";
+import { createSignal, For } from "solid-js";
+
+export default function FilesPage() {
+    const [selectedIds, setSelectedIds] = createSignal<string[]>([]);
+
+    const { data, isLoading, refetch } = createGetFileList({
+        endpoint: "/api/files",
+    });
+
+    const { deleteFile, isLoading: isDeleting } = createDeleteFile({
+        endpoint: "/api/files",
+    });
+
+    const { batchDeleteFiles, isLoading: isBatchDeleting } = createBatchDeleteFiles({
+        endpoint: "/api/files",
+    });
+
+    const handleDelete = async (id: string) => {
+        await deleteFile(id);
+        refetch();
+    };
+
+    const handleBatchDelete = async () => {
+        await batchDeleteFiles(selectedIds());
+        setSelectedIds([]);
+        refetch();
+    };
+
+    const toggleSelect = (id: string) => {
+        setSelectedIds((prev) => (prev.includes(id) ? prev.filter((i) => i !== id) : [...prev, id]));
+    };
+
+    return (
+        <main style={{ padding: "2rem" }}>
+            <h1>Files</h1>
+
+            {selectedIds().length > 0 && (
+                <button onClick={() => handleBatchDelete()} disabled={isBatchDeleting()}>
+                    {isBatchDeleting() ? "Deleting..." : `Delete Selected (${selectedIds().length})`}
+                </button>
+            )}
+
+            {isLoading() && <div>Loading...</div>}
+
+            <ul>
+                <For each={data()?.data}>
+                    {(file) => (
+                        <li>
+                            <input type="checkbox" checked={selectedIds().includes(file.id)} onChange={() => toggleSelect(file.id)} />
+                            {file.originalName || file.name || file.id} ({file.size} bytes)
+                            <button onClick={() => handleDelete(file.id)} disabled={isDeleting()}>
+                                Delete
+                            </button>
+                        </li>
+                    )}
+                </For>
+            </ul>
+        </main>
+    );
+}
+```
+
+## Environment Variables
+
+Configure storage backend via environment variables:
+
+```bash
+# .env
+UPLOAD_DIR=./uploads
+```
+
+## Next Steps
+
+- [Solid Guide](/docs/packages/storage-client/solid) - Learn all Solid primitives in detail
+- [API Reference](/docs/packages/storage-client/api) - Complete API documentation

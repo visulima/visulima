@@ -1,0 +1,110 @@
+# Dropbox
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, OAuth wiring, and Dropbox-specific URL minting.
+
+## Overview
+
+The Dropbox adapter wraps the official `dropbox` SDK in the `BaseStorage` contract. It supports static access tokens, refresh-token auth (with built-in caching and 60 s renewal leeway), or a pre-built client for callers that already wire auth themselves. Read URLs are minted from `filesGetTemporaryLink` (4 h cap) or, when `publicByDefault: true`, from a sharing-link with automatic `?dl=0 → ?dl=1` rewriting so the URL serves raw bytes.
+
+## Installation
+
+```sh
+npm install dropbox
+```
+
+```sh
+yarn add dropbox
+```
+
+```sh
+pnpm add dropbox
+```
+
+## Usage
+
+```ts
+import DropboxStorage from "@visulima/storage/provider/dropbox";
+
+const storage = new DropboxStorage({
+    refreshToken: process.env.DROPBOX_REFRESH_TOKEN!,
+    appKey: process.env.DROPBOX_APP_KEY!,
+    appSecret: process.env.DROPBOX_APP_SECRET,
+    rootFolderPath: "uploads",
+});
+```
+
+## Configuration
+
+### Static access token
+
+Short-lived tokens (the SDK does no refresh on its own):
+
+```ts
+const storage = new DropboxStorage({
+    accessToken: process.env.DROPBOX_ACCESS_TOKEN!,
+});
+```
+
+Falls back to `DROPBOX_ACCESS_TOKEN` when no auth option is configured.
+
+### Refresh-token auth
+
+Recommended for long-running apps — the adapter caches the access token and refreshes it inside a 60 s leeway window:
+
+```ts
+const storage = new DropboxStorage({
+    refreshToken: process.env.DROPBOX_REFRESH_TOKEN!,
+    appKey: process.env.DROPBOX_APP_KEY!,
+    appSecret: process.env.DROPBOX_APP_SECRET, // optional for PKCE clients
+});
+```
+
+### Pre-built client
+
+For callers that have wired their own auth:
+
+```ts
+import { Dropbox } from "dropbox";
+
+const storage = new DropboxStorage({
+    client: new Dropbox({ accessToken: customToken }),
+});
+```
+
+### Public links
+
+```ts
+const storage = new DropboxStorage({
+    refreshToken: process.env.DROPBOX_REFRESH_TOKEN!,
+    appKey: process.env.DROPBOX_APP_KEY!,
+    publicByDefault: true,
+});
+
+const url = await storage.getReadUrl("avatar.png");
+// → https://www.dropbox.com/s/abc?dl=1 (already rewritten for direct download)
+```
+
+## URL Generation
+
+### `getReadUrl(key, options?)`
+
+- Without `publicByDefault`: returns a temporary link via `filesGetTemporaryLink` (max 4 h / 14 400 s).
+- With `publicByDefault`: creates a sharing link (recovers from `shared_link_already_exists` by reusing the existing one).
+- `responseContentDisposition` is not supported — Dropbox has no content-disposition override.
+
+### `getUploadUrl(key)`
+
+Throws `METHOD_NOT_ALLOWED`. Dropbox doesn't expose presigned PUT URLs; uploads happen against the SDK or `https://content.dropboxapi.com/2/files/upload` with `Authorization: Bearer …`.
+
+## Features
+
+- **Multiple auth strategies** — static, refresh-token, or bring-your-own client.
+- **Refresh-token caching** — built-in 60 s leeway, no double-refresh storms.
+- **404 / not-found tolerance** — `delete()` is idempotent across both HTTP 404 and Dropbox's tagged `path_lookup/not_found` errors.
+- **Shared-link conflict recovery** — re-uses the existing public link when `sharingCreateSharedLinkWithSettings` fails with `shared_link_already_exists`.
+
+## Limitations
+
+- Single-shot uploads only: the adapter buffers the part stream and POSTs in one request. For chunked transfers, drop to `storage.raw` and use the SDK's `filesUploadSession*` methods.
+- No native presigned upload URLs.
+- Read URLs are capped at the Dropbox 4 h maximum.

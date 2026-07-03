@@ -1,0 +1,236 @@
+---
+title: Conditional and finally tasks
+description: Gate tasks with `when:` and run cleanup with `always:` — including affected-files tokens for change-aware commands.
+---
+
+# Conditional and finally tasks
+
+Three task primitives let you express "run only sometimes" and "always clean up" without resorting to wrapper scripts:
+
+- **`when:`** — gates execution on OS, env, branch, and CI.
+- **`always:`** — runs a task after the main graph, even on failure.
+- **`${affected.files}` tokens** — embed only the files that changed.
+
+## `when:` — conditional execution
+
+The orchestrator evaluates `when:` immediately before launching a task. A failed predicate marks the task **skipped** (not failed) and surfaces the reason in the run summary, so it stays visible instead of disappearing silently.
+
+### A first example
+
+```json title="project.json"
+{
+    "targets": {
+        "deploy": {
+            "command": "pnpm run deploy",
+            "when": {
+                "branch": ["main", "alpha"],
+                "ci": true,
+                "env": { "name": "DEPLOY_TOKEN", "exists": true }
+            }
+        }
+    }
+}
+```
+
+This `deploy` runs only when **all** of these hold:
+
+1. The current branch is `main` or `alpha`.
+2. We're inside CI (the `CI` env var is truthy).
+3. `DEPLOY_TOKEN` is set and non-empty.
+
+Run it locally on a feature branch and you'll see:
+
+```text
+$ vis run deploy
+↳ skipped: branch=feat/new-button does not match ["main","alpha"]
+```
+
+### Clause grammar
+
+Positive clauses are **AND**-ed. Within a clause, an array is **OR**-ed. The optional `not` block negates each clause individually.
+
+| Clause         | Form                                      | Example                                      |
+| -------------- | ----------------------------------------- | -------------------------------------------- |
+| `os`           | `string` \| `string[]`                    | `"linux"` · `["linux", "darwin"]`            |
+| `env` (string) | env var must be set and non-empty         | `"GITHUB_TOKEN"`                             |
+| `env` (object) | `{ name, equals }` for exact value        | `{ name: "NODE_ENV", equals: "production" }` |
+| `env` (object) | `{ name, exists: false }` for unset/empty | `{ name: "SKIP_BUILD", exists: false }`      |
+| `branch`       | `string` \| `string[]`                    | `["main", "alpha", "beta"]`                  |
+| `ci`           | `boolean`                                 | `true` (only in CI) · `false` (only locally) |
+| `not.*`        | mirrors of every clause above             | `not: { ci: true }` (locally only)           |
+
+The `os` clause accepts every Node.js platform value (`aix`, `darwin`, `freebsd`, `linux`, `openbsd`, `sunos`, `win32`) plus the friendly alias `windows` (treated as `win32`).
+
+### Patterns that come up often
+
+**Local-only task** — useful for things like opening Storybook or starting a dev tunnel:
+
+```json
+"when": { "ci": false }
+```
+
+**Skip on Windows** — for Unix-only tooling:
+
+```json
+"when": { "not": { "os": "win32" } }
+```
+
+**Release-branch CI smoke test**:
+
+```json
+"when": {
+    "ci": true,
+    "branch": ["main", "next", "alpha", "beta"]
+}
+```
+
+**Toggle by feature flag** — useful when you want a task to participate in `vis run` only when an env var opts in:
+
+```json
+"when": { "env": "ENABLE_INTEGRATION_TESTS" }
+```
+
+## `always:` — finally tasks
+
+Set `always: true` to pull a task out of the dependency graph entirely. It runs once after the main run completes, **even if upstream tasks fail**.
+
+```json title="project.json"
+{
+    "targets": {
+        "test": { "command": "vitest run --coverage" },
+        "stop-db": {
+            "command": "docker compose down",
+            "always": true
+        },
+        "upload-coverage": {
+            "command": "codecov",
+            "always": true,
+            "when": { "ci": true }
+        }
+    }
+}
+```
+
+When you `vis run test`, this happens:
+
+1. `test` runs.
+2. Whether `test` succeeds or fails, `stop-db` runs (the database is freed either way).
+3. If we're in CI, `upload-coverage` also runs — `always:` and `when:` compose, so finally-tasks can still be conditional.
+
+### Rules of the road
+
+- Always-tasks **never block** other tasks. They don't appear as `dependsOn` of anything.
+- They run **sequentially** after the main run, in declaration order.
+- They are **not cached** — cleanup that doesn't fire isn't cleanup.
+- They are **skipped on SIGINT** (Ctrl+C). The user asked to stop; don't keep going.
+- They **do** participate in retries and timeouts the same way other tasks do.
+
+## `${affected.files}` — change-aware commands
+
+Many tools want a list of files to operate on. Tokens let you embed only the files that changed in the current run, computed from `git diff --name-only` against the affected base.
+
+```json title="project.json"
+{
+    "targets": {
+        "lint": { "command": "eslint ${affected.files}" },
+        "format": { "command": "prettier --write ${affected.files}" }
+    }
+}
+```
+
+Run it through the affected pipeline:
+
+```bash
+vis affected lint --base=origin/main
+```
+
+Vis expands the token before invoking the shell. Paths are:
+
+- workspace-relative by default
+- rewritten relative to the project root when the task runs from a project
+- **shell-quoted** so paths with spaces or quotes survive the shell
+- **filtered** to drop files outside the project root
+
+`${changed_files}` is an alias of `${affected.files}`.
+
+### When you need a flag per file
+
+Some tools want `--file path1 --file path2 …` instead of a space-separated list:
+
+```json
+{
+    "targets": {
+        "stylelint": { "command": "stylelint ${changed_files | flag '--file'}" }
+    }
+}
+```
+
+The flag string is a literal — single or double quotes both work. An empty flag is a no-op (just emits the bare paths).
+
+### Empty affected set
+
+When nothing matches, the token expands to **nothing**. That can be a footgun for tools that read the working directory when given no arguments. Two ways to guard:
+
+```json
+// 1. Short-circuit in shell
+"command": "test -z \"${affected.files}\" || eslint ${affected.files}"
+
+// 2. Skip the task entirely with `when:` + a custom env var
+// (set VIS_HAS_AFFECTED in your CI before the run if you want this)
+"when": { "env": "VIS_HAS_AFFECTED" }
+```
+
+### Tokens vs. the `affectedFiles` option
+
+The `affectedFiles: "args" | "env" | "both"` target option is the **implicit** counterpart of tokens — vis appends paths to the command line or sets `VIS_AFFECTED_FILES`. Use it when the tool already accepts files at the end of the command line.
+
+Tokens are **explicit** — embed the paths exactly where the command needs them. Use them when:
+
+- the tool wants a non-trailing argument position (`some-tool --check ${affected.files} --report=html`)
+- you need the per-file flag form (`| flag '--file'`)
+- you need to short-circuit on empty input
+
+Both mechanisms can coexist on the same target. They're complementary, not exclusive.
+
+### Escaping
+
+A leading backslash emits the literal token:
+
+```json
+"command": "echo '\\${affected.files} expanded to:' && echo '${affected.files}'"
+```
+
+## Putting it together
+
+A realistic CI release pipeline using all three primitives:
+
+```json title="project.json"
+{
+    "targets": {
+        "build": {
+            "command": "tsc -b",
+            "type": "build"
+        },
+        "test": {
+            "command": "vitest run --changed=${affected.files}",
+            "dependsOn": ["build"]
+        },
+        "publish": {
+            "command": "pnpm publish --access=public",
+            "dependsOn": ["build", "test"],
+            "when": {
+                "ci": true,
+                "branch": "main",
+                "env": { "name": "NPM_TOKEN", "exists": true }
+            }
+        },
+        "notify": {
+            "command": "node scripts/notify-slack.mjs",
+            "always": true,
+            "when": { "ci": true }
+        }
+    }
+}
+```
+
+Runs as: `build` → `test` (only against affected files) → `publish` (only on `main` in CI with a token), then `notify` always fires in CI to post a status update — pass or fail.

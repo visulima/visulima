@@ -1,0 +1,8 @@
+{
+    "name": "task-runner-client",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/tooling/task-runner-client/src",
+    "projectType": "library",
+    "tags": ["task-runner-client", "type:package", "category:dev-tools"],
+    "implicitDependencies": []
+}

@@ -1,0 +1,16 @@
+{
+    "title": "Pail",
+    "pages": [
+        "index",
+        "installation",
+        "comparison",
+        "concepts",
+        "usage",
+        "middleware",
+        "---Reference---",
+        "configuration",
+        "api",
+        "examples",
+        "troubleshooting"
+    ]
+}

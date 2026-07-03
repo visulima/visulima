@@ -1,0 +1,28 @@
+.gitkeep
+.env*
+*.ico
+*.lock
+*.node
+dist
+CHANGELOG.md
+coverage
+node_modules
+.eslintcache
+native/target
+
+**/tsconfig.json
+**/jsconfig.json
+
+# Fixtures and tests with whitespace-sensitive JSX text content — reformatting
+# would collapse `<Text>Foo: {bar}</Text>` into multi-line form, dropping the
+# space and breaking screen-output assertions.
+__tests__/ink/fixtures/**
+__tests__/ink/components.test.tsx
+__tests__/ink/render.test.tsx
+__tests__/ink/render-to-string.test.tsx
+__tests__/ink/testing.test.tsx
+__tests__/ink/use-box-metrics.test.tsx
+__tests__/ink/measure-element.test.tsx
+__tests__/ink-compat.test.tsx
+examples/use-stdout.tsx
+examples/help.tsx

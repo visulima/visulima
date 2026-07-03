@@ -1,0 +1,64 @@
+---
+title: "vis sort-package-json"
+description: "Sort package.json files across the workspace using the sort-package-json Rust crate"
+---
+
+# vis sort-package-json
+
+Normalise every `package.json` in the workspace using the `sort-package-json` Rust implementation. Use `--check` in CI to assert the tree is already sorted without writing.
+
+## Usage
+
+```bash
+vis sort-package-json [options]
+```
+
+## Examples
+
+```bash
+vis sort-package-json
+vis sort-package-json --check                                  # CI: exit 1 if unsorted
+vis sort-package-json --sort-scripts                           # also alphabetise the scripts field
+vis sort-package-json --indent 4                               # force 4-space indent
+vis sort-package-json --indent tab                             # force tab indent
+vis sort-package-json --ignore '**/fixtures/**'                # skip globs (repeatable)
+vis sort-package-json --sort-order name,version,license        # custom prefix order
+vis sort-package-json --unsorted dependencies,devDependencies  # preserve key order in those sections
+vis sort-package-json --no-final-newline                       # no trailing newline
+vis sort-package-json --line-ending crlf                       # force CRLF
+vis sort-package-json --no-format-bugs                         # keep `bugs: { url }` instead of collapsing to a string
+vis sort-package-json --no-format-repository                   # keep full `repository: { type, url }` instead of `owner/repo`
+vis sort-package-json --no-sort-exports                        # keep author-defined `exports` condition order
+vis sort-package-json --no-editorconfig                        # ignore `.editorconfig` for indent / line-ending defaults
+```
+
+## Cosmetic post-sort normalisations
+
+After the Rust sorter finishes, three opt-out cleanups run in TypeScript:
+
+- **`formatBugs`** collapses `{ "bugs": { "url": "https://…" } }` to the bare string `{ "bugs": "https://…" }` when only `url` is present.
+- **`formatRepository`** collapses `{ "repository": { "type": "git", "url": "git+https://github.com/owner/repo.git" } }` to the GitHub shorthand `{ "repository": "owner/repo" }`. SSH URLs (`git+ssh://git@github.com/...`) are recognised too. The shorthand is only emitted when `directory` is absent, so monorepo packages produced by `vis sync package-json-fields` keep their full object form.
+- **`sortExports`** reorders condition keys inside `exports` to the canonical sequence `types`, `node-addons`, `node`, `import`, `require`, `default`. Subpath keys (`./foo`) are preserved in their original order.
+
+`vis sync package-json-fields` always writes the canonical object form so two packages can be compared without false positives. The `format-*` flags here are what render the shorthand on disk after sort.
+
+## .editorconfig integration
+
+When `editorconfig: true` (the default), the sorter discovers the nearest `.editorconfig` for each `package.json` and uses its `indent_size` / `indent_style` / `end_of_line` values as defaults. Explicit `--indent` / `--line-ending` flags still win. Pass `--no-editorconfig` to ignore the file entirely.
+
+## Options
+
+| Option                   | Alias | Default | Description                                                                                                             |
+| ------------------------ | ----- | ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| `--check`                | `-c`  | `false` | Check if `package.json` files are sorted without writing (exits 1 if unsorted)                                          |
+| `--sort-scripts`         |       | `false` | Also sort the `scripts` field alphabetically                                                                            |
+| `--indent`               |       |         | Indent override: a number of spaces, `tab`, or a literal whitespace string. When unset, the file's indent is preserved. |
+| `--ignore`               |       |         | Glob pattern of files to skip (basename match, or path-relative when the pattern contains `/`). Repeatable.             |
+| `--sort-order`           |       |         | Comma-separated list of top-level keys to place first. Repeatable.                                                      |
+| `--unsorted`             |       |         | Comma-separated list of top-level sections whose key order should be preserved. Repeatable.                             |
+| `--no-final-newline`     |       | `false` | Do not append a trailing newline (default: append one).                                                                 |
+| `--line-ending`          |       | `auto`  | Line ending to write: `auto` (per-file detection), `lf`, or `crlf`.                                                     |
+| `--no-format-bugs`       |       | `false` | Disable collapsing `bugs: { url }` to the bare string form.                                                             |
+| `--no-format-repository` |       | `false` | Disable collapsing `repository: { type, url }` to the GitHub `owner/repo` shorthand.                                    |
+| `--no-sort-exports`      |       | `false` | Disable canonical sorting of `exports` condition keys.                                                                  |
+| `--no-editorconfig`      |       | `false` | Disable `.editorconfig` discovery for indent / line-ending defaults.                                                    |

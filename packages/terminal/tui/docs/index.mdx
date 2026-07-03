@@ -1,0 +1,76 @@
+---
+title: Introduction
+description: "React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API"
+---
+
+# @visulima/tui
+
+**React-based terminal UI library powered by a native Rust diff engine.**
+
+`@visulima/tui` provides a component-driven TUI framework with an Ink-compatible API, a high-performance Rust diff renderer, and first-class support for React hooks, Yoga layout, mouse events, scrolling, and raw-buffer rendering.
+
+## Key Features
+
+- **Ink-compatible API** — Drop-in replacement for most Ink component and hook usage
+- **Rust diff engine** — Native NAPI binding emits only changed terminal cells as ANSI
+- **Three rendering modes** — React, raw-buffer, and inline mode
+- **Full hook set** — Input, paste, mouse, focus, scrollable, text input, window size
+- **Native renderer extras** — `useMouse`, `useScrollable`, `useTextInput`, `DevTools`, `renderInline`
+- **TypeScript first** — Full type safety with exported types
+- **Testing utilities** — Framework-agnostic `render()` + mock streams via `@visulima/tui/test`
+
+## Quick Start
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { render, useInput } from "@visulima/tui/react";
+import React, { useState } from "react";
+
+function Counter() {
+    const [count, setCount] = useState(0);
+
+    useInput((_input, key) => {
+        if (key.upArrow) setCount((c) => c + 1);
+        if (key.downArrow) setCount((c) => c - 1);
+    });
+
+    return (
+        <Box flexDirection="column" padding={1}>
+            <Text bold color="cyan">
+                Counter
+            </Text>
+            <Text>Count: {count}</Text>
+            <Text dim>↑↓ to change · Ctrl+C to exit</Text>
+        </Box>
+    );
+}
+
+render(<Counter />);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Getting Started" href="/getting-started">
+        Installation, requirements, and mode selection
+    </Card>
+    <Card title="Quickstart: React" href="/quickstart-react">
+        Build your first TUI app with React components
+    </Card>
+    <Card title="Quickstart: Raw Buffer" href="/quickstart-raw-buffer">
+        Drive the Rust renderer directly without React
+    </Card>
+    <Card title="Components" href="/components">
+        Box, Text, Static, Spinner, ProgressBar, and more
+    </Card>
+    <Card title="Hooks" href="/hooks">
+        Input, mouse, focus, scrollable, and other hooks
+    </Card>
+    <Card title="Testing" href="/testing">
+        Test components with mock streams and frame capture
+    </Card>
+    <Card title="API Reference" href="/ink-compat">
+        Ink compatibility matrix and native-only exports
+    </Card>
+</Cards>

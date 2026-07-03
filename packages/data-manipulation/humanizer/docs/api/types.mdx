@@ -1,0 +1,544 @@
+---
+title: "TypeScript Types"
+---
+
+# TypeScript Types
+
+Complete TypeScript type definitions for @visulima/humanizer.
+
+## Bytes Types
+
+### FormateByteOptions
+
+Options for formatting bytes to strings.
+
+```typescript
+interface FormateByteOptions<T = string> {
+    /**
+     * Number of decimal places to display
+     * @default 0
+     */
+    decimals?: number;
+
+    /**
+     * Locale for number formatting (uses Intl.NumberFormat)
+     * @default "en-US"
+     */
+    locale?: string;
+
+    /**
+     * Use long unit names (e.g., "Megabytes" instead of "MB")
+     * @default false
+     */
+    long?: boolean;
+
+    /**
+     * Unit system to use
+     * - "metric": KB, MB, GB (base 10)
+     * - "iec": KiB, MiB, GiB (base 2)
+     * - "metric_octet": ko, Mo, Go (French, base 10)
+     * - "iec_octet": Kio, Mio, Gio (French, base 2)
+     * @default "metric"
+     */
+    units?: "metric" | "iec" | "metric_octet" | "iec_octet";
+
+    /**
+     * Mathematical base for conversion
+     * - 2: Binary (1 KB = 1024 bytes)
+     * - 10: Decimal (1 KB = 1000 bytes)
+     * @default 2
+     */
+    base?: 2 | 10;
+
+    /**
+     * Force output to a specific unit (e.g., "KB", "MB")
+     */
+    unit?: T;
+
+    /**
+     * Include space between value and unit
+     * @default true
+     */
+    space?: boolean;
+
+    // Additional Intl.NumberFormat options
+    notation?: "standard" | "scientific" | "engineering" | "compact";
+    useGrouping?: boolean;
+    minimumFractionDigits?: number;
+    maximumFractionDigits?: number;
+    minimumIntegerDigits?: number;
+    minimumSignificantDigits?: number;
+    maximumSignificantDigits?: number;
+}
+```
+
+### ParseByteOptions
+
+Options for parsing byte strings to numbers.
+
+```typescript
+interface ParseByteOptions {
+    /**
+     * Locale for parsing localized numbers
+     * @default "en-US"
+     */
+    locale?: string;
+
+    /**
+     * Unit system for parsing
+     * @default "metric"
+     */
+    units?: "metric" | "iec" | "metric_octet" | "iec_octet";
+
+    /**
+     * Mathematical base for conversion
+     * @default 2
+     */
+    base?: 2 | 10;
+}
+```
+
+### IntlLocale
+
+Type representing all supported CLDR locales.
+
+```typescript
+type IntlLocale =
+    | "af"
+    | "af-NA"
+    | "ar"
+    | "ar-AE"
+    | "ar-SA"
+    | "de"
+    | "de-DE"
+    | "de-AT"
+    | "de-CH"
+    | "en"
+    | "en-US"
+    | "en-GB"
+    | "en-AU"
+    | "en-CA"
+    | "es"
+    | "es-ES"
+    | "es-MX"
+    | "fr"
+    | "fr-FR"
+    | "fr-CA"
+    | "ja"
+    | "ja-JP"
+    | "zh"
+    | "zh-CN"
+    | "zh-TW";
+// ... 700+ more locales
+```
+
+## Duration Types
+
+### DurationOptions
+
+Options for formatting durations to strings.
+
+```typescript
+interface DurationOptions {
+    /**
+     * Units to use in output (must be in descending order)
+     * @default ["w", "d", "h", "m", "s"]
+     */
+    units?: DurationUnitName[];
+
+    /**
+     * Maximum number of units to display
+     * @default Infinity
+     */
+    largest?: number;
+
+    /**
+     * Round the smallest unit to nearest integer
+     * @default false
+     */
+    round?: boolean;
+
+    /**
+     * Delimiter between units
+     * @default ", " (or language-specific)
+     */
+    delimiter?: string;
+
+    /**
+     * Spacer between count and unit name
+     * @default " "
+     */
+    spacer?: string;
+
+    /**
+     * Decimal separator
+     * @default "." (or language-specific)
+     */
+    decimal?: string;
+
+    /**
+     * Conjunction before final unit
+     * @default ""
+     */
+    conjunction?: string;
+
+    /**
+     * Include comma before conjunction
+     * @default true
+     */
+    serialComma?: boolean;
+
+    /**
+     * Maximum decimal points to show
+     */
+    maxDecimalPoints?: number;
+
+    /**
+     * Custom digit replacements (0-9)
+     */
+    digitReplacements?: DurationDigitReplacements;
+
+    /**
+     * Language object for localization
+     * @default English
+     */
+    language?: DurationLanguage;
+
+    /**
+     * Custom unit measures in milliseconds
+     */
+    unitMeasures?: DurationUnitMeasures;
+}
+```
+
+### ParseDurationOptions
+
+Options for parsing duration strings to milliseconds.
+
+```typescript
+interface ParseDurationOptions {
+    /**
+     * Default unit for numeric-only input
+     * @default "ms"
+     */
+    defaultUnit?: DurationUnit;
+
+    /**
+     * Language object with unitMap for localized parsing
+     */
+    language?: DurationLanguage;
+}
+```
+
+### DurationUnitName
+
+Valid duration unit names.
+
+```typescript
+type DurationUnitName = "y" | "mo" | "w" | "d" | "h" | "m" | "s" | "ms";
+```
+
+**Description:**
+
+- `y`: Years
+- `mo`: Months
+- `w`: Weeks
+- `d`: Days
+- `h`: Hours
+- `m`: Minutes
+- `s`: Seconds
+- `ms`: Milliseconds
+
+### DurationUnit
+
+Alias for DurationUnitName.
+
+```typescript
+type DurationUnit = DurationUnitName;
+```
+
+### DurationUnitMeasures
+
+Unit lengths in milliseconds.
+
+```typescript
+interface DurationUnitMeasures {
+    /**
+     * Years in milliseconds
+     * @default 31556952000 (365.2425 days)
+     */
+    y: number;
+
+    /**
+     * Months in milliseconds
+     * @default 2629746000 (30.436875 days)
+     */
+    mo: number;
+
+    /**
+     * Weeks in milliseconds
+     * @default 604800000 (7 days)
+     */
+    w: number;
+
+    /**
+     * Days in milliseconds
+     * @default 86400000 (24 hours)
+     */
+    d: number;
+
+    /**
+     * Hours in milliseconds
+     * @default 3600000 (60 minutes)
+     */
+    h: number;
+
+    /**
+     * Minutes in milliseconds
+     * @default 60000 (60 seconds)
+     */
+    m: number;
+
+    /**
+     * Seconds in milliseconds
+     * @default 1000
+     */
+    s: number;
+
+    /**
+     * Milliseconds
+     * @default 1
+     */
+    ms: number;
+}
+```
+
+### DurationLanguage
+
+Language object for duration localization.
+
+```typescript
+interface DurationLanguage {
+    /**
+     * Year unit name(s)
+     * Can be a string or function that returns appropriate form based on count
+     */
+    y: ((count: number) => string) | string;
+
+    /**
+     * Month unit name(s)
+     */
+    mo: ((count: number) => string) | string;
+
+    /**
+     * Week unit name(s)
+     */
+    w: ((count: number) => string) | string;
+
+    /**
+     * Day unit name(s)
+     */
+    d: ((count: number) => string) | string;
+
+    /**
+     * Hour unit name(s)
+     */
+    h: ((count: number) => string) | string;
+
+    /**
+     * Minute unit name(s)
+     */
+    m: ((count: number) => string) | string;
+
+    /**
+     * Second unit name(s)
+     */
+    s: ((count: number) => string) | string;
+
+    /**
+     * Millisecond unit name(s)
+     */
+    ms: ((count: number) => string) | string;
+
+    /**
+     * Decimal separator
+     * @default "."
+     */
+    decimal?: string;
+
+    /**
+     * Delimiter between units
+     * @default ", "
+     */
+    delimiter?: string;
+
+    /**
+     * Unit map for parsing localized strings
+     * Maps localized unit names to unit codes
+     */
+    unitMap?: Record<string, DurationUnitName>;
+
+    /**
+     * Custom digit replacements (0-9)
+     */
+    _digitReplacements?: DurationDigitReplacements;
+
+    /**
+     * Hide count when value is 2
+     * Used in some languages (e.g., Welsh)
+     * @internal
+     */
+    _hideCountIf2?: boolean;
+
+    /**
+     * Display number before unit (e.g., "seconds 3" instead of "3 seconds")
+     * @internal
+     */
+    _numberFirst?: boolean;
+
+    /**
+     * Past tense template (e.g., "%s ago")
+     */
+    past?: string;
+
+    /**
+     * Future tense template (e.g., "in %s")
+     */
+    future?: string;
+}
+```
+
+### DurationDigitReplacements
+
+Array of 10 strings representing digits 0-9.
+
+```typescript
+type DurationDigitReplacements = [
+    string, // 0
+    string, // 1
+    string, // 2
+    string, // 3
+    string, // 4
+    string, // 5
+    string, // 6
+    string, // 7
+    string, // 8
+    string, // 9
+];
+```
+
+**Example:**
+
+```typescript
+const arabicDigits: DurationDigitReplacements = ["۰", "١", "٢", "٣", "٤", "٥", "٦", "٧", "٨", "٩"];
+```
+
+### DurationPiece
+
+Internal representation of a duration component.
+
+```typescript
+interface DurationPiece {
+    /**
+     * The numeric count for this unit
+     */
+    unitCount: number;
+
+    /**
+     * The unit name
+     */
+    unitName: DurationUnitName;
+}
+```
+
+## Usage Examples
+
+### Type-Safe Formatting
+
+```typescript
+import type { FormateByteOptions, DurationOptions } from "@visulima/humanizer";
+
+const byteOptions: FormateByteOptions = {
+    decimals: 2,
+    locale: "de-DE",
+    units: "metric",
+    base: 2,
+};
+
+const durationOptions: DurationOptions = {
+    units: ["h", "m", "s"],
+    largest: 2,
+    round: true,
+};
+```
+
+### Custom Language Type
+
+```typescript
+import type { DurationLanguage } from "@visulima/humanizer";
+
+const customLanguage: DurationLanguage = {
+    y: (count) => (count === 1 ? "year" : "years"),
+    mo: (count) => (count === 1 ? "month" : "months"),
+    w: (count) => (count === 1 ? "week" : "weeks"),
+    d: (count) => (count === 1 ? "day" : "days"),
+    h: (count) => (count === 1 ? "hour" : "hours"),
+    m: (count) => (count === 1 ? "minute" : "minutes"),
+    s: (count) => (count === 1 ? "second" : "seconds"),
+    ms: (count) => (count === 1 ? "millisecond" : "milliseconds"),
+    decimal: ".",
+    delimiter: ", ",
+};
+```
+
+### Unit Measures Type
+
+```typescript
+import type { DurationUnitMeasures } from "@visulima/humanizer";
+
+const customUnits: DurationUnitMeasures = {
+    y: 31557600000,
+    mo: 30 * 86400000, // Exactly 30 days
+    w: 604800000,
+    d: 86400000,
+    h: 3600000,
+    m: 60000,
+    s: 1000,
+    ms: 1,
+};
+```
+
+### Type Guards
+
+```typescript
+import type { DurationUnit, IntlLocale } from "@visulima/humanizer";
+
+function isValidDurationUnit(unit: string): unit is DurationUnit {
+    return ["y", "mo", "w", "d", "h", "m", "s", "ms"].includes(unit);
+}
+
+function isValidLocale(locale: string): locale is IntlLocale {
+    try {
+        new Intl.NumberFormat(locale);
+        return true;
+    } catch {
+        return false;
+    }
+}
+```
+
+## Type Imports
+
+Import types as needed:
+
+```typescript
+// Individual types
+import type { FormateByteOptions } from "@visulima/humanizer";
+import type { DurationOptions } from "@visulima/humanizer";
+
+// Multiple types
+import type { FormateByteOptions, ParseByteOptions, DurationOptions, DurationLanguage } from "@visulima/humanizer";
+
+// All types
+import type * as Humanizer from "@visulima/humanizer";
+```

@@ -1,0 +1,113 @@
+---
+title: "Usage Guide"
+description: "Complete guide to parsing command-line arguments."
+---
+
+# Usage Guide
+
+## Option Definitions
+
+```typescript
+import { parseArgs } from "@visulima/command-line-args";
+
+const definitions = [
+    {
+        name: "file", // Long option: --file
+        alias: "f", // Short option: -f
+        type: String, // Type conversion
+        defaultValue: "in.txt", // Default value
+        multiple: false, // Single value (default)
+    },
+];
+
+const options = parseArgs(definitions);
+```
+
+## Type Conversion
+
+**String:**
+
+```typescript
+{ name: "file", type: String }
+// --file input.txt → { file: "input.txt" }
+```
+
+**Number:**
+
+```typescript
+{ name: "count", type: Number }
+// --count 42 → { count: 42 }
+```
+
+**Boolean:**
+
+```typescript
+{ name: "verbose", type: Boolean }
+// --verbose → { verbose: true }
+// (no flag) → { verbose: false }
+```
+
+## Multiple Values
+
+```typescript
+const options = parseArgs([{ name: "include", type: String, multiple: true }]);
+
+// node script.js --include src --include lib --include test
+// { include: ["src", "lib", "test"] }
+```
+
+## Default Option (Positional)
+
+```typescript
+const options = parseArgs([{ name: "files", type: String, multiple: true, defaultOption: true }]);
+
+// node script.js file1.txt file2.txt file3.txt
+// { files: ["file1.txt", "file2.txt", "file3.txt"] }
+```
+
+## Partial Parsing
+
+```typescript
+const options = parseArgs(definitions, { partial: true });
+// Unknown options are preserved in _unknown array
+```
+
+## Stop Early
+
+```typescript
+const options = parseArgs(definitions, { stopAtFirstUnknown: true });
+// Stops parsing at first unknown option
+```
+
+## Camel Case
+
+```typescript
+const options = parseArgs(definitions, { camelCase: true });
+// --my-option becomes myOption
+```
+
+## Complete Example
+
+```typescript
+import { parseArgs } from "@visulima/command-line-args";
+
+const options = parseArgs([
+    { name: "input", alias: "i", type: String, defaultValue: "stdin" },
+    { name: "output", alias: "o", type: String, defaultValue: "stdout" },
+    { name: "verbose", alias: "v", type: Boolean },
+    { name: "port", alias: "p", type: Number, defaultValue: 3000 },
+    { name: "include", type: String, multiple: true },
+    { name: "files", type: String, multiple: true, defaultOption: true },
+]);
+
+// node script.js -i data.json -o result.json -v -p 8080 --include lib --include src file1.js file2.js
+// Result:
+// {
+//   input: "data.json",
+//   output: "result.json",
+//   verbose: true,
+//   port: 8080,
+//   include: ["lib", "src"],
+//   files: ["file1.js", "file2.js"]
+// }
+```

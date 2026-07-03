@@ -1,0 +1,92 @@
+---
+title: MailerSend
+description: Send emails using the MailerSend API with @visulima/email
+---
+
+# MailerSend Provider
+
+The MailerSend provider allows you to send emails through the [MailerSend API](https://developers.mailersend.com/api/v1/email.html).
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { mailerSendProvider } from "@visulima/email/providers/mailersend";
+
+const mail = createMail(
+    mailerSendProvider({
+        apiToken: process.env.MAILERSEND_API_TOKEN!,
+    }),
+);
+```
+
+## Configuration
+
+The `MailerSendConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                      | Description                     |
+| ---------- | --------- | -------- | ---------------------------- | ------------------------------- |
+| `apiToken` | `string`  | Yes      | -                            | Your MailerSend API token       |
+| `endpoint` | `string`  | No       | `https://api.mailersend.com` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                      | Enable debug logging            |
+| `logger`   | `Console` | No       | -                            | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                          | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                      | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from MailerSend").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The MailerSend provider supports additional options through `MailerSendEmailOptions`:
+
+```typescript
+import type { MailerSendEmailOptions } from "@visulima/email/providers/mailersend";
+
+const options: MailerSendEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    templateId: "tmpl_xxx",
+    templateVariables: { name: "John" },
+    personalization: [
+        {
+            email: "user@example.com",
+            data: { name: "John" },
+        },
+    ],
+    scheduledAt: 1705312800,
+};
+```
+
+| Option              | Type                                                 | Description                           |
+| ------------------- | ---------------------------------------------------- | ------------------------------------- |
+| `templateId`        | `string`                                             | MailerSend template ID                |
+| `templateVariables` | `Record<string, unknown>`                            | Template variables                    |
+| `personalization`   | `{ email: string; data: Record<string, unknown> }[]` | Per-recipient variables               |
+| `scheduledAt`       | `number`                                             | Scheduled delivery (Unix timestamp)   |
+| `domainId`          | `string`                                             | Domain ID for domain-specific sending |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

@@ -1,0 +1,112 @@
+---
+title: Hono
+description: Request-scoped wide event logging middleware for Hono
+---
+
+# Hono Middleware
+
+The Hono adapter attaches a request-scoped [Wide Event](/docs/packages/pail/usage/wide-events) to the Hono context. The event auto-emits when the handler completes or throws.
+
+## Setup
+
+```typescript
+import { Hono } from "hono";
+import { createPail } from "@visulima/pail";
+import { pailMiddleware } from "@visulima/pail/middleware/hono";
+
+const app = new Hono();
+const logger = createPail();
+
+app.use("*", pailMiddleware({ pail: logger }));
+```
+
+## Accessing the Logger
+
+### Via `c.get("log")`
+
+```typescript
+app.get("/api/users", (c) => {
+    const log = c.get("log");
+    log.set({ user: { id: 1 } });
+    log.info("Fetched user list");
+    return c.json({ ok: true });
+});
+```
+
+### Via `useLogger(c)`
+
+A typed helper that retrieves the logger from context and throws if the middleware isn't registered:
+
+```typescript
+import { useLogger } from "@visulima/pail/middleware/hono";
+
+app.get("/api/users", (c) => {
+    const log = useLogger(c);
+    log.set({ user: { id: 1 } });
+    return c.json({ ok: true });
+});
+```
+
+> **Note:** Unlike other adapters, Hono's `useLogger()` requires the context argument `c`. Hono stores the logger on the context object rather than in `AsyncLocalStorage`.
+
+## How It Works
+
+1. The middleware creates a `WideEvent` with request method, path, headers, and request ID
+2. The logger is stored on the Hono context via `c.set("log", logger)`
+3. The handler runs inside a try/catch:
+    - **Success:** emits with `c.res.status`
+    - **Error:** emits with the error, then re-throws
+
+## Error Handling
+
+Errors are caught, logged, and re-thrown so Hono's error handling pipeline still works:
+
+```typescript
+app.get("/api/fail", async (c) => {
+    const log = useLogger(c);
+    log.set({ user: { id: 1 } });
+    throw new Error("Something went wrong");
+    // Wide event emits with error before Hono's onError handles it
+});
+```
+
+## Route Configuration
+
+```typescript
+app.use(
+    "*",
+    pailMiddleware({
+        pail: logger,
+        service: "api-gateway",
+        exclude: ["/health", "/metrics"],
+        include: ["/api/**"],
+        routes: {
+            "/api/auth/**": { service: "auth-service" },
+        },
+    }),
+);
+```
+
+## TypeScript
+
+```typescript
+import type { PailHonoContext } from "@visulima/pail/middleware/hono";
+
+app.get("/api/users", (c: PailHonoContext) => {
+    const log = c.get("log");
+    log.set({ user: { id: 1 } });
+    return c.json({ ok: true });
+});
+```
+
+## Exported Types
+
+| Export                  | Description                                      |
+| ----------------------- | ------------------------------------------------ |
+| `pailMiddleware`        | Factory function returning Hono middleware       |
+| `useLogger`             | Retrieve logger from Hono context (`c` required) |
+| `PailHonoContext`       | Hono context type                                |
+| `PailHonoNext`          | Hono next function type                          |
+| `PailHonoMiddleware`    | The middleware function signature                |
+| `HonoMiddlewareOptions` | Options type for `pailMiddleware()`              |
+| `WideEvent`             | Re-exported `WideEvent` class                    |

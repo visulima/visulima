@@ -3,26 +3,36 @@
 
 rules:
     dangerous-triggers:
-        # These workflows use pull_request_target for write perms but do not
-        # check out PR-controlled refs, so fork-takeover doesn't apply.
+        # pull_request_target is required where the workflow needs write access
+        # (labelling, allow-edits, PR comments, etc.). None of these workflows
+        # checks out PR-controlled refs, so the fork-takeover pattern that makes
+        # pull_request_target dangerous doesn't apply here.
         ignore:
             - "allo-allo.yaml"
             - "labeler.yml"
+            - "require-allow-edits.yml"
             - "semantic-pull-request.yml"
 
     excessive-permissions:
-        # Reusable workflows declare the permissions they need internally;
-        # the caller's permissions: block is the union/superset.
+        # Reusable workflows from anolilab/workflows declare the permissions they
+        # need internally; the caller's permissions: block is the union/superset.
+        # Pinning down further here would just duplicate what the callee already
+        # declares.
         ignore:
             - "cache-clear.yml"
             - "stale-issues.yml"
 
     unpinned-uses:
-        # Workflows with intentionally unpinned action references (typically
-        # org-internal callers or upstream-managed templates).
+        # All anolilab/workflows references are pinned to @main intentionally so
+        # the org-wide CI definitions roll forward without per-repo bumps. The
+        # repo lives under the same org so a takeover requires compromising the
+        # whole anolilab account.
         ignore:
             - "allo-allo.yaml"
             - "cache-clear.yml"
+            - "codspeed.yml"
+            - "data-sync.yml"
+            - "build-native.yml"
             - "lint.yml"
             - "lock-file-maintenance.yml"
             - "lock-issues.yaml"

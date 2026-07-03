@@ -1,0 +1,177 @@
+/**
+ * Modified copy of https://github.com/webdiscus/ansis/blob/master/src/ansi-codes.js
+ *
+ * ISC License
+ *
+ * Copyright (c) 2023, webdiscus
+ */
+
+import type { ColorSupportLevel } from "@visulima/is-ansi-color-supported";
+import { isStderrColorSupported, isStdoutColorSupported } from "@visulima/is-ansi-color-supported";
+
+import type { AnsiColors, AnsiStyles, ColorData, ColorValueHex } from "./types";
+import { clamp } from "./util/clamp";
+import { convertHexToRgb } from "./util/convert-hex-to-rgb";
+import { ansi256To16, rgbToAnsi16, rgbToAnsi256 } from "./util/convert-rgb-to-ansi";
+
+const closeCode = 39;
+const bgCloseCode = 49;
+const bgOffset = 10;
+
+type StyleMethods = {
+    bg: (code: number) => ColorData;
+    bgHex: (hex: ColorValueHex) => ColorData;
+    bgRgb: (r: number, g: number, b: number) => ColorData;
+    fg: (code: number) => ColorData;
+    hex: (hex: ColorValueHex) => ColorData;
+    rgb: (r: number, g: number, b: number) => ColorData;
+};
+
+type AnsiCodes = {
+    baseColors: Required<Record<AnsiColors, ColorData>>;
+    baseStyles: Required<Record<AnsiStyles, ColorData>>;
+    styleMethods: StyleMethods;
+};
+
+const mono = { close: "", open: "" };
+
+/**
+ * Build the full set of ANSI color/style codes for a given color-support level.
+ *
+ * Splitting this into a factory (rather than module-level constants frozen at
+ * import time) is what lets `new Colorize({ level })` and `colorizeStderr` render
+ * at a chosen level at runtime instead of relying on env vars set before import.
+ * @param supportedColor `0` no color, `1` ANSI 16, `2` ANSI 256, `3` TrueColor.
+ * @returns The resolved base colors, base styles and dynamic style methods.
+ */
+const createAnsiCodes = (supportedColor: ColorSupportLevel): AnsiCodes => {
+    const esc: (open: number | string, close: number | string) => ColorData
+        = supportedColor > 0
+            ? (open: number | string, close: number | string): ColorData => {
+                return { close: `[${String(close)}m`, open: `[${String(open)}m` };
+            }
+            : (): ColorData => mono;
+
+    const createRgbFunction = (function_: (code: number | string) => ColorData) => (r: number | string, g: number | string, b: number | string) =>
+        function_(rgbToAnsi256(Number(r), Number(g), Number(b)));
+
+    const createHexFunction = (function_: (r: number | string, g: number | string, b: number | string) => ColorData) => (hex: ColorValueHex) => {
+        const [r, g, b] = convertHexToRgb(hex);
+
+        return function_(r, g, b);
+    };
+
+    let createAnsi256 = (code: number | string): ColorData => esc(`38;5;${String(code)}`, closeCode);
+
+    let createBgAnsi256 = (code: number | string): ColorData => esc(`48;5;${String(code)}`, bgCloseCode);
+
+    let createRgb = (r: number | string, g: number | string, b: number | string): ColorData => esc(`38;2;${String(r)};${String(g)};${String(b)}`, closeCode);
+
+    let createBgRgb = (r: number | string, g: number | string, b: number | string): ColorData =>
+        esc(`48;2;${String(r)};${String(g)};${String(b)}`, bgCloseCode);
+
+    if (supportedColor === 1) {
+        // ANSI 16 colors
+        createAnsi256 = (code: number | string) => esc(ansi256To16(Number(code)), closeCode);
+        createBgAnsi256 = (code: number | string) => esc(ansi256To16(Number(code)) + bgOffset, bgCloseCode);
+        createRgb = (r: number | string, g: number | string, b: number | string) => esc(rgbToAnsi16(Number(r), Number(g), Number(b)), closeCode);
+        createBgRgb = (r: number | string, g: number | string, b: number | string) => esc(rgbToAnsi16(Number(r), Number(g), Number(b)) + bgOffset, bgCloseCode);
+    } else if (supportedColor === 2) {
+        // ANSI 256 colors
+        createRgb = createRgbFunction(createAnsi256);
+        createBgRgb = createRgbFunction(createBgAnsi256);
+    }
+
+    const baseStyles: Required<Record<AnsiStyles, ColorData>> = {
+        // 21 isn't widely supported and 22 does the same thing
+        bold: esc(1, 22),
+        dim: esc(2, 22),
+        hidden: esc(8, 28),
+        inverse: esc(7, 27),
+        italic: esc(3, 23),
+        overline: esc(53, 55),
+        reset: esc(0, 0),
+        strike: esc(9, 29), // alias for strikethrough
+        strikethrough: esc(9, 29),
+        underline: esc(4, 24),
+        visible: mono,
+    };
+
+    const baseColors: Required<Record<AnsiColors, ColorData>> = {
+        bgBlack: esc(40, bgCloseCode),
+        bgBlackBright: esc(100, bgCloseCode),
+        bgBlue: esc(44, bgCloseCode),
+        bgBlueBright: esc(104, bgCloseCode),
+        bgCyan: esc(46, bgCloseCode),
+        bgCyanBright: esc(106, bgCloseCode),
+        bgGray: esc(100, bgCloseCode), // US spelling alias for bgBlackBright
+        bgGreen: esc(42, bgCloseCode),
+        bgGreenBright: esc(102, bgCloseCode),
+        bgGrey: esc(100, bgCloseCode), // UK spelling alias for bgBlackBright
+        bgMagenta: esc(45, bgCloseCode),
+        bgMagentaBright: esc(105, bgCloseCode),
+        bgRed: esc(41, bgCloseCode),
+        bgRedBright: esc(101, bgCloseCode),
+        bgWhite: esc(47, bgCloseCode),
+        bgWhiteBright: esc(107, bgCloseCode),
+        bgYellow: esc(43, bgCloseCode),
+        bgYellowBright: esc(103, bgCloseCode),
+        black: esc(30, closeCode),
+        blackBright: esc(90, closeCode),
+        blue: esc(34, closeCode),
+        blueBright: esc(94, closeCode),
+        cyan: esc(36, closeCode),
+        cyanBright: esc(96, closeCode),
+        gray: esc(90, closeCode), // US spelling alias for blackBright
+        green: esc(32, closeCode),
+        greenBright: esc(92, closeCode),
+        grey: esc(90, closeCode), // UK spelling alias for blackBright
+        magenta: esc(35, closeCode),
+        magentaBright: esc(95, closeCode),
+        red: esc(31, closeCode),
+        redBright: esc(91, closeCode),
+        white: esc(37, closeCode),
+        whiteBright: esc(97, closeCode),
+        yellow: esc(33, closeCode),
+        yellowBright: esc(93, closeCode),
+    };
+
+    const styleMethods: StyleMethods = {
+        bg: (code) => createBgAnsi256(clamp(code, 0, 255)),
+
+        bgHex: createHexFunction(createBgRgb),
+
+        bgRgb: (r, g, b) => createBgRgb(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255)),
+
+        fg: (code) => createAnsi256(clamp(code, 0, 255)),
+
+        hex: createHexFunction(createRgb),
+
+        rgb: (r, g, b) => createRgb(clamp(r, 0, 255), clamp(g, 0, 255), clamp(b, 0, 255)),
+    };
+
+    return { baseColors, baseStyles, styleMethods };
+};
+
+/** The color-support level detected for stdout at import time. */
+const stdoutColorLevel: ColorSupportLevel = isStdoutColorSupported();
+
+/** The color-support level detected for stderr at import time. */
+const stderrColorLevel: ColorSupportLevel = isStderrColorSupported();
+
+const defaultCodes = createAnsiCodes(stdoutColorLevel);
+
+// Backwards-compatible module-level codes (resolved for the detected stdout level).
+// Explicitly typed (not destructured) so isolated-declaration `.d.ts` emit succeeds:
+// these consts are re-exported, and a destructured binding can't be exported under
+// `--isolatedDeclarations` (TS9019), so `prefer-destructuring` must stay disabled here.
+/* eslint-disable prefer-destructuring -- exported binding can't be destructured under --isolatedDeclarations (TS9019) */
+const baseColors: Required<Record<AnsiColors, ColorData>> = defaultCodes.baseColors;
+const baseStyles: Required<Record<AnsiStyles, ColorData>> = defaultCodes.baseStyles;
+const styleMethods: StyleMethods = defaultCodes.styleMethods;
+/* eslint-enable prefer-destructuring -- re-enable after the isolated-declaration exports */
+
+export type { AnsiCodes, StyleMethods };
+
+// fallow-ignore-next-line unused-export -- baseColors/baseStyles/styleMethods are intentional backwards-compatible public exports (see the module-level codes above); not consumed inside the repo.
+export { baseColors, baseStyles, createAnsiCodes, stderrColorLevel, stdoutColorLevel, styleMethods };

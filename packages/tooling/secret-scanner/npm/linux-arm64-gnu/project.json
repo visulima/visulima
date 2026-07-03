@@ -1,0 +1,7 @@
+{
+    "name": "secret-scanner-binding-linux-arm64-gnu",
+    "$schema": "../../../../node_modules/nx/schemas/project-schema.json",
+    "projectType": "library",
+    "tags": ["secret-scanner", "type:native-binding"],
+    "implicitDependencies": ["secret-scanner"]
+}

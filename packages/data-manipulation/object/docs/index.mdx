@@ -1,0 +1,168 @@
+---
+title: Introduction
+description: "Powerful utilities for working with objects using dot notation, filtering, and deep key operations"
+---
+
+# @visulima/object
+
+Powerful utilities for manipulating objects and arrays. Access nested properties with dot notation, filter objects with pick/omit, extract deep keys, and more—all with full TypeScript support.
+
+## Key Features
+
+**Dot Notation Access**
+
+- Get, set, and delete nested properties
+- Safe property access with fallbacks
+- Support for arrays and complex paths
+- Path escaping for special characters
+
+**Object Filtering**
+
+- Pick specific properties to keep
+- Omit unwanted properties
+- Works with nested paths
+- Preserves object structure
+
+**Deep Operations**
+
+- Extract all nested keys
+- Generate deep key lists
+- Traverse complex objects
+- Type-safe operations
+
+**Type Safety**
+
+- Full TypeScript support
+- Type guards for plain objects
+- Preserves nested types
+- IntelliSense-friendly
+
+## Quick Start
+
+Install the package:
+
+```bash
+npm install @visulima/object
+```
+
+Access nested properties:
+
+```typescript
+import { getProperty, setProperty } from "@visulima/object";
+
+const user = {
+    profile: {
+        settings: {
+            theme: "dark",
+        },
+    },
+};
+
+// Get nested value
+const theme = getProperty(user, "profile.settings.theme");
+console.log(theme); // "dark"
+
+// Set nested value
+setProperty(user, "profile.settings.theme", "light");
+```
+
+Filter object properties:
+
+```typescript
+import { pick, omit } from "@visulima/object";
+
+const pokemon = { id: "007", name: "Squirtle", type: "water" };
+
+const nameAndType = pick(pokemon, ["name", "type"]);
+// { name: "Squirtle", type: "water" }
+
+const withoutId = omit(pokemon, ["id"]);
+// { name: "Squirtle", type: "water" }
+```
+
+## Use Cases
+
+### Configuration Management
+
+Safely access and modify nested configuration:
+
+```typescript
+import { getProperty, setProperty, hasProperty } from "@visulima/object";
+
+const config = {
+    database: {
+        host: "localhost",
+        port: 5432,
+    },
+    cache: {
+        enabled: true,
+    },
+};
+
+// Check if property exists
+if (!hasProperty(config, "database.password")) {
+    setProperty(config, "database.password", process.env.DB_PASSWORD);
+}
+
+// Get with fallback
+const port = getProperty(config, "database.port", 3000);
+```
+
+### API Response Filtering
+
+Extract only needed fields from API responses:
+
+```typescript
+import { pick } from "@visulima/object";
+
+async function fetchUser(id: string) {
+    const response = await fetch(`/api/users/${id}`);
+    const fullData = await response.json();
+
+    // Return only public fields
+    return pick(fullData, ["id", "name", "email", "profile.avatar", "profile.bio"]);
+}
+```
+
+### Form Data Processing
+
+Clean sensitive data from form submissions:
+
+```typescript
+import { omit } from "@visulima/object";
+
+function sanitizeFormData(data: Record<string, unknown>) {
+    // Remove sensitive fields before logging
+    return omit(data, ["password", "creditCard", "ssn", "payment.cardNumber"]);
+}
+
+const formData = {
+    /* user input */
+};
+logger.info("Form submitted:", sanitizeFormData(formData));
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn how to install and import the package
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started with common use cases
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all functions with detailed examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+This package works in both Node.js and browser environments:
+
+- **Node.js:** ≥22.13 ≤25.x
+- **Browsers:** Modern browsers with ES6 support
+- **Deno/Bun:** Fully compatible

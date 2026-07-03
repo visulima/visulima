@@ -1,0 +1,25 @@
+---
+title: "API"
+---
+
+# API Reference
+
+## `ono(message, ...args)`
+
+Create and throw an error.
+
+## `ono(error, message, ...args)`
+
+Wrap an error with additional context.
+
+## `ono.type(ErrorType, message, ...args)`
+
+Create specific error type.
+
+**Example:**
+
+```typescript
+ono("Error: %s", message);
+ono(originalError, "Context");
+ono.type("TypeError", "Invalid");
+```

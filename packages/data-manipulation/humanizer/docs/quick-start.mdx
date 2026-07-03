@@ -1,0 +1,160 @@
+---
+title: "Quick Start"
+---
+
+# Quick Start
+
+Get started with @visulima/humanizer in under 5 minutes. Learn the essential operations for bytes and duration formatting.
+
+## Format Bytes to Strings
+
+Convert numeric byte values to human-readable strings:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+// Basic formatting
+formatBytes(1024);
+// => "1 KB"
+
+formatBytes(1234567);
+// => "1 MB"
+
+// With decimal precision
+formatBytes(1234567, { decimals: 2 });
+// => "1.18 MB"
+
+// Long format
+formatBytes(1234567, { decimals: 2, long: true });
+// => "1.18 Megabytes"
+```
+
+## Parse Strings to Bytes
+
+Convert human-readable strings back to numeric byte values:
+
+```typescript
+import { parseBytes } from "@visulima/humanizer";
+
+parseBytes("1 KB");
+// => 1024
+
+parseBytes("1.5 MB");
+// => 1572864
+
+parseBytes("2.5GB");
+// => 2684354560
+```
+
+## Format Duration
+
+Convert milliseconds to human-readable time strings:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+// Basic duration
+duration(3000);
+// => "3 seconds"
+
+duration(97320000);
+// => "1 day, 3 hours, 2 minutes"
+
+// Limit to specific units
+duration(97320000, { units: ["h", "m"] });
+// => "27 hours, 2 minutes"
+
+// Limit number of units shown
+duration(97320000, { largest: 2 });
+// => "1 day, 3 hours"
+```
+
+## Parse Duration
+
+Convert human-readable duration strings to milliseconds:
+
+```typescript
+import { parseDuration } from "@visulima/humanizer";
+
+// Natural language
+parseDuration("1 day, 3 hours, 2 minutes");
+// => 97320000
+
+// Abbreviated format
+parseDuration("2h 30m");
+// => 9000000
+
+// Colon format (H:MM:SS)
+parseDuration("1:25:05");
+// => 5105000
+
+// ISO 8601 format
+parseDuration("PT2H30M5S");
+// => 9005000
+```
+
+## Localization
+
+Use locale-specific formatting:
+
+```typescript
+import { formatBytes, duration } from "@visulima/humanizer";
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+
+// Bytes with German locale
+formatBytes(123412341, { decimals: 2, locale: "de" });
+// => "117,70 MB"
+
+// Duration with German language
+duration(3000, { language: de });
+// => "3 Sekunden"
+```
+
+## Common Patterns
+
+### File Upload Limits
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const maxSize = 10 * 1024 * 1024; // 10MB
+
+console.log(`Maximum upload size: ${formatBytes(maxSize)}`);
+// => "Maximum upload size: 10 MB"
+```
+
+### API Timeout Messages
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+const timeout = 30000; // 30 seconds
+
+console.log(`Request timeout: ${duration(timeout, { units: ["s"] })}`);
+// => "Request timeout: 30 seconds"
+```
+
+### Progress Display
+
+```typescript
+import { formatBytes, duration } from "@visulima/humanizer";
+
+function showProgress(downloaded: number, total: number, elapsed: number) {
+    const percent = ((downloaded / total) * 100).toFixed(1);
+    const downloadedStr = formatBytes(downloaded, { decimals: 1 });
+    const totalStr = formatBytes(total, { decimals: 1 });
+    const elapsedStr = duration(elapsed, { units: ["m", "s"], largest: 2 });
+
+    console.log(`${percent}% (${downloadedStr} / ${totalStr}) - ${elapsedStr}`);
+}
+
+showProgress(5242880, 10485760, 15000);
+// => "50.0% (5.0 MB / 10.0 MB) - 15 seconds"
+```
+
+## Next Steps
+
+- Explore [Bytes Usage](/usage/bytes) for advanced formatting options
+- Learn about [Duration Usage](/usage/duration) for complex time formatting
+- Read [Localization Concepts](/concepts/localization) for internationalization
+- Check [API Reference](/api/bytes) for complete function documentation

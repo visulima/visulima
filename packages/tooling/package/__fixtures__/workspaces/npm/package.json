@@ -1,0 +1,8 @@
+{
+    "name": "@foo/test-npm",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {}
+}

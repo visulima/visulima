@@ -1,0 +1,28 @@
+---
+title: "Quick Start"
+---
+
+# Quick Start
+
+## Basic Usage
+
+```typescript
+import { ono } from "@visulima/ono";
+
+// Simple error
+throw ono("File not found");
+
+// With cause
+try {
+    // ...
+} catch (error) {
+    throw ono(error, "Failed to process");
+}
+```
+
+## Formatted Messages
+
+```typescript
+throw ono("User %s not found", userId);
+throw ono("Invalid config: %j", config);
+```

@@ -1,0 +1,111 @@
+---
+title: "API"
+---
+
+# API Reference
+
+## `verifyEmail(email, options?): Promise<EmailVerificationReport>`
+
+The top-level orchestrator. Runs the offline checks immediately, then — unless
+`offline` is set — the network checks, and aggregates everything (including the
+score) into one report.
+
+**Parameters:**
+
+- `email` (string): The address to verify
+- `options?` (`VerifyEmailOptions`): see below
+
+**`VerifyEmailOptions`:**
+
+| Option               | Type                      | Default | Description                                       |
+| -------------------- | ------------------------- | ------- | ------------------------------------------------- |
+| `offline`            | `boolean`                 | `false` | Skip all network checks (overrides `checkSmtp`)   |
+| `checkSmtp`          | `boolean`                 | `true`  | Run live SMTP verification                        |
+| `cache`              | `Cache<MxCheckResult>`    | —       | Shared cache for MX/SMTP lookups across a list    |
+| `smtp`               | `SmtpVerificationOptions` | —       | SMTP probe options (timeout, `catchAllProbes`, …) |
+| `disposable`         | `DisposableEmailOptions`  | —       | Disposable-list overrides                         |
+| `free`               | `FreeEmailOptions`        | —       | Free-list overrides                               |
+| `roleCustomPrefixes` | `Iterable<string>`        | —       | Additional role-account prefixes                  |
+| `typo`               | `TypoOptions`             | —       | Typo-suggestion overrides                         |
+| `weights`            | `Partial<ScoreWeights>`   | —       | Score weight overrides (see [Scoring](/scoring))  |
+
+## `EmailVerificationReport`
+
+```typescript
+type VerificationState = "deliverable" | "risky" | "undeliverable" | "unknown";
+
+interface EmailVerificationReport {
+    email: string;
+    state: VerificationState; // overall verdict
+    reason: string; // human-readable explanation
+    score: number; // composite 0–100
+
+    syntaxValid: boolean;
+    disposable: boolean;
+    free: boolean;
+    role: boolean;
+    noReply: boolean;
+    acceptAll: boolean; // catch-all domain
+    mailboxFull: boolean;
+    deferred: boolean; // greylisted / inconclusive
+    secureEmailGateway: boolean;
+
+    domain: DomainReport; // MX resolution
+    smtp?: SmtpVerificationResult;
+    name: NameResult; // parsed first/last/full + confidence
+    character: CharacterResult;
+    symbol: SymbolResult;
+    tag: TagResult; // +sub-address detection
+    provider?: MxProviderInfo; // classified mailbox/SEG
+    didYouMean?: string; // typo suggestion
+}
+```
+
+## Standalone checks
+
+Each is exported from the root and from its own subpath.
+
+| Function                        | Subpath                                      | Purpose                              |
+| ------------------------------- | -------------------------------------------- | ------------------------------------ |
+| `validateSyntax(email)`         | `@visulima/email-verifier/checks/syntax`     | RFC-ish syntax validity              |
+| `checkMxRecords(domain, opts?)` | `@visulima/email-verifier/checks/mx`         | MX (with A/AAAA fallback)            |
+| `verifySmtp(email, opts?)`      | `@visulima/email-verifier/checks/smtp`       | SMTP RCPT / catch-all / mailbox-full |
+| `isDisposableEmail(email)`      | `@visulima/email-verifier/checks/disposable` | Disposable domain                    |
+| `isFreeEmail(email)`            | `@visulima/email-verifier/checks/free`       | Free mailbox provider                |
+| `isRoleAccount` / `isNoReply`   | `@visulima/email-verifier/checks/role`       | Role / no-reply mailbox              |
+| `detectTag(email)`              | `@visulima/email-verifier/checks/tag`        | `+tag` sub-addressing                |
+| `analyzeCharacters(email)`      | `@visulima/email-verifier/checks/character`  | Local-part character irregularities  |
+| `analyzeSymbols(email)`         | `@visulima/email-verifier/checks/symbol`     | Unicode / mixed-script analysis      |
+
+## Enrichment
+
+| Function                                                    | Subpath                                    | Purpose                               |
+| ----------------------------------------------------------- | ------------------------------------------ | ------------------------------------- |
+| `enrichProvider(records)`                                   | `@visulima/email-verifier/enrich/provider` | Provider / SEG from MX                |
+| `classifyMx` / `classifyMxRecords` / `isSecureEmailGateway` | `@visulima/email-verifier/enrich/provider` | Re-exported MX classification         |
+| `suggestEmailTypo(email)`                                   | `@visulima/email-verifier/enrich/typo`     | Misspelled-domain suggestion          |
+| `suggestDomain` / `sift3Distance`                           | `@visulima/email-verifier/enrich/typo`     | Lower-level typo helpers              |
+| `parseName(email)`                                          | `@visulima/email-verifier/enrich/name`     | First / last / full name + confidence |
+
+## Scoring
+
+| Export                         | Purpose                            |
+| ------------------------------ | ---------------------------------- |
+| `scoreReport(input, weights?)` | Compute `{ score, state, reason }` |
+| `DEFAULT_WEIGHTS`              | The default scoring weights        |
+
+See [Scoring](/scoring) for the weight table and override examples.
+
+## Caching
+
+`InMemoryCache` (implements the `Cache` interface) can be shared across calls so
+repeated domains reuse MX/SMTP work:
+
+```typescript
+import { InMemoryCache, verifyEmail } from "@visulima/email-verifier";
+
+const cache = new InMemoryCache();
+
+await verifyEmail("a@example.com", { cache });
+await verifyEmail("b@example.com", { cache }); // reuses example.com MX/SMTP
+```

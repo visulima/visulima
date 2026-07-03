@@ -1,0 +1,241 @@
+---
+title: API Reference
+description: "Complete API reference for @visulima/find-ai-runner"
+---
+
+# API Reference
+
+## Functions
+
+### `detectAllProviders(options?)`
+
+Returns info for all 11 supported providers, whether installed or not. Pass `{ version: false }` to skip the (slow) version probe.
+
+```typescript
+function detectAllProviders(options?: AiDetectOptions): AiProviderInfo[];
+```
+
+### `detectAllProvidersAsync(options?)`
+
+Async/parallel variant of `detectAllProviders`.
+
+```typescript
+function detectAllProvidersAsync(options?: AiDetectOptions): Promise<AiProviderInfo[]>;
+```
+
+### `detectAvailableProviders(options?)`
+
+Returns only providers that are installed on the system.
+
+```typescript
+function detectAvailableProviders(options?: AiDetectOptions): AiProviderInfo[];
+```
+
+### `detectProvider(name, options?)`
+
+Detect a specific provider by name. Returns provider info including availability, path, version, and detection method.
+
+```typescript
+function detectProvider(name: AiProviderName, options?: AiDetectOptions): AiProviderInfo;
+```
+
+### `findRunner(preference?, options?)`
+
+Return the first available provider in preference order, stopping at the first hit. Version probing is opt-in via `{ version: true }`.
+
+```typescript
+function findRunner(preference?: AiProviderName[], options?: AiDetectOptions): AiProviderInfo | undefined;
+```
+
+### `buildCliArgs(name, prompt, options?)`
+
+Build the CLI arguments array for a provider without executing. Useful for previewing or logging what command would be run. Permission-bypass flags are only added when `options.dangerous` is `true`.
+
+```typescript
+function buildCliArgs(name: AiProviderName, prompt: string, options?: AiRunOptions): string[];
+```
+
+### `runProvider(provider, prompt, options?)`
+
+Execute a prompt against a detected provider. Uses `spawn` with stdin closed immediately for non-interactive execution. The process environment is sanitized with `NO_COLOR=1` and `FORCE_COLOR=0` for clean output. By default the provider runs with its normal safety prompts; pass `{ dangerous: true }` for permission-bypass mode.
+
+```typescript
+function runProvider(provider: AiProviderInfo, prompt: string, options?: AiRunOptions): Promise<AiRunResult>;
+```
+
+**Throws** an [`AiRunError`](#airunerror) (carrying partial output + exit metadata) if:
+
+- the provider is not available
+- the process times out (`timedOut`)
+- the run is aborted via `options.signal` (`aborted`)
+- the process exits with a non-zero code
+- spawning the process fails
+
+## Constants
+
+### `PROVIDERS`
+
+The full provider configuration map.
+
+```typescript
+const PROVIDERS: Record<AiProviderName, AiProviderConfig>;
+```
+
+### `PROVIDER_NAMES`
+
+All supported provider names in alphabetical order.
+
+```typescript
+const PROVIDER_NAMES: AiProviderName[];
+// ["amp", "claude", "codex", "copilot", "crush", "cursor", "droid", "gemini", "kimi", "opencode", "qwen"]
+```
+
+## Types
+
+### `AiProviderName`
+
+Union of all supported provider name strings.
+
+```typescript
+type AiProviderName = "amp" | "claude" | "codex" | "copilot" | "crush" | "cursor" | "droid" | "gemini" | "kimi" | "opencode" | "qwen";
+```
+
+### `AiProviderInfo`
+
+Information about a detected AI CLI provider.
+
+```typescript
+interface AiProviderInfo {
+    /** Provider name. */
+    name: AiProviderName;
+    /** Whether the provider was found on the system. */
+    available: boolean;
+    /** How the provider was detected. */
+    detectionMethod?: "envvar" | "which" | "known-path";
+    /** Absolute path to the CLI binary. */
+    path?: string;
+    /** Detected version string (e.g., "1.2.3"). */
+    version?: string;
+}
+```
+
+### `AiProviderConfig`
+
+Configuration for an AI CLI provider.
+
+```typescript
+interface AiProviderConfig {
+    /** Primary CLI command name. */
+    command: string;
+    /** Alternate CLI command names to try. */
+    alternateCommands: string[];
+    /** Environment variable that can override the CLI path. */
+    envVariable: string;
+    /** Default model to use if none specified. Empty string means provider-default. */
+    defaultModel: string;
+    /** Whether the provider accepts a max-tokens flag. */
+    supportsMaxTokens: boolean;
+    /** Whether the provider accepts a model-selection flag. */
+    supportsModel: boolean;
+    /** Builds the CLI arguments array for a given prompt and options. */
+    buildArgs: (prompt: string, options: AiBuildArgsOptions) => string[];
+}
+```
+
+### `AiBuildArgsOptions`
+
+Options passed to a provider's `buildArgs` function.
+
+```typescript
+interface AiBuildArgsOptions {
+    /** When true, append the provider's permission-bypass flag. */
+    dangerous?: boolean;
+    /** Maximum tokens in the response. */
+    maxTokens: number;
+    /** Resolved model id ("" means provider-default). */
+    model: string;
+}
+```
+
+### `AiDetectOptions`
+
+Options controlling provider detection.
+
+```typescript
+interface AiDetectOptions {
+    /**
+     * Whether to probe each found CLI for its version banner.
+     * Detection helpers default this to `true`; `findRunner` defaults it to `false`.
+     */
+    version?: boolean;
+}
+```
+
+### `AiRunOptions`
+
+Options for running a prompt against an AI provider.
+
+```typescript
+interface AiRunOptions {
+    /** Working directory for the spawned process. */
+    cwd?: string;
+    /** When true, enable permission-bypass mode (adds the provider's bypass flag). */
+    dangerous?: boolean;
+    /** Extra environment variables, merged over `process.env`. */
+    env?: Record<string, string | undefined>;
+    /** Maximum tokens in the response. Defaults to 4096. */
+    maxTokens?: number;
+    /** Model override (e.g., "claude-opus-4-20250514"). */
+    model?: string;
+    /** Callback invoked with each stderr chunk as it streams in. */
+    onStderr?: (chunk: string) => void;
+    /** Callback invoked with each stdout chunk as it streams in. */
+    onStdout?: (chunk: string) => void;
+    /** AbortSignal to cancel the run; `controller.abort()` kills the child. */
+    signal?: AbortSignal;
+    /** Timeout in milliseconds. Defaults to 300000 (5 minutes). */
+    timeoutMs?: number;
+}
+```
+
+### `AiRunResult`
+
+Result from running a prompt against an AI provider.
+
+```typescript
+interface AiRunResult {
+    /** Wall-clock duration of the run in milliseconds. */
+    durationMs: number;
+    /** Exit code of the process (null if killed by a signal). */
+    exitCode: number | null;
+    /** Which provider was used. */
+    provider: AiProviderName;
+    /** Standard error output from the CLI. */
+    stderr: string;
+    /** Standard output from the CLI (the AI response). */
+    stdout: string;
+}
+```
+
+### `AiRunError`
+
+Error thrown by `runProvider`. Carries partial output and exit metadata so callers can debug failed, timed-out, or aborted runs.
+
+```typescript
+class AiRunError extends Error {
+    /** Whether the run was aborted via `options.signal`. */
+    readonly aborted: boolean;
+    /** Wall-clock duration before failure, in milliseconds. */
+    readonly durationMs: number;
+    /** Exit code (null if killed by a signal or never spawned). */
+    readonly exitCode: number | null;
+    /** Provider that was being run. */
+    readonly provider: AiProviderName;
+    /** Partial stderr captured before failure. */
+    readonly stderr: string;
+    /** Partial stdout captured before failure. */
+    readonly stdout: string;
+    /** Whether the run exceeded `timeoutMs`. */
+    readonly timedOut: boolean;
+}
+```

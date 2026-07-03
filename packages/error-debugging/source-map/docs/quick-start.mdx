@@ -1,0 +1,21 @@
+---
+title: "Quick Start"
+---
+
+# Quick Start
+
+## Read Source Map
+
+```typescript
+import { SourceMapConsumer } from "@visulima/source-map";
+
+const consumer = await SourceMapConsumer.fromSourceMap(rawMap);
+
+const original = consumer.originalPositionFor({
+    line: 10,
+    column: 5,
+});
+
+console.log(original);
+// { source: 'original.ts', line: 8, column: 3 }
+```

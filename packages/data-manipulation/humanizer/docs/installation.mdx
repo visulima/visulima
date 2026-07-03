@@ -1,0 +1,56 @@
+---
+title: "Installation"
+---
+
+# Installation
+
+```bash npm2yarn
+npm install @visulima/humanizer
+```
+
+## Import
+
+### Main Functions
+
+```typescript
+import { formatBytes, parseBytes, duration, parseDuration } from "@visulima/humanizer";
+```
+
+### Language Packs (Duration)
+
+Import specific languages for duration formatting:
+
+```typescript
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+import { durationLanguage as es } from "@visulima/humanizer/language/es";
+import { durationLanguage as fr } from "@visulima/humanizer/language/fr";
+
+duration(3000, { language: de });
+// => "3 Sekunden"
+```
+
+### TypeScript Types
+
+```typescript
+import type { FormateByteOptions, ParseByteOptions, DurationOptions, DurationLanguage, DurationUnit } from "@visulima/humanizer";
+```
+
+## Requirements
+
+- **Node.js:** 22.13 or higher
+- **TypeScript:** 5.0 or higher (if using TypeScript)
+- **ECMAScript:** ES2020 or higher
+
+## Verification
+
+Verify installation by running a simple example:
+
+```typescript
+import { formatBytes, duration } from "@visulima/humanizer";
+
+console.log(formatBytes(1024));
+// => "1 KB"
+
+console.log(duration(3000));
+// => "3 seconds"
+```

@@ -1,0 +1,56 @@
+---
+title: Command Tokens
+description: Interpolate affected/changed file lists into command strings
+---
+
+# Command Tokens
+
+`parseCommands` and `expandTokens` substitute first-class `${…}` references in command strings so tasks like `eslint ${affected.files}` resolve to the actual file list at run time.
+
+## Supported tokens
+
+| Token                                | Expands to                                                              |
+| ------------------------------------ | ----------------------------------------------------------------------- |
+| `${affected.files}`                  | Space-joined, shell-quoted paths from the supplied `affectedFiles` list |
+| `${changed_files}`                   | Alias of `${affected.files}` — same source list, different name         |
+| `${affected.files \| flag '--file'}` | One `--file <path>` pair per file: `--file 'a.ts' --file 'b.ts' …`      |
+| `${changed_files \| flag "-i"}`      | Same, with double-quoted flag value                                     |
+
+Both `'single'` and `"double"` quotes around the flag value are accepted. An empty flag value (`| flag ''`) is a no-op — the renderer emits the bare paths as if the flag were omitted.
+
+Unknown tokens (`${UNSET_VAR}`) are left in place so the shell may expand them at runtime — silently dropping them would mask bugs in user commands.
+
+## Path quoting & project-relative rewriting
+
+- Every emitted path is run through a POSIX-aware shell quoter so spaces, quotes, `$`, and other metacharacters are escaped before they hit the shell.
+- When `TokenContext.projectRoot` is set, paths are rewritten **relative to that project root** and any file outside the root is dropped. A task scoped to `packages/app` won't accidentally lint a sibling package's file.
+- Affected file lists come from `git diff --name-only`, which always emits forward slashes — even on Windows.
+
+## Escape
+
+Prefix with a single backslash to emit the literal token without expansion:
+
+```
+node ./scripts/render.mjs --pattern '\${affected.files}'
+```
+
+The regex consumes at most one leading backslash, so use a different surrounding quoting scheme if you need a real backslash adjacent to a token.
+
+## Usage
+
+`parseCommands` runs token expansion as part of its pipeline when a `tokens` context is supplied:
+
+```typescript
+import { parseCommands, runConcurrently } from "@visulima/task-runner";
+
+const commands = parseCommands(["eslint ${affected.files}", "prettier --write ${changed_files | flag '--file'}"], {
+    tokens: {
+        affectedFiles: ["packages/app/src/index.ts", "packages/lib/src/util.ts"],
+        projectRoot: "packages/app", // optional — drops paths outside this root
+    },
+});
+
+await runConcurrently(commands);
+```
+
+The lower-level `expandTokensInString` and `expandTokens` are also exported for callers that build their own command pipeline.

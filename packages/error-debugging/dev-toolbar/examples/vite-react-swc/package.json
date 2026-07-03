@@ -1,0 +1,26 @@
+{
+    "name": "dev_toolbar_vite-react-swc",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "tsc -b && vite build",
+        "dev": "vite",
+        "preview": "vite preview"
+    },
+    "dependencies": {
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
+    },
+    "devDependencies": {
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "@visulima/dev-toolbar": "workspace:*",
+        "@visulima/vite-overlay": "workspace:*",
+        "@vitejs/plugin-react-swc": "catalog:build",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build"
+    },
+    "peerDependencies": {},
+    "optionalDependencies": {}
+}

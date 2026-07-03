@@ -1,0 +1,26 @@
+{
+    "pages": [
+        "index",
+        "installation",
+        {
+            "title": "Concepts",
+            "pages": ["concepts/concurrent-runner", "concepts/task-graph", "concepts/caching", "concepts/auto-fingerprinting", "concepts/remote-caching"]
+        },
+        {
+            "title": "Guides",
+            "pages": [
+                "guides/concurrent-processes",
+                "guides/smart-lockfile-hashing",
+                "guides/framework-inference",
+                "guides/affected-detection",
+                "guides/conditional-tasks",
+                "guides/command-tokens",
+                "guides/cooperative-cache-hints",
+                "guides/run-summaries",
+                "guides/graph-visualization"
+            ]
+        },
+        "configuration",
+        "api"
+    ]
+}

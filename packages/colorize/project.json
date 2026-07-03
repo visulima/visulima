@@ -1,8 +1,0 @@
-{
-    "name": "colorize",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/colorize/src",
-    "projectType": "library",
-    "tags": ["type:package", "colorize"],
-    "implicitDependencies": ["is-ansi-color-supported", "path"]
-}

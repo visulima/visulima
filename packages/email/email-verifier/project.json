@@ -1,0 +1,8 @@
+{
+    "name": "email/email-verifier",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/email/email-verifier/src",
+    "projectType": "library",
+    "tags": ["email-verifier", "type:package", "category:communication"],
+    "implicitDependencies": ["email/disposable-email-domains", "email/free-email-domains", "email/email-provider-mx"]
+}

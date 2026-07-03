@@ -1,0 +1,18 @@
+---
+title: "Installation"
+---
+
+# Installation
+
+```bash npm2yarn
+npm install @visulima/email-provider-mx
+```
+
+## Import
+
+```typescript
+import { classifyMx, classifyMxRecords, isSecureEmailGateway } from "@visulima/email-provider-mx";
+```
+
+The package is ESM-only, zero-dependency, and performs no network access — pair
+it with your own DNS resolver to obtain MX records.

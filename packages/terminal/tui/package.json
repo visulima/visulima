@@ -1,0 +1,756 @@
+{
+    "name": "@visulima/tui",
+    "version": "1.0.0-alpha.27",
+    "description": "React-based TUI library powered by a native Rust diff engine, drop-in Ink-compatible API",
+    "keywords": [
+        "cli",
+        "ink",
+        "napi",
+        "react",
+        "rust",
+        "terminal",
+        "tui",
+        "visulima"
+    ],
+    "homepage": "https://visulima.com/packages/tui",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/terminal/tui"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": [
+        "./index.js"
+    ],
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/ink/index.d.ts",
+            "default": "./dist/ink/index.js"
+        },
+        "./components/accordion": {
+            "types": "./dist/components/accordion.d.ts",
+            "default": "./dist/components/accordion.js"
+        },
+        "./components/alert": {
+            "types": "./dist/components/alert.d.ts",
+            "default": "./dist/components/alert.js"
+        },
+        "./components/animate-presence": {
+            "types": "./dist/components/animate-presence.d.ts",
+            "default": "./dist/components/animate-presence.js"
+        },
+        "./components/approval-prompt": {
+            "types": "./dist/components/approval-prompt.d.ts",
+            "default": "./dist/components/approval-prompt.js"
+        },
+        "./components/area-chart": {
+            "types": "./dist/components/area-chart.d.ts",
+            "default": "./dist/components/area-chart.js"
+        },
+        "./components/badge": {
+            "types": "./dist/components/badge.d.ts",
+            "default": "./dist/components/badge.js"
+        },
+        "./components/bar-chart": {
+            "types": "./dist/components/bar-chart.d.ts",
+            "default": "./dist/components/bar-chart.js"
+        },
+        "./components/big-text": {
+            "types": "./dist/components/big-text.d.ts",
+            "default": "./dist/components/big-text.js"
+        },
+        "./components/blink-dot": {
+            "types": "./dist/components/blink-dot.d.ts",
+            "default": "./dist/components/blink-dot.js"
+        },
+        "./components/box": {
+            "types": "./dist/components/box.d.ts",
+            "default": "./dist/components/box.js"
+        },
+        "./components/breadcrumb": {
+            "types": "./dist/components/breadcrumb.d.ts",
+            "default": "./dist/components/breadcrumb.js"
+        },
+        "./components/button": {
+            "types": "./dist/components/button.d.ts",
+            "default": "./dist/components/button.js"
+        },
+        "./components/calendar": {
+            "types": "./dist/components/calendar.d.ts",
+            "default": "./dist/components/calendar.js"
+        },
+        "./components/canvas": {
+            "types": "./dist/components/canvas.d.ts",
+            "default": "./dist/components/canvas.js"
+        },
+        "./components/card": {
+            "types": "./dist/components/card.d.ts",
+            "default": "./dist/components/card.js"
+        },
+        "./components/checkbox": {
+            "types": "./dist/components/checkbox.d.ts",
+            "default": "./dist/components/checkbox.js"
+        },
+        "./components/code": {
+            "types": "./dist/components/code.d.ts",
+            "default": "./dist/components/code.js"
+        },
+        "./components/collapsible": {
+            "types": "./dist/components/collapsible.d.ts",
+            "default": "./dist/components/collapsible.js"
+        },
+        "./components/command-block": {
+            "types": "./dist/components/command-block.d.ts",
+            "default": "./dist/components/command-block.js"
+        },
+        "./components/command-palette": {
+            "types": "./dist/components/command-palette.d.ts",
+            "default": "./dist/components/command-palette.js"
+        },
+        "./components/confirm-dialog": {
+            "types": "./dist/components/confirm-dialog.d.ts",
+            "default": "./dist/components/confirm-dialog.js"
+        },
+        "./components/confirm-input": {
+            "types": "./dist/components/confirm-input.d.ts",
+            "default": "./dist/components/confirm-input.js"
+        },
+        "./components/console-overlay": {
+            "types": "./dist/components/console-overlay.d.ts",
+            "default": "./dist/components/console-overlay.js"
+        },
+        "./components/content-switcher": {
+            "types": "./dist/components/content-switcher.d.ts",
+            "default": "./dist/components/content-switcher.js"
+        },
+        "./components/controlled-scroll-view": {
+            "types": "./dist/components/controlled-scroll-view.d.ts",
+            "default": "./dist/components/controlled-scroll-view.js"
+        },
+        "./components/cursor": {
+            "types": "./dist/components/cursor.d.ts",
+            "default": "./dist/components/cursor.js"
+        },
+        "./components/date-picker": {
+            "types": "./dist/components/date-picker.d.ts",
+            "default": "./dist/components/date-picker.js"
+        },
+        "./components/definition-list": {
+            "types": "./dist/components/definition-list.d.ts",
+            "default": "./dist/components/definition-list.js"
+        },
+        "./components/dialog": {
+            "types": "./dist/components/dialog.d.ts",
+            "default": "./dist/components/dialog.js"
+        },
+        "./components/diff-view": {
+            "types": "./dist/components/diff-view.d.ts",
+            "default": "./dist/components/diff-view.js"
+        },
+        "./components/divider": {
+            "types": "./dist/components/divider.d.ts",
+            "default": "./dist/components/divider.js"
+        },
+        "./components/file-picker": {
+            "types": "./dist/components/file-picker-entry.d.ts",
+            "default": "./dist/components/file-picker-entry.js"
+        },
+        "./components/form": {
+            "types": "./dist/components/form.d.ts",
+            "default": "./dist/components/form.js"
+        },
+        "./components/gauge": {
+            "types": "./dist/components/gauge.d.ts",
+            "default": "./dist/components/gauge.js"
+        },
+        "./components/gradient": {
+            "types": "./dist/components/gradient.d.ts",
+            "default": "./dist/components/gradient.js"
+        },
+        "./components/heading": {
+            "types": "./dist/components/heading.d.ts",
+            "default": "./dist/components/heading.js"
+        },
+        "./components/heatmap": {
+            "types": "./dist/components/heatmap.d.ts",
+            "default": "./dist/components/heatmap.js"
+        },
+        "./components/help": {
+            "types": "./dist/components/help.d.ts",
+            "default": "./dist/components/help.js"
+        },
+        "./components/histogram": {
+            "types": "./dist/components/histogram.d.ts",
+            "default": "./dist/components/histogram.js"
+        },
+        "./components/kbd": {
+            "types": "./dist/components/kbd.d.ts",
+            "default": "./dist/components/kbd.js"
+        },
+        "./components/line-chart": {
+            "types": "./dist/components/line-chart.d.ts",
+            "default": "./dist/components/line-chart.js"
+        },
+        "./components/link": {
+            "types": "./dist/components/link.d.ts",
+            "default": "./dist/components/link.js"
+        },
+        "./components/loading-indicator": {
+            "types": "./dist/components/loading-indicator.d.ts",
+            "default": "./dist/components/loading-indicator.js"
+        },
+        "./components/markdown": {
+            "types": "./dist/components/markdown.d.ts",
+            "default": "./dist/components/markdown.js"
+        },
+        "./components/masked-input": {
+            "types": "./dist/components/masked-input.d.ts",
+            "default": "./dist/components/masked-input.js"
+        },
+        "./components/menu": {
+            "types": "./dist/components/menu.d.ts",
+            "default": "./dist/components/menu.js"
+        },
+        "./components/message-bubble": {
+            "types": "./dist/components/message-bubble.d.ts",
+            "default": "./dist/components/message-bubble.js"
+        },
+        "./components/model-badge": {
+            "types": "./dist/components/model-badge.d.ts",
+            "default": "./dist/components/model-badge.js"
+        },
+        "./components/multi-select": {
+            "types": "./dist/components/multi-select.d.ts",
+            "default": "./dist/components/multi-select.js"
+        },
+        "./components/newline": {
+            "types": "./dist/components/newline.d.ts",
+            "default": "./dist/components/newline.js"
+        },
+        "./components/operation-tree": {
+            "types": "./dist/components/operation-tree.d.ts",
+            "default": "./dist/components/operation-tree.js"
+        },
+        "./components/option-list": {
+            "types": "./dist/components/option-list.d.ts",
+            "default": "./dist/components/option-list.js"
+        },
+        "./components/ordered-list": {
+            "types": "./dist/components/ordered-list.d.ts",
+            "default": "./dist/components/ordered-list.js"
+        },
+        "./components/paginator": {
+            "types": "./dist/components/paginator.d.ts",
+            "default": "./dist/components/paginator.js"
+        },
+        "./components/paragraph": {
+            "types": "./dist/components/paragraph.d.ts",
+            "default": "./dist/components/paragraph.js"
+        },
+        "./components/placeholder": {
+            "types": "./dist/components/placeholder.d.ts",
+            "default": "./dist/components/placeholder.js"
+        },
+        "./components/progress-bar": {
+            "types": "./dist/components/progress-bar.d.ts",
+            "default": "./dist/components/progress-bar.js"
+        },
+        "./components/radio-group": {
+            "types": "./dist/components/radio-group.d.ts",
+            "default": "./dist/components/radio-group.js"
+        },
+        "./components/scatter-plot": {
+            "types": "./dist/components/scatter-plot.d.ts",
+            "default": "./dist/components/scatter-plot.js"
+        },
+        "./components/scroll-bar": {
+            "types": "./dist/components/scroll-bar.d.ts",
+            "default": "./dist/components/scroll-bar.js"
+        },
+        "./components/scroll-bar-box": {
+            "types": "./dist/components/scroll-bar-box.d.ts",
+            "default": "./dist/components/scroll-bar-box.js"
+        },
+        "./components/scroll-list": {
+            "types": "./dist/components/scroll-list.d.ts",
+            "default": "./dist/components/scroll-list.js"
+        },
+        "./components/scroll-view": {
+            "types": "./dist/components/scroll-view.d.ts",
+            "default": "./dist/components/scroll-view.js"
+        },
+        "./components/search-input": {
+            "types": "./dist/components/search-input.d.ts",
+            "default": "./dist/components/search-input.js"
+        },
+        "./components/select-input": {
+            "types": "./dist/components/select-input.d.ts",
+            "default": "./dist/components/select-input.js"
+        },
+        "./components/select-input-indicator": {
+            "types": "./dist/components/select-input-indicator.d.ts",
+            "default": "./dist/components/select-input-indicator.js"
+        },
+        "./components/select-input-item": {
+            "types": "./dist/components/select-input-item.d.ts",
+            "default": "./dist/components/select-input-item.js"
+        },
+        "./components/shimmer-text": {
+            "types": "./dist/components/shimmer-text.d.ts",
+            "default": "./dist/components/shimmer-text.js"
+        },
+        "./components/slider": {
+            "types": "./dist/components/slider.d.ts",
+            "default": "./dist/components/slider.js"
+        },
+        "./components/spacer": {
+            "types": "./dist/components/spacer.d.ts",
+            "default": "./dist/components/spacer.js"
+        },
+        "./components/sparkline": {
+            "types": "./dist/components/sparkline.d.ts",
+            "default": "./dist/components/sparkline.js"
+        },
+        "./components/spinner": {
+            "types": "./dist/components/spinner.d.ts",
+            "default": "./dist/components/spinner.js"
+        },
+        "./components/static": {
+            "types": "./dist/components/static.d.ts",
+            "default": "./dist/components/static.js"
+        },
+        "./components/static-render": {
+            "types": "./dist/components/static-render.d.ts",
+            "default": "./dist/components/static-render.js"
+        },
+        "./components/status-line": {
+            "types": "./dist/components/status-line.d.ts",
+            "default": "./dist/components/status-line.js"
+        },
+        "./components/status-message": {
+            "types": "./dist/components/status-message.d.ts",
+            "default": "./dist/components/status-message.js"
+        },
+        "./components/stepper": {
+            "types": "./dist/components/stepper.d.ts",
+            "default": "./dist/components/stepper.js"
+        },
+        "./components/stopwatch": {
+            "types": "./dist/components/stopwatch.d.ts",
+            "default": "./dist/components/stopwatch.js"
+        },
+        "./components/streaming-text": {
+            "types": "./dist/components/streaming-text.d.ts",
+            "default": "./dist/components/streaming-text.js"
+        },
+        "./components/switch": {
+            "types": "./dist/components/switch.d.ts",
+            "default": "./dist/components/switch.js"
+        },
+        "./components/tab": {
+            "types": "./dist/components/tab.d.ts",
+            "default": "./dist/components/tab.js"
+        },
+        "./components/table": {
+            "types": "./dist/components/table.d.ts",
+            "default": "./dist/components/table.js"
+        },
+        "./components/tabs": {
+            "types": "./dist/components/tabs.d.ts",
+            "default": "./dist/components/tabs.js"
+        },
+        "./components/tag": {
+            "types": "./dist/components/tag.d.ts",
+            "default": "./dist/components/tag.js"
+        },
+        "./components/text": {
+            "types": "./dist/components/text.d.ts",
+            "default": "./dist/components/text.js"
+        },
+        "./components/text-input": {
+            "types": "./dist/components/text-input.d.ts",
+            "default": "./dist/components/text-input.js"
+        },
+        "./components/textarea": {
+            "types": "./dist/components/textarea.d.ts",
+            "default": "./dist/components/textarea.js"
+        },
+        "./components/timer": {
+            "types": "./dist/components/timer.d.ts",
+            "default": "./dist/components/timer.js"
+        },
+        "./components/toast": {
+            "types": "./dist/components/toast.d.ts",
+            "default": "./dist/components/toast.js"
+        },
+        "./components/tooltip": {
+            "types": "./dist/components/tooltip.d.ts",
+            "default": "./dist/components/tooltip.js"
+        },
+        "./components/transform": {
+            "types": "./dist/components/transform.d.ts",
+            "default": "./dist/components/transform.js"
+        },
+        "./components/transition": {
+            "types": "./dist/components/transition.d.ts",
+            "default": "./dist/components/transition.js"
+        },
+        "./components/tree-view": {
+            "types": "./dist/components/tree-view-entry.d.ts",
+            "default": "./dist/components/tree-view-entry.js"
+        },
+        "./components/unordered-list": {
+            "types": "./dist/components/unordered-list.d.ts",
+            "default": "./dist/components/unordered-list.js"
+        },
+        "./hooks/use-animation": {
+            "types": "./dist/ink/hooks/use-animation.d.ts",
+            "default": "./dist/ink/hooks/use-animation.js"
+        },
+        "./hooks/use-app": {
+            "types": "./dist/ink/hooks/use-app.d.ts",
+            "default": "./dist/ink/hooks/use-app.js"
+        },
+        "./hooks/use-box-metrics": {
+            "types": "./dist/ink/hooks/use-box-metrics.d.ts",
+            "default": "./dist/ink/hooks/use-box-metrics.js"
+        },
+        "./hooks/use-clipboard": {
+            "types": "./dist/ink/hooks/use-clipboard.d.ts",
+            "default": "./dist/ink/hooks/use-clipboard.js"
+        },
+        "./hooks/use-color-blindness": {
+            "types": "./dist/ink/hooks/use-color-blindness.d.ts",
+            "default": "./dist/ink/hooks/use-color-blindness.js"
+        },
+        "./hooks/use-element-position": {
+            "types": "./dist/ink/mouse/use-element-position.d.ts",
+            "default": "./dist/ink/mouse/use-element-position.js"
+        },
+        "./hooks/use-console-capture": {
+            "types": "./dist/ink/hooks/use-console-capture.d.ts",
+            "default": "./dist/ink/hooks/use-console-capture.js"
+        },
+        "./hooks/use-cursor": {
+            "types": "./dist/ink/hooks/use-cursor.d.ts",
+            "default": "./dist/ink/hooks/use-cursor.js"
+        },
+        "./hooks/use-focus": {
+            "types": "./dist/ink/hooks/use-focus.d.ts",
+            "default": "./dist/ink/hooks/use-focus.js"
+        },
+        "./hooks/use-focus-manager": {
+            "types": "./dist/ink/hooks/use-focus-manager.d.ts",
+            "default": "./dist/ink/hooks/use-focus-manager.js"
+        },
+        "./hooks/use-form": {
+            "types": "./dist/ink/hooks/use-form.d.ts",
+            "default": "./dist/ink/hooks/use-form.js"
+        },
+        "./hooks/use-hotkey": {
+            "types": "./dist/ink/hooks/use-hotkey.d.ts",
+            "default": "./dist/ink/hooks/use-hotkey.js"
+        },
+        "./hooks/use-input": {
+            "types": "./dist/ink/hooks/use-input.d.ts",
+            "default": "./dist/ink/hooks/use-input.js"
+        },
+        "./hooks/use-interval": {
+            "types": "./dist/ink/hooks/use-interval.d.ts",
+            "default": "./dist/ink/hooks/use-interval.js"
+        },
+        "./hooks/use-is-screen-reader-enabled": {
+            "types": "./dist/ink/hooks/use-is-screen-reader-enabled.d.ts",
+            "default": "./dist/ink/hooks/use-is-screen-reader-enabled.js"
+        },
+        "./hooks/use-key-bindings": {
+            "types": "./dist/ink/hooks/use-key-bindings.d.ts",
+            "default": "./dist/ink/hooks/use-key-bindings.js"
+        },
+        "./hooks/use-key-chord": {
+            "types": "./dist/ink/hooks/use-key-chord.d.ts",
+            "default": "./dist/ink/hooks/use-key-chord.js"
+        },
+        "./hooks/use-linked-scroll": {
+            "types": "./dist/ink/hooks/use-linked-scroll.d.ts",
+            "default": "./dist/ink/hooks/use-linked-scroll.js"
+        },
+        "./hooks/use-mouse": {
+            "types": "./dist/ink/mouse/use-mouse.d.ts",
+            "default": "./dist/ink/mouse/use-mouse.js"
+        },
+        "./hooks/use-mouse-action": {
+            "types": "./dist/ink/mouse/use-mouse-action.d.ts",
+            "default": "./dist/ink/mouse/use-mouse-action.js"
+        },
+        "./hooks/use-mouse-position": {
+            "types": "./dist/ink/mouse/use-mouse-position.d.ts",
+            "default": "./dist/ink/mouse/use-mouse-position.js"
+        },
+        "./hooks/use-on-mouse-click": {
+            "types": "./dist/ink/mouse/use-on-mouse-click.d.ts",
+            "default": "./dist/ink/mouse/use-on-mouse-click.js"
+        },
+        "./hooks/use-on-mouse-hover": {
+            "types": "./dist/ink/mouse/use-on-mouse-hover.d.ts",
+            "default": "./dist/ink/mouse/use-on-mouse-hover.js"
+        },
+        "./hooks/use-on-mouse-state": {
+            "types": "./dist/ink/mouse/use-on-mouse-state.d.ts",
+            "default": "./dist/ink/mouse/use-on-mouse-state.js"
+        },
+        "./hooks/use-paste": {
+            "types": "./dist/ink/hooks/use-paste.d.ts",
+            "default": "./dist/ink/hooks/use-paste.js"
+        },
+        "./hooks/use-persistent-state": {
+            "types": "./dist/ink/hooks/use-persistent-state.d.ts",
+            "default": "./dist/ink/hooks/use-persistent-state.js"
+        },
+        "./hooks/use-scroll-acceleration": {
+            "types": "./dist/ink/hooks/use-scroll-acceleration.d.ts",
+            "default": "./dist/ink/hooks/use-scroll-acceleration.js"
+        },
+        "./hooks/use-scroll-input": {
+            "types": "./dist/ink/hooks/use-scroll-input.d.ts",
+            "default": "./dist/ink/hooks/use-scroll-input.js"
+        },
+        "./hooks/use-stderr": {
+            "types": "./dist/ink/hooks/use-stderr.d.ts",
+            "default": "./dist/ink/hooks/use-stderr.js"
+        },
+        "./hooks/use-stdin": {
+            "types": "./dist/ink/hooks/use-stdin.d.ts",
+            "default": "./dist/ink/hooks/use-stdin.js"
+        },
+        "./hooks/use-stdout": {
+            "types": "./dist/ink/hooks/use-stdout.d.ts",
+            "default": "./dist/ink/hooks/use-stdout.js"
+        },
+        "./hooks/use-stopwatch": {
+            "types": "./dist/ink/hooks/use-stopwatch.d.ts",
+            "default": "./dist/ink/hooks/use-stopwatch.js"
+        },
+        "./hooks/use-terminal-palette": {
+            "types": "./dist/ink/hooks/use-terminal-palette.d.ts",
+            "default": "./dist/ink/hooks/use-terminal-palette.js"
+        },
+        "./hooks/use-text-buffer": {
+            "types": "./dist/ink/hooks/use-text-buffer.d.ts",
+            "default": "./dist/ink/hooks/use-text-buffer.js"
+        },
+        "./hooks/use-text-selection": {
+            "types": "./dist/ink/hooks/use-text-selection.d.ts",
+            "default": "./dist/ink/hooks/use-text-selection.js"
+        },
+        "./hooks/use-timeout": {
+            "types": "./dist/ink/hooks/use-timeout.d.ts",
+            "default": "./dist/ink/hooks/use-timeout.js"
+        },
+        "./hooks/use-timer": {
+            "types": "./dist/ink/hooks/use-timer.d.ts",
+            "default": "./dist/ink/hooks/use-timer.js"
+        },
+        "./hooks/use-window-size": {
+            "types": "./dist/ink/hooks/use-window-size.d.ts",
+            "default": "./dist/ink/hooks/use-window-size.js"
+        },
+        "./core": {
+            "types": "./dist/core/index.d.ts",
+            "default": "./dist/core/index.js"
+        },
+        "./react": {
+            "types": "./dist/react/index.d.ts",
+            "default": "./dist/react/index.js"
+        },
+        "./test": {
+            "types": "./dist/testing/index.d.ts",
+            "default": "./dist/testing/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist/**",
+        "index.js",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:native": "napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
+        "build:native:debug": "napi build --platform --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache *.node",
+        "dev": "pnpm run build --watch",
+        "example": "NODE_NO_WARNINGS=1 node --import=tsx",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "lint:attw": "attw --pack --profile esm-only",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:exports": "node scripts/validate-exports.mjs",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@visulima/ansi": "4.0.0-alpha.18",
+        "@visulima/colorize": "2.0.0-alpha.15",
+        "@visulima/error": "6.0.0-alpha.35",
+        "@visulima/spinner": "1.0.0-alpha.4",
+        "@visulima/string": "3.0.0-alpha.18",
+        "cli-boxes": "catalog:prod",
+        "code-excerpt": "catalog:prod",
+        "is-in-ci": "catalog:prod",
+        "patch-console": "catalog:prod",
+        "scheduler": "catalog:prod",
+        "signal-exit": "catalog:prod",
+        "terminal-size": "catalog:prod",
+        "tseep": "catalog:prod",
+        "yoga-layout": "catalog:prod"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@eslint-react/eslint-plugin": "catalog:lint",
+        "@napi-rs/cli": "catalog:dev",
+        "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@semantic-release/exec": "catalog:dev",
+        "@shikijs/langs": "catalog:prod",
+        "@shikijs/themes": "catalog:dev",
+        "@total-typescript/ts-reset": "catalog:dev",
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-reconciler": "catalog:types",
+        "@types/scheduler": "catalog:types",
+        "@types/ws": "catalog:types",
+        "@visulima/boxen": "3.0.0-alpha.15",
+        "@visulima/packem": "catalog:dev",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "delay": "catalog:dev",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "eslint-plugin-jsx-a11y": "catalog:lint",
+        "eslint-plugin-react": "catalog:lint",
+        "eslint-plugin-react-hooks": "catalog:lint",
+        "eslint-plugin-react-perf": "catalog:lint",
+        "eslint-plugin-react-refresh": "catalog:lint",
+        "eslint-plugin-react-you-might-not-need-an-effect": "catalog:lint",
+        "eslint-plugin-validate-jsx-nesting": "catalog:lint",
+        "fallow": "catalog:lint",
+        "marked": "catalog:dev",
+        "node-pty": "catalog:dev",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "secretlint": "catalog:lint",
+        "semantic-release": "catalog:cli",
+        "shiki": "catalog:syntax",
+        "tsx": "catalog:dev",
+        "type-fest": "catalog:prod",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test",
+        "ws": "catalog:prod"
+    },
+    "peerDependencies": {
+        "@shikijs/langs": "catalog:prod",
+        "@shikijs/themes": "catalog:dev",
+        "@visulima/tabular": "4.0.0-alpha.14",
+        "cfonts": "catalog:prod",
+        "diff": "catalog:prod",
+        "marked": "catalog:dev",
+        "react": "^19.2.6",
+        "react-devtools-core": "^7.0.1",
+        "react-reconciler": "^0.33.0",
+        "shiki": "catalog:syntax",
+        "ws": "catalog:prod"
+    },
+    "peerDependenciesMeta": {
+        "@shikijs/langs": {
+            "optional": true
+        },
+        "@shikijs/themes": {
+            "optional": true
+        },
+        "@visulima/tabular": {
+            "optional": true
+        },
+        "cfonts": {
+            "optional": true
+        },
+        "diff": {
+            "optional": true
+        },
+        "marked": {
+            "optional": true
+        },
+        "react-devtools-core": {
+            "optional": true
+        },
+        "shiki": {
+            "optional": true
+        },
+        "ws": {
+            "optional": true
+        }
+    },
+    "optionalDependencies": {
+        "@visulima/tui-binding-darwin-arm64": "workspace:*",
+        "@visulima/tui-binding-darwin-x64": "workspace:*",
+        "@visulima/tui-binding-linux-arm64-gnu": "workspace:*",
+        "@visulima/tui-binding-linux-arm64-musl": "workspace:*",
+        "@visulima/tui-binding-linux-x64-gnu": "workspace:*",
+        "@visulima/tui-binding-linux-x64-musl": "workspace:*",
+        "@visulima/tui-binding-win32-arm64-msvc": "workspace:*",
+        "@visulima/tui-binding-win32-x64-msvc": "workspace:*"
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "napi": {
+        "binaryName": "tui-native",
+        "packageName": "@visulima/tui-binding",
+        "targets": [
+            "x86_64-apple-darwin",
+            "aarch64-apple-darwin",
+            "x86_64-unknown-linux-gnu",
+            "x86_64-unknown-linux-musl",
+            "aarch64-unknown-linux-gnu",
+            "aarch64-unknown-linux-musl",
+            "x86_64-pc-windows-msvc",
+            "aarch64-pc-windows-msvc"
+        ]
+    }
+}

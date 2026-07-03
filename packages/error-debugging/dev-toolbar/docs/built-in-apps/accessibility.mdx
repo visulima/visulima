@@ -1,0 +1,135 @@
+---
+title: Accessibility
+description: Run WCAG accessibility audits directly in the browser with axe-core. Highlights failing elements with live overlays and persists results across panel reloads.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+**App ID:** `dev-toolbar:a11y`
+
+The Accessibility app integrates [axe-core](https://github.com/dequelabs/axe-core) — the industry-standard accessibility engine used by Deque, Google Lighthouse, and many browser extensions — directly into your dev workflow. Run a scan with one click, see violations highlighted on the page with colour-coded overlays, and drill into each issue with WCAG references and fix guidance.
+
+## Features
+
+- **WCAG 2.0 / 2.1 / 2.2 and Best Practices** standard selection
+- **Colour-coded element overlays** on the live page (critical → red, serious → orange, moderate → yellow, minor → blue)
+- **SessionStorage persistence** — scan results survive panel close/reopen within the same browser session
+- **Severity filtering** — focus on critical issues first
+- **Rule disabling** — disable noisy or inapplicable rules per-session
+- **Export** — download results as JSON or CSV
+- **Tooltip** — shows violation count and severity breakdown without opening the panel; includes quick Scan and Overlays toggle buttons
+
+## Tooltip
+
+The accessibility tooltip appears when hovering the A11y app button in the toolbar. It shows:
+
+- Total violation count (red badge when violations exist, green when clean)
+- Breakdown grid: **Critical / Serious / Moderate / Minor** counts
+- "Scanned X ago" timestamp for the most recent scan
+- **Scan** / **Re-scan** button — runs a full axe-core audit inline
+- **Overlays** button — toggles element highlights on the page
+
+You can scan and toggle overlays without ever opening the full panel.
+
+## Using the Panel
+
+### Running a Scan
+
+1. Open the Accessibility app from the toolbar
+2. Optionally select a **WCAG Standard** from the dropdown (WCAG 2.0 A/AA/AAA, WCAG 2.1 A/AA/AAA, WCAG 2.2 A/AA/AAA, or Best Practices)
+3. Optionally set a **minimum severity** filter (Critical, Serious, Moderate, Minor)
+4. Click **Start Scan**
+
+The scan runs axe-core in the page context and typically completes in under a second for most pages.
+
+### Reading Results
+
+Each violation card shows:
+
+- **Severity badge** (Critical / Serious / Moderate / Minor)
+- **Rule name** and short description
+- **Affected element count**
+- **WCAG tags** (e.g. `wcag2aa`, `wcag143`)
+- **Learn more** link to the axe-core rule documentation
+- **Disable rule** button — suppresses this rule for the remainder of the session
+
+Click a violation card to scroll to and highlight the first affected element on the page.
+
+### Overlays
+
+Toggle **Show Overlays** to paint colour-coded outlines directly onto all failing elements:
+
+| Colour         | Severity |
+| -------------- | -------- |
+| Red outline    | Critical |
+| Orange outline | Serious  |
+| Yellow outline | Moderate |
+| Blue outline   | Minor    |
+
+Overlays use `el.style.setProperty('outline', ..., 'important')` so they always appear regardless of the page's own CSS.
+
+### Exporting Results
+
+Use the **Export JSON** or **Export CSV** buttons in the panel header to download the current scan results. Useful for filing issues, tracking regressions, or pasting into reports.
+
+## Session Persistence
+
+Scan results are saved to `sessionStorage` under the key `__vdt_a11y__`. The data includes:
+
+```ts
+{
+    issues: AxeViolation[];
+    lastScan: number;   // Unix timestamp
+}
+```
+
+This means:
+
+- Results survive closing and reopening the DevTools panel
+- Results are cleared when the browser tab is closed
+- Each page navigation resets the cache (different page = different session entry)
+
+## Configuration
+
+### Enable via Plugin
+
+The Accessibility app is disabled by default. Enable it in your Vite config:
+
+```ts title="vite.config.ts"
+devToolbar({
+    apps: {
+        a11y: true,
+    },
+});
+```
+
+### axe-core Dependency
+
+`axe-core` is an **optional peer dependency** — you must install it separately:
+
+```sh
+pnpm add -D axe-core
+# or
+npm install --save-dev axe-core
+# or
+yarn add -D axe-core
+```
+
+axe-core is dynamically imported inside the scan function, so it does **not** add to your bundle size — it is only loaded when the user triggers a scan in development mode. If axe-core is not installed, the panel displays an error message when a scan is attempted.
+
+<Callout type="info">axe-core runs entirely in the browser. No data leaves your machine. The scan reads the live DOM and reports violations locally.</Callout>
+
+## Supported WCAG Standards
+
+| Standard        | Description                                              |
+| --------------- | -------------------------------------------------------- |
+| `wcag2a`        | WCAG 2.0 Level A — minimum compliance                    |
+| `wcag2aa`       | WCAG 2.0 Level AA — standard compliance target (default) |
+| `wcag2aaa`      | WCAG 2.0 Level AAA — maximum compliance                  |
+| `wcag21a`       | WCAG 2.1 Level A                                         |
+| `wcag21aa`      | WCAG 2.1 Level AA                                        |
+| `wcag21aaa`     | WCAG 2.1 Level AAA — maximum compliance                  |
+| `wcag22a`       | WCAG 2.2 Level A                                         |
+| `wcag22aa`      | WCAG 2.2 Level AA                                        |
+| `wcag22aaa`     | WCAG 2.2 Level AAA — maximum compliance                  |
+| `best-practice` | axe-core best practices (not a formal WCAG level)        |

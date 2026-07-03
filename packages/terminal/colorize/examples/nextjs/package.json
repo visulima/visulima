@@ -1,0 +1,26 @@
+{
+    "name": "colorize_nextjs_example",
+    "version": "0.0.0",
+    "private": true,
+    "scripts": {
+        "build": "next build",
+        "dev": "next dev",
+        "lint": "next lint",
+        "start": "next start"
+    },
+    "dependencies": {
+        "@visulima/colorize": "workspace:*",
+        "next": "catalog:prod",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend"
+    },
+    "devDependencies": {
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "eslint": "catalog:lint",
+        "eslint-config-next": "catalog:lint",
+        "postcss": "catalog:dev",
+        "typescript": "catalog:tsc"
+    }
+}

@@ -1,0 +1,23 @@
+{
+    "name": "tui-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@jrichman/ink": "7.0.0",
+        "@visulima/tui": "workspace:*",
+        "diff": "catalog:prod",
+        "ink": "7.0.5",
+        "marked": "catalog:dev",
+        "react": "catalog:frontend"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "@types/react": "catalog:types",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}

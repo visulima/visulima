@@ -1,0 +1,86 @@
+---
+title: "Installation"
+description: "How to install and import @visulima/bytes"
+---
+
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+# Installation
+
+Install the package using your preferred package manager:
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">```bash npm install @visulima/bytes ```</Tab>
+    <Tab value="pnpm">```bash pnpm add @visulima/bytes ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/bytes ```</Tab>
+    <Tab value="bun">```bash bun add @visulima/bytes ```</Tab>
+</Tabs>
+
+## Import Methods
+
+### ESM (Recommended)
+
+Import specific functions you need:
+
+```typescript
+import { concat, equals, toUint8Array } from "@visulima/bytes";
+```
+
+Import everything:
+
+```typescript
+import * as bytes from "@visulima/bytes";
+
+bytes.concat([...]);
+```
+
+### CommonJS
+
+For CommonJS environments:
+
+```javascript
+const { concat, equals, toUint8Array } = require("@visulima/bytes");
+```
+
+## Requirements
+
+- **Node.js:** ≥22.13 ≤25.x
+- **TypeScript:** ≥5.0 (optional, but recommended for type safety)
+
+## Verify Installation
+
+Verify the package works correctly:
+
+```typescript
+import { concat } from "@visulima/bytes";
+
+const result = concat([new Uint8Array([1, 2]), new Uint8Array([3, 4])]);
+
+console.log(result); // Uint8Array([1, 2, 3, 4])
+```
+
+If you see the expected output, installation was successful!
+
+## TypeScript Support
+
+The package includes full TypeScript type definitions. No additional `@types` packages are needed.
+
+```typescript
+import type { Uint8ArrayList } from "@visulima/bytes";
+import { concat } from "@visulima/bytes";
+
+const arrays: Uint8Array[] = [new Uint8Array([1, 2]), new Uint8Array([3, 4])];
+
+const result: Uint8Array = concat(arrays);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use all available functions
+    </Card>
+    <Card title="API Reference" href="/api">
+        Explore the complete API documentation
+    </Card>
+</Cards>

@@ -1,0 +1,164 @@
+---
+title: "API Reference"
+description: "Complete API documentation for @visulima/object"
+---
+
+# API Reference
+
+## Property Access
+
+### getProperty
+
+```typescript
+function getProperty<T>(object: Record<string, unknown>, path: string, defaultValue?: T): T | undefined;
+```
+
+Get a nested property value using dot notation.
+
+**Parameters:**
+
+- `object` - The source object
+- `path` - Dot notation path (e.g., "user.profile.name")
+- `defaultValue` - Value to return if property doesn't exist
+
+**Returns:** Property value or default value
+
+---
+
+### setProperty
+
+```typescript
+function setProperty(object: Record<string, unknown>, path: string, value: unknown): void;
+```
+
+Set a nested property value using dot notation.
+
+---
+
+### deleteProperty
+
+```typescript
+function deleteProperty(object: Record<string, unknown>, path: string): boolean;
+```
+
+Delete a nested property using dot notation.
+
+**Returns:** `true` if property was deleted
+
+---
+
+### hasProperty
+
+```typescript
+function hasProperty(object: Record<string, unknown>, path: string): boolean;
+```
+
+Check if a nested property exists.
+
+---
+
+### escapePath
+
+```typescript
+function escapePath(path: string): string;
+```
+
+Escape special characters in a property path.
+
+---
+
+## Object Filtering
+
+### pick
+
+```typescript
+function pick<T extends Record<string, unknown>>(object: T, paths: string[]): Partial<T>;
+```
+
+Create a new object with only specified properties.
+
+**Parameters:**
+
+- `object` - Source object
+- `paths` - Array of property paths to keep
+
+**Example:**
+
+```typescript
+pick({ a: 1, b: 2, c: 3 }, ["a", "c"]);
+// { a: 1, c: 3 }
+```
+
+---
+
+### omit
+
+```typescript
+function omit<T extends Record<string, unknown>>(object: T, paths: string[]): Partial<T>;
+```
+
+Create a new object without specified properties.
+
+---
+
+## Deep Operations
+
+### deepKeys
+
+```typescript
+function deepKeys(object: Record<string, unknown>): string[];
+```
+
+Extract all nested keys from an object.
+
+---
+
+### deepKeysFromList
+
+```typescript
+function deepKeysFromList(list: Array<Record<string, unknown>>): string[];
+```
+
+Extract all possible keys from an array of objects.
+
+---
+
+## Type Checking
+
+### isPlainObject
+
+```typescript
+function isPlainObject(value: unknown): value is Record<string, unknown>;
+```
+
+Check if a value is a plain object.
+
+**Returns:** `true` if value is a plain object
+
+---
+
+## Function Summary
+
+| Function           | Category   | Description                 |
+| ------------------ | ---------- | --------------------------- |
+| `getProperty`      | Access     | Get nested property value   |
+| `setProperty`      | Access     | Set nested property value   |
+| `deleteProperty`   | Access     | Delete nested property      |
+| `hasProperty`      | Access     | Check if property exists    |
+| `escapePath`       | Access     | Escape special characters   |
+| `pick`             | Filtering  | Keep specified properties   |
+| `omit`             | Filtering  | Remove specified properties |
+| `deepKeys`         | Deep Ops   | Extract all nested keys     |
+| `deepKeysFromList` | Deep Ops   | Extract keys from array     |
+| `isPlainObject`    | Type Check | Check if plain object       |
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use these functions
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
+</Cards>

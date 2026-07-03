@@ -1,0 +1,39 @@
+---
+title: "VisulimaError API"
+---
+
+# VisulimaError API
+
+## Constructor
+
+```typescript
+new VisulimaError(options);
+```
+
+**Options:**
+
+- `name` (string): Error name
+- `message` (string): Error message
+- `cause` (Error, optional): Original error
+
+## Properties
+
+### `hint: string`
+
+User-friendly hint for fixing the error.
+
+### `cause: Error`
+
+Original error that caused this error.
+
+## Methods
+
+### `getErrorCauses(error: Error): Error[]`
+
+Get all causes in error chain.
+
+**Example:**
+
+```typescript
+const causes = getErrorCauses(error);
+```

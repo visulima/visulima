@@ -1,0 +1,37 @@
+---
+title: "Usage"
+---
+
+# Usage
+
+## Basic Setup
+
+```typescript
+import { createErrorHandler } from "@visulima/error-handler";
+
+const handler = createErrorHandler({
+    debug: process.env.NODE_ENV !== "production",
+    log: true,
+});
+```
+
+## With Logger
+
+```typescript
+const handler = createErrorHandler({
+    debug: false,
+    logger: console,
+});
+```
+
+## Custom Formatter
+
+```typescript
+const handler = createErrorHandler({
+    formatError: (error, req) => ({
+        message: error.message,
+        path: req.url,
+        timestamp: new Date().toISOString(),
+    }),
+});
+```

@@ -1,0 +1,98 @@
+---
+title: "Attested remote cache"
+description: "Keyless-sign remote cache artifacts with Sigstore and verify the signer identity on download — provenance on top of the HMAC integrity layer."
+---
+
+# Attested remote cache
+
+The remote cache has two independent trust layers:
+
+- **`remoteCache.signing` (HMAC)** — _integrity_. A shared secret proves a stored artifact was not tampered with. Anyone holding the secret can produce a valid MAC, so it answers "was this changed?" — not "who produced it?".
+- **`remoteCache.attestation` (Sigstore)** — _authenticity_. Each artifact is keyless-signed in CI against a short-lived [Fulcio](https://docs.sigstore.dev/) certificate minted from the workflow's OIDC token and logged in [Rekor](https://docs.sigstore.dev/logging/overview/). On download vis verifies the bundle **and pins the signer identity**, so a valid signature from an _unexpected_ identity is rejected.
+
+Use attestation when the cache is shared across trust boundaries (a public or multi-tenant bucket, untrusted PR runners) and you need "this artifact was produced by _our_ release workflow," not just "this artifact is intact."
+
+> The payload signed and verified is the artifact's sha256, recomputed from disk on both ends — never the digest the server claims. A server that swaps bytes but echoes the requested hash still fails verification.
+
+## 1. Install the optional dependency
+
+Sigstore is an optional peer dependency — the weight (tuf-js, the bundle/protobuf machinery) is only paid where attestation is actually used:
+
+```bash
+pnpm add -D sigstore   # or: npm install -D sigstore / yarn add -D sigstore / bun add -d sigstore
+```
+
+If `remoteCache.attestation` is configured but `sigstore` is missing, `vis run` prints a startup warning with the exact install command and continues **unsigned** rather than failing the build. `vis attest` (interactive) offers to install it for you.
+
+## 2. Configure the expected signer
+
+`expectedIdentity` is **required** — verifying a bundle without pinning _who_ signed it only re-proves integrity, which the HMAC layer already does. Pick one of three forms:
+
+```typescript
+export default defineConfig({
+    taskRunner: {
+        remoteCache: {
+            url: "https://cache.example.com",
+            token: process.env.CACHE_TOKEN,
+            attestation: {
+                // (a) GitHub Actions preset — recommended
+                expectedIdentity: {
+                    github: {
+                        repo: "visulima/visulima",
+                        workflow: ".github/workflows/release.yml",
+                        ref: "refs/heads/main",
+                    },
+                },
+                requireOnDownload: true,
+            },
+        },
+    },
+});
+```
+
+| Form                                  | When to use                                              | Anchoring                                                                                                                                                                  |
+| ------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `{ github: { repo, workflow, ref } }` | GitHub Actions (the common case)                         | Expands to issuer `https://token.actions.githubusercontent.com` and the literal SAN `https://github.com/{repo}/{workflow}@{ref}`, regex-escaped and `^…$`-anchored for you |
+| `{ oidcIssuer, san }`                 | Any other OIDC provider; you know the exact identity URI | vis regex-escapes and anchors it — pass the **plain URI**, not a regex                                                                                                     |
+| `{ oidcIssuer, sanRegex }`            | Advanced: you genuinely need a pattern (e.g. any tag)    | **Raw, unescaped regex — you own anchoring.** Unanchored values are substring-matched                                                                                      |
+
+> **Why anchoring matters.** sigstore-js matches the SAN with `String.prototype.match`, i.e. as an _unanchored regex_. An unanchored pattern is substring-matched, so a longer attacker-controlled SAN that merely _contains_ your expected value would pass. The `github` and literal `san` forms are escaped and anchored automatically; only `sanRegex` exposes this, and `vis run` warns if a `sanRegex` is not `^…$`-anchored.
+
+## 3. Signing in CI
+
+Signing needs an ambient OIDC token. In GitHub Actions, grant the job `id-token: write`:
+
+```yaml
+permissions:
+    contents: read
+    id-token: write # required for keyless signing
+```
+
+vis detects ambient OIDC via `CI=true`, `ACTIONS_ID_TOKEN_REQUEST_URL`, or `SIGSTORE_ID_TOKEN`. With a token present, every cache **upload** is signed and the bundle travels in the `X-Artifact-Attestation` header. Outside CI (local dev) signing is skipped and the upload proceeds **unsigned** — local machines shouldn't block on a Fulcio round-trip they can't complete.
+
+## 4. `requireOnDownload` and the mixed-producer caveat
+
+`requireOnDownload` (default `false`) controls what happens to a download whose attestation is missing or fails verification:
+
+- **`false`** — treat it as a cache _miss_ and re-execute the task. Soft; no provenance guarantee, but no hard failure.
+- **`true`** — reject it. Provenance is enforced.
+
+Because local producers upload **unsigned**, a workspace that mixes local and CI producers against one cache will see local entries rejected by any consumer with `requireOnDownload: true`, forcing re-execution until CI repopulates them. That is intended. **Set `requireOnDownload: true` only where every producer runs in CI** (e.g. a read-only cache for PR runners, populated solely by the release workflow).
+
+## 5. Observability
+
+Two callbacks are wired to `vis run`'s logger:
+
+- **Rejection** — `remote cache entry <hash> rejected: attestation <invalid|missing>. Treating as a cache miss.`
+- **Verification failure** — `attestation verification failed: <message>`. The message is sigstore's own, so an unexpected-signer mismatch (`certificate identity error - expected …, got …`) is distinguishable from a broken chain or an expired-cert error at a glance.
+
+## Troubleshooting
+
+| Symptom                                                               | Cause                                               | Fix                                                                                                                    |
+| --------------------------------------------------------------------- | --------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `…requires a pinned keyless signer via expectedIdentity` at startup   | `attestation` block has no valid `expectedIdentity` | Add one of the three identity forms                                                                                    |
+| Startup warning: `sigstore package is not installed`                  | Optional dep missing                                | Run the printed install command; uploads stay unsigned until then                                                      |
+| `verification failed: certificate identity error - expected X, got Y` | Signer identity ≠ pinned identity                   | The artifact was produced by a different workflow/ref. Confirm `repo`/`workflow`/`ref` (or fix the producing workflow) |
+| All CI hits re-execute under `requireOnDownload: true`                | A local/unsigned producer populated the cache       | Ensure every producer for that cache runs in CI, or set `requireOnDownload: false`                                     |
+
+See also: [Security audit](./security-audit.mdx) for inbound provenance verification, and `vis attest` for standalone (non-cache) artifact attestation.

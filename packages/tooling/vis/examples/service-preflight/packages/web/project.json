@@ -1,0 +1,29 @@
+{
+    "projectType": "application",
+    "tags": ["category:app"],
+    "targets": {
+        "test": {
+            "command": "node -e \"console.log('web tests OK against DB=' + (process.env.DATABASE_URL ?? 'unset') + ' REDIS=' + (process.env.REDIS_URL ?? 'unset'))\"",
+            "dependsOn": [
+                { "projects": "api", "target": "db" },
+                { "projects": "api", "target": "redis" }
+            ]
+        },
+        "test-with-queue": {
+            "command": "node -e \"console.log('web tests against Q=' + (process.env.QUEUE_URL ?? 'unset'))\"",
+            "dependsOn": [{ "projects": "api", "target": "queue" }]
+        },
+        "integration-test": {
+            "command": "node -e \"console.log('integration test running with DB=' + process.env.DATABASE_URL); setTimeout(() => console.log('integration test passed'), 2500)\"",
+            "dependsOn": [{ "projects": "api", "target": "db" }]
+        },
+        "serve": {
+            "command": "node scripts/http-server.mjs",
+            "preset": "server",
+            "dependsOn": [
+                { "projects": "api", "target": "db" },
+                { "projects": "api", "target": "redis" }
+            ]
+        }
+    }
+}

@@ -1,0 +1,262 @@
+---
+title: Testing Utilities API
+description: Complete API reference for ANSI string testing utilities in @visulima/string.
+---
+
+# Testing Utilities API
+
+Detailed API reference for the ANSI string testing and comparison utilities.
+
+## toEqualAnsi
+
+A Vitest custom matcher for comparing ANSI-encoded strings. Provides detailed error output when strings do not match, showing both the visible content and the underlying escape codes.
+
+```typescript
+function toEqualAnsi(actual: string, expected: string): ExpectationResult;
+```
+
+**Import:**
+
+```typescript
+import { toEqualAnsi } from "@visulima/string/test/vitest";
+```
+
+**Parameters:**
+
+| Parameter  | Type     | Description                      |
+| ---------- | -------- | -------------------------------- |
+| `actual`   | `string` | The actual ANSI string received. |
+| `expected` | `string` | The expected ANSI string.        |
+
+**Returns:** `ExpectationResult` -- An object with `pass` (boolean) and `message` (function returning a string).
+
+**Setup:**
+
+```typescript
+import { expect } from "vitest";
+import { toEqualAnsi } from "@visulima/string/test/vitest";
+
+expect.extend({ toEqualAnsi });
+```
+
+**Usage in tests:**
+
+```typescript
+it("should match colored output", () => {
+    const actual = "\x1b[31mError\x1b[39m";
+    const expected = "\x1b[31mError\x1b[39m";
+
+    expect(actual).toEqualAnsi(expected);
+});
+```
+
+**Error output:** When the assertion fails, the message includes:
+
+- Visible content of both strings (with ANSI codes stripped)
+- Escape codes shown as visible characters
+- JSON-encoded representation
+- Visual width of each string
+- Whether the visible content is identical (indicating only escape codes differ)
+
+### ExpectationResult
+
+```typescript
+interface ExpectationResult {
+    /** Whether the assertion passed. */
+    pass: boolean;
+
+    /** Function returning the error message for display. */
+    message: () => string;
+
+    /** The actual value (optional, for diff display). */
+    actual?: unknown;
+
+    /** The expected value (optional, for diff display). */
+    expected?: unknown;
+}
+```
+
+### CustomMatchers
+
+TypeScript interface for extending Vitest's `expect`:
+
+```typescript
+interface CustomMatchers {
+    toEqualAnsi: (expected: string) => ExpectationResult;
+}
+```
+
+---
+
+## formatAnsiString
+
+Formats an ANSI string into multiple representations for debugging and test output.
+
+```typescript
+function formatAnsiString(ansiString: string): {
+    ansi: string;
+    json: string;
+    lengthDifference: number;
+    stripped: string;
+    visible: string;
+};
+```
+
+**Import:**
+
+```typescript
+import { formatAnsiString } from "@visulima/string/test/utils";
+```
+
+**Parameters:**
+
+| Parameter    | Type     | Description                |
+| ------------ | -------- | -------------------------- |
+| `ansiString` | `string` | The ANSI string to format. |
+
+**Returns:** An object with the following properties:
+
+| Property           | Type     | Description                                                                                                          |
+| ------------------ | -------- | -------------------------------------------------------------------------------------------------------------------- |
+| `ansi`             | `string` | The original ANSI string, unchanged.                                                                                 |
+| `stripped`         | `string` | The string with all ANSI/VT control characters removed (using `node:util.stripVTControlCharacters`).                 |
+| `visible`          | `string` | The string with escape characters replaced by the literal text `\u001B` so they are visible.                         |
+| `json`             | `string` | The `JSON.stringify` output, showing all escape codes as `\u001b` sequences.                                         |
+| `lengthDifference` | `number` | The difference in `.length` between the original and stripped string, indicating how many characters are ANSI codes. |
+
+**Examples:**
+
+```typescript
+const colored = "\x1b[31mError\x1b[39m";
+const formatted = formatAnsiString(colored);
+
+formatted.ansi; // '\x1b[31mError\x1b[39m'
+formatted.stripped; // 'Error'
+formatted.visible; // '\\u001B[31mError\\u001B[39m'
+formatted.json; // '"\\u001b[31mError\\u001b[39m"'
+formatted.lengthDifference; // 9
+```
+
+---
+
+## expectAnsiStrings
+
+Creates a detailed comparison result for two ANSI strings. This is the underlying implementation used by `toEqualAnsi`.
+
+```typescript
+function expectAnsiStrings(actual: string, expected: string): ExpectationResult;
+```
+
+**Import:**
+
+```typescript
+import { expectAnsiStrings } from "@visulima/string/test/utils";
+```
+
+**Parameters:**
+
+| Parameter  | Type     | Description               |
+| ---------- | -------- | ------------------------- |
+| `actual`   | `string` | The actual ANSI string.   |
+| `expected` | `string` | The expected ANSI string. |
+
+**Returns:** `ExpectationResult` -- The same result type as `toEqualAnsi`.
+
+**Examples:**
+
+```typescript
+const result = expectAnsiStrings("\x1b[31mError\x1b[39m", "\x1b[32mError\x1b[39m");
+
+result.pass; // false (different color codes)
+result.message(); // Detailed diff message
+```
+
+---
+
+## compareAnsiStrings
+
+Performs a detailed comparison between two ANSI strings, returning structured data about the differences.
+
+```typescript
+function compareAnsiStrings(
+    actual: string,
+    expected: string,
+): {
+    actual: ReturnType<typeof formatAnsiString>;
+    ansiEqual: boolean;
+    expected: ReturnType<typeof formatAnsiString>;
+    strippedEqual: boolean;
+    summary: {
+        actualLength: number;
+        actualStrippedLength: number;
+        ansiEqual: boolean;
+        expectedLength: number;
+        expectedStrippedLength: number;
+        strippedEqual: boolean;
+    };
+};
+```
+
+**Import:**
+
+```typescript
+import { compareAnsiStrings } from "@visulima/string/test/utils";
+```
+
+**Parameters:**
+
+| Parameter  | Type     | Description               |
+| ---------- | -------- | ------------------------- |
+| `actual`   | `string` | The actual ANSI string.   |
+| `expected` | `string` | The expected ANSI string. |
+
+**Returns:** An object with:
+
+| Property        | Type      | Description                                                     |
+| --------------- | --------- | --------------------------------------------------------------- |
+| `actual`        | `object`  | The `formatAnsiString` result for the actual string.            |
+| `expected`      | `object`  | The `formatAnsiString` result for the expected string.          |
+| `ansiEqual`     | `boolean` | Whether the full strings (including ANSI codes) are identical.  |
+| `strippedEqual` | `boolean` | Whether the visible content (ANSI codes stripped) is identical. |
+| `summary`       | `object`  | Aggregate comparison data including lengths and equality flags. |
+
+**Examples:**
+
+```typescript
+const result = compareAnsiStrings("\x1b[31mError\x1b[39m", "\x1b[32mError\x1b[39m");
+
+result.ansiEqual; // false
+result.strippedEqual; // true (both say "Error")
+result.summary.actualLength; // 14
+result.summary.actualStrippedLength; // 5
+result.summary.expectedLength; // 14
+result.summary.expectedStrippedLength; // 5
+```
+
+**Use case:** Useful when you need programmatic access to the comparison data rather than just a pass/fail assertion:
+
+```typescript
+it("should use correct colors", () => {
+    const output = generateOutput();
+    const expected = generateExpected();
+
+    const comparison = compareAnsiStrings(output, expected);
+
+    if (!comparison.ansiEqual && comparison.strippedEqual) {
+        console.log("Content matches but ANSI codes differ");
+        console.log("Actual JSON:", comparison.actual.json);
+        console.log("Expected JSON:", comparison.expected.json);
+    }
+
+    expect(comparison.ansiEqual).toBe(true);
+});
+```
+
+---
+
+## Notes
+
+- All ANSI stripping uses Node.js built-in `stripVTControlCharacters` from `node:util`.
+- The `toEqualAnsi` matcher uses `getStringWidth` from `@visulima/string` to calculate the visual width shown in error messages.
+- These utilities work with any ANSI escape codes, including SGR (colors, bold, underline), OSC (hyperlinks), and other VT control sequences.
+- The `test/vitest` export provides the matcher function directly; the `test/utils` export provides the lower-level utilities for custom testing setups.

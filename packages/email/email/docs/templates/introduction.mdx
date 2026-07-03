@@ -1,0 +1,297 @@
+---
+title: Template Engines
+description: Use template engines for dynamic email content with @visulima/email
+---
+
+# Template Engines
+
+@visulima/email supports multiple template engines for rendering dynamic email content. All template engines implement the `TemplateRenderer` interface and can be used with the `MailMessage.view()` method.
+
+```typescript
+type TemplateRenderer = (template: unknown, data?: Record<string, unknown>, options?: Record<string, unknown>) => string | Promise<string>;
+```
+
+## Available Template Engines
+
+### Handlebars
+
+[Handlebars](https://handlebarsjs.com/) provides logic-less templating with support for helpers and partials.
+
+**Install:** `npm install handlebars`
+
+```typescript
+import { MailMessage } from "@visulima/email";
+import { renderHandlebars } from "@visulima/email/template/handlebars";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome");
+
+await message.view(renderHandlebars, "<h1>Hello {{name}}!</h1><p>Welcome to {{company}}.</p>", {
+    name: "John",
+    company: "Acme Corp",
+});
+```
+
+#### Registering Helpers
+
+```typescript
+import { registerHandlebarsHelper } from "@visulima/email/template/handlebars";
+
+registerHandlebarsHelper("uppercase", (str: string) => str.toUpperCase());
+
+await message.view(renderHandlebars, "<h1>Hello {{uppercase name}}!</h1>", {
+    name: "John",
+});
+```
+
+#### Registering Partials
+
+```typescript
+import { registerHandlebarsPartial } from "@visulima/email/template/handlebars";
+
+registerHandlebarsPartial("header", "<header><h1>{{title}}</h1></header>");
+
+await message.view(renderHandlebars, "{{> header}}<p>Content here</p>", {
+    title: "Welcome",
+});
+```
+
+### MJML
+
+[MJML](https://mjml.io/) is a framework that makes it easy to create responsive emails. It compiles MJML markup to HTML.
+
+**Install:** `npm install mjml`
+
+```typescript
+import { MailMessage } from "@visulima/email";
+import mjml from "@visulima/email/template/mjml";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome");
+
+const mjmlTemplate = `
+<mjml>
+  <mj-body>
+    <mj-section>
+      <mj-column>
+        <mj-text>Hello World!</mj-text>
+      </mj-column>
+    </mj-section>
+  </mj-body>
+</mjml>
+`;
+
+await message.view(mjml, mjmlTemplate);
+```
+
+#### MJML Options
+
+| Option            | Type                           | Default  | Description                 |
+| ----------------- | ------------------------------ | -------- | --------------------------- |
+| `beautify`        | `boolean`                      | `false`  | Beautify the output HTML    |
+| `minify`          | `boolean`                      | `false`  | Minify the output HTML      |
+| `keepComments`    | `boolean`                      | `true`   | Keep comments in the output |
+| `validationLevel` | `"strict" \| "soft" \| "skip"` | `"soft"` | Validation strictness level |
+| `fonts`           | `Record<string, string>`       | -        | Custom fonts map            |
+
+```typescript
+await message.view(
+    mjml,
+    mjmlTemplate,
+    {},
+    {
+        minify: true,
+        validationLevel: "strict",
+    },
+);
+```
+
+### React Email
+
+[React Email](https://react.email/) lets you build beautiful emails using React components.
+
+**Install:** `npm install @react-email/render @react-email/components`
+
+```typescript
+import { MailMessage } from "@visulima/email";
+import reactEmail from "@visulima/email/template/react-email";
+import { Html, Head, Body, Text } from "@react-email/components";
+
+const WelcomeEmail = ({ name }: { name: string }) => (
+    <Html>
+        <Head />
+        <Body>
+            <Text>Hello {name}!</Text>
+        </Body>
+    </Html>
+);
+
+const message = new MailMessage()
+    .to("user@example.com")
+    .from("sender@example.com")
+    .subject("Welcome");
+
+await message.view(reactEmail, <WelcomeEmail name="John" />);
+```
+
+#### React Email Options
+
+| Option      | Type      | Default | Description                          |
+| ----------- | --------- | ------- | ------------------------------------ |
+| `plainText` | `boolean` | `false` | Render as plain text instead of HTML |
+| `pretty`    | `boolean` | `false` | Pretty print the output HTML         |
+
+### Vue Email
+
+[Vue Email](https://vuemail.net/) lets you build emails with Vue components.
+
+**Install:** `npm install @vue-email/render @vue-email/components`
+
+```typescript
+import { MailMessage } from "@visulima/email";
+import vueEmail from "@visulima/email/template/vue-email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome");
+
+await message.view(vueEmail, VueEmailComponent, {
+    name: "John",
+    company: "Acme",
+});
+```
+
+#### Vue Email Options
+
+| Option              | Type                      | Default | Description                          |
+| ------------------- | ------------------------- | ------- | ------------------------------------ |
+| `plainText`         | `boolean`                 | `false` | Render as plain text instead of HTML |
+| `pretty`            | `boolean`                 | `false` | Pretty print the output HTML         |
+| `htmlToTextOptions` | `Record<string, unknown>` | -       | Options for HTML-to-text conversion  |
+
+### HTML-to-Text
+
+The HTML-to-text converter transforms HTML content into readable plain text. It is used automatically by `MailMessage` when only HTML content is provided (auto-text generation).
+
+**Install:** `npm install html-to-text`
+
+```typescript
+import htmlToText from "@visulima/email/template/html-to-text";
+
+const text = htmlToText("<h1>Hello World</h1><p>Welcome to our platform.</p>");
+// Output: "HELLO WORLD\n\nWelcome to our platform."
+```
+
+#### HTML-to-Text Options
+
+| Option             | Type              | Default | Description                              |
+| ------------------ | ----------------- | ------- | ---------------------------------------- |
+| `wordwrap`         | `number \| false` | `80`    | Word wrap limit (false to disable)       |
+| `preserveNewlines` | `boolean`         | `false` | Preserve newlines in output              |
+| `longWordSplit`    | `object`          | -       | Options for handling long words          |
+| `selectors`        | `object[]`        | -       | Custom selectors for formatting elements |
+
+### Liquid
+
+[LiquidJS](https://liquidjs.com/) is the Shopify templating language, with tags, filters, and control flow.
+
+**Install:** `npm install liquidjs`
+
+```typescript
+import { MailMessage } from "@visulima/email";
+import liquid from "@visulima/email/template/liquid";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome");
+
+await message.view(liquid, "{% if vip %}VIP {% endif %}Hello {{ name | upcase }}!", {
+    name: "ada",
+    vip: true,
+});
+```
+
+The render function accepts an options object that is forwarded to the LiquidJS `Liquid` constructor as the third argument.
+
+### JSX Email
+
+[jsx-email](https://jsx.email/) renders email components with a Preact-compatible runtime.
+
+**Install:** `npm install jsx-email`
+
+```typescript
+import jsxEmail from "@visulima/email/template/jsx-email";
+import { Text } from "jsx-email";
+
+const html = await jsxEmail(<Text>Hello jsx-email</Text>);
+
+// Pass `{ plainText: true }` as the third argument to render plain text instead.
+const text = await jsxEmail(<Text>Plain body</Text>, undefined, { plainText: true });
+```
+
+### i18n (Localized Rendering)
+
+The i18n helper wraps **any** template engine with locale resolution: it picks the template for the requested locale, falling back to the language subtag (`en-US` → `en`) and then to a default locale.
+
+```typescript
+import { renderHandlebars } from "@visulima/email/template/handlebars";
+import { createI18nRenderer, renderI18n } from "@visulima/email/template/i18n";
+
+const templates = {
+    en: "Hello {{name}}",
+    de: "Hallo {{name}}",
+};
+
+// One-off render:
+await renderI18n(templates, "de", renderHandlebars, { name: "Ada" }); // "Hallo Ada"
+
+// Reusable renderer bound to an engine + default locale:
+const render = createI18nRenderer(renderHandlebars, "en");
+
+await render(templates, "fr", { name: "Cleo" }); // falls back to "en" → "Hello Cleo"
+```
+
+`resolveLocale(templates, locale, defaultLocale?)` is also exported if you only need the resolution logic. `renderI18n` throws an `EmailError` when neither the locale, its language subtag, nor the default locale has a template.
+
+## Auto-Generated Text Content
+
+When you use `message.view()` or set HTML content with `message.html()`, @visulima/email automatically generates a plain text version using the HTML-to-text converter. This ensures email clients that don't support HTML still display readable content.
+
+To disable auto-text generation:
+
+```typescript
+await message.view(renderHandlebars, template, data, {
+    autoText: false,
+});
+```
+
+## Text-Only Templates
+
+Use `viewText()` for text-only template rendering:
+
+```typescript
+import { renderHandlebars } from "@visulima/email/template/handlebars";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Welcome");
+
+await message.viewText(renderHandlebars, "Hello {{name}}! Welcome to {{company}}.", {
+    name: "John",
+    company: "Acme Corp",
+});
+```
+
+## Custom Template Engines
+
+You can create custom template engines by implementing the `TemplateRenderer` type:
+
+```typescript
+import type { TemplateRenderer } from "@visulima/email";
+
+const myRenderer: TemplateRenderer = (template, data, options) => {
+    let result = template as string;
+
+    for (const [key, value] of Object.entries(data || {})) {
+        result = result.replaceAll(`\${${key}}`, String(value));
+    }
+
+    return result;
+};
+
+await message.view(myRenderer, "<h1>Hello ${name}!</h1>", {
+    name: "John",
+});
+```

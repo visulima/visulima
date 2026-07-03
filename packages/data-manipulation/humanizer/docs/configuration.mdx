@@ -1,0 +1,510 @@
+---
+title: "Configuration"
+---
+
+# Configuration
+
+Comprehensive configuration guide for customizing bytes and duration formatting.
+
+## Bytes Configuration
+
+### Number Formatting
+
+Control how numbers are displayed using standard Intl.NumberFormat options.
+
+#### Decimal Precision
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+// No decimals (default)
+formatBytes(1234567);
+// => "1 MB"
+
+// 2 decimal places
+formatBytes(1234567, { decimals: 2 });
+// => "1.18 MB"
+
+// Fixed decimal places with Intl options
+formatBytes(1234567, {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+});
+// => "1.18 MB"
+```
+
+#### Grouping Separators
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+// With grouping (default)
+formatBytes(1234567890, { unit: "KB", useGrouping: true });
+// => "1,205,632 KB"
+
+// Without grouping
+formatBytes(1234567890, { unit: "KB", useGrouping: false });
+// => "1205632 KB"
+```
+
+#### Scientific Notation
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+formatBytes(1234567890, {
+    unit: "B",
+    notation: "scientific",
+});
+// => "1.234567890E9 B"
+
+formatBytes(1234567890, {
+    unit: "B",
+    notation: "engineering",
+});
+// => "1.234567890E9 B"
+
+formatBytes(1234567890, {
+    notation: "compact",
+});
+// => "1.2B B"
+```
+
+### Unit System Selection
+
+Choose the appropriate unit system for your use case.
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const bytes = 1073741824;
+
+// Metric (decimal, 1000-based)
+formatBytes(bytes, { units: "metric", base: 10 });
+// => "1.07 GB"
+
+// IEC (binary, 1024-based)
+formatBytes(bytes, { units: "iec", base: 2 });
+// => "1 GiB"
+
+// French octet variants
+formatBytes(bytes, { units: "metric_octet", locale: "fr-FR" });
+// => "1,07 Go"
+
+formatBytes(bytes, { units: "iec_octet", locale: "fr-FR" });
+// => "1 Gio"
+```
+
+### Locale Settings
+
+```typescript
+import { formatBytes, parseBytes } from "@visulima/humanizer";
+
+// Application-wide locale configuration
+const userLocale = navigator.language || "en-US";
+
+function formatFileSize(bytes: number): string {
+    return formatBytes(bytes, {
+        decimals: 2,
+        locale: userLocale,
+    });
+}
+
+function parseFileSize(input: string): number {
+    return parseBytes(input, { locale: userLocale });
+}
+```
+
+### Custom Configuration Objects
+
+Create reusable configuration objects:
+
+```typescript
+import type { FormateByteOptions } from "@visulima/humanizer";
+
+// Configuration for file sizes in UI
+const uiByteConfig: FormateByteOptions = {
+    decimals: 1,
+    units: "iec",
+    base: 2,
+    long: false,
+};
+
+// Configuration for technical documentation
+const docsByteConfig: FormateByteOptions = {
+    decimals: 2,
+    units: "metric",
+    base: 10,
+    long: true,
+};
+
+// Configuration for French locale
+const frenchByteConfig: FormateByteOptions = {
+    decimals: 2,
+    locale: "fr-FR",
+    units: "metric_octet",
+    base: 10,
+};
+```
+
+## Duration Configuration
+
+### Unit Selection
+
+Control which units appear in the output.
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+const ms = 97320000;
+
+// Default units (weeks, days, hours, minutes, seconds)
+duration(ms);
+// => "1 day, 3 hours, 2 minutes"
+
+// Hours and minutes only
+duration(ms, { units: ["h", "m"] });
+// => "27 hours, 2 minutes"
+
+// Full precision
+duration(ms, { units: ["d", "h", "m", "s", "ms"] });
+// => "1 day, 3 hours, 2 minutes"
+
+// Coarse granularity (years, months, weeks)
+duration(ms, { units: ["y", "mo", "w", "d"] });
+// => "1 day"
+```
+
+### Output Limiting
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+const ms = 1000000000000;
+
+// Show all units (very long)
+duration(ms);
+// => "31 years, 8 months, 1 week, 19 hours, 46 minutes, 40 seconds"
+
+// Show only top 2 units
+duration(ms, { largest: 2 });
+// => "31 years, 8 months"
+
+// Show only top 3 units
+duration(ms, { largest: 3 });
+// => "31 years, 8 months, 1 week"
+```
+
+### Rounding Strategy
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+const ms = 1234.56;
+
+// No rounding (show decimals)
+duration(ms);
+// => "1.23456 seconds"
+
+// Round to nearest integer
+duration(ms, { round: true });
+// => "1 second"
+
+// Control decimals without rounding
+duration(ms, { maxDecimalPoints: 2 });
+// => "1.23 seconds"
+
+// Combine rounding with largest
+duration(97380000, { largest: 2, round: true });
+// => "1 day, 3 hours"
+```
+
+### Text Formatting
+
+Customize delimiters, conjunctions, and spacing.
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+const ms = 22141000;
+
+// Default formatting
+duration(ms);
+// => "6 hours, 9 minutes, 1 second"
+
+// Custom delimiter
+duration(ms, { delimiter: " and " });
+// => "6 hours and 9 minutes and 1 second"
+
+// Conjunction before last unit
+duration(ms, { conjunction: " and " });
+// => "6 hours, 9 minutes, and 1 second"
+
+// No serial comma
+duration(ms, { conjunction: " and ", serialComma: false });
+// => "6 hours, 9 minutes and 1 second"
+
+// Custom spacer
+duration(260040000, { spacer: " whole " });
+// => "3 whole days, 14 whole minutes"
+```
+
+### Language Configuration
+
+```typescript
+import { duration } from "@visulima/humanizer";
+import { durationLanguage as de } from "@visulima/humanizer/language/de";
+import { durationLanguage as es } from "@visulima/humanizer/language/es";
+
+// Application-wide language setting
+const userLanguage = getUserPreferredLanguage();
+
+async function getDurationLanguage(langCode: string) {
+    try {
+        const module = await import(`@visulima/humanizer/language/${langCode}`);
+        return module.durationLanguage;
+    } catch {
+        const { durationLanguage: en } = await import("@visulima/humanizer/language/en");
+        return en;
+    }
+}
+
+const language = await getDurationLanguage(userLanguage);
+
+duration(3000, { language });
+```
+
+### Custom Unit Measures
+
+Override default unit lengths for specialized applications.
+
+```typescript
+import type { DurationUnitMeasures } from "@visulima/humanizer";
+
+// Standard measures
+const standard: DurationUnitMeasures = {
+    y: 31556952000, // 365.2425 days
+    mo: 2629746000, // 30.436875 days
+    w: 604800000, // 7 days
+    d: 86400000, // 24 hours
+    h: 3600000, // 60 minutes
+    m: 60000, // 60 seconds
+    s: 1000, // 1000 ms
+    ms: 1,
+};
+
+// Simplified (30-day months, 365-day years)
+const simplified: DurationUnitMeasures = {
+    y: 365 * 86400000, // 365 days
+    mo: 30 * 86400000, // 30 days
+    w: 7 * 86400000, // 7 days
+    d: 86400000,
+    h: 3600000,
+    m: 60000,
+    s: 1000,
+    ms: 1,
+};
+
+// Business time (8-hour days, 5-day weeks)
+const businessTime: DurationUnitMeasures = {
+    y: 260 * 8 * 3600000, // 260 business days
+    mo: 22 * 8 * 3600000, // 22 business days
+    w: 5 * 8 * 3600000, // 5 business days
+    d: 8 * 3600000, // 8 hours
+    h: 3600000,
+    m: 60000,
+    s: 1000,
+    ms: 1,
+};
+
+duration(2629800000, { unitMeasures: simplified });
+// => "1 month, 10 hours, 30 minutes"
+```
+
+### Custom Digit Replacements
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+// Custom digit system
+const romanNumerals = ["", "I", "II", "III", "IV", "V", "VI", "VII", "VIII", "IX"];
+
+duration(1234, {
+    digitReplacements: ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9"],
+});
+
+// Arabic-Indic digits (built into Arabic language)
+import { durationLanguage as ar } from "@visulima/humanizer/language/ar";
+duration(1234, { language: ar });
+// => "١٫٢٣٤ ثانية"
+```
+
+## Configuration Presets
+
+Create and reuse configuration presets for common scenarios.
+
+### UI Display Preset
+
+```typescript
+import type { DurationOptions } from "@visulima/humanizer";
+
+export const uiDurationConfig: DurationOptions = {
+    units: ["d", "h", "m"],
+    largest: 2,
+    round: true,
+};
+
+// Usage
+duration(timestamp, uiDurationConfig);
+```
+
+### Technical Documentation Preset
+
+```typescript
+import type { DurationOptions } from "@visulima/humanizer";
+
+export const technicalDurationConfig: DurationOptions = {
+    units: ["h", "m", "s", "ms"],
+    largest: 3,
+    maxDecimalPoints: 3,
+};
+```
+
+### Localized Preset Factory
+
+```typescript
+import type { DurationOptions } from "@visulima/humanizer";
+
+async function createLocalizedDurationConfig(locale: string): Promise<DurationOptions> {
+    const langCode = locale.split("-")[0];
+    const languageModule = await import(`@visulima/humanizer/language/${langCode}`);
+
+    return {
+        language: languageModule.durationLanguage,
+        units: ["d", "h", "m"],
+        largest: 2,
+        round: true,
+    };
+}
+```
+
+## Environment-Based Configuration
+
+```typescript
+// config/humanizer.ts
+import type { FormateByteOptions, DurationOptions } from "@visulima/humanizer";
+
+interface HumanizerConfig {
+    bytes: FormateByteOptions;
+    duration: DurationOptions;
+}
+
+export const config: HumanizerConfig = {
+    bytes: {
+        decimals: process.env.NODE_ENV === "production" ? 1 : 2,
+        units: process.env.BYTE_UNIT_SYSTEM === "iec" ? "iec" : "metric",
+        locale: process.env.LOCALE || "en-US",
+    },
+    duration: {
+        units: ["d", "h", "m", "s"],
+        largest: Number.parseInt(process.env.DURATION_MAX_UNITS || "3", 10),
+        round: process.env.NODE_ENV === "production",
+    },
+};
+```
+
+## Validation Helpers
+
+```typescript
+import type { DurationUnitName } from "@visulima/humanizer";
+
+export function validateUnits(units: string[]): units is DurationUnitName[] {
+    const validUnits = ["y", "mo", "w", "d", "h", "m", "s", "ms"];
+    return units.every((unit) => validUnits.includes(unit));
+}
+
+export function ensureDescendingOrder(units: DurationUnitName[]): boolean {
+    const order = ["y", "mo", "w", "d", "h", "m", "s", "ms"];
+    let lastIndex = -1;
+
+    for (const unit of units) {
+        const index = order.indexOf(unit);
+        if (index <= lastIndex) return false;
+        lastIndex = index;
+    }
+
+    return true;
+}
+```
+
+## Best Practices
+
+### Consistency
+
+Use the same configuration throughout your application:
+
+```typescript
+// utils/humanizer.ts
+import { formatBytes, duration } from "@visulima/humanizer";
+import type { FormateByteOptions, DurationOptions } from "@visulima/humanizer";
+
+const byteConfig: FormateByteOptions = {
+    decimals: 2,
+    units: "iec",
+    base: 2,
+};
+
+const durationConfig: DurationOptions = {
+    units: ["d", "h", "m"],
+    largest: 2,
+    round: true,
+};
+
+export const formatFileSize = (bytes: number) => formatBytes(bytes, byteConfig);
+export const formatDuration = (ms: number) => duration(ms, durationConfig);
+```
+
+### User Preferences
+
+Respect user locale and preferences:
+
+```typescript
+import { formatBytes, duration } from "@visulima/humanizer";
+
+class HumanizerService {
+    constructor(private userLocale: string) {}
+
+    formatBytes(bytes: number) {
+        return formatBytes(bytes, {
+            decimals: 2,
+            locale: this.userLocale,
+        });
+    }
+
+    async formatDuration(ms: number) {
+        const langCode = this.userLocale.split("-")[0];
+        const { durationLanguage } = await import(`@visulima/humanizer/language/${langCode}`);
+
+        return duration(ms, {
+            language: durationLanguage,
+            largest: 2,
+        });
+    }
+}
+```
+
+### Type Safety
+
+Use TypeScript for configuration validation:
+
+```typescript
+import type { FormateByteOptions } from "@visulima/humanizer";
+
+const config: FormateByteOptions = {
+    decimals: 2,
+    units: "iec", // Type-checked
+    base: 2, // Type-checked
+    // @ts-expect-error - Invalid unit system
+    units: "invalid",
+};
+```

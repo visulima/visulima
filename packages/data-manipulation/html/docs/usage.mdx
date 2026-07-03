@@ -1,0 +1,784 @@
+---
+title: "Usage"
+---
+
+# Usage Guide
+
+Comprehensive guide to all HTML processing features in @visulima/html.
+
+## HTML Escaping
+
+### Basic Content Escaping
+
+Escape HTML special characters for safe insertion into HTML content:
+
+```typescript
+import { escapeHtml } from "@visulima/html";
+
+// Escape dangerous characters
+escapeHtml("<script>alert('xss')</script>");
+// => '&lt;script>alert('xss')&lt;/script>'
+
+// Escape ampersands
+escapeHtml("Hello & World");
+// => 'Hello &amp; World'
+
+// Handle null/undefined
+escapeHtml(null);
+// => ''
+
+escapeHtml(undefined);
+// => ''
+```
+
+### Attribute Escaping
+
+Escape for use in HTML attribute values:
+
+```typescript
+import { escapeHtml } from "@visulima/html";
+
+// Attribute mode escapes quotes
+const value = 'data-value="test"';
+escapeHtml(value, true);
+// => 'data-value=&quot;test&quot;'
+
+// Use in attributes
+const userInput = 'value"onclick="alert(1)"';
+const html = `<input value="${escapeHtml(userInput, true)}">`;
+// Safe: <input value="value&quot;onclick=&quot;alert(1)&quot;">
+```
+
+### Performance Characteristics
+
+```typescript
+import { escapeHtml } from "@visulima/html";
+
+// Fast path for strings without special characters
+escapeHtml("Hello World");
+// No allocations needed
+
+// Optimized for repeated escaping
+for (const item of items) {
+    const safe = escapeHtml(item.content);
+}
+```
+
+## HTML Template Tags
+
+### Template Literal Usage
+
+```typescript
+import { html } from "@visulima/html";
+
+// Static HTML (trusted)
+const markup = html`<div class="container">Hello</div>`;
+// => '<div class="container">Hello</div>'
+
+// With interpolated values (auto-escaped)
+const name = "Alice";
+const comment = "<script>bad</script>";
+const result = html`
+    <div>
+        <strong>${name}</strong>
+        <p>${comment}</p>
+    </div>
+`;
+// Interpolations are escaped:
+// <div>
+//     <strong>Alice</strong>
+//     <p>&lt;script&gt;bad&lt;/script&gt;</p>
+// </div>
+```
+
+### Conditional Content
+
+```typescript
+import { html } from "@visulima/html";
+
+function renderUserBadge(user: { name: string; isAdmin: boolean }) {
+    return html` <div class="user">${user.name} ${user.isAdmin ? html`<span class="badge">Admin</span>` : ""}</div> `;
+}
+```
+
+### Lists and Iteration
+
+```typescript
+import { html } from "@visulima/html";
+
+function renderList(items: string[]) {
+    return html`
+        <ul>
+            ${items.map((item) => html`<li>${item}</li>`).join("")}
+        </ul>
+    `;
+}
+
+renderList(["Apple", "Banana", "Cherry"]);
+```
+
+### Function Mode
+
+```typescript
+import { html } from "@visulima/html";
+
+// Return as-is (trusted HTML)
+html("<div>Safe HTML</div>", false);
+// => '<div>Safe HTML</div>'
+
+// Escape HTML
+html("<script>alert(1)</script>", true);
+// => '&lt;script&gt;alert(1)&lt;/script&gt;'
+```
+
+## CSS Escaping
+
+### Basic CSS Escaping
+
+```typescript
+import { escapeCss } from "@visulima/html";
+
+// Prevent CSS injection
+const userInput = "red; } body { display: none; ";
+const safe = escapeCss(userInput);
+
+// Use in styles
+const css = `.user-color { color: ${safe}; }`;
+```
+
+### CSS Selector Escaping
+
+```typescript
+import { escapeCss } from "@visulima/html";
+
+// Escape user-provided class names
+const className = escapeCss(userClassName);
+const styles = `.${className} { color: red; }`;
+
+// Escape ID selectors
+const id = escapeCss(userId);
+const selector = `#${id}`;
+```
+
+### Style Element Injection
+
+```typescript
+import { escapeCss } from "@visulima/html";
+
+function injectStyles(userStyles: string) {
+    return `<style>${escapeCss(userStyles)}</style>`;
+}
+```
+
+## CSS Template Tags
+
+### Template Literal CSS
+
+```typescript
+import { css } from "@visulima/html";
+
+// Static CSS
+const styles = css`
+    .container {
+        padding: 10px;
+        margin: 20px;
+    }
+`;
+
+// With interpolations
+const color = "red";
+const size = "16px";
+const result = css`
+    .theme {
+        color: ${color};
+        font-size: ${size};
+    }
+`;
+```
+
+### CSS Object to String
+
+```typescript
+import { css } from "@visulima/html";
+
+// Convert CSS object (with TypeScript autocomplete!)
+const styles = css({
+    padding: "10px",
+    margin: "20px",
+    backgroundColor: "blue",
+    fontSize: "16px",
+});
+// => 'padding: 10px; margin: 20px; background-color: blue; font-size: 16px;'
+
+// CamelCase automatically converts to kebab-case
+const result = css({
+    paddingTop: "5px",
+    marginBottom: "10px",
+});
+// => 'padding-top: 5px; margin-bottom: 10px;'
+```
+
+### Dynamic Styling
+
+```typescript
+import { css } from "@visulima/html";
+
+interface ThemeConfig {
+    primaryColor: string;
+    fontSize: string;
+    spacing: string;
+}
+
+function generateTheme(config: ThemeConfig): string {
+    return css({
+        color: config.primaryColor,
+        fontSize: config.fontSize,
+        padding: config.spacing,
+        margin: config.spacing,
+    });
+}
+```
+
+## JavaScript Escaping
+
+### Script Tag Injection
+
+```typescript
+import { escapeJs } from "@visulima/html";
+
+// Escape for <script> tags
+const userData = { name: "Alice", role: "admin" };
+const safe = escapeJs(JSON.stringify(userData));
+
+const html = `<script>window.user = ${safe};</script>`;
+```
+
+### Prevent Script Breaking
+
+```typescript
+import { escapeJs } from "@visulima/html";
+
+// User input that tries to break out of script context
+const malicious = "</script><script>alert('xss')</script>";
+const safe = escapeJs(malicious);
+
+// Safe even with malicious input
+const script = `<script>const data = "${safe}";</script>`;
+```
+
+### JSON Data Injection
+
+```typescript
+import { escapeJs } from "@visulima/html";
+
+function inlineConfig(config: Record<string, unknown>): string {
+    const safeConfig = escapeJs(JSON.stringify(config));
+    return `<script>window.CONFIG = ${safeConfig};</script>`;
+}
+```
+
+## Custom Element Validation
+
+### Basic Validation
+
+```typescript
+import { isValidCustomElementName } from "@visulima/html";
+
+// Valid names (contain hyphen)
+isValidCustomElementName("my-element");
+// => true
+
+isValidCustomElementName("app-header");
+// => true
+
+// Invalid names (no hyphen)
+isValidCustomElementName("myElement");
+// => false
+
+isValidCustomElementName("div");
+// => false
+```
+
+### Registration Guard
+
+```typescript
+import { isValidCustomElementName } from "@visulima/html";
+
+function safeRegister(name: string, constructor: CustomElementConstructor) {
+    if (!isValidCustomElementName(name)) {
+        throw new Error(`Invalid custom element name: "${name}". ` + "Custom element names must contain a hyphen.");
+    }
+
+    customElements.define(name, constructor);
+}
+```
+
+### Validation in Frameworks
+
+```typescript
+import { isValidCustomElementName } from "@visulima/html";
+
+class ComponentRegistry {
+    register(name: string, component: unknown) {
+        if (!isValidCustomElementName(name)) {
+            console.error(`Invalid component name: ${name}`);
+            return false;
+        }
+
+        this.components.set(name, component);
+        return true;
+    }
+}
+```
+
+## HTML Entity Encoding
+
+### Basic Encoding
+
+```typescript
+import { encode } from "@visulima/html";
+
+// Encode special characters (default mode)
+encode("< > \" ' & ©");
+// => '&lt; &gt; &quot; &apos; &amp; ©'
+
+// Non-ASCII characters passed through
+encode("Hello © World");
+// => 'Hello © World'
+```
+
+### Encoding Modes
+
+```typescript
+import { encode } from "@visulima/html";
+
+const text = "< > © ∆";
+
+// specialChars: Only HTML special characters (default)
+encode(text, { mode: "specialChars" });
+// => '&lt; &gt; © ∆'
+
+// nonAscii: Special chars + everything outside ASCII
+encode(text, { mode: "nonAscii" });
+// => '&lt; &gt; &copy; &#8710;'
+
+// nonAsciiPrintable: Special chars + non-ASCII printable
+encode(text, { mode: "nonAsciiPrintable" });
+// => '&lt; &gt; &copy; &#8710;'
+
+// extensive: All non-printable, non-ASCII, and named references
+encode(text, { mode: "extensive" });
+// => '&lt; &gt; &copy; &Delta;'
+```
+
+### Encoding Standards
+
+```typescript
+import { encode } from "@visulima/html";
+
+const text = "< ©";
+
+// HTML5 (default)
+encode(text, { level: "html5" });
+// => '&lt; ©'
+
+// HTML4
+encode(text, { level: "html4" });
+// => '&lt; ©'
+
+// XML (uses numeric entities for non-standard chars)
+encode(text, { level: "xml", mode: "nonAscii" });
+// => '&lt; &#169;'
+```
+
+### Numeric Encoding
+
+```typescript
+import { encode } from "@visulima/html";
+
+const text = "©";
+
+// Decimal (default)
+encode(text, { mode: "nonAscii", numeric: "decimal" });
+// => '&#169;'
+
+// Hexadecimal
+encode(text, { mode: "nonAscii", numeric: "hexadecimal" });
+// => '&#xa9;'
+```
+
+## HTML Entity Decoding
+
+### Basic Decoding
+
+```typescript
+import { decode } from "@visulima/html";
+
+// Decode named entities
+decode("&lt; &gt; &copy;");
+// => '< > ©'
+
+// Decode numeric entities
+decode("&#169; &#xa9;");
+// => '© ©'
+
+// Mixed entities
+decode("&lt; &#62; &copy;");
+// => '< > ©'
+```
+
+### Decoding Scopes
+
+```typescript
+import { decode } from "@visulima/html";
+
+const html = "&lt &gt";
+
+// body: Emulates browser tag body parsing (default)
+decode(html, { scope: "body" });
+// => '< >' (entities without semicolon replaced)
+
+// attribute: Emulates browser attribute parsing
+decode(html, { scope: "attribute" });
+// => '< >' (replaced when not followed by =)
+
+// strict: Only entities with semicolon
+decode(html, { scope: "strict" });
+// => '&lt &gt' (ignored without semicolon)
+```
+
+### Decode Single Entity
+
+```typescript
+import { decodeEntity } from "@visulima/html";
+
+// Decode individual entities
+decodeEntity("&lt;");
+// => '<'
+
+decodeEntity("&copy;");
+// => '©'
+
+decodeEntity("&#169;");
+// => '©'
+```
+
+## HTML Sanitization
+
+### Basic Sanitization
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+// Remove dangerous HTML
+const dirty = '<p>Hello <script>alert("xss")</script>World</p>';
+const clean = sanitizeHtml(dirty);
+// => '<p>Hello World</p>'
+
+// Remove dangerous attributes
+const input = '<a href="javascript:alert(1)">Click</a>';
+const safe = sanitizeHtml(input);
+// => '<a>Click</a>'
+```
+
+### Custom Allowed Tags
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+// Allow specific tags
+const html = "<p>Text <b>bold</b> <script>bad</script></p>";
+const clean = sanitizeHtml(html, {
+    allowedTags: ["p", "b", "i", "strong"],
+});
+// => '<p>Text <b>bold</b> </p>'
+```
+
+### Per-Tag Attributes
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+const html = '<a href="http://example.com" onclick="bad()">Link</a>';
+const clean = sanitizeHtml(html, {
+    allowedTags: ["a"],
+    allowedAttributes: {
+        a: ["href", "title"],
+    },
+});
+// => '<a href="http://example.com">Link</a>'
+```
+
+### URL Scheme Filtering
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+const html = '<a href="javascript:alert(1)">Bad</a><a href="http://safe.com">Good</a>';
+const clean = sanitizeHtml(html, {
+    allowedTags: ["a"],
+    allowedAttributes: { a: ["href"] },
+    allowedSchemes: ["http", "https", "mailto"],
+});
+// => '<a>Bad</a><a href="http://safe.com">Good</a>'
+```
+
+### Iframe Whitelisting
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+const html = `
+    <iframe src="https://www.youtube.com/embed/VIDEO"></iframe>
+    <iframe src="https://evil.com/bad"></iframe>
+`;
+
+const clean = sanitizeHtml(html, {
+    allowedTags: ["iframe"],
+    allowedAttributes: { iframe: ["src"] },
+    allowedIframeHostnames: ["www.youtube.com", "player.vimeo.com"],
+});
+// Only YouTube iframe preserved
+```
+
+### Transform Tags
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+const html = '<a href="http://example.com">Link</a>';
+const clean = sanitizeHtml(html, {
+    allowedTags: ["a"],
+    allowedAttributes: { a: ["href"] },
+    transformTags: {
+        a: (tagName, attribs) => ({
+            tagName: "a",
+            attribs: {
+                ...attribs,
+                rel: "nofollow noopener",
+                target: "_blank",
+            },
+        }),
+    },
+});
+// => '<a href="http://example.com" rel="nofollow noopener" target="_blank">Link</a>'
+```
+
+### Rich Text Editor Config
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+function sanitizeRichText(html: string): string {
+    return sanitizeHtml(html, {
+        allowedTags: ["p", "br", "strong", "em", "u", "a", "ul", "ol", "li", "blockquote", "h1", "h2", "h3"],
+        allowedAttributes: {
+            a: ["href", "title"],
+        },
+        allowedSchemes: ["http", "https", "mailto"],
+        transformTags: {
+            a: (tagName, attribs) => ({
+                tagName: "a",
+                attribs: {
+                    ...attribs,
+                    rel: "nofollow noopener noreferrer",
+                },
+            }),
+        },
+    });
+}
+```
+
+## HTML Tag Stripping
+
+### Basic Stripping
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+// Extract plain text
+const html = "<div>Hello <b>World</b></div>";
+const text = stripHtml(html).result;
+// => 'Hello World'
+
+// Preserves spaces between tags
+const html2 = "aaa<div>bbb</div>ccc";
+const text2 = stripHtml(html2).result;
+// => 'aaa bbb ccc'
+```
+
+### Strip With Content
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+// Remove tags and their content
+const html = 'Text <script>alert("bad")</script> more <style>css</style> text';
+const text = stripHtml(html, {
+    stripTogetherWithTheirContents: ["script", "style"],
+}).result;
+// => 'Text more text'
+
+// Remove code blocks
+const html2 = "Text <pre><code>code block</code></pre> more text";
+const text2 = stripHtml(html2, {
+    stripTogetherWithTheirContents: ["pre", "code"],
+}).result;
+// => 'Text more text'
+```
+
+### Preserve Legitimate Brackets
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+// Detects comparison operators
+const text = "5 < 10 and 20 > 15";
+const result = stripHtml(text).result;
+// => '5 < 10 and 20 > 15'
+
+// Mixed HTML and operators
+const html = "Value <b>5</b> < 10";
+const result2 = stripHtml(html).result;
+// => 'Value 5 < 10'
+```
+
+### Email Text Extraction
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+function extractEmailText(htmlEmail: string): string {
+    return stripHtml(htmlEmail, {
+        stripTogetherWithTheirContents: ["script", "style", "head", "title", "meta"],
+    }).result;
+}
+```
+
+## HTML Tag Lists
+
+### Standard Tags
+
+```typescript
+import { htmlTags } from "@visulima/html";
+
+// All standard HTML tags
+console.log(htmlTags);
+// => ['a', 'abbr', 'address', 'area', 'article', ...]
+
+// Validate tag
+const isStandardTag = htmlTags.includes("div");
+// => true
+
+// Filter allowed tags
+const safeTags = htmlTags.filter((tag) => ["p", "a", "div", "span"].includes(tag));
+```
+
+### Void Tags
+
+```typescript
+import { voidHtmlTags } from "@visulima/html";
+
+// Self-closing tags
+console.log(voidHtmlTags);
+// => ['area', 'base', 'br', 'col', 'embed', 'hr', 'img', 'input', ...]
+
+// Check if self-closing
+const isSelfClosing = voidHtmlTags.includes("br");
+// => true
+
+const needsClosing = !voidHtmlTags.includes("div");
+// => true
+```
+
+### Sanitization Integration
+
+```typescript
+import { sanitizeHtml, htmlTags, voidHtmlTags } from "@visulima/html";
+
+// Use tag lists for configuration
+const clean = sanitizeHtml(dirtyHtml, {
+    allowedTags: htmlTags.filter((tag) => ["p", "a", "b", "i", "div"].includes(tag)),
+    selfClosing: voidHtmlTags,
+});
+```
+
+## Practical Examples
+
+### Comment System
+
+```typescript
+import { escapeHtml, sanitizeHtml, html } from "@visulima/html";
+
+interface Comment {
+    id: string;
+    author: string;
+    content: string;
+    isRichText: boolean;
+}
+
+function renderComment(comment: Comment): string {
+    const safeAuthor = escapeHtml(comment.author);
+    const safeContent = comment.isRichText
+        ? sanitizeHtml(comment.content, {
+              allowedTags: ["p", "b", "i", "a"],
+              allowedAttributes: { a: ["href"] },
+          })
+        : escapeHtml(comment.content);
+
+    return html`
+        <div class="comment" data-id="${comment.id}">
+            <strong>${safeAuthor}</strong>
+            <div class="content">${safeContent}</div>
+        </div>
+    `;
+}
+```
+
+### Form Input Display
+
+```typescript
+import { escapeHtml } from "@visulima/html";
+
+function renderFormValue(fieldName: string, value: string): string {
+    return `<input type="text" name="${escapeHtml(fieldName, true)}" value="${escapeHtml(value, true)}">`;
+}
+```
+
+### Search Result Snippets
+
+```typescript
+import { stripHtml } from "@visulima/html";
+
+function createSnippet(htmlContent: string, maxLength: number = 200): string {
+    const plainText = stripHtml(htmlContent).result;
+    const trimmed = plainText.substring(0, maxLength);
+    return trimmed.length < plainText.length ? trimmed + "..." : trimmed;
+}
+```
+
+### User Profile Bio
+
+```typescript
+import { sanitizeHtml } from "@visulima/html";
+
+function saveBio(htmlBio: string): string {
+    return sanitizeHtml(htmlBio, {
+        allowedTags: ["p", "br", "b", "i", "a"],
+        allowedAttributes: {
+            a: ["href"],
+        },
+        allowedSchemes: ["http", "https"],
+        transformTags: {
+            a: (tagName, attribs) => ({
+                tagName: "a",
+                attribs: {
+                    ...attribs,
+                    rel: "nofollow",
+                    target: "_blank",
+                },
+            }),
+        },
+    });
+}
+```

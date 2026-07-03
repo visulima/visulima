@@ -1,0 +1,92 @@
+---
+title: Providers
+description: "All supported AI CLI providers, their commands, and configuration"
+---
+
+# Supported Providers
+
+find-ai-runner supports 11 AI CLI providers. Each provider has a primary command, optional alternate commands, and provider-specific flags for prompt execution.
+
+## Provider Reference
+
+| Provider | Command    | Alternates     | Env Variable    | Default Model    |
+| -------- | ---------- | -------------- | --------------- | ---------------- |
+| Amp      | `amp`      |                | `AMP_PATH`      | provider-default |
+| Claude   | `claude`   |                | `CLAUDE_PATH`   | provider-default |
+| Codex    | `codex`    | `openai-codex` | `CODEX_PATH`    | provider-default |
+| Copilot  | `copilot`  |                | `COPILOT_PATH`  | provider-default |
+| Crush    | `crush`    |                | `CRUSH_PATH`    | provider-default |
+| Cursor   | `agent`    | `cursor`       | `CURSOR_PATH`   | provider-default |
+| Droid    | `droid`    |                | `DROID_PATH`    | provider-default |
+| Gemini   | `gemini`   | `gemini-cli`   | `GEMINI_PATH`   | `gemini-2.5-pro` |
+| Kimi     | `kimi`     |                | `KIMI_PATH`     | provider-default |
+| OpenCode | `opencode` |                | `OPENCODE_PATH` | provider-default |
+| Qwen     | `qwen`     | `qwen-code`    | `QWEN_PATH`     | provider-default |
+
+## CLI Flags Per Provider
+
+Each provider uses different flags to accept prompts and configure behavior.
+The permission-bypass / auto-approval flag in the last column is **only added
+when you opt in** with `{ dangerous: true }` (or `--dangerous` on the CLI).
+
+| Provider | Prompt Flags (safe default)                                   | Bypass flag (opt-in via `dangerous`)         |
+| -------- | ------------------------------------------------------------- | -------------------------------------------- |
+| Amp      | `-x` + prompt                                                 | `--dangerously-allow-all`                    |
+| Claude   | `[--model <model>] --output-format text -p`                   | `--dangerously-skip-permissions`             |
+| Codex    | `exec [--model <model>]` + prompt                             | `--dangerously-bypass-approvals-and-sandbox` |
+| Copilot  | `-p` + prompt `[--model <model>]`                             | `--allow-all-tools`                          |
+| Crush    | `run [-m <model>]` + prompt                                   | `--yolo`                                     |
+| Cursor   | `-p --output-format text [--model <m>]` + prompt              | `--force`                                    |
+| Droid    | prompt + `-o text [-m <model>]`                               | `--skip-permissions-unsafe`                  |
+| Gemini   | `--sandbox [--model <m>] --max-output-tokens <n> -p` + prompt | drops `--sandbox`                            |
+| Kimi     | `--quiet -p` + prompt `[-m <model>]`                          | —                                            |
+| OpenCode | `run` + prompt `[-m <model>]`                                 | —                                            |
+| Qwen     | `-p` + prompt + `-o text [-m <model>]`                        | `--yolo`                                     |
+
+## Provider Details
+
+> **Warning:** Permission-bypass mode is opt-in. By default every provider runs with its normal safety prompts; pass `{ dangerous: true }` (or `--dangerous` on the CLI) to add the provider's bypass flag, which grants unattended tool/file/shell access. Only use it for fully trusted prompts.
+
+### Amp
+
+[Amp](https://amp.dev) CLI tool. Uses `-x` for execute mode. Bypass: `--dangerously-allow-all`.
+
+### Claude
+
+[Claude Code](https://claude.com/claude-code) by Anthropic. Supports model selection and outputs plain text. Defaults to the provider-default model. Bypass: `--dangerously-skip-permissions`.
+
+### Codex
+
+[OpenAI Codex CLI](https://github.com/openai/codex). Also detected as `openai-codex`. Targets the modern Rust CLI surface (`codex exec "<prompt>"`); the retired `--approval-mode`/`--max-tokens` flags are no longer emitted. Bypass: `--dangerously-bypass-approvals-and-sandbox`.
+
+### Copilot
+
+[GitHub Copilot CLI](https://github.com/github/copilot-cli). Uses `-p` for prompt mode. Bypass: `--allow-all-tools`.
+
+### Crush
+
+[Crush](https://crush.dev) CLI. Uses the `run` subcommand. Bypass: `--yolo`.
+
+### Cursor
+
+[Cursor](https://cursor.com) agent mode. Primary command is `agent`, also detected as `cursor`. Bypass: `--force`.
+
+### Droid
+
+[Droid](https://github.com/nicepkg/droid) CLI. Accepts positional prompts with text output. Bypass: `--skip-permissions-unsafe`.
+
+### Gemini
+
+[Google Gemini CLI](https://github.com/google-gemini/gemini-cli). Also detected as `gemini-cli`. Runs in sandbox mode (its safety boundary) with configurable max output tokens. Default model: `gemini-2.5-pro`. With `dangerous`, the `--sandbox` flag is dropped.
+
+### Kimi
+
+[Kimi](https://kimi.ai) CLI. Uses `--quiet` for clean output and `-p` for prompt mode.
+
+### OpenCode
+
+[OpenCode](https://opencode.ai) CLI. Uses the `run` subcommand. Defaults to the provider-default model.
+
+### Qwen
+
+[Qwen](https://qwen.ai) CLI. Also detected as `qwen-code`. Uses `-p` for prompt and `-o text` for text output. Bypass: `--yolo`.

@@ -1,0 +1,142 @@
+---
+title: Introduction
+description: Cerebro is a modern, TypeScript-first CLI framework for building powerful command-line applications.
+---
+
+import { Card, Cards } from "fumadocs-ui/components/card";
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+Cerebro is a modern, TypeScript-first CLI framework that makes it easy to build powerful command-line applications. Built with performance and developer experience in mind, Cerebro provides everything you need to create awesome CLIs.
+
+![Cerebro Output](/assets/cerebro/cerebro_output.png)
+
+## Why Cerebro?
+
+### Fast & Lightweight
+
+Cerebro is optimized for performance with minimal overhead. Your CLI starts quickly and runs efficiently, even with complex command structures.
+
+### TypeScript First
+
+Full TypeScript support with excellent type inference. Get autocomplete, type safety, and better developer experience out of the box.
+
+### Extensible
+
+Plugin system allows you to extend functionality without modifying core code. Add features like logging, prompts, file system operations, and more.
+
+### Feature Rich
+
+Built-in support for:
+
+- Commands with arguments and options
+- Shell autocompletions (bash, zsh, fish, powershell)
+- Help generation
+- README documentation generation
+- Error handling
+- Plugin lifecycle hooks
+- Command composition
+
+### Zero Configuration
+
+Get started in minutes. Sensible defaults mean you can build a working CLI without any configuration.
+
+## Quick Navigation
+
+<Cards>
+    <Card title="Quick Start" href="/docs/packages/cerebro/quickstart" description="Get up and running with Cerebro in under 2 minutes" />
+    <Card title="Commands" href="/docs/packages/cerebro/guides/commands" description="Learn how to create and configure commands" />
+    <Card title="Options & Arguments" href="/docs/packages/cerebro/guides/options" description="Handle command-line options and positional arguments" />
+    <Card title="Plugins" href="/docs/packages/cerebro/guides/plugins" description="Extend Cerebro with plugins and lifecycle hooks" />
+    <Card title="Toolbox" href="/docs/packages/cerebro/toolbox/parameters" description="Access runtime, logger, and other toolbox features" />
+</Cards>
+
+## Key Features
+
+### Commands
+
+Define commands with descriptions, options, arguments, and aliases. Commands can be grouped, hidden, or configured with examples.
+
+```typescript
+cli.addCommand({
+    name: "build",
+    description: "Build your project",
+    options: [
+        { name: "production", type: Boolean },
+        { name: "output", type: String },
+    ],
+    execute: ({ options, logger }) => {
+        logger.info(`Building ${options.production ? "production" : "development"}...`);
+    },
+});
+```
+
+### Options
+
+Powerful option handling with support for:
+
+- Type validation (String, Number, Boolean, Arrays)
+- Default values
+- Required options
+- Aliases
+- Negatable options (`--no-` prefix)
+- Conflicting options
+- Implied options
+
+### Arguments
+
+Positional arguments with type checking and default values.
+
+```typescript
+cli.addCommand({
+    name: "greet",
+    argument: {
+        name: "name",
+        type: String,
+        description: "Name to greet",
+    },
+    execute: ({ argument }) => {
+        console.log(`Hello, ${argument[0]}!`);
+    },
+});
+```
+
+### Plugins
+
+Extend functionality with plugins that hook into the command lifecycle:
+
+- `init` - Called once during plugin initialization
+- `execute` - Called during command execution (extends toolbox)
+- `beforeCommand` - Called before command execution
+- `afterCommand` - Called after successful command execution
+- `onError` - Called when errors occur
+
+### Command Composition
+
+Call commands from within other commands using `runtime.runCommand()`:
+
+```typescript
+cli.addCommand({
+    name: "deploy",
+    execute: async ({ runtime, logger }) => {
+        logger.info("Building...");
+        await runtime.runCommand("build", { argv: ["--production"] });
+
+        logger.info("Testing...");
+        await runtime.runCommand("test");
+
+        logger.info("Deploying...");
+    },
+});
+```
+
+## Installation
+
+<Tabs items={["pnpm", "npm", "yarn"]}>
+    <Tab value="pnpm">```bash pnpm add @visulima/cerebro ```</Tab>
+    <Tab value="npm">```bash npm install @visulima/cerebro ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/cerebro ```</Tab>
+</Tabs>
+
+## Next Steps
+
+Ready to build your CLI? Head to the [Quick Start](/docs/packages/cerebro/quickstart) guide to create your first command in minutes!

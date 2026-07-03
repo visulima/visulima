@@ -1,7 +1,0 @@
-{
-    "name": "@foo/test-yarn",
-    "private": true,
-    "workspaces": [
-        "packages/*"
-    ]
-}

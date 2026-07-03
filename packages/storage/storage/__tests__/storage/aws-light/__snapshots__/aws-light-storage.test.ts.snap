@@ -1,0 +1,117 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`aws-light > .create() > should handle existing 1`] = `
+{
+  "UploadId": "123456789",
+  "bytesWritten": 64,
+  "contentType": "video/mp4",
+  "createdAt": "2022-02-02T00:00:00.000Z",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "created",
+}
+`;
+
+exports[`aws-light > .create() > should request api and set status and UploadId 1`] = `
+{
+  "ETag": undefined,
+  "Parts": undefined,
+  "UploadId": "123456789",
+  "bytesWritten": 0,
+  "content": undefined,
+  "contentType": "video/mp4",
+  "createdAt": Any<String>,
+  "expiredAt": Any<Number>,
+  "hash": undefined,
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "modifiedAt": undefined,
+  "name": "anonymous/testfile.mp4",
+  "originalName": "testfile.mp4",
+  "partSize": undefined,
+  "partsUrls": undefined,
+  "size": 64,
+  "status": "created",
+  "uri": undefined,
+}
+`;
+
+exports[`aws-light > .write() > should request api and set status and bytesWritten 1`] = `
+{
+  "ETag": "etag123",
+  "UploadId": "123456789",
+  "bytesWritten": 64,
+  "contentType": "video/mp4",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "completed",
+  "uri": "/1234",
+}
+`;
+
+exports[`aws-light > .write() > should request api and set status and bytesWritten on resume 1`] = `
+{
+  "Parts": [],
+  "UploadId": "123456789",
+  "bytesWritten": 0,
+  "contentType": "video/mp4",
+  "id": "e8fed598250d10ea-7f59007b4b7cf67-120941ca7dc37b78",
+  "metadata": {
+    "custom": "",
+    "lastModified": 1635398061454,
+    "mimeType": "video/mp4",
+    "name": "testfile.mp4",
+    "sha1": "ZAPAntzKARqtb+j3B529GAOf3kI=",
+    "size": 64,
+  },
+  "name": "testfile.mp4",
+  "originalName": "testfile.mp4",
+  "size": 64,
+  "status": "created",
+}
+`;
+
+exports[`aws-light > normalizeError > aws-light error 1`] = `
+{
+  "code": "SomeServiceException",
+  "message": "SomeServiceException",
+  "name": "SomeError",
+  "statusCode": 400,
+}
+`;
+
+exports[`aws-light > normalizeError > not aws-light error 1`] = `
+{
+  "code": "Error",
+  "message": "[aws-light] unknown",
+  "name": "Error",
+  "statusCode": 500,
+}
+`;

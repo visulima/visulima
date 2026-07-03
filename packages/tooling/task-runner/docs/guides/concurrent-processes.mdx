@@ -1,0 +1,215 @@
+---
+title: Running Concurrent Processes
+description: How to run multiple commands in parallel with output streaming
+---
+
+# Running Concurrent Processes
+
+This guide covers common patterns for running multiple processes concurrently.
+
+## Basic Usage
+
+```typescript
+import { runConcurrently } from "@visulima/task-runner";
+
+const result = await runConcurrently(["npm run build", "npm run test", "npm run lint"]);
+
+if (!result.success) {
+    console.error("Some commands failed:");
+    for (const event of result.closeEvents) {
+        if (event.exitCode !== 0) {
+            console.error(`  ${event.name ?? event.command}: exit ${event.exitCode}`);
+        }
+    }
+}
+```
+
+## Command Shortcuts
+
+Use `parseCommands` to expand package manager shorthand before passing to `runConcurrently`:
+
+```typescript
+import { parseCommands, runConcurrently } from "@visulima/task-runner";
+
+const commands = parseCommands([
+    "npm:build", // npm run build
+    "pnpm:test", // pnpm run test
+    "yarn:lint", // yarn run lint
+    "bun:dev", // bun run dev
+    "node:script", // node --run script
+    "deno:check", // deno task check
+]);
+
+await runConcurrently(commands);
+```
+
+> **Note:** `runConcurrently` does not expand shortcuts internally. Always use `parseCommands` first if you need shortcut or wildcard expansion.
+
+## Wildcard Expansion
+
+Expand commands against package.json scripts using `parseCommands`:
+
+```typescript
+import { parseCommands, runConcurrently } from "@visulima/task-runner";
+
+// If package.json has: { "scripts": { "watch-js": "...", "watch-css": "...", "watch-tests": "..." } }
+const commands = parseCommands(["npm:watch-*"]);
+// Result: [{ command: "npm run watch-js" }, { command: "npm run watch-css" }, ...]
+
+await runConcurrently(commands);
+
+// Deno tasks from deno.json are also supported:
+const denoCommands = parseCommands(["deno:dev-*"]);
+```
+
+## Real-Time Output Streaming
+
+Stream stdout/stderr as lines arrive:
+
+```typescript
+await runConcurrently(["npm run build", "npm run test"], {
+    onEvent: (event) => {
+        switch (event.kind) {
+            case "stdout":
+                console.log(`[${event.index}] ${event.text}`);
+                break;
+            case "stderr":
+                console.error(`[${event.index}] ${event.text}`);
+                break;
+            case "close":
+                console.log(`[${event.index}] exited with ${event.exitCode}`);
+                break;
+            case "error":
+                console.error(`[${event.index}] ${event.message}`);
+                break;
+        }
+    },
+});
+```
+
+## Controlling Parallelism
+
+Limit the number of simultaneous processes:
+
+```typescript
+// Run at most 2 processes at a time
+await runConcurrently(["build-a", "build-b", "build-c", "build-d"], { maxProcesses: 2 });
+```
+
+## Kill Others on Failure
+
+Stop all processes when one fails:
+
+```typescript
+await runConcurrently(["npm run typecheck", "npm run lint", "npm run test"], {
+    killOthers: ["failure"], // Kill all if any exits non-zero
+    killTimeout: 3000, // Wait 3s, then SIGKILL
+});
+```
+
+## Running Dev Servers
+
+For long-running processes, use `stdin: "inherit"` so the child can read keyboard input:
+
+```typescript
+await runConcurrently([
+    { command: "vite dev", name: "frontend", stdin: "inherit" },
+    { command: "node server.js", name: "backend" },
+]);
+
+// Ctrl+C sends SIGINT to all process groups
+// Exit codes are translated to 0 (user cancellation is not failure)
+```
+
+## Retry Failed Commands
+
+Automatically restart failed commands with configurable delay:
+
+```typescript
+// Fixed delay
+await runConcurrently(["flaky-build"], {
+    restart: { tries: 3, delay: 1000 }, // 3 retries, 1s between each
+});
+
+// Exponential backoff (1s, 2s, 4s, 8s, ...)
+await runConcurrently(["flaky-build"], {
+    restart: { tries: 5, delay: "exponential" },
+});
+```
+
+## Cleanup After Completion
+
+Run teardown commands sequentially after all processes finish:
+
+```typescript
+await runConcurrently(["npm run dev", "docker compose up"], {
+    teardown: ["docker compose down", "rm -rf .cache"],
+});
+```
+
+## Timing Summary
+
+Print a timing table after all commands complete:
+
+```typescript
+await runConcurrently(["npm run build", "npm run test", "npm run lint"], { timings: true });
+
+// Output:
+// ── Timing Summary ───────────────────────────────────
+//
+// name  │ duration │ code │ killed │ command
+// ──────┼──────────┼──────┼────────┼────────────────────
+// test  │ 5.2s     │ 0    │ no     │ npm run test
+// build │ 3.1s     │ 0    │ no     │ npm run build
+// lint  │ 1.8s     │ 0    │ no     │ npm run lint
+```
+
+## Custom Shell
+
+Override the shell used for command execution:
+
+```typescript
+// Auto-detected from npm config (npm config set script-shell)
+await runConcurrently(["echo hello"]);
+
+// Explicit override
+await runConcurrently(["echo hello"], {
+    shellPath: "C:\\Program Files\\Git\\bin\\bash.exe",
+});
+
+// Direct execution (no shell)
+await runConcurrently([{ command: "node build.js", shell: false }]);
+```
+
+## Argument Placeholders
+
+Pass arguments to commands via placeholders:
+
+```typescript
+import { parseCommands } from "@visulima/task-runner";
+
+const commands = parseCommands(["echo {1} {2}", "echo {@}", "echo {*}"], { additionalArguments: ["hello", "world"] });
+
+// Results:
+// echo 'hello' 'world'    ← {1} and {2} replaced individually
+// echo 'hello' 'world'    ← {@} = all args, individually quoted
+// echo 'hello world'      ← {*} = all args as single string
+```
+
+## Named Commands
+
+Give commands meaningful names for logging and success conditions:
+
+```typescript
+const result = await runConcurrently(
+    [
+        { command: "npm run build", name: "build" },
+        { command: "npm run test", name: "test" },
+        { command: "npm run lint", name: "lint" },
+    ],
+    {
+        // Only "test" needs to pass
+        successCondition: "command-test",
+    },
+);
+```

@@ -1,0 +1,8 @@
+{
+    "name": "terminal/cerebro",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/terminal/cerebro/src",
+    "projectType": "library",
+    "tags": ["cerebro", "type:package", "category:cli-terminal"],
+    "implicitDependencies": ["terminal/command-line-args"]
+}

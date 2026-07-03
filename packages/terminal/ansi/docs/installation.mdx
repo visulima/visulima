@@ -1,0 +1,171 @@
+---
+title: "Installation"
+description: "How to install and import @visulima/ansi"
+---
+
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+# Installation
+
+Install the package using your preferred package manager:
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">```bash npm install @visulima/ansi ```</Tab>
+    <Tab value="pnpm">```bash pnpm add @visulima/ansi ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/ansi ```</Tab>
+    <Tab value="bun">```bash bun add @visulima/ansi ```</Tab>
+</Tabs>
+
+## Import Methods
+
+### Main Package Import
+
+Import everything from the main entry point:
+
+```typescript
+import { cursorUp, cursorLeft, clearScreen, hyperlink } from "@visulima/ansi";
+
+process.stdout.write(cursorUp(2) + cursorLeft);
+process.stdout.write(clearScreen);
+console.log(hyperlink("https://example.com", "Click here"));
+```
+
+### Submodule Imports
+
+Import from specific submodules for better tree-shaking:
+
+```typescript
+// Cursor functions
+import { cursorUp, cursorLeft, cursorTo } from "@visulima/ansi/cursor";
+
+// Screen clearing
+import { clearScreen, clearScreenFromTopLeft } from "@visulima/ansi/clear";
+
+// Erase functions
+import { eraseLine, eraseDown } from "@visulima/ansi/erase";
+
+// Hyperlinks
+import { hyperlink } from "@visulima/ansi/hyperlink";
+
+// Strip ANSI codes
+import { strip } from "@visulima/ansi/strip";
+```
+
+### Available Submodules
+
+The package provides these submodules for targeted imports:
+
+- **`@visulima/ansi/cursor`** - Cursor positioning and movement
+- **`@visulima/ansi/clear`** - Screen and line clearing
+- **`@visulima/ansi/erase`** - Text erasure functions
+- **`@visulima/ansi/hyperlink`** - Clickable terminal links
+- **`@visulima/ansi/image`** - Image display (iTerm2)
+- **`@visulima/ansi/strip`** - Strip ANSI codes
+- **`@visulima/ansi/scroll`** - Scrolling control
+- **`@visulima/ansi/alternative-screen`** - Alternative screen buffer
+- **`@visulima/ansi/title`** - Window title control
+- **`@visulima/ansi/window-ops`** - Window operations
+- **`@visulima/ansi/mouse`** - Mouse event handling
+- **`@visulima/ansi/mode`** - Terminal mode management
+- **`@visulima/ansi/status`** - Status reporting
+- **`@visulima/ansi/iterm2`** - iTerm2-specific features
+- **`@visulima/ansi/xterm`** - XTerm-specific features
+- **`@visulima/ansi/screen`** - Screen operations
+- **`@visulima/ansi/passthrough`** - tmux/screen passthrough
+- **`@visulima/ansi/reset`** - Terminal reset
+
+### CommonJS
+
+For CommonJS environments:
+
+```javascript
+const { cursorUp, cursorLeft, clearScreen } = require("@visulima/ansi");
+
+// Or from submodules
+const { cursorUp } = require("@visulima/ansi/cursor");
+```
+
+## Requirements
+
+- **Node.js:** ≥22.13 ≤25.x
+- **Terminal:** ANSI escape code support (most modern terminals)
+- **TypeScript:** ≥5.0 (optional, for type definitions)
+
+## Verify Installation
+
+Test the installation with a simple cursor movement:
+
+```typescript
+import { cursorUp, cursorLeft } from "@visulima/ansi";
+
+// Move cursor up 2 rows and to the left
+process.stdout.write(cursorUp(2) + cursorLeft);
+console.log("Cursor moved!");
+```
+
+If you see the cursor move, installation was successful!
+
+## TypeScript Support
+
+The package includes comprehensive TypeScript type definitions:
+
+```typescript
+import type { CursorOptions } from "@visulima/ansi";
+import { cursorTo, cursorMove } from "@visulima/ansi";
+
+// Fully typed function calls
+const position: string = cursorTo(10, 5);
+const movement: string = cursorMove(2, 3);
+```
+
+## Terminal Compatibility
+
+ANSI escape codes work in most modern terminals:
+
+**Full Support:**
+
+- iTerm2 (macOS) - including images and extended features
+- Terminal.app (macOS)
+- GNOME Terminal (Linux)
+- Konsole (Linux)
+- Windows Terminal
+- VS Code integrated terminal
+- Hyper
+- Alacritty
+- Kitty
+
+**Partial Support:**
+
+- cmd.exe (Windows) - limited ANSI support
+- PowerShell - basic ANSI support
+
+**Not Supported:**
+
+- Very old terminal emulators
+- Non-interactive environments without TTY
+
+To check if your terminal supports ANSI codes:
+
+```typescript
+import { cursorUp } from "@visulima/ansi";
+
+const isTTY = process.stdout.isTTY;
+const supportsAnsi = process.env.TERM !== "dumb" && isTTY;
+
+if (supportsAnsi) {
+    process.stdout.write(cursorUp(1));
+} else {
+    console.log("ANSI not supported");
+}
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use ANSI codes with examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Explore the complete API documentation
+    </Card>
+</Cards>

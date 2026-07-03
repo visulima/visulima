@@ -1,0 +1,39 @@
+---
+title: Introduction
+description: "Validate and block disposable/temporary email addresses with an up-to-date list of disposable domains."
+---
+
+# @visulima/disposable-email-domains
+
+Validate and block disposable/temporary email addresses using a comprehensive, regularly-updated list of disposable email domains.
+
+## Quick Start
+
+```typescript
+import { isDisposableEmail } from "@visulima/disposable-email-domains";
+
+isDisposableEmail("user@mailinator.com");
+// true (disposable)
+
+isDisposableEmail("user@gmail.com");
+// false (legitimate)
+```
+
+## Use Cases
+
+- **User Registration** - Block temporary emails
+- **Email Validation** - Ensure real email addresses
+- **Spam Prevention** - Reduce fake accounts
+- **Data Quality** - Maintain clean user database
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install the package
+    </Card>
+    <Card title="Usage" href="/usage">
+        Learn how to validate emails
+    </Card>
+    <Card title="API" href="/api">
+        API documentation
+    </Card>
+</Cards>

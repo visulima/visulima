@@ -1,102 +1,261 @@
 "package: ansi":
     - changed-files:
-          - any-glob-to-any-file: "packages/ansi/**/*"
-"package: api-platform":
-    - changed-files:
-          - any-glob-to-any-file: "packages/api-platform/**/*"
+          - any-glob-to-any-file: "packages/terminal/ansi/**/*"
 "package: boxen":
     - changed-files:
-          - any-glob-to-any-file: "packages/boxen/**/*"
+          - any-glob-to-any-file: "packages/terminal/boxen/**/*"
 "package: bytes":
     - changed-files:
-          - any-glob-to-any-file: "packages/bytes/**/*"
+          - any-glob-to-any-file: "packages/data-manipulation/bytes/**/*"
 "package: cerebro":
     - changed-files:
-          - any-glob-to-any-file: "packages/cerebro/**/*"
+          - any-glob-to-any-file: "packages/terminal/cerebro/**/*"
 "package: colorize":
     - changed-files:
-          - any-glob-to-any-file: "packages/colorize/**/*"
+          - any-glob-to-any-file: "packages/terminal/colorize/**/*"
 "package: command-line-args":
     - changed-files:
-          - any-glob-to-any-file: "packages/command-line-args/**/*"
-"package: connect":
+          - any-glob-to-any-file: "packages/terminal/command-line-args/**/*"
+"package: content-safety":
     - changed-files:
-          - any-glob-to-any-file: "packages/connect/**/*"
-"package: crud":
+          - any-glob-to-any-file: "packages/data-manipulation/content-safety/**/*"
+"package: dashboard":
     - changed-files:
-          - any-glob-to-any-file: "packages/crud/**/*"
+          - any-glob-to-any-file: "packages/tooling/vis/dashboard/**/*"
 "package: deep-clone":
     - changed-files:
-          - any-glob-to-any-file: "packages/deep-clone/**/*"
+          - any-glob-to-any-file: "packages/data-manipulation/deep-clone/**/*"
+"package: dev-toolbar":
+    - changed-files:
+          - any-glob-to-any-file: "packages/error-debugging/dev-toolbar/**/*"
+"package: disposable-email-domains":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/disposable-email-domains/**/*"
+"package: email":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/email/**/*"
+"package: email-provider-mx":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/email-provider-mx/**/*"
+"package: email-verifier":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/email-verifier/**/*"
 "package: error":
     - changed-files:
-          - any-glob-to-any-file: "packages/error/**/*"
+          - any-glob-to-any-file: "packages/error-debugging/error/**/*"
 "package: error-handler":
     - changed-files:
-          - any-glob-to-any-file: "packages/error-handler/**/*"
+          - any-glob-to-any-file: "packages/error-debugging/error-handler/**/*"
+"package: find-ai-runner":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/find-ai-runner/**/*"
 "package: find-cache-dir":
     - changed-files:
-          - any-glob-to-any-file: "packages/find-cache-dir/**/*"
+          - any-glob-to-any-file: "packages/filesystem/find-cache-dir/**/*"
 "package: fmt":
     - changed-files:
-          - any-glob-to-any-file: "packages/fmt/**/*"
+          - any-glob-to-any-file: "packages/terminal/fmt/**/*"
+"package: free-email-domains":
+    - changed-files:
+          - any-glob-to-any-file: "packages/email/free-email-domains/**/*"
 "package: fs":
     - changed-files:
-          - any-glob-to-any-file: "packages/fs/**/*"
+          - any-glob-to-any-file: "packages/filesystem/fs/**/*"
 "package: health-check":
     - changed-files:
-          - any-glob-to-any-file: "packages/health-check/**/*"
+          - any-glob-to-any-file: "packages/api/health-check/**/*"
+"package: html":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/html/**/*"
 "package: humanizer":
     - changed-files:
-          - any-glob-to-any-file: "packages/humanizer/**/*"
+          - any-glob-to-any-file: "packages/data-manipulation/humanizer/**/*"
 "package: inspector":
     - changed-files:
-          - any-glob-to-any-file: "packages/inspector/**/*"
+          - any-glob-to-any-file: "packages/error-debugging/inspector/**/*"
+"package: interactive-manager":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/interactive-manager/**/*"
 "package: is-ansi-color-supported":
     - changed-files:
-          - any-glob-to-any-file: "packages/is-ansi-color-supported/**/*"
+          - any-glob-to-any-file: "packages/terminal/is-ansi-color-supported/**/*"
+"package: iso-locale":
+    - changed-files:
+          - any-glob-to-any-file: "packages/data-manipulation/iso-locale/**/*"
 "package: jsdoc-open-api":
     - changed-files:
-          - any-glob-to-any-file: "packages/jsdoc-open-api/**/*"
+          - any-glob-to-any-file: "packages/api/jsdoc-open-api/**/*"
+"package: notification":
+    - changed-files:
+          - any-glob-to-any-file: "packages/notification/notification/**/*"
+"package: nuxt":
+    - changed-files:
+          - any-glob-to-any-file: "packages/storage/storage/src/adapter/nuxt/**/*"
 "package: object":
     - changed-files:
-          - any-glob-to-any-file: "packages/object/**/*"
+          - any-glob-to-any-file: "packages/data-manipulation/object/**/*"
 "package: ono":
     - changed-files:
-          - any-glob-to-any-file: "packages/ono/**/*"
+          - any-glob-to-any-file: "packages/error-debugging/ono/**/*"
 "package: package":
     - changed-files:
-          - any-glob-to-any-file: "packages/package/**/*"
+          - any-glob-to-any-file: "packages/tooling/package/**/*"
 "package: pagination":
     - changed-files:
-          - any-glob-to-any-file: "packages/pagination/**/*"
+          - any-glob-to-any-file: "packages/api/pagination/**/*"
 "package: pail":
     - changed-files:
-          - any-glob-to-any-file: "packages/pail/**/*"
+          - any-glob-to-any-file: "packages/error-debugging/pail/**/*"
 "package: path":
     - changed-files:
-          - any-glob-to-any-file: "packages/path/**/*"
-"package: prisma-dmmf-transformer":
+          - any-glob-to-any-file: "packages/filesystem/path/**/*"
+"package: progress-bar":
     - changed-files:
-          - any-glob-to-any-file: "packages/prisma-dmmf-transformer/**/*"
+          - any-glob-to-any-file: "packages/terminal/progress-bar/**/*"
 "package: redact":
     - changed-files:
-          - any-glob-to-any-file: "packages/redact/**/*"
+          - any-glob-to-any-file: "packages/data-manipulation/redact/**/*"
+"package: secret-scanner":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/**/*"
+"package: secret-scanner/darwin-arm64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/darwin-arm64/**/*"
+"package: secret-scanner/darwin-x64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/darwin-x64/**/*"
+"package: secret-scanner/linux-arm64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/linux-arm64-gnu/**/*"
+"package: secret-scanner/linux-arm64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/linux-arm64-musl/**/*"
+"package: secret-scanner/linux-x64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/linux-x64-gnu/**/*"
+"package: secret-scanner/linux-x64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/linux-x64-musl/**/*"
+"package: secret-scanner/win32-arm64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/win32-arm64-msvc/**/*"
+"package: secret-scanner/win32-x64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/secret-scanner/npm/win32-x64-msvc/**/*"
 "package: source-map":
     - changed-files:
-          - any-glob-to-any-file: "packages/source-map/**/*"
+          - any-glob-to-any-file: "packages/error-debugging/source-map/**/*"
+"package: spinner":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/spinner/**/*"
+"package: storage":
+    - changed-files:
+          - any-glob-to-any-file: "packages/storage/storage/**/*"
+"package: storage-client":
+    - changed-files:
+          - any-glob-to-any-file: "packages/storage/storage-client/**/*"
 "package: string":
     - changed-files:
-          - any-glob-to-any-file: "packages/string/**/*"
+          - any-glob-to-any-file: "packages/data-manipulation/string/**/*"
 "package: tabular":
     - changed-files:
-          - any-glob-to-any-file: "packages/tabular/**/*"
+          - any-glob-to-any-file: "packages/terminal/tabular/**/*"
+"package: task-runner":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/**/*"
+"package: task-runner-client":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner-client/**/*"
+"package: task-runner/darwin-arm64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/darwin-arm64/**/*"
+"package: task-runner/darwin-x64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/darwin-x64/**/*"
+"package: task-runner/linux-arm64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-arm64-gnu/**/*"
+"package: task-runner/linux-arm64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-arm64-musl/**/*"
+"package: task-runner/linux-x64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-x64-gnu/**/*"
+"package: task-runner/linux-x64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/linux-x64-musl/**/*"
+"package: task-runner/win32-arm64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/win32-arm64-msvc/**/*"
+"package: task-runner/win32-x64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/task-runner/npm/win32-x64-msvc/**/*"
 "package: tsconfig":
     - changed-files:
-          - any-glob-to-any-file: "packages/tsconfig/**/*"
+          - any-glob-to-any-file: "packages/tooling/tsconfig/**/*"
+"package: tui":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/**/*"
+"package: tui/darwin-arm64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/darwin-arm64/**/*"
+"package: tui/darwin-x64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/darwin-x64/**/*"
+"package: tui/linux-arm64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/linux-arm64-gnu/**/*"
+"package: tui/linux-arm64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/linux-arm64-musl/**/*"
+"package: tui/linux-x64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/linux-x64-gnu/**/*"
+"package: tui/linux-x64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/linux-x64-musl/**/*"
+"package: tui/win32-arm64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/win32-arm64-msvc/**/*"
+"package: tui/win32-x64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/terminal/tui/npm/win32-x64-msvc/**/*"
+"package: vis":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/**/*"
+"package: vis-mcp":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis-mcp/**/*"
+"package: vis/darwin-arm64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/darwin-arm64/**/*"
+"package: vis/darwin-x64":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/darwin-x64/**/*"
+"package: vis/linux-arm64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/linux-arm64-gnu/**/*"
+"package: vis/linux-arm64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/linux-arm64-musl/**/*"
+"package: vis/linux-x64-gnu":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/linux-x64-gnu/**/*"
+"package: vis/linux-x64-musl":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/linux-x64-musl/**/*"
+"package: vis/win32-arm64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/win32-arm64-msvc/**/*"
+"package: vis/win32-x64-msvc":
+    - changed-files:
+          - any-glob-to-any-file: "packages/tooling/vis/npm/win32-x64-msvc/**/*"
 "package: vite-overlay":
     - changed-files:
-          - any-glob-to-any-file: "packages/vite-overlay/**/*"
+          - any-glob-to-any-file: "packages/error-debugging/vite-overlay/**/*"
+"package: workflow":
+    - changed-files:
+          - any-glob-to-any-file: "packages/workflow/workflow/**/*"
 "documentation":
     - changed-files:
           - any-glob-to-any-file: "docs/**/*"

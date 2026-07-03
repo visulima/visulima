@@ -1,0 +1,160 @@
+---
+title: Testing
+description: Test email-sending code with an in-memory harness and Vitest matchers from @visulima/email
+---
+
+# Testing
+
+`@visulima/email/test` makes it easy to assert on email behavior without sending anything over the network. `createTestEmail()` gives you a ready `Mail` instance wired to an in-memory mock provider, plus helpers to inspect, wait on, and reset the captured outbox. A set of Vitest matchers (`toHaveSentTo`, `toHaveSentWithSubject`, and more) lets you write expressive assertions over what was sent.
+
+```typescript
+import { createTestEmail, registerEmailMatchers } from "@visulima/email/test";
+```
+
+## createTestEmail
+
+`createTestEmail()` returns a test harness backed by the in-memory mock provider. Nothing leaves the process — every message is captured for assertion.
+
+```typescript
+const email = createTestEmail();
+// email.mail   -> a ready Mail instance, used exactly like a real one
+// email.sent() -> captured entries, oldest first
+// email.reset()-> clears the captured outbox
+// email.waitFor(predicate, options) -> resolves with the first matching entry
+```
+
+### Returned Harness
+
+| Member                         | Description                                                                             |
+| ------------------------------ | --------------------------------------------------------------------------------------- |
+| `mail`                         | A `Mail` instance wired to the mock provider. Use it exactly like a real one.           |
+| `sent()`                       | Returns the captured messages, oldest first.                                            |
+| `reset()`                      | Removes all captured messages.                                                          |
+| `waitFor(predicate, options?)` | Resolves with the first captured message matching `predicate`, polling until `timeout`. |
+
+`waitFor` accepts an options object with `timeout` (ms, default `1000`) and `interval` (ms, default `10`). It is useful when the send happens asynchronously — for example, after a queue worker processes a job:
+
+```typescript
+const email = createTestEmail();
+
+void someBackgroundJob(email.mail);
+
+const message = await email.waitFor((entry) => entry.options.subject === "Welcome", {
+    timeout: 2000,
+    interval: 20,
+});
+```
+
+## Vitest Matchers
+
+`registerEmailMatchers(expect)` extends Vitest's `expect` with email-specific matchers. The raw matcher map is also exported as `emailMatchers` for manual use.
+
+| Matcher                                         | Description                                                                           |
+| ----------------------------------------------- | ------------------------------------------------------------------------------------- |
+| `toHaveSentTo(address)`                         | Asserts a message was sent to `address` (To, Cc, or Bcc; case-insensitive).           |
+| `toHaveSentWithSubject(stringOrRegExp)`         | Asserts a message's subject equals a string or matches a `RegExp`.                    |
+| `toHaveSentWithAttachment(filename?)`           | Asserts a message carried an attachment, optionally with an exact filename.           |
+| `toHaveSentMatching(predicateOrPartialOptions)` | Asserts a message matches a predicate over the options, or shallow-matches a partial. |
+
+The matchers assert against a `TestEmail` harness or a raw array of captured entries.
+
+## Recommended Setup
+
+Register the matchers once in your test (or a shared setup file) and add a `declare module "vitest"` augmentation so the new matchers are fully typed:
+
+```typescript
+import { beforeAll, expect } from "vitest";
+import { createTestEmail, registerEmailMatchers } from "@visulima/email/test";
+
+declare module "vitest" {
+    interface Assertion<T = any> {
+        toHaveSentTo(address: string): T;
+        toHaveSentWithSubject(expected: string | RegExp): T;
+        toHaveSentWithAttachment(filename?: string): T;
+        toHaveSentMatching(matcher: Record<string, unknown> | ((options: any) => boolean)): T;
+    }
+    interface AsymmetricMatchersContaining {
+        toHaveSentTo(address: string): void;
+        toHaveSentWithSubject(expected: string | RegExp): void;
+        toHaveSentWithAttachment(filename?: string): void;
+        toHaveSentMatching(matcher: Record<string, unknown> | ((options: any) => boolean)): void;
+    }
+}
+
+beforeAll(() => {
+    registerEmailMatchers(expect);
+});
+```
+
+## Writing a Test
+
+With the matchers registered, assert directly on the harness:
+
+```typescript
+import { beforeAll, expect, it } from "vitest";
+import { createTestEmail, registerEmailMatchers } from "@visulima/email/test";
+
+beforeAll(() => {
+    registerEmailMatchers(expect);
+});
+
+it("sends a welcome email", async () => {
+    const email = createTestEmail();
+
+    await email.mail.send({
+        from: { email: "sender@example.com" },
+        to: { email: "user@example.com" },
+        subject: "Welcome",
+        html: "<h1>Welcome!</h1>",
+    });
+
+    expect(email).toHaveSentTo("user@example.com");
+    expect(email).toHaveSentWithSubject("Welcome");
+    expect(email).toHaveSentWithSubject(/welcome/i);
+});
+```
+
+### Matching on Arbitrary Options
+
+Use `toHaveSentMatching` with a partial options object or a predicate for assertions the dedicated matchers don't cover:
+
+```typescript
+// Shallow-match a partial of the sent options.
+expect(email).toHaveSentMatching({ subject: "Welcome" });
+
+// Or pass a predicate.
+expect(email).toHaveSentMatching((options) => options.to?.email === "user@example.com");
+```
+
+### Inspecting and Resetting
+
+`sent()` returns the raw captured entries for manual assertions, and `reset()` clears the outbox between tests:
+
+```typescript
+import { afterEach } from "vitest";
+
+const email = createTestEmail();
+
+afterEach(() => {
+    email.reset();
+});
+
+it("captures the outbox", async () => {
+    await email.mail.send({ from: { email: "a@x.com" }, to: { email: "b@x.com" }, subject: "Hi", text: "yo" });
+
+    const captured = email.sent();
+    expect(captured).toHaveLength(1);
+    expect(captured[0]?.options.subject).toBe("Hi");
+});
+```
+
+## Using the Matchers Manually
+
+If you prefer not to register the matchers globally, pass the raw `emailMatchers` map to `expect.extend(...)` yourself:
+
+```typescript
+import { expect } from "vitest";
+import { emailMatchers } from "@visulima/email/test";
+
+expect.extend(emailMatchers);
+```

@@ -1,0 +1,137 @@
+---
+title: SendGrid
+description: Send emails using the SendGrid API with @visulima/email
+---
+
+# SendGrid Provider
+
+The SendGrid provider allows you to send emails through the [SendGrid Mail Send API](https://docs.sendgrid.com/api-reference/mail-send/mail-send), a cloud-based email service for transactional and marketing emails.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { sendGridProvider } from "@visulima/email/providers/sendgrid";
+
+const mail = createMail(
+    sendGridProvider({
+        apiKey: process.env.SENDGRID_API_KEY!,
+    }),
+);
+```
+
+## Configuration
+
+The `SendGridConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                    | Description                     |
+| ---------- | --------- | -------- | -------------------------- | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                          | Your SendGrid API key           |
+| `endpoint` | `string`  | No       | `https://api.sendgrid.com` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                    | Enable debug logging            |
+| `logger`   | `Console` | No       | -                          | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                        | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                    | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from SendGrid").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The SendGrid provider supports extensive additional options through `SendGridEmailOptions`:
+
+### Dynamic Templates
+
+```typescript
+import type { SendGridEmailOptions } from "@visulima/email/providers/sendgrid";
+
+const options: SendGridEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "",
+    templateId: "d-xxx",
+    templateData: { name: "John", company: "Acme" },
+};
+```
+
+### Tracking Settings
+
+```typescript
+const options: SendGridEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    trackingSettings: {
+        clickTracking: { enable: true, enableText: false },
+        openTracking: { enable: true, substitutionTag: "%open%" },
+        subscriptionTracking: {
+            enable: true,
+            text: "Unsubscribe here: <% %>",
+            html: "<a href='<% %>'>Unsubscribe</a>",
+            substitutionTag: "<% %>",
+        },
+        ganalytics: {
+            enable: true,
+            utmSource: "email",
+            utmMedium: "transactional",
+            utmCampaign: "welcome",
+        },
+    },
+};
+```
+
+### Mail Settings
+
+```typescript
+const options: SendGridEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    mailSettings: {
+        sandboxMode: true,
+        bypassListManagement: false,
+        footer: {
+            enable: true,
+            text: "Footer text",
+            html: "<p>Footer HTML</p>",
+        },
+    },
+};
+```
+
+| Option             | Type                      | Description                                  |
+| ------------------ | ------------------------- | -------------------------------------------- |
+| `templateId`       | `string`                  | SendGrid dynamic template ID                 |
+| `templateData`     | `Record<string, unknown>` | Dynamic template data                        |
+| `sendAt`           | `number`                  | Send at (Unix timestamp)                     |
+| `batchId`          | `string`                  | Batch ID for batch sending                   |
+| `asmGroupId`       | `number`                  | Advanced Suppression Management group ID     |
+| `ipPoolName`       | `string`                  | IP pool name                                 |
+| `mailSettings`     | `object`                  | Mail settings (sandbox, footer, etc.)        |
+| `trackingSettings` | `object`                  | Tracking settings (clicks, opens, analytics) |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | Yes       |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | Yes       |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

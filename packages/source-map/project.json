@@ -1,8 +1,0 @@
-{
-    "name": "source-map",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/source-map/src",
-    "projectType": "library",
-    "tags": ["source-map", "type:package"],
-    "implicitDependencies": []
-}

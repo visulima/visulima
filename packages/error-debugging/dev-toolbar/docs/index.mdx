@@ -1,0 +1,94 @@
+---
+title: Visulima Dev Toolbar
+description: A framework-agnostic development toolbar for Vite applications with built-in accessibility auditing, visual annotations, click-to-source inspector, AI agent integration via MCP, performance monitoring, SEO inspection, and an extensible app system.
+---
+
+import { Card, Cards } from "fumadocs-ui/components/card";
+
+`@visulima/dev-toolbar` is a powerful, extensible development toolbar for any Vite-based project — React, Vue, Svelte, SolidJS, or plain HTML. Inspired by Astro DevToolbar, Vue DevTools, and Nuxt DevTools, it brings a consistent developer experience regardless of your framework.
+
+The toolbar renders inside a Shadow DOM custom element for complete CSS isolation, communicates with the Vite dev server over type-safe RPC, and ships eleven built-in apps covering the most common development workflows.
+
+**Requirements:** Vite 6, 7, or 8 · Node.js 22.21+
+
+## Features
+
+<Cards>
+    <Card title="Framework Agnostic" description="Works with any Vite project. React, Vue, Svelte, SolidJS — zero framework assumptions." />
+    <Card
+        title="11 Built-in Apps"
+        description="Accessibility auditing, Annotations, Assets browser, Inspector, Module Graph, Performance metrics, SEO inspection, Settings, Tailwind tokens, Timeline events, and Vite Config viewer — out of the box."
+    />
+    <Card
+        title="Visual Annotations"
+        description="Click elements to annotate them with intent, severity, and context. Annotations persist to disk and are readable by AI agents via MCP."
+    />
+    <Card
+        title="AI Agent Integration"
+        description="MCP server exposes annotations to coding agents like Claude Code. Agents read context, fix issues, and resolve annotations — no copy-paste needed."
+    />
+    <Card
+        title="Click-to-Source Inspector"
+        description="Click any element to jump to its JSX source in your editor. Supports React, Vue, and Svelte component detection with Shadow DOM piercing."
+    />
+    <Card
+        title="Extensible App System"
+        description="Register custom apps with Preact components, full RPC access, and tooltip support. Build your own devtools panel in minutes."
+    />
+    <Card
+        title="Type-safe RPC"
+        description="Bidirectional communication between the browser and Vite's Node.js process. Inspect files, open editors, read configs — all typed end-to-end."
+    />
+    <Card
+        title="Persistent State"
+        description="Panel size, position, theme, and keyboard shortcuts are saved to localStorage and restored across page reloads automatically."
+    />
+    <Card
+        title="Library Integration"
+        description="Third-party libraries can hook in via __DEV_TOOLBAR_HOOK__ without any direct dependency, enabling zero-config devtools for your users."
+    />
+</Cards>
+
+## Built-in Apps at a Glance
+
+| App                                                            | ID                         | What it does                                             |
+| -------------------------------------------------------------- | -------------------------- | -------------------------------------------------------- |
+| [Accessibility](/docs/dev-toolbar/built-in-apps/accessibility) | `dev-toolbar:a11y`         | axe-core WCAG audit with live element overlays           |
+| [Annotations](/docs/dev-toolbar/built-in-apps/annotations)     | `dev-toolbar:annotations`  | Visual annotations with AI agent integration via MCP     |
+| [Assets](/docs/dev-toolbar/built-in-apps/assets)               | `dev-toolbar:assets`       | Browse, preview, and inspect static files in `publicDir` |
+| [Inspector](/docs/dev-toolbar/built-in-apps/inspector)         | `dev-toolbar:inspector`    | Click any element to jump to its source in your editor   |
+| [Module Graph](/docs/dev-toolbar/built-in-apps/module-graph)   | `dev-toolbar:module-graph` | Browse and filter Vite's live module graph               |
+| [Performance](/docs/dev-toolbar/built-in-apps/performance)     | `dev-toolbar:performance`  | Web Vitals, resource timing, navigation metrics          |
+| [SEO](/docs/dev-toolbar/built-in-apps/seo)                     | `dev-toolbar:seo`          | Social preview cards + meta tag audit                    |
+| [Settings](/docs/dev-toolbar/built-in-apps/settings)           | `dev-toolbar:settings`     | Theme, toolbar behaviour, keyboard shortcuts             |
+| [Tailwind](/docs/dev-toolbar/built-in-apps/tailwind)           | `dev-toolbar:tailwind`     | Browse resolved Tailwind CSS v4 design tokens            |
+| [Timeline](/docs/dev-toolbar/built-in-apps/timeline)           | `dev-toolbar:timeline`     | Chronological event log from your app and libraries      |
+| [Vite Config](/docs/dev-toolbar/built-in-apps/vite-config)     | `dev-toolbar:vite-config`  | Inspect the resolved Vite configuration                  |
+
+## How it Works
+
+The toolbar is injected into the page by a Vite plugin as a `<dev-toolbar>` custom element. It renders a Preact UI inside Shadow DOM — so no styles leak in or out. Each "app" is a Preact component that receives RPC helpers and renders inside a resizable, draggable panel.
+
+```
+Browser                          Vite Dev Server           AI Agent
+──────────────────────────────   ────────────────────────  ──────────────
+<dev-toolbar> (Shadow DOM)  ←──  HTML injection             MCP Server
+  ├── Toolbar pill                ├── RPC handler      ←──→ ├── get_pending_annotations
+  ├── Panel canvas       ←──────→ ├── getViteConfig()       ├── get_screenshot
+  │   ├── App: A11y               ├── getModuleGraph()      ├── resolve_annotation
+  │   ├── App: Inspector          ├── openInEditor()        └── watch_annotations
+  │   ├── App: Annotations        ├── getAnnotations()
+  │   ├── App: Performance        └── saveScreenshot()
+  │   └── App: SEO
+  ├── Settings (localStorage)
+  └── Annotations (.devtoolbar/)
+```
+
+## Keyboard Shortcuts
+
+| Action                    | Default           |
+| ------------------------- | ----------------- |
+| Toggle toolbar open/close | `Alt`+`Shift`+`D` |
+| Close active app / panel  | `Escape`          |
+
+Both shortcuts are fully configurable in the [Settings app](/docs/dev-toolbar/built-in-apps/settings) or via the [plugin options](/docs/dev-toolbar/configuration).

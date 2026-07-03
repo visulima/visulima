@@ -1,0 +1,11 @@
+{
+    "name": "setup-wizard",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "deploy": "node ./setup.mjs"
+    },
+    "dependencies": {
+        "@inquirer/prompts": "^8.5.2"
+    }
+}

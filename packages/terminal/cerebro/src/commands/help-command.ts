@@ -1,0 +1,347 @@
+import { cyan, green, inverse, yellow } from "@visulima/colorize";
+
+import defaultEnv from "../default-env";
+import type { Cli as ICli } from "../types/cli";
+import type { ArgumentDefinition, Command as ICommand, OptionDefinition } from "../types/command";
+import type { Section } from "../types/command-line-usage";
+import type { Toolbox as IToolbox } from "../types/toolbox";
+import commandLineUsage from "../util/command-line-usage";
+import templateFormat from "../util/text-processing/template-format";
+
+const EMPTY_GROUP_KEY = "__Other";
+
+const upperFirstChar = (string_: string): string => string_.charAt(0).toUpperCase() + string_.slice(1);
+
+const printGeneralHelp = (logger: Console, runtime: ICli<Console>, commands: Map<string, ICommand>, groupOption: string | undefined) => {
+    logger.debug("no command given, printing general help...");
+
+    let filteredCommands = [...new Set(commands.values())].filter((command) => !command.hidden);
+
+    if (groupOption) {
+        filteredCommands = filteredCommands.filter((command) => command.group === groupOption);
+    }
+
+    // eslint-disable-next-line unicorn/no-array-reduce
+    const groupedCommands: Record<string, ICommand[]> = filteredCommands.reduce<Record<string, ICommand[]>>((accumulator, command) => {
+        const group = command.group ?? EMPTY_GROUP_KEY;
+
+        accumulator[group] ??= [];
+
+        accumulator[group].push(command);
+
+        return accumulator;
+    }, {});
+
+    // Build command list with hierarchical display for nested commands
+    const buildCommandList = (commandList: ICommand[]): string[][] =>
+        commandList.map((command) => {
+            let aliases = "";
+
+            if (typeof command.alias === "string") {
+                aliases = command.alias;
+            } else if (Array.isArray(command.alias)) {
+                aliases = command.alias.join(", ");
+            }
+
+            if (aliases !== "") {
+                aliases = ` [${aliases}]`;
+            }
+
+            // Display full path for nested commands
+            let commandDisplay = command.name;
+
+            if (command.commandPath && command.commandPath.length > 0) {
+                commandDisplay = `${command.commandPath.join(" ")} ${command.name}`;
+            }
+
+            return [`${green(commandDisplay)}${aliases}`, command.description ?? ""];
+        });
+
+    ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(
+        commandLineUsage(
+            [
+                {
+                    content: `${cyan(runtime.getCliName())} ${green("<command>")} [positional arguments] ${yellow("[options]")}`,
+                    header: inverse.cyan(" Usage "),
+                },
+                ...Object.keys(groupedCommands).map((key) => {
+                    const groupOptionName = groupOption ? ` ${upperFirstChar(groupOption)}` : "";
+
+                    return {
+                        content: buildCommandList(groupedCommands[key] as ICommand[]),
+                        header:
+                            key === EMPTY_GROUP_KEY || groupOption
+                                ? inverse.green(` Available${groupOptionName} Commands `)
+                                : ` ${inverse.green(` ${upperFirstChar(key)} `)}`,
+                    };
+                }),
+                commands.has("help")
+                    ? {
+                        header: inverse.yellow(" Command Options "),
+                        optionList: (commands.get("help") as ICommand).options?.filter((option) => !option.hidden),
+                    }
+                    : undefined,
+                { header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() },
+                {
+                    content: defaultEnv.filter((envVariable) => !envVariable.hidden).map((envVariable) => [envVariable.name, envVariable.description ?? ""]),
+                    header: inverse.magenta(" Environment Variables "),
+                },
+                {
+                    content: `Run "${cyan(runtime.getCliName())} ${green("help <command>")}" or "${cyan(runtime.getCliName())} ${green("<command>")} ${yellow("--help")}" for help with a specific command.`,
+                    raw: true,
+                },
+            ].filter(Boolean) as Section[],
+        ),
+    );
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const findChildren = <OD extends OptionDefinition<any>>(commands: Map<string, ICommand<OD>>, parentPath: string[]): ICommand<OD>[] => {
+    const matches: ICommand<OD>[] = [];
+
+    for (const cmd of commands.values()) {
+        if (cmd.hidden) {
+            continue;
+        }
+
+        const commandPath = cmd.commandPath ?? [];
+
+        if (commandPath.length !== parentPath.length) {
+            continue;
+        }
+
+        let isMatch = true;
+
+        for (const [index, element] of parentPath.entries()) {
+            if (commandPath[index] !== element) {
+                isMatch = false;
+                break;
+            }
+        }
+
+        if (isMatch) {
+            matches.push(cmd);
+        }
+    }
+
+    return matches;
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const printParentHelp = <OD extends OptionDefinition<any>>(logger: Console, runtime: ICli<Console>, parentPath: string[], children: ICommand<OD>[]): void => {
+    const parentDisplay = parentPath.join(" ");
+    const usageGroups: Section[] = [
+        {
+            content: `${cyan(runtime.getCliName())} ${green(parentDisplay)} ${green("<subcommand>")} [positional arguments] ${yellow("[options]")}`,
+            header: inverse.cyan(" Usage "),
+        },
+        {
+            content: children.map((child) => {
+                const fullPath = [...child.commandPath ?? [], child.name].join(" ");
+
+                return [green(fullPath), child.description ?? ""];
+            }),
+            header: inverse.green(" Subcommands "),
+        },
+        { header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() },
+        {
+            content: `Run "${cyan(runtime.getCliName())} ${green(`${parentDisplay} <subcommand>`)} ${yellow("--help")}" for help with a specific subcommand.`,
+            raw: true,
+        },
+    ];
+
+    ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(commandLineUsage(usageGroups));
+};
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const printCommandHelp = <OD extends OptionDefinition<any>>(
+    logger: Console,
+    runtime: ICli<Console>,
+    commands: Map<string, ICommand<OD>>,
+    name: string,
+    resolvedCommand?: ICommand<OD>,
+    // eslint-disable-next-line sonarjs/cognitive-complexity
+): void => {
+    // Prefer a pre-resolved command (e.g. when `--help` is set on a top-level
+    // command whose leaf name collides with a nested command — the name-only
+    // map loses one of them, but the caller already resolved the right one).
+    // Try to find command by name first if not already resolved
+    let command = resolvedCommand ?? commands.get(name);
+
+    // If not found, try to find by full path (for nested commands)
+    if (!command) {
+        for (const cmd of commands.values()) {
+            const fullPath = cmd.commandPath ? [...cmd.commandPath, cmd.name] : [cmd.name];
+
+            if (fullPath.at(-1) === name || fullPath.join(" ") === name) {
+                command = cmd;
+                break;
+            }
+        }
+    }
+
+    if (!command) {
+        const parentPath = name.split(" ").filter(Boolean);
+        const children = parentPath.length > 0 ? findChildren(commands, parentPath) : [];
+
+        if (children.length > 0) {
+            printParentHelp(logger, runtime, parentPath, children);
+
+            return;
+        }
+
+        logger.error(`Command "${name}" not found`);
+
+        return;
+    }
+
+    const usageGroups: Section[] = [];
+
+    // Build full command path for display
+    const fullCommandPath = command.commandPath ? [...command.commandPath, command.name] : [command.name];
+    const commandDisplay = fullCommandPath.join(" ");
+
+    usageGroups.push({
+        content: `${cyan(runtime.getCliName())} ${green(commandDisplay)}${command.argument ? " [positional arguments]" : ""}${
+            command.options ? " [options]" : ""
+        }`,
+        header: inverse.cyan(" Usage "),
+    });
+
+    if (command.description) {
+        usageGroups.push({ content: command.description, header: inverse.green(" Description ") });
+    }
+
+    if (command.argument) {
+        usageGroups.push({ header: "Command Positional Arguments", isArgument: true, optionList: [command.argument] });
+    }
+
+    if (Array.isArray(command.options) && command.options.length > 0) {
+        usageGroups.push({
+            header: inverse.yellow(" Command Options "),
+            // eslint-disable-next-line @typescript-eslint/no-explicit-any
+            optionList: command.options.filter((option) => !option.hidden) as OptionDefinition<any>[],
+        });
+    }
+
+    usageGroups.push({ header: inverse.yellow(" Global Options "), optionList: runtime.getGlobalOptions() });
+
+    if (Array.isArray(command.env) && command.env.length > 0) {
+        const visibleEnvVariables = command.env.filter((envVariable) => !envVariable.hidden);
+
+        if (visibleEnvVariables.length > 0) {
+            usageGroups.push({
+                content: visibleEnvVariables.map((envVariable) => [envVariable.name, envVariable.description ?? ""]),
+                header: inverse.magenta(" Environment Variables "),
+            });
+        }
+    }
+
+    if (command.alias !== undefined && command.alias.length > 0) {
+        let alias: string[] = command.alias as string[];
+
+        if (typeof command.alias === "string") {
+            alias = [command.alias];
+        }
+
+        usageGroups.splice(1, 0, {
+            content: alias,
+            header: "Alias(es)",
+        });
+    }
+
+    if (Array.isArray(command.examples) && command.examples.length > 0) {
+        usageGroups.push({
+            content: command.examples,
+            header: "Examples",
+        });
+    }
+
+    const ownPath = [...command.commandPath ?? [], command.name];
+    const ownChildren = findChildren(commands, ownPath);
+
+    if (ownChildren.length > 0) {
+        usageGroups.push({
+            content: ownChildren.map((child) => {
+                const fullPath = [...child.commandPath ?? [], child.name].join(" ");
+
+                return [green(fullPath), child.description ?? ""];
+            }),
+            header: inverse.green(" Subcommands "),
+        });
+    }
+
+    ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(commandLineUsage(usageGroups));
+};
+
+class HelpCommand<TLogger extends Console = Console> implements ICommand<OptionDefinition<string>, TLogger> {
+    public argument: ArgumentDefinition<string> = {
+        description: "Command to show help for (subcommand path supported, e.g. `cli help docker build`)",
+        name: "command",
+        type: String,
+    };
+
+    public name: string = "help";
+
+    public options: OptionDefinition<string>[] = [
+        {
+            description: "Display only the specified group",
+            name: "group",
+            type: String,
+        },
+    ];
+
+    private readonly commands: Map<string, ICommand<OptionDefinition<unknown>, TLogger>>;
+
+    public constructor(commands: Map<string, ICommand<OptionDefinition<unknown>, TLogger>>) {
+        this.commands = commands;
+    }
+
+    public execute(toolbox: IToolbox<TLogger>): void {
+        const { argument, command, commandName, logger, options, runtime } = toolbox;
+
+        const { footer, header } = runtime.getCommandSection();
+
+        if (header) {
+            ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(templateFormat(header));
+        }
+
+        // `cli help <name>` arrives with commandName === "help" and the target
+        // name(s) in the positional argument. Join multiple segments so nested
+        // paths like `cli help hook install` resolve via the path-aware lookup
+        // in printCommandHelp.
+        const positionalName = commandName === "help" && Array.isArray(argument) && argument.length > 0 ? argument.join(" ") : undefined;
+
+        if (commandName === "help" && positionalName === undefined) {
+            printGeneralHelp(
+                logger,
+                runtime as unknown as ICli<Console>,
+                this.commands as unknown as Map<string, ICommand>,
+                // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- options may be undefined at runtime
+                typeof options?.group === "string" ? options.group : undefined,
+            );
+        } else {
+            // When --help is invoked on a specific command, the toolbox already
+            // carries the correctly-resolved command (including nested vs. flat
+            // disambiguation by full path). Pass it through so the renderer
+            // doesn't re-look up by leaf name. When entering via `help <name>`,
+            // we don't have a resolved command yet — fall back to lookup by name.
+            // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- command may be undefined at runtime even though the type says otherwise
+            const resolved = positionalName !== undefined || command === undefined || command.name === "help" ? undefined : command;
+
+            printCommandHelp(
+                logger,
+                runtime as unknown as ICli<Console>,
+                this.commands as unknown as Map<string, ICommand>,
+                positionalName ?? commandName,
+                resolved,
+            );
+        }
+
+        if (footer) {
+            ((logger as Console & { raw?: (...args: unknown[]) => void }).raw ?? logger.log)(templateFormat(footer));
+        }
+    }
+}
+
+export default HelpCommand;

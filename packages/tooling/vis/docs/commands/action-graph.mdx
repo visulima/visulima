@@ -1,0 +1,46 @@
+---
+title: "vis action-graph"
+description: "Show the execution plan for a target without running it"
+---
+
+# vis action-graph
+
+Displays the task execution plan that `vis run` would produce, without running anything. Useful for debugging dependency ordering and understanding what will execute.
+
+## Usage
+
+```bash
+vis action-graph <selector> [options]
+```
+
+## Examples
+
+```bash
+vis action-graph build                                  # All projects
+vis action-graph :test                                  # Moon-style selector
+vis action-graph "#frontend:build"                      # Tag filter
+vis action-graph build --json                           # Machine-readable output
+vis action-graph lint --query "language=typescript"      # Filter by query
+```
+
+## Output Formats
+
+**ASCII (default)** — Tasks indented by graph depth, dependencies above dependents:
+
+```
+  @myorg/utils:build
+@myorg/app:build (no-cache)
+```
+
+**JSON** (`--json`) — Machine-readable structure with roots, dependencies, and task metadata.
+
+## Options
+
+| Option    | Default | Description                        |
+| --------- | ------- | ---------------------------------- |
+| `--json`  | `false` | Emit JSON instead of ASCII         |
+| `--query` |         | Filter matched projects by a query |
+
+## Selectors
+
+See [vis run selectors](/commands/run#selectors) for the full selector syntax.

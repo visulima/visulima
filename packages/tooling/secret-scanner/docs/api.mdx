@@ -1,0 +1,280 @@
+---
+title: API Reference
+description: Full API reference for all exported functions and types.
+---
+
+# API Reference
+
+## Scanning
+
+### `scan(paths, options?)`
+
+Recursively scan one or more paths for secrets. Runs the detector on a Rust thread pool.
+
+```typescript
+import { scan } from "@visulima/secret-scanner";
+
+const findings = await scan([process.cwd()], {
+    redact: true,
+    walk: { gitignore: true, maxFileSize: 5 * 1024 * 1024 },
+});
+```
+
+- Respects `.gitignore`, `.ignore` and global excludes by default.
+- Walker-level exclusions come from `walk.excludePatterns` and `walk.excludeFromFiles`.
+- Findings are sorted, deduped by identity and priority, and emitted with paths relative to the first scan root.
+
+### `scanFiles(files, options?)`
+
+Scan a fixed list of files (for example, the output of `git diff --name-only`). Bypasses the walker entirely.
+
+```typescript
+import { scanFiles } from "@visulima/secret-scanner";
+
+const findings = await scanFiles(["src/app.ts", "src/db.ts"], {
+    walk: { excludePatterns: ["*.generated.ts"] },
+});
+```
+
+`walk.excludePatterns` / `walk.excludeFromFiles` still apply — the JS wrapper runs them through the `ignore` npm package to match the walker's semantics.
+
+### `scanString(content, file, options?)`
+
+Scan an in-memory buffer as if it lived at `file`. Useful for editor integrations and LSPs.
+
+```typescript
+import { scanString } from "@visulima/secret-scanner";
+
+const findings = await scanString('const token = "ghp_..."', "src/app.ts");
+```
+
+Runs synchronously on the calling thread (the binding exposes `scanTextSync`); the wrapper returns a Promise for API consistency.
+
+## Introspection
+
+### `listRules(options?)`
+
+Return metadata for every rule compiled from the effective config. Useful for building UIs, validating user configs, or pretty-printing the active ruleset.
+
+```typescript
+import { listRules } from "@visulima/secret-scanner";
+
+const rules = await listRules({ rules: { enable: ["tag:preset:weak-passwords"] } });
+
+for (const rule of rules) {
+    console.log(`${rule.id} (${String(rule.keywords.length)} keywords)`);
+}
+```
+
+### `inspectRuleset(options?)`
+
+Return the rules that failed to compile (invalid regex, bad allowlist, etc.). Rules that compile are silently skipped otherwise, which makes this the canonical way to validate a config before scanning.
+
+```typescript
+import { inspectRuleset } from "@visulima/secret-scanner";
+
+const skipped = await inspectRuleset({ config: { path: "./leaks.json" } });
+
+if (skipped.length > 0) {
+    console.warn(skipped.map((s) => `${s.ruleId}: ${s.reason}`).join("\n"));
+}
+```
+
+### `listRequiredValidators(options?)`
+
+Return every **non-HTTP** validator type referenced by the current ruleset, plus the optional peer-dep needed to verify findings from rules of that type. Returns an empty array when the ruleset only uses built-in HTTP / JWT validators.
+
+Ideal for a pre-flight check before enabling `config.validate: true`, or for wiring a `--list-validators`-style UI.
+
+```typescript
+import { listRequiredValidators } from "@visulima/secret-scanner";
+
+const report = await listRequiredValidators();
+
+for (const entry of report) {
+    console.log(`${entry.displayName} (${entry.type}) — ${String(entry.ruleCount)} rule(s)`);
+    if (entry.packageName) {
+        console.log(`  install: npm add ${entry.packageName}`);
+    }
+}
+```
+
+## Fingerprints
+
+### `fingerprint(finding)`
+
+Content-addressed stable key — SHA-256 over `(secret, ruleId, file)` truncated to 16 hex characters. Use it to build or merge baselines; the result survives line shifts inside the file and only changes when the secret, the rule, or the file path changes.
+
+```typescript
+import { fingerprint } from "@visulima/secret-scanner";
+
+const key = fingerprint(finding);
+// "a1b2c3d4e5f60718"
+```
+
+### `legacyFingerprint(finding)`
+
+Gitleaks-compatible `file:ruleID:startLine` string. Retained for interop with existing gitleaks baselines and tooling — suppression loaders still accept this form on read, but new baselines should use `fingerprint()` so line edits don't churn the file.
+
+```typescript
+import { legacyFingerprint } from "@visulima/secret-scanner";
+
+const key = legacyFingerprint(finding);
+// "src/config.ts:aws-access-token:42"
+```
+
+## Transformers
+
+### `transformYamlBlockScalars(content)`
+
+Collapse YAML `|` (literal) and `>` (folded) block scalars into single-line `key: "value"` proxies so multi-line secrets become a contiguous match for the detector. Opt-in because it requires reading the file in JS rather than going through the Rust walker — use it via `scanString` on YAML inputs you specifically want to transform.
+
+```typescript
+import { readFile } from "node:fs/promises";
+import { scanString, transformYamlBlockScalars } from "@visulima/secret-scanner";
+
+const yaml = await readFile("config.yaml", "utf8");
+const findings = await scanString(transformYamlBlockScalars(yaml), "config.yaml");
+```
+
+Scope: handles `key: |` / `key: >` at any indent level, including quoted keys. Sequence-element scalars (`- |`) and flow-style mappings are left alone — smaller hit rate, larger edge-case surface, and not worth carrying without real demand.
+
+The transformer pads blank lines for every consumed block-scalar body line, so `finding.startLine` / `finding.endLine` still map back to the original source without a side-band source map.
+
+## Heuristic helpers
+
+The same predicates the [heuristic filter suite](./configuration.mdx#heuristics--post-detection-false-positive-filters) applies. Exported so custom pre-filters (editor plugins, CI gates, third-party wrappers) can reuse the logic without re-implementing the rules.
+
+```typescript
+import { isLockFile, isNotAlphanumericString, isPotentialUuid, isSequentialString } from "@visulima/secret-scanner";
+
+isLockFile("packages/foo/pnpm-lock.yaml"); // true
+isSequentialString("AAAAAAAA"); // true
+isPotentialUuid("123e4567-e89b-12d3-a456-426614174000"); // true
+isNotAlphanumericString("*****"); // true
+```
+
+Each returns `true` when the input **should be dropped** as a likely false positive. See the [configuration reference](./configuration.mdx#heuristics--post-detection-false-positive-filters) for the full behaviour of each heuristic and the knobs to turn them off.
+
+## Paths
+
+### `bundledConfigPath`
+
+Absolute path to the bundled gitleaks ruleset JSON. Exposed so downstream tools can re-run / diff the bundled defaults without re-implementing the loader.
+
+## Types
+
+### `Finding`
+
+```typescript
+interface Finding {
+    ruleId: string;
+    description: string;
+    file: string;
+    startLine: number;
+    endLine: number;
+    startColumn: number;
+    endColumn: number;
+    match: string;
+    secret: string;
+    entropy: number;
+    tags: string[];
+    confidence: Confidence;
+    alternateMatches: string[];
+    source?: string;
+    validation?: ValidationStatus;
+}
+```
+
+- `file` is **relative** to the first scan root. When scanning with `scanFiles`, it is relative to the current working directory.
+- Columns are **1-based and count Unicode code points**, not bytes — consumable by editor/LSP tooling.
+- `confidence` resolves to `"low"` when the rule declares none (every bundled gitleaks rule). Use it alongside `config.minConfidence` to filter.
+- `alternateMatches` lists other rule ids that matched the same byte span and were collapsed by the dedup pass.
+- `source` tags the rule's provenance — `"gitleaks"`, `"kingfisher"`, `"visulima"`, or whatever the user declared.
+- `validation` is set only when `config.validate: true`. See [`ValidationStatus`](#validationstatus) below.
+
+### `RuleInfo`
+
+```typescript
+interface RuleInfo {
+    id: string;
+    description: string;
+    tags: string[];
+    keywords: string[];
+    entropy?: number;
+    hasRegex: boolean;
+    hasPathFilter: boolean;
+    alwaysRuns: boolean;
+    confidence: Confidence;
+}
+```
+
+`alwaysRuns` is `true` when the rule declares no keywords — its regex runs against every file instead of being prefiltered by Aho-Corasick. Surface it in tooling that validates custom rulesets so users can spot accidental perf regressions.
+
+### `SkippedRule`
+
+```typescript
+interface SkippedRule {
+    ruleId: string;
+    reason: string;
+}
+```
+
+### `Confidence`
+
+Author-declared rule quality. Rules that don't declare a value resolve to `"low"`.
+
+```typescript
+type Confidence = "low" | "medium" | "high";
+```
+
+### `ValidationStatus`
+
+Populated on `Finding.validation` when `config.validate: true`.
+
+```typescript
+type ValidationStatus = "verified" | "rejected" | "skipped" | "error";
+```
+
+- `"verified"` / `"rejected"` — the provider returned a conclusive result.
+- `"skipped"` — the validator ran but the rule uses an unsupported validation type (gRPC without deps, multi-step HTTP, checksum, …).
+- `"error"` — the validator ran but failed (network, timeout, rate-limit).
+- _absent_ — validator was never invoked (`config.validate` was `false`).
+
+### `ValidatorReport`
+
+Returned by [`listRequiredValidators()`](#listrequiredvalidatorsoptions).
+
+```typescript
+interface ValidatorReport {
+    displayName: string;
+    implemented: boolean;
+    packageName?: string;
+    ruleCount: number;
+    summary: string;
+    type: string;
+}
+```
+
+- `type` — the validator's discriminator in the rule schema (`"aws"`, `"mongodb"`, `"mysql"`, …).
+- `implemented: false` means no transport is wired up yet — a bespoke implementation is required.
+- `packageName` is the npm peer-dep to install; omitted when no driver is needed.
+
+### `GitleaksConfig`
+
+Lightweight structural mirror of the gitleaks schema. The Rust side is the source of truth via `serde_json::from_value`; the TypeScript type only validates the shape for downstream tooling.
+
+```typescript
+interface GitleaksConfig {
+    allowlist?: unknown;
+    allowlists?: unknown[];
+    description?: string;
+    extend?: { disabledRules?: string[]; path?: string; useDefault?: boolean };
+    rules?: unknown[];
+    title?: string;
+}
+```
+
+### `ScanOptions`
+
+See the [Configuration](./configuration.mdx) page.

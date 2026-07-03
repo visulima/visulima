@@ -1,0 +1,222 @@
+---
+title: Events
+description: Track the email lifecycle with a unified event shape, an event bus, and an event store from @visulima/email
+---
+
+# Events
+
+`@visulima/email/events` gives you a single, provider-agnostic way to observe what happens to your mail. Both internal send-lifecycle signals (queued, attempt, sent, failed) and normalized provider webhook events (delivered, opened, clicked, bounced, complained, deferred, unsubscribed) converge onto one `EmailEvent` shape, so you can wire a single subscriber and reconstruct a complete per-message timeline from one stream.
+
+```typescript
+import { ALL_EVENTS, EventBus, MemoryEventStore } from "@visulima/email/events";
+import type { EmailEvent, EmailEventType, EventStore } from "@visulima/email/events";
+```
+
+## The EmailEvent Shape
+
+Every event — whether emitted by the send pipeline or derived from a webhook — uses the same interface:
+
+```typescript
+interface EmailEvent {
+    /** A unique id for this event. */
+    id: string;
+
+    /** The kind of event. */
+    type: EmailEventType;
+
+    /** When the event occurred. */
+    timestamp: Date;
+
+    /** The message this event concerns. */
+    messageId?: string;
+
+    /** The recipient address this event concerns, when applicable. */
+    recipient?: string;
+
+    /** The provider that produced (or will produce) the message. */
+    provider?: string;
+
+    /** Arbitrary structured payload (provider response, bounce sub-type, click URL, …). */
+    data?: Record<string, unknown>;
+}
+```
+
+### Event Types
+
+`type` is an `EmailEventType`, one of:
+
+| Type           | Origin           | Description                                        |
+| -------------- | ---------------- | -------------------------------------------------- |
+| `queued`       | Send pipeline    | The message was accepted into a queue.             |
+| `attempt`      | Send pipeline    | A delivery attempt is starting.                    |
+| `sent`         | Send pipeline    | The provider accepted the message for delivery.    |
+| `delivered`    | Provider webhook | The receiving mail server accepted the message.    |
+| `opened`       | Provider webhook | The recipient opened the message.                  |
+| `clicked`      | Provider webhook | The recipient clicked a tracked link.              |
+| `bounced`      | Provider webhook | The message bounced (hard or soft).                |
+| `complained`   | Provider webhook | The recipient marked the message as spam.          |
+| `deferred`     | Provider webhook | Delivery was temporarily deferred by the receiver. |
+| `failed`       | Send pipeline    | A delivery attempt failed.                         |
+| `unsubscribed` | Provider webhook | The recipient unsubscribed.                        |
+
+The first group (`queued` → `failed`) is emitted by the send pipeline; the rest typically originate from provider webhooks (delivery and engagement signals).
+
+## EventBus
+
+`EventBus` is a tiny synchronous pub/sub bus for `EmailEvent`s. Subscribe to a specific `EmailEventType` or to `ALL_EVENTS` (`"*"`) to receive everything.
+
+```typescript
+import { ALL_EVENTS, EventBus } from "@visulima/email/events";
+
+const bus = new EventBus();
+
+// Subscribe to a single type.
+const unsubscribe = bus.on("sent", (event) => {
+    console.log(`Sent ${event.messageId} via ${event.provider}`);
+});
+
+// Subscribe to every event.
+bus.on(ALL_EVENTS, (event) => {
+    console.log(`[${event.type}]`, event.messageId);
+});
+
+// Stop listening.
+unsubscribe();
+```
+
+### Methods
+
+| Method                 | Description                                                                  |
+| ---------------------- | ---------------------------------------------------------------------------- |
+| `on(type, listener)`   | Subscribes a listener. Returns an unsubscribe function.                      |
+| `once(type, listener)` | Subscribes a listener that is removed after its first invocation.            |
+| `off(type, listener)`  | Removes a previously-added listener.                                         |
+| `emit(event)`          | Dispatches an event to type-specific listeners, then to `ALL_EVENTS` ones.   |
+| `clear(type?)`         | Removes all listeners, or only those for a single type when `type` is given. |
+
+### Logging Lifecycle Events
+
+Wire an `EventBus` once and let every part of your app emit onto it:
+
+```typescript
+import { ALL_EVENTS, EventBus } from "@visulima/email/events";
+import type { EmailEvent } from "@visulima/email/events";
+
+const bus = new EventBus();
+
+bus.on(ALL_EVENTS, (event: EmailEvent) => {
+    console.log(`[${event.timestamp.toISOString()}] ${event.type}`, {
+        messageId: event.messageId,
+        recipient: event.recipient,
+        provider: event.provider,
+    });
+});
+
+// Emit from your send pipeline.
+bus.emit({
+    id: "evt_1",
+    type: "queued",
+    timestamp: new Date(),
+    messageId: "msg_42",
+    recipient: "user@example.com",
+});
+
+bus.emit({
+    id: "evt_2",
+    type: "sent",
+    timestamp: new Date(),
+    messageId: "msg_42",
+    recipient: "user@example.com",
+    provider: "resend",
+});
+
+// Emit from a normalized webhook handler.
+bus.emit({
+    id: "evt_3",
+    type: "delivered",
+    timestamp: new Date(),
+    messageId: "msg_42",
+    recipient: "user@example.com",
+    provider: "resend",
+});
+```
+
+### One-Time Listeners
+
+Use `once()` to react to the next event of a type and then auto-remove the listener:
+
+```typescript
+bus.once("bounced", (event) => {
+    console.warn(`First bounce for ${event.recipient}`, event.data);
+});
+```
+
+## MemoryEventStore
+
+`MemoryEventStore` is an in-memory `EventStore` that groups events by `messageId`, so you can reconstruct a complete, time-ordered timeline for any single message. Events without a `messageId` are kept under a shared bucket so nothing is silently dropped.
+
+```typescript
+import { MemoryEventStore } from "@visulima/email/events";
+
+const store = new MemoryEventStore();
+```
+
+### Methods
+
+| Method                | Description                                                     |
+| --------------------- | --------------------------------------------------------------- |
+| `append(event)`       | Appends an event to its message's bucket.                       |
+| `timeline(messageId)` | Returns the time-ordered events for one message (oldest first). |
+| `all()`               | Returns every stored event, ordered by timestamp.               |
+| `clear()`             | Removes all stored events.                                      |
+
+### Reconstructing a Per-Message Timeline
+
+Append events to the store as they arrive, then read back the full timeline for a message:
+
+```typescript
+import { EventBus, MemoryEventStore } from "@visulima/email/events";
+
+const bus = new EventBus();
+const store = new MemoryEventStore();
+
+// Persist every event the bus sees.
+bus.on("*", (event) => {
+    store.append(event);
+});
+
+// … events are emitted over the message's lifecycle …
+bus.emit({ id: "evt_1", type: "queued", timestamp: new Date("2026-06-01T10:00:00Z"), messageId: "msg_42" });
+bus.emit({ id: "evt_2", type: "sent", timestamp: new Date("2026-06-01T10:00:01Z"), messageId: "msg_42" });
+bus.emit({ id: "evt_3", type: "delivered", timestamp: new Date("2026-06-01T10:00:05Z"), messageId: "msg_42" });
+bus.emit({ id: "evt_4", type: "opened", timestamp: new Date("2026-06-01T10:02:00Z"), messageId: "msg_42" });
+
+// Reconstruct the full, ordered history for one message.
+for (const event of store.timeline("msg_42")) {
+    console.log(event.type, "at", event.timestamp.toISOString());
+}
+// queued    at 2026-06-01T10:00:00.000Z
+// sent      at 2026-06-01T10:00:01.000Z
+// delivered at 2026-06-01T10:00:05.000Z
+// opened    at 2026-06-01T10:02:00.000Z
+```
+
+## The EventStore Interface
+
+`MemoryEventStore` is the built-in implementation. To persist events durably (database, log pipeline, analytics warehouse), implement the `EventStore` interface yourself:
+
+```typescript
+import type { EmailEvent, EventStore } from "@visulima/email/events";
+
+class DatabaseEventStore implements EventStore {
+    public async append(event: EmailEvent): Promise<void> {
+        await db.emailEvents.insert(event);
+    }
+
+    public async timeline(messageId: string): Promise<EmailEvent[]> {
+        return db.emailEvents.where({ messageId }).orderBy("timestamp", "asc");
+    }
+}
+```
+
+Both `append` and `timeline` may be synchronous or asynchronous, so the same interface fits an in-memory store and a remote database alike.

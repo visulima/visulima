@@ -1,0 +1,342 @@
+{
+    "name": "@visulima/pail",
+    "version": "4.0.0-alpha.23",
+    "description": "Highly configurable Logger for Node.js, Edge and Browser.",
+    "keywords": [
+        "anolilab",
+        "ansi",
+        "browser",
+        "browser-logger",
+        "callsite",
+        "callsites",
+        "cli",
+        "color",
+        "colorful",
+        "colorize",
+        "consola",
+        "console",
+        "console-logger",
+        "debug",
+        "error-logging",
+        "file-logger",
+        "file-logging",
+        "filesystem-logger",
+        "filter",
+        "fs-logger",
+        "handling exceptions",
+        "json",
+        "json-logger",
+        "json-logging",
+        "log",
+        "log level",
+        "log-cleaner",
+        "log-rotation",
+        "log4j",
+        "log4js",
+        "log4ts",
+        "logger",
+        "logging",
+        "node",
+        "node-logger",
+        "pail",
+        "pino",
+        "pretty",
+        "pretty-error",
+        "pretty-log",
+        "print",
+        "progress",
+        "redact",
+        "rotating-log",
+        "show error",
+        "stream",
+        "timer",
+        "universal",
+        "visulima",
+        "warning-logging",
+        "winston"
+    ],
+    "homepage": "https://visulima.com/packages/pail/",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/error-debugging/pail"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de",
+        "url": "https://danielbannert.com"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "import": {
+                "types": "./dist/index.server.d.ts",
+                "default": "./dist/index.server.js"
+            },
+            "browser": "./dist/index.browser.js"
+        },
+        "./browser": {
+            "types": "./dist/index.browser.d.ts",
+            "default": "./dist/index.browser.js"
+        },
+        "./server": {
+            "types": "./dist/index.server.d.ts",
+            "default": "./dist/index.server.js"
+        },
+        "./processor/redact": {
+            "types": "./dist/processor/redact-processor.d.ts",
+            "default": "./dist/processor/redact-processor.js"
+        },
+        "./processor/message-formatter": {
+            "types": "./dist/processor/message-formatter-processor.d.ts",
+            "default": "./dist/processor/message-formatter-processor.js"
+        },
+        "./processor/caller": {
+            "types": "./dist/processor/caller/caller-processor.d.ts",
+            "default": "./dist/processor/caller/caller-processor.js"
+        },
+        "./processor/opentelemetry": {
+            "types": "./dist/processor/opentelemetry-processor.d.ts",
+            "default": "./dist/processor/opentelemetry-processor.js"
+        },
+        "./processor/sampling": {
+            "types": "./dist/processor/sampling-processor.d.ts",
+            "default": "./dist/processor/sampling-processor.js"
+        },
+        "./processor/environment": {
+            "types": "./dist/processor/environment-processor.d.ts",
+            "default": "./dist/processor/environment-processor.js"
+        },
+        "./error": {
+            "types": "./dist/error.d.ts",
+            "default": "./dist/error.js"
+        },
+        "./reporter/file": {
+            "types": "./dist/reporter/file/json-file-reporter.d.ts",
+            "default": "./dist/reporter/file/json-file-reporter.js"
+        },
+        "./server/reporter/json": {
+            "import": {
+                "types": "./dist/reporter/json/index.d.ts",
+                "default": "./dist/reporter/json/index.js"
+            }
+        },
+        "./browser/reporter/json": {
+            "import": {
+                "types": "./dist/reporter/json/index.browser.d.ts",
+                "default": "./dist/reporter/json/index.browser.js"
+            }
+        },
+        "./reporter/json": {
+            "import": {
+                "types": "./dist/reporter/json/index.d.ts",
+                "default": "./dist/reporter/json/index.js"
+            },
+            "browser": "./dist/reporter/json/index.browser.js"
+        },
+        "./server/reporter/pretty": {
+            "import": {
+                "types": "./dist/reporter/pretty/index.d.ts",
+                "default": "./dist/reporter/pretty/index.js"
+            }
+        },
+        "./browser/reporter/pretty": {
+            "import": {
+                "types": "./dist/reporter/pretty/index.browser.d.ts",
+                "default": "./dist/reporter/pretty/index.browser.js"
+            }
+        },
+        "./reporter/pretty": {
+            "import": {
+                "types": "./dist/reporter/pretty/index.d.ts",
+                "default": "./dist/reporter/pretty/index.js"
+            },
+            "browser": "./dist/reporter/pretty/index.browser.js"
+        },
+        "./reporter/simple": {
+            "types": "./dist/reporter/simple/simple-reporter.server.d.ts",
+            "default": "./dist/reporter/simple/simple-reporter.server.js"
+        },
+        "./reporter/abstract-http": {
+            "types": "./dist/reporter/http/abstract-http-reporter.d.ts",
+            "default": "./dist/reporter/http/abstract-http-reporter.js"
+        },
+        "./reporter/http": {
+            "import": {
+                "types": "./dist/reporter/http/http-reporter.d.ts",
+                "default": "./dist/reporter/http/http-reporter.js"
+            },
+            "edge-light": {
+                "types": "./dist/reporter/http/http-reporter.edge-light.d.ts",
+                "default": "./dist/reporter/http/http-reporter.edge-light.js"
+            },
+            "browser": {
+                "types": "./dist/reporter/http/http-reporter.d.ts",
+                "default": "./dist/reporter/http/http-reporter.js"
+            }
+        },
+        "./object-tree": {
+            "types": "./dist/object-tree.d.ts",
+            "default": "./dist/object-tree.js"
+        },
+        "./wide-event": {
+            "types": "./dist/wide-event.d.ts",
+            "default": "./dist/wide-event.js"
+        },
+        "./middleware/express": {
+            "types": "./dist/middleware/express.d.ts",
+            "default": "./dist/middleware/express.js"
+        },
+        "./middleware/fastify": {
+            "types": "./dist/middleware/fastify.d.ts",
+            "default": "./dist/middleware/fastify.js"
+        },
+        "./middleware/hono": {
+            "types": "./dist/middleware/hono.d.ts",
+            "default": "./dist/middleware/hono.js"
+        },
+        "./middleware/elysia": {
+            "types": "./dist/middleware/elysia.d.ts",
+            "default": "./dist/middleware/elysia.js"
+        },
+        "./middleware/sveltekit": {
+            "types": "./dist/middleware/sveltekit.d.ts",
+            "default": "./dist/middleware/sveltekit.js"
+        },
+        "./middleware/next": {
+            "types": "./dist/middleware/next/handler.d.ts",
+            "default": "./dist/middleware/next/handler.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "lint:attw": "attw --pack --profile esm-only",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@visulima/colorize": "2.0.0-alpha.15",
+        "@visulima/interactive-manager": "1.0.0-alpha.5"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@opentelemetry/api": "catalog:dev",
+        "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
+        "@total-typescript/ts-reset": "catalog:dev",
+        "@types/node": "catalog:types",
+        "@visulima/ansi": "4.0.0-alpha.18",
+        "@visulima/error": "6.0.0-alpha.35",
+        "@visulima/fmt": "2.0.0-alpha.14",
+        "@visulima/inspector": "2.0.0-alpha.15",
+        "@visulima/packem": "catalog:dev",
+        "@visulima/redact": "3.0.0-alpha.14",
+        "@visulima/string": "3.0.0-alpha.18",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "fallow": "catalog:lint",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "rotating-file-stream": "catalog:dev",
+        "safe-stable-stringify": "catalog:dev",
+        "secretlint": "catalog:lint",
+        "semantic-release": "catalog:cli",
+        "terminal-size": "catalog:dev",
+        "type-fest": "catalog:prod",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    },
+    "peerDependencies": {
+        "@opentelemetry/api": "catalog:peer",
+        "@sveltejs/kit": ">=2.0",
+        "@visulima/redact": "3.0.0-alpha.14",
+        "elysia": ">=1.0",
+        "express": ">=4.0",
+        "fastify": ">=4.0",
+        "hono": ">=4.0",
+        "next": ">=14.0",
+        "rotating-file-stream": "catalog:peer"
+    },
+    "peerDependenciesMeta": {
+        "@opentelemetry/api": {
+            "optional": true
+        },
+        "@sveltejs/kit": {
+            "optional": true
+        },
+        "@visulima/redact": {
+            "optional": true
+        },
+        "elysia": {
+            "optional": true
+        },
+        "express": {
+            "optional": true
+        },
+        "fastify": {
+            "optional": true
+        },
+        "hono": {
+            "optional": true
+        },
+        "next": {
+            "optional": true
+        },
+        "rotating-file-stream": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

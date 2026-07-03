@@ -1,0 +1,15 @@
+{
+    "name": "colorize_node_example",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "node cli.js"
+    },
+    "dependencies": {
+        "@visulima/colorize": "workspace:*",
+        "color-convert": "catalog:prod",
+        "log-update": "catalog:prod"
+    },
+    "devDependencies": {}
+}

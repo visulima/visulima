@@ -1,0 +1,106 @@
+# Microsoft OneDrive
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, OAuth wiring, and Graph-specific behavior.
+
+## Overview
+
+The OneDrive adapter targets Microsoft Graph (`/me/drive` or `/users/{id}/drive`) via the official `@microsoft/microsoft-graph-client`. It supports app-only (client-credentials) auth for service deployments, refresh-token auth for end-user flows, or a pre-built Graph client. Refresh-token caching uses a shared OAuth helper with 60 s leeway.
+
+## Installation
+
+```sh
+npm install @microsoft/microsoft-graph-client
+```
+
+```sh
+yarn add @microsoft/microsoft-graph-client
+```
+
+```sh
+pnpm add @microsoft/microsoft-graph-client
+```
+
+## Usage
+
+### App-only (client-credentials)
+
+```ts
+import OneDriveStorage from "@visulima/storage/provider/onedrive";
+
+const storage = new OneDriveStorage({
+    clientId: process.env.ONEDRIVE_CLIENT_ID!,
+    clientSecret: process.env.ONEDRIVE_CLIENT_SECRET!,
+    tenantId: process.env.ONEDRIVE_TENANT_ID!,
+    driveUserId: process.env.ONEDRIVE_USER_ID, // target a specific user's drive
+    basePath: "uploads",
+});
+```
+
+### Refresh-token (delegated end-user auth)
+
+```ts
+const storage = new OneDriveStorage({
+    clientId: process.env.ONEDRIVE_CLIENT_ID!,
+    clientSecret: process.env.ONEDRIVE_CLIENT_SECRET,
+    tenantId: process.env.ONEDRIVE_TENANT_ID, // optional; defaults to `common`
+    refreshToken: process.env.ONEDRIVE_REFRESH_TOKEN!,
+});
+```
+
+### Pre-built client
+
+```ts
+import { Client } from "@microsoft/microsoft-graph-client";
+
+const storage = new OneDriveStorage({
+    client: Client.init({ authProvider: async (done) => done(null, await getToken()) }),
+});
+```
+
+Pre-built clients bypass the adapter's auth bookkeeping entirely.
+
+## Configuration
+
+### `basePath`
+
+All operations are rooted under `basePath` so the same Microsoft tenant can host multiple logical "buckets":
+
+```ts
+new OneDriveStorage({
+    /* …auth… */
+    basePath: "uploads/avatars",
+});
+```
+
+Keys are then joined as `uploads/avatars/<key>` inside `/drive/root:`.
+
+### Drive selection
+
+- Default: `/me/drive` (the authenticated user).
+- `driveUserId`: targets `/users/{id}/drive` — useful for app-only auth where there's no "me".
+- Pre-built client: target whatever the client is wired for.
+
+## URL Generation
+
+### `getReadUrl(key, options?)`
+
+- Default: returns the `@microsoft.graph.downloadUrl` from the item metadata (pre-authenticated, short-lived, ~1 h).
+- `publicByDefault: true`: calls `createLink` (`type: "view", scope: "anonymous"`) to mint an anonymous sharing link.
+- `responseContentDisposition` is not supported.
+
+### `getUploadUrl(key, options?)`
+
+Returns an upload-session URL from `POST /drive/root:/{path}:/createUploadSession`. The caller drives the session with `PUT` requests carrying `Content-Range` headers — see Microsoft's [resumable upload docs](https://learn.microsoft.com/en-us/graph/api/driveitem-createuploadsession).
+
+## Features
+
+- **Two server-side auth flows** — client-credentials for app deployments, refresh-token for delegated end-user access.
+- **Shared OAuth helper** — refresh-token mode reuses the same caching/leeway logic as the Dropbox adapter.
+- **Upload sessions** — `getUploadUrl()` initiates a Microsoft Graph resumable upload session.
+- **Sharing-link minting** — `publicByDefault` swaps the read-URL strategy without changing the call site.
+
+## Limitations
+
+- Single-shot writes via `write()` buffer the part stream — use `getUploadUrl()` for large transfers.
+- `parentReference.path` requires the literal `/drive/root:` prefix; the adapter handles this for you but `storage.raw` callers should be aware.
+- Read URLs (`@microsoft.graph.downloadUrl`) are short-lived (~1 h) — re-call `getReadUrl()` for each request rather than caching.

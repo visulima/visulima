@@ -1,0 +1,27 @@
+{
+    "name": "upload_example_express-rest-s3",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "tsx index.ts"
+    },
+    "dependencies": {
+        "@aws-sdk/abort-controller": "catalog:prod",
+        "@aws-sdk/client-s3": "catalog:prod",
+        "@aws-sdk/credential-providers": "catalog:prod",
+        "@aws-sdk/s3-request-presigner": "catalog:prod",
+        "@aws-sdk/types": "catalog:prod",
+        "@visulima/storage": "workspace:*",
+        "aws-crt": "catalog:prod",
+        "cors": "catalog:prod",
+        "dotenv": "catalog:prod",
+        "express": "catalog:backend",
+        "winston": "catalog:prod"
+    },
+    "devDependencies": {
+        "@types/cors": "catalog:types",
+        "@types/express": "catalog:types",
+        "tsx": "catalog:dev"
+    }
+}

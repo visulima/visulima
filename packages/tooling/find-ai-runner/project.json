@@ -1,0 +1,7 @@
+{
+    "name": "tooling/find-ai-runner",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/tooling/find-ai-runner/src",
+    "projectType": "library",
+    "tags": ["package", "type:package", "category:dev-tools"]
+}

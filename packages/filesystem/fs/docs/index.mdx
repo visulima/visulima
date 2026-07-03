@@ -1,0 +1,219 @@
+---
+title: Introduction
+description: "Human-friendly file system utilities for Node.js with async/sync APIs for walking, finding, reading, and writing files."
+---
+
+# @visulima/fs
+
+Human-friendly file system utilities for Node.js. A comprehensive collection of async and sync file system operations that make working with files and directories safer and more convenient.
+
+## Why @visulima/fs?
+
+Node.js's built-in `fs` module is powerful but low-level. **@visulima/fs** provides high-level utilities that handle common patterns:
+
+- **Safe operations** - Automatically create parent directories when needed
+- **Dual APIs** - Both async and sync versions of every function
+- **Type-safe** - Full TypeScript support with proper types
+- **Format support** - Built-in JSON and YAML parsing/writing
+- **Directory traversal** - Powerful walk and findUp utilities
+- **Cross-platform** - Consistent behavior on Windows, macOS, and Linux
+
+## Key Features
+
+**Directory Walking**
+
+- **Recursive traversal** - Walk directory trees with filtering
+- **Configurable depth** - Control how deep to traverse
+- **Pattern matching** - Include/exclude files by glob patterns
+- **Symlink handling** - Follow or ignore symbolic links
+
+**File Finding**
+
+- **Find upward** - Search parent directories for files
+- **Stop conditions** - Flexible search control
+- **Multiple matchers** - Search by name, extension, or pattern
+
+**Safe File Operations**
+
+- **Ensure files** - Create files with parent directories
+- **Ensure directories** - Safely create directory trees
+- **Ensure links** - Create symbolic and hard links safely
+- **Atomic writes** - Write files safely without corruption risk
+
+**Format Support**
+
+- **JSON handling** - Read and write JSON with formatting
+- **YAML support** - Parse and write YAML files (optional peer dependency)
+- **Automatic formatting** - Preserve indentation and style
+
+**Utilities**
+
+- **Empty directory check** - Determine if directory is empty
+- **File size calculation** - Get size with compression support
+- **EOL detection** - Detect line ending styles
+- **Path utilities** - Additional path manipulation helpers
+
+## Quick Start
+
+### Installation
+
+```bash npm2yarn
+npm install @visulima/fs
+```
+
+### Basic Usage
+
+```typescript
+import { readJson, writeJson, emptyDir, walk, findUp } from "@visulima/fs";
+
+// Read JSON file
+const config = await readJson("config.json");
+
+// Write JSON file (creates parent dirs automatically)
+await writeJson("data/output.json", { result: "success" });
+
+// Check if directory is empty
+const isEmpty = await emptyDir("temp");
+
+// Walk directory tree
+for await (const entry of walk("src")) {
+    console.log(entry.path);
+}
+
+// Find file in parent directories
+const packageJson = await findUp("package.json");
+```
+
+## Use Cases
+
+### Build Tools & Scripts
+
+Safely manage build artifacts and configuration files:
+
+```typescript
+import { ensureDir, emptyDir, writeJson } from "@visulima/fs";
+
+// Prepare build directory
+await ensureDir("dist");
+await emptyDir("dist");
+
+// Write build manifest
+await writeJson("dist/manifest.json", {
+    version: "1.0.0",
+    files: ["index.js", "styles.css"],
+});
+```
+
+### Configuration Management
+
+Read and write configuration files in multiple formats:
+
+```typescript
+import { readJson, writeJson } from "@visulima/fs";
+import { readYaml, writeYaml } from "@visulima/fs/yaml";
+
+// Read config from JSON or YAML
+const config = await readJson(".config.json");
+// or
+const config = await readYaml(".config.yml");
+
+// Update and save
+config.updated = new Date();
+await writeJson(".config.json", config);
+```
+
+### Project File Discovery
+
+Find project files by walking up the directory tree:
+
+```typescript
+import { findUp } from "@visulima/fs";
+
+// Find nearest package.json
+const packagePath = await findUp("package.json");
+
+// Find config file with multiple possible names
+const configPath = await findUp([".config.json", ".config.yml", "config.json"]);
+
+// Find with custom matcher
+const gitRoot = await findUp((dir) => {
+    return dir.endsWith(".git");
+});
+```
+
+### Source Code Analysis
+
+Process all files in a project with filtering:
+
+```typescript
+import { walk } from "@visulima/fs";
+
+// Find all TypeScript files
+const tsFiles: string[] = [];
+
+for await (const entry of walk("src", {
+    extensions: [".ts", ".tsx"],
+    skip: ["**/*.test.ts", "**/node_modules/**"],
+})) {
+    if (entry.isFile) {
+        tsFiles.push(entry.path);
+    }
+}
+```
+
+## Comparison with Alternatives
+
+### vs. Node.js `fs`
+
+| Feature               | @visulima/fs | Node.js fs |
+| --------------------- | ------------ | ---------- |
+| Ensure directories    | ✅           | ❌         |
+| Safe atomic writes    | ✅           | ❌         |
+| JSON read/write       | ✅           | ❌         |
+| YAML support          | ✅           | ❌         |
+| Directory walking     | ✅           | ❌         |
+| Find up directories   | ✅           | ❌         |
+| Empty directory check | ✅           | ❌         |
+
+### vs. fs-extra
+
+| Feature           | @visulima/fs | fs-extra |
+| ----------------- | ------------ | -------- |
+| Modern ESM        | ✅           | ⚠️       |
+| TypeScript native | ✅           | ⚠️       |
+| YAML support      | ✅           | ❌       |
+| Walk utilities    | ✅           | ❌       |
+| Find up           | ✅           | ❌       |
+| Size calculation  | ✅           | ❌       |
+| EOL detection     | ✅           | ❌       |
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn how to install and set up the package
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started with common operations in 5 minutes
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Explore all file system utilities
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+### Node.js
+
+- ✅ Node.js 22.13 - 25.x
+- ✅ ESM and CommonJS support
+
+### Operating Systems
+
+- ✅ Windows
+- ✅ macOS
+- ✅ Linux
+- ✅ Any POSIX-compliant OS

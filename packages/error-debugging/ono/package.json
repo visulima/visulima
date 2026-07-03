@@ -1,0 +1,147 @@
+{
+    "name": "@visulima/ono",
+    "version": "2.0.0-alpha.38",
+    "description": "Ono is an error-parsing library that pretty prints JavaScript errors on a web page or the terminal.",
+    "keywords": [
+        "anolilab",
+        "browser",
+        "cli",
+        "code-frame",
+        "codeframe",
+        "connect",
+        "debugging",
+        "devtools",
+        "diagnostics",
+        "error",
+        "error-inspector",
+        "error-reporting",
+        "exception",
+        "express",
+        "html-error",
+        "http-errors",
+        "node",
+        "open-in-editor",
+        "source-code-preview",
+        "stacktrace",
+        "terminal",
+        "visulima",
+        "web",
+        "webpack",
+        "whoops",
+        "youch"
+    ],
+    "homepage": "https://visulima.com/packages/ono/",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/error-debugging/ono"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": true,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./page/context": {
+            "types": "./dist/error-inspector/page/create-request-context.d.ts",
+            "default": "./dist/error-inspector/page/create-request-context.js"
+        },
+        "./server/open-in-editor": {
+            "types": "./dist/server/open-in-editor.d.ts",
+            "default": "./dist/server/open-in-editor.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev:hono": "packem build --development --watch --onSuccess 'node ./examples/hono/index.js'",
+        "dev:node": "packem build --development --watch --onSuccess 'node ./examples/node/index.js'",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "lint:attw": "attw --pack --profile esm-only",
+        "lint:eslint": "eslint . --cache --concurrency auto",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@shikijs/langs": "catalog:prod",
+        "@visulima/error": "6.0.0-alpha.35",
+        "isomorphic-dompurify": "catalog:prod",
+        "launch-editor-middleware": "catalog:prod",
+        "shiki": "catalog:syntax"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@eslint/css": "catalog:lint",
+        "@shikijs/themes": "catalog:dev",
+        "@tailwindcss/forms": "catalog:frontend",
+        "@tailwindcss/node": "catalog:frontend",
+        "@tailwindcss/oxide": "catalog:frontend",
+        "@tailwindcss/typography": "catalog:style",
+        "@total-typescript/ts-reset": "catalog:dev",
+        "@types/http-errors": "catalog:types",
+        "@types/node": "catalog:types",
+        "@visulima/packem": "catalog:dev",
+        "@visulima/path": "3.0.0-alpha.13",
+        "@vitest/coverage-v8": "catalog:test",
+        "cssnano": "catalog:dev",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "fallow": "catalog:lint",
+        "http-errors": "catalog:dev",
+        "lucide-static": "catalog:icons",
+        "marked": "catalog:dev",
+        "openai": "catalog:dev",
+        "prettier": "catalog:lint",
+        "prettier-plugin-tailwindcss": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "semantic-release": "catalog:cli",
+        "tailwind-csstree": "catalog:dev",
+        "tailwindcss": "catalog:style",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

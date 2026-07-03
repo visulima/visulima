@@ -1,0 +1,173 @@
+---
+title: "API Reference"
+description: "Complete API for @visulima/redact"
+---
+
+# API Reference
+
+## Functions
+
+### redact
+
+```typescript
+function redact<T>(input: T, rules?: string[], options?: RedactOptions): T;
+```
+
+Redact sensitive properties from objects.
+
+**Parameters:**
+
+- `input` - Object to redact
+- `rules` - Array of property paths to redact
+- `options` - Redaction options
+
+**Returns:** New object with redacted values
+
+---
+
+### stringAnonymize
+
+```typescript
+function stringAnonymize(text: string, options?: AnonymizeOptions): string;
+```
+
+Anonymize sensitive information in text using NLP.
+
+**Parameters:**
+
+- `text` - Text to anonymize
+- `options` - Anonymization options
+
+**Returns:** Anonymized text
+
+---
+
+## Options
+
+### RedactOptions
+
+```typescript
+interface RedactOptions {
+    replacement?: string;
+    caseSensitive?: boolean;
+}
+```
+
+**Properties:**
+
+- `replacement` - Custom replacement text. Default: `"<FIELD_NAME>"`
+- `caseSensitive` - Case-sensitive matching. Default: `true`
+
+---
+
+### AnonymizeOptions
+
+```typescript
+interface AnonymizeOptions {
+    include?: string[];
+    exclude?: string[];
+    replacement?: string;
+}
+```
+
+**Properties:**
+
+- `include` - Entity types to anonymize
+- `exclude` - Entity types to skip
+- `replacement` - Custom replacement pattern
+
+---
+
+## Built-in Rules
+
+### Credentials
+
+- `password` - Password fields
+- `apikey` - API keys
+- `token` - Auth tokens
+- `bearer` - Bearer tokens
+- `auth` - Auth headers
+- `secret` - Secret values
+
+### Financial
+
+- `creditcard` - Credit card numbers
+- `cvv` / `cvd` - Card security codes
+- `bankacc` - Bank account numbers
+- `routing` - Routing numbers
+- `PAN` - Primary account numbers
+- `money` - Monetary values
+
+### Personal
+
+- `email` - Email addresses
+- `ssn` / `us_social_security` - Social Security Numbers
+- `firstname` / `lastname` - Names
+- `phonenumber` - Phone numbers
+- `passport` - Passport numbers
+- `dl` - Driver's license
+- `uk_nin` - UK National Insurance
+
+### Technical
+
+- `ip` - IP addresses
+- `mac_address` - MAC addresses
+- `url` - URLs
+- `domain` - Domain names
+- `crypto` - Cryptocurrency addresses
+
+### Other
+
+- `date` - Dates
+- `time` - Times
+- `zip_code` - Postal codes
+- `isbn` - ISBN numbers
+- `organization` - Organization names
+
+---
+
+## Text Anonymization Categories
+
+### NLP-Detected Entities
+
+- `Person` - People's names
+- `Organization` - Company/org names
+- `Place` - Locations
+- `Date` - Date expressions
+- `Money` - Monetary amounts
+- `PhoneNumber` - Phone numbers
+- `Email` - Email addresses
+
+---
+
+## Examples
+
+### All Options
+
+```typescript
+import { redact, stringAnonymize } from "@visulima/redact";
+
+// Object redaction with options
+const safe = redact(data, ["password", "ssn"], {
+    replacement: "[REDACTED]",
+    caseSensitive: false,
+});
+
+// Text anonymization with options
+const anonymous = stringAnonymize(text, {
+    include: ["Person", "Email"],
+    exclude: ["Organization"],
+    replacement: "<HIDDEN>",
+});
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Detailed usage examples
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to overview
+    </Card>
+</Cards>

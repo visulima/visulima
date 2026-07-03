@@ -1,0 +1,212 @@
+---
+title: Inbound
+description: Parse inbound email webhooks from Postmark, SendGrid, Mailgun, Cloudflare, and AWS SES into a single normalized shape with @visulima/email
+---
+
+# Inbound
+
+Every provider that receives mail on your behalf — Postmark, SendGrid Inbound Parse, Mailgun Routes, Cloudflare Email Workers, AWS SES — posts you a different webhook payload. The `@visulima/email/inbound` subpath normalizes all of them onto one shape, `InboundEmail`, so the rest of your application is provider-agnostic. It also bundles helpers for the things you actually do with inbound mail: extracting the new reply text out of a quoted history, stitching messages into conversation threads, and parsing addresses.
+
+## The normalized shape: `InboundEmail`
+
+Every `parse*Inbound` adapter maps its provider's payload onto this shape:
+
+```typescript
+interface InboundAddress {
+    email: string;
+    name?: string;
+}
+
+interface InboundAttachment {
+    filename: string;
+    contentType?: string;
+    content?: string; // base64, when the provider inlines it
+    size?: number;
+    cid?: string; // Content-ID, for inline attachments
+}
+
+interface InboundEmail {
+    from?: InboundAddress;
+    to: InboundAddress[];
+    cc: InboundAddress[];
+    bcc: InboundAddress[];
+    replyTo?: InboundAddress;
+    subject?: string;
+    text?: string;
+    html?: string;
+    headers: Record<string, string>; // keys are lower-cased
+    messageId?: string;
+    inReplyTo?: string;
+    references: string[]; // oldest first
+    attachments: InboundAttachment[];
+    provider: string; // the provider this was parsed from
+    raw?: unknown; // the original payload, for provider-specific fields
+}
+```
+
+Headers are keyed by their **lower-cased** name. `references` is an array of bare Message-IDs (oldest first). `raw` always holds the original payload so you can reach for provider-specific fields the normalized shape doesn't carry.
+
+## Provider parsers
+
+Each parser takes that provider's webhook payload and returns an `InboundEmail`.
+
+### Postmark (`parsePostmarkInbound`)
+
+```typescript
+import { parsePostmarkInbound } from "@visulima/email/inbound";
+
+const email = parsePostmarkInbound(await request.json());
+```
+
+### SendGrid (`parseSendGridInbound`)
+
+SendGrid's [Inbound Parse](https://www.twilio.com/docs/sendgrid/for-developers/parsing-email/setting-up-the-inbound-parse-webhook) posts `multipart/form-data` fields. Its `headers` field is a single raw string, which the parser splits for you.
+
+```typescript
+import { parseSendGridInbound } from "@visulima/email/inbound";
+
+// Collect the parsed multipart fields into a plain object first.
+const email = parseSendGridInbound(formFields);
+```
+
+### Mailgun (`parseMailgunInbound`)
+
+Mailgun's `message-headers` field is either a JSON array of `[name, value]` pairs or a string; the parser accepts both.
+
+```typescript
+import { parseMailgunInbound } from "@visulima/email/inbound";
+
+const email = parseMailgunInbound(formFields);
+```
+
+### Cloudflare Email Workers (`parseCloudflareInbound`)
+
+Cloudflare delivers a `ForwardableEmailMessage` whose body is only available as a **stream**. Decode the body yourself and pass the result via `text`/`html` alongside the message.
+
+```typescript
+import { parseCloudflareInbound } from "@visulima/email/inbound";
+
+export default {
+    async email(message, env, ctx) {
+        const text = await new Response(message.raw).text();
+
+        const email = parseCloudflareInbound({
+            from: message.from,
+            to: message.to,
+            headers: message.headers, // a Headers instance
+            text,
+        });
+
+        // ...handle email
+    },
+};
+```
+
+### AWS SES (`parseSesInbound`)
+
+Pass the SES `mail` object (typically delivered via SNS/Lambda). SES does not include the decoded body in the notification — fetch it from S3 (or pass it directly) and supply it via `text`/`html`.
+
+```typescript
+import { parseSesInbound } from "@visulima/email/inbound";
+
+const email = parseSesInbound({
+    mail: snsRecord.mail,
+    text: bodyFromS3, // decoded body you fetched yourself
+});
+```
+
+## Extracting the reply: `extractReply`
+
+When someone replies, the provider hands you the entire quoted history. `extractReply` strips it back down to just the new text the sender wrote.
+
+```typescript
+import { extractReply } from "@visulima/email/inbound";
+
+const reply = extractReply(email.text ?? "");
+```
+
+It handles:
+
+- `>`-prefixed quote blocks
+- Localized "On … wrote:" attribution lines — including German ("Am … schrieb:"), French, Spanish, and Turkish variants
+- Outlook's `-----Original Message-----` separator and `From:` / `Von:` header blocks
+- The `-- ` signature delimiter
+
+By default the trailing signature is stripped. Pass `stripSignature: false` to keep it:
+
+```typescript
+const reply = extractReply(email.text ?? "", { stripSignature: false });
+```
+
+| Option            | Type      | Default | Description                                              |
+| ----------------- | --------- | ------- | -------------------------------------------------------- |
+| `stripSignature?` | `boolean` | `true`  | Remove the trailing signature after the `-- ` delimiter. |
+
+## Threading: `stitchThreads`
+
+Group a flat list of `InboundEmail`s into conversations. Threading is driven by `In-Reply-To` / `References`, with a normalized-subject fallback for clients that don't set those headers.
+
+```typescript
+import { stitchThreads } from "@visulima/email/inbound";
+
+const threads = stitchThreads(messages);
+
+for (const thread of threads) {
+    console.log(thread.id, thread.messages.length);
+}
+```
+
+Each `EmailThread` is `{ id: string; messages: InboundEmail[] }`. The `id` is the thread's root Message-ID (or a synthetic key when a message has none); `messages` preserve input order.
+
+The two normalizers backing the fallback are exported on their own:
+
+```typescript
+import { normalizeMessageId, normalizeSubject } from "@visulima/email/inbound";
+
+normalizeMessageId("<abc123@mail.example.com>"); // "abc123@mail.example.com"
+normalizeSubject("Re: Fwd: Quarterly report"); // "quarterly report"
+```
+
+## Address helpers
+
+The same parsers the adapters use internally are exported for working with raw header values:
+
+```typescript
+import { parseAddress, parseAddressList, parseReferences } from "@visulima/email/inbound";
+
+parseAddress("Jane Doe <jane@example.com>");
+// { email: "jane@example.com", name: "Jane Doe" }
+
+parseAddressList("a@example.com, Bob <b@example.com>");
+// [{ email: "a@example.com" }, { email: "b@example.com", name: "Bob" }]
+
+parseReferences("<msg-1@example.com> <msg-2@example.com>");
+// ["msg-1@example.com", "msg-2@example.com"]
+```
+
+## End-to-end example
+
+Receiving a Postmark inbound webhook, normalizing it, pulling out the new reply, and acting on it:
+
+```typescript
+import { extractReply, parsePostmarkInbound } from "@visulima/email/inbound";
+
+app.post("/inbound/postmark", async (request, response) => {
+    // 1. Normalize the provider payload.
+    const email = parsePostmarkInbound(await request.json());
+
+    // 2. Strip the quoted history and signature down to the new reply.
+    const reply = extractReply(email.text ?? "");
+
+    // 3. Use the normalized fields — provider-agnostic from here on.
+    await tickets.appendComment({
+        from: email.from?.email,
+        subject: email.subject,
+        body: reply,
+        inReplyTo: email.inReplyTo,
+        attachments: email.attachments,
+    });
+
+    response.status(200).end();
+});
+```

@@ -1,0 +1,77 @@
+---
+title: Introduction
+description: Fast secret and credential scanner — a Rust port of the gitleaks detection engine, exposed through NAPI.
+---
+
+# Secret Scanner
+
+**Fast secret and credential scanner for Node.js, built on a Rust port of the [gitleaks](https://github.com/gitleaks/gitleaks) detection engine and exposed through NAPI.**
+
+`@visulima/secret-scanner` ships a combined default ruleset (1,047 rules active by default — 222 upstream gitleaks rules MIT + 825 MongoDB Kingfisher rules Apache-2.0, plus 11 opt-in `preset:*` rules disabled by default) together with a vetted set of false-positive reductions, native `.gitignore` support, and a handful of ergonomic extensions (opt-in tagged rule groups, per-rule priority, per-rule pre-processing, target-scoped allowlists). The detector is PCRE-compatible, parallelised with `rayon`, and mmap-aware for large files.
+
+Use it as a library, through the [`vis secrets`](../vis/index.mdx) CLI, or as a drop-in replacement for `gitleaks` / `secretlint` in existing pipelines.
+
+## Features
+
+- **1,047 bundled rules** active by default — 222 from upstream gitleaks (MIT) + 825 from MongoDB Kingfisher (Apache-2.0) — plus 11 opt-in `preset:*` rules (`preset:weak-passwords` for low-entropy credentials, `preset:password-manager` for committed vault exports), disabled by default.
+- **Fancy-regex engine** with lookaround support; delegates to `regex` internally when a pattern doesn't need PCRE features.
+- **Aho-Corasick keyword prefilter** — candidate rules are shortlisted in a single DFA pass before any per-rule regex runs.
+- **Parallel file scanning** via `rayon`, memory-mapped zero-copy reads above 1 MiB.
+- **Respects `.gitignore` / `.ignore`** out of the box, plus scanner-specific `walk.excludePatterns` / `walk.excludeFromFiles` for `.secretsignore`-style files.
+- **Baseline JSON** with content-hash fingerprints (SHA-256 over `secret + ruleId + file`, truncated to 16 hex) — survives line shifts. Legacy `file:rule:line` baselines still suppress on read.
+- **Inline + block + next-line suppression** — `gitleaks:allow`, `gitleaks:allow-start` / `-end`, `secret-scanner:` equivalents, plus detect-secrets `pragma: allowlist secret` / `pragma: allowlist nextline secret` for YAML and PEM bodies.
+- **Heuristic false-positive suite** — lock-file skip, UUID / sequential / non-alphanumeric drops. On by default, individually toggleable via `config.heuristics.*`.
+- **YAML block-scalar transformer** — opt-in helper (`transformYamlBlockScalars`) that collapses multi-line `|` / `>` scalars into single-line proxies so secrets split across lines become detectable.
+- **Deterministic output order** across runs — stable sort on file + line + column + rule id.
+- **Findings deduplication** — identical findings collapse; rule priority resolves span overlaps (specific rules beat `generic-api-key`).
+- **Targeted allowlists** via gitleaks' `targetRules` schema (#1919).
+- **Per-rule text pre-processor** (`preRegexReplace`) for normalising escape sequences / templates before the main regex runs (#1182).
+- **Codepoint-based column math** for editor / LSP consumers (#1962).
+- **SARIF** output ready for GitHub / GitLab code scanning (polished URIs + rule cross-refs).
+- **JSON-only config at runtime** — author in TOML if you prefer; convert once at build time. No c12 / TOML parser in the runtime dep graph.
+
+## Quick Start
+
+```typescript
+import { scan, scanFiles, scanString, listRules, inspectRuleset, fingerprint, transformYamlBlockScalars } from "@visulima/secret-scanner";
+
+// Scan a directory (respects .gitignore)
+const findings = await scan([process.cwd()], { redact: true });
+
+// Scan a fixed list of files (e.g. `git diff --name-only`)
+const staged = await scanFiles(["src/app.ts", "src/db.ts"]);
+
+// Scan an in-memory buffer
+const inline = await scanString('aws_secret = "AKIA..."', "config.env");
+
+// Collapse YAML block scalars first so multi-line secrets are detectable
+const yamlFindings = await scanString(transformYamlBlockScalars(yamlSource), "config.yaml");
+
+// List every bundled rule
+const rules = await listRules();
+
+// Validate a custom config before scanning
+const skipped = await inspectRuleset({ config: { path: "./leaks.json" } });
+
+// Additively enable the bundled weak-passwords opt-in group (defaults still fire)
+const weak = await scan([process.cwd()], { rules: { enable: ["tag:preset:weak-passwords"] } });
+
+// Keep UUID-shaped findings (heuristic filters default to on; toggle individually)
+const audit = await scan([process.cwd()], { config: { heuristics: { potentialUuid: false } } });
+
+// Compute a content-hash fingerprint — stable across line shifts
+for (const f of findings) console.log(fingerprint(f));
+```
+
+## Why Secret Scanner?
+
+- **Gitleaks-compatible without the Go runtime** — ships as an ESM module with prebuilt NAPI binaries for 8 platforms (darwin / linux / windows × x64 / arm64, plus linux musl variants).
+- **Fewer false positives than stock gitleaks** — additive stopword patches cover common placeholder patterns (`${VAR}`, `{{ var }}`, `vault://`, `your-secret`, etc.) and empty-RHS matches are dropped by default.
+- **Rule priority** — a specific rule always wins over a generic catch-all on the same byte span.
+- **Deterministic, portable output** — relative paths, stable ordering, JSON-first — baselines are checked into the repo and survive cwd changes.
+- **Works in vis** — `vis secrets`, `vis migrate gitleaks`, `vis migrate secretlint`, `vis hook add secrets`.
+
+## Related
+
+- [`@visulima/vis`](../vis/index.mdx) — ships `vis secrets` on top of this package with migrations and pre-commit hook helpers.
+- [gitleaks](https://github.com/gitleaks/gitleaks) — upstream detection engine (MIT) we vendor the ruleset from.

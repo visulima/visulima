@@ -1,0 +1,2363 @@
+---
+title: Components
+description: "Reference for all React components in @visulima/tui: Alert, Badge, Box, Code, ConsoleOverlay, FilePicker, Text, BigText, ConfirmInput, DiffView, Gradient, Help, Link, Markdown, MultiSelect, Newline, OrderedList, Paginator, Slider, Spacer, Static, StatusMessage, Stopwatch, Tab, Tabs, Textarea, TextInput, Timer, Transform, TreeView, Spinner, ProgressBar, SelectInput, Table, UnorderedList"
+---
+
+# Components
+
+`@visulima/tui` exposes Ink-compatible core components plus native renderer additions.
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { Cursor } from "@visulima/tui/components/cursor";
+import { Newline } from "@visulima/tui/components/newline";
+import { Spacer } from "@visulima/tui/components/spacer";
+import { Static } from "@visulima/tui/components/static";
+import { Text } from "@visulima/tui/components/text";
+import { Transform } from "@visulima/tui/components/transform";
+import { ConfirmInput } from "@visulima/tui/components/confirm-input";
+import { FilePicker } from "@visulima/tui/components/file-picker";
+import { Gradient } from "@visulima/tui/components/gradient";
+import { Help } from "@visulima/tui/components/help";
+import { MultiSelect } from "@visulima/tui/components/multi-select";
+import { Paginator } from "@visulima/tui/components/paginator";
+import { ProgressBar } from "@visulima/tui/components/progress-bar";
+import { SelectInput } from "@visulima/tui/components/select-input";
+import { Spinner } from "@visulima/tui/components/spinner";
+import { Stopwatch } from "@visulima/tui/components/stopwatch";
+import { Tab } from "@visulima/tui/components/tab";
+import { Tabs } from "@visulima/tui/components/tabs";
+import { TextInput } from "@visulima/tui/components/text-input";
+import { Timer } from "@visulima/tui/components/timer";
+```
+
+### Heavy components (subpath imports)
+
+`BigText`, `Code`, `DiffView`, `Markdown` and `Table` each ship with at least one heavy optional peer dependency. They are exported from per-component subpaths so the optional deps are only loaded when you actually import the component.
+
+```tsx
+import { BigText } from "@visulima/tui/components/big-text"; // requires: cfonts
+import { Code } from "@visulima/tui/components/code"; // requires: shiki, @shikijs/langs, @shikijs/themes
+import { DiffView } from "@visulima/tui/components/diff-view"; // requires: diff (+ shiki for syntax highlighting)
+import { Markdown } from "@visulima/tui/components/markdown"; // requires: marked (+ shiki for code blocks)
+import { Table } from "@visulima/tui/components/table"; // requires: @visulima/tabular
+```
+
+See the [Package Map › Heavy component subpaths](./package-map.mdx#heavy-component-subpaths) table for a full peer-dep matrix and `npm install` commands.
+
+## `Box`
+
+Layout primitive backed by Yoga.
+
+```tsx
+<Box
+    flexDirection="row" // row | column | row-reverse | column-reverse
+    flexGrow={1}
+    flexShrink={1}
+    width={40}
+    height={10}
+    minWidth={10}
+    minHeight={4}
+    padding={1}
+    paddingX={2}
+    margin={1}
+    gap={1}
+    alignItems="center"
+    justifyContent="space-between"
+    borderStyle="round" // single | double | round | bold | classic | singleDouble | doubleSingle
+    borderColor="cyan"
+    borderBackgroundColor="blue"
+    borderTop={true}
+    borderRight={true}
+    borderBottom={true}
+    borderLeft={true}
+>
+    {children}
+</Box>
+```
+
+### Overflow and CSS-Level Scrolling
+
+`Box` supports CSS-level scrolling via `overflow: 'scroll'`. This is separate from the component-based `ScrollView` and provides native-style overflow clipping with integrated scrollbar rendering.
+
+```tsx
+<Box
+    overflow="scroll" // visible | hidden | scroll
+    overflowX="hidden" // per-axis overflow control
+    overflowY="scroll" // per-axis overflow control
+    scrollTop={0} // vertical scroll position (rows)
+    scrollLeft={0} // horizontal scroll position (columns)
+    scrollbarThumbColor="gray" // scrollbar thumb color
+    scrollbar={true} // show/hide scrollbar (default: true)
+    height={10}
+    width={40}
+>
+    {longContent}
+</Box>
+```
+
+### Sticky Headers
+
+Elements within a scrollable `Box` can be pinned to the top or bottom of the viewport using the `sticky` prop. A sticky header remains pinned only while its parent section is visible.
+
+```tsx
+<Box overflow="scroll" height={15}>
+    <Box sticky>
+        <Text bold>Section A</Text>
+    </Box>
+    {sectionAContent}
+
+    <Box sticky>
+        <Text bold>Section B</Text>
+    </Box>
+    {sectionBContent}
+</Box>
+```
+
+| Prop        | Type                           | Description                                                                                       |
+| ----------- | ------------------------------ | ------------------------------------------------------------------------------------------------- |
+| `sticky`    | `boolean \| 'top' \| 'bottom'` | Pin this element during scroll. `true` and `'top'` pin to the top; `'bottom'` pins to the bottom. |
+| `opaque`    | `boolean`                      | Marks this element as opaque for rendering optimization (not yet active).                         |
+| `scrollbar` | `boolean`                      | Show/hide the scrollbar for scrollable elements. Defaults to `true`.                              |
+
+Notes:
+
+- `Box` defaults to `flexDirection="row"` unless you set it explicitly.
+- Border side toggles (`borderTop`, etc.) are supported.
+- Per-side border colors are supported: `borderTopColor`, `borderBottomColor`, `borderLeftColor`, `borderRightColor`.
+- Per-side border background colors are supported: `borderTopBackgroundColor`, `borderBottomBackgroundColor`, `borderLeftBackgroundColor`, `borderRightBackgroundColor`.
+- Per-side dim is supported: `borderTopDimColor`, `borderBottomDimColor`, `borderLeftDimColor`, `borderRightDimColor`.
+
+## `Text`
+
+Renders styled text.
+
+```tsx
+<Text
+    color="cyan" // named, #rgb, #rrggbb, rgb(r,g,b), or ANSI index 0-255
+    backgroundColor="blue"
+    bold
+    italic
+    underline
+    strikethrough
+    dim
+    inverse
+>
+    Hello world
+</Text>
+```
+
+`dimColor` is supported as an Ink-compat alias for `dim`.
+
+## `Cursor`
+
+Declaratively position the terminal cursor. Two modes are available:
+
+### Inline mode (no props)
+
+Place `<Cursor />` after a `<Text>` node. The cursor appears where the preceding text ended, even when text wraps across lines.
+
+```tsx
+<Box>
+    <Text>{prompt + value}</Text>
+    <Cursor />
+</Box>
+```
+
+This is the recommended approach for text inputs. It handles text wrapping, wide characters (CJK, emoji), and multi-line output automatically because the cursor position is derived from the actual rendered text output.
+
+For editable text with a cursor position in the middle:
+
+```tsx
+<Box>
+    <Text>{value.slice(0, cursorPos)}</Text>
+    <Cursor />
+    <Text>{value.slice(cursorPos)}</Text>
+</Box>
+```
+
+### Anchor mode
+
+Pass `anchorRef` and/or `x`/`y` to position the cursor relative to another element's content origin.
+
+```tsx
+const ref = useRef(null);
+
+<Box ref={ref}>
+    <Text>{content}</Text>
+</Box>
+<Cursor anchorRef={ref} x={5} y={1} />
+```
+
+| Prop        | Type                         | Default     |
+| ----------- | ---------------------------- | ----------- |
+| `anchorRef` | `RefObject<DOMElement/null>` | parent node |
+| `x`         | `number`                     | `0`         |
+| `y`         | `number`                     | `0`         |
+
+Notes:
+
+- `<Cursor>` must not be rendered inside `<Text>`.
+- If multiple `<Cursor>` components are rendered, the last one controls the terminal cursor.
+- If `anchorRef` is set but unresolved, the cursor is hidden for that frame.
+- See also [`useCursor()`](./hooks.mdx#usecursor) for imperative cursor control (e.g. IME support).
+
+## `Code`
+
+Syntax-highlighted code display using [Shiki](https://shiki.style/). Supports 25+ languages with lazy loading and VS Code-quality tokenization.
+
+> **Subpath import.** Imported from `@visulima/tui/components/code`. Requires the optional peers `shiki`, `@shikijs/langs`, `@shikijs/themes`.
+>
+> ```bash npm2yarn
+> npm install shiki @shikijs/langs @shikijs/themes
+> ```
+
+```tsx
+import { Code } from "@visulima/tui/components/code";
+
+<Code code='const x = "hello";' language="javascript" />
+<Code code={source} language="python" showLineNumbers startLine={10} />
+```
+
+| Prop              | Type                  | Default                 | Description                                |
+| ----------------- | --------------------- | ----------------------- | ------------------------------------------ |
+| `code`            | `string`              | _(required)_            | Source code to highlight                   |
+| `language`        | `string`              | —                       | Programming language (e.g. `"typescript"`) |
+| `theme`           | `string`              | `"github-dark-default"` | Shiki theme name                           |
+| `showLineNumbers` | `boolean`             | `false`                 | Show line number gutter                    |
+| `startLine`       | `number`              | `1`                     | Starting line number (for excerpts)        |
+| `highlightLines`  | `ReadonlySet<number>` | —                       | Line numbers to visually emphasize         |
+
+Supported languages: `javascript`, `typescript`, `jsx`, `tsx`, `json`, `html`, `css`, `python`, `ruby`, `rust`, `go`, `java`, `bash`, `shell`, `sql`, `markdown`, `yaml`, `toml`, `xml`, `svelte`, `vue`, and more. Unknown languages fall back to plain text.
+
+The highlighter loads asynchronously — the first render shows plain text, then re-renders with colors once Shiki is ready.
+
+## `DiffView`
+
+Display file differences with colored additions/deletions. Supports unified and split (side-by-side) views with optional inline character-level diff highlighting.
+
+> **Subpath import.** Imported from `@visulima/tui/components/diff-view`. Requires the optional peer `diff`. To enable syntax highlighting via the `language` prop, also install `shiki`, `@shikijs/langs`, and `@shikijs/themes`.
+>
+> ```bash npm2yarn
+> npm install diff
+> # optional, for syntax highlighting:
+> npm install shiki @shikijs/langs @shikijs/themes
+> ```
+
+```tsx
+import { DiffView } from "@visulima/tui/components/diff-view";
+
+<DiffView oldText={original} newText={modified} />
+<DiffView diff={unifiedDiffString} mode="split" />
+<DiffView oldText={a} newText={b} oldLabel="v1.0" newLabel="v2.0" inlineDiff />
+```
+
+| Prop              | Type                     | Default                 | Description                                           |
+| ----------------- | ------------------------ | ----------------------- | ----------------------------------------------------- |
+| `oldText`         | `string`                 | `""`                    | Original text (left / old)                            |
+| `newText`         | `string`                 | `""`                    | Modified text (right / new)                           |
+| `diff`            | `string`                 | —                       | Pre-computed unified diff (overrides oldText/newText) |
+| `mode`            | `"unified"` \| `"split"` | `"unified"`             | Display mode                                          |
+| `showLineNumbers` | `boolean`                | `true`                  | Show line numbers                                     |
+| `context`         | `number`                 | `3`                     | Unchanged context lines around changes                |
+| `inlineDiff`      | `boolean`                | `true`                  | Character-level highlighting within changed lines     |
+| `oldLabel`        | `string`                 | `"old"`                 | Label for the old version                             |
+| `newLabel`        | `string`                 | `"new"`                 | Label for the new version                             |
+| `language`        | `string`                 | —                       | Programming language for syntax highlighting          |
+| `theme`           | `string`                 | `"github-dark-default"` | Shiki theme for syntax highlighting                   |
+
+### Syntax highlighting in diffs
+
+When `language` is provided, diff content is highlighted with Shiki (same engine as the `Code` component). Syntax colors are preserved for context lines, and overlaid with diff colors (red/green) for changed lines.
+
+```tsx
+<DiffView oldText={oldCode} newText={newCode} language="typescript" />
+```
+
+Colors: additions in green (`+`), deletions in red (`-`), context lines dimmed. Inline diff highlights changed characters with inverted background.
+
+## `FilePicker`
+
+A file system browser for picking files and navigating directories in the terminal.
+
+```tsx
+import { FilePicker } from "@visulima/tui/components/file-picker";
+<FilePicker
+    onSelect={(entry) => console.log("Selected:", entry.path)}
+    filter={{ extensions: [".ts", ".tsx"] }}
+/>
+<FilePicker
+    initialPath="/home/user/projects"
+    showSize
+    showPermissions
+    limit={15}
+    onCancel={() => exit()}
+/>
+```
+
+| Prop              | Type                         | Default         | Description                            |
+| ----------------- | ---------------------------- | --------------- | -------------------------------------- |
+| `initialPath`     | `string`                     | `process.cwd()` | Starting directory                     |
+| `filter`          | `FilePickerFilter`           | `{}`            | File filtering options (see below)     |
+| `onSelect`        | `(entry: FileEntry) => void` | —               | Called when a file is selected (Enter) |
+| `onCancel`        | `() => void`                 | —               | Called when Escape is pressed          |
+| `showPermissions` | `boolean`                    | `false`         | Show file permissions column           |
+| `showSize`        | `boolean`                    | `false`         | Show file size column                  |
+| `isFocused`       | `boolean`                    | `true`          | Whether keyboard navigation is active  |
+| `limit`           | `number`                     | `10`            | Visible items (viewport height)        |
+| `accentColor`     | `string`                     | `"cyan"`        | Focused item highlight color           |
+| `directoryColor`  | `string`                     | `"blue"`        | Directory name color                   |
+| `fileColor`       | `string`                     | `"white"`       | File name color                        |
+
+### Filter options
+
+| Field             | Type       | Default | Description                                  |
+| ----------------- | ---------- | ------- | -------------------------------------------- |
+| `extensions`      | `string[]` | —       | Allowed extensions (e.g. `[".ts", ".json"]`) |
+| `showHidden`      | `boolean`  | `false` | Include hidden files (dotfiles)              |
+| `showDirectories` | `boolean`  | `true`  | Include directories                          |
+| `showFiles`       | `boolean`  | `true`  | Include regular files                        |
+
+### FileEntry shape
+
+```ts
+type FileEntry = {
+    name: string;
+    path: string;
+    isDirectory: boolean;
+    isHidden: boolean;
+    size: number;
+    permissions: string;
+};
+```
+
+### Keyboard
+
+| Key               | Action                        |
+| ----------------- | ----------------------------- |
+| `↑` / `↓`         | Move focus                    |
+| `Enter`           | Open directory or select file |
+| `Backspace` / `←` | Go to parent directory        |
+| `Escape`          | Cancel (`onCancel`)           |
+| `Page Up/Down`    | Jump by viewport height       |
+| `Home` / `End`    | Jump to first/last entry      |
+| `.`               | Refresh directory listing     |
+
+## `BigText`
+
+Render large ASCII art text using [CFonts](https://github.com/dominikwilkowski/cfonts). Ported from [`ink-big-text`](https://github.com/sindresorhus/ink-big-text).
+
+> **Subpath import.** Imported from `@visulima/tui/components/big-text`. Requires the optional peer `cfonts`.
+>
+> ```bash npm2yarn
+> npm install cfonts
+> ```
+
+```tsx
+import { BigText } from "@visulima/tui/components/big-text";
+
+<BigText text="Hello" />
+<BigText text="Cool" font="chrome" colors={["red", "blue"]} />
+```
+
+| Prop              | Type                            | Default         |
+| ----------------- | ------------------------------- | --------------- |
+| `text`            | `string`                        | required        |
+| `font`            | `Font`                          | `'block'`       |
+| `align`           | `'left' \| 'center' \| 'right'` | `'left'`        |
+| `colors`          | `string[]`                      | `['system']`    |
+| `backgroundColor` | `BackgroundColor`               | `'transparent'` |
+| `letterSpacing`   | `number`                        | `1`             |
+| `lineHeight`      | `number`                        | `1`             |
+| `space`           | `boolean`                       | `true`          |
+| `maxLength`       | `number`                        | `0`             |
+
+Available fonts: `block`, `slick`, `tiny`, `grid`, `pallet`, `shade`, `simple`, `simpleBlock`, `3d`, `simple3d`, `chrome`, `huge`.
+
+## `Gradient`
+
+Apply a terminal color gradient to child text. Ported from [`ink-gradient`](https://github.com/sindresorhus/ink-gradient), uses `@visulima/colorize` internally.
+
+```tsx
+import { Gradient } from "@visulima/tui/components/gradient";
+import { Text } from "@visulima/tui/components/text";
+<Gradient name="rainbow">
+    <Text>Hello, World!</Text>
+</Gradient>
+
+<Gradient colors={["#ff0000", "#00ff00", "#0000ff"]}>
+    <Text>Custom gradient</Text>
+</Gradient>
+```
+
+| Prop     | Type             | Default |
+| -------- | ---------------- | ------- |
+| `name`   | `GradientName`   | —       |
+| `colors` | `GradientColors` | —       |
+
+`name` and `colors` are mutually exclusive — exactly one must be provided.
+
+Built-in presets: `rainbow`, `cristal`, `teen`, `mind`, `morning`, `vice`, `passion`, `fruit`, `instagram`, `atlas`, `retro`, `summer`, `pastel`.
+
+## `Help`
+
+Auto-generated keybinding help bar. Renders key-description pairs from an array of `KeyBinding` definitions (typically returned by `useKeyBindings`).
+
+```tsx
+import { Help } from "@visulima/tui/components/help";
+import { useKeyBindings } from "@visulima/tui/hooks/use-key-bindings";
+const { bindings } = useKeyBindings([
+    { binding: { key: "q", description: "Quit" }, handler: () => exit() },
+    { binding: { key: ["↑", "k"], description: "Up", group: "Navigation" }, handler: () => moveUp() },
+]);
+
+<Help bindings={bindings} />
+<Help bindings={bindings} mode="full" />
+```
+
+| Prop               | Type                  | Default      | Description                                   |
+| ------------------ | --------------------- | ------------ | --------------------------------------------- |
+| `bindings`         | `KeyBinding[]`        | _(required)_ | Key bindings to display                       |
+| `mode`             | `"short"` \| `"full"` | `"short"`    | Short = single line; full = multi-column grid |
+| `separator`        | `string`              | `" · "`      | Separator between pairs in short mode         |
+| `keyColor`         | `string`              | `"cyan"`     | Color for key labels                          |
+| `descriptionColor` | `string`              | —            | Color for descriptions (defaults to dim)      |
+| `maxColumns`       | `number`              | `3`          | Max columns in full mode                      |
+
+### Short mode
+
+Renders all bindings on a single line, truncated to terminal width:
+
+```
+q Quit · ↑/k Up · ↓/j Down · enter Select
+```
+
+### Full mode
+
+Groups bindings by the `group` field into columns:
+
+```
+Navigation          Actions
+↑/k Up              enter Select
+↓/j Down            q Quit
+```
+
+Key names are automatically humanized: `"upArrow"` → `"↑"`, `"return"` → `"enter"`, `"escape"` → `"esc"`, etc.
+
+## `Link`
+
+Create clickable hyperlinks in the terminal using OSC 8 sequences. Ported from [`ink-link`](https://github.com/sindresorhus/ink-link).
+
+```tsx
+import { Link } from "@visulima/tui/components/link";
+import { Text } from "@visulima/tui/components/text";
+<Link url="https://example.com">
+    <Text color="cyan">My Website</Text>
+</Link>
+
+// Custom fallback for unsupported terminals
+<Link url="https://example.com" fallback={(text, url) => `[${text}](${url})`}>
+    <Text>Docs</Text>
+</Link>
+```
+
+| Prop       | Type                                                 | Default | Description                        |
+| ---------- | ---------------------------------------------------- | ------- | ---------------------------------- |
+| `url`      | `string`                                             | —       | The URL to link to (required)      |
+| `fallback` | `boolean \| ((text: string, url: string) => string)` | `true`  | Fallback for unsupported terminals |
+| `children` | `ReactNode`                                          | —       | Link text content                  |
+
+When `fallback` is `true`, unsupported terminals show: `My Website https://example.com`. When `false`, only the text is shown. A function receives `(text, url)` for custom formatting.
+
+[Supported terminals.](https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda)
+
+## `Markdown`
+
+Render Markdown content as terminal UI elements. Parses with [marked](https://marked.js.org/) and maps tokens to Ink components. Code blocks are syntax-highlighted via the `Code` component.
+
+> **Subpath import.** Imported from `@visulima/tui/components/markdown`. Requires the optional peer `marked`. Code blocks pull in `shiki`, `@shikijs/langs`, `@shikijs/themes`; tables pull in `@visulima/tabular` — install whichever your content needs.
+>
+> ```bash npm2yarn
+> npm install marked
+> # for code-block highlighting:
+> npm install shiki @shikijs/langs @shikijs/themes
+> # for table rendering inside markdown:
+> npm install @visulima/tabular
+> ```
+
+````tsx
+import { Markdown } from "@visulima/tui/components/markdown";
+
+<Markdown>{"# Hello World\n\nThis is **bold** and *italic*."}</Markdown>
+<Markdown codeTheme="github-dark-default">{"```js\nconst x = 1;\n```"}</Markdown>
+````
+
+| Prop        | Type      | Default                 | Description                          |
+| ----------- | --------- | ----------------------- | ------------------------------------ |
+| `children`  | `string`  | _(required)_            | Markdown source string               |
+| `codeTheme` | `string`  | `"github-dark-default"` | Shiki theme for code blocks          |
+| `maxWidth`  | `number`  | terminal width          | Maximum text wrap width              |
+| `streaming` | `boolean` | `false`                 | Progressive rendering for LLM output |
+
+### Streaming mode
+
+Enable `streaming` when rendering Markdown that arrives incrementally (e.g., token-by-token from an AI model). The component handles incomplete Markdown gracefully — unclosed code fences and partial blocks render as text until they close.
+
+```tsx
+const [text, setText] = useState("");
+// ... text grows as tokens arrive ...
+<Markdown streaming>{text}</Markdown>;
+```
+
+### Supported Markdown features
+
+- **Headings** (H1-H6) — bold, color-coded by depth
+- **Paragraphs** — with word wrapping
+- **Code blocks** — syntax highlighted via `<Code>` component
+- **Inline code** — rendered with inverse styling
+- **Bold**, **italic**, **strikethrough**
+- **Links** — rendered via the existing `<Link>` component (OSC 8)
+- **Ordered and unordered lists** — via existing `<OrderedList>` / `<UnorderedList>`
+- **Blockquotes** — with left border
+- **Horizontal rules**
+- **Tables** — via existing `<Table>` component
+- **Images** — displayed as `[image: alt text]` (terminals cannot render images)
+
+## `Newline`
+
+```tsx
+<Newline />
+<Newline count={2} />
+```
+
+## `Spacer`
+
+```tsx
+<Box flexDirection="row">
+    <Text>Left</Text>
+    <Spacer />
+    <Text>Right</Text>
+</Box>
+```
+
+## `Static`
+
+Append-only region for completed items and log lines.
+
+```tsx
+<Static items={completedTasks}>
+    {(task) => (
+        <Box key={task.id}>
+            <Text color="green">✓ {task.name}</Text>
+        </Box>
+    )}
+</Static>
+```
+
+`Static` only appends new tail items from `items`.
+
+## `Transform`
+
+Applies a transform function to the collected text output of its subtree.
+
+```tsx
+<Transform transform={(s) => s.toUpperCase()}>
+    <Text>hello world</Text>
+</Transform>
+```
+
+## `Spinner`
+
+Animated spinner. Backed by [`@visulima/spinner`](https://visulima.com/packages/spinner) (replaces the previous `cli-spinners` dependency). The frame set and tick interval are determined by the named preset; pass `type` to switch presets.
+
+```tsx
+<Spinner />
+<Spinner type="dots" />
+<Spinner type="wave" />
+```
+
+| Prop   | Type          | Default  | Description                              |
+| ------ | ------------- | -------- | ---------------------------------------- |
+| `type` | `SpinnerName` | `"dots"` | Any preset name from `@visulima/spinner` |
+
+Available presets include `dots`, `breathe`, `cascade`, `checkerboard`, `columns`, `diagSwipe`, `dna`, `doubleArrow`, `fillSweep`, `helix`, `infinity`, `orbit`, `pulse`, `rain`, `scan`, `scanline`, `snake`, `sparkle`, `wave`, `waveRows`, plus every preset re-exported from `cli-spinners`. See `packages/terminal/spinner/src/spinners.ts` for the full list.
+
+## `Stopwatch`
+
+A count-up elapsed time display. Exposes `start`, `stop`, `toggle`, `reset`, and `lap` controls via ref.
+
+```tsx
+import { Stopwatch } from "@visulima/tui/components/stopwatch";
+import { useRef } from "react";
+
+const ref = useRef(null);
+
+<Stopwatch ref={ref} autoStart />
+<Stopwatch autoStart color="green" bold />
+<Stopwatch format={(ms) => `${(ms / 1000).toFixed(1)}s`} />
+```
+
+| Prop        | Type                          | Default            | Description                   |
+| ----------- | ----------------------------- | ------------------ | ----------------------------- |
+| `autoStart` | `boolean`                     | `false`            | Start counting immediately    |
+| `interval`  | `number`                      | `1000`             | Tick interval in milliseconds |
+| `format`    | `(elapsed: number) => string` | `MM:SS`/`HH:MM:SS` | Custom time formatter         |
+| `color`     | `string`                      | —                  | Text color                    |
+| `bold`      | `boolean`                     | —                  | Bold text                     |
+
+### Ref methods
+
+```tsx
+ref.current.start(); // Start counting
+ref.current.stop(); // Pause
+ref.current.toggle(); // Toggle start/stop
+ref.current.reset(); // Reset to 00:00 and stop
+ref.current.lap(); // Capture current elapsed time
+```
+
+For headless usage, use the [`useStopwatch`](./hooks#usestopwatch) hook directly.
+
+## `Timer`
+
+A countdown timer display. Exposes `start`, `stop`, `toggle`, and `reset` controls via ref.
+
+```tsx
+import { Timer } from "@visulima/tui/components/timer";
+import { useRef } from "react";
+
+const ref = useRef(null);
+
+<Timer ref={ref} duration={60_000} autoStart />
+<Timer duration={300_000} autoStart color="red" onTimeout={() => alert("Done!")} />
+```
+
+| Prop        | Type                            | Default            | Description                        |
+| ----------- | ------------------------------- | ------------------ | ---------------------------------- |
+| `duration`  | `number`                        | _(required)_       | Countdown duration in milliseconds |
+| `autoStart` | `boolean`                       | `false`            | Start counting immediately         |
+| `interval`  | `number`                        | `1000`             | Tick interval in milliseconds      |
+| `onTimeout` | `() => void`                    | —                  | Called when the timer reaches zero |
+| `format`    | `(remaining: number) => string` | `MM:SS`/`HH:MM:SS` | Custom time formatter              |
+| `color`     | `string`                        | —                  | Text color                         |
+| `bold`      | `boolean`                       | —                  | Bold text                          |
+
+### Ref methods
+
+```tsx
+ref.current.start(); // Start countdown
+ref.current.stop(); // Pause
+ref.current.toggle(); // Toggle start/stop
+ref.current.reset(); // Reset to original duration and stop
+```
+
+For headless usage, use the [`useTimer`](./hooks#usetimer) hook directly.
+
+## `ProgressBar`
+
+A terminal progress bar that fills proportionally to a percentage value. Ported from [`ink-progress-bar`](https://github.com/brigand/ink-progress-bar).
+
+```tsx
+import { ProgressBar } from "@visulima/tui/components/progress-bar";
+<ProgressBar percent={0.5} />
+<ProgressBar percent={0.75} color="green" left={10} right={5} />
+<ProgressBar percent={1} character="▓" rightPad />
+```
+
+All `Text` props (color, bold, dimColor, etc.) are forwarded to the underlying `<Text>`.
+
+| Prop        | Type      | Default | Description                                    |
+| ----------- | --------- | ------- | ---------------------------------------------- |
+| `percent`   | `number`  | `1`     | Completion between 0 and 1 (clamped)           |
+| `columns`   | `number`  | `0`     | Override terminal width (0 = auto-detect)      |
+| `left`      | `number`  | `0`     | Columns reserved on the left (e.g. for labels) |
+| `right`     | `number`  | `0`     | Columns reserved on the right                  |
+| `character` | `string`  | `'█'`   | Fill character for the completed portion       |
+| `rightPad`  | `boolean` | `false` | Pad remaining space with whitespace            |
+
+Example with labels:
+
+```tsx
+<Box>
+    <Text>Progress: </Text>
+    <ProgressBar percent={0.6} left={10} right={5} color="cyan" />
+    <Text> 60%</Text>
+</Box>
+```
+
+## `Slider`
+
+A keyboard-driven range input for selecting numeric values. Supports horizontal and vertical orientations.
+
+```tsx
+import { Slider } from "@visulima/tui/components/slider";
+<Slider defaultValue={50} onChange={(v) => console.log(v)} />
+<Slider defaultValue={22} min={10} max={40} step={1} accentColor="red" width={30} />
+<Slider defaultValue={60} orientation="vertical" width={8} />
+```
+
+| Prop              | Type                           | Default        | Description                                  |
+| ----------------- | ------------------------------ | -------------- | -------------------------------------------- |
+| `value`           | `number`                       | —              | Controlled value                             |
+| `defaultValue`    | `number`                       | `0`            | Initial value (uncontrolled)                 |
+| `min`             | `number`                       | `0`            | Minimum value                                |
+| `max`             | `number`                       | `100`          | Maximum value                                |
+| `step`            | `number`                       | `1`            | Increment per arrow key press                |
+| `orientation`     | `"horizontal"` \| `"vertical"` | `"horizontal"` | Layout direction                             |
+| `width`           | `number`                       | `20`           | Track width in columns (or rows if vertical) |
+| `isFocused`       | `boolean`                      | `true`         | Whether the component responds to input      |
+| `isDisabled`      | `boolean`                      | `false`        | Ignores all input and dims the slider        |
+| `filledCharacter` | `string`                       | `"█"`          | Character for the filled portion             |
+| `emptyCharacter`  | `string`                       | `"░"`          | Character for the empty portion              |
+| `thumbCharacter`  | `string`                       | `"●"`          | Character marking the current position       |
+| `accentColor`     | `string`                       | `"green"`      | Color for filled portion and thumb           |
+| `defaultColor`    | `string`                       | `"gray"`       | Color for empty portion                      |
+| `onChange`        | `(value: number) => void`      | —              | Called when value changes                    |
+
+### Keyboard
+
+- **Left/Right arrows** (horizontal) or **Up/Down** (vertical): move by `step`
+- **Home/End**: jump to min/max
+- **Page Up/Down**: move by 10 × step
+- **0–9**: jump to 0%, 10%, … 90% of the range
+
+### Controlled mode
+
+```tsx
+const [value, setValue] = useState(50);
+<Slider value={value} onChange={setValue} />;
+```
+
+## `ConsoleOverlay`
+
+A dockable panel that captures `console.log`/`warn`/`error`/`debug` output and displays it within the TUI. Similar to browser devtools console.
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { ConsoleOverlay } from "@visulima/tui/components/console-overlay";
+<Box flexDirection="column" height="100%">
+    <Box flexGrow={1}>{/* main app content */}</Box>
+    <ConsoleOverlay dock="bottom" height={6} />
+</Box>;
+```
+
+| Prop            | Type                  | Default    | Description                    |
+| --------------- | --------------------- | ---------- | ------------------------------ |
+| `dock`          | `"top"` \| `"bottom"` | `"bottom"` | Panel position                 |
+| `height`        | `number`              | `8`        | Visible rows                   |
+| `maxEntries`    | `number`              | `200`      | Buffer size                    |
+| `showTimestamp` | `boolean`             | `true`     | Show `[HH:MM:SS]` prefix       |
+| `showLevel`     | `boolean`             | `true`     | Show level label (LOG/WRN/ERR) |
+| `filter`        | `ConsoleLevel[]`      | all levels | Which levels to capture        |
+
+Entries are color-coded: gray (debug), white (log), blue (info), yellow (warn), red (error). Auto-scrolls to show the latest entry.
+
+## `ConfirmInput`
+
+A Y/N confirmation prompt. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+<img src="./media/ink-ui/confirm-input.png" width="200" alt="ConfirmInput demo" />
+
+```tsx
+import { ConfirmInput } from "@visulima/tui/components/confirm-input";
+import { Text } from "@visulima/tui/components/text";
+<Text>Do you want to continue? </Text>
+<ConfirmInput
+    onConfirm={() => console.log("Confirmed!")}
+    onCancel={() => console.log("Cancelled.")}
+/>
+```
+
+| Prop            | Type                      | Default      | Description                              |
+| --------------- | ------------------------- | ------------ | ---------------------------------------- |
+| `defaultChoice` | `"confirm"` \| `"cancel"` | `"confirm"`  | Default action when Enter is pressed     |
+| `isDisabled`    | `boolean`                 | `false`      | Ignores all input when true              |
+| `submitOnEnter` | `boolean`                 | `true`       | Whether Enter submits the default choice |
+| `onConfirm`     | `() => void`              | _(required)_ | Called when user presses Y               |
+| `onCancel`      | `() => void`              | _(required)_ | Called when user presses N               |
+
+Shows `Y/n` when default is confirm, `y/N` when default is cancel. Press `Y`/`y` to confirm, `N`/`n` to cancel, Enter to submit the default.
+
+## `MultiSelect`
+
+Multi-choice selection component with checkboxes and keyboard navigation. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+<img src="./media/ink-ui/multi-select.gif" width="400" alt="MultiSelect demo" />
+
+```tsx
+import { MultiSelect } from "@visulima/tui/components/multi-select";
+const options = [
+    { label: "TypeScript", value: "ts" },
+    { label: "JavaScript", value: "js" },
+    { label: "Python", value: "py" },
+];
+
+<MultiSelect options={options} onSubmit={(values) => console.log("Selected:", values)} />;
+```
+
+| Prop           | Type                         | Default      | Description                                         |
+| -------------- | ---------------------------- | ------------ | --------------------------------------------------- |
+| `options`      | `MultiSelectOption[]`        | _(required)_ | Available choices                                   |
+| `defaultValue` | `string[]`                   | `[]`         | Initially selected values                           |
+| `isDisabled`   | `boolean`                    | `false`      | Ignores all input when true                         |
+| `isFocused`    | `boolean`                    | `true`       | Whether the component captures input                |
+| `limit`        | `number`                     | —            | Max visible options; auto-limits to terminal height |
+| `accentColor`  | `string`                     | `"blue"`     | Color for the focused indicator                     |
+| `defaultColor` | `string`                     | —            | Color for unfocused, unselected labels              |
+| `onChange`     | `(values: string[]) => void` | —            | Called when selection changes (space)               |
+| `onSubmit`     | `(values: string[]) => void` | —            | Called when Enter is pressed                        |
+
+Keyboard: arrow keys or `j`/`k` to navigate, Space to toggle, `a` to select/deselect all, Enter to submit.
+
+## `TextInput`
+
+Single-line text input with cursor navigation, autocomplete suggestions, and optional password masking. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+<img src="./media/ink-ui/text-input.gif" width="400" alt="TextInput demo" />
+
+```tsx
+import { TextInput } from "@visulima/tui/components/text-input";
+<TextInput placeholder="Enter your name..." onSubmit={(value) => console.log("Name:", value)} />;
+```
+
+| Prop           | Type                      | Default | Description                                           |
+| -------------- | ------------------------- | ------- | ----------------------------------------------------- |
+| `defaultValue` | `string`                  | `""`    | Starting value                                        |
+| `isDisabled`   | `boolean`                 | `false` | Ignores all input when true                           |
+| `mask`         | `boolean`                 | `false` | Renders asterisks instead of characters               |
+| `placeholder`  | `string`                  | —       | Greyed-out text when input is empty                   |
+| `suggestions`  | `string[]`                | —       | Autocomplete candidates (case-sensitive prefix match) |
+| `onChange`     | `(value: string) => void` | —       | Called on every keystroke                             |
+| `onSubmit`     | `(value: string) => void` | —       | Called when Enter is pressed                          |
+
+Keyboard: left/right arrows for cursor, Home/End or Ctrl+A/E for start/end, Ctrl+U/K/W for line editing, Backspace/Delete, right arrow to accept suggestion, Enter to submit (accepts suggestion if pending).
+
+### Password mode
+
+```tsx
+<TextInput mask onSubmit={(password) => authenticate(password)} />
+```
+
+### Autocomplete
+
+```tsx
+<TextInput suggestions={["react", "react-dom", "react-native"]} onSubmit={install} />
+```
+
+The first matching suggestion is shown dimmed after the cursor. Press right arrow or Enter to accept it.
+
+## `Textarea`
+
+Multi-line text input with cursor navigation, selection, clipboard copy (OSC 52), undo/redo, paste support, and viewport scrolling.
+
+```tsx
+import { Textarea } from "@visulima/tui/components/textarea";
+<Textarea
+    placeholder="Write something..."
+    rows={8}
+    showLineNumbers
+    onChange={(value) => console.log(value)}
+    onSubmit={(value) => console.log("Submitted:", value)}
+/>;
+```
+
+| Prop              | Type                      | Default | Description                                  |
+| ----------------- | ------------------------- | ------- | -------------------------------------------- |
+| `defaultValue`    | `string`                  | `""`    | Starting content                             |
+| `placeholder`     | `string`                  | —       | Greyed-out text shown when empty             |
+| `rows`            | `number`                  | `5`     | Visible rows (viewport height)               |
+| `maxRows`         | `number`                  | —       | Auto-grow up to this height before scrolling |
+| `isDisabled`      | `boolean`                 | `false` | Ignores all input and dims the text          |
+| `isFocused`       | `boolean`                 | `true`  | Whether the component responds to input      |
+| `showLineNumbers` | `boolean`                 | `false` | Show line numbers in the left gutter         |
+| `tabSize`         | `number`                  | `2`     | Number of spaces inserted for Tab            |
+| `onChange`        | `(value: string) => void` | —       | Called on every edit                         |
+| `onSubmit`        | `(value: string) => void` | —       | Called on Meta+Enter or Ctrl+Enter           |
+
+### Keyboard
+
+| Key                     | Action                     |
+| ----------------------- | -------------------------- |
+| Arrow keys              | Move cursor                |
+| Shift+Arrows            | Extend selection           |
+| Home / Ctrl+A           | Start of line              |
+| End / Ctrl+E            | End of line                |
+| Ctrl+Home               | Start of buffer            |
+| Ctrl+End                | End of buffer              |
+| Enter                   | Insert newline             |
+| Meta+Enter / Ctrl+Enter | Submit (`onSubmit`)        |
+| Backspace / Delete      | Delete character           |
+| Ctrl+U                  | Kill to line start         |
+| Ctrl+K                  | Kill to line end           |
+| Ctrl+W                  | Kill word backward         |
+| Tab                     | Insert spaces (`tabSize`)  |
+| Ctrl+Z                  | Undo                       |
+| Ctrl+Y                  | Redo                       |
+| Ctrl+Shift+A            | Select all                 |
+| Ctrl+C (with selection) | Copy to clipboard (OSC 52) |
+| Escape                  | Clear selection            |
+| Paste (bracketed)       | Insert pasted text         |
+
+### Auto-growing height
+
+```tsx
+<Textarea rows={3} maxRows={15} placeholder="Grows from 3 to 15 rows..." />
+```
+
+### With line numbers
+
+```tsx
+<Textarea showLineNumbers defaultValue={"function hello() {\n  return 'world';\n}"} rows={5} />
+```
+
+## `SelectInput`
+
+Interactive select input for choosing from a list of options. Ported from [`ink-select-input`](https://github.com/vadimdemedes/ink-select-input).
+
+<img src="./media/ink-ui/select.gif" width="400" alt="SelectInput demo" />
+
+```tsx
+import { SelectInput } from "@visulima/tui/components/select-input";
+const items = [
+    { label: "TypeScript", value: "ts" },
+    { label: "JavaScript", value: "js" },
+    { label: "Python", value: "py" },
+];
+
+<SelectInput items={items} onSelect={(item) => console.log(item.value)} />;
+```
+
+Navigate with arrow keys or `j`/`k`, select with Enter, or jump to an item by pressing a number key (1–9).
+
+### Props
+
+| Prop                 | Type                                     | Default                | Description                                                  |
+| -------------------- | ---------------------------------------- | ---------------------- | ------------------------------------------------------------ |
+| `items`              | `Item<V>[]`                              | `[]`                   | Choices to display                                           |
+| `isFocused`          | `boolean`                                | `true`                 | Whether the component captures keyboard input                |
+| `initialIndex`       | `number`                                 | —                      | Initially-selected item index; omit for no initial selection |
+| `index`              | `number`                                 | —                      | Controlled selected index (see below)                        |
+| `limit`              | `number`                                 | —                      | Max visible items; enables scroll windowing                  |
+| `accentColor`        | `string`                                 | `"blue"`               | Color for the selected item and indicator                    |
+| `defaultColor`       | `string`                                 | —                      | Color for unselected items                                   |
+| `indicatorComponent` | `FC<IndicatorProps>`                     | `SelectInputIndicator` | Custom indicator component                                   |
+| `itemComponent`      | `FC<ItemProps>`                          | `SelectInputItem`      | Custom item component                                        |
+| `onSelect`           | `(item: Item<V>) => void`                | —                      | Called on Enter or number key press                          |
+| `onHighlight`        | `(item: Item<V>, index: number) => void` | —                      | Called when selection moves; second arg is the new index     |
+| `resetOnItemsChange` | `boolean`                                | `true`                 | Reset selection when item values change                      |
+
+Each item in the `items` array must have a `label` (display text) and a `value` (returned on select). An optional `key` provides a stable React key. An optional `action` function is called automatically when the item is selected.
+
+### Item actions
+
+Instead of switching on `value` in the `onSelect` handler, you can define per-item behavior inline:
+
+```tsx
+const items = [
+    { label: "Build", value: "build", action: () => runBuild() },
+    { label: "Test", value: "test", action: () => runTests() },
+    { label: "Deploy", value: "deploy", action: () => deploy() },
+];
+
+<SelectInput items={items} initialIndex={0} />;
+```
+
+When an item is selected (Enter or number key), `onSelect` fires first (if provided), then `item.action()` is called. Both are optional — you can use either or both.
+
+### Separators
+
+Add non-focusable separator lines between groups of items. Separators are skipped during keyboard navigation and cannot be selected:
+
+```tsx
+const items = [
+    { label: "Cut", value: "cut" },
+    { label: "Copy", value: "copy" },
+    { label: "Paste", value: "paste" },
+    { isSeparator: true },
+    { label: "Select All", value: "selectAll" },
+];
+
+<SelectInput items={items} initialIndex={0} />;
+```
+
+A separator renders as `───` by default. Pass a custom `label` to change the text:
+
+```tsx
+{ isSeparator: true, label: "── Advanced ──" }
+```
+
+The `SeparatorItem` type is exported for use in typed item arrays:
+
+```tsx
+import type { SelectInputEntry, SelectInputSeparator } from "@visulima/tui/components/select-input";
+const items: SelectInputEntry<string>[] = [{ label: "Option A", value: "a" }, { isSeparator: true }, { label: "Option B", value: "b" }];
+```
+
+Note: the reset check compares item **values** only — changing labels or other properties while keeping the same values will not trigger a reset. Set `resetOnItemsChange={false}` to preserve the selection across all item changes.
+
+### No initial selection
+
+When `initialIndex` is omitted, no item is highlighted until the user presses a navigation key. This is useful for rendering a list without a pre-selected value, similar to an empty radio group:
+
+```tsx
+<SelectInput items={items} onHighlight={(item) => console.log("Browsing:", item.label)} />
+```
+
+The first down arrow or `j` press highlights the first item; the first up arrow or `k` press highlights the last. Enter is a no-op until an item is highlighted. Number keys (1–9) still work for direct selection.
+
+To start with the first item already highlighted, pass `initialIndex={0}`.
+
+### Controlled mode
+
+Pass `index` to control the selection externally. When `index` is set, `initialIndex` is ignored. Update `index` from your `onHighlight` callback to track the selection:
+
+```tsx
+const [selectedIndex, setSelectedIndex] = useState(0);
+
+<SelectInput
+    items={items}
+    index={selectedIndex}
+    onHighlight={(item, idx) => setSelectedIndex(idx)}
+    onSelect={(item) => console.log("Selected:", item.value)}
+/>;
+```
+
+### Scroll windowing
+
+When no `limit` is specified and the list has more items than the terminal has rows, the component automatically caps the visible items to the terminal height. This prevents overflow without any manual measurement.
+
+You can also set `limit` explicitly to control the window size:
+
+```tsx
+<SelectInput items={longList} limit={5} />
+```
+
+The list wraps around when navigating past the first or last visible item.
+
+### Custom colors
+
+Override the default blue highlight with `accentColor` and `defaultColor`:
+
+```tsx
+<SelectInput items={items} accentColor="green" defaultColor="gray" />
+```
+
+These colors are passed through to the indicator and item components.
+
+### Focus dimming
+
+When multiple `SelectInput` components are on screen, the unfocused ones automatically dim their selected item using `dimColor`. This makes it easy to tell which list has focus:
+
+```tsx
+<Box>
+    <SelectInput items={leftItems} initialIndex={0} isFocused={leftActive} />
+    <SelectInput items={rightItems} initialIndex={0} isFocused={!leftActive} />
+</Box>
+```
+
+The `isFocused` prop is passed through to both `indicatorComponent` and `itemComponent`, so custom components can implement their own unfocused styling.
+
+### Custom components
+
+Replace the default indicator or item rendering:
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+const CustomIndicator = ({ isSelected, isFocused, accentColor }) => (
+    <Box marginRight={1}>
+        <Text color={isSelected ? accentColor : undefined} dimColor={!isFocused}>
+            {isSelected ? "→" : " "}
+        </Text>
+    </Box>
+);
+
+const CustomItem = ({ label, isSelected, isFocused, accentColor, defaultColor }) => (
+    <Text bold={isSelected} color={isSelected ? accentColor : defaultColor} dimColor={isSelected && !isFocused}>
+        {label}
+    </Text>
+);
+
+<SelectInput items={items} indicatorComponent={CustomIndicator} itemComponent={CustomItem} />;
+```
+
+Custom components receive `isSelected`, `isFocused`, `accentColor`, and (for items) `defaultColor` plus the item's own `label`/`value`/`key` fields.
+
+## `Tab` / `Tabs`
+
+Tabbed navigation component with keyboard support. Inspired by [`ink-tab`](https://github.com/jdeniau/ink-tab).
+
+```tsx
+import { Tab } from "@visulima/tui/components/tab";
+import { Tabs } from "@visulima/tui/components/tabs";
+<Tabs onChange={(name, tab) => console.log("Active:", name)}>
+    <Tab name="files">Files</Tab>
+    <Tab name="search">Search</Tab>
+    <Tab name="settings">Settings</Tab>
+</Tabs>;
+```
+
+### `Tabs` Props
+
+| Prop            | Type                                                           | Default      | Description                                                                                                           |
+| --------------- | -------------------------------------------------------------- | ------------ | --------------------------------------------------------------------------------------------------------------------- |
+| `children`      | `ReactNode`                                                    | _(required)_ | `<Tab>` elements                                                                                                      |
+| `onChange`      | `(name: string, tab: ReactElement) => void`                    | _(required)_ | Fired when the active tab changes (both modes). In controlled mode the parent must update `value` from this callback. |
+| `value`         | `string`                                                       | —            | Controlled active tab name. When set, the component is controlled and `defaultValue` is ignored.                      |
+| `defaultValue`  | `string`                                                       | —            | Initial active tab in uncontrolled mode                                                                               |
+| `flexDirection` | `"row"` \| `"column"` \| `"row-reverse"` \| `"column-reverse"` | `"row"`      | Layout direction                                                                                                      |
+| `isFocused`     | `boolean \| null`                                              | `undefined`  | Focus state; `false` disables input, `null` = unmanaged                                                               |
+| `showIndex`     | `boolean`                                                      | `true`       | Show 1-based index numbers before tab names                                                                           |
+| `width`         | `number \| string`                                             | —            | Container width (also separator width in column layouts)                                                              |
+| `keyMap`        | `KeyMap`                                                       | —            | Custom keyboard bindings                                                                                              |
+| `colors`        | `TabColors`                                                    | —            | Active tab color customization                                                                                        |
+
+### Controlled mode
+
+```tsx
+const [active, setActive] = useState("files");
+
+<Tabs value={active} onChange={(name) => setActive(name)}>
+    <Tab name="files">Files</Tab>
+    <Tab name="search">Search</Tab>
+</Tabs>;
+```
+
+### `Tab` Props
+
+| Prop       | Type        | Default      | Description                     |
+| ---------- | ----------- | ------------ | ------------------------------- |
+| `name`     | `string`    | _(required)_ | Unique identifier for this tab  |
+| `children` | `ReactNode` | _(required)_ | Content rendered inside the tab |
+
+### Keyboard
+
+- **Left/Right arrows** (or Up/Down in column layout): navigate between tabs
+- **Tab/Shift+Tab**: cycle through tabs (only when `isFocused` is unmanaged)
+- **Meta/Cmd + 1–9**: jump to a specific tab by index
+
+### Column layout
+
+```tsx
+<Tabs flexDirection="column" onChange={handleChange}>
+    <Tab name="a">Alpha</Tab>
+    <Tab name="b">Beta</Tab>
+</Tabs>
+```
+
+### Custom colors
+
+```tsx
+<Tabs colors={{ activeTab: { color: "cyan", backgroundColor: "white" } }} onChange={handleChange}>
+    <Tab name="one">One</Tab>
+    <Tab name="two">Two</Tab>
+</Tabs>
+```
+
+## `Table`
+
+Render data as a formatted table in the terminal. Uses [`@visulima/tabular`](https://visulima.com/packages/tabular) as the rendering engine, supporting multiple border styles, column configuration, cell formatting, and word wrap. Ported from [`ink-table`](https://github.com/maticzav/ink-table).
+
+> **Subpath import.** Imported from `@visulima/tui/components/table`. Requires the optional peer `@visulima/tabular`.
+>
+> ```bash npm2yarn
+> npm install @visulima/tabular
+> ```
+
+```tsx
+import { Table } from "@visulima/tui/components/table";
+
+const data = [
+    { name: "Alice", age: 30, city: "NYC" },
+    { name: "Bob", age: 25, city: "LA" },
+];
+
+<Table data={data} />
+<Table data={data} borderStyle="rounded" padding={2} />
+```
+
+### Props
+
+| Prop           | Type                                  | Default      | Description                                       |
+| -------------- | ------------------------------------- | ------------ | ------------------------------------------------- |
+| `data`         | `T[]`                                 | _(required)_ | Array of objects to display as rows               |
+| `columns`      | `(string \| ColumnConfig)[]`          | all keys     | Columns to display and their order                |
+| `padding`      | `number`                              | `1`          | Cell padding (left and right) in characters       |
+| `borderStyle`  | `string \| BorderStyle`               | `"default"`  | Border preset or custom object (see below)        |
+| `maxWidth`     | `number`                              | —            | Maximum table width; columns truncate/wrap to fit |
+| `showHeader`   | `boolean`                             | `true`       | Whether to show the header row                    |
+| `formatCell`   | `(value, column, rowIndex) => string` | —            | Custom cell value formatter                       |
+| `formatHeader` | `(column) => string`                  | —            | Custom header label formatter                     |
+| `skeleton`     | `string`                              | `""`         | Replacement for `null`/`undefined` cells          |
+| `wordWrap`     | `boolean`                             | `false`      | Enable word wrap instead of truncation            |
+
+### Column Configuration
+
+Columns accept either simple key strings or `ColumnConfig` objects for advanced control:
+
+```tsx
+<Table data={data} columns={[{ key: "name", header: "Full Name", width: 20, align: "left" }, { key: "age", header: "Years", align: "right" }, "city"]} />
+```
+
+| ColumnConfig field | Type                            | Description                           |
+| ------------------ | ------------------------------- | ------------------------------------- |
+| `key`              | `string` _(required)_           | Key from the data object              |
+| `header`           | `string`                        | Custom header label (defaults to key) |
+| `width`            | `number`                        | Fixed column width in characters      |
+| `align`            | `"left" \| "center" \| "right"` | Horizontal alignment                  |
+
+### Border Styles
+
+Available presets: `"default"`, `"rounded"`, `"double"`, `"minimal"`, `"dots"`, `"markdown"`, `"ascii"`, `"none"`, `"block"`, `"thick"`.
+
+```tsx
+<Table data={data} borderStyle="rounded" />
+<Table data={data} borderStyle="ascii" />
+<Table data={data} borderStyle="none" />
+```
+
+You can also pass a custom `BorderStyle` object from `@visulima/tabular` for full control.
+
+### Custom Formatting
+
+```tsx
+<Table
+    data={data}
+    formatCell={(value, column, rowIndex) => {
+        if (column === "name") return String(value).toUpperCase();
+        return String(value ?? "");
+    }}
+    formatHeader={(column) => column.toUpperCase()}
+    skeleton="N/A"
+/>
+```
+
+> **Note:** Unlike the original `ink-table`, this component uses function-based formatters (`formatCell`, `formatHeader`) instead of custom React component props (`header`, `cell`, `skeleton`), because the table is rendered as a single string via `@visulima/tabular`.
+
+## `Badge`
+
+Uppercase colored label badge for status indicators. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+<img src="./media/ink-ui/badge.png" width="400" alt="Badge demo" />
+
+```tsx
+import { Badge } from "@visulima/tui/components/badge";
+<Badge>new</Badge>
+<Badge color="red">error</Badge>
+<Badge color="green">success</Badge>
+```
+
+| Prop       | Type        | Default      | Description                                |
+| ---------- | ----------- | ------------ | ------------------------------------------ |
+| `children` | `ReactNode` | _(required)_ | Label content; strings are auto-uppercased |
+| `color`    | `string`    | `"magenta"`  | Background color for the badge             |
+
+## `StatusMessage`
+
+Status notification with a colored variant icon. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+<img src="./media/ink-ui/status-message.png" width="400" alt="StatusMessage demo" />
+
+```tsx
+import { StatusMessage } from "@visulima/tui/components/status-message";
+<StatusMessage variant="success">Build completed</StatusMessage>
+<StatusMessage variant="error">Connection failed</StatusMessage>
+<StatusMessage variant="warning">Disk space low</StatusMessage>
+<StatusMessage variant="info">3 updates available</StatusMessage>
+```
+
+| Prop       | Type                                                | Default      | Description               |
+| ---------- | --------------------------------------------------- | ------------ | ------------------------- |
+| `children` | `ReactNode`                                         | _(required)_ | Message text              |
+| `variant`  | `"success"` \| `"error"` \| `"warning"` \| `"info"` | _(required)_ | Determines icon and color |
+
+Icons: ✔ (success/green), ✖ (error/red), ⚠ (warning/yellow), ℹ (info/blue).
+
+## `Alert`
+
+Bordered alert box with a variant-specific icon and optional title. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+<img src="./media/ink-ui/alert.png" width="600" alt="Alert demo" />
+
+```tsx
+import { Alert } from "@visulima/tui/components/alert";
+<Alert variant="info">Check the docs for details.</Alert>
+<Alert variant="warning" title="Deprecation Notice">
+    This API will be removed in v3.
+</Alert>
+```
+
+| Prop       | Type                                                | Default      | Description                |
+| ---------- | --------------------------------------------------- | ------------ | -------------------------- |
+| `children` | `ReactNode`                                         | _(required)_ | Alert message              |
+| `variant`  | `"info"` \| `"success"` \| `"error"` \| `"warning"` | _(required)_ | Border color and icon      |
+| `title`    | `string`                                            | —            | Bold heading above message |
+
+## `UnorderedList`
+
+Bullet list with nesting support and customizable markers. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+<img src="./media/ink-ui/unordered-list.png" width="400" alt="UnorderedList demo" />
+
+```tsx
+import { UnorderedList } from "@visulima/tui/components/unordered-list";
+<UnorderedList items={[{ label: "TypeScript" }, { label: "JavaScript" }, { label: "Python", children: [{ label: "Django" }, { label: "Flask" }] }]} />;
+```
+
+| Prop     | Type                   | Default           | Description                                       |
+| -------- | ---------------------- | ----------------- | ------------------------------------------------- |
+| `items`  | `UnorderedListEntry[]` | _(required)_      | List entries with `label` and optional `children` |
+| `marker` | `string` \| `string[]` | `["─", "◦", "▪"]` | Bullet symbol(s); arrays cycle by depth           |
+
+Each entry has `label: ReactNode` and optional `children: UnorderedListEntry[]` for nesting.
+
+## `OrderedList`
+
+Numbered list with hierarchical nesting and auto-padded markers. Inspired by [ink-ui](https://github.com/vadimdemedes/ink-ui).
+
+<img src="./media/ink-ui/ordered-list.png" width="400" alt="OrderedList demo" />
+
+```tsx
+import { OrderedList } from "@visulima/tui/components/ordered-list";
+<OrderedList
+    items={[
+        { label: "Install dependencies" },
+        { label: "Configure", children: [{ label: "Create config file" }, { label: "Set environment variables" }] },
+        { label: "Deploy" },
+    ]}
+/>;
+```
+
+| Prop    | Type                 | Default      | Description                                       |
+| ------- | -------------------- | ------------ | ------------------------------------------------- |
+| `items` | `OrderedListEntry[]` | _(required)_ | List entries with `label` and optional `children` |
+
+Numbers are right-padded for alignment (e.g., ` 1.`, ` 2.`, `10.`). Nested lists produce hierarchical markers (`1.`, `1.1.`, `1.2.`).
+
+## `Paginator`
+
+A pagination component with a render-prop pattern and configurable page indicators. Handles keyboard navigation and slices items by page.
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { Paginator } from "@visulima/tui/components/paginator";
+import { Text } from "@visulima/tui/components/text";
+<Paginator items={allItems} pageSize={5}>
+    {(pageItems, meta) => (
+        <Box flexDirection="column">
+            {pageItems.map((item, i) => (
+                <Text key={i}>{item}</Text>
+            ))}
+        </Box>
+    )}
+</Paginator>;
+```
+
+| Prop             | Type                                            | Default      | Description                           |
+| ---------------- | ----------------------------------------------- | ------------ | ------------------------------------- |
+| `items`          | `T[]`                                           | _(required)_ | Full item list to paginate            |
+| `pageSize`       | `number`                                        | _(required)_ | Items per page                        |
+| `children`       | `(pageItems: T[], meta: PageMeta) => ReactNode` | _(required)_ | Render prop for page content          |
+| `page`           | `number`                                        | —            | Controlled current page (0-indexed)   |
+| `defaultPage`    | `number`                                        | `0`          | Initial page for uncontrolled mode    |
+| `onChange`       | `(page: number) => void`                        | —            | Called when page changes              |
+| `isFocused`      | `boolean`                                       | `true`       | Whether keyboard navigation is active |
+| `style`          | `"dots"` \| `"numeric"` \| `"fraction"`         | `"dots"`     | Indicator style                       |
+| `indicatorColor` | `string`                                        | `"cyan"`     | Color for the active indicator        |
+
+### PageMeta
+
+The render-prop receives a `PageMeta` object as the second argument:
+
+```ts
+type PageMeta = {
+    currentPage: number;
+    totalPages: number;
+    startIndex: number;
+    endIndex: number;
+    isFirstPage: boolean;
+    isLastPage: boolean;
+};
+```
+
+### Indicator styles
+
+- **dots**: `● ○ ○ ○` — active dot highlighted
+- **numeric**: `‹ 1 / 4 ›` — arrows dim at boundaries
+- **fraction**: `1/4` — compact display
+
+### Keyboard
+
+| Key               | Action        |
+| ----------------- | ------------- |
+| `←` / `Page Up`   | Previous page |
+| `→` / `Page Down` | Next page     |
+| `Home`            | First page    |
+| `End`             | Last page     |
+
+### Controlled mode
+
+```tsx
+const [page, setPage] = useState(0);
+<Paginator items={data} pageSize={10} page={page} onChange={setPage}>
+    {(items) => <MyList items={items} />}
+</Paginator>;
+```
+
+## `TreeView`
+
+Interactive tree view with keyboard navigation, expand/collapse, single/multi selection, async lazy-loading, and viewport virtualization. Ported from [ink-tree-view](https://github.com/costajohnt/ink-tree-view).
+
+```tsx
+import { TreeView } from "@visulima/tui/components/tree-view";
+import type { TreeNode } from "@visulima/tui/components/tree-view";
+const data: TreeNode[] = [
+    {
+        id: "src",
+        label: "src",
+        children: [
+            { id: "src/index.ts", label: "index.ts" },
+            {
+                id: "src/components",
+                label: "components",
+                children: [{ id: "src/components/App.tsx", label: "App.tsx" }],
+            },
+        ],
+    },
+    { id: "package.json", label: "package.json" },
+];
+
+<TreeView data={data} defaultExpanded="all" />;
+```
+
+### Keyboard controls
+
+| Key       | Action                                                  |
+| --------- | ------------------------------------------------------- |
+| `↑` / `↓` | Move focus                                              |
+| `→`       | Expand node, or move to first child if already expanded |
+| `←`       | Collapse node, or move to parent if already collapsed   |
+| `Enter`   | Toggle expand (none mode) or select (single/multi mode) |
+| `Space`   | Toggle selection (multi mode) or expand (none/single)   |
+| `Home`    | Focus first node                                        |
+| `End`     | Focus last node                                         |
+
+### Props
+
+| Prop               | Type                                             | Default       | Description                                                                            |
+| ------------------ | ------------------------------------------------ | ------------- | -------------------------------------------------------------------------------------- |
+| `data`             | `TreeNode<T>[]`                                  | _(required)_  | Tree data. Must be referentially stable (use `useMemo`).                               |
+| `selectionMode`    | `"none"` \| `"single"` \| `"multiple"`           | `"none"`      | `"single"` shows a tick, `"multiple"` shows checkboxes.                                |
+| `defaultExpanded`  | `ReadonlySet<string>` \| `"all"`                 | —             | IDs of nodes expanded on mount. Pass `"all"` to expand everything.                     |
+| `defaultSelected`  | `ReadonlySet<string>`                            | —             | IDs of nodes selected on mount.                                                        |
+| `visibleNodeCount` | `number`                                         | `Infinity`    | Limits visible rows (viewport virtualization). Scroll indicators appear automatically. |
+| `renderNode`       | `(props: TreeNodeRendererProps<T>) => ReactNode` | —             | Custom node renderer. Receives `{ node, state }`.                                      |
+| `loadChildren`     | `(node: TreeNode<T>) => Promise<TreeNode<T>[]>`  | —             | Async function called when expanding a node with `isParent: true` and no children.     |
+| `onFocusChange`    | `(nodeId: string) => void`                       | —             | Called when the focused node changes.                                                  |
+| `onExpandChange`   | `(expandedIds: ReadonlySet<string>) => void`     | —             | Called when the expanded set changes.                                                  |
+| `onSelectChange`   | `(selectedIds: ReadonlySet<string>) => void`     | —             | Called when the selection changes.                                                     |
+| `onLoadError`      | `(nodeId: string, error: Error) => void`         | —             | Called when `loadChildren` rejects.                                                    |
+| `isDisabled`       | `boolean`                                        | `false`       | Ignores keyboard input when `true`.                                                    |
+| `ariaLabel`        | `string`                                         | `"Tree view"` | Accessible label for the tree container.                                               |
+
+### `TreeNode<T>` shape
+
+```ts
+type TreeNode<T = Record<string, unknown>> = {
+    id: string; // unique across the whole tree
+    label: string; // display text
+    data?: T; // arbitrary user data
+    children?: TreeNode<T>[]; // child nodes
+    isParent?: boolean; // show expand indicator even with no children (for async loading)
+};
+```
+
+### Custom rendering
+
+Use `renderNode` for full control over each row:
+
+```tsx
+<TreeView
+    data={data}
+    defaultExpanded="all"
+    renderNode={({ node, state }) => (
+        <Box gap={1}>
+            <Text dimColor>{"  ".repeat(state.depth)}</Text>
+            <Text color={state.isFocused ? "blue" : undefined}>
+                {state.hasChildren ? (state.isExpanded ? "📂" : "📁") : "📄"} {node.label}
+            </Text>
+        </Box>
+    )}
+/>
+```
+
+### Async lazy-loading
+
+Mark nodes with `isParent: true` and provide a `loadChildren` callback:
+
+```tsx
+const data: TreeNode[] = [{ id: "root", label: "Remote Files", isParent: true }];
+
+<TreeView
+    data={data}
+    loadChildren={async (node) => {
+        const response = await fetch(`/api/files/${node.id}`);
+        return response.json();
+    }}
+    onLoadError={(nodeId, error) => console.error(`Failed to load ${nodeId}:`, error)}
+/>;
+```
+
+A loading indicator (`⟳`) is shown while children are being fetched.
+
+### Viewport virtualization
+
+Limit the visible rows for large trees:
+
+```tsx
+<TreeView data={largeTree} defaultExpanded="all" visibleNodeCount={15} />
+```
+
+Scroll indicators (`↑ N more above` / `↓ N more below`) appear automatically.
+
+### Headless usage
+
+For full control, use the hooks directly instead of the `<TreeView>` component:
+
+```tsx
+import { useTreeView, useTreeViewState } from "@visulima/tui/components/tree-view";
+function CustomTree({ data }) {
+    const state = useTreeViewState({ data, selectionMode: "single" });
+    useTreeView({ state, selectionMode: "single" });
+
+    return (
+        <Box flexDirection="column">
+            {state.viewportNodes.map(({ node, state: nodeState }) => (
+                <Text key={node.id} color={nodeState.isFocused ? "blue" : undefined}>
+                    {"  ".repeat(nodeState.depth)}
+                    {nodeState.isExpanded ? "▾" : nodeState.hasChildren ? "▸" : " "} {node.label}
+                </Text>
+            ))}
+        </Box>
+    );
+}
+```
+
+### Theming
+
+The default theme can be imported and inspected:
+
+```tsx
+import { treeViewTheme } from "@visulima/tui/components/tree-view";
+// treeViewTheme.styles.label({ isFocused: true, isSelected: false })
+// => { color: "blue" }
+```
+
+For full visual customization, prefer `renderNode` over theme overrides.
+
+## `Accordion`
+
+Keyboard-navigable accordion. Arrow keys (or `j`/`k`) move between panels; Enter or Space toggles.
+
+| Prop              | Type                | Default  | Description                        |
+| ----------------- | ------------------- | -------- | ---------------------------------- |
+| `items`           | `AccordionItem[]`   | required | Panels (`{ id, title, content }`)  |
+| `allowMultiple`   | `boolean`           | `false`  | Allow multiple panels open at once |
+| `defaultExpanded` | `readonly string[]` | —        | Ids open on mount                  |
+| `accentColor`     | `string`            | `"blue"` | Color of the focused header        |
+| `autoFocus`       | `boolean`           | `false`  | Auto-focus the first item on mount |
+| `isDisabled`      | `boolean`           | `false`  | Disable input                      |
+
+```tsx
+<Accordion items={[{ id: "one", title: "Section 1", content: <Text>Body</Text> }]} />
+```
+
+## `AnimatePresence`
+
+Orchestrates enter / exit animations for keyed children. Wrap a dynamic list of `<Transition />` (or any component accepting `show: boolean` + `onExit`) to keep outgoing children mounted until their exit animation finishes.
+
+```tsx
+<AnimatePresence>
+    {visible && (
+        <Transition key="banner" preset="slide-down">
+            <Text>Saved!</Text>
+        </Transition>
+    )}
+</AnimatePresence>
+```
+
+Children must have a `key` to be tracked. Components opt in by exposing `show` + `onExit` props or by setting a static `isAnimatable = true` on the component type.
+
+## `ApprovalPrompt`
+
+Three-way prompt for tool calls. `y` / Enter → `allow-once`, `a` → `allow-always`, `n` / Esc → `deny`.
+
+| Prop          | Type                            | Default    | Description                           |
+| ------------- | ------------------------------- | ---------- | ------------------------------------- |
+| `tool`        | `string`                        | required   | Name of the action under review       |
+| `onDecision`  | `(d: ApprovalDecision) => void` | required   | Resolution callback                   |
+| `risk`        | `"low" \| "medium" \| "high"`   | `"medium"` | Severity badge / border color         |
+| `description` | `string`                        | —          | Body text                             |
+| `params`      | `Record<string, unknown>`       | —          | Key=value preview                     |
+| `children`    | `ReactNode`                     | —          | Optional body (diff, command preview) |
+| `accentColor` | `string`                        | risk color | Override option-letter color          |
+| `autoFocus`   | `boolean`                       | `true`     | Auto-focus on mount                   |
+| `isDisabled`  | `boolean`                       | `false`    | Disable input                         |
+
+```tsx
+<ApprovalPrompt tool="bash" risk="high" params={{ cmd: "rm -rf /" }} onDecision={resolve} />
+```
+
+## `AreaChart`
+
+Line chart with the area between each line and the baseline filled with shaded blocks.
+
+| Prop          | Type                             | Default    | Description                                |
+| ------------- | -------------------------------- | ---------- | ------------------------------------------ |
+| `series`      | `LineSeries[]`                   | required   | Series to plot (same shape as `LineChart`) |
+| `width`       | `number`                         | `40`       | Plot width in columns                      |
+| `height`      | `number`                         | `10`       | Plot height in rows                        |
+| `fillDensity` | `"light" \| "medium" \| "heavy"` | `"medium"` | Glyph used for the fill                    |
+| `minY`/`maxY` | `number`                         | auto       | Y-axis bounds                              |
+| `palette`     | `string[]`                       | default    | Fallback colors                            |
+| `axisColor`   | `string`                         | `"gray"`   | Axis label color                           |
+| `showLegend`  | `boolean`                        | `true`     | Render the legend                          |
+
+```tsx
+<AreaChart series={[{ name: "load", data: [1, 4, 2, 5, 3] }]} />
+```
+
+## `BarChart`
+
+Vertical or horizontal bar chart. Uses braille / block glyphs.
+
+| Prop          | Type                         | Default      | Description                              |
+| ------------- | ---------------------------- | ------------ | ---------------------------------------- |
+| `data`        | `BarDatum[]`                 | required     | `{ value, label?, color? }` per bar      |
+| `orientation` | `"vertical" \| "horizontal"` | `"vertical"` | Bar orientation                          |
+| `width`       | `number`                     | auto         | Plot width in columns                    |
+| `height`      | `number`                     | `10`         | Plot height in rows                      |
+| `max`         | `number`                     | auto         | Upper bound for the axis                 |
+| `palette`     | `string[]`                   | default      | Fallback colors                          |
+| `showLabels`  | `boolean`                    | `true`       | Render labels under (or beside) each bar |
+| `showValues`  | `boolean`                    | `false`      | Render numeric values next to each bar   |
+
+```tsx
+<BarChart
+    data={[
+        { value: 12, label: "Mon" },
+        { value: 8, label: "Tue" },
+    ]}
+/>
+```
+
+## `BlinkDot`
+
+Steady or blinking indicator dot.
+
+| Prop        | Type      | Default | Description                                      |
+| ----------- | --------- | ------- | ------------------------------------------------ |
+| `character` | `string`  | `"●"`   | Glyph                                            |
+| `color`     | `string`  | `"red"` | Color                                            |
+| `interval`  | `number`  | `800`   | Milliseconds per blink cycle                     |
+| `isActive`  | `boolean` | `true`  | When `false`, the dot stays solid (no animation) |
+
+```tsx
+<BlinkDot color="green" /> Connected
+```
+
+## `Breadcrumb`
+
+Render a breadcrumb trail; the last item is highlighted as the current location.
+
+| Prop           | Type               | Default  | Description                |
+| -------------- | ------------------ | -------- | -------------------------- |
+| `items`        | `BreadcrumbItem[]` | required | `{ label, icon?, key? }`   |
+| `separator`    | `string`           | `"›"`    | Separator glyph            |
+| `currentColor` | `string`           | `"blue"` | Color applied to last item |
+
+```tsx
+<Breadcrumb items={[{ label: "Home" }, { label: "Settings" }, { label: "Profile" }]} />
+```
+
+## `Button`
+
+Focusable button. Triggers `onPress` on Enter or Space.
+
+| Prop          | Type                                               | Default     | Description                   |
+| ------------- | -------------------------------------------------- | ----------- | ----------------------------- |
+| `children`    | `ReactNode`                                        | required    | Label                         |
+| `onPress`     | `() => void`                                       | —           | Pressed callback              |
+| `variant`     | `"primary" \| "secondary" \| "outline" \| "ghost"` | `"primary"` | Visual style                  |
+| `accentColor` | `string`                                           | `"blue"`    | Color when focused            |
+| `autoFocus`   | `boolean`                                          | `false`     | Focus on mount                |
+| `isDisabled`  | `boolean`                                          | `false`     | Ignores input and renders dim |
+
+```tsx
+<Button onPress={() => save()} autoFocus>
+    Save
+</Button>
+```
+
+## `Calendar`
+
+Month grid with keyboard navigation. Arrow keys move day-by-day; Enter submits.
+
+| Prop             | Type                | Default   | Description                       |
+| ---------------- | ------------------- | --------- | --------------------------------- |
+| `value`          | `Date`              | —         | Controlled selected date          |
+| `defaultValue`   | `Date`              | today     | Initial selection (uncontrolled)  |
+| `onChange`       | `(d: Date) => void` | —         | Called on navigation or selection |
+| `onSubmit`       | `(d: Date) => void` | —         | Called on Enter                   |
+| `minDate`        | `Date`              | —         | Lower bound                       |
+| `maxDate`        | `Date`              | —         | Upper bound                       |
+| `firstDayOfWeek` | `0 \| 1`            | `1`       | Sunday (`0`) or Monday (`1`)      |
+| `accentColor`    | `string`            | `"blue"`  | Color of today / focused cell     |
+| `selectedColor`  | `string`            | `"green"` | Color of the selected day         |
+| `autoFocus`      | `boolean`           | `false`   | Auto-focus on mount               |
+| `isDisabled`     | `boolean`           | `false`   | Disable input                     |
+
+```tsx
+<Calendar onSubmit={(d) => setDate(d)} autoFocus />
+```
+
+## `Canvas`
+
+A fixed-size cell grid backed by typed arrays. The imperative `draw` callback paints into a `CanvasContext`; only rows the draw pass dirties are re-serialized. Bumping `version` invalidates the cache.
+
+| Prop      | Type                           | Description                                 |
+| --------- | ------------------------------ | ------------------------------------------- |
+| `width`   | `number`                       | Columns (cells horizontally)                |
+| `height`  | `number`                       | Rows                                        |
+| `draw`    | `(ctx: CanvasContext) => void` | Draw callback                               |
+| `version` | `unknown`                      | Cache invalidation key (data hash, counter) |
+
+```tsx
+<Canvas width={20} height={5} version={frame} draw={(ctx) => ctx.setCell(0, 0, "█", { color: "cyan" })} />
+```
+
+This is the foundation for chart components (`LineChart`, `BarChart`, `Heatmap`, `ScatterPlot`).
+
+## `Card`
+
+Container with optional title, subtitle, header-right, and footer.
+
+| Prop          | Type               | Default   | Description                      |
+| ------------- | ------------------ | --------- | -------------------------------- |
+| `children`    | `ReactNode`        | required  | Body                             |
+| `title`       | `string`           | —         | Heading                          |
+| `subtitle`    | `string`           | —         | Sub-heading                      |
+| `headerRight` | `ReactNode`        | —         | Content rendered after the title |
+| `footer`      | `ReactNode`        | —         | Footer below body                |
+| `borderColor` | `string`           | —         | Border color                     |
+| `titleColor`  | `string`           | —         | Title color                      |
+| `borderStyle` | border preset      | `"round"` | Passed to `Box`                  |
+| `width`       | `number \| string` | fill      | Card width                       |
+
+```tsx
+<Card title="Build" subtitle="Step 2 of 3" footer={<Text dimColor>Press q to cancel</Text>}>
+    <Text>Bundling…</Text>
+</Card>
+```
+
+## `Checkbox`
+
+Toggleable boolean input.
+
+| Prop             | Type                         | Default  | Description                  |
+| ---------------- | ---------------------------- | -------- | ---------------------------- |
+| `isChecked`      | `boolean`                    | —        | Controlled checked state     |
+| `defaultChecked` | `boolean`                    | `false`  | Initial state (uncontrolled) |
+| `onChange`       | `(checked: boolean) => void` | —        | Called on toggle             |
+| `children`       | `ReactNode`                  | —        | Label                        |
+| `accentColor`    | `string`                     | `"blue"` | Color when focused           |
+| `autoFocus`      | `boolean`                    | `false`  | Focus on mount               |
+| `isDisabled`     | `boolean`                    | `false`  | Disable input                |
+
+```tsx
+<Checkbox onChange={setEnabled}>Enable notifications</Checkbox>
+```
+
+## `Collapsible`
+
+Toggleable section with a focusable header.
+
+| Prop          | Type                      | Default  | Description                  |
+| ------------- | ------------------------- | -------- | ---------------------------- |
+| `title`       | `ReactNode`               | required | Header label                 |
+| `children`    | `ReactNode`               | required | Body shown when open         |
+| `defaultOpen` | `boolean`                 | `false`  | Initial state (uncontrolled) |
+| `isOpen`      | `boolean`                 | —        | Controlled open state        |
+| `onToggle`    | `(open: boolean) => void` | —        | Called on toggle             |
+| `accentColor` | `string`                  | `"blue"` | Header color when focused    |
+| `autoFocus`   | `boolean`                 | `false`  | Focus on mount               |
+| `isDisabled`  | `boolean`                 | `false`  | Disable interaction          |
+
+## `CommandBlock`
+
+Render a shell command and its output with a status header.
+
+| Prop            | Type                                          | Default  | Description                             |
+| --------------- | --------------------------------------------- | -------- | --------------------------------------- |
+| `command`       | `string`                                      | required | Command rendered in the header          |
+| `status`        | `"idle" \| "running" \| "success" \| "error"` | `"idle"` | Lifecycle state — drives icon and color |
+| `cwd`           | `string`                                      | —        | Working directory shown after command   |
+| `output`        | `ReactNode`                                   | —        | Output (string or any node)             |
+| `exitCode`      | `number`                                      | —        | Exit code shown when finished           |
+| `durationMs`    | `number`                                      | —        | Duration shown when finished            |
+| `maxOutputRows` | `number`                                      | —        | Truncate output beyond this many rows   |
+
+## `CommandPalette`
+
+Searchable command palette.
+
+| Prop          | Type                                  | Default                         | Description                |
+| ------------- | ------------------------------------- | ------------------------------- | -------------------------- |
+| `commands`    | `CommandEntry[]`                      | required                        | Entries to search          |
+| `onSelect`    | `(id: string, query: string) => void` | required                        | Selection callback         |
+| `onCancel`    | `() => void`                          | —                               | Called on Escape           |
+| `limit`       | `number`                              | `8`                             | Max rows                   |
+| `placeholder` | `string`                              | `"Type a command or search..."` | Search field placeholder   |
+| `emptyText`   | `string`                              | `"No results"`                  | Shown when no matches      |
+| `accentColor` | `string`                              | `"cyan"`                        | Border / focused row color |
+| `autoFocus`   | `boolean`                             | `false`                         | Auto-focus on mount        |
+
+## `ConfirmDialog`
+
+Modal confirm prompt with focusable buttons.
+
+| Prop           | Type                              | Default     | Description              |
+| -------------- | --------------------------------- | ----------- | ------------------------ |
+| `onConfirm`    | `() => void`                      | required    | Confirm callback         |
+| `onCancel`     | `() => void`                      | required    | Cancel callback          |
+| `title`        | `string`                          | —           | Heading                  |
+| `children`     | `ReactNode`                       | —           | Body content             |
+| `confirmLabel` | `string`                          | `"Confirm"` | Confirm button label     |
+| `cancelLabel`  | `string`                          | `"Cancel"`  | Cancel button label      |
+| `defaultFocus` | `"confirm" \| "cancel"`           | `"confirm"` | Initially focused button |
+| `tone`         | `"info" \| "warning" \| "danger"` | `"info"`    | Border color             |
+| `width`        | `number`                          | —           | Dialog width             |
+| `autoFocus`    | `boolean`                         | `true`      | Auto-focus on mount      |
+| `isDisabled`   | `boolean`                         | `false`     | Disable input            |
+
+## `ContentSwitcher`
+
+Segmented control for picking among 2–5 options.
+
+| Prop           | Type                      | Default  | Description                       |
+| -------------- | ------------------------- | -------- | --------------------------------- |
+| `options`      | `ContentSwitcherOption[]` | required | Segments (`{ id, label, icon? }`) |
+| `value`        | `string`                  | —        | Controlled selected id            |
+| `defaultValue` | `string`                  | first    | Initial selection (uncontrolled)  |
+| `onChange`     | `(id: string) => void`    | —        | Called when the selection changes |
+| `accentColor`  | `string`                  | `"blue"` | Color of the selected segment     |
+| `autoFocus`    | `boolean`                 | `false`  | Auto-focus on mount               |
+| `isDisabled`   | `boolean`                 | `false`  | Disable input                     |
+
+## `DatePicker`
+
+Input row that opens an inline `Calendar` on focus / Enter.
+
+| Prop           | Type                  | Default         | Description                     |
+| -------------- | --------------------- | --------------- | ------------------------------- |
+| `value`        | `Date`                | —               | Controlled selected date        |
+| `defaultValue` | `Date`                | —               | Initial date (uncontrolled)     |
+| `onChange`     | `(d: Date) => void`   | —               | Called when the user commits    |
+| `placeholder`  | `string`              | `"Pick a date"` | Shown when no value is selected |
+| `formatValue`  | `(d: Date) => string` | locale          | Custom display formatter        |
+| `minDate`      | `Date`                | —               | Lower bound                     |
+| `maxDate`      | `Date`                | —               | Upper bound                     |
+| `accentColor`  | `string`              | `"blue"`        | Calendar accent color           |
+| `autoFocus`    | `boolean`             | `false`         | Auto-focus on mount             |
+| `isDisabled`   | `boolean`             | `false`         | Disable input                   |
+
+## `DefinitionList`
+
+Term/definition pairs.
+
+| Prop        | Type                    | Default    | Description                                  |
+| ----------- | ----------------------- | ---------- | -------------------------------------------- |
+| `items`     | `DefinitionItem[]`      | required   | `{ term, description }` entries              |
+| `layout`    | `"inline" \| "stacked"` | `"inline"` | Inline = same row; stacked = term above      |
+| `termColor` | `string`                | `"cyan"`   | Color applied to the term                    |
+| `termWidth` | `number`                | —          | Min width to align inline terms              |
+| `columnGap` | `number`                | `2`        | Spacing between term and description columns |
+
+## `Dialog`
+
+Bordered, scrollable container that fills a fraction of the terminal. Used for modal-style overlays.
+
+| Prop              | Type                 | Default     | Description                      |
+| ----------------- | -------------------- | ----------- | -------------------------------- |
+| `children`        | `ReactNode`          | required    | Dialog body                      |
+| `title`           | `ReactNode`          | —           | Heading                          |
+| `footer`          | `ReactNode`          | —           | Footer below the scrollable area |
+| `visible`         | `boolean`            | `true`      | Render only when truthy          |
+| `width`           | `number`             | `60`        | Width in columns                 |
+| `maxHeight`       | `number`             | `0.8`       | Fraction (≤1) or absolute rows   |
+| `borderStyle`     | border preset        | `"round"`   | Passed to `Box`                  |
+| `borderColor`     | `string`             | `"cyan"`    | Border color                     |
+| `backgroundColor` | `string`             | terminal bg | Dialog background                |
+| `paddingX`        | `number`             | `2`         | Inner horizontal padding         |
+| `paddingY`        | `number`             | `1`         | Inner vertical padding           |
+| `scrollRef`       | `Ref<ScrollViewRef>` | —           | Ref to the inner `ScrollView`    |
+| `scrollbarStyle`  | scrollbar preset     | `"block"`   | Scrollbar visual style           |
+
+## `Divider`
+
+Horizontal or vertical rule with an optional centered label.
+
+| Prop           | Type                         | Default        | Description                                   |
+| -------------- | ---------------------------- | -------------- | --------------------------------------------- |
+| `orientation`  | `"horizontal" \| "vertical"` | `"horizontal"` | Direction                                     |
+| `length`       | `number`                     | fill           | Total length                                  |
+| `character`    | `string`                     | `─`/`│`        | Override the line glyph                       |
+| `label`        | `string`                     | —              | Text rendered in the middle (horizontal only) |
+| `labelPadding` | `number`                     | `1`            | Padding around the label                      |
+| `color`        | `string`                     | —              | Line color                                    |
+| `dimColor`     | `boolean`                    | `false`        | Render dim                                    |
+
+```tsx
+<Divider label="Settings" />
+```
+
+## `Form`
+
+Layout primitive for forms — pairs nicely with `useForm` and the `<Form.Field>` sub-component for label/error styling.
+
+| Prop          | Type        | Default  | Description                       |
+| ------------- | ----------- | -------- | --------------------------------- |
+| `children`    | `ReactNode` | required | `<Form.Field>` rows (or any node) |
+| `title`       | `string`    | —        | Heading                           |
+| `description` | `string`    | —        | Subtitle below the heading        |
+| `footer`      | `ReactNode` | —        | Footer (buttons, hints)           |
+| `bordered`    | `boolean`   | `true`   | Render with a border              |
+| `accentColor` | `string`    | `"blue"` | Form chrome accent                |
+| `width`       | `number`    | —        | Fixed width                       |
+
+`Form.Field` accepts `{ label, description?, error?, required?, isDisabled?, children }` and renders consistent label + error styling around any control.
+
+## `Gauge`
+
+Numeric range display. Useful for usage / load / capacity readouts.
+
+| Prop          | Type                             | Default    | Description                               |
+| ------------- | -------------------------------- | ---------- | ----------------------------------------- |
+| `value`       | `number`                         | required   | Current value (clamped into `[min, max]`) |
+| `min`         | `number`                         | `0`        | Lower bound                               |
+| `max`         | `number`                         | `100`      | Upper bound                               |
+| `size`        | `"small" \| "medium" \| "large"` | `"medium"` | Dimension preset                          |
+| `label`       | `string`                         | —          | Label rendered above the readout          |
+| `formatValue` | `(v: number) => string`          | round      | Format the numeric readout                |
+| `thresholds`  | `GaugeThreshold[]`               | —          | Color thresholds (see source)             |
+| `showValue`   | `boolean`                        | `true`     | Show the numeric readout in the middle    |
+| `showLegend`  | `boolean`                        | `false`    | Show a threshold legend below the gauge   |
+
+## `Heading`
+
+Convenience wrapper around `Text` that picks color and decoration by level.
+
+| Prop        | Type                         | Default  | Description                          |
+| ----------- | ---------------------------- | -------- | ------------------------------------ |
+| `children`  | `ReactNode`                  | required | Heading content                      |
+| `level`     | `1 \| 2 \| 3 \| 4 \| 5 \| 6` | `1`      | Determines decoration / color        |
+| `color`     | `string`                     | —        | Explicit color override              |
+| `underline` | `boolean`                    | `false`  | Render an underline on a second line |
+
+## `Heatmap`
+
+2D matrix rendered as a colored cell grid.
+
+| Prop           | Type         | Default  | Description                        |
+| -------------- | ------------ | -------- | ---------------------------------- |
+| `data`         | `number[][]` | required | Rows × cols matrix                 |
+| `cellWidth`    | `number`     | `2`      | Width of each cell in columns      |
+| `character`    | `string`     | `"█"`    | Glyph painted in each cell         |
+| `palette`      | `string[]`   | default  | Color ramp from low → high         |
+| `min`/`max`    | `number`     | data     | Fixed bounds for consistent scales |
+| `rowLabels`    | `string[]`   | —        | Labels rendered to the left        |
+| `columnLabels` | `string[]`   | —        | Labels rendered below              |
+
+(Type is `HeatmapProps`.)
+
+## `Histogram`
+
+Bin numeric values into bars.
+
+| Prop         | Type       | Default  | Description                           |
+| ------------ | ---------- | -------- | ------------------------------------- |
+| `data`       | `number[]` | required | Raw values to bin                     |
+| `bins`       | `number`   | `10`     | Number of equal-width buckets         |
+| `thresholds` | `number[]` | —        | Explicit bin edges (overrides `bins`) |
+| `min`/`max`  | `number`   | auto     | Fixed min/max                         |
+| `width`      | `number`   | auto     | Plot width                            |
+| `height`     | `number`   | `10`     | Plot height                           |
+| `color`      | `string`   | —        | Bar color                             |
+| `showValues` | `boolean`  | `false`  | Show the numeric count above each bar |
+
+## `Kbd`
+
+Render a single key cap.
+
+| Prop       | Type                             | Default   | Description      |
+| ---------- | -------------------------------- | --------- | ---------------- |
+| `children` | `ReactNode`                      | required  | Key label        |
+| `color`    | `string`                         | `"gray"`  | Background color |
+| `variant`  | `"solid" \| "outline" \| "bare"` | `"solid"` | Visual style     |
+
+```tsx
+Press <Kbd>Ctrl</Kbd>+<Kbd>C</Kbd> to copy.
+```
+
+## `LineChart`
+
+Multi-series line chart drawn on a `Canvas` braille grid.
+
+| Prop          | Type           | Default  | Description                        |
+| ------------- | -------------- | -------- | ---------------------------------- |
+| `series`      | `LineSeries[]` | required | Series (`{ name?, data, color? }`) |
+| `width`       | `number`       | `40`     | Plot width in columns              |
+| `height`      | `number`       | `10`     | Plot height in rows                |
+| `minY`/`maxY` | `number`       | auto     | Y-axis bounds                      |
+| `palette`     | `string[]`     | default  | Fallback colors                    |
+| `axisColor`   | `string`       | `"gray"` | Axis tick color                    |
+| `showLegend`  | `boolean`      | `true`   | Show legend                        |
+
+(Type is `LineChartProps`.)
+
+## `LoadingIndicator`
+
+Spinner + optional inline message.
+
+| Prop       | Type          | Default  | Description                                 |
+| ---------- | ------------- | -------- | ------------------------------------------- |
+| `type`     | `SpinnerName` | `"dots"` | `@visulima/spinner` preset                  |
+| `color`    | `string`      | `"cyan"` | Spinner and label color                     |
+| `children` | `ReactNode`   | —        | Optional message rendered after the spinner |
+
+```tsx
+<LoadingIndicator>Building…</LoadingIndicator>
+```
+
+## `MaskedInput`
+
+Single-line input constrained by a literal mask. `#` (or a custom token) marks editable positions; every other character is rendered literally.
+
+| Prop              | Type                      | Default  | Description                            |
+| ----------------- | ------------------------- | -------- | -------------------------------------- |
+| `mask`            | `string`                  | required | Mask, e.g. `"(###) ###-####"`          |
+| `defaultValue`    | `string`                  | `""`     | Initial raw value (no mask characters) |
+| `onChange`        | `(value: string) => void` | —        | Called whenever the raw value changes  |
+| `onSubmit`        | `(value: string) => void` | —        | Called on Enter                        |
+| `token`           | `string`                  | `"#"`    | Editable-position marker               |
+| `placeholderChar` | `string`                  | `"_"`    | Character shown in empty positions     |
+| `isDisabled`      | `boolean`                 | `false`  | Disable input                          |
+
+## `Menu`
+
+Vertical menu with optional sections, icons, and shortcuts.
+
+| Prop          | Type                   | Default  | Description                              |
+| ------------- | ---------------------- | -------- | ---------------------------------------- |
+| `onSelect`    | `(id: string) => void` | required | Selection callback                       |
+| `items`       | `MenuItem[]`           | —        | Flat list (ignored if `sections` is set) |
+| `sections`    | `MenuSection[]`        | —        | Grouped items                            |
+| `title`       | `string`               | —        | Header                                   |
+| `bordered`    | `boolean`              | `true`   | Render a border                          |
+| `accentColor` | `string`               | `"blue"` | Color of the focused row                 |
+| `autoFocus`   | `boolean`              | `false`  | Auto-focus on mount                      |
+
+## `MessageBubble`
+
+Conversation bubble with a role-based icon and color.
+
+| Prop       | Type                                          | Default       | Description                                 |
+| ---------- | --------------------------------------------- | ------------- | ------------------------------------------- |
+| `children` | `ReactNode`                                   | required      | Bubble body                                 |
+| `role`     | `"user" \| "assistant" \| "system" \| "tool"` | `"assistant"` | Determines alignment, color, icon           |
+| `label`    | `string`                                      | —             | Text rendered above the bubble              |
+| `meta`     | `string`                                      | —             | Metadata next to the label (e.g. timestamp) |
+| `color`    | `string`                                      | —             | Override the role color                     |
+| `flat`     | `boolean`                                     | `false`       | Render without a border                     |
+
+## `ModelBadge`
+
+Compact badge for model names.
+
+| Prop       | Type                               | Default     | Description                             |
+| ---------- | ---------------------------------- | ----------- | --------------------------------------- |
+| `model`    | `string`                           | required    | Model identifier                        |
+| `provider` | `string`                           | —           | Provider chip rendered before the model |
+| `icon`     | `ReactNode`                        | —           | Optional icon                           |
+| `color`    | `string`                           | `"magenta"` | Background color                        |
+| `variant`  | `"solid" \| "subtle" \| "outline"` | `"solid"`   | Visual style                            |
+
+```tsx
+<ModelBadge model="claude-opus-4.7" provider="Anthropic" />
+```
+
+## `OperationTree`
+
+Tree-shaped task list. Each node carries a status (`pending`, `running`, `completed`, `error`, `skipped`); running nodes show a spinner.
+
+| Prop          | Type              | Default  | Description           |
+| ------------- | ----------------- | -------- | --------------------- |
+| `nodes`       | `OperationNode[]` | required | Tree of operations    |
+| `showSpinner` | `boolean`         | `true`   | Animate running nodes |
+
+## `OptionList`
+
+Static list with optional icons / descriptions / shortcuts. Non-interactive (use `SelectInput` or `Menu` for navigable lists).
+
+| Prop              | Type                | Default  | Description                     |
+| ----------------- | ------------------- | -------- | ------------------------------- |
+| `options`         | `OptionListEntry[]` | required | Entries (`{ id, label, ... }`)  |
+| `currentId`       | `string`            | —        | Id of the row to highlight      |
+| `accentColor`     | `string`            | —        | Highlight color                 |
+| `bordered`        | `boolean`           | `false`  | Render with a border            |
+| `iconColumnWidth` | `number`            | `2`      | Icon column width for alignment |
+
+## `Paragraph`
+
+Block-level wrapper around `Text` with vertical margin. Useful inside long-form layouts.
+
+| Prop           | Type        | Default  | Description        |
+| -------------- | ----------- | -------- | ------------------ |
+| `children`     | `ReactNode` | required | Paragraph body     |
+| `color`        | `string`    | —        | Foreground color   |
+| `dimColor`     | `boolean`   | `false`  | Render dim         |
+| `marginTop`    | `number`    | `0`      | Blank lines before |
+| `marginBottom` | `number`    | `1`      | Blank lines after  |
+
+## `Placeholder`
+
+Skeleton blocks for loading states.
+
+| Prop        | Type       | Default          | Description                      |
+| ----------- | ---------- | ---------------- | -------------------------------- |
+| `rows`      | `number`   | `3`              | Number of skeleton rows          |
+| `widths`    | `number[]` | `[1, 0.85, 0.6]` | Per-row width fractions (cycled) |
+| `width`     | `number`   | fill             | Total width reference            |
+| `character` | `string`   | `"█"`            | Fill character                   |
+| `color`     | `string`   | `"gray"`         | Block color                      |
+| `animated`  | `boolean`  | `true`           | Pulse the blocks                 |
+| `interval`  | `number`   | `500`            | Pulse interval (ms)              |
+
+## `RadioGroup`
+
+Single-choice list of options.
+
+| Prop               | Type                         | Default      | Description                                                                                             |
+| ------------------ | ---------------------------- | ------------ | ------------------------------------------------------------------------------------------------------- |
+| `options`          | `RadioOption[]`              | required     | Choices (`{ value, label, ... }`)                                                                       |
+| `value`            | `string`                     | —            | Controlled selected value                                                                               |
+| `defaultValue`     | `string`                     | —            | Initial value (uncontrolled)                                                                            |
+| `onChange`         | `(value: string) => void`    | —            | Called when selection changes                                                                           |
+| `onSubmit`         | `(value: string) => void`    | —            | Called on Enter                                                                                         |
+| `orientation`      | `"vertical" \| "horizontal"` | `"vertical"` | Layout direction                                                                                        |
+| `commitOnNavigate` | `boolean`                    | `true`       | If true, arrow keys commit and fire `onChange`. If false, focus is independent and Space/Enter commits. |
+| `accentColor`      | `string`                     | `"blue"`     | Color of focused / selected indicator                                                                   |
+| `autoFocus`        | `boolean`                    | `false`      | Auto-focus on mount                                                                                     |
+| `isDisabled`       | `boolean`                    | `false`      | Disable input                                                                                           |
+
+## `ScatterPlot`
+
+Scatter chart drawn on a braille `Canvas`. Uses `LineSeries` (the `data` array supplies points).
+
+| Prop          | Type           | Default  | Description            |
+| ------------- | -------------- | -------- | ---------------------- |
+| `series`      | `LineSeries[]` | required | Series of points       |
+| `width`       | `number`       | `40`     | Plot width             |
+| `height`      | `number`       | `10`     | Plot height            |
+| `minX`/`maxX` | `number`       | auto     | X-axis bounds          |
+| `minY`/`maxY` | `number`       | auto     | Y-axis bounds          |
+| `palette`     | `string[]`     | default  | Series fallback colors |
+| `axisColor`   | `string`       | `"gray"` | Axis label color       |
+| `showLegend`  | `boolean`      | `true`   | Show legend            |
+
+## `SearchInput`
+
+Single-line search input with leading icon and optional autocomplete suggestions.
+
+| Prop           | Type                      | Default       | Description              |
+| -------------- | ------------------------- | ------------- | ------------------------ |
+| `defaultValue` | `string`                  | `""`          | Initial value            |
+| `onChange`     | `(value: string) => void` | —             | Fired on every keystroke |
+| `onSubmit`     | `(value: string) => void` | —             | Fired on Enter           |
+| `placeholder`  | `string`                  | `"Search..."` | Empty-state text         |
+| `icon`         | `ReactNode`               | `"⌕"`         | Leading icon             |
+| `suggestions`  | `string[]`                | —             | Autocomplete candidates  |
+| `accentColor`  | `string`                  | `"blue"`      | Border / icon color      |
+| `isDisabled`   | `boolean`                 | `false`       | Disable input            |
+
+## `SelectInputIndicator` / `SelectInputItem`
+
+Default sub-components used by `<SelectInput>` for the indicator and item rendering. Exported so custom components can re-use the styling primitives, or so consumers can pass them through `indicatorComponent`/`itemComponent` props.
+
+`SelectInputIndicator` accepts `{ isSelected?, isFocused?, accentColor? }`.
+
+`SelectInputItem` accepts `{ label, isSelected?, isFocused?, accentColor?, defaultColor? }`.
+
+## `ShimmerText`
+
+Text with a sweeping highlight band — a lightweight skeleton/loading effect.
+
+| Prop             | Type     | Default   | Description                          |
+| ---------------- | -------- | --------- | ------------------------------------ |
+| `text`           | `string` | required  | Text to render                       |
+| `bandWidth`      | `number` | `3`       | Width of the highlight in characters |
+| `interval`       | `number` | `60`      | Frame interval (ms)                  |
+| `color`          | `string` | —         | Base text color                      |
+| `highlightColor` | `string` | `"white"` | Highlight band color                 |
+
+## `Sparkline`
+
+Tiny inline chart drawn with the eight Unicode block glyphs.
+
+| Prop    | Type       | Default  | Description    |
+| ------- | ---------- | -------- | -------------- |
+| `data`  | `number[]` | required | Values to plot |
+| `min`   | `number`   | data     | Fixed minimum  |
+| `max`   | `number`   | data     | Fixed maximum  |
+| `color` | `string`   | —        | Glyph color    |
+
+```tsx
+<Sparkline data={[1, 4, 2, 5, 3, 7, 6]} color="cyan" />
+```
+
+## `StaticRender`
+
+Pre-renders its children once and caches the result on the underlying DOM node. The next layout pass composites the cached region directly via `addRegionTree()`, skipping the entire subtree traversal.
+
+`StaticRender` is a featured perf primitive used heavily by `vis` for completed-task output, log lines, and other content that does not change.
+
+```tsx
+<StaticRender deps={[completed.length]}>
+    {() => (
+        <Box flexDirection="column">
+            {completed.map((task) => (
+                <Text key={task.id} color="green">
+                    ✓ {task.name}
+                </Text>
+            ))}
+        </Box>
+    )}
+</StaticRender>
+```
+
+| Prop       | Type              | Default  | Description                                                                                                                                                                                                                             |
+| ---------- | ----------------- | -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `children` | `() => ReactNode` | required | Render function invoked once. The result is cached and composited on subsequent renders.                                                                                                                                                |
+| `deps`     | `DependencyList`  | —        | React-style dependency array (shallow `Object.is` comparison). When any entry changes the cache is invalidated and `children()` is invoked again. If omitted, the cache invalidates whenever the `children` function reference changes. |
+| `style`    | `Styles`          | —        | Style applied to the static-render container                                                                                                                                                                                            |
+| `width`    | `number`          | —        | Fixed width for the cached region                                                                                                                                                                                                       |
+
+Pass a stable `deps` array (or memoize the `children` function) — otherwise a fresh function identity on every render forces a re-render.
+
+> Distinct from `<Static>`, which is the append-only Ink primitive for completed log lines.
+
+## `StatusLine`
+
+Single-row status bar with `left` / `center` / `right` slots.
+
+| Prop              | Type        | Default | Description                  |
+| ----------------- | ----------- | ------- | ---------------------------- |
+| `left`            | `ReactNode` | —       | Content rendered flush-left  |
+| `center`          | `ReactNode` | —       | Content rendered centered    |
+| `right`           | `ReactNode` | —       | Content rendered flush-right |
+| `color`           | `string`    | —       | Default foreground           |
+| `backgroundColor` | `string`    | —       | Background spanning the row  |
+
+```tsx
+<StatusLine left={<Text>main</Text>} right={<Text>UTF-8 · LF</Text>} />
+```
+
+## `Stepper`
+
+Progress indicator across discrete steps.
+
+| Prop          | Type                         | Default        | Description                                          |
+| ------------- | ---------------------------- | -------------- | ---------------------------------------------------- |
+| `steps`       | `StepperStep[]`              | required       | List of steps                                        |
+| `activeIndex` | `number`                     | `0`            | Index of the current step (when steps lack a status) |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` | Layout direction                                     |
+| `accentColor` | `string`                     | `"blue"`       | Color for active / completed steps                   |
+| `errorColor`  | `string`                     | `"red"`        | Color for error steps                                |
+
+## `StreamingText`
+
+Reveal text one character at a time. Useful for typing-style output (LLM streaming, intros).
+
+| Prop                 | Type         | Default  | Description                                |
+| -------------------- | ------------ | -------- | ------------------------------------------ |
+| `text`               | `string`     | required | Full text to stream                        |
+| `interval`           | `number`     | `20`     | Milliseconds between characters            |
+| `cursor`             | `string`     | `"▊"`    | Cursor character shown while streaming     |
+| `showCursorWhenDone` | `boolean`    | `false`  | Keep the cursor after streaming completes  |
+| `onComplete`         | `() => void` | —        | Called once per `text` value when complete |
+| `color`              | `string`     | —        | Text color                                 |
+
+## `Switch`
+
+Toggle switch with a labelled track.
+
+| Prop           | Type                       | Default         | Description                     |
+| -------------- | -------------------------- | --------------- | ------------------------------- |
+| `value`        | `boolean`                  | —               | Controlled value                |
+| `defaultValue` | `boolean`                  | `false`         | Initial value (uncontrolled)    |
+| `onChange`     | `(value: boolean) => void` | —               | Called on toggle                |
+| `children`     | `ReactNode`                | —               | Label rendered after the switch |
+| `labels`       | `[string, string]`         | `["off", "on"]` | Track labels                    |
+| `accentColor`  | `string`                   | `"green"`       | Color when on                   |
+| `autoFocus`    | `boolean`                  | `false`         | Focus on mount                  |
+| `isDisabled`   | `boolean`                  | `false`         | Disable input                   |
+
+## `Tag`
+
+Inline label / chip.
+
+| Prop       | Type                               | Default    | Description             |
+| ---------- | ---------------------------------- | ---------- | ----------------------- |
+| `children` | `ReactNode`                        | required   | Tag content             |
+| `color`    | `string`                           | `"blue"`   | Base color              |
+| `icon`     | `ReactNode`                        | —          | Optional leading symbol |
+| `variant`  | `"subtle" \| "solid" \| "outline"` | `"subtle"` | Visual style            |
+
+## `Toast`
+
+Auto-dismissing notification.
+
+| Prop        | Type                                          | Default  | Description                                       |
+| ----------- | --------------------------------------------- | -------- | ------------------------------------------------- |
+| `children`  | `ReactNode`                                   | required | Body                                              |
+| `title`     | `string`                                      | —        | Optional title before the body                    |
+| `variant`   | `"info" \| "success" \| "warning" \| "error"` | `"info"` | Determines icon and border color                  |
+| `duration`  | `number`                                      | `4000`   | Auto-dismiss timeout (ms); `0` disables           |
+| `onDismiss` | `() => void`                                  | —        | Called after auto-dismiss                         |
+| `visible`   | `boolean`                                     | —        | Manually control visibility (disables `duration`) |
+| `width`     | `number`                                      | —        | Optional fixed width                              |
+
+## `Tooltip`
+
+Inline tooltip attached to an anchor element. Terminal rendering does not support floating layers, so the tooltip is placed inline next to (or above / below) the anchor.
+
+| Prop        | Type                                     | Default   | Description             |
+| ----------- | ---------------------------------------- | --------- | ----------------------- |
+| `children`  | `ReactNode`                              | required  | Anchor content          |
+| `content`   | `ReactNode`                              | required  | Tooltip body            |
+| `placement` | `"top" \| "right" \| "bottom" \| "left"` | `"right"` | Relative position       |
+| `color`     | `string`                                 | `"gray"`  | Border color            |
+| `isVisible` | `boolean`                                | `true`    | Render only when truthy |
+
+## `Transition`
+
+Animate enter / exit of a child subtree. Pair with `<AnimatePresence>` to keep outgoing children mounted until exit completes.
+
+| Prop           | Type                                                                                | Default  | Description                                                                       |
+| -------------- | ----------------------------------------------------------------------------------- | -------- | --------------------------------------------------------------------------------- |
+| `children`     | `ReactNode`                                                                         | required | Content to animate                                                                |
+| `show`         | `boolean`                                                                           | `true`   | Drive towards `entered` (true) or `exited` (false). Flip to trigger an animation. |
+| `preset`       | `"fade" \| "slide-up" \| "slide-down" \| "slide-left" \| "slide-right" \| "reveal"` | `"fade"` | Animation preset                                                                  |
+| `duration`     | `number`                                                                            | `240`    | Total duration in milliseconds                                                    |
+| `distance`     | `number`                                                                            | `4`      | Slide offset (slide presets) or row span (reveal)                                 |
+| `tickInterval` | `number`                                                                            | `30`     | Frame interval in milliseconds                                                    |
+| `onExit`       | `() => void`                                                                        | —        | Called once the exit animation finishes (used by `<AnimatePresence>`)             |

@@ -1,0 +1,1040 @@
+---
+title: API Reference
+description: Complete API reference for @visulima/storage-client
+---
+
+# API Reference
+
+Complete API reference for the `@visulima/storage-client` package. This page documents every exported hook, primitive, type, and utility across all framework integrations.
+
+## Core Exports
+
+The core module is available via the root import path `@visulima/storage-client` and provides framework-agnostic utilities, adapters, and types.
+
+### `createUploader`
+
+Creates a low-level event-driven file uploader instance using `XMLHttpRequest` with multipart/form-data.
+
+```ts
+import { createUploader } from "@visulima/storage-client";
+
+const uploader = createUploader({
+    endpoint: "/api/upload/multipart",
+    metadata: { category: "photos" },
+});
+```
+
+**Options: `UploaderOptions`**
+
+| Property     | Type                     | Required | Description                                    |
+| ------------ | ------------------------ | -------- | ---------------------------------------------- |
+| `endpoint`   | `string`                 | Yes      | Upload endpoint URL                            |
+| `metadata`   | `Record<string, string>` | No       | Additional metadata to include with the upload |
+| `retry`      | `boolean`                | No       | Enable automatic retry on failure              |
+| `maxRetries` | `number`                 | No       | Maximum number of retry attempts               |
+
+**Returns: `Uploader`**
+
+| Method          | Signature                                                           | Description                                       |
+| --------------- | ------------------------------------------------------------------- | ------------------------------------------------- |
+| `add`           | `(file: File, batchId?: string) => string`                          | Adds a file to the upload queue. Returns item ID. |
+| `addBatch`      | `(files: File[]) => string[]`                                       | Adds multiple files as a batch. Returns item IDs. |
+| `getItem`       | `(id: string) => UploadItem \| undefined`                           | Gets an item by ID                                |
+| `getItems`      | `() => UploadItem[]`                                                | Gets all items                                    |
+| `getBatch`      | `(batchId: string) => BatchState \| undefined`                      | Gets batch state by batch ID                      |
+| `getBatches`    | `() => BatchState[]`                                                | Gets all batches                                  |
+| `getBatchItems` | `(batchId: string) => UploadItem[]`                                 | Gets all items in a batch                         |
+| `abortItem`     | `(id: string) => void`                                              | Aborts a specific upload                          |
+| `abortBatch`    | `(batchId: string) => void`                                         | Aborts all uploads in a batch                     |
+| `abort`         | `() => void`                                                        | Aborts all uploads                                |
+| `clear`         | `() => void`                                                        | Clears all items and aborts active uploads        |
+| `retryItem`     | `(id: string) => void`                                              | Retries a failed upload item                      |
+| `retryBatch`    | `(batchId: string) => void`                                         | Retries all failed items in a batch               |
+| `on`            | `(event: UploaderEventType, handler: UploaderEventHandler) => void` | Subscribes to uploader events                     |
+| `off`           | `(event: UploaderEventType, handler: UploaderEventHandler) => void` | Unsubscribes from uploader events                 |
+
+### `createMultipartAdapter`
+
+Creates a multipart upload adapter wrapping the `Uploader` with a Promise-based API.
+
+```ts
+import { createMultipartAdapter } from "@visulima/storage-client";
+
+const adapter = createMultipartAdapter({
+    endpoint: "/api/upload/multipart",
+});
+
+const result = await adapter.upload(file);
+```
+
+**Options: `MultipartAdapterOptions`**
+
+| Property     | Type                     | Required | Description            |
+| ------------ | ------------------------ | -------- | ---------------------- |
+| `endpoint`   | `string`                 | Yes      | Upload endpoint URL    |
+| `metadata`   | `Record<string, string>` | No       | Additional metadata    |
+| `retry`      | `boolean`                | No       | Enable automatic retry |
+| `maxRetries` | `number`                 | No       | Maximum retry attempts |
+
+**Returns: `MultipartAdapter`**
+
+| Method        | Signature                               | Description                                         |
+| ------------- | --------------------------------------- | --------------------------------------------------- |
+| `upload`      | `(file: File) => Promise<UploadResult>` | Uploads a file and returns the result               |
+| `uploadBatch` | `(files: File[]) => string[]`           | Uploads multiple files as a batch, returns item IDs |
+| `abort`       | `() => void`                            | Aborts all uploads                                  |
+| `abortBatch`  | `(batchId: string) => void`             | Aborts a batch of uploads                           |
+| `abortItem`   | `(id: string) => void`                  | Aborts a specific upload item                       |
+| `clear`       | `() => void`                            | Clears all uploads                                  |
+| `uploader`    | `Uploader`                              | The underlying uploader instance                    |
+
+### `createTusAdapter`
+
+Creates a TUS (resumable upload) adapter with pause/resume and chunked upload support.
+
+```ts
+import { createTusAdapter } from "@visulima/storage-client";
+
+const adapter = createTusAdapter({
+    endpoint: "/api/upload/tus",
+    chunkSize: 1024 * 1024, // 1MB
+});
+
+const result = await adapter.upload(file);
+```
+
+**Options: `TusAdapterOptions`**
+
+| Property      | Type                     | Required | Default              | Description                                                                          |
+| ------------- | ------------------------ | -------- | -------------------- | ------------------------------------------------------------------------------------ |
+| `endpoint`    | `string`                 | Yes      | -                    | TUS upload endpoint URL                                                              |
+| `chunkSize`   | `number`                 | No       | `1048576` (1MB)      | Chunk size for TUS uploads                                                           |
+| `metadata`    | `Record<string, string>` | No       | `{}`                 | Additional metadata                                                                  |
+| `retry`       | `boolean`                | No       | `true`               | Enable automatic retry                                                               |
+| `maxRetries`  | `number`                 | No       | `3`                  | Maximum retry attempts                                                               |
+| `control`     | `UploadControl`          | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume) |
+| `fingerprint` | `FingerprintFn`          | No       | `defaultFingerprint` | Override the per-file resume key                                                     |
+| `urlStorage`  | `UrlStorage`             | No       | -                    | Persistent storage for resume URLs; opt in via `defaultUrlStorage()`                 |
+
+**Returns: `TusAdapter`**
+
+| Method          | Signature                               | Description                                 |
+| --------------- | --------------------------------------- | ------------------------------------------- |
+| `upload`        | `(file: File) => Promise<UploadResult>` | Uploads a file using TUS protocol           |
+| `pause`         | `() => void`                            | Pauses the current upload                   |
+| `resume`        | `() => Promise<void>`                   | Resumes a paused upload                     |
+| `abort`         | `() => void`                            | Aborts the current upload                   |
+| `clear`         | `() => void`                            | Clears all uploads                          |
+| `getOffset`     | `() => number`                          | Gets current upload offset                  |
+| `isPaused`      | `() => boolean`                         | Whether upload is paused                    |
+| `setOnStart`    | `(callback?) => void`                   | Sets start callback                         |
+| `setOnProgress` | `(callback?) => void`                   | Sets progress callback `(progress, offset)` |
+| `setOnFinish`   | `(callback?) => void`                   | Sets finish callback                        |
+| `setOnError`    | `(callback?) => void`                   | Sets error callback                         |
+
+### `createChunkedRestAdapter`
+
+Creates a chunked REST upload adapter that uploads files in chunks using PATCH requests with pause/resume support.
+
+```ts
+import { createChunkedRestAdapter } from "@visulima/storage-client";
+
+const adapter = createChunkedRestAdapter({
+    endpoint: "/api/upload/chunked-rest",
+    chunkSize: 5 * 1024 * 1024, // 5MB
+});
+
+const result = await adapter.upload(file);
+```
+
+**Options: `ChunkedRestAdapterOptions`**
+
+| Property      | Type                     | Required | Default              | Description                                                                          |
+| ------------- | ------------------------ | -------- | -------------------- | ------------------------------------------------------------------------------------ |
+| `endpoint`    | `string`                 | Yes      | -                    | Chunked REST upload endpoint URL                                                     |
+| `chunkSize`   | `number`                 | No       | `5242880` (5MB)      | Chunk size in bytes                                                                  |
+| `metadata`    | `Record<string, string>` | No       | `{}`                 | Additional metadata                                                                  |
+| `retry`       | `boolean`                | No       | `true`               | Enable automatic retry                                                               |
+| `maxRetries`  | `number`                 | No       | `3`                  | Maximum retry attempts                                                               |
+| `control`     | `UploadControl`          | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume) |
+| `fingerprint` | `FingerprintFn`          | No       | `defaultFingerprint` | Override the per-file resume key                                                     |
+| `urlStorage`  | `UrlStorage`             | No       | -                    | Persistent storage for resume identifiers; opt in via `defaultUrlStorage()`          |
+
+**Returns: `ChunkedRestAdapter`**
+
+| Method          | Signature                               | Description                                 |
+| --------------- | --------------------------------------- | ------------------------------------------- |
+| `upload`        | `(file: File) => Promise<UploadResult>` | Uploads a file in chunks                    |
+| `pause`         | `() => void`                            | Pauses the upload                           |
+| `resume`        | `() => Promise<void>`                   | Resumes a paused upload                     |
+| `abort`         | `() => void`                            | Aborts current upload                       |
+| `clear`         | `() => void`                            | Clears upload state                         |
+| `getOffset`     | `() => Promise<number>`                 | Gets current upload offset                  |
+| `isPaused`      | `() => boolean`                         | Whether upload is paused                    |
+| `setOnStart`    | `(callback?) => void`                   | Sets start callback                         |
+| `setOnProgress` | `(callback?) => void`                   | Sets progress callback `(progress, offset)` |
+| `setOnFinish`   | `(callback?) => void`                   | Sets finish callback                        |
+| `setOnError`    | `(callback?) => void`                   | Sets error callback                         |
+
+### Cross-process resume
+
+The TUS and chunked-REST adapters can resume an interrupted upload after a page refresh,
+process restart, or another tab takes over. The flow has two opt-in pieces:
+
+- **`urlStorage`** — persists the per-file resume identifier so the next call to `adapter.upload(file)`
+  with the same file recognises it and resumes instead of starting over. Pass `defaultUrlStorage()`
+  (browser → `localStorage`, elsewhere → in-memory) or implement the `UrlStorage` interface yourself.
+- **`UploadControl`** — a serializable handle. `toJSON()` returns a snapshot you can stash anywhere
+  (URL query param, server, IndexedDB); `UploadControl.from(token)` rehydrates it in another process,
+  and passing that control into `adapter.upload(file)` resumes the prior session.
+
+```ts
+import { createTusAdapter, defaultUrlStorage, UploadControl } from "@visulima/storage-client";
+
+// First process — persistent storage takes care of resume across reloads.
+const adapter = createTusAdapter({
+    endpoint: "/api/upload/tus",
+    urlStorage: defaultUrlStorage(),
+});
+
+await adapter.upload(file); // crashes? a later upload(file) resumes automatically
+
+// Or hand off a snapshot to another process.
+const control = new UploadControl();
+
+void createTusAdapter({ endpoint: "/api/upload/tus", control }).upload(file);
+
+// Later, in another tab/process:
+const token = JSON.stringify(control); // or control.toJSON()
+const restored = UploadControl.from(token);
+
+await createTusAdapter({ endpoint: "/api/upload/tus", control: restored }).upload(file);
+```
+
+Both pieces are independent. Use `urlStorage` alone for transparent same-machine resume.
+Use `UploadControl` alone (or together with `urlStorage`) when you need to drive pause/abort/serialize
+the upload from outside the adapter.
+
+**Types**
+
+| Type                     | Description                                                                                                 |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------- |
+| `UploadControl`          | Class with `pause()`, `resume()`, `abort()`, `toJSON()`, and `UploadControl.from(token)`                    |
+| `UploadControlSnapshot`  | Serializable shape — `{ v, protocol, endpoint, fingerprint, uploadUrl, offset? }`                           |
+| `UrlStorage`             | Interface — `addEntry / findEntry / listEntries / removeEntry` (all async)                                  |
+| `MemoryUrlStorage`       | In-process implementation (no persistence)                                                                  |
+| `LocalStorageUrlStorage` | Browser-localStorage implementation. Constructor throws if no `localStorage` is available                   |
+| `defaultUrlStorage()`    | Returns `LocalStorageUrlStorage` if available, otherwise falls back to `MemoryUrlStorage`                   |
+| `FingerprintFn`          | `(input: { endpoint, file, protocol }) => string \| Promise<string>` — override to customise the resume key |
+
+### Utility Functions
+
+```ts
+import {
+    buildUrl,
+    fetchFile,
+    fetchJson,
+    fetchHead,
+    deleteRequest,
+    putFile,
+    patchChunk,
+    parseApiError,
+    extractFileMetaFromHeaders,
+} from "@visulima/storage-client";
+```
+
+| Function                     | Signature                                           | Description                                  |
+| ---------------------------- | --------------------------------------------------- | -------------------------------------------- |
+| `buildUrl`                   | `(baseUrl, path, params?) => string`                | Builds URL with query parameters             |
+| `fetchFile`                  | `(url) => Promise<Blob>`                            | Fetches a file as Blob with error handling   |
+| `fetchJson`                  | `<T>(url) => Promise<T>`                            | Fetches JSON with error handling             |
+| `fetchHead`                  | `(url) => Promise<Headers>`                         | Fetches metadata via HEAD request            |
+| `deleteRequest`              | `(url) => Promise<void>`                            | Sends DELETE request with error handling     |
+| `putFile`                    | `(url, file, onProgress?) => Promise<{...}>`        | PUT request with progress tracking           |
+| `patchChunk`                 | `(url, chunk, offset, checksum?) => Promise<{...}>` | PATCH request for chunk uploads              |
+| `parseApiError`              | `(response) => Promise<Error>`                      | Parses error response from API               |
+| `extractFileMetaFromHeaders` | `(id, headers) => FileMeta`                         | Extracts file metadata from response headers |
+
+### `storageQueryKeys`
+
+Query key factory for TanStack Query integration. Provides consistent cache key generation across all hooks.
+
+```ts
+import { storageQueryKeys } from "@visulima/storage-client";
+
+// Base key
+storageQueryKeys.all; // ["storage"]
+
+// File keys
+storageQueryKeys.files.all(endpoint);
+storageQueryKeys.files.detail(endpoint, id, transformParams?);
+storageQueryKeys.files.list(endpoint, { limit?, page? });
+storageQueryKeys.files.meta(endpoint, id);
+storageQueryKeys.files.head(endpoint, id);
+
+// Transform keys
+storageQueryKeys.transform.all(endpoint);
+storageQueryKeys.transform.file(endpoint, id, transformParams);
+storageQueryKeys.transform.metadata(endpoint);
+```
+
+---
+
+## Types
+
+### `FileMeta`
+
+File metadata returned from the server.
+
+```ts
+interface FileMeta {
+    id: string;
+    name?: string;
+    originalName?: string;
+    contentType?: string;
+    size?: number;
+    bytesWritten?: number;
+    createdAt?: string;
+    metadata?: Record<string, unknown>;
+    status?: "completed" | "part" | "deleted" | "created";
+}
+```
+
+### `UploadResult`
+
+Result returned after a successful file upload. Extends `FileMeta`.
+
+```ts
+interface UploadResult extends FileMeta {
+    filename?: string;
+    offset?: number;
+    url?: string;
+}
+```
+
+### `UploadMethod`
+
+```ts
+type UploadMethod = "auto" | "multipart" | "tus" | "chunked-rest";
+```
+
+### `UploadItem`
+
+State of an individual upload item tracked by the uploader.
+
+```ts
+interface UploadItem {
+    id: string;
+    file: File;
+    status: "pending" | "uploading" | "completed" | "error" | "aborted";
+    completed: number; // Progress percentage (0-100)
+    loaded: number; // Bytes uploaded so far
+    size: number; // Total file size in bytes
+    error?: string;
+    batchId?: string;
+    retryCount?: number;
+    url?: string;
+    uploadResponse?: { data?: unknown; response?: string };
+}
+```
+
+### `BatchState`
+
+State of a batch upload.
+
+```ts
+interface BatchState {
+    id: string;
+    itemIds: string[];
+    status: "pending" | "uploading" | "completed" | "error" | "cancelled";
+    progress: number; // Aggregate progress (0-100)
+    totalCount: number;
+    completedCount: number;
+    errorCount: number;
+}
+```
+
+### `UploaderEventType`
+
+```ts
+type UploaderEventType =
+    | "ITEM_START"
+    | "ITEM_PROGRESS"
+    | "ITEM_FINISH"
+    | "ITEM_ERROR"
+    | "ITEM_ABORT"
+    | "BATCH_START"
+    | "BATCH_PROGRESS"
+    | "BATCH_FINISH"
+    | "BATCH_ERROR"
+    | "BATCH_CANCELLED"
+    | "BATCH_FINALIZE"
+    | "BATCH_COMPLETE";
+```
+
+### `ApiError`
+
+```ts
+interface ApiError {
+    error: {
+        code: string;
+        message: string;
+        name?: string;
+    };
+}
+```
+
+### `FileHeadMetadata`
+
+Metadata returned from HEAD requests.
+
+```ts
+interface FileHeadMetadata {
+    contentLength?: number;
+    contentType?: string;
+    etag?: string;
+    lastModified?: string;
+    uploadOffset?: number;
+    uploadComplete?: boolean;
+    uploadExpires?: string;
+    chunkedUpload?: boolean;
+    receivedChunks?: number[];
+}
+```
+
+### `FileListResponse`
+
+Response from file list queries.
+
+```ts
+interface FileListResponse {
+    data: FileMeta[];
+    meta?: {
+        page?: number;
+        perPage?: number;
+        total?: number;
+        firstPage?: number;
+        lastPage?: number;
+        firstPageUrl?: string;
+        lastPageUrl?: string;
+        nextPageUrl?: string | undefined;
+        previousPageUrl?: string | undefined;
+    };
+}
+```
+
+### `TransformOptions`
+
+Options for file transformation (images, etc.).
+
+```ts
+interface TransformOptions {
+    width?: number;
+    height?: number;
+    quality?: number; // 0-100
+    format?: string; // "jpeg", "png", "webp", etc.
+    fit?: "cover" | "contain" | "fill" | "inside" | "outside";
+    [key: string]: string | number | boolean | undefined;
+}
+```
+
+### `TransformMetadata`
+
+Available transformation capabilities.
+
+```ts
+interface TransformMetadata {
+    formats?: string[];
+    parameters?: string[];
+}
+```
+
+### `BatchDeleteResult`
+
+```ts
+interface BatchDeleteResult {
+    successful?: number;
+    failed?: number;
+}
+```
+
+---
+
+## React Hooks
+
+All React hooks are imported from `@visulima/storage-client/react`. They require `@tanstack/react-query` and a `QueryClientProvider` to be set up in your component tree.
+
+### Upload Hooks
+
+#### `useUpload`
+
+Unified upload hook with automatic method selection based on provided endpoints and file size.
+
+```ts
+const {
+    upload, // (file: File) => Promise<UploadResult>
+    abort, // () => void
+    reset, // () => void
+    progress, // number (0-100)
+    isUploading, // boolean
+    isPaused, // boolean | undefined
+    error, // Error | undefined
+    result, // UploadResult | undefined
+    currentMethod, // UploadMethod
+    offset, // number | undefined
+    pause, // (() => void) | undefined
+    resume, // (() => Promise<void>) | undefined
+} = useUpload(options);
+```
+
+**Options: `UseUploadOptions`**
+
+| Property              | Type                           | Default                   | Description                                |
+| --------------------- | ------------------------------ | ------------------------- | ------------------------------------------ |
+| `endpointMultipart`   | `string`                       | -                         | Multipart upload endpoint URL              |
+| `endpointTus`         | `string`                       | -                         | TUS upload endpoint URL                    |
+| `endpointChunkedRest` | `string`                       | -                         | Chunked REST upload endpoint URL           |
+| `method`              | `UploadMethod`                 | auto-detected             | Upload method to use                       |
+| `chunkSize`           | `number`                       | 1MB (TUS) / 5MB (chunked) | Chunk size                                 |
+| `tusThreshold`        | `number`                       | `10485760` (10MB)         | File size threshold for auto-selecting TUS |
+| `metadata`            | `Record<string, string>`       | -                         | Additional metadata                        |
+| `retry`               | `boolean`                      | -                         | Enable automatic retry (TUS/chunked only)  |
+| `maxRetries`          | `number`                       | -                         | Maximum retry attempts (TUS/chunked only)  |
+| `onStart`             | `() => void`                   | -                         | Called when upload starts                  |
+| `onProgress`          | `(progress: number) => void`   | -                         | Called when progress updates               |
+| `onSuccess`           | `(file: UploadResult) => void` | -                         | Called on success                          |
+| `onError`             | `(error: Error) => void`       | -                         | Called on failure                          |
+| `onPause`             | `() => void`                   | -                         | Called when paused (TUS/chunked only)      |
+| `onResume`            | `() => void`                   | -                         | Called when resumed (TUS/chunked only)     |
+
+#### `useMultipartUpload`
+
+Hook for traditional multipart/form-data uploads.
+
+```ts
+const { upload, progress, isUploading, error, result, reset } = useMultipartUpload({
+    endpoint: "/api/upload/multipart",
+});
+```
+
+**Options: `UseMultipartUploadOptions`**
+
+| Property     | Type                           | Required | Description                  |
+| ------------ | ------------------------------ | -------- | ---------------------------- |
+| `endpoint`   | `string`                       | Yes      | Upload endpoint URL          |
+| `metadata`   | `Record<string, string>`       | No       | Additional metadata          |
+| `onStart`    | `() => void`                   | No       | Called when upload starts    |
+| `onProgress` | `(progress: number) => void`   | No       | Called when progress updates |
+| `onSuccess`  | `(file: UploadResult) => void` | No       | Called on success            |
+| `onError`    | `(error: Error) => void`       | No       | Called on failure            |
+
+#### `useTusUpload`
+
+Hook for TUS resumable uploads with pause/resume support.
+
+```ts
+const { upload, pause, resume, abort, progress, isUploading, isPaused, offset, error, result, reset } = useTusUpload({
+    endpoint: "/api/upload/tus",
+});
+```
+
+**Options: `UseTusUploadOptions`**
+
+| Property      | Type                           | Required | Default              | Description                                                                          |
+| ------------- | ------------------------------ | -------- | -------------------- | ------------------------------------------------------------------------------------ |
+| `endpoint`    | `string`                       | Yes      | -                    | TUS upload endpoint URL                                                              |
+| `chunkSize`   | `number`                       | No       | `1048576` (1MB)      | Chunk size                                                                           |
+| `metadata`    | `Record<string, string>`       | No       | -                    | Additional metadata                                                                  |
+| `retry`       | `boolean`                      | No       | -                    | Enable automatic retry                                                               |
+| `maxRetries`  | `number`                       | No       | -                    | Maximum retry attempts                                                               |
+| `control`     | `UploadControl`                | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume) |
+| `fingerprint` | `FingerprintFn`                | No       | `defaultFingerprint` | Override the per-file resume key                                                     |
+| `urlStorage`  | `UrlStorage`                   | No       | -                    | Persistent storage for resume URLs; opt in via `defaultUrlStorage()`                 |
+| `onStart`     | `() => void`                   | No       | -                    | Called when upload starts                                                            |
+| `onProgress`  | `(progress: number) => void`   | No       | -                    | Called when progress updates                                                         |
+| `onSuccess`   | `(file: UploadResult) => void` | No       | -                    | Called on success                                                                    |
+| `onError`     | `(error: Error) => void`       | No       | -                    | Called on failure                                                                    |
+| `onPause`     | `() => void`                   | No       | -                    | Called when paused                                                                   |
+| `onResume`    | `() => void`                   | No       | -                    | Called when resumed                                                                  |
+
+#### `useChunkedRestUpload`
+
+Hook for client-side chunked REST uploads with pause/resume support.
+
+```ts
+const { upload, pause, resume, abort, progress, isUploading, isPaused, offset, error, result, reset } = useChunkedRestUpload({
+    endpoint: "/api/upload/chunked-rest",
+    chunkSize: 5 * 1024 * 1024,
+});
+```
+
+**Options: `UseChunkedRestUploadOptions`**
+
+| Property      | Type                                         | Required | Default              | Description                                                                          |
+| ------------- | -------------------------------------------- | -------- | -------------------- | ------------------------------------------------------------------------------------ |
+| `endpoint`    | `string`                                     | Yes      | -                    | Chunked REST upload endpoint URL                                                     |
+| `chunkSize`   | `number`                                     | No       | `5242880` (5MB)      | Chunk size                                                                           |
+| `metadata`    | `Record<string, string>`                     | No       | -                    | Additional metadata                                                                  |
+| `retry`       | `boolean`                                    | No       | -                    | Enable automatic retry                                                               |
+| `maxRetries`  | `number`                                     | No       | -                    | Maximum retry attempts                                                               |
+| `control`     | `UploadControl`                              | No       | -                    | Unified pause/resume/abort handle, see [Cross-process resume](#cross-process-resume) |
+| `fingerprint` | `FingerprintFn`                              | No       | `defaultFingerprint` | Override the per-file resume key                                                     |
+| `urlStorage`  | `UrlStorage`                                 | No       | -                    | Persistent storage for resume identifiers; opt in via `defaultUrlStorage()`          |
+| `onStart`     | `() => void`                                 | No       | -                    | Called when upload starts                                                            |
+| `onProgress`  | `(progress: number, offset: number) => void` | No       | -                    | Called when progress updates                                                         |
+| `onSuccess`   | `(file: UploadResult) => void`               | No       | -                    | Called on success                                                                    |
+| `onError`     | `(error: Error) => void`                     | No       | -                    | Called on failure                                                                    |
+| `onPause`     | `() => void`                                 | No       | -                    | Called when paused                                                                   |
+| `onResume`    | `() => void`                                 | No       | -                    | Called when resumed                                                                  |
+
+#### `useBatchUpload`
+
+Hook for uploading multiple files simultaneously as a batch.
+
+```ts
+const { uploadBatch, abortBatch, progress, isUploading, items, completedCount, errorCount, error, reset } = useBatchUpload({
+    endpoint: "/api/upload/multipart",
+});
+```
+
+**Options: `UseBatchUploadOptions`**
+
+| Property     | Type                                                 | Required | Description                  |
+| ------------ | ---------------------------------------------------- | -------- | ---------------------------- |
+| `endpoint`   | `string`                                             | Yes      | Upload endpoint URL          |
+| `metadata`   | `Record<string, string>`                             | No       | Additional metadata          |
+| `onStart`    | `(batchId: string) => void`                          | No       | Called when batch starts     |
+| `onProgress` | `(progress: number, batchId: string) => void`        | No       | Called when progress updates |
+| `onSuccess`  | `(results: UploadResult[], batchId: string) => void` | No       | Called on success            |
+| `onError`    | `(error: Error, batchId: string) => void`            | No       | Called on failure            |
+
+**Returns: `UseBatchUploadReturn`**
+
+| Property         | Type                          | Description                                |
+| ---------------- | ----------------------------- | ------------------------------------------ |
+| `uploadBatch`    | `(files: File[]) => string[]` | Uploads files as a batch, returns item IDs |
+| `abortBatch`     | `(batchId: string) => void`   | Aborts a specific batch                    |
+| `items`          | `UploadItem[]`                | All upload items in current batch          |
+| `progress`       | `number`                      | Current batch progress (0-100)             |
+| `isUploading`    | `boolean`                     | Whether a batch is uploading               |
+| `completedCount` | `number`                      | Number of completed items                  |
+| `errorCount`     | `number`                      | Number of failed items                     |
+| `error`          | `Error \| undefined`          | Last batch error                           |
+| `reset`          | `() => void`                  | Reset batch state                          |
+
+### File Input Hooks
+
+#### `useFileInput`
+
+Hook for file input handling with drag and drop support.
+
+```ts
+const { files, inputRef, handleFileChange, handleDrop, handleDragOver, handleDragLeave, openFileDialog, reset } = useFileInput({
+    multiple: true,
+    accept: "image/*",
+});
+```
+
+**Options: `UseFileInputOptions`**
+
+| Property          | Type                      | Description                                     |
+| ----------------- | ------------------------- | ----------------------------------------------- |
+| `accept`          | `string`                  | Accept file types (e.g., `"image/*"`, `".pdf"`) |
+| `multiple`        | `boolean`                 | Whether to allow multiple file selection        |
+| `onFilesSelected` | `(files: File[]) => void` | Callback when files are selected                |
+
+**Returns: `UseFileInputReturn`**
+
+| Property           | Type                                | Description                        |
+| ------------------ | ----------------------------------- | ---------------------------------- |
+| `files`            | `File[]`                            | Currently selected files           |
+| `inputRef`         | `React.RefObject<HTMLInputElement>` | Ref for the file input element     |
+| `handleFileChange` | `(event) => void`                   | Handler for input change events    |
+| `handleDrop`       | `(event) => void`                   | Handler for drop events            |
+| `handleDragOver`   | `(event) => void`                   | Handler for drag over events       |
+| `handleDragLeave`  | `(event) => void`                   | Handler for drag leave events      |
+| `openFileDialog`   | `() => void`                        | Opens file dialog programmatically |
+| `reset`            | `() => void`                        | Resets selected files              |
+
+#### `usePasteUpload`
+
+Hook for handling clipboard paste uploads.
+
+```ts
+const { handlePaste, pastedFiles, reset } = usePasteUpload({
+    filter: (file) => file.type.startsWith("image/"),
+    onFilesPasted: (files) => console.log("Pasted:", files),
+});
+```
+
+**Options: `UsePasteUploadOptions`**
+
+| Property        | Type                      | Description                            |
+| --------------- | ------------------------- | -------------------------------------- |
+| `filter`        | `(file: File) => boolean` | Filter function to accept/reject files |
+| `onFilesPasted` | `(files: File[]) => void` | Callback when files are pasted         |
+
+**Returns: `UsePasteUploadReturn`**
+
+| Property      | Type              | Description              |
+| ------------- | ----------------- | ------------------------ |
+| `handlePaste` | `(event) => void` | Handler for paste events |
+| `pastedFiles` | `File[]`          | Files that were pasted   |
+| `reset`       | `() => void`      | Resets pasted files      |
+
+### File Operation Hooks (Queries)
+
+#### `useGetFile`
+
+Fetches/downloads a file by ID using TanStack Query. Supports optional transformation parameters.
+
+```ts
+const { data, isLoading, error, meta, refetch } = useGetFile({
+    endpoint: "/api/files",
+    id: "file-123",
+});
+```
+
+**Options: `UseGetFileOptions`**
+
+| Property    | Type                                          | Required | Description                                   |
+| ----------- | --------------------------------------------- | -------- | --------------------------------------------- |
+| `endpoint`  | `string`                                      | Yes      | Base endpoint URL                             |
+| `id`        | `string`                                      | Yes      | File ID to fetch                              |
+| `enabled`   | `boolean`                                     | No       | Whether to enable the query (default: `true`) |
+| `transform` | `Record<string, string \| number \| boolean>` | No       | Transformation parameters                     |
+| `onSuccess` | `(data: Blob, meta?) => void`                 | No       | Success callback                              |
+| `onError`   | `(error: Error) => void`                      | No       | Error callback                                |
+
+**Returns: `UseGetFileReturn`**
+
+| Property    | Type                    | Description                         |
+| ----------- | ----------------------- | ----------------------------------- |
+| `data`      | `Blob \| undefined`     | File data as Blob                   |
+| `meta`      | `FileMeta \| undefined` | File metadata from response headers |
+| `isLoading` | `boolean`               | Whether request is in progress      |
+| `error`     | `Error \| undefined`    | Last request error                  |
+| `refetch`   | `() => void`            | Refetch the file                    |
+
+#### `useGetFileList`
+
+Fetches a paginated list of files.
+
+```ts
+const { data, isLoading, error, refetch } = useGetFileList({
+    endpoint: "/api/files",
+    page: 1,
+    limit: 20,
+});
+```
+
+**Options: `UseGetFileListOptions`**
+
+| Property    | Type                               | Required | Description                                   |
+| ----------- | ---------------------------------- | -------- | --------------------------------------------- |
+| `endpoint`  | `string`                           | Yes      | Base endpoint URL                             |
+| `page`      | `number`                           | No       | Page number                                   |
+| `limit`     | `number`                           | No       | Maximum elements to retrieve                  |
+| `enabled`   | `boolean`                          | No       | Whether to enable the query (default: `true`) |
+| `onSuccess` | `(data: FileListResponse) => void` | No       | Success callback                              |
+| `onError`   | `(error: Error) => void`           | No       | Error callback                                |
+
+#### `useGetFileMeta`
+
+Fetches file metadata by ID.
+
+```ts
+const { data, isLoading, error, refetch } = useGetFileMeta({
+    endpoint: "/api/files",
+    id: "file-123",
+});
+```
+
+**Options: `UseGetFileMetaOptions`**
+
+| Property    | Type                       | Required | Description                                   |
+| ----------- | -------------------------- | -------- | --------------------------------------------- |
+| `endpoint`  | `string`                   | Yes      | Base endpoint URL                             |
+| `id`        | `string`                   | Yes      | File ID                                       |
+| `enabled`   | `boolean`                  | No       | Whether to enable the query (default: `true`) |
+| `onSuccess` | `(meta: FileMeta) => void` | No       | Success callback                              |
+| `onError`   | `(error: Error) => void`   | No       | Error callback                                |
+
+#### `useHeadFile`
+
+Fetches file metadata via HEAD request. Useful for checking upload status without downloading.
+
+```ts
+const { data, isLoading, error, refetch } = useHeadFile({
+    endpoint: "/api/files",
+    id: "file-123",
+});
+```
+
+**Options: `UseHeadFileOptions`**
+
+| Property    | Type                               | Required | Description                                   |
+| ----------- | ---------------------------------- | -------- | --------------------------------------------- |
+| `endpoint`  | `string`                           | Yes      | Base endpoint URL                             |
+| `id`        | `string`                           | Yes      | File ID                                       |
+| `enabled`   | `boolean`                          | No       | Whether to enable the query (default: `true`) |
+| `onSuccess` | `(meta: FileHeadMetadata) => void` | No       | Success callback                              |
+| `onError`   | `(error: Error) => void`           | No       | Error callback                                |
+
+### File Operation Hooks (Mutations)
+
+#### `useDeleteFile`
+
+Deletes a file by ID. Automatically invalidates related TanStack Query caches.
+
+```ts
+const { deleteFile, isLoading, error, reset } = useDeleteFile({
+    endpoint: "/api/files",
+});
+
+await deleteFile("file-123");
+```
+
+**Options: `UseDeleteFileOptions`**
+
+| Property    | Type                     | Required | Description       |
+| ----------- | ------------------------ | -------- | ----------------- |
+| `endpoint`  | `string`                 | Yes      | Base endpoint URL |
+| `onSuccess` | `() => void`             | No       | Success callback  |
+| `onError`   | `(error: Error) => void` | No       | Error callback    |
+
+#### `useBatchDeleteFiles`
+
+Deletes multiple files by IDs. Automatically invalidates caches.
+
+```ts
+const { batchDeleteFiles, isLoading, error, reset } = useBatchDeleteFiles({
+    endpoint: "/api/files",
+});
+
+const result = await batchDeleteFiles(["file-1", "file-2"]);
+// result: { successful?: number, failed?: number }
+```
+
+**Options: `UseBatchDeleteFilesOptions`**
+
+| Property    | Type                                  | Required | Description       |
+| ----------- | ------------------------------------- | -------- | ----------------- |
+| `endpoint`  | `string`                              | Yes      | Base endpoint URL |
+| `onSuccess` | `(result: BatchDeleteResult) => void` | No       | Success callback  |
+| `onError`   | `(error: Error) => void`              | No       | Error callback    |
+
+#### `usePutFile`
+
+Creates or updates a file via PUT request with progress tracking.
+
+```ts
+const { putFile, progress, isLoading, error, data, reset } = usePutFile({
+    endpoint: "/api/files",
+});
+
+await putFile("file-123", file);
+```
+
+**Options: `UsePutFileOptions`**
+
+| Property     | Type                             | Required | Description       |
+| ------------ | -------------------------------- | -------- | ----------------- |
+| `endpoint`   | `string`                         | Yes      | Base endpoint URL |
+| `onProgress` | `(progress: number) => void`     | No       | Progress callback |
+| `onSuccess`  | `(result: UploadResult) => void` | No       | Success callback  |
+| `onError`    | `(error: Error) => void`         | No       | Error callback    |
+
+#### `usePatchChunk`
+
+Uploads individual chunks for chunked uploads via PATCH request.
+
+```ts
+const { patchChunk, isLoading, error, data, reset } = usePatchChunk({
+    endpoint: "/api/upload/chunked-rest",
+});
+
+await patchChunk("file-123", chunkBlob, offset, checksum);
+```
+
+**Options: `UsePatchChunkOptions`**
+
+| Property    | Type                             | Required | Description       |
+| ----------- | -------------------------------- | -------- | ----------------- |
+| `endpoint`  | `string`                         | Yes      | Base endpoint URL |
+| `onSuccess` | `(result: UploadResult) => void` | No       | Success callback  |
+| `onError`   | `(error: Error) => void`         | No       | Error callback    |
+
+### Transform Hooks
+
+#### `useTransformFile`
+
+Fetches a transformed file (e.g., resized image) using TanStack Query.
+
+```ts
+const { data, isLoading, error, meta, refetch } = useTransformFile({
+    endpoint: "/api/files",
+    id: "file-123",
+    transform: { width: 800, height: 600, quality: 85 },
+});
+```
+
+**Options: `UseTransformFileOptions`**
+
+| Property    | Type                          | Required | Description                 |
+| ----------- | ----------------------------- | -------- | --------------------------- |
+| `endpoint`  | `string`                      | Yes      | Base endpoint URL           |
+| `id`        | `string`                      | Yes      | File ID                     |
+| `transform` | `TransformOptions`            | Yes      | Transformation parameters   |
+| `enabled`   | `boolean`                     | No       | Whether to enable the query |
+| `onSuccess` | `(data: Blob, meta?) => void` | No       | Success callback            |
+| `onError`   | `(error: Error) => void`      | No       | Error callback              |
+
+#### `useTransformMetadata`
+
+Fetches available transformation options from the server.
+
+```ts
+const { data, isLoading, error, refetch } = useTransformMetadata({
+    endpoint: "/api/files",
+});
+// data: { formats?: string[], parameters?: string[] }
+```
+
+### Abort Hooks
+
+#### `useAbortAll`
+
+```ts
+const { abortAll } = useAbortAll({ endpoint: "/api/upload/multipart" });
+```
+
+#### `useAbortBatch`
+
+```ts
+const { abortBatch } = useAbortBatch({ endpoint: "/api/upload/multipart" });
+abortBatch("batch-123");
+```
+
+#### `useAbortItem`
+
+```ts
+const { abortItem } = useAbortItem({ endpoint: "/api/upload/multipart" });
+abortItem("item-123");
+```
+
+### Retry Hooks
+
+#### `useRetry`
+
+```ts
+const { retryItem } = useRetry({ endpoint: "/api/upload/multipart" });
+retryItem("item-123");
+```
+
+#### `useBatchRetry`
+
+```ts
+const { retryBatch } = useBatchRetry({ endpoint: "/api/upload/multipart" });
+retryBatch("batch-123");
+```
+
+### Event Listener Hooks
+
+All listener hooks accept `endpoint` and `metadata` options, plus an event-specific callback.
+
+| Hook                        | Callback           | Callback Signature            |
+| --------------------------- | ------------------ | ----------------------------- |
+| `useBatchStartListener`     | `onBatchStart`     | `(batch: BatchState) => void` |
+| `useBatchProgressListener`  | `onBatchProgress`  | `(batch: BatchState) => void` |
+| `useBatchFinishListener`    | `onBatchFinish`    | `(batch: BatchState) => void` |
+| `useBatchErrorListener`     | `onBatchError`     | `(batch: BatchState) => void` |
+| `useBatchCancelledListener` | `onBatchCancelled` | `(batch: BatchState) => void` |
+| `useBatchFinalizeListener`  | `onBatchFinalize`  | `(batch: BatchState) => void` |
+| `useRetryListener`          | `onRetry`          | `(item: UploadItem) => void`  |
+| `useAllAbortListener`       | `onAbortAll`       | `() => void`                  |
+
+---
+
+## Solid Primitives
+
+All Solid.js primitives are imported from `@visulima/storage-client/solid`. They require `@tanstack/solid-query` and a `QueryClientProvider` in your component tree.
+
+Solid primitives follow the same API patterns as React hooks but use Solid's reactive primitives (`Accessor`, `createSignal`, `createMemo`) instead of React state. Return values that are reactive are wrapped as `Accessor<T>` (called as functions, e.g., `progress()` instead of `progress`).
+
+### Upload Primitives
+
+| Primitive                 | Description                                    |
+| ------------------------- | ---------------------------------------------- |
+| `createUpload`            | Unified upload with automatic method selection |
+| `createMultipartUpload`   | Multipart/form-data uploads                    |
+| `createTusUpload`         | TUS resumable uploads with pause/resume        |
+| `createChunkedRestUpload` | Chunked REST uploads with pause/resume         |
+| `createBatchUpload`       | Batch upload for multiple files                |
+
+### File Input Primitives
+
+| Primitive           | Description                           |
+| ------------------- | ------------------------------------- |
+| `createFileInput`   | File input with drag and drop support |
+| `createPasteUpload` | Clipboard paste upload handling       |
+
+### File Operation Primitives
+
+| Primitive                | Description                  |
+| ------------------------ | ---------------------------- |
+| `createGetFile`          | Fetch/download a file by ID  |
+| `createGetFileList`      | Fetch paginated file list    |
+| `createGetFileMeta`      | Fetch file metadata          |
+| `createHeadFile`         | HEAD request for file status |
+| `createDeleteFile`       | Delete a file                |
+| `createBatchDeleteFiles` | Batch delete files           |
+| `createPutFile`          | Create/update a file via PUT |
+| `createPatchChunk`       | Upload individual chunks     |
+
+### Transform Primitives
+
+| Primitive                 | Description                       |
+| ------------------------- | --------------------------------- |
+| `createTransformFile`     | Fetch transformed file            |
+| `createTransformMetadata` | Fetch transformation capabilities |
+
+### Abort Primitives
+
+| Primitive          | Description           |
+| ------------------ | --------------------- |
+| `createAbortAll`   | Abort all uploads     |
+| `createAbortBatch` | Abort a batch         |
+| `createAbortItem`  | Abort a specific item |
+
+### Retry Primitives
+
+| Primitive          | Description                   |
+| ------------------ | ----------------------------- |
+| `createRetry`      | Retry a failed item           |
+| `createBatchRetry` | Retry failed items in a batch |
+
+### Event Listener Primitives
+
+| Primitive                      | Description                      |
+| ------------------------------ | -------------------------------- |
+| `createBatchStartListener`     | Listen to batch start events     |
+| `createBatchProgressListener`  | Listen to batch progress events  |
+| `createBatchFinishListener`    | Listen to batch finish events    |
+| `createBatchErrorListener`     | Listen to batch error events     |
+| `createBatchCancelledListener` | Listen to batch cancelled events |
+| `createBatchFinalizeListener`  | Listen to batch finalize events  |
+| `createRetryListener`          | Listen to retry events           |
+| `createAllAbortListener`       | Listen to abort all events       |
+
+---
+
+## Vue Composables
+
+All Vue composables are imported from `@visulima/storage-client/vue`. They require `@tanstack/vue-query` and `VueQueryPlugin` to be installed. The API mirrors the React hooks using the same naming convention (`useUpload`, `useTusUpload`, etc.) with Vue's reactivity system (`Ref` instead of React state).
+
+---
+
+## Svelte Stores
+
+All Svelte stores are imported from `@visulima/storage-client/svelte`. They require `@tanstack/svelte-query` and follow Svelte store conventions. Function names use the `create*` prefix (e.g., `createUpload`, `createTusUpload`). Return values are Svelte stores accessed with the `$` prefix in templates (e.g., `$progress`, `$isUploading`).

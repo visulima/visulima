@@ -1,0 +1,328 @@
+---
+title: First-release & version resolver
+description: "Bootstrap a greenfield monorepo with `--first-release`, pick the right `currentVersionResolver` mode (`disk`, `registry`, `git-tag`) for your workflow, and migrate cleanly from semantic-release, changesets, or a hand-rolled release flow."
+---
+
+# First release and current-version resolver
+
+Every release tool needs an answer to one question: **what version is this package on right now?** The answer drives the diff that produces the next version. Get it wrong and you ship `1.0.0` over the top of an existing `1.5.3` — the kind of regression a registry will accept (semver does not enforce monotonicity) and your users will never forgive.
+
+vis exposes two knobs that together answer that question precisely:
+
+- `currentVersionResolver` — the **mode** for looking up `oldVersion`. Three options: `"disk"` (default), `"registry"`, `"git-tag"`.
+- `--first-release` — the **bootstrap escape hatch** for greenfield monorepos that do not yet have any of those sources to consult.
+
+This guide covers both, starting with the bootstrap problem and then drilling into the three resolver modes.
+
+## The greenfield problem
+
+Imagine the very first time you run `vis release version` on a brand-new monorepo:
+
+- No git tags yet (you have not shipped anything).
+- No published versions on npm / cargo / PyPI (likewise).
+- Maybe `package.json` says `"version": "0.0.0"` from `pnpm init`, or maybe it says `"1.0.0"` because the team picked that as the first release.
+
+In `"disk"` mode (the default), vis happily reads `package.json#version` and uses that as the baseline — no problem. But the moment you flip to `"registry"` or `"git-tag"` to align with your team's source of truth, every package falls back with a warning:
+
+```
+currentVersionResolver (registry): registry returned no version for @scope/cerebro
+  (likely a 404 / not-yet-published); falling back to manifest version 1.0.0.
+```
+
+That fallback is **safe** — vis never throws on a missing baseline, it just uses the manifest — but it produces a wall of warnings the operator has to mentally suppress on every greenfield bootstrap. And the warnings hide real problems: a typo in `releaseTagPattern`, a misconfigured registry URL, an off-by-one in the workspace's package list. You want those visible. So vis ships an explicit flag:
+
+```bash
+vis release version --first-release
+vis release publish --first-release
+```
+
+`--first-release` does three things:
+
+1. **Forces `currentVersionResolver` to `"disk"`** for every package in this run, regardless of workspace or per-package config. The bootstrap path cannot query a registry / tag history that does not exist yet.
+2. **Skips remote tag-collision checks** during the version phase. A `git ls-remote --tags` check that would normally refuse a tag that already exists on the remote is bypassed — on the first release, "the remote has no matching tags" is the whole point.
+3. **Triggers a doctor preflight** (`first-release.repo-not-greenfield`) that refuses to proceed if the workspace is **not** actually greenfield.
+
+That third item is the safety net. Without it, an operator could pass `--first-release` on a year-old monorepo and double-bump every package — a data-loss bug. The preflight scans for:
+
+- Any git tag matching any configured `releaseTagPattern` (workspace-level or per-package).
+- Any package that has a non-empty `readPublishedVersion()` result via its `versionActions` — npm, cargo, PyPI, Maven Central, container registries are all probed.
+
+If either finds anything, the doctor fails hard:
+
+```
+[fail] first-release.repo-not-greenfield (error)
+       --first-release is set but the workspace is NOT greenfield:
+       Found 12 git tag(s) matching "{name}@{version}":
+       @scope/a@1.0.0, @scope/b@2.0.0 (+10 more).
+       @scope/cli is already published at version 2.1.3.
+       Remove --first-release and run a normal release, or roll back
+       the existing tags / unpublish before bootstrapping.
+```
+
+If neither does:
+
+```
+[pass] first-release.repo-not-greenfield (info)
+       Workspace looks greenfield (no matching release tags, no
+       published versions detected). Safe to use --first-release.
+```
+
+> **When to use `--first-release`:** Exactly once per monorepo, on the very first ship. After that, never again — the workspace has tags and / or registry entries, and the normal resolver path is the right answer. The flag is intentionally awkward to type so it does not become a habit.
+
+## The `currentVersionResolver` modes
+
+`release.currentVersionResolver` decides where `oldVersion` comes from when building the release plan. Three values, with very different operational profiles:
+
+```typescript
+// vis.config.ts
+export default {
+    release: {
+        currentVersionResolver: "disk", // default
+        // or "registry"
+        // or "git-tag"
+    },
+};
+```
+
+### `"disk"` — the default
+
+Read `package.json#version` (or the equivalent manifest field — `Cargo.toml`'s `[package].version`, `pyproject.toml`'s `[project].version`, `pom.xml`'s `<version>` — depending on the package's `versionActions`).
+
+- **Fastest** — no network, no shell-outs.
+- **Most predictable** — the value is exactly what you see on disk.
+- **No side channels** — does not need registry credentials, does not need git history.
+
+Use `"disk"` when:
+
+- The version on disk is your team's canonical source of truth.
+- Your release flow guarantees disk and registry stay in lock-step (every CI publish writes the bumped version back to a release branch — vis's default behaviour).
+- You are migrating from changesets, bumpy, or any other tool that already maintains versions in the manifest.
+
+This is the right answer for ~80% of workspaces. Pick it unless you have a specific reason to deviate.
+
+### `"registry"` — query the package registry
+
+Query the live version on the package's own registry via `versionActions.readPublishedVersion()`. Each package's actions decide how to ask:
+
+- **npm** — `npm view <pkg> version` (or the `--registry` override).
+- **cargo** — `GET https://crates.io/api/v1/crates/<name>`.
+- **python** — PyPI's JSON API.
+- **maven** — Maven Central's REST endpoint.
+- **container** — `crane manifest` or registry API.
+- **shell** — your configured `checkPublished` command.
+
+Use `"registry"` when:
+
+- The registry is your team's source of truth (`npm` is what shipped; the manifest is what _will_ ship).
+- You publish from multiple branches and want vis to dynamically catch up to whichever was most recent.
+- You have an out-of-band publish flow (e.g. a manual `npm publish` for a hotfix) and want vis to pick up wherever you left off.
+
+Cost: **one network request per package per `vis release version` / `vis release publish` invocation** (modulo the rate-limit + memo behaviour below). On a fresh 49-package monorepo that adds ~5–10 seconds to every release. On a hot CI runner with a populated DNS cache, much less.
+
+### `"git-tag"` — parse the most recent matching tag
+
+Read the highest semver out of the git tags matching `releaseTagPattern`. The pattern is the **same one** vis uses for writing tags during the publish phase — there is no separate "read pattern", which avoids a historical class of bugs where the read and write patterns disagreed on the delimiter (`v{version}` vs `{name}@{version}`).
+
+- Compiles the pattern to a `git tag --list <glob>` filter so it does not pull every tag in the repo.
+- Anchors the regex (`^…$`) so partial matches are never accepted.
+- Sorts the matched semvers with `semver.rcompare` and returns the highest.
+
+Use `"git-tag"` when:
+
+- You are migrating from **semantic-release**, which is fundamentally tag-driven. Your existing tags are the authoritative "what shipped" history; vis should respect that without you having to back-port versions into manifests.
+- You ship some packages out of the registry's reach (private mirrors, OCI registries with no public read API) but always tag.
+- The tag history is auditable in a way the registry is not (tag pushes are signed, the registry is not).
+
+Cost: **one `git tag --list` per package** (workspace-local, no network) plus a small regex match. Much cheaper than `"registry"`; about as expensive as `"disk"` after the first call (git caches aggressively).
+
+## Per-package overrides
+
+Workspace-level `currentVersionResolver` is the default for every package. To override one (or a handful), set `packages.<name>.currentVersionResolver`:
+
+```typescript
+release: {
+    currentVersionResolver: "registry",  // workspace default
+    packages: {
+        // A newly-added package that has not been published yet:
+        // skip the registry probe (it would 404 and warn) and use disk.
+        "@scope/new-package": {
+            currentVersionResolver: "disk",
+        },
+
+        // A package we publish out-of-band and audit via tags only:
+        "@scope/legacy": {
+            currentVersionResolver: "git-tag",
+        },
+    },
+},
+```
+
+Precedence is:
+
+1. Per-package override (`packages.<name>.currentVersionResolver`).
+2. Workspace-level (`release.currentVersionResolver`).
+3. The built-in default `"disk"`.
+
+`--first-release` overrides all three and forces `"disk"` for the duration of the run.
+
+## What "fallback" means
+
+Both `"registry"` and `"git-tag"` are **best-effort**. When the registry returns nothing (404, no published versions yet, empty array) or no git tag matches the pattern, the resolver falls back to the manifest version and emits a plan warning:
+
+```
+currentVersionResolver (registry): registry returned no version for @scope/foo
+  (likely a 404 / not-yet-published); falling back to manifest version 0.0.1.
+
+currentVersionResolver (git-tag): no git tag matched pattern "{name}@{version}"
+  for @scope/bar; falling back to manifest version 1.0.0. (Pass --first-release
+  to bootstrap.)
+```
+
+The warning is a soft signal — "I tried the source you configured and could not find an answer". It never throws, never blocks the release, and the resulting `oldVersion` is the same one `"disk"` mode would have produced. Operators see it in:
+
+- `vis release plan` output (under `Warnings`).
+- The PR sticky comment (under "Release plan warnings").
+- CI logs (`::warning::` annotations on GitHub Actions).
+
+If the warning shows up on the **same package on every release**, that is a config smell — usually a `releaseTagPattern` typo or a wrong registry URL. Fix the config; don't suppress the warning.
+
+## Performance: rate-limiting and memoisation
+
+Two subtleties of the `"registry"` mode worth knowing about.
+
+**Concurrency cap.** Registry-mode resolution caps in-flight HTTP requests at **4** to avoid tripping crates.io's documented 1-request-per-second unauthenticated rate limit and PyPI's per-IP throttle:
+
+```typescript
+export const REGISTRY_LOOKUP_CONCURRENCY = 4;
+```
+
+The cap is workspace-wide, not per-registry. A 49-package workspace in `"registry"` mode resolves in roughly `ceil(49 / 4) × p99-registry-latency` seconds — the deliberate choice over "fast but rate-limited".
+
+**Per-process memo.** Within a single Node process, every `(name, mode, manifest-version)` triple is looked up at most once. Two places this matters:
+
+- A `vis release version` followed by `vis release publish` in the **same** Node process (e.g. via `vis release ci release`) shares the memo, so the publish does not re-probe the registry for every package.
+- The manifest version is part of the memo key, so the `version` apply mutating `pkg.json` mid-process correctly **invalidates** the entry — the follow-up `publish` resolves the new value, not a stale cached one.
+
+The memo does not persist across processes. A new `vis release` invocation starts empty.
+
+## `skipRegistryLookup`: read-only command paths
+
+There is one more knob most operators never need to touch directly. The internal `skipRegistryLookup: true` option, set by **read-only commands** (`vis release plan`, `vis release status`, `vis release add`, `vis release doctor`, `vis release generate`), forces every package's resolver to `"disk"` for the duration of that invocation.
+
+The reasoning: those commands do not actually need the upstream value. `vis release add` is writing a change file — the registry has no opinion on that. `vis release plan` is showing the operator what _would_ ship; it surfaces the warning text but the registry answer is not load-bearing. Probing the registry on every `vis release add` invocation would make the most common command take 5+ seconds for no reason.
+
+**Operators do not need to do anything.** The flag is set automatically by the command handlers; you cannot pass it on the command line and you should not need to. It is documented here only so the absence of registry probes on read-only commands does not look mysterious.
+
+The mutation-side commands — `vis release version`, `vis release publish`, `vis release ci release` — still honour the configured resolver mode. That is where the live registry / tag answer matters, so that is where vis pays the lookup cost.
+
+## Worked example 1: migrating from semantic-release
+
+semantic-release is tag-driven by design. Every shipped version produces a git tag (`v1.2.3` or `<pkg>-v1.2.3`); the next release's baseline is "the latest tag matching the configured `tagFormat`". When you migrate to vis, you have two options:
+
+**Option A — keep the existing tag history, switch reads to `"git-tag"` mode.** Your tags are the authoritative log; your manifests may not be (semantic-release usually does not commit version bumps back). The right configuration:
+
+```typescript
+// vis.config.ts
+export default {
+    release: {
+        currentVersionResolver: "git-tag",
+
+        // Match whatever semantic-release was writing. The defaults:
+        //   single-package repo:  "v{version}"        (semantic-release default)
+        //   monorepo (multi-pkg): "{name}@{version}"  (vis default; also semantic-release-monorepo default)
+        releaseTagPattern: "v{version}", // or "{name}@{version}", or your custom pattern
+    },
+};
+```
+
+Then run `vis release version` for the next release. vis reads the latest matching tag (e.g. `v1.2.3`), computes the bump from the pending change files, and produces `v1.3.0`. No manual baseline configuration; no manifest backfill.
+
+> **If you used semantic-release-monorepo** with `tagFormat: "${name}@${version}"`, set `releaseTagPattern: "{name}@{version}"`. vis's token syntax (`{name}` not `${name}`) differs by one character — easy mistake.
+
+**Option B — backfill the manifests once, then live in `"disk"` mode.** Bring `package.json#version` into alignment with the latest tag for each package, commit it, and from then on use the default `"disk"` mode. This is more work upfront (one commit) but simpler ongoing — no git history to keep clean.
+
+If your team is happy with semantic-release's tag-as-source-of-truth model, **pick option A**. If you find the floating-manifest situation confusing (especially when developers `npm install` from a fresh clone and see `0.0.0-development`), pick option B.
+
+## Worked example 2: migrating from a manual flow
+
+You ship out-of-band: a developer runs `npm publish` from their machine, then bumps `package.json` in a follow-up commit. There are no tags, sometimes the manifest version is ahead of the registry, sometimes behind.
+
+The cleanest path:
+
+1. Audit each package: is the manifest version ahead, behind, or in sync with the registry?
+2. For packages where they disagree, decide which value is authoritative. Usually the registry — that is what your users see.
+3. Run a one-time backfill commit to align manifests with the registry.
+4. Configure `currentVersionResolver: "disk"` (the default — no config needed).
+5. Run `vis release version --first-release` _only if_ none of those packages were ever git-tagged with a matching `releaseTagPattern` (run `vis release doctor --first-release` first to confirm).
+
+After that one bootstrap release, you are on the normal flow. `--first-release` is gone. The manifest is in sync. The default resolver does the right thing.
+
+If you cannot do the manifest backfill (the team is mid-migration and cannot stop publishing), use `"registry"` mode instead:
+
+```typescript
+release: { currentVersionResolver: "registry" },
+```
+
+The manifest stays floating, vis catches up to whatever the registry shows on every release. Slower (one HTTP request per package per release) but no commit churn.
+
+## Worked example 3: greenfield bootstrap
+
+You have a fresh monorepo, three packages, no tags, nothing published. From zero to first ship:
+
+```bash
+# 1. (Optional) Verify the workspace really is greenfield.
+vis release doctor --first-release
+
+# 2. Write a change file describing the initial release.
+vis release add --packages '@scope/a:minor,@scope/b:minor,@scope/c:minor' \
+                --message 'Initial release'
+
+# 3. Bump versions on disk (no tag-collision check; no registry probe).
+vis release version --first-release
+
+# 4. Publish (creates the first tags + first npm publishes).
+vis release publish --first-release
+```
+
+After step 4, every subsequent release drops the `--first-release` flag. You now have tags, registry entries, and a baseline.
+
+Common variant: **first release of an existing-on-npm package that was migrated into a new monorepo.** In that case the workspace is **not** greenfield from the registry's perspective — `--first-release` will fail the doctor preflight. Set `currentVersionResolver: "registry"` (or "disk" with an accurate manifest) and run a normal release.
+
+## Reference: configuration recap
+
+```typescript
+// vis.config.ts
+export default {
+    release: {
+        // Workspace-level default. Three valid values.
+        currentVersionResolver: "disk", // or "registry", or "git-tag"
+
+        // Optional — the pattern vis uses for BOTH tag-writing (publish phase)
+        // and tag-reading (git-tag resolver mode). Tokens: {name}, {unscopedName},
+        // {version}, {major}, {minor}, {patch}, {date}, {channel}.
+        releaseTagPattern: "{name}@{version}",
+
+        // Per-package overrides — same set of modes, different value.
+        packages: {
+            "@scope/legacy": { currentVersionResolver: "git-tag" },
+            "@scope/new": { currentVersionResolver: "disk" },
+        },
+    },
+};
+```
+
+```bash
+# Bootstrap only. Forces disk mode, skips tag-collision checks. One-shot.
+vis release version --first-release
+vis release publish --first-release
+
+# Confirm a workspace is greenfield before using the flag.
+vis release doctor --first-release
+```
+
+## Cross-references
+
+- [Release manager guide](./release.mdx) — the overall mental model.
+- [Release CI guide](./release-ci.mdx) — wiring versions into version-PR / auto-publish channels.
+- [Release comparison](./release-comparison.mdx) — how the resolver modes map onto changesets / semantic-release / release-please equivalents.
+- Source: `src/release/core/version-resolver.ts`, `src/release/types.ts` (`VisReleaseConfig.currentVersionResolver`, `PerPackageReleaseConfig.currentVersionResolver`), `src/commands/release/doctor/handler.ts` (`first-release.repo-not-greenfield`).

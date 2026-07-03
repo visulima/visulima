@@ -1,0 +1,286 @@
+---
+title: Slugification API
+description: Complete API reference for slugify and transliterate functions in @visulima/string.
+---
+
+# Slugification API
+
+Detailed API reference for the `slugify` and `transliterate` functions.
+
+## slugify
+
+Converts a string into a URL-friendly slug. It transliterates non-ASCII characters, optionally converts case, removes disallowed characters (replacing with separator), and collapses separators.
+
+```typescript
+function slugify(input: string, options?: SlugifyOptions): string;
+```
+
+**Import:**
+
+```typescript
+import slugify from "@visulima/string/slugify";
+// or from the barrel export:
+// import { slugify } from "@visulima/string";
+```
+
+**Parameters:**
+
+| Parameter | Type             | Description                        |
+| --------- | ---------------- | ---------------------------------- |
+| `input`   | `string`         | The string to convert into a slug. |
+| `options` | `SlugifyOptions` | Optional configuration options.    |
+
+**Returns:** `string` -- The generated URL-friendly slug.
+
+**Examples:**
+
+```typescript
+slugify("Hello World!"); // 'hello-world'
+slugify("Creme Brulee"); // 'creme-brulee'
+slugify("foo & bar * baz"); // 'foo-bar-baz'
+
+// Chinese support
+slugify("你好 World!"); // 'ni-hao-world'
+
+// Custom separator
+slugify("foo bar baz", { separator: "_" }); // 'foo_bar_baz'
+
+// Uppercase
+slugify("foo bar", { lowercase: false, uppercase: true }); // 'FOO-BAR'
+
+// Preserve case
+slugify("Foo Bar", { lowercase: false }); // 'Foo-Bar'
+```
+
+**Edge cases:**
+
+- If both `lowercase` and `uppercase` are `true`, a console warning is emitted and the function defaults to lowercase.
+- Leading and trailing separator characters are always trimmed from the result.
+- Consecutive separators are collapsed into a single separator.
+
+---
+
+## SlugifyOptions
+
+```typescript
+interface SlugifyOptions extends OptionsTransliterate {
+    /**
+     * Allowed characters. Other characters will be converted to `separator`.
+     * Uses regex character class syntax (e.g. "a-zA-Z0-9").
+     * @default "a-zA-Z0-9-_.~"
+     */
+    allowedChars?: string;
+
+    /**
+     * Fix Chinese spacing passed to transliterate.
+     * If you don't need to transliterate Chinese characters, set to false to improve performance.
+     * @default true
+     */
+    fixChineseSpacing?: boolean;
+
+    /**
+     * Characters/strings to ignore during transliteration.
+     * @default []
+     */
+    ignore?: string[];
+
+    /**
+     * Whether the result should be converted into lowercase.
+     * Cannot be true if `uppercase` is true.
+     * @default true
+     */
+    lowercase?: boolean;
+
+    /**
+     * Search/replace pairs applied after transliteration.
+     * Can be an object `{ search: replacement }` or an array of `[search, replacement]` tuples.
+     * Searches can be strings or RegExp.
+     * @default []
+     */
+    replaceAfter?: OptionReplaceCombined;
+
+    /**
+     * Search/replace pairs applied before transliteration.
+     * @default []
+     */
+    replaceBefore?: OptionReplaceCombined;
+
+    /**
+     * Custom separator string used to join words in the slug.
+     * @default "-"
+     */
+    separator?: string;
+
+    /**
+     * Whether to transliterate the input string.
+     * @default true
+     */
+    transliterate?: boolean;
+
+    /**
+     * Trim leading/trailing whitespace before processing.
+     * @default false
+     */
+    trim?: boolean;
+
+    /**
+     * Character to use for unknown characters.
+     * @default ""
+     */
+    unknown?: string;
+
+    /**
+     * Whether the result should be converted into uppercase.
+     * Cannot be true if `lowercase` is true.
+     * @default false
+     */
+    uppercase?: boolean;
+}
+```
+
+---
+
+## transliterate
+
+Transliterates Unicode characters to ASCII equivalents using a comprehensive character map. Supports Chinese Pinyin, Thai romanization, Cyrillic, Greek, Arabic, Hebrew, Japanese, Korean, and many other scripts.
+
+```typescript
+function transliterate(source: string, options?: OptionsTransliterate): string;
+```
+
+**Import:**
+
+```typescript
+import { transliterate } from "@visulima/string";
+```
+
+**Parameters:**
+
+| Parameter | Type                   | Description                  |
+| --------- | ---------------------- | ---------------------------- |
+| `source`  | `string`               | The string to transliterate. |
+| `options` | `OptionsTransliterate` | Optional configuration.      |
+
+**Returns:** `string` -- The transliterated ASCII string.
+
+**Examples:**
+
+```typescript
+// European
+transliterate("Creme brulee"); // 'Creme brulee'
+transliterate("Dusseldorf"); // 'Dusseldorf'
+
+// Cyrillic
+transliterate("Москва"); // 'Moskva'
+
+// Chinese (with spacing)
+transliterate("你好世界"); // 'Ni Hao Shi Jie'
+
+// Chinese (without spacing)
+transliterate("你好世界", { fixChineseSpacing: false });
+// 'NiHaoShiJie'
+
+// Custom replacements
+transliterate("Replace C++ before map", {
+    replaceBefore: { "C++": "cpp" },
+}); // 'Replace cpp before map'
+
+// Ignore segments
+transliterate("Don't change THIS", {
+    ignore: ["THIS"],
+}); // "Dont change THIS"
+
+// Unknown characters
+transliterate("a🚀b", { unknown: "[?]" }); // 'a[?]b'
+```
+
+---
+
+## OptionsTransliterate
+
+```typescript
+interface OptionsTransliterate {
+    /**
+     * Add space between Chinese Pinyin syllables.
+     * @default true
+     */
+    fixChineseSpacing?: boolean;
+
+    /**
+     * Characters/strings to ignore during transliteration.
+     * These are preserved as-is in the output.
+     * @default []
+     */
+    ignore?: string[];
+
+    /**
+     * Search/replace pairs applied after the character map.
+     * Can be an object or array of `[RegExp | string, string]` tuples.
+     * @default []
+     */
+    replaceAfter?: OptionReplaceCombined;
+
+    /**
+     * Search/replace pairs applied before the character map.
+     * @default []
+     */
+    replaceBefore?: OptionReplaceCombined;
+
+    /**
+     * Trim leading/trailing whitespace from the result.
+     * @default false
+     */
+    trim?: boolean;
+
+    /**
+     * Character to use for unknown (untransliterable) characters.
+     * @default ""
+     */
+    unknown?: string;
+}
+```
+
+---
+
+## OptionReplaceCombined
+
+The replacement configuration can be either an object or an array:
+
+```typescript
+/** Object form: keys are search strings, values are replacements */
+type OptionReplaceObject = Record<string, string>;
+
+/** Array form: tuples of [search, replacement] where search can be a RegExp */
+type OptionReplaceArray = [RegExp | string, string | undefined][];
+
+/** Combined type */
+type OptionReplaceCombined = OptionReplaceArray | OptionReplaceObject;
+```
+
+**Object form:**
+
+```typescript
+slugify("C# and C++", {
+    replaceBefore: {
+        "C#": "csharp",
+        "C++": "cpp",
+    },
+}); // 'csharp-and-cpp'
+```
+
+**Array form (with RegExp):**
+
+```typescript
+transliterate("test123", {
+    replaceAfter: [[/\d+/g, "NUM"]],
+}); // 'testNUM'
+```
+
+---
+
+## Notes
+
+- The `slugify` function internally calls `transliterate` when the `transliterate` option is `true` (the default).
+- The character map covers thousands of Unicode code points across many writing systems.
+- When `transliterate` is set to `false`, the input is normalized with NFC but non-ASCII characters that are not in `allowedChars` will be removed.
+- The `fixChineseSpacing` option inserts spaces between Chinese Pinyin syllables for more readable output. Set to `false` for compact slugs.

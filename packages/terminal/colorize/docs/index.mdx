@@ -1,0 +1,171 @@
+---
+title: Introduction
+description: "Terminal and console string styling with ANSI colors, supporting Node.js, browsers, and multiple runtimes."
+---
+
+# @visulima/colorize
+
+Terminal and console string styling done right. A high-performance, feature-rich library for colorizing terminal and browser console output with ANSI escape codes.
+
+## Why Colorize?
+
+**@visulima/colorize** is a modern, performant alternative to Chalk and other color libraries, offering the best of both worlds: **Chalk-compatible API** with **superior performance** (up to 3x faster).
+
+### Key Features
+
+**Compatibility & Performance**
+
+- **Chalk-compatible API** - Drop-in replacement with the same syntax
+- **Up to 3x faster** than Chalk in benchmarks
+- **Named imports** - `import { red, green } from '@visulima/colorize'`
+- **Zero dependencies** (except for color detection)
+
+**Multiple Runtimes**
+
+- **Node.js** 22.13+ support (ESM and CommonJS)
+- **Browser support** - Works in Chrome, Safari, Edge, and more
+- **Deno** and **Next.js** runtime compatibility
+
+**Rich Color Support**
+
+- **Base ANSI 16 colors** - Standard terminal colors (red, green, blue, etc.)
+- **ANSI 256 colors** - Extended color palette with `ansi256()` or `fg()`/`bg()`
+- **TrueColor (16M colors)** - RGB and HEX colors with `rgb()` and `hex()`
+- **Automatic fallback** - TrueColor → 256 → 16 → no colors
+
+**Developer Experience**
+
+- **Chained syntax** - `` red.bold.underline`text` ``
+- **Template literals** - `` red`Hello ${green`World`}` ``
+- **Nested templates** - Deep nesting support (unique among color libraries)
+- **TypeScript** - Full type definitions with IDE autocomplete
+
+**Advanced Features**
+
+- **Color gradients** - Single and multi-line gradient support
+- **Tagged templates** - String interpolation with `@visulima/colorize/template`
+- **Strip ANSI codes** - Remove colors with `strip()` method
+- **Environment awareness** - Respects `NO_COLOR`, `FORCE_COLOR`, `--no-color`, `--color`
+
+## Quick Start
+
+### Installation
+
+```bash npm2yarn
+npm install @visulima/colorize
+```
+
+### Basic Usage
+
+```typescript
+import colorize, { red, green, blue } from "@visulima/colorize";
+
+// Default import
+console.log(colorize.green("Success!"));
+
+// Named import
+console.log(red("Error!"));
+
+// Template literals
+console.log(blue`Information`);
+
+// Chained syntax
+console.log(green.bold`Success!`);
+
+// Nested templates
+console.log(red`The ${blue.underline`file.js`} not found!`);
+```
+
+## Use Cases
+
+### CLI Tool Output
+
+Enhance command-line tool output with clear, colorful messages:
+
+```typescript
+import { green, red, yellow, bold } from "@visulima/colorize";
+
+console.log(green.bold("✓ Build completed successfully!"));
+console.log(yellow("⚠ Warning: Deprecated API usage detected"));
+console.log(red("✗ Error: File not found"));
+console.log(bold("=== Test Results ==="));
+```
+
+### Structured Logging
+
+Create readable, color-coded logs for better debugging:
+
+```typescript
+import { gray, cyan, yellow, red, bold } from "@visulima/colorize";
+
+const logger = {
+    debug: (msg: string) => console.log(gray(`[DEBUG] ${msg}`)),
+    info: (msg: string) => console.log(cyan(`[INFO] ${msg}`)),
+    warn: (msg: string) => console.log(yellow(`[WARN] ${msg}`)),
+    error: (msg: string) => console.log(red.bold(`[ERROR] ${msg}`)),
+};
+
+logger.info("Server started on port 3000");
+logger.warn("High memory usage detected");
+logger.error("Database connection failed");
+```
+
+### Terminal Dashboards
+
+Build rich terminal UI with gradients and complex styling:
+
+```typescript
+import { green, red, hex, inverse } from "@visulima/colorize";
+
+const cpu = { totalPercent: 45 };
+const ram = { used: 8, total: 16 };
+const disk = { used: 120, total: 256 };
+
+const orange = hex("#FFAB40");
+
+console.log(inverse`
+CPU:  ${red`${cpu.totalPercent}%`}
+RAM:  ${green`${((ram.used / ram.total) * 100).toFixed(1)}%`}
+DISK: ${orange`${((disk.used / disk.total) * 100).toFixed(1)}%`}
+`);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Learn how to install and set up colorize in your project
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started with colorize in 5 minutes
+    </Card>
+    <Card title="Basic Usage" href="/usage/basic">
+        Explore common usage patterns and syntax
+    </Card>
+    <Card title="Advanced Features" href="/usage/advanced">
+        Discover TrueColor, gradients, and advanced capabilities
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with all methods and options
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+### Node.js
+
+- ✅ Node.js 22.13 - 25.x
+- ✅ ESM and CommonJS support
+
+### Browsers
+
+- ✅ Chrome 69+ (TrueColor)
+- ✅ Safari 10+ (TrueColor)
+- ✅ Edge 79+ (TrueColor)
+- ✅ Opera 56+ (TrueColor)
+- ⚠️ Firefox (fallback to `%c` syntax)
+
+### Runtimes
+
+- ✅ Deno
+- ✅ Next.js (edge runtime)

@@ -1,0 +1,28 @@
+---
+title: "Installation"
+description: "How to install @visulima/command-line-args."
+---
+
+# Installation
+
+```bash npm2yarn
+npm install @visulima/command-line-args
+```
+
+## Import
+
+```typescript
+import { parseArgs } from "@visulima/command-line-args";
+// or
+import { commandLineArgs } from "@visulima/command-line-args";
+```
+
+## Verification
+
+```typescript
+import { parseArgs } from "@visulima/command-line-args";
+
+const options = parseArgs([{ name: "test", type: Boolean }]);
+
+console.log("✓ Installation successful");
+```

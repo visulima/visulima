@@ -1,0 +1,18 @@
+{
+    "name": "fmt-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@visulima/fmt": "workspace:*",
+        "quick-format-unescaped": "catalog:dev"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}

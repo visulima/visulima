@@ -1,8 +1,0 @@
-{
-    "name": "string",
-    "$schema": "../../node_modules/nx/schemas/project-schema.json",
-    "sourceRoot": "packages/string/src",
-    "projectType": "library",
-    "tags": ["string", "type:package"],
-    "implicitDependencies": []
-}

@@ -1,0 +1,454 @@
+---
+title: "API Reference"
+description: "Complete API documentation for @visulima/deep-clone"
+---
+
+# API Reference
+
+Complete reference for all functions and types in the `@visulima/deep-clone` package.
+
+## Main Function
+
+### deepClone
+
+Creates a deep clone of the input data with circular reference handling.
+
+**Signature:**
+
+```typescript
+function deepClone<T>(originalData: T, options?: Options): DeepReadwrite<T>;
+```
+
+**Type Parameters:**
+
+- `T` - The type of the original data
+
+**Parameters:**
+
+- `originalData` (`T`, required) - The data to clone (any type)
+- `options` (`Options`, optional) - Cloning configuration options
+
+**Returns:** `DeepReadwrite<T>` - A deep cloned copy with readonly modifiers removed
+
+**Example:**
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const original = {
+    name: "Alice",
+    age: 30,
+    nested: { city: "NYC" },
+};
+
+const cloned = deepClone(original);
+cloned.nested.city = "LA";
+
+console.log(original.nested.city); // "NYC" (unchanged)
+console.log(cloned.nested.city); // "LA"
+```
+
+---
+
+## Options
+
+### Options Interface
+
+Configuration options for the `deepClone` function.
+
+**Type Definition:**
+
+```typescript
+type Options = {
+    strict?: boolean;
+    handler?: Partial<Handlers>;
+};
+```
+
+**Properties:**
+
+#### strict
+
+Controls whether to copy non-enumerable properties and symbols.
+
+- **Type:** `boolean`
+- **Default:** `false`
+- **Description:**
+    - `false` (loose mode): Only copies enumerable properties (faster)
+    - `true` (strict mode): Copies all properties including non-enumerable and symbols (slower)
+
+**Example:**
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const obj = { visible: "enumerable" };
+Object.defineProperty(obj, "hidden", {
+    value: "non-enumerable",
+    enumerable: false,
+});
+
+// Loose mode (default)
+const loose = deepClone(obj);
+console.log(loose.hidden); // undefined
+
+// Strict mode
+const strict = deepClone(obj, { strict: true });
+console.log(strict.hidden); // "non-enumerable"
+```
+
+#### handler
+
+Custom handlers for specific data types.
+
+- **Type:** `Partial<Handlers>`
+- **Default:** `undefined`
+- **Description:** Override default cloning behavior for specific types. Every key is optional, so you only pass the handlers you want to override.
+
+**Handlers Definition:**
+
+```typescript
+type InternalHandler<T> = (object: T, state: State) => T;
+
+type Handlers = {
+    Array: InternalHandler<unknown[]>;
+    ArrayBuffer: InternalHandler<ArrayBuffer>;
+    Blob: InternalHandler<Blob>;
+    DataView: InternalHandler<DataView>;
+    Date: InternalHandler<Date>;
+    Error: InternalHandler<Error>;
+    File: InternalHandler<File>;
+    Function: InternalHandler<Function>;
+    Map: InternalHandler<Map<unknown, unknown>>;
+    Object: InternalHandler<Record<string, unknown>>;
+    Promise: InternalHandler<Promise<unknown>>;
+    RegExp: InternalHandler<RegExp>;
+    Set: InternalHandler<Set<unknown>>;
+    SharedArrayBuffer: InternalHandler<SharedArrayBuffer>;
+    WeakMap: InternalHandler<WeakMap<any, unknown>>;
+    WeakSet: InternalHandler<WeakSet<any>>;
+};
+```
+
+> Note: typed arrays are cloned through the `ArrayBuffer` handler — there are no dedicated typed-array keys.
+
+**Example:**
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+import type { State } from "@visulima/deep-clone";
+
+const cloned = deepClone(data, {
+    handler: {
+        Date: (date: Date, _state: State) => {
+            // Clone to current time instead of original time
+            return new Date();
+        },
+        Array: (array: unknown[], state: State) => {
+            // Custom array cloning (e.g., filter nulls)
+            const filtered = array.filter((item) => item !== null);
+            return filtered.map((item) => state.clone(item, state));
+        },
+    },
+});
+```
+
+---
+
+## State Interface
+
+The state object passed to custom handlers.
+
+**Type Definition:**
+
+```typescript
+interface State {
+    cache: WeakMap<any, any>;
+    clone: (value: any, state: State) => any;
+}
+```
+
+**Properties:**
+
+- `cache` (`WeakMap<any, any>`) - Circular reference tracking cache
+- `clone` (`function`) - The clone function to recursively clone nested values
+
+**Usage in Custom Handlers:**
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+import type { State } from "@visulima/deep-clone";
+
+const cloned = deepClone(data, {
+    handler: {
+        Object: (obj: Record<PropertyKey, unknown>, state: State) => {
+            // Create empty object
+            const copy = {} as Record<PropertyKey, unknown>;
+
+            // Clone each property using state.clone
+            for (const key in obj) {
+                copy[key] = state.clone(obj[key], state);
+            }
+
+            return copy;
+        },
+    },
+});
+```
+
+---
+
+## Utility Functions
+
+### copyOwnProperties
+
+Copies all own enumerable properties from an object (shallow copy).
+
+**Signature:**
+
+```typescript
+function copyOwnProperties<T extends object>(object: T): T;
+```
+
+**Parameters:**
+
+- `object` (`T`, required) - The object to copy properties from
+
+**Returns:** `T` - A new object with copied properties
+
+**Note:** This performs a **shallow copy**. Nested objects are referenced, not cloned.
+
+**Example:**
+
+```typescript
+import { copyOwnProperties } from "@visulima/deep-clone/utils";
+
+const original = {
+    name: "Alice",
+    age: 30,
+    address: { city: "NYC" },
+};
+
+const copy = copyOwnProperties(original);
+copy.age = 31;
+copy.address.city = "LA";
+
+console.log(original.age); // 30 (unchanged)
+console.log(original.address.city); // "LA" (changed! shallow copy)
+```
+
+---
+
+### getCleanClone
+
+Creates an empty object with the same prototype as the input object.
+
+**Signature:**
+
+```typescript
+function getCleanClone<T extends object>(object: T): T;
+```
+
+**Parameters:**
+
+- `object` (`T`, required) - The object to get a clean clone of
+
+**Returns:** `T` - An empty object with the same prototype
+
+**Example:**
+
+```typescript
+import { getCleanClone } from "@visulima/deep-clone/utils";
+
+class User {
+    name: string = "";
+    age: number = 0;
+
+    greet() {
+        return `Hello, ${this.name}!`;
+    }
+}
+
+const user = new User();
+user.name = "Alice";
+user.age = 30;
+
+const clean = getCleanClone(user);
+
+console.log(clean.name); // "" (empty)
+console.log(clean.age); // 0 (default)
+console.log(clean.greet()); // "Hello, !" (method exists)
+console.log(clean instanceof User); // true
+```
+
+**Use Case:** Useful when you need an empty instance of the same class/prototype without manually calling constructors.
+
+---
+
+## Type Definitions
+
+### DeepReadwrite
+
+Utility type that recursively removes `readonly` modifiers from all properties.
+
+**Type Definition:**
+
+```typescript
+type DeepReadwrite<T> = T extends object | [] ? { -readonly [P in keyof T]: DeepReadwrite<T[P]> } : T;
+```
+
+**Description:** The cloned object has all readonly modifiers removed, allowing mutations.
+
+**Example:**
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+interface ReadonlyData {
+    readonly id: number;
+    readonly config: {
+        readonly enabled: boolean;
+    };
+}
+
+const data: ReadonlyData = {
+    id: 1,
+    config: { enabled: true },
+};
+
+// TypeScript error: Cannot assign to 'id' because it is a read-only property
+// data.id = 2;
+
+const cloned = deepClone(data);
+
+// OK! DeepReadwrite removes readonly
+cloned.id = 2;
+cloned.config.enabled = false;
+```
+
+---
+
+## Supported Types Reference
+
+### Fully Supported Types
+
+These types are deeply cloned with full support:
+
+| Type                | Behavior                                   |
+| ------------------- | ------------------------------------------ |
+| `undefined`         | Returned as-is (immutable)                 |
+| `null`              | Returned as-is (immutable)                 |
+| `boolean`           | Returned as-is (immutable)                 |
+| `number`            | Returned as-is (immutable)                 |
+| `string`            | Returned as-is (immutable)                 |
+| `Object`            | Deep cloned with all nested properties     |
+| `Array`             | Deep cloned with all elements              |
+| `Date`              | New Date instance with same timestamp      |
+| `RegExp`            | New RegExp with same pattern and flags     |
+| `Map`               | New Map with cloned entries                |
+| `Set`               | New Set with cloned values                 |
+| `Error`             | New Error with cloned properties and stack |
+| `ArrayBuffer`       | New ArrayBuffer with copied bytes          |
+| `Uint8Array`        | New Uint8Array with copied data            |
+| `Int8Array`         | New Int8Array with copied data             |
+| `Uint16Array`       | New Uint16Array with copied data           |
+| `Int16Array`        | New Int16Array with copied data            |
+| `Uint32Array`       | New Uint32Array with copied data           |
+| `Int32Array`        | New Int32Array with copied data            |
+| `Float32Array`      | New Float32Array with copied data          |
+| `Float64Array`      | New Float64Array with copied data          |
+| `Uint8ClampedArray` | New Uint8ClampedArray with copied data     |
+| `DataView`          | New DataView with cloned buffer            |
+| `Blob`              | New Blob with same content (browser)       |
+| `Buffer`            | New Buffer with copied data (Node.js)      |
+| `Function`          | **Copied by reference** (not cloned)       |
+| DOM Nodes           | Cloned using `element.cloneNode(true)`     |
+
+### Unsupported Types
+
+These types throw `TypeError` when cloned:
+
+| Type                | Error Message                                |
+| ------------------- | -------------------------------------------- |
+| `Promise`           | "Promise objects cannot be cloned"           |
+| `WeakMap`           | "WeakMap objects cannot be cloned"           |
+| `WeakSet`           | "WeakSet objects cannot be cloned"           |
+| `SharedArrayBuffer` | "SharedArrayBuffer objects cannot be cloned" |
+
+**Example:**
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+try {
+    deepClone(new Promise((resolve) => resolve(1)));
+} catch (error) {
+    console.log(error.message);
+    // "Promise objects cannot be cloned"
+}
+```
+
+---
+
+## Error Handling
+
+### TypeError
+
+Thrown when attempting to clone unsupported types.
+
+**Example:**
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+try {
+    const weakMap = new WeakMap();
+    deepClone(weakMap);
+} catch (error) {
+    console.log(error instanceof TypeError); // true
+    console.log(error.message); // "WeakMap objects cannot be cloned"
+}
+```
+
+### Circular References
+
+Circular references are **automatically handled** and do not throw errors:
+
+```typescript
+import { deepClone } from "@visulima/deep-clone";
+
+const obj: any = { name: "circular" };
+obj.self = obj; // Circular reference
+
+const cloned = deepClone(obj); // No error!
+console.log(cloned.self === cloned); // true
+```
+
+---
+
+## Function Summary
+
+| Function            | Category | Description                                           |
+| ------------------- | -------- | ----------------------------------------------------- |
+| `deepClone`         | Main     | Deep clone any value with circular reference handling |
+| `copyOwnProperties` | Utility  | Shallow copy of object's own properties               |
+| `getCleanClone`     | Utility  | Create empty object with same prototype               |
+
+## Type Export Summary
+
+| Type               | Description                            |
+| ------------------ | -------------------------------------- |
+| `Options`          | Configuration options for deepClone    |
+| `State`            | State object for custom handlers       |
+| `DeepReadwrite<T>` | Removes readonly modifiers recursively |
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use deepClone with detailed examples
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
+</Cards>

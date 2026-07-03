@@ -1,0 +1,335 @@
+---
+title: Best Practices
+description: "Team workflows, enterprise patterns, security, and performance optimization for vis"
+---
+
+# Best Practices
+
+Learn how to use `vis` effectively in team environments, enterprise workflows, and production systems.
+
+## Team Collaboration
+
+### Shared Configuration
+
+Keep your `vis.json` configuration consistent across team members by committing it to version control:
+
+```json
+{
+    "update": {
+        "target": "minor",
+        "exclude": ["legacy-*", "deprecated-*"]
+    },
+    "tasks": {
+        "build": {
+            "dependsOn": ["^build"],
+            "outputs": ["{projectRoot}/dist/**"],
+            "cache": true
+        }
+    }
+}
+```
+
+### Code Review Guidelines
+
+**Pre-Review Checklist:**
+
+- Run `vis check --dry-run` to preview changes
+- Verify no breaking changes in major version updates
+- Test critical functionality after dependency updates
+- Review CHANGELOG files for updated packages
+
+**Review Process:**
+
+- **Security First** — Always review security-related dependency updates immediately
+- **Batch Related Updates** — Group related packages (e.g., React ecosystem) in single PRs
+- **Document Reasons** — Include rationale for version pinning or exclusions
+- **Test Coverage** — Ensure adequate testing before merging dependency updates
+
+### Communication Standards
+
+Use clear commit messages when updating dependencies:
+
+```bash
+# Good commit messages
+feat(deps): update React to v18.3.0 for improved performance
+security(deps): patch lodash vulnerability CVE-2021-23337
+chore(deps): update dev dependencies to latest versions
+
+# Poor commit messages
+update packages
+fix deps
+bump versions
+```
+
+## Enterprise Usage
+
+### Governance and Compliance
+
+**Dependency Approval Process:**
+
+- **Security Scanning** — All updates must pass security audits
+- **License Compliance** — Verify license compatibility with internal policies
+- **Stability Requirements** — Prefer LTS versions in production environments
+- **Change Management** — Follow established change approval processes
+
+**Enterprise Configuration:**
+
+```json
+{
+    "update": {
+        "target": "minor",
+        "exclude": ["experimental-*"]
+    }
+}
+```
+
+### Private Registry Integration
+
+Configure your workspace for corporate environments with private registries:
+
+```ini
+# .npmrc (workspace root)
+@company:registry=https://npm.company.com/
+//npm.company.com/:_authToken=${NPM_TOKEN}
+registry=https://npm.company.com/
+
+# Public packages fallback
+@types:registry=https://registry.npmjs.org/
+```
+
+`vis check` and `vis update` automatically read `.npmrc` configuration, including scoped registry mappings and authentication tokens.
+
+### Audit Trail and Reporting
+
+Maintain records of dependency changes:
+
+```bash
+# Generate dependency reports
+vis check --format json > dependency-report.json
+
+# Include in CI/CD pipeline
+vis check --format json > artifacts/deps-$(date +%Y%m%d).json
+```
+
+## Release Workflows
+
+### Semantic Versioning Integration
+
+Align dependency updates with your release cycle:
+
+**Pre-Release Phase:**
+
+```bash
+# Check for updates without applying
+vis check --target patch
+
+# Update only patch versions during freeze
+vis update --target patch --exclude "major-framework-*"
+```
+
+**Release Preparation:**
+
+```bash
+# Update to latest stable versions
+vis update --target minor --exclude "experimental-*"
+```
+
+**Post-Release:**
+
+```bash
+# Update to latest including major versions
+vis update --target latest --interactive
+```
+
+### Staging Environment Testing
+
+**Pre-Production Validation:**
+
+```bash
+# Update dependencies (backup is created automatically)
+vis update --target minor
+
+# Run comprehensive tests
+pnpm run test:integration
+pnpm run test:e2e
+
+# Rollback if issues found
+vis update --rollback
+```
+
+## Security Best Practices
+
+### Vulnerability Management
+
+**Response Priorities:**
+
+| Severity        | Response Time                        |
+| --------------- | ------------------------------------ |
+| Critical / High | Update within 24 hours               |
+| Moderate        | Update within 1 week                 |
+| Low             | Include in next regular update cycle |
+
+```bash
+# Check for security vulnerabilities
+vis check --security
+
+# Review and apply security fixes
+vis update --security --interactive
+```
+
+### Manual Security Reviews
+
+- Review all new dependencies before first use
+- Audit package maintainers and download counts
+- Verify package authenticity and signatures
+- Check for known security issues in dependency chains
+
+### Token Management
+
+```bash
+# Use scoped tokens with minimal permissions
+NPM_TOKEN=npm_[REDACTED]_readonly_access_only
+
+# Rotate tokens regularly (quarterly)
+# Store tokens in secure credential management systems
+# Never commit tokens to version control
+```
+
+## Performance Optimization
+
+### Large Monorepo Handling
+
+For workspaces with many catalog entries, filter by scope:
+
+```bash
+# Process by categories
+vis check --include "@company/ui-*"
+vis check --include "@company/api-*"
+vis check --include "@types/*" --target latest
+
+# Use filtering for large operations
+vis update --include "react*" --exclude "*-experimental"
+```
+
+### Task Caching
+
+Leverage `vis run` caching for faster builds:
+
+```json
+{
+    "tasks": {
+        "build": {
+            "outputs": ["{projectRoot}/dist/**"],
+            "cache": true
+        },
+        "test": {
+            "cache": true
+        }
+    },
+    "taskRunner": {
+        "parallel": 5,
+        "smartLockfileHashing": true
+    }
+}
+```
+
+### Network Optimization
+
+```ini
+# .npmrc — use faster registries geographically close to your location
+registry=https://registry.npmjs.org/
+```
+
+## Error Handling and Recovery
+
+### Backup and Recovery
+
+`vis update` automatically creates a backup before modifying catalog files.
+
+```bash
+# Update with automatic backup
+vis update --target minor
+
+# Restore from backup if something goes wrong
+vis update --rollback
+
+# Manual backup as an alternative
+cp pnpm-workspace.yaml pnpm-workspace.yaml.backup
+```
+
+### Version Rollback Strategy
+
+```bash
+# Rollback entire catalog
+vis update --rollback
+
+# Or restore from git
+git checkout HEAD~1 pnpm-workspace.yaml
+pnpm install
+```
+
+## Integration Patterns
+
+### Package.json Scripts
+
+```json
+{
+    "scripts": {
+        "deps:check": "vis check",
+        "deps:update:patch": "vis update --target patch",
+        "deps:update:minor": "vis update --target minor --interactive",
+        "deps:security": "vis check --security",
+        "prerelease": "vis check && vis check --security"
+    }
+}
+```
+
+### Git Hooks Integration
+
+```bash
+# Install vis git hooks
+vis hook install
+
+# Create a pre-commit hook
+echo '#!/bin/sh
+vis check --exit-code --format minimal || {
+  echo "Dependency issues detected. Run vis check for details."
+  exit 1
+}' > .vis/hooks/pre-commit
+chmod +x .vis/hooks/pre-commit
+```
+
+### Migrating from Husky
+
+```bash
+# Automatically migrate existing husky hooks
+vis hook migrate
+```
+
+## Quick Reference Checklist
+
+### Daily Workflow
+
+- Check for security updates: `vis check --security`
+- Review outdated dependencies: `vis check`
+- Update patch versions: `vis update --target patch`
+
+### Weekly Workflow
+
+- Comprehensive dependency check: `vis check`
+- Update minor versions: `vis update --target minor --interactive`
+- Review and update exclusion rules in `vis.json`
+
+### Monthly Workflow
+
+- Review major version updates: `vis check --target latest`
+- Update development dependencies: `vis update --dev`
+- Audit dependency licenses and compliance
+- Review and optimize `vis.json` configuration
+
+### Before Releases
+
+- Run full security audit: `vis check --security`
+- Preview all changes: `vis update --dry-run`
+- Update in staging: `vis update --target minor`
+- Test thoroughly, then rollback if needed: `vis update --rollback`

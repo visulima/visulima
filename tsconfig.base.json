@@ -1,8 +1,6 @@
 {
     "$schema": "https://json.schemastore.org/tsconfig",
     "compilerOptions": {
-        "baseUrl": "./",
-        "downlevelIteration": true,
         "isolatedModules": true,
         "lib": ["DOM", "DOM.Iterable", "ES2024"],
         "module": "ESNext",
@@ -46,5 +44,15 @@
         "skipLibCheck": true,
         "forceConsistentCasingInFileNames": true
     },
-    "exclude": ["dist/**/*", "node_modules/**/*", "build/**/*", "scripts/**/*", "verify-node-version.cjs", "examples/**", "**/coverage/**", "vitest.config.ts"]
+    "exclude": [
+        "**/dist/**",
+        "**/node_modules/**",
+        "**/build/**",
+        "scripts/**/*",
+        "verify-node-version.cjs",
+        "examples/**",
+        "**/coverage/**",
+        "vitest.config.ts",
+        "**/__fixtures__/**"
+    ]
 }

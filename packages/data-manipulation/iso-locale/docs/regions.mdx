@@ -1,0 +1,161 @@
+---
+title: Regions
+description: Working with UN geoscheme regions and geographical data.
+---
+
+# Regions
+
+@visulima/iso-locale provides comprehensive regional data based on the United Nations geoscheme, including continents, subregions, and intermediary regions.
+
+## Region Data Structure
+
+Each region includes:
+
+- **continent**: Continental region (e.g., "Africa", "Americas", "Asia", "Europe", "Oceania", "Antarctica")
+- **intermediary**: Optional intermediary region (e.g., "Sub-Saharan Africa", "Latin America and the Caribbean")
+- **subregion**: Geographical subregion (e.g., "Northern Africa", "Western Europe", "Eastern Asia")
+
+## Getting Region Data
+
+### For a Country
+
+```typescript
+import { getRegionsForCountry } from "@visulima/iso-locale";
+
+const region = getRegionsForCountry("US");
+console.log(region.continent); // "Americas"
+console.log(region.intermediary); // "North America"
+console.log(region.subregion); // "Northern America"
+```
+
+## Finding Countries by Region
+
+### By Continent
+
+```typescript
+import { getCountriesInContinent } from "@visulima/iso-locale";
+
+const africanCountries = getCountriesInContinent("Africa");
+console.log(africanCountries.length); // ~50+ countries
+console.log(africanCountries); // ["DZ", "EG", "KE", ...]
+
+const europeanCountries = getCountriesInContinent("Europe");
+console.log(europeanCountries.length); // ~40+ countries
+```
+
+### By Subregion
+
+```typescript
+import { getCountriesInSubregion } from "@visulima/iso-locale";
+
+const westernEurope = getCountriesInSubregion("Western Europe");
+console.log(westernEurope);
+// ["AT", "BE", "FR", "DE", "LI", "LU", "MC", "NL", "CH"]
+
+const easternAsia = getCountriesInSubregion("Eastern Asia");
+console.log(easternAsia);
+// ["CN", "HK", "MO", "KP", "JP", "MN", "KR"]
+```
+
+### By Intermediary Region
+
+```typescript
+import { getCountriesInIntermediary } from "@visulima/iso-locale";
+
+const subSaharanAfrica = getCountriesInIntermediary("Sub-Saharan Africa");
+console.log(subSaharanAfrica.length); // ~40+ countries
+
+const latinAmerica = getCountriesInIntermediary("Latin America and the Caribbean");
+console.log(latinAmerica.length); // ~30+ countries
+```
+
+## Getting Available Regions
+
+### All Continents
+
+```typescript
+import { getContinents } from "@visulima/iso-locale";
+
+const continents = getContinents();
+console.log(continents);
+// ["Africa", "Americas", "Antarctica", "Asia", "Europe", "Oceania"]
+```
+
+### All Subregions
+
+```typescript
+import { getSubregions } from "@visulima/iso-locale";
+
+// Get all subregions
+const allSubregions = getSubregions();
+console.log(allSubregions.length); // ~20+ subregions
+
+// Filter by continent
+const europeanSubregions = getSubregions("Europe");
+console.log(europeanSubregions);
+// ["Eastern Europe", "Northern Europe", "Southern Europe", "Western Europe"]
+```
+
+### All Intermediary Regions
+
+```typescript
+import { getIntermediaryRegions } from "@visulima/iso-locale";
+
+const intermediaries = getIntermediaryRegions();
+console.log(intermediaries);
+// ["Latin America and the Caribbean", "North America", "Sub-Saharan Africa"]
+```
+
+## Examples
+
+### Group Countries by Continent
+
+```typescript
+import { getCountriesInContinent, getContinents } from "@visulima/iso-locale";
+
+function groupByContinent() {
+    const continents = getContinents();
+    const grouped: Record<string, string[]> = {};
+
+    continents.forEach((continent) => {
+        grouped[continent] = getCountriesInContinent(continent);
+    });
+
+    return grouped;
+}
+```
+
+### Find Countries in Same Subregion
+
+```typescript
+import { getRegionsForCountry, getCountriesInSubregion } from "@visulima/iso-locale";
+
+function getNeighboringCountries(countryCode: string) {
+    const region = getRegionsForCountry(countryCode);
+    if (!region) return [];
+
+    return getCountriesInSubregion(region.subregion).filter((code) => code !== countryCode);
+}
+
+getNeighboringCountries("DE");
+// ["AT", "BE", "FR", "LI", "LU", "MC", "NL", "CH"]
+```
+
+### Filter Countries by Region
+
+```typescript
+import { getRegionsForCountry } from "@visulima/iso-locale";
+
+function filterByRegion(countries: string[], continent: string) {
+    return countries.filter((code) => {
+        const region = getRegionsForCountry(code);
+        return region?.continent === continent;
+    });
+}
+```
+
+## Next Steps
+
+- [Countries](/docs/countries) - Working with country data
+- [Timezones](/docs/timezones) - Working with timezone data
+- [API Reference](/docs/api) - Complete API documentation

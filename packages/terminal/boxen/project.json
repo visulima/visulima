@@ -1,0 +1,8 @@
+{
+    "name": "terminal/boxen",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/terminal/boxen/src",
+    "projectType": "library",
+    "tags": ["type:package", "boxen", "category:cli-terminal"],
+    "implicitDependencies": ["filesystem/path", "data-manipulation/string"]
+}

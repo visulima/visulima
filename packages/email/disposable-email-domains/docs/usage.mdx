@@ -1,0 +1,46 @@
+---
+title: "Usage"
+---
+
+# Usage
+
+## Check Disposable Email
+
+```typescript
+import { isDisposableEmail } from "@visulima/disposable-email-domains";
+
+const email = "user@tempmail.com";
+
+if (isDisposableEmail(email)) {
+    console.log("Disposable email detected");
+} else {
+    console.log("Valid email");
+}
+```
+
+## Get Domain List
+
+```typescript
+import { disposableDomains } from "@visulima/disposable-email-domains";
+
+console.log(disposableDomains);
+// ["mailinator.com", "tempmail.com", ...]
+```
+
+## Form Validation
+
+```typescript
+function validateEmail(email: string): boolean {
+    // Check format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return false;
+    }
+
+    // Check if disposable
+    if (isDisposableEmail(email)) {
+        return false;
+    }
+
+    return true;
+}
+```

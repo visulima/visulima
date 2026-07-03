@@ -1,0 +1,8 @@
+{
+    "name": "error-debugging/ono",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/error-debugging/ono/src",
+    "projectType": "library",
+    "tags": ["ono", "type:package", "category:error-handling"],
+    "implicitDependencies": ["error-debugging/error", "terminal/boxen", "shared-utils"]
+}

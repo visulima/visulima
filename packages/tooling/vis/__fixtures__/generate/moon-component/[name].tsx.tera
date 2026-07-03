@@ -1,0 +1,10 @@
+{% include "header" %}
+import * as React from "react";
+
+export interface {{ name | pascal_case }}Props {
+    label: string;
+}
+
+export const {{ name | pascal_case }}: React.FC<{{ name | pascal_case }}Props> = ({ label }) => {
+    return <div className="{{ style }}">{label}</div>;
+};

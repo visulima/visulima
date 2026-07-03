@@ -9,49 +9,15 @@ on: # yamllint disable-line rule:truthy
     workflow_dispatch: # yamllint disable-line rule:empty-values
 
 permissions:
-    contents: "read" # for checkout
+    contents: "write" # for checkout and lock file updates
 
 jobs:
     lock-file:
-        name: "Lock File Maintenance"
-        if: "github.repository == 'visulima/visulima'"
-        runs-on: "ubuntu-latest"
-        permissions:
-            contents: "write"
-
-        steps:
-            - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
-              with:
-                  egress-policy: "audit"
-
-            - name: "Git checkout"
-              uses: "actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd" # v6.0.2
-              with:
-                  token: "${{ secrets.LOCK_MAINTENANCE_GITHUB_TOKEN }}"
-              env:
-                  GIT_COMMITTER_NAME: "GitHub Actions Shell"
-                  GIT_AUTHOR_NAME: "GitHub Actions Shell"
-                  EMAIL: "github-actions[bot]@users.noreply.github.com"
-
-            - name: "Setup resources and environment"
-              id: "setup"
-              uses: "anolilab/workflows/step/setup@main"
-              with:
-                  node-version: "22.x"
-                  cache-prefix: "lock-file"
-                  install-packages: "false"
-
-            - name: "Update lock file"
-              if: "success()"
-              run: "pnpm install --lockfile-only && pnpm dedupe"
-
-            - name: "Commit lock file"
-              if: "success()"
-              uses: "stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9" # v7.1.0
-              with:
-                  file_pattern: "pnpm-lock.yaml"
-                  commit_message: "chore: updated lock file [ci skip]"
-                  commit_user_name: "github-actions-shell"
-                  commit_user_email: "github-actions[bot]@users.noreply.github.com"
-                  commit_author: "github-actions-shell <github-actions[bot]@users.noreply.github.com>"
+        uses: "anolilab/workflows/.github/workflows/pnpm-lock-file-maintenance.yml@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+        with:
+            target-repo: "visulima/visulima"
+            node-version: "22"
+            # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+            run-audit-fix: false
+        secrets:
+            github-token: "${{ secrets.LOCK_MAINTENANCE_GITHUB_TOKEN }}"

@@ -1,0 +1,134 @@
+---
+title: Settings
+description: Control the toolbar's appearance, behaviour, and keyboard shortcuts. All settings are persisted to localStorage and applied immediately.
+---
+
+**App ID:** `dev-toolbar:settings`
+
+The Settings app provides a UI for every user-adjustable preference. Changes are applied immediately and persisted to `localStorage` under the key `__v_dt__frame_state`, so they survive page reloads. Plugin-level defaults (from `vite.config.ts`) are used as the initial values; user choices always take priority.
+
+## Setting Groups
+
+### Appearance
+
+| Setting           | Description                                                   | Default |
+| ----------------- | ------------------------------------------------------------- | ------- |
+| **Theme**         | `Light`, `Dark`, or `System` (follows `prefers-color-scheme`) | System  |
+| **Reduce motion** | Disable all animations and transitions in the toolbar         | Off     |
+
+### Toolbar
+
+| Setting                               | Description                                                                                          | Default |
+| ------------------------------------- | ---------------------------------------------------------------------------------------------------- | ------- |
+| **Auto-hide when inactive**           | Collapse the toolbar pill after a period of inactivity. Options: Never, Always, 2 s, 5 s, 10 s, 30 s | 5 s     |
+| **Show toolbar when panel is closed** | Keep the toolbar pill visible even when no app panel is open                                         | On      |
+
+### Panel
+
+| Setting                    | Description                                                | Default |
+| -------------------------- | ---------------------------------------------------------- | ------- |
+| **Close on outside click** | Close the DevTools panel when clicking anywhere outside it | On      |
+
+### Editor
+
+| Setting              | Description                                                                                                      | Default       |
+| -------------------- | ---------------------------------------------------------------------------------------------------------------- | ------------- |
+| **Preferred editor** | Editor used when clicking "Open in editor" in the Inspector. Overrides the plugin-level `editor` option per-user | Auto-detected |
+
+Select from a dropdown of all editors supported by [`launch-editor`](https://github.com/yyx990803/launch-editor) (VS Code, WebStorm, Cursor, Vim, etc.). Choose **Auto-detected** to let `launch-editor` detect the running IDE from the OS process list or `EDITOR` / `VISUAL` environment variables.
+
+### Keyboard Shortcuts
+
+| Setting            | Description                               | Default           |
+| ------------------ | ----------------------------------------- | ----------------- |
+| **Toggle toolbar** | Open or close the DevTools panel          | `Alt`+`Shift`+`D` |
+| **Close panel**    | Dismiss the active app or close the panel | `Escape`          |
+
+Each keyboard shortcut has a **Record** button that enters capture mode — the next key combination you press (excluding lone modifier keys) is saved as the new binding. A **Reset** link appears next to a customised binding to restore the default.
+
+## Recording a Custom Shortcut
+
+1. Click **Record** next to the shortcut you want to change
+2. The button pulses and reads "Press keys…"
+3. Press the desired key combination (e.g. `Ctrl`+`Shift`+`F`)
+4. The new binding is saved immediately
+5. A **Reset** link appears if the binding differs from the default
+
+To cancel without saving, click the **✕** button.
+
+### Supported Key Formats
+
+Key names follow the browser's `KeyboardEvent.key` specification. Modifier prefixes are:
+
+| Modifier         | Prefix    |
+| ---------------- | --------- |
+| Alt / Option     | `Alt`     |
+| Control          | `Control` |
+| Meta / Cmd / Win | `Meta`    |
+| Shift            | `Shift`   |
+
+Examples: `Alt+Shift+D`, `Control+Shift+P`, `Meta+K`, `F12`
+
+## localStorage Schema
+
+All settings are stored as a JSON object:
+
+```ts
+interface DevToolsFrameState {
+    closeOnOutsideClick: boolean;
+    editor: string; // preferred editor key, "" = auto-detect
+    height: number; // panel height % (20–95)
+    isPip: boolean; // picture-in-picture mode
+    isFirstVisit: boolean; // onboarding hint shown
+    keybindings: {
+        toggle: string; // e.g. "Alt+Shift+D"
+        close: string; // e.g. "Escape"
+    };
+    left: number; // pill horizontal position % (0–100)
+    minimizePanelInactive: number; // ms, -1 = never
+    open: boolean; // panel open state (never restored on load)
+    position: "top" | "bottom" | "left" | "right";
+    preferShowFloatingPanel: boolean;
+    reduceMotion: boolean;
+    route: string;
+    top: number; // pill vertical position % (0–100)
+    viewMode: "default" | "fullscreen" | "wide";
+    width: number; // panel width % (0–100)
+}
+```
+
+**Storage key:** `__v_dt__frame_state`
+
+## Plugin Defaults
+
+You can set project-level defaults in `vite.config.ts`. These are used as the initial values when no `localStorage` state exists:
+
+```ts title="vite.config.ts"
+devToolbar({
+    closeOnOutsideClick: true,
+    editor: "webstorm", // seeds the "Preferred editor" dropdown for all users
+    height: 60,
+    keybindings: {
+        toggle: "Alt+Shift+D",
+        close: "Escape",
+    },
+    minimizePanelInactive: 5000,
+    position: "bottom",
+    reduceMotion: false,
+    width: 80,
+});
+```
+
+User choices in the Settings app always override these defaults.
+
+## View Modes
+
+The panel supports three view modes accessible via the panel header controls:
+
+| Mode         | Description                                 |
+| ------------ | ------------------------------------------- |
+| `default`    | Panel fills the configured width percentage |
+| `wide`       | Panel expands to 100% viewport width        |
+| `fullscreen` | Panel covers the entire viewport            |
+
+View mode can also be set programmatically via the [Global API](/docs/dev-toolbar/custom-apps/global-api).

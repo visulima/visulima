@@ -1,0 +1,295 @@
+---
+title: "Installation"
+description: "How to install and set up @visulima/path in your project."
+---
+
+# Installation
+
+## Package Manager
+
+Install **@visulima/path** using your preferred package manager:
+
+```bash npm2yarn
+npm install @visulima/path
+```
+
+## Requirements
+
+- **Node.js:** 22.13 or higher
+- **TypeScript:** 5.0+ (optional, for TypeScript projects)
+
+## Import Methods
+
+### Node.js (ESM)
+
+```typescript
+// Default import
+import path from "@visulima/path";
+
+// Named imports (recommended)
+import { resolve, join, basename, dirname, extname } from "@visulima/path";
+
+// Extra utilities
+import { filename, resolveAlias, isBinaryPath } from "@visulima/path/utils";
+```
+
+### Node.js (CommonJS)
+
+```javascript
+// Default import
+const path = require("@visulima/path");
+
+// Named imports
+const { resolve, join, basename, dirname } = require("@visulima/path");
+
+// Extra utilities
+const { filename, resolveAlias } = require("@visulima/path/utils");
+```
+
+### TypeScript
+
+TypeScript definitions are included automatically:
+
+```typescript
+import type { Path } from "@visulima/path";
+import path from "@visulima/path";
+
+// Full type checking and autocomplete
+const result: string = path.join("src", "index.ts");
+```
+
+## Migration from Node.js `path`
+
+### Drop-in Replacement
+
+Simply replace your Node.js `path` imports:
+
+```typescript
+// Before
+import path from "node:path";
+// or
+const path = require("node:path");
+
+// After
+import path from "@visulima/path";
+// or
+const path = require("@visulima/path");
+```
+
+**No other code changes needed!** All Node.js `path` methods work identically.
+
+### Named Imports
+
+```typescript
+// Before
+import { resolve, join } from "node:path";
+
+// After
+import { resolve, join } from "@visulima/path";
+```
+
+### What Changes?
+
+**Output normalization** - All paths use forward slashes:
+
+```typescript
+// Node.js path (on Windows)
+path.join("C:", "Users", "John"); // 'C:\\Users\\John'
+
+// @visulima/path (on Windows)
+path.join("C:", "Users", "John"); // 'C:/Users/John'
+```
+
+This ensures **consistent behavior** across all operating systems.
+
+## Verification
+
+Verify your installation works correctly:
+
+```typescript
+import { resolve, join, basename } from "@visulima/path";
+
+console.log(join("src", "config", "app.json"));
+// Output: 'src/config/app.json'
+
+console.log(resolve("docs", "guide.md"));
+// Output: '/current/directory/docs/guide.md'
+
+console.log(basename("/home/user/document.pdf"));
+// Output: 'document.pdf'
+```
+
+If you see output similar to above, installation is successful!
+
+## Subpath Exports
+
+The package provides subpath exports for extra utilities:
+
+```typescript
+// Main path module
+import path from "@visulima/path";
+import { join, resolve } from "@visulima/path";
+
+// Extra utilities
+import { filename, normalizeAliases, resolveAlias, reverseResolveAlias, isRelative, isBinaryPath, toPath, isWindows } from "@visulima/path/utils";
+```
+
+## Using with TypeScript
+
+### Type Definitions
+
+Full TypeScript support is included:
+
+```typescript
+import type { Path } from "@visulima/path";
+import type { ParsedPath } from "@visulima/path";
+
+const myPath: Path = await import("@visulima/path");
+```
+
+### Type Safety
+
+All methods are fully typed:
+
+```typescript
+import { parse, format } from "@visulima/path";
+
+// parse() returns ParsedPath type
+const parsed = parse("/home/user/file.txt");
+// parsed.root: string
+// parsed.dir: string
+// parsed.base: string
+// parsed.ext: string
+// parsed.name: string
+
+// format() accepts ParsedPath
+const formatted = format({
+    root: "/",
+    dir: "/home/user",
+    base: "file.txt",
+});
+```
+
+## Runtime Support
+
+**@visulima/path** works in multiple JavaScript runtimes:
+
+### Node.js
+
+```typescript
+import { join } from "@visulima/path";
+const config = join("src", "config.json");
+```
+
+### Deno
+
+```typescript
+import { join } from "npm:@visulima/path";
+const config = join("src", "config.json");
+```
+
+### Bun
+
+```typescript
+import { join } from "@visulima/path";
+const config = join("src", "config.json");
+```
+
+### Browsers (with bundlers)
+
+```typescript
+// Works with Vite, Webpack, Rollup, etc.
+import { join } from "@visulima/path";
+const assetPath = join("assets", "images", "logo.png");
+```
+
+## Common Setup Patterns
+
+### In a Build Tool
+
+```typescript
+// vite.config.ts
+import { resolve } from "@visulima/path";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+    resolve: {
+        alias: {
+            "@": resolve("src"),
+        },
+    },
+});
+```
+
+### In a Node.js Script
+
+```typescript
+#!/usr/bin/env node
+import { join, resolve, dirname } from "@visulima/path";
+import { fileURLToPath } from "node:url";
+
+// Get current file directory
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+// Resolve paths relative to script
+const configPath = join(__dirname, "config", "app.json");
+```
+
+### In a TypeScript Project
+
+```typescript
+// src/utils/paths.ts
+import { join, resolve } from "@visulima/path";
+
+export const ROOT_DIR = resolve(process.cwd());
+export const SRC_DIR = join(ROOT_DIR, "src");
+export const BUILD_DIR = join(ROOT_DIR, "dist");
+export const CONFIG_FILE = join(ROOT_DIR, "config.json");
+```
+
+## Troubleshooting
+
+### Module Not Found
+
+If you see `Cannot find module '@visulima/path'`:
+
+```bash npm2yarn
+# Clear cache and reinstall
+rm -rf node_modules package-lock.json
+npm install
+```
+
+### TypeScript Errors
+
+Ensure your `tsconfig.json` includes:
+
+```json
+{
+    "compilerOptions": {
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "module": "ES2020"
+    }
+}
+```
+
+### Subpath Not Resolved
+
+If `@visulima/path/utils` doesn't work, verify Node.js version:
+
+```bash
+node --version
+# Should be 22.13 or higher
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use all path methods
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>

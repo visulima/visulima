@@ -1,0 +1,297 @@
+import { getErrorConstructor, isErrorLike } from "./error-constructors";
+import NonError from "./non-error";
+
+const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+    if (typeof value !== "object" || value === null) {
+        return false;
+    }
+
+    const proto: unknown = Object.getPrototypeOf(value);
+
+    return proto === null || proto === Object.prototype || Object.getPrototypeOf(proto) === null;
+};
+
+interface DeserializeOptions {
+    maxDepth?: number;
+}
+
+/**
+ * Options for deserializing error objects.
+ */
+type DeserializeOptionsType = DeserializeOptions;
+
+const defaultOptions: DeserializeOptions = {
+    maxDepth: Number.POSITIVE_INFINITY,
+};
+
+/**
+ * Deserialize a plain object, potentially reconstructing it as an Error.
+ */
+const deserializePlainObject = (object: Record<string, unknown>, options: DeserializeOptionsType, depth = 0): Error => {
+    // Check if it looks like a serialized error first
+    if (isErrorLike(object)) {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        return reconstructError(object, options, depth);
+    }
+
+    // Check maxDepth for non-error objects
+    if (options.maxDepth !== undefined && depth >= options.maxDepth) {
+        return new NonError(JSON.stringify(object));
+    }
+
+    // Not an error-like object
+    return new NonError(JSON.stringify(object));
+};
+
+/**
+ * Reconstruct an AggregateError from serialized data.
+ */
+const reconstructAggregateError = (
+    Constructor: new (...arguments_: unknown[]) => Error,
+    errors: unknown[],
+    message: unknown,
+    options: DeserializeOptionsType,
+    depth: number,
+): Error => {
+    // Reconstruct the errors array first
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    const reconstructedErrors = errors.map((error_) => deserializeValue(error_, options, depth + 1));
+
+    return new (Constructor as new (errors: unknown[], message: unknown) => Error)(reconstructedErrors, message);
+};
+
+/**
+ * Reconstruct an Error from a serialized error object.
+ */
+const reconstructError = (serialized: Record<string, unknown>, options: DeserializeOptionsType, depth: number): Error => {
+    // Check maxDepth for error reconstruction
+    if (options.maxDepth !== undefined && depth >= options.maxDepth) {
+        return new NonError(JSON.stringify(serialized));
+    }
+
+    const { cause, errors, message, name, stack, ...properties } = serialized;
+
+    // Get the appropriate constructor
+    const Constructor = getErrorConstructor(name as string) ?? Error;
+
+    // Create the error instance, handling AggregateError specially
+    const error
+        = name === "AggregateError" && Array.isArray(errors)
+            ? reconstructAggregateError(Constructor as new (...arguments_: unknown[]) => Error, errors, message, options, depth)
+            : new Constructor(message as string);
+
+    // Only restore the name if it's not already set by the constructor
+    // The constructor's name property takes precedence
+    if (!error.name && name) {
+        error.name = name as string;
+    }
+
+    // Restore the message if provided in serialized data
+    if (message !== undefined) {
+        error.message = message as string;
+    }
+
+    // Restore the stack if provided
+    if (stack) {
+        error.stack = stack as string;
+    }
+
+    // Restore other properties
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    restoreErrorProperties(error, properties, cause, name, options, depth);
+
+    // Restore cause if present
+    if (cause !== undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
+        error.cause = deserializeValue(cause, options, depth + 1);
+    }
+
+    // Make properties enumerable where appropriate
+    // eslint-disable-next-line @typescript-eslint/no-use-before-define
+    makePropertiesEnumerable(error, serialized);
+
+    return error;
+};
+
+/**
+ * Deserialize a nested value.
+ */
+const deserializeValue = (value: unknown, options: DeserializeOptionsType, depth: number): unknown => {
+    if (isPlainObject(value)) {
+        // Reconstruct Map/Set from the structured form produced by `serializeValue`.
+        // eslint-disable-next-line no-underscore-dangle -- serialization marker
+        if (value.__dataType === "Map" && Array.isArray(value.value)) {
+            return new Map(
+                (value.value as [unknown, unknown][]).map(([k, v]) => [deserializeValue(k, options, depth + 1), deserializeValue(v, options, depth + 1)]),
+            );
+        }
+
+        // eslint-disable-next-line no-underscore-dangle -- serialization marker
+        if (value.__dataType === "Set" && Array.isArray(value.value)) {
+            return new Set(value.value.map((v) => deserializeValue(v, options, depth + 1)));
+        }
+
+        // Check if it looks like a serialized error
+        if (isErrorLike(value)) {
+            return deserializePlainObject(value, options, depth);
+        }
+
+        // For nested plain objects that aren't error-like, preserve them as plain objects
+        // and recursively deserialize their properties
+        const result: Record<string, unknown> = {};
+
+        // eslint-disable-next-line @typescript-eslint/naming-convention
+        for (const [key, value_] of Object.entries(value)) {
+            // Skip prototype-pollution vectors when rebuilding nested plain objects.
+            if (key === "__proto__" || key === "constructor" || key === "prototype") {
+                continue;
+            }
+
+            result[key] = deserializeValue(value_, options, depth + 1);
+        }
+
+        return result;
+    }
+
+    if (Array.isArray(value)) {
+        return value.map((item) => deserializeValue(item, options, depth));
+    }
+
+    return value;
+};
+
+/**
+ * Restore additional properties on an error object.
+ */
+const restoreErrorProperties = (
+    error: Error,
+    properties: Record<string, unknown>,
+    cause: unknown,
+    name: unknown,
+    options: DeserializeOptionsType,
+    depth: number,
+): void => {
+    const errorCopy = error as unknown as Record<string, unknown>;
+
+    for (const [key, value] of Object.entries(properties)) {
+        if (key === "__proto__" || key === "constructor" || key === "prototype") {
+            // Skip prototype-pollution / prototype-replacement vectors. A payload such as
+            // `{"name":"Error","message":"x","__proto__":{"isAdmin":true}}` would otherwise trigger
+            // the `__proto__` setter and replace the reconstructed error's prototype with
+            // attacker-controlled data (so `instanceof Error` becomes false). Since deserialization
+            // of cross-boundary, potentially untrusted data is this API's purpose, these keys are dropped.
+            continue;
+        } else if (key === "cause" && cause !== undefined) {
+            // Cause is already handled above, skip
+            continue;
+        } else if (key === "errors" && name === "AggregateError") {
+            // Errors are already handled above for AggregateError, skip
+            continue;
+        } else {
+            // Recursively deserialize nested values, assigned as an own data property so a
+            // payload key like "constructor" cannot clobber inherited accessors.
+            Object.defineProperty(errorCopy, key, {
+                configurable: true,
+                enumerable: true,
+                value: deserializeValue(value, options, depth + 1),
+                writable: true,
+            });
+        }
+    }
+};
+
+/**
+ * Make error properties enumerable based on the original serialized object.
+ */
+const makePropertiesEnumerable = (error: Error, serialized: Record<string, unknown>): void => {
+    // Get all properties from the error (including inherited ones)
+    const errorProperties = new Set<string>(["message", "name", "stack"]);
+
+    // Add standard Error properties
+
+    // Add any additional properties that were in the serialized object
+    for (const key of Object.keys(serialized)) {
+        errorProperties.add(key);
+    }
+
+    // Define properties to ensure proper enumerability
+    for (const key of errorProperties) {
+        if (key in error) {
+            const descriptor = Object.getOwnPropertyDescriptor(error, key);
+
+            if (descriptor && !descriptor.enumerable) {
+                // Make it enumerable if it wasn't
+                Object.defineProperty(error, key, {
+                    ...descriptor,
+                    enumerable: true,
+                });
+            }
+        }
+    }
+};
+
+/**
+ * Handle primitive values by wrapping them in NonError.
+ */
+const handlePrimitive = (value: string | number | boolean | null): NonError => new NonError(JSON.stringify(value));
+
+/**
+ * Handle arrays by wrapping them in NonError.
+ */
+const handleArray = (value: unknown[]): NonError => new NonError(JSON.stringify(value));
+
+/**
+ * Handle plain objects.
+ */
+const handlePlainObject = (value: Record<string, unknown>, config: DeserializeOptionsType): Error => {
+    if (isErrorLike(value)) {
+        return reconstructError(value, config, 0);
+    }
+
+    return deserializePlainObject(value, config);
+};
+
+/**
+ * Deserialize a value back to its original form.
+ * If the value looks like a serialized error, it will be reconstructed as an Error instance.
+ * Otherwise, it will be wrapped in a NonError.
+ */
+const deserialize = (value: unknown, options: DeserializeOptionsType = {}): Error => {
+    const config = { ...defaultOptions, ...options };
+
+    // If it's already an Error, return it as-is
+    if (value instanceof Error) {
+        return value;
+    }
+
+    // Handle null
+    if (value === null) {
+        // eslint-disable-next-line unicorn/no-null
+        return handlePrimitive(null);
+    }
+
+    // Handle primitives
+    if (typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+        return handlePrimitive(value);
+    }
+
+    // Handle arrays
+    if (Array.isArray(value)) {
+        return handleArray(value);
+    }
+
+    // Check if it looks like a serialized error (this handles objects with prototypes like serialized errors)
+    if (isErrorLike(value)) {
+        return reconstructError(value, config, 0);
+    }
+
+    // Handle plain objects
+    if (isPlainObject(value)) {
+        return handlePlainObject(value, config);
+    }
+
+    // Handle other types
+    return new NonError(JSON.stringify(value));
+};
+
+export default deserialize;

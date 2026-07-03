@@ -1,0 +1,50 @@
+---
+title: "Code Frames"
+---
+
+# Code Frames
+
+## Basic Usage
+
+```typescript
+import { codeFrame } from "@visulima/error/code-frame";
+
+const source = `
+function add(a, b) {
+    return a + b;
+}
+
+const result = add(1, "2");
+`.trim();
+
+const frame = codeFrame(source, {
+    start: { line: 5, column: 20 },
+});
+
+console.log(frame);
+```
+
+## With Range
+
+```typescript
+const frame = codeFrame(source, {
+    start: { line: 5, column: 16 },
+    end: { line: 5, column: 19 },
+});
+```
+
+## Custom Options
+
+```typescript
+const frame = codeFrame(
+    source,
+    {
+        start: { line: 5, column: 16 },
+    },
+    {
+        linesAbove: 3,
+        linesBelow: 2,
+        message: "Type mismatch",
+    },
+);
+```

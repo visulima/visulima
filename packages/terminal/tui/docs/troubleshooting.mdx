@@ -1,0 +1,95 @@
+---
+title: Troubleshooting
+description: "Common issues and fixes for @visulima/tui: TTY errors, raw mode cleanup, blank screen, input, mouse, paste, scrolling, and more"
+---
+
+# Troubleshooting
+
+## "Device not configured" (os error 6)
+
+**Cause:** stdin is not attached to a real TTY.
+
+Common failure cases:
+
+```bash
+./app > output.log
+printf '' | ./app
+```
+
+Run in an interactive terminal session instead.
+
+## Scrollback History Is Cleared on Exit
+
+`render()` uses `clearScreenAndHomeCursor` (CSI H + CSI 2J — viewport-only clear) when exiting and on rerender, replacing the older `resetTerminal` call. The terminal scrollback buffer is preserved so users can scroll back through prior output after the app exits.
+
+## Terminal Left in Raw Mode After Crash
+
+If the process dies hard (`kill -9`, OOM, host crash), cleanup hooks do not run.
+
+Recovery in the same terminal:
+
+```bash
+reset
+# or
+stty sane
+```
+
+## Blank Screen / No Visible Output
+
+Check these first:
+
+1. Root component renders visible content (not `null`)
+2. App is in a real TTY
+3. Terminal emulator supports alternate screen mode
+
+## Input Not Responding
+
+Checklist:
+
+- `process.stdin.isTTY === true`
+- In React mode, use `render()` (it starts input parser + app lifecycle)
+- In raw-buffer mode, create a `TerminalGuard` before your loop
+
+## Mouse Events Not Firing
+
+- React mode enables mouse tracking by default
+- Raw-buffer mode needs `new TerminalGuard(true)`
+- Confirm your terminal supports SGR mouse tracking (1006)
+
+## Paste Not Routed to `usePaste`
+
+Routing behavior is intentional:
+
+- If one or more active `usePaste` listeners exist, paste goes to `usePaste`
+- Otherwise, paste falls back to `useInput`
+
+In raw-buffer mode, bracketed paste requires `new TerminalGuard(true)`.
+
+## Scrolling Content Moves Sibling UI Unexpectedly
+
+If you use negative margins to "scroll" a child, Yoga shifts layout instead of clipping.
+
+Use data slicing instead:
+
+```tsx
+const visible = items.slice(scroll.offset, scroll.offset + viewportHeight);
+```
+
+## Text Wraps Unexpectedly
+
+Text currently wraps to available layout width. There is no `Text wrap="..."` API in `@visulima/tui`.
+
+If output looks wrong, check parent width constraints (`Box width`, `padding`, `border`, etc.).
+
+## Wide Unicode/Emoji Alignment Issues
+
+`@visulima/tui` uses width-aware rendering for full-width characters (CJK and many emoji) and marks continuation cells explicitly in the buffer/diff pipeline.
+
+If alignment still looks off, it's usually due to terminal-specific grapheme behavior (some ZWJ emoji clusters). For strict layout-sensitive UIs, prefer single-codepoint glyphs over complex emoji sequences.
+
+## `renderToString` Output Surprises
+
+`renderToString` is synchronous and returns a plain string snapshot.
+
+- `useLayoutEffect` updates can affect output
+- `useEffect` async follow-up updates do not affect returned output

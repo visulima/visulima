@@ -1,0 +1,30 @@
+{
+    "name": "colorize-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "node ./",
+        "test:bench:vitest": "vitest bench"
+    },
+    "dependencies": {
+        "@visulima/colorize": "workspace:*",
+        "ansi-colors": "catalog:prod",
+        "ansis": "catalog:prod",
+        "chalk": "catalog:prod",
+        "chalk-template": "catalog:prod",
+        "cli-color": "catalog:prod",
+        "colorette": "catalog:prod",
+        "colors": "catalog:prod",
+        "colors-cli": "catalog:prod",
+        "kleur": "catalog:prod",
+        "kolorist": "catalog:prod",
+        "picocolors": "catalog:prod"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "benchmark": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}

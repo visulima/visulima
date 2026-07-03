@@ -1,0 +1,86 @@
+---
+title: Mailtrap
+description: Send emails using the Mailtrap API with @visulima/email
+---
+
+# Mailtrap Provider
+
+The Mailtrap provider allows you to send emails through the [Mailtrap API](https://mailtrap.io/api-docs), an email testing and development tool that also supports transactional email sending.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { mailtrapProvider } from "@visulima/email/providers/mailtrap";
+
+const mail = createMail(
+    mailtrapProvider({
+        apiToken: process.env.MAILTRAP_API_TOKEN!,
+    }),
+);
+```
+
+## Configuration
+
+The `MailtrapConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                        | Description                     |
+| ---------- | --------- | -------- | ------------------------------ | ------------------------------- |
+| `apiToken` | `string`  | Yes      | -                              | Your Mailtrap API token         |
+| `endpoint` | `string`  | No       | `https://send.api.mailtrap.io` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                        | Enable debug logging            |
+| `logger`   | `Console` | No       | -                              | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                            | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                        | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Mailtrap").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Mailtrap provider supports additional options through `MailtrapEmailOptions`:
+
+```typescript
+import type { MailtrapEmailOptions } from "@visulima/email/providers/mailtrap";
+
+const options: MailtrapEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    category: "welcome",
+    templateUuid: "tmpl-uuid-xxx",
+    templateVariables: { name: "John" },
+    customVariables: { userId: "123" },
+};
+```
+
+| Option              | Type                      | Description                  |
+| ------------------- | ------------------------- | ---------------------------- |
+| `category`          | `string`                  | Category for categorization  |
+| `templateUuid`      | `string`                  | Mailtrap template UUID       |
+| `templateVariables` | `Record<string, unknown>` | Template variables           |
+| `customVariables`   | `Record<string, unknown>` | Custom variables (key-value) |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | Yes       |

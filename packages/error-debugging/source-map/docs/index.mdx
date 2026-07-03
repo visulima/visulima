@@ -1,0 +1,39 @@
+---
+title: Introduction
+description: "Parse and generate source maps for better debugging of transpiled code."
+---
+
+# @visulima/source-map
+
+Parse, generate, and manipulate source maps for debugging transpiled JavaScript and TypeScript.
+
+## Key Features
+
+- Parse source maps
+- Generate source maps
+- Map positions
+- Support for inline maps
+
+## Quick Start
+
+```typescript
+import { SourceMapConsumer } from "@visulima/source-map";
+
+const map = await SourceMapConsumer.fromSourceMap(sourceMap);
+const original = map.originalPositionFor({ line: 1, column: 0 });
+```
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started
+    </Card>
+    <Card title="Usage" href="/usage">
+        Usage guide
+    </Card>
+    <Card title="API" href="/api">
+        API docs
+    </Card>
+</Cards>

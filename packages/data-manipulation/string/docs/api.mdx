@@ -1,0 +1,1021 @@
+---
+title: API Reference
+description: Complete API reference for @visulima/string functions and types.
+---
+
+# API Reference
+
+Complete reference for all functions, types, and utilities provided by @visulima/string.
+
+## Case Conversion
+
+### camelCase
+
+Converts string to camelCase.
+
+```typescript
+function camelCase(input: string, options?: CaseOptions): string;
+```
+
+**Parameters:**
+
+- `input`: String to convert
+- `options`: Optional configuration
+
+**Returns:** String in camelCase format
+
+**Example:**
+
+```typescript
+camelCase("hello-world"); // 'helloWorld'
+```
+
+---
+
+### pascalCase
+
+Converts string to PascalCase.
+
+```typescript
+function pascalCase(input: string, options?: CaseOptions): string;
+```
+
+---
+
+### snakeCase
+
+Converts string to snake_case.
+
+```typescript
+function snakeCase(input: string, options?: CaseOptions): string;
+```
+
+---
+
+### kebabCase
+
+Converts string to kebab-case.
+
+```typescript
+function kebabCase(input: string, options?: KebabCaseOptions): string;
+```
+
+---
+
+### constantCase
+
+Converts string to CONSTANT_CASE.
+
+```typescript
+function constantCase(input: string, options?: CaseOptions): string;
+```
+
+---
+
+### dotCase
+
+Converts string to dot.case.
+
+```typescript
+function dotCase(input: string, options?: CaseOptions): string;
+```
+
+---
+
+### pathCase
+
+Converts string to path/case.
+
+```typescript
+function pathCase(input: string, options?: CaseOptions): string;
+```
+
+---
+
+### titleCase
+
+Converts string to Title Case.
+
+```typescript
+function titleCase(input: string, options?: CaseOptions): string;
+```
+
+---
+
+### sentenceCase
+
+Converts string to Sentence case.
+
+```typescript
+function sentenceCase(input: string, options?: CaseOptions): string;
+```
+
+---
+
+### splitByCase
+
+Splits string by case transitions.
+
+```typescript
+function splitByCase(input: string, options?: SplitOptions): string[];
+```
+
+**Parameters:**
+
+- `input`: String to split
+- `options`: Optional configuration
+
+**Returns:** Array of string segments
+
+**Example:**
+
+```typescript
+splitByCase("camelCase"); // ['camel', 'Case']
+```
+
+---
+
+### flipCase
+
+Inverts case of each character in a string.
+
+```typescript
+function flipCase(input: string, options?: FlipOptions): string;
+```
+
+**Parameters:**
+
+- `input`: String to flip case
+- `options`: Optional configuration (same as CaseOptions except handleEmoji)
+
+**Returns:** String with inverted case
+
+**Example:**
+
+```typescript
+flipCase("Hello World"); // 'hELLO wORLD'
+flipCase("XMLHttpRequest"); // 'xmlhTTPrEQUEST'
+```
+
+---
+
+### identifyCase
+
+Identifies the case style of a string.
+
+```typescript
+function identifyCase(input: string): IdentifyCase;
+```
+
+**Parameters:**
+
+- `input`: String to identify
+
+**Returns:** Case style identifier: `'camel'`, `'pascal'`, `'snake'`, `'kebab'`, `'upper_snake'`, `'lower'`, `'upper'`, `'title'`, `'sentence'`, `'mixed'`, or `'unknown'`
+
+**Example:**
+
+```typescript
+identifyCase("helloWorld"); // 'camel'
+identifyCase("HELLO_WORLD"); // 'upper_snake'
+identifyCase("Hello World"); // 'title'
+```
+
+---
+
+### lowerFirst
+
+Converts first character to lowercase.
+
+```typescript
+function lowerFirst(input: string): string;
+```
+
+**Example:**
+
+```typescript
+lowerFirst("Hello"); // 'hello'
+lowerFirst("HELLO"); // 'hELLO'
+```
+
+---
+
+### upperFirst
+
+Converts first character to uppercase.
+
+```typescript
+function upperFirst(input: string): string;
+```
+
+**Example:**
+
+```typescript
+upperFirst("hello"); // 'Hello'
+upperFirst("hello world"); // 'Hello world'
+```
+
+---
+
+### noCase
+
+Removes all case styling, converting to lowercase with spaces.
+
+```typescript
+function noCase(input: string, options?: CaseOptions): string;
+```
+
+**Example:**
+
+```typescript
+noCase("camelCase"); // 'camel case'
+noCase("PascalCase"); // 'pascal case'
+noCase("snake_case"); // 'snake case'
+```
+
+---
+
+### flatCase
+
+Converts string to flatcase (no separators, all lowercase).
+
+```typescript
+function flatCase(input: string, options?: CaseOptions): string;
+```
+
+**Example:**
+
+```typescript
+flatCase("foo bar"); // 'foobar'
+flatCase("foo-bar"); // 'foobar'
+```
+
+---
+
+### capitalCase
+
+Converts string to Capital Case (each word capitalized).
+
+```typescript
+function capitalCase(input: string, options?: CaseOptions): string;
+```
+
+**Example:**
+
+```typescript
+capitalCase("foo bar"); // 'Foo Bar'
+capitalCase("foo-bar"); // 'Foo Bar'
+```
+
+---
+
+### trainCase
+
+Converts string to Train-Case (each word capitalized, hyphen-separated).
+
+```typescript
+function trainCase(input: string, options?: CaseOptions): string;
+```
+
+**Example:**
+
+```typescript
+trainCase("foo bar"); // 'Foo-Bar'
+trainCase("XMLHttpRequest"); // 'Xml-Http-Request'
+```
+
+---
+
+### pascalSnakeCase
+
+Converts string to Pascal_Snake_Case.
+
+```typescript
+function pascalSnakeCase(input: string, options?: CaseOptions): string;
+```
+
+**Example:**
+
+```typescript
+pascalSnakeCase("foo bar"); // 'Foo_Bar'
+pascalSnakeCase("XMLHttpRequest"); // 'Xml_Http_Request'
+```
+
+---
+
+## String Manipulation
+
+### truncate
+
+Truncates string to specified length.
+
+```typescript
+function truncate(input: string, length: number, options?: TruncateOptions): string;
+```
+
+**Parameters:**
+
+- `input`: String to truncate
+- `length`: Maximum length
+- `options`: Optional configuration
+
+**Returns:** Truncated string
+
+**Example:**
+
+```typescript
+truncate("hello world", 8); // 'hello...'
+```
+
+---
+
+### wordWrap
+
+Wraps text to specified width.
+
+```typescript
+function wordWrap(text: string, options?: WordWrapOptions): string;
+```
+
+**Parameters:**
+
+- `text`: Text to wrap
+- `options`: Optional configuration
+
+**Returns:** Wrapped text
+
+**Example:**
+
+```typescript
+wordWrap("Long text...", { width: 40 });
+```
+
+---
+
+### alignText
+
+Aligns text to left, center, or right.
+
+```typescript
+function alignText(text: string | string[], options?: AlignTextOptions): string | string[];
+```
+
+**Parameters:**
+
+- `text`: Text to align (string or array of strings)
+- `options`: Optional configuration
+
+**Returns:** Aligned text in same format as input
+
+**Example:**
+
+```typescript
+alignText("Hello", { align: "center" });
+```
+
+---
+
+### outdent
+
+Removes leading indentation.
+
+```typescript
+function outdent(strings: TemplateStringsArray, ...values: any[]): string;
+
+function outdent(options: OutdentOptions): typeof outdent;
+
+namespace outdent {
+    function string(input: string): string;
+}
+```
+
+**Usage:**
+
+```typescript
+// Template literal
+outdent`
+  Hello
+  World
+`;
+
+// String input
+outdent.string("  Hello\n  World");
+
+// With options
+const custom = outdent({ trimLeadingNewline: false });
+custom`Hello`;
+```
+
+---
+
+### slice
+
+Unicode-aware string slicing.
+
+```typescript
+function slice(input: string, start: number, end?: number, options?: SliceOptions): string;
+```
+
+**Parameters:**
+
+- `input`: String to slice
+- `start`: Start index
+- `end`: End index (optional)
+- `options`: Optional configuration
+
+**Returns:** Sliced string
+
+**Example:**
+
+```typescript
+slice("hello world", 0, 5); // 'hello'
+```
+
+---
+
+### replaceString
+
+Advanced string replacement with ignore ranges.
+
+```typescript
+function replaceString(source: string, searches: OptionReplaceArray, ignoreRanges?: IntervalArray): string;
+```
+
+**Parameters:**
+
+- `source`: Source string
+- `searches`: Array of [search, replace] tuples
+- `ignoreRanges`: Optional ranges to ignore
+
+**Returns:** String with replacements applied
+
+**Example:**
+
+```typescript
+replaceString("hello", [["h", "H"]], []); // 'Hello'
+```
+
+---
+
+### excerpt
+
+Strips HTML tags and truncates text to a specified limit.
+
+```typescript
+function excerpt(html: string, limit: number, options?: ExcerptOptions): string;
+```
+
+**Parameters:**
+
+- `html`: HTML string to process
+- `limit`: Maximum character limit
+- `options`: Optional configuration
+
+**Returns:** Plain text string with HTML removed and truncated
+
+**Example:**
+
+```typescript
+excerpt("<p>Hello <strong>world</strong>!</p>", 10);
+// 'Hello wor…'
+
+excerpt("<div>Content</div>", 7);
+// 'Content'
+```
+
+---
+
+### countOccurrences
+
+Counts occurrences of a substring in a string.
+
+```typescript
+function countOccurrences(value: string, substring: string): number;
+```
+
+**Parameters:**
+
+- `value`: Content to search in
+- `substring`: Substring to look for (must be non-empty)
+
+**Returns:** Count of `substring`s in `value`
+
+**Throws:** `TypeError` when substring is not a string or is empty
+
+**Example:**
+
+```typescript
+countOccurrences("foo", "o"); // 2
+countOccurrences("fo fooo fo", "o"); // 5
+countOccurrences("a🤔b🤔c", "🤔"); // 2
+```
+
+---
+
+### direction
+
+Detects the direction of text: left-to-right, right-to-left, or neutral.
+
+```typescript
+function direction(value: string): "rtl" | "ltr" | "neutral";
+```
+
+**Parameters:**
+
+- `value`: The string to analyze
+
+**Returns:** The text direction: `'rtl'` for right-to-left, `'ltr'` for left-to-right, or `'neutral'` for neutral
+
+**Example:**
+
+```typescript
+direction("english"); // 'ltr'
+direction("الجملة"); // 'rtl'
+direction("123"); // 'neutral'
+direction(""); // 'neutral'
+```
+
+---
+
+## String Width
+
+### getStringWidth
+
+Calculates visual width of string.
+
+```typescript
+function getStringWidth(input: string, options?: StringWidthOptions): number;
+```
+
+**Parameters:**
+
+- `input`: String to measure
+- `options`: Optional configuration
+
+**Returns:** Visual width in columns
+
+**Example:**
+
+```typescript
+getStringWidth("hello"); // 5
+getStringWidth("你好"); // 4
+```
+
+---
+
+### getStringTruncatedWidth
+
+Calculates width with truncation support.
+
+```typescript
+function getStringTruncatedWidth(input: string, options?: StringTruncatedWidthOptions): StringTruncatedWidthResult;
+```
+
+**Parameters:**
+
+- `input`: String to measure
+- `options`: Optional configuration
+
+**Returns:** Object with width, truncation info, and index
+
+**Example:**
+
+```typescript
+getStringTruncatedWidth("hello", { limit: 3 });
+// { width: 3, truncated: true, ellipsed: false, index: 3 }
+```
+
+---
+
+## Slugification
+
+### slugify
+
+Creates URL-friendly slug.
+
+```typescript
+function slugify(input: string, options?: SlugifyOptions): string;
+```
+
+**Parameters:**
+
+- `input`: String to slugify
+- `options`: Optional configuration
+
+**Returns:** URL-friendly slug
+
+**Example:**
+
+```typescript
+slugify("Hello World!"); // 'hello-world'
+```
+
+---
+
+### transliterate
+
+Transliterates Unicode to ASCII.
+
+```typescript
+function transliterate(source: string, options?: OptionsTransliterate): string;
+```
+
+**Parameters:**
+
+- `source`: String to transliterate
+- `options`: Optional configuration
+
+**Returns:** Transliterated string
+
+**Example:**
+
+```typescript
+transliterate("Café"); // 'Cafe'
+```
+
+---
+
+## String Similarity
+
+### distance
+
+Calculates Levenshtein distance.
+
+```typescript
+function distance(a: string, b: string): number;
+```
+
+**Parameters:**
+
+- `a`: First string
+- `b`: Second string
+
+**Returns:** Edit distance
+
+**Example:**
+
+```typescript
+distance("hello", "hallo"); // 1
+```
+
+---
+
+### closest
+
+Finds closest matching string.
+
+```typescript
+function closest(target: string, options: string[]): string | null;
+```
+
+**Parameters:**
+
+- `target`: Target string
+- `options`: Array of candidate strings
+
+**Returns:** Closest match or null
+
+**Example:**
+
+```typescript
+closest("aple", ["apple", "banana"]); // 'apple'
+```
+
+---
+
+### closestN
+
+Finds N closest matches.
+
+```typescript
+function closestN(target: string, options: string[], count: number): string[];
+```
+
+**Parameters:**
+
+- `target`: Target string
+- `options`: Array of candidate strings
+- `count`: Number of matches to return
+
+**Returns:** Array of closest matches
+
+---
+
+### closestString
+
+Finds closest string with options.
+
+```typescript
+function closestString(target: string, options: string[], config?: ClosestStringOptions): ClosestStringResult | null;
+```
+
+**Returns:** Object with value, distance, and similarity
+
+---
+
+### compareSimilarity
+
+Compares two strings.
+
+```typescript
+function compareSimilarity(
+    a: string,
+    b: string,
+    options?: CompareSimilarityOptions,
+): {
+    distance: number;
+    similarity: number;
+    equal: boolean;
+};
+```
+
+---
+
+### wordSimilaritySort
+
+Sorts strings by similarity.
+
+```typescript
+function wordSimilaritySort(target: string, words: string[], options?: WordSimilaritySortOptions): string[];
+```
+
+---
+
+## Utilities
+
+### escapeRegExp
+
+Escapes special regex characters for safe use in regular expressions.
+
+```typescript
+function escapeRegExp(string: string): string;
+```
+
+**Parameters:**
+
+- `string`: String to escape
+
+**Returns:** Escaped string safe for use in regex
+
+**Example:**
+
+```typescript
+escapeRegExp("hello.world"); // 'hello\\.world'
+escapeRegExp("(test)"); // '\\(test\\)'
+```
+
+---
+
+### inRange
+
+Checks if a number falls within any of the specified intervals.
+
+```typescript
+function inRange(value: number, ranges: IntervalArray): boolean;
+```
+
+**Parameters:**
+
+- `value`: Number to check
+- `ranges`: Array of [start, end] intervals
+
+**Returns:** True if number is within any interval
+
+**Example:**
+
+```typescript
+inRange(5, [
+    [0, 10],
+    [20, 30],
+]); // true
+inRange(15, [
+    [0, 10],
+    [20, 30],
+]); // false
+```
+
+---
+
+### hasChinese
+
+Checks if string contains Chinese characters (Han script).
+
+```typescript
+function hasChinese(text: string): boolean;
+```
+
+**Parameters:**
+
+- `text`: String to check
+
+**Returns:** True if string contains Chinese characters
+
+**Example:**
+
+```typescript
+hasChinese("你好"); // true
+hasChinese("hello"); // false
+hasChinese("hello 世界"); // true
+```
+
+---
+
+### hasPunctuationOrSpace
+
+Checks if string contains punctuation or space characters.
+
+```typescript
+function hasPunctuationOrSpace(text: string): boolean;
+```
+
+**Parameters:**
+
+- `text`: String to check
+
+**Returns:** True if string contains punctuation or space
+
+**Example:**
+
+```typescript
+hasPunctuationOrSpace("hello world"); // true
+hasPunctuationOrSpace("hello,world"); // true
+hasPunctuationOrSpace("helloworld"); // false
+```
+
+---
+
+### findStringOccurrences
+
+Finds all occurrences of multiple substrings and returns their positions.
+
+```typescript
+function findStringOccurrences(source: string, targets: string[]): IntervalArray;
+```
+
+**Parameters:**
+
+- `source`: String to search within
+- `targets`: Array of strings to search for
+
+**Returns:** Array of [start, end] intervals for each occurrence
+
+**Example:**
+
+```typescript
+findStringOccurrences("hello world hello", ["hello", "world"]);
+// [[0, 4], [6, 10], [12, 16]]
+
+findStringOccurrences("abc def abc", ["abc"]);
+// [[0, 2], [8, 10]]
+```
+
+---
+
+## Testing
+
+### toEqualAnsi
+
+Vitest matcher for ANSI strings.
+
+```typescript
+function toEqualAnsi(received: string, expected: string): { pass: boolean; message: () => string };
+```
+
+**Usage:**
+
+```typescript
+expect.extend({ toEqualAnsi });
+expect(actual).toEqualAnsi(expected);
+```
+
+---
+
+### formatAnsiString
+
+Formats ANSI string for display.
+
+```typescript
+function formatAnsiString(input: string): {
+    ansi: string;
+    stripped: string;
+    visible: string;
+    json: string;
+    lengthDifference: number;
+};
+```
+
+---
+
+### compareAnsiStrings
+
+Compares two ANSI strings.
+
+```typescript
+function compareAnsiStrings(
+    actual: string,
+    expected: string,
+): {
+    ansiEqual: boolean;
+    strippedEqual: boolean;
+    summary: string;
+    actual: FormattedAnsiString;
+    expected: FormattedAnsiString;
+};
+```
+
+---
+
+## Type Definitions
+
+### CaseOptions
+
+```typescript
+interface CaseOptions {
+    cache?: boolean;
+    cacheMaxSize?: number;
+    cacheStore?: Map<string, string>;
+    knownAcronyms?: ReadonlyArray<string>;
+    locale?: string;
+}
+```
+
+### TruncateOptions
+
+```typescript
+interface TruncateOptions {
+    ellipsis?: string;
+    ellipsisWidth?: number;
+    position?: "end" | "middle" | "start";
+    preferTruncationOnSpace?: boolean;
+    width?: StringWidthOptions;
+}
+```
+
+### StringWidthOptions
+
+```typescript
+interface StringWidthOptions {
+    ambiguousIsNarrow?: boolean;
+    ansiWidth?: number;
+    controlWidth?: number;
+    countAnsiEscapeCodes?: boolean;
+    emojiWidth?: number;
+    fullWidth?: number;
+    regularWidth?: number;
+    tabWidth?: number;
+    wideWidth?: number;
+}
+```
+
+### SlugifyOptions
+
+```typescript
+interface SlugifyOptions {
+    allowedChars?: string;
+    fixChineseSpacing?: boolean;
+    ignore?: string[];
+    lowercase?: boolean;
+    replaceAfter?: OptionReplaceCombined;
+    replaceBefore?: OptionReplaceCombined;
+    separator?: string;
+    transliterate?: boolean;
+    trim?: boolean;
+    unknown?: string;
+    uppercase?: boolean;
+}
+```
+
+### ExcerptOptions
+
+```typescript
+interface ExcerptOptions {
+    // String to append when truncation occurs
+    ellipsis?: string; // default: '…'
+
+    // All other TruncateOptions except 'position' (always 'end')
+    // See TruncateOptions for full details
+}
+```
+
+### FlipOptions
+
+```typescript
+interface FlipOptions extends Omit<CaseOptions, "handleEmoji"> {
+    // Same as CaseOptions but handleEmoji is not available
+    // (emojis are preserved by default in flipCase)
+}
+```
+
+### IdentifyCase
+
+```typescript
+type IdentifyCase = "camel" | "pascal" | "snake" | "kebab" | "upper_snake" | "lower" | "upper" | "title" | "sentence" | "mixed" | "unknown";
+```
+
+---
+
+## Next Steps
+
+- [Case Conversion](/docs/case-conversion) - Case conversion guide
+- [String Manipulation](/docs/string-manipulation) - String manipulation guide
+- [TypeScript](/docs/typescript) - TypeScript support

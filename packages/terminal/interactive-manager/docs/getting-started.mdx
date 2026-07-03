@@ -1,0 +1,82 @@
+---
+title: Getting Started
+description: Install and start using the interactive manager
+sidebar_position: 2
+---
+
+## Installation
+
+Install the package using your preferred package manager:
+
+import { Tabs, Tab } from "fumadocs-ui/components/tabs";
+
+<Tabs items={["pnpm", "npm", "yarn", "bun"]}>
+<Tab value="pnpm">
+```bash
+pnpm add @visulima/interactive-manager
+```
+</Tab>
+
+<Tab value="npm">```bash npm install @visulima/interactive-manager ```</Tab>
+
+<Tab value="yarn">```bash yarn add @visulima/interactive-manager ```</Tab>
+
+<Tab value="bun">
+```bash
+bun add @visulima/interactive-manager
+```
+</Tab>
+</Tabs>
+
+## Basic Usage
+
+### Setting Up
+
+The interactive manager requires two stream hooks — one for stdout and one for stderr:
+
+```typescript
+import { InteractiveManager, InteractiveStreamHook } from "@visulima/interactive-manager";
+
+const stdoutHook = new InteractiveStreamHook(process.stdout);
+const stderrHook = new InteractiveStreamHook(process.stderr);
+const manager = new InteractiveManager(stdoutHook, stderrHook);
+```
+
+### Updating Output
+
+Once hooked, you can dynamically update terminal output:
+
+```typescript
+manager.hook();
+
+// Write multiple lines
+manager.update("stdout", ["Line 1", "Line 2", "Line 3"]);
+
+// Update with new content (previous lines are erased)
+manager.update("stdout", ["Updated line 1", "Updated line 2"]);
+
+manager.unhook();
+```
+
+### Suspend and Resume
+
+Temporarily pause interactive mode to allow external output:
+
+```typescript
+manager.hook();
+manager.update("stdout", ["Processing..."]);
+
+// Pause interactive mode
+manager.suspend("stdout");
+console.log("This message appears normally");
+
+// Resume interactive mode
+manager.resume("stdout");
+manager.update("stdout", ["Still processing..."]);
+
+manager.unhook();
+```
+
+## See Also
+
+- [Usage Guide](/docs/interactive-manager/usage) - Complete API reference

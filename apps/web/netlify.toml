@@ -1,0 +1,159 @@
+[build]
+  command = "pnpm run build:web"
+  publish = "apps/web/dist/client"
+  ignore = "node apps/web/scripts/netlify-ignore-command.cjs"
+
+[functions]
+  directory = "apps/web/netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "22"
+  # Disable Netlify's heuristic "likely secret" smart detection. The monorepo
+  # ships @visulima/secret-scanner, whose detection ruleset, test fixtures, and
+  # suppression docs deliberately contain example credentials (ghp_…, AIza…).
+  # Those example values are also aggregated into the generated llms-full.txt,
+  # so a path-based omit list can't reliably cover them. The explicit secrets
+  # scan (real configured env-var values) stays on and reports 0 leaks.
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
+# Security headers
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    X-XSS-Protection = "1; mode=block"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+
+# Cache headers for static assets
+[[headers]]
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/css/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/img/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Install scripts. Served with a plain-text content type so `curl | bash`
+# and `irm | iex` see the body directly.
+#
+# Caching — see https://docs.netlify.com/platform/caching/ for the split
+# between client-side `Cache-Control` and CDN-specific
+# `Netlify-CDN-Cache-Control`:
+#
+#   - `Cache-Control` keeps browsers/curl from redownloading the same
+#     body on retries within an hour.
+#   - `Netlify-CDN-Cache-Control` lets the edge cache hold the script for
+#     a full day and serve stale copies while it revalidates in the
+#     background. That's where the real bandwidth saving comes from —
+#     one origin hit per edge per day instead of per request. When we
+#     need to push a fix fast, trigger a Netlify cache purge (or redeploy)
+#     and the edges refresh on next access.
+[[headers]]
+  for = "/install.sh"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/install.ps1"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+# SHA256 sidecars for the install scripts. Cached aggressively because
+# they only change when the script body changes — and when that happens
+# the new sidecar has a different hash, so cache invalidation is
+# automatic.
+[[headers]]
+  for = "/install.sh.sha256"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/install.ps1.sha256"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+# Versioned install URLs. Tutorials, blog posts, and Dockerfiles can pin
+# to a major version so a breaking flag rename in v2 doesn't silently
+# break copy-pastes. We rewrite (status 200, not redirect) so curl /
+# irm hashes stay aligned with the canonical /install.{sh,ps1}.
+#
+# When v2 lands with breaking changes, copy `install.sh` → `install.v1.sh`
+# at the cut point, drop these rewrites, and add fresh /install/v2.sh
+# rewrites pointing at the new body.
+[[redirects]]
+  from = "/install/v1.sh"
+  to = "/install.sh"
+  status = 200
+
+[[redirects]]
+  from = "/install/v1.ps1"
+  to = "/install.ps1"
+  status = 200
+
+[[redirects]]
+  from = "/install/v1.sh.sha256"
+  to = "/install.sh.sha256"
+  status = 200
+
+[[redirects]]
+  from = "/install/v1.ps1.sha256"
+  to = "/install.ps1.sha256"
+  status = 200
+
+# Headers attach to the URL the user requests (the rewrite source),
+# not the destination. Mirror /install.{sh,ps1,*.sha256} headers onto
+# the versioned aliases so curl/irm see the right Content-Type and
+# the CDN gets the same cache window.
+[[headers]]
+  for = "/install/v1.sh"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/install/v1.ps1"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/install/v1.sh.sha256"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"
+
+[[headers]]
+  for = "/install/v1.ps1.sha256"
+  [headers.values]
+    Content-Type = "text/plain; charset=utf-8"
+    Cache-Control = "public, max-age=3600, stale-while-revalidate=86400"
+    Netlify-CDN-Cache-Control = "public, s-maxage=86400, stale-while-revalidate=604800"

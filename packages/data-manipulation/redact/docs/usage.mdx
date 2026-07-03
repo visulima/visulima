@@ -1,0 +1,239 @@
+---
+title: "Usage Guide"
+description: "Complete guide to data redaction and anonymization"
+---
+
+# Usage Guide
+
+## Object Redaction
+
+### Basic Redaction
+
+```typescript
+import { redact } from "@visulima/redact";
+
+const user = {
+    id: 123,
+    name: "Alice",
+    password: "secret123",
+    apiKey: "sk_live_abc123",
+};
+
+const safe = redact(user, ["password", "apiKey"]);
+console.log(safe);
+// { id: 123, name: "Alice", password: "<PASSWORD>", apiKey: "<APIKEY>" }
+```
+
+### Nested Properties
+
+```typescript
+import { redact } from "@visulima/redact";
+
+const data = {
+    user: {
+        profile: {
+            email: "alice@example.com",
+            ssn: "123-45-6789",
+        },
+        credentials: {
+            password: "secret",
+        },
+    },
+};
+
+const safe = redact(data, ["user.profile.ssn", "user.credentials.password"]);
+```
+
+### Array Elements
+
+```typescript
+import { redact } from "@visulima/redact";
+
+const users = [
+    { name: "Alice", password: "pass1" },
+    { name: "Bob", password: "pass2" },
+];
+
+const safe = redact(users, ["*.password"]);
+```
+
+## Text Anonymization
+
+### Automatic Detection
+
+```typescript
+import { stringAnonymize } from "@visulima/redact";
+
+const text = "Contact John Doe at john@example.com or 555-1234";
+const result = stringAnonymize(text);
+// "Contact <PERSON> at <EMAIL> or <PHONENUMBER>"
+```
+
+### Select Categories
+
+```typescript
+import { stringAnonymize } from "@visulima/redact";
+
+const text = "John works at Acme Corp earning $50,000";
+
+// Only anonymize people and money
+const result = stringAnonymize(text, {
+    include: ["Person", "Money"],
+});
+// "John works at Acme Corp earning <MONEY>"
+```
+
+### Exclude Categories
+
+```typescript
+import { stringAnonymize } from "@visulima/redact";
+
+const text = "Email john@example.com about the project";
+
+// Anonymize everything except emails
+const result = stringAnonymize(text, {
+    exclude: ["Email"],
+});
+```
+
+## Built-in Rules
+
+### Sensitive Data Patterns
+
+The library includes 40+ detection patterns:
+
+```typescript
+import { redact } from "@visulima/redact";
+
+const data = {
+    email: "user@example.com", // Detected
+    password: "myPassword123", // Detected
+    creditCard: "4532123456789010", // Detected
+    ssn: "123-45-6789", // Detected
+    apiKey: "sk_live_abc123", // Detected
+    token: "Bearer eyJ...", // Detected
+    ip: "192.168.1.1", // Detected
+    phone: "+1-555-123-4567", // Detected
+};
+
+// Auto-detect all sensitive fields
+const safe = redact(data);
+```
+
+### Financial Data
+
+```typescript
+import { redact } from "@visulima/redact";
+
+const payment = {
+    cardNumber: "4532-1234-5678-9010",
+    cvv: "123",
+    routing: "021000021",
+    account: "123456789",
+};
+
+const safe = redact(payment, ["cardNumber", "cvv", "routing", "account"]);
+```
+
+## Custom Options
+
+### Custom Replacement
+
+```typescript
+import { redact } from "@visulima/redact";
+
+const safe = redact(data, ["password"], {
+    replacement: "[REDACTED]",
+});
+// password: "[REDACTED]"
+```
+
+### Case Sensitivity
+
+```typescript
+import { redact } from "@visulima/redact";
+
+const safe = redact(data, ["Password"], {
+    caseSensitive: false,
+});
+// Matches "password", "PASSWORD", "Password"
+```
+
+## Real-World Examples
+
+### Express Middleware
+
+```typescript
+import { redact } from "@visulima/redact";
+import type { Request, Response, NextFunction } from "express";
+
+function redactMiddleware(req: Request, res: Response, next: NextFunction) {
+    // Redact request body
+    if (req.body) {
+        req.body = redact(req.body, ["password", "token", "apiKey"]);
+    }
+
+    // Redact response
+    const originalJson = res.json.bind(res);
+    res.json = (data: any) => {
+        const safe = redact(data, ["password", "secret", "token"]);
+        return originalJson(safe);
+    };
+
+    next();
+}
+
+app.use(redactMiddleware);
+```
+
+### Logger Integration
+
+```typescript
+import { redact } from "@visulima/redact";
+import winston from "winston";
+
+const logger = winston.createLogger({
+    format: winston.format.combine(
+        winston.format((info) => {
+            return {
+                ...info,
+                ...redact(info, ["password", "token", "apiKey"]),
+            };
+        })(),
+        winston.format.json(),
+    ),
+});
+```
+
+### Database Query Sanitization
+
+```typescript
+import { redact } from "@visulima/redact";
+
+class UserRepository {
+    async findById(id: string) {
+        const user = await this.db.users.findOne({ id });
+
+        // Remove sensitive fields before returning
+        return redact(user, ["password", "passwordHash", "resetToken", "twoFactorSecret"]);
+    }
+
+    async logQuery(query: any) {
+        // Redact sensitive data in logs
+        const safe = redact(query, ["password", "token", "secret"]);
+
+        logger.debug("Query executed", safe);
+    }
+}
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to overview
+    </Card>
+</Cards>

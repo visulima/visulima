@@ -1,0 +1,325 @@
+---
+title: "Unit Systems"
+---
+
+# Unit Systems
+
+Understanding the different unit systems and measurement bases used for bytes and duration formatting.
+
+## Byte Unit Systems
+
+@visulima/humanizer supports four different unit systems for byte formatting, each with different naming conventions and use cases.
+
+### Metric (Base 10)
+
+The metric system uses powers of 1000 (base 10) and standard SI prefixes:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+formatBytes(1000, { units: "metric", base: 10 });
+// => "1 KB"
+
+formatBytes(1000000, { units: "metric", base: 10 });
+// => "1 MB"
+
+formatBytes(1000000000, { units: "metric", base: 10 });
+// => "1 GB"
+```
+
+**Units:** B → KB → MB → GB → TB → PB → EB → ZB → YB
+
+**Use case:** Hard drive manufacturers, networking (bandwidth)
+
+### IEC (Base 2)
+
+The IEC system uses powers of 1024 (base 2) with binary prefixes:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+formatBytes(1024, { units: "iec", base: 2 });
+// => "1 KiB"
+
+formatBytes(1048576, { units: "iec", base: 2 });
+// => "1 MiB"
+
+formatBytes(1073741824, { units: "iec", base: 2 });
+// => "1 GiB"
+```
+
+**Units:** B → KiB → MiB → GiB → TiB → PiB → EiB → ZiB → YiB
+
+**Use case:** Operating systems, memory, file sizes
+
+### Metric Octet (Base 10, French)
+
+French variant using "octets" instead of "bytes":
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+formatBytes(1000, { units: "metric_octet", base: 10, locale: "fr-FR" });
+// => "1 ko"
+
+formatBytes(1000000, { units: "metric_octet", base: 10, locale: "fr-FR" });
+// => "1 Mo"
+```
+
+**Units:** o → ko → Mo → Go → To → Po → Eo → Zo → Yo
+
+**Use case:** French-language applications and documentation
+
+### IEC Octet (Base 2, French)
+
+French variant with binary prefixes:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+formatBytes(1024, { units: "iec_octet", base: 2, locale: "fr-FR" });
+// => "1 Kio"
+
+formatBytes(1048576, { units: "iec_octet", base: 2, locale: "fr-FR" });
+// => "1 Mio"
+```
+
+**Units:** o → Kio → Mio → Gio → Tio → Pio → Eio → Zio → Yio
+
+**Use case:** French-language system tools and applications
+
+## Base Conversion
+
+The choice of base (2 or 10) significantly affects the output:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const bytes = 1073741824; // 1 GiB in binary
+
+// Base 2 (binary, 1024)
+formatBytes(bytes, { base: 2, units: "iec" });
+// => "1 GiB"
+
+// Base 10 (decimal, 1000)
+formatBytes(bytes, { base: 10, units: "metric" });
+// => "1.07 GB"
+```
+
+### When to Use Each Base
+
+**Base 2 (1024):**
+
+- File sizes in operating systems
+- Memory (RAM, cache)
+- Internal storage calculations
+
+**Base 10 (1000):**
+
+- Hard drive capacity (manufacturer specifications)
+- Network bandwidth
+- Marketing and sales materials
+
+## Duration Units
+
+Duration formatting supports various time units with customizable measures.
+
+### Available Units
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+// Milliseconds
+duration(500, { units: ["ms"] });
+// => "500 milliseconds"
+
+// Seconds
+duration(5000, { units: ["s"] });
+// => "5 seconds"
+
+// Minutes
+duration(300000, { units: ["m"] });
+// => "5 minutes"
+
+// Hours
+duration(7200000, { units: ["h"] });
+// => "2 hours"
+
+// Days
+duration(172800000, { units: ["d"] });
+// => "2 days"
+
+// Weeks
+duration(1209600000, { units: ["w"] });
+// => "2 weeks"
+
+// Months
+duration(5259600000, { units: ["mo"] });
+// => "2 months"
+
+// Years
+duration(63113904000, { units: ["y"] });
+// => "2 years"
+```
+
+### Unit Order and Hierarchy
+
+Units must be specified in descending order of size:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+// ✅ Correct: Descending order
+duration(90061000, { units: ["d", "h", "m", "s"] });
+// => "1 day, 1 hour, 1 minute, 1 second"
+
+// ❌ Incorrect: Ascending order (will not work as expected)
+duration(90061000, { units: ["s", "m", "h", "d"] });
+// Output may be incorrect
+```
+
+### Custom Unit Measures
+
+Override default unit lengths for specialized use cases:
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+// Default: Month = 30.436875 days
+duration(2629800000);
+// => "1 month"
+
+// Custom: Month = 30 days exactly
+duration(2629800000, {
+    unitMeasures: {
+        y: 31557600000,
+        mo: 30 * 86400000, // 30 days
+        w: 604800000,
+        d: 86400000,
+        h: 3600000,
+        m: 60000,
+        s: 1000,
+        ms: 1,
+    },
+});
+// => "1 month, 10 hours, 30 minutes"
+```
+
+### Default Unit Measures
+
+The default unit measures use astronomically accurate values:
+
+| Unit             | Value             | Calculation                             |
+| ---------------- | ----------------- | --------------------------------------- |
+| Year (y)         | 31,556,952,000 ms | 365.2425 days (accounts for leap years) |
+| Month (mo)       | 2,629,746,000 ms  | 30.436875 days (365.2425/12)            |
+| Week (w)         | 604,800,000 ms    | 7 days                                  |
+| Day (d)          | 86,400,000 ms     | 24 hours                                |
+| Hour (h)         | 3,600,000 ms      | 60 minutes                              |
+| Minute (m)       | 60,000 ms         | 60 seconds                              |
+| Second (s)       | 1,000 ms          | 1000 milliseconds                       |
+| Millisecond (ms) | 1 ms              | Base unit                               |
+
+## Choosing the Right System
+
+### For Bytes
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+function formatFileSize(bytes: number, context: "os" | "web" | "network") {
+    switch (context) {
+        case "os":
+            // Operating system file sizes
+            return formatBytes(bytes, { units: "iec", base: 2 });
+
+        case "web":
+            // Web applications, general use
+            return formatBytes(bytes, { units: "metric", base: 10 });
+
+        case "network":
+            // Network bandwidth
+            return formatBytes(bytes, { units: "metric", base: 10 });
+
+        default:
+            return formatBytes(bytes);
+    }
+}
+```
+
+### For Duration
+
+```typescript
+import { duration } from "@visulima/humanizer";
+
+function formatDuration(ms: number, precision: "coarse" | "medium" | "fine") {
+    switch (precision) {
+        case "coarse":
+            // Years, months, days
+            return duration(ms, { units: ["y", "mo", "d"], largest: 2 });
+
+        case "medium":
+            // Hours, minutes, seconds
+            return duration(ms, { units: ["h", "m", "s"], largest: 2 });
+
+        case "fine":
+            // Seconds, milliseconds
+            return duration(ms, { units: ["s", "ms"], largest: 2 });
+
+        default:
+            return duration(ms);
+    }
+}
+```
+
+## Best Practices
+
+### Be Consistent
+
+Use the same unit system throughout your application:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+// ✅ Good: Consistent base and units
+const config = { base: 2, units: "iec" } as const;
+
+formatBytes(1024, config);
+formatBytes(2048, config);
+formatBytes(4096, config);
+```
+
+### Document Your Choice
+
+Make it clear which unit system you're using:
+
+```typescript
+/**
+ * Formats file size using IEC binary prefixes (KiB, MiB, GiB).
+ * 1 KiB = 1024 bytes (not 1000).
+ */
+function formatFileSize(bytes: number): string {
+    return formatBytes(bytes, { base: 2, units: "iec", decimals: 2 });
+}
+```
+
+### Match Platform Conventions
+
+Use the unit system appropriate for your platform:
+
+```typescript
+import { formatBytes } from "@visulima/humanizer";
+
+const isWindows = process.platform === "win32";
+const isMacOS = process.platform === "darwin";
+
+function formatSystemFileSize(bytes: number): string {
+    // macOS uses decimal (1 MB = 1,000,000 bytes)
+    if (isMacOS) {
+        return formatBytes(bytes, { base: 10, units: "metric" });
+    }
+
+    // Windows uses binary (1 MB = 1,048,576 bytes)
+    return formatBytes(bytes, { base: 2, units: "iec" });
+}
+```

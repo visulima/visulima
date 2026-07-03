@@ -1,7 +1,0 @@
-{
-    "name": "@visulima/inspector",
-    "version": "1.0.30",
-    "exports": {
-        ".": "./src/index.ts"
-    }
-}

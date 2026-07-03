@@ -1,0 +1,161 @@
+import type { Cli as ICli } from "./cli";
+import type { Command as ICommand } from "./command";
+import type { Options } from "./options";
+import type { CerebroFs, CerebroProcess } from "./runtime";
+
+/**
+ * Type-safe Toolbox interface with customizable options and environment variable types.
+ * @template TLogger - The logger type (defaults to Console)
+ * @template TOptions - The options type (defaults to Options/Record&lt;string, unknown>)
+ * @template TEnv - The environment variables type (defaults to Record&lt;string, unknown>)
+ */
+export interface Toolbox<
+    TLogger extends Console = Console,
+    TOptions extends Record<string, unknown> = Options,
+    TEnv extends Record<string, unknown> = Record<string, unknown>,
+>
+    extends Cerebro.ExtensionOverrides {
+    /**
+     * The argument passed to the command.
+     * For example, if you run `cerebro foo bar baz`, then this will be `["foo", "bar", "baz"]`.
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: "copy",
+     *   argument: {
+     *     name: "files",
+     *     type: String,
+     *     description: "Files to copy"
+     *   },
+     *   execute: ({ argument }) => {
+     *     // argument is an array of strings
+     *     // argument[0] is the first file, argument[1] is the second, etc.
+     *     argument.forEach((file) => console.log(`Copying ${file}...`));
+     *   }
+     * });
+     * ```
+     */
+    argument: string[];
+
+    /* The original argv value. */
+    argv: ReadonlyArray<string>;
+
+    /**
+     * The command that is being executed.
+     */
+    command: ICommand;
+
+    /**
+     * The name of the command that is being executed.
+     */
+    commandName: string;
+
+    /**
+     * Alias for `logger`. Exposed under the `console` name so commands can
+     * write portable `({ console }) => console.log(...)` code without reaching
+     * for the global `console`. The injected value is the same object as
+     * `toolbox.logger`, so verbosity-aware methods (`debug`) keep working.
+     */
+    console: TLogger;
+
+    /**
+     * Environment variables processed from the command definition.
+     * Values are transformed according to their type definitions and default values.
+     * @example
+     * ```typescript
+     * // Define env types when creating command
+     * type MyEnv = { apiKey: string; debug: boolean };
+     *
+     * cli.addCommand({
+     *   name: "build",
+     *   env: [
+     *     { name: "API_KEY", type: String },
+     *     { name: "DEBUG", type: Boolean }
+     *   ],
+     *   execute: ({ env }) => {
+     *     // env.apiKey and env.debug are now typed!
+     *     console.log(env.apiKey, env.debug);
+     *   }
+     * });
+     * ```
+     */
+    env: TEnv;
+
+    /**
+     * Filesystem adapter. Defaults to `node:fs/promises`, but can be swapped via
+     * `CliOptions.fs` for tests (in-memory adapter) or sandboxed runtimes
+     * (JustBash, MCP). Prefer `toolbox.fs` over a direct `node:fs/promises`
+     * import inside command actions to keep them portable and testable.
+     */
+    fs: CerebroFs;
+
+    /** The logger instance. */
+    logger: TLogger;
+
+    /**
+     * Any optional parameters. Typically coming from command-line
+     * argument like this: `--force -p tsconfig-mjson`.
+     * @example
+     * ```typescript
+     * // Define options type for better autocomplete
+     * type MyOptions = {
+     *   output?: string;
+     *   verbose?: boolean;
+     *   port?: number;
+     * };
+     *
+     * cli.addCommand({
+     *   name: "serve",
+     *   options: [
+     *     { name: "output", type: String },
+     *     { name: "verbose", type: Boolean },
+     *     { name: "port", type: Number }
+     *   ],
+     *   execute: ({ options }: { options: MyOptions }) => {
+     *     // options.output, options.verbose, options.port are typed!
+     *     console.log(options.output, options.verbose, options.port);
+     *   }
+     * });
+     * ```
+     */
+    options: TOptions;
+
+    /**
+     * Runtime process info — cwd, env, argv, exit, platform, arch, stdin —
+     * captured at CLI construction. Prefer `toolbox.process` over reaching for
+     * the global `process` so commands stay portable across Node, Deno, Bun,
+     * and mocked test runtimes. `process.exit` honors the `CliOptions.exit`
+     * override, which lets tests assert exit codes without killing the runner.
+     */
+    process: CerebroProcess;
+
+    /**
+     * Raw tokens that command-line-args could not assign to a defined
+     * option — typically everything after a `--` separator, since
+     * cerebro runs the parser with `stopAtFirstUnknown: true`.
+     *
+     * Use this for passthrough patterns like
+     * `my-cmd foo bar -- --flag=value --other`, where everything after
+     * `--` is forwarded to an inner tool (`create-vite`, a template
+     * runner, etc.). Empty array when there was no `--` segment.
+     * @example
+     * ```typescript
+     * cli.addCommand({
+     *   name: "create",
+     *   argument: { name: "template", type: String },
+     *   execute: ({ argument, rawUnknown }) => {
+     *     // `vis create vite my-app -- --template react-ts`
+     *     // → argument === ["vite", "my-app"]
+     *     // → rawUnknown === ["--template", "react-ts"]
+     *     spawnSync("npm", ["create", "vite", ...rawUnknown]);
+     *   },
+     * });
+     * ```
+     */
+    rawUnknown: ReadonlyArray<string>;
+
+    /**
+     * This is the instance of the CLI that is running the command.
+     */
+    runtime: ICli<TLogger>;
+}

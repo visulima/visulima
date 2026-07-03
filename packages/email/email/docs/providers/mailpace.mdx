@@ -1,0 +1,104 @@
+---
+title: MailPace
+description: Send emails using the MailPace API with @visulima/email
+---
+
+# MailPace Provider
+
+The MailPace provider allows you to send emails through the [MailPace API](https://docs.mailpace.com/api), a simple transactional email service.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { mailPaceProvider } from "@visulima/email/providers/mailpace";
+
+const mail = createMail(
+    mailPaceProvider({
+        apiToken: process.env.MAILPACE_API_TOKEN!,
+    }),
+);
+```
+
+## Configuration
+
+The `MailPaceConfig` interface extends `BaseConfig` with the following options:
+
+| Option     | Type      | Required | Default                           | Description                     |
+| ---------- | --------- | -------- | --------------------------------- | ------------------------------- |
+| `apiToken` | `string`  | Yes      | -                                 | Your MailPace API token         |
+| `endpoint` | `string`  | No       | `https://app.mailpace.com/api/v1` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                           | Enable debug logging            |
+| `logger`   | `Console` | No       | -                                 | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                               | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                           | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from MailPace").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The MailPace provider supports additional options through `MailPaceEmailOptions`:
+
+```typescript
+import type { MailPaceEmailOptions } from "@visulima/email/providers/mailpace";
+
+const options: MailPaceEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    tags: ["welcome"],
+    listUnsubscribe: "https://example.com/unsubscribe",
+};
+```
+
+| Option              | Type                      | Description                   |
+| ------------------- | ------------------------- | ----------------------------- |
+| `tags`              | `string[]`                | Tags for categorization       |
+| `templateId`        | `number`                  | MailPace template ID          |
+| `templateVariables` | `Record<string, unknown>` | Template variables            |
+| `listUnsubscribe`   | `string`                  | List-Unsubscribe header value |
+
+### Attachments
+
+MailPace uses a specific attachment format:
+
+```typescript
+const options: MailPaceEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "With attachment",
+    html: "<h1>Hello</h1>",
+    attachments: [
+        {
+            name: "document.pdf",
+            content: "base64-encoded-content",
+            content_type: "application/pdf",
+        },
+    ],
+};
+```
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | Yes       |
+| Templates      | Yes       |
+| Tracking       | No        |

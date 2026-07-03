@@ -1,0 +1,204 @@
+---
+title: "Quick Start"
+---
+
+# Quick Start
+
+Build your first CLI application with Cerebro in under 5 minutes.
+
+## Basic CLI
+
+Create a simple CLI with a single command:
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+
+// Create CLI instance
+const cli = createCerebro("greet-cli", {
+    packageName: "greet-cli",
+    packageVersion: "1.0.0",
+});
+
+// Add a command
+cli.addCommand({
+    name: "hello",
+    description: "Greet someone",
+    execute: ({ logger }) => {
+        logger.log("Hello, World!");
+    },
+});
+
+// Run the CLI
+await cli.run();
+```
+
+Run it:
+
+```bash
+$ node cli.js hello
+Hello, World!
+```
+
+## Commands with Arguments
+
+Add arguments to your commands:
+
+```typescript
+cli.addCommand({
+    name: "greet",
+    description: "Greet someone by name",
+    argument: {
+        name: "name",
+        description: "Person to greet",
+        type: String,
+    },
+    execute: ({ argument, logger }) => {
+        const name = argument[0];
+        logger.log(`Hello, ${name}!`);
+    },
+});
+```
+
+```bash
+$ node cli.js greet Alice
+Hello, Alice!
+```
+
+## Commands with Options
+
+Add options for more flexibility:
+
+```typescript
+cli.addCommand({
+    name: "greet",
+    description: "Greet someone",
+    argument: {
+        name: "name",
+        description: "Person to greet",
+        type: String,
+    },
+    options: [
+        {
+            name: "loud",
+            alias: "l",
+            description: "Make it loud",
+            type: Boolean,
+        },
+        {
+            name: "times",
+            alias: "t",
+            description: "Number of times to greet",
+            type: Number,
+            defaultValue: 1,
+        },
+    ],
+    execute: ({ argument, options, logger }) => {
+        const name = argument[0];
+        const message = `Hello, ${name}!`;
+        const output = options.loud ? message.toUpperCase() : message;
+
+        for (let i = 0; i < options.times; i++) {
+            logger.log(output);
+        }
+    },
+});
+```
+
+```bash
+$ node cli.js greet Alice --loud --times 3
+HELLO, ALICE!
+HELLO, ALICE!
+HELLO, ALICE!
+```
+
+## Automatic Help
+
+Cerebro automatically generates help text:
+
+```bash
+$ node cli.js --help
+greet-cli v1.0.0
+
+Usage: greet-cli <command> [options]
+
+Commands:
+  greet <name>  Greet someone
+
+Options:
+  --help     Show help
+  --version  Show version
+```
+
+## Environment Variables
+
+Access environment variables in your commands:
+
+```typescript
+cli.addCommand({
+    name: "env",
+    description: "Show environment info",
+    env: {
+        API_KEY: {
+            description: "API key for authentication",
+            required: true,
+        },
+    },
+    execute: ({ env, logger }) => {
+        logger.log(`API Key: ${env.API_KEY}`);
+    },
+});
+```
+
+```bash
+$ API_KEY=secret123 node cli.js env
+API Key: secret123
+```
+
+## Nested Commands
+
+Create command hierarchies:
+
+```typescript
+cli.addCommand({
+    name: "db",
+    description: "Database commands",
+    commands: [
+        {
+            name: "migrate",
+            description: "Run migrations",
+            execute: ({ logger }) => {
+                logger.log("Running migrations...");
+            },
+        },
+        {
+            name: "seed",
+            description: "Seed database",
+            execute: ({ logger }) => {
+                logger.log("Seeding database...");
+            },
+        },
+    ],
+});
+```
+
+```bash
+$ node cli.js db migrate
+Running migrations...
+
+$ node cli.js db seed
+Seeding database...
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Concepts" href="/concepts/architecture">
+        Learn how Cerebro works under the hood
+    </Card>
+    <Card title="Commands Guide" href="/usage/commands">
+        Deep dive into command creation
+    </Card>
+    <Card title="Plugins" href="/guides/using-plugins">
+        Extend your CLI with plugins
+    </Card>
+</Cards>

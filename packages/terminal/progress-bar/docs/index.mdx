@@ -1,0 +1,44 @@
+---
+title: Progress Bar
+description: Terminal progress bars with multiple styles and multi-bar support
+icon: BarChart
+sidebar_position: 1
+---
+
+A terminal progress bar library with multiple styles, gradient support, composite multi-bar rendering, and peak markers.
+
+## Features
+
+- **7 Built-in Styles** - Classic, grey, rect, filled, solid, ASCII, braille
+- **Multi-bar Support** - Display multiple progress bars simultaneously
+- **Composite Mode** - Overlay multiple bars in a single visualization
+- **Gradient Arrays** - Smooth sub-character progress transitions
+- **Peak Markers** - Show peak values on the bar
+- **Braille Pill Caps** - Rounded pill-shaped bars with braille characters
+- **Custom Formatting** - Template-based output with payload placeholders
+- **TypeScript** - Full type support out of the box
+
+## Quick Example
+
+```typescript
+import { ProgressBar } from "@visulima/progress-bar";
+
+const bar = new ProgressBar({
+    total: 100,
+    style: "shades_classic",
+});
+
+console.log(bar.render()); // progress [░░░░░░░░░░░░░░░░░░░░] 0% | ETA: 0s | 0/100
+
+bar.update(50);
+console.log(bar.render()); // progress [██████████░░░░░░░░░░] 50% | ETA: ...
+
+bar.update(100);
+console.log(bar.render()); // progress [████████████████████] 100% | ETA: 0s | 100/100
+```
+
+## Next Steps
+
+- [Getting Started](/docs/progress-bar/getting-started) - Install and set up
+- [Usage Guide](/docs/progress-bar/usage) - Complete API reference
+- [Styles Reference](/docs/progress-bar/styles) - All available bar styles

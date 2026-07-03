@@ -1,0 +1,72 @@
+diff --git a/lib/constants.js b/lib/constants.js
+index f0aeda7d48171c71603af40d23bd4c8de7522c0e..4742bb2bab759254d0ae9eac9f4e433c5dde8fb6 100644
+--- a/lib/constants.js
++++ b/lib/constants.js
+@@ -5,6 +5,8 @@ const WIN_NO_SLASH = `[^${WIN_SLASH}]`;
+ 
+ const DEFAULT_MAX_EXTGLOB_RECURSION = 0;
+ 
++const UNIGNORE = Symbol('unignore');
++
+ /**
+  * Posix glob regex
+  */
+@@ -93,6 +95,9 @@ module.exports = {
+   MAX_LENGTH: 1024 * 64,
+   POSIX_REGEX_SOURCE,
+ 
++  // token to un-ignore results in onIgnore
++  UNIGNORE,
++
+   // regular expressions
+   REGEX_BACKSLASH: /\\(?![*+?^${}(|)[\]])/g,
+   REGEX_NON_SPECIAL_CHARS: /^[^@![\].,$*+?^{}()|\\/]+/,
+diff --git a/lib/parse.js b/lib/parse.js
+index 57d994a87896b384ecf2f5260f7ffa5814628162..b330e4725c546c303a89506e4378d5b38c7efef0 100644
+--- a/lib/parse.js
++++ b/lib/parse.js
+@@ -1198,6 +1198,17 @@ const parse = (input, options) => {
+         continue;
+       }
+ 
++      if (isBrace && rest[0] === '/') {
++        prev.type = 'globstar';
++        prev.value += value;
++        prev.output = `(?:^|${SLASH_LITERAL}|${globstar(opts)}${SLASH_LITERAL})`;
++        state.output += prev.output;
++        state.globstar = true;
++        consume(value + advance());
++        push({ type: 'slash', value: '/', output: '' });
++        continue;
++      }
++
+       // remove single star from output
+       state.output = state.output.slice(0, -prev.output.length);
+ 
+diff --git a/lib/picomatch.js b/lib/picomatch.js
+index fbb8b1ca9f1e14c78b9b4009b73c40546ba445ab..c57a18c3c545ef066da533fef0bec504d759c3e1 100644
+--- a/lib/picomatch.js
++++ b/lib/picomatch.js
+@@ -75,12 +75,17 @@ const picomatch = (glob, options, returnState = false) => {
+       return returnObject ? result : false;
+     }
+ 
+-    if (isIgnored(input)) {
+-      if (typeof opts.onIgnore === 'function') {
+-        opts.onIgnore(result);
++    ignored: {
++      if (isIgnored(input)) {
++        if (typeof opts.onIgnore === 'function') {
++          if (opts.onIgnore(result) === constants.UNIGNORE) {
++            result.isMatch = true;
++            break ignored;
++          }
++        }
++        result.isMatch = false;
++        return returnObject ? result : false;
+       }
+-      result.isMatch = false;
+-      return returnObject ? result : false;
+     }
+ 
+     if (typeof opts.onMatch === 'function') {

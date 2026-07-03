@@ -1,0 +1,301 @@
+---
+title: "Usage Guide"
+description: "Complete guide to using @visulima/object"
+---
+
+# Usage Guide
+
+## Dot Notation Access
+
+### Get Property
+
+```typescript
+import { getProperty } from "@visulima/object";
+
+const obj = {
+    user: {
+        profile: {
+            name: "Alice",
+            age: 30,
+        },
+        posts: [{ title: "First Post" }, { title: "Second Post" }],
+    },
+};
+
+// Get nested property
+console.log(getProperty(obj, "user.profile.name")); // "Alice"
+
+// Get array element
+console.log(getProperty(obj, "user.posts.0.title")); // "First Post"
+
+// Get with default value
+console.log(getProperty(obj, "user.email", "not@found.com")); // "not@found.com"
+
+// Get non-existent property
+console.log(getProperty(obj, "missing.path")); // undefined
+```
+
+### Set Property
+
+```typescript
+import { setProperty } from "@visulima/object";
+
+const obj = { user: { name: "Alice" } };
+
+// Set existing nested property
+setProperty(obj, "user.name", "Bob");
+
+// Create new nested property
+setProperty(obj, "user.profile.age", 30);
+console.log(obj); // { user: { name: "Bob", profile: { age: 30 } } }
+
+// Set array element
+setProperty(obj, "user.tags.0", "developer");
+```
+
+### Delete Property
+
+```typescript
+import { deleteProperty } from "@visulima/object";
+
+const obj = {
+    user: {
+        name: "Alice",
+        password: "secret",
+        profile: { age: 30 },
+    },
+};
+
+// Delete nested property
+deleteProperty(obj, "user.password");
+
+// Delete deeply nested
+deleteProperty(obj, "user.profile.age");
+
+console.log(obj); // { user: { name: "Alice", profile: {} } }
+```
+
+### Has Property
+
+```typescript
+import { hasProperty } from "@visulima/object";
+
+const config = {
+    database: {
+        host: "localhost",
+        port: 5432,
+    },
+};
+
+console.log(hasProperty(config, "database.host")); // true
+console.log(hasProperty(config, "database.password")); // false
+console.log(hasProperty(config, "cache")); // false
+```
+
+### Escape Path
+
+```typescript
+import { escapePath } from "@visulima/object";
+
+// Escape special characters in property names
+const path = escapePath("user.settings['theme.color']");
+// Use this path with getProperty/setProperty
+```
+
+## Object Filtering
+
+### Pick Properties
+
+```typescript
+import { pick } from "@visulima/object";
+
+const pokemon = {
+    id: "007",
+    name: "Squirtle",
+    type: "water",
+    hp: 44,
+    attack: 48,
+    defense: 65,
+};
+
+// Pick specific properties
+const basic = pick(pokemon, ["name", "type"]);
+// { name: "Squirtle", type: "water" }
+
+// Pick nested properties
+const doc = {
+    items: {
+        keep: "📌",
+        discard: "✂️",
+        archive: "📦",
+    },
+};
+
+const filtered = pick(doc, ["items.keep", "items.archive"]);
+// { items: { keep: "📌", archive: "📦" } }
+```
+
+### Omit Properties
+
+```typescript
+import { omit } from "@visulima/object";
+
+const user = {
+    id: 1,
+    name: "Alice",
+    email: "alice@example.com",
+    password: "secret",
+    creditCard: "1234-5678",
+};
+
+// Remove sensitive data
+const safe = omit(user, ["password", "creditCard"]);
+// { id: 1, name: "Alice", email: "alice@example.com" }
+
+// Omit nested properties
+const doc = {
+    items: {
+        keep: "📌",
+        discard: "✂️",
+    },
+};
+
+const cleaned = omit(doc, ["items.discard"]);
+// { items: { keep: "📌" } }
+```
+
+## Deep Keys
+
+### Extract All Keys
+
+```typescript
+import { deepKeys } from "@visulima/object";
+
+const obj = {
+    user: {
+        name: "Alice",
+        profile: {
+            age: 30,
+            location: "NYC",
+        },
+    },
+    settings: {
+        theme: "dark",
+    },
+};
+
+const keys = deepKeys(obj);
+console.log(keys);
+// ["user", "user.name", "user.profile", "user.profile.age", "user.profile.location", "settings", "settings.theme"]
+```
+
+### Deep Keys From List
+
+```typescript
+import { deepKeysFromList } from "@visulima/object";
+
+const items = [
+    { id: 1, name: "Item 1", meta: { price: 10 } },
+    { id: 2, name: "Item 2", meta: { price: 20 } },
+];
+
+const keys = deepKeysFromList(items);
+// Extract all possible keys from array of objects
+```
+
+## Type Checking
+
+### Is Plain Object
+
+```typescript
+import { isPlainObject } from "@visulima/object";
+
+console.log(isPlainObject({})); // true
+console.log(isPlainObject({ key: "value" })); // true
+console.log(isPlainObject(Object.create(null))); // true
+
+console.log(isPlainObject([])); // false
+console.log(isPlainObject(null)); // false
+console.log(isPlainObject(new Date())); // false
+console.log(isPlainObject(/regex/)); // false
+
+class CustomClass {}
+console.log(isPlainObject(new CustomClass())); // false
+```
+
+## Real-World Examples
+
+### Configuration Merging
+
+```typescript
+import { getProperty, setProperty, hasProperty } from "@visulima/object";
+
+function mergeConfig(base: Record<string, unknown>, overrides: Record<string, unknown>) {
+    const merged = { ...base };
+
+    for (const [key, value] of Object.entries(overrides)) {
+        if (hasProperty(merged, key)) {
+            setProperty(merged, key, value);
+        }
+    }
+
+    return merged;
+}
+```
+
+### API Response Transformation
+
+```typescript
+import { pick, omit } from "@visulima/object";
+
+class UserService {
+    async getPublicProfile(userId: string) {
+        const user = await this.db.findUser(userId);
+
+        // Return only public fields
+        return pick(user, ["id", "username", "profile.avatar", "profile.bio", "stats.followers", "stats.following"]);
+    }
+
+    async sanitizeForLogs(data: Record<string, unknown>) {
+        // Remove sensitive fields before logging
+        return omit(data, ["password", "token", "creditCard", "ssn", "api.secret"]);
+    }
+}
+```
+
+### Dynamic Form Handling
+
+```typescript
+import { getProperty, setProperty } from "@visulima/object";
+
+class FormState {
+    private data: Record<string, unknown> = {};
+
+    getValue(path: string, defaultValue?: unknown) {
+        return getProperty(this.data, path, defaultValue);
+    }
+
+    setValue(path: string, value: unknown) {
+        setProperty(this.data, path, value);
+    }
+
+    getErrors(path: string): string[] {
+        return getProperty(this.data, `errors.${path}`, []);
+    }
+}
+
+const form = new FormState();
+form.setValue("user.email", "alice@example.com");
+form.setValue("user.profile.age", 30);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="API Reference" href="/api">
+        Complete API documentation with all parameters
+    </Card>
+    <Card title="Back to Overview" href="/">
+        Return to package overview
+    </Card>
+</Cards>

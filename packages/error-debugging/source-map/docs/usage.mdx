@@ -1,0 +1,28 @@
+---
+title: "Usage"
+---
+
+# Usage
+
+## Parse Source Map
+
+```typescript
+import { SourceMapConsumer } from "@visulima/source-map";
+
+const map = await SourceMapConsumer.fromSourceMap(sourceMapObject);
+```
+
+## Map Positions
+
+```typescript
+const original = map.originalPositionFor({
+    line: generatedLine,
+    column: generatedColumn,
+});
+
+const generated = map.generatedPositionFor({
+    source: "original.ts",
+    line: originalLine,
+    column: originalColumn,
+});
+```

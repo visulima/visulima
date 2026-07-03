@@ -1,0 +1,105 @@
+---
+title: "Installation"
+---
+
+# Installation
+
+Install Cerebro using your preferred package manager:
+
+```bash npm2yarn
+npm install @visulima/cerebro
+```
+
+## Peer Dependencies
+
+Cerebro has minimal dependencies by default. Install optional peer dependencies as needed:
+
+### Required Dependencies
+
+```bash npm2yarn
+npm install @visulima/command-line-args @visulima/error
+```
+
+### Optional Features
+
+**Boxed Output (for formatted messages)**:
+
+```bash npm2yarn
+npm install @visulima/boxen
+```
+
+**Advanced Logging (Pail integration)**:
+
+```bash npm2yarn
+npm install @visulima/pail
+```
+
+**Shell Completion**:
+
+```bash npm2yarn
+npm install @visulima/fs @visulima/path
+```
+
+**README Generation**:
+
+```bash npm2yarn
+npm install @visulima/readgen
+```
+
+## Import
+
+### ESM (Recommended)
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+```
+
+### CommonJS
+
+```typescript
+const { createCerebro } = require("@visulima/cerebro");
+```
+
+### Subpath Imports
+
+Cerebro provides subpath imports for built-in commands and plugins:
+
+```typescript
+// Built-in commands
+import { HelpCommand } from "@visulima/cerebro/command/help";
+import { VersionCommand } from "@visulima/cerebro/command/version";
+import { CompletionCommand } from "@visulima/cerebro/command/completion";
+import { ReadmeCommand } from "@visulima/cerebro/command/readme";
+
+// Plugins
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+import { runtimeVersionCheckPlugin } from "@visulima/cerebro/plugin/runtime-version-check";
+import { updateNotifierPlugin } from "@visulima/cerebro/plugin/update-notifier";
+```
+
+## Requirements
+
+- **Node.js**: 18.x or higher
+- **TypeScript**: 5.0 or higher (for TypeScript projects)
+- **Package Manager**: npm, yarn, pnpm, or bun
+
+## Verification
+
+Verify your installation by creating a simple CLI:
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+
+const cli = createCerebro("test-cli");
+
+cli.addCommand({
+    name: "hello",
+    description: "Say hello",
+    execute: ({ logger }) => {
+        logger.log("Hello from Cerebro!");
+    },
+});
+
+await cli.run(["hello"]);
+// Output: Hello from Cerebro!
+```

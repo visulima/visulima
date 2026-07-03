@@ -1,0 +1,138 @@
+---
+title: "vis ai"
+description: "AI-assisted commands: provider detection, failure-fix proposals, and self-healing CI"
+---
+
+# vis ai
+
+`vis ai` groups AI-assisted commands behind a common namespace. The root prints the subcommand catalogue (text or JSON) so a coding agent can discover what's available; the subcommands live underneath. Cache management is handled by [`vis cache`](./cache).
+
+## Usage
+
+```bash
+vis ai [subcommand] [options]
+```
+
+## Subcommands
+
+| Subcommand                        | Purpose                                                                                                                  |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| [`providers`](#providers)         | List detected AI providers and show which one is selected                                                                |
+| [`test`](#test)                   | Run a one-shot prompt against the selected provider to verify it works                                                   |
+| [`fix`](#fix)                     | Read a failed task's logs and propose a structured patch (Phase 1: local, no git side effects)                           |
+| [`heal`](#heal)                   | Self-healing CI loop: propose a fix, validate it via re-run, post the result to the PR/MR/build annotation               |
+| [`heal accept`](#heal-accept)     | Re-validate the proposed fix and commit it to the PR/MR branch (triggered by a maintainer comment or block-step unblock) |
+| [`discover-help`](#discover-help) | Emit the machine-readable subcommand catalogue as JSON (for AI agents)                                                   |
+
+## Root: `vis ai`
+
+Lists subcommands as a human-readable summary on stderr. Takes no options — for the JSON catalogue, use [`discover-help`](#discover-help).
+
+```bash
+vis ai                       # human-readable list (stderr)
+```
+
+## providers
+
+List every detected AI provider with its detection method, version, path, priority, and whether it's the one vis would use.
+
+| Option     | Default | Description                      |
+| ---------- | ------- | -------------------------------- |
+| `--format` | `table` | Output format: `table` or `json` |
+
+```bash
+vis ai providers
+vis ai providers --format json
+```
+
+The table marks the selected provider with `>>>` and prints a footer line naming it. With no provider available, the footer hints at installing one.
+
+## test
+
+Send a fixed prompt (`Reply with exactly: OK`) to the selected provider with a 30-second timeout. Useful for verifying configuration before relying on `fix`/`heal`.
+
+```bash
+vis ai test
+```
+
+Exits non-zero if no provider is available or the provider call fails.
+
+## fix
+
+Read the latest run summary, find the requested failed task, and ask the AI to propose a structured patch. Phase 1 is local-only — no git operations, no auto-apply unless `--apply` is passed.
+
+| Option       | Default | Description                                                                                  |
+| ------------ | ------- | -------------------------------------------------------------------------------------------- |
+| `--format`   | `table` | Output format: `table` or `json`                                                             |
+| `--run`      |         | Use a specific run ID from `.vis/runs/` instead of the latest run                            |
+| `--apply`    | `false` | Apply the proposed patch to disk after printing it (prompts for confirmation unless `--yes`) |
+| `--no-cache` | `false` | Bypass the AI response cache                                                                 |
+| `--yes`      | `false` | Skip the confirmation prompt before applying                                                 |
+
+```bash
+vis ai fix @myorg/app:build
+vis ai fix @myorg/app:build --apply --yes
+vis ai fix @myorg/app:build --run 2026-04-28T12-00-00 --format json
+```
+
+## heal
+
+Self-healing CI loop. Reads the latest failed task, asks the AI for a patch, applies it, validates it by re-running just the failing target with `--no-cache --summarize --fail-fast`, and — when the validation passes — posts the proposal back to the PR/MR or, on Buildkite, to a build annotation.
+
+The CI surface is auto-detected:
+
+- **GitHub Actions** (`GITHUB_ACTIONS=true`): tries `gh pr comment` first, falls back to the GitHub REST API (`POST /repos/:owner/:repo/issues/:n/comments`) when `gh` is missing or fails. Uses `GITHUB_TOKEN` for the REST fallback.
+- **GitLab CI** (`GITLAB_CI=true`): posts via the GitLab REST API (`POST /projects/:id/merge_requests/:iid/notes`). Requires `GITLAB_TOKEN` (or `CI_TOKEN`) — `CI_JOB_TOKEN` cannot post MR notes.
+- **Buildkite** (`BUILDKITE=true`): posts a build [annotation](https://buildkite.com/docs/agent/v3/cli-annotate) via `buildkite-agent annotate` (no token needed — the agent's `BUILDKITE_AGENT_ACCESS_TOKEN` covers it). Falls back to the Buildkite REST API (`POST /v2/.../builds/{n}/annotations`, requires `BUILDKITE_API_TOKEN`) when the agent CLI isn't available. The annotation context is keyed on `BUILDKITE_BUILD_ID` so reruns update in place. Self-hosted Buildkite Enterprise honours `BUILDKITE_API_BASE_URL`.
+- **Push events / unrecognised CI**: skipped with a notice — the patch is still applied + validated locally.
+
+| Option                 | Default | Description                                                       |
+| ---------------------- | ------- | ----------------------------------------------------------------- |
+| `--run`                |         | Use a specific run ID from `.vis/runs/` instead of the latest run |
+| `--dry-run`            | `false` | Print the proposal but skip apply, validation, and PR/MR comment  |
+| `--no-cache`           | `false` | Bypass the AI response cache                                      |
+| `--validation-timeout` | `1800`  | Validation re-run timeout in seconds (default 30 min)             |
+
+```bash
+vis ai heal                                # heal latest failure, comment on the PR/MR (or annotate the Buildkite build)
+vis ai heal --dry-run                      # print proposal, skip apply/validate/comment
+vis ai heal --run 2026-04-28T12-00-00      # heal a specific historical failure
+vis ai heal --validation-timeout 600       # cap validation at 10 minutes
+```
+
+The PR/MR comment (or Buildkite annotation) includes the failing task ID, the AI's root-cause explanation, an inline diff per file (with a backtick fence chosen to survive content collisions), and a `vis ai fix … --apply` snippet for local re-application. Comments larger than 60 KB drop the diff body and link back to `vis ai fix`.
+
+## heal accept
+
+Re-derives the latest heal proposal, re-validates it with the same `--no-cache --summarize --fail-fast` re-run that `heal` used, and — when validation passes again — commits the patch to the PR/MR branch via the upstream provider's REST API.
+
+`heal accept` is **not invoked manually** in normal flow. It is wired into the per-provider acceptance trigger:
+
+- **GitHub Actions / GitLab CI**: triggered when an allow-listed maintainer leaves a `/vis heal accept` comment on the PR/MR. The companion workflow (`.github/workflows/vis-heal-accept.yml` / `.gitlab-ci.yml` job) forwards the comment author and head ref to `vis ai heal accept`.
+- **Buildkite**: triggered when an allow-listed maintainer **unblocks** a [block step](https://buildkite.com/docs/pipelines/block-step) in the pipeline. `BUILDKITE_UNBLOCKER_EMAIL` (preferred) or `BUILDKITE_UNBLOCKER` is the actor — there is no comment phrase to match. Buildkite has no commit API of its own, so the commit is derived from `BUILDKITE_REPO`: HTTPS or SSH URLs that match `*github*` route through GitHub, `*gitlab*` URLs route through GitLab. Set whichever `GITHUB_TOKEN` or `GITLAB_TOKEN` matches your remote.
+
+| Option                 | Default | Description                                                       |
+| ---------------------- | ------- | ----------------------------------------------------------------- |
+| `--run`                |         | Use a specific run ID from `.vis/runs/` instead of the latest run |
+| `--validation-timeout` | `1800`  | Validation re-run timeout in seconds (default 30 min)             |
+
+`heal accept` refuses to run when:
+
+- The trigger actor is not on the configured allow-list (the error names the env var(s) checked, so a misconfigured allow-list yields an actionable hint).
+- The change targets a forked repository (the upstream provider can't push to a fork from the CI token).
+
+A reference Buildkite pipeline with the propose + block-step accept shape is generated by [`vis generate buildkite-ci`](./generate#builtin-templates) and documented in the [CI/CD guide](/guides/ci-cd#buildkite).
+
+## discover-help
+
+Emits the subcommand catalogue as structured JSON to stdout — names, descriptions, examples, and option schemas — so a coding agent (Claude, Cursor, Zed, …) can introspect the namespace without parsing prose. The same payload is surfaced through the bundled MCP server; see the [AI Integration guide](/guides/ai-integration).
+
+```bash
+vis ai discover-help
+vis ai discover-help | jq '.subcommands[].path'
+```
+
+## Related
+
+- [AI Integration guide](/guides/ai-integration) — MCP server, Claude Skill, and the self-healing CI workflow.
+- [`vis cache`](./cache) — manage the AI response cache (`vis cache rotate`, `vis cache stats`).

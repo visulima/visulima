@@ -1,0 +1,45 @@
+---
+title: Introduction
+description: "Detect terminal color support for ANSI, 256 colors, and TrueColor."
+---
+
+# @visulima/is-ansi-color-supported
+
+Detect terminal color support capabilities including ANSI 16 colors, 256 colors, and TrueColor (16 million colors).
+
+## Quick Start
+
+```typescript
+import { isAnsiColorSupported } from "@visulima/is-ansi-color-supported";
+
+const colorLevel = isAnsiColorSupported();
+
+if (colorLevel >= 3) {
+    console.log("TrueColor supported!");
+} else if (colorLevel >= 2) {
+    console.log("256 colors supported");
+} else if (colorLevel >= 1) {
+    console.log("Basic ANSI colors supported");
+} else {
+    console.log("No color support");
+}
+```
+
+## Color Levels
+
+- `0` - No color support
+- `1` - Basic 16 colors (ANSI)
+- `2` - 256 colors
+- `3` - TrueColor (16 million colors)
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install the package
+    </Card>
+    <Card title="Usage" href="/usage">
+        Learn how to detect colors
+    </Card>
+    <Card title="API" href="/api">
+        API documentation
+    </Card>
+</Cards>

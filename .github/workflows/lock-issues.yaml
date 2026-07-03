@@ -4,8 +4,14 @@ on: # yamllint disable-line rule:truthy
     schedule:
         - cron: "0 * * * *"
 
+permissions:
+    contents: "read"
+    discussions: "write"
+    issues: "write"
+    pull-requests: "write"
+
 jobs:
     lock-closed:
-        uses: "anolilab/workflows/.github/workflows/lock-closed.yml@main"
+        uses: "anolilab/workflows/.github/workflows/lock-closed.yml@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
         with:
             target-repo: "visulima/visulima"

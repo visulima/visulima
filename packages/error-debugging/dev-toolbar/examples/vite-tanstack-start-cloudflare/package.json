@@ -1,0 +1,40 @@
+{
+    "name": "dev_toolbar_vite-tanstack-start-cloudflare",
+    "version": "0.0.0",
+    "private": true,
+    "sideEffects": false,
+    "type": "module",
+    "scripts": {
+        "build": "vite build && tsc --noEmit",
+        "cf:preview": "wrangler pages dev",
+        "deploy": "pnpm run build && wrangler pages deploy",
+        "dev": "vite dev",
+        "start": "vite start"
+    },
+    "dependencies": {
+        "@tanstack/react-router": "catalog:frontend",
+        "@tanstack/react-router-devtools": "catalog:frontend",
+        "@tanstack/react-start": "catalog:frontend",
+        "react": "catalog:frontend",
+        "react-dom": "catalog:frontend",
+        "redaxios": "catalog:prod",
+        "tailwind-merge": "catalog:prod"
+    },
+    "devDependencies": {
+        "@cloudflare/vite-plugin": "*",
+        "@cloudflare/workers-types": "catalog:dev",
+        "@tailwindcss/postcss": "catalog:frontend",
+        "@types/node": "catalog:types",
+        "@types/react": "catalog:types",
+        "@types/react-dom": "catalog:types",
+        "@visulima/dev-toolbar": "workspace:*",
+        "@visulima/vite-overlay": "workspace:*",
+        "@vitejs/plugin-react": "catalog:build",
+        "axe-core": "catalog:dev",
+        "postcss": "catalog:dev",
+        "tailwindcss": "catalog:style",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build",
+        "wrangler": "catalog:dev"
+    }
+}

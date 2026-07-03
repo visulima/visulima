@@ -1,0 +1,991 @@
+{
+    "$schema": "https://json-schema.org/draft/2020-12/schema",
+    "$id": "https://visulima.com/schemas/project.schema.json",
+    "title": "vis project.json",
+    "description": "Per-project configuration for @visulima/vis. Place a project.json in each workspace package root.",
+    "type": "object",
+    "properties": {
+        "implicitDependencies": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Implicit dependencies on other projects."
+        },
+        "language": {
+            "type": "string",
+            "description": "Primary language — informational and query-able."
+        },
+        "layer": {
+            "type": "string",
+            "enum": [
+                "application",
+                "automation",
+                "configuration",
+                "library",
+                "scaffolding",
+                "tool"
+            ],
+            "description": "Project layer, used for constraint inheritance and query filtering."
+        },
+        "name": {
+            "type": "string",
+            "description": "Project name. When set, takes precedence over `package.json#name` as the project's identity in the workspace graph and CLI filters. Falls back to `package.json#name` when omitted."
+        },
+        "owners": {
+            "type": "array",
+            "items": {
+                "$ref": "#/$defs/OwnersEntry"
+            },
+            "description": "Code owners for paths inside this project."
+        },
+        "project": {
+            "type": "object",
+            "properties": {
+                "channel": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "maintainers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "owner": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                }
+            },
+            "additionalProperties": false,
+            "description": "Project-level metadata."
+        },
+        "projectType": {
+            "type": "string",
+            "enum": [
+                "application",
+                "library",
+                "service",
+                "tool"
+            ],
+            "description": "Project type — `library`, `application`, `service`, or `tool`.\n\n- `library` — reusable code consumed by other workspace projects.\n- `application` — end-user-facing build target (web app, mobile app).\n- `service` — long-running HTTP / worker process deployed independently.\n- `tool` — CLI or developer tooling shipped as an executable."
+        },
+        "restricted": {
+            "type": "boolean",
+            "description": "Marks the project as write-restricted. Consumed by `vis sync codeowners --write-guard` to scope the generated Write Guard workflow to this project's paths."
+        },
+        "sourceRoot": {
+            "type": "string",
+            "description": "Source root, used for display and language inference."
+        },
+        "stack": {
+            "type": "string",
+            "enum": [
+                "backend",
+                "data",
+                "frontend",
+                "infrastructure",
+                "systems"
+            ],
+            "description": "Tech stack."
+        },
+        "tags": {
+            "type": "array",
+            "items": {
+                "type": "string"
+            },
+            "description": "Filterable tags."
+        },
+        "targets": {
+            "type": "object",
+            "additionalProperties": {
+                "$ref": "#/$defs/VisTargetConfiguration"
+            },
+            "description": "Vis-style target definitions (merged on top of package.json scripts)."
+        },
+        "$schema": {
+            "type": "string",
+            "description": "JSON Schema reference for editor autocomplete."
+        }
+    },
+    "additionalProperties": false,
+    "$defs": {
+        "OwnersEntry": {
+            "type": "object",
+            "properties": {
+                "channel": {
+                    "type": "string",
+                    "description": "Optional notification channel (e.g. Slack, Teams)."
+                },
+                "owners": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Owner handles (e.g. `@visulima/core-team`)."
+                },
+                "path": {
+                    "type": "string",
+                    "description": "File/glob pattern relative to the project root."
+                }
+            },
+            "required": [
+                "owners",
+                "path"
+            ],
+            "additionalProperties": false,
+            "description": "Declared code-owner assignment for a path glob within a project. Mirrors moon's `owners` shape so migrations can round-trip cleanly."
+        },
+        "VisTargetConfiguration": {
+            "type": "object",
+            "properties": {
+                "always": {
+                    "type": "boolean",
+                    "description": "When `true`, this target runs after the main task graph completes — even if upstream tasks failed. Useful for cleanup, teardown, notifications, or anything that should fire regardless of build outcome. Always-tasks are not part of the normal dependency graph and never block other tasks."
+                },
+                "cache": {
+                    "type": "boolean",
+                    "description": "Whether this target is cacheable"
+                },
+                "cacheOnWarning": {
+                    "type": "boolean",
+                    "description": "When `false`, exit-0 runs whose terminal output matched any  {@link  TargetConfiguration.warningPattern }  are not seeded into the cache. Defaults to `true` — warnings are surfaced on the result (`hadWarnings: true`) but caching still happens, matching the \"succeeded with warnings is incremental\" behaviour rush, lage and wireit users have repeatedly asked for."
+                },
+                "cacheRestore": {
+                    "type": "object",
+                    "properties": {
+                        "preserveMtime": {
+                            "type": "boolean",
+                            "description": "Restore each file's modification time from the captured tar header (second precision). When `false`, restored files take the current wall-clock time, matching the legacy behaviour."
+                        },
+                        "preservePerms": {
+                            "type": "boolean",
+                            "description": "Restore each file's POSIX mode bits (rwx triplets, low 12 bits). When `false`, restored files take the process umask. Only meaningful on POSIX hosts; Windows ignores tar mode."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Fine-grained controls over how cached outputs are rehydrated. See  {@link  CacheRestoreOptions } . Both fields default to `true` (faithful restore); flip individually when downstream tooling needs the legacy \"now\"-stamped behaviour."
+                },
+                "command": {
+                    "type": "string",
+                    "description": "The command to run (alternative to executor)"
+                },
+                "concurrencyGroup": {
+                    "type": "string",
+                    "description": "Workspace-level concurrency group this target opts into. The scheduler caps the *combined* in-flight count of every task whose target carries the same group name to the value declared in  {@link  TaskRunnerOptions.concurrencyGroups } . Use this when several targets share an external resource (a single Postgres, a developer's Docker daemon, an account-wide deploy lock) so the cap follows the resource, not any single target name.\n\nTargets that name a group not declared in `concurrencyGroups` run uncapped — a typo shouldn't deadlock the graph. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                },
+                "concurrencyWeight": {
+                    "type": "number",
+                    "description": "Per-task slot weight against the global `parallel` cap. Defaults to `1`. A task with `concurrencyWeight: 2` consumes two slots; with `parallel: 4` only two such tasks can run concurrently (or one weight-2 plus two weight-1). Use for CPU-pinning tasks — bundlers, `tsc`, native compiles — where the runner shouldn't keep over-subscribing the box just because slots are nominally free.\n\nThe scheduler always lets a single task run even if its weight exceeds the remaining budget; otherwise a heavy task on a `parallel: 1` pool would deadlock. Values `&lt;= 0`, non-finite, or non-integer are ignored (treated as `1`)."
+                },
+                "configurations": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "object",
+                        "additionalProperties": {}
+                    },
+                    "description": "Named configurations (e.g., \"production\", \"development\")"
+                },
+                "dependsOn": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "dependencies": {
+                                        "type": "boolean",
+                                        "description": "Whether this is a dependency on the same project"
+                                    },
+                                    "params": {
+                                        "type": "string",
+                                        "enum": [
+                                            "forward",
+                                            "ignore"
+                                        ],
+                                        "description": "Params to pass through"
+                                    },
+                                    "projects": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        ],
+                                        "description": "The project name (if different from the current project)"
+                                    },
+                                    "target": {
+                                        "type": "string",
+                                        "description": "The target name"
+                                    }
+                                },
+                                "required": [
+                                    "target"
+                                ],
+                                "additionalProperties": false,
+                                "description": "Defines a dependency on another target."
+                            }
+                        ]
+                    },
+                    "description": "Other targets this target depends on"
+                },
+                "executor": {
+                    "type": "string",
+                    "description": "The executor/command to run"
+                },
+                "hashMode": {
+                    "type": "string",
+                    "enum": [
+                        "declared",
+                        "trace"
+                    ],
+                    "description": "How this target's cache key is derived.\n\n- `\"declared\"` (default): the Nx-style path — the hash is built   up-front from explicitly declared `inputs` (plus named/global   inputs and the lockfile). Deterministic and portable across   machines: two runners with the same workspace state produce the   same key regardless of OS or syscall surface.\n- `\"trace\"`: the task is run under the file-access tracker   (strace on Linux, an fs preload shim elsewhere) and the cache   key is derived from the files it actually *read* during   execution — no `inputs` declaration required. Mirrors the   shipped `{ auto: true }` output capture, but for the input   side. Use for compound or opaque commands whose real input set   is impractical to enumerate.\n\nOpt-in per target precisely because trace mode trades reproducibility for convenience: the observed read set can differ across runners with different syscall surfaces (a static binary on a host without strace records nothing), so a trace key is **not** guaranteed portable between machines. Leave targets on `\"declared\"` whenever the input set can reasonably be listed.\n\nEquivalent to flipping  {@link  TaskRunnerOptions.autoFingerprint }  on for this one target while every other target stays declared."
+                },
+                "inputs": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "anyOf": [
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "fileset": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "base": {
+                                                                "type": "string",
+                                                                "enum": [
+                                                                    "package",
+                                                                    "workspace"
+                                                                ],
+                                                                "description": "Anchor for the pattern."
+                                                            },
+                                                            "pattern": {
+                                                                "type": "string",
+                                                                "description": "Glob pattern (may start with `!` for negation)."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "base",
+                                                            "pattern"
+                                                        ],
+                                                        "additionalProperties": false,
+                                                        "description": "Object form of a fileset pattern, for anchoring to the workspace root."
+                                                    },
+                                                    {
+                                                        "type": "string"
+                                                    }
+                                                ]
+                                            }
+                                        },
+                                        "required": [
+                                            "fileset"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "An input based on file patterns.\n\n`fileset` may be a bare glob string (package-root relative) or an object form `{ pattern, base }` to anchor explicitly to the workspace root. Negation (`!` prefix) works in both forms."
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "runtime": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "runtime"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "An input based on a runtime command."
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "env": {
+                                                "type": "string"
+                                            }
+                                        },
+                                        "required": [
+                                            "env"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "An input based on environment variables."
+                                    },
+                                    {
+                                        "type": "object",
+                                        "properties": {
+                                            "externalDependencies": {
+                                                "type": "array",
+                                                "items": {
+                                                    "type": "string"
+                                                }
+                                            }
+                                        },
+                                        "required": [
+                                            "externalDependencies"
+                                        ],
+                                        "additionalProperties": false,
+                                        "description": "An input based on external dependency versions."
+                                    }
+                                ],
+                                "description": "Defines an input for cache invalidation."
+                            }
+                        ]
+                    },
+                    "description": "Input patterns for cache invalidation"
+                },
+                "maxConcurrent": {
+                    "type": "number",
+                    "description": "Maximum number of in-flight instances of this target across the whole graph. When set, the scheduler refuses to start an additional task whose `target.target` equals this target's name once the running count reaches `maxConcurrent`. Independent of `--parallel`: the global cap still bounds total in-flight tasks, and `maxConcurrent` further bounds the per-target subset.\n\nUse for tests/deploys that share an external resource (DB, port, mock server). Set to `1` to serialize. Values `&lt;= 0` are ignored.\n\nIf multiple projects declare different values for the same target name, the runner uses the smallest declared cap. Caps don't apply to tasks marked `always: true`; those run in a separate finalisation phase outside the scheduler."
+                },
+                "outputs": {
+                    "type": "array",
+                    "items": {
+                        "anyOf": [
+                            {
+                                "type": "string"
+                            },
+                            {
+                                "type": "object",
+                                "properties": {
+                                    "auto": {
+                                        "type": "boolean",
+                                        "const": true
+                                    }
+                                },
+                                "required": [
+                                    "auto"
+                                ],
+                                "additionalProperties": false
+                            }
+                        ],
+                        "description": "A single entry in a task's `outputs` list.\n\n- `string` — a literal path *or* a glob pattern relative to the   workspace root. Prefix with `!` to exclude files the positive   patterns would otherwise include (e.g. `\"!dist/cache/**\"`).\n- `{ auto: true }` — use whatever files the task actually wrote   during execution (resolved from the file-access tracker). Lets   authors who don't know their exact output layout cache results   without listing every path. Silently behaves as \"no outputs\" when   tracking isn't active for this task."
+                    },
+                    "description": "Output patterns produced by this target. Each entry is a literal path, a glob (`\"dist/**\"`), a negative glob (`\"!dist/cache/**\"`), or `{ auto: true }` to cache whatever files the task actually wrote during execution (resolved from the file-access tracker). `{ auto: true }` lets a build script cache zero-config without the author enumerating its output layout; it contributes nothing — and the runner declines to seed the cache — when write tracking isn't available for the task, so a hit can never restore a missing artifact."
+                },
+                "parallelism": {
+                    "type": "boolean",
+                    "description": "Whether this target supports parallel execution"
+                },
+                "pty": {
+                    "type": "boolean",
+                    "description": "Per-target PTY override. When `true`, every task spawned from this target runs inside a pseudo-terminal (so `isatty()` returns true and the child preserves color / progress UI). When `false`, the workspace-level PTY toggle is suppressed for this target. Useful when most targets are happy with piped stdio but one tool (vitest, prettier, a colorising linter) needs a real TTY, or vice versa.\n\nAbsent means \"follow the workspace default\" — the executor decides based on its own toggles."
+                },
+                "warningPattern": {
+                    "anyOf": [
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "Regex source string(s) that mark a successful task as having emitted warnings. The orchestrator scans the task's combined terminal output after a 0-exit and, on first match, sets `hadWarnings` on the result. Combine with `cacheOnWarning: false` to skip caching for warning-tainted runs. Both bare strings and arrays are accepted; arrays are tested in order.\n\n  ```ts   warningPattern: [\"\\\\bwarning\\\\b\", \"TS\\\\d{4}\"]   ```"
+                },
+                "when": {
+                    "type": "object",
+                    "properties": {
+                        "branch": {
+                            "anyOf": [
+                                {
+                                    "type": "string"
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string"
+                                    }
+                                }
+                            ],
+                            "description": "Match against the current git branch (HEAD)."
+                        },
+                        "ci": {
+                            "type": "boolean",
+                            "description": "Run only when invoked inside CI when `true`, only outside CI when `false`. Detects CI via the `CI` env var (the convention GitHub Actions, GitLab, CircleCI, Jenkins, etc. all share)."
+                        },
+                        "env": {
+                            "anyOf": [
+                                {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "object",
+                                            "properties": {
+                                                "equals": {
+                                                    "type": "string",
+                                                    "description": "Match this exact value. Mutually exclusive with `exists`."
+                                                },
+                                                "exists": {
+                                                    "type": "boolean",
+                                                    "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
+                                                },
+                                                "name": {
+                                                    "type": "string",
+                                                    "description": "Variable name."
+                                                }
+                                            },
+                                            "required": [
+                                                "name"
+                                            ],
+                                            "additionalProperties": false
+                                        }
+                                    ],
+                                    "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "anyOf": [
+                                            {
+                                                "type": "string"
+                                            },
+                                            {
+                                                "type": "object",
+                                                "properties": {
+                                                    "equals": {
+                                                        "type": "string",
+                                                        "description": "Match this exact value. Mutually exclusive with `exists`."
+                                                    },
+                                                    "exists": {
+                                                        "type": "boolean",
+                                                        "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
+                                                    },
+                                                    "name": {
+                                                        "type": "string",
+                                                        "description": "Variable name."
+                                                    }
+                                                },
+                                                "required": [
+                                                    "name"
+                                                ],
+                                                "additionalProperties": false
+                                            }
+                                        ],
+                                        "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
+                                    }
+                                }
+                            ],
+                            "description": "Match against environment variables. A bare string asserts the variable is set and non-empty; the object form lets you match an exact value or just assert presence/absence."
+                        },
+                        "not": {
+                            "type": "object",
+                            "properties": {
+                                "branch": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string"
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string"
+                                            }
+                                        }
+                                    ]
+                                },
+                                "ci": {
+                                    "type": "boolean"
+                                },
+                                "env": {
+                                    "anyOf": [
+                                        {
+                                            "anyOf": [
+                                                {
+                                                    "type": "string"
+                                                },
+                                                {
+                                                    "type": "object",
+                                                    "properties": {
+                                                        "equals": {
+                                                            "type": "string",
+                                                            "description": "Match this exact value. Mutually exclusive with `exists`."
+                                                        },
+                                                        "exists": {
+                                                            "type": "boolean",
+                                                            "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
+                                                        },
+                                                        "name": {
+                                                            "type": "string",
+                                                            "description": "Variable name."
+                                                        }
+                                                    },
+                                                    "required": [
+                                                        "name"
+                                                    ],
+                                                    "additionalProperties": false
+                                                }
+                                            ],
+                                            "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "anyOf": [
+                                                    {
+                                                        "type": "string"
+                                                    },
+                                                    {
+                                                        "type": "object",
+                                                        "properties": {
+                                                            "equals": {
+                                                                "type": "string",
+                                                                "description": "Match this exact value. Mutually exclusive with `exists`."
+                                                            },
+                                                            "exists": {
+                                                                "type": "boolean",
+                                                                "description": "Assert the variable is set & non-empty (`true`) or unset/empty (`false`)."
+                                                            },
+                                                            "name": {
+                                                                "type": "string",
+                                                                "description": "Variable name."
+                                                            }
+                                                        },
+                                                        "required": [
+                                                            "name"
+                                                        ],
+                                                        "additionalProperties": false
+                                                    }
+                                                ],
+                                                "description": "An environment-variable match. The string form is shorthand for `{ name, exists: true }` (set + non-empty). The object form supports either presence assertions or exact-value matching."
+                                            }
+                                        }
+                                    ]
+                                },
+                                "os": {
+                                    "anyOf": [
+                                        {
+                                            "type": "string",
+                                            "enum": [
+                                                "aix",
+                                                "darwin",
+                                                "freebsd",
+                                                "linux",
+                                                "openbsd",
+                                                "sunos",
+                                                "windows",
+                                                "win32"
+                                            ],
+                                            "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
+                                        },
+                                        {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "string",
+                                                "enum": [
+                                                    "aix",
+                                                    "darwin",
+                                                    "freebsd",
+                                                    "linux",
+                                                    "openbsd",
+                                                    "sunos",
+                                                    "windows",
+                                                    "win32"
+                                                ],
+                                                "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
+                                            }
+                                        }
+                                    ]
+                                }
+                            },
+                            "additionalProperties": false,
+                            "description": "Negative mirrors. A task runs only when *all* `not.*` clauses fail."
+                        },
+                        "os": {
+                            "anyOf": [
+                                {
+                                    "type": "string",
+                                    "enum": [
+                                        "aix",
+                                        "darwin",
+                                        "freebsd",
+                                        "linux",
+                                        "openbsd",
+                                        "sunos",
+                                        "windows",
+                                        "win32"
+                                    ],
+                                    "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
+                                },
+                                {
+                                    "type": "array",
+                                    "items": {
+                                        "type": "string",
+                                        "enum": [
+                                            "aix",
+                                            "darwin",
+                                            "freebsd",
+                                            "linux",
+                                            "openbsd",
+                                            "sunos",
+                                            "windows",
+                                            "win32"
+                                        ],
+                                        "description": "Aliased platform list — `\"windows\"` is sugar for Node's `\"win32\"`."
+                                    }
+                                }
+                            ],
+                            "description": "Match `process.platform` (`\"linux\" | \"darwin\" | \"win32\" | \"freebsd\" | \"openbsd\" | \"sunos\" | \"aix\"`). Pass `\"windows\"` as an alias for `\"win32\"` — easier to remember and matches what people type."
+                        }
+                    },
+                    "additionalProperties": false,
+                    "description": "Predicate that gates execution. When the condition evaluates to `false` for the current environment, the task is skipped (marked `\"skipped\"`, not failed). Combine with `os`, `env`, `branch`, and `ci` clauses for granular control:\n\n  ```ts   when: { os: \"linux\", ci: true, env: \"DEPLOY_TOKEN\" }   ```"
+                },
+                "aliases": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Alternate names that resolve to this target on the CLI. Useful for shortening long canonical names (`test` ↔ `t`) or for offering migration-friendly aliases when renaming targets. Aliases must be globally unique within the workspace."
+                },
+                "arguments": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/$defs/TaskArgument"
+                    },
+                    "description": "Declarative argument schema for this target. Forwarded CLI args (`vis run &lt;target> -- --flag value`) are validated against it, surfaced by per-task `--help`, and exposed to the command as `VIS_ARG_&lt;NAME>` environment variables."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "One-line description surfaced by `vis list` and per-task `--help`. Kept short — longer docs belong in project READMEs or vis.config.ts comments."
+                },
+                "inferred": {
+                    "type": "boolean",
+                    "description": "True when the target was synthesized by a Project Crystal-style detector (see  {@link  ../inference } ) rather than declared by a package.json script, project.json, or vis.task.ts file. Surfaced by `vis list --inferred` and used by tooling to distinguish implicit defaults from explicit user intent."
+                },
+                "options": {
+                    "$ref": "#/$defs/VisTargetOptions",
+                    "description": "Vis-specific target options."
+                },
+                "preset": {
+                    "$ref": "#/$defs/TargetPreset",
+                    "description": "Preset applied before user-specified options."
+                },
+                "type": {
+                    "$ref": "#/$defs/TargetType",
+                    "description": "Semantic task type. Affects caching defaults and CI filtering.",
+                    "default": "test"
+                }
+            },
+            "additionalProperties": false,
+            "description": "An extended target configuration that adds the vis-specific options on top of task-runner's `TargetConfiguration`."
+        },
+        "TaskArgument": {
+            "type": "object",
+            "properties": {
+                "alias": {
+                    "type": "string",
+                    "description": "Short single-character alias (e.g. `r` for `--reporter`, used as `-r`). Must be exactly one character — enforced at run time by  {@link  validateArgumentSchema } ."
+                },
+                "choices": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Allowed values when  {@link  TaskArgument.type }  is `\"enum\"`. Must be non-empty (and is required) for `enum` — enforced at run time by  {@link  validateArgumentSchema } ."
+                },
+                "default": {
+                    "$ref": "#/$defs/TaskArgumentValue",
+                    "description": "Value applied when the argument is omitted. Skips the required check."
+                },
+                "description": {
+                    "type": "string",
+                    "description": "One-line help text surfaced by per-task `--help`."
+                },
+                "name": {
+                    "type": "string",
+                    "description": "Canonical name, without the leading `--` (kebab-case by convention). Must start with a letter and contain only letters, digits, `-`, `_` — enforced at run time by  {@link  validateArgumentSchema } ."
+                },
+                "positional": {
+                    "type": "boolean",
+                    "description": "Consume the value from the next free positional argument instead of a `--flag`. Positional args are filled in declaration order."
+                },
+                "required": {
+                    "type": "boolean",
+                    "description": "Fail the task when the argument is absent and has no `default`."
+                },
+                "type": {
+                    "$ref": "#/$defs/TaskArgumentType",
+                    "description": "Value type for coercion + validation. Defaults to `\"string\"`."
+                }
+            },
+            "required": [
+                "name"
+            ],
+            "additionalProperties": false,
+            "description": "A single declared argument for a task target."
+        },
+        "TaskArgumentValue": {
+            "type": [
+                "boolean",
+                "number",
+                "string"
+            ],
+            "description": "A coerced task-argument value."
+        },
+        "TaskArgumentType": {
+            "type": "string",
+            "enum": [
+                "boolean",
+                "enum",
+                "number",
+                "string"
+            ],
+            "description": "Value type a  {@link  TaskArgument }  coerces to and validates against."
+        },
+        "VisTargetOptions": {
+            "type": "object",
+            "properties": {
+                "affectedFiles": {
+                    "$ref": "#/$defs/AffectedFilesMode",
+                    "description": "How to forward affected files to the task process. Only used when invoked via `vis affected &lt;target>`.",
+                    "default": false
+                },
+                "envFile": {
+                    "anyOf": [
+                        {
+                            "type": "boolean"
+                        },
+                        {
+                            "type": "string"
+                        },
+                        {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    ],
+                    "description": "Load environment variables from dotenv file(s) before running.\n- `string`: a single file path (relative to project root).\n- `string[]`: multiple files — later entries override earlier ones,   so put more-specific files last (e.g. `[\".env\", \".env.local\"]`).\n- `true`: auto-cascade in the Next/Vite order:   `.env` → `.env.{NODE_ENV}` → `.env.local` → `.env.{NODE_ENV}.local`.   Skips `.env.local` when NODE_ENV is `test`, matching Next.js."
+                },
+                "interactive": {
+                    "type": "boolean",
+                    "description": "When true, the task is serialized with respect to parallel execution and must be run on the main process (claims stdin). Used for commands that read from the terminal.",
+                    "default": false
+                },
+                "internal": {
+                    "type": "boolean",
+                    "description": "When true, the task is hidden from CLI listings and can only be invoked as a dependency of another task.",
+                    "default": false
+                },
+                "killGracePeriodMs": {
+                    "type": "number",
+                    "description": "Milliseconds the timeout watchdog waits between sending SIGTERM and SIGKILL when the `timeout` budget fires. Tasks that ignore SIGTERM (e.g. test runners holding open child processes) get force-killed after this grace window so a stuck task can't outlive its budget.\n\nSet to `0` to skip escalation and rely on SIGTERM only.",
+                    "default": 5000
+                },
+                "mutex": {
+                    "type": "string",
+                    "description": "Serializes all tasks that share the same mutex name. Useful for tasks that contend on a shared resource (e.g., a database migration)."
+                },
+                "outputStyle": {
+                    "type": "string",
+                    "enum": [
+                        "normal",
+                        "quiet"
+                    ],
+                    "description": "Per-target output verbosity. Overrides the global `--output-style` flag for this specific target.\n\n- `\"normal\"` (default): print every task's terminal output\n- `\"quiet\"`: only print output when the task fails. Successful   and cached tasks contribute their status line and timing, but   their captured stdout/stderr is suppressed.\n\nUseful when a routinely-noisy task (a linter or test runner with verbose progress output) should stay quiet during green builds but reveal everything when it fails."
+                },
+                "persistent": {
+                    "type": "boolean",
+                    "description": "When true, the task is a long-running / never-ending process. Persistent tasks are scheduled last, execute after all cacheable tasks complete, and are never cached.",
+                    "default": false
+                },
+                "preset": {
+                    "$ref": "#/$defs/TargetPreset",
+                    "description": "A preset that pre-fills a common bundle of options. User-provided fields always take precedence over the preset."
+                },
+                "pty": {
+                    "type": "boolean",
+                    "description": "Run the task through a pseudo-terminal so color-aware tools (vitest, eslint, biome, …) render as if attached to a real TTY instead of a pipe. Output is captured via task-runner's `TerminalBuffer` so ANSI escapes are normalized into the final rendered state before reaching the reporter.\n\nForces cache to off — PTY output can include timing-dependent frames (spinners) that aren't safe to replay from a cache.",
+                    "default": false
+                },
+                "retryCount": {
+                    "type": "number",
+                    "description": "Number of times to retry the task on failure. Uses an exponential backoff by default (1s, 2s, 4s, ...).",
+                    "default": 0
+                },
+                "retryDelay": {
+                    "anyOf": [
+                        {
+                            "type": "number"
+                        },
+                        {
+                            "type": "string",
+                            "const": "exponential"
+                        }
+                    ],
+                    "description": "Delay between retry attempts in milliseconds, or `\"exponential\"` for 2^attempt * 1000 ms.",
+                    "default": "exponential"
+                },
+                "runFromWorkspaceRoot": {
+                    "type": "boolean",
+                    "description": "When true, the command executes with the workspace root as CWD instead of the project root.",
+                    "default": false
+                },
+                "runInCI": {
+                    "$ref": "#/$defs/RunInCI",
+                    "description": "Controls whether the task runs in CI environments.",
+                    "default": true
+                },
+                "runnerTags": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Capability tags that gate this task to runners advertising the same tag. The CLI's `--runner-tags=gpu,slow` flag (or `VIS_RUNNER_TAGS` env var) tells vis what the current runner supports; tasks whose `runnerTags` share at least one tag with the runner set are eligible. Untagged tasks (no `runnerTags` or an empty array) are general-purpose and always run.\n\nUse this for special-purpose CI lanes — e.g. a GPU runner that should only pick up visual-regression suites, or a nightly job that runs `slow` integration tests. When neither flag nor env is set, the filter is inactive and every task runs."
+                },
+                "service": {
+                    "$ref": "#/$defs/ServiceConfig",
+                    "description": "Marks this target as a long-lived service that can be started via `vis service start &lt;id>` and auto-attached when other tasks declare it in `dependsOn`. Implies persistent + non-cacheable behaviour (set `preset: \"server\"` to inherit the rest of the bundle).\n\nThe presence of this block — not `preset: \"server\"` alone — is what makes a target eligible for the cross-invocation registry. `preset: \"server\"` without `service` keeps today's in-run-only behaviour."
+                },
+                "shell": {
+                    "type": "string",
+                    "description": "Per-target shell override. When set, the command runs through this shell instead of the platform default."
+                },
+                "shellArgs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    },
+                    "description": "Arguments passed to the per-target shell/interpreter before the command string. Defaults to `[\"-c\"]` (POSIX shells, pwsh). Set this to run the command under an interpreter that uses a different flag — e.g. `shell: \"node\", shellArgs: [\"-e\"]` runs the command as inline JS (\"script mode\"), or `shellArgs: [\"-lc\"]` for a login shell. Only applies when `shell`/`unixShell`/`windowsShell` resolves to a custom shell.\n\nMust be non-empty when set — an empty array would drop the interpreter flag entirely, so the runtime falls back to `-c` defensively."
+                },
+                "strictEnv": {
+                    "type": "boolean",
+                    "description": "Override the workspace `strictEnv` setting for this target. When truthy, the target fails if its command references an env var that resolves to neither the task's effective env nor `process.env`. When `false`, the target opts out of a workspace `strictEnv: true` (e.g. for a one-off command that legitimately tolerates an unset variable)."
+                },
+                "timeout": {
+                    "type": "number",
+                    "description": "Maximum wall-clock milliseconds a single task run is allowed to take before being killed. `0` / `undefined` means no timeout.\n\nWhen the timeout fires the task is sent SIGTERM and, if it has not exited within `killGracePeriodMs`, SIGKILL. The task exits with a failure status carrying the `[timeout]` marker in `terminalOutput`. Retries count per-attempt, not cumulatively.\n\nUse this to prevent runaway tasks from eating CI wall-clock time up to the job-level cutoff."
+                },
+                "unixShell": {
+                    "type": "string",
+                    "description": "Per-target unix shell override, used on Linux and macOS. Takes precedence over `shell` on unix-like systems."
+                },
+                "windowsShell": {
+                    "type": "string",
+                    "description": "Per-target windows shell override, used on Windows. Takes precedence over `shell` on Windows."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Vis-specific target options that extend the task-runner's base `TargetConfiguration`. These live under `target.options` and are interpreted by vis before handing the task off to task-runner.\n\nConditional execution (`when:`) and finally tasks (`always:`) live at the target top level, not under `options` — they're handled by the task-runner orchestrator. See `@visulima/task-runner`'s `WhenCondition`."
+        },
+        "AffectedFilesMode": {
+            "type": [
+                "string",
+                "boolean"
+            ],
+            "enum": [
+                "args",
+                "both",
+                "env",
+                false
+            ],
+            "description": "Controls how affected files are forwarded to a task.\n- `false` (default): Do not forward.\n- `\"args\"`: Append affected paths as additional command arguments.\n- `\"env\"`: Expose them via `VIS_AFFECTED_FILES` environment variable.\n- `\"both\"`: Both of the above."
+        },
+        "TargetPreset": {
+            "type": "string",
+            "enum": [
+                "server",
+                "utility"
+            ],
+            "description": "Preset bundles of target options.\n- `server`: Long-running local dev server — caching off, not in CI,   interactive, persistent.\n- `utility`: Short-lived helper — caching off, not in CI."
+        },
+        "RunInCI": {
+            "anyOf": [
+                {
+                    "type": "string",
+                    "const": "affected"
+                },
+                {
+                    "type": "string",
+                    "const": "always"
+                },
+                {
+                    "type": "boolean"
+                }
+            ],
+            "description": "Controls whether a target runs in CI.\n- `true` (default): Always run.\n- `false`: Never run in CI (local-only).\n- `\"affected\"`: Only when the project is affected by the current change set.\n- `\"always\"`: Always run, even if unaffected."
+        },
+        "ServiceConfig": {
+            "type": "object",
+            "properties": {
+                "env": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "type": "string"
+                    },
+                    "description": "Env vars to expose to dependent tasks when this service is registered. Merged into the dependent task's env after the task's own envFile and before the task's explicit `env` overrides — the dependent task wins on key collisions.\n\nNote: only this `env` map propagates to dependents. The service target's own `envFile` is loaded into the **service process** at start time but is *not* forwarded — dependents must declare any shared values they need either here or in their own envFile. This boundary is intentional: envFiles often contain operator-only secrets (deploy keys, admin tokens) that should not leak into downstream test commands."
+                },
+                "killGracePeriodMs": {
+                    "type": "number",
+                    "description": "Grace period in milliseconds between SIGTERM and SIGKILL when the service is stopped.",
+                    "default": 5000
+                },
+                "port": {
+                    "type": "number",
+                    "description": "Optional port the service listens on. Used as the default for `readiness.tcp.port` when no explicit probe is configured, and surfaced by `vis service list`."
+                },
+                "readiness": {
+                    "type": "object",
+                    "properties": {
+                        "tcp": {
+                            "type": "object",
+                            "properties": {
+                                "host": {
+                                    "type": "string"
+                                },
+                                "port": {
+                                    "type": "number"
+                                },
+                                "timeoutMs": {
+                                    "type": "number"
+                                }
+                            },
+                            "required": [
+                                "port"
+                            ],
+                            "additionalProperties": false
+                        }
+                    },
+                    "required": [
+                        "tcp"
+                    ],
+                    "additionalProperties": false,
+                    "description": "Readiness probe configuration. v1 supports TCP only."
+                }
+            },
+            "additionalProperties": false,
+            "description": "Configuration block declared on a target to mark it as a long-lived \"service\" — eligible to be started/stopped via `vis service` and auto-attached when other tasks depend on it.\n\nTargets must also carry `preset: \"server\"` (or the equivalent `persistent: true`) for the service-mode lifecycle to apply."
+        },
+        "TargetType": {
+            "type": "string",
+            "enum": [
+                "build",
+                "run",
+                "test"
+            ],
+            "description": "Semantic classification for a target.\n- `build`: Generates one or more artifacts; cached by default.\n- `test`: Validation task (lint, typecheck, unit test). Default type.\n- `run`: One-off or long-running process. Not cached by default."
+        }
+    }
+}

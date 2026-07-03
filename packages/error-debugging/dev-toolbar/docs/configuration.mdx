@@ -1,0 +1,465 @@
+---
+title: Configuration
+description: Complete reference for all Vite plugin options available in @visulima/dev-toolbar.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { TypeTable } from "fumadocs-ui/components/type-table";
+
+Pass options to the `devToolbar()` plugin in your `vite.config.ts`:
+
+```ts title="vite.config.ts"
+import { defineConfig } from "vite";
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+
+export default defineConfig({
+    plugins: [
+        devToolbar({
+            placement: "bottom-center",
+            // Opt-in to the apps you want — all are off by default
+            apps: {
+                inspector: true,
+                seo: true,
+                performance: true,
+                a11y: true,
+                timeline: true,
+                moduleGraph: true,
+                tailwind: true,
+                assets: true,
+            },
+        }),
+    ],
+});
+```
+
+## Plugin Options
+
+### `apps`
+
+Controls which built-in apps are registered. All optional apps are **disabled by default** — only `viteConfig` and `settings` are shown out of the box. Set an app to `true` to enable it.
+
+```ts
+apps?: {
+    a11y?: boolean;           // default: false
+    annotations?: boolean;    // default: false
+    assets?: boolean;         // default: false
+    inspector?: boolean;      // default: false
+    moduleGraph?: boolean;    // default: false
+    performance?: boolean;    // default: false
+    seo?: boolean;            // default: false
+    settings?: boolean;       // default: true  (always shown)
+    tailwind?: boolean;       // default: false
+    timeline?: boolean;       // default: false
+    viteConfig?: boolean;     // default: true  (always shown)
+}
+```
+
+**Example** — enable the SEO, Inspector, Annotations, and Performance apps:
+
+```ts
+devToolbar({
+    apps: {
+        annotations: true,
+        inspector: true,
+        seo: true,
+        performance: true,
+    },
+});
+```
+
+---
+
+### `appendTo`
+
+**Type:** `string | RegExp` — **Default:** `''` (auto-detected for supported frameworks)
+
+Append the toolbar import to a specific module ID instead of injecting a `<script>` tag via `transformIndexHtml`.
+Use this whenever your project's HTML is not a static file that Vite can transform — most commonly with SSR frameworks.
+
+```ts
+devToolbar({
+    appendTo: "src/main.ts",
+    // or as a regex:
+    appendTo: /main\.(ts|js)$/,
+});
+```
+
+**Auto-detection**
+
+The plugin automatically detects supported SSR frameworks and sets `appendTo` for you:
+
+| Framework      | Detection                                                                    | Auto `appendTo`  |
+| -------------- | ---------------------------------------------------------------------------- | ---------------- |
+| TanStack Start | `tanstack-start-core:config` or `tanstack-react-start:config` plugin present | `/router\.tsx$/` |
+
+If your framework is auto-detected, you do not need to set `appendTo` manually. An explicit `appendTo` value always takes precedence over auto-detection.
+
+**Why SSR frameworks need this**
+
+Frameworks like TanStack Start, Nuxt, and SvelteKit render the full HTML document on the server at request time.
+Vite's `transformIndexHtml` hook is only called when Vite itself serves an HTML file; server-rendered HTML bypasses it entirely.
+`appendTo` switches to module-graph injection instead: the toolbar import is prepended to the matched module during Vite's `transform` phase.
+Because that hook automatically skips SSR transforms (`transformOptions.ssr === true`), the import is added only to the **client** bundle — never to the server-side render.
+
+<Callout type="warn">
+    Only set `appendTo` if you understand exactly what it does. The toolbar import is prepended to the matching module's source code at transform time. Make
+    sure the target module is executed in the browser (not server-only code).
+</Callout>
+
+---
+
+### `closeOnOutsideClick`
+
+**Type:** `boolean` — **Default:** `true`
+
+Close the DevTools panel when the user clicks outside of it. Users can override this preference in the [Settings app](/docs/dev-toolbar/built-in-apps/settings).
+
+---
+
+### `customApps`
+
+**Type:** `DevToolbarApp[]` — **Default:** `[]`
+
+Register additional custom apps at plugin configuration time. These are added alongside the built-in apps. See [Creating Custom Apps](/docs/dev-toolbar/custom-apps/creating-apps) for the full `DevToolbarApp` interface.
+
+```ts
+import type { DevToolbarApp } from "@visulima/dev-toolbar";
+
+const myApp: DevToolbarApp = {
+    id: "my-app",
+    name: "My App",
+    icon: myIconSvgString,
+    component: MyAppComponent,
+};
+
+devToolbar({
+    customApps: [myApp],
+});
+```
+
+---
+
+### `defaultVisible`
+
+**Type:** `boolean` — **Default:** `true`
+
+Whether the toolbar pill is visible when the page first loads. Set to `false` to hide the toolbar until the user presses the toggle shortcut.
+
+---
+
+### `editor`
+
+**Type:** `string` — **Default:** auto-detected
+
+The editor to open when clicking "Open in editor" in the Inspector app.
+Accepts any value understood by [`launch-editor`](https://github.com/yyx990803/launch-editor):
+
+- An editor alias: `"code"`, `"webstorm"`, `"vim"`, `"atom"`, `"subl"`
+- A full path to the editor executable
+
+When omitted, `launch-editor` auto-detects the editor from the `EDITOR` / `VISUAL`
+environment variables, or by scanning the running IDE process list (e.g. it detects
+a running WebStorm or VS Code window automatically).
+
+```ts
+devToolbar({
+    editor: "webstorm",
+    // or
+    editor: "code",
+    // or
+    editor: "/usr/local/bin/hx",
+});
+```
+
+---
+
+### `height`
+
+**Type:** `number` (20–95) — **Default:** `60`
+
+Initial panel height as a percentage of the viewport height. Users can resize the panel by dragging its top edge; the value is then saved to `localStorage`.
+
+---
+
+### `injectSource`
+
+**Type:** `{ enabled?: boolean; ignore?: { files?: string[]; components?: string[] } }` — **Default:** `{ enabled: true }`
+
+Controls the JSX source injection transform. When enabled, `data-vdt-source="<file>:<line>:<col>"` attributes are
+added to every JSX opening element at build time (development mode only). The Inspector app uses these attributes
+to jump directly to the source file when an element is clicked.
+
+Only runs when `config.mode === "development"`. Set `enabled: false` to opt out entirely.
+
+```ts
+devToolbar({
+    injectSource: {
+        enabled: true,
+
+        // Optional: skip specific files or component names
+        ignore: {
+            files: ["**/generated/**", "**/*.stories.tsx"], // glob patterns
+            components: ["StrictMode", "Suspense"], // component names (exact or glob)
+        },
+    },
+});
+```
+
+<Callout type="info">
+    Source injection reads the unmodified on-disk file so that both SSR and client builds emit identical `data-vdt-source` values. This prevents React hydration
+    mismatches in SSR frameworks such as TanStack Start.
+</Callout>
+
+---
+
+### `keybindings`
+
+**Type:** `{ toggle?: string; close?: string }`
+
+Project-level default keyboard shortcuts. These act as the defaults; users can override them in the [Settings app](/docs/dev-toolbar/built-in-apps/settings), and their choices are saved to `localStorage`.
+
+```ts
+devToolbar({
+    keybindings: {
+        toggle: "Alt+Shift+D", // default
+        close: "Escape", // default
+    },
+});
+```
+
+Key names follow the `KeyboardEvent.key` property. Modifiers are joined with `+`: `Control`, `Alt`, `Meta`, `Shift`.
+
+---
+
+### `minimizePanelInactive`
+
+**Type:** `number` — **Default:** `5000`
+
+Auto-hide the toolbar pill after this many milliseconds of inactivity (no mouse movement near the toolbar). Set to `-1` to never auto-hide. Set to `0` to always hide immediately when inactive. Users can change this in the [Settings app](/docs/dev-toolbar/built-in-apps/settings).
+
+---
+
+### `placement`
+
+**Type:** `"bottom-left" | "bottom-center" | "bottom-right"` — **Default:** `"bottom-center"`
+
+Initial horizontal alignment of the toolbar pill. This is a coarse shorthand that sets both the edge and horizontal position. For full control use `position` + drag to reposition. The toolbar pill is draggable to any position; its final location is saved to `localStorage`.
+
+---
+
+### `position`
+
+**Type:** `"bottom" | "left" | "right" | "top"` — **Default:** `"bottom"`
+
+Which edge of the viewport the toolbar pill is anchored to. Takes precedence over the edge implied by `placement`.
+
+---
+
+### `reduceMotion`
+
+**Type:** `boolean` — **Default:** `false`
+
+Disable animations and transitions in the toolbar. Users can also toggle this in the [Settings app](/docs/dev-toolbar/built-in-apps/settings). When `true`, the toolbar respects `prefers-reduced-motion` at all times.
+
+---
+
+### `removeDevtoolsOnBuild`
+
+**Type:** `boolean` — **Default:** `true`
+
+Strip all dev-toolbar virtual modules from the bundle when building for production (i.e. when `command !== 'serve'` or `mode === 'production'`).
+
+The plugin already has `apply: "serve"` so the toolbar is never injected during a standard build. `removeDevtoolsOnBuild` is an explicit safety net that ensures nothing leaks through in edge cases — such as the [`appendTo`](#appendto) option, where the toolbar import is added to a user module that is also present in the production build graph.
+
+When enabled (the default), a second Vite plugin resolves all `virtual:visulima-dev-toolbar-*` imports to an empty module so they are safely tree-shaken away.
+
+```ts
+devToolbar({
+    // Keep the toolbar in staging / preview builds
+    removeDevtoolsOnBuild: false,
+});
+```
+
+<Callout type="info">
+    Leave this at `true` for all standard use cases. Only set it to `false` if you intentionally ship the toolbar in non-development builds (e.g. internal
+    staging environments where Vite builds instead of serving).
+</Callout>
+
+---
+
+### `requireUrlFlag`
+
+**Type:** `boolean` — **Default:** `false`
+
+When `true`, the toolbar is only injected when the page URL contains the flag specified by `urlFlagName`. Useful for staging environments where you only want the toolbar active on specific URLs.
+
+```ts
+devToolbar({
+    requireUrlFlag: true,
+    urlFlagName: "devtools", // ?devtools or #devtools in URL
+});
+```
+
+---
+
+### `serverFunctions`
+
+**Type:** `Partial<ServerFunctions>`
+
+Register additional Node.js functions that app components can call over RPC. See [RPC Functions](/docs/dev-toolbar/custom-apps/rpc) for the full pattern.
+
+```ts
+import fs from "node:fs/promises";
+
+devToolbar({
+    serverFunctions: {
+        async getRoutes() {
+            const files = await fs.readdir("src/pages");
+            return files.map((f) => `/${f.replace(/\.(tsx?|jsx?)$/, "")}`);
+        },
+    },
+});
+```
+
+---
+
+### `urlFlagName`
+
+**Type:** `string` — **Default:** `"devtools"`
+
+The URL flag name checked when `requireUrlFlag` is `true`. The toolbar activates when the flag appears as a query param (`?devtools`) or hash fragment (`#devtools`).
+
+---
+
+### `width`
+
+**Type:** `number` — **Default:** `80`
+
+Initial panel width as a percentage of the viewport width. Users can resize the panel by dragging; the value is saved to `localStorage`.
+
+## Complete TypeScript Interface
+
+```ts
+interface DevToolbarOptions {
+    /**
+     * Append toolbar import to this module instead of injecting into HTML.
+     * @default ''
+     */
+    appendTo?: string | RegExp;
+
+    /**
+     * Built-in apps to enable. All optional apps are disabled by default.
+     * Only viteConfig and settings are shown out of the box.
+     */
+    apps?: {
+        a11y?: boolean;
+        annotations?: boolean;
+        assets?: boolean;
+        inspector?: boolean;
+        moduleGraph?: boolean;
+        performance?: boolean;
+        seo?: boolean;
+        settings?: boolean;
+        tailwind?: boolean;
+        timeline?: boolean;
+        viteConfig?: boolean;
+    };
+
+    /**
+     * Close panel when clicking outside it.
+     * @default true
+     */
+    closeOnOutsideClick?: boolean;
+
+    /**
+     * Additional custom apps to register.
+     */
+    customApps?: DevToolbarApp[];
+
+    /**
+     * Show toolbar pill on initial page load.
+     * @default true
+     */
+    defaultVisible?: boolean;
+
+    /**
+     * Force a specific editor for open-in-editor. Auto-detected if omitted.
+     */
+    editor?: string;
+
+    /**
+     * Initial panel height as viewport height percentage (20–95).
+     * @default 60
+     */
+    height?: number;
+
+    /**
+     * JSX source attribute injection config.
+     */
+    injectSource?: { enabled?: boolean; ignore?: { files?: string[]; components?: string[] } };
+
+    /**
+     * Project-level default keyboard shortcuts.
+     * Users can override via the Settings app.
+     */
+    keybindings?: {
+        /** @default "Alt+Shift+D" */
+        toggle?: string;
+        /** @default "Escape" */
+        close?: string;
+    };
+
+    /**
+     * Auto-hide after N ms of inactivity. -1 = never.
+     * @default 5000
+     */
+    minimizePanelInactive?: number;
+
+    /**
+     * Toolbar pill edge alignment.
+     * @default "bottom-center"
+     */
+    placement?: "bottom-left" | "bottom-center" | "bottom-right";
+
+    /**
+     * Toolbar pill anchor edge.
+     * @default "bottom"
+     */
+    position?: "bottom" | "left" | "right" | "top";
+
+    /**
+     * Disable animations globally.
+     * @default false
+     */
+    reduceMotion?: boolean;
+
+    /**
+     * Strip toolbar virtual modules from production builds.
+     * @default true
+     */
+    removeDevtoolsOnBuild?: boolean;
+
+    /**
+     * Only activate when URL contains urlFlagName.
+     * @default false
+     */
+    requireUrlFlag?: boolean;
+
+    /**
+     * Additional server-side RPC functions.
+     */
+    serverFunctions?: Partial<ServerFunctions>;
+
+    /**
+     * URL flag name for requireUrlFlag.
+     * @default "devtools"
+     */
+    urlFlagName?: string;
+
+    /**
+     * Initial panel width as viewport width percentage.
+     * @default 80
+     */
+    width?: number;
+}
+```

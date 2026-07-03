@@ -1,0 +1,958 @@
+---
+title: Hooks
+description: "Reference for all React hooks in @visulima/tui/react: useInput, usePaste, useClipboard, useKeyBindings, useHotkey, useInterval, useForm, usePersistentState, useTextBuffer, useTextSelection, useColorBlindness, useConsoleCapture, useAnimation, useTimer, useStopwatch, useScrollAcceleration, useTerminalPalette, useTreeViewState, useTreeView, useMouse, useTextInput, useCursor, useScrollable, useFocus, useApp, and more"
+---
+
+# Hooks
+
+Use these hooks inside components rendered with `render()`. Hooks that rely on the full app event emitter are marked as `render()`-mode only.
+
+```tsx
+import { useApp, useCursor, useFocus, useFocusManager, useInput, useMouse, usePaste, useScrollable, useTextInput } from "@visulima/tui/react";
+```
+
+## `useInput`
+
+Subscribe to typed characters and key events.
+
+Bracketed paste payloads belong to [`usePaste`](#usepaste). If no `usePaste` handler is active, paste text is still forwarded to `useInput` for backward compatibility, but **that fallback is deprecated** and will be removed in the next major version.
+
+```tsx
+useInput((input, key) => {
+    if (key.upArrow) moveUp();
+    if (key.downArrow) moveDown();
+    if (key.return) submit();
+    if (key.escape) cancel();
+    if (key.ctrl && input === "c") exit();
+});
+```
+
+### `key` Fields
+
+| Field        | Type      |
+| ------------ | --------- |
+| `upArrow`    | `boolean` |
+| `downArrow`  | `boolean` |
+| `leftArrow`  | `boolean` |
+| `rightArrow` | `boolean` |
+| `return`     | `boolean` |
+| `backspace`  | `boolean` |
+| `delete`     | `boolean` |
+| `pageUp`     | `boolean` |
+| `pageDown`   | `boolean` |
+| `home`       | `boolean` |
+| `end`        | `boolean` |
+| `tab`        | `boolean` |
+| `shift`      | `boolean` |
+| `escape`     | `boolean` |
+| `ctrl`       | `boolean` |
+| `meta`       | `boolean` |
+
+## `usePaste`
+
+Subscribe to bracketed paste events.
+
+```tsx
+usePaste((text) => {
+    handlePaste(text);
+});
+```
+
+`usePaste` is the dedicated API for paste blobs. When at least one active `usePaste` listener exists, pasted text is routed to `usePaste` and not forwarded to `useInput`. If no paste listener is active, paste still falls back to `useInput`, but **that fallback is deprecated** and will be removed in the next major version.
+
+### Options
+
+```tsx
+usePaste(handler, { isActive: false });
+```
+
+| Option     | Type      | Default |
+| ---------- | --------- | ------- |
+| `isActive` | `boolean` | `true`  |
+
+## `useClipboard`
+
+Copy text to the system clipboard via OSC 52 terminal escape sequences. Works in terminals that support OSC 52 (Alacritty, Ghostty, Kitty, WezTerm, iTerm2, xterm, foot, Windows Terminal, etc.).
+
+```tsx
+import { useClipboard } from "@visulima/tui/hooks/use-clipboard";
+const { copy, isSupported } = useClipboard();
+copy("Hello, clipboard!");
+```
+
+### Options
+
+```tsx
+const { copy } = useClipboard({ target: "p" }); // primary selection (X11)
+```
+
+| Option   | Type                | Default | Description                                            |
+| -------- | ------------------- | ------- | ------------------------------------------------------ |
+| `target` | `"c" \| "p" \| "s"` | `"c"`   | Clipboard target (c=clipboard, p=primary, s=secondary) |
+
+### Return Value
+
+| Field         | Type                     | Description                                  |
+| ------------- | ------------------------ | -------------------------------------------- |
+| `copy`        | `(text: string) => void` | Copy text; no-op if terminal is unsupported  |
+| `isSupported` | `boolean`                | Whether the current terminal supports OSC 52 |
+
+### Low-level utilities
+
+For use outside React components:
+
+```tsx
+import { writeOsc52, clearOsc52, isOsc52Supported } from "@visulima/tui";
+if (isOsc52Supported()) {
+    writeOsc52(process.stdout, "text to copy", "c");
+}
+```
+
+## `useTextBuffer`
+
+Manages a multi-line text buffer with cursor, selection, undo/redo. This is the data model behind the `<Textarea>` component, exposed for custom editor implementations.
+
+```tsx
+import { useTextBuffer } from "@visulima/tui/hooks/use-text-buffer";
+const buffer = useTextBuffer("initial\ntext");
+
+buffer.insert("hello");
+buffer.newline();
+buffer.moveCursor("up");
+buffer.undo();
+```
+
+### Return Value
+
+| Field               | Type                                    | Description                         |
+| ------------------- | --------------------------------------- | ----------------------------------- |
+| `lines`             | `ReadonlyArray<string>`                 | Current lines of text               |
+| `cursor`            | `{ line: number, col: number }`         | Current cursor position             |
+| `anchor`            | `{ line: number, col: number } \| null` | Selection anchor (null if none)     |
+| `value`             | `string`                                | Joined text (lines joined by `\n`)  |
+| `insert`            | `(text: string) => void`                | Insert text at cursor               |
+| `newline`           | `() => void`                            | Insert a newline                    |
+| `deleteBack`        | `() => void`                            | Backspace                           |
+| `deleteForward`     | `() => void`                            | Delete key                          |
+| `deleteLine`        | `() => void`                            | Delete entire current line          |
+| `deleteToLineEnd`   | `() => void`                            | Ctrl+K                              |
+| `deleteToLineStart` | `() => void`                            | Ctrl+U                              |
+| `deleteWord`        | `() => void`                            | Ctrl+W                              |
+| `moveCursor`        | `(dir, selecting?) => void`             | Move cursor (up/down/left/right)    |
+| `moveToLineStart`   | `(selecting?) => void`                  | Home                                |
+| `moveToLineEnd`     | `(selecting?) => void`                  | End                                 |
+| `moveToStart`       | `(selecting?) => void`                  | Start of buffer                     |
+| `moveToEnd`         | `(selecting?) => void`                  | End of buffer                       |
+| `selectAll`         | `() => void`                            | Select all text                     |
+| `clearSelection`    | `() => void`                            | Clear the selection                 |
+| `getSelectedText`   | `() => string`                          | Get selected text                   |
+| `hasSelection`      | `() => boolean`                         | Whether text is selected            |
+| `deleteSelection`   | `() => void`                            | Delete selected text                |
+| `replaceSelection`  | `(text: string) => void`                | Replace selection with text         |
+| `undo`              | `() => void`                            | Undo last edit                      |
+| `redo`              | `() => void`                            | Redo last undo                      |
+| `setValue`          | `(value: string) => void`               | Replace entire buffer (clears undo) |
+
+Undo coalesces rapid keystrokes within 300ms into a single entry. The undo stack holds up to 100 snapshots.
+
+## `useTextSelection`
+
+Manages text selection on a DOM element using the existing `Selection`/`Range` API, with optional auto-copy to clipboard.
+
+```tsx
+import { useTextSelection } from "@visulima/tui/hooks/use-text-selection";
+const ref = useRef(null);
+const { selectedText, selectAll, clearSelection } = useTextSelection(ref, {
+    copyOnSelect: true,
+    onSelectionChange: (text) => console.log("Selected:", text),
+});
+
+return (
+    <Box ref={ref}>
+        <Text>Selectable content</Text>
+    </Box>
+);
+```
+
+### Options
+
+| Option              | Type                     | Default | Description                         |
+| ------------------- | ------------------------ | ------- | ----------------------------------- |
+| `isActive`          | `boolean`                | `true`  | Enable/disable text selection       |
+| `copyOnSelect`      | `boolean`                | `false` | Auto-copy to clipboard on selection |
+| `onSelectionChange` | `(text: string) => void` | —       | Called when selected text changes   |
+
+### Return Value
+
+| Field            | Type         | Description                       |
+| ---------------- | ------------ | --------------------------------- |
+| `selection`      | `Selection`  | The underlying Selection instance |
+| `selectedText`   | `string`     | Currently selected text           |
+| `selectAll`      | `() => void` | Select all content in the element |
+| `clearSelection` | `() => void` | Clear the current selection       |
+
+## `useColorBlindness`
+
+Simulate or compensate for color vision deficiency. Returns a `transformColor` function that maps hex colors through a color blindness matrix.
+
+```tsx
+import { useColorBlindness } from "@visulima/tui/hooks/use-color-blindness";
+const { transformColor } = useColorBlindness({ mode: "deuteranopia" });
+<Text color={transformColor("#ff0000")}>This text</Text>;
+```
+
+| Option       | Type                                                                                  | Default  |
+| ------------ | ------------------------------------------------------------------------------------- | -------- |
+| `mode`       | `"protanopia"` \| `"deuteranopia"` \| `"tritanopia"` \| `"achromatopsia"` \| `"none"` | `"none"` |
+| `compensate` | `boolean`                                                                             | `false`  |
+
+Simulation mode shows how colors appear to affected users. Compensation mode shifts colors to a distinguishable range. Low-level utilities (`applyColorMatrix`, `COLOR_BLINDNESS_SIMULATION`, `COLOR_BLINDNESS_COMPENSATION`) are also exported for direct use.
+
+## `useConsoleCapture`
+
+Capture `console.log`/`warn`/`error`/`info`/`debug` output into a React state buffer. Used by the `<ConsoleOverlay>` component.
+
+```tsx
+import { useConsoleCapture } from "@visulima/tui/hooks/use-console-capture";
+const { entries, clear } = useConsoleCapture({ maxEntries: 100 });
+```
+
+| Option       | Type             | Default                                     |
+| ------------ | ---------------- | ------------------------------------------- |
+| `maxEntries` | `number`         | `200`                                       |
+| `filter`     | `ConsoleLevel[]` | `["log", "info", "warn", "error", "debug"]` |
+| `isActive`   | `boolean`        | `true`                                      |
+
+Each entry has `id`, `level`, `message`, and `timestamp`.
+
+> **Note:** Only one active `useConsoleCapture` instance should exist at a time. The `<ConsoleOverlay>` component uses this hook internally — do not use both simultaneously unless the hook has `isActive: false`.
+
+## `useScrollAcceleration`
+
+macOS-style scroll physics with momentum. Tracks scroll event velocity and applies exponential acceleration when events arrive rapidly.
+
+```tsx
+import { useScrollAcceleration } from "@visulima/tui/hooks/use-scroll-acceleration";
+const { handleScroll } = useScrollAcceleration({
+    onScroll: (delta) => scrollViewRef.current?.scrollBy(delta),
+});
+```
+
+| Option         | Type                      | Default |
+| -------------- | ------------------------- | ------- |
+| `acceleration` | `number`                  | `1.5`   |
+| `decayRate`    | `number` (0-1)            | `0.92`  |
+| `maxVelocity`  | `number`                  | `20`    |
+| `isActive`     | `boolean`                 | `true`  |
+| `onScroll`     | `(delta: number) => void` | —       |
+
+Returns `handleScroll(direction)`, `velocity`, and `isCoasting`.
+
+## `useScrollInput`
+
+Wire keyboard input to scroll actions. Used internally by `ScrollView`/`ScrollList` when `keyboard` prop is enabled, but also available standalone for custom scroll containers.
+
+```tsx
+import { useScrollInput } from "@visulima/tui/hooks/use-scroll-input";
+const { isFocused } = useScrollInput({
+    scrollBy: (delta) => ref.current?.scrollBy(delta),
+    scrollToTop: () => ref.current?.scrollToTop(),
+    scrollToBottom: () => ref.current?.scrollToBottom(),
+    viewportHeight: 20,
+    vimBindings: true,
+});
+```
+
+| Option           | Type                      | Default  |
+| ---------------- | ------------------------- | -------- |
+| `scrollBy`       | `(delta: number) => void` | required |
+| `scrollToTop`    | `() => void`              | required |
+| `scrollToBottom` | `() => void`              | required |
+| `viewportHeight` | `number`                  | required |
+| `isActive`       | `boolean`                 | `true`   |
+| `vimBindings`    | `boolean`                 | `false`  |
+
+Returns `{ isFocused }`.
+
+## `createLinkedScrollGroup`
+
+Synchronize scroll position across multiple `ScrollView` instances.
+
+```tsx
+import { createLinkedScrollGroup } from "@visulima/tui/hooks/use-linked-scroll";
+const group = createLinkedScrollGroup();
+
+// In each linked component:
+const { ref, onScroll } = group.useLinkedScroll();
+// Attach ref and onScroll to your ScrollView
+```
+
+Returns a `LinkedScrollGroup` with a `useLinkedScroll()` hook that provides `{ ref, onScroll }` for each consumer.
+
+## `useTerminalPalette`
+
+Query the terminal emulator for its current color palette using OSC escape sequences.
+
+```tsx
+import { useTerminalPalette } from "@visulima/tui/hooks/use-terminal-palette";
+const { palette, isLoading, isSupported } = useTerminalPalette();
+if (palette?.background) {
+    console.log("Terminal background:", palette.background);
+}
+```
+
+Returns `palette` (with `foreground`, `background`, `cursor`, and `colors` array of 16 ANSI colors as hex strings), `isLoading`, and `isSupported`. Low-level `queryTerminalPalette()` and `isTerminalPaletteQuerySupported()` are also exported.
+
+## `useMouse` (native renderer only)
+
+Low-level callback hook for mouse events. Subscribe to every mouse event with full modifier info.
+
+```tsx
+useMouse((event) => {
+    // event.button: left | right | middle | scrollUp | scrollDown
+    // event.x, event.y are 0-based terminal coordinates
+    if (event.button === "left") onClick(event.x, event.y);
+});
+```
+
+### Event Shape
+
+| Field    | Type      | Notes                                 |
+| -------- | --------- | ------------------------------------- |
+| `x`      | `number`  | 0-based column                        |
+| `y`      | `number`  | 0-based row                           |
+| `button` | `string`  | left/right/middle/scrollUp/scrollDown |
+| `shift`  | `boolean` | modifier                              |
+| `ctrl`   | `boolean` | modifier                              |
+| `meta`   | `boolean` | modifier                              |
+
+> For higher-level mouse hooks with element hover/click detection, see [Mouse Support](./mouse) (Ink layer, imported from `@visulima/tui`).
+
+## `useTextInput` (native renderer only)
+
+Managed text input with cursor and editing shortcuts.
+
+```tsx
+const { value, cursor, clear } = useTextInput({
+    onSubmit: (v) => send(v),
+});
+
+return (
+    <Text>
+        {value.slice(0, cursor)}
+        <Text inverse>{value[cursor] ?? " "}</Text>
+        {value.slice(cursor + 1)}
+    </Text>
+);
+```
+
+### Options
+
+| Option         | Type                  | Default |
+| -------------- | --------------------- | ------- |
+| `initialValue` | `string`              | `''`    |
+| `onSubmit`     | `(v: string) => void` | —       |
+| `onChange`     | `(v: string) => void` | —       |
+| `isActive`     | `boolean`             | `true`  |
+
+### Return Value
+
+| Field      | Type                  |
+| ---------- | --------------------- |
+| `value`    | `string`              |
+| `cursor`   | `number`              |
+| `setValue` | `(v: string) => void` |
+| `clear`    | `() => void`          |
+
+Supported editing keys: arrows, Home/End, Backspace/Delete, Ctrl+A/E/U/K/W, Enter, paste.
+
+## `useScrollable` (native renderer only)
+
+Virtual scrolling state for fixed-height viewports.
+
+```tsx
+const viewportHeight = 20;
+const scroll = useScrollable({
+    viewportHeight,
+    contentHeight: items.length,
+});
+
+useInput((_input, key) => {
+    if (key.upArrow) scroll.scrollUp();
+    if (key.downArrow) scroll.scrollDown();
+    if (key.pageUp) scroll.scrollBy(-10);
+    if (key.pageDown) scroll.scrollBy(10);
+    if (key.home) scroll.scrollToTop();
+    if (key.end) scroll.scrollToBottom();
+});
+
+const visible = items.slice(scroll.offset, scroll.offset + viewportHeight);
+```
+
+### Return Value
+
+`offset`, `scrollUp`, `scrollDown`, `scrollBy`, `scrollToTop`, `scrollToBottom`, `atTop`, `atBottom`.
+
+## `useFocus`
+
+Register a focusable component.
+
+```tsx
+const { isFocused, focus } = useFocus({ id: "search", autoFocus: true });
+```
+
+Tab/Shift+Tab focus cycling is wired automatically by `render()`.
+
+## `useFocusManager`
+
+Programmatic focus control.
+
+```tsx
+const { focusNext, focusPrevious, focus, activeId, enableFocus, disableFocus } = useFocusManager();
+```
+
+## `useApp`
+
+Lifecycle controls.
+
+```tsx
+const { exit, quit } = useApp();
+```
+
+`exit()` and `quit()` are equivalent.
+
+## `useWindowSize`
+
+Returns `{ columns, rows }` and updates on terminal resize.
+
+```tsx
+const { columns, rows } = useWindowSize();
+```
+
+> This hook relies on the full app event emitter and is intended for `render()` mode.
+
+## `useStdout` / `useStderr`
+
+Write outside the rendered frame.
+
+```tsx
+const { write } = useStdout();
+const { write: writeErr } = useStderr();
+
+write("log line\n");
+writeErr("warning\n");
+```
+
+## `useStdin`
+
+Access stdin and raw mode controls.
+
+```tsx
+const { stdin, setRawMode, isRawModeSupported } = useStdin();
+```
+
+## `useBoxMetrics`
+
+Read computed layout metrics from a `Box` ref.
+
+```tsx
+const ref = useRef(null);
+const { width, height, left, top, hasMeasured } = useBoxMetrics(ref);
+
+return <Box ref={ref}>...</Box>;
+```
+
+Returns zeroed metrics until first layout pass.
+
+> This hook relies on the full app event emitter and is intended for `render()` mode.
+
+## `measureElement`
+
+Imperative element measurement. Returns position and dimensions.
+
+```tsx
+const { x, y, width, height } = measureElement(ref.current);
+```
+
+Additional measurement utilities are available for advanced use cases:
+
+```tsx
+import { getBoundingBox } from "@visulima/tui";
+// ResizeObserver example
+const observer = new ResizeObserver((entries) => {
+    for (const entry of entries) {
+        console.log(`Size changed: ${entry.contentRect.width}x${entry.contentRect.height}`);
+    }
+});
+observer.observe(ref.current);
+```
+
+## `useCursor`
+
+Imperative cursor positioning. Use this when you need precise control over cursor placement, for example with IME (Input Method Editor) support where you need to account for wide characters.
+
+```tsx
+const { setCursorPosition } = useCursor();
+
+const prompt = "> ";
+setCursorPosition({ x: stringWidth(prompt + text), y: 1 });
+
+return (
+    <Box flexDirection="column">
+        <Text>Header</Text>
+        <Text>
+            {prompt}
+            {text}
+        </Text>
+    </Box>
+);
+```
+
+### `setCursorPosition`
+
+| Argument   | Type                                      | Description                               |
+| ---------- | ----------------------------------------- | ----------------------------------------- |
+| `position` | `{ x: number, y: number }` or `undefined` | Absolute position, or `undefined` to hide |
+
+Notes:
+
+- `x` and `y` are 0-based coordinates relative to the top-left of the rendered output.
+- Use `stringWidth()` from `@visulima/string` for correct column calculation with wide characters.
+- The cursor is automatically hidden when the component using `useCursor` unmounts.
+- For most text input use cases, prefer the declarative [`<Cursor />`](./components.mdx#cursor) component instead.
+
+## `useAnimation`
+
+Drive frame-based or time-based animations. Returns a frame counter, elapsed time, frame delta, and a reset function. All animations share a single timer internally, so multiple `useAnimation` calls consolidate into one render cycle instead of spawning independent timers.
+
+```tsx
+import { Text } from "@visulima/tui/components/text";
+import { useAnimation } from "@visulima/tui/hooks/use-animation";
+const Spinner = () => {
+    const { frame } = useAnimation({ interval: 80 });
+    const characters = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+
+    return <Text>{characters[frame % characters.length]}</Text>;
+};
+```
+
+### Options
+
+| Option     | Type      | Default | Description                                                                                                                 |
+| ---------- | --------- | ------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `interval` | `number`  | `100`   | Time between ticks in milliseconds.                                                                                         |
+| `isActive` | `boolean` | `true`  | Whether the animation is running. When set to `false`, the animation stops. When toggled back to `true`, values reset to 0. |
+
+### Return Value
+
+| Field   | Type         | Description                                                                                                                            |
+| ------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `frame` | `number`     | Discrete counter that increments by 1 each interval. Useful for indexed sequences like spinner frames.                                 |
+| `time`  | `number`     | Total elapsed milliseconds since the animation started or was last reset. Useful for continuous math-based animations like sine waves. |
+| `delta` | `number`     | Milliseconds since the previous rendered tick. Accounts for throttled renders. Useful for physics-based or velocity-driven motion.     |
+| `reset` | `() => void` | Resets `frame`, `time`, and `delta` to 0 and restarts timing from the current moment.                                                  |
+
+### Examples
+
+#### Continuous sine-wave animation using `time`
+
+```tsx
+const Pulse = () => {
+    const { time } = useAnimation({ interval: 50 });
+    const brightness = Math.sin((time / 1000) * Math.PI * 2);
+    const width = Math.round((brightness + 1) * 10);
+
+    return <Text color="cyan">{"█".repeat(width)}</Text>;
+};
+```
+
+#### Pausable animation using `isActive`
+
+```tsx
+import { useState } from "react";
+import { Text } from "@visulima/tui/components/text";
+import { useAnimation } from "@visulima/tui/hooks/use-animation";
+import { useInput } from "@visulima/tui/hooks/use-input";
+const PausableCounter = () => {
+    const [paused, setPaused] = useState(false);
+    const { frame } = useAnimation({ interval: 100, isActive: !paused });
+
+    useInput((input) => {
+        if (input === " ") setPaused((prev) => !prev);
+    });
+
+    return (
+        <Text>
+            Frame: {frame} {paused ? "(paused)" : ""}
+        </Text>
+    );
+};
+```
+
+#### Resettable one-shot animation using `reset`
+
+```tsx
+import { Text } from "@visulima/tui/components/text";
+import { useAnimation } from "@visulima/tui/hooks/use-animation";
+import { useInput } from "@visulima/tui/hooks/use-input";
+const Flash = () => {
+    const { frame, reset } = useAnimation({ interval: 100 });
+
+    useInput((input) => {
+        if (input === "r") reset();
+    });
+
+    return <Text>{frame < 10 ? "Flash!" : "Press r to flash again"}</Text>;
+};
+```
+
+#### Physics-based motion using `delta`
+
+```tsx
+import { useRef } from "react";
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { useAnimation } from "@visulima/tui/hooks/use-animation";
+const BouncingDot = () => {
+    const posRef = useRef(0);
+    const velRef = useRef(0.05);
+    const { delta } = useAnimation({ interval: 16 });
+
+    posRef.current += velRef.current * delta;
+
+    if (posRef.current > 40 || posRef.current < 0) {
+        velRef.current *= -1;
+        posRef.current = Math.max(0, Math.min(40, posRef.current));
+    }
+
+    return <Text>{" ".repeat(Math.round(posRef.current))}●</Text>;
+};
+```
+
+#### Multiple animations at different speeds
+
+Multiple calls share one internal timer. The scheduler wakes at the earliest deadline and lets slower animations skip that tick.
+
+```tsx
+const Dashboard = () => {
+    const { frame: fast } = useAnimation({ interval: 80 });
+    const { frame: slow } = useAnimation({ interval: 500 });
+
+    const spinner = ["⠋", "⠙", "⠹", "⠸", "⠼", "⠴", "⠦", "⠧", "⠇", "⠏"];
+    const dots = [".  ", ".. ", "..."];
+
+    return (
+        <Box flexDirection="column">
+            <Text>
+                {spinner[fast % spinner.length]} Loading
+                {dots[slow % dots.length]}
+            </Text>
+        </Box>
+    );
+};
+```
+
+### Interaction with `maxFps`
+
+The `maxFps` option on `render()` controls how often Ink flushes frames to the terminal. `useAnimation` respects this throttle — when `maxFps` is low (e.g., `maxFps: 5`), animation callbacks are coalesced and the `delta` value reflects the actual time between rendered frames, not the interval. The `frame` and `time` values are always computed from elapsed wall-clock time, so they remain accurate regardless of throttling.
+
+## `useTimer`
+
+A countdown timer hook built on `useAnimation`. Returns the remaining time and control methods.
+
+```tsx
+import { useTimer } from "@visulima/tui/hooks/use-timer";
+const { remaining, isRunning, isFinished, start, stop, toggle, reset } = useTimer({
+    duration: 60_000,
+    interval: 1000,
+    onTimeout: () => console.log("Time's up!"),
+});
+```
+
+### Options
+
+| Option      | Type         | Default      | Description                        |
+| ----------- | ------------ | ------------ | ---------------------------------- |
+| `duration`  | `number`     | _(required)_ | Countdown duration in milliseconds |
+| `interval`  | `number`     | `1000`       | Tick frequency in milliseconds     |
+| `autoStart` | `boolean`    | `false`      | Start counting immediately         |
+| `onTimeout` | `() => void` | —            | Called once when time reaches zero |
+
+### Return Value
+
+| Field        | Type         | Description                              |
+| ------------ | ------------ | ---------------------------------------- |
+| `remaining`  | `number`     | Milliseconds remaining (clamped to >= 0) |
+| `isRunning`  | `boolean`    | Whether the timer is counting down       |
+| `isFinished` | `boolean`    | Whether the countdown has reached zero   |
+| `start`      | `() => void` | Start the countdown                      |
+| `stop`       | `() => void` | Pause the countdown                      |
+| `toggle`     | `() => void` | Toggle between running and stopped       |
+| `reset`      | `() => void` | Reset to original duration and stop      |
+
+For a visual component, see [`<Timer>`](./components#timer).
+
+## `useStopwatch`
+
+A count-up stopwatch hook built on `useAnimation`. Returns elapsed time, control methods, and lap functionality.
+
+```tsx
+import { useStopwatch } from "@visulima/tui/hooks/use-stopwatch";
+const { elapsed, isRunning, start, stop, toggle, reset, lap, laps } = useStopwatch({
+    interval: 100,
+    autoStart: true,
+});
+```
+
+### Options
+
+| Option      | Type      | Default | Description                    |
+| ----------- | --------- | ------- | ------------------------------ |
+| `interval`  | `number`  | `1000`  | Tick frequency in milliseconds |
+| `autoStart` | `boolean` | `false` | Start counting immediately     |
+
+### Return Value
+
+| Field       | Type           | Description                              |
+| ----------- | -------------- | ---------------------------------------- |
+| `elapsed`   | `number`       | Milliseconds elapsed since start/reset   |
+| `isRunning` | `boolean`      | Whether the stopwatch is running         |
+| `start`     | `() => void`   | Start counting                           |
+| `stop`      | `() => void`   | Pause counting                           |
+| `toggle`    | `() => void`   | Toggle between running and stopped       |
+| `reset`     | `() => void`   | Reset to zero, clear laps, and stop      |
+| `lap`       | `() => number` | Capture current elapsed time; returns it |
+| `laps`      | `number[]`     | Accumulated lap times                    |
+
+For a visual component, see [`<Stopwatch>`](./components#stopwatch).
+
+## `useKeyBindings`
+
+Declarative keybinding hook. Registers multiple key bindings with handlers and returns the enabled bindings for display in a [`<Help>`](./components#help) component.
+
+```tsx
+import { Help } from "@visulima/tui/components/help";
+import { useKeyBindings } from "@visulima/tui/hooks/use-key-bindings";
+const { bindings } = useKeyBindings([
+    { binding: { key: "q", description: "Quit" }, handler: () => exit() },
+    { binding: { key: ["upArrow", "k"], description: "Move up", group: "Navigation" }, handler: () => moveUp() },
+    { binding: { key: "ctrl+s", description: "Save" }, handler: () => save() },
+    { binding: { key: "escape", description: "Cancel", enabled: false }, handler: () => cancel() },
+]);
+
+<Help bindings={bindings} />;
+```
+
+### Key Binding Format
+
+The `key` field supports:
+
+- **Single character**: `"q"`, `"a"`, `" "` (space)
+- **Special key name**: `"return"`, `"escape"`, `"upArrow"`, `"leftArrow"`, `"backspace"`, `"tab"`, `"pageUp"`, `"pageDown"`, `"home"`, `"end"`, `"delete"`
+- **Modifier combo**: `"ctrl+c"`, `"meta+s"`, `"shift+tab"` (modifier + key)
+- **Array**: `["upArrow", "k"]` — matches any of the listed keys
+
+### KeyBinding type
+
+```ts
+type KeyBinding = {
+    key: string | readonly string[];
+    description: string;
+    enabled?: boolean; // default: true
+    group?: string; // for Help grouping
+};
+```
+
+### Options
+
+| Option     | Type      | Default | Description               |
+| ---------- | --------- | ------- | ------------------------- |
+| `isActive` | `boolean` | `true`  | Whether input is captured |
+
+### Return Value
+
+| Field      | Type           | Description                               |
+| ---------- | -------------- | ----------------------------------------- |
+| `bindings` | `KeyBinding[]` | Enabled bindings, for passing to `<Help>` |
+
+Disabled bindings (`enabled: false`) are excluded from both the returned array and keyboard matching.
+
+## `useIsScreenReaderEnabled`
+
+Returns whether screen reader mode is active. When enabled, components render `aria-label` text instead of visual content.
+
+```tsx
+const isEnabled = useIsScreenReaderEnabled();
+```
+
+Screen reader mode is enabled by either:
+
+- Passing `isScreenReaderEnabled: true` to `render()`
+- Setting the `INK_SCREEN_READER=true` environment variable
+
+Defaults to `false`. This matches upstream Ink behavior — there is no automatic detection of screen readers.
+
+## `useTreeViewState`
+
+State management hook for the `<TreeView>` component. Use this for headless tree view implementations where you want full control over rendering.
+
+```tsx
+import { useTreeViewState } from "@visulima/tui/components/tree-view";
+const state = useTreeViewState({
+    data: treeNodes,
+    selectionMode: "single",
+    defaultExpanded: "all",
+    visibleNodeCount: 20,
+    onFocusChange: (id) => console.log("focused:", id),
+    onExpandChange: (ids) => console.log("expanded:", ids),
+    onSelectChange: (ids) => console.log("selected:", ids),
+});
+```
+
+Returns a `TreeViewState<T>` object with:
+
+- **Read-only state:** `focusedId`, `expandedIds`, `selectedIds`, `viewportNodes`, `visibleCount`, `hasScrollUp`, `hasScrollDown`, `loadingIds`, `nodeMap`
+- **Actions:** `focusNext()`, `focusPrevious()`, `focusFirst()`, `focusLast()`, `expand()`, `collapse()`, `expandNode(id)`, `collapseNode(id)`, `toggleExpanded()`, `expandAll()`, `collapseAll()`, `select()`, `focusParent()`, `focusFirstChild()`, `setLoading(id, bool)`, `insertChildren(parentId, children)`
+
+## `useTreeView`
+
+Keyboard input hook for the tree view. Binds arrow keys, Enter, Space, Home, and End to the tree view state actions. Use alongside `useTreeViewState` for headless implementations.
+
+```tsx
+import { useTreeView, useTreeViewState } from "@visulima/tui/components/tree-view";
+const state = useTreeViewState({ data, selectionMode: "none" });
+
+useTreeView({
+    state,
+    selectionMode: "none",
+    isDisabled: false,
+    loadChildren: async (node) => fetchChildren(node.id),
+    onLoadError: (nodeId, err) => console.error(err),
+});
+```
+
+| Prop            | Type                                            | Default  | Description                      |
+| --------------- | ----------------------------------------------- | -------- | -------------------------------- |
+| `state`         | `TreeViewState<T>`                              | required | State from `useTreeViewState`    |
+| `selectionMode` | `"none"` \| `"single"` \| `"multiple"`          | required | Determines Enter/Space behavior  |
+| `isDisabled`    | `boolean`                                       | `false`  | Ignores all keyboard input       |
+| `loadChildren`  | `(node: TreeNode<T>) => Promise<TreeNode<T>[]>` | —        | Async child loader               |
+| `onLoadError`   | `(nodeId: string, error: Error) => void`        | —        | Error callback for async loading |
+
+## `useForm`
+
+Headless form state machine. Tracks values, touched state, errors, and submission in-flight. Pair with `<Form>` and `<Form.Field>` for default layout, or wire your own inputs.
+
+```tsx
+import { useForm } from "@visulima/tui/hooks/use-form";
+const { values, errors, touched, setValue, setTouched, submit, isSubmitting, reset } = useForm({
+    fields: {
+        email: {
+            initialValue: "",
+            validate: (v) => (v.includes("@") ? undefined : "Invalid email"),
+        },
+        name: { initialValue: "" },
+    },
+    onSubmit: async (vs) => {
+        await api.create(vs);
+    },
+});
+```
+
+### Options
+
+| Option     | Type                                | Description                                        |
+| ---------- | ----------------------------------- | -------------------------------------------------- |
+| `fields`   | `Record<string, FieldConfig<V>>`    | Field declarations (`{ initialValue, validate? }`) |
+| `onSubmit` | `(values) => void \| Promise<void>` | Called by `submit()` when all fields validate      |
+
+### Return Value
+
+| Field          | Type                                | Description                                                             |
+| -------------- | ----------------------------------- | ----------------------------------------------------------------------- |
+| `values`       | `FormValues<S>`                     | Current values                                                          |
+| `errors`       | `Partial<Record<keyof S, string>>`  | Validation errors (per field)                                           |
+| `touched`      | `Partial<Record<keyof S, boolean>>` | Per-field touched flag                                                  |
+| `isSubmitting` | `boolean`                           | True while the last `submit()` is in-flight                             |
+| `setValue`     | `(name, value) => void`             | Update a single field (validates the field)                             |
+| `setTouched`   | `(name, touched?) => void`          | Mark a field as touched                                                 |
+| `submit`       | `() => Promise<boolean>`            | Validate all, mark touched, call `onSubmit`. Returns `true` on success. |
+| `reset`        | `() => void`                        | Reset to initial values; clear errors and touched                       |
+
+`submit()` returns `false` (and skips `onSubmit`) when any field is invalid.
+
+## `useHotkey`
+
+Bind a single keyboard shortcut to a callback. Accepts either a short string (`"ctrl+s"`, `"shift+tab"`, `"?"`, `"escape"`) or a structured `HotkeyDescriptor`.
+
+```tsx
+import { useHotkey } from "@visulima/tui/hooks/use-hotkey";
+useHotkey("ctrl+s", () => save());
+useHotkey("?", () => setShowHelp(true));
+useHotkey({ ctrl: true, input: "k" }, () => openPalette());
+```
+
+### Shortcut string syntax
+
+`+`-separated tokens. Modifiers: `ctrl`/`control`, `shift`, `meta`/`cmd`/`alt`. Named keys: `escape`/`esc`, `enter`/`return`, `tab`, `up`/`down`/`left`/`right` (or `upArrow`/...), `home`/`end`, `pageUp`/`pageDown`, `backspace`/`delete`. Anything else is matched against the typed character.
+
+### Options
+
+| Option     | Type      | Default | Description                                              |
+| ---------- | --------- | ------- | -------------------------------------------------------- |
+| `isActive` | `boolean` | `true`  | Disable the binding while keeping the component rendered |
+
+For multiple bindings with help-bar integration, use [`useKeyBindings`](#usekeybindings) + `<Help>` instead.
+
+## `useInterval`
+
+Invoke `callback` every `interval` ms. The callback ref is captured, so re-renders do not rebuild the timer; only `interval` and `isActive` do.
+
+```tsx
+import { useInterval } from "@visulima/tui/hooks/use-interval";
+const { clear } = useInterval(() => poll(), 5_000);
+useInterval(() => tick(), 1_000, { isActive: !paused });
+```
+
+### Options
+
+| Option     | Type      | Default | Description                                                 |
+| ---------- | --------- | ------- | ----------------------------------------------------------- |
+| `isActive` | `boolean` | `true`  | When `false` the timer is paused; flipping back restarts it |
+
+Returns `{ clear }` for manual cancellation. Invalid intervals (`0`, `NaN`, `Infinity`) pause the timer.
+
+## `usePersistentState`
+
+`useState` that persists its value through a configurable storage backend (file on disk by default).
+
+```tsx
+import { usePersistentState } from "@visulima/tui/hooks/use-persistent-state";
+const [theme, setTheme] = usePersistentState("theme", "dark");
+const [recent, setRecent] = usePersistentState<string[]>("recent", [], { namespace: "vis" });
+```
+
+### Options
+
+| Option      | Type                | Default                        | Description                                    |
+| ----------- | ------------------- | ------------------------------ | ---------------------------------------------- |
+| `namespace` | `string`            | `"tui"`                        | Used by the default file storage to scope keys |
+| `storage`   | `PersistentStorage` | `createFileStorage(namespace)` | Custom storage backend                         |
+
+The backend is captured once on mount; mutating `options.storage` later has no effect. Remount the hook (e.g. via a `key` prop) to swap backends.
+
+### Storage backends
+
+```tsx
+import { createFileStorage, createMemoryStorage, usePersistentState } from "@visulima/tui/hooks/use-persistent-state";
+// File storage — JSON file at ~/.cache/visulima-tui/<namespace>.json,
+// written via temp-file + rename so partial writes can't corrupt the file.
+const fileStorage = createFileStorage("vis");
+
+// In-memory storage — useful in tests or read-only environments.
+const memoryStorage = createMemoryStorage();
+
+const [value, setValue] = usePersistentState("layout", "single", { storage: memoryStorage });
+```
+
+A custom backend just needs to implement `{ read(key): string | undefined, write(key, value): void }`. Values are JSON-encoded by the hook before they reach `write`. Errors thrown by the backend are swallowed by the hook so the UI keeps working in read-only environments.

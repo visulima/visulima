@@ -1,0 +1,76 @@
+---
+title: Introduction
+description: "Enhanced error handling with stacktrace parsing, code frames, and AI-powered solutions for Node.js applications."
+---
+
+# @visulima/error
+
+Comprehensive error handling library with enhanced error objects, stacktrace parsing, code frame generation, and AI-powered solution suggestions.
+
+## Key Features
+
+**Enhanced Errors**
+
+- Custom error classes with hints and causes
+- Nested error support with full cause chains
+- Additional context and metadata
+
+**Code Frames**
+
+- Beautiful code frame generation
+- Syntax highlighting for error locations
+- Configurable line ranges
+
+**Stacktrace Parsing**
+
+- Parse and analyze stack traces
+- Extract file locations and line numbers
+- Cross-platform support
+
+**AI Solutions** (Optional)
+
+- AI-powered error solutions
+- Context-aware suggestions
+- Integrates with AI providers
+
+## Quick Start
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+class ValidationError extends VisulimaError {
+    constructor(message: string) {
+        super({
+            name: "ValidationError",
+            message,
+        });
+    }
+}
+
+const error = new ValidationError("Invalid email format");
+error.hint = "Expected format: user@example.com";
+
+throw error;
+```
+
+## Use Cases
+
+**Application Error Handling:** Enhanced errors for better debugging
+**API Development:** Structured error responses
+**CLI Tools:** User-friendly error messages with code frames
+**Development Tools:** Error analysis and reporting
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install and set up the package
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Create your first enhanced error
+    </Card>
+    <Card title="Guides" href="/guides/custom-errors">
+        Learn about all features
+    </Card>
+    <Card title="API Reference" href="/api/visulima-error">
+        Complete API documentation
+    </Card>
+</Cards>

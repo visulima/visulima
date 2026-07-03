@@ -1,0 +1,126 @@
+---
+title: "Installation"
+---
+
+# Installation
+
+Install jsdoc-open-api using your preferred package manager:
+
+```bash npm2yarn
+npm install @visulima/jsdoc-open-api
+```
+
+## Optional Dependencies
+
+The CLI requires additional packages:
+
+```bash npm2yarn
+npm install commander cli-progress
+```
+
+These are listed as `optionalDependencies` and may install automatically depending on your package manager.
+
+### For Webpack/Next.js
+
+If using the Webpack plugin:
+
+```bash npm2yarn
+npm install webpack
+```
+
+## Import
+
+### ESM (Recommended)
+
+```javascript
+import jsdocOpenApi from "@visulima/jsdoc-open-api";
+import { SwaggerCompilerPlugin } from "@visulima/jsdoc-open-api";
+```
+
+### CommonJS
+
+```javascript
+const jsdocOpenApi = require("@visulima/jsdoc-open-api");
+const { SwaggerCompilerPlugin } = require("@visulima/jsdoc-open-api");
+```
+
+### Subpath Imports
+
+```javascript
+// CLI utilities
+import { initCommand, generateCommand } from "@visulima/jsdoc-open-api/cli";
+
+// Commander.js integration
+import { program } from "@visulima/jsdoc-open-api/cli/commander";
+```
+
+## Requirements
+
+- **Node.js**: 22.x or higher
+- **Package Manager**: npm, yarn, pnpm, or bun
+- **Build Tools**: Webpack 5.x (for plugin usage)
+
+## CLI Setup
+
+After installation, the CLI is available:
+
+```bash
+# Using npx
+npx jsdoc-open-api --help
+
+# Using pnpm
+pnpm exec jsdoc-open-api --help
+
+# Using yarn
+yarn jsdoc-open-api --help
+```
+
+Initialize configuration:
+
+```bash
+npx jsdoc-open-api init
+```
+
+This creates `.openapirc.js`:
+
+```javascript
+module.exports = {
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "My API",
+            version: "1.0.0",
+        },
+    },
+    sources: ["./src/routes/**/*.js"],
+    output: "./swagger.json",
+};
+```
+
+## Verification
+
+Verify your installation by generating a simple spec:
+
+```javascript
+// test-generation.js
+import jsdocOpenApi from "@visulima/jsdoc-open-api";
+
+const spec = await jsdocOpenApi({
+    definition: {
+        openapi: "3.0.0",
+        info: {
+            title: "Test API",
+            version: "1.0.0",
+        },
+    },
+    sources: ["./src/**/*.js"],
+});
+
+console.log("Paths:", Object.keys(spec.paths || {}));
+```
+
+Run it:
+
+```bash
+node test-generation.js
+```

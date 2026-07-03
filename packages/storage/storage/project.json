@@ -1,0 +1,8 @@
+{
+    "name": "storage/storage",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/storage/storage/src",
+    "projectType": "library",
+    "tags": ["storage", "type:package", "category:file-system"],
+    "implicitDependencies": ["api/pagination", "data-manipulation/humanizer", "filesystem/path", "filesystem/fs"]
+}

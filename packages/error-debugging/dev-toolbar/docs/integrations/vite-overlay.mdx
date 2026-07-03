@@ -1,0 +1,152 @@
+---
+title: vite-overlay
+description: Use @visulima/vite-overlay together with the Dev Toolbar for a unified error-display experience.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+import { Step, Steps } from "fumadocs-ui/components/steps";
+
+`@visulima/vite-overlay` is a drop-in replacement for Vite's built-in error overlay. It adds syntax highlighting, source-map aware stack traces, cause-chain navigation, and AI-powered solution hints.
+
+When both packages are installed together the Dev Toolbar automatically detects vite-overlay and shows a red **error badge button** in the toolbar bar. Clicking the badge opens or closes the overlay panel, so you get a single, integrated debugging experience without any extra wiring.
+
+---
+
+## How it works
+
+The toolbar polls two globals that vite-overlay writes to the browser window:
+
+| Global                       | Set by       | What it contains                      |
+| ---------------------------- | ------------ | ------------------------------------- |
+| `window.__v_o_error_history` | vite-overlay | Array of all captured errors          |
+| `window.__v_o__current`      | vite-overlay | The currently mounted overlay element |
+
+When `__v_o_error_history` has at least one entry a red triangular badge button appears on the right side of the toolbar bar. The badge shows the error count (capped at `9+`). Clicking it toggles the overlay panel open or closed.
+
+Because the detection is automatic there is nothing to configure — just install both plugins.
+
+---
+
+## Installation
+
+<Steps>
+
+<Step>
+
+### Install both packages
+
+```sh
+pnpm add -D @visulima/dev-toolbar @visulima/vite-overlay
+```
+
+</Step>
+
+<Step>
+
+### Configure your Vite config
+
+Add both plugins to `plugins`. Set `showBallonButton: false` on vite-overlay so the toolbar renders the error button instead of the standalone floating balloon:
+
+```ts title="vite.config.ts"
+import { devToolbar } from "@visulima/dev-toolbar/vite";
+import viteOverlay from "@visulima/vite-overlay";
+import { defineConfig } from "vite";
+
+export default defineConfig({
+    plugins: [
+        // Disable the built-in balloon — the dev-toolbar renders its own error button
+        viteOverlay({ showBallonButton: false }),
+        devToolbar({
+            apps: {
+                settings: true,
+            },
+        }),
+    ],
+});
+```
+
+<Callout type="info">Plugin order does not matter. The toolbar detects vite-overlay at runtime via the shared globals, not at build time.</Callout>
+
+</Step>
+
+</Steps>
+
+---
+
+## Error badge behaviour
+
+Once an error is captured by vite-overlay:
+
+- A red **alert-triangle** icon appears on the right side of the toolbar bar.
+- The badge shows the total number of errors in the current history (`1`–`9+`).
+- Clicking the badge **shows** the overlay if it is hidden, or **hides** it if it is visible.
+- The badge disappears automatically when the error history is cleared (e.g. after a hot-reload that resolves the error).
+
+The toolbar checks the error count every 300 ms so the badge appears within a fraction of a second of an error being captured.
+
+---
+
+## Keeping the standalone balloon
+
+If you prefer the standalone floating balloon from vite-overlay and do not want the toolbar button, simply omit `showBallonButton: false`:
+
+```ts title="vite.config.ts"
+export default defineConfig({
+    plugins: [
+        viteOverlay(), // default: showBallonButton: true
+        devToolbar({ apps: { settings: true } }),
+    ],
+});
+```
+
+Both the balloon and the toolbar button will work independently. The toolbar button will still appear because both are driven by the same `__v_o_error_history` global.
+
+---
+
+## Framework-specific notes
+
+### SSR frameworks (TanStack Start, Nuxt, SvelteKit, …)
+
+SSR frameworks render the HTML server-side, which means `transformIndexHtml` is not called by Vite and the toolbar script is never injected automatically.
+
+**TanStack Start** is auto-detected — no extra configuration needed. For other SSR frameworks, use the `appendTo` option to target a module file that is part of every route instead:
+
+```ts title="vite.config.ts"
+devToolbar({
+    // Inject via the router module instead of index.html
+    appendTo: /router\.tsx$/,
+    apps: { settings: true },
+});
+```
+
+See the [Getting Started](/docs/dev-toolbar/getting-started) guide for more details on `appendTo`.
+
+### React
+
+The vite-overlay plugin auto-detects `@vitejs/plugin-react`. No extra configuration is needed. To use a custom React plugin pass its name:
+
+```ts
+viteOverlay({ reactPluginName: "my-custom-react-plugin" });
+```
+
+### Vue
+
+Pass a custom Vue plugin name if you use something other than `@vitejs/plugin-vue`:
+
+```ts
+viteOverlay({ vuePluginName: "my-custom-vue-plugin" });
+```
+
+---
+
+## Full vite-overlay options reference
+
+The full option set for `@visulima/vite-overlay` is documented in its own package. The options most relevant when used together with the Dev Toolbar are:
+
+| Option                    | Default     | Notes                                                                        |
+| ------------------------- | ----------- | ---------------------------------------------------------------------------- |
+| `showBallonButton`        | `true`      | Set to `false` when using the Dev Toolbar so only the toolbar badge is shown |
+| `forwardConsole`          | `true`      | Captures `console.error` calls and shows them in the overlay                 |
+| `forwardedConsoleMethods` | `["error"]` | Add `"warn"` etc. to capture more console output                             |
+| `solutionFinders`         | `[]`        | Custom solution-finder functions for AI-powered hints                        |
+| `overlay.customCSS`       | —           | Inject CSS to restyle the overlay panel or balloon                           |

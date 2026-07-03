@@ -1,0 +1,8 @@
+{
+    "name": "terminal/tabular",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/terminal/tabular/src",
+    "projectType": "library",
+    "tags": ["tabular", "type:package", "category:cli-terminal"],
+    "implicitDependencies": ["data-manipulation/string"]
+}

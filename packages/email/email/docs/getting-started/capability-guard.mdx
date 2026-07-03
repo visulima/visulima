@@ -1,0 +1,71 @@
+---
+title: Capability Guard
+description: Fail-fast field support checks that stop unsupported message fields before they reach a provider
+---
+
+# Capability Guard
+
+Every provider declares which capabilities it supports through its `features` flags — `attachments`, `tagging`, `scheduling`, `html`, `customHeaders`, `replyTo`, `templates`, and more. Before a message is handed to the provider, `Mail` runs a **fail-fast** check: if the message uses a capability the provider has _explicitly_ declared unsupported (`features[x] === false`), the send is rejected locally — no wasted network round-trip and no silent data loss.
+
+## How it works
+
+```typescript
+import { createMail } from "@visulima/email";
+import { awsSesProvider } from "@visulima/email/providers/aws-ses";
+
+// AWS SES declares `tagging: false`
+const mail = createMail(awsSesProvider({ accessKeyId, secretAccessKey, region }));
+
+const result = await mail.send({
+    from: { email: "noreply@example.com" },
+    subject: "Hi",
+    tags: ["promo"], // not representable by AWS SES
+    text: "Body",
+    to: { email: "user@example.com" },
+});
+
+result.success; // false
+(result.error as { code?: string }).code; // "UNSUPPORTED_FEATURES"
+```
+
+The error message lists exactly which fields were rejected, and the `hint` contains a human-readable explanation per field.
+
+> Capabilities left `undefined` are treated as "unknown" and are **never** rejected, so providers that publish a partial (or no) `features` map are never falsely blocked. Aggregate providers such as [`failover`](/docs/packages/email/providers/failover) and [`roundrobin`](/docs/packages/email/providers/roundrobin) deliberately leave routed-dependent capabilities undefined and delegate the decision to whichever mailer ultimately handles the message.
+
+## Configuring the guard
+
+The behaviour is configurable per `Mail` instance via the second argument to `createMail`:
+
+```typescript
+createMail(provider, { featureCheck: "error" }); // default — reject unsupported fields
+createMail(provider, { featureCheck: "warn" }); // log a warning and send anyway
+createMail(provider, { featureCheck: "off" }); // skip the check entirely
+```
+
+| Mode      | Behaviour                                                                          |
+| --------- | ---------------------------------------------------------------------------------- |
+| `"error"` | (default) `send()` returns a failed `Result` with an `UNSUPPORTED_FEATURES` error. |
+| `"warn"`  | Logs a warning (when a logger is attached) and sends the message anyway.           |
+| `"off"`   | Skips the check entirely.                                                          |
+
+`sendMany()` inherits the configured mode automatically — a rejected message yields an unsuccessful `Receipt` rather than throwing.
+
+## Running the check standalone
+
+You can run the same check yourself — for example inside a custom provider built with `defineProvider`:
+
+```typescript
+import { checkFeatureSupport } from "@visulima/email";
+// or the focused entry point:
+// import checkFeatureSupport from "@visulima/email/validation/check-feature-support";
+
+const { supported, violations } = checkFeatureSupport(message, provider.features);
+
+if (!supported) {
+    for (const violation of violations) {
+        console.warn(violation.message);
+    }
+}
+```
+
+`checkFeatureSupport(options, features?)` returns `{ supported: boolean, violations: FeatureViolation[] }`. When `features` is omitted the check is a no-op (`supported: true`).

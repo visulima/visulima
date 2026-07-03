@@ -1,0 +1,13 @@
+{
+    "name": "pkg-fail-38",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'pkg-fail-38 built' && sleep 0.2",
+        "lint": "echo 'Linting pkg-fail-38...' && echo 'src/index.ts:42 error no-unused-vars' >&2 && echo '1 error found' >&2 && exit 1",
+        "test": "echo 'pkg-fail-38 tests passed'"
+    },
+    "dependencies": {
+        "lib-fast-3": "1.0.0"
+    }
+}

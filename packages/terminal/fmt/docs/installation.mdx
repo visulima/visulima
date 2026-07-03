@@ -1,0 +1,83 @@
+---
+title: "Installation"
+description: "How to install and import @visulima/fmt"
+---
+
+import { Tab, Tabs } from "fumadocs-ui/components/tabs";
+
+# Installation
+
+Install the package using your preferred package manager:
+
+<Tabs items={["npm", "pnpm", "yarn", "bun"]}>
+    <Tab value="npm">```bash npm install @visulima/fmt ```</Tab>
+    <Tab value="pnpm">```bash pnpm add @visulima/fmt ```</Tab>
+    <Tab value="yarn">```bash yarn add @visulima/fmt ```</Tab>
+    <Tab value="bun">```bash bun add @visulima/fmt ```</Tab>
+</Tabs>
+
+## Import Methods
+
+### ESM (Recommended)
+
+Import the functions you need:
+
+```typescript
+import { format, build } from "@visulima/fmt";
+
+const result = format("Hello %s", ["World"]);
+```
+
+### CommonJS
+
+For CommonJS environments:
+
+```javascript
+const { format, build } = require("@visulima/fmt");
+
+const result = format("Hello %s", ["World"]);
+```
+
+## Requirements
+
+- **Node.js:** ≥22.13 ≤25.x
+- **TypeScript:** ≥5.0 (optional, for type definitions)
+
+## Verify Installation
+
+Test the installation with a simple format:
+
+```typescript
+import { format } from "@visulima/fmt";
+
+const result = format("Testing %d + %d = %d", [2, 2, 4]);
+console.log(result); // "Testing 2 + 2 = 4"
+```
+
+If you see the expected output, installation was successful!
+
+## TypeScript Support
+
+The package includes full TypeScript type definitions:
+
+```typescript
+import { format, build } from "@visulima/fmt";
+import type { FormatOptions, Formatters } from "@visulima/fmt";
+
+const options: FormatOptions = {
+    stringify: JSON.stringify,
+};
+
+const result: string = format("Value: %j", [{ key: "value" }], options);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Learn how to use all format specifiers
+    </Card>
+    <Card title="API Reference" href="/api">
+        Explore the complete API documentation
+    </Card>
+</Cards>

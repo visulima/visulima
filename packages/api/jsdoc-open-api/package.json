@@ -1,0 +1,153 @@
+{
+    "name": "@visulima/jsdoc-open-api",
+    "version": "3.0.0-alpha.41",
+    "description": "Generates swagger doc based on JSDoc.",
+    "keywords": [
+        "api",
+        "cli",
+        "command",
+        "comment",
+        "javascript",
+        "jsdoc",
+        "openapi",
+        "swagger",
+        "visulima",
+        "webpack"
+    ],
+    "homepage": "https://visulima.com/packages/jsdoc-open-api/",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/api/jsdoc-open-api"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./cli": {
+            "types": "./dist/cli/index.d.ts",
+            "default": "./dist/cli/index.js"
+        },
+        "./cli/commander": {
+            "types": "./dist/cli/commander/index.d.ts",
+            "default": "./dist/cli/commander/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "typesVersions": {
+        ">=5.0": {
+            ".": [
+                "./dist/index.d.ts"
+            ],
+            "cli": [
+                "./dist/cli/index.d.ts"
+            ],
+            "cli/commander": [
+                "./dist/cli/commander/index.d.ts"
+            ]
+        }
+    },
+    "bin": {
+        "jsdoc-open-api": "./bin/index.js"
+    },
+    "files": [
+        "bin/**",
+        "cli/**",
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "lint:attw": "attw --pack --profile esm-only",
+        "lint:eslint": "eslint . --cache --concurrency auto ",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto  --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@apidevtools/swagger-parser": "catalog:prod",
+        "@visulima/fs": "5.0.0-alpha.33",
+        "comment-parser": "catalog:prod",
+        "es-toolkit": "catalog:prod",
+        "yaml": "catalog:prod"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@types/cli-progress": "catalog:types",
+        "@types/http-errors": "catalog:types",
+        "@types/node": "catalog:types",
+        "@types/webpack": "catalog:types",
+        "@visulima/packem": "catalog:dev",
+        "@vitest/coverage-v8": "catalog:test",
+        "@vitest/ui": "catalog:test",
+        "cli-progress": "catalog:dev",
+        "commander": "catalog:dev",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "eslint": "catalog:lint",
+        "fallow": "catalog:lint",
+        "openapi-types": "catalog:dev",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "semantic-release": "catalog:cli",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test",
+        "webpack": "catalog:build"
+    },
+    "optionalDependencies": {
+        "cli-progress": "catalog:optional",
+        "commander": "catalog:optional",
+        "webpack": "catalog:build"
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

@@ -1,0 +1,88 @@
+---
+title: HTTP
+description: Send emails using a generic HTTP API with @visulima/email
+---
+
+# HTTP Provider
+
+The HTTP provider allows you to send emails through any generic HTTP API endpoint. This is useful for custom email services or internal APIs that accept email payloads.
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers)
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { httpProvider } from "@visulima/email/providers/http";
+
+const mail = createMail(
+    httpProvider({
+        endpoint: "https://my-email-api.example.com/send",
+        apiKey: process.env.API_KEY!,
+    }),
+);
+```
+
+## Configuration
+
+The `HttpEmailConfig` interface has the following options:
+
+| Option     | Type                       | Required | Default  | Description                          |
+| ---------- | -------------------------- | -------- | -------- | ------------------------------------ |
+| `endpoint` | `string`                   | Yes      | -        | The HTTP endpoint URL to send to     |
+| `apiKey`   | `string`                   | No       | -        | API key for authentication           |
+| `headers`  | `Record<string, string>`   | No       | -        | Custom HTTP headers for all requests |
+| `method`   | `"GET" \| "POST" \| "PUT"` | No       | `"POST"` | HTTP method to use                   |
+
+**Note:** The HTTP provider does not extend `BaseConfig` and does not support `debug`, `logger`, `retries`, or `timeout` options from the base configuration.
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello via HTTP").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The HTTP provider supports additional options through `HttpEmailOptions`:
+
+```typescript
+import type { HttpEmailOptions } from "@visulima/email/providers/http";
+
+const options: HttpEmailOptions = {
+    from: { email: "sender@example.com" },
+    to: { email: "user@example.com" },
+    subject: "Hello",
+    html: "<h1>Hello</h1>",
+    endpointOverride: "https://other-api.example.com/send",
+    methodOverride: "PUT",
+    customParams: {
+        priority: "high",
+        trackingId: "abc-123",
+    },
+};
+```
+
+| Option             | Type                       | Description                                   |
+| ------------------ | -------------------------- | --------------------------------------------- |
+| `customParams`     | `Record<string, unknown>`  | Custom parameters in the request payload      |
+| `endpointOverride` | `string`                   | Override the endpoint for this specific email |
+| `methodOverride`   | `"GET" \| "POST" \| "PUT"` | Override the HTTP method for this email       |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | No        |
+| Templates      | No        |
+| Tracking       | No        |

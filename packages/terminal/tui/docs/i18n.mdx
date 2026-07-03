@@ -1,0 +1,233 @@
+---
+title: Internationalization (i18n)
+description: "How to plug react-i18next (or react-intl) into @visulima/tui for multi-locale terminal UIs"
+---
+
+# Internationalization (i18n)
+
+`@visulima/tui` does **not** ship a built-in i18n system. Instead, use any framework-agnostic React i18n library — they work unchanged because the TUI renderer is just a React reconciler.
+
+This page covers the recommended library, how to wire it up, and terminal-specific gotchas.
+
+## Why not built-in?
+
+The React i18n ecosystem is mature and none of the mainstream libraries rely on DOM APIs. Reimplementing plurals, ICU formatting, and locale loading inside the TUI would duplicate work without adding value. Picking one off-the-shelf keeps the TUI focused on rendering.
+
+## Recommendation: `react-i18next`
+
+[`react-i18next`](https://react.i18next.com/) + [`i18next`](https://www.i18next.com/) is the safest default:
+
+- **Zero DOM assumptions.** The core uses React context + `use-sync-external-store`; no `document`, `window`, `localStorage`, or `fetch`.
+- **Largest plugin ecosystem.** File-system backends, HTTP backends, ICU post-processors, backend adapters.
+- **First-class Node support.** The library is explicitly designed to run on the server.
+
+### Installation
+
+```bash
+pnpm add i18next react-i18next
+# Optional: load JSON locales from disk at startup
+pnpm add i18next-fs-backend
+```
+
+### Minimal setup
+
+Initialize `i18next` **before your first render** so `I18nextProvider` receives a ready instance:
+
+```tsx
+// i18n.ts
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
+
+await i18next.use(initReactI18next).init({
+    fallbackLng: "en",
+    // Detect from the user's shell env — see "Locale detection" below.
+    lng: resolveLocale(),
+    interpolation: {
+        // Safe: React renders strings directly, no HTML escaping needed.
+        escapeValue: false,
+    },
+    resources: {
+        en: {
+            translation: {
+                greeting: "Hello, {{name}}!",
+                items_one: "{{count}} item",
+                items_other: "{{count}} items",
+            },
+        },
+        fr: {
+            translation: {
+                greeting: "Bonjour, {{name}} !",
+                items_one: "{{count}} élément",
+                items_other: "{{count}} éléments",
+            },
+        },
+    },
+});
+
+export default i18next;
+
+function resolveLocale(): string {
+    const raw = process.env["LC_ALL"] ?? process.env["LANG"] ?? "en";
+
+    // "en_US.UTF-8" → "en"
+    return raw.split(/[._]/)[0] ?? "en";
+}
+```
+
+### Using translations in components
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { render } from "@visulima/tui/react";
+import { I18nextProvider, useTranslation } from "react-i18next";
+import React from "react";
+
+import i18n from "./i18n";
+
+function Greeting() {
+    const { t } = useTranslation();
+
+    return (
+        <Box flexDirection="column">
+            <Text>{t("greeting", { name: "World" })}</Text>
+            <Text dimColor>{t("items", { count: 3 })}</Text>
+        </Box>
+    );
+}
+
+render(
+    <I18nextProvider i18n={i18n}>
+        <Greeting />
+    </I18nextProvider>,
+);
+```
+
+### Locale detection
+
+**Do not use [`i18next-browser-languagedetector`](https://github.com/i18next/i18next-browser-languageDetector)** — it relies on `localStorage`, cookies, and `navigator.language`, all of which are missing in Node.
+
+Detect from environment variables instead:
+
+```ts
+const resolveLocale = (): string => {
+    const raw = process.env["LC_ALL"] ?? process.env["LC_MESSAGES"] ?? process.env["LANG"] ?? "en";
+
+    // Normalize "en_US.UTF-8" → "en-US", then return just the base ("en").
+    const locale = raw.split(".")[0]!.replace("_", "-");
+
+    return locale.split("-")[0]!;
+};
+```
+
+### Loading locales from disk
+
+For larger apps, keep translations in JSON and load them via `i18next-fs-backend`:
+
+```ts
+import Backend from "i18next-fs-backend";
+import { fileURLToPath } from "node:url";
+import path from "node:path";
+import i18next from "i18next";
+import { initReactI18next } from "react-i18next";
+
+const here = path.dirname(fileURLToPath(import.meta.url));
+
+await i18next
+    .use(Backend)
+    .use(initReactI18next)
+    .init({
+        backend: {
+            loadPath: path.join(here, "locales/{{lng}}/{{ns}}.json"),
+        },
+        fallbackLng: "en",
+        ns: ["common", "errors"],
+        defaultNS: "common",
+    });
+```
+
+Expected layout:
+
+```
+locales/
+  en/
+    common.json
+    errors.json
+  fr/
+    common.json
+    errors.json
+```
+
+### Pluralization
+
+`i18next` uses [CLDR plural rules](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html). Suffix keys with the plural form:
+
+```json
+{
+    "items_one": "{{count}} item",
+    "items_other": "{{count}} items",
+    "minutes_zero": "now",
+    "minutes_one": "{{count}} minute ago",
+    "minutes_other": "{{count}} minutes ago"
+}
+```
+
+```tsx
+t("items", { count: 0 }); // "0 items"
+t("items", { count: 1 }); // "1 item"
+t("items", { count: 42 }); // "42 items"
+```
+
+Polish, Arabic, Russian, and others use more plural forms — i18next picks the correct one automatically.
+
+## Terminal-specific gotchas
+
+### 1. Right-to-left (RTL) text
+
+Real bidirectional rendering is **not supported by most terminals** — they render text left-to-right regardless of Unicode bidi markers. Two pragmatic options:
+
+- **Accept LTR visual order** for RTL locales like Arabic / Hebrew: many Arabic users are accustomed to terminal output reading left-to-right character by character. Most CLIs ship as-is.
+- **Mirror your layout manually** for specific screens where it matters. Swap `justifyContent="flex-start"` ↔ `"flex-end"`, reverse `Box` children, and move side panels.
+
+```tsx
+import { useTranslation } from "react-i18next";
+
+const RTL_LANGS = new Set(["ar", "he", "fa", "ur"]);
+
+function useDirection() {
+    const { i18n } = useTranslation();
+
+    return RTL_LANGS.has(i18n.language.split("-")[0] ?? "") ? "rtl" : "ltr";
+}
+```
+
+### 2. East-Asian character widths (CJK)
+
+CJK characters occupy **two columns** each. `@visulima/tui`'s text measurement already accounts for this via `inkCharacterWidth`, so layout is correct out of the box — no action needed. Just make sure hard-coded column widths in your UI account for it (e.g. avoid `width={10}` for a field that might hold Japanese text).
+
+### 3. Numeric and date formatting
+
+`react-i18next` delegates `{{value, number}}` / `{{value, datetime}}` to [`Intl` APIs](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Intl). Node 16+ ships full-ICU by default on most distros; earlier Node versions ship `small-icu` (English only). Install the [`full-icu`](https://www.npmjs.com/package/full-icu) npm package or set `NODE_ICU_DATA` if you need non-English locale data.
+
+### 4. Emoji and variable-width glyphs in messages
+
+Some localized strings include emoji or other wide characters that change a line's visual width. Keep layout slack (don't cap widths at the exact length of English strings) so translated text doesn't get truncated.
+
+## Alternatives
+
+| Library                                                    | When to reach for it                                                                                                                                                                                           |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **[`react-intl`](https://formatjs.github.io/) (FormatJS)** | You want [ICU MessageFormat](https://unicode-org.github.io/icu/userguide/format_parse/messages/) strictly; you already use FormatJS tooling. Pure-JS, works in Node. Requires full-ICU in older Node versions. |
+| **[`@lingui/react`](https://lingui.dev/)**                 | You want compile-time message catalogs, smaller runtime. Uses `"use client"` directives harmless in Node/TUI contexts.                                                                                         |
+
+Both integrate the same way: wrap your app in their provider and use their hook in components.
+
+## Complete example
+
+See [`examples/i18n.tsx`](https://github.com/visulima/visulima/blob/main/packages/terminal/tui/examples/i18n.tsx) for a runnable demo with locale switching, pluralization, and env-based detection.
+
+## Further reading
+
+- [i18next documentation](https://www.i18next.com/)
+- [react-i18next documentation](https://react.i18next.com/)
+- [CLDR plural rules chart](https://www.unicode.org/cldr/charts/latest/supplemental/language_plural_rules.html)

@@ -1,0 +1,10 @@
+"title": "Advanced"
+"description": "Exercises to:, force:, comparison if:, and cross-directory partials"
+"variables":
+    "mode":
+        "type": "enum"
+        "values": ["dev", "prod"]
+        "default": "dev"
+    "name":
+        "type": "string"
+        "default": "widget"

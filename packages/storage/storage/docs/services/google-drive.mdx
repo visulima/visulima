@@ -1,0 +1,113 @@
+# Google Drive
+
+> **Just need ad-hoc uploads?** Wrap this adapter in the [`Files` facade](../files-facade.mdx) for a one-liner API. The reference below shows direct adapter usage, OAuth wiring, and Drive-specific key resolution.
+
+## Overview
+
+The Google Drive adapter routes virtual keys onto `fileId`s by stamping every upload with an `appProperties.fsdkKey` marker. An LRU cache amortizes the resolve cost. Drive isn't a key-value store, so a virtual key like `"docs/report.pdf"` can technically map to multiple Drive files — the adapter throws if `files.list` returns more than one match, and call sites can drop to `storage.raw` to disambiguate.
+
+## Installation
+
+```sh
+npm install @googleapis/drive google-auth-library
+```
+
+```sh
+yarn add @googleapis/drive google-auth-library
+```
+
+```sh
+pnpm add @googleapis/drive google-auth-library
+```
+
+## Usage
+
+```ts
+import GoogleDriveStorage from "@visulima/storage/provider/google-drive";
+
+const storage = new GoogleDriveStorage({
+    credentials: {
+        client_email: process.env.GOOGLE_DRIVE_CLIENT_EMAIL!,
+        private_key: process.env.GOOGLE_DRIVE_PRIVATE_KEY!,
+    },
+    driveId: process.env.GOOGLE_DRIVE_ID, // Shared Drive id
+    rootFolderId: process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID,
+});
+```
+
+## Configuration
+
+### Auth precedence
+
+1. `client` — pre-built `drive_v3.Drive` instance.
+2. `credentials` — inline service-account credentials (`client_email` + `private_key`).
+3. `keyFilename` — path to a service-account JSON file.
+4. `oauth` — 3-legged refresh token (`clientId` + `clientSecret` + `refreshToken`).
+5. Env fallbacks: `GOOGLE_DRIVE_CLIENT_EMAIL` + `GOOGLE_DRIVE_PRIVATE_KEY`, or `GOOGLE_DRIVE_KEY_FILE`.
+
+`GOOGLE_DRIVE_SUBJECT` enables domain-wide delegation for service-account auth shapes.
+
+### Shared Drive
+
+Service accounts have a 15 GB personal quota. Production workloads should target a Shared Drive with the service account added as a member:
+
+```ts
+const storage = new GoogleDriveStorage({
+    keyFilename: "/etc/secrets/sa.json",
+    driveId: "0AAbCdEfG...",
+    rootFolderId: "0AAbCdEfG...", // typically the same as driveId
+});
+```
+
+### OAuth (end-user Drive)
+
+```ts
+const storage = new GoogleDriveStorage({
+    oauth: {
+        clientId: process.env.GOOGLE_OAUTH_CLIENT_ID!,
+        clientSecret: process.env.GOOGLE_OAUTH_CLIENT_SECRET!,
+        refreshToken: process.env.GOOGLE_DRIVE_REFRESH_TOKEN!,
+    },
+});
+```
+
+The `google-auth-library` `OAuth2Client` handles refresh natively — no per-request token plumbing in the adapter.
+
+### Public reads
+
+```ts
+const storage = new GoogleDriveStorage({
+    credentials: {
+        /* … */
+    },
+    publicByDefault: true,
+});
+
+const url = await storage.getReadUrl("file.mp4");
+// → https://drive.google.com/uc?export=download&id=<fileId>
+```
+
+When `publicByDefault` is set, every `write()` also creates an "anyone with link, reader" permission.
+
+## URL Generation
+
+### `getReadUrl(key, options?)`
+
+Requires `publicByDefault: true` — Drive has no signed-URL primitive. Returns the canonical `https://drive.google.com/uc?export=download&id=<fileId>` URL. `responseContentDisposition` is not supported.
+
+### `getUploadUrl(key, options?)`
+
+Returns a resumable-upload session URL (`https://www.googleapis.com/upload/drive/v3/files?uploadType=resumable`). Requires `credentials`, `keyFilename`, or `oauth` — the pre-built `client` escape hatch throws because the adapter can't recover the underlying auth handle to mint tokens.
+
+## Features
+
+- **Virtual-key routing** — uploads stamp `appProperties.fsdkKey`; reads resolve via `files.list`, cached in an LRU.
+- **Shared-Drive aware** — sets `supportsAllDrives` / `includeItemsFromAllDrives` on every request.
+- **Domain-wide delegation** — pass `subject` (or `GOOGLE_DRIVE_SUBJECT`) to impersonate a workspace user.
+- **Resumable uploads** — `getUploadUrl` initiates a session that the caller can drive directly from a browser.
+
+## Limitations
+
+- `getReadUrl()` throws `METHOD_NOT_ALLOWED` without `publicByDefault: true`. Use `get()` for private files.
+- Single-shot writes via `write()`; for large files use `getUploadUrl()` and stream against the session URL.
+- Duplicate virtual keys (same `fsdkKey` on multiple Drive files) cause `resolve` to throw — surface via `storage.raw` and reconcile manually.

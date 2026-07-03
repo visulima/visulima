@@ -1,0 +1,149 @@
+---
+title: Caching
+description: How task caching works with explicit inputs
+---
+
+# Caching (Nx-style)
+
+The default caching mode uses explicit input declarations to compute deterministic hashes. If the hash matches a previous run, the cached result is replayed instantly.
+
+## How It Works
+
+1. **Collect inputs** - File patterns, env vars, runtime commands, external dependencies, and the hashes of `dependsOn` dependencies
+2. **Compute hash** - SHA-256 hash of all input contents
+3. **Check cache** - Look up hash in local (then remote) cache
+4. **Hit?** Replay terminal output and restore build artifacts
+5. **Miss?** Execute task, store result for next time
+
+## Inputs
+
+### File patterns
+
+```typescript
+const options = {
+    namedInputs: {
+        production: ["{projectRoot}/src/**/*", "{projectRoot}/package.json", "!{projectRoot}/**/*.test.ts"],
+    },
+    targetDefaults: {
+        build: { inputs: ["production"] },
+    },
+};
+```
+
+Bare glob strings resolve relative to the project root. For workspace-root-relative paths (shared configs, root lockfiles), use the object form:
+
+```typescript
+inputs: ["src/**", { fileset: { pattern: "tsconfig.base.json", base: "workspace" } }, { fileset: { pattern: "!packages/*/dist", base: "workspace" } }];
+```
+
+`base` accepts `"package"` (default, same as a bare string) or `"workspace"`. Negation with `!` works in both forms.
+
+### Environment variables
+
+```typescript
+{
+    envVars: ["NODE_ENV", "API_URL"],
+    globalEnv: ["CI"], // Changes bust ALL caches
+}
+```
+
+### Runtime commands
+
+```typescript
+const inputs = [{ runtime: "node --version" }, { env: "NODE_ENV" }, { externalDependencies: ["typescript", "esbuild"] }];
+```
+
+### Dependency hashes (`dependsOn`)
+
+`dependsOn` does more than order execution — a task's cache key also folds in the hashes of its direct dependencies. When a dependency's source changes, its hash changes, which changes the dependent's hash, so the dependent re-runs instead of replaying a stale result.
+
+```typescript
+targetDefaults: {
+    // `check` runs after each dependency's `build` AND invalidates when any
+    // dependency's `build` hash changes — even if the checking project's own
+    // files are untouched.
+    check: { dependsOn: ["^build"] },
+};
+```
+
+This is what makes cross-package tasks (type-checking, bundling, integration tests) cache-correct: a task whose output depends on a sibling's `dist` can no longer restore a cache hit after that `dist` was rebuilt. Coverage is transitive — every task folds its direct dependencies, whose hashes already fold theirs (a Merkle-style chain).
+
+Because this is keyed on the dependency's hash (not its output files), you don't have to enumerate a dependency's `dist` paths as inputs. Tasks with no `dependsOn` edge to a project are unaffected by that project's changes, so invalidation stays scoped to the declared graph.
+
+## Global Inputs
+
+Files that invalidate every task's cache when changed:
+
+```typescript
+{
+    globalInputs: [
+        "package-lock.json",  // Default
+        "pnpm-lock.yaml",     // Default
+        "yarn.lock",          // Default
+        "tsconfig.base.json", // Default
+        "tsconfig.json",      // Default
+        ".env",               // Default
+    ],
+}
+```
+
+## Outputs
+
+Each task declares the files it produces via `outputs`. Entries can be:
+
+- **Glob patterns** — relative to the workspace root (`"packages/app/dist/**"`). Resolved via `fs.glob` and filtered to files only.
+- **Negations** — `"!dist/cache/**"` excludes paths the positive globs would otherwise capture. Applied after the combined positive set is expanded.
+- **`{ auto: true }`** — uses whatever files the task actually wrote, as recorded by the file-access tracker. Silently behaves as "no outputs" when tracking isn't active for this task.
+
+```typescript
+targets: {
+    build: {
+        outputs: ["dist/**", "!dist/cache/**", { auto: true }],
+    },
+}
+```
+
+Resolved paths are deduped, sorted, and filtered to files inside the workspace before archiving — archives are byte-reproducible across invocations.
+
+## Cache Storage
+
+Cache entries are stored atomically in `.task-runner-cache/`:
+
+```
+.task-runner-cache/
+  <hash>/
+    outputs/          # Archived build outputs
+    code              # Exit code
+    terminalOutput    # Captured terminal output
+    fingerprint.json  # Auto-fingerprint data (optional)
+    .commit           # Marker for complete entries
+```
+
+## Cache Size Management
+
+```typescript
+{
+    maxCacheSize: "1GB",           // Evict oldest entries when exceeded
+    maxCacheAge: 7 * 24 * 60 * 60 * 1000, // 7 days (default)
+}
+```
+
+## Performance
+
+- **Parallel cache I/O** — output staging and restore swap run with bounded concurrency (16 in flight by default), so tasks with many small files saturate disk without overwhelming it.
+- **Streaming HMAC verification** — when `remoteCache.signing.secret` is set, downloads from the HTTP backend recompute `HMAC-SHA256(secret, hash || body)` chunk-by-chunk off disk. Constant-time comparison rejects tampered or replayed artifacts before they ever land in the local cache. With `verifyOnDownload: true` the client also rejects unsigned downloads outright.
+
+## Dry Run
+
+Inspect hashes without executing:
+
+```typescript
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        dryRun: true,
+    },
+    context,
+);
+// Each task reports "skipped" with its computed hash
+```

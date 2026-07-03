@@ -1,0 +1,353 @@
+---
+title: "Quick Start"
+description: "Get started with @visulima/boxen in 5 minutes."
+---
+
+# Quick Start
+
+Learn the essentials of **@visulima/boxen** in 5 minutes.
+
+## Installation
+
+```bash npm2yarn
+npm install @visulima/boxen
+```
+
+## Basic Box
+
+Create a simple box around text:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("Hello, World!"));
+```
+
+Output:
+
+```
+┌─────────────┐
+│Hello, World!│
+└─────────────┘
+```
+
+## Add Padding
+
+Add space inside the box:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("Padded", { padding: 1 }));
+```
+
+Output:
+
+```
+┌────────┐
+│        │
+│ Padded │
+│        │
+└────────┘
+```
+
+## Change Border Style
+
+Use different border styles:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+// Double border
+console.log(boxen("Double", { borderStyle: "double" }));
+// Output:
+// ╔══════╗
+// ║Double║
+// ╚══════╝
+
+// Round corners
+console.log(boxen("Round", { borderStyle: "round" }));
+// Output:
+// ╭─────╮
+// │Round│
+// ╰─────╯
+
+// Bold border
+console.log(boxen("Bold", { borderStyle: "bold" }));
+// Output:
+// ┏━━━━┓
+// ┃Bold┃
+// ┗━━━━┛
+```
+
+## Add Colors
+
+Color your boxes with @visulima/colorize:
+
+```bash npm2yarn
+npm install @visulima/colorize
+```
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { green, red, blue } from "@visulima/colorize";
+
+// Colored text
+console.log(boxen(green("Success!"), { padding: 1 }));
+
+// Colored border
+console.log(
+    boxen("Important", {
+        borderColor: () => red("─"),
+        padding: 1,
+    }),
+);
+
+// Both colored
+console.log(
+    boxen(blue("Information"), {
+        borderColor: () => blue("─"),
+        padding: 1,
+    }),
+);
+```
+
+## Add Margins
+
+Add space outside the box:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+console.log(boxen("With margin", { margin: 1 }));
+```
+
+Output:
+
+```
+
+   ┌───────────┐
+   │With margin│
+   └───────────┘
+
+```
+
+## Text Alignment
+
+Control text alignment inside the box:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+// Center aligned
+console.log(
+    boxen("Center\nAligned", {
+        textAlignment: "center",
+        padding: 1,
+    }),
+);
+
+// Right aligned
+console.log(
+    boxen("Right\nAligned", {
+        textAlignment: "right",
+        padding: 1,
+    }),
+);
+```
+
+## Add Headers
+
+Add a labeled header to your box:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+console.log(
+    boxen("Important message here", {
+        headerText: "Alert",
+        headerAlignment: "center",
+        padding: 1,
+    }),
+);
+```
+
+Output:
+
+```
+┌───── Alert ─────┐
+│                 │
+│ Important       │
+│ message here    │
+│                 │
+└─────────────────┘
+```
+
+## Add Footers
+
+Add a footer with additional information:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+console.log(
+    boxen("Build completed successfully", {
+        headerText: "Status",
+        footerText: "Press any key to continue",
+        footerAlignment: "center",
+        padding: 1,
+    }),
+);
+```
+
+## Multi-line Content
+
+Boxes automatically handle multi-line text:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+const message = `Line 1
+Line 2
+Line 3`;
+
+console.log(boxen(message, { padding: 1 }));
+```
+
+Output:
+
+```
+┌────────┐
+│        │
+│ Line 1 │
+│ Line 2 │
+│ Line 3 │
+│        │
+└────────┘
+```
+
+## Set Fixed Width
+
+Control the box width:
+
+```typescript
+import { boxen } from "@visulima/boxen";
+
+console.log(
+    boxen("This text will wrap to fit within the width", {
+        width: 20,
+        padding: 1,
+    }),
+);
+```
+
+## Common Patterns
+
+### Success Message
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { green } from "@visulima/colorize";
+
+console.log(
+    boxen(green("✓ Build completed successfully!"), {
+        padding: 1,
+        borderStyle: "round",
+        borderColor: () => green("─"),
+    }),
+);
+```
+
+### Error Message
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { red } from "@visulima/colorize";
+
+console.log(
+    boxen(red("✗ Build failed: Missing dependencies"), {
+        padding: 1,
+        borderStyle: "double",
+        borderColor: () => red("═"),
+    }),
+);
+```
+
+### Warning Message
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { yellow } from "@visulima/colorize";
+
+console.log(
+    boxen(yellow("⚠ Deprecation warning"), {
+        padding: 1,
+        borderStyle: "bold",
+        borderColor: () => yellow("━"),
+    }),
+);
+```
+
+### Application Banner
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { cyan, bold } from "@visulima/colorize";
+
+const banner = bold(cyan("MyApp CLI v1.0.0"));
+const tagline = "Build amazing applications";
+
+console.log(
+    boxen(`${banner}\n${tagline}`, {
+        padding: 1,
+        margin: 1,
+        borderStyle: "double",
+        textAlignment: "center",
+    }),
+);
+```
+
+### Status Display
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { green, gray } from "@visulima/colorize";
+
+const status = [`${gray("Server:")} ${green("Running")}`, `${gray("Port:")} ${green("3000")}`, `${gray("Environment:")} ${green("production")}`].join("\n");
+
+console.log(
+    boxen(status, {
+        padding: 1,
+        headerText: "Server Status",
+        headerAlignment: "center",
+    }),
+);
+```
+
+### Update Notification
+
+```typescript
+import { boxen } from "@visulima/boxen";
+import { yellow, green } from "@visulima/colorize";
+
+console.log(
+    boxen(`${yellow("Update available:")} v1.0.0 → ${green("v1.1.0")}\n` + `Run ${green("npm update")} to upgrade`, {
+        padding: 1,
+        margin: 1,
+        borderStyle: "round",
+        headerText: "Update",
+        headerAlignment: "center",
+    }),
+);
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Usage Guide" href="/usage">
+        Explore all border styles and options
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>

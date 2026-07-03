@@ -1,0 +1,60 @@
+---
+title: Layouts
+description: Reusable content chrome with a {{content}} slot, code-first and engine-agnostic
+---
+
+# Layouts
+
+`@visulima/notification/layouts` is the shared chrome — header, footer, brand, unsubscribe link — that every
+notification body drops into. A layout is a template with a `{{content}}` slot; you render the per-notification body,
+then wrap it. It reuses the package's [template engines](/docs/packages/notification/templates), so the default is
+zero-dependency and edge-safe.
+
+## Usage
+
+```typescript
+import { defineLayout } from "@visulima/notification/layouts";
+
+const branded = defineLayout({
+    template: `
+        <table class="wrapper">
+            <tr><td><img src="https://app/logo.png" /></td></tr>
+            <tr><td>{{content}}</td></tr>
+            <tr><td class="footer">© ACME · <a href="{{unsubscribeUrl}}">unsubscribe</a></td></tr>
+        </table>`,
+});
+
+const html = await branded.render("<p>Thanks for joining!</p>", { unsubscribeUrl: "https://app/u/123" });
+
+await notify.sendToChannel("email", { from: "noreply@app.com", to: "user@x.com", subject: "Welcome", html });
+```
+
+`render(content, variables?)` injects `content` into the slot and renders the layout with `variables` — layout variables
+(`unsubscribeUrl`, brand tokens, …) work for free.
+
+## Slot & escaping
+
+The default renderer (`renderString`) inserts the slot value verbatim, so `{{content}}` is right for already-rendered
+HTML. If you pass the **Handlebars** renderer, use the unescaped triple-stache `{{{content}}}` so the body is not
+double-escaped:
+
+```typescript
+import { renderHandlebars } from "@visulima/notification/template/handlebars";
+
+const layout = defineLayout({ render: renderHandlebars, template: "<main>{{{content}}}</main>" });
+```
+
+Use `slot` to rename the placeholder (e.g. `slot: "body"` → `{{body}}`).
+
+## With workflows
+
+Compose layouts inside a [workflow](/docs/packages/notification/workflow) email step — render the body, wrap it, send:
+
+```typescript
+await step.email("welcome", async () => ({
+    from: "noreply@app.com",
+    to: payload.email,
+    subject: "Welcome",
+    html: await branded.render("<p>Welcome!</p>", { unsubscribeUrl: payload.unsubscribeUrl }),
+}));
+```

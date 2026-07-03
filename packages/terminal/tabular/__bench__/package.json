@@ -1,0 +1,20 @@
+{
+    "name": "tabular-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "@types/cli-table": "catalog:types",
+        "@types/node": "catalog:types",
+        "@visulima/tabular": "workspace:*",
+        "cli-table": "catalog:dev",
+        "cli-table3": "catalog:dev",
+        "table": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}

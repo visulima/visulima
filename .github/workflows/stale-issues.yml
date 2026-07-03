@@ -4,8 +4,11 @@ on: # yamllint disable-line rule:truthy
     schedule:
         - cron: "0 0 * * *"
 
+permissions:
+    contents: "read"
+
 jobs:
     stale-issues:
-        uses: "anolilab/workflows/.github/workflows/stale-issues.yml@main"
+        uses: "anolilab/workflows/.github/workflows/stale-issues.yml@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
         with:
             target-repo: "visulima/visulima"

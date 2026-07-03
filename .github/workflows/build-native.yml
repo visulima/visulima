@@ -1,0 +1,598 @@
+# https://help.github.com/en/categories/automating-your-workflow-with-github-actions
+
+name: "Build Native"
+
+on: # yamllint disable-line rule:truthy
+    pull_request:
+        branches:
+            - "main"
+            - "next"
+            - "alpha"
+            - "beta"
+    push:
+        branches:
+            - "main"
+            - "next"
+            - "alpha"
+            - "beta"
+    workflow_dispatch: # yamllint disable-line rule:empty-values
+
+concurrency:
+    group: "${{ github.workflow }}-${{ github.ref }}"
+    cancel-in-progress: true
+
+permissions:
+    contents: "read"
+
+env:
+    CARGO_INCREMENTAL: 0
+
+jobs:
+    files-changed:
+        name: "Detect native file changes"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 3
+        outputs:
+            task-runner: "${{ steps.changes.outputs.task-runner }}"
+            tui: "${{ steps.changes.outputs.tui }}"
+            vis: "${{ steps.changes.outputs.vis }}"
+            secret-scanner: "${{ steps.changes.outputs.secret-scanner }}"
+            any-changed: "${{ steps.changes.outputs.task-runner == 'true' || steps.changes.outputs.tui == 'true' || steps.changes.outputs.vis == 'true' || steps.changes.outputs.secret-scanner == 'true' }}"
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              with:
+                  fetch-depth: 0
+
+            - name: "Check for native file changes"
+              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              id: "changes"
+              with:
+                  filters: |
+                      task-runner:
+                        - 'packages/tooling/task-runner/native/**'
+                        - 'packages/tooling/task-runner/npm/**'
+                        - 'packages/tooling/task-runner/package.json'
+                        - 'packages/tooling/task-runner/index.js'
+                        - '.github/workflows/build-native.yml'
+                      tui:
+                        - 'packages/terminal/tui/native/**'
+                        - 'packages/terminal/tui/npm/**'
+                        - 'packages/terminal/tui/package.json'
+                        - 'packages/terminal/tui/index.js'
+                        - '.github/workflows/build-native.yml'
+                      vis:
+                        - 'packages/tooling/vis/native/**'
+                        - 'packages/tooling/vis/npm/**'
+                        - 'packages/tooling/vis/package.json'
+                        - 'packages/tooling/vis/index.js'
+                        - '.github/workflows/build-native.yml'
+                      secret-scanner:
+                        - 'packages/tooling/secret-scanner/native/**'
+                        - 'packages/tooling/secret-scanner/npm/**'
+                        - 'packages/tooling/secret-scanner/package.json'
+                        - 'packages/tooling/secret-scanner/index.js'
+                        - '.github/workflows/build-native.yml'
+
+    # Build all changed packages per target, test inline on native-runnable targets.
+    # Always runs so that test.yml can download artifacts for every PR — caches
+    # prevent recompilation when native sources are unchanged.
+    build:
+        name: "Build native - ${{ matrix.settings.target }}"
+        needs: "files-changed"
+        timeout-minutes: 60
+        strategy:
+            fail-fast: false
+            matrix:
+                settings:
+                    - target: "x86_64-apple-darwin"
+                      os: "macos-latest"
+                    - target: "aarch64-apple-darwin"
+                      os: "macos-latest"
+                      testable: true
+                    - target: "x86_64-unknown-linux-gnu"
+                      os: "ubuntu-latest"
+                      testable: true
+                    - target: "x86_64-unknown-linux-musl"
+                      os: "ubuntu-latest"
+                      cross: "-x"
+                    - target: "aarch64-unknown-linux-gnu"
+                      os: "ubuntu-latest"
+                      # Cross via cargo-zigbuild (zig cc), like the musl
+                      # targets. The vis napi addon links rusqlite's bundled
+                      # SQLite, so cross-compiling needs a C cross-compiler;
+                      # --use-napi-cross downloads a toolchain that has been
+                      # flaky (missing .tgz → "failed to find tool
+                      # aarch64-linux-gnu-gcc"). zig ships its own cc and
+                      # already cross-builds the vis-cli helper for this triple.
+                      cross: "-x"
+                    - target: "aarch64-unknown-linux-musl"
+                      os: "ubuntu-latest"
+                      cross: "-x"
+                    - target: "x86_64-pc-windows-msvc"
+                      os: "windows-latest"
+                      testable: true
+                    - target: "aarch64-pc-windows-msvc"
+                      os: "windows-latest"
+        runs-on: "${{ matrix.settings.os }}"
+
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+
+            # --- Cache per package ---
+            # Caches always restore (keyed by source hash) so test.yml can download
+            # the resulting artifacts even for PRs that don't touch native sources.
+            - name: "Restore task-runner native build cache"
+              id: "cache-task-runner"
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: |
+                      packages/tooling/task-runner/*.node
+                      packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
+                  key: "native-task-runner-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/task-runner/native/Cargo.toml', 'packages/tooling/task-runner/native/Cargo.lock', 'packages/tooling/task-runner/native/build.rs', 'packages/tooling/task-runner/native/src/**', 'packages/tooling/task-runner/native/fspy_seccomp/Cargo.toml', 'packages/tooling/task-runner/native/fspy_seccomp/Cargo.lock', 'packages/tooling/task-runner/native/fspy_seccomp/src/**') }}"
+
+            - name: "Restore tui native build cache"
+              id: "cache-tui"
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: "packages/terminal/tui/*.node"
+                  key: "native-tui-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/terminal/tui/native/Cargo.toml', 'packages/terminal/tui/native/Cargo.lock', 'packages/terminal/tui/native/build.rs', 'packages/terminal/tui/native/src/**') }}"
+
+            - name: "Restore vis native build cache"
+              id: "cache-vis"
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  # Both the napi addon (*.node) and the vis CLI front-end binary
+                  # (dropped into the matching binding package) are cached.
+                  path: |
+                      packages/tooling/vis/*.node
+                      packages/tooling/vis/npm/*/vis-native-cli
+                      packages/tooling/vis/npm/*/vis-native-cli.exe
+                  key: "native-vis-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/vis/native/Cargo.toml', 'packages/tooling/vis/native/Cargo.lock', 'packages/tooling/vis/native/build.rs', 'packages/tooling/vis/native/src/**', 'packages/tooling/vis/native/cli/**') }}"
+
+            - name: "Restore secret-scanner native build cache"
+              id: "cache-secret-scanner"
+              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: "packages/tooling/secret-scanner/*.node"
+                  key: "native-secret-scanner-${{ matrix.settings.target }}-zig0.14.1-${{ hashFiles('rust-toolchain.toml', 'packages/tooling/secret-scanner/native/Cargo.toml', 'packages/tooling/secret-scanner/native/Cargo.lock', 'packages/tooling/secret-scanner/native/build.rs', 'packages/tooling/secret-scanner/native/src/**') }}"
+
+            # Determine if any package actually needs building (not all cached)
+            # A skipped cache step (package unchanged) has outcome='skipped' and empty cache-hit,
+            # so we must check both that the cache step ran AND missed.
+            - name: "Check if build is needed"
+              id: "need-build"
+              shell: "bash"
+              run: |
+                  NEED="false"
+                  if [[ "${{ steps.cache-task-runner.outcome }}" == "success" && "${{ steps.cache-task-runner.outputs.cache-hit }}" != "true" ]]; then
+                    NEED="true"
+                  fi
+                  if [[ "${{ steps.cache-tui.outcome }}" == "success" && "${{ steps.cache-tui.outputs.cache-hit }}" != "true" ]]; then
+                    NEED="true"
+                  fi
+                  if [[ "${{ steps.cache-vis.outcome }}" == "success" && "${{ steps.cache-vis.outputs.cache-hit }}" != "true" ]]; then
+                    NEED="true"
+                  fi
+                  if [[ "${{ steps.cache-secret-scanner.outcome }}" == "success" && "${{ steps.cache-secret-scanner.outputs.cache-hit }}" != "true" ]]; then
+                    NEED="true"
+                  fi
+                  echo "any=$NEED" >> "$GITHUB_OUTPUT"
+
+            # Setup Node.js/pnpm — needed for building AND for running vitest on testable targets
+            - name: "Setup resources and environment"
+              if: "steps.need-build.outputs.any == 'true' || (matrix.settings.testable && needs.files-changed.outputs.any-changed == 'true')"
+              id: "setup"
+              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              with:
+                  node-version: "22"
+                  cache-prefix: "build-native"
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
+                  run-signatures-audit: false
+                  run-npm-audit: false
+
+            - name: "Install Rust toolchain"
+              if: "steps.need-build.outputs.any == 'true'"
+              uses: "anolilab/workflows/step/rust@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              with:
+                  cache-key: "build-native"
+                  save-cache: "${{ github.ref_name == 'main' }}"
+                  targets: "${{ matrix.settings.target }}"
+                  tools: "${{ matrix.settings.cross == '-x' && 'cargo-zigbuild' || '' }}"
+                  workspaces: |
+                      packages/tooling/task-runner/native
+                      packages/terminal/tui/native
+                      packages/tooling/vis/native
+                      packages/tooling/secret-scanner/native
+
+            - name: "Install Zig (cross-compilation)"
+              if: "steps.need-build.outputs.any == 'true' && matrix.settings.cross == '-x'"
+              uses: "mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29" # v2.2.1
+              with:
+                  version: "0.14.1"
+
+            # Zig for the fspy-seccomp-helper build below. The
+            # napi-cli build path bundles its own zig for the `.node`
+            # addon, but `cargo zigbuild` (used for the helper bin)
+            # needs a standalone zig on PATH. The earlier setup-zig
+            # step only fires for musl (`cross == '-x'`); the helper
+            # builds on every Linux target, so install zig here too.
+            # Idempotent — re-running setup-zig when it already ran
+            # for musl is a no-op.
+            # Also gated on the vis cache: the vis CLI binary cross-compiles all
+            # Linux triples (musl + aarch64) via cargo-zigbuild below, so zig must
+            # be present whenever vis needs building too. setup-zig is idempotent.
+            - name: "Install Zig (all Linux sidecar binaries)"
+              if: "contains(matrix.settings.target, 'linux') && (steps.cache-task-runner.outputs.cache-hit != 'true' || steps.cache-vis.outputs.cache-hit != 'true')"
+              uses: "mlugg/setup-zig@d1434d08867e3ee9daa34448df10607b98908d29" # v2.2.1
+              with:
+                  version: "0.14.1"
+
+            # cargo-zigbuild for the fspy-seccomp-helper and vis-cli build steps.
+            # Prebuilt via taiki-e/install-action (~5s; building via
+            # `cargo install` would add multiple minutes per CI run).
+            - name: "Install cargo-zigbuild (Linux only)"
+              if: "contains(matrix.settings.target, 'linux') && (steps.cache-task-runner.outputs.cache-hit != 'true' || steps.cache-vis.outputs.cache-hit != 'true')"
+              uses: "taiki-e/install-action@e49978b799e49ff429d162b7a30601a569ab6538" # v2.81.1
+              with:
+                  tool: "cargo-zigbuild"
+
+            # --- Build each package when cache missed ---
+            # Cache keys are derived from native sources, so cache hits short-circuit
+            # unchanged packages. Removing the files-changed gate ensures that PRs
+            # whose diff misses native sources still produce artifacts for test.yml.
+            #
+            # The four napi addons are independent cargo workspaces in separate
+            # working directories, so they build concurrently via `parallel:` (each
+            # step runs in the background with an implicit wait-all at the group's
+            # end). Per-step `if:` cache gates are preserved, so a cached package is
+            # still skipped inside the group. The sidecar binaries (fspy-* / vis-cli)
+            # and their `rustup target add` calls stay OUTSIDE the group and remain
+            # sequential — that avoids concurrent rustup invocations racing on the
+            # toolchain lock, and keeps peak memory lower during release linking.
+            #
+            # `--config.verify-deps-before-run=false` is REQUIRED on each command:
+            # otherwise pnpm re-verifies (and reinstalls) the whole workspace before
+            # running the script. Four in parallel means four concurrent installs
+            # mutating the shared `node_modules/.pnpm` hoist tree, which races and
+            # fails with `ENOENT: ... unlink ...\.pnpm\node_modules\...` inside
+            # `symlinkHoistedDependency` (seen on both Windows and macOS — the flaky
+            # failure that only a re-run cleared). "Setup resources and environment"
+            # already ran an explicit `pnpm install --frozen-lockfile`, so the
+            # pre-run verify is pure redundancy. NOTE: the flag must be passed
+            # per-command — the `npm_config_verify_deps_before_run` env var does NOT
+            # disable it (pnpm mis-coerces the env value); only the CLI flag does.
+            - parallel:
+                  - name: "Build task-runner native"
+                    if: "steps.cache-task-runner.outputs.cache-hit != 'true'"
+                    run: "pnpm --config.verify-deps-before-run=false build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    working-directory: "packages/tooling/task-runner"
+
+                  - name: "Build tui native"
+                    if: "steps.cache-tui.outputs.cache-hit != 'true'"
+                    run: "pnpm --config.verify-deps-before-run=false build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    working-directory: "packages/terminal/tui"
+
+                  - name: "Build vis native"
+                    if: "steps.cache-vis.outputs.cache-hit != 'true'"
+                    run: "pnpm --config.verify-deps-before-run=false build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    working-directory: "packages/tooling/vis"
+
+                  - name: "Build secret-scanner native"
+                    if: "steps.cache-secret-scanner.outputs.cache-hit != 'true'"
+                    run: "pnpm --config.verify-deps-before-run=false build:native --target ${{ matrix.settings.target }} ${{ matrix.settings.cross || '' }}"
+                    working-directory: "packages/tooling/secret-scanner"
+
+            # Build the fspy-seccomp-helper sidecar binary for every
+            # Linux target. Pure-Rust seccomp (no libseccomp dep), so
+            # cargo-zigbuild can cross-compile all four triples without
+            # extra sysroot setup. Each output drops into the matching
+            # binding package so its `files` array publishes it.
+            - name: "Build fspy-seccomp-helper (all Linux)"
+              if: "contains(matrix.settings.target, 'linux') && steps.cache-task-runner.outputs.cache-hit != 'true'"
+              shell: "bash"
+              working-directory: "packages/tooling/task-runner"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
+              run: |
+                  rustup target add "$TARGET"
+                  cargo zigbuild \
+                      --manifest-path native/fspy_seccomp/Cargo.toml \
+                      --bin fspy-seccomp-helper \
+                      --release \
+                      --target "$TARGET"
+                  case "$TARGET" in
+                    x86_64-unknown-linux-gnu)    binding="linux-x64-gnu" ;;
+                    x86_64-unknown-linux-musl)   binding="linux-x64-musl" ;;
+                    aarch64-unknown-linux-gnu)   binding="linux-arm64-gnu" ;;
+                    aarch64-unknown-linux-musl)  binding="linux-arm64-musl" ;;
+                    *)                           binding="" ;;
+                  esac
+                  if [ -n "$binding" ]; then
+                      install -m 0755 \
+                          "native/fspy_seccomp/target/$TARGET/release/fspy-seccomp-helper" \
+                          "npm/$binding/fspy-seccomp-helper"
+                  fi
+
+            # Build the fspy_macos interpose dylib for each darwin target.
+            # It's a standalone cdylib (NOT linked into the addon — its
+            # __interpose section must not load into the parent), injected at
+            # runtime via DYLD_INSERT_LIBRARIES. Native macOS compile, so no
+            # zigbuild/sysroot. The .dylib drops into the matching darwin
+            # binding package so its `files` array publishes it.
+            - name: "Build fspy_macos dylib (all macOS)"
+              if: "contains(matrix.settings.target, 'apple')"
+              shell: "bash"
+              working-directory: "packages/tooling/task-runner"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
+              run: |
+                  rustup target add "$TARGET"
+                  cargo build \
+                      --manifest-path native/fspy_macos/Cargo.toml \
+                      --release \
+                      --target "$TARGET"
+                  case "$TARGET" in
+                    x86_64-apple-darwin)   binding="darwin-x64" ;;
+                    aarch64-apple-darwin)  binding="darwin-arm64" ;;
+                    *)                     binding="" ;;
+                  esac
+                  if [ -n "$binding" ]; then
+                      install -m 0755 \
+                          "native/fspy_macos/target/$TARGET/release/libfspy_macos.dylib" \
+                          "npm/$binding/fspy-macos.dylib"
+                  fi
+
+            # Build the fspy_windows IAT-hook DLL for each MSVC target. Pure
+            # Rust (no Detours/vcpkg). The cdylib output is `fspy_windows.dll`
+            # (no `lib` prefix on Windows); it drops into the matching win32
+            # binding package so its `files` array publishes it.
+            - name: "Build fspy_windows DLL (all Windows)"
+              if: "contains(matrix.settings.target, 'windows')"
+              shell: "bash"
+              working-directory: "packages/tooling/task-runner"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
+              run: |
+                  rustup target add "$TARGET"
+                  cargo build \
+                      --manifest-path native/fspy_windows/Cargo.toml \
+                      --release \
+                      --target "$TARGET"
+                  case "$TARGET" in
+                    x86_64-pc-windows-msvc)   binding="win32-x64-msvc" ;;
+                    aarch64-pc-windows-msvc)  binding="win32-arm64-msvc" ;;
+                    *)                        binding="" ;;
+                  esac
+                  if [ -n "$binding" ]; then
+                      cp "native/fspy_windows/target/$TARGET/release/fspy_windows.dll" "npm/$binding/fspy-windows.dll"
+                  fi
+
+            # Build the vis CLI front-end binary (the Rust startup + dispatch
+            # shell) for this target and drop it into the matching binding package
+            # so its `files` array publishes it. `-p vis-cli` compiles ONLY the
+            # lean CLI crate — never the napi addon or its oxc/rusqlite deps.
+            # Linux triples cross via cargo-zigbuild (handles musl + aarch64 with
+            # no extra sysroot); macOS/Windows build the host-or-cross Apple/MSVC
+            # triple natively, mirroring the fspy sidecar builds above.
+            - name: "Build vis-cli native binary"
+              if: "steps.cache-vis.outputs.cache-hit != 'true'"
+              shell: "bash"
+              working-directory: "packages/tooling/vis"
+              env:
+                  TARGET: "${{ matrix.settings.target }}"
+              run: |
+                  rustup target add "$TARGET"
+                  case "$TARGET" in
+                    *linux*) cargo zigbuild --manifest-path native/Cargo.toml -p vis-cli --release --target "$TARGET" ;;
+                    *)       cargo build    --manifest-path native/Cargo.toml -p vis-cli --release --target "$TARGET" ;;
+                  esac
+                  case "$TARGET" in
+                    x86_64-apple-darwin)         binding="darwin-x64";       exe="vis";     dest="vis-native-cli" ;;
+                    aarch64-apple-darwin)        binding="darwin-arm64";     exe="vis";     dest="vis-native-cli" ;;
+                    x86_64-unknown-linux-gnu)    binding="linux-x64-gnu";    exe="vis";     dest="vis-native-cli" ;;
+                    x86_64-unknown-linux-musl)   binding="linux-x64-musl";   exe="vis";     dest="vis-native-cli" ;;
+                    aarch64-unknown-linux-gnu)   binding="linux-arm64-gnu";  exe="vis";     dest="vis-native-cli" ;;
+                    aarch64-unknown-linux-musl)  binding="linux-arm64-musl"; exe="vis";     dest="vis-native-cli" ;;
+                    x86_64-pc-windows-msvc)      binding="win32-x64-msvc";   exe="vis.exe"; dest="vis-native-cli.exe" ;;
+                    aarch64-pc-windows-msvc)     binding="win32-arm64-msvc"; exe="vis.exe"; dest="vis-native-cli.exe" ;;
+                    *)                           binding="" ;;
+                  esac
+                  if [ -z "$binding" ]; then
+                      echo "no binding package mapping for target '$TARGET'" >&2
+                      exit 1
+                  fi
+                  cp "native/target/$TARGET/release/$exe" "npm/$binding/$dest"
+                  case "$TARGET" in
+                    *windows*) : ;;
+                    *) chmod 0755 "npm/$binding/$dest" ;;
+                  esac
+
+            # --- Save build artifacts back to cache (trusted refs only) ---
+            # PRs (including forks) restore but never write — a fork build can't
+            # poison the cache for the next main run that pulls under the same key.
+            - name: "Save task-runner native build cache"
+              if: "github.event_name == 'push' && steps.cache-task-runner.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: |
+                      packages/tooling/task-runner/*.node
+                      packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
+                  key: "${{ steps.cache-task-runner.outputs.cache-primary-key }}"
+
+            - name: "Save tui native build cache"
+              if: "github.event_name == 'push' && steps.cache-tui.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: "packages/terminal/tui/*.node"
+                  key: "${{ steps.cache-tui.outputs.cache-primary-key }}"
+
+            - name: "Save vis native build cache"
+              if: "github.event_name == 'push' && steps.cache-vis.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: |
+                      packages/tooling/vis/*.node
+                      packages/tooling/vis/npm/*/vis-native-cli
+                      packages/tooling/vis/npm/*/vis-native-cli.exe
+                  key: "${{ steps.cache-vis.outputs.cache-primary-key }}"
+
+            - name: "Save secret-scanner native build cache"
+              if: "github.event_name == 'push' && steps.cache-secret-scanner.outputs.cache-hit != 'true'"
+              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              with:
+                  path: "packages/tooling/secret-scanner/*.node"
+                  key: "${{ steps.cache-secret-scanner.outputs.cache-primary-key }}"
+
+            # --- Upload artifacts per package ---
+            - name: "Upload task-runner artifact"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "bindings-task-runner-${{ matrix.settings.target }}"
+                  path: |
+                      packages/tooling/task-runner/*.node
+                      packages/tooling/task-runner/npm/linux-*/fspy-seccomp-helper
+                      packages/tooling/task-runner/npm/darwin-*/fspy-macos.dylib
+                      packages/tooling/task-runner/npm/win32-*/fspy-windows.dll
+                  if-no-files-found: "error"
+
+            - name: "Upload tui artifact"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "bindings-tui-${{ matrix.settings.target }}"
+                  path: "packages/terminal/tui/*.node"
+                  if-no-files-found: "error"
+
+            - name: "Upload vis artifact"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "bindings-vis-${{ matrix.settings.target }}"
+                  path: |
+                      packages/tooling/vis/*.node
+                      packages/tooling/vis/npm/*/vis-native-cli
+                      packages/tooling/vis/npm/*/vis-native-cli.exe
+                  if-no-files-found: "error"
+
+            - name: "Upload secret-scanner artifact"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "bindings-secret-scanner-${{ matrix.settings.target }}"
+                  path: "packages/tooling/secret-scanner/*.node"
+                  if-no-files-found: "error"
+
+            # --- Upload NAPI loader files (index.js, index.d.ts) once ---
+            # napi build regenerates these on every runner, but the content is
+            # target-agnostic (derived from Rust signatures + napi.targets). Upload
+            # once from x86_64-unknown-linux-gnu so semantic-release.yml can copy
+            # them into the package roots before publish — guarantees the
+            # published .d.ts matches the Rust signatures of the .node binaries.
+            - name: "Upload task-runner loader"
+              if: "matrix.settings.target == 'x86_64-unknown-linux-gnu'"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "loader-task-runner"
+                  path: |
+                      packages/tooling/task-runner/index.js
+                      packages/tooling/task-runner/index.d.ts
+                  if-no-files-found: "error"
+
+            - name: "Upload tui loader"
+              if: "matrix.settings.target == 'x86_64-unknown-linux-gnu'"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "loader-tui"
+                  path: |
+                      packages/terminal/tui/index.js
+                      packages/terminal/tui/index.d.ts
+                  if-no-files-found: "error"
+
+            - name: "Upload vis loader"
+              if: "matrix.settings.target == 'x86_64-unknown-linux-gnu'"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "loader-vis"
+                  path: |
+                      packages/tooling/vis/index.js
+                      packages/tooling/vis/index.d.ts
+                  if-no-files-found: "error"
+
+            - name: "Upload secret-scanner loader"
+              if: "matrix.settings.target == 'x86_64-unknown-linux-gnu'"
+              uses: "actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a" # v7.0.1
+              with:
+                  name: "loader-secret-scanner"
+                  path: |
+                      packages/tooling/secret-scanner/index.js
+                      packages/tooling/secret-scanner/index.d.ts
+                  if-no-files-found: "error"
+
+            # --- Test native bindings inline (only on targets that can run natively) ---
+            - name: "Test task-runner native binding"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.task-runner == 'true')"
+              run: "pnpm vitest run __tests__/unit/native-binding.test.ts"
+              working-directory: "packages/tooling/task-runner"
+
+            - name: "Test tui native binding"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.tui == 'true')"
+              run: "pnpm vitest run __tests__/native-binding.test.ts"
+              working-directory: "packages/terminal/tui"
+
+            - name: "Test vis native binding"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.vis == 'true')"
+              run: "pnpm vitest run __tests__/native/native-binding.test.ts"
+              working-directory: "packages/tooling/vis"
+
+            # @visulima/path and @visulima/error have no @visulima inter-deps, so
+            # they build concurrently. @visulima/fs depends on @visulima/path, so it
+            # stays sequential AFTER the group (the implicit wait-all guarantees path
+            # is built before fs starts).
+            - parallel:
+                  - name: "Build @visulima/path (secret-scanner dep)"
+                    if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
+                    run: "pnpm --config.verify-deps-before-run=false run build"
+                    working-directory: "packages/filesystem/path"
+
+                  - name: "Build @visulima/error (secret-scanner dep)"
+                    if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
+                    run: "pnpm --config.verify-deps-before-run=false run build"
+                    working-directory: "packages/error-debugging/error"
+
+            - name: "Build @visulima/fs (secret-scanner dep)"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
+              run: "pnpm --config.verify-deps-before-run=false run build"
+              working-directory: "packages/filesystem/fs"
+
+            - name: "Test secret-scanner native binding"
+              if: "matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.secret-scanner == 'true')"
+              run: "pnpm vitest run __tests__/native-binding.test.ts"
+              working-directory: "packages/tooling/secret-scanner"
+
+    # This check runs once all build jobs have passed
+    build-native-required-check:
+        needs: ["files-changed", "build"]
+        name: "Check Native Build"
+        if: "always()"
+        runs-on: "ubuntu-24.04"
+        timeout-minutes: 30
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Check for failures"
+              run: |
+                  if [[ "${{ contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') }}" == "true" ]]; then
+                    echo "One of the dependent jobs have failed. You may need to re-run it." && exit 1
+                  fi

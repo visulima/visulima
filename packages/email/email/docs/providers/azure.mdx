@@ -1,0 +1,88 @@
+---
+title: Azure
+description: Send emails using Microsoft Azure Communication Services with @visulima/email
+---
+
+# Azure Provider
+
+The Azure provider allows you to send emails through [Microsoft Azure Communication Services](https://learn.microsoft.com/en-us/azure/communication-services/concepts/email/email-overview).
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers) - requires OAuth2 token or connection string
+
+## Setup
+
+### Using Connection String
+
+```typescript
+import { createMail } from "@visulima/email";
+import { azureProvider } from "@visulima/email/providers/azure";
+
+const mail = createMail(
+    azureProvider({
+        connectionString: process.env.AZURE_CONNECTION_STRING!,
+        region: "eastus",
+    }),
+);
+```
+
+### Using OAuth2 Access Token
+
+```typescript
+const mail = createMail(
+    azureProvider({
+        accessToken: process.env.AZURE_ACCESS_TOKEN!,
+        region: "eastus",
+    }),
+);
+```
+
+## Configuration
+
+The `AzureConfig` interface extends `BaseConfig` with the following options:
+
+| Option             | Type      | Required | Default | Description                                                              |
+| ------------------ | --------- | -------- | ------- | ------------------------------------------------------------------------ |
+| `region`           | `string`  | Yes      | -       | Azure region (e.g., `eastus`, `westus`)                                  |
+| `connectionString` | `string`  | No\*     | -       | Azure Communication Services connection string                           |
+| `accessToken`      | `string`  | No\*     | -       | Azure AD access token for OAuth2 authentication                          |
+| `endpoint`         | `string`  | No       | Auto    | Custom endpoint (defaults to `https://{region}.communication.azure.com`) |
+| `debug`            | `boolean` | No       | `false` | Enable debug logging                                                     |
+| `logger`           | `Console` | No       | -       | Custom logger instance                                                   |
+| `retries`          | `number`  | No       | `3`     | Number of retry attempts                                                 |
+| `timeout`          | `number`  | No       | `30000` | Request timeout in milliseconds                                          |
+
+\*Either `connectionString` or `accessToken` must be provided.
+
+## Basic Usage
+
+```typescript
+import { MailMessage } from "@visulima/email";
+
+const message = new MailMessage().to("user@example.com").from("sender@example.com").subject("Hello from Azure").html("<h1>Hello World</h1>");
+
+const result = await mail.send(message);
+```
+
+## Provider-Specific Email Options
+
+The Azure provider supports additional options through `AzureEmailOptions`:
+
+| Option              | Type                      | Description            |
+| ------------------- | ------------------------- | ---------------------- |
+| `importance`        | `"normal" \| "high"`      | Email importance level |
+| `templateId`        | `string`                  | Azure template ID      |
+| `templateVariables` | `Record<string, unknown>` | Template variables     |
+
+## Supported Features
+
+| Feature        | Supported |
+| -------------- | --------- |
+| Attachments    | Yes       |
+| Batch Sending  | No        |
+| Custom Headers | Yes       |
+| HTML           | Yes       |
+| Reply-To       | Yes       |
+| Scheduling     | No        |
+| Tagging        | No        |
+| Templates      | Yes       |
+| Tracking       | No        |

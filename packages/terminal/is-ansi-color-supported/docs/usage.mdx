@@ -1,0 +1,36 @@
+---
+title: "Usage"
+---
+
+# Usage
+
+## Check Color Support
+
+```typescript
+import { isAnsiColorSupported } from "@visulima/is-ansi-color-supported";
+
+const level = isAnsiColorSupported();
+
+switch (level) {
+    case 3:
+        console.log("TrueColor (16M colors)");
+        break;
+    case 2:
+        console.log("256 colors");
+        break;
+    case 1:
+        console.log("16 colors (ANSI)");
+        break;
+    default:
+        console.log("No colors");
+}
+```
+
+## Environment Detection
+
+Automatically detects:
+
+- CI environments
+- Terminal capabilities
+- Environment variables (FORCE_COLOR, NO_COLOR)
+- TTY status

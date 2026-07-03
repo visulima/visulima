@@ -1,0 +1,383 @@
+---
+title: CI/CD Integration
+description: "Integrate vis into your CI/CD pipelines for automated builds, testing, and dependency management"
+---
+
+# CI/CD Integration
+
+Integrate vis into your continuous integration and deployment pipelines.
+
+## GitHub Actions
+
+### Build and Test
+
+Only build and test affected projects in pull requests:
+
+```yaml
+name: CI
+on: [pull_request]
+
+jobs:
+    build:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # Full history for affected detection
+
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: pnpm
+
+            - run: pnpm install --frozen-lockfile
+
+            - name: Build affected projects
+              run: vis affected build --base=origin/main
+
+            - name: Test affected projects
+              run: vis affected test --base=origin/main
+```
+
+### Dependency Health Checks
+
+Run scheduled dependency checks:
+
+```yaml
+name: Dependency Check
+on:
+    schedule:
+        - cron: "0 9 * * 1" # Every Monday at 9am
+
+jobs:
+    check:
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+            - uses: pnpm/action-setup@v4
+            - uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  cache: pnpm
+
+            - run: pnpm install --frozen-lockfile
+
+            - name: Check for outdated dependencies
+              run: vis check --format json > deps-report.json
+
+            - name: Security audit
+              run: vis check --security --exit-code
+
+            - name: Upload report
+              if: always()
+              uses: actions/upload-artifact@v4
+              with:
+                  name: dependency-report
+                  path: deps-report.json
+```
+
+### Task Caching
+
+Cache task runner artifacts between CI runs:
+
+```yaml
+- name: Cache vis task runner
+  uses: actions/cache@v4
+  with:
+      path: .vis/cache
+      key: vis-cache-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}
+      restore-keys: |
+          vis-cache-${{ runner.os }}-
+```
+
+### Collapsible Task Output
+
+`vis run` automatically wraps each task's output in a collapsible group when it detects a supported CI runner, so the web UI shows one foldable section per task instead of a single firehose of stdout. Failed tasks are always rendered expanded so the failure is visible without an extra click.
+
+| Runner          | Detected via          | Format emitted               |
+| :-------------- | :-------------------- | :--------------------------- |
+| GitHub Actions  | `GITHUB_ACTIONS=true` | `::group::` / `::endgroup::` |
+| GitLab CI       | `GITLAB_CI=true`      | `section_start:` ANSI lines  |
+| Buildkite       | `BUILDKITE=true`      | `--- ` collapsed headers     |
+| Azure Pipelines | `TF_BUILD=True`       | `##[group]` / `##[endgroup]` |
+
+CircleCI is intentionally not auto-detected: its 2.0+ format has no inline grouping directive — steps auto-group in the web UI without any markup from the runner.
+
+Override the default detection in `vis.config.ts`:
+
+```ts
+export default defineConfig({
+    run: {
+        // "auto" (default) — detect via env. "off" disables grouping.
+        // "azure" / "buildkite" / "github" / "gitlab" force the format
+        // on self-hosted runners that don't set the standard env vars.
+        ciGrouping: "auto",
+    },
+});
+```
+
+## GitLab CI
+
+`vis ci` auto-detects GitLab merge-request pipelines via `CI_MERGE_REQUEST_TARGET_BRANCH_NAME` and `CI_COMMIT_SHA`, so the affected-graph base/head are derived without manual flags.
+
+### Build and Test
+
+```yaml
+default:
+    image: node:22
+
+variables:
+    GIT_DEPTH: 0 # Full history for affected detection
+
+stages:
+    - ci
+
+ci:
+    stage: ci
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    before_script:
+        - corepack enable
+        - corepack prepare pnpm@latest --activate
+    script:
+        - pnpm vis ci lint,test,build
+```
+
+`vis ci` runs `pnpm install --frozen-lockfile`, then `vis affected` for each comma-separated target. Pass `--no-install` if the install step is already handled elsewhere.
+
+### vis ai heal on merge requests
+
+`vis ai heal` posts the proposed patch as an MR note. It needs an API token that can write notes — `CI_JOB_TOKEN` cannot, so set `GITLAB_TOKEN` (or `CI_TOKEN`) on the job:
+
+```yaml
+heal:
+    stage: ci
+    needs: [ci]
+    when: on_failure
+    rules:
+        - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+    variables:
+        GITLAB_TOKEN: $GITLAB_HEAL_TOKEN # project/group access token with `api` scope
+    script:
+        - pnpm vis ai heal
+```
+
+When a maintainer comments `/vis heal accept` on the MR, run `vis ai heal accept` from a follow-up pipeline (or scheduled poll) — the command re-derives the proposal, validates it, and commits via the GitLab REST API using the same token.
+
+## Buildkite
+
+Buildkite agents auto-detect through `BUILDKITE`, `BUILDKITE_PULL_REQUEST_BASE_BRANCH`, and `BUILDKITE_COMMIT`. `vis ai heal` renders as a build [annotation](https://buildkite.com/docs/agent/v3/cli-annotate); acceptance is a manual unblock on a [block step](https://buildkite.com/docs/pipelines/block-step) — there is no PR-comment surface to listen to.
+
+### Generate the pipeline
+
+The shape below ships as a builtin `vis generate` template — point at the package preset instead of copy-pasting:
+
+```bash
+vis generate buildkite-ci
+```
+
+The template prompts for `targets`, `packageManager`, `withHeal`, and `agentQueue`, and writes to `.buildkite/pipeline.yml`. Vendor a customised copy at `.vis/templates/buildkite-ci/` to override the bundled preset — discovery prefers the user copy when names collide.
+
+### Reference pipeline
+
+The generator emits the same shape as below. Drop this in `.buildkite/pipeline.yml` if you'd rather hand-write it:
+
+```yaml
+steps:
+    - label: ":hammer: vis ci"
+      key: ci
+      command: |
+          corepack enable
+          corepack prepare pnpm@latest --activate
+          pnpm vis ci lint,test,build
+      agents:
+          queue: default
+
+    - label: ":sparkles: vis ai heal"
+      key: heal-propose
+      depends_on: ci
+      if: build.failed_jobs > 0
+      command: pnpm vis ai heal
+      env:
+          # Required so heal can commit cross-VCS once accepted.
+          # Set whichever matches the upstream repo.
+          GITHUB_TOKEN: "${GITHUB_TOKEN}"
+          # GITLAB_TOKEN: "${GITLAB_TOKEN}"
+
+    - block: ":white_check_mark: Apply AI heal patch?"
+      key: heal-gate
+      depends_on: heal-propose
+      prompt: "Unblocking will apply and commit the patch from the heal annotation."
+
+    - label: ":robot_face: vis ai heal accept"
+      depends_on: heal-gate
+      command: pnpm vis ai heal accept
+      env:
+          GITHUB_TOKEN: "${GITHUB_TOKEN}"
+          # GITLAB_TOKEN: "${GITLAB_TOKEN}"
+```
+
+The annotation context is keyed on `BUILDKITE_BUILD_ID`, so reruns update the existing annotation instead of stacking duplicates on the same build.
+
+### Token requirements
+
+| Surface                          | Token                                                        | Why                                                                                                                                          |
+| -------------------------------- | ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Annotation via `buildkite-agent` | none — uses the agent's `BUILDKITE_AGENT_ACCESS_TOKEN`       | First fallback path; works on every standard Buildkite agent.                                                                                |
+| Annotation via REST              | `BUILDKITE_API_TOKEN` with `write_build_annotations`         | Second fallback when the CLI is missing (uncommon).                                                                                          |
+| `vis ai heal accept` commit      | `GITHUB_TOKEN` _or_ `GITLAB_TOKEN`                           | Buildkite has no commit API of its own — vis derives the upstream provider from `BUILDKITE_REPO` and commits through GitHub/GitLab directly. |
+| Self-hosted Buildkite            | `BUILDKITE_API_BASE_URL=https://buildkite.acme.internal/api` | Honoured by the REST fallback; the agent CLI honours its own config.                                                                         |
+
+The block-step unblocker is the acceptance signal — `BUILDKITE_UNBLOCKER_EMAIL` (preferred) or `BUILDKITE_UNBLOCKER` is checked against the heal allow-list, so `/vis heal accept` is implicit on Buildkite (no comment-trigger phrase to match).
+
+### Allow-list entries on Buildkite
+
+`ai.heal.allowedActors` is matched against the trigger actor verbatim. The actor identifier differs by provider:
+
+| Provider       | Source env / payload                                   | Example entry            |
+| -------------- | ------------------------------------------------------ | ------------------------ |
+| GitHub Actions | `comment.user.login` from the `issue_comment`          | `octocat`                |
+| GitLab CI      | `VIS_HEAL_TRIGGER_ACTOR` (set by webhook bridge)       | `ada-lovelace`           |
+| Buildkite      | `BUILDKITE_UNBLOCKER_EMAIL` then `BUILDKITE_UNBLOCKER` | `maintainer@example.com` |
+
+If you operate the same allow-list across providers (vendoring `vis.config.ts` in a shared preset), include both shapes — Buildkite emails and platform usernames — for any maintainer authorised to accept heal patches. A mismatched allow-list yields an actionable refusal naming the missing entry shape.
+
+### Push-event builds
+
+Push builds (no PR) report `BUILDKITE_PULL_REQUEST=false`. `vis ai heal` still runs and the annotation still renders, but heal-accept refuses to commit because there is no MR/PR head branch to push to. Gate the heal step on PR builds if you want it skipped entirely:
+
+```yaml
+- label: ":sparkles: vis ai heal"
+  if: build.pull_request.id != null && build.failed_jobs > 0
+  command: pnpm vis ai heal
+```
+
+## Enforcing Dependency Policies
+
+Use `--exit-code` to fail the pipeline when outdated dependencies are found:
+
+```yaml
+- name: Enforce patch updates
+  run: vis check --target patch --exit-code
+```
+
+Use `--security` to catch vulnerabilities:
+
+```yaml
+- name: Security gate
+  run: vis check --security --exit-code
+```
+
+## Keeping Pipelines Pinned
+
+`vis update` auto-detects and bumps non-npm references alongside the catalog flow:
+
+- **GitHub Actions** — every `uses:` in `.github/workflows/*.yml` and composite `action.yml` files. Defaults to pinning to a commit SHA with a `# vN.M.P` version comment for readability.
+- **Docker** — every `FROM` line in any `Dockerfile*` and every `image:` field in `docker-compose*.yml`.
+- **GitLab CI** — `image:`, `services:`, and `include: { project, ref }` blocks in `.gitlab-ci.yml` plus anything under `.gitlab/ci/`.
+
+`vis update` honours ignore lists declared in `.github/dependabot.yml` and `renovate.json` (`ignoreDeps`, `ignore.dependency-name`, and `packageRules` with `enabled: false`) so existing automation rules are respected.
+
+To pin actions in a workflow that runs the updater itself:
+
+```yaml
+- uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # v4.0.0
+- name: Update actions and docker references
+  env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  run: vis update --yes --dry-run
+```
+
+Drop `--dry-run` to apply, or run `--style preserve` to keep existing tag-style refs. Pass `--no-actions`, `--no-docker`, or `--no-gitlab` to opt out of a specific ecosystem. Use `--include-branches` to also bump branch refs (`@main`).
+
+## Deployment Build Gating
+
+Use [`vis ignore`](../commands/ignore) to cancel deployment platform builds when the target app isn't affected by the latest commit. It exits with **inverted codes** (`0` = skip, `1` = build) so it drops directly into Vercel's "Ignored Build Step" and Netlify's `ignore` field.
+
+### Vercel
+
+Under **Project → Settings → Git → Ignored Build Step**:
+
+```bash
+npx @visulima/vis ignore my-app
+```
+
+Vercel exposes `VERCEL_GIT_PREVIOUS_SHA`, which `vis ignore` picks up automatically as the base ref. When the ref isn't reachable (Vercel's checkout is shallow by default), it silently falls back to `HEAD~1`.
+
+### Netlify
+
+`netlify.toml`:
+
+```toml
+[build]
+ignore = "npx @visulima/vis ignore my-app"
+```
+
+Netlify exposes `CACHED_COMMIT_REF`, which `vis ignore` picks up automatically.
+
+### GitHub Actions (preflight gate)
+
+GitHub Actions has no native "ignore" hook, but you can run `vis ignore --json` as a preflight step and gate downstream jobs on the decision:
+
+```yaml
+name: CI
+on: [pull_request]
+
+jobs:
+    gate:
+        runs-on: ubuntu-latest
+        outputs:
+            action: ${{ steps.decide.outputs.action }}
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0
+            - uses: pnpm/action-setup@v4
+            - run: pnpm install --frozen-lockfile
+
+            - id: decide
+              run: |
+                  pnpm vis ignore my-app --json --exit-zero-on-build \
+                      | tee decision.json
+                  echo "action=$(jq -r .action decision.json)" >> "$GITHUB_OUTPUT"
+
+    deploy:
+        needs: gate
+        if: needs.gate.outputs.action == 'build'
+        runs-on: ubuntu-latest
+        steps:
+            - run: echo "Deploying…"
+```
+
+`--exit-zero-on-build` disables the inverted-exit-code contract so the preflight step itself always succeeds — the decision flows through the job output instead.
+
+### Commit-message overrides
+
+Commit-message keywords take precedence over git diff detection, for emergency bypasses:
+
+| Token                                                | Effect                                |
+| ---------------------------------------------------- | ------------------------------------- |
+| `[skip ci]` / `[ci skip]` / `[no ci]` / `[vis skip]` | Skip build (all projects)             |
+| `[vis skip <project>]`                               | Skip build for one project            |
+| `[vis deploy]`                                       | Force build (all projects)            |
+| `[vis deploy <project>]`                             | Force build for one project           |
+| `[nx skip]` / `[nx skip <project>]` _(legacy)_       | Skip, for nx-ignore migration         |
+| `[nx deploy]` / `[nx deploy <project>]` _(legacy)_   | Force deploy, for nx-ignore migration |
+
+See the [`vis ignore` reference](../commands/ignore) for the full list of options and reason codes.
+
+### Unsupported platforms
+
+Cloudflare Pages, Cloudflare Workers Builds, Render, and AWS Amplify do **not** invoke custom ignore scripts — they only support path-based filters and fixed commit keywords. Use their native filtering features instead, or move CI gating into GitHub Actions / GitLab CI as shown above.
+
+## Generating Reports
+
+Export JSON reports for monitoring dashboards or Slack notifications:
+
+```yaml
+- name: Generate reports
+  run: |
+      vis check --format json > check-results.json
+      vis check --security --format json > security-results.json
+```

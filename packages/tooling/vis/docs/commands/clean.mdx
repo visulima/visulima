@@ -1,0 +1,58 @@
+---
+title: "vis clean"
+description: "Remove node_modules (and optionally lockfiles and stale package directories) from the workspace"
+---
+
+# vis clean
+
+Remove `node_modules` from every workspace project, and optionally lockfiles and stale
+package directories. Removal is symlink-safe (it never follows symlinks or Windows
+junctions into their targets).
+
+The workspace **root's own `node_modules` is always removed last** — package
+`node_modules` symlink into the root store and the running `vis` resolves its own
+binary and native addon from the root, so clearing the root first could pull those out
+mid-run.
+
+## Usage
+
+```bash
+vis clean [options]
+```
+
+## Examples
+
+```bash
+# Remove every node_modules directory in the workspace
+vis clean
+
+# Also remove lockfiles (pnpm-lock.yaml, package-lock.json, …)
+vis clean --lockfile
+
+# Also remove stale workspace directories that have no package.json
+vis clean --empty-packages
+
+# Preview what would be removed without deleting anything
+vis clean --dry-run
+```
+
+## Options
+
+| Option             | Alias | Default | Description                                                                                                                |
+| ------------------ | ----- | ------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `--lockfile`       | `-l`  | `false` | Also remove lockfiles (`pnpm-lock.yaml`, `package-lock.json`, `npm-shrinkwrap.json`, `yarn.lock`, `bun.lock`, `bun.lockb`) |
+| `--empty-packages` | `-e`  | `false` | Also remove directories that match a workspace pattern but have no `package.json`                                          |
+| `--dry-run`        |       | `false` | Show what would be removed without acting                                                                                  |
+
+## `--empty-packages`
+
+Workspace patterns such as `packages/*` occasionally leave behind directories that no
+longer contain a `package.json` — a half-deleted package, a renamed folder, a scratch
+checkout. Installs and task discovery silently skip them, so they linger. `--empty-packages`
+removes any directory that matches a configured workspace pattern (read from
+`pnpm-workspace.yaml`, falling back to `package.json#workspaces`) but carries no
+`package.json`.
+
+A directory that still contains a package further down — e.g. a grouping folder
+`packages/group` under a `packages/**` pattern with a real `packages/group/pkg/package.json`
+— is **never** removed, so you can't accidentally delete a valid package.

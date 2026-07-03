@@ -1,0 +1,35 @@
+{
+    "name": "string-bench",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "test:bench": "vitest bench"
+    },
+    "dependencies": {
+        "@arcanis/slice-ansi": "catalog:prod",
+        "@sindresorhus/slugify": "catalog:prod",
+        "@sindresorhus/transliterate": "catalog:prod",
+        "@visulima/colorize": "workspace:*",
+        "@visulima/string": "workspace:*",
+        "ansi-truncate": "catalog:prod",
+        "case-anything": "catalog:prod",
+        "change-case": "catalog:prod",
+        "cli-truncate": "catalog:prod",
+        "fast-string-truncated-width": "catalog:prod",
+        "lodash": "catalog:prod",
+        "scule": "catalog:prod",
+        "slice-ansi": "catalog:prod",
+        "slug": "catalog:prod",
+        "slugify": "catalog:prod",
+        "string-ts": "catalog:prod",
+        "string-width": "catalog:prod",
+        "transliteration": "catalog:prod",
+        "wrap-ansi": "catalog:prod"
+    },
+    "devDependencies": {
+        "@codspeed/vitest-plugin": "catalog:test",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    }
+}

@@ -1,0 +1,31 @@
+{
+    "name": "vite_overlay_vite-vue",
+    "version": "0.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "build": "run-p type-check \"build-only {@}\" --",
+        "build-only": "vite build",
+        "dev": "vite",
+        "preview": "vite preview",
+        "type-check": "vue-tsc --build"
+    },
+    "dependencies": {
+        "vue": "catalog:frontend"
+    },
+    "devDependencies": {
+        "@tsconfig/node22": "catalog:dev",
+        "@types/node": "catalog:types",
+        "@visulima/vite-overlay": "workspace:*",
+        "@vitejs/plugin-vue": "catalog:build",
+        "@vue/tsconfig": "catalog:frontend",
+        "npm-run-all2": "catalog:dev",
+        "typescript": "catalog:tsc",
+        "vite": "catalog:build",
+        "vite-plugin-vue-devtools": "catalog:build",
+        "vue-tsc": "catalog:lint"
+    },
+    "engines": {
+        "node": ">=22"
+    }
+}

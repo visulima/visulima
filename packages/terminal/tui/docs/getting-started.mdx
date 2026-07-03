@@ -1,0 +1,113 @@
+---
+title: Getting Started
+description: "Install @visulima/tui and choose the right rendering mode for your project"
+---
+
+# Getting Started
+
+`@visulima/tui` supports three runtime modes.
+
+| Mode            | Primary API                                                    | Import path                                  | Best for                                            |
+| --------------- | -------------------------------------------------------------- | -------------------------------------------- | --------------------------------------------------- |
+| React mode      | `render(<App />)`                                              | `@visulima/tui/react`                        | Component-driven TUIs with hooks and Yoga layout    |
+| Raw-buffer mode | `Renderer` + `renderer.render`                                 | `@visulima/tui/core`                         | Direct per-cell rendering and custom loops          |
+| Inline mode     | `renderInline` / `createInlineLoop`                            | `@visulima/tui/react` / `@visulima/tui/core` | Fixed-height UI below the cursor                    |
+| Testing         | `render` / `cleanup` / `screen` / `keys` / `waitFor` / `flush` | `@visulima/tui/test`                         | Test components with mock streams, no real terminal |
+
+## Install
+
+### React apps (most users)
+
+```bash npm2yarn
+npm install @visulima/tui react react-reconciler
+```
+
+### Raw-buffer / non-React apps
+
+```bash npm2yarn
+npm install @visulima/tui
+```
+
+> `@visulima/tui/core` is a TypeScript-facing runtime with a native Rust diff/render engine. React is an optional peer dependency.
+
+### Component imports
+
+Every component is published at its own subpath under `@visulima/tui/components/<kebab-name>`. Hooks, `render`, and primitives stay on the bare `@visulima/tui` entry.
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { Spinner } from "@visulima/tui/components/spinner";
+import { useApp } from "@visulima/tui/hooks/use-app";
+import { useInput } from "@visulima/tui/hooks/use-input";
+import { render } from "@visulima/tui";
+```
+
+This means you only pull in the components you actually use, and heavy peer dependencies stay tree-shakeable.
+
+> **Breaking from earlier alphas.** Components are no longer re-exported from the bare `@visulima/tui` entry — you must import each one from its own subpath.
+
+### Optional peer dependencies
+
+A few components have heavy peer dependencies. Install only the peers for the components you actually use:
+
+| Component  | Subpath                              | Required peers                                                                                            |
+| ---------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| `BigText`  | `@visulima/tui/components/big-text`  | `cfonts`                                                                                                  |
+| `Code`     | `@visulima/tui/components/code`      | `shiki`, `@shikijs/langs`, `@shikijs/themes`                                                              |
+| `DiffView` | `@visulima/tui/components/diff-view` | `diff` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for syntax highlighting)                           |
+| `Markdown` | `@visulima/tui/components/markdown`  | `marked` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for code blocks; `@visulima/tabular` for tables) |
+| `Table`    | `@visulima/tui/components/table`     | `@visulima/tabular`                                                                                       |
+
+To enable the React DevTools overlay (`DEV=true`), install the optional peers `react-devtools-core` and `ws`.
+
+See [Package Map › Heavy component subpaths](./package-map.mdx#heavy-component-subpaths) for full installation snippets.
+
+## Requirements
+
+- **Node.js**: 20.19 or higher
+
+## Run examples in this repository
+
+```bash
+# React mode
+node --import @oxc-node/core/register examples/kitchen-sink.tsx
+node --import @oxc-node/core/register examples/counter.tsx
+
+# Raw-buffer mode
+node --import @oxc-node/core/register examples-raw/matrix.ts
+node --import @oxc-node/core/register examples-raw/conway.ts
+
+# Inline mode (React)
+node --import @oxc-node/core/register examples/inline-minimal.tsx
+```
+
+See [Examples](/examples) for the full list.
+
+## Ink migration (typical)
+
+```diff
+- import { render, Box, Text } from 'ink'
++ import { render } from '@visulima/tui'
++ import { Box } from '@visulima/tui/components/box'
++ import { Text } from '@visulima/tui/components/text'
+```
+
+Most app-level API usage maps directly. See [Ink Compatibility](/ink-compat) for caveats and stubs.
+
+## Next Steps
+
+<Cards>
+    <Card title="Package Map" href="/package-map">
+        Choose the right sub-package for your use case
+    </Card>
+    <Card title="Quickstart: React" href="/quickstart-react">
+        Build a TUI app with React components and hooks
+    </Card>
+    <Card title="Quickstart: Raw Buffer" href="/quickstart-raw-buffer">
+        Drive the Rust renderer directly without React
+    </Card>
+    <Card title="Testing" href="/testing">
+        Test components with mock streams and frame capture
+    </Card>
+</Cards>

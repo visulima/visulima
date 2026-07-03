@@ -1,0 +1,21 @@
+{
+    "title": "Notification",
+    "pages": [
+        "index",
+        "installation",
+        "getting-started",
+        "channels",
+        "providers",
+        "routing",
+        "preferences",
+        "middleware",
+        "queue",
+        "events",
+        "webhooks",
+        "templates",
+        "workflow",
+        "digest",
+        "layouts",
+        "i18n"
+    ]
+}

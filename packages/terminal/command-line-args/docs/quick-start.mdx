@@ -1,0 +1,51 @@
+---
+title: "Quick Start"
+description: "Get started with @visulima/command-line-args."
+---
+
+# Quick Start
+
+## Basic Parsing
+
+```typescript
+import { parseArgs } from "@visulima/command-line-args";
+
+const options = parseArgs([
+    { name: "file", alias: "f", type: String },
+    { name: "verbose", alias: "v", type: Boolean },
+]);
+
+// node script.js --file input.txt -v
+// { file: "input.txt", verbose: true }
+```
+
+## With Types
+
+```typescript
+const options = parseArgs([
+    { name: "count", type: Number },
+    { name: "name", type: String },
+    { name: "flag", type: Boolean },
+]);
+
+// node script.js --count 42 --name "Test" --flag
+// { count: 42, name: "Test", flag: true }
+```
+
+## Multiple Values
+
+```typescript
+const options = parseArgs([{ name: "include", type: String, multiple: true }]);
+
+// node script.js --include src --include lib
+// { include: ["src", "lib"] }
+```
+
+## Default Values
+
+```typescript
+const options = parseArgs([{ name: "port", type: Number, defaultValue: 3000 }]);
+
+// node script.js
+// { port: 3000 }
+```

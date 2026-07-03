@@ -1,0 +1,65 @@
+---
+title: Introduction
+description: "ISO standards data for countries, currencies, regions, timezones, and BCP 47 locale support"
+---
+
+# @visulima/iso-locale
+
+Comprehensive ISO standards data for countries (ISO 3166), currencies (ISO 4217), regions (UN Geoscheme), timezones (IANA), and BCP 47 locale support.
+
+## Key Features
+
+- **Country Data** - ISO 3166-1 alpha-2/alpha-3 codes, flag emojis, calling codes
+- **Currency Data** - ISO 4217 codes, symbols, country mappings
+- **Region Data** - UN Geoscheme continents and subregions
+- **Timezone Data** - IANA timezone database with country mappings
+- **BCP 47 Support** - Parse and generate language tags
+- **TypeScript** - Full type definitions
+
+## Quick Start
+
+```typescript
+import { getByAlpha2, getEmoji, getCurrency } from "@visulima/iso-locale";
+
+const country = getByAlpha2("US");
+console.log(country.name); // "United States"
+console.log(getEmoji("US")); // "🇺🇸"
+console.log(getCurrency("en-US")); // "USD"
+```
+
+## Use Cases
+
+```typescript
+// Country selector
+import { getAllCountries, getEmoji } from "@visulima/iso-locale";
+
+const countries = getAllCountries().map((c) => ({
+    code: c.alpha2,
+    name: c.name,
+    flag: getEmoji(c.alpha2),
+}));
+
+// Currency formatting
+import { getSymbol } from "@visulima/iso-locale";
+
+function formatPrice(amount: number, code: string) {
+    return `${getSymbol(code)}${amount.toFixed(2)}`;
+}
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Install and import
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Get started
+    </Card>
+    <Card title="Usage" href="/usage">
+        Usage guide
+    </Card>
+    <Card title="API" href="/api">
+        API reference
+    </Card>
+</Cards>

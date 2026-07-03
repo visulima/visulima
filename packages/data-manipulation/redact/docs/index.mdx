@@ -1,0 +1,127 @@
+---
+title: Introduction
+description: "GDPR-compliant data redaction and anonymization with deep object traversal and NLP-powered text masking"
+---
+
+# @visulima/redact
+
+Powerful library for redacting and masking sensitive data. Protect user privacy with automatic detection of passwords, emails, credit cards, SSNs, and more—plus NLP-powered text anonymization for GDPR compliance.
+
+## Key Features
+
+**Smart Redaction**
+
+- Deep object property masking
+- Circular reference handling
+- Path-based redaction rules
+- Preserves object structure
+
+**Built-in Detection**
+
+- 40+ sensitive data patterns
+- Passwords, tokens, API keys
+- Credit cards, SSN, bank accounts
+- Emails, phone numbers, IPs
+- Personal names (NLP-powered)
+
+**Text Anonymization**
+
+- Natural Language Processing
+- Detect people, organizations
+- Money, dates, locations
+- Customizable entity types
+
+**Production-Ready**
+
+- TypeScript support
+- No input mutation
+- GDPR compliant
+- Fast performance
+
+## Quick Start
+
+```bash
+npm install @visulima/redact
+```
+
+Redact sensitive object properties:
+
+```typescript
+import { redact } from "@visulima/redact";
+
+const user = {
+    name: "Alice",
+    email: "alice@example.com",
+    password: "secret123",
+    creditCard: "4532-1234-5678-9010",
+};
+
+const safe = redact(user, ["password", "creditCard"]);
+console.log(safe);
+// { name: "Alice", email: "alice@example.com", password: "<PASSWORD>", creditCard: "<CREDITCARD>" }
+```
+
+Anonymize text with NLP:
+
+```typescript
+import { stringAnonymize } from "@visulima/redact";
+
+const text = "Contact John Doe at john@example.com or call (555) 123-4567";
+const anonymized = stringAnonymize(text);
+console.log(anonymized);
+// "Contact <PERSON> at <EMAIL> or call <PHONENUMBER>"
+```
+
+## Use Cases
+
+### GDPR-Compliant Logging
+
+```typescript
+import { redact } from "@visulima/redact";
+
+function logUserAction(user: User, action: string) {
+    const safeUser = redact(user, ["password", "ssn", "creditCard", "apiKey"]);
+    logger.info({ user: safeUser, action });
+}
+```
+
+### Sanitize API Responses
+
+```typescript
+import { redact } from "@visulima/redact";
+
+app.use((req, res, next) => {
+    const originalJson = res.json;
+    res.json = function (data) {
+        const sanitized = redact(data, ["password", "token", "secret"]);
+        return originalJson.call(this, sanitized);
+    };
+    next();
+});
+```
+
+### Anonymize User Content
+
+```typescript
+import { stringAnonymize } from "@visulima/redact";
+
+function anonymizeUserReview(review: string) {
+    return stringAnonymize(review, {
+        include: ["Person", "Organization", "PhoneNumber", "Email"],
+    });
+}
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Installation and setup guide
+    </Card>
+    <Card title="Usage Guide" href="/usage">
+        Complete usage examples
+    </Card>
+    <Card title="API Reference" href="/api">
+        Full API documentation
+    </Card>
+</Cards>

@@ -1,0 +1,13 @@
+{
+    "name": "lib-c",
+    "version": "1.0.0",
+    "private": true,
+    "scripts": {
+        "build": "echo 'Building lib-c...' && sleep 20.5 && echo 'lib-c built!' && mkdir -p dist && date > dist/.stamp",
+        "lint": "echo 'Linting lib-c...' && echo 'No lint errors.'",
+        "test": "echo 'Testing lib-c...' && sleep 0.2 && echo 'lib-c tests passed!'"
+    },
+    "dependencies": {
+        "lib-fast-1": "1.0.0"
+    }
+}

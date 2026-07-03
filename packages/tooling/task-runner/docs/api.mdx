@@ -1,0 +1,290 @@
+---
+title: API Reference
+description: Full API reference for all exported functions and types
+---
+
+# API Reference
+
+## Concurrent Process Runner
+
+### `runConcurrently(commands, options?)`
+
+Run commands concurrently with real-time output streaming. Automatically uses native Rust addon when available.
+
+```typescript
+import { runConcurrently } from "@visulima/task-runner";
+
+const result = await runConcurrently(["npm run build", { command: "npm run test", name: "test" }], {
+    maxProcesses: 4,
+    killOthers: ["failure"],
+    onEvent: (event) => console.log(event),
+});
+// result: { success: boolean, closeEvents: ConcurrentCloseEvent[] }
+```
+
+**Options:**
+
+| Option             | Type                         | Default         | Description                |
+| ------------------ | ---------------------------- | --------------- | -------------------------- |
+| `maxProcesses`     | `number`                     | `0` (unlimited) | Max simultaneous processes |
+| `killOthers`       | `("failure" \| "success")[]` | `[]`            | Kill others on condition   |
+| `killSignal`       | `string`                     | `"SIGTERM"`     | Signal for killing         |
+| `killTimeout`      | `number`                     | `5000`          | Ms before SIGKILL          |
+| `successCondition` | `string`                     | `"all"`         | Success evaluation         |
+| `shellPath`        | `string`                     | auto-detected   | Custom shell path          |
+| `restart`          | `{ tries, delay }`           | none            | Retry failed commands      |
+| `teardown`         | `string[]`                   | none            | Cleanup commands           |
+| `timings`          | `boolean`                    | `false`         | Print timing table         |
+| `onEvent`          | `(event) => void`            | none            | Event callback             |
+
+### `parseCommands(inputs, options?)`
+
+Parse command strings through the expansion pipeline: strip quotes, expand shortcuts (`npm:build`), expand wildcards (`npm run watch-*`), expand argument placeholders (`{1}`, `{@}`, `{*}`).
+
+```typescript
+import { parseCommands } from "@visulima/task-runner";
+
+const commands = parseCommands(['"npm:build"', "npm run watch-*"], { additionalArguments: ["--verbose"] });
+```
+
+### `detectScriptShell()`
+
+Detect the npm `script-shell` configuration. Checks `npm_config_script_shell` env var first, then queries `npm config get script-shell` (cached). Returns `string | undefined`.
+
+### Flow Controllers
+
+- `withRestart(runFn, commands, options, restartOptions)` - Wrap a runner with retry logic
+- `createInputHandler(commands, options?)` - Route stdin to child processes by name/index prefix
+- `logTimings(closeEvents, output?)` - Print timing summary table to a stream
+- `formatTimingTable(closeEvents)` - Generate timing table as a string
+- `runTeardown(options)` - Run cleanup commands sequentially
+
+### Command Parsers
+
+- `stripQuotes(config)` - Remove surrounding quotes
+- `expandShortcut(config)` - Expand `npm:build` to `npm run build`
+- `expandWildcard(config)` - Expand `npm run watch-*` against package.json/deno.json scripts
+- `expandArguments(config, args)` - Replace `{1}`, `{@}`, `{*}` placeholders
+
+## Task Runner
+
+### `defaultTaskRunner(tasks, options, context)`
+
+The main entry point. Returns `Promise<TaskResults>`.
+
+## Task Graph
+
+### `createTaskGraph(tasks, options)`
+
+Creates a dependency-ordered task graph from task definitions. `options` is a `CreateTaskGraphOptions` object with `projectGraph`, `targetDefaults?`, and `workspace`.
+
+### `getTaskId(target)`
+
+Creates a task ID string from a `TaskTarget` object (`"project:target:configuration"`).
+
+### `parseTaskId(id)`
+
+Parses a task ID into `{ project, target, configuration? }`.
+
+### Graph Utilities
+
+- `findCycle(graph)` - Returns first cycle found, or undefined
+- `findCycles(graph)` - Returns all cycles
+- `makeAcyclic(graph)` - Removes cycle-forming edges
+- `walkTaskGraph(graph, fn)` - Walk in topological order
+- `getDependentTasks(graph, taskId)` - Find all tasks depending on a task
+- `getTransitiveDependencies(graph, taskId)` - Find all transitive deps
+- `getLeafTasks(graph)` - Find tasks with no dependencies
+- `reverseTaskGraph(graph)` - Reverse edge directions
+
+## Hashing
+
+### `InProcessTaskHasher`
+
+Computes task hashes from explicit input declarations.
+
+```typescript
+const hasher = new InProcessTaskHasher({
+    workspaceRoot,
+    projects,
+    namedInputs,
+    targetDefaults,
+    envVars,
+    globalInputs,
+    globalEnv,
+    smartLockfileHashing,
+    frameworkInference,
+});
+
+const details = await hasher.hashTask(task);
+```
+
+### `computeTaskHash(hashDetails)`
+
+Computes a final SHA-256 hash from `TaskHashDetails`.
+
+### `IncrementalFileHasher`
+
+mtime-based file hasher that only re-hashes changed files.
+
+```typescript
+const hasher = new IncrementalFileHasher({
+    workspaceRoot,
+    snapshotPath: "node_modules/.cache/task-runner/file-snapshot.json", // default
+});
+
+const hashes = await hasher.hashDirectory("packages/my-app/src");
+```
+
+## Cache
+
+### `Cache`
+
+Local file-based cache with LRU eviction.
+
+- `get(hash)` - Retrieve cached result
+- `put(hash, output, outputs, code, fingerprint?)` - Store result
+- `restoreOutputs(hash, outputs)` - Restore build artifacts
+- `clear()` - Clear entire cache
+
+### `RemoteCache`
+
+Turborepo-compatible HTTP cache client.
+
+- `retrieve(hash, localCacheDirectory)` - Download from remote
+- `store(hash, localCacheDirectory)` - Upload to remote
+
+Options include `compression: "gzip" | "brotli"` (default `"gzip"` for Turborepo wire compatibility). Brotli reduces tarball size significantly on source-tree payloads but requires vis clients on both ends.
+
+## Lockfile
+
+### `LockfileHasher`
+
+Smart lockfile parser that hashes per-package dependency versions.
+
+- `hashForPackage(packageJsonPath)` - Returns `PackageLockfileHash | undefined`
+- `lockfileType` - Detected format (`"npm" | "pnpm" | "yarn" | undefined`)
+
+### Lockfile Parsers
+
+- `parseNpmLockfile(content)` - Parse package-lock.json
+- `parsePnpmLockfile(content)` - Parse pnpm-lock.yaml
+- `parseYarnLockfile(content)` - Parse yarn.lock
+
+## Framework Inference
+
+- `detectFrameworks(packageJsonPath)` - Returns detected frameworks
+- `inferFrameworkEnvPatterns(workspaceRoot, projects)` - Returns env patterns
+- `getFrameworkEnvVariables(packageJsonPath, env?)` - Returns matching env vars
+
+## Affected Detection
+
+- `getChangedFiles(workspaceRoot, base, head)` - Git diff to get changed file paths
+- `getAffectedProjects(options)` - Detect affected projects from git changes (`AffectedOptions`)
+- `filterAffectedTasks(taskIds, affectedProjects)` - Filter task IDs by affected project set
+
+## Visualization
+
+- `toGraphvizDot(graph, options?)` - DOT format
+- `toGraphJson(graph, options?)` - JSON format
+- `toGraphHtml(graph, options?)` - Self-contained HTML
+- `toGraphAscii(graph, options?)` - ASCII tree
+- `projectGraphToDot(projectGraph)` - Project graph DOT
+
+## Run Summary
+
+- `generateRunSummary(results, taskGraph, startTime)` - Create summary
+- `writeRunSummary(summary, workspaceRoot)` - Write a timestamped JSON under `.task-runner/runs/`
+- `writeLastRunSummary(summary, workspaceRoot)` - Overwrite `.task-runner/last-summary.json` (one file, always latest)
+- `readLastRunSummary(workspaceRoot)` - Returns the last persisted summary or `undefined` if none
+- `getLastRunSummaryPath(workspaceRoot)` - Canonical path where the last-run summary lives
+
+The orchestrator writes `last-summary.json` automatically after every completed (non-aborted) run, so CLI integrations can render "last run details" without re-executing.
+
+## Log Reporter
+
+- `createLogReporter(mode, write?)` - Factory returning a `LogReporter`
+- `LogReporter` - Implements `LifeCycleInterface`; renders `printTaskTerminalOutput` per mode
+
+Modes:
+
+| Mode          | Behavior                                                                         |
+| ------------- | -------------------------------------------------------------------------------- |
+| `interleaved` | Pass-through — emit each task's buffered output verbatim                         |
+| `labeled`     | Prefix every line with `[project#target]` so parallel tasks stay distinguishable |
+| `grouped`     | Wrap each task's output in a `── project#target ──` header + blank-line footer   |
+
+Matches vite-task's `--log` flag semantics. Pair with `CompositeLifeCycle` to keep your existing UI renderer alongside the log reporter.
+
+## Chrome Tracing Profile
+
+- `toChromeTrace(summary)` - Convert a `RunSummary` to a Chrome Tracing event array
+- `writeChromeTrace(summary, outputPath)` - Write the trace JSON to disk
+
+```typescript
+import { writeChromeTrace, generateRunSummary } from "@visulima/task-runner";
+
+const summary = generateRunSummary(results, taskGraph, startTime);
+await writeChromeTrace(summary, "trace.json");
+// Open in chrome://tracing or Perfetto to see the gantt.
+```
+
+Parallel tasks are packed into synthetic `tid` lanes via sweep-line scheduling, so the timeline reflects true concurrency even without real thread IDs. Dependency edges render as flow arrows between spans.
+
+## Lifecycle
+
+- `ConsoleLifeCycle` - Logs events to console
+- `EmptyLifeCycle` - No-op implementation
+- `CompositeLifeCycle` - Combines multiple lifecycles
+
+Optional hooks on `LifeCycleInterface` (implement what you need):
+
+| Hook                                          | When                                                                                                                            |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `printCacheMiss(task, reasons)`               | Auto-fingerprint cache miss, with diagnostic reason                                                                             |
+| `printSelfModifyingSkip(task, modifiedFiles)` | Cache skipped because the task wrote to its own tracked inputs                                                                  |
+| `printEmptyFingerprintWarning(task, reason)`  | Tracker ran but returned zero workspace accesses — likely a static binary without strace                                        |
+| `printWhenSkip(task, reason)`                 | A `when:` clause did not match the current environment. Co-fires with `printTaskTerminalOutput` (status `"skipped"`) — pick one |
+| `onTaskStdout(task, chunk)`                   | Streaming stdout chunk in arrival order. Non-blocking — the orchestrator does not await. Buffered executors skip this hook      |
+| `onTaskStderr(task, chunk)`                   | Streaming stderr chunk in arrival order. Same contract as `onTaskStdout`                                                        |
+
+`onTaskStdout` / `onTaskStderr` are forwarded by streaming executors (e.g. `vis run`'s concurrent executor). Buffered executors (the simple test executor) skip them — rely on `printTaskTerminalOutput` for the final dump.
+
+## Native Bindings
+
+The native (Rust / NAPI) addon is exposed through `loadNativeBindings()` and `isNativeAvailable()`. The loader is lazy and cached after the first attempt — when the addon is missing the loader returns `undefined` and callers fall through to TypeScript implementations.
+
+```typescript
+import { loadNativeBindings, isNativeAvailable } from "@visulima/task-runner";
+
+if (isNativeAvailable()) {
+    const native = loadNativeBindings();
+    const hash = native?.hashFile("/abs/path");
+}
+```
+
+Pure-TypeScript fallbacks ship for everything the native addon exposes (parallel file hashing, cycle detection, concurrent process runner) so callers never need to branch on platform.
+
+## Worktree detection
+
+Three top-level helpers wrap the native worktree API with a pure-Node fallback (uses `git rev-parse --git-common-dir`). They share a per-process memoization cache and are safe to call from any code path — the cache directory resolver, affected detection, and lockfile resolution all use them to point at the right `.git` inside linked git worktrees.
+
+```typescript
+import { getMainWorktreeRoot, isLinkedWorktree, resetWorktreeCache } from "@visulima/task-runner";
+
+const mainRoot = getMainWorktreeRoot(workspaceRoot);
+// mainRoot is the absolute path to the primary checkout for a linked
+// worktree, or undefined for primary checkouts / non-git directories.
+```
+
+| Function                             | Returns               | Notes                                                                                                            |
+| ------------------------------------ | --------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `getMainWorktreeRoot(workspaceRoot)` | `string \| undefined` | Resolves the main worktree root for a linked worktree; `undefined` for primary checkouts and non-git directories |
+| `isLinkedWorktree(workspaceRoot)`    | `boolean`             | `true` when `workspaceRoot` is a linked worktree (not the primary)                                               |
+| `resetWorktreeCache()`               | `void`                | Clears the per-process resolution cache. Test-only escape hatch                                                  |
+
+## Types
+
+Key interfaces: `Task`, `TaskGraph`, `TaskResult`, `TaskRunnerOptions`, `TaskRunnerContext`, `ProjectGraph`, `ProjectConfiguration`, `TargetConfiguration`, `TaskHashDetails`, `InputDefinition`, `FileSetInput`, `FileSetPattern`, `FileSetBase`, `TaskFingerprint`, `CacheMissReason`, `RunSummary`, `ChromeTraceEvent`, `LogMode`, `RemoteCacheCompression`, `DetectedFramework`, `ConcurrentCommandConfig`, `ConcurrentCommandInput`, `ConcurrentRunnerOptions`, `ConcurrentRunResult`, `ConcurrentCloseEvent`, `ProcessEvent`.
+
+`TaskResult` adds `selfModified?: boolean` and `emptyFingerprint?: boolean` flags when caching is skipped for those reasons. `TaskFingerprint` adds `modifiedInputs?: string[]` populated when the auto-fingerprint tracker sees both read and write accesses against the same workspace path.

@@ -51,6 +51,9 @@ typings/
 *.pem
 .tmp
 
+# JetBrains
+.idea
+
 # Storybook
 storybook-static/
 
@@ -62,9 +65,23 @@ storybook-static/
 
 # Nx cache
 .nx/
+.github/instructions/nx.instructions.md
 
 # Package build output
 dist
 
-.cursor/rules/nx-rules.mdc
-.github/instructions/nx.instructions.md
+!packages/data-manipulation/iso-locale/src/data/
+!packages/tooling/vis/data/
+
+# Claude
+.claude/settings.local.json
+.claude/scheduled_tasks.lock
+
+.playwright-mcp
+
+.codex
+
+packages/tooling/vis/examples/**/.vis/
+
+# Local git worktrees (Agent tool isolation)
+.worktrees/

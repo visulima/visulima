@@ -1,0 +1,160 @@
+---
+title: "Quickstart: React Mode"
+description: "Build a TUI app with React components, hooks, and Yoga layout using @visulima/tui/react"
+---
+
+# Quickstart: React Mode
+
+Build a TUI app with React components, hooks, and Yoga layout.
+
+```bash npm2yarn
+npm install @visulima/tui react
+```
+
+## Minimal Example
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { render, useInput } from "@visulima/tui/react";
+import React, { useState } from "react";
+
+function Counter() {
+    const [count, setCount] = useState(0);
+
+    useInput((_input, key) => {
+        if (key.upArrow) setCount((c) => c + 1);
+        if (key.downArrow) setCount((c) => c - 1);
+    });
+
+    return (
+        <Box flexDirection="column" padding={1}>
+            <Text bold color="cyan">
+                Counter
+            </Text>
+            <Text>Count: {count}</Text>
+            <Text dim>↑↓ to change · Ctrl+C to exit</Text>
+        </Box>
+    );
+}
+
+render(<Counter />);
+```
+
+Run it:
+
+```bash
+node --import @oxc-node/core/register app.tsx
+```
+
+## Render Path
+
+1. `render(<App />)` mounts your tree into Yoga layout nodes
+2. React commits set a dirty flag
+3. A frame loop checks the dirty flag at `maxFps` (default 60)
+4. Dirty frames run layout + paint into `Uint32Array`
+5. Rust diff emits only changed terminal cells as ANSI
+
+## Layout: `Box`
+
+`Box` is the main layout primitive.
+
+```tsx
+<Box flexDirection="row" gap={2} padding={1}>
+    <Box flexDirection="column" flexGrow={1} borderStyle="round">
+        <Text>Left panel</Text>
+    </Box>
+    <Box flexDirection="column" width={30} borderStyle="single">
+        <Text>Right panel</Text>
+    </Box>
+</Box>
+```
+
+Common props: `flexDirection`, `flexGrow`, `flexShrink`, `width`, `height`, `padding`, `margin`, `gap`, `alignItems`, `justifyContent`, `borderStyle`.
+
+## Text Styling
+
+```tsx
+<Text color="cyan" bold>Bold cyan text</Text>
+<Text color="#ff6600">Hex color</Text>
+<Text backgroundColor="blue" color="white">Highlighted</Text>
+<Text italic dim>Dim italic</Text>
+```
+
+Color accepts named values, `#rgb`, `#rrggbb`, `rgb(r,g,b)`, and ANSI 256-color indices (`0-255`).
+
+## Keyboard Input
+
+```tsx
+useInput((input, key) => {
+    if (key.upArrow) moveUp();
+    if (key.downArrow) moveDown();
+    if (key.return) submit();
+    if (key.escape) cancel();
+    if (key.ctrl && input === "c") exit();
+});
+```
+
+See [Hooks: useInput](/hooks#useinput) for the full key map.
+
+## App Lifecycle
+
+```tsx
+import { Text } from "@visulima/tui/components/text";
+import { useApp, useInput } from "@visulima/tui/react";
+
+function App() {
+    const { exit } = useApp();
+
+    useInput((_input, key) => {
+        if (key.escape) exit();
+    });
+
+    return <Text>Press Esc to quit</Text>;
+}
+```
+
+`useApp()` returns both `exit()` and `quit()`.
+
+## `render()` Options and Return Value
+
+```tsx
+const { rerender, unmount, waitUntilExit } = render(<App />, {
+    maxFps: 30, // default 60
+});
+
+rerender(<App theme="dark" />);
+unmount();
+await waitUntilExit();
+```
+
+## `renderToString` for Tests
+
+```tsx
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+import { renderToString } from "@visulima/tui/react";
+import React from "react";
+
+const output = renderToString(
+    <Box>
+        <Text color="green">hello</Text>
+    </Box>,
+);
+
+// output: 'hello'
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Components" href="/components">
+        Box, Text, Static, Spinner, ProgressBar props reference
+    </Card>
+    <Card title="Hooks" href="/hooks">
+        Input, mouse, focus, scrollable, and other hooks
+    </Card>
+    <Card title="Examples" href="/examples">
+        Runnable demo apps
+    </Card>
+</Cards>

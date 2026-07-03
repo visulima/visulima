@@ -1,0 +1,8 @@
+{
+    "name": "@foo/test-lerna",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "devDependencies": {}
+}

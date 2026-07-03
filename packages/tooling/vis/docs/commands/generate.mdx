@@ -1,0 +1,256 @@
+---
+title: "vis generate"
+description: "Scaffold files from in-repo templates — programmatic (TS) or moon-format (template.yml + Tera files)"
+---
+
+# vis generate
+
+Run an in-repo template to scaffold a new component, service, package, or anything else. Templates live in your repo (under `.vis/templates/`) and have access to all of vis's prompt + writer machinery.
+
+`vis generate` complements [`vis create`](./create.mdx): `create` scaffolds whole projects from remote templates, while `generate` scaffolds inside an existing repo from local (or remote) templates.
+
+Two template formats are supported:
+
+- **Native templates** — single TS/JS modules that export a typed `Template` object. Programmatic, no DSL.
+- **Moon-format templates** — directory of files with `template.yml`, Tera filename interpolation, YAML frontmatter, partials. Drop-in compatible with the moon subset most users actually write.
+
+## Usage
+
+```bash
+vis generate [name|source] [-- --opt=value ...]
+```
+
+## Examples
+
+```bash
+# Interactive picker over discovered templates
+vis generate
+
+# Run a specific template
+vis generate package
+
+# Pre-fill option values (everything after `--` is forwarded as overrides)
+vis generate component -- --name=Button --style=primary
+
+# Custom destination + overwrite without prompting
+vis generate package --to=./packages/new --force
+
+# Print planned writes without touching disk
+vis generate package --dry-run
+
+# Fetch a remote template via giget and run it
+vis generate git://github.com/visulima/template-fixture#main
+vis generate npm://@scope/template-pkg
+
+# List discovered templates
+vis generate --list
+```
+
+## Options
+
+| Option             | Default | Description                                                                     |
+| ------------------ | ------- | ------------------------------------------------------------------------------- |
+| `--list`           | `false` | List discovered templates                                                       |
+| `--describe`       | `false` | Print template metadata (about, destination, variables) without running produce |
+| `--json`           | `false` | Emit JSON output (with `--list` or `--describe`)                                |
+| `--to <dir>`       | cwd     | Destination directory                                                           |
+| `--dry-run`        | `false` | Print planned writes without touching disk                                      |
+| `--force`          | `false` | Overwrite existing files without prompting                                      |
+| `--defaults`       | `false` | Skip prompts; use template defaults                                             |
+| `--skip-scripts`   | `false` | Skip running post-generation scripts                                            |
+| `--no-interactive` | `false` | Skip interactive prompts (errors on missing required values)                    |
+| `--prefer-offline` | `false` | Prefer locally cached remote templates over re-downloading                      |
+
+Anything after `--` is forwarded as variable overrides (`--name=Button` → `options.name = "Button"`, `--no-flag` → `options.flag = false`).
+
+## Discovery
+
+Templates are discovered, in priority order (first match wins):
+
+1. `<workspace>/.vis/templates/<name>.{ts,js,mjs}` — native templates.
+2. `<workspace>/.vis/templates/<name>/` (any directory containing `template.yml`) — moon-format templates living alongside native ones.
+3. `<workspace>/.moon/templates/<name>/` — moon-format templates from the moon ecosystem (auto-discovered for zero-config migration).
+4. Extra directories listed in `vis.config.ts` `generator.templates`.
+5. **Builtin templates** shipped with `@visulima/vis` (e.g. `buildkite-ci`). Lowest priority — any user template with the same name overrides.
+
+When a name resolves in multiple sources, **the higher-priority source wins** and a warning is printed at discovery so the conflict is visible. In particular, dropping `.vis/templates/<builtin-name>/` into your repo is the supported way to vendor and customise a bundled preset.
+
+`--list` annotates each row with its source (`native`, `moon`, `config`, `builtin`, `remote`) so you can see at a glance which copy is in effect.
+
+## Builtin templates
+
+`@visulima/vis` ships a small set of opinionated presets so you don't have to copy reference YAML out of the docs. They are bundled in the package's `templates/` directory and resolved relative to the installed module — they work the same in dev, production, and CI containers, with no extra setup.
+
+| Template       | Generates                 | Purpose                                                                                                                           |
+| -------------- | ------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `buildkite-ci` | `.buildkite/pipeline.yml` | Buildkite pipeline that runs `vis ci` against affected packages, with an optional `vis ai heal` propose + block-step accept flow. |
+
+Run `vis generate buildkite-ci` to invoke it; the prompts cover `targets`, `packageManager` (pnpm/npm/yarn), `withHeal`, and `agentQueue`. To customise, vendor a copy at `.vis/templates/buildkite-ci/` — the user copy wins over the bundled preset.
+
+## Configuration
+
+Add extra template directories in `vis.config.ts`:
+
+```typescript
+import { defineConfig } from "@visulima/vis/config";
+
+export default defineConfig({
+    generator: {
+        templates: ["./tools/generators", "./packages/scaffolding/templates"],
+    },
+});
+```
+
+## Writing a native template
+
+Native templates are TS modules under `.vis/templates/`:
+
+```typescript
+// .vis/templates/package.ts
+import { createTemplate } from "@visulima/vis/generate";
+
+export default createTemplate({
+    about: { name: "package", description: "Scaffold a new visulima package" },
+    options: {
+        name: { type: "string", required: true, prompt: "Package name?" },
+        category: { type: "enum", values: ["api", "fs", "tooling"], required: true },
+    },
+    async produce({ options, builtins }) {
+        const dir = `packages/${options.category}/${options.name}`;
+
+        return {
+            files: {
+                [`${dir}/package.json`]: JSON.stringify({ name: options.name }, null, 2),
+                [`${dir}/src/index.ts`]: "export {};\n",
+                [`${dir}/README.md`]: `# ${options.name}\n`,
+            },
+            scripts: ["pnpm install"],
+            suggestions: ["Add a tag in project.json", "Add the package to apps/web/src/data/packages-metadata.json"],
+        };
+    },
+});
+```
+
+The `Template` shape:
+
+- `about.name` / `about.description` — surfaced by `--list` and the interactive picker.
+- `options` — variable schema with types `string` / `number` / `boolean` / `enum` / `array`. Each can declare `required`, `default`, `prompt`, `internal`, `order`.
+- `produce({ options, builtins })` — returns a `Creation`:
+    - `files` — recursive `Record<string, string | Buffer | Record<…>>` (objects are nested directories, Buffers are binary writes).
+    - `scripts` — strings or `{ commands, phase, silent }` objects, run after files are written (unless `--skip-scripts`).
+    - `suggestions` — strings printed at the end as next steps.
+- `destination` — optional default destination directory honored when the user does not pass `--to`.
+
+`builtins` exposes `dest_dir`, `dest_rel_dir`, `working_dir`, `workspace_root`.
+
+## Writing a moon-format template
+
+Drop a directory into `.vis/templates/<name>/` (or use an existing `.moon/templates/<name>/`):
+
+```
+.vis/templates/component/
+  template.yml
+  [name].tsx.tera
+  [name].test.tsx.tera     # frontmatter: if: withTest
+  partials/_header.tera    # not emitted, used via {% include "header" %}
+  README.md.raw            # copied verbatim
+```
+
+`template.yml`:
+
+```yaml
+title: Component
+description: Scaffold a React component
+variables:
+    name:
+        type: string
+        required: true
+        prompt: Component name?
+    withTest:
+        type: boolean
+        default: true
+    style:
+        type: enum
+        values: [primary, secondary]
+        default: primary
+```
+
+`[name].tsx.tera`:
+
+```tera
+{% include "header" %}
+import * as React from "react";
+
+export const {{ name | pascal_case }}: React.FC = () => <div className="{{ style }}" />;
+```
+
+`[name].test.tsx.tera` (frontmatter `if: withTest` skips the file when `withTest === false`):
+
+```tera
+---
+if: withTest
+---
+import { {{ name | pascal_case }} } from "./{{ name | pascal_case }}";
+…
+```
+
+### Filename interpolation
+
+Bracket syntax `[var]` and `[var | filter]` works in any path segment. The `.tera` and `.twig` suffixes are stripped on write.
+
+### Frontmatter
+
+YAML block at the top of any text file:
+
+```yaml
+---
+to: alt/path/[name].tsx # override destination, supports interpolation
+force: true # overwrite without prompting
+if: withTest # include only when truthy
+skip: false # skip when truthy
+---
+```
+
+### Filters
+
+Eight case filters and two path helpers — names match moon:
+
+`camel_case`, `kebab_case`, `lower_case`, `pascal_case`, `snake_case`, `upper_case`, `upper_kebab_case`, `upper_snake_case`, `path_join`, `path_relative`.
+
+Chain with `|`: `{{ name | snake_case | upper_case }}`.
+
+### Tera subset
+
+Supported:
+
+- `{{ var }}`, `{{ obj.field }}`, `{{ var | filter | filter(arg) }}` — unknown variables throw with file:line (so typos surface instead of silently empty output).
+- `{% if expr %}` / `{% else %}` / `{% endif %}` — `expr` supports variables, `not var`, `a == "b"`, `a != "b"`, `a and b`, `a or b`, and parentheses. Undefined variables evaluate as falsy. `and` / `or` short-circuit.
+- `{% for x in collection %}` / `{% endfor %}` — `collection` must be an array; missing/null collections render as empty.
+- `{% include "name" %}` — pulls in a partial. Partials are any file whose **basename starts with `_`** (e.g. `_header.tera`) or whose path includes a `partials/` segment. Partials are not emitted. They can be referenced by bare basename (`header`), with or without the leading underscore, or by full path (`partials/header`, `layouts/header`).
+
+**Unsupported** (errors with file:line and a clear hint):
+
+- `{% set x = ... %}`
+- `{% extends "..." %}`, `{% block %}` / `{% endblock %}`
+- `{% macro %}` / `{% endmacro %}`
+- `{% import %}`
+- Custom whitespace control (`{%- -%}`)
+
+Rewrite templates that use these — the supported subset covers what most moon templates actually use.
+
+## Migrating from moon
+
+The vast majority of moon templates work unchanged. To migrate:
+
+1. Either copy `.moon/templates/<name>/` to `.vis/templates/<name>/`, or leave it where it is — vis discovers `.moon/templates/` automatically.
+2. Run `vis generate --list` to confirm vis sees your templates.
+3. Run a template; if you hit an unsupported Tera feature, vis will point at the exact file:line.
+
+What does **not** port:
+
+- Tera macros / `{% set %}` / template inheritance — phase 2 work.
+- `object` variable types — phase 2.
+- The `glob://` template source — phase 2.
+- The `variables()` function — phase 2.
+
+Anything else should be a drop-in.

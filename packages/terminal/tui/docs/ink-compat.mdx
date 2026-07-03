@@ -1,0 +1,161 @@
+---
+title: Ink Compatibility
+description: "Ink API parity matrix, render option differences, and native-only exports in @visulima/tui/react"
+---
+
+# Ink Compatibility
+
+`@visulima/tui` targets Ink API compatibility for core component and hook workflows, with a few documented stubs and behavior differences.
+
+## Core API Parity
+
+| Export                       | Status | Notes                                                         |
+| ---------------------------- | ------ | ------------------------------------------------------------- |
+| `render()`                   | ✅     | Returns `{ rerender, unmount, waitUntilExit, app, input }`    |
+| `Box`                        | ✅     | Yoga-backed layout                                            |
+| `Text`                       | ✅     | Core style props supported                                    |
+| `Newline`                    | ✅     | `count` supported                                             |
+| `Spacer`                     | ✅     | Flex grow spacer                                              |
+| `Static`                     | ✅     | Append-only semantics                                         |
+| `Transform`                  | ✅     | Transform callback support                                    |
+| `renderToString()`           | ✅     | Synchronous snapshot                                          |
+| `measureElement()`           | ✅     | Returns `{ x, y, width, height }`                             |
+| `useApp()`                   | ✅     | `exit` + `quit`                                               |
+| `useInput()`                 | ✅     | Arrows, Enter, Escape, Ctrl, Meta, paging keys                |
+| `usePaste()`                 | ✅     | Bracketed paste routing                                       |
+| `useFocus()`                 | ✅     | Focus state and `focus(id)`                                   |
+| `useFocusManager()`          | ✅     | Focus navigation methods                                      |
+| `useStdin()`                 | ✅     | Raw mode helpers                                              |
+| `useStdout()`                | ✅     | Buffered while app is running                                 |
+| `useStderr()`                | ✅     | Buffered while app is running                                 |
+| `useBoxMetrics()`            | ✅     | Layout metrics + `hasMeasured` (intended for `render()` mode) |
+| `useWindowSize()`            | ✅     | `{ columns, rows }` (intended for `render()` mode)            |
+| `Cursor`                     | ✅     | Declarative cursor; inline mode + anchor mode                 |
+| `useCursor()`                | ✅     | Imperative cursor positioning with IME support                |
+| `useAnimation()`             | ✅     | Shared-timer animation driver: frame, time, delta, reset      |
+| `Link`                       | ✅     | Ported from `ink-link`, OSC 8 clickable hyperlinks            |
+| `ProgressBar`                | ✅     | Ported from `ink-progress-bar`, percent-based fill            |
+| `SelectInput`                | ✅     | Ported from `ink-select-input`, interactive list selection    |
+| `TextInput`                  | ✅     | Inspired by `ink-ui`, single-line text entry with cursor      |
+| `ConfirmInput`               | ✅     | Inspired by `ink-ui`, Y/N confirmation prompt                 |
+| `MultiSelect`                | ✅     | Inspired by `ink-ui`, multi-choice selection with checkboxes  |
+| `Badge`                      | ✅     | Inspired by `ink-ui`, uppercase colored label                 |
+| `StatusMessage`              | ✅     | Inspired by `ink-ui`, status icon + message                   |
+| `Alert`                      | ✅     | Inspired by `ink-ui`, bordered variant alert box              |
+| `UnorderedList`              | ✅     | Inspired by `ink-ui`, bullet list with nesting                |
+| `OrderedList`                | ✅     | Inspired by `ink-ui`, numbered list with nesting              |
+| `useIsScreenReaderEnabled()` | ✅     | Enabled via `render()` option or `INK_SCREEN_READER` env var  |
+
+## Render Option Differences
+
+`render()` accepts Ink-style options, but these are currently ignored:
+
+- `concurrent`
+- `patchConsole`
+- `exitOnCtrlC`
+- `incrementalRendering`
+- `debug`
+
+`maxFps` is used.
+
+## Mouse Support (Ink Layer)
+
+Ported from [`@zenobius/ink-mouse`](https://github.com/zenobi-us/ink-mouse). Import from `@visulima/tui`.
+
+| Export                   | Description                                      |
+| ------------------------ | ------------------------------------------------ |
+| `<MouseProvider>`        | Enables mouse tracking for descendant components |
+| `<Fullscreen>`           | Terminal-filling Box container                   |
+| `useMouseContext()`      | Full mouse context (position, events, actions)   |
+| `useMousePosition()`     | Reactive mouse coordinates                       |
+| `useMouseAction()`       | Current action (click/scroll/drag)               |
+| `useOnMouseClick(ref)`   | Click detection on an element                    |
+| `useOnMouseHover(ref)`   | Hover detection on an element                    |
+| `useOnMouseState(ref)`   | Combined `{ hovering, clicking }` state          |
+| `useElementPosition()`   | Absolute element position via Yoga tree          |
+| `useElementDimensions()` | Element width and height                         |
+| `isIntersecting()`       | Hit-test utility                                 |
+
+See the [Mouse Support](./mouse) page for full documentation.
+
+## Scroll Components (Ink Layer)
+
+Ported from [`ink-scroll-view`](https://github.com/ByteLandTechnology/ink-scroll-view), [`@byteland/ink-scroll-bar`](https://github.com/ByteLandTechnology/ink-scroll-bar), and [`ink-scroll-list`](https://github.com/ByteLandTechnology/ink-scroll-list). Import from `@visulima/tui`.
+
+| Export                   | Description                                                   |
+| ------------------------ | ------------------------------------------------------------- |
+| `<ScrollView>`           | Scrollable viewport with imperative ref for scroll control    |
+| `<ControlledScrollView>` | Controlled variant — parent owns `scrollOffset`               |
+| `<ScrollBar>`            | Vertical scroll bar indicator (border or inset placement)     |
+| `<ScrollBarBox>`         | Box with integrated scroll bar on one border                  |
+| `<ScrollList>`           | ScrollView + externally controlled selection with auto-scroll |
+
+See the [Scroll Components](./scroll) page for full documentation.
+
+## CSS-Level Scroll and Measurement APIs
+
+Ported from [jacob314/ink](https://github.com/jacob314/ink) (Google's Gemini CLI fork). These extend Ink's `Box` with CSS-level overflow scrolling, sticky headers, and advanced measurement.
+
+| Export                                   | Description                                                      |
+| ---------------------------------------- | ---------------------------------------------------------------- |
+| `Box` `overflow="scroll"`                | CSS-level overflow scrolling with integrated scrollbar rendering |
+| `Box` `sticky`                           | Sticky headers that pin to viewport edges during scroll          |
+| `Box` `scrollbar`                        | Show/hide scrollbar on scrollable containers                     |
+| `ResizeObserver`                         | Browser-like API for observing element size changes              |
+| `getBoundingBox()`                       | Scroll-aware absolute position and dimensions                    |
+| `getInnerWidth()` / `getInnerHeight()`   | Inner dimensions excluding borders                               |
+| `getScrollHeight()` / `getScrollWidth()` | Total scroll content dimensions                                  |
+| `getScrollTop()` / `getScrollLeft()`     | Current scroll position                                          |
+| `calculateScroll()`                      | Compute scroll state for a scrollable element                    |
+| `getVerticalScrollbarBoundingBox()`      | Scrollbar thumb position for hit testing                         |
+| `getHorizontalScrollbarBoundingBox()`    | Horizontal scrollbar position                                    |
+| `setStringWidthFunction()`               | Replace the string width function for custom terminals           |
+| `getRelativeTop()` / `getRelativeLeft()` | Position relative to an ancestor element                         |
+
+## Native Renderer API (No Ink Equivalent)
+
+| Export                                                                | Description                                                                                                           |
+| --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `useScrollable()`                                                     | Virtual scrolling state helper                                                                                        |
+| `useMouse()`                                                          | Mouse click/wheel events with modifiers                                                                               |
+| `useTextInput()`                                                      | Managed text editing hook                                                                                             |
+| `Spinner`                                                             | Animated spinner component                                                                                            |
+| `renderInline()`                                                      | React inline rendering mode                                                                                           |
+| `createInlineLoop()`                                                  | Raw-buffer inline rendering loop                                                                                      |
+| `Renderer` / `TerminalGuard`                                          | Raw-buffer runtime primitives                                                                                         |
+| `render` / `cleanup` / `screen` / `keys` / `waitFor` / `flush` (test) | Testing utilities with mock streams, screen queries, keyboard simulation, and async assertions (`@visulima/tui/test`) |
+
+## Architectural Differences vs Ink
+
+| Concern            | Ink                  | @visulima/tui                |
+| ------------------ | -------------------- | ---------------------------- |
+| Render strategy    | JS string renderer   | Rust diff over `Uint32Array` |
+| Screen mode        | Inline rewrite model | Alternate screen model       |
+| `patchConsole`     | Integrated           | Not implemented              |
+| Screen reader hook | Functional           | Functional (opt-in)          |
+| Cursor hook        | Functional           | Functional                   |
+
+## Ports of Upstream Ink PRs
+
+A handful of in-flight upstream Ink PRs are vendored in `@visulima/tui` ahead of merge. Behavior is intended to match upstream; any drift is a bug.
+
+| Upstream PR                                                                                                | Behavior in `@visulima/tui`                                                                                                                                                                        |
+| ---------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [#115 — Math.round on Yoga computed values](https://github.com/vadimdemedes/ink/pull/115)                  | All Yoga `getComputedLeft/Top/Width/Height` reads are wrapped in `Math.round` (`render-node-to-output.ts`, `render-text-node.ts`) so subpixel layouts snap to integer cells.                       |
+| [#119 — `StaticRender` `deps` prop](https://github.com/vadimdemedes/ink/pull/119)                          | `<StaticRender>` accepts a `deps: DependencyList` prop. The cached subtree is invalidated when any dep changes (shallow `Object.is` compare). See [components.mdx](./components.mdx#staticrender). |
+| [#123 — neighbor-merge & ASCII fast paths in text rendering](https://github.com/vadimdemedes/ink/pull/123) | Text rendering reuses neighbor cells where possible and takes a fast path for ASCII spans, reducing per-cell allocation in the most common case.                                                   |
+| [#125 — conditional accessibility objects in Box](https://github.com/vadimdemedes/ink/pull/125)            | `<Box>` only emits an `internal_accessibility` object when `role` or `aria-state` is set, avoiding wasted allocations on the layout-only path.                                                     |
+
+## `compat-test/` Status
+
+The `compat-test/` directory tracks runnable Ink example ports.
+
+- Most files are direct ports with import-path changes
+- Two files include small TypeScript typing fixes from upstream examples (`use-focus.tsx`, `use-focus-with-id.tsx`)
+
+Run examples manually:
+
+```bash
+node --import @oxc-node/core/register compat-test/counter.tsx
+node --import @oxc-node/core/register compat-test/chat.tsx
+```

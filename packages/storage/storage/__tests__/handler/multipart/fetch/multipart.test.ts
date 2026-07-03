@@ -1,0 +1,109 @@
+import { rm } from "node:fs/promises";
+
+import { temporaryDirectory } from "tempy";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+
+import MultipartFetch from "../../../../src/handler/multipart/multipart-fetch";
+import DiskStorage from "../../../../src/storage/local/disk-storage";
+import { storageOptions, testfile } from "../../../__helpers__/config";
+import { waitForStorageReady } from "../../../__helpers__/utils";
+
+describe("fetch MultipartFetch", () => {
+    const basePath = "http://localhost/multipart/";
+    let directory: string;
+
+    const create = (): Request => {
+        const formData = new FormData();
+
+        formData.append("file", new Blob([testfile.asBuffer], { type: testfile.contentType }), testfile.name);
+        formData.append("custom", "customField");
+
+        return new Request(basePath.toString(), {
+            body: formData,
+            method: "POST",
+        });
+    };
+
+    beforeAll(async () => {
+        directory = temporaryDirectory();
+    });
+
+    afterAll(async () => {
+        try {
+            await rm(directory, { force: true, recursive: true });
+        } catch {
+            // ignore if directory doesn't exist
+        }
+    });
+
+    describe("default options", () => {
+        it("should create MultipartFetch handler instance", () => {
+            expect.assertions(1);
+
+            expect(new MultipartFetch({ storage: new DiskStorage({ directory: "/files" }) })).toBeInstanceOf(MultipartFetch);
+        });
+    });
+
+    describe("post", () => {
+        it("should support custom fields in multipart upload", async () => {
+            expect.assertions(2);
+
+            const request = create();
+
+            const storage = new DiskStorage({ ...storageOptions, allowMIME: ["video/mp4", "image/*"], directory });
+            const multipartHandler = new MultipartFetch({ storage });
+
+            await waitForStorageReady(storage);
+
+            const response = await multipartHandler.fetch(request);
+
+            expect(response.status).toBe(200);
+            expect(response.headers.get("location")).toBeDefined();
+        });
+
+        it("should handle invalid request data with error response", async () => {
+            expect.assertions(2);
+
+            const request = new Request(basePath.toString(), {
+                body: JSON.stringify({ invalid: "data" }),
+                headers: {
+                    "content-type": "application/json",
+                },
+                method: "POST",
+            });
+
+            const storage = new DiskStorage({ ...storageOptions, directory });
+            const multipartHandler = new MultipartFetch({ storage });
+
+            await waitForStorageReady(storage);
+
+            const response = await multipartHandler.fetch(request);
+
+            expect(response.status).toBe(400);
+
+            const body = await response.json();
+
+            expect(body.error).toBeDefined();
+        });
+    });
+
+    describe("options", () => {
+        it("should return 204 with proper CORS headers for OPTIONS request", async () => {
+            expect.assertions(2);
+
+            const request = new Request(basePath.toString(), {
+                method: "OPTIONS",
+            });
+
+            const storage = new DiskStorage({ ...storageOptions, directory });
+            const multipartHandler = new MultipartFetch({ storage });
+
+            await waitForStorageReady(storage);
+
+            const response = await multipartHandler.fetch(request);
+
+            expect(response.status).toBe(204);
+            expect(response.headers.get("access-control-allow-methods")).toBe("DELETE, DOWNLOAD, GET, OPTIONS, POST");
+        });
+    });
+});

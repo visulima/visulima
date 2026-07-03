@@ -1,0 +1,8 @@
+{
+    "name": "secret-scanner",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/tooling/secret-scanner/src",
+    "projectType": "library",
+    "tags": ["secret-scanner", "type:package", "category:dev-tools"],
+    "implicitDependencies": ["filesystem/fs", "filesystem/path"]
+}

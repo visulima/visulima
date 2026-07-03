@@ -1,0 +1,265 @@
+---
+title: Global API
+description: Programmatic control of the toolbar via window.__VISULIMA_DEVTOOLS__ — open apps, register apps dynamically, show notifications, and access RPC from outside React/Preact.
+---
+
+import { Callout } from "fumadocs-ui/components/callout";
+
+The global API is available at `window.__VISULIMA_DEVTOOLS__` during development. It provides programmatic control over every aspect of the toolbar — useful for integration testing, browser console debugging, and runtime app registration.
+
+<Callout type="warn">The global API is only available in development mode. Always guard calls with an existence check.</Callout>
+
+```ts
+const api = (window as any).__VISULIMA_DEVTOOLS__;
+
+if (api) {
+    // safe to use
+}
+```
+
+---
+
+## Visibility
+
+### `show()`
+
+Show the toolbar pill (if hidden via `hide()` or auto-hide).
+
+```ts
+api.show();
+```
+
+### `hide()`
+
+Hide the toolbar pill.
+
+```ts
+api.hide();
+```
+
+### `toggle()`
+
+Toggle the toolbar pill visibility.
+
+```ts
+api.toggle();
+```
+
+---
+
+## App Management
+
+### `openApp(id: string): Promise<void>`
+
+Open an app panel by its ID. The panel slides into view and the app component mounts.
+
+```ts
+await api.openApp("dev-toolbar:a11y");
+await api.openApp("my-package:my-app");
+```
+
+### `closeApp(): void`
+
+Close the currently open app panel.
+
+```ts
+api.closeApp();
+```
+
+### `getActiveApp(): DevToolbarApp | null`
+
+Returns the currently open app, or `null` if the panel is closed.
+
+```ts
+const app = api.getActiveApp();
+console.log(app?.id); // "dev-toolbar:a11y"
+```
+
+### `registerApp(app: DevToolbarApp, isCore?: boolean): void`
+
+Register a new app at runtime. The app button appears in the toolbar immediately.
+
+```ts
+api.registerApp({
+    id: "my-package:inspector",
+    name: "Inspector",
+    icon: svgString,
+    component: InspectorApp,
+});
+```
+
+Set `isCore = true` to place the app in the main toolbar row (alongside built-in apps). Without this flag, the app appears in the "More" overflow panel.
+
+### `unregisterApp(id: string): void`
+
+Remove an app from the toolbar. The app button disappears immediately.
+
+```ts
+api.unregisterApp("my-package:inspector");
+```
+
+### `getApps(): DevToolbarApp[]`
+
+Returns the full list of registered apps (built-in + custom).
+
+```ts
+const apps = api.getApps();
+apps.forEach((app) => console.log(app.id, app.name));
+```
+
+---
+
+## Notifications
+
+Show a notification badge on an app button to draw the user's attention.
+
+### `notify(appId: string, type: "info" | "warning" | "error"): void`
+
+```ts
+api.notify("my-package:monitor", "warning");
+```
+
+The notification badge appears on the app's toolbar button. Clicking the button clears the notification and opens the app.
+
+### `clearNotification(appId: string): void`
+
+Remove a notification badge without opening the app.
+
+```ts
+api.clearNotification("my-package:monitor");
+```
+
+---
+
+## Settings
+
+### `getSettings(): DevToolsFrameState`
+
+Returns the current toolbar state (position, size, theme preferences, keybindings, etc.).
+
+```ts
+const settings = api.getSettings();
+console.log(settings.position); // "bottom"
+console.log(settings.width); // 80
+console.log(settings.keybindings); // { toggle: "Alt+Shift+D", close: "Escape" }
+```
+
+### `updateSettings(patch: Partial<DevToolsFrameState>): void`
+
+Merge a partial update into the current state. Changes are persisted to `localStorage` immediately.
+
+```ts
+// Move panel to a different edge
+api.updateSettings({ position: "right" });
+
+// Change panel to fullscreen mode
+api.updateSettings({ viewMode: "fullscreen" });
+
+// Update keyboard shortcuts
+api.updateSettings({
+    keybindings: {
+        toggle: "Control+Shift+D",
+        close: "Escape",
+    },
+});
+```
+
+---
+
+## RPC
+
+### `rpc`
+
+Direct access to the server-side RPC functions — the same object available as `helpers.rpc` inside app components.
+
+```ts
+// Read the resolved Vite config from the console
+const config = await api.rpc.getViteConfig();
+console.log(config.server.port);
+
+// Open a file in the editor
+await api.rpc.openInEditor("/src/components/Button.tsx", 42);
+
+// Browse the module graph
+const modules = await api.rpc.getModuleGraph();
+const heaviest = [...modules].sort((a, b) => b.importerCount - a.importerCount).slice(0, 5);
+```
+
+---
+
+## Hook
+
+### `hook`
+
+Access to the same hook system available via `window.__DEV_TOOLBAR_HOOK__`. Useful for emitting events and subscribing from non-component code.
+
+```ts
+// Subscribe to panel open events
+api.hook.on("devtools:open", (appId) => {
+    console.log("App opened:", appId);
+});
+
+// Add a timeline event
+api.hook.addTimelineEvent("my-app", {
+    id: crypto.randomUUID(),
+    title: "Data fetched",
+    time: Date.now(),
+    level: "info",
+    data: { url: "/api/users", count: 42 },
+});
+```
+
+---
+
+## Console Debugging
+
+The global API is useful for debugging directly in the browser console:
+
+```js
+// Quickly open the Accessibility app
+__VISULIMA_DEVTOOLS__.openApp("dev-toolbar:a11y");
+
+// Check current panel size
+__VISULIMA_DEVTOOLS__.getSettings().width;
+
+// List all registered apps
+__VISULIMA_DEVTOOLS__.getApps().map((a) => a.id);
+
+// Trigger a fullscreen view
+__VISULIMA_DEVTOOLS__.updateSettings({ viewMode: "fullscreen" });
+```
+
+---
+
+## Full Type Reference
+
+```ts
+interface VisulimaDevToolsAPI {
+    // Visibility
+    show(): void;
+    hide(): void;
+    toggle(): void;
+
+    // App management
+    openApp(id: string): Promise<void>;
+    closeApp(): void;
+    getActiveApp(): DevToolbarApp | null;
+    registerApp(app: DevToolbarApp, isCore?: boolean): void;
+    unregisterApp(id: string): void;
+    getApps(): DevToolbarApp[];
+
+    // Notifications
+    notify(appId: string, type: "info" | "warning" | "error"): void;
+    clearNotification(appId: string): void;
+
+    // Settings
+    getSettings(): DevToolsFrameState;
+    updateSettings(patch: Partial<DevToolsFrameState>): void;
+
+    // RPC access
+    rpc: ServerFunctions;
+
+    // Hook system access
+    hook: DevToolbarHook;
+}
+```

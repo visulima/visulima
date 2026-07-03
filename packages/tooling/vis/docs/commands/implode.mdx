@@ -1,0 +1,27 @@
+---
+title: "vis implode"
+description: "Remove vis from the system (self-uninstall)"
+---
+
+# vis implode
+
+Self-uninstall. Removes the `vis` binary, caches, and (with confirmation) any installed Claude Skill / MCP integration. Pair with `--yes` for non-interactive teardown in CI.
+
+## Usage
+
+```bash
+vis implode [options]
+```
+
+## Examples
+
+```bash
+vis implode
+vis implode --yes
+```
+
+## Options
+
+| Option  | Alias | Default | Description                  |
+| ------- | ----- | ------- | ---------------------------- |
+| `--yes` | `-y`  | `false` | Skip the confirmation prompt |

@@ -1,0 +1,205 @@
+{
+    "name": "@visulima/cerebro",
+    "version": "3.0.0-alpha.33",
+    "description": "A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.",
+    "keywords": [
+        "ansi",
+        "args",
+        "argument",
+        "argv",
+        "clap",
+        "class",
+        "cli",
+        "cli-app",
+        "command",
+        "command line apps",
+        "command-line-usage",
+        "commander",
+        "flag",
+        "gluegun",
+        "interactive",
+        "line",
+        "meow",
+        "minimist",
+        "nopt",
+        "oclif",
+        "option",
+        "options",
+        "opts",
+        "parser",
+        "terminal",
+        "visulima",
+        "yargs"
+    ],
+    "homepage": "https://visulima.com/packages/cerebro",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/terminal/cerebro"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./command/help": {
+            "types": "./dist/commands/help-command.d.ts",
+            "default": "./dist/commands/help-command.js"
+        },
+        "./command/version": {
+            "types": "./dist/commands/version-command.d.ts",
+            "default": "./dist/commands/version-command.js"
+        },
+        "./command/completion": {
+            "types": "./dist/commands/completion-command.d.ts",
+            "default": "./dist/commands/completion-command.js"
+        },
+        "./command/readme-generator": {
+            "types": "./dist/commands/readme-command.d.ts",
+            "default": "./dist/commands/readme-command.js"
+        },
+        "./plugins/error-handler": {
+            "types": "./dist/plugins/error-handler-plugin.d.ts",
+            "default": "./dist/plugins/error-handler-plugin.js"
+        },
+        "./plugins/runtime-version-check": {
+            "types": "./dist/plugins/runtime-version-check-plugin.d.ts",
+            "default": "./dist/plugins/runtime-version-check-plugin.js"
+        },
+        "./plugins/update-notifier": {
+            "types": "./dist/plugins/update-notifier/update-notifier-plugin.d.ts",
+            "default": "./dist/plugins/update-notifier/update-notifier-plugin.js"
+        },
+        "./compile-cache": {
+            "types": "./dist/util/general/compile-cache.d.ts",
+            "default": "./dist/util/general/compile-cache.js"
+        },
+        "./heap-tuning": {
+            "types": "./dist/util/general/heap-tuning.d.ts",
+            "default": "./dist/util/general/heap-tuning.js"
+        },
+        "./logger/pail": {
+            "types": "./dist/logger/create-pail-logger.d.ts",
+            "default": "./dist/logger/create-pail-logger.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development",
+        "build:prod": "packem build --production",
+        "clean": "rimraf node_modules dist .eslintcache",
+        "dev": "pnpm run build --watch",
+        "fallow:audit": "fallow audit",
+        "fallow:dead-code": "fallow dead-code",
+        "fallow:health": "fallow health --report-only",
+        "lint:attw": "attw --pack --profile esm-only",
+        "lint:eslint": "eslint . --cache --concurrency auto ",
+        "lint:eslint:fix": "eslint . --cache --concurrency auto  --fix",
+        "lint:package-json": "publint --strict",
+        "lint:prettier": "prettier --config=prettier.config.js --check .",
+        "lint:prettier:fix": "prettier --config=prettier.config.js --write .",
+        "lint:types": "tsc --noEmit --project tsconfig.json",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:ui": "vitest --ui --coverage.enabled=true",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@visulima/colorize": "2.0.0-alpha.15",
+        "@visulima/tabular": "4.0.0-alpha.14",
+        "fastest-levenshtein": "catalog:prod"
+    },
+    "devDependencies": {
+        "@anolilab/eslint-config": "catalog:lint",
+        "@anolilab/prettier-config": "catalog:lint",
+        "@anolilab/semantic-release-pnpm": "catalog:dev",
+        "@anolilab/semantic-release-preset": "catalog:dev",
+        "@arethetypeswrong/cli": "catalog:dev",
+        "@bomb.sh/tab": "catalog:dev",
+        "@total-typescript/ts-reset": "catalog:dev",
+        "@types/node": "catalog:types",
+        "@visulima/boxen": "3.0.0-alpha.15",
+        "@visulima/command-line-args": "2.0.0-alpha.14",
+        "@visulima/error": "6.0.0-alpha.35",
+        "@visulima/find-cache-dir": "3.0.0-alpha.12",
+        "@visulima/packem": "catalog:dev",
+        "@visulima/pail": "4.0.0-alpha.23",
+        "@visulima/path": "3.0.0-alpha.13",
+        "@visulima/string": "3.0.0-alpha.18",
+        "@vitest/coverage-v8": "catalog:test",
+        "ci-info": "catalog:dev",
+        "commander": "catalog:dev",
+        "conventional-changelog-conventionalcommits": "catalog:dev",
+        "esbuild": "catalog:build",
+        "eslint": "catalog:lint",
+        "fallow": "catalog:lint",
+        "github-slugger": "catalog:dev",
+        "prettier": "catalog:lint",
+        "publint": "catalog:dev",
+        "rimraf": "catalog:node",
+        "semantic-release": "catalog:cli",
+        "terminal-size": "catalog:prod",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    },
+    "peerDependencies": {
+        "@bomb.sh/tab": "catalog:peer",
+        "@visulima/boxen": "3.0.0-alpha.15",
+        "@visulima/find-cache-dir": "3.0.0-alpha.12",
+        "@visulima/pail": "4.0.0-alpha.23",
+        "github-slugger": "catalog:peer"
+    },
+    "peerDependenciesMeta": {
+        "@bomb.sh/tab": {
+            "optional": true
+        },
+        "@visulima/boxen": {
+            "optional": true
+        },
+        "@visulima/find-cache-dir": {
+            "optional": true
+        },
+        "@visulima/pail": {
+            "optional": true
+        },
+        "github-slugger": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "darwin",
+        "linux",
+        "win32"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

@@ -1,0 +1,178 @@
+---
+title: Introduction
+description: "Lightweight, extensible CLI framework for building command-line applications with TypeScript support, plugins, and cross-runtime compatibility"
+---
+
+# @visulima/cerebro
+
+A lightweight, extensible CLI framework for building modern command-line applications with TypeScript support, plugins, nested commands, and cross-runtime compatibility (Node.js, Deno, Bun).
+
+## Key Features
+
+**Framework & Architecture**
+
+- **Zero Dependencies Core** - Minimal footprint with optional peer dependencies
+- **TypeScript First** - Full type safety with comprehensive type definitions
+- **Cross-Runtime** - Works with Node.js, Deno, and Bun
+- **Plugin System** - Extensible architecture with built-in and custom plugins
+
+**Commands & Arguments**
+
+- **Nested Commands** - Support for subcommands and command hierarchies
+- **Argument Parsing** - Built-in parser with types (String, Boolean, Number)
+- **Option Validation** - Required options, conflicting options, implied options
+- **Auto-completion** - Shell completion for bash, zsh, and fish
+
+**Developer Experience**
+
+- **Auto Help Generation** - Automatic help text from command metadata
+- **Version Command** - Built-in version display
+- **README Generation** - Generate documentation from command definitions
+- **Error Handling** - Comprehensive error handling with helpful messages
+
+**Built-in Features**
+
+- **Verbosity Levels** - Quiet, normal, verbose, and debug output modes
+- **Environment Variables** - Type-safe environment variable handling
+- **Exception Handling** - Graceful error handling and exit codes
+- **Levenshtein Suggestions** - Command suggestions for typos
+
+## Quick Start
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+
+const cli = createCerebro("my-cli", {
+    packageName: "my-cli",
+    packageVersion: "1.0.0",
+});
+
+cli.addCommand({
+    name: "greet",
+    description: "Greet someone",
+    argument: {
+        name: "name",
+        description: "Name to greet",
+        type: String,
+    },
+    execute: ({ argument, logger }) => {
+        logger.log(`Hello, ${argument[0]}!`);
+    },
+});
+
+await cli.run();
+```
+
+## Use Cases
+
+### Build Production CLIs
+
+Create professional command-line tools with nested commands, options, and help text:
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+
+const cli = createCerebro("deploy-cli", {
+    packageName: "@company/deploy-cli",
+    packageVersion: "2.1.0",
+});
+
+cli.addCommand({
+    name: "deploy",
+    description: "Deploy application to environment",
+    argument: {
+        name: "environment",
+        description: "Target environment (staging|production)",
+        type: String,
+    },
+    options: [
+        {
+            name: "skip-tests",
+            description: "Skip test suite",
+            type: Boolean,
+        },
+        {
+            name: "timeout",
+            description: "Deployment timeout in seconds",
+            type: Number,
+            defaultValue: 300,
+        },
+    ],
+    execute: async ({ argument, options, logger }) => {
+        const env = argument[0];
+        logger.log(`Deploying to ${env}...`);
+        // Deployment logic
+    },
+});
+
+await cli.run();
+```
+
+### Plugin-Based Applications
+
+Extend your CLI with plugins for error handling, version checks, and notifications:
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+import { updateNotifierPlugin } from "@visulima/cerebro/plugin/update-notifier";
+
+const cli = createCerebro("my-tool", {
+    packageName: "my-tool",
+    packageVersion: "1.0.0",
+});
+
+cli.use(errorHandlerPlugin());
+cli.use(updateNotifierPlugin({ checkInterval: 86400000 }));
+
+// Add commands...
+await cli.run();
+```
+
+### Cross-Runtime Tools
+
+Build CLIs that work across Node.js, Deno, and Bun:
+
+```typescript
+// Works in Node.js, Deno, and Bun
+import { createCerebro } from "@visulima/cerebro";
+
+const cli = createCerebro("universal-cli");
+
+cli.addCommand({
+    name: "info",
+    description: "Show runtime information",
+    execute: ({ logger, env }) => {
+        logger.log(`Runtime: ${env.RUNTIME ?? "unknown"}`);
+        logger.log(`Platform: ${process.platform}`);
+    },
+});
+
+await cli.run();
+```
+
+## Next Steps
+
+<Cards>
+    <Card title="Installation" href="/installation">
+        Set up Cerebro in your project
+    </Card>
+    <Card title="Quick Start" href="/quick-start">
+        Build your first CLI in 5 minutes
+    </Card>
+    <Card title="Concepts" href="/concepts/architecture">
+        Understand Cerebro's architecture
+    </Card>
+    <Card title="API Reference" href="/api">
+        Complete API documentation
+    </Card>
+</Cards>
+
+## Browser and Server Support
+
+Cerebro is designed for command-line environments and works with:
+
+- **Node.js** - Version 18.x and above
+- **Deno** - Latest stable version
+- **Bun** - Latest stable version
+- **Platforms** - Linux, macOS, Windows

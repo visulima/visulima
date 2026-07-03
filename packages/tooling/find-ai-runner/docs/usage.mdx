@@ -1,0 +1,224 @@
+---
+title: Usage
+description: "How to detect, configure, and run AI CLI tools with find-ai-runner"
+---
+
+# Usage
+
+## CLI
+
+Run directly with `npx` — no installation required:
+
+```bash
+# List all providers and their availability
+npx @visulima/find-ai-runner list
+
+# Output as JSON
+npx @visulima/find-ai-runner list --json
+
+# Detect a specific provider
+npx @visulima/find-ai-runner detect claude
+
+# Run a prompt against a provider
+npx @visulima/find-ai-runner run claude "Explain this error"
+
+# Run with a custom model and timeout
+npx @visulima/find-ai-runner run claude "Analyze this code" --model claude-opus-4-20250514 --timeout 60000
+
+# Preview CLI arguments without executing
+npx @visulima/find-ai-runner args claude "Explain this code"
+npx @visulima/find-ai-runner args claude "Explain this code" --json
+```
+
+### CLI Options
+
+| Option             | Short | Description                                       |
+| ------------------ | ----- | ------------------------------------------------- |
+| `--help`           | `-h`  | Show help message                                 |
+| `--version`        | `-v`  | Show version                                      |
+| `--json`           | `-j`  | Output as JSON                                    |
+| `--model <model>`  | `-m`  | Model override (for run command)                  |
+| `--max-tokens <n>` |       | Max tokens (default: 4096)                        |
+| `--timeout <ms>`   | `-t`  | Timeout in ms (default: 300000)                   |
+| `--dangerous`      |       | Enable permission-bypass mode (UNSAFE, see below) |
+
+> **Warning:** `--dangerous` (or `{ dangerous: true }` in the API) adds the provider's permission-bypass / auto-approval flag, granting the agent unattended tool/file/shell access. Untrusted content in the prompt that prompt-injects the agent then runs with all safety rails off. Only use it for fully trusted prompts. Unknown flags are reported as warnings on stderr.
+
+## Programmatic API
+
+## Detecting Providers
+
+### Detect all providers
+
+Returns info for all 11 providers, whether installed or not:
+
+```typescript
+import { detectAllProviders } from "@visulima/find-ai-runner";
+
+const all = detectAllProviders();
+
+for (const provider of all) {
+    console.log(`${provider.name}: ${provider.available ? "installed" : "not found"}`);
+}
+```
+
+### Detect available providers only
+
+Returns only providers that are installed on the system:
+
+```typescript
+import { detectAvailableProviders } from "@visulima/find-ai-runner";
+
+const available = detectAvailableProviders();
+console.log(available);
+// [{ name: "claude", available: true, path: "/usr/local/bin/claude", version: "1.2.3" }, ...]
+```
+
+### Detect a specific provider
+
+```typescript
+import { detectProvider } from "@visulima/find-ai-runner";
+
+const claude = detectProvider("claude");
+
+if (claude.available) {
+    console.log(`Claude found at ${claude.path}, version ${claude.version}`);
+    console.log(`Detection method: ${claude.detectionMethod}`); // "envvar", "which", or "known-path"
+}
+```
+
+### Faster detection (parallel, skip version probe)
+
+`detectAllProviders`/`detectProvider` cold-start each found CLI for its
+`--version` banner, which can cost ~0.5-2 s per Node-based CLI. Skip it with
+`{ version: false }`, and use `detectAllProvidersAsync` to probe in parallel:
+
+```typescript
+import { detectAllProvidersAsync } from "@visulima/find-ai-runner";
+
+const providers = await detectAllProvidersAsync({ version: false });
+```
+
+### Find the first available runner
+
+```typescript
+import { findRunner } from "@visulima/find-ai-runner";
+
+// Prefer claude, then codex, then gemini; stops at the first installed one.
+const runner = findRunner(["claude", "codex", "gemini"]);
+
+if (runner) {
+    console.log(`Using ${runner.name} at ${runner.path}`);
+}
+```
+
+## Running Prompts
+
+### Basic execution
+
+```typescript
+import { detectProvider, runProvider } from "@visulima/find-ai-runner";
+
+const provider = detectProvider("claude");
+
+if (provider.available) {
+    const result = await runProvider(provider, "Explain this error: TypeError: Cannot read property 'foo' of undefined");
+    console.log(result.stdout);
+    console.log(`exit ${result.exitCode} in ${result.durationMs}ms`);
+}
+```
+
+### Working directory, env, cancellation, streaming, and errors
+
+```typescript
+import { AiRunError, detectProvider, runProvider } from "@visulima/find-ai-runner";
+
+const provider = detectProvider("claude");
+const controller = new AbortController();
+
+if (provider.available) {
+    try {
+        const result = await runProvider(provider, "Review the staged changes", {
+            cwd: "/path/to/repo", // point the agent at a target repo
+            env: { ANTHROPIC_API_KEY: process.env.MY_KEY }, // per-run env, merged over process.env
+            signal: controller.signal, // controller.abort() cancels the run
+            onStdout: (chunk) => process.stdout.write(chunk), // stream progress
+        });
+
+        console.log(result.stdout);
+    } catch (error) {
+        if (error instanceof AiRunError) {
+            // Partial output + exit metadata are preserved for debugging.
+            console.error(`timedOut=${error.timedOut} aborted=${error.aborted} exit=${error.exitCode}`);
+            console.error(error.stdout);
+        }
+    }
+}
+```
+
+### Custom model and timeout
+
+```typescript
+import { detectProvider, runProvider } from "@visulima/find-ai-runner";
+
+const provider = detectProvider("claude");
+
+if (provider.available) {
+    const result = await runProvider(provider, "Analyze this dependency update", {
+        model: "claude-opus-4-20250514",
+        maxTokens: 8192,
+        timeoutMs: 60_000,
+    });
+
+    console.log(result.stdout);
+    console.log(`Provider used: ${result.provider}`);
+}
+```
+
+### Preview CLI arguments
+
+Build the CLI arguments without executing, useful for logging or debugging:
+
+```typescript
+import { buildCliArgs } from "@visulima/find-ai-runner";
+
+const args = buildCliArgs("claude", "Explain this code", {
+    model: "claude-opus-4-20250514",
+});
+
+console.log(args);
+// ["--model", "claude-opus-4-20250514", "--output-format", "text", "-p", "Explain this code"]
+
+// With dangerous: true, the permission-bypass flag is prepended:
+const unsafe = buildCliArgs("claude", "Explain this code", { dangerous: true });
+// ["--dangerously-skip-permissions", "--output-format", "text", "-p", "Explain this code"]
+```
+
+## Detection Strategies
+
+Providers are detected using three strategies, tried in order:
+
+1. **Environment variable** — Each provider has a dedicated env var (e.g., `CLAUDE_PATH`, `GEMINI_PATH`) that can point to the CLI binary
+2. **`which`/`where` command** — Looks up the command on the system PATH
+3. **Known paths** — Checks common installation directories:
+    - `/opt/homebrew/bin/` (macOS Homebrew)
+    - `/usr/local/bin/` (system-wide)
+    - `~/.npm-global/bin/` (npm global)
+    - `~/.local/bin/` (user-local)
+    - `~/.cargo/bin/` (Rust/Cargo)
+    - Windows: `%APPDATA%\npm\`, `%LOCALAPPDATA%\Programs\`, `%ProgramFiles%\`
+
+## Environment Variable Overrides
+
+Override the detected path for any provider by setting its environment variable:
+
+```bash
+export CLAUDE_PATH=/custom/path/to/claude
+export GEMINI_PATH=/opt/custom/gemini
+```
+
+This is useful for:
+
+- Using a specific version of a provider
+- Testing with a mock/wrapper script
+- Corporate environments with non-standard installation paths

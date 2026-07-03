@@ -1,0 +1,15 @@
+.source
+.tmp-external-docs
+.tanstack/tmp
+.netlify
+public/assets
+
+!src/data
+src/content/docs/packages
+
+# Install scripts copied from packages/tooling/vis/scripts at build time
+# (with version banner stamped by copy-install-scripts.js + SHA256 sidecar).
+public/install.sh
+public/install.sh.sha256
+public/install.ps1
+public/install.ps1.sha256

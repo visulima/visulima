@@ -1,0 +1,57 @@
+---
+title: Durability & replay
+description: How the engine suspends, persists and resumes a run deterministically
+---
+
+# Durability & replay
+
+`@visulima/workflow` uses a **replay** model (the same approach as Temporal, Inngest and TanStack Workflow): there is no
+serialised continuation of your function — instead the body is re-run from the top on every activation, and already-done
+work is short-circuited from a recorded history.
+
+## The execution loop
+
+1. **Trigger.** The payload is validated, a run id is generated, and the body runs from the top.
+2. **Steps record.** Each `ctx.step(id, fn)` runs `fn` once and appends `{ id, output }` to an append-only history.
+3. **Suspend.** The first `ctx.sleep` / `ctx.waitForEvent` that is not yet satisfied throws an internal signal that
+   unwinds the body. The engine persists the run (lifecycle snapshot + history + what it is waiting on).
+4. **Resume.** On `sweep` (a due sleep/timeout) or `signal` (an awaited event), the engine appends the resolution to the
+   history and **re-runs the body from the top**. This time every prior `ctx.step` finds its recorded output and returns
+   it without executing `fn`; the previously-suspended `sleep`/`wait` is now satisfied and execution continues to the
+   next durable point.
+5. **Complete / fail.** When the body returns, the run is `completed` with its output; if it throws, the run is `failed`
+   with the serialised error.
+
+## Why "the one rule" matters
+
+Because the body is re-run on every activation, **only** work wrapped in `ctx.step` is guarded against re-execution.
+A bare side effect runs again on each replay:
+
+```typescript
+run: async (ctx) => {
+    sendEmail(); // ❌ runs on every replay — once per activation
+    await ctx.step("welcome", () => sendEmail()); // ✅ runs exactly once
+    await ctx.sleep("wait", { amount: 1, unit: "days" });
+    await ctx.step("nudge", () => sendNudge()); // ✅ runs once, after the sleep
+};
+```
+
+## Determinism
+
+The replay short-circuit means recorded steps return instantly and identically, and `Date.now()` is read only when a
+_new_ sleep/wait first suspends — never on the replay path — so resuming an existing run is deterministic. Keep your
+own logic deterministic too: branch on `ctx.payload` and recorded step outputs, not on ambient state that can change
+between activations.
+
+## What gets persisted
+
+The unit a [store](/docs/packages/workflow/stores) keeps is JSON-serialisable: the lifecycle snapshot, the step history
+(so step outputs must be JSON-safe), and denormalised `status` / `wakeAt` / `eventName` fields so the store can answer
+"what is due" and route signals without parsing the snapshot.
+
+## Lifecycle
+
+A run is modelled as an [XState](https://stately.ai/docs) state machine — `running → suspended | waiting → running →
+completed | failed` — which owns the legal transitions and produces the snapshot that the store persists. `running` is
+transient and never observed at an API boundary; `getRun`/results report `suspended`, `waiting`, `completed` or
+`failed`.

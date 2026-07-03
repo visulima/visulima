@@ -1,0 +1,37 @@
+{
+    "name": "@visulima/task-runner-binding-linux-arm64-musl",
+    "version": "1.0.0-alpha.3",
+    "description": "Native binding for @visulima/task-runner (Linux arm64 musl)",
+    "homepage": "https://visulima.com",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/visulima/visulima.git",
+        "directory": "packages/tooling/task-runner"
+    },
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "main": "task-runner-native.linux-arm64-musl.node",
+    "files": [
+        "fspy-seccomp-helper",
+        "task-runner-native.linux-arm64-musl.node"
+    ],
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "os": [
+        "linux"
+    ],
+    "cpu": [
+        "arm64"
+    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
+    "libc": [
+        "musl"
+    ]
+}

@@ -1,9 +1,0 @@
-{
-    "name": "package-esm",
-    "private": true,
-    "description": "ESM version",
-    "type": "module",
-    "dependencies": {
-        "@visulima/colorize": "workspace:*"
-    }
-}

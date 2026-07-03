@@ -1,0 +1,125 @@
+---
+title: "Installation"
+description: "How to install and set up @visulima/colorize in your project."
+---
+
+# Installation
+
+## Package Manager
+
+Install **@visulima/colorize** using your preferred package manager:
+
+```bash npm2yarn
+npm install @visulima/colorize
+```
+
+## Requirements
+
+- **Node.js:** 22.13 or higher
+- **TypeScript:** 5.0+ (optional, for TypeScript projects)
+
+## Import Methods
+
+### Node.js (ESM)
+
+```typescript
+// Default import
+import colorize from "@visulima/colorize";
+
+// Named imports (recommended)
+import { red, green, blue, bold, hex } from "@visulima/colorize";
+```
+
+### Node.js (CommonJS)
+
+```javascript
+// Default import
+const colorize = require("@visulima/colorize");
+
+// Named imports
+const { red, green, blue, bold, hex } = require("@visulima/colorize");
+```
+
+### Browser
+
+For browser environments, use the dedicated browser export:
+
+```typescript
+// ESM default import
+import colorize from "@visulima/colorize/browser";
+
+// ESM named imports
+import { red, green, blue } from "@visulima/colorize/browser";
+```
+
+**Important:** Browser version returns an array format for console styling. Use the spread operator:
+
+```typescript
+import { green } from "@visulima/colorize/browser";
+
+console.log(...green("Success!")); // Note the spread operator
+```
+
+### Subpath Exports
+
+The package provides several specialized exports for advanced features:
+
+```typescript
+// Template literals
+import template from "@visulima/colorize/template";
+
+// Gradient support
+import { gradient, multilineGradient } from "@visulima/colorize/gradient";
+
+// Utility functions
+import { strip } from "@visulima/colorize/utils";
+```
+
+## Verification
+
+Verify your installation by running a simple color test:
+
+```typescript
+import { green, red, blue } from "@visulima/colorize";
+
+console.log(green("✓ Installation successful!"));
+console.log(blue("ℹ Colorize is ready to use"));
+console.log(red.bold("● Colors are working"));
+```
+
+If you see colored output, the installation is successful!
+
+## TypeScript Support
+
+TypeScript definitions are included automatically. No additional `@types` packages are needed.
+
+```typescript
+import type { ColorizeType } from "@visulima/colorize";
+
+// Full type checking and autocomplete
+const colorize: ColorizeType = (await import("@visulima/colorize")).default;
+```
+
+## Environment Variables
+
+Colorize automatically detects and respects color support through environment variables:
+
+- **`NO_COLOR`** - Disables all colors when set to any value
+- **`FORCE_COLOR`** - Forces color output (values: `0`, `1`, `2`, `3`)
+- **`COLORTERM`** - Detects TrueColor support (value: `truecolor`)
+
+CLI flags are also supported:
+
+- **`--no-color`** - Disables colors
+- **`--color`** - Forces color output
+
+## Next Steps
+
+<Cards>
+    <Card title="Quick Start" href="/quick-start">
+        Get up and running with colorize in 5 minutes
+    </Card>
+    <Card title="Basic Usage" href="/usage/basic">
+        Learn the fundamental usage patterns
+    </Card>
+</Cards>

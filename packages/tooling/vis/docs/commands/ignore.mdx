@@ -1,0 +1,57 @@
+---
+title: "vis ignore"
+description: "Generate or merge an ignore file (.dockerignore / .vercelignore / .npmignore / .slugignore) without adding duplicate entries."
+---
+
+# vis ignore
+
+Generates a curated set of ignore patterns for files that don't belong in a build context or published package — docs, type-defs, source maps, tests, CI config, editor files — and merges them into an existing ignore file **without adding entries that are already present**. Re-running is idempotent.
+
+Inspired by [`untracked`](https://github.com/Kikobeats/untracked), but reimplemented dependency-free and monorepo-aware.
+
+> Looking for the CI "Ignored Build Step" gate that used to live at `vis ignore`? It moved to [`vis ci ignore`](./ci-ignore).
+
+## Usage
+
+```bash
+vis ignore [options]
+```
+
+## Targets
+
+The `--target` flag selects which ignore file to write and which extras to include:
+
+| Target             | File            | Includes `node_modules`?                   |
+| ------------------ | --------------- | ------------------------------------------ |
+| `docker` (default) | `.dockerignore` | Yes (built inside the image)               |
+| `vercel`           | `.vercelignore` | Yes                                        |
+| `slug`             | `.slugignore`   | Yes                                        |
+| `npm`              | `.npmignore`    | No — npm excludes it from tarballs already |
+
+## Examples
+
+```bash
+vis ignore                          # print a .dockerignore (deduped against an existing one)
+vis ignore --write                  # write/merge .dockerignore in place
+vis ignore --target=vercel --write  # write a .vercelignore
+vis ignore --target=npm --json      # emit the npm-target result as JSON
+```
+
+## Merging (no duplicate entries)
+
+When the target file already exists, `vis ignore` reads it, compares each candidate pattern against the existing entries (verbatim, case-sensitive), and appends **only the missing ones** under a `# Added by vis ignore` section. Entries already present — including any you added by hand — are never duplicated or reordered. If nothing is missing, the file is left untouched.
+
+By default the merged result is printed to stdout; pass `--write` to save it, or `--json` for a machine-readable `{ target, file, added }` record.
+
+## Options
+
+| Option     | Default  | Description                                           |
+| ---------- | -------- | ----------------------------------------------------- |
+| `--target` | `docker` | Ignore-file target: `docker`, `vercel`, `npm`, `slug` |
+| `--write`  | `false`  | Write the result to disk instead of printing it       |
+| `--json`   | `false`  | Emit the result as JSON                               |
+
+## See also
+
+- [`vis docker`](./docker) — Docker scaffold/prune, Dockerfile generation, and hadolint linting
+- [`vis ci ignore`](./ci-ignore) — CI "Ignored Build Step" gate for Vercel/Netlify

@@ -1,0 +1,270 @@
+---
+title: "Configuration"
+---
+
+# Configuration
+
+Configure Cerebro CLI instances with various options and settings.
+
+## CLI Options
+
+Configure the CLI instance at creation:
+
+```typescript
+import { createCerebro } from "@visulima/cerebro";
+
+const cli = createCerebro("my-cli", {
+    packageName: "@company/my-cli",
+    packageVersion: "1.0.0",
+    logger: console,
+    cwd: process.cwd(),
+    argv: process.argv.slice(2),
+});
+```
+
+### packageName
+
+The npm package name:
+
+```typescript
+{
+    packageName: "@company/my-cli";
+}
+```
+
+Used by:
+
+- Update notifier plugin
+- Version command
+- Help text generation
+
+### packageVersion
+
+The package version:
+
+```typescript
+{
+    packageVersion: "1.0.0";
+}
+```
+
+Displayed by `--version` flag.
+
+### logger
+
+Custom logger instance (default: `console`):
+
+```typescript
+import { createPail } from "@visulima/pail";
+
+const logger = createPail();
+
+const cli = createCerebro("my-cli", {
+    logger,
+});
+```
+
+### cwd
+
+Working directory (default: `process.cwd()`):
+
+```typescript
+{
+    cwd: "/custom/directory";
+}
+```
+
+### argv
+
+Command-line arguments (default: `process.argv.slice(2)`):
+
+```typescript
+{
+    argv: ["build", "--production"];
+}
+```
+
+## Environment Variables
+
+### CEREBRO_OUTPUT_LEVEL
+
+Control output verbosity:
+
+```bash
+CEREBRO_OUTPUT_LEVEL=quiet my-cli build    # No output
+CEREBRO_OUTPUT_LEVEL=normal my-cli build   # Normal output (default)
+CEREBRO_OUTPUT_LEVEL=verbose my-cli build  # Verbose output
+CEREBRO_OUTPUT_LEVEL=debug my-cli build    # Debug output
+```
+
+Values:
+
+- `quiet` - No output
+- `normal` - Standard output
+- `verbose` - Detailed output
+- `debug` - Debug information
+
+### CEREBRO_MIN_NODE_VERSION
+
+Override minimum Node.js version check:
+
+```bash
+CEREBRO_MIN_NODE_VERSION=16.0.0 my-cli build
+```
+
+### CEREBRO_TERMINAL_WIDTH
+
+Override terminal width detection:
+
+```bash
+CEREBRO_TERMINAL_WIDTH=120 my-cli help
+```
+
+## Plugin Configuration
+
+### Error Handler
+
+```typescript
+import { errorHandlerPlugin } from "@visulima/cerebro/plugin/error-handler";
+
+cli.use(
+    errorHandlerPlugin({
+        exitOnError: true, // Exit process on errors
+        showStackTrace: false, // Hide stack traces
+        logErrors: true, // Log to console
+    }),
+);
+```
+
+### Runtime Version Check
+
+```typescript
+import { runtimeVersionCheckPlugin } from "@visulima/cerebro/plugin/runtime-version-check";
+
+cli.use(
+    runtimeVersionCheckPlugin({
+        requiredVersion: ">=18.0.0",
+        message: "Custom error message",
+    }),
+);
+```
+
+### Update Notifier
+
+```typescript
+import { updateNotifierPlugin } from "@visulima/cerebro/plugin/update-notifier";
+
+cli.use(
+    updateNotifierPlugin({
+        packageName: "my-cli",
+        packageVersion: "1.0.0",
+        checkInterval: 86400000, // 24 hours in ms
+        updateMessage: "Update available: {latest}",
+    }),
+);
+```
+
+## Command Configuration
+
+### Global Options
+
+Add options available to all commands:
+
+```typescript
+cli.addGlobalOption({
+    name: "config",
+    alias: "c",
+    description: "Configuration file path",
+    type: String,
+    defaultValue: "./config.json",
+});
+```
+
+### Default Command
+
+Set command to run when none specified:
+
+```typescript
+cli.setDefaultCommand("help");
+```
+
+### Help Sections
+
+Organize commands in help output:
+
+```typescript
+cli.addCommandSection({
+    name: "Database Commands",
+    description: "Manage database operations",
+    commands: ["db:migrate", "db:seed"],
+});
+
+cli.addCommandSection({
+    name: "Build Commands",
+    description: "Build and deploy",
+    commands: ["build", "deploy"],
+});
+```
+
+## Configuration Files
+
+Create a configuration file system:
+
+```typescript
+// my-cli.config.json
+{
+  "output": "./dist",
+  "minify": true,
+  "sourcemap": false,
+  "plugins": ["@my-cli/plugin-react"]
+}
+```
+
+Load configuration:
+
+```typescript
+import { resolve } from "path";
+import { readFileSync, existsSync } from "fs";
+
+function loadConfig(cwd: string) {
+    const configPath = resolve(cwd, "my-cli.config.json");
+
+    if (!existsSync(configPath)) {
+        return {};
+    }
+
+    return JSON.parse(readFileSync(configPath, "utf-8"));
+}
+
+cli.addCommand({
+    name: "build",
+    execute: async ({ cwd, logger }) => {
+        const config = loadConfig(cwd);
+        logger.log(`Using config:`, config);
+    },
+});
+```
+
+## TypeScript Configuration
+
+Configure TypeScript for your CLI project:
+
+```json
+// tsconfig.json
+{
+    "compilerOptions": {
+        "target": "ES2022",
+        "module": "ES2022",
+        "moduleResolution": "bundler",
+        "outDir": "./dist",
+        "rootDir": "./src",
+        "strict": true,
+        "esModuleInterop": true,
+        "skipLibCheck": true,
+        "declaration": true,
+        "declarationMap": true
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules", "dist"]
+}
+```

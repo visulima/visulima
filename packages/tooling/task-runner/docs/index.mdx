@@ -1,0 +1,68 @@
+---
+title: Introduction
+description: High-performance monorepo task runner with intelligent caching
+---
+
+# Task Runner
+
+**High-performance monorepo task runner with intelligent caching, dependency-aware scheduling, and auto-fingerprinting.**
+
+`@visulima/task-runner` provides the core building blocks for running tasks in monorepos with maximum cache hit rates. It supports both explicit input declarations (like Nx) and automatic file access tracking (like Vite Task).
+
+## Why Task Runner?
+
+- **Concurrent process runner** - Run multiple commands in parallel with native Rust performance and JS fallback
+- **Process tree management** - Clean signal propagation via setsid/killpg (Unix) and Job Objects (Windows)
+- **Command parser** - `npm:build` shortcuts, `npm run watch-*` wildcards, `{1}` argument placeholders
+- **npm script-shell support** - Honors `npm config set script-shell` for custom shells
+- **Long-running processes** - Configurable stdin (null/pipe/inherit), bounded output buffers
+- **Two caching modes** - Choose Nx-style explicit inputs or Vite Task-style auto-fingerprinting
+- **Smart lockfile hashing** - Lockfile changes only bust cache for affected packages
+- **Framework env inference** - Auto-detects Next.js, Vite, CRA, Gatsby, Nuxt, Expo, and more
+- **Remote caching** - Turborepo-compatible HTTP cache protocol
+- **Native Rust addon** - Parallel file hashing (xxHash) and concurrent process management via tokio
+- **Dependency-aware scheduling** - Topological ordering with priority-based batching
+- **Incremental hashing** - mtime-based change detection for near-instant cache checks
+- **Affected detection** - Git diff-based filtering
+- **Run summaries** - Detailed JSON reports for debugging cache behavior
+- **Cache diagnostics** - Explains exactly why a cache miss occurred
+
+## Quick Start
+
+```typescript
+import { defaultTaskRunner } from "@visulima/task-runner";
+
+const results = await defaultTaskRunner(
+    tasks,
+    {
+        smartLockfileHashing: true,
+        frameworkInference: true,
+        globalInputs: ["pnpm-lock.yaml", "tsconfig.base.json"],
+        globalEnv: ["NODE_ENV"],
+    },
+    context,
+);
+```
+
+## How It Works
+
+1. **Build the task graph** - Define tasks and their dependencies
+2. **Compute cache keys** - Hash file contents, env vars, and command arguments
+3. **Check cache** - Skip execution if inputs haven't changed
+4. **Execute tasks** - Run in parallel, respecting dependency order
+5. **Store results** - Cache terminal output and build artifacts for next time
+
+## Comparison
+
+| Feature             | Task Runner | Nx       | Turborepo | Vite Task     |
+| ------------------- | ----------- | -------- | --------- | ------------- |
+| Input detection     | Both modes  | Explicit | Explicit  | Automatic     |
+| Output caching      | Yes         | Yes      | Yes       | Terminal only |
+| Remote cache        | Yes         | Yes      | Yes       | No            |
+| Smart lockfile hash | Yes         | No       | Yes       | No            |
+| Framework inference | Yes         | No       | Yes       | No            |
+| Auto-fingerprinting | Yes         | No       | No        | Yes           |
+| Cache diagnostics   | Yes         | Partial  | No        | Yes           |
+| LRU cache eviction  | Yes         | No       | No        | No            |
+| Graph visualization | Yes         | Yes      | No        | No            |
+| Run summaries       | Yes         | No       | Yes       | No            |

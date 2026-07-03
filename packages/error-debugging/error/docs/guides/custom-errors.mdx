@@ -1,0 +1,58 @@
+---
+title: "Custom Errors"
+---
+
+# Creating Custom Errors
+
+## Basic Custom Error
+
+```typescript
+import { VisulimaError } from "@visulima/error";
+
+class ValidationError extends VisulimaError {
+    constructor(message: string, field?: string) {
+        super({
+            name: "ValidationError",
+            message,
+        });
+
+        if (field) {
+            this.hint = `Field '${field}' is invalid`;
+        }
+    }
+}
+```
+
+## With Metadata
+
+```typescript
+class APIError extends VisulimaError {
+    public statusCode: number;
+    public endpoint: string;
+
+    constructor(message: string, statusCode: number, endpoint: string) {
+        super({
+            name: "APIError",
+            message,
+        });
+
+        this.statusCode = statusCode;
+        this.endpoint = endpoint;
+    }
+}
+
+const error = new APIError("Request failed", 500, "/api/users");
+```
+
+## Error Chains
+
+```typescript
+const dbError = new Error("Connection refused");
+const appError = new VisulimaError({
+    name: "ApplicationError",
+    message: "Failed to fetch user",
+    cause: dbError,
+});
+
+throw appError;
+```

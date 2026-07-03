@@ -1,0 +1,14 @@
+{
+    "name": "@fixture/c",
+    "version": "1.0.0",
+    "main": "index.js",
+    "files": [
+        "index.js"
+    ],
+    "dependencies": {
+        "@fixture/a": "workspace:*"
+    },
+    "devDependencies": {
+        "typescript": "catalog:"
+    }
+}

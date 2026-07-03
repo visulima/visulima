@@ -1,0 +1,8 @@
+{
+    "name": "data-manipulation/html",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/data-manipulation/html/src",
+    "projectType": "library",
+    "tags": ["html", "type:package", "category:api-web"],
+    "implicitDependencies": []
+}
