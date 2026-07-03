@@ -1,3 +1,133 @@
+## @visulima/colorize [2.0.0](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.29...@visulima/colorize@2.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* the listed packages no longer publish a CommonJS build —
+consumers must use ESM (import) or dynamic import(). @visulima/connect,
+@visulima/crud, @visulima/prisma-dmmf-transformer and @visulima/api-platform
+are removed and deprecated.
+
+Co-Authored-By: Claude Opus 4.8 (1M context) <noreply@anthropic.com>
+* change min node version to 22.13
+
+### Features
+
+* **colorize:** add per-instance color level and fix exports/gradient hot path ([f38cfba](https://github.com/visulima/visulima/commit/f38cfbaf0fe0db716e125d457c195d88a67d8dad))
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **colorize:** 1 bug fix + 1 perf ([e5a53ed](https://github.com/visulima/visulima/commit/e5a53ed2e6761a40853afcbd0c939a558b4f1680))
+* **colorize:** make dist-runtime test tolerant of minified function names ([6657dec](https://github.com/visulima/visulima/commit/6657decbbfd6b8fbd58b17077a679a27298906cd))
+* **colorize:** properly fix eslint errors in code ([c9941a4](https://github.com/visulima/visulima/commit/c9941a42e04570c7a4f39e4f65424b507a58352d))
+* **colorize:** resolve eslint and formatting issues ([edc292a](https://github.com/visulima/visulima/commit/edc292a567fb3a97e6428e6fee86b47137e00952))
+* **colorize:** rewrite ternary as if/else to satisfy operator-linebreak ([999c115](https://github.com/visulima/visulima/commit/999c115ee078a601167c972404c6e625813fea1b))
+* **colorize:** satisfy isolatedDeclarations for re-exported codes ([3756b45](https://github.com/visulima/visulima/commit/3756b454b15480479d3b48ac347bd287808a8bed))
+* **colorize:** strip ambient FORCE_COLOR from test helper env ([414d237](https://github.com/visulima/visulima/commit/414d237d0836222766e1ad6c85897a99c29aafe2))
+* **colorize:** update package files ([84c87a3](https://github.com/visulima/visulima/commit/84c87a3383cf370c94280319ac79ac106aaca3ec))
+* **colorize:** update packem to 2.0.0-alpha.54 ([61e248b](https://github.com/visulima/visulima/commit/61e248be63d5e3ad069aae06d5f0a76e5ca58600))
+* **colorize:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([65da9d0](https://github.com/visulima/visulima/commit/65da9d038280a836a925fc264186506841b89add))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* resolve failing tests across multiple packages ([2b4b6f0](https://github.com/visulima/visulima/commit/2b4b6f04169b60fdc4cf77b293015436a272c0fb))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **object,redact,colorize,path,fs:** add comprehensive Fumadocs documentation ([19c3840](https://github.com/visulima/visulima/commit/19c384041db855e1c2de41ce2067458b39737565))
+
+### Styles
+
+* cs fix ([3ec237b](https://github.com/visulima/visulima/commit/3ec237b85eb4f83801d2c3f73a19e7107778dd5d))
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* apply linting and formatting fixes across packages ([5d150a5](https://github.com/visulima/visulima/commit/5d150a578f9ce861c791843c683deeb849b774a9))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **colorize:** add tsconfig.eslint.json for type-aware linting ([0a2b596](https://github.com/visulima/visulima/commit/0a2b596b74df932cf492400029ecdaf572b8f474))
+* **colorize:** apply pending changes ([2ef0ef0](https://github.com/visulima/visulima/commit/2ef0ef0f05183a62a442f2390947b955da33a23a))
+* **colorize:** apply prettier formatting ([f572dc4](https://github.com/visulima/visulima/commit/f572dc47f1398070adc5d4879d9f99870fe71760))
+* **colorize:** enforce curly braces and apply lint fixes ([aaa9abb](https://github.com/visulima/visulima/commit/aaa9abbf7216ecc6526a40104ad9088235978142))
+* **colorize:** fix lint conflict between eslint and prettier ([b0a316d](https://github.com/visulima/visulima/commit/b0a316d0ba7f6b7969fe14ce0fee9aae55206453))
+* **colorize:** fix lint errors ([7aac22d](https://github.com/visulima/visulima/commit/7aac22d80dffe22a75881bc89460493381cda317))
+* **colorize:** housekeeping cleanup ([69a01ec](https://github.com/visulima/visulima/commit/69a01ec038aa738b1f4a2504c85ea56f5786edc5))
+* **colorize:** migrate .prettierrc.cjs to prettier.config.js ([6d84ecc](https://github.com/visulima/visulima/commit/6d84eccbfba7ff59fd7463ef973b80d50d85f464))
+* **colorize:** migrate deps to pnpm catalogs ([72117a7](https://github.com/visulima/visulima/commit/72117a7e915e99b81517a67a61bce44bf58bc23e))
+* **colorize:** update dependencies ([ec10901](https://github.com/visulima/visulima/commit/ec109011e995724aaff2276344c18619c4c96ad9))
+* **colorize:** update dependencies ([9da1353](https://github.com/visulima/visulima/commit/9da1353fc7c6c61b511ceb2988f5ae2a6a598d45))
+* **colorize:** update dependencies ([1d995c9](https://github.com/visulima/visulima/commit/1d995c97607a5c95ac208758e957a62180e27072))
+* **colorize:** upgrade packem to 2.0.0-alpha.76 ([d912a81](https://github.com/visulima/visulima/commit/d912a81321bdb96047b483deea693375030e63a3))
+* cs fixes ([#659](https://github.com/visulima/visulima/issues/659)) ([61f8912](https://github.com/visulima/visulima/commit/61f891274c1de22a36af256fc981b585b9ec6a6a))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* move top-level examples into their respective packages ([3bf7105](https://github.com/visulima/visulima/commit/3bf7105a56db6383ae65d5e28dea9a2c18af791a))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* moved examples ([bb07290](https://github.com/visulima/visulima/commit/bb07290fba65a83aaad8f0ef62d1c244d1610002))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **release:** @visulima/colorize@2.0.0-alpha.1 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/colorize@1.4.29...@visulima/colorize@2.0.0-alpha.1) (2025-12-05) ([79cf8b0](https://github.com/visulima/visulima/commit/79cf8b0fd9302359d9308e68befaa30fb4214ba4))
+* **release:** @visulima/colorize@2.0.0-alpha.10 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.9...@visulima/colorize@2.0.0-alpha.10) (2026-04-22) ([c84d5b4](https://github.com/visulima/visulima/commit/c84d5b438e1a26c85a39be56b007af0dbc6da7fd))
+* **release:** @visulima/colorize@2.0.0-alpha.11 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.10...@visulima/colorize@2.0.0-alpha.11) (2026-05-14) ([a9fe7a4](https://github.com/visulima/visulima/commit/a9fe7a4eede08c90dbba6d9f07a33cd8c4a615b2))
+* **release:** @visulima/colorize@2.0.0-alpha.12 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.11...@visulima/colorize@2.0.0-alpha.12) (2026-05-27) ([bbdbeae](https://github.com/visulima/visulima/commit/bbdbeae6d5c6bf5bd02894bcf988183e90a21c80))
+* **release:** @visulima/colorize@2.0.0-alpha.13 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.12...@visulima/colorize@2.0.0-alpha.13) (2026-06-04) ([69ea2cb](https://github.com/visulima/visulima/commit/69ea2cb5f07aab059c8c2172532c9bbe71551ab5))
+* **release:** @visulima/colorize@2.0.0-alpha.14 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.13...@visulima/colorize@2.0.0-alpha.14) (2026-06-13) ([060b7df](https://github.com/visulima/visulima/commit/060b7df7c285edb15d574acf764fee00274f8cbb))
+* **release:** @visulima/colorize@2.0.0-alpha.15 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.14...@visulima/colorize@2.0.0-alpha.15) (2026-06-30) ([9ad1ad6](https://github.com/visulima/visulima/commit/9ad1ad60cfe5d1b5eb3a22ea7e15579ddf8fa21c))
+* **release:** @visulima/colorize@2.0.0-alpha.2 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.1...@visulima/colorize@2.0.0-alpha.2) (2025-12-06) ([cc9095e](https://github.com/visulima/visulima/commit/cc9095e9dc8c393a6ccad8429d0833a35dc81f41))
+* **release:** @visulima/colorize@2.0.0-alpha.3 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.2...@visulima/colorize@2.0.0-alpha.3) (2025-12-11) ([07e054a](https://github.com/visulima/visulima/commit/07e054a038b227233bc3199f263244c640963b66))
+* **release:** @visulima/colorize@2.0.0-alpha.4 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.3...@visulima/colorize@2.0.0-alpha.4) (2025-12-27) ([551a302](https://github.com/visulima/visulima/commit/551a302633a7c0e7cacf88234561c68031c7a0ea))
+* **release:** @visulima/colorize@2.0.0-alpha.5 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.4...@visulima/colorize@2.0.0-alpha.5) (2026-03-06) ([faed09a](https://github.com/visulima/visulima/commit/faed09ad6a8ae6ecabdcef5335cc7fc485902d90))
+* **release:** @visulima/colorize@2.0.0-alpha.6 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.5...@visulima/colorize@2.0.0-alpha.6) (2026-03-26) ([d2f13da](https://github.com/visulima/visulima/commit/d2f13da1acb92d9c90c255eabad878f36ea81ffe))
+* **release:** @visulima/colorize@2.0.0-alpha.7 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.6...@visulima/colorize@2.0.0-alpha.7) (2026-03-26) ([cd801f1](https://github.com/visulima/visulima/commit/cd801f1b9bb6757d6a9c26fb274557edfab0d0d9))
+* **release:** @visulima/colorize@2.0.0-alpha.8 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.7...@visulima/colorize@2.0.0-alpha.8) (2026-04-08) ([48db5b0](https://github.com/visulima/visulima/commit/48db5b0f81e111b6b5585ce5640179d1550ddf73))
+* **release:** @visulima/colorize@2.0.0-alpha.9 [skip ci]\n\n## @visulima/colorize [2.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.8...@visulima/colorize@2.0.0-alpha.9) (2026-04-15) ([fb89580](https://github.com/visulima/visulima/commit/fb895805ab333ba9818303507cc6fe5fc091d094))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update homepage URLs to visulima.com/packages/ format ([be42968](https://github.com/visulima/visulima/commit/be42968129df85fb074224435e33135ff44cab91))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* upgrade `vitest` version to 4.0.15 in multiple package.json files and update lockfile for improved compatibility; adjust test cases for ESM package support in tooling tests ([0fba407](https://github.com/visulima/visulima/commit/0fba407e08283ba8c1c9488f99ca1f9ff676c4cf))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* address thermos code-quality findings ([392ed96](https://github.com/visulima/visulima/commit/392ed96b489b1c4df30157ad2f33fc9b3fd82fef))
+* **colorize,tabular:** resolve fallow dead-code findings ([28e41ec](https://github.com/visulima/visulima/commit/28e41ecffa073614f783d8527f4dceed772f2e20))
+* **colorize:** decompose GradientBuilder constructor (complexity) ([ae00682](https://github.com/visulima/visulima/commit/ae006822e366814ba63d0893c203d65c70f9b725))
+* ship esm-only; remove deprecated api packages ([6e58351](https://github.com/visulima/visulima/commit/6e58351e73ac7d8f8ec88be4d77871e4de5d5405))
+
+### Tests
+
+* **colorize:** cover ansi-code downsampling, gradient utils, css/unescape/template and browser paths ([70d84af](https://github.com/visulima/visulima/commit/70d84af748296eb718b527da9a25cd079b3b5138))
+* **colorize:** use packages.colors key in bench ([e87c2db](https://github.com/visulima/visulima/commit/e87c2db66eec4883cb22201982d0820461babd6f))
+* repair cerebro, fs, colorize bench CI runs ([03b530e](https://github.com/visulima/visulima/commit/03b530edc678ca6f5c2869ae283f0f3ca6e86c5e))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Build System
+
+* emit .js instead of .mjs for esm output ([c8a6026](https://github.com/visulima/visulima/commit/c8a602665a59f0441a61a5a510cdfed9353101e6))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/is-ansi-color-supported:** upgraded to 3.0.0
+
 ## @visulima/colorize [2.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/colorize@2.0.0-alpha.14...@visulima/colorize@2.0.0-alpha.15) (2026-06-30)
 
 ### ⚠ BREAKING CHANGES
