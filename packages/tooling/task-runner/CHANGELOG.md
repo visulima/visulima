@@ -1,3 +1,26 @@
+## @visulima/task-runner [1.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.25...@visulima/task-runner@1.0.0-alpha.26) (2026-07-03)
+
+### Bug Fixes
+
+* **task-runner:** copy decompressed tar into offset-0 array before parse ([d3df40d](https://github.com/visulima/visulima/commit/d3df40d35d7c51ea665c11fe6bb8aed5e9e728da))
+* **task-runner:** fold dependency hashes into task cache key ([8ad36ce](https://github.com/visulima/visulima/commit/8ad36ce48478063d407c09a51263a7e1de11da4a))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+
+### Code Refactoring
+
+* resolve fallow dead-code across 13 packages ([8c458d2](https://github.com/visulima/visulima/commit/8c458d2eb17225ed48fc4bee4569e522912e8c3d))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
 ## @visulima/task-runner [1.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/task-runner@1.0.0-alpha.24...@visulima/task-runner@1.0.0-alpha.25) (2026-06-23)
 
 ### Features
