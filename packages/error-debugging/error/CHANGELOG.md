@@ -1,3 +1,151 @@
+## @visulima/error [6.0.0](https://github.com/visulima/visulima/compare/@visulima/error@5.0.6...@visulima/error@6.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* **serialize:** Serialized errors now have all properties explicitly enumerable, which may affect code relying on property enumerability checks. ErrorProto properties are now non-enumerable.
+* change min node version to 22.13
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* address pr 713 code-scanning findings ([66ab1fd](https://github.com/visulima/visulima/commit/66ab1fd4f5065014dd98cea9a014ae659cea2fb0))
+* **dev-toolbar:** resolve import/no-named-as-default eslint error ([#686](https://github.com/visulima/visulima/issues/686)) ([87964f5](https://github.com/visulima/visulima/commit/87964f587e9b13fff0ea8b7ea8f058e847d7c015))
+* **error-debugging:** resolve eslint and formatting issues ([7d0ada8](https://github.com/visulima/visulima/commit/7d0ada8787bf624df5a7d504448a4d1b69165aba))
+* **error-debugging:** resolve eslint and type-safety issues ([886dbff](https://github.com/visulima/visulima/commit/886dbffe3f744c9493fcc54e781de3fd21eebf78))
+* **error, secret-scanner:** fix build and test failures ([c2c438f](https://github.com/visulima/visulima/commit/c2c438fc442ea2d3052a86e7b35b0e2327475ebf))
+* **error:** 4 bug fixes ([db024ed](https://github.com/visulima/visulima/commit/db024ed12a05910526799dc8738a3bb68ff76fd6))
+* **error:** disable isolated declarations to unblock Windows CI ([9400798](https://github.com/visulima/visulima/commit/9400798af74f780f1dde89de48692b31fb020d3e))
+* **error:** harden code-frame and ai cache access ([9e33cf2](https://github.com/visulima/visulima/commit/9e33cf2dcbe89ebe9107f32d6b0cfc653c622f4e))
+* **error:** harden serialize/deserialize and ai cache, add sourcemap hook ([e5a27a0](https://github.com/visulima/visulima/commit/e5a27a057c6a290739dde000b6d304a0cd92555e))
+* **error:** properly fix eslint errors in code ([4f4cf45](https://github.com/visulima/visulima/commit/4f4cf45f223ad0482bb9c0eed14738303662105a))
+* **error:** remove remaining eslint suppressions with proper code fixes ([e92dc33](https://github.com/visulima/visulima/commit/e92dc3372363051cf635a69f918c5f875fd1bd72))
+* **error:** resolve eslint and formatting issues ([703a2cf](https://github.com/visulima/visulima/commit/703a2cf03aef83b13cee952666eb6413b69ee1e3))
+* **error:** resolve eslint and formatting issues ([c28a1ce](https://github.com/visulima/visulima/commit/c28a1ce7aab333981723520ea78ff823003dd64c))
+* **error:** resolve eslint errors ([52639e9](https://github.com/visulima/visulima/commit/52639e902f8bc7b29498ecfb0c546cf9642d7af8))
+* **error:** type parse-stacktrace trace as Trace ([5c95d27](https://github.com/visulima/visulima/commit/5c95d27777cd9ca8aa4c836a465c7c67c41a7512))
+* **error:** update package files ([ea9d556](https://github.com/visulima/visulima/commit/ea9d55669d1f3e0d7902d931a82e0acd39081ea7))
+* **error:** update packem to 2.0.0-alpha.54 ([bd3a938](https://github.com/visulima/visulima/commit/bd3a938b9465147803d06a82018b539ed4c121c8))
+* **error:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([1e8ce4c](https://github.com/visulima/visulima/commit/1e8ce4c2b70b9ed58668311f1e38d49a5205a15a))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **security:** address codeql findings across packages ([3366f9c](https://github.com/visulima/visulima/commit/3366f9c07d54bdde5242fbd90780baa4634de179))
+* **serialize:** improve error serialization enumerability and circular reference handling ([41e2f0b](https://github.com/visulima/visulima/commit/41e2f0b2dd43b75ec4c44dda0bad3200319cd489))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* **tests:** revert unsafe vitest autofixes from the lint sweep ([378f27c](https://github.com/visulima/visulima/commit/378f27caa370f1d3188aef2ed36d46839abc88c4))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **error,error-handler,ono,inspector,source-map,vite-overlay:** add comprehensive Fumadocs documentation ([a0c8c92](https://github.com/visulima/visulima/commit/a0c8c92949cff2730fc6122f717fe344c030f366))
+* prettier-format agent instructions ([71b6414](https://github.com/visulima/visulima/commit/71b6414528780ac82c4e0bb25b5f4f11faba5549))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+* **error:** format LICENSE.md ([ea3bdd3](https://github.com/visulima/visulima/commit/ea3bdd34bfd46cbf02a0293ce407d6732e4d2263))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **error-debugging:** remove empty dependency objects from package.json ([7eb7c8e](https://github.com/visulima/visulima/commit/7eb7c8eba1394e515fa77c0f56baf41c0810de2e))
+* **error-debugging:** update dependencies ([6002ece](https://github.com/visulima/visulima/commit/6002ece1803b2ba8261cff42a362dd6e8ddcc3ee))
+* **error:** add tsconfig.eslint.json for type-aware linting ([c5fa576](https://github.com/visulima/visulima/commit/c5fa57628362636cdafc09139d955c60bd1db3d0))
+* **error:** apply pending changes ([37bdcfa](https://github.com/visulima/visulima/commit/37bdcfa0d59c309623cae748a1d6151f39c8bdc6))
+* **error:** apply prettier and eslint formatting sweep ([25c5eaf](https://github.com/visulima/visulima/commit/25c5eaf4989bddfe860b52aea113b3e229fea84f))
+* **error:** apply prettier and eslint quote-style auto-fix ([7f4ffa8](https://github.com/visulima/visulima/commit/7f4ffa839a9d1f47e2b3fa98e97aca199e1c6f34))
+* **error:** apply prettier formatting ([10704af](https://github.com/visulima/visulima/commit/10704af82a1317a43b5379982617f35953b8d069))
+* **error:** enforce curly braces and apply lint fixes ([d96e5d5](https://github.com/visulima/visulima/commit/d96e5d5673b3a6dc847051135358a293cf7de268))
+* **error:** fix lint errors ([4ccd46c](https://github.com/visulima/visulima/commit/4ccd46c3b9d962b9aaf2f8968e6ae75676e2027a))
+* **error:** migrate .prettierrc.cjs to prettier.config.js ([15ca04c](https://github.com/visulima/visulima/commit/15ca04cb0de5f026607aef88e98b68a0fffa3366))
+* **error:** migrate deps to pnpm catalogs ([3feaa2b](https://github.com/visulima/visulima/commit/3feaa2b908b770635f0652132382841b05e9e6e3))
+* **error:** update dependencies ([09611be](https://github.com/visulima/visulima/commit/09611be27152da54c6d1354fe584eee3f902b34b))
+* **error:** update dependencies ([4d22f31](https://github.com/visulima/visulima/commit/4d22f315f164ccaa50c88dcb7d0dd85b58bfbf5a))
+* **error:** update dependencies ([8dcc42c](https://github.com/visulima/visulima/commit/8dcc42cc1cbe6f3acceecb3360cb8dce0b99deb7))
+* **error:** update packem config ([3e8d5db](https://github.com/visulima/visulima/commit/3e8d5dbc710d90bb5d0b5cc00c304322db150548))
+* **error:** upgrade packem to 2.0.0-alpha.76 ([8c17a52](https://github.com/visulima/visulima/commit/8c17a527c8a811d57d39ebb58a6af55078ddb18a))
+* **fallow:** resolve dead-code findings ([c4125d5](https://github.com/visulima/visulima/commit/c4125d53e03ac9d90115399634535991927a96cc))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* jsr.json update and lock file ([73fce38](https://github.com/visulima/visulima/commit/73fce38c7cb4603f3fffb88609b1b18e2feb4937))
+* move top-level examples into their respective packages ([3bf7105](https://github.com/visulima/visulima/commit/3bf7105a56db6383ae65d5e28dea9a2c18af791a))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **release:** @visulima/error@6.0.0-alpha.1 [skip ci]\n\n## @visulima/error [6.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/error@5.0.6...@visulima/error@6.0.0-alpha.1) (2025-12-07) ([82ce8e9](https://github.com/visulima/visulima/commit/82ce8e9081740e356d0f60346c754dde0acbb57a))
+* **release:** @visulima/error@6.0.0-alpha.10 [skip ci]\n\n## @visulima/error [6.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.9...@visulima/error@6.0.0-alpha.10) (2026-04-21) ([fb8f505](https://github.com/visulima/visulima/commit/fb8f505e57e85a4401152b62a8ad0af47f602d0d))
+* **release:** @visulima/error@6.0.0-alpha.11 [skip ci]\n\n## @visulima/error [6.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.10...@visulima/error@6.0.0-alpha.11) (2026-04-21) ([9144701](https://github.com/visulima/visulima/commit/91447011f902b49c78c03c7f8f1004ec27ed2fc4))
+* **release:** @visulima/error@6.0.0-alpha.12 [skip ci]\n\n## @visulima/error [6.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.11...@visulima/error@6.0.0-alpha.12) (2026-04-21) ([c66ee36](https://github.com/visulima/visulima/commit/c66ee362ebde7f1d130bd38d987a5dac70a05f15))
+* **release:** @visulima/error@6.0.0-alpha.13 [skip ci]\n\n## @visulima/error [6.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.12...@visulima/error@6.0.0-alpha.13) (2026-04-22) ([5b0bec8](https://github.com/visulima/visulima/commit/5b0bec8b2953686eeec3d926f3a5d4a7b2354ee6))
+* **release:** @visulima/error@6.0.0-alpha.14 [skip ci]\n\n## @visulima/error [6.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.13...@visulima/error@6.0.0-alpha.14) (2026-04-30) ([20566a5](https://github.com/visulima/visulima/commit/20566a5f70ff995e1195a14c94e1d22a368dfe52))
+* **release:** @visulima/error@6.0.0-alpha.15 [skip ci]\n\n## @visulima/error [6.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.14...@visulima/error@6.0.0-alpha.15) (2026-05-04) ([c4ab78c](https://github.com/visulima/visulima/commit/c4ab78cb50f84d4b81b66de159c2bb8bfe992c5c))
+* **release:** @visulima/error@6.0.0-alpha.16 [skip ci]\n\n## @visulima/error [6.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.15...@visulima/error@6.0.0-alpha.16) (2026-05-06) ([c97477c](https://github.com/visulima/visulima/commit/c97477c0fc7e2e677db587ac3bac5b132049d45e))
+* **release:** @visulima/error@6.0.0-alpha.17 [skip ci]\n\n## @visulima/error [6.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.16...@visulima/error@6.0.0-alpha.17) (2026-05-06) ([813f024](https://github.com/visulima/visulima/commit/813f024cc22091bbda4d3ef9c325aa425f623602))
+* **release:** @visulima/error@6.0.0-alpha.18 [skip ci]\n\n## @visulima/error [6.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.17...@visulima/error@6.0.0-alpha.18) (2026-05-07) ([a5c6129](https://github.com/visulima/visulima/commit/a5c6129f2ca4f8b7e228dd7cf0a19d388a57a965))
+* **release:** @visulima/error@6.0.0-alpha.19 [skip ci]\n\n## @visulima/error [6.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.18...@visulima/error@6.0.0-alpha.19) (2026-05-07) ([96e0db8](https://github.com/visulima/visulima/commit/96e0db8209420f41bf7e0c5152cd090b98adbc11))
+* **release:** @visulima/error@6.0.0-alpha.2 [skip ci]\n\n## @visulima/error [6.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.1...@visulima/error@6.0.0-alpha.2) (2025-12-11) ([4aaebc3](https://github.com/visulima/visulima/commit/4aaebc30100db11882fc25ba8e8d8378b298538b))
+* **release:** @visulima/error@6.0.0-alpha.20 [skip ci]\n\n## @visulima/error [6.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.19...@visulima/error@6.0.0-alpha.20) (2026-05-10) ([5f7ad8e](https://github.com/visulima/visulima/commit/5f7ad8ec12730482e756115f8da2d34d3b3a3c77))
+* **release:** @visulima/error@6.0.0-alpha.21 [skip ci]\n\n## @visulima/error [6.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.20...@visulima/error@6.0.0-alpha.21) (2026-05-10) ([c14104f](https://github.com/visulima/visulima/commit/c14104f488a7cfab0f210314503f0273bfb85c49))
+* **release:** @visulima/error@6.0.0-alpha.22 [skip ci]\n\n## @visulima/error [6.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.21...@visulima/error@6.0.0-alpha.22) (2026-05-11) ([8334608](https://github.com/visulima/visulima/commit/8334608e6a0f15441bfe149367663c4f4eb66838))
+* **release:** @visulima/error@6.0.0-alpha.23 [skip ci]\n\n## @visulima/error [6.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.22...@visulima/error@6.0.0-alpha.23) (2026-05-11) ([29e99de](https://github.com/visulima/visulima/commit/29e99decb20b7530fd6b467ec8969183339a1e1d))
+* **release:** @visulima/error@6.0.0-alpha.24 [skip ci]\n\n## @visulima/error [6.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.23...@visulima/error@6.0.0-alpha.24) (2026-05-14) ([e48ba9b](https://github.com/visulima/visulima/commit/e48ba9b37bb9ffc155c933c5e931db158b0756f9))
+* **release:** @visulima/error@6.0.0-alpha.25 [skip ci]\n\n## @visulima/error [6.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.24...@visulima/error@6.0.0-alpha.25) (2026-05-16) ([e358d7a](https://github.com/visulima/visulima/commit/e358d7ac9fbb8b1e8706fcc2ba4c87f4122b5ae3))
+* **release:** @visulima/error@6.0.0-alpha.26 [skip ci]\n\n## @visulima/error [6.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.25...@visulima/error@6.0.0-alpha.26) (2026-05-19) ([b9139a3](https://github.com/visulima/visulima/commit/b9139a36e0eec2b1259a2d34351c8c07993ba540))
+* **release:** @visulima/error@6.0.0-alpha.27 [skip ci]\n\n## @visulima/error [6.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.26...@visulima/error@6.0.0-alpha.27) (2026-05-20) ([19c0c11](https://github.com/visulima/visulima/commit/19c0c11e00beaac49fde417032daf7e1309e2c65))
+* **release:** @visulima/error@6.0.0-alpha.28 [skip ci]\n\n## @visulima/error [6.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.27...@visulima/error@6.0.0-alpha.28) (2026-05-26) ([eed748d](https://github.com/visulima/visulima/commit/eed748d763f773cbf88a41768c4fbde1ce71e009))
+* **release:** @visulima/error@6.0.0-alpha.29 [skip ci]\n\n## @visulima/error [6.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.28...@visulima/error@6.0.0-alpha.29) (2026-05-26) ([4798a81](https://github.com/visulima/visulima/commit/4798a814e49f02be5b02199b5f4dd2ea4e35c40f))
+* **release:** @visulima/error@6.0.0-alpha.3 [skip ci]\n\n## @visulima/error [6.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.2...@visulima/error@6.0.0-alpha.3) (2025-12-27) ([5cb9164](https://github.com/visulima/visulima/commit/5cb91643f0cf4a6c99c2b6870fb9c8329c53b342))
+* **release:** @visulima/error@6.0.0-alpha.30 [skip ci]\n\n## @visulima/error [6.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.29...@visulima/error@6.0.0-alpha.30) (2026-05-27) ([3242960](https://github.com/visulima/visulima/commit/3242960a007c224f9eb0454d3d80725f96a73673))
+* **release:** @visulima/error@6.0.0-alpha.31 [skip ci]\n\n## @visulima/error [6.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.30...@visulima/error@6.0.0-alpha.31) (2026-06-02) ([a69d52d](https://github.com/visulima/visulima/commit/a69d52d8d4a29810c6754de0c4de088d5ccaf4db))
+* **release:** @visulima/error@6.0.0-alpha.32 [skip ci]\n\n## @visulima/error [6.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.31...@visulima/error@6.0.0-alpha.32) (2026-06-04) ([b3da462](https://github.com/visulima/visulima/commit/b3da462992162ede7c381483fc05a21e84091615))
+* **release:** @visulima/error@6.0.0-alpha.33 [skip ci]\n\n## @visulima/error [6.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.32...@visulima/error@6.0.0-alpha.33) (2026-06-13) ([42e177e](https://github.com/visulima/visulima/commit/42e177e962235ee4bb52f82e6ab0a047c0ebc63a))
+* **release:** @visulima/error@6.0.0-alpha.34 [skip ci]\n\n## @visulima/error [6.0.0-alpha.34](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.33...@visulima/error@6.0.0-alpha.34) (2026-06-19) ([aa2ae65](https://github.com/visulima/visulima/commit/aa2ae65e2332777b869c768c21051ae28cd415e0))
+* **release:** @visulima/error@6.0.0-alpha.35 [skip ci]\n\n## @visulima/error [6.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.34...@visulima/error@6.0.0-alpha.35) (2026-06-30) ([8afa45e](https://github.com/visulima/visulima/commit/8afa45e7f2f0d9ef3d6518b8b8af00aa40ff18e0))
+* **release:** @visulima/error@6.0.0-alpha.4 [skip ci]\n\n## @visulima/error [6.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.3...@visulima/error@6.0.0-alpha.4) (2026-01-17) ([0daaceb](https://github.com/visulima/visulima/commit/0daaceb83122c15af226c826e60eefda595c7ea4))
+* **release:** @visulima/error@6.0.0-alpha.5 [skip ci]\n\n## @visulima/error [6.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.4...@visulima/error@6.0.0-alpha.5) (2026-03-06) ([3b17e71](https://github.com/visulima/visulima/commit/3b17e713301393aa35466209835596400bb4fb94))
+* **release:** @visulima/error@6.0.0-alpha.6 [skip ci]\n\n## @visulima/error [6.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.5...@visulima/error@6.0.0-alpha.6) (2026-03-26) ([43d0b84](https://github.com/visulima/visulima/commit/43d0b8476c6e7a61bc0d72dbde39a68535c05948))
+* **release:** @visulima/error@6.0.0-alpha.7 [skip ci]\n\n## @visulima/error [6.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.6...@visulima/error@6.0.0-alpha.7) (2026-03-26) ([851bf64](https://github.com/visulima/visulima/commit/851bf64428411ef4dc9e8016afced891363c07e6))
+* **release:** @visulima/error@6.0.0-alpha.8 [skip ci]\n\n## @visulima/error [6.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.7...@visulima/error@6.0.0-alpha.8) (2026-04-08) ([0875ffd](https://github.com/visulima/visulima/commit/0875ffd3ae6295313f84d348612b32a2ba853bab))
+* **release:** @visulima/error@6.0.0-alpha.9 [skip ci]\n\n## @visulima/error [6.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.8...@visulima/error@6.0.0-alpha.9) (2026-04-15) ([75b9d8d](https://github.com/visulima/visulima/commit/75b9d8d40cfed49673c30c640f7e28478baa24d7))
+* **repo:** apply eslint --fix and prettier --fix across packages ([#650](https://github.com/visulima/visulima/issues/650)) ([2e26a84](https://github.com/visulima/visulima/commit/2e26a84774f218f21345e9a8ecd68236b6542743)), closes [#620](https://github.com/visulima/visulima/issues/620)
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update homepage URLs to visulima.com/packages/ format ([be42968](https://github.com/visulima/visulima/commit/be42968129df85fb074224435e33135ff44cab91))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* **error:** apply lint cleanup and restore test formatting ([756f99d](https://github.com/visulima/visulima/commit/756f99d9f28cd61cde721555369d668e08f884b7))
+* resolve fallow dead-code across 13 packages ([8c458d2](https://github.com/visulima/visulima/commit/8c458d2eb17225ed48fc4bee4569e522912e8c3d))
+
+### Tests
+
+* **error:** cover ai finder, solution finders, stacktrace and code-frame branches ([08fdd54](https://github.com/visulima/visulima/commit/08fdd549855a04f9f1aa9fd9c555cefb401b2297))
+* **error:** normalize parse-stacktrace test paths to forward slashes ([64b14c6](https://github.com/visulima/visulima/commit/64b14c6c1fc287c6f2ae0fbda734d2ec397e8413))
+* fix failing and flaky package tests ([3f2894e](https://github.com/visulima/visulima/commit/3f2894e816e99f465abb0d3b7d5161af69bbb4ec))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+### Continuous Integration
+
+* disable isolatedDeclarationTransformer ([b34aa64](https://github.com/visulima/visulima/commit/b34aa648561299524b9f2c273815b6e5456fd12a))
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+* **lint:** raise eslint job timeout and cache slow per-package eslint runs ([#717](https://github.com/visulima/visulima/issues/717)) ([c93878d](https://github.com/visulima/visulima/commit/c93878dbfa1888cc834704448ae6eefd3098597e)), closes [#713](https://github.com/visulima/visulima/issues/713)
+
 ## @visulima/error [6.0.0-alpha.35](https://github.com/visulima/visulima/compare/@visulima/error@6.0.0-alpha.34...@visulima/error@6.0.0-alpha.35) (2026-06-30)
 
 ### Bug Fixes
