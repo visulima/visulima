@@ -1,3 +1,97 @@
+## @visulima/humanizer [3.0.0](https://github.com/visulima/visulima/compare/@visulima/humanizer@2.0.5...@visulima/humanizer@3.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Features
+
+* **humanizer:** add Norwegian Nynorsk (nn) duration language ([#684](https://github.com/visulima/visulima/issues/684)) ([4d0c07d](https://github.com/visulima/visulima/commit/4d0c07dbb1d9dc17efb8585e93bc24deaf83eb68)), closes [EvanHahn/HumanizeDuration.js#236](https://github.com/EvanHahn/HumanizeDuration.js/issues/236)
+* **humanizer:** fix parse/format bugs and add humanizer factory, bits, iso8601 ([15a4a19](https://github.com/visulima/visulima/commit/15a4a19404e2bbd3f8fe413eac427a966604480a))
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **data-manipulation:** resolve eslint and type-safety issues ([f1682c2](https://github.com/visulima/visulima/commit/f1682c2611cbcc6c85d4bbea520d43464b42e7ee))
+* **humanizer:** 3 bug fixes + 1 perf ([97686e3](https://github.com/visulima/visulima/commit/97686e33c6c286c1f4f3ecafd5852368355d26e7))
+* **humanizer:** keep runtime dynamic language import out of the build glob ([48693e3](https://github.com/visulima/visulima/commit/48693e326cd12e99e2debd8135aa8f4454cb0f9a))
+* **humanizer:** properly fix eslint errors in code ([cb00491](https://github.com/visulima/visulima/commit/cb00491092837af7e1fb519e7fee4d1567f51e34))
+* **humanizer:** remove remaining eslint suppressions with proper code fixes ([ec9c058](https://github.com/visulima/visulima/commit/ec9c058bcd0524c6843198679faad9f9f8b546e0))
+* **humanizer:** resolve eslint and formatting issues ([18e63f7](https://github.com/visulima/visulima/commit/18e63f701b8a75ba9d24bee32d38a59304a1bbc4))
+* **humanizer:** resolve eslint errors ([4dea64f](https://github.com/visulima/visulima/commit/4dea64f9cd70b6d6a485c59993a6b26c2a15ea7f))
+* **humanizer:** update package files ([f370cff](https://github.com/visulima/visulima/commit/f370cff64a0c065ca66f87ffbbd5f7d20cc41a8f))
+* **humanizer:** update packem to 2.0.0-alpha.54 ([f38a2ba](https://github.com/visulima/visulima/commit/f38a2baf3067292f65ded370fa2194bab518ee3c))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* resolve failing tests across multiple packages ([2b4b6f0](https://github.com/visulima/visulima/commit/2b4b6f04169b60fdc4cf77b293015436a272c0fb))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* update Romanian duration translations and improve unit handling ([f553b09](https://github.com/visulima/visulima/commit/f553b09e0d001853a88223d456bcb1709415667d))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **humanizer,html,iso-locale,package,tsconfig:** add comprehensive Fumadocs documentation ([19781ce](https://github.com/visulima/visulima/commit/19781ce5d27605971a9f2fdf0a99863effd98091))
+* **humanizer:** add HumanizeDuration.js credits ([#688](https://github.com/visulima/visulima/issues/688)) ([a4d57c8](https://github.com/visulima/visulima/commit/a4d57c87d3352a764732bf3cb13305247d512650))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **data-manipulation:** remove empty dependency objects from package.json ([c0e8f76](https://github.com/visulima/visulima/commit/c0e8f7689a2da413f771494f6ecb07babc4b5e06))
+* **data-manipulation:** update dependencies ([49458ab](https://github.com/visulima/visulima/commit/49458ab8f8e17d875840b1b4fe8b5efe12ff3513))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* **humanizer:** add tsconfig.eslint.json for type-aware linting ([3c39145](https://github.com/visulima/visulima/commit/3c391453b8ad7a75598384a152e62cd4d44141ca))
+* **humanizer:** apply prettier formatting ([f66629e](https://github.com/visulima/visulima/commit/f66629e5138777948bc3bef31eb17d8f27aa120e))
+* **humanizer:** enforce curly braces and apply lint fixes ([35b82d7](https://github.com/visulima/visulima/commit/35b82d76b9177ba3e11b078f3ba11cce61822307))
+* **humanizer:** exclude __bench__ dir from eslint config ([435f953](https://github.com/visulima/visulima/commit/435f953d48fc1f117aa57f90a5b5ced389c3bb63))
+* **humanizer:** housekeeping cleanup ([0aa67b7](https://github.com/visulima/visulima/commit/0aa67b737fcce7ee793c6242f36d4d7647cb1960))
+* **humanizer:** migrate .prettierrc.cjs to prettier.config.js ([85c09a7](https://github.com/visulima/visulima/commit/85c09a74f03e3d6450b9ec25a97b5a4123ca2ea4))
+* **humanizer:** migrate deps to pnpm catalogs ([f731305](https://github.com/visulima/visulima/commit/f73130503a2cd7caa211799e668ede30b40844b4))
+* **humanizer:** update dependencies ([48f5e2c](https://github.com/visulima/visulima/commit/48f5e2c4f16bd4503722644043dce08967193634))
+* **humanizer:** update dependencies ([70c666e](https://github.com/visulima/visulima/commit/70c666ee1f7dcf5cf6a7fde56b2763ea3f037dd7))
+* **humanizer:** update dependencies ([d536412](https://github.com/visulima/visulima/commit/d5364126592f69e4ac06af6f692842aa9c971c82))
+* **humanizer:** upgrade packem to 2.0.0-alpha.76 ([d0399e3](https://github.com/visulima/visulima/commit/d0399e31873cbde38eb6143437446ec6caf853b3))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **release:** @visulima/humanizer@3.0.0-alpha.1 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/humanizer@2.0.5...@visulima/humanizer@3.0.0-alpha.1) (2025-12-04) ([60ba833](https://github.com/visulima/visulima/commit/60ba8332120fd536a98a37d8ca70a72b19f66e16))
+* **release:** @visulima/humanizer@3.0.0-alpha.10 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.9...@visulima/humanizer@3.0.0-alpha.10) (2026-04-15) ([6e90778](https://github.com/visulima/visulima/commit/6e90778ee18c0333f77c4339f8d732208b7b77b2))
+* **release:** @visulima/humanizer@3.0.0-alpha.11 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.10...@visulima/humanizer@3.0.0-alpha.11) (2026-04-22) ([55e381a](https://github.com/visulima/visulima/commit/55e381a86cf11cee1d986a8121ce90c00c96a69b))
+* **release:** @visulima/humanizer@3.0.0-alpha.12 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.11...@visulima/humanizer@3.0.0-alpha.12) (2026-05-27) ([5b58e7d](https://github.com/visulima/visulima/commit/5b58e7dcdce3161b9b39cfac8523de94c847cb8f))
+* **release:** @visulima/humanizer@3.0.0-alpha.13 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.12...@visulima/humanizer@3.0.0-alpha.13) (2026-06-04) ([197bbee](https://github.com/visulima/visulima/commit/197bbeec3e9c34e8fa152d2ff799a826bf2f3b64))
+* **release:** @visulima/humanizer@3.0.0-alpha.14 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.13...@visulima/humanizer@3.0.0-alpha.14) (2026-06-13) ([bab30a9](https://github.com/visulima/visulima/commit/bab30a9829e09ac16c35d999dffd11250b03c196))
+* **release:** @visulima/humanizer@3.0.0-alpha.15 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.14...@visulima/humanizer@3.0.0-alpha.15) (2026-06-19) ([6c56082](https://github.com/visulima/visulima/commit/6c56082f53c63a5f9ead67a9db0230604bb5b617))
+* **release:** @visulima/humanizer@3.0.0-alpha.2 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.1...@visulima/humanizer@3.0.0-alpha.2) (2025-12-06) ([eff2416](https://github.com/visulima/visulima/commit/eff24163d562821990767800bd0cd4285bc7757a))
+* **release:** @visulima/humanizer@3.0.0-alpha.3 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.2...@visulima/humanizer@3.0.0-alpha.3) (2025-12-10) ([83174fd](https://github.com/visulima/visulima/commit/83174fd8e8da2d91cea2a6de4024aa1482472370))
+* **release:** @visulima/humanizer@3.0.0-alpha.4 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.3...@visulima/humanizer@3.0.0-alpha.4) (2025-12-11) ([f307744](https://github.com/visulima/visulima/commit/f307744223a5858f9f44493acdf108a63af936c2))
+* **release:** @visulima/humanizer@3.0.0-alpha.5 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.4...@visulima/humanizer@3.0.0-alpha.5) (2025-12-27) ([40a9c7d](https://github.com/visulima/visulima/commit/40a9c7def8a30fac17558494e70a33c4b0447bbe))
+* **release:** @visulima/humanizer@3.0.0-alpha.6 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.5...@visulima/humanizer@3.0.0-alpha.6) (2026-03-06) ([74def4f](https://github.com/visulima/visulima/commit/74def4f5e51663b364654f0ab5103858977eaa80))
+* **release:** @visulima/humanizer@3.0.0-alpha.7 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.6...@visulima/humanizer@3.0.0-alpha.7) (2026-03-26) ([abb72a0](https://github.com/visulima/visulima/commit/abb72a0b020f043429febb5eee7c41d4cebab8be))
+* **release:** @visulima/humanizer@3.0.0-alpha.8 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.7...@visulima/humanizer@3.0.0-alpha.8) (2026-03-26) ([6f2e9f8](https://github.com/visulima/visulima/commit/6f2e9f84bbfd4d235da43702372eb3f6d677f1ef))
+* **release:** @visulima/humanizer@3.0.0-alpha.9 [skip ci]\n\n## @visulima/humanizer [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.8...@visulima/humanizer@3.0.0-alpha.9) (2026-04-08) ([ee162e4](https://github.com/visulima/visulima/commit/ee162e4ac5ef120ec96be31cf61b8ba9c1ab4ae9))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Tests
+
+* **humanizer:** cover bytes/duration edge paths, slavic plural forms, and create-duration-language options ([f557598](https://github.com/visulima/visulima/commit/f55759841d579f8608ea24ec9b48cef573e5ab85))
+* **humanizer:** tighten bytes and duration assertions ([0d74921](https://github.com/visulima/visulima/commit/0d74921f7750417c5e961f034723374257284372))
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
 ## @visulima/humanizer [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/humanizer@3.0.0-alpha.14...@visulima/humanizer@3.0.0-alpha.15) (2026-06-19)
 
 ### Features
