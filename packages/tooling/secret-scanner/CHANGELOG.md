@@ -1,3 +1,25 @@
+## @visulima/secret-scanner [1.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.7...@visulima/secret-scanner@1.0.0-alpha.8) (2026-07-03)
+
+### Bug Fixes
+
+* **ci:** disable pnpm pre-run install via --config flag, not env ([0320d83](https://github.com/visulima/visulima/commit/0320d838876fe41efacad57bad697a5b36132e80))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+
+### Code Refactoring
+
+* resolve fallow dead-code across 13 packages ([8c458d2](https://github.com/visulima/visulima/commit/8c458d2eb17225ed48fc4bee4569e522912e8c3d))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
 ## @visulima/secret-scanner [1.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/secret-scanner@1.0.0-alpha.6...@visulima/secret-scanner@1.0.0-alpha.7) (2026-06-20)
 
 ### Bug Fixes
