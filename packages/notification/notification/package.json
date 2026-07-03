@@ -1,6 +1,6 @@
 {
     "name": "@visulima/notification",
-    "version": "1.0.0-alpha.7",
+    "version": "1.0.0",
     "description": "A reusable, ESM-only, edge-ready multi-channel notification library with SMS, push, chat, in-app and webhook providers",
     "keywords": [
         "notification",
@@ -257,10 +257,10 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/email": "1.0.0-alpha.47",
-        "@visulima/error": "6.0.0-alpha.35",
+        "@visulima/email": "1.0.0",
+        "@visulima/error": "6.0.0",
         "@visulima/packem": "catalog:dev",
-        "@visulima/workflow": "1.0.0-alpha.2",
+        "@visulima/workflow": "1.0.0",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",
@@ -283,8 +283,8 @@
     "peerDependencies": {
         "@aws-sdk/client-sqs": "^3.0.0",
         "@opentelemetry/api": "^1.0.0 || ^2.0.0",
-        "@visulima/email": "1.0.0-alpha.47",
-        "@visulima/workflow": "1.0.0-alpha.2",
+        "@visulima/email": "1.0.0",
+        "@visulima/workflow": "1.0.0",
         "bullmq": "^5.0.0",
         "croner": "^10.0.1",
         "handlebars": "catalog:peer",
