@@ -1,6 +1,6 @@
 {
     "name": "@visulima/workflow",
-    "version": "1.0.0-alpha.2",
+    "version": "1.0.0",
     "description": "A reusable, ESM-only, edge-ready durable workflow engine: code-first workflows with resumable steps, delays and external-event waits, backed by a pluggable store",
     "keywords": [
         "workflow",
