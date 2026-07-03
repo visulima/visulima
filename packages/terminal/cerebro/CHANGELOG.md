@@ -1,3 +1,185 @@
+## @visulima/cerebro [3.0.0](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.5...@visulima/cerebro@3.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Features
+
+* **cerebro:** add addGlobalOption API for CLI-wide options ([ccc1cc0](https://github.com/visulima/visulima/commit/ccc1cc085ed0189be49ab8da7d9dbbc69ba07c72))
+* **cerebro:** add heap-tuning and compile-cache performance helpers ([aebd564](https://github.com/visulima/visulima/commit/aebd56425b8e0e3fac0e5c6cec3697cdfe376881))
+* **cerebro:** add lazy command loading via loader field ([5e10e4a](https://github.com/visulima/visulima/commit/5e10e4ac1bcdb3a0203395f43f760c8fc3b12741))
+* **cerebro:** clear lint findings and resolve help command collisions ([b75f269](https://github.com/visulima/visulima/commit/b75f2693426e35c3866f7cb501a1a25ad92e6e83))
+* **cerebro:** expose rawUnknown on the Toolbox ([0d92cdf](https://github.com/visulima/visulima/commit/0d92cdf22270db5420af8b639b135b75e043de08))
+* **cerebro:** harden argv caps, add choices + strict options, bound update check ([4082ec2](https://github.com/visulima/visulima/commit/4082ec2e80eb0ced5c8843d9d3e5d6bd0f798485))
+* **cerebro:** inject fs/console/process into toolbox + clone/getAction ([7d8ab0a](https://github.com/visulima/visulima/commit/7d8ab0a3ef88ac2c8da054984cf36162e8a61530))
+* **cerebro:** longest-prefix parser with option-stop and parent help ([ef1d244](https://github.com/visulima/visulima/commit/ef1d24446462cd5b34598f70715d4987c31b4eff))
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **cerebro:** 6 bug fixes ([717f07e](https://github.com/visulima/visulima/commit/717f07ef9ffcc1c28a01250fe1534fa45f5d11cf))
+* **cerebro:** add blank line before re-keying nested namesake ([ad40fec](https://github.com/visulima/visulima/commit/ad40fec43b255673fbf09399b6a99c6d596c0d23))
+* **cerebro:** cast positionals argument to string array ([432ac5d](https://github.com/visulima/visulima/commit/432ac5dab63a71583e3d170dc1c014dc735d6a1d))
+* **cerebro:** catch and report errors thrown from [#execute](https://github.com/visulima/visulima/issues/execute)CommandInternal ([1580aa0](https://github.com/visulima/visulima/commit/1580aa081152052010e0458f6c38bbc0cf6bfa57)), closes [#executeCommandInternal](https://github.com/visulima/visulima/issues/executeCommandInternal)
+* **cerebro:** disambiguate flat/nested commands sharing a leaf name ([fdfe641](https://github.com/visulima/visulima/commit/fdfe64188e4d4f280d1466df6fcbcbbc6e3a891b))
+* **cerebro:** properly fix eslint errors in code ([2ba0003](https://github.com/visulima/visulima/commit/2ba00034172b33072af1ae09109652b6571f4474))
+* **cerebro:** remove remaining eslint suppressions with proper code fixes ([a872fb4](https://github.com/visulima/visulima/commit/a872fb477866b921a79a42eb4645fda97f1b83d3))
+* **cerebro:** resolve eslint and formatting issues ([d362f80](https://github.com/visulima/visulima/commit/d362f8011afa2fdf7195544a05468ad425904c27))
+* **cerebro:** resolve eslint errors ([7159a69](https://github.com/visulima/visulima/commit/7159a6910d94042b834bdda4b6929d529532d272))
+* **cerebro:** rewrite formatRow as if/else to satisfy lint rules ([43140b3](https://github.com/visulima/visulima/commit/43140b391c6282f3ff335b51713e77335c46cd31))
+* **cerebro:** silence packem hoist warning blocking prod build ([608aa67](https://github.com/visulima/visulima/commit/608aa676b615473e9e7860b72f788d6c58b96bd7))
+* **cerebro:** silence unused-condition lint on resolved help command ([02b0695](https://github.com/visulima/visulima/commit/02b06957e6db41c9fdc3ff47ad5d3c9941f77214))
+* **cerebro:** suppress no-confusing-arrow on content section formatRow ([847b679](https://github.com/visulima/visulima/commit/847b67932150e07e111b77e908b5bd4ee074837d))
+* **cerebro:** update package files ([5161bbd](https://github.com/visulima/visulima/commit/5161bbd0abf7f5feb71c1d01b06ba48ec31545b4))
+* **cerebro:** update packem to 2.0.0-alpha.54 ([bcc08fd](https://github.com/visulima/visulima/commit/bcc08fdf6eed77b84bdff0fe40dd4fe7dd74a463))
+* **cerebro:** use default colorize import ([c8f5997](https://github.com/visulima/visulima/commit/c8f599775bf3a5c9f92e570c80970b439f4a44c9))
+* **cerebro:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([6647854](https://github.com/visulima/visulima/commit/6647854b69a518466318af623938c0435f3a2579))
+* **dependencies:** update [@bomb](https://github.com/bomb).sh/tab to version 0.0.11 in package.json files ([9d50ce3](https://github.com/visulima/visulima/commit/9d50ce3bb1ae8209ce56173edbf7bd86837438ce))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* **terminal:** resolve eslint and formatting issues ([12ef283](https://github.com/visulima/visulima/commit/12ef283684d1808fbcfe44077a0cfe8324801485))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* update package.json description and keywords ([#578](https://github.com/visulima/visulima/issues/578)) ([154709c](https://github.com/visulima/visulima/commit/154709c05e71d1ffd3e360b27e12febd817912f0))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Performance Improvements
+
+* **cerebro:** disable esbuild keepNames in prod build ([18e4db0](https://github.com/visulima/visulima/commit/18e4db065acd5d83f65e1f56e3923ebda7bb86b6))
+
+### Documentation
+
+* **cerebro,prisma-dmmf-transformer,jsdoc-open-api:** add comprehensive Fumadocs documentation ([891b308](https://github.com/visulima/visulima/commit/891b308a34bca2765a4a97ea450648d20d90e0cf))
+* **cerebro:** document addGlobalOption and getGlobalOptions APIs ([92b38bf](https://github.com/visulima/visulima/commit/92b38bf19115b1469b7e3cbe439305f4d27342e8))
+* **cerebro:** document lazy command loading ([3feb2e1](https://github.com/visulima/visulima/commit/3feb2e149ad5a93725539096d6f389d1b1f72875))
+* **cerebro:** fix markdown formatting in migration guide ([66aaab6](https://github.com/visulima/visulima/commit/66aaab6e25ba2ffca707decaacc3a899850e91f5))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* apply linting and formatting fixes across packages ([5d150a5](https://github.com/visulima/visulima/commit/5d150a578f9ce861c791843c683deeb849b774a9))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **cerebro:** add tsconfig.eslint.json for type-aware linting ([f14bd4c](https://github.com/visulima/visulima/commit/f14bd4ccef02397a97abf60b0be91e58faf4f5e8))
+* **cerebro:** apply formatter and lint fixes ([25aedfa](https://github.com/visulima/visulima/commit/25aedfa32a9476e8a127580e2a4154bca512342d))
+* **cerebro:** apply formatter and lint fixes ([f2d19a1](https://github.com/visulima/visulima/commit/f2d19a167b8ebef07e2c2cce241673a6c34a8112))
+* **cerebro:** apply linter fixes and prior session changes ([f50c294](https://github.com/visulima/visulima/commit/f50c294aa41c4c5bbbf8c1c1e3f4d4dcdb5be07f))
+* **cerebro:** apply pending changes ([5502fd8](https://github.com/visulima/visulima/commit/5502fd8399ef704bf9d5c192642aef35b73275ef))
+* **cerebro:** apply pending lint and source updates ([727956c](https://github.com/visulima/visulima/commit/727956c737b9a1f811bc71c5343bcc56f91e5097))
+* **cerebro:** apply prettier and eslint quote-style auto-fix ([31132ae](https://github.com/visulima/visulima/commit/31132aeab40b3f6fa920a37635813e14d7e8b17e))
+* **cerebro:** apply prettier formatting ([2649ac5](https://github.com/visulima/visulima/commit/2649ac5e3dfda9b816087f34e0feab28a4496cbb))
+* **cerebro:** enforce curly braces and apply lint fixes ([79f5b19](https://github.com/visulima/visulima/commit/79f5b19bf8f1c6e6f4d2c47f4a160bfcf44b6bb4))
+* **cerebro:** fix lint errors ([87649b0](https://github.com/visulima/visulima/commit/87649b0408ce3667bf1be9be795321851e6e8f15))
+* **cerebro:** housekeeping cleanup ([643b7d9](https://github.com/visulima/visulima/commit/643b7d9e268dca11544f0b9476b011a8620c04c8))
+* **cerebro:** migrate .prettierrc.cjs to prettier.config.js ([133284e](https://github.com/visulima/visulima/commit/133284ef72efd7639dd147a2c5552c514cb84bff))
+* **cerebro:** migrate deps to pnpm catalogs ([75cfac0](https://github.com/visulima/visulima/commit/75cfac01080464cc07279164520177472aff3b13))
+* **cerebro:** update dependencies ([401f0bf](https://github.com/visulima/visulima/commit/401f0bf2bab395ac191e48cded78fa354970b245))
+* **cerebro:** update dependencies ([a276082](https://github.com/visulima/visulima/commit/a27608237e7dd33bed639101147f7ee36f1cdaec))
+* **cerebro:** update dependencies ([60f2a71](https://github.com/visulima/visulima/commit/60f2a717e23220c394a31fde456291e42348fddd))
+* **cerebro:** upgrade packem to 2.0.0-alpha.76 ([657c11e](https://github.com/visulima/visulima/commit/657c11ec325b49abec1f9a6e4bac72f482942758))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* refresh generated license bundles and disposable-domain stats ([a389f38](https://github.com/visulima/visulima/commit/a389f38484788aafa8ba9b698e2dd5805a982d98))
+* **release:** @visulima/cerebro@3.0.0-alpha.1 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/cerebro@2.1.5...@visulima/cerebro@3.0.0-alpha.1) (2025-12-07) ([4c5329f](https://github.com/visulima/visulima/commit/4c5329fb28afb47f4c1adab0c18bddcd8e3e8882))
+* **release:** @visulima/cerebro@3.0.0-alpha.10 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.9...@visulima/cerebro@3.0.0-alpha.10) (2026-04-08) ([b462497](https://github.com/visulima/visulima/commit/b4624973e96bf75bfe2d3a3f46617a7115cba1a1))
+* **release:** @visulima/cerebro@3.0.0-alpha.11 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.10...@visulima/cerebro@3.0.0-alpha.11) (2026-04-22) ([232c653](https://github.com/visulima/visulima/commit/232c653ca0b038a00df6e6bc4a4beed52c512a3a))
+* **release:** @visulima/cerebro@3.0.0-alpha.12 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.11...@visulima/cerebro@3.0.0-alpha.12) (2026-04-28) ([2976a5a](https://github.com/visulima/visulima/commit/2976a5afcf94f0c5a5f7f94e927148b68fb9e07c))
+* **release:** @visulima/cerebro@3.0.0-alpha.13 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.12...@visulima/cerebro@3.0.0-alpha.13) (2026-04-30) ([34c90b1](https://github.com/visulima/visulima/commit/34c90b171bf58b3105483c3e7335b695858d2d09))
+* **release:** @visulima/cerebro@3.0.0-alpha.14 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.13...@visulima/cerebro@3.0.0-alpha.14) (2026-05-04) ([6887d18](https://github.com/visulima/visulima/commit/6887d183d4b95a8cef21075021fe893432b1038d))
+* **release:** @visulima/cerebro@3.0.0-alpha.15 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.14...@visulima/cerebro@3.0.0-alpha.15) (2026-05-06) ([87000d5](https://github.com/visulima/visulima/commit/87000d569b36b67454fa52591acc9ae9990a9b5f))
+* **release:** @visulima/cerebro@3.0.0-alpha.16 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.15...@visulima/cerebro@3.0.0-alpha.16) (2026-05-06) ([33ac60a](https://github.com/visulima/visulima/commit/33ac60a19af326e5543dc19788dff3a15df17d11))
+* **release:** @visulima/cerebro@3.0.0-alpha.17 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.16...@visulima/cerebro@3.0.0-alpha.17) (2026-05-07) ([ee749d8](https://github.com/visulima/visulima/commit/ee749d8730e29130e4bee37812704592bd502651))
+* **release:** @visulima/cerebro@3.0.0-alpha.18 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.17...@visulima/cerebro@3.0.0-alpha.18) (2026-05-07) ([eb9c91c](https://github.com/visulima/visulima/commit/eb9c91c80776146696fa382b2cb1ec7bf3e54830))
+* **release:** @visulima/cerebro@3.0.0-alpha.19 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.19](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.18...@visulima/cerebro@3.0.0-alpha.19) (2026-05-10) ([ac35797](https://github.com/visulima/visulima/commit/ac3579726cfc302004e124120bc50c286a06ac11))
+* **release:** @visulima/cerebro@3.0.0-alpha.2 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.1...@visulima/cerebro@3.0.0-alpha.2) (2025-12-08) ([b0109cc](https://github.com/visulima/visulima/commit/b0109cc5d4a1094b341ef9a7c4e6b93f2092adfd))
+* **release:** @visulima/cerebro@3.0.0-alpha.20 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.20](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.19...@visulima/cerebro@3.0.0-alpha.20) (2026-05-10) ([4df2086](https://github.com/visulima/visulima/commit/4df208651d0c7c4c52757be3440624e1cb01e93e))
+* **release:** @visulima/cerebro@3.0.0-alpha.21 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.21](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.20...@visulima/cerebro@3.0.0-alpha.21) (2026-05-11) ([c707213](https://github.com/visulima/visulima/commit/c707213f81b9589cb0e17aafe5b830fbad7ce29b))
+* **release:** @visulima/cerebro@3.0.0-alpha.22 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.22](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.21...@visulima/cerebro@3.0.0-alpha.22) (2026-05-11) ([9f80bc3](https://github.com/visulima/visulima/commit/9f80bc3a717b602a6fb067ea6f17f1accc6e2815))
+* **release:** @visulima/cerebro@3.0.0-alpha.23 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.23](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.22...@visulima/cerebro@3.0.0-alpha.23) (2026-05-14) ([13afd74](https://github.com/visulima/visulima/commit/13afd74a7ae51cccc00b18ec857365a0b1fe13ae))
+* **release:** @visulima/cerebro@3.0.0-alpha.24 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.24](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.23...@visulima/cerebro@3.0.0-alpha.24) (2026-05-16) ([b57cc42](https://github.com/visulima/visulima/commit/b57cc42feeb90aae783c7737e1a832ae8b208848))
+* **release:** @visulima/cerebro@3.0.0-alpha.25 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.25](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.24...@visulima/cerebro@3.0.0-alpha.25) (2026-05-19) ([cf4cafb](https://github.com/visulima/visulima/commit/cf4cafb1a0be95a696339113f9f5013022e077ea))
+* **release:** @visulima/cerebro@3.0.0-alpha.26 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.26](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.25...@visulima/cerebro@3.0.0-alpha.26) (2026-05-20) ([dade446](https://github.com/visulima/visulima/commit/dade446b6d4a054a37e2a97b3018700445b7a7cc))
+* **release:** @visulima/cerebro@3.0.0-alpha.27 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.27](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.26...@visulima/cerebro@3.0.0-alpha.27) (2026-05-26) ([2c00124](https://github.com/visulima/visulima/commit/2c00124477fbe4d4e1c4a6f9ec1cc29a85148db9))
+* **release:** @visulima/cerebro@3.0.0-alpha.28 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.28](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.27...@visulima/cerebro@3.0.0-alpha.28) (2026-05-27) ([dc52b96](https://github.com/visulima/visulima/commit/dc52b96370af675d44755ee11dc6495119244aa0))
+* **release:** @visulima/cerebro@3.0.0-alpha.29 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.29](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.28...@visulima/cerebro@3.0.0-alpha.29) (2026-05-29) ([b00e325](https://github.com/visulima/visulima/commit/b00e325ac75d9fd003a0605310a8685f279831ec))
+* **release:** @visulima/cerebro@3.0.0-alpha.3 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.2...@visulima/cerebro@3.0.0-alpha.3) (2025-12-11) ([679ba8a](https://github.com/visulima/visulima/commit/679ba8a80a6b4abf23e049dfde7570bd7ce248ab))
+* **release:** @visulima/cerebro@3.0.0-alpha.30 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.30](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.29...@visulima/cerebro@3.0.0-alpha.30) (2026-06-04) ([140098b](https://github.com/visulima/visulima/commit/140098b1d5dd9f8b82569dea2815a67f3728aa26))
+* **release:** @visulima/cerebro@3.0.0-alpha.31 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.31](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.30...@visulima/cerebro@3.0.0-alpha.31) (2026-06-04) ([cf90503](https://github.com/visulima/visulima/commit/cf90503f22c8f0f02d85aed12d2828208f9899a0))
+* **release:** @visulima/cerebro@3.0.0-alpha.32 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.32](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.31...@visulima/cerebro@3.0.0-alpha.32) (2026-06-13) ([f2c1000](https://github.com/visulima/visulima/commit/f2c10006ef7852ef6462b32b507de62d6caf370e))
+* **release:** @visulima/cerebro@3.0.0-alpha.33 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.32...@visulima/cerebro@3.0.0-alpha.33) (2026-06-30) ([d3fd75d](https://github.com/visulima/visulima/commit/d3fd75d83ab4d4bc73c37b8193d106a0205508b5))
+* **release:** @visulima/cerebro@3.0.0-alpha.4 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.3...@visulima/cerebro@3.0.0-alpha.4) (2025-12-13) ([3c0405c](https://github.com/visulima/visulima/commit/3c0405c681793184596e9fcf0276b21cb2e25d24))
+* **release:** @visulima/cerebro@3.0.0-alpha.5 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.4...@visulima/cerebro@3.0.0-alpha.5) (2025-12-27) ([a4271df](https://github.com/visulima/visulima/commit/a4271dffc0ec68cac142401eda5b578bfc93a330))
+* **release:** @visulima/cerebro@3.0.0-alpha.6 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.5...@visulima/cerebro@3.0.0-alpha.6) (2026-03-06) ([a120f6c](https://github.com/visulima/visulima/commit/a120f6c31b382b16e3ea2247ccdce844a03c948f))
+* **release:** @visulima/cerebro@3.0.0-alpha.7 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.6...@visulima/cerebro@3.0.0-alpha.7) (2026-03-16) ([51b0ee1](https://github.com/visulima/visulima/commit/51b0ee1e467943a59be16e52d72ef95c60b43b2c))
+* **release:** @visulima/cerebro@3.0.0-alpha.8 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.7...@visulima/cerebro@3.0.0-alpha.8) (2026-03-26) ([8953f36](https://github.com/visulima/visulima/commit/8953f36290c2c48128bc99d3c8a701d635acc9c0))
+* **release:** @visulima/cerebro@3.0.0-alpha.9 [skip ci]\n\n## @visulima/cerebro [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.8...@visulima/cerebro@3.0.0-alpha.9) (2026-03-26) ([69bfe1b](https://github.com/visulima/visulima/commit/69bfe1b1ca2a09fea3736343b2fad8680896501c))
+* **repo:** apply eslint --fix and prettier --fix across packages ([#650](https://github.com/visulima/visulima/issues/650)) ([2e26a84](https://github.com/visulima/visulima/commit/2e26a84774f218f21345e9a8ecd68236b6542743)), closes [#620](https://github.com/visulima/visulima/issues/620)
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update bundled dependency licenses ([6ace4c6](https://github.com/visulima/visulima/commit/6ace4c69d41fc1fd0a744fbca8ca219ba631b4ab))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update docs ([8eb4d08](https://github.com/visulima/visulima/commit/8eb4d085de9315b63328286b42b8ce5e9f424579))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* **cerebro:** async fs in update-notifier ([d8c0a27](https://github.com/visulima/visulima/commit/d8c0a272dc1195345c4b52077f58e437c27e7b8e))
+* **cerebro:** hoist regex and apply lint fixes ([46a8aac](https://github.com/visulima/visulima/commit/46a8aac8776fbc38634394b3097659e717ef01af))
+* **cerebro:** lazy-load optional peer deps in built-in commands ([d499fe6](https://github.com/visulima/visulima/commit/d499fe60e903eb4322e8fb449d2592b88b7039cd))
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+* resolve fallow dead-code across 13 packages ([8c458d2](https://github.com/visulima/visulima/commit/8c458d2eb17225ed48fc4bee4569e522912e8c3d))
+
+### Tests
+
+* **cerebro:** add tests for options after positional arguments ([f321be8](https://github.com/visulima/visulima/commit/f321be8b56aa79fcf49b98f19d4a2620ae52dc34))
+* **cerebro:** cover plugins, error/validation utils, update-notifier, and command processing branches ([6e40a11](https://github.com/visulima/visulima/commit/6e40a11ec1dd7204083a7d4d1b52a85cb66533e6))
+* **cerebro:** update ESM/CJS integration snapshot for -v alias ([897bb2f](https://github.com/visulima/visulima/commit/897bb2f97d0279801d8d87cf94c0373922550477))
+* fix cross-platform flakes in package + cerebro ([#676](https://github.com/visulima/visulima/issues/676)) ([d1afb4b](https://github.com/visulima/visulima/commit/d1afb4ba743cf18bdf9f02081539d70bdcda91e9))
+* fix failing and flaky package tests ([3f2894e](https://github.com/visulima/visulima/commit/3f2894e816e99f465abb0d3b7d5161af69bbb4ec))
+* improve coverage across packages ([91bd6d3](https://github.com/visulima/visulima/commit/91bd6d3b61736e3c8bd1fc59b0b5955f76a5d323))
+* repair cerebro, fs, colorize bench CI runs ([03b530e](https://github.com/visulima/visulima/commit/03b530edc678ca6f5c2869ae283f0f3ca6e86c5e))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Build System
+
+* **cerebro:** move @visulima/string and terminal-size to devDependencies ([27924b4](https://github.com/visulima/visulima/commit/27924b4716de5631e43e7b7485e6b44a232f27ee))
+* **deps:** update cerebro dependencies ([2bd6590](https://github.com/visulima/visulima/commit/2bd65902460b2531c7d7e6264cbb7348273774b8))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+* integrate codspeed for benchmark tracking ([e758f3d](https://github.com/visulima/visulima/commit/e758f3da491cc00d3f8bbf10d7ba3fdf8deb5325))
+
+
+### Dependencies
+
+* **@visulima/colorize:** upgraded to 2.0.0
+* **@visulima/tabular:** upgraded to 4.0.0
+* **@visulima/boxen:** upgraded to 3.0.0
+* **@visulima/command-line-args:** upgraded to 2.0.0
+* **@visulima/error:** upgraded to 6.0.0
+* **@visulima/find-cache-dir:** upgraded to 3.0.0
+* **@visulima/pail:** upgraded to 4.0.0
+* **@visulima/path:** upgraded to 3.0.0
+* **@visulima/string:** upgraded to 3.0.0
+
 ## @visulima/cerebro [3.0.0-alpha.33](https://github.com/visulima/visulima/compare/@visulima/cerebro@3.0.0-alpha.32...@visulima/cerebro@3.0.0-alpha.33) (2026-06-30)
 
 ### Styles
