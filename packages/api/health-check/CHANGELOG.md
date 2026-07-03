@@ -1,3 +1,88 @@
+## @visulima/health-check [4.0.0](https://github.com/visulima/visulima/compare/@visulima/health-check@3.0.5...@visulima/health-check@4.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Features
+
+* **health-check:** add liveness/readiness, timeouts, caching and more checks ([6602713](https://github.com/visulima/visulima/commit/660271357e2e4781333a58d45d0c9d0d9312a5dc))
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **api:** resolve eslint and type-safety issues across api packages ([3601491](https://github.com/visulima/visulima/commit/3601491261de56b5cfad87c97daafd458e4ee3b6))
+* **health-check:** 2 bug fixes ([560c924](https://github.com/visulima/visulima/commit/560c924923e23ce168cea67010412d1bdc286490))
+* **health-check:** add node types for process/http/assert globals ([39f503f](https://github.com/visulima/visulima/commit/39f503fdce923a892d015552b377f0bf59f7468c))
+* **health-check:** update package files ([d8544c3](https://github.com/visulima/visulima/commit/d8544c3fc489463d361f5b39b289b950f2d04742))
+* **health-check:** update packem to 2.0.0-alpha.54 ([e424965](https://github.com/visulima/visulima/commit/e424965736783b8357da7b28c42f34e0d6d76b44))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **crud,health-check,pagination:** add comprehensive Fumadocs documentation ([1fc3748](https://github.com/visulima/visulima/commit/1fc3748b2d9b1ef2332b5d38cb6dd2c7c1f78589))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* **api:** remove empty dependency objects from package.json ([f6bfc85](https://github.com/visulima/visulima/commit/f6bfc85c48c973ff8ea0a7db5951794ae0ea3efb))
+* **api:** update dependencies ([f3b6f7c](https://github.com/visulima/visulima/commit/f3b6f7c956e8ae2c0da67773b3790f159c07de29))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **dependencies:** update msw to version 2.12.6, jsdom to version 27.4.0, and [@tanstack](https://github.com/tanstack) packages to version 1.144.0 in package.json files ([1aa0236](https://github.com/visulima/visulima/commit/1aa0236e1f8190eecf7526cf2dc0f369cac02d87))
+* **fallow:** resolve dead-code findings ([c4125d5](https://github.com/visulima/visulima/commit/c4125d53e03ac9d90115399634535991927a96cc))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* **health-check:** add tsconfig.eslint.json for type-aware linting ([be743c8](https://github.com/visulima/visulima/commit/be743c8682f5ff1fc56dfda2856d9a434cd52dd2))
+* **health-check:** apply prettier formatting ([2069a83](https://github.com/visulima/visulima/commit/2069a8375ff28d692045381abdcc6454a1f60a27))
+* **health-check:** housekeeping cleanup ([9d3f375](https://github.com/visulima/visulima/commit/9d3f375d8c5977266a03fcf2d3d2e98d59c16fb5))
+* **health-check:** migrate .prettierrc.cjs to prettier.config.js ([c593760](https://github.com/visulima/visulima/commit/c5937606ae0226d58c114aad77261c266a720995))
+* **health-check:** migrate deps to pnpm catalogs ([e06d861](https://github.com/visulima/visulima/commit/e06d86139e9440dcadaaf09075bc0b905f4ac3e1))
+* **health-check:** update dependencies ([d6a1887](https://github.com/visulima/visulima/commit/d6a188719248b52d9b5b2cc526b4ee0d0d2b469d))
+* **health-check:** update dependencies ([1f52d81](https://github.com/visulima/visulima/commit/1f52d810a17d20c21881d28defb7a03771c02c98))
+* **health-check:** update dependencies ([7203dc8](https://github.com/visulima/visulima/commit/7203dc8540ba396631986afbcf01300164825438))
+* **health-check:** upgrade packem to 2.0.0-alpha.76 ([718c263](https://github.com/visulima/visulima/commit/718c2637afd44ad39eebbc351b693c6ca439ffec))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **release:** @visulima/health-check@4.0.0-alpha.1 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/health-check@3.0.5...@visulima/health-check@4.0.0-alpha.1) (2025-12-04) ([514d290](https://github.com/visulima/visulima/commit/514d29085d7f031aa306f47994ca9ff2cefb6c0f))
+* **release:** @visulima/health-check@4.0.0-alpha.10 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.9...@visulima/health-check@4.0.0-alpha.10) (2026-05-27) ([59db64f](https://github.com/visulima/visulima/commit/59db64f68c3a6b421a07cbc0ad6d57bcbae3762f))
+* **release:** @visulima/health-check@4.0.0-alpha.11 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.10...@visulima/health-check@4.0.0-alpha.11) (2026-06-04) ([346dced](https://github.com/visulima/visulima/commit/346dced10e1a4ac4dc4646df899e2c2d28e9d486))
+* **release:** @visulima/health-check@4.0.0-alpha.12 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.11...@visulima/health-check@4.0.0-alpha.12) (2026-06-13) ([ebba025](https://github.com/visulima/visulima/commit/ebba025a630b8690aa2aff3931d2efc422f640e0))
+* **release:** @visulima/health-check@4.0.0-alpha.2 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.1...@visulima/health-check@4.0.0-alpha.2) (2025-12-06) ([550fd9e](https://github.com/visulima/visulima/commit/550fd9e9da12ff1de34920873559a71a003a2e5d))
+* **release:** @visulima/health-check@4.0.0-alpha.3 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.2...@visulima/health-check@4.0.0-alpha.3) (2025-12-11) ([de1063d](https://github.com/visulima/visulima/commit/de1063dc3ae55cf29a8c7f939cbae3430e84354f))
+* **release:** @visulima/health-check@4.0.0-alpha.4 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.3...@visulima/health-check@4.0.0-alpha.4) (2025-12-27) ([9b30371](https://github.com/visulima/visulima/commit/9b303711c050b2eb95440fbcf166d1f942e1120d))
+* **release:** @visulima/health-check@4.0.0-alpha.5 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.4...@visulima/health-check@4.0.0-alpha.5) (2026-03-06) ([5ccc4bd](https://github.com/visulima/visulima/commit/5ccc4bd01e135c42926ca031cf723a17507f2ec2))
+* **release:** @visulima/health-check@4.0.0-alpha.6 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.5...@visulima/health-check@4.0.0-alpha.6) (2026-03-26) ([a89a551](https://github.com/visulima/visulima/commit/a89a5513e1ae656a6b89af5473db8b8e52fbcb50))
+* **release:** @visulima/health-check@4.0.0-alpha.7 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.6...@visulima/health-check@4.0.0-alpha.7) (2026-03-26) ([a511361](https://github.com/visulima/visulima/commit/a5113612653f4561bb6e83648e99a9e10e960802))
+* **release:** @visulima/health-check@4.0.0-alpha.8 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.7...@visulima/health-check@4.0.0-alpha.8) (2026-04-15) ([b2024f6](https://github.com/visulima/visulima/commit/b2024f6a4c59976395342f3dce1b9d35f33b430b))
+* **release:** @visulima/health-check@4.0.0-alpha.9 [skip ci]\n\n## @visulima/health-check [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.8...@visulima/health-check@4.0.0-alpha.9) (2026-04-22) ([10fa69e](https://github.com/visulima/visulima/commit/10fa69eda41ab2fbe615ac7c76cd8827116103de))
+* **repo:** sort package.json keys across all packages ([e1fd9ab](https://github.com/visulima/visulima/commit/e1fd9ab467ef96a98c777da1572ff6a50fcf7e71))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update homepage URLs to visulima.com/packages/ format ([be42968](https://github.com/visulima/visulima/commit/be42968129df85fb074224435e33135ff44cab91))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* **health-check:** fix dns-check return type cast and reformat ([d40dd4c](https://github.com/visulima/visulima/commit/d40dd4c9d755a6d01d5806ccce32d062bc4f4f3d))
+
+### Tests
+
+* **health-check:** cover never-resolving check timeout ([513866a](https://github.com/visulima/visulima/commit/513866a3c0c3707f29e64cee21d54aca4acedc92))
+* **health-check:** cover unhealthy ternaries, displayName fallback, and dns/ping catch paths ([d26f4c6](https://github.com/visulima/visulima/commit/d26f4c6de9dbccd6cfed9a866f0a4429eb8f79a5))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
 ## @visulima/health-check [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/health-check@4.0.0-alpha.11...@visulima/health-check@4.0.0-alpha.12) (2026-06-13)
 
 ### Features
