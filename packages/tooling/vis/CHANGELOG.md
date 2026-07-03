@@ -1,3 +1,20 @@
+## @visulima/vis [1.0.0-alpha.47](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.46...@visulima/vis@1.0.0-alpha.47) (2026-07-03)
+
+### Bug Fixes
+
+* **vis:** move default task cache out of source-bearing .vis/ ([b76ee30](https://github.com/visulima/visulima/commit/b76ee303c94eb69cccb40fe2f49afb8c7569630b))
+
+### Tests
+
+* **vis:** use camelCase cacheDir key in cache verify tests ([5b08c11](https://github.com/visulima/visulima/commit/5b08c1116d97c45dd9eb2728b25bfd4b446614bf))
+
+
+### Dependencies
+
+* **@visulima/secret-scanner:** upgraded to 1.0.0-alpha.8
+* **@visulima/task-runner:** upgraded to 1.0.0-alpha.26
+* **@visulima/find-ai-runner:** upgraded to 1.0.0-alpha.9
+
 ## @visulima/vis [1.0.0-alpha.46](https://github.com/visulima/visulima/compare/@visulima/vis@1.0.0-alpha.45...@visulima/vis@1.0.0-alpha.46) (2026-07-01)
 
 ### Features

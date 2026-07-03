@@ -1,6 +1,6 @@
 {
     "name": "@visulima/vis",
-    "version": "1.0.0-alpha.46",
+    "version": "1.0.0-alpha.47",
     "description": "A monorepo dev toolkit — task runner, remote caching, security scanning, git hooks, and AI agent integrations — powered by @visulima/task-runner",
     "keywords": [
         "build",
@@ -146,10 +146,10 @@
     },
     "dependencies": {
         "@visulima/error": "6.0.0-alpha.35",
-        "@visulima/secret-scanner": "1.0.0-alpha.7",
+        "@visulima/secret-scanner": "1.0.0-alpha.8",
         "@visulima/source-map": "3.0.0-alpha.12",
         "@visulima/tabular": "4.0.0-alpha.14",
-        "@visulima/task-runner": "1.0.0-alpha.25",
+        "@visulima/task-runner": "1.0.0-alpha.26",
         "@visulima/tui": "1.0.0-alpha.27",
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^2.0.1",
@@ -193,7 +193,7 @@
         "@visulima/cerebro": "3.0.0-alpha.33",
         "@visulima/colorize": "2.0.0-alpha.15",
         "@visulima/error": "6.0.0-alpha.35",
-        "@visulima/find-ai-runner": "1.0.0-alpha.8",
+        "@visulima/find-ai-runner": "1.0.0-alpha.9",
         "@visulima/find-cache-dir": "3.0.0-alpha.12",
         "@visulima/fs": "5.0.0-alpha.33",
         "@visulima/humanizer": "3.0.0-alpha.15",
