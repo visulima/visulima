@@ -1,3 +1,117 @@
+## @visulima/find-cache-dir [3.0.0](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@2.0.7...@visulima/find-cache-dir@3.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Features
+
+* **find-cache-dir:** add thunk/files/global-fallback options and async create ([ee4f56d](https://github.com/visulima/visulima/commit/ee4f56d5a03ef8dfd55d331bf5d45a0187c2acc7))
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **filesystem:** resolve eslint issues in fs, path, and find-cache-dir ([59ad5e3](https://github.com/visulima/visulima/commit/59ad5e3051e92365eb8b1fdd73d4f4fd1f4bb547))
+* **find-cache-dir:** 1 bug fix + 1 perf ([fe5b33e](https://github.com/visulima/visulima/commit/fe5b33e4b25410b34dcfb768befd38ca7bb1a1a7))
+* **find-cache-dir:** remove remaining eslint suppressions with proper code fixes ([3963089](https://github.com/visulima/visulima/commit/396308918a15627efdbbf561c73db2837806c2aa))
+* **find-cache-dir:** resolve eslint and formatting issues ([14f7c5e](https://github.com/visulima/visulima/commit/14f7c5e7db01f254cbceb050b4826cd59a68ff5c))
+* **find-cache-dir:** resolve eslint errors ([a3ca4f4](https://github.com/visulima/visulima/commit/a3ca4f4978ae00e50d02d344165afad251de7241))
+* **find-cache-dir:** resolve eslint issues ([2bc4c56](https://github.com/visulima/visulima/commit/2bc4c565a9d6dd7ecd9b198cc1b6de76aa92bab3))
+* **find-cache-dir:** update package files ([5361624](https://github.com/visulima/visulima/commit/53616242673b8c4edfd79645494bc27f18b70516))
+* **find-cache-dir:** update packem to 2.0.0-alpha.54 ([9758ef7](https://github.com/visulima/visulima/commit/9758ef7f7e5bfbaf718e088c4bbc40230565bc33))
+* **find-cache-dir:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([b0db740](https://github.com/visulima/visulima/commit/b0db74081d4338962844c356101ed9b5e19eca5a))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* update package.json description and keywords ([#578](https://github.com/visulima/visulima/issues/578)) ([154709c](https://github.com/visulima/visulima/commit/154709c05e71d1ffd3e360b27e12febd817912f0))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **bytes,deep-clone,ansi,fmt,find-cache-dir:** add comprehensive Fumadocs documentation ([dfe0116](https://github.com/visulima/visulima/commit/dfe0116ebd26fe38f94f77b8ed4dadc3ff45ba91))
+* **find-cache-dir:** document alias rename ([4ac5a71](https://github.com/visulima/visulima/commit/4ac5a7146841456ba44dcb6e18134f1891ed7cb4))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **fallow:** resolve dead-code findings ([c4125d5](https://github.com/visulima/visulima/commit/c4125d53e03ac9d90115399634535991927a96cc))
+* **filesystem:** remove empty dependency objects from package.json ([76ffc54](https://github.com/visulima/visulima/commit/76ffc545660695dde19130d1c01d9bd1aaf2ca98))
+* **filesystem:** update dependencies ([d1a4591](https://github.com/visulima/visulima/commit/d1a45917ba9547a1d7f1b6f62d85ab99bc059dd4))
+* **find-cache-dir:** add tsconfig.eslint.json for type-aware linting ([caee085](https://github.com/visulima/visulima/commit/caee08596310daf50378e8249774c6a544020dab))
+* **find-cache-dir:** apply auto-fix formatting ([fface98](https://github.com/visulima/visulima/commit/fface98531ba7901663fb6ea6b4cabfcadcadd5c))
+* **find-cache-dir:** apply pending changes ([7bde581](https://github.com/visulima/visulima/commit/7bde5810a14c80e20ade3da69d33d06dd1057a86))
+* **find-cache-dir:** apply prettier and eslint quote-style auto-fix ([599ecb8](https://github.com/visulima/visulima/commit/599ecb864150ea46acca9761d86e47a6790dcf55))
+* **find-cache-dir:** apply prettier formatting ([ab10fab](https://github.com/visulima/visulima/commit/ab10fab66ed7b56a3a0c04f1b4a7b64f762ebb42))
+* **find-cache-dir:** bump @visulima/fs to 5.0.0-alpha.14 ([343af7b](https://github.com/visulima/visulima/commit/343af7b921fcd9abd8e7809be17d0820bc175044))
+* **find-cache-dir:** collapse overlong lines to standard formatting ([ab934d0](https://github.com/visulima/visulima/commit/ab934d0059242967eb602a7ca41d27a89316d11d))
+* **find-cache-dir:** enforce curly braces and apply lint fixes ([81d8cc1](https://github.com/visulima/visulima/commit/81d8cc1ecbe95442d2919a15bc61e0d18d5a2ac4))
+* **find-cache-dir:** housekeeping cleanup ([ed1f1ff](https://github.com/visulima/visulima/commit/ed1f1ffb279e2a5c435421c1a309fe3da1fbf67a))
+* **find-cache-dir:** migrate .prettierrc.cjs to prettier.config.js ([c325af8](https://github.com/visulima/visulima/commit/c325af85b66fa5d2507f20acd5d29f41c1bbfc47))
+* **find-cache-dir:** migrate deps to pnpm catalogs ([78b4664](https://github.com/visulima/visulima/commit/78b4664ab3d919483e78e363bc828a6d94cf4798))
+* **find-cache-dir:** update dependencies ([bef8212](https://github.com/visulima/visulima/commit/bef82127bee109dc3daf5f809350c72d401e9e44))
+* **find-cache-dir:** update dependencies ([37e44e9](https://github.com/visulima/visulima/commit/37e44e9a8e6d863fcab47643d89698705c91863b))
+* **find-cache-dir:** update dependencies ([1c49caa](https://github.com/visulima/visulima/commit/1c49caad9b06ec7b76dee642782f14bcf129cfad))
+* **find-cache-dir:** upgrade packem to 2.0.0-alpha.76 ([f29ce07](https://github.com/visulima/visulima/commit/f29ce0709fac1833c60ff1e73d6937ffb6014b9b))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* **fs:** apply prettier and eslint formatting sweep ([6e442f3](https://github.com/visulima/visulima/commit/6e442f3fe4413d52db2959f92574c4159e0450ce))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.1 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@2.0.7...@visulima/find-cache-dir@3.0.0-alpha.1) (2025-12-07) ([9a87b88](https://github.com/visulima/visulima/commit/9a87b88715b09082082a45f0f0f9998e215202d7))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.10 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.9...@visulima/find-cache-dir@3.0.0-alpha.10) (2026-05-27) ([730b5e2](https://github.com/visulima/visulima/commit/730b5e2e69a6bbbc7b2ab2448d8bb3d508e0ca69))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.11 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.10...@visulima/find-cache-dir@3.0.0-alpha.11) (2026-06-04) ([16a00dc](https://github.com/visulima/visulima/commit/16a00dcc587441e5fd9dc43df6944438498c5bff))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.12 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.11...@visulima/find-cache-dir@3.0.0-alpha.12) (2026-06-13) ([8b5d0c2](https://github.com/visulima/visulima/commit/8b5d0c2b1ce7a2e7dedcf0f0003f16782f8eeea9))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.2 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.1...@visulima/find-cache-dir@3.0.0-alpha.2) (2025-12-11) ([6552384](https://github.com/visulima/visulima/commit/655238402dc6201f87db2120d27fc93de3011253))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.3 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.2...@visulima/find-cache-dir@3.0.0-alpha.3) (2025-12-27) ([f1d6191](https://github.com/visulima/visulima/commit/f1d61918404f9a57a793709ea503da24aee91bd2))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.4 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.3...@visulima/find-cache-dir@3.0.0-alpha.4) (2026-03-06) ([4086d3b](https://github.com/visulima/visulima/commit/4086d3b2eb6ae87e77639b6a88795d7604875705))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.5 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.4...@visulima/find-cache-dir@3.0.0-alpha.5) (2026-03-26) ([329d884](https://github.com/visulima/visulima/commit/329d884c450b54e9ffa860039b2f839c75d84bca))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.6 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.5...@visulima/find-cache-dir@3.0.0-alpha.6) (2026-03-26) ([59815bd](https://github.com/visulima/visulima/commit/59815bdcc4afbdfb6a5c32f7a88ba17627ce7520))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.7 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.6...@visulima/find-cache-dir@3.0.0-alpha.7) (2026-04-08) ([828007d](https://github.com/visulima/visulima/commit/828007dae5f512f38ab9967b197a99f1aa45cbd6))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.8 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.7...@visulima/find-cache-dir@3.0.0-alpha.8) (2026-04-21) ([b2b8b0a](https://github.com/visulima/visulima/commit/b2b8b0aa1189f38f0870ebed056b81d199264273))
+* **release:** @visulima/find-cache-dir@3.0.0-alpha.9 [skip ci]\n\n## @visulima/find-cache-dir [3.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.8...@visulima/find-cache-dir@3.0.0-alpha.9) (2026-04-22) ([b4d6352](https://github.com/visulima/visulima/commit/b4d6352c7d5da9db20108b1f2c8cb7769dc76eda))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
+### Tests
+
+* **find-cache-dir:** async create avoids sync fs ([980bd92](https://github.com/visulima/visulima/commit/980bd9277a35a5b05cd4b005bb4abe236254e1cb))
+* **find-cache-dir:** cover create option, not-found undefined return, and cwd fallback ([dca21a2](https://github.com/visulima/visulima/commit/dca21a25a08aa1b042c022fb6c90ac83b96e5674))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Build System
+
+* **deps:** update find-cache-dir dependencies ([1b32c4d](https://github.com/visulima/visulima/commit/1b32c4d5d9c8ab7cb6648a6d9273e48f22eefbb8))
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/fs:** upgraded to 5.0.0
+* **@visulima/path:** upgraded to 3.0.0
+
 ## @visulima/find-cache-dir [3.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/find-cache-dir@3.0.0-alpha.11...@visulima/find-cache-dir@3.0.0-alpha.12) (2026-06-13)
 
 ### Features
