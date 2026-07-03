@@ -240,8 +240,8 @@ import { detectAiSession, isAiSession } from "@visulima/find-ai-runner";
 const session = detectAiSession();
 
 if (session) {
-    console.log(`Driven by ${session.agent} (via ${session.variable})`);
-    // e.g. { agent: "Claude Code", confidence: "definite", provider: "claude", variable: "CLAUDECODE" }
+    console.log(`Driven by ${session.agent} (${session.type}, via ${session.signal})`);
+    // e.g. { agent: "Claude Code", confidence: "definite", type: "agent", provider: "claude", signal: "CLAUDECODE" }
 }
 
 if (isAiSession()) {
@@ -249,11 +249,24 @@ if (isAiSession()) {
 }
 ```
 
-Detection is by environment markers the agent harnesses set in the shells they spawn (Claude Code, Cursor Agent, Codex, Gemini CLI / Qwen Code, GitHub Copilot CLI, opencode, Amp, Cline, Aider, Antigravity, Augment, Replit Agent), plus the self-describing `AI_AGENT` variable, which wins over the marker table. Markers for invokable providers are declared on each provider's config (`sessionMarkers` in `src/providers/*.ts`); non-invokable agents live in `src/session.ts`. Every marker is sourced from a shipping implementation — a false positive silently changes a tool's behavior under a human's fingers.
+Detection is by environment markers the agent harnesses set in the shells they spawn, plus the self-describing `AI_AGENT` variable, which wins over the marker table. Covered agents: Claude Code, Cursor Agent, Codex, Gemini CLI, Qwen Code, GitHub Copilot (CLI and VS Code), opencode, Amp, Crush, Cline, Aider, Antigravity, Augment, Windsurf, Warp, Pi, Jules, Bolt.new, Zed, Replit Agent, and Replit Assistant. Markers for invokable providers are declared on each provider's config (`sessionMarkers` in `src/providers/*.ts`); non-invokable agents live in `src/session.ts`. Every marker is sourced from a shipping implementation — a false positive silently changes a tool's behavior under a human's fingers.
 
-Markers that only prove the **platform** (a Cursor editor terminal via `CURSOR_TRACE_ID`, a Replit workspace via `REPL_ID`) — where a human may well be the one typing — are reported with `confidence: "ambient"` and only consulted with `detectAiSession(process.env, { includeAmbient: true })`. Use ambient detection for telemetry, never for behavior switches.
+Each result carries a `type`: **`agent`** (an AI agent is autonomously driving the process) or **`interactive`** (a human is working inside an AI environment — an editor's integrated terminal). A marker is either a single variable or a composite `all`/`any`/`none` condition — the latter is what separates an agent run from a human typing in the same editor (e.g. Zed with `PAGER=cat` is the agent; Zed alone is the editor). The `signal` field reports what matched: an env var name, a composite marker's label, or a `process:<name>` ancestry hit.
 
-Both functions accept a custom env object for testing: `detectAiSession({ CLAUDECODE: "1" })`.
+Markers that only prove the **platform** (a Cursor editor terminal via `CURSOR_TRACE_ID`, a Replit workspace via `REPL_ID`, a Zed/Bolt.new editor) — where a human may well be the one typing — are reported with `confidence: "ambient"` (`type: "interactive"`) and only consulted with `detectAiSession(process.env, { includeAmbient: true })`. Use ambient detection for telemetry, never for behavior switches.
+
+Some agents mark the shells they spawn with **no environment variable at all** (Octofriend, Devin, Factory Droid) and are detectable only by walking the process ancestry. That is opt-in and meaningfully slower (it spawns a subprocess), so it lives on the async variant:
+
+```ts
+import { detectAiSessionAsync } from "@visulima/find-ai-runner";
+
+const session = await detectAiSessionAsync(process.env, { checkProcesses: true });
+// e.g. { agent: "Octofriend", confidence: "definite", type: "agent", signal: "process:octofriend" }
+```
+
+Both functions accept a custom env object for testing: `detectAiSession({ CLAUDECODE: "1" })`. Pass `{ ancestry: [...] }` to `detectAiSessionAsync` to supply the process tree yourself and skip the subprocess spawn.
+
+The CLI exposes this as `find-ai-runner session [--ambient] [--processes] [--json]`.
 
 ## API
 
@@ -285,9 +298,21 @@ Build the CLI arguments array for a provider without executing.
 
 Detects the AI agent session the current process runs inside via environment markers (see [Session Detection](#session-detection)). Pure; pass a custom `env` in tests.
 
+### `detectAiSessionAsync(env?: EnvLike, options?: AiSessionOptions): Promise<AiSessionInfo | undefined>`
+
+Async superset of `detectAiSession`: checks env markers first, then (when `{ checkProcesses: true }`) walks the process ancestry to catch agents that set no env marker (Octofriend, Devin, Factory Droid). Pass `{ ancestry: [...] }` to supply the process tree yourself and skip the spawn.
+
 ### `isAiSession(env?: EnvLike, options?: AiSessionOptions): boolean`
 
 Convenience predicate over `detectAiSession`.
+
+### `isAiSessionAsync(env?: EnvLike, options?: AiSessionOptions): Promise<boolean>`
+
+Convenience predicate over `detectAiSessionAsync`.
+
+### `getProcessAncestry(startPid?: number): Promise<string[]>`
+
+Returns the command names of the current process and its ancestors (nearest first, lowercased, suffix-stripped). Resolves to `[]` on any failure. This is the signal `detectAiSessionAsync({ checkProcesses: true })` consumes.
 
 ### `runProvider(provider: AiProviderInfo, prompt: string, options?: AiRunOptions): Promise<AiRunResult>`
 

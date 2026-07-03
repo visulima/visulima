@@ -2,26 +2,30 @@
 import { parseArgs } from "node:util";
 
 import { PROVIDER_NAMES } from "./constants";
-import { buildCliArgs, detectAllProviders, detectProvider, runProvider } from "./index";
+import { buildCliArgs, detectAiSessionAsync, detectAllProviders, detectProvider, runProvider } from "./index";
 import type { AiProviderName } from "./types";
 
 interface CliValues {
+    ambient?: boolean;
     dangerous?: boolean;
     help?: boolean;
     json?: boolean;
     "max-tokens"?: string;
     model?: string;
+    processes?: boolean;
     timeout?: string;
     version?: boolean;
 }
 
 /** Option definitions, shared between parsing and unknown-flag diagnostics. */
 const OPTION_DEFINITIONS = {
+    ambient: { type: "boolean" },
     dangerous: { type: "boolean" },
     help: { short: "h", type: "boolean" },
     json: { short: "j", type: "boolean" },
     "max-tokens": { type: "string" },
     model: { short: "m", type: "string" },
+    processes: { type: "boolean" },
     timeout: { short: "t", type: "string" },
     version: { short: "v", type: "boolean" },
 } as const;
@@ -75,6 +79,7 @@ Usage:
 Commands:
   list                        List all providers and their availability
   detect <provider>           Detect a specific provider
+  session                     Detect whether an AI agent is driving THIS process
   run <provider> <prompt>     Run a prompt against a provider
   args <provider> <prompt>    Preview CLI arguments without executing
 
@@ -85,6 +90,10 @@ Options:
   -m, --model <model>         Model override (for run command)
   --max-tokens <n>            Max tokens (default: 4096)
   -t, --timeout <ms>          Timeout in ms (default: 300000)
+  --ambient                   Include ambient markers (session: editor terminals,
+                              cloud workspaces where a human may be typing)
+  --processes                 Also walk the process tree (session: catches agents
+                              that set no env var; spawns a subprocess, slower)
   --dangerous                 Enable permission-bypass mode (UNSAFE: grants the
                               agent unattended tool/file/shell access)
 
@@ -144,6 +153,31 @@ const handleList = (cliValues: CliValues): void => {
 
         console.log(`  ${status} ${provider.name}${version}${path}`);
     }
+};
+
+const handleSession = async (cliValues: CliValues): Promise<void> => {
+    const session = await detectAiSessionAsync(process.env, {
+        checkProcesses: cliValues.processes === true,
+        includeAmbient: cliValues.ambient === true,
+    });
+
+    if (!session) {
+        // Exit 1 in both modes so scripts can gate on the exit code regardless of --json.
+        console.log(cliValues.json ? "null" : "No AI agent session detected.");
+        process.exitCode = 1;
+
+        return;
+    }
+
+    if (cliValues.json) {
+        console.log(JSON.stringify(session, undefined, 2));
+
+        return;
+    }
+
+    const provider = session.provider ? ` [provider: ${session.provider}]` : "";
+
+    console.log(`${session.agent} (${session.type}, ${session.confidence}) via ${session.signal}${provider}`);
 };
 
 const handleDetect = (cliPositionals: string[], cliValues: CliValues): void => {
@@ -278,6 +312,11 @@ const main = async (): Promise<void> => {
 
         case "run": {
             await handleRun(positionals, values);
+            break;
+        }
+
+        case "session": {
+            await handleSession(values);
             break;
         }
 

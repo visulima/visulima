@@ -16,7 +16,11 @@ const amp: AiProviderConfig = {
     defaultModel: "",
     displayName: "Amp",
     envVariable: "AMP_PATH",
-    sessionMarkers: [{ confidence: "definite", equals: "amp", variable: "AGENT" }],
+    // Sourcegraph Amp injects AGENT=amp and AMP_CURRENT_THREAD_ID into every shell tool execution.
+    sessionMarkers: [
+        { confidence: "definite", variable: "AMP_CURRENT_THREAD_ID" },
+        { confidence: "definite", equals: "amp", variable: "AGENT" },
+    ],
     supportsMaxTokens: false,
     supportsModel: false,
 };
