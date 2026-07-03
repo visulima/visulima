@@ -6572,7 +6572,7 @@ importers:
         version: 0.21.1
       '@solidjs/start':
         specifier: catalog:frontend
-        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       '@supabase/storage-js':
         specifier: 2.108.1
         version: 2.108.1
@@ -7016,7 +7016,7 @@ importers:
         version: 0.16.1(solid-js@1.9.13)
       '@solidjs/start':
         specifier: catalog:frontend
-        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+        version: 1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
       '@visulima/storage':
         specifier: workspace:*
         version: link:../../../storage
@@ -7028,7 +7028,7 @@ importers:
         version: 1.9.13
       vinxi:
         specifier: catalog:prod
-        version: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
+        version: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
 
   packages/storage/storage-client/examples/svelte-kit:
     dependencies:
@@ -35395,7 +35395,7 @@ snapshots:
   '@es-joy/jsdoccomment@0.86.0':
     dependencies:
       '@types/estree': 1.0.9
-      '@typescript-eslint/types': 8.61.0
+      '@typescript-eslint/types': 8.62.0
       comment-parser: 1.4.6
       esquery: 1.7.0
       jsdoc-type-pratt-parser: 7.2.0
@@ -35500,9 +35500,9 @@ snapshots:
 
   '@eslint-react/ast@5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/typescript-estree': 8.61.0(typescript@6.0.3)
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/typescript-estree': 8.62.0(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       string-ts: 2.3.1
       typescript: 6.0.3
@@ -35527,9 +35527,9 @@ snapshots:
       '@eslint-react/jsx': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/shared': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/var': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/scope-manager': 8.61.0
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/scope-manager': 8.62.0
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       ts-pattern: 5.9.0
       typescript: 6.0.3
@@ -35582,7 +35582,7 @@ snapshots:
 
   '@eslint-react/eslint@5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -35602,8 +35602,8 @@ snapshots:
       '@eslint-react/eslint': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/shared': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/var': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       ts-pattern: 5.9.0
       typescript: 6.0.3
@@ -35627,7 +35627,7 @@ snapshots:
   '@eslint-react/shared@5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:
       '@eslint-react/eslint': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       ts-pattern: 5.9.0
       typescript: 6.0.3
@@ -35650,9 +35650,9 @@ snapshots:
     dependencies:
       '@eslint-react/ast': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/eslint': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/scope-manager': 8.61.0
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/scope-manager': 8.62.0
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       ts-pattern: 5.9.0
       typescript: 6.0.3
@@ -35674,7 +35674,7 @@ snapshots:
 
   '@eslint-zod/utils@2.3.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       esquery: 1.7.0
     transitivePeerDependencies:
       - eslint
@@ -41180,11 +41180,11 @@ snapshots:
     dependencies:
       solid-js: 1.9.13
 
-  '@solidjs/start@1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
+  '@solidjs/start@1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@tanstack/server-functions-plugin': 1.121.21(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))
-      '@vinxi/server-components': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))
+      '@vinxi/server-components': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))
       cookie-es: 2.0.1
       defu: 6.1.7
       error-stack-parser: 2.1.4
@@ -41196,7 +41196,7 @@ snapshots:
       source-map-js: 1.2.1
       terracotta: 1.1.0(solid-js@1.9.13)
       tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
-      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0)
+      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0)
       vite-plugin-solid: 2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
     transitivePeerDependencies:
       - '@testing-library/jest-dom'
@@ -41204,11 +41204,11 @@ snapshots:
       - supports-color
       - vite
 
-  '@solidjs/start@1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
+  '@solidjs/start@1.3.2(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))':
     dependencies:
       '@tanstack/server-functions-plugin': 1.121.21(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))
-      '@vinxi/server-components': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))
+      '@vinxi/server-components': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))
       cookie-es: 2.0.1
       defu: 6.1.7
       error-stack-parser: 2.1.4
@@ -41220,7 +41220,7 @@ snapshots:
       source-map-js: 1.2.1
       terracotta: 1.1.0(solid-js@1.9.13)
       tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
-      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
+      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
       vite-plugin-solid: 2.11.12(@testing-library/jest-dom@6.9.1)(solid-js@1.9.13)(vite@8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
     transitivePeerDependencies:
       - '@testing-library/jest-dom'
@@ -41526,7 +41526,7 @@ snapshots:
 
   '@stylistic/eslint-plugin-ts@4.4.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       eslint-visitor-keys: 4.2.1
       espree: 10.4.0
@@ -41537,7 +41537,7 @@ snapshots:
   '@stylistic/eslint-plugin@5.10.0(eslint@10.4.1(jiti@2.7.0))':
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@10.4.1(jiti@2.7.0))
-      '@typescript-eslint/types': 8.61.0
+      '@typescript-eslint/types': 8.62.0
       eslint: 10.4.1(jiti@2.7.0)
       eslint-visitor-keys: 4.2.1
       espree: 10.4.0
@@ -41878,7 +41878,7 @@ snapshots:
 
   '@tanstack/eslint-plugin-query@5.101.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
     optionalDependencies:
       typescript: 6.0.3
@@ -41887,7 +41887,7 @@ snapshots:
 
   '@tanstack/eslint-plugin-router@1.162.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
     transitivePeerDependencies:
       - supports-color
@@ -43453,8 +43453,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.56.1(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.61.0(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
+      '@typescript-eslint/tsconfig-utils': 8.62.0(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
       debug: 4.4.3(supports-color@8.1.1)
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -43462,8 +43462,8 @@ snapshots:
 
   '@typescript-eslint/project-service@8.59.1(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.61.0(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
+      '@typescript-eslint/tsconfig-utils': 8.62.0(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
       debug: 4.4.3(supports-color@8.1.1)
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -43471,28 +43471,28 @@ snapshots:
 
   '@typescript-eslint/project-service@8.59.4(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.61.0(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
+      '@typescript-eslint/tsconfig-utils': 8.62.0(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
       debug: 4.4.3(supports-color@8.1.1)
       typescript: 6.0.3
-    transitivePeerDependencies:
-      - supports-color
-
-  '@typescript-eslint/project-service@8.61.0(typescript@5.9.3)':
-    dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.61.0(typescript@5.9.3)
-      '@typescript-eslint/types': 8.61.0
-      debug: 4.4.3(supports-color@8.1.1)
-      typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
 
   '@typescript-eslint/project-service@8.61.0(typescript@6.0.3)':
     dependencies:
-      '@typescript-eslint/tsconfig-utils': 8.61.0(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
+      '@typescript-eslint/tsconfig-utils': 8.62.0(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
       debug: 4.4.3(supports-color@8.1.1)
       typescript: 6.0.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@typescript-eslint/project-service@8.62.0(typescript@5.9.3)':
+    dependencies:
+      '@typescript-eslint/tsconfig-utils': 8.62.0(typescript@5.9.3)
+      '@typescript-eslint/types': 8.62.0
+      debug: 4.4.3(supports-color@8.1.1)
+      typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
 
@@ -43542,13 +43542,13 @@ snapshots:
     dependencies:
       typescript: 6.0.3
 
-  '@typescript-eslint/tsconfig-utils@8.61.0(typescript@5.9.3)':
-    dependencies:
-      typescript: 5.9.3
-
   '@typescript-eslint/tsconfig-utils@8.61.0(typescript@6.0.3)':
     dependencies:
       typescript: 6.0.3
+
+  '@typescript-eslint/tsconfig-utils@8.62.0(typescript@5.9.3)':
+    dependencies:
+      typescript: 5.9.3
 
   '@typescript-eslint/tsconfig-utils@8.62.0(typescript@6.0.3)':
     dependencies:
@@ -43645,21 +43645,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/typescript-estree@8.61.0(typescript@5.9.3)':
-    dependencies:
-      '@typescript-eslint/project-service': 8.61.0(typescript@5.9.3)
-      '@typescript-eslint/tsconfig-utils': 8.61.0(typescript@5.9.3)
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/visitor-keys': 8.61.0
-      debug: 4.4.3(supports-color@8.1.1)
-      minimatch: 10.2.5
-      semver: 7.8.4
-      tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
-      ts-api-utils: 2.5.0(typescript@5.9.3)
-      typescript: 5.9.3
-    transitivePeerDependencies:
-      - supports-color
-
   '@typescript-eslint/typescript-estree@8.61.0(typescript@6.0.3)':
     dependencies:
       '@typescript-eslint/project-service': 8.61.0(typescript@6.0.3)
@@ -43672,6 +43657,21 @@ snapshots:
       tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
       ts-api-utils: 2.5.0(typescript@6.0.3)
       typescript: 6.0.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@typescript-eslint/typescript-estree@8.62.0(typescript@5.9.3)':
+    dependencies:
+      '@typescript-eslint/project-service': 8.62.0(typescript@5.9.3)
+      '@typescript-eslint/tsconfig-utils': 8.62.0(typescript@5.9.3)
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/visitor-keys': 8.62.0
+      debug: 4.4.3(supports-color@8.1.1)
+      minimatch: 10.2.5
+      semver: 7.8.4
+      tinyglobby: 0.2.17(patch_hash=3dc68a89992573038dda3690f1e942d721bae88f0c4677029007794e6eae453d)
+      ts-api-utils: 2.5.0(typescript@5.9.3)
+      typescript: 5.9.3
     transitivePeerDependencies:
       - supports-color
 
@@ -43993,7 +43993,7 @@ snapshots:
       untun: 0.1.3
       uqr: 0.1.3
 
-  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))':
+  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))':
     dependencies:
       '@babel/parser': 7.29.7
       acorn: 8.16.0
@@ -44004,9 +44004,9 @@ snapshots:
       magicast: 0.2.11
       recast: 0.23.11
       tslib: 2.8.1
-      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0)
+      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0)
 
-  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))':
+  '@vinxi/plugin-directives@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))':
     dependencies:
       '@babel/parser': 7.29.7
       acorn: 8.16.0
@@ -44017,29 +44017,29 @@ snapshots:
       magicast: 0.2.11
       recast: 0.23.11
       tslib: 2.8.1
-      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
+      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
 
-  '@vinxi/server-components@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))':
+  '@vinxi/server-components@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))':
     dependencies:
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0))
       acorn: 8.16.0
       acorn-loose: 8.5.2
       acorn-typescript: 1.4.13(acorn@8.16.0)
       astring: 1.9.0
       magicast: 0.2.11
       recast: 0.23.11
-      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0)
+      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0)
 
-  '@vinxi/server-components@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))':
+  '@vinxi/server-components@0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))':
     dependencies:
-      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))
+      '@vinxi/plugin-directives': 0.5.1(vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0))
       acorn: 8.16.0
       acorn-loose: 8.5.2
       acorn-typescript: 1.4.13(acorn@8.16.0)
       astring: 1.9.0
       magicast: 0.2.11
       recast: 0.23.11
-      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
+      vinxi: 0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0)
 
   '@visulima/cerebro@3.0.0-alpha.25(@bomb.sh/tab@0.0.15(cac@6.7.14)(citty@0.2.2)(commander@15.0.0))(@visulima/find-cache-dir@3.0.0-alpha.9)(github-slugger@2.0.0)':
     dependencies:
@@ -44830,8 +44830,8 @@ snapshots:
 
   '@vitest/eslint-plugin@1.6.19(@typescript-eslint/eslint-plugin@8.61.0(@typescript-eslint/parser@8.59.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.8)':
     dependencies:
-      '@typescript-eslint/scope-manager': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/scope-manager': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.61.0(@typescript-eslint/parser@8.59.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
@@ -44842,8 +44842,8 @@ snapshots:
 
   '@vitest/eslint-plugin@1.6.19(@typescript-eslint/eslint-plugin@8.61.0(@typescript-eslint/parser@8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)(vitest@4.1.8)':
     dependencies:
-      '@typescript-eslint/scope-manager': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/scope-manager': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
     optionalDependencies:
       '@typescript-eslint/eslint-plugin': 8.61.0(@typescript-eslint/parser@8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
@@ -47465,7 +47465,7 @@ snapshots:
 
   detective-typescript@14.0.0(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/typescript-estree': 8.61.0(typescript@5.9.3)
+      '@typescript-eslint/typescript-estree': 8.62.0(typescript@5.9.3)
       ast-module-types: 6.0.1
       node-source-walk: 7.0.1
       typescript: 5.9.3
@@ -48224,7 +48224,7 @@ snapshots:
   eslint-plugin-erasable-syntax-only@0.4.1(@typescript-eslint/parser@8.59.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3):
     dependencies:
       '@typescript-eslint/parser': 8.59.1(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       cached-factory: 0.2.0
       eslint: 10.4.1(jiti@2.7.0)
       typescript: 6.0.3
@@ -48258,7 +48258,7 @@ snapshots:
   eslint-plugin-import-x@4.16.2(@typescript-eslint/utils@8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(eslint-import-resolver-node@0.3.10)(eslint@10.4.1(jiti@2.7.0)):
     dependencies:
       '@package-json/types': 0.0.12
-      '@typescript-eslint/types': 8.61.0
+      '@typescript-eslint/types': 8.62.0
       comment-parser: 1.4.7
       debug: 4.4.3(supports-color@8.1.1)
       eslint: 10.4.1(jiti@2.7.0)
@@ -48443,7 +48443,7 @@ snapshots:
 
   eslint-plugin-no-for-of-array@0.1.0(eslint@10.4.1(jiti@2.7.0))(typescript-eslint@8.59.4(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3))(typescript@6.0.3):
     dependencies:
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       typescript: 6.0.3
       typescript-eslint: 8.59.4(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
@@ -48462,7 +48462,7 @@ snapshots:
 
   eslint-plugin-perfectionist@5.9.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3):
     dependencies:
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       natural-orderby: 5.0.0
     transitivePeerDependencies:
@@ -48512,8 +48512,8 @@ snapshots:
       '@eslint-react/eslint': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/jsx': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/shared': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       compare-versions: 6.1.1
       eslint: 10.4.1(jiti@2.7.0)
       typescript: 6.0.3
@@ -48552,8 +48552,8 @@ snapshots:
       '@eslint-react/eslint': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/jsx': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/shared': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -48579,8 +48579,8 @@ snapshots:
       '@eslint-react/core': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/eslint': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/var': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       ts-pattern: 5.9.0
       typescript: 6.0.3
@@ -48620,8 +48620,8 @@ snapshots:
       '@eslint-react/eslint': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/shared': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/var': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       typescript: 6.0.3
     transitivePeerDependencies:
@@ -48648,8 +48648,8 @@ snapshots:
       '@eslint-react/eslint': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/shared': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/var': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       birecord: 0.1.1
       eslint: 10.4.1(jiti@2.7.0)
       ts-pattern: 5.9.0
@@ -48681,11 +48681,11 @@ snapshots:
       '@eslint-react/jsx': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/shared': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       '@eslint-react/var': 5.8.18(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/scope-manager': 8.61.0
-      '@typescript-eslint/type-utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/types': 8.61.0
-      '@typescript-eslint/typescript-estree': 8.61.0(typescript@6.0.3)
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/scope-manager': 8.62.0
+      '@typescript-eslint/type-utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/typescript-estree': 8.62.0(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       compare-versions: 6.1.1
       eslint: 10.4.1(jiti@2.7.0)
       string-ts: 2.3.1
@@ -48792,7 +48792,7 @@ snapshots:
 
   eslint-plugin-solid@0.14.5(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3):
     dependencies:
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       estraverse: 5.3.0
       is-html: 2.0.0
@@ -48821,7 +48821,7 @@ snapshots:
 
   eslint-plugin-storybook@10.4.4(eslint@10.4.1(jiti@2.7.0))(storybook@10.4.4(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.8.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(typescript@6.0.3):
     dependencies:
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
       storybook: 10.4.4(@testing-library/dom@10.4.1)(@types/react@19.2.17)(prettier@3.8.4)(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
     transitivePeerDependencies:
@@ -48848,8 +48848,8 @@ snapshots:
 
   eslint-plugin-testing-library@7.16.2(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3):
     dependencies:
-      '@typescript-eslint/scope-manager': 8.61.0
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/scope-manager': 8.62.0
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
       eslint: 10.4.1(jiti@2.7.0)
     transitivePeerDependencies:
       - supports-color
@@ -48935,7 +48935,7 @@ snapshots:
   eslint-plugin-zod@4.7.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)(zod@4.4.3):
     dependencies:
       '@eslint-zod/utils': 2.3.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
-      '@typescript-eslint/utils': 8.61.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@10.4.1(jiti@2.7.0))(typescript@6.0.3)
     optionalDependencies:
       eslint: 10.4.1(jiti@2.7.0)
       zod: 4.4.3
@@ -61208,7 +61208,7 @@ snapshots:
       '@types/unist': 3.0.3
       vfile-message: 4.0.3
 
-  vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0):
+  vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))(yaml@2.9.0):
     dependencies:
       '@babel/core': 7.29.7
       '@babel/plugin-syntax-jsx': 7.29.7(@babel/core@7.29.7)
@@ -61242,7 +61242,7 @@ snapshots:
       unctx: 2.5.0
       unenv: 1.10.0
       unstorage: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(next@16.2.9(@babel/core@7.29.7)(@opentelemetry/api@1.9.1)(@playwright/test@1.61.0)(react-dom@19.2.6(react@19.2.6))(react@19.2.6))(tailwindcss@4.3.0))
-      vite: 7.3.5(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
+      vite: 8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
       zod: 4.4.3
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -61262,6 +61262,7 @@ snapshots:
       - '@vercel/blob'
       - '@vercel/functions'
       - '@vercel/kv'
+      - '@vitejs/devtools'
       - aws4fetch
       - bare-abort-controller
       - bare-buffer
@@ -61274,7 +61275,6 @@ snapshots:
       - ioredis
       - jiti
       - less
-      - lightningcss
       - mysql2
       - oxc-parser
       - react-native-b4a
@@ -61292,7 +61292,7 @@ snapshots:
       - xml2js
       - yaml
 
-  vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(lightningcss@1.32.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0):
+  vinxi@0.5.11(@azure/storage-blob@12.32.0)(@electric-sql/pglite@0.3.16)(@netlify/blobs@10.7.9)(@types/node@25.9.3)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(jiti@2.7.0)(mysql2@3.22.5(@types/node@25.9.3))(oxc-parser@0.133.0)(rolldown@1.0.3)(srvx@0.11.16)(terser@5.48.0)(tsx@4.22.4)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))(yaml@2.9.0):
     dependencies:
       '@babel/core': 7.29.7
       '@babel/plugin-syntax-jsx': 7.29.7(@babel/core@7.29.7)
@@ -61326,7 +61326,7 @@ snapshots:
       unctx: 2.5.0
       unenv: 1.10.0
       unstorage: 1.17.5(@azure/storage-blob@12.32.0)(@netlify/blobs@10.7.9)(@vercel/blob@2.4.0)(aws4fetch@1.0.20)(db0@0.3.4(@electric-sql/pglite@0.3.16)(mysql2@3.22.5(@types/node@25.9.3)))(ioredis@5.10.1)(uploadthing@7.7.4(express@5.2.1)(h3@2.0.1-rc.20(crossws@0.4.5(srvx@0.11.16)))(tailwindcss@4.3.0))
-      vite: 7.3.5(@types/node@25.9.3)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
+      vite: 8.0.16(@types/node@25.9.3)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
       zod: 4.4.3
     transitivePeerDependencies:
       - '@azure/app-configuration'
@@ -61346,6 +61346,7 @@ snapshots:
       - '@vercel/blob'
       - '@vercel/functions'
       - '@vercel/kv'
+      - '@vitejs/devtools'
       - aws4fetch
       - bare-abort-controller
       - bare-buffer
@@ -61358,7 +61359,6 @@ snapshots:
       - ioredis
       - jiti
       - less
-      - lightningcss
       - mysql2
       - oxc-parser
       - react-native-b4a
