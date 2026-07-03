@@ -1,6 +1,6 @@
 {
     "name": "@visulima/inspector",
-    "version": "2.0.0-alpha.15",
+    "version": "2.0.0",
     "description": "Inspect utility for Node.js and Browsers.",
     "keywords": [
         "dump",
@@ -91,7 +91,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/colorize": "2.0.0-alpha.15",
+        "@visulima/colorize": "2.0.0",
         "@visulima/packem": "catalog:dev",
         "@vitest/browser": "catalog:test",
         "@vitest/coverage-v8": "catalog:test",
