@@ -1,6 +1,6 @@
 {
     "name": "@visulima/ansi",
-    "version": "4.0.0-alpha.18",
+    "version": "4.0.0",
     "description": "ANSI escape codes for some terminal swag.",
     "keywords": [
         "alternative-screen",
@@ -237,7 +237,7 @@
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
         "@visulima/packem": "catalog:dev",
-        "@visulima/path": "3.0.0-alpha.13",
+        "@visulima/path": "3.0.0",
         "@vitest/coverage-v8": "catalog:test",
         "@vitest/ui": "catalog:test",
         "conventional-changelog-conventionalcommits": "catalog:dev",

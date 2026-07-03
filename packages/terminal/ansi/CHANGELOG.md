@@ -1,3 +1,138 @@
+## @visulima/ansi [4.0.0](https://github.com/visulima/visulima/compare/@visulima/ansi@3.0.5...@visulima/ansi@4.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Features
+
+* **ansi:** add bracketed paste markers ([5dc3d57](https://github.com/visulima/visulima/commit/5dc3d579cd1887c3b949ffee875d7259d8a5879e))
+* **ansi:** add character set selection (SCS) ([60852bd](https://github.com/visulima/visulima/commit/60852bd00920dc90c582adc298584a13e4f361a8))
+* **ansi:** add desktop notification sequences ([36f0a69](https://github.com/visulima/visulima/commit/36f0a69191e502750c7e104838688edd249e837e))
+* **ansi:** add FinalTerm shell integration marks (OSC 133) ([e087278](https://github.com/visulima/visulima/commit/e087278a25f5665172cbaa3f4dacd628ebd344ba))
+* **ansi:** add focus event reporting sequences ([83718f7](https://github.com/visulima/visulima/commit/83718f770c6e5297a69675f3adea2ba9004b95aa))
+* **ansi:** add foreground/background/cursor color sequences ([2c562bd](https://github.com/visulima/visulima/commit/2c562bdfb3a67168fd106b78159b4e98d6131f47))
+* **ansi:** add keypad application/numeric mode sequences ([cc62e9d](https://github.com/visulima/visulima/commit/cc62e9d21c7043df0b101c967133ae0b335e2d83))
+* **ansi:** add kitty graphics protocol sequence wrapper ([6e83b5c](https://github.com/visulima/visulima/commit/6e83b5cff7938ae38df8d9aa6e019453c89ae1ea))
+* **ansi:** add osc52 clipboard + kitty keyboard, harden strip ([793cc9e](https://github.com/visulima/visulima/commit/793cc9e848aabe4b7b637a855941eb1f40649c94))
+* **ansi:** add sixel graphics sequence wrapper ([fb2a225](https://github.com/visulima/visulima/commit/fb2a225d10ad6008e0cdc6959128d30502536c2f))
+* **ansi:** add urxvt OSC 777 extension ([8b96c1a](https://github.com/visulima/visulima/commit/8b96c1ac11c19c56fa3a55adff21309ad2287b43))
+* **ansi:** add working directory reporting (OSC 7) ([95059d5](https://github.com/visulima/visulima/commit/95059d5462a416393937d5bbab6ca425397a22b4))
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **ansi:** 3 bug fixes ([5b6977c](https://github.com/visulima/visulima/commit/5b6977caa2479f094ec4e04125127e06275c3aae))
+* **ansi:** correct DECSWT and DECSIN escape sequences ([#592](https://github.com/visulima/visulima/issues/592)) ([ca6b028](https://github.com/visulima/visulima/commit/ca6b0289d9ef3e453ad0e424172c6f7aee58b711))
+* **ansi:** properly fix eslint errors in code ([6da2c5f](https://github.com/visulima/visulima/commit/6da2c5fbac6669163ba55e5b7b4062a10940de90))
+* **ansi:** remove remaining eslint suppressions with proper code fixes ([27715b6](https://github.com/visulima/visulima/commit/27715b64843f0cd211f53b32bc752ef743bb52ef))
+* **ansi:** remove unused [@ts-expect-error](https://github.com/ts-expect-error) directives ([078d12b](https://github.com/visulima/visulima/commit/078d12b6429160dafc9ffaf6c0cee55fe871c509))
+* **ansi:** resolve eslint and formatting issues ([da359e8](https://github.com/visulima/visulima/commit/da359e8248c5c06ae1aed97609520f6699ce77aa))
+* **ansi:** resolve eslint and formatting issues ([3fc3401](https://github.com/visulima/visulima/commit/3fc340173818b239ccf5d8f0f574ebe0c0d3465e))
+* **ansi:** resolve eslint errors ([c1ed26b](https://github.com/visulima/visulima/commit/c1ed26b7b528f388446e830a93ae6cc4abee636c))
+* **ansi:** sanitize title in every OSC-write helper ([75c579e](https://github.com/visulima/visulima/commit/75c579e9b009d25c4d90f959d06f0bd524c1d07a))
+* **ansi:** strip 8-bit C1 control sequences (0x9b CSI, 0x9d OSC, …) ([ecd702d](https://github.com/visulima/visulima/commit/ecd702ded915ae4affd2a0a65583d73819d9e8b3))
+* **ansi:** strip OSC terminators from color/cwd/finalterm payloads ([6c4ab8c](https://github.com/visulima/visulima/commit/6c4ab8c4cae3f8bafd7483f161887883bb315a6b))
+* **ansi:** update package files ([13d5a39](https://github.com/visulima/visulima/commit/13d5a390e4286bbaa887dbbb989d29f1ee4090db))
+* **ansi:** update packem to 2.0.0-alpha.54 ([8dad6cb](https://github.com/visulima/visulima/commit/8dad6cb820ef0b5748755fe907959fd2830d9f2b))
+* **ansi:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([9778bbb](https://github.com/visulima/visulima/commit/9778bbb1d8786feba0d467f846930838297d9ca4))
+* **lint:** clear pre-existing eslint rot across packages ([#674](https://github.com/visulima/visulima/issues/674)) ([5354253](https://github.com/visulima/visulima/commit/5354253b163bd50bcefaf8a3fddf831bdb5df32b))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* **terminal:** resolve eslint and formatting issues ([12ef283](https://github.com/visulima/visulima/commit/12ef283684d1808fbcfe44077a0cfe8324801485))
+* **terminal:** resolve eslint and formatting issues ([8f30389](https://github.com/visulima/visulima/commit/8f30389deb9ff81e7afce0aa064ef11fcb179f23))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+### Documentation
+
+* **ansi:** document new escape sequence modules ([0bbc476](https://github.com/visulima/visulima/commit/0bbc4766259d9bde491186cadeb167d9e353f4dc))
+* **bytes,deep-clone,ansi,fmt,find-cache-dir:** add comprehensive Fumadocs documentation ([dfe0116](https://github.com/visulima/visulima/commit/dfe0116ebd26fe38f94f77b8ed4dadc3ff45ba91))
+
+### Styles
+
+* cs fixes ([2a960bb](https://github.com/visulima/visulima/commit/2a960bb1772c9dc70080e2d75d3a0d827034e294))
+
+### Miscellaneous Chores
+
+* add fallow code-intelligence across all packages ([a3b4821](https://github.com/visulima/visulima/commit/a3b48215002e86fed20f2973038b5d4a0aa1ce04))
+* **ansi:** add tsconfig.eslint.json for type-aware linting ([779ade8](https://github.com/visulima/visulima/commit/779ade858be2ec544486c354eed1dc8fc3f377f9))
+* **ansi:** apply pending changes ([cd52fc6](https://github.com/visulima/visulima/commit/cd52fc6bed679efc5203d1f67f0b125d86d44aca))
+* **ansi:** apply prettier and eslint quote-style auto-fix ([b564048](https://github.com/visulima/visulima/commit/b564048f5fe7c116633358874ca3b5a5a20806a3))
+* **ansi:** apply prettier formatting ([8ad7895](https://github.com/visulima/visulima/commit/8ad7895e4ad2fcaa78b542ce69e63f903208ee03))
+* **ansi:** enforce curly braces and apply lint fixes ([bdf29eb](https://github.com/visulima/visulima/commit/bdf29ebe46f6a2506171d5bffe30cf431be61308))
+* **ansi:** housekeeping cleanup ([da5f5d1](https://github.com/visulima/visulima/commit/da5f5d124563ba8809a374f0f6eb9dcb022f330c))
+* **ansi:** migrate .prettierrc.cjs to prettier.config.js ([1507e7a](https://github.com/visulima/visulima/commit/1507e7a245ff053929eedce92d2caf58b83ede40))
+* **ansi:** migrate deps to pnpm catalogs ([2bdd466](https://github.com/visulima/visulima/commit/2bdd466ce1aa69d28bc88d952dfae65b6fc73c17))
+* **ansi:** update dependencies ([0959eea](https://github.com/visulima/visulima/commit/0959eea366d3908c13196575a1d3bda17a1bf0aa))
+* **ansi:** update dependencies ([f5cd15a](https://github.com/visulima/visulima/commit/f5cd15ac4f5ca57a614208eb9fc5a9e4e336e2b4))
+* **ansi:** update dependencies ([0af3c28](https://github.com/visulima/visulima/commit/0af3c28ef5bf36f6c3672da94c39ff228ba886b0))
+* **ansi:** upgrade packem to 2.0.0-alpha.76 ([f970913](https://github.com/visulima/visulima/commit/f970913dadd41f5d89ecbc52b481cb5099502c3d))
+* apply eslint + prettier autofixes across packages ([c1bb784](https://github.com/visulima/visulima/commit/c1bb7848a0d93d0dfe2960c77e3cda22239c79a0))
+* bump engines.node to ^22.14.0 || >=24.10.0 ([c3d0931](https://github.com/visulima/visulima/commit/c3d0931d1504e4f21ebf50ea680cfa7ce4ba15ce))
+* **ci-stability:** green CI across vis, native, lint, tests, attw ([#651](https://github.com/visulima/visulima/issues/651)) ([d4eb684](https://github.com/visulima/visulima/commit/d4eb684b5f75c818c9251048c605a0ed54a268e3))
+* **fallow:** resolve dead-code findings ([c4125d5](https://github.com/visulima/visulima/commit/c4125d53e03ac9d90115399634535991927a96cc))
+* fixed jsr.json ([5d85e51](https://github.com/visulima/visulima/commit/5d85e5179de38e284ec433b14d77c71a1619c8d6))
+* fixed project.json names and schema path ([964722f](https://github.com/visulima/visulima/commit/964722f691db205c7edb9aa6db29e849a647500b))
+* jsr.json update and lock file ([73fce38](https://github.com/visulima/visulima/commit/73fce38c7cb4603f3fffb88609b1b18e2feb4937))
+* moved all packages into groups ([0615e9d](https://github.com/visulima/visulima/commit/0615e9d14a8a886e11da529ce150cf31ca973c10))
+* re-sort workspace package.json files via vis sort-package-json ([f625696](https://github.com/visulima/visulima/commit/f625696cfac974325774b3243e1a83c3d23acbd7))
+* **release:** @visulima/ansi@4.0.0-alpha.1 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.1](https://github.com/visulima/visulima/compare/@visulima/ansi@3.0.5...@visulima/ansi@4.0.0-alpha.1) (2025-12-05) ([e8da050](https://github.com/visulima/visulima/commit/e8da05027a1fc7988993802a9f02047e4719de03))
+* **release:** @visulima/ansi@4.0.0-alpha.10 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.10](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.9...@visulima/ansi@4.0.0-alpha.10) (2026-04-21) ([bbbe0c7](https://github.com/visulima/visulima/commit/bbbe0c7f3e838bef7f394614dfbead24c05335d9))
+* **release:** @visulima/ansi@4.0.0-alpha.11 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.11](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.10...@visulima/ansi@4.0.0-alpha.11) (2026-04-21) ([e814577](https://github.com/visulima/visulima/commit/e81457711b4b344002ff1f981248769eaa94f709))
+* **release:** @visulima/ansi@4.0.0-alpha.12 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.12](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.11...@visulima/ansi@4.0.0-alpha.12) (2026-04-21) ([4863884](https://github.com/visulima/visulima/commit/4863884effa695d570fd66b44e5404381dcb8eb1))
+* **release:** @visulima/ansi@4.0.0-alpha.13 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.13](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.12...@visulima/ansi@4.0.0-alpha.13) (2026-04-22) ([4c1f2e0](https://github.com/visulima/visulima/commit/4c1f2e00575fff6a44f9ed957e075bd89854c67b))
+* **release:** @visulima/ansi@4.0.0-alpha.14 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.14](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.13...@visulima/ansi@4.0.0-alpha.14) (2026-05-20) ([12647bb](https://github.com/visulima/visulima/commit/12647bbd4af2ef7e08bb23f2a8aa52a89d427052))
+* **release:** @visulima/ansi@4.0.0-alpha.15 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.15](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.14...@visulima/ansi@4.0.0-alpha.15) (2026-05-27) ([05e7922](https://github.com/visulima/visulima/commit/05e7922d63b145245139f82efa93fcb0ee72d8a0))
+* **release:** @visulima/ansi@4.0.0-alpha.16 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.16](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.15...@visulima/ansi@4.0.0-alpha.16) (2026-06-04) ([23cca8e](https://github.com/visulima/visulima/commit/23cca8eafe81c865e5167b36edca03b015040b23))
+* **release:** @visulima/ansi@4.0.0-alpha.17 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.17](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.16...@visulima/ansi@4.0.0-alpha.17) (2026-06-13) ([2d30e09](https://github.com/visulima/visulima/commit/2d30e099c04040089efc6b41c966fe3d74aa3b9e))
+* **release:** @visulima/ansi@4.0.0-alpha.18 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.17...@visulima/ansi@4.0.0-alpha.18) (2026-06-30) ([32d5156](https://github.com/visulima/visulima/commit/32d51569a23125b8feca89de16a3bd54b4214684))
+* **release:** @visulima/ansi@4.0.0-alpha.2 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.2](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.1...@visulima/ansi@4.0.0-alpha.2) (2025-12-06) ([755097a](https://github.com/visulima/visulima/commit/755097a4db305feb7ec2f86b2405eeeb89df7d3b))
+* **release:** @visulima/ansi@4.0.0-alpha.3 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.3](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.2...@visulima/ansi@4.0.0-alpha.3) (2025-12-11) ([0e1ca41](https://github.com/visulima/visulima/commit/0e1ca41bb1d8fcbb05bfdaac64654f5142e5327f))
+* **release:** @visulima/ansi@4.0.0-alpha.4 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.4](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.3...@visulima/ansi@4.0.0-alpha.4) (2025-12-27) ([b9bc435](https://github.com/visulima/visulima/commit/b9bc435d8b41893481ecbccc89b99424d8048803))
+* **release:** @visulima/ansi@4.0.0-alpha.5 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.5](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.4...@visulima/ansi@4.0.0-alpha.5) (2026-03-06) ([fcc03dc](https://github.com/visulima/visulima/commit/fcc03dc7548c27e3b46f4410799a6487738a7816))
+* **release:** @visulima/ansi@4.0.0-alpha.6 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.6](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.5...@visulima/ansi@4.0.0-alpha.6) (2026-03-26) ([9d9de7a](https://github.com/visulima/visulima/commit/9d9de7a7d246c40df67262f5818ddfdfe9f285e3))
+* **release:** @visulima/ansi@4.0.0-alpha.7 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.7](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.6...@visulima/ansi@4.0.0-alpha.7) (2026-03-26) ([b36061c](https://github.com/visulima/visulima/commit/b36061c5cf29b3c2244fcd5af20fed3c000cb7ce))
+* **release:** @visulima/ansi@4.0.0-alpha.8 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.8](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.7...@visulima/ansi@4.0.0-alpha.8) (2026-04-08) ([4ae4102](https://github.com/visulima/visulima/commit/4ae4102ad0e501758cc2bed11794f747ae3513cf))
+* **release:** @visulima/ansi@4.0.0-alpha.9 [skip ci]\n\n## @visulima/ansi [4.0.0-alpha.9](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.8...@visulima/ansi@4.0.0-alpha.9) (2026-04-15) ([955e42e](https://github.com/visulima/visulima/commit/955e42e9daecb8ce36b5d6d82ba5cc9a28466829))
+* simplify pnpm-workspace packages list ([7cab221](https://github.com/visulima/visulima/commit/7cab221163632d9b7aa044a6f88c49083103a869))
+* sorted package.json ([b47c545](https://github.com/visulima/visulima/commit/b47c545591600fdab17d5cd3a3fbc68b61e199da))
+* **terminal:** apply prettier and eslint formatting sweep ([15fd89c](https://github.com/visulima/visulima/commit/15fd89c677eea60866e08e4fd5f5a6bc8f3bd2e5))
+* **terminal:** remove empty dependency objects from package.json ([562c704](https://github.com/visulima/visulima/commit/562c704e5d90aa2d13eae942ebbdcfeb787c2b46))
+* **terminal:** update dependencies ([a5bb91a](https://github.com/visulima/visulima/commit/a5bb91a66f2be2ade485d586156a54c347a23cc9))
+* update @anolilab/semantic-release-pnpm and @anolilab/semantic-release-preset to versions 3.2.2 and 12.1.2 across multiple package.json files for improved compatibility ([3921626](https://github.com/visulima/visulima/commit/3921626141fe5da398749bf0ba675f1596f18afb))
+* update dependencies across multiple packages to improve compatibility and performance, including upgrading `@anolilab/semantic-release-pnpm` and `@anolilab/semantic-release-preset` to versions 3.2.0 and 12.1.0 respectively, and updating `react`, `react-dom`, and `next` versions to 19.2.1 and 16.0.7 in various package.json files ([aee8fcd](https://github.com/visulima/visulima/commit/aee8fcd796ae9b8d055903260e7150996ea9f53d))
+* update lock file maintenance ([d83e716](https://github.com/visulima/visulima/commit/d83e71697b75d24704185b66bb521a934d2db02d))
+* update the jsr.json ([864ab7e](https://github.com/visulima/visulima/commit/864ab7e71c4b5ae82f64792d1ae8debfea2c539b))
+* visulima website ([#591](https://github.com/visulima/visulima/issues/591)) ([59ab2e2](https://github.com/visulima/visulima/commit/59ab2e2befb03e51cd2088956f83d9b87de6d033))
+* year update ([47f4105](https://github.com/visulima/visulima/commit/47f410596ce7190cfea36a073db32e0cec50bbcd))
+
+### Code Refactoring
+
+* **ansi:** share OSC terminator sanitizer; address review findings ([ed2215d](https://github.com/visulima/visulima/commit/ed2215d8a61e2896dae278c7a07eae393ed415ea))
+* **ansi:** use replaceAll and reflow single-line arrow ([2f1525c](https://github.com/visulima/visulima/commit/2f1525c9176f0e7c65148fd2ac89b8cdb68a7b7e))
+* **docs:** migrate Nextra components to fumadocs-ui, remove Nextra stripping ([484878f](https://github.com/visulima/visulima/commit/484878f01879363ef5e9a0282904dc4627d6060c))
+
+### Tests
+
+* **ansi:** cover cursor moves, iterm2 file data, xterm/title guards, device-attribute reports and barrel ([13cd284](https://github.com/visulima/visulima/commit/13cd2848b0927d8150b5c8e8a2c24526ff3bdc57))
+* **repo:** add dist runtime + types integration tests ([32ee300](https://github.com/visulima/visulima/commit/32ee300b7184117a0ddf9f9d390f75f8932d5ed9))
+
+### Build System
+
+* regenerate bundled-license manifests and types ordering ([af26588](https://github.com/visulima/visulima/commit/af26588d75aaa937fd4862800560bd4070a4878c))
+
+### Continuous Integration
+
+* **fallow:** make fallow:health advisory (--report-only) ([d57148e](https://github.com/visulima/visulima/commit/d57148ea0e3556b4c24d8d336b9fa14987f5dc7d))
+
+
+### Dependencies
+
+* **@visulima/path:** upgraded to 3.0.0
+
 ## @visulima/ansi [4.0.0-alpha.18](https://github.com/visulima/visulima/compare/@visulima/ansi@4.0.0-alpha.17...@visulima/ansi@4.0.0-alpha.18) (2026-06-30)
 
 ### Features
