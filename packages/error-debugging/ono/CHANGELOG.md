@@ -1,3 +1,46 @@
+## @visulima/ono [2.0.0](https://github.com/visulima/visulima/compare/@visulima/ono@1.0.12...@visulima/ono@2.0.0) (2026-07-03)
+
+### ⚠ BREAKING CHANGES
+
+* change min node version to 22.13
+
+### Features
+
+* **web:** auto-generate packages page from workspace metadata ([623e520](https://github.com/visulima/visulima/commit/623e5207693a7fe720f5f2f179593a3654c880e3))
+
+### Bug Fixes
+
+* add new package image, fixed readme rendering on npm, fixed building of packages ([b790ba2](https://github.com/visulima/visulima/commit/b790ba253ea07fef83528fd822a678facf021b5f))
+* **dependencies:** update hono and isomorphic-dompurify to versions 4.11.3 and 2.35.0 in package.json files ([0169fa9](https://github.com/visulima/visulima/commit/0169fa94d187c5e6a22e2ed48353124953996aee))
+* **dependencies:** update hono and related packages to version 4.11.2 and update @hono/swagger-ui to version 0.5.3 ([5d3eed5](https://github.com/visulima/visulima/commit/5d3eed57d30d8216bf91484f35d39678938651fb))
+* **error-debugging:** resolve eslint and type-safety issues ([886dbff](https://github.com/visulima/visulima/commit/886dbffe3f744c9493fcc54e781de3fd21eebf78))
+* **ono:** 4 bug fixes ([c42baed](https://github.com/visulima/visulima/commit/c42baedb403b69d57ee25f81abf61e01ca8e71ad))
+* **ono:** annotate renderJson for isolatedDeclarations ([bf8853f](https://github.com/visulima/visulima/commit/bf8853f1ffe39485fabbe3486eac4af1dc70d5d7))
+* **ono:** collapse stringifiedBody to a single toString() call ([1847db9](https://github.com/visulima/visulima/commit/1847db944e78349f932bb6dc51e3247c5a71b01e))
+* **ono:** fix runtime detection, request masking, add json renderer ([dcbd84b](https://github.com/visulima/visulima/commit/dcbd84b80a9153e262a645e0f6ffa2b5b0dd60c6))
+* **ono:** guard circular request bodies and mask password-shaped body keys ([42a288c](https://github.com/visulima/visulima/commit/42a288cf3c0e2f3f00a02812b4879db95e718fda))
+* **ono:** properly fix eslint errors in code ([ca1d1a2](https://github.com/visulima/visulima/commit/ca1d1a2aa4d4db69f2f38d2b85d8df5e32b906fb))
+* **ono:** remove remaining eslint suppressions with proper code fixes ([ab20811](https://github.com/visulima/visulima/commit/ab20811c01df07a836303c4b4a478de79d1d338c))
+* **ono:** resolve eslint and formatting issues ([3113c1f](https://github.com/visulima/visulima/commit/3113c1fbd668a0f99016f8f590977b033d19aa96))
+* **ono:** resolve eslint errors ([4d8e045](https://github.com/visulima/visulima/commit/4d8e0455f2420bef082e3aa3f00e76461e8c17c8))
+* **ono:** update package files ([2e8a1dd](https://github.com/visulima/visulima/commit/2e8a1dd987c061f57e9e60c64a40245c499f8c98))
+* **ono:** update packem to 2.0.0-alpha.54 ([e3bf220](https://github.com/visulima/visulima/commit/e3bf220c8813bb04a1d5061c62e1897010f5340b))
+* **ono:** use min-dark/min-light shiki themes for code highlighting ([793a345](https://github.com/visulima/visulima/commit/793a345bbb9dc6520ce8d37a3488a83b1cbe8ce2))
+* **ono:** use workspace:* for internal [@visulima](https://github.com/visulima) deps ([2e4ff1a](https://github.com/visulima/visulima/commit/2e4ff1a1ae8f849f9fb4cf26e7b58446bb47c1f1))
+* remove deprecated baseUrl and downlevelIteration from tsconfigs ([a708366](https://github.com/visulima/visulima/commit/a708366b5c3bc73cfde480a712ed397bd921fb93))
+* Remove JSR configuration generation script and generated jsr.json files ([#616](https://github.com/visulima/visulima/issues/616)) ([533744b](https://github.com/visulima/visulima/commit/533744b103b74896941db5b727173e617a27a63b))
+* **storage-client:** percent-encode user fields in defaultFingerprint ([7c78a0f](https://github.com/visulima/visulima/commit/7c78a0f9512e2a673b941d80839e9f1e86b7b5d0))
+* update dependencies and improve error handling in error-debugging packages ([b95fea4](https://github.com/visulima/visulima/commit/b95fea4ef0e0a6777b3dd465603b1dd3c40aa4e8))
+* update Node.js engine version requirement to >=22.13 in multiple package.json files for improved compatibility ([b828e9a](https://github.com/visulima/visulima/commit/b828e9aeaebfc798eecddccd90e6ec7560c6d36a))
+* update package OG images across multiple packages ([f08e4dd](https://github.com/visulima/visulima/commit/f08e4dd2b105ccb29c8412020a9c2be36d6c1e9e))
+* **web:** improve build setup with incremental stats caching and prod install ([fe33e75](https://github.com/visulima/visulima/commit/fe33e75827586779b4b3a0c6d57b39f889ee6207))
+
+
+### Dependencies
+
+* **@visulima/error:** upgraded to 6.0.0
+* **@visulima/path:** upgraded to 3.0.0
+
 ## @visulima/ono [2.0.0-alpha.38](https://github.com/visulima/visulima/compare/@visulima/ono@2.0.0-alpha.37...@visulima/ono@2.0.0-alpha.38) (2026-06-30)
 
 
