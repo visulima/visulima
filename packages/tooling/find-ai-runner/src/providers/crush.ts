@@ -22,8 +22,12 @@ const crush: AiProviderConfig = {
     defaultModel: "",
     displayName: "Crush",
     envVariable: "CRUSH_PATH",
-    // No verified session marker yet — crush does not mark the shells it spawns.
-    sessionMarkers: [],
+    // Crush sets CRUSH=1 (and AGENT=crush) on every shell exec; AI_AGENT=crush is covered by the generic marker.
+    // See: https://github.com/charmbracelet/crush/blob/main/internal/shell/shell.go
+    sessionMarkers: [
+        { confidence: "definite", equals: "1", variable: "CRUSH" },
+        { confidence: "definite", equals: "crush", variable: "AGENT" },
+    ],
     supportsMaxTokens: false,
     supportsModel: true,
 };

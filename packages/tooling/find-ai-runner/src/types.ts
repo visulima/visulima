@@ -35,23 +35,76 @@ interface AiBuildArgsOptions {
 type AiSessionConfidence = "ambient" | "definite";
 
 /**
- * One environment marker a provider's harness sets in the shells it spawns,
- * declared on the provider's config and consumed by `detectAiSession`.
- * Matches when the variable is set non-empty (and not `0`/`false`), or
- * exactly `equals` when given. Only add markers that ship in a production
- * implementation — an unverified marker is a behavior bug waiting for a
- * human to hit it.
+ * What kind of AI session was detected.
+ *
+ * - `agent` — an AI agent is autonomously driving the process (an agent-spawned shell).
+ * - `interactive` — a human is working inside an AI environment (an editor's integrated terminal); the tooling is present but a person is at the keyboard.
+ *
+ * Defaults are derived from {@link AiSessionConfidence} when a marker omits it:
+ * `definite` -> `agent`, `ambient` -> `interactive`.
  */
-interface AiSessionMarkerConfig {
+type AiSessionType = "agent" | "interactive";
+
+/**
+ * A single environment condition.
+ *
+ * - A bare string matches when that variable is set to a non-empty, non-disabled (`0`/`false`) value.
+ * - A `[name, value]` tuple matches when that variable is exactly `value`.
+ */
+type EnvAtom = [string, string] | string;
+
+/**
+ * A composite environment condition. When an object, every clause present must
+ * hold: every `all` entry matches, at least one `any` entry matches, and no
+ * `none` entry matches.
+ */
+interface EnvConditionObject {
+    /** Every entry must match. */
+    all?: EnvCondition[];
+    /** At least one entry must match. */
+    any?: EnvCondition[];
+    /** No entry may match. */
+    none?: EnvCondition[];
+}
+
+/** An environment condition: a single {@link EnvAtom} or a composite {@link EnvConditionObject}. */
+type EnvCondition = EnvAtom | EnvConditionObject;
+
+/** Fields shared by every {@link AiSessionMarkerConfig} variant. */
+interface AiSessionMarkerBase {
     /** Display-name override for this marker (e.g. `"Cursor editor"` for the ambient Cursor marker); defaults to the provider's `displayName`. */
     agent?: string;
     /** See {@link AiSessionConfidence}. */
     confidence: AiSessionConfidence;
+    /** Session type override; defaults from `confidence` (see {@link AiSessionType}). */
+    type?: AiSessionType;
+}
+
+/** A composite marker: a multi-variable `match` condition with an explicit reporting `label`. */
+interface AiSessionCompositeMarker extends AiSessionMarkerBase {
+    /** Reporting label surfaced as the matched `signal` (e.g. `"TERM_PROGRAM+PAGER"`). */
+    label: string;
+    /** Composite env condition. */
+    match: EnvCondition;
+}
+
+/** A simple marker: a single environment variable, optionally scoped to an exact value. */
+interface AiSessionVariableMarker extends AiSessionMarkerBase {
     /** Require this exact value (for shared variables like `AGENT`). */
     equals?: string;
-    /** The environment variable to check. */
+    /** The environment variable to check. Also the reported `signal`. */
     variable: string;
 }
+
+/**
+ * One environment marker a provider's harness sets in the shells it spawns,
+ * declared on the provider's config and consumed by `detectAiSession`. A marker
+ * is EITHER a single-variable check OR a composite `match` condition — the
+ * discriminated union makes a marker with neither (or both) unrepresentable.
+ * Only add markers that ship in a production implementation — an unverified
+ * marker is a behavior bug waiting for a human to hit it.
+ */
+type AiSessionMarkerConfig = AiSessionCompositeMarker | AiSessionVariableMarker;
 
 /** Configuration for an AI CLI provider, including how to build CLI arguments. */
 interface AiProviderConfig {
@@ -236,4 +289,19 @@ class AiRunError extends Error {
 }
 
 export { AiRunError };
-export type { AiBuildArgsOptions, AiDetectAsyncOptions, AiDetectOptions, AiProviderConfig, AiProviderInfo, AiProviderName, AiRunOptions, AiRunResult, AiSessionConfidence, AiSessionMarkerConfig };
+export type {
+    AiBuildArgsOptions,
+    AiDetectAsyncOptions,
+    AiDetectOptions,
+    AiProviderConfig,
+    AiProviderInfo,
+    AiProviderName,
+    AiRunOptions,
+    AiRunResult,
+    AiSessionConfidence,
+    AiSessionMarkerConfig,
+    AiSessionType,
+    EnvAtom,
+    EnvCondition,
+    EnvConditionObject,
+};

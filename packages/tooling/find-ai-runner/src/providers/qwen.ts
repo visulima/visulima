@@ -22,8 +22,10 @@ const qwen: AiProviderConfig = {
     defaultModel: "",
     displayName: "Qwen Code",
     envVariable: "QWEN_PATH",
-    // Qwen Code sets gemini-cli's GEMINI_CLI (it is a fork); the marker lives on the gemini provider.
-    sessionMarkers: [],
+    // Qwen Code (Alibaba's gemini-cli fork) sets QWEN_CODE=1 on every shell exec. It also inherits
+    // the fork's GEMINI_CLI marker, so QWEN_CODE must be checked FIRST to attribute the session
+    // to Qwen rather than misreporting it as Gemini CLI.
+    sessionMarkers: [{ confidence: "definite", equals: "1", variable: "QWEN_CODE" }],
     supportsMaxTokens: false,
     supportsModel: true,
 };

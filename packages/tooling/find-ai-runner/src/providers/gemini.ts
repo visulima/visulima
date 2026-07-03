@@ -24,8 +24,9 @@ const gemini: AiProviderConfig = {
     defaultModel: "gemini-2.5-pro",
     displayName: "Gemini CLI",
     envVariable: "GEMINI_PATH",
-    // Qwen Code (a gemini-cli fork) sets the same variable; detection attributes it here.
-    sessionMarkers: [{ confidence: "definite", variable: "GEMINI_CLI" }],
+    // Qwen Code (a gemini-cli fork) also sets GEMINI_CLI, so exclude it here — the QWEN_CODE marker on
+    // the qwen provider claims those sessions. This makes attribution order-independent.
+    sessionMarkers: [{ confidence: "definite", label: "GEMINI_CLI", match: { all: ["GEMINI_CLI"], none: ["QWEN_CODE"] } }],
     supportsMaxTokens: true,
     supportsModel: true,
 };

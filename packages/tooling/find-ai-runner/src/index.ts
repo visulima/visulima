@@ -480,9 +480,19 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
 export { buildCliArgs, detectAllProviders, detectAllProvidersAsync, detectAvailableProviders, detectProvider, findRunner, runProvider };
 
 export { PROVIDER_NAMES } from "./constants";
+export { getProcessAncestry } from "./process-tree";
 export { default as PROVIDERS } from "./providers";
-export { AI_AGENT_ENV, detectAiSession, isAiSession, SESSION_MARKERS } from "./session";
-export { type AiSessionInfo, type AiSessionMarker, type AiSessionOptions, type EnvLike } from "./session";
+export {
+    AI_AGENT_ENV,
+    detectAiSession,
+    detectAiSessionAsync,
+    detectAiSessionByProcess,
+    isAiSession,
+    isAiSessionAsync,
+    PROCESS_AGENTS,
+    SESSION_MARKERS,
+} from "./session";
+export { type AiSessionInfo, type AiSessionMarker, type AiSessionOptions, type EnvLike, type ProcessAgent } from "./session";
 export { AiRunError } from "./types";
 export {
     type AiBuildArgsOptions,
@@ -495,4 +505,8 @@ export {
     type AiRunResult,
     type AiSessionConfidence,
     type AiSessionMarkerConfig,
+    type AiSessionType,
+    type EnvAtom,
+    type EnvCondition,
+    type EnvConditionObject,
 } from "./types";

@@ -17,7 +17,14 @@ const opencode: AiProviderConfig = {
     defaultModel: "",
     displayName: "opencode",
     envVariable: "OPENCODE_PATH",
-    sessionMarkers: [{ confidence: "definite", variable: "OPENCODE_CLIENT" }],
+    // opencode exposes several markers in the shells it spawns; any one identifies the session.
+    sessionMarkers: [
+        {
+            confidence: "definite",
+            label: "OPENCODE",
+            match: { any: ["OPENCODE", "OPENCODE_BIN_PATH", "OPENCODE_SERVER", "OPENCODE_APP_INFO", "OPENCODE_MODES", "OPENCODE_CLIENT"] },
+        },
+    ],
     supportsMaxTokens: false,
     supportsModel: true,
 };
