@@ -1,6 +1,6 @@
 {
     "name": "@visulima/content-safety",
-    "version": "1.0.0-alpha.11",
+    "version": "1.0.0",
     "description": "Content safety filtering with multi-language banned word detection. Supports 19 languages with word-boundary matching, match position reporting, and both browser and server runtime compatibility.",
     "keywords": [
         "arabic",
