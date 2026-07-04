@@ -2,8 +2,8 @@
     "name": "dev_toolbar_vite-tanstack-start",
     "version": "0.0.0",
     "private": true,
-    "sideEffects": false,
     "type": "module",
+    "sideEffects": false,
     "scripts": {
         "build": "vite build && tsc --noEmit",
         "dev": "vite dev",
