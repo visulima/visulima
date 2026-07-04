@@ -13,6 +13,11 @@
     ],
     "homepage": "https://visulima.com/packages/task-runner",
     "bugs": "https://github.com/visulima/visulima/issues",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -28,13 +33,15 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "sideEffects": false,
+    "files": [
+        "dist/**",
+        "index.js",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
     "type": "module",
+    "sideEffects": false,
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -54,13 +61,10 @@
         },
         "./package.json": "./package.json"
     },
-    "files": [
-        "dist/**",
-        "index.js",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
-    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "scripts": {
         "bench:native": "cargo bench --manifest-path native/Cargo.toml",
         "build": "packem build --development",
@@ -112,7 +116,7 @@
         "eslint": "catalog:lint",
         "fallow": "catalog:lint",
         "prettier": "catalog:lint",
-        "protobufjs": "8.6.3",
+        "protobufjs": "8.6.5",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
@@ -142,13 +146,6 @@
         "@visulima/task-runner-binding-win32-arm64-msvc": "workspace:*",
         "@visulima/task-runner-binding-win32-x64-msvc": "workspace:*"
     },
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "napi": {
         "binaryName": "task-runner-native",
         "packageName": "@visulima/task-runner-binding",
@@ -162,5 +159,8 @@
             "x86_64-pc-windows-msvc",
             "aarch64-pc-windows-msvc"
         ]
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
     }
 }
