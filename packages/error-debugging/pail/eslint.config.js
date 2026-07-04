@@ -17,6 +17,7 @@ export default createConfig(
             "playwright-setup.js",
             "prettier.config.js",
             "README.md",
+            "CHANGELOG.md",
             "MIGRATION-GUIDE.md",
             "__bench__",
         ],
