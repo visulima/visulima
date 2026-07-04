@@ -16,19 +16,16 @@
         "dmarc",
         "email",
         "encryption",
-        "i18n",
-        "inbound-email",
-        "jsx-email",
-        "liquid",
-        "list-unsubscribe",
-        "middleware",
-        "queue",
-        "webhook",
         "failover",
         "handlebars",
         "html-to-text",
         "http",
+        "i18n",
+        "inbound-email",
         "infobip",
+        "jsx-email",
+        "liquid",
+        "list-unsubscribe",
         "mail",
         "mailcrab",
         "mailersend",
@@ -38,6 +35,7 @@
         "mailpace",
         "mailtrap",
         "mandrill",
+        "middleware",
         "mjml",
         "mock",
         "netcore",
@@ -47,7 +45,7 @@
         "plunk",
         "postal",
         "postmark",
-        "sparkpost",
+        "queue",
         "react-email",
         "resend",
         "roundrobin",
@@ -56,13 +54,20 @@
         "signing",
         "smime",
         "smtp",
+        "sparkpost",
         "sweego",
         "visulima",
         "vue-email",
+        "webhook",
         "zeptomail"
     ],
     "homepage": "https://visulima.com/packages/email",
     "bugs": "https://github.com/visulima/visulima/issues",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -78,13 +83,13 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "sideEffects": false,
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
     "type": "module",
+    "sideEffects": false,
     "exports": {
         ".": {
             "types": "./dist/index.d.ts",
@@ -348,11 +353,10 @@
         },
         "./package.json": "./package.json"
     },
-    "files": [
-        "dist",
-        "README.md",
-        "CHANGELOG.md"
-    ],
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
@@ -385,7 +389,7 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
-        "@eslint-react/eslint-plugin": "5.9.2",
+        "@eslint-react/eslint-plugin": "5.10.1",
         "@opentelemetry/api": "catalog:dev",
         "@react-email/render": "catalog:frontend",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
@@ -412,11 +416,11 @@
         "eslint-plugin-react-you-might-not-need-an-effect": "1.0.1",
         "eslint-plugin-validate-jsx-nesting": "0.1.1",
         "fallow": "catalog:lint",
-        "fast-xml-parser": "^5.9.2",
+        "fast-xml-parser": "^5.9.3",
         "handlebars": "catalog:dev",
         "jsx-email": "^3.2.1",
         "juice": "^12.1.1",
-        "liquidjs": "^10.27.0",
+        "liquidjs": "^10.27.1",
         "mjml": "catalog:dev",
         "nodemailer": "catalog:dev",
         "pkijs": "catalog:dev",
@@ -488,9 +492,5 @@
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
     }
 }
