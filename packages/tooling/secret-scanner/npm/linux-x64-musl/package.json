@@ -26,11 +26,11 @@
     "cpu": [
         "x64"
     ],
+    "libc": [
+        "musl"
+    ],
     "publishConfig": {
         "access": "public",
         "provenance": true
-    },
-    "libc": [
-        "musl"
-    ]
+    }
 }
