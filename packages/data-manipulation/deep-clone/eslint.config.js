@@ -13,6 +13,7 @@ export default createConfig({
         ".secretlintrc.cjs",
         "package.json",
         "README.md",
+        "CHANGELOG.md",
     ],
     typescript: {
         tsconfigPath: "./tsconfig.eslint.json",
