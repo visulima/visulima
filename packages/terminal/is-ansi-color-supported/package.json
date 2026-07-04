@@ -34,6 +34,11 @@
     ],
     "homepage": "https://visulima.com/packages/is-ansi-color-supported/",
     "bugs": "https://github.com/visulima/visulima/issues",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -49,38 +54,14 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "sideEffects": false,
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
     "type": "module",
-    "exports": {
-        ".": {
-            "edge-light": {
-                "types": "./dist/is-color-supported.edge-light.d.ts",
-                "default": "./dist/is-color-supported.edge-light.js"
-            },
-            "browser": {
-                "types": "./dist/is-color-supported.browser.d.ts",
-                "default": "./dist/is-color-supported.browser.js"
-            },
-            "default": {
-                "types": "./dist/is-color-supported.server.d.ts",
-                "default": "./dist/is-color-supported.server.js"
-            }
-        },
-        "./browser": {
-            "types": "./dist/is-color-supported.browser.d.ts",
-            "default": "./dist/is-color-supported.browser.js"
-        },
-        "./edge-light": {
-            "types": "./dist/is-color-supported.edge-light.d.ts",
-            "default": "./dist/is-color-supported.edge-light.js"
-        },
-        "./package.json": "./package.json"
-    },
+    "sideEffects": false,
     "module": "dist/is-color-supported.server.js",
     "browser": "dist/is-color-supported.browser.js",
     "types": "dist/is-color-supported.server.d.ts",
@@ -99,12 +80,35 @@
             ]
         }
     },
-    "files": [
-        "dist/**",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
-    ],
+    "exports": {
+        ".": {
+            "default": {
+                "types": "./dist/is-color-supported.server.d.ts",
+                "default": "./dist/is-color-supported.server.js"
+            },
+            "edge-light": {
+                "types": "./dist/is-color-supported.edge-light.d.ts",
+                "default": "./dist/is-color-supported.edge-light.js"
+            },
+            "browser": {
+                "types": "./dist/is-color-supported.browser.d.ts",
+                "default": "./dist/is-color-supported.browser.js"
+            }
+        },
+        "./browser": {
+            "types": "./dist/is-color-supported.browser.d.ts",
+            "default": "./dist/is-color-supported.browser.js"
+        },
+        "./edge-light": {
+            "types": "./dist/is-color-supported.edge-light.d.ts",
+            "default": "./dist/is-color-supported.edge-light.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
@@ -150,9 +154,5 @@
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
     }
 }
