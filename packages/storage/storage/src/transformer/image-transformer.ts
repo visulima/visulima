@@ -40,9 +40,10 @@ import type {
 } from "./types";
 import { getFormatFromContentType, isValidMediaType } from "./utils";
 
-// sharp ships as a CommonJS `export =` namespace, so `Sharp` is `sharp.Sharp`,
-// not a named export — alias it off the default import.
-type Sharp = sharp.Sharp;
+// sharp ships as a CommonJS `export =` namespace; reference `Sharp` through an
+// import-type query so it resolves in type position under `verbatimModuleSyntax`
+// (a default value import cannot be used as a type namespace).
+type Sharp = import("sharp").Sharp;
 
 /**
  * Image transformer that uses storage backends to retrieve and transform images.
@@ -863,6 +864,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
     private applyCLAHE(sharpInstance: Sharp, options: CLAHEOptions): Sharp {
         const { height, maxSlope, width, ...formatOptions } = options;
 
+        if (width === undefined || height === undefined) {
+            throw new Error("CLAHE transformation requires both `width` and `height`.");
+        }
+
         let claheInstance = sharpInstance.clahe({
             height,
             maxSlope,
@@ -886,6 +891,10 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
      */
     private applyConvolve(sharpInstance: Sharp, options: ConvolveOptions): Sharp {
         const { height, kernel, offset, scale, width, ...formatOptions } = options;
+
+        if (width === undefined || height === undefined || kernel === undefined) {
+            throw new Error("Convolve transformation requires `width`, `height`, and `kernel`.");
+        }
 
         let convolveInstance = sharpInstance.convolve({
             height,
