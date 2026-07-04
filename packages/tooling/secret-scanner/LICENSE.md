@@ -61,14 +61,11 @@ duplicate it here to avoid drift.
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/secret-scanner artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
-
 ## @visulima/fs
-
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -95,15 +92,14 @@ Repository: git+https://github.com/visulima/visulima.git
 > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > SOFTWARE.
 >
-> # Licenses of bundled dependencies
 >
+>
+> # Licenses of bundled dependencies
 > The published @visulima/fs artifact additionally contains code with the following licenses:
 > ISC, MIT
 >
 > # Bundled dependencies:
->
 > ## @visulima/error
->
 > License: MIT
 > By: Daniel Bannert
 > Repository: git+https://github.com/visulima/visulima.git
@@ -130,6 +126,8 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 > >
+> >
+> >
 > > # Licenses of bundled dependencies
 > >
 > > The published @visulima/error artifact additionally contains code with the following licenses:
@@ -153,15 +151,16 @@ Repository: git+https://github.com/visulima/visulima.git
 > > >
 > > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 > >
-> > # Licenses of bundled types
 > >
+> >
+> >
+> >
+> > # Licenses of bundled types
 > > The published @visulima/error artifact additionally contains code with the following licenses:
 > > Apache-2.0
 > >
 > > # Bundled types:
-> >
 > > ## ai
-> >
 > > License: Apache-2.0
 > > Repository: https://github.com/vercel/ai
 > >
@@ -179,10 +178,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > > See the License for the specific language governing permissions and
 > > > limitations under the License.
 >
-> ---
+> ---------------------------------------
 >
 > ## detect-indent
->
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/detect-indent
@@ -197,10 +195,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## fdir
->
 > License: MIT
 > By: thecodrr
 > Repository: git+https://github.com/thecodrr/fdir.git
@@ -213,10 +210,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > >
 > > THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## glob-parent
->
 > License: ISC
 > By: Gulp Team, Elan Shanker, Blaine Bublitz
 > Repository: gulpjs/glob-parent
@@ -237,10 +233,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR
 > > IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## is-extglob
->
 > License: MIT
 > By: Jon Schlinkert
 > Repository: jonschlinkert/is-extglob
@@ -267,10 +262,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > > THE SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## is-fs-case-sensitive
->
 > License: MIT
 > By: Hiroki Osame
 > Repository: privatenumber/is-fs-case-sensitive
@@ -297,10 +291,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## is-glob
->
 > License: MIT
 > By: Jon Schlinkert, Brian Woodward, Daniel Perez
 > Repository: micromatch/is-glob
@@ -327,10 +320,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > > THE SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## picomatch
->
 > License: MIT
 > By: Jon Schlinkert
 > Repository: micromatch/picomatch
@@ -357,10 +349,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 > > THE SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## tinyglobby
->
 > License: MIT
 > By: Superchupu
 > Repository: git+https://github.com/SuperchupuDev/tinyglobby.git
@@ -387,15 +378,16 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
-> # Licenses of bundled types
 >
+>
+>
+>
+> # Licenses of bundled types
 > The published @visulima/fs artifact additionally contains code with the following licenses:
 > ISC, MIT
 >
 > # Bundled types:
->
 > ## is-fs-case-sensitive
->
 > License: MIT
 > By: Hiroki Osame
 > Repository: privatenumber/is-fs-case-sensitive
@@ -422,10 +414,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## tinyglobby
->
 > License: MIT
 > By: Superchupu
 > Repository: git+https://github.com/SuperchupuDev/tinyglobby.git
@@ -452,10 +443,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 > > SOFTWARE.
 >
-> ---
+> ---------------------------------------
 >
 > ## yaml
->
 > License: ISC
 > By: Eemeli Aro
 > Repository: github:eemeli/yaml
@@ -474,10 +464,9 @@ Repository: git+https://github.com/visulima/visulima.git
 > > TORTIOUS ACTION, ARISING OUT OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF
 > > THIS SOFTWARE.
 
----
+---------------------------------------
 
 ## @visulima/path
-
 License: MIT
 By: Daniel Bannert
 Repository: git+https://github.com/visulima/visulima.git
@@ -577,15 +566,14 @@ Repository: git+https://github.com/visulima/visulima.git
 > FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER
 > DEALINGS IN THE SOFTWARE.
 >
-> # Licenses of bundled dependencies
 >
+>
+> # Licenses of bundled dependencies
 > The published @visulima/path artifact additionally contains code with the following licenses:
 > MIT
 >
 > # Bundled dependencies:
->
 > ## binary-extensions
->
 > License: MIT
 > By: Sindre Sorhus
 > Repository: sindresorhus/binary-extensions

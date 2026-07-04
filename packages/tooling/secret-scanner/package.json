@@ -17,6 +17,11 @@
     ],
     "homepage": "https://visulima.com/packages/secret-scanner",
     "bugs": "https://github.com/visulima/visulima/issues",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -32,20 +37,6 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "sideEffects": false,
-    "type": "module",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "default": "./dist/index.js"
-        },
-        "./package.json": "./package.json"
-    },
     "files": [
         "data/ruleset.json",
         "data/LICENSE-GITLEAKS",
@@ -57,6 +48,19 @@
         "CHANGELOG.md",
         "LICENSE.md"
     ],
+    "type": "module",
+    "sideEffects": false,
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "scripts": {
         "build": "pnpm run build:rules && packem build --development",
         "build:native": "pnpm --config.verify-deps-before-run=false run build:rules:prod && napi build --platform --release --esm --manifest-path native/Cargo.toml --output-dir . --js index.js",
@@ -91,8 +95,8 @@
         "@anolilab/semantic-release-pnpm": "catalog:dev",
         "@anolilab/semantic-release-preset": "catalog:dev",
         "@arethetypeswrong/cli": "catalog:dev",
-        "@aws-sdk/client-sts": "3.1067.0",
-        "@azure/storage-blob": "12.32.0",
+        "@aws-sdk/client-sts": "3.1079.0",
+        "@azure/storage-blob": "12.33.0",
         "@grpc/grpc-js": "1.14.4",
         "@napi-rs/cli": "catalog:dev",
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
@@ -109,16 +113,16 @@
         "esbuild": "catalog:build",
         "eslint": "catalog:lint",
         "fallow": "catalog:lint",
-        "google-auth-library": "10.7.0",
-        "mongodb": "7.3.0",
+        "google-auth-library": "10.9.0",
+        "mongodb": "7.4.0",
         "mysql2": "3.22.5",
-        "pg": "8.21.0",
+        "pg": "8.22.0",
         "prettier": "catalog:lint",
         "publint": "catalog:dev",
         "rimraf": "catalog:node",
         "secretlint": "catalog:lint",
         "semantic-release": "catalog:cli",
-        "smol-toml": "^1.6.1",
+        "smol-toml": "^1.7.0",
         "typescript": "catalog:tsc",
         "vitest": "catalog:test",
         "yaml": "catalog:dev"
@@ -165,13 +169,6 @@
         "@visulima/secret-scanner-binding-win32-arm64-msvc": "workspace:*",
         "@visulima/secret-scanner-binding-win32-x64-msvc": "workspace:*"
     },
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
-    },
     "napi": {
         "binaryName": "secret-scanner-native",
         "packageName": "@visulima/secret-scanner-binding",
@@ -185,5 +182,8 @@
             "x86_64-pc-windows-msvc",
             "aarch64-pc-windows-msvc"
         ]
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
     }
 }

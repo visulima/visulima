@@ -20,6 +20,7 @@ export default createConfig(
             ".secretlintrc.cjs",
             "package.json",
             "README.md",
+            "CHANGELOG.md",
             "prettier.config.js",
             "native/Cargo.toml",
             "native/deny.toml",
