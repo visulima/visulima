@@ -3,7 +3,9 @@ import { describe, expect, it, vi } from "vitest";
 import { defineReleasePlugin, runAfterPublishAllHooks, runAfterPublishHooks, runApplyDraftHooks, runWillPublishHooks } from "../../../src/release/core/plugins";
 import type { PluginPackageInfo, ReleasePlan, ReleasePlugin, ReleasePluginContext } from "../../../src/release/types";
 
-const ctxWith = (plugins: ReleasePlugin[]): ReleasePluginContext => { return { config: { plugins }, cwd: "/repo" }; };
+const ctxWith = (plugins: ReleasePlugin[]): ReleasePluginContext => {
+    return { config: { plugins }, cwd: "/repo" };
+};
 
 const emptyPlan: ReleasePlan = { consumedChangeFiles: [], releases: [], warnings: [] };
 const pkg: PluginPackageInfo = { dir: "/repo/packages/a", name: "@scope/a", oldVersion: "1.0.0", version: "1.1.0" };
