@@ -50,14 +50,11 @@ Repository: sindresorhus/is-plain-obj
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
-
 The published @visulima/error artifact additionally contains code with the following licenses:
 Apache-2.0
 
 # Bundled types:
-
 ## ai
-
 License: Apache-2.0
 Repository: https://github.com/vercel/ai
 
