@@ -190,9 +190,13 @@ jobs:
                   fi
                   echo "any=$NEED" >> "$GITHUB_OUTPUT"
 
-            # Setup Node.js/pnpm — needed for building AND for running vitest on testable targets
+            # Setup Node.js/pnpm — needed for building AND for running vitest on testable targets.
+            # The binding-test / secret-scanner-dep steps below run on every push (not just when
+            # native files change), so setup must match: on a push, any testable leg needs pnpm even
+            # when the native binary was cache-restored. Gating only on `any-changed` skipped setup on
+            # non-native pushes (e.g. a lockfile-only commit) and broke the tests with "pnpm: not found".
             - name: "Setup resources and environment"
-              if: "steps.need-build.outputs.any == 'true' || (matrix.settings.testable && needs.files-changed.outputs.any-changed == 'true')"
+              if: "steps.need-build.outputs.any == 'true' || (matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.any-changed == 'true'))"
               id: "setup"
               uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
               with:
