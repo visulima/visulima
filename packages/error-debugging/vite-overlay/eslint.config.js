@@ -17,6 +17,7 @@ export default createConfig(
             "playwright-setup.js",
             "prettier.config.js",
             "README.md",
+            "CHANGELOG.md",
             "src/overlay/client/index.css", // ignore till eslint fix
         ],
         typescript: {
