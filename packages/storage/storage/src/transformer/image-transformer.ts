@@ -867,7 +867,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
             height,
             maxSlope,
             width,
-        } as Required<CLAHEOptions>);
+        });
 
         // Apply format and quality options
         if (Object.keys(formatOptions).length > 0) {
@@ -893,7 +893,7 @@ class ImageTransformer<TFile extends File = File, TFileReturn extends FileReturn
             offset,
             scale,
             width,
-        } as Required<ConvolveOptions>);
+        });
 
         // Apply format and quality options
         if (Object.keys(formatOptions).length > 0) {
