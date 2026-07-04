@@ -16,6 +16,7 @@ export default createConfig(
             "prettier.config.js",
             "package.json",
             "README.md",
+            "CHANGELOG.md",
             "prettier.config.js",
         ],
         typescript: {
