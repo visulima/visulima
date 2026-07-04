@@ -43,10 +43,10 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
 
             - name: "Check for file changes"
-              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              uses: "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706" # v4.0.2
               id: "changes"
               continue-on-error: true
               with:
@@ -60,7 +60,7 @@ jobs:
 
             - name: "Check for file changes (retry)"
               if: "steps.changes.outcome == 'failure'"
-              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              uses: "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706" # v4.0.2
               id: "changes_retry"
               with:
                   token: "${{ github.token }}"
@@ -83,7 +83,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
               with:
                   fetch-depth: 0
 
@@ -93,7 +93,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -137,7 +137,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
               with:
                   fetch-depth: 0
 
@@ -147,7 +147,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -172,7 +172,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
               with:
                   fetch-depth: 0
 
@@ -182,7 +182,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -210,10 +210,10 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
 
             - name: "Setup resources and environment"
-              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -248,7 +248,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
 
             - name: "Lint YAML files"
               uses: "ibiqlik/action-yamllint@2576378a8e339169678f9939646ee3ee325e845c" # v3.1.1
@@ -269,7 +269,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
 
             - name: "Lint github workflows"
               # raven-actions/actionlint shells out to `npm install @actions/tool-cache`
@@ -307,7 +307,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
 
             - name: "Install Rust toolchain"
               uses: "oxc-project/setup-rust@3d6fb132fbe7cdcb66bf8ec193911c2945369d12" # v1.0.17

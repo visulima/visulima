@@ -50,10 +50,10 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
 
             - name: "Check for Rust source changes"
-              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              uses: "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706" # v4.0.2
               id: "changes"
               continue-on-error: true
               with:
@@ -81,7 +81,7 @@ jobs:
               run: "sleep 30"
 
             - name: "Check for Rust source changes (retry)"
-              uses: "dorny/paths-filter@fbd0ab8f3e69293af611ebaee6363fc25e6d187d" # v4.0.1
+              uses: "dorny/paths-filter@7b450fff21473bca461d4b92ce414b9d0420d706" # v4.0.2
               id: "changes_retry"
               if: "steps.changes.outcome == 'failure'"
               with:
@@ -136,7 +136,7 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
 
             - name: "Install Rust stable toolchain"
               uses: "dtolnay/rust-toolchain@e97e2d8cc328f1b50210efc529dca0028893a2d9" # v1
@@ -145,7 +145,7 @@ jobs:
 
             - name: "Restore Cargo cache"
               id: "cargo-cache"
-              uses: "actions/cache/restore@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              uses: "actions/cache/restore@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
               with:
                   path: |
                       ~/.cargo/registry
@@ -191,7 +191,7 @@ jobs:
             # so a fork can't poison the cache for downstream runs.
             - name: "Save Cargo cache"
               if: "github.event_name == 'push' && steps.cargo-cache.outputs.cache-hit != 'true'"
-              uses: "actions/cache/save@27d5ce7f107fe9357f9df03efb73ab90386fccae" # v5.0.5
+              uses: "actions/cache/save@55cc8345863c7cc4c66a329aec7e433d2d1c52a9" # v6.1.0
               with:
                   path: |
                       ~/.cargo/registry

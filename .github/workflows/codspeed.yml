@@ -98,7 +98,7 @@ jobs:
                   done
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
               with:
                   fetch-depth: 0
 
@@ -107,7 +107,7 @@ jobs:
               uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
 
             - name: "Setup resources and environment"
-              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -160,10 +160,10 @@ jobs:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@6c16895f4c3b5273b373656988505d1a8264e78b" # main
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
 
             - name: "Setup resources and environment"
-              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -248,7 +248,7 @@ jobs:
             - name: "Run benchmark"
               env:
                   BENCH_PROJECT: "${{ matrix.project }}"
-              uses: "CodSpeedHQ/action@63f3e98b61959fe67f146a3ff022e4136fe9bb9c" # v4.17.6
+              uses: "CodSpeedHQ/action@a4a36bb07c0638b0b4ca52bf1f3dad1b4289e52f" # v4.18.1
               with:
                   mode: "simulation"
                   run: "pnpm exec nx run \"$BENCH_PROJECT\":test:bench"
