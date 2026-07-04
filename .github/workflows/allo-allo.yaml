@@ -16,7 +16,7 @@ permissions:
 
 jobs:
     allo-allo:
-        uses: "anolilab/workflows/.github/workflows/allo-allo.yml@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+        uses: "anolilab/workflows/.github/workflows/allo-allo.yml@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
         with:
             target-repo: "visulima/visulima"
             onboarding-lead: "prisis"

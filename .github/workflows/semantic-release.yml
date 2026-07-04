@@ -137,7 +137,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/node@acba5fb15ac98ad23dec1ad233e40e1bb79c1dae" # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -259,7 +259,7 @@ jobs:
 
             - name: "Commit refreshed lockfile"
               if: "success()"
-              uses: "stefanzweifel/git-auto-commit-action@04702edda442b2e678b25b537cec683a1493fcb9" # v7.1.0
+              uses: "stefanzweifel/git-auto-commit-action@4a55954c782fc1ea30b9056cd3e7a2b40ca8887d" # v7.2.0
               with:
                   file_pattern: "pnpm-lock.yaml"
                   commit_message: "chore(deps): sync pnpm-lock.yaml with released manifests [skip ci]"
