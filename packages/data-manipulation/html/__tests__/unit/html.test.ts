@@ -222,7 +222,9 @@ describe(html, () => {
             expect.assertions(1);
 
             const items = ["a", "<b>"];
-            const result = html`<ul>${items.map((item) => html.raw(html`<li>${item}</li>`))}</ul>`;
+            const result = html`<ul>
+                ${items.map((item) => html.raw(html`<li>${item}</li>`))}
+            </ul>`;
 
             expect(result).toBe("<ul><li>a</li><li>&lt;b></li></ul>");
         });
