@@ -16,6 +16,11 @@
     ],
     "homepage": "https://visulima.com/packages/inspector",
     "bugs": "https://github.com/visulima/visulima/issues",
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -31,21 +36,13 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
-    "sideEffects": false,
+    "files": [
+        "dist",
+        "README.md",
+        "CHANGELOG.md"
+    ],
     "type": "module",
-    "exports": {
-        ".": {
-            "types": "./dist/index.d.ts",
-            "browser": "./dist/index.js",
-            "default": "./dist/index.js"
-        },
-        "./package.json": "./package.json"
-    },
+    "sideEffects": false,
     "module": "dist/index.js",
     "browser": "./dist/index.js",
     "types": "dist/index.d.ts",
@@ -56,11 +53,18 @@
             ]
         }
     },
-    "files": [
-        "dist",
-        "README.md",
-        "CHANGELOG.md"
-    ],
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js",
+            "browser": "./dist/index.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "scripts": {
         "build": "packem build --development",
         "build:prod": "packem build --production",
@@ -113,9 +117,5 @@
     },
     "engines": {
         "node": "^22.14.0 || >=24.10.0"
-    },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
     }
 }
