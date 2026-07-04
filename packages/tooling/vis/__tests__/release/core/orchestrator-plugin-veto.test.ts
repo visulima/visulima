@@ -10,7 +10,9 @@ import type { PublishResult } from "../../../src/release/core/package-managers/i
 import type { PublishContext } from "../../../src/release/core/version-actions/interface";
 import { VersionActions } from "../../../src/release/core/version-actions/interface";
 
-const writeJson = (path: string, value: unknown): void => { writeFileSync(path, `${JSON.stringify(value, null, 4)}\n`); };
+const writeJson = (path: string, value: unknown): void => {
+    writeFileSync(path, `${JSON.stringify(value, null, 4)}\n`);
+};
 
 const setupFixture = (): string => {
     const cwd = mkdtempSync(join(tmpdir(), "vis-orch-veto-"));

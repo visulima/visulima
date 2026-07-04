@@ -3,7 +3,7 @@
 
 # 1) deps — only manifests + pruned lockfile, so this layer is reused
 #    on every source-only change.
-FROM node:26.3.1 AS deps
+FROM node:26.4.0 AS deps
 WORKDIR /app
 RUN corepack enable
 COPY .vis/docker/workspace/ ./
@@ -18,7 +18,7 @@ RUN pnpm --filter api build
 RUN pnpm exec vis docker prune --context=.vis/docker
 
 # 3) runtime — only the focus project's built output and pruned deps.
-FROM node:26.3.1
+FROM node:26.4.0
 WORKDIR /app
 COPY --from=build /app/packages/api ./packages/api
 COPY --from=build /app/packages/shared ./packages/shared

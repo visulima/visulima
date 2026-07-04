@@ -27,11 +27,11 @@
     "cpu": [
         "arm64"
     ],
+    "libc": [
+        "musl"
+    ],
     "publishConfig": {
         "access": "public",
         "provenance": true
-    },
-    "libc": [
-        "musl"
-    ]
+    }
 }
