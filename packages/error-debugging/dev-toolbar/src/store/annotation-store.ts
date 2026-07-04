@@ -24,8 +24,10 @@ export const MAX_TEXT_FIELD_LENGTH = 100_000;
  * Truncates a string field to {@link MAX_TEXT_FIELD_LENGTH} to bound per-field
  * size. Non-string values are returned unchanged.
  */
-export const clampTextField = <T>(value: T): T =>
-    typeof value === "string" && value.length > MAX_TEXT_FIELD_LENGTH ? (value.slice(0, MAX_TEXT_FIELD_LENGTH) as T) : value;
+// eslint-disable-next-line func-style -- a generic arrow (`<T,>`) is parsed as JSX by this package's Babel transform, and Prettier strips the disambiguating comma; a function declaration is the only generic form that survives both.
+export function clampTextField<T>(value: T): T {
+    return typeof value === "string" && value.length > MAX_TEXT_FIELD_LENGTH ? (value.slice(0, MAX_TEXT_FIELD_LENGTH) as T) : value;
+}
 
 /**
  * Resolves absolute paths for the annotation store.
