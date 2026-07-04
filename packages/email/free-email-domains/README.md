@@ -52,14 +52,14 @@ pnpm add @visulima/free-email-domains
 
 <!-- START_PLACEHOLDER_CONTRIBUTING -->
 
-| Repository         | Domains | Success | Performance     |
-| ------------------ | ------- | ------- | --------------- |
-| willwhite/freemail | 4.462   | ✅      | 0.24s (61.8 KB) |
+| Repository | Domains | Success | Performance |
+|------------|---------|---------|-------------|
+| willwhite/freemail | 4.462 | ✅ | 0.11s (61.8 KB) |
 
 <!-- END_PLACEHOLDER_CONTRIBUTING -->
 <!-- START_PLACEHOLDER_LAST_UPDATED -->
 
-_Last updated: 2026-06-29_
+_Last updated: 2026-07-03_
 
 <!-- END_PLACEHOLDER_LAST_UPDATED -->
 
