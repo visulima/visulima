@@ -17,6 +17,7 @@ export default createConfig(
             "package.json",
             "prettier.config.js",
             "README.md",
+            "CHANGELOG.md",
         ],
         typescript: {
             tsconfigPath: "./tsconfig.eslint.json",
