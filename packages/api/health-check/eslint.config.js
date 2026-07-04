@@ -16,6 +16,7 @@ export default createConfig(
             ".secretlintrc.js",
             "package.json",
             "README.md",
+            "CHANGELOG.md",
             "prettier.config.js",
         ],
         typescript: {
