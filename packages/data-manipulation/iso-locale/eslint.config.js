@@ -15,6 +15,7 @@ export default createConfig(
             ".secretlintrc.cjs",
             "package.json",
             "README.md",
+            "CHANGELOG.md",
             "research.md",
             "prettier.config.js",
         ],
