@@ -31,7 +31,7 @@ services:
             - "db"
 
     localstack:
-        image: "localstack/localstack:2026.5.4"
+        image: "localstack/localstack:2026.6.1"
         environment:
             - "AWS_DEFAULT_REGION=us-east-1"
             - "EDGE_PORT=4566"
