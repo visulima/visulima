@@ -1,22 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import {
-    DEC_SPECIAL_GRAPHICS,
-    G0,
-    G1,
-    LS0,
-    LS1,
-    LS1R,
-    LS2,
-    LS2R,
-    LS3,
-    LS3R,
-    SCS,
-    selectCharacterSet,
-    SI,
-    SO,
-    USASCII,
-} from "../../src/charset";
+import { DEC_SPECIAL_GRAPHICS, G0, G1, LS0, LS1, LS1R, LS2, LS2R, LS3, LS3R, SCS, selectCharacterSet, SI, SO, USASCII } from "../../src/charset";
 import { ESC } from "../../src/constants";
 
 describe("character set selection (SCS)", () => {
