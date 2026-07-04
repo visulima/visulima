@@ -43,14 +43,11 @@ This project includes spinner animations inspired by and adapted from the follow
 <!-- DEPENDENCIES -->
 
 # Licenses of bundled dependencies
-
 The published @visulima/spinner artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled dependencies:
-
 ## cli-spinners
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/cli-spinners
@@ -70,14 +67,11 @@ Repository: sindresorhus/cli-spinners
 <!-- TYPE_DEPENDENCIES -->
 
 # Licenses of bundled types
-
 The published @visulima/spinner artifact additionally contains code with the following licenses:
 MIT
 
 # Bundled types:
-
 ## cli-spinners
-
 License: MIT
 By: Sindre Sorhus
 Repository: sindresorhus/cli-spinners
