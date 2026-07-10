@@ -170,7 +170,7 @@ catalogs:
     '@visulima/fs': 5.0.0
     '@visulima/humanizer': 3.0.0
     '@visulima/inspector': 2.0.0
-    '@visulima/packem': 2.0.0-alpha.89
+    '@visulima/packem': 2.0.0-alpha.93
     '@visulima/path': 3.0.0
     '@visulima/redact': 3.0.0
     '@visulima/string': 3.0.0
