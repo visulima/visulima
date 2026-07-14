@@ -810,7 +810,34 @@ minimumReleaseAgeExclude:
   - nodemailer@9.0.1
   - dompurify@3.4.11
 
+# @visulima/packem imports `@visulima/cerebro/logger/pail` — cerebro's opt-in subpath —
+# but declares no dependency on @visulima/pail. cerebro is right to treat pail as an
+# *optional* peer (nothing in its main entry touches pail; only that subpath does), so
+# the missing dependency is packem's.
+#
+# pnpm left the optional peer unresolved, so Node fell back to the hoisted
+# @visulima/pail — which in a clean checkout is the unbuilt workspace source (no dist/),
+# and every `packem build` died with ERR_MODULE_NOT_FOUND. That deadlocked the repo:
+# packem needed pail's dist, and only packem could produce it.
+#
+# So this declares the dependency packem is missing. The version tracks cerebro's peer
+# range (4.0.0-alpha.16), not the workspace pail (4.0.0) — which is also why it resolves
+# to a built registry copy instead of linking the workspace source. Keyed on packem
+# (never a workspace package), so the workspace cerebro keeps linking the local pail for
+# development. Remove once packem declares @visulima/pail itself.
+packageExtensions:
+  '@visulima/packem':
+    dependencies:
+      '@visulima/pail': 4.0.0-alpha.16
+
 overrides:
+  # Pin the two packages we patch to a single version. Lock-file maintenance re-resolves
+  # everything to the newest match, which moved picomatch to 4.0.5 and orphaned the
+  # 4.0.4-keyed patch — ERR_PNPM_UNUSED_PATCH failed the job every 3 hours. Pinning also
+  # collapses the duplicate copies, so no consumer silently ends up on an *unpatched*
+  # picomatch. Bumping either one is now a deliberate edit here plus a re-cut patch.
+  picomatch: 4.0.5
+  tinyglobby: 0.2.17
   '@tanstack/start-server-core@<1.167.30': '>=1.167.30'
   fastify@<5.7.2: '>=5.7.2'
   fastify@<=5.7.2: '>=5.7.3'
@@ -943,8 +970,9 @@ overrides:
   nuxt@>=4.0.0-alpha.1 <=4.4.5: ^4.4.6
   path-to-regexp@<0.1.13: '>=0.1.13 <0.2.0'
   path-to-regexp@>=8.0.0 <8.4.0: '>=8.4.0'
-  picomatch@<2.3.2: '>=2.3.2'
-  picomatch@>=4.0.0 <4.0.4: '>=4.0.4'
+  # picomatch security floors (<2.3.2, >=4.0.0 <4.0.4) are superseded by the exact
+  # `picomatch: 4.0.5` pin above, which clears both. Keeping them here made pnpm resolve
+  # some consumers to an unpatched 4.0.4 alongside the patched copy.
   postcss@<8.5.10: '>=8.5.10'
   prismjs@<1.30.0: '>=1.30.0'
   protobufjs@<7.5.5: '>=7.5.5'
@@ -1032,7 +1060,10 @@ overrides:
   ws@>=7.0.0 <7.5.11: ^7.5.11
   ws@>=8.0.0 <8.21.0: ^8.21.0
 patchedDependencies:
-  picomatch@4.0.4: patches/picomatch@4.0.4.patch
+  # Keep these keys in lockstep with the picomatch/tinyglobby pins in `overrides` above.
+  # pnpm applies patches strictly (no fuzz), so the key must name the exact version the
+  # patch was cut against — and any version bump means re-cutting the patch.
+  picomatch@4.0.5: patches/picomatch@4.0.5.patch
   tinyglobby@0.2.17: patches/tinyglobby@0.2.17.patch
 
 preferWorkspacePackages: true
