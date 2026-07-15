@@ -1,6 +1,44 @@
 ## @visulima/email [2.0.0](https://github.com/visulima/visulima/compare/%40visulima%2Femail%401.0.1...%40visulima%2Femail%402.0.0) (2026-07-15)
 
 
+### ⚠ BREAKING CHANGES
+
+* **email:** the `@visulima/email/render` barrel and the `postProcessHtml` helper (with `PostProcessOptions`) have been removed, and the CSS inliner now resolves the optional `juice` peer at import time.
+
+  **Why:** importing `@visulima/email` eagerly evaluated `createRequire(import.meta.url)` from the render `css-inline` module, which the bundler folds into the shared chunk that the package root pulls. In bundled non-Node runtimes (Cloudflare Workers/workerd, Vite production builds) `import.meta.url` is `undefined`, so the worker crashed at boot — before serving any request — even for consumers that never inline CSS ([#723](https://github.com/visulima/visulima/issues/723)).
+
+  **Migration:**
+
+  1. Import each render helper from its own subpath instead of the removed `@visulima/email/render` barrel:
+
+     ```diff
+     - import { injectPreheader, addDarkModeSupport, rewriteCidLinks, extractCidReferences } from "@visulima/email/render";
+     + import { injectPreheader } from "@visulima/email/render/preheader";
+     + import { addDarkModeSupport } from "@visulima/email/render/dark-mode";
+     + import { rewriteCidLinks, extractCidReferences } from "@visulima/email/render/cid";
+     ```
+
+  2. Replace `postProcessHtml(...)` by composing the helpers yourself (order: inline CSS → preheader → dark-mode → CID rewrite):
+
+     ```diff
+     - import { postProcessHtml } from "@visulima/email/render";
+     -
+     - const out = postProcessHtml(html, { inlineCss: true, preheader: "Hi", darkMode: true });
+     + import inlineCss from "@visulima/email/render/css-inline";
+     + import { injectPreheader } from "@visulima/email/render/preheader";
+     + import { addDarkModeSupport } from "@visulima/email/render/dark-mode";
+     +
+     + const out = inlineCss(addDarkModeSupport(injectPreheader(html, "Hi")));
+     ```
+
+  3. `inlineCss` now lives at `@visulima/email/render/css-inline` (default export) and imports `juice` eagerly. Install the optional peer (`pnpm add juice`) before importing it — a missing peer now surfaces as a module-resolution error at import time rather than an `EmailError` on first call. Import it only where you actually inline CSS so `juice` (a Node-only library) stays out of edge/worker bundles.
+
+
+### Bug Fixes
+
+* **email:** make render exports worker-safe ([#726](https://github.com/visulima/visulima/pull/726)) ([2d09b49](https://github.com/visulima/visulima/commit/2d09b4985e78c71c208b12b3507659b9ab5594cf))
+
+
 ### Dependencies
 
 * **@visulima/fs:** upgraded to 5.0.2
