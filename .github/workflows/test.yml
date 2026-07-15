@@ -126,6 +126,11 @@ jobs:
                   install-node-gyp: "true"
                   install-bun: "matrix.os == 'ubuntu-latest'"
                   skip-playwright: "true"
+                  # The setup action's default `npm install --global npm@latest` exists only
+                  # to enable publish provenance, which the test job never needs. npm@12 dropped
+                  # support for the Node 25 current line (engines require >=26.0.0), so the
+                  # upgrade fails the node-25 matrix leg. The runner's bundled npm is fine here.
+                  upgrade-npm-version: false
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-signatures-audit: false
                   run-npm-audit: false

@@ -44,6 +44,10 @@ jobs:
                   install-packages: "true"
                   # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages and pnpm registry config
                   run-npm-audit: false
+                  # `npm audit signatures` walks the whole lockfile with npm, which cannot resolve the
+                  # `jsr:` deps (@std/bytes, @std/html) — npm looks up @jsr/* on registry.npmjs.org and
+                  # 404s. pnpm resolves them fine via npm.jsr.io, so this only breaks the audit step.
+                  run-signatures-audit: false
 
             - name: "Sync disposable email domains"
               if: "success()"
