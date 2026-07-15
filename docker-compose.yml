@@ -16,7 +16,7 @@ services:
             - "5433:5432"
 
     redis:
-        image: "redis:8.4.0-alpine@sha256:6cbef353e480a8a6e7f10ec545f13d7d3fa85a212cdcc5ffaf5a1c818b9d3798"
+        image: "redis:8.4.0-alpine@sha256:4eec4565e45aa0b3966554c866bc73211e281b0b3d89fe9a33c982e6faca809d"
         ports:
             - "6379:6379"
 
