@@ -1,3 +1,5 @@
+## @visulima/fs [5.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Ffs%405.0.0...%40visulima%2Ffs%405.0.1) (2026-07-15)
+
 ## @visulima/fs [5.0.0](https://github.com/visulima/visulima/compare/@visulima/fs@4.1.0...@visulima/fs@5.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
