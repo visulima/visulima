@@ -13,7 +13,7 @@ import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { implicitBaseUrlSymbol, readTsConfig } from "../../src/read-tsconfig";
-import { getTscTsconfig, parseVersion } from "../helpers";
+import { getTscTsconfig, parseVersion, tsAtLeast, tsBelow } from "../helpers";
 
 const typescriptVersion = parseVersion(tsVersion);
 
@@ -106,7 +106,10 @@ describe("parses tsconfig", () => {
         });
     });
 
-    it("parses a path", async () => {
+    // Uses `moduleResolution: node10` (removed in TS 7) and relies on `exclude`
+    // path rendering that only stabilised at 5.5, so the live-`tsc` parity holds
+    // on 5.5 → 6.x only.
+    it.runIf(tsAtLeast(5, 5) && tsBelow(7, 0))("parses a path", async () => {
         expect.assertions(1);
 
         writeJsonSync(join(distribution, "tsconfig.json"), {
@@ -199,7 +202,11 @@ describe("parses tsconfig", () => {
         });
 
         describe("circularity", () => {
-            it("self extend", async () => {
+            // TS 7's `tsc` no longer rejects a direct self-extend with a
+            // circularity diagnostic (it resolves the config); the library's own
+            // circularity detection is exercised by the sibling "recursive" spec
+            // on every version. Gate the parity spec to < 7.
+            it.runIf(tsBelow(7, 0))("self extend", async () => {
                 expect.assertions(2);
 
                 writeJsonSync(join(distribution, "tsconfig.json"), {
@@ -289,7 +296,10 @@ describe("parses tsconfig", () => {
         }
     });
 
-    it("when extending a base config include and exclude get overwritten by base config", async () => {
+    // Emission of the resolve-package-json-exports and imports options in
+    // `--showConfig` only settled at TS 5.7; earlier compilers render this
+    // extends case differently.
+    it.runIf(tsAtLeast(5, 7))("when extending a base config include and exclude get overwritten by base config", async () => {
         expect.assertions(1);
 
         writeJsonSync(join(distribution, "tsconfig.base.json"), {
@@ -454,7 +464,8 @@ describe("parses tsconfig", () => {
     });
 
     describe("nodenext", () => {
-        it("implies resolveJsonModule", async () => {
+        // `nodenext` implying `resolveJsonModule` in `--showConfig` landed in TS 5.9.
+        it.runIf(tsAtLeast(5, 9))("implies resolveJsonModule", async () => {
             expect.assertions(1);
 
             writeJsonSync(join(distribution, "tsconfig.json"), {
@@ -493,7 +504,8 @@ describe("parses tsconfig", () => {
     });
 
     describe("module node18 and node20", () => {
-        it("module: node18 implications", async () => {
+        // `module: node18` became a valid compiler option in TS 5.8.
+        it.runIf(tsAtLeast(5, 8))("module: node18 implications", async () => {
             expect.assertions(1);
 
             writeJsonSync(join(distribution, "tsconfig.json"), {
@@ -510,7 +522,8 @@ describe("parses tsconfig", () => {
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
 
-        it("module: node20 implications", async () => {
+        // `module: node20` became a valid compiler option in TS 5.9.
+        it.runIf(tsAtLeast(5, 9))("module: node20 implications", async () => {
             expect.assertions(1);
 
             writeJsonSync(join(distribution, "tsconfig.json"), {
@@ -547,7 +560,9 @@ describe("parses tsconfig", () => {
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
 
-        it("does not add outDir when exclude is empty array", async () => {
+        // TS 7 omits an empty `exclude: []` from `--showConfig`; earlier
+        // compilers echo it back, which is what this parity case checks.
+        it.runIf(tsBelow(7, 0))("does not add outDir when exclude is empty array", async () => {
             expect.assertions(1);
 
             writeJsonSync(join(distribution, "tsconfig.json"), {
@@ -639,7 +654,9 @@ describe("parses tsconfig", () => {
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
 
-        it("normalizes importsNotUsedAsValues to lowercase", async () => {
+        // `importsNotUsedAsValues` was removed in TS 7, which drops it from
+        // `--showConfig` entirely; earlier compilers still echo (and normalise) it.
+        it.runIf(tsBelow(7, 0))("normalizes importsNotUsedAsValues to lowercase", async () => {
             expect.assertions(1);
 
             writeJsonSync(join(distribution, "tsconfig.json"), {
@@ -675,7 +692,9 @@ describe("parses tsconfig", () => {
         });
     });
 
-    describe("rewriteRelativeImportExtensions", () => {
+    // `rewriteRelativeImportExtensions` was introduced in TS 5.7; older
+    // compilers reject it as an unknown option.
+    describe.runIf(tsAtLeast(5, 7))("rewriteRelativeImportExtensions", () => {
         it("sets allowImportingTsExtensions implicitly", async () => {
             expect.assertions(1);
 
