@@ -853,6 +853,11 @@ overrides:
   svgo@=4.0.0: '>=4.0.1'
   webpack@>=5.49.0 <5.104.0: '>=5.104.0'
   webpack@>=5.49.0 <=5.104.0: '>=5.104.1'
+  # websocket-driver <0.7.5: message corruption (GHSA-xv26-6w52-cph6, critical)
+  # + resource-limit bypass (GHSA-mp7j-qc5w-4988). Pulled transitively via
+  # storage > firebase-admin > @firebase/database > faye-websocket. 0.7.5
+  # satisfies faye-websocket's `>=0.5.1` range.
+  'websocket-driver@<0.7.5': '>=0.7.5'
   '@anthropic-ai/sdk@>=0.79.0 <0.91.1': ^0.91.1
   '@eslint/plugin-kit@<0.3.4': '>=0.4.0'
   '@grpc/grpc-js@<1.14.4': '>=1.14.4'

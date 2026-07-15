@@ -63,9 +63,20 @@ describe("lithuanian plural forms", () => {
     it("should select the correct month form across all three slavic forms", () => {
         expect.assertions(3);
 
-        expect(word(lt, "mo", 21)).toBe("mėnuo"); // counter % 10 === 1 && counter % 100 > 20
+        expect(word(lt, "mo", 21)).toBe("mėnuo"); // counter % 10 === 1 && counter % 100 !== 11
         expect(word(lt, "mo", 2)).toBe("mėnesiai");
         expect(word(lt, "mo", 11)).toBe("mėnesių");
+    });
+
+    it("should use the singular form for numbers ending in 01 (101, 201, …)", () => {
+        expect.assertions(4);
+
+        // Regression: `counter % 100 > 20` wrongly excluded 101/201 from the
+        // singular form, rendering the genitive plural instead.
+        expect(word(lt, "ms", 101)).toBe("milisekundė");
+        expect(word(lt, "ms", 201)).toBe("milisekundė");
+        expect(word(lt, "ms", 11)).toBe("milisekundžių"); // 11 stays genitive plural
+        expect(word(lt, "ms", 211)).toBe("milisekundžių"); // ends in 11 → genitive plural
     });
 });
 
