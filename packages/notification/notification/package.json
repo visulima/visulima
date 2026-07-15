@@ -1,6 +1,6 @@
 {
     "name": "@visulima/notification",
-    "version": "1.0.0",
+    "version": "1.0.1",
     "description": "A reusable, ESM-only, edge-ready multi-channel notification library with SMS, push, chat, in-app and webhook providers",
     "keywords": [
         "apns",
@@ -261,7 +261,7 @@
         "@secretlint/secretlint-rule-preset-recommend": "catalog:lint",
         "@total-typescript/ts-reset": "catalog:dev",
         "@types/node": "catalog:types",
-        "@visulima/email": "1.0.0",
+        "@visulima/email": "1.0.1",
         "@visulima/error": "6.0.0",
         "@visulima/packem": "catalog:dev",
         "@visulima/workflow": "1.0.0",
@@ -287,7 +287,7 @@
     "peerDependencies": {
         "@aws-sdk/client-sqs": "^3.0.0",
         "@opentelemetry/api": "^1.0.0 || ^2.0.0",
-        "@visulima/email": "1.0.0",
+        "@visulima/email": "1.0.1",
         "@visulima/workflow": "1.0.0",
         "bullmq": "^5.0.0",
         "croner": "^10.0.1",
