@@ -1,0 +1,143 @@
+---
+title: Render
+description: HTML post-processing helpers for @visulima/email — preheader, dark-mode, CID rewriting, and optional CSS inlining
+---
+
+# Render
+
+The render helpers post-process an HTML email before it is sent — injecting a hidden preheader,
+adding dark-mode hooks, rewriting `cid:` references, and (optionally) inlining CSS.
+
+Each helper is a small, single-purpose function published as its **own subpath export** so you only
+pull in what you use. This matters for edge/worker bundles: the CSS inliner imports the optional
+[`juice`](https://github.com/Automattic/juice) peer, and keeping it on a separate entry means nothing
+else — not the other helpers, not the package root — drags `juice` (a Node-only CJS library) into
+your bundle. You import `juice` only if and when you import `@visulima/email/render/css-inline` (which
+previously broke Cloudflare Workers — see [#723](https://github.com/visulima/visulima/issues/723)).
+
+```typescript
+import { injectPreheader } from "@visulima/email/render/preheader";
+import { addDarkModeSupport } from "@visulima/email/render/dark-mode";
+import { rewriteCidLinks, extractCidReferences } from "@visulima/email/render/cid";
+import inlineCss from "@visulima/email/render/css-inline"; // opt-in — requires the `juice` peer
+```
+
+> **Note:** There is no `@visulima/email/render` barrel and no bundled `postProcessHtml` pipeline —
+> import each helper from its dedicated subpath and compose them yourself (see
+> [Composing the helpers](#composing-the-helpers)). The CSS inliner is the **default export** of
+> `@visulima/email/render/css-inline`; every other helper is a **named export**.
+
+## `injectPreheader`
+
+Injects hidden preview text after `<body>` so inboxes show it instead of leaked body content.
+
+```typescript
+import { injectPreheader } from "@visulima/email/render/preheader";
+
+const html = injectPreheader(rawHtml, "Your order has shipped");
+```
+
+`injectPreheader(html: string, preheader: string, options?: PreheaderOptions): string`
+
+| Option   | Type      | Default | Description                                                                      |
+| -------- | --------- | ------- | -------------------------------------------------------------------------------- |
+| `spacer` | `boolean` | `true`  | Append invisible padding so the preheader isn't followed by leaked body content. |
+
+## `addDarkModeSupport`
+
+Adds the `color-scheme` / `supported-color-schemes` meta tags and, when `styles` are provided, a
+`@media (prefers-color-scheme: dark)` override block.
+
+```typescript
+import { addDarkModeSupport } from "@visulima/email/render/dark-mode";
+
+const html = addDarkModeSupport(rawHtml, {
+    styles: "body { background: #111; color: #eee; }",
+});
+```
+
+`addDarkModeSupport(html: string, options?: DarkModeOptions): string`
+
+| Option   | Type     | Description                                                                     |
+| -------- | -------- | ------------------------------------------------------------------------------- |
+| `styles` | `string` | Extra CSS wrapped in a `@media (prefers-color-scheme: dark)` block (overrides). |
+
+## `rewriteCidLinks` &amp; `extractCidReferences`
+
+Work with `cid:` references for inline (embedded) images.
+
+```typescript
+import { rewriteCidLinks, extractCidReferences } from "@visulima/email/render/cid";
+
+// Which CIDs does the HTML reference?
+const cids = extractCidReferences(html); // string[]
+
+// Swap `cid:` links for hosted URLs (or any resolver output).
+const rewritten = rewriteCidLinks(html, (cid) => hostedUrls[cid]);
+```
+
+- `extractCidReferences(html: string): string[]` — returns the unique `cid:` identifiers used in the HTML.
+- `rewriteCidLinks(html: string, resolver: (cid: string) => string | undefined): string` — replaces each `cid:` reference with `resolver(cid)`; references the resolver returns `undefined` for are left untouched.
+
+## `inlineCss`
+
+Inlines `<style>` / linked CSS into element `style` attributes for maximum email-client
+compatibility, via [`juice`](https://github.com/Automattic/juice).
+
+```typescript
+import inlineCss from "@visulima/email/render/css-inline";
+
+const html = inlineCss(rawHtml, { preserveImportant: true });
+```
+
+`inlineCss(html: string, options?: Record<string, unknown>): string`
+
+> **Note:** `juice` is an **optional peer dependency** — install it with `pnpm add juice` (or your
+> package manager's equivalent) before importing this module. Unlike the other helpers, importing
+> `@visulima/email/render/css-inline` resolves `juice` eagerly, so import it only where you actually
+> inline CSS. That isolation is deliberate: it keeps `juice` out of the package root, so edge/worker
+> bundles that never inline CSS never pull it in.
+
+## Composing the helpers
+
+There is no built-in pipeline function — chain the helpers you need. Each takes HTML and returns HTML,
+so they compose directly. A sensible order is **inline CSS → preheader → dark-mode → CID rewrite**
+(inline first, so `juice` operates on the original `<style>` blocks before anything else rewrites the
+markup):
+
+```typescript
+import inlineCss from "@visulima/email/render/css-inline";
+import { injectPreheader } from "@visulima/email/render/preheader";
+import { addDarkModeSupport } from "@visulima/email/render/dark-mode";
+import { rewriteCidLinks } from "@visulima/email/render/cid";
+
+const render = (rawHtml: string): string => {
+    let html = inlineCss(rawHtml); // omit this line (and the import) if you don't inline CSS
+    html = injectPreheader(html, "Your order has shipped");
+    html = addDarkModeSupport(html, { styles: ".card { background: #111; }" });
+    html = rewriteCidLinks(html, (cid) => hostedUrls[cid]);
+
+    return html;
+};
+```
+
+If you don't inline CSS, drop the `inlineCss` import and line entirely — the remaining helpers have no
+optional peers and are safe in any runtime.
+
+## Using the helpers in a middleware
+
+Combine them with `withRender` to post-process every outgoing message:
+
+```typescript
+import { createMail } from "@visulima/email";
+import { withRender } from "@visulima/email/middleware";
+import { injectPreheader } from "@visulima/email/render/preheader";
+import { addDarkModeSupport } from "@visulima/email/render/dark-mode";
+
+mail.use(
+    withRender(async (email) => ({
+        ...email,
+        html: email.html ? addDarkModeSupport(injectPreheader(email.html, "Hi!")) : email.html,
+    })),
+);
+```

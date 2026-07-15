@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 
-import { addDarkModeSupport, extractCidReferences, injectPreheader, inlineCss, postProcessHtml, rewriteCidLinks } from "../../src/render";
+import { extractCidReferences, rewriteCidLinks } from "../../src/render/cid";
+import inlineCss from "../../src/render/css-inline";
+import { addDarkModeSupport } from "../../src/render/dark-mode";
+import { injectPreheader } from "../../src/render/preheader";
 
 describe("render pipeline", () => {
     describe(injectPreheader, () => {
@@ -76,15 +79,14 @@ describe("render pipeline", () => {
         });
     });
 
-    describe(postProcessHtml, () => {
-        it("applies the selected steps in order", () => {
+    describe("composing the helpers", () => {
+        it("applies preheader, dark-mode, and CID rewrite when chained", () => {
             expect.assertions(3);
 
-            const html = postProcessHtml("<html><head></head><body><p>Hi</p></body></html>", {
-                cidResolver: () => "https://cdn/x.png",
-                darkMode: true,
-                preheader: "Preview",
-            });
+            const html = rewriteCidLinks(
+                addDarkModeSupport(injectPreheader("<html><head></head><body><p>Hi</p></body></html>", "Preview")),
+                () => "https://cdn/x.png",
+            );
 
             expect(html).toContain("Preview");
             expect(html).toContain("name=\"color-scheme\"");
