@@ -104,7 +104,7 @@ Options (`ReadTsConfigOptions`):
 
 | Option              | Type                                                                  | Default     | Description                                                                                                                                                                                                                             |
 | ------------------- | --------------------------------------------------------------------- | ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tscCompatible`     | `"5.4" \| "5.5" \| "5.6" \| "5.7" \| "5.8" \| "5.9" \| "6.0" \| true` | `undefined` | Synthesize the _derived_ defaults TypeScript would imply from other options for the given version (e.g. `module: nodenext` ⇒ `moduleResolution: nodenext`). `true` targets the latest supported version.                                |
+| `tscCompatible`     | `"5.4" \| "5.5" \| "5.6" \| "5.7" \| "5.8" \| "5.9" \| "6.0" \| "7.0" \| true` | `undefined` | Synthesize the _derived_ defaults TypeScript would imply from other options for the given version (e.g. `module: nodenext` ⇒ `moduleResolution: nodenext`). `true` targets the latest supported version.                                |
 | `typescriptVersion` | `"auto" \| false \| string`                                           | `false`     | Apply the _unconditional_ compiler-option defaults of a TypeScript version. `"auto"` detects the installed version (including Yarn PnP); a string pins an explicit version; `false` applies none. Can be combined with `tscCompatible`. |
 
 ### writeTsConfig / writeTsConfigSync
@@ -515,7 +515,7 @@ Defined in: [packages/tsconfig/src/read-tsconfig.ts:444](https://github.com/visu
 ##### tscCompatible?
 
 ```ts
-optional tscCompatible: "5.4" | "5.5" | "5.6" | "5.7" | "5.8" | "5.9" | "6.0" | true;
+optional tscCompatible: "5.4" | "5.5" | "5.6" | "5.7" | "5.8" | "5.9" | "6.0" | "7.0" | true;
 ```
 
 Defined in: [packages/tsconfig/src/read-tsconfig.ts:703](https://github.com/visulima/visulima/blob/afe199ce97ec3025aa13484407254660803d8d9c/packages/tsconfig/src/read-tsconfig.ts#L703)
