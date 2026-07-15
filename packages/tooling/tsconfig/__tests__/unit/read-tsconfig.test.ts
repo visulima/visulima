@@ -747,4 +747,25 @@ describe("parses tsconfig", () => {
             expect(parsedTsconfig).toStrictEqual(expectedTsconfig);
         });
     });
+
+    describe("tscCompatible: true", () => {
+        it("follows the latest-version (7.0) regime, not the legacy 5.x one", () => {
+            expect.assertions(2);
+
+            // `module: nodenext` derives differently between regimes: the 5.x
+            // path synthesizes `esModuleInterop`, the 6.0/7.0 path does not.
+            writeJsonSync(join(distribution, "tsconfig.json"), {
+                compilerOptions: {
+                    module: "nodenext",
+                },
+            });
+
+            const asTrue = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: true });
+            const asLatest = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: "7.0" });
+            const asLegacy = readTsConfig(join(distribution, "tsconfig.json"), { tscCompatible: "5.9" });
+
+            expect(asTrue).toStrictEqual(asLatest);
+            expect(asTrue).not.toStrictEqual(asLegacy);
+        });
+    });
 });
