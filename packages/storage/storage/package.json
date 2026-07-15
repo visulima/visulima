@@ -1,6 +1,6 @@
 {
     "name": "@visulima/storage",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "description": "Server-side file-storage abstraction - store files in a web-accessible location via a simplified API. Includes S3, Azure, GCS, local filesystem and 20+ other backends with TUS/multipart/REST upload handlers and the most convenient features of each.",
     "keywords": [
         "anolilab",
@@ -333,7 +333,7 @@
         "@types/supertest": "catalog:types",
         "@types/type-is": "catalog:types",
         "@vercel/blob": "catalog:dev",
-        "@visulima/fs": "5.0.1",
+        "@visulima/fs": "5.0.2",
         "@visulima/humanizer": "3.0.0",
         "@visulima/packem": "catalog:dev",
         "@visulima/path": "3.0.0",
