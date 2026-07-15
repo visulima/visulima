@@ -18,7 +18,7 @@ import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { readTsConfig } from "../../src/read-tsconfig";
-import { esc, getTscTsconfig, parseVersion } from "../helpers";
+import { esc, getTscTsconfig, parseVersion, tsBelow } from "../helpers";
 
 const typescriptVersion = parseVersion(tsVersion);
 
@@ -290,7 +290,10 @@ describe("node_modules", () => {
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
 
-        it("extensionless file should not work", async () => {
+        // TS 7 resolves these node_modules extends targets that older `tsc`
+        // rejected; the library's own ENOENT behaviour is version-independent
+        // and covered on < 7. Gate the parity spec to < 7.
+        it.runIf(tsBelow(7, 0))("extensionless file should not work", async () => {
             expect.assertions(2);
 
             writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig"), {
@@ -307,7 +310,7 @@ describe("node_modules", () => {
             expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for 'dep/tsconfig' found.");
         });
 
-        it("arbitrary extension should not work", async () => {
+        it.runIf(tsBelow(7, 0))("arbitrary extension should not work", async () => {
             expect.assertions(2);
 
             writeJsonSync(join(distribution, "node_modules", "dep", "tsconfig.ts"), {
@@ -630,7 +633,7 @@ describe("node_modules", () => {
                 expect(tsconfig).toStrictEqual(expectedTsconfig);
             });
 
-            it("missing condition should fail", async () => {
+            it.runIf(tsBelow(7, 0))("missing condition should fail", async () => {
                 expect.assertions(2);
 
                 writeJsonSync(join(distribution, "node_modules", "dep", "package.json"), {
@@ -659,7 +662,7 @@ describe("node_modules", () => {
             });
         });
 
-        it("missing subpath should fail", async () => {
+        it.runIf(tsBelow(7, 0))("missing subpath should fail", async () => {
             expect.assertions(2);
 
             writeJsonSync(join(distribution, "node_modules", "dep", "package.json"), {
@@ -736,7 +739,7 @@ describe("node_modules", () => {
             expect(tsconfig).toStrictEqual(expectedTsconfig);
         });
 
-        it("path block should not resolve tsconfig.json", async () => {
+        it.runIf(tsBelow(7, 0))("path block should not resolve tsconfig.json", async () => {
             expect.assertions(2);
 
             writeJsonSync(join(distribution, "node_modules", "dep", "package.json"), {

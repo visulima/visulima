@@ -13,7 +13,7 @@ import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { readTsConfig } from "../../src/read-tsconfig";
-import { getTscTsconfig, parseVersion } from "../helpers";
+import { getTscTsconfig, parseVersion, tsAtLeast } from "../helpers";
 
 const typescriptVersion = parseVersion(tsVersion);
 
@@ -175,7 +175,9 @@ describe("relative path", () => {
         expect(() => readTsConfig(join(distribution, "tsconfig.json"))).toThrow("ENOENT: No such file or directory, for './directory' found.");
     });
 
-    it("should resolve outDir in extends", async () => {
+    // TS 5.4's `--showConfig` does not auto-add the extends-resolved `outDir`
+    // to `exclude`; that rendering settled at 5.5.
+    it.runIf(tsAtLeast(5, 5))("should resolve outDir in extends", async () => {
         expect.assertions(1);
 
         writeJsonSync(join(distribution, "a", "dep.json"), {

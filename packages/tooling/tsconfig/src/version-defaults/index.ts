@@ -9,6 +9,7 @@ import type { TsConfigJson } from "type-fest";
 import { applyV4Defaults } from "./v4";
 import { applyV5Defaults } from "./v5";
 import { applyV6Defaults } from "./v6";
+import { applyV7Defaults } from "./v7";
 
 type ApplyVersionDefaults = (compilerOptions: TsConfigJson.CompilerOptions, userSet: ReadonlySet<string>) => void;
 
@@ -22,6 +23,7 @@ const versionDeltas: ReadonlyArray<readonly [number, ApplyVersionDefaults]> = [
     [4, applyV4Defaults],
     [5, applyV5Defaults],
     [6, applyV6Defaults],
+    [7, applyV7Defaults],
 ];
 
 const VERSION_REGEX = /^v?(\d+)/;

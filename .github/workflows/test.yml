@@ -33,6 +33,7 @@ jobs:
         outputs:
             packages: "${{ steps.changes.outputs.packages || steps.changes_retry.outputs.packages }}"
             codecov: "${{ steps.changes.outputs.codecov || steps.changes_retry.outputs.codecov }}"
+            tsconfig: "${{ steps.changes.outputs.tsconfig || steps.changes_retry.outputs.tsconfig }}"
         steps:
             - name: "Harden Runner"
               uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
@@ -532,14 +533,84 @@ jobs:
             - name: "Run ${{ matrix.browser }} browser tests"
               run: "pnpm run test:affected:browser:${{ matrix.browser }}"
 
+    # Runs ONLY the @visulima/tsconfig package's test suite against every
+    # TypeScript version it claims to support. The package emulates `tsc
+    # --showConfig` and version-specific compiler-option defaults, so its parity
+    # tests must be exercised against each real compiler — not just the pinned
+    # catalog version. The suite version-gates specs tied to a particular release
+    # (see `__tests__/helpers.ts` `tsAtLeast`/`tsBelow`), so every leg is expected
+    # to be green (with some specs skipped per version). This is pure TypeScript —
+    # no native bindings — so it skips the Build Native wait the other jobs need.
+    tsconfig-ts-versions:
+        name: "Test tsconfig (typescript ${{ matrix.ts_version }})"
+        if: "needs.files-changed.outputs.tsconfig == 'true'"
+        needs: "files-changed"
+        runs-on: "ubuntu-latest"
+        timeout-minutes: 30
+        strategy:
+            fail-fast: false
+            matrix:
+                # Every version in the `tscCompatible` union / `version-defaults`
+                # dispatch. `typescript@<minor>` floats to the latest patch.
+                ts_version: ["5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "6.0", "7.0"]
+        steps:
+            - name: "Harden Runner"
+              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              with:
+                  egress-policy: "audit"
+
+            - name: "Git checkout"
+              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
+
+            - name: "Setup resources and environment"
+              id: "setup"
+              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
+              with:
+                  node-version: "22"
+                  install-node-gyp: "true"
+                  cache-prefix: "tsconfig-ts-${{ matrix.ts_version }}"
+                  skip-playwright: "true"
+                  # This job never publishes, so the provenance-only npm upgrade is unneeded.
+                  upgrade-npm-version: false
+                  # TODO: re-enable once pnpm/npm audit works with unpublished @visulima/task-runner-binding-* packages.
+                  run-signatures-audit: false
+                  run-npm-audit: false
+
+            # Build the package and its workspace dependencies (topological order).
+            - name: "Build @visulima/tsconfig and its dependencies"
+              run: "pnpm --filter \"@visulima/tsconfig...\" run build"
+
+            # Pin the package's TypeScript to the matrix version. `pnpm add` rewrites
+            # the package.json spec (from `catalog:tsc`) and the lockfile, so the
+            # subsequent `vitest` run resolves this exact compiler for both
+            # `import 'typescript'` and the `tsc --showConfig` parity shell-outs.
+            - name: "Install typescript@${{ matrix.ts_version }}"
+              run: "pnpm --filter \"@visulima/tsconfig\" add --save-dev \"typescript@${{ matrix.ts_version }}\""
+
+            # Fail loudly if the injected compiler is not what the leg claims to test,
+            # rather than silently re-running an already-covered version.
+            - name: "Verify active TypeScript version"
+              shell: "bash"
+              working-directory: "packages/tooling/tsconfig"
+              run: |
+                  active="$(node -e "console.log(require('typescript').version)")"
+                  echo "Active TypeScript: $active (matrix: ${{ matrix.ts_version }})"
+                  case "$active" in
+                      "${{ matrix.ts_version }}".*) echo "OK" ;;
+                      *) echo "::error::Expected typescript ${{ matrix.ts_version }}.x but resolved $active" && exit 1 ;;
+                  esac
+
+            - name: "Run @visulima/tsconfig tests"
+              run: "pnpm --filter \"@visulima/tsconfig\" run test"
+
     # This check runs once all dependant jobs have passed
     # It symbolizes that all required checks have successfully passed (Or skipped)
     # This check is the only required GitHub check
     test-required-check:
-        needs: ["files-changed", "test", "browser-test"]
+        needs: ["files-changed", "test", "browser-test", "tsconfig-ts-versions"]
         name: "Check Test Run"
         # This is necessary since a failed/skipped dependent job would cause this job to be skipped
-        if: "always() && (needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.browser-test.result == 'success' || needs.browser-test.result == 'skipped')"
+        if: "always() && (needs.test.result == 'success' || needs.test.result == 'skipped') && (needs.browser-test.result == 'success' || needs.browser-test.result == 'skipped') && (needs.tsconfig-ts-versions.result == 'success' || needs.tsconfig-ts-versions.result == 'skipped')"
         runs-on: "ubuntu-24.04"
         timeout-minutes: 30
         steps:

@@ -68,6 +68,27 @@ describe("readTsConfig with typescriptVersion option", () => {
         expect(parsed.compilerOptions?.target).toBe("es5");
     });
 
+    it("applies v7 unconditional defaults when typescriptVersion=7.0.0", () => {
+        expect.assertions(1);
+
+        writeJsonSync(join(directory, "tsconfig.json"), {});
+
+        const parsed = readTsConfig(join(directory, "tsconfig.json"), { typescriptVersion: "7.0.0" });
+
+        expect(parsed.compilerOptions).toMatchObject({
+            alwaysStrict: true,
+            libReplacement: false,
+            module: "esnext",
+            moduleResolution: "bundler",
+            noUncheckedSideEffectImports: true,
+            rootDir: ".",
+            stableTypeOrdering: true,
+            strict: true,
+            target: "es2025",
+            types: [],
+        });
+    });
+
     it("auto-detects from sibling node_modules/typescript/package.json", () => {
         expect.assertions(1);
 

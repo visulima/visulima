@@ -14,7 +14,7 @@ import { version as tsVersion } from "typescript";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import { implicitBaseUrlSymbol, readTsConfig } from "../../src/read-tsconfig";
-import { getTscTsconfig, parseVersion } from "../helpers";
+import { getTscTsconfig, parseVersion, tsAtLeast, tsBelow } from "../helpers";
 
 const typescriptVersion = parseVersion(tsVersion);
 
@@ -433,7 +433,9 @@ describe("parse-tsconfig merges", () => {
         });
     });
 
-    it("nested extends", async () => {
+    // TS 7 drops `compileOnSave` from `--showConfig`; earlier compilers preserve
+    // it through an extends chain, which is what this parity case checks.
+    it.runIf(tsBelow(7, 0))("nested extends", async () => {
         expect.assertions(1);
 
         writeJsonSync(join(distribution, "c.json"), {
@@ -495,7 +497,9 @@ describe("parse-tsconfig merges", () => {
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
 
-    it("watchOptions", async () => {
+    // TS 7 no longer emits the `watchOptions` block in `--showConfig`; earlier
+    // compilers render it, which these three parity cases verify.
+    it.runIf(tsBelow(7, 0))("watchOptions", async () => {
         expect.assertions(1);
 
         writeJsonSync(join(distribution, "tsconfig.base.json"), {
@@ -521,7 +525,7 @@ describe("parse-tsconfig merges", () => {
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
 
-    it("watchOptions.excludeFiles", async () => {
+    it.runIf(tsBelow(7, 0))("watchOptions.excludeFiles", async () => {
         expect.assertions(1);
 
         writeJsonSync(join(distribution, "tsconfig.json"), {
@@ -539,7 +543,7 @@ describe("parse-tsconfig merges", () => {
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
 
-    it("watchOptions enum normalization", async () => {
+    it.runIf(tsBelow(7, 0))("watchOptions enum normalization", async () => {
         expect.assertions(1);
 
         writeJsonSync(join(distribution, "tsconfig.json"), {
@@ -605,8 +609,10 @@ describe("parse-tsconfig merges", () => {
         expect(tsconfig).toStrictEqual(expectedTsconfig);
     });
 
+    // The `${configDir}` template variable was introduced in TS 5.5; older
+    // compilers leave it unexpanded, so `--showConfig` parity can't hold there.
     // eslint-disable-next-line no-template-curly-in-string
-    describe("${configDir}", () => {
+    describe.runIf(tsAtLeast(5, 5))("${configDir}", () => {
         it("should work in paths, include, excludes", async () => {
             expect.assertions(1);
 

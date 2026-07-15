@@ -34,5 +34,12 @@ packages: &packages
     - "package.json"
     - "packages/**"
 
+# Scopes the TypeScript-version matrix leg of the Tests workflow to changes that
+# can affect @visulima/tsconfig's cross-version parity.
+tsconfig:
+    - "packages/tooling/tsconfig/**"
+    - "pnpm-lock.yaml"
+    - ".github/workflows/test.yml"
+
 codecov:
     - "codecov.yml"
