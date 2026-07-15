@@ -37,7 +37,7 @@ jobs:
         runs-on: "ubuntu-24.04"
         timeout-minutes: 20
         container:
-            image: "node:24-alpine"
+            image: "node:24.18.0-alpine"
             # --privileged is over-broad for tests but the minimal
             # cap our process_vm_readv needs is CAP_SYS_PTRACE,
             # which by default isn't granted to containers.

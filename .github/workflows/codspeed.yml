@@ -35,7 +35,7 @@ jobs:
             has-benches: "${{ steps.affected.outputs.has-benches }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
               with:
                   egress-policy: "audit"
 
@@ -98,7 +98,7 @@ jobs:
                   done
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
               with:
                   fetch-depth: 0
 
@@ -107,7 +107,7 @@ jobs:
               uses: "nrwl/nx-set-shas@afb73a62d26e41464e9254689e1fd6122ee683c1" # v5.0.1
 
             - name: "Setup resources and environment"
-              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -155,15 +155,15 @@ jobs:
             matrix: "${{ fromJSON(needs.discover.outputs.matrix) }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
 
             - name: "Setup resources and environment"
-              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -248,7 +248,7 @@ jobs:
             - name: "Run benchmark"
               env:
                   BENCH_PROJECT: "${{ matrix.project }}"
-              uses: "CodSpeedHQ/action@a4a36bb07c0638b0b4ca52bf1f3dad1b4289e52f" # v4.18.1
+              uses: "CodSpeedHQ/action@f99becdce5e5d51fd556489ebef684f4ecfd6286" # v4.18.5
               with:
                   mode: "simulation"
                   run: "pnpm exec nx run \"$BENCH_PROJECT\":test:bench"

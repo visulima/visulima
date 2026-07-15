@@ -13,7 +13,7 @@ jobs:
             id-token: "write"
             actions: "read"
             contents: "read"
-        uses: "anolilab/workflows/.github/workflows/scorecards.yml@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0
+        uses: "anolilab/workflows/.github/workflows/scorecards.yml@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5
         with:
             branch: "main"
             publish_results: true

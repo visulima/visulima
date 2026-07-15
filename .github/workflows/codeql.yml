@@ -13,7 +13,7 @@ jobs:
             security-events: "write"
             actions: "read"
             contents: "read"
-        uses: "anolilab/workflows/.github/workflows/codeql.yml@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0
+        uses: "anolilab/workflows/.github/workflows/codeql.yml@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5
         with:
             languages: "[\"javascript-typescript\"]"
             branches: "[\"main\", \"alpha\", \"next\", \"beta\"]"
