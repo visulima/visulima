@@ -1,3 +1,5 @@
+## @visulima/html [1.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fhtml%401.0.0...%40visulima%2Fhtml%401.0.1) (2026-07-15)
+
 ## @visulima/html 1.0.0 (2026-07-03)
 
 ### Features
