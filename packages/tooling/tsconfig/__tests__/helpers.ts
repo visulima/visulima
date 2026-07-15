@@ -3,12 +3,17 @@ import { dirname, resolve } from "node:path";
 
 import { x, xSync } from "tinyexec";
 import type { TsConfigJson } from "type-fest";
+import { version as tsVersion } from "typescript";
 
 import type { Options } from "../src/read-tsconfig";
 
 const tscPath = resolve("node_modules/.bin/tsc");
 
 const TRAILING_NEWLINE_REGEX = /\n$/;
+
+const [tsMajorRaw, tsMinorRaw] = tsVersion.split(".");
+const TS_MAJOR = Number.parseInt(tsMajorRaw ?? "0", 10);
+const TS_MINOR = Number.parseInt(tsMinorRaw ?? "0", 10);
 
 /**
  * Escape the slash `\` in ESC-symbol.
@@ -87,3 +92,16 @@ export const parseVersion = (version: string): Options["tscCompatible"] | undefi
 
     return `${String(major)}.${String(minor)}` as Options["tscCompatible"];
 };
+
+/**
+ * Version gate for the installed TypeScript compiler that the parity tests
+ * shell out to. Many specs assert behaviour tied to a specific `tsc` release —
+ * a compiler option that did not exist yet (e.g. `rewriteRelativeImportExtensions`
+ * in 5.7, `module: node20` in 5.9), or `--showConfig`/resolution output that
+ * changed across versions (e.g. TS 7 drops `watchOptions` and resolves `extends`
+ * targets older `tsc` rejected). Use these to `runIf`/`skipIf` such specs so the
+ * suite stays green across the full supported range (5.4 → 7.x).
+ */
+export const tsAtLeast = (major: number, minor: number): boolean => TS_MAJOR > major || (TS_MAJOR === major && TS_MINOR >= minor);
+
+export const tsBelow = (major: number, minor: number): boolean => !tsAtLeast(major, minor);

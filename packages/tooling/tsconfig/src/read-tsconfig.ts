@@ -420,7 +420,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         config.compilerOptions.preserveConstEnums ??= true;
     }
 
-    if (["5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "true"].includes(String(options?.tscCompatible))) {
+    if (["5.4", "5.5", "5.6", "5.7", "5.8", "5.9"].includes(String(options?.tscCompatible))) {
         if (
             config.compilerOptions.esModuleInterop === undefined
             && (config.compilerOptions.module === "node16"
@@ -502,7 +502,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
             config.compilerOptions.allowSyntheticDefaultImports = true;
         }
 
-        if (["5.7", "5.8", "5.9", "true"].includes(String(options?.tscCompatible)) && config.compilerOptions.moduleResolution) {
+        if (["5.7", "5.8", "5.9"].includes(String(options?.tscCompatible)) && config.compilerOptions.moduleResolution) {
             let resolvePackageJson = false;
 
             if (["bundler", "node16", "nodenext"].includes(config.compilerOptions.moduleResolution.toLocaleLowerCase())) {
@@ -561,7 +561,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
     }
 
     if (
-        ["5.6", "5.7", "5.8", "5.9", "true"].includes(String(options?.tscCompatible))
+        ["5.6", "5.7", "5.8", "5.9"].includes(String(options?.tscCompatible))
         && config.compilerOptions.strict
         && config.compilerOptions.strictBuiltinIteratorReturn === undefined
     ) {
@@ -569,7 +569,7 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         config.compilerOptions.strictBuiltinIteratorReturn = true;
     }
 
-    if (["5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "true"].includes(String(options?.tscCompatible))) {
+    if (["5.4", "5.5", "5.6", "5.7", "5.8", "5.9"].includes(String(options?.tscCompatible))) {
         if (config.compilerOptions.strict) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.noImplicitAny = config.compilerOptions.noImplicitAny ?? true;
@@ -607,8 +607,10 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
         }
     }
 
-    // TypeScript 6.0+ emits fewer implicit defaults in --showConfig
-    if (String(options?.tscCompatible) === "6.0") {
+    // TypeScript 6.0+ emits fewer implicit defaults in --showConfig. TS 7.0 (the
+    // native port) adopts 6.0's derived-default behaviour, so it shares this gate.
+    // `true` means "latest supported version", which follows the 7.0 regime.
+    if (["6.0", "7.0", "true"].includes(String(options?.tscCompatible))) {
         // moduleDetection: force for node-style modules
         if (
             config.compilerOptions.moduleDetection === undefined
@@ -700,7 +702,7 @@ type Options = {
      * changes over 5.2, so it would be a silent no-op.
      * @default undefined
      */
-    tscCompatible?: "5.4" | "5.5" | "5.6" | "5.7" | "5.8" | "5.9" | "6.0" | true;
+    tscCompatible?: "5.4" | "5.5" | "5.6" | "5.7" | "5.8" | "5.9" | "6.0" | "7.0" | true;
 
     /**
      * Apply the *unconditional* compiler-option defaults TypeScript would
