@@ -24,6 +24,7 @@ class DisposableEmailSyncManager {
     constructor(options = {}) {
         this.domains = new Map();
         this.previousDomains = new Set();
+        this.allowlist = new Set();
         this.syncOptions = {
             concurrency: options.concurrency ?? 5,
             outputPath: options.outputPath ?? "dist",
@@ -430,6 +431,13 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
         const domainsArray = [...this.domains.entries()]
             .filter(([domain, entry]) => {
                 const normalizedDomain = domain.toLowerCase().trim();
+
+                // The curated allowlist beats every source: it exists precisely to undo
+                // false positives that upstream lists (or a stale blacklist entry) introduce.
+                if (this.allowlist.has(normalizedDomain)) {
+                    return false;
+                }
+
                 const isBlacklistDomain = entry.sources.has("blacklist.json");
 
                 // Always include blacklist domains, even if they're whitelisted
@@ -468,6 +476,7 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
     // eslint-disable-next-line class-methods-use-this -- Factory method, doesn't need instance state
     initializeStats(repositoryCount) {
         return {
+            allowlistDomains: 0,
             blacklistDomains: 0,
             duplicates: 0,
             failedDownloads: 0,
@@ -495,6 +504,56 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
         }
 
         return DOMAIN_VALIDATION_REGEX.test(domain) && !domain.includes("..") && domain.includes(".");
+    }
+
+    /**
+     * Loads custom allowlist.json file if it exists.
+     *
+     * These are legitimate provider domains (e.g. Yahoo's regional `yahoo.co.in`,
+     * Microsoft's `hotmail.fr`) that upstream sources keep mis-reporting as disposable.
+     * They are excluded from the generated list rather than added to it, so the
+     * allowlist is the inverse of blacklist.json — and it wins over every source,
+     * including blacklist.json.
+     * @param {string} allowlistPath Path to the allowlist.json file.
+     * @returns {Promise<number>} Number of domains loaded into the allowlist.
+     */
+    async loadAllowlist(allowlistPath) {
+        try {
+            const content = await fs.readFile(allowlistPath, "utf8");
+            const allowlistData = JSON.parse(content);
+
+            if (Array.isArray(allowlistData)) {
+                allowlistData.forEach((domain) => {
+                    if (typeof domain === "string" && domain) {
+                        const normalizedDomain = domain.trim().toLowerCase();
+
+                        if (normalizedDomain && this.isValidDomain(normalizedDomain)) {
+                            this.allowlist.add(normalizedDomain);
+                        }
+                    }
+                });
+
+                // eslint-disable-next-line no-console
+                console.log(`📋 Loaded ${this.allowlist.size} domains from allowlist.json`);
+
+                return this.allowlist.size;
+            }
+
+            // eslint-disable-next-line no-console
+            console.warn("⚠️  allowlist.json is not an array, skipping");
+
+            return 0;
+        } catch (error) {
+            if (error.code === "ENOENT") {
+                // eslint-disable-next-line no-console
+                console.log("ℹ️  No allowlist.json found, skipping custom allowlist");
+            } else {
+                // eslint-disable-next-line no-console
+                console.warn(`⚠️  Error loading allowlist.json: ${error.message}`);
+            }
+
+            return 0;
+        }
     }
 
     /**
@@ -621,9 +680,10 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
      * Main synchronization method that orchestrates the entire process.
      * @param {Array<object>} repositories Array of repository configurations.
      * @param {string} [blacklistPath] Optional path to blacklist.json file.
+     * @param {string} [allowlistPath] Optional path to allowlist.json file.
      * @returns {Promise<object>} Sync result with domains, errors, and stats.
      */
-    async sync(repositories, blacklistPath) {
+    async sync(repositories, blacklistPath, allowlistPath) {
         const startTime = Date.now();
         const stats = this.initializeStats(repositories.length);
         const errors = [];
@@ -641,6 +701,18 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
             // Load custom blacklist if provided
             if (blacklistPath) {
                 stats.blacklistDomains = await this.loadBlacklist(blacklistPath);
+            }
+
+            // Load the curated allowlist last so it can veto anything the sources added.
+            if (allowlistPath) {
+                stats.allowlistDomains = await this.loadAllowlist(allowlistPath);
+
+                const conflicts = [...this.allowlist].filter((domain) => this.domains.get(domain)?.sources.has("blacklist.json"));
+
+                if (conflicts.length > 0) {
+                    // eslint-disable-next-line no-console
+                    console.warn(`⚠️  ${conflicts.length} domain(s) in both allowlist.json and blacklist.json; allowlist wins: ${conflicts.join(", ")}`);
+                }
             }
 
             // Calculate final statistics

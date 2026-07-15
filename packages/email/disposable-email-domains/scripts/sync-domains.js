@@ -189,14 +189,15 @@ const main = async () => {
             timeout: 30_000,
         });
 
-        // Check for custom blacklist.json file
+        // Check for custom blacklist.json / allowlist.json files
         const blacklistPath = join(dirnamePath, "config/blacklist.json");
+        const allowlistPath = join(dirnamePath, "config/allowlist.json");
 
         // eslint-disable-next-line no-console
         console.log("🚀 Starting domain synchronization...");
 
-        // Run synchronization with optional blacklist
-        const result = await syncManager.sync(repositories, blacklistPath);
+        // Run synchronization with optional blacklist and allowlist
+        const result = await syncManager.sync(repositories, blacklistPath, allowlistPath);
 
         // eslint-disable-next-line no-console
         console.log("\n✅ Synchronization completed!\n");
@@ -214,6 +215,7 @@ const main = async () => {
             ["Removed Domains", result.stats.removedDomains.toLocaleString()],
             ["Duplicates Found", result.stats.duplicates.toLocaleString()],
             ["Blacklist Domains", result.stats.blacklistDomains.toLocaleString()],
+            ["Allowlist Domains", result.stats.allowlistDomains.toLocaleString()],
             ["Processing Time", `${(result.stats.processingTime / 1000).toFixed(2)}s`],
             ["Output Directory", syncManager.syncOptions.outputPath],
         );
