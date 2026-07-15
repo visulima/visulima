@@ -36,7 +36,7 @@ jobs:
             tsconfig: "${{ steps.changes.outputs.tsconfig || steps.changes_retry.outputs.tsconfig }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
               with:
                   egress-policy: "audit"
 
@@ -106,12 +106,12 @@ jobs:
             NODE: "${{ matrix.node_version }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
               with:
                   fetch-depth: 0
 
@@ -121,7 +121,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
                   node-version: "${{ matrix.node_version }}"
                   install-node-gyp: "true"
@@ -364,12 +364,12 @@ jobs:
             NODE: "22"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
               with:
                   fetch-depth: 0
 
@@ -379,7 +379,7 @@ jobs:
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -555,16 +555,16 @@ jobs:
                 ts_version: ["5.4", "5.5", "5.6", "5.7", "5.8", "5.9", "6.0", "7.0"]
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
 
             - name: "Setup resources and environment"
               id: "setup"
-              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
+              uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
               with:
                   node-version: "22"
                   install-node-gyp: "true"
@@ -617,7 +617,7 @@ jobs:
             # If any jobs we depend on fail, we will fail since this is a required check
             # NOTE: A timeout is considered a failure
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
               with:
                   egress-policy: "audit"
 
