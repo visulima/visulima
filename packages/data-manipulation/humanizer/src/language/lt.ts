@@ -2,7 +2,9 @@ import type { DurationLanguage, DurationUnitMeasures } from "../types";
 import createDurationLanguage from "./util/create-duration-language";
 
 const getLithuanianForm = (counter: number): number => {
-    if (counter === 1 || (counter % 10 === 1 && counter % 100 > 20)) {
+    // Numbers ending in 1 (except 11) take the singular form — this includes
+    // 1, 21, 101, 201, … Aligns with CLDR Lithuanian rules and the `lv` helper.
+    if (counter % 10 === 1 && counter % 100 !== 11) {
         return 0;
     }
 

@@ -186,7 +186,7 @@ describe("localized duration", () => {
     });
 
     it("humanizes all languages correctly with the top-level function", () => {
-        expect.assertions(3427);
+        expect.assertions(3429);
 
         for (const [language, pairs] of languages) {
             for (const [milliseconds, expectedResult] of pairs) {
