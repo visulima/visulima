@@ -28,8 +28,10 @@
      + import { injectPreheader } from "@visulima/email/render/preheader";
      + import { addDarkModeSupport } from "@visulima/email/render/dark-mode";
      +
-     + const out = inlineCss(addDarkModeSupport(injectPreheader(html, "Hi")));
+     + const out = addDarkModeSupport(injectPreheader(inlineCss(html), "Hi"));
      ```
+
+     Read the nesting inside-out to follow the pipeline order: `inlineCss` runs first, then `injectPreheader`, then `addDarkModeSupport`. CID rewriting is intentionally omitted here because the original `postProcessHtml` call set no `cidResolver`; if you used one, apply it as the outermost call — `rewriteCidLinks(out, resolver)`.
 
   3. `inlineCss` now lives at `@visulima/email/render/css-inline` (default export) and imports `juice` eagerly. Install the optional peer (`pnpm add juice`) before importing it — a missing peer now surfaces as a module-resolution error at import time rather than an `EmailError` on first call. Import it only where you actually inline CSS so `juice` (a Node-only library) stays out of edge/worker bundles.
 
