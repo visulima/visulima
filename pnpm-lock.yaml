@@ -2421,7 +2421,7 @@ importers:
         specifier: catalog:prod
         version: 12.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 5.0.0
+        specifier: 5.0.1
         version: link:../../filesystem/fs
       comment-parser:
         specifier: catalog:prod
@@ -3733,7 +3733,7 @@ importers:
         specifier: 6.0.0
         version: link:../../error-debugging/error
       '@visulima/fs':
-        specifier: 5.0.0
+        specifier: 5.0.1
         version: link:../../filesystem/fs
       '@visulima/packem':
         specifier: catalog:dev
@@ -3904,7 +3904,7 @@ importers:
   packages/email/email-verifier:
     dependencies:
       '@visulima/disposable-email-domains':
-        specifier: 1.0.0
+        specifier: 1.0.1
         version: link:../disposable-email-domains
       '@visulima/email-provider-mx':
         specifier: 1.0.0
@@ -6034,7 +6034,7 @@ importers:
         version: 26.1.0
       '@visulima/fs':
         specifier: 5.0.0
-        version: link:../fs
+        version: 5.0.0(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.89(645a7e0d752bc03a22a65de40287bd94)
@@ -6410,7 +6410,7 @@ importers:
         specifier: catalog:types
         version: 26.1.0
       '@visulima/email':
-        specifier: 1.0.0
+        specifier: 1.0.1
         version: link:../../email/email
       '@visulima/error':
         specifier: 6.0.0
@@ -6606,7 +6606,7 @@ importers:
         specifier: catalog:dev
         version: 2.5.0
       '@visulima/fs':
-        specifier: 5.0.0
+        specifier: 5.0.1
         version: link:../../filesystem/fs
       '@visulima/humanizer':
         specifier: 3.0.0
@@ -9320,7 +9320,7 @@ importers:
         specifier: catalog:prod
         version: 1.1.0
       '@visulima/fs':
-        specifier: 5.0.0
+        specifier: 5.0.1
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0
@@ -9494,7 +9494,7 @@ importers:
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
         specifier: 5.0.0
-        version: link:../../filesystem/fs
+        version: 5.0.0(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.89(862508276cb07fdaa587e15c4cc01291)
@@ -9832,7 +9832,7 @@ importers:
   packages/tooling/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 5.0.0
+        specifier: 5.0.1
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0
@@ -9965,7 +9965,7 @@ importers:
         specifier: 1.0.0
         version: link:../task-runner
       '@visulima/tui':
-        specifier: 1.0.0
+        specifier: 1.0.1
         version: link:../../terminal/tui
       fb-watchman:
         specifier: '>=2.0.0'
@@ -10095,7 +10095,7 @@ importers:
         specifier: 3.0.0
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
-        specifier: 5.0.0
+        specifier: 5.0.1
         version: link:../../filesystem/fs
       '@visulima/humanizer':
         specifier: 3.0.0
@@ -10104,7 +10104,7 @@ importers:
         specifier: 1.0.0
         version: link:../../terminal/interactive-manager
       '@visulima/package':
-        specifier: 5.0.0
+        specifier: 5.0.1
         version: link:../package
       '@visulima/packem':
         specifier: catalog:dev
@@ -10125,7 +10125,7 @@ importers:
         specifier: 3.0.0
         version: link:../../data-manipulation/string
       '@visulima/tsconfig':
-        specifier: 3.0.0
+        specifier: 3.0.1
         version: link:../tsconfig
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -10303,13 +10303,13 @@ importers:
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
       '@visulima/fs':
-        specifier: 5.0.0
+        specifier: 5.0.1
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.0
+        specifier: 1.0.1
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -11671,7 +11671,7 @@ packages:
     resolution: {integrity: sha512-5ThLXS2ZXPoCa9xpRqDi9BebpkkbYbAhUU1lMomD+UXEp2SeB4/pVxeFF0j/9nbBlUhDOm5aariI31h8ZcXrBg==}
     hasBin: true
     peerDependencies:
-      vite: '>=6.4.2'
+      vite: ^7.3.5
       wrangler: ^4.107.0
 
   '@cloudflare/workerd-darwin-64@1.20260701.1':
@@ -17479,7 +17479,7 @@ packages:
       esbuild: '>=0.28.1'
       rollup: '>=4.59.0'
       storybook: ^10.4.6
-      vite: '>=7.1.11'
+      vite: ^7.3.5
       webpack: '>=5.104.1'
     peerDependenciesMeta:
       esbuild:
@@ -19512,6 +19512,28 @@ packages:
       yaml:
         optional: true
 
+  '@visulima/fs@5.0.0':
+    resolution: {integrity: sha512-qH7EqOJSW404oGq7Si19PRh8roKuDgHCy6+UZzJFIxEpgCRdSyd5NBQZZdTBPbrN2fzofEThW5r+Q7xkEE742w==}
+    engines: {node: ^22.14.0 || >=24.10.0}
+    os: [darwin, linux, win32]
+    peerDependencies:
+      ini: ^7.0.0
+      json5: ^2.2.3
+      jsonc-parser: ^3.3.1
+      smol-toml: ^1.6.1
+      yaml: '>=2.9.0'
+    peerDependenciesMeta:
+      ini:
+        optional: true
+      json5:
+        optional: true
+      jsonc-parser:
+        optional: true
+      smol-toml:
+        optional: true
+      yaml:
+        optional: true
+
   '@visulima/fs@5.0.0-alpha.24':
     resolution: {integrity: sha512-QbbctCwVAZrkyjTsMZ9CbyunwSJEicFRheCGv4CQ/ZdZ7vt3n54NIPUO2FbnR9WyZNfWv2hDKe53tC+RCqR7CA==}
     engines: {node: ^22.14.0 || >=24.10.0}
@@ -19712,6 +19734,11 @@ packages:
   '@visulima/path@2.0.5':
     resolution: {integrity: sha512-DBQe4IeEn1Yx03HQUlxog4sDJEQiVKnr2Kdm1acK6CgdcNN0fveoTfSvPsrxTKmMqdTgBbvB6UMUFh53cV+jgg==}
     engines: {node: '>=20.19 <=25.x'}
+    os: [darwin, linux, win32]
+
+  '@visulima/path@3.0.0':
+    resolution: {integrity: sha512-l9vlDaoFrmPlG3OFuC+ZitAT8fMB2AJu1ILNZhgToVQ0HCAFVG8X1pIM/GIBQeDULveW+unIRYR4HOhS+plsCA==}
+    engines: {node: ^22.14.0 || >=24.10.0}
     os: [darwin, linux, win32]
 
   '@visulima/path@3.0.0-alpha.10':
@@ -43959,6 +43986,16 @@ snapshots:
     optionalDependencies:
       yaml: 2.9.0
 
+  '@visulima/fs@5.0.0(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)':
+    dependencies:
+      '@visulima/path': 3.0.0
+    optionalDependencies:
+      ini: 7.0.0
+      json5: 2.2.3
+      jsonc-parser: 3.3.1
+      smol-toml: 1.7.0
+      yaml: 2.9.0
+
   '@visulima/fs@5.0.0-alpha.24(ini@7.0.0)(json5@2.2.3)(jsonc-parser@3.3.1)(smol-toml@1.7.0)(yaml@2.9.0)':
     dependencies:
       '@visulima/path': 3.0.0-alpha.10
@@ -44685,6 +44722,8 @@ snapshots:
       rotating-file-stream: 3.2.9
 
   '@visulima/path@2.0.5': {}
+
+  '@visulima/path@3.0.0': {}
 
   '@visulima/path@3.0.0-alpha.10': {}
 
@@ -48168,7 +48207,7 @@ snapshots:
       eslint: 8.57.1
       eslint-plugin-react: 7.37.5(eslint@8.57.1)
 
-  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1):
+  eslint-config-standard@17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.6.0(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@10.6.0(jiti@2.7.0)))(eslint@8.57.1):
     dependencies:
       eslint: 8.57.1
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.6.0(jiti@2.7.0))
@@ -59171,7 +59210,7 @@ snapshots:
   standard@17.1.2(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3)):
     dependencies:
       eslint: 8.57.1
-      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@8.57.1))(eslint-plugin-promise@6.6.0(eslint@8.57.1))(eslint@8.57.1)
+      eslint-config-standard: 17.1.0(eslint-plugin-import@2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@8.57.1))(eslint-plugin-n@15.7.0(eslint@10.6.0(jiti@2.7.0)))(eslint-plugin-promise@6.6.0(eslint@10.6.0(jiti@2.7.0)))(eslint@8.57.1)
       eslint-config-standard-jsx: 11.0.0(eslint-plugin-react@7.37.5(eslint@8.57.1))(eslint@8.57.1)
       eslint-plugin-import: 2.32.0(@typescript-eslint/parser@8.62.1(eslint@10.6.0(jiti@2.7.0))(typescript@6.0.3))(eslint@10.6.0(jiti@2.7.0))
       eslint-plugin-n: 15.7.0(eslint@8.57.1)
