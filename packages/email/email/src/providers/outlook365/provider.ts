@@ -1,5 +1,4 @@
 import EmailError from "../../errors/email-error";
-import RequiredOptionError from "../../errors/required-option-error";
 import type { EmailAddress, EmailResult, Result } from "../../types";
 import generateMessageId from "../../utils/generate-message-id";
 import { makeRequest } from "../../utils/make-request";
@@ -8,6 +7,7 @@ import validateEmailOptions from "../../utils/validation/validate-email-options"
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import { createProviderLogger, createStandardAttachment, handleProviderError, ProviderState } from "../utils";
+import { createTokenResolver, resolveAuth } from "./auth";
 import type { Outlook365Config, Outlook365EmailOptions } from "./types";
 
 const PROVIDER_NAME = "outlook365";
@@ -23,36 +23,77 @@ const toGraphRecipients = (addresses: EmailAddress[]): { emailAddress: { address
     });
 
 /**
- * Outlook365 provider — sends email through the Microsoft Graph `sendMail` endpoint.
+ * Converts a token-acquisition failure into an {@link EmailError}.
+ *
+ * The built-in flows already throw a descriptive EmailError (e.g. the AADSTS code from Azure AD)
+ * — re-wrapping it would bury the diagnostic. Anything else (a transport error, a throwing
+ * `getAccessToken`) keeps its message.
+ * @param error The thrown value.
+ * @returns The error to report.
  */
-const outlook365Provider: ProviderFactory<Outlook365Config> = defineProvider((config: Outlook365Config = {}) => {
-    if (!config.accessToken && !config.getAccessToken) {
-        throw new RequiredOptionError(PROVIDER_NAME, ["accessToken", "getAccessToken"]);
+const toTokenError = (error: unknown): EmailError => {
+    if (error instanceof EmailError) {
+        return error;
     }
 
-    const options: Pick<Outlook365Config, "accessToken" | "getAccessToken" | "logger">
-        & Required<Omit<Outlook365Config, "accessToken" | "getAccessToken" | "logger">> = {
-            accessToken: config.accessToken,
-            debug: config.debug ?? false,
-            endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
-            getAccessToken: config.getAccessToken,
-            logger: config.logger,
-            retries: config.retries ?? DEFAULT_RETRIES,
-            saveToSentItems: config.saveToSentItems ?? true,
-            timeout: config.timeout ?? DEFAULT_TIMEOUT,
-            userId: config.userId ?? "me",
-        };
+    const reason = error instanceof Error ? error.message : String(error);
 
-    const providerState = new ProviderState();
+    return new EmailError(PROVIDER_NAME, `Failed to obtain access token: ${reason}`, { cause: error });
+};
+
+/**
+ * The publicly readable `provider.options` — every option the provider defaults is guaranteed
+ * present, and every credential is omitted.
+ */
+type ResolvedOptions = Omit<Outlook365Config, "accessToken" | "clientSecret" | "getAccessToken" | "onRefreshToken" | "refreshToken">
+    & Required<Pick<Outlook365Config, "debug" | "endpoint" | "retries" | "saveToSentItems" | "timeout" | "userId">>;
+
+/**
+ * Outlook365 provider — sends email through the Microsoft Graph `sendMail` endpoint.
+ *
+ * Authenticates with a caller-supplied token (`accessToken` / `getAccessToken`), the delegated
+ * refresh-token flow, or the app-only client-credentials flow. See {@link Outlook365Config}.
+ */
+const outlook365Provider: ProviderFactory<Outlook365Config, unknown, Outlook365EmailOptions> = defineProvider<
+    Outlook365Config,
+    unknown,
+    Outlook365EmailOptions
+>((config: Outlook365Config = {}) => {
     const logger = createProviderLogger(PROVIDER_NAME, config.logger);
 
-    const resolveToken = async (): Promise<string> => {
-        if (options.getAccessToken) {
-            return options.getAccessToken();
-        }
+    // Throws unless exactly one flow's credentials are present.
+    const auth = resolveAuth(config, PROVIDER_NAME, logger);
 
-        return options.accessToken as string;
+    // App-only tokens belong to the application, not a user, so Graph rejects `/me` with
+    // "/me request is only valid with delegated authentication flow".
+    if (auth.mode === "clientCredentials" && (config.userId === undefined || config.userId === "me")) {
+        throw new EmailError(PROVIDER_NAME, "The app-only (client credentials) flow requires an explicit 'userId'", {
+            hint: "Set 'userId' to the sender's mailbox id or UPN — app-only tokens have no 'me' mailbox.",
+        });
+    }
+
+    // Credentials are deliberately kept out of `options`: it is a public field, so a crash
+    // reporter or a `console.log(provider.options)` would otherwise dump a client secret. The
+    // resolver closes over `config` instead, which also keeps it immune to mutations here.
+    const options: ResolvedOptions = {
+        authMode: auth.mode,
+        authority: config.authority,
+        clientId: config.clientId,
+        debug: config.debug ?? false,
+        endpoint: config.endpoint ?? DEFAULT_ENDPOINT,
+        logger: config.logger,
+        now: config.now,
+        retries: config.retries ?? DEFAULT_RETRIES,
+        saveToSentItems: config.saveToSentItems ?? true,
+        scopes: config.scopes,
+        tenantId: config.tenantId,
+        timeout: config.timeout ?? DEFAULT_TIMEOUT,
+        tokenRefreshSkewMs: config.tokenRefreshSkewMs,
+        userId: config.userId ?? "me",
     };
+
+    const providerState = new ProviderState();
+    const resolveToken = createTokenResolver(auth, config, PROVIDER_NAME, logger);
 
     return {
         features: {
@@ -74,7 +115,9 @@ const outlook365Provider: ProviderFactory<Outlook365Config> = defineProvider((co
 
         // eslint-disable-next-line @typescript-eslint/require-await
         async isAvailable(): Promise<boolean> {
-            return Boolean(options.accessToken ?? options.getAccessToken);
+            // Always true: the factory throws unless a flow's credentials are present. Reaching
+            // the token endpoint is `validateCredentials`'s job.
+            return true;
         },
 
         name: PROVIDER_NAME,
@@ -94,7 +137,7 @@ const outlook365Provider: ProviderFactory<Outlook365Config> = defineProvider((co
                 try {
                     accessToken = await resolveToken();
                 } catch (error) {
-                    return { error: new EmailError(PROVIDER_NAME, "Failed to obtain access token", { cause: error }), success: false };
+                    return { error: toTokenError(error), success: false };
                 }
 
                 const message: Record<string, unknown> = {
@@ -165,7 +208,19 @@ const outlook365Provider: ProviderFactory<Outlook365Config> = defineProvider((co
         },
 
         async validateCredentials(): Promise<boolean> {
-            return this.isAvailable();
+            // For the built-in flows this round-trips the Azure AD token endpoint; for a
+            // caller-supplied token it only confirms the source resolves.
+            try {
+                await resolveToken();
+
+                return true;
+            } catch (error) {
+                // Warn, not debug: the boolean throws away the AADSTS reason, so this log is the
+                // only place it survives.
+                logger.warn(`Credential validation failed: ${error instanceof Error ? error.message : String(error)}`);
+
+                return false;
+            }
         },
     };
 });

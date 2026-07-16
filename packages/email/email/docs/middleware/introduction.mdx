@@ -170,7 +170,9 @@ mail.use(loggingMiddleware({ logger: myLogger, redact: false }));
 
 ## oauth2Middleware
 
-Injects an OAuth2 bearer credential into each outgoing message, caching it until just before expiry and refreshing on demand. Use it for Gmail / Microsoft 365, where access tokens are short-lived. The token can be injected as a request header (default) or handed to the `onToken` callback for SMTP XOAUTH2 clients.
+Injects an OAuth2 bearer credential into each outgoing message, caching it until just before expiry and refreshing on demand. Use it for Gmail / Microsoft 365, where access tokens are short-lived. The token can be injected as a request header (default) or handed to the `onToken` callback for SMTP XOAUTH2 clients. Concurrent sends during a refresh share one in-flight request rather than stampeding the token endpoint.
+
+> **Note:** the [Outlook365 provider](/docs/providers/outlook365) authenticates to Microsoft Graph itself — app-only (client credentials) and delegated (refresh token) flows are built in, so it needs no middleware. Reach for `oauth2Middleware` when a provider takes its credential from a request header, or for SMTP XOAUTH2.
 
 ```typescript
 type OAuth2Token = {
