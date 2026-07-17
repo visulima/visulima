@@ -1,3 +1,13 @@
+## @visulima/vis [1.0.4](https://github.com/visulima/visulima/compare/%40visulima%2Fvis%401.0.3...%40visulima%2Fvis%401.0.4) (2026-07-17)
+
+
+### Dependencies
+
+* **@visulima/tui:** upgraded to 1.0.4
+* **@visulima/fs:** upgraded to 5.0.4
+* **@visulima/package:** upgraded to 5.0.4
+* **@visulima/tsconfig:** upgraded to 3.1.1
+
 ## @visulima/vis [1.0.3](https://github.com/visulima/visulima/compare/%40visulima%2Fvis%401.0.2...%40visulima%2Fvis%401.0.3) (2026-07-17)
 
 
