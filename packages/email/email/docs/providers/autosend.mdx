@@ -1,0 +1,105 @@
+---
+title: AutoSend
+description: Send emails through the AutoSend API with @visulima/email
+---
+
+# AutoSend Provider
+
+The AutoSend provider sends emails through the [AutoSend send endpoint](https://docs.autosend.com/api-reference/mails/send)
+(`POST https://api.autosend.com/v1/mails/send`).
+
+**Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers) — uses the Fetch API.
+
+## Setup
+
+```typescript
+import { createMail } from "@visulima/email";
+import { autosendProvider } from "@visulima/email/providers/autosend";
+
+const mail = createMail(
+    autosendProvider({
+        apiKey: process.env.AUTOSEND_API_KEY,
+    }),
+);
+```
+
+## Configuration
+
+The `AutoSendConfig` interface extends `BaseConfig`.
+
+| Option     | Type      | Required | Default                       | Description                     |
+| ---------- | --------- | -------- | ----------------------------- | ------------------------------- |
+| `apiKey`   | `string`  | Yes      | -                             | AutoSend API key (Bearer token) |
+| `endpoint` | `string`  | No       | `https://api.autosend.com/v1` | Custom API endpoint             |
+| `debug`    | `boolean` | No       | `false`                       | Enable debug logging            |
+| `logger`   | `Console` | No       | -                             | Custom logger instance          |
+| `retries`  | `number`  | No       | `3`                           | Number of retry attempts        |
+| `timeout`  | `number`  | No       | `30000`                       | Request timeout in milliseconds |
+
+## Basic Usage
+
+```typescript
+const result = await mail.send({
+    from: { email: "hello@mail.yourdomain.com", name: "Your Company" },
+    to: { email: "customer@example.com", name: "Jane Doe" },
+    subject: "Welcome to Our Platform!",
+    html: "<h1>Welcome!</h1><p>Thanks for signing up.</p>",
+});
+```
+
+The `from` address must be on a domain verified in AutoSend. A successful send returns AutoSend's
+`emailId` as the result's `messageId`.
+
+## Templates
+
+Pass a `templateId` to render server-side. It replaces `html` / `text`, and `dynamicData` fills the
+template's Handlebars placeholders (`{{ name }}`).
+
+```typescript
+await mail.send({
+    from: { email: "hello@mail.yourdomain.com" },
+    to: { email: "customer@example.com" },
+    subject: "Your order",
+    templateId: "tpl_123",
+    dynamicData: { name: "Jane", orderNumber: "ORD-12345" },
+});
+```
+
+## Provider-Specific Email Options
+
+The `AutoSendEmailOptions` interface extends `EmailOptions` with:
+
+| Option               | Type                      | Description                                              |
+| -------------------- | ------------------------- | -------------------------------------------------------- |
+| `templateId`         | `string`                  | AutoSend template id, used instead of `html` / `text`    |
+| `dynamicData`        | `Record<string, unknown>` | Values for the template's Handlebars placeholders        |
+| `trackingOpen`       | `boolean`                 | Enable open tracking for this message                    |
+| `trackingClick`      | `boolean`                 | Enable click tracking for this message                   |
+| `unsubscribeGroupId` | `string`                  | The unsubscribe group this message belongs to            |
+| `bypassSuppressions` | `boolean`                 | Send even if the recipient is suppressed — use sparingly |
+
+## Limits
+
+These are validated before the request, so you get a precise error rather than an API rejection:
+
+| Limit                        | Value                                 |
+| ---------------------------- | ------------------------------------- |
+| `to` recipients              | Exactly 1 — use `cc` / `bcc` for more |
+| Combined `to` + `cc` + `bcc` | 50                                    |
+| Attachments                  | 20 files, ≤40MB total after Base64    |
+| Custom headers               | 20                                    |
+| Subject length               | 998 characters                        |
+
+> **Note:** AutoSend's send endpoint takes a **single** `to` recipient. Passing several is rejected
+> rather than silently truncated — send one message per recipient, or use `cc` / `bcc`.
+
+## Supported Features
+
+- ✅ Attachments
+- ✅ Custom headers
+- ✅ HTML & text bodies
+- ✅ Reply-To
+- ✅ Templates (`templateId` + `dynamicData`)
+- ✅ Open / click tracking
+- ❌ Batch sending — AutoSend has a [bulk endpoint](https://docs.autosend.com/api-reference/mails/bulk), but the provider contract has no batch hook to expose it
+- ❌ Scheduling / tagging
