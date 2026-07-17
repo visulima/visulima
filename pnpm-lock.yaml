@@ -2422,7 +2422,7 @@ importers:
         specifier: catalog:prod
         version: 12.1.0(openapi-types@12.1.3)
       '@visulima/fs':
-        specifier: 5.0.2
+        specifier: 5.0.3
         version: link:../../filesystem/fs
       comment-parser:
         specifier: catalog:prod
@@ -3734,7 +3734,7 @@ importers:
         specifier: 6.0.0
         version: link:../../error-debugging/error
       '@visulima/fs':
-        specifier: 5.0.2
+        specifier: 5.0.3
         version: link:../../filesystem/fs
       '@visulima/packem':
         specifier: catalog:dev
@@ -6411,7 +6411,7 @@ importers:
         specifier: catalog:types
         version: 26.1.0
       '@visulima/email':
-        specifier: 2.0.0
+        specifier: 2.1.0
         version: link:../../email/email
       '@visulima/error':
         specifier: 6.0.0
@@ -6607,10 +6607,10 @@ importers:
         specifier: catalog:dev
         version: 2.5.0
       '@visulima/fs':
-        specifier: 5.0.2
+        specifier: 5.0.3
         version: link:../../filesystem/fs
       '@visulima/humanizer':
-        specifier: 3.0.0
+        specifier: 3.0.1
         version: link:../../data-manipulation/humanizer
       '@visulima/packem':
         specifier: catalog:dev
@@ -9321,7 +9321,7 @@ importers:
         specifier: catalog:prod
         version: 1.1.0
       '@visulima/fs':
-        specifier: 5.0.2
+        specifier: 5.0.3
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0
@@ -9607,7 +9607,7 @@ importers:
         specifier: catalog:dev
         version: 1.2.0-beta.12
       '@visulima/humanizer':
-        specifier: 3.0.0
+        specifier: 3.0.1
         version: link:../../data-manipulation/humanizer
       '@visulima/path':
         specifier: 3.0.0
@@ -9833,7 +9833,7 @@ importers:
   packages/tooling/tsconfig:
     dependencies:
       '@visulima/fs':
-        specifier: 5.0.2
+        specifier: 5.0.3
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0
@@ -9963,10 +9963,10 @@ importers:
         specifier: 4.0.0
         version: link:../../terminal/tabular
       '@visulima/task-runner':
-        specifier: 1.0.0
+        specifier: 1.0.1
         version: link:../task-runner
       '@visulima/tui':
-        specifier: 1.0.2
+        specifier: 1.0.3
         version: link:../../terminal/tui
       fb-watchman:
         specifier: '>=2.0.0'
@@ -10096,16 +10096,16 @@ importers:
         specifier: 3.0.0
         version: link:../../filesystem/find-cache-dir
       '@visulima/fs':
-        specifier: 5.0.2
+        specifier: 5.0.3
         version: link:../../filesystem/fs
       '@visulima/humanizer':
-        specifier: 3.0.0
+        specifier: 3.0.1
         version: link:../../data-manipulation/humanizer
       '@visulima/interactive-manager':
         specifier: 1.0.0
         version: link:../../terminal/interactive-manager
       '@visulima/package':
-        specifier: 5.0.2
+        specifier: 5.0.3
         version: link:../package
       '@visulima/packem':
         specifier: catalog:dev
@@ -10126,7 +10126,7 @@ importers:
         specifier: 3.0.0
         version: link:../../data-manipulation/string
       '@visulima/tsconfig':
-        specifier: 3.0.2
+        specifier: 3.1.0
         version: link:../tsconfig
       '@vitest/coverage-v8':
         specifier: catalog:test
@@ -10304,13 +10304,13 @@ importers:
         specifier: ^1.29.0
         version: 1.29.0(zod@4.4.3)
       '@visulima/fs':
-        specifier: 5.0.2
+        specifier: 5.0.3
         version: link:../../filesystem/fs
       '@visulima/path':
         specifier: 3.0.0
         version: link:../../filesystem/path
       '@visulima/vis':
-        specifier: 1.0.2
+        specifier: 1.0.3
         version: link:../vis
       zod:
         specifier: catalog:utils
@@ -11672,7 +11672,7 @@ packages:
     resolution: {integrity: sha512-5ThLXS2ZXPoCa9xpRqDi9BebpkkbYbAhUU1lMomD+UXEp2SeB4/pVxeFF0j/9nbBlUhDOm5aariI31h8ZcXrBg==}
     hasBin: true
     peerDependencies:
-      vite: '>=6.4.2'
+      vite: ^7.3.5
       wrangler: ^4.107.0
 
   '@cloudflare/workerd-darwin-64@1.20260701.1':
@@ -17480,7 +17480,7 @@ packages:
       esbuild: '>=0.28.1'
       rollup: '>=4.59.0'
       storybook: ^10.4.6
-      vite: '>=7.1.11'
+      vite: ^7.3.5
       webpack: '>=5.104.1'
     peerDependenciesMeta:
       esbuild:
