@@ -1,20 +1,12 @@
+import type { CacheableToken } from "../utils/create-token-cache";
+import createTokenCache from "../utils/create-token-cache";
 import headersToRecord from "../utils/headers-to-record";
 import type { Middleware } from "./types";
 
 /**
  * An OAuth2 access token plus its expiry.
  */
-export interface OAuth2Token {
-    /**
-     * The bearer access token.
-     */
-    accessToken: string;
-
-    /**
-     * Absolute expiry time in milliseconds since the epoch. Omit for non-expiring tokens.
-     */
-    expiresAt?: number;
-}
+export type OAuth2Token = CacheableToken;
 
 /**
  * Options for the {@link oauth2Middleware}.
@@ -70,20 +62,13 @@ export interface OAuth2MiddlewareOptions {
 export const oauth2Middleware = (options: OAuth2MiddlewareOptions): Middleware => {
     const { fetchToken, headerName = "Authorization", now = Date.now, onToken, scheme = "Bearer", skewMs = 60_000 } = options;
 
-    let cached: OAuth2Token | undefined;
+    const getToken = createTokenCache(async () => {
+        const token = await fetchToken();
 
-    const getToken = async (): Promise<OAuth2Token> => {
-        const valid = cached && (cached.expiresAt === undefined || cached.expiresAt - skewMs > now());
+        onToken?.(token);
 
-        if (valid && cached) {
-            return cached;
-        }
-
-        cached = await fetchToken();
-        onToken?.(cached);
-
-        return cached;
-    };
+        return token;
+    }, { now, skewMs });
 
     return async (emailOptions, next) => {
         const token = await getToken();

@@ -955,16 +955,32 @@ await mail.send({
 
 ### Outlook365 Provider
 
-Sends through Microsoft Graph `sendMail`. Universal runtime (Fetch API). Bring your own OAuth2 token (`Mail.Send` scope)
-via `accessToken` or `getAccessToken` — no auth SDK is bundled.
+Sends through Microsoft Graph `sendMail`. Universal runtime (Fetch API). No auth SDK is bundled — authenticate with
+the built-in app-only (client credentials) or delegated (refresh token) flow, or bring your own OAuth2 token
+(`Mail.Send` scope) via `accessToken` / `getAccessToken`.
 
 ```typescript
-import { createMail, outlook365Provider } from "@visulima/email/providers/outlook365";
+import { createMail } from "@visulima/email";
+import { outlook365Provider } from "@visulima/email/providers/outlook365";
 
+// App-only (client credentials) — userId is required, app-only tokens have no "me" mailbox.
 const mail = createMail(
     outlook365Provider({
-        getAccessToken: async () => getGraphAccessToken(),
-        userId: "sender@contoso.com", // or "me" (default)
+        tenantId: process.env.AZURE_TENANT_ID,
+        clientId: process.env.AZURE_CLIENT_ID,
+        clientSecret: process.env.AZURE_CLIENT_SECRET,
+        userId: "sender@contoso.com",
+    }),
+);
+
+// Delegated (refresh token) — sends as the consenting user.
+const delegated = createMail(
+    outlook365Provider({
+        tenantId: process.env.AZURE_TENANT_ID,
+        clientId: process.env.AZURE_CLIENT_ID,
+        refreshToken: await loadRefreshToken(),
+        // Azure AD may rotate the refresh token; this is awaited before the token is used.
+        onRefreshToken: async (token) => saveRefreshToken(token),
     }),
 );
 
