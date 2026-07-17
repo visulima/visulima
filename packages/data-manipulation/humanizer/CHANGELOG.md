@@ -1,3 +1,5 @@
+## @visulima/humanizer [3.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Fhumanizer%403.0.0...%40visulima%2Fhumanizer%403.0.1) (2026-07-17)
+
 ## @visulima/humanizer [3.0.0](https://github.com/visulima/visulima/compare/@visulima/humanizer@2.0.5...@visulima/humanizer@3.0.0) (2026-07-03)
 
 ### ⚠ BREAKING CHANGES
