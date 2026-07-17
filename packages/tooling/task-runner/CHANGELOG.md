@@ -1,3 +1,10 @@
+## @visulima/task-runner [1.0.1](https://github.com/visulima/visulima/compare/%40visulima%2Ftask-runner%401.0.0...%40visulima%2Ftask-runner%401.0.1) (2026-07-17)
+
+
+### Dependencies
+
+* **@visulima/humanizer:** upgraded to 3.0.1
+
 ## @visulima/task-runner 1.0.0 (2026-07-03)
 
 ### Features
