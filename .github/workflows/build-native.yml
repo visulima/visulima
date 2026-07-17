@@ -40,12 +40,12 @@ jobs:
             any-changed: "${{ steps.changes.outputs.task-runner == 'true' || steps.changes.outputs.tui == 'true' || steps.changes.outputs.vis == 'true' || steps.changes.outputs.secret-scanner == 'true' }}"
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
               with:
                   fetch-depth: 0
 
@@ -123,12 +123,12 @@ jobs:
 
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
               with:
                   egress-policy: "audit"
 
             - name: "Git checkout"
-              uses: "anolilab/workflows/step/checkout-with-retry@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # main
+              uses: "anolilab/workflows/step/checkout-with-retry@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # main
 
             # --- Cache per package ---
             # Caches always restore (keyed by source hash) so test.yml can download
@@ -198,7 +198,7 @@ jobs:
             - name: "Setup resources and environment"
               if: "steps.need-build.outputs.any == 'true' || (matrix.settings.testable && (github.event_name != 'pull_request' || needs.files-changed.outputs.any-changed == 'true'))"
               id: "setup"
-              uses: "anolilab/workflows/step/node@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
+              uses: "anolilab/workflows/step/node@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
                   node-version: "22"
                   cache-prefix: "build-native"
@@ -208,7 +208,7 @@ jobs:
 
             - name: "Install Rust toolchain"
               if: "steps.need-build.outputs.any == 'true'"
-              uses: "anolilab/workflows/step/rust@992a32d56bf8961a317c8d7aa5ec68af4487ae79" # v20.2.0 # v19.0.4 # main
+              uses: "anolilab/workflows/step/rust@aa162a984a4909f412bc4dbae712def066a0a681" # v20.2.5 # v19.0.4 # main
               with:
                   cache-key: "build-native"
                   save-cache: "${{ github.ref_name == 'main' }}"
@@ -248,7 +248,7 @@ jobs:
             # `cargo install` would add multiple minutes per CI run).
             - name: "Install cargo-zigbuild (Linux only)"
               if: "contains(matrix.settings.target, 'linux') && (steps.cache-task-runner.outputs.cache-hit != 'true' || steps.cache-vis.outputs.cache-hit != 'true')"
-              uses: "taiki-e/install-action@c93ccc03e00cd0e08e494f5fd058a6c55a6a1907" # v2.82.8
+              uses: "taiki-e/install-action@43aecc8d72668fbcfe75c31400bc4f890f1c5853" # v2.83.2
               with:
                   tool: "cargo-zigbuild"
 
@@ -591,7 +591,7 @@ jobs:
         timeout-minutes: 30
         steps:
             - name: "Harden Runner"
-              uses: "step-security/harden-runner@9af89fc71515a100421586dfdb3dc9c984fbf411" # v2.19.4
+              uses: "step-security/harden-runner@bf7454d06d71f1098171f2acdf0cd4708d7b5920" # v2.20.0
               with:
                   egress-policy: "audit"
 
