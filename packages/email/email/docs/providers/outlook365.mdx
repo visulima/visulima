@@ -5,14 +5,31 @@ description: Send emails through Microsoft Graph (Outlook365) with @visulima/ema
 
 # Outlook365 Provider
 
-The Outlook365 provider sends emails through the [Microsoft Graph `sendMail` endpoint](https://learn.microsoft.com/en-us/graph/api/user-sendmail).
+The Outlook365 provider sends emails through the [Microsoft Graph `sendMail` endpoint](https://learn.microsoft.com/en-us/graph/api/user-sendmail)
+(`POST https://graph.microsoft.com/v1.0/users/{senderUpn}/sendMail`).
 
 **Runtime Support:** Universal (Node.js, Deno, Bun, Cloudflare Workers) — uses the Fetch API.
 
-Authentication is delegated: you supply a static `accessToken` or an async `getAccessToken` (e.g. backed by
-`@azure/msal-node`). The provider never bundles an auth SDK, so it stays dependency-light and runtime-agnostic.
+**Reference:** [app-only auth](https://learn.microsoft.com/en-us/graph/auth-v2-service) ·
+[delegated auth](https://learn.microsoft.com/en-us/graph/auth-v2-user)
 
-## Setup
+No auth SDK is bundled, so the provider stays dependency-light and runtime-agnostic. It supports four
+authentication modes, evaluated in this precedence order:
+
+| Mode                       | When to use                                                   |
+| -------------------------- | ------------------------------------------------------------- |
+| `getAccessToken`           | You already mint tokens (e.g. via `@azure/msal-node`)         |
+| `accessToken`              | A static token — scripts, tests, short-lived jobs             |
+| `refreshToken` (delegated) | Send **as a signed-in user** without them being present       |
+| `clientSecret` (app-only)  | Send as **any mailbox in the tenant** from a daemon / backend |
+
+For the two built-in flows the provider calls the Azure AD token endpoint itself, caches the access token
+until shortly before it expires, and collapses concurrent sends into a single token request.
+
+## App-only (client credentials)
+
+Best for backends sending from a fixed mailbox. In the Azure app registration grant the **application**
+permission `Mail.Send` and click _Grant admin consent_.
 
 ```typescript
 import { createMail } from "@visulima/email";
@@ -20,7 +37,48 @@ import { outlook365Provider } from "@visulima/email/providers/outlook365";
 
 const mail = createMail(
     outlook365Provider({
-        // Bring your own OAuth2 token with the `Mail.Send` scope.
+        tenantId: process.env.AZURE_TENANT_ID,
+        clientId: process.env.AZURE_CLIENT_ID,
+        clientSecret: process.env.AZURE_CLIENT_SECRET,
+        // Required: app-only tokens belong to the app, not a user, so there is no "me" mailbox.
+        userId: "sender@contoso.com",
+    }),
+);
+```
+
+> **Note:** Application permissions grant access to **every** mailbox in the tenant. Scope them down with an
+> [application access policy](https://learn.microsoft.com/en-us/graph/auth-limit-mailbox-access).
+
+## Delegated (refresh token)
+
+Sends as the user who consented. Grant the **delegated** permission `Mail.Send`, and obtain a refresh token
+through the authorization-code flow with the `offline_access` scope.
+
+```typescript
+const mail = createMail(
+    outlook365Provider({
+        tenantId: process.env.AZURE_TENANT_ID, // or "common"
+        clientId: process.env.AZURE_CLIENT_ID,
+        clientSecret: process.env.AZURE_CLIENT_SECRET, // omit for public clients
+        refreshToken: await loadRefreshToken(),
+        // Azure AD may rotate the refresh token — persist the new one to survive a restart.
+        // Awaited before the token is used; if it rejects, the send still succeeds and the
+        // failure is logged, but the stored token is stale until the next rotation.
+        onRefreshToken: async (token) => saveRefreshToken(token),
+        // userId defaults to "me" — the consenting user's own mailbox.
+    }),
+);
+```
+
+> **Note:** a confidential-client delegated config and an app-only config with a leftover
+> `refreshToken` look identical — both carry `tenantId`, `clientId`, `clientSecret` and
+> `refreshToken`. `refreshToken` wins by default; set `authMode` to pin the flow explicitly.
+
+## Bring your own token
+
+```typescript
+const mail = createMail(
+    outlook365Provider({
         getAccessToken: async () => getGraphAccessToken(),
         userId: "sender@contoso.com", // or "me" (default) to use the token's own mailbox
     }),
@@ -29,19 +87,30 @@ const mail = createMail(
 
 ## Configuration
 
-The `Outlook365Config` interface extends `BaseConfig`. One of `accessToken` / `getAccessToken` is required.
+The `Outlook365Config` interface extends `BaseConfig`. At least one of `accessToken`, `getAccessToken`,
+`refreshToken` or `clientSecret` is required.
 
-| Option            | Type                         | Required | Default                            | Description                                                  |
-| ----------------- | ---------------------------- | -------- | ---------------------------------- | ------------------------------------------------------------ |
-| `accessToken`     | `string`                     | Cond.    | -                                  | Static OAuth2 token with the `Mail.Send` scope               |
-| `getAccessToken`  | `() => MaybePromise<string>` | Cond.    | -                                  | Returns a fresh OAuth2 token (preferred for expiring tokens) |
-| `userId`          | `string`                     | No       | `me`                               | Mailbox to send as (user id / UPN)                           |
-| `saveToSentItems` | `boolean`                    | No       | `true`                             | Keep a copy in the Sent Items folder                         |
-| `endpoint`        | `string`                     | No       | `https://graph.microsoft.com/v1.0` | Custom Graph endpoint                                        |
-| `debug`           | `boolean`                    | No       | `false`                            | Enable debug logging                                         |
-| `logger`          | `Console`                    | No       | -                                  | Custom logger instance                                       |
-| `retries`         | `number`                     | No       | `3`                                | Number of retry attempts                                     |
-| `timeout`         | `number`                     | No       | `30000`                            | Request timeout in milliseconds                              |
+| Option               | Type                                    | Required | Default                             | Description                                                              |
+| -------------------- | --------------------------------------- | -------- | ----------------------------------- | ------------------------------------------------------------------------ |
+| `accessToken`        | `string`                                | Cond.    | -                                   | Static OAuth2 token with the `Mail.Send` scope                           |
+| `getAccessToken`     | `() => MaybePromise<string>`            | Cond.    | -                                   | Returns a fresh OAuth2 token (preferred for expiring tokens)             |
+| `tenantId`           | `string`                                | Cond.    | -                                   | Azure AD tenant id — required by the built-in flows                      |
+| `clientId`           | `string`                                | Cond.    | -                                   | App registration client id — required by the built-in flows              |
+| `clientSecret`       | `string`                                | Cond.    | -                                   | Client secret; alone it selects the app-only flow                        |
+| `refreshToken`       | `string`                                | Cond.    | -                                   | Refresh token; selects the delegated flow                                |
+| `authMode`           | `Outlook365AuthMode`                    | No       | Inferred                            | Pins the flow when a config matches more than one                        |
+| `onRefreshToken`     | `(token: string) => MaybePromise<void>` | No       | -                                   | Awaited when Azure AD rotates the refresh token, so it can be stored     |
+| `scopes`             | `string[]`                              | No       | Flow-dependent                      | Scope override for the built-in flows                                    |
+| `authority`          | `string`                                | No       | `https://login.microsoftonline.com` | Login authority — override for sovereign clouds                          |
+| `tokenRefreshSkewMs` | `number`                                | No       | `60000`                             | Renew the access token this long before it expires; negative clamps to 0 |
+| `now`                | `() => number`                          | No       | `Date.now`                          | Time source in milliseconds — injectable for tests                       |
+| `userId`             | `string`                                | No       | `me`                                | Mailbox to send as (user id / UPN); required for the app-only flow       |
+| `saveToSentItems`    | `boolean`                               | No       | `true`                              | Keep a copy in the Sent Items folder                                     |
+| `endpoint`           | `string`                                | No       | `https://graph.microsoft.com/v1.0`  | Custom Graph endpoint                                                    |
+| `debug`              | `boolean`                               | No       | `false`                             | Enable debug logging                                                     |
+| `logger`             | `Console`                               | No       | -                                   | Custom logger instance                                                   |
+| `retries`            | `number`                                | No       | `3`                                 | Number of retry attempts                                                 |
+| `timeout`            | `number`                                | No       | `30000`                             | Request timeout in milliseconds                                          |
 
 ## Basic Usage
 
