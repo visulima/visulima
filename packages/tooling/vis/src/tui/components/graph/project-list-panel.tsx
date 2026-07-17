@@ -1,6 +1,6 @@
 import { Box } from "@visulima/tui/components/box";
-import { ScrollBar } from "@visulima/tui/components/scroll-bar";
 import { Text } from "@visulima/tui/components/text";
+import { ScrollBar } from "@visulima/tui-components/scroll-bar";
 import React from "react";
 
 import type { GraphFilterType, GraphNode } from "./graph-store";
