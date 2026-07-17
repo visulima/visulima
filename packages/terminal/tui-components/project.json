@@ -1,0 +1,13 @@
+{
+    "name": "tui-components",
+    "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+    "sourceRoot": "packages/terminal/tui-components/src",
+    "projectType": "library",
+    "tags": [
+        "type:registry",
+        "category:cli-terminal"
+    ],
+    "implicitDependencies": [
+        "tui"
+    ]
+}

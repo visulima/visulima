@@ -1,8 +1,8 @@
 import { Box } from "@visulima/tui/components/box";
-import type { ScrollViewRef } from "@visulima/tui/components/scroll-view";
-import { ScrollView } from "@visulima/tui/components/scroll-view";
-import { Spinner } from "@visulima/tui/components/spinner";
 import { Text } from "@visulima/tui/components/text";
+import type { ScrollViewRef } from "@visulima/tui-components/scroll-view";
+import { ScrollView } from "@visulima/tui-components/scroll-view";
+import { Spinner } from "@visulima/tui-components/spinner";
 
 import { formatMs } from "../pretty-time";
 import { getStatusInfo, isCacheStatus } from "../status-utils";
