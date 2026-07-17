@@ -14,10 +14,10 @@ The AutoSend provider sends emails through the [AutoSend send endpoint](https://
 
 ```typescript
 import { createMail } from "@visulima/email";
-import { autosendProvider } from "@visulima/email/providers/autosend";
+import { autoSendProvider } from "@visulima/email/providers/autosend";
 
 const mail = createMail(
-    autosendProvider({
+    autoSendProvider({
         apiKey: process.env.AUTOSEND_API_KEY,
     }),
 );
@@ -87,8 +87,14 @@ These are validated before the request, so you get a precise error rather than a
 | `to` recipients              | Exactly 1 — use `cc` / `bcc` for more |
 | Combined `to` + `cc` + `bcc` | 50                                    |
 | Attachments                  | 20 files, ≤40MB total after Base64    |
-| Custom headers               | 20                                    |
+| Custom header count          | 20                                    |
+| Custom header names          | `^[A-Za-z0-9-]{1,76}$`                |
+| Custom header values         | 1000 characters                       |
 | Subject length               | 998 characters                        |
+
+Inline (`cid:`) attachments are **rejected**: AutoSend's API has no `contentId` field, so a `cid`
+reference could never resolve and the image would silently render broken. Host the image and
+reference it by URL instead.
 
 > **Note:** AutoSend's send endpoint takes a **single** `to` recipient. Passing several is rejected
 > rather than silently truncated — send one message per recipient, or use `cc` / `bcc`.

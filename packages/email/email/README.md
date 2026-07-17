@@ -346,10 +346,11 @@ const roundRobin = roundRobinProvider({
 AutoSend is a transactional and marketing email service with volume-based pricing. Universal runtime (Fetch API).
 
 ```typescript
-import { createMail, autosendProvider } from "@visulima/email/providers/autosend";
+import { createMail } from "@visulima/email";
+import { autoSendProvider } from "@visulima/email/providers/autosend";
 
 const mail = createMail(
-    autosendProvider({
+    autoSendProvider({
         apiKey: process.env.AUTOSEND_API_KEY,
     }),
 );
