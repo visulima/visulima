@@ -2,6 +2,7 @@
     "title": "Providers",
     "pages": [
         "introduction",
+        "autosend",
         "aws-ses",
         "resend",
         "brevo",

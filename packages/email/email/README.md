@@ -341,6 +341,33 @@ const roundRobin = roundRobinProvider({
 
 **Note:** The round-robin provider starts at a random provider and then rotates through providers for each subsequent email. If a provider is unavailable, it will automatically try the next provider in the rotation.
 
+### AutoSend Provider
+
+AutoSend is a transactional and marketing email service with volume-based pricing. Universal runtime (Fetch API).
+
+```typescript
+import { createMail } from "@visulima/email";
+import { autoSendProvider } from "@visulima/email/providers/autosend";
+
+const mail = createMail(
+    autoSendProvider({
+        apiKey: process.env.AUTOSEND_API_KEY,
+    }),
+);
+
+await mail.send({
+    from: { email: "hello@mail.yourdomain.com", name: "Your Company" },
+    to: { email: "customer@example.com", name: "Jane Doe" },
+    subject: "Welcome!",
+    html: "<h1>Thanks for signing up.</h1>",
+    // AutoSend-specific: templateId, dynamicData, trackingOpen, trackingClick,
+    // unsubscribeGroupId, bypassSuppressions
+});
+```
+
+AutoSend's send endpoint takes a **single** `to` recipient (max 50 across to/cc/bcc). Passing several
+is rejected rather than silently truncated.
+
 ### Mailgun Provider
 
 Mailgun is a developer-friendly email API service built for transactional emails and automated messaging.

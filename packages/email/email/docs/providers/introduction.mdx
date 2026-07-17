@@ -9,6 +9,7 @@ Providers are responsible for actually sending emails. @visulima/email supports 
 
 ## Available Providers
 
+- **[AutoSend](/docs/packages/email/providers/autosend)** - Transactional and marketing email with volume-based pricing ([API Docs](https://docs.autosend.com/api-reference/mails/send))
 - **[AWS SES](/docs/packages/email/providers/aws-ses)** - Amazon Simple Email Service ([API Docs](https://docs.aws.amazon.com/ses/latest/APIReference-V2/Welcome.html))
 - **[Resend](/docs/packages/email/providers/resend)** - Modern email API for developers ([API Docs](https://resend.com/docs/api-reference/emails/send-email))
 - **[Brevo](/docs/packages/email/providers/brevo)** - Email marketing and transactional email platform (formerly Sendinblue) ([API Docs](https://developers.brevo.com/reference/sendtransacemail))
@@ -95,6 +96,7 @@ These providers require Node.js built-in modules and only work in **Node.js**:
 | MailPace      | ✅      | ✅   | ✅   | ✅                 |
 | Mailtrap      | ✅      | ✅   | ✅   | ✅                 |
 | Postal        | ✅      | ✅   | ✅   | ✅                 |
+| AutoSend      | ✅      | ✅   | ✅   | ✅                 |
 | Postmark      | ✅      | ✅   | ✅   | ✅                 |
 | Azure         | ✅      | ✅   | ✅   | ✅                 |
 | Infobip       | ✅      | ✅   | ✅   | ✅                 |
@@ -117,11 +119,11 @@ These providers require Node.js built-in modules and only work in **Node.js**:
 
 ### Choosing a Provider
 
-- **For Cloudflare Workers, Deno, or Bun**: Use Resend, HTTP, Zeptomail, Brevo, Mailgun, Mailjet, MailerSend, Mandrill, MailPace, Mailtrap, Postal, Postmark, SendGrid, Plunk, Azure, Infobip, Scaleway, AhaSend, Mailomat, Sweego, or Mock
+- **For Cloudflare Workers, Deno, or Bun**: Use Resend, HTTP, Zeptomail, Brevo, Mailgun, Mailjet, MailerSend, Mandrill, MailPace, Mailtrap, Postal, Postmark, SendGrid, Plunk, Azure, Infobip, Scaleway, AhaSend, Mailomat, Sweego, AutoSend, or Mock
 - **For Node.js**: You can use any provider
 - **For testing**: Use Mock or Mailtrap provider to test email logic without sending real emails
 - **For observability**: Use OpenTelemetry provider to wrap any provider and add distributed tracing and metrics
-- **For cross-runtime compatibility**: Use Resend, HTTP, Zeptomail, Brevo, Mailgun, Mailjet, MailerSend, Mandrill, MailPace, Mailtrap, Postal, Postmark, SendGrid, Plunk, Azure, Infobip, Scaleway, AhaSend, Mailomat, Sweego, or Mock, or wrap Node.js-only providers in Failover/Round Robin with universal providers as fallbacks
+- **For cross-runtime compatibility**: Use Resend, HTTP, Zeptomail, Brevo, Mailgun, Mailjet, MailerSend, Mandrill, MailPace, Mailtrap, Postal, Postmark, SendGrid, Plunk, Azure, Infobip, Scaleway, AhaSend, Mailomat, Sweego, AutoSend, or Mock, or wrap Node.js-only providers in Failover/Round Robin with universal providers as fallbacks
 
 ## Provider Interface
 

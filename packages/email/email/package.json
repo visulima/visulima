@@ -122,6 +122,10 @@
             "types": "./dist/template-engines/i18n.d.ts",
             "default": "./dist/template-engines/i18n.js"
         },
+        "./providers/autosend": {
+            "types": "./dist/providers/autosend/index.d.ts",
+            "default": "./dist/providers/autosend/index.js"
+        },
         "./providers/aws-ses": {
             "types": "./dist/providers/aws-ses/index.d.ts",
             "default": "./dist/providers/aws-ses/index.js"
