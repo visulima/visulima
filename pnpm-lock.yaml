@@ -11672,7 +11672,7 @@ packages:
     resolution: {integrity: sha512-5ThLXS2ZXPoCa9xpRqDi9BebpkkbYbAhUU1lMomD+UXEp2SeB4/pVxeFF0j/9nbBlUhDOm5aariI31h8ZcXrBg==}
     hasBin: true
     peerDependencies:
-      vite: ^7.3.5
+      vite: '>=6.4.2'
       wrangler: ^4.107.0
 
   '@cloudflare/workerd-darwin-64@1.20260701.1':
@@ -17480,7 +17480,7 @@ packages:
       esbuild: '>=0.28.1'
       rollup: '>=4.59.0'
       storybook: ^10.4.6
-      vite: ^7.3.5
+      vite: '>=7.1.11'
       webpack: '>=5.104.1'
     peerDependenciesMeta:
       esbuild:
