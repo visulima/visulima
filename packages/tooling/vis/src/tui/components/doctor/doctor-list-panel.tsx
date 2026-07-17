@@ -1,9 +1,9 @@
 import { Box } from "@visulima/tui/components/box";
-import { ScrollBar } from "@visulima/tui/components/scroll-bar";
-import { Spinner } from "@visulima/tui/components/spinner";
-import { Tab } from "@visulima/tui/components/tab";
-import { Tabs } from "@visulima/tui/components/tabs";
 import { Text } from "@visulima/tui/components/text";
+import { ScrollBar } from "@visulima/tui-components/scroll-bar";
+import { Spinner } from "@visulima/tui-components/spinner";
+import { Tab } from "@visulima/tui-components/tab";
+import { Tabs } from "@visulima/tui-components/tabs";
 import React from "react";
 
 import type { SectionId } from "../../../commands/doctor/sections";
