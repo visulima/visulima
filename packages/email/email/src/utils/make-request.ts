@@ -5,6 +5,14 @@ import type { Result } from "../types";
 const hasBuffer = globalThis.Buffer !== undefined;
 
 /**
+ * Error code carried by the result of a request that was aborted by its own timeout.
+ *
+ * A timeout says nothing about whether the server received and acted on the request, so it is
+ * the one transport failure a non-idempotent call must not blindly repeat.
+ */
+export const REQUEST_TIMEOUT_CODE = "ETIMEDOUT";
+
+/**
  * Request options compatible with both Fetch API and Node.js http
  */
 export interface RequestOptions {
@@ -112,7 +120,7 @@ export const makeRequest = async (url: string | URL, options: RequestOptions = {
             if (error instanceof Error && error.name === "AbortError") {
                 return {
                     // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
-                    error: new EmailError("http", `Request timed out after ${options.timeout}ms`),
+                    error: new EmailError("http", `Request timed out after ${options.timeout}ms`, { code: REQUEST_TIMEOUT_CODE }),
                     success: false,
                 };
             }

@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import EmailError from "../../src/errors/email-error";
 import type { Result } from "../../src/types";
+import { REQUEST_TIMEOUT_CODE } from "../../src/utils/make-request";
 import retry from "../../src/utils/retry";
 
 describe(retry, () => {
@@ -292,6 +293,74 @@ describe(retry, () => {
             vi.useRealTimers();
 
             // Initial call + 2 retries = 3 calls total
+            expect(retryFunction).toHaveBeenCalledTimes(3);
+        });
+    });
+
+    describe("retry policy", () => {
+        const createStatusFunction = (statusCode: number): () => Promise<Result<string>> =>
+            // eslint-disable-next-line @typescript-eslint/require-await
+            async () => {
+                return {
+                    data: { statusCode } as unknown as string,
+                    error: new EmailError("http", `Request failed with status ${String(statusCode)}`),
+                    success: false,
+                };
+            };
+
+        it("should not repeat a send the server may already have acted on", async () => {
+            expect.assertions(1);
+
+            const retryFunction = vi.fn(createStatusFunction(500));
+
+            await retry(retryFunction, 3, 0);
+
+            expect(retryFunction).toHaveBeenCalledTimes(1);
+        });
+
+        it("should not repeat a request the server rejected outright", async () => {
+            expect.assertions(1);
+
+            const retryFunction = vi.fn(createStatusFunction(400));
+
+            await retry(retryFunction, 3, 0);
+
+            expect(retryFunction).toHaveBeenCalledTimes(1);
+        });
+
+        it("should retry a throttled request", async () => {
+            expect.assertions(1);
+
+            const retryFunction = vi.fn(createStatusFunction(429));
+
+            await retry(retryFunction, 2, 0);
+
+            expect(retryFunction).toHaveBeenCalledTimes(3);
+        });
+
+        it("should not retry a timed-out request", async () => {
+            expect.assertions(1);
+
+            // eslint-disable-next-line @typescript-eslint/require-await
+            const retryFunction = vi.fn(async (): Promise<Result<string>> => {
+                return {
+                    error: new EmailError("http", "Request timed out after 1000ms", { code: REQUEST_TIMEOUT_CODE }),
+                    success: false,
+                };
+            });
+
+            await retry(retryFunction, 3, 0);
+
+            expect(retryFunction).toHaveBeenCalledTimes(1);
+        });
+
+        it("should honour a caller-supplied policy", async () => {
+            expect.assertions(1);
+
+            const retryFunction = vi.fn(createStatusFunction(400));
+
+            await retry(retryFunction, 2, 0, () => true);
+
             expect(retryFunction).toHaveBeenCalledTimes(3);
         });
     });
