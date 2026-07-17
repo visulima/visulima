@@ -336,4 +336,4 @@ const createTokenResolver = (auth: ResolvedAuth, config: Outlook365Config, provi
     };
 };
 
-export { createTokenResolver, resolveAuth };
+export { createTokenResolver, DEFAULT_AUTHORITY, resolveAuth };

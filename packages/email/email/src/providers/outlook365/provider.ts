@@ -7,7 +7,7 @@ import validateEmailOptions from "../../utils/validation/validate-email-options"
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
 import { createProviderLogger, createStandardAttachment, handleProviderError, ProviderState } from "../utils";
-import { createTokenResolver, resolveAuth } from "./auth";
+import { createTokenResolver, DEFAULT_AUTHORITY, resolveAuth } from "./auth";
 import type { Outlook365Config, Outlook365EmailOptions } from "./types";
 
 const PROVIDER_NAME = "outlook365";
@@ -77,7 +77,7 @@ const outlook365Provider: ProviderFactory<Outlook365Config, unknown, Outlook365E
     // resolver closes over `config` instead, which also keeps it immune to mutations here.
     const options: ResolvedOptions = {
         authMode: auth.mode,
-        authority: config.authority,
+        authority: config.authority ?? DEFAULT_AUTHORITY,
         clientId: config.clientId,
         debug: config.debug ?? false,
         endpoint: config.endpoint ?? DEFAULT_ENDPOINT,

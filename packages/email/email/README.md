@@ -960,7 +960,8 @@ the built-in app-only (client credentials) or delegated (refresh token) flow, or
 (`Mail.Send` scope) via `accessToken` / `getAccessToken`.
 
 ```typescript
-import { createMail, outlook365Provider } from "@visulima/email/providers/outlook365";
+import { createMail } from "@visulima/email";
+import { outlook365Provider } from "@visulima/email/providers/outlook365";
 
 // App-only (client credentials) — userId is required, app-only tokens have no "me" mailbox.
 const mail = createMail(

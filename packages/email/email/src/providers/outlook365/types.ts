@@ -13,7 +13,7 @@ export type Outlook365AuthMode = "accessToken" | "clientCredentials" | "getAcces
  * 1. `getAccessToken` — bring your own async token source (e.g. `@azure/msal-node`).
  * 2. `accessToken` — a static token, for scripts and tests.
  * 3. `refreshToken` — delegated flow; the provider exchanges the refresh token for access tokens and caches them. Requires `tenantId` + `clientId`.
- * 4. `clientSecret` — app-only flow (client credentials). Requires `tenantId` + `clientId`, and `userId` must name a real mailbox, since app-only tokens have no `me`.
+ * 4. `clientCredentials` (selected by supplying `clientSecret`) — app-only flow. Requires `tenantId` + `clientId`, and `userId` must name a real mailbox, since app-only tokens have no `me`.
  *
  * A confidential-client delegated config and an app-only config with a leftover `refreshToken`
  * are indistinguishable — both carry `tenantId`, `clientId`, `clientSecret` and `refreshToken`.
