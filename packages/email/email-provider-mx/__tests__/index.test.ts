@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { classifyMx, classifyMxRecords, isSecureEmailGateway } from "../src/index";
+import { classifyMx, classifyMxRecords, isSecureEmailGateway, MX_PROVIDERS } from "../src/index";
 
 describe(classifyMx, () => {
     it("classifies Google Workspace MX hosts as mailbox", () => {
@@ -19,6 +19,23 @@ describe(classifyMx, () => {
 
         expect(info?.provider).toBe("microsoft");
         expect(info?.type).toBe("mailbox");
+    });
+
+    it("classifies consumer Outlook.com/Hotmail (olc.protection.outlook.com) as free, not Microsoft 365", () => {
+        expect.assertions(4);
+
+        // The consumer Outlook Live tier is distinct from the business M365 host
+        // and must classify as free webmail, not a business mailbox.
+        expect(classifyMx("hotmail-com.olc.protection.outlook.com")).toStrictEqual({
+            display: "Outlook.com",
+            provider: "outlook",
+            type: "free",
+        });
+        expect(classifyMx("outlook-com.olc.protection.outlook.com")?.type).toBe("free");
+
+        // The business tenant host on the same infrastructure stays a mailbox.
+        expect(classifyMx("tenant.mail.protection.outlook.com")?.provider).toBe("microsoft");
+        expect(classifyMx("tenant.mail.protection.outlook.com")?.type).toBe("mailbox");
     });
 
     it("classifies Proofpoint MX hosts as a secure email gateway", () => {
@@ -126,5 +143,23 @@ describe(isSecureEmailGateway, () => {
         expect(isSecureEmailGateway("eu-smtp-inbound-1.mimecast.com")).toBe(true);
         expect(isSecureEmailGateway("aspmx.l.google.com")).toBe(false);
         expect(isSecureEmailGateway("mail.example.com")).toBe(false);
+    });
+});
+
+describe("MX_PROVIDERS", () => {
+    it("is deep-frozen so the exported dataset cannot be mutated", () => {
+        expect.assertions(3);
+
+        expect(Object.isFrozen(MX_PROVIDERS)).toBe(true);
+        expect(Object.isFrozen(MX_PROVIDERS[0])).toBe(true);
+        expect(Object.isFrozen(MX_PROVIDERS[0]?.patterns)).toBe(true);
+    });
+
+    it("throws in strict mode when a caller tries to push a new entry", () => {
+        expect.assertions(1);
+
+        const mutable = MX_PROVIDERS as { push: (value: unknown) => void };
+
+        expect(() => mutable.push({})).toThrow(TypeError);
     });
 });
