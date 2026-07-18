@@ -16,6 +16,7 @@ const displayNamesCache = new Map<string, Intl.DisplayNames | undefined>();
  * @returns A cached `Intl.DisplayNames` instance, or `undefined` when the runtime
  * lacks the API or the locale is invalid
  */
+// eslint-disable-next-line import/prefer-default-export
 export const getDisplayNames = (type: Intl.DisplayNamesType, locale: string): Intl.DisplayNames | undefined => {
     if (typeof Intl === "undefined" || typeof Intl.DisplayNames !== "function") {
         return undefined;
