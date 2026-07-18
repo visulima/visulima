@@ -1,4 +1,5 @@
 import { Buffer } from "node:buffer";
+import { runInNewContext } from "node:vm";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
 
@@ -291,23 +292,40 @@ describe("@visulima/bytes", () => {
     });
 
     describe("isUint8Array cross-realm", () => {
-        it("should recognise a Uint8Array from another realm via toStringTag", () => {
+        it("should recognise a genuine Uint8Array from another realm", () => {
             expect.assertions(2);
 
-            // Simulate a cross-realm value: an object that fails `instanceof`
-            // Uint8Array but reports `[object Uint8Array]`.
-            const crossRealm = Object.create(null) as Record<PropertyKey, unknown>;
-
-            Object.defineProperty(crossRealm, Symbol.toStringTag, { value: "Uint8Array" });
+            // A real typed array built in a separate vm realm fails `instanceof`
+            // Uint8Array but is still a genuine `ArrayBuffer` view.
+            const crossRealm = runInNewContext("new Uint8Array([1, 2, 3])") as Uint8Array;
 
             expect(crossRealm instanceof Uint8Array).toBe(false);
             expect(isUint8Array(crossRealm)).toBe(true);
+        });
+
+        it("should not match a plain object with a spoofed toStringTag", () => {
+            expect.assertions(2);
+
+            // A forged `Symbol.toStringTag` must not pass the guard: it is not a
+            // genuine `ArrayBuffer` view, so `ArrayBuffer.isView` rejects it.
+            const spoof = Object.create(null) as Record<PropertyKey, unknown>;
+
+            Object.defineProperty(spoof, Symbol.toStringTag, { value: "Uint8Array" });
+
+            expect(spoof instanceof Uint8Array).toBe(false);
+            expect(isUint8Array(spoof)).toBe(false);
         });
 
         it("should not match plain objects", () => {
             expect.assertions(1);
 
             expect(isUint8Array({})).toBe(false);
+        });
+
+        it("should not match a DataView", () => {
+            expect.assertions(1);
+
+            expect(isUint8Array(new DataView(new ArrayBuffer(4)))).toBe(false);
         });
     });
 
@@ -365,6 +383,48 @@ describe("@visulima/bytes", () => {
             const result = toUint8Array(ab, { copy: true });
 
             expect(result.buffer).not.toBe(ab);
+        });
+    });
+
+    describe("toUint8Array cross-realm", () => {
+        it("should convert a Uint8Array from another realm", () => {
+            expect.assertions(3);
+
+            const crossRealm = runInNewContext("new Uint8Array([1, 2, 3])") as Uint8Array;
+            const result = toUint8Array(crossRealm);
+
+            expect(result).toBeInstanceOf(Uint8Array);
+            expect(result instanceof Uint8Array).toBe(true);
+            expect(result).toStrictEqual(new Uint8Array([1, 2, 3]));
+        });
+
+        it("should agree with isUint8Array for a cross-realm Uint8Array", () => {
+            expect.assertions(2);
+
+            const crossRealm = runInNewContext("new Uint8Array([9, 8, 7])") as Uint8Array;
+
+            expect(isUint8Array(crossRealm)).toBe(true);
+            expect(() => toUint8Array(crossRealm)).not.toThrow();
+        });
+
+        it("should copy a cross-realm Uint8Array with { copy: true }", () => {
+            expect.assertions(2);
+
+            const crossRealm = runInNewContext("new Uint8Array([4, 5, 6])") as Uint8Array;
+            const result = toUint8Array(crossRealm, { copy: true });
+
+            expect(result).toStrictEqual(new Uint8Array([4, 5, 6]));
+            expect(result.buffer).not.toBe(crossRealm.buffer);
+        });
+
+        it("should convert an ArrayBuffer from another realm", () => {
+            expect.assertions(2);
+
+            const crossRealm = runInNewContext("new Uint8Array([1, 2, 3]).buffer") as ArrayBuffer;
+            const result = toUint8Array(crossRealm);
+
+            expect(result).toBeInstanceOf(Uint8Array);
+            expect(result).toStrictEqual(new Uint8Array([1, 2, 3]));
         });
     });
 
@@ -437,6 +497,26 @@ describe("@visulima/bytes", () => {
 
             expect(() => hexToUint8Array("zz")).toThrow("non-hex character");
         });
+
+        it("should throw on non-hex characters mixed with valid pairs", () => {
+            expect.assertions(1);
+
+            expect(() => hexToUint8Array("00zz")).toThrow("non-hex character");
+        });
+
+        it("should encode a subarray view correctly", () => {
+            expect.assertions(1);
+
+            const view = new Uint8Array([255, 0, 15, 255]).subarray(1, 3);
+
+            expect(uint8ArrayToHex(view)).toBe("000f");
+        });
+
+        it("should encode an empty array to an empty string", () => {
+            expect.assertions(1);
+
+            expect(uint8ArrayToHex(new Uint8Array([]))).toBe("");
+        });
     });
 
     describe("base64 codecs", () => {
@@ -466,6 +546,32 @@ describe("@visulima/bytes", () => {
             const view = new Uint8Array([0, 104, 105, 0]).subarray(1, 3);
 
             expect(uint8ArrayToBase64(view)).toBe("aGk=");
+        });
+
+        it("should throw on non-alphabet characters", () => {
+            expect.assertions(2);
+
+            expect(() => base64ToUint8Array("a!b=")).toThrow(TypeError);
+            expect(() => base64ToUint8Array("a!b=")).toThrow("Invalid base64 string");
+        });
+
+        it("should throw on invalid padding", () => {
+            expect.assertions(1);
+
+            // A single leftover base64 digit encodes no bytes and is invalid.
+            expect(() => base64ToUint8Array("aGk=A")).toThrow("Invalid base64 string");
+        });
+
+        it("should ignore ASCII whitespace", () => {
+            expect.assertions(1);
+
+            expect(base64ToUint8Array("aG\n k=")).toStrictEqual(new Uint8Array([104, 105]));
+        });
+
+        it("should accept unpadded input", () => {
+            expect.assertions(1);
+
+            expect(base64ToUint8Array("aGk")).toStrictEqual(new Uint8Array([104, 105]));
         });
     });
 
@@ -564,6 +670,24 @@ describe("@visulima/bytes", () => {
             expect(bytesModule.hexToUint8Array("6869")).toStrictEqual(bytes);
             expect(bytesModule.uint8ArrayToBase64(bytes)).toBe("aGk=");
             expect(bytesModule.base64ToUint8Array("aGk=")).toStrictEqual(bytes);
+        });
+
+        it("rejects invalid base64 without Buffer", async () => {
+            expect.assertions(2);
+
+            const bytesModule = await importWithoutBuffer();
+
+            expect(() => bytesModule.base64ToUint8Array("a!b=")).toThrow("Invalid base64 string");
+            expect(bytesModule.base64ToUint8Array("aG\n k=")).toStrictEqual(new Uint8Array([104, 105]));
+        });
+
+        it("rejects invalid hex without Buffer", async () => {
+            expect.assertions(2);
+
+            const bytesModule = await importWithoutBuffer();
+
+            expect(() => bytesModule.hexToUint8Array("zz")).toThrow("non-hex character");
+            expect(() => bytesModule.hexToUint8Array("abc")).toThrow("even length");
         });
     });
 });
