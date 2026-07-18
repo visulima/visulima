@@ -103,6 +103,24 @@ const parseWmicRow = (line: string): ProcessRow | undefined => {
     return { comm: columns[1] ?? "", pid, ppid };
 };
 
+/** Parse one PowerShell `Get-CimInstance … | ConvertTo-Csv` row (columns: `ProcessId,ParentProcessId,Name`, each quoted). */
+const parsePowershellRow = (line: string): ProcessRow | undefined => {
+    const columns = line.trim().split(",").map((column) => column.replace(/^"/, "").replace(/"$/, ""));
+
+    if (columns.length < 3) {
+        return undefined;
+    }
+
+    const pid = Number.parseInt(columns[0] ?? "", 10);
+    const ppid = Number.parseInt(columns[1] ?? "", 10);
+
+    if (!Number.isFinite(pid) || !Number.isFinite(ppid)) {
+        return undefined;
+    }
+
+    return { comm: columns[2] ?? "", pid, ppid };
+};
+
 /** Parse the `comm` and `ppid` out of a Linux `/proc/&lt;pid>/stat` string. */
 const parseProcStat = (content: string): { comm: string; ppid: number } | undefined => {
     // Format: "pid (comm) state ppid ...". `comm` may contain spaces and parentheses,
@@ -181,7 +199,22 @@ const readLinuxAncestry = (startPid: number): string[] => {
 const getProcessAncestry = async (startPid: number = process.pid): Promise<string[]> => {
     try {
         if (IS_WINDOWS) {
-            return await buildTableAncestry("wmic", ["process", "get", "ProcessId,ParentProcessId,Name", "/format:csv"], parseWmicRow, startPid);
+            try {
+                return await buildTableAncestry("wmic", ["process", "get", "ProcessId,ParentProcessId,Name", "/format:csv"], parseWmicRow, startPid);
+            } catch {
+                // `wmic` is deprecated and no longer shipped by default on Windows 11 24H2+;
+                // fall back to PowerShell's CIM provider, which is always present.
+                return await buildTableAncestry(
+                    "powershell",
+                    [
+                        "-NoProfile",
+                        "-Command",
+                        "Get-CimInstance Win32_Process | Select-Object ProcessId,ParentProcessId,Name | ConvertTo-Csv -NoTypeInformation",
+                    ],
+                    parsePowershellRow,
+                    startPid,
+                );
+            }
         }
 
         if (process.platform === "linux") {
@@ -194,4 +227,4 @@ const getProcessAncestry = async (startPid: number = process.pid): Promise<strin
     }
 };
 
-export { getProcessAncestry, normalizeProcessName, parseProcStat, parsePsRow, parseWmicRow, walkAncestry };
+export { getProcessAncestry, normalizeProcessName, parseProcStat, parsePowershellRow, parsePsRow, parseWmicRow, walkAncestry };
