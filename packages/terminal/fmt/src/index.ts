@@ -342,7 +342,10 @@ export const build = (
     // options object on every call: reuse one frozen base when the caller passes no per-call
     // `formatOptions`, and only spread when they actually do. Build-time options other than
     // `formatters` (e.g. `stringify`, `colors`, `appendExtraArguments`) are carried over.
-    const { formatters: _formatters, ...rest } = options;
+    const rest = { ...options };
+
+    delete rest.formatters;
+
     const baseOptions: Options = Object.freeze({ ...rest, formatters });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
