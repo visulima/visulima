@@ -41,7 +41,7 @@ const startWatchMode = async (configName: string, paths: string[], options: Gene
             if (pending) {
                 pending = false;
 
-                void run();
+                run().catch(logError);
             }
         }
     };
@@ -60,13 +60,13 @@ const startWatchMode = async (configName: string, paths: string[], options: Gene
         debounceTimer = setTimeout(() => {
             debounceTimer = undefined;
 
-            void run();
+            run().catch(logError);
         }, WATCH_DEBOUNCE_MS);
     };
 
     const watchers = paths.map((p) =>
         watch(p, { recursive: true }, (_event, filename) => {
-            if (filename !== null && resolve(p, filename.toString()) === outputPath) {
+            if (filename !== null && resolve(p, filename) === outputPath) {
                 return;
             }
 

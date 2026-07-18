@@ -25,11 +25,11 @@ const translators = [jsDocumentCommentsToOpenApi, swaggerJsDocumentCommentsToOpe
 
 type OpenApiConfig = {
     definition?: string;
-    exclude: string[];
+    exclude?: string[];
     extensions?: string[];
     followSymlinks?: boolean;
     include?: (RegExp | string)[];
-    swaggerDefinition: BaseDefinition;
+    swaggerDefinition?: BaseDefinition;
 };
 
 const loadConfig = async (configPath: string): Promise<OpenApiConfig> => {
@@ -81,7 +81,7 @@ const buildSpec = async (
 
     // Without a base-definition file the config must supply `swaggerDefinition`;
     // otherwise SpecBuilder receives undefined and throws a bare TypeError.
-    if (typeof swaggerDefinition !== "object" || swaggerDefinition === null) {
+    if (typeof swaggerDefinition !== "object") {
         throw new TypeError(
             `Invalid config "${options.config ?? configName}": missing "swaggerDefinition" object. Provide it in the config or pass a base definition file via -d/--definition.`,
         );
@@ -102,7 +102,7 @@ const buildSpec = async (
         );
 
     const spec = new SpecBuilder(swaggerDefinition);
-    const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...(openapiConfig.exclude ?? [])]);
+    const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...openapiConfig.exclude ?? []]);
 
     // Always restore the terminal (the progress bar hides the cursor) even when a
     // file fails to parse or the spec fails validation.
