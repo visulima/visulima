@@ -1,6 +1,7 @@
 import { watch } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import type { AddressInfo } from "node:net";
+import { isIP } from "node:net";
 
 import { serve } from "@hono/node-server";
 import { isAccessibleSync, readJsonSync } from "@visulima/fs";
@@ -40,8 +41,6 @@ interface ChangeEvent {
 
 type ChangeListener = (event: ChangeEvent) => void;
 
-const IPV4_HOST_REGEX = /^\d{1,3}(?:\.\d{1,3}){3}$/;
-
 /**
  * DNS-rebinding guard: only answer requests whose Host header is a loopback
  * name, a literal IP (unreachable via rebinding, which needs a hostname
@@ -74,7 +73,10 @@ const isAllowedDashboardHost = (hostHeader: string | undefined, configuredHost: 
         return true;
     }
 
-    return IPV4_HOST_REGEX.test(host) || host.includes(":");
+    // A literal IP (v4 or v6) can't be reached via DNS rebinding, which needs a
+    // hostname that re-resolves to a loopback address, so allow only real IPs —
+    // not every host that merely contains a colon.
+    return isIP(host) !== 0;
 };
 
 const readRunById = (workspaceRoot: string, id: string): LoadedRunSummary | undefined => {
