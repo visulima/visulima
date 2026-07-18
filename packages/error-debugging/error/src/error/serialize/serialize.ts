@@ -31,11 +31,12 @@ const toJsonWasCalled = new WeakSet();
  * un-minified class identity.
  */
 const getErrorName = (error: Error): string => {
-    if (Object.prototype.hasOwnProperty.call(error, "name") && typeof error.name === "string" && error.name !== "") {
+    if (Object.hasOwn(error, "name") && typeof error.name === "string" && error.name !== "") {
         return error.name;
     }
 
-    const constructorName = error.constructor?.name;
+    const constructor = error.constructor as { name?: unknown } | undefined;
+    const constructorName = constructor?.name;
 
     return typeof constructorName === "string" && constructorName !== "" ? constructorName : error.name;
 };

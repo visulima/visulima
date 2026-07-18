@@ -76,6 +76,7 @@ describe("solution/ai/ai-solution-response", () => {
 
         const result = aiSolutionResponse(raw);
 
+        // eslint-disable-next-line no-script-url -- asserting the dangerous URL is stripped from the output
         expect(result).not.toContain("javascript:alert(1)");
         expect(result).toContain("https://example.com/safe");
     });
