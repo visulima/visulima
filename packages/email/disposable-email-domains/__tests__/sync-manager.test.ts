@@ -20,6 +20,7 @@ interface SyncManager {
 
 const SyncManager = DisposableEmailSyncManager as new (options: { outputPath: string }) => SyncManager;
 
+// eslint-disable-next-line no-secrets/no-secrets -- test suite name, not a secret
 describe("disposableEmailSyncManager list parsing", () => {
     let manager: SyncManager;
 
@@ -130,6 +131,7 @@ describe("disposableEmailSyncManager list parsing", () => {
     });
 });
 
+// eslint-disable-next-line no-secrets/no-secrets -- test suite name, not a secret
 describe("disposableEmailSyncManager generated ./domains declaration", () => {
     let outputPath: string;
     let manager: SyncManager;
@@ -159,7 +161,7 @@ describe("repositories.json config", () => {
     it("does not pull willwhite/freemail's free-provider list (data/free.txt)", () => {
         expect.assertions(1);
 
-        const freemailFreeSources = (repositories as { url: string; blocklist_files?: string[] }[]).filter(
+        const freemailFreeSources = (repositories as { blocklist_files?: string[]; url: string }[]).filter(
             (repo) => repo.url.includes("willwhite/freemail") && (repo.blocklist_files ?? []).some((file) => file.includes("free.txt")),
         );
 
