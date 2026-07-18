@@ -5,6 +5,9 @@ import { Cerebro as Cli } from "../../src";
 const INVALID_XML_PATTERN = /Invalid value "xml" for option "format"/;
 const INVALID_ES2099_PATTERN = /Invalid value "es2099"/;
 const UNKNOWN_OPTION_PATTERN = /Found unknown option/;
+const INVALID_KEBAB_CHOICE_PATTERN = /Invalid value "silent" for option "log-level"/;
+const KEBAB_CONFLICT_PATTERN = /Options "cache-dir" and "dry-run" cannot be used together/;
+const KEBAB_MISSING_PATTERN = /is missing required options: log-level/;
 
 describe("option choices", () => {
     it("accepts a value that is one of the declared choices", async () => {
@@ -67,6 +70,94 @@ describe("option choices", () => {
         await cli.run({ shouldExitProcess: false });
 
         expect(execute).toHaveBeenCalledTimes(1);
+    });
+});
+
+describe("kebab-case option names", () => {
+    // The parser emits camelCased keys (camelCase: true), so validators must
+    // resolve hyphenated names via their camelCase form. These cases guard
+    // against choices/conflicts/required silently mismatching the parsed keys.
+    it("enforces choices for a hyphenated option name", async () => {
+        expect.assertions(1);
+
+        const cli = new Cli("MyCLI", { argv: ["run", "--log-level", "silent"] });
+
+        cli.addCommand({
+            execute: vi.fn(),
+            name: "run",
+            options: [{ choices: ["info", "verbose", "debug"], name: "log-level", type: String }],
+        });
+
+        await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow(INVALID_KEBAB_CHOICE_PATTERN);
+    });
+
+    it("accepts a valid choice for a hyphenated option name", async () => {
+        expect.assertions(2);
+
+        let received: unknown;
+        const execute = vi.fn(({ options }: { options: Record<string, unknown> }) => {
+            received = options.logLevel;
+        });
+        const cli = new Cli("MyCLI", { argv: ["run", "--log-level", "verbose"] });
+
+        cli.addCommand({
+            execute,
+            name: "run",
+            options: [{ choices: ["info", "verbose", "debug"], name: "log-level", type: String }],
+        });
+
+        await cli.run({ shouldExitProcess: false });
+
+        expect(execute).toHaveBeenCalledTimes(1);
+        expect(received).toBe("verbose");
+    });
+
+    it("enforces conflicts between hyphenated option names", async () => {
+        expect.assertions(1);
+
+        const cli = new Cli("MyCLI", { argv: ["build", "--cache-dir", "/tmp", "--dry-run"] });
+
+        cli.addCommand({
+            execute: vi.fn(),
+            name: "build",
+            options: [
+                { conflicts: "dry-run", name: "cache-dir", type: String },
+                { name: "dry-run", type: Boolean },
+            ],
+        });
+
+        await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow(KEBAB_CONFLICT_PATTERN);
+    });
+
+    it("does not treat a supplied hyphenated required option as missing", async () => {
+        expect.assertions(1);
+
+        const execute = vi.fn().mockResolvedValue(undefined);
+        const cli = new Cli("MyCLI", { argv: ["run", "--log-level", "info"] });
+
+        cli.addCommand({
+            execute,
+            name: "run",
+            options: [{ name: "log-level", required: true, type: String }],
+        });
+
+        await cli.run({ shouldExitProcess: false });
+
+        expect(execute).toHaveBeenCalledTimes(1);
+    });
+
+    it("reports a hyphenated required option as missing when omitted", async () => {
+        expect.assertions(1);
+
+        const cli = new Cli("MyCLI", { argv: ["run"] });
+
+        cli.addCommand({
+            execute: vi.fn(),
+            name: "run",
+            options: [{ name: "log-level", required: true, type: String }],
+        });
+
+        await expect(cli.run({ shouldExitProcess: false })).rejects.toThrow(KEBAB_MISSING_PATTERN);
     });
 });
 

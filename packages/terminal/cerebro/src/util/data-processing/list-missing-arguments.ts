@@ -21,18 +21,30 @@ const listMissingArguments = <OD extends OptionDefinition<any>>(
 ): PossibleOptionDefinition<OD>[] => {
     const missing: PossibleOptionDefinition<OD>[] = [];
 
+    // The global options carry a `group`, so command-line-args groups the
+    // result: every parsed option lives under `_all` (with camelCased keys),
+    // never at the bare top level. Read through `_all` when present so a
+    // provided option is actually detected instead of always looking missing.
+    // eslint-disable-next-line no-underscore-dangle
+    const values = ((parsedArguments._all as Record<string, unknown> | undefined) ?? parsedArguments) as Record<string, unknown>;
+
     for (const config of commandLineConfig) {
         if (!onlyRequired && !config.required) {
             continue;
         }
 
-        if (parsedArguments[config.name] !== undefined) {
+        // The parser emits camelCased keys (camelCase: true), so hyphenated
+        // option names must be looked up via their pre-computed camelCase name.
+        // eslint-disable-next-line no-underscore-dangle
+        const key = config.__camelCaseName__ ?? config.name;
+
+        if (values[key] !== undefined) {
             continue;
         }
 
         if (config.type?.name === "Boolean") {
             // eslint-disable-next-line no-param-reassign
-            parsedArguments[config.name] = false;
+            parsedArguments[key] = false;
             continue;
         }
 

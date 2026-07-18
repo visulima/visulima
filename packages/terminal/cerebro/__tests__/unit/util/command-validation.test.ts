@@ -4,6 +4,7 @@ import CommandValidationError from "../../../src/errors/command-validation-error
 import ConflictingOptionsError from "../../../src/errors/conflicting-options-error";
 import type { Command as ICommand, OptionDefinition } from "../../../src/types/command";
 import { validateConflictingOptions, validateDuplicateOptions, validateRequiredOptions } from "../../../src/util/command-processing/command-validation";
+import { processOptionNames } from "../../../src/util/command-processing/option-processor";
 
 const makeCommand = (overrides: Partial<ICommand>): ICommand => {
     return {
@@ -29,6 +30,41 @@ describe("command-validation", () => {
             };
 
             expect(run).toThrow(CommandValidationError);
+        });
+
+        it("does not report a provided hyphenated required option as missing", () => {
+            expect.assertions(1);
+
+            // Global options force command-line-args to group the result, so the
+            // provided value lives under `_all` with a camelCased key. The
+            // validator must resolve `log-level` -> `logLevel` and look there.
+            const command = makeCommand({
+                options: [{ name: "log-level", required: true, type: String }],
+            });
+
+            processOptionNames(command);
+
+            const run = (): void => {
+                validateRequiredOptions(command.options ?? [], { _all: { logLevel: "info" } }, command);
+            };
+
+            expect(run).not.toThrow();
+        });
+
+        it("reports a hyphenated required option as missing when it is absent from _all", () => {
+            expect.assertions(1);
+
+            const command = makeCommand({
+                options: [{ name: "log-level", required: true, type: String }],
+            });
+
+            processOptionNames(command);
+
+            const run = (): void => {
+                validateRequiredOptions(command.options ?? [], { _all: {} }, command);
+            };
+
+            expect(run).toThrow("is missing required options: log-level");
         });
 
         it("reports unknown options as arguments when the value does not start with --", () => {
@@ -99,6 +135,21 @@ describe("command-validation", () => {
 
             const run = (): void => {
                 validateConflictingOptions(options, { json: true, yaml: true }, command);
+            };
+
+            expect(run).toThrow(ConflictingOptionsError);
+        });
+
+        it("throws when hyphenated conflicting options are both set (camelCased keys)", () => {
+            expect.assertions(1);
+
+            // Parsed options are camelCased; the validator must resolve both the
+            // option name and its declared conflict to their camelCase form.
+            const options: OptionDefinition<unknown>[] = [{ conflicts: "dry-run", name: "cache-dir", type: String }];
+            const command = makeCommand({ options });
+
+            const run = (): void => {
+                validateConflictingOptions(options, { cacheDir: "/tmp", dryRun: true }, command);
             };
 
             expect(run).toThrow(ConflictingOptionsError);

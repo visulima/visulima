@@ -1,4 +1,6 @@
 import type { CommandLineOptions } from "@visulima/command-line-args";
+// eslint-disable-next-line import/no-extraneous-dependencies -- bundled into dist by packem; kept a devDependency on purpose
+import camelCase from "@visulima/string/case/camel-case";
 
 import CommandValidationError from "../../errors/command-validation-error";
 import ConflictingOptionsError from "../../errors/conflicting-options-error";
@@ -88,12 +90,18 @@ export const validateConflictingOptions = <OD extends OptionDefinition<unknown>,
     const conflicts = command.__conflictingOptions__ ?? arguments_.filter((argument) => argument.conflicts !== undefined);
 
     if (conflicts.length > 0) {
+        // The parser emits camelCased keys (camelCase: true), so both the
+        // option name and every declared conflict must be resolved to their
+        // camelCase form before indexing the parsed options.
         const conflict = conflicts.find((argument) => {
+            // eslint-disable-next-line no-underscore-dangle
+            const ownKey = argument.__camelCaseName__ ?? camelCase(argument.name);
+
             if (Array.isArray(argument.conflicts)) {
-                return argument.conflicts.some((c) => commandArguments[c] !== undefined) && commandArguments[argument.name] !== undefined;
+                return argument.conflicts.some((c) => commandArguments[camelCase(c)] !== undefined) && commandArguments[ownKey] !== undefined;
             }
 
-            return commandArguments[argument.conflicts as string] !== undefined && commandArguments[argument.name] !== undefined;
+            return commandArguments[camelCase(argument.conflicts as string)] !== undefined && commandArguments[ownKey] !== undefined;
         });
 
         if (conflict) {
@@ -125,7 +133,11 @@ export const validateChoices = <OD extends OptionDefinition<unknown>, TLogger ex
             continue;
         }
 
-        const value = commandArguments[option.name];
+        // The parser emits camelCased keys (camelCase: true), so hyphenated
+        // option names must be looked up via their pre-computed camelCase name.
+        // eslint-disable-next-line no-underscore-dangle
+        const key = (option as { __camelCaseName__?: string }).__camelCaseName__ ?? camelCase(option.name);
+        const value = commandArguments[key];
 
         if (value === undefined || value === null) {
             continue;

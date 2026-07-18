@@ -113,8 +113,10 @@ describe(runtimeVersionCheckPlugin, () => {
     it("detects Bun and validates against the bun default minimum", async () => {
         expect.assertions(1);
 
+        // Real Bun exposes only a `Bun` marker carrying `Bun.version`; there is
+        // no `Bun.process`, and runtime probes use the Node-compatible globals.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        (globalThis as any).Bun = { process: { env: {}, exit: vi.fn() }, version: "1.0.0" };
+        (globalThis as any).Bun = { version: "1.0.0" };
 
         const context = createContext();
 
@@ -124,21 +126,19 @@ describe(runtimeVersionCheckPlugin, () => {
     });
 
     it("detects Bun with a missing version and exits when below the requirement", () => {
-        expect.assertions(3);
+        expect.assertions(2);
 
-        const bunExit = vi.fn();
-
+        // No `Bun.version` -> detected major is 0, which is below the required 1.
+        // exitProcess routes through the Node-compatible process.exit (exitSpy).
         // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/no-unsafe-member-access
-        (globalThis as any).Bun = { process: { env: {}, exit: bunExit } };
+        (globalThis as any).Bun = {};
 
         const context = createContext();
 
-        // The runtime-process Bun exit wrapper throws after calling exit because
-        // the mocked exit returns instead of terminating the process.
-        expect(() => runtimeVersionCheckPlugin({ runtimes: { bun: { minVersion: 1 } } }).init?.(context)).toThrow("Bun exit failed");
+        runtimeVersionCheckPlugin({ runtimes: { bun: { minVersion: 1 } } }).init?.(context);
 
         expect(context.logger.error).toHaveBeenCalledWith(expect.stringContaining("cerebro requires bun"));
-        expect(bunExit).toHaveBeenCalledWith(1);
+        expect(exitSpy).toHaveBeenCalledWith(1);
     });
 
     it("detects Deno and validates against the provided deno requirement", async () => {
