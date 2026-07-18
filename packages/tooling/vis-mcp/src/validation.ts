@@ -32,7 +32,7 @@ export const isSafePositional = (value: string): boolean => value.length > 0 && 
 
 /**
  * Guard for free-form values forwarded as the argument of a CLI option (e.g.
- * `--since <ref>`, `--query <expr>`, `--ecosystem <list>`, `--db <path>`). The
+ * `--since &lt;ref>`, `--query &lt;expr>`, `--ecosystem &lt;list>`, `--db &lt;path>`). The
  * option name is a fixed literal, but the value itself is LLM-supplied: the
  * `@visulima/command-line-args` tokenizer classifies any `--x`/`-x` token as an
  * option rather than the preceding option's value, so a flag-shaped value like
