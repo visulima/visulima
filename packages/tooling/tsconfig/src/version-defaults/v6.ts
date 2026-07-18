@@ -6,14 +6,17 @@
  */
 import type { TsConfigJson } from "type-fest";
 
+import { applyModuleAndTargetDefaults } from "./shared";
+
 /**
  * TypeScript 6.0 default-flips.
  *
- * Note on `module` / `moduleResolution`: in v6 these remain *derived* from
- * `target` (and from each other) — the values below are correct when the v6
- * default `target: es2025` is also in effect (the most common path for a
- * parsed config). When the user sets a non-default `target`, the cross-field
- * derivation handled by `tsCompatibleWrapper` still applies pre-v6 rules.
+ * Note on `module` / `moduleResolution` / `target`: these remain *derived* from
+ * each other in v6. `applyModuleAndTargetDefaults` reproduces that derivation —
+ * the default `target: es2025` + `module: es2022` + `moduleResolution: bundler`
+ * applies only when no user-set Node-style `module`/`moduleResolution` pins the
+ * fields to the values `tsc` derives (e.g. `module: nodenext` ⇒
+ * `moduleResolution: nodenext`, `target: esnext`).
  */
 // eslint-disable-next-line import/prefer-default-export
 export const applyV6Defaults = (compilerOptions: TsConfigJson.CompilerOptions, userSet: ReadonlySet<string>): void => {
@@ -23,24 +26,10 @@ export const applyV6Defaults = (compilerOptions: TsConfigJson.CompilerOptions, u
         compilerOptions.strict = true;
     }
 
-    // target: defaults to the latest stable ES year (es2025 in v6.0).
-    if (!userSet.has("target")) {
-        // type-fest does not yet model 'es2025'; cast through the union.
-        // eslint-disable-next-line no-param-reassign
-        compilerOptions.target = "es2025";
-    }
-
-    // module: with target=es2025 (≥es2022), v6 derives module=es2022.
-    if (!userSet.has("module")) {
-        // eslint-disable-next-line no-param-reassign
-        compilerOptions.module = "es2022";
-    }
-
-    // moduleResolution: with module=es2022 (non-Node), v6 derives bundler.
-    if (!userSet.has("moduleResolution")) {
-        // eslint-disable-next-line no-param-reassign
-        compilerOptions.moduleResolution = "bundler";
-    }
+    // target/module/moduleResolution: v6 defaults to es2025 + es2022 + bundler,
+    // unless a user-set Node-style module (or moduleResolution) dictates them.
+    // type-fest does not yet model 'es2025'; the union accepts it as a string.
+    applyModuleAndTargetDefaults(compilerOptions, userSet, { module: "es2022", target: "es2025" });
 
     // rootDir: when a `configFilePath` is present, v6 always uses the tsconfig
     // directory as rootDir — previously this only happened for `composite: true`.
