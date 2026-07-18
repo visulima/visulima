@@ -252,6 +252,72 @@ describe("core/input InputParser", () => {
             expect(onPaste).toHaveBeenCalledTimes(1);
             expect(onData).not.toHaveBeenCalled();
         });
+
+        it("processes a keystroke that precedes the paste-start marker in the same chunk", () => {
+            expect.assertions(3);
+
+            const onPaste = vi.fn();
+            const onData = vi.fn();
+
+            parser.on("paste", onPaste);
+            parser.on("data", onData);
+            stdin.emit("data", `x${ESC}[200~hello${ESC}[201~`);
+
+            // The leading keystroke must reach the data channel, not the paste payload.
+            expect(onData.mock.calls[0]?.[0]).toBe("x");
+            expect(onPaste).toHaveBeenCalledTimes(1);
+            expect(onPaste.mock.calls[0]?.[0]).toBe("hello");
+        });
+
+        it("processes a keystroke that follows the paste-end marker in the same chunk", () => {
+            expect.assertions(3);
+
+            const onPaste = vi.fn();
+            const onKeydown = vi.fn();
+
+            parser.on("paste", onPaste);
+            parser.on("keydown", onKeydown);
+            stdin.emit("data", `${ESC}[200~hello${ESC}[201~\r`);
+
+            expect(onPaste.mock.calls[0]?.[0]).toBe("hello");
+            expect(onKeydown).toHaveBeenCalledTimes(1);
+            expect(onKeydown.mock.calls[0]?.[0]).toBe("enter");
+        });
+
+        it("splits keystrokes surrounding a paste delivered in one chunk", () => {
+            expect.assertions(4);
+
+            const onPaste = vi.fn();
+            const onData = vi.fn();
+            const onKeydown = vi.fn();
+
+            parser.on("paste", onPaste);
+            parser.on("data", onData);
+            parser.on("keydown", onKeydown);
+            stdin.emit("data", `x${ESC}[200~hello${ESC}[201~\r`);
+
+            expect(onData.mock.calls[0]?.[0]).toBe("x");
+            expect(onPaste).toHaveBeenCalledTimes(1);
+            expect(onPaste.mock.calls[0]?.[0]).toBe("hello");
+            expect(onKeydown.mock.calls[0]?.[0]).toBe("enter");
+        });
+
+        it("keeps surrounding keystrokes separate from the pasted text on the data channel", () => {
+            expect.assertions(3);
+
+            const onData = vi.fn();
+            const onKeydown = vi.fn();
+
+            parser.on("data", onData);
+            parser.on("keydown", onKeydown);
+            stdin.emit("data", `x${ESC}[200~hi${ESC}[201~\r`);
+
+            // No paste listener: "x" is printable input, the paste falls back to
+            // the data channel as its own event, and Enter is a named key.
+            expect(onData.mock.calls[0]?.[0]).toBe("x");
+            expect(onData.mock.calls[1]?.[0]).toBe("hi");
+            expect(onKeydown.mock.calls[0]?.[0]).toBe("enter");
+        });
     });
 
     describe("sGR 1006 mouse tracking", () => {
