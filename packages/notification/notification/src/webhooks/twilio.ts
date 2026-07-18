@@ -29,6 +29,7 @@ const STATUS_MAP: Record<string, NotificationEventType> = {
  * @returns The string Twilio computes the HMAC over.
  */
 const buildSignatureBase = (url: string, parameters: Record<string, string>): string => {
+    // eslint-disable-next-line sonarjs/no-alphabetical-sort -- Twilio signs parameters in Unicode code-unit order; localeCompare would break signature verification
     const keys = Object.keys(parameters).toSorted();
     let base = url;
 
