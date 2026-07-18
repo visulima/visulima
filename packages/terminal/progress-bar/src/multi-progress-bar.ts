@@ -63,33 +63,11 @@ export class MultiBarInstance extends ProgressBar {
      * ANSI formatting would otherwise break width measurement and the bracket match).
      */
     public renderForComposite(): string {
-        const glue = this.options.barGlue;
-        const { formatBar } = this.options;
-
-        this.options.barGlue = "";
-        this.options.formatBar = undefined;
-
-        try {
-            return this.render();
-        } finally {
-            this.options.barGlue = glue;
-            this.options.formatBar = formatBar;
-        }
+        return this.render({ barGlue: "", formatBar: undefined });
     }
 
     public getBarGlue(): string {
         return this.options.barGlue ?? "";
-    }
-
-    /** Whether the per-bar `fps` throttle permits triggering a redraw. */
-    private shouldRenderBar(): boolean {
-        const fps = this.options.fps ?? 10;
-
-        if (fps <= 0) {
-            return true;
-        }
-
-        return Date.now() - this.lastBarRenderTime >= 1000 / fps;
     }
 
     public getBarState(): { char: string; current: number; total: number } {
@@ -102,6 +80,17 @@ export class MultiBarInstance extends ProgressBar {
             current: this.current,
             total: this.options.total,
         };
+    }
+
+    /** Whether the per-bar `fps` throttle permits triggering a redraw. */
+    private shouldRenderBar(): boolean {
+        const fps = this.options.fps ?? 10;
+
+        if (fps <= 0) {
+            return true;
+        }
+
+        return Date.now() - this.lastBarRenderTime >= 1000 / fps;
     }
 }
 
