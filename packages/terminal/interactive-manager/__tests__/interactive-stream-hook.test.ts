@@ -243,6 +243,24 @@ describe("interactiveStreamHook", () => {
             expect(captured.join("")).toBe("");
         });
 
+        it("should preserve text written with a non-UTF-8 encoding", () => {
+            expect.assertions(1);
+
+            const { captured, stream } = createMockStream();
+            const hook = new InteractiveStreamHook(stream);
+
+            hook.active();
+            captured.length = 0;
+
+            // "é" encoded as latin1 is the single byte 0xE9, which is not valid UTF-8. Decoding
+            // it through the default UTF-8 decoder would replace it with U+FFFD.
+            (stream.write as (data: string, encoding: BufferEncoding, callback?: () => void) => boolean)("café", "latin1");
+
+            hook.inactive();
+
+            expect(captured.join("")).toContain("café");
+        });
+
         it("should still buffer and replay writes on a non-TTY stream", () => {
             expect.assertions(1);
 
@@ -295,6 +313,52 @@ describe("interactiveStreamHook", () => {
             hook.inactive();
 
             expect(captured.join("")).toContain("m5");
+        });
+
+        it("should invoke the registered onEarlyFlush callback before flushing on a TTY", () => {
+            expect.assertions(2);
+
+            const { captured, stream } = createMockStream();
+            const hook = new InteractiveStreamHook(stream, { maxHistory: 4 });
+
+            const order: string[] = [];
+
+            hook.onEarlyFlush(() => {
+                order.push(`callback@${String(captured.length)}`);
+            });
+
+            hook.active();
+            captured.length = 0;
+
+            for (let index = 0; index < 6; index += 1) {
+                stream.write(`m${String(index)}`);
+            }
+
+            // The callback ran exactly once, before any flushed entry reached the stream
+            // (captured was still empty when it fired).
+            expect(order).toStrictEqual(["callback@0"]);
+            expect(captured.join("")).toContain("m0");
+        });
+
+        it("should not invoke onEarlyFlush on a non-TTY stream", () => {
+            expect.assertions(1);
+
+            const { stream } = createMockStream(false);
+            const hook = new InteractiveStreamHook(stream, { maxHistory: 4 });
+
+            let called = false;
+
+            hook.onEarlyFlush(() => {
+                called = true;
+            });
+
+            hook.active();
+
+            for (let index = 0; index < 6; index += 1) {
+                stream.write(`m${String(index)}`);
+            }
+
+            expect(called).toBe(false);
         });
     });
 

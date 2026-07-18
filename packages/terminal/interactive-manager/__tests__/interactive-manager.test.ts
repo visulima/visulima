@@ -1,8 +1,23 @@
 import { PassThrough } from "node:stream";
 
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
+// The manager reads live terminal dimensions through `terminal-size` (not from the
+// fake streams below), so mock it to a fixed 80x24 viewport to keep the behavioral
+// assertions deterministic regardless of the developer's real terminal geometry.
+const terminalSizeMock = vi.fn<() => { columns: number; rows: number }>(() => {
+    return { columns: 80, rows: 24 };
+});
+
+vi.mock(import("terminal-size"), () => {
+    return {
+        default: () => terminalSizeMock(),
+    };
+});
+
+// eslint-disable-next-line import/first
 import InteractiveManager from "../src/interactive-manager";
+// eslint-disable-next-line import/first
 import InteractiveStreamHook from "../src/interactive-stream-hook";
 
 /**
@@ -20,10 +35,6 @@ const createMockStream = (): { captured: string[]; stream: NodeJS.WriteStream } 
 
     const stream = passthrough as unknown as NodeJS.WriteStream;
 
-    // Required for terminal-size to work when reading dimensions on
-    // our fake streams (the manager only writes to them so this is enough).
-    Object.defineProperty(stream, "columns", { configurable: true, value: 80 });
-    Object.defineProperty(stream, "rows", { configurable: true, value: 24 });
     Object.defineProperty(stream, "isTTY", { configurable: true, value: true });
 
     return { captured, stream };
@@ -150,6 +161,78 @@ describe("interactiveManager", () => {
             // After a 2-line write then a 1-line write, lastLength should reflect the new write.
             expect(manager.lastLength).toBe(1);
         });
+
+        it("should count the position offset in lastLength for a partial update (from > 0)", () => {
+            expect.assertions(2);
+
+            const { manager } = createManager();
+
+            manager.hook();
+            manager.update("stdout", ["a", "b", "c"]);
+
+            expect(manager.lastLength).toBe(3);
+
+            // Overwrite starting at line 2 with a single row. The on-screen region is still
+            // position (2) + output.length (1) = 3 lines, not just the 1 written row.
+            manager.update("stdout", ["X"], 2);
+
+            expect(manager.lastLength).toBe(3);
+        });
+
+        it("should erase the full region on a redraw after a partial update", () => {
+            expect.assertions(1);
+
+            const { manager } = createManager();
+
+            manager.hook();
+            manager.update("stdout", ["a", "b", "c"]);
+            manager.update("stdout", ["X"], 2);
+
+            const eraseSpy = vi.spyOn(InteractiveStreamHook.prototype, "erase");
+
+            // A full redraw (from 0) must erase all 3 on-screen lines; a bug that stored
+            // lastLength = 1 after the partial update would erase only 1, stranding a and b.
+            manager.update("stdout", ["p"]);
+
+            expect(eraseSpy).toHaveBeenCalledExactlyOnceWith(3);
+
+            eraseSpy.mockRestore();
+        });
+    });
+
+    describe("bounded-history flush coordination", () => {
+        it("erases the interactive region and resets bookkeeping before an early flush", () => {
+            expect.assertions(4);
+
+            const { captured: capturedOut, stream: outStream } = createMockStream();
+            const { stream: errorStream } = createMockStream();
+            const stdoutHook = new InteractiveStreamHook(outStream, { maxHistory: 4 });
+            const stderrHook = new InteractiveStreamHook(errorStream, { maxHistory: 4 });
+            const manager = new InteractiveManager(stdoutHook, stderrHook);
+
+            manager.hook();
+            manager.update("stdout", ["frame"]);
+
+            expect(manager.lastLength).toBe(1);
+
+            capturedOut.length = 0;
+
+            // Flood the hooked stream past its maxHistory so the early flush fires while the
+            // frame is on screen.
+            for (let index = 0; index < 6; index += 1) {
+                outStream.write(`m${String(index)}`);
+            }
+
+            // The region was erased and its bookkeeping cleared so the next update() repaints
+            // fresh below the flushed history instead of the flush tearing through the frame.
+            expect(manager.lastLength).toBe(0);
+            expect(manager.outside).toBe(0);
+
+            // The erase escape sequence was emitted before the flushed history entries.
+            const out = capturedOut.join("");
+
+            expect(out.indexOf("[")).toBeLessThan(out.indexOf("m0"));
+        });
     });
 
     describe("erase", () => {
@@ -239,6 +322,24 @@ describe("interactiveManager", () => {
             manager.suspend("stdout", false);
 
             expect(manager.isSuspended).toBe(true);
+        });
+
+        it("should ignore update() while suspended so external output is not overwritten", () => {
+            expect.assertions(2);
+
+            const { capturedOut, manager } = createManager();
+
+            manager.hook();
+            manager.update("stdout", ["frame"]);
+            manager.suspend("stdout", false);
+
+            capturedOut.length = 0;
+
+            // A still-ticking renderer calling update() must be inert while suspended.
+            manager.update("stdout", ["frame 2"]);
+
+            expect(capturedOut.join("")).toBe("");
+            expect(manager.lastLength).toBe(1);
         });
     });
 });

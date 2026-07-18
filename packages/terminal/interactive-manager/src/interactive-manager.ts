@@ -62,6 +62,17 @@ class InteractiveManager {
             // ~12x/sec per stream, so we cache the size and only refresh it on resize.
             this.#size = terminalSize();
         };
+
+        // When a hook's bounded-history buffer overflows while a frame is on screen it flushes
+        // straight to the stream at the cursor — below the frame. Erase the region and forget it
+        // first so the flushed output lands above and the next update() repaints from scratch.
+        for (const streamName of Object.keys(this.#stream) as StreamType[]) {
+            this.#stream[streamName].onEarlyFlush(() => {
+                this.erase(streamName);
+                this.#lastLength = 0;
+                this.#outside = 0;
+            });
+        }
     }
 
     /**
@@ -177,6 +188,7 @@ class InteractiveManager {
             }
 
             this.#lastLength = 0;
+            this.#outside = 0;
 
             const hooks = Object.values(this.#stream);
 
@@ -242,6 +254,12 @@ class InteractiveManager {
      * @param from Index of the line starting from which contents are overwritten
      */
     public update(stream: StreamType, rows: string[], from: number = 0): void {
+        if (this.#isSuspended) {
+            // While suspended the region is handed to external output (a prompt, a subprocess).
+            // A still-ticking renderer must not erase or overwrite it; resume() repaints.
+            return;
+        }
+
         if (rows.length === 0) {
             // An empty update means "clear the region" — there is otherwise no way to
             // wipe the interactive area through the main API.
@@ -280,7 +298,10 @@ class InteractiveManager {
 
         hook.write(`${output.join("\n")}\n`);
 
-        this.#lastLength = outside ? outside + output.length + 1 : output.length;
+        // lastLength must measure the full on-screen region from line 0. After a partial update
+        // (from > 0) the region is position + output.length lines, so fold position in; storing
+        // only output.length would under-erase on the next redraw and strand the lines above.
+        this.#lastLength = outside ? outside + output.length + 1 : position + output.length;
         this.#outside = Math.max(this.lastLength - height, this.outside);
     }
 
