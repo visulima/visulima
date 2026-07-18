@@ -48,22 +48,31 @@ const clearTerminalSizeCache = (): void => {
     probedTerminal = undefined;
 };
 
+const clampSpacer = (value: number): number => Math.max(0, Math.floor(value));
+
 const getObject = (detail: Partial<Spacer> | number | undefined): Spacer => {
     if (typeof detail === "number") {
         return {
-            bottom: detail,
-            left: detail * 3,
-            right: detail * 3,
-            top: detail,
+            bottom: clampSpacer(detail),
+            left: clampSpacer(detail * 3),
+            right: clampSpacer(detail * 3),
+            top: clampSpacer(detail),
         };
     }
 
-    return {
+    const merged = {
         bottom: 0,
         left: 0,
         right: 0,
         top: 0,
         ...detail,
+    };
+
+    return {
+        bottom: clampSpacer(merged.bottom),
+        left: clampSpacer(merged.left),
+        right: clampSpacer(merged.right),
+        top: clampSpacer(merged.top),
     };
 };
 
@@ -148,13 +157,15 @@ const wrapText = (
 
     switch (alignment) {
         case "left": {
-            title = text + colorizeBorder(horizontal.slice(textWidth), getStringWidth(horizontal.slice(textWidth)));
+            const seg = slice(horizontal, textWidth);
+
+            title = text + colorizeBorder(seg, getStringWidth(seg));
 
             break;
         }
 
         case "right": {
-            const seg = horizontal.slice(textWidth + 2);
+            const seg = slice(horizontal, textWidth + 2);
 
             title = `${colorizeBorder(seg, getStringWidth(seg))} ${text} `;
 
@@ -223,12 +234,12 @@ const makeContentText = (
 
                 switch (textAlignment) {
                     case "center": {
-                        paddedLine = PAD.repeat((max - longestLength) / 2) + alignedLine;
+                        paddedLine = PAD.repeat(Math.max(0, (max - longestLength) / 2)) + alignedLine;
                         break;
                     }
 
                     case "right": {
-                        paddedLine = PAD.repeat(max - longestLength) + alignedLine;
+                        paddedLine = PAD.repeat(Math.max(0, max - longestLength)) + alignedLine;
                         break;
                     }
 
@@ -345,7 +356,7 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
             );
         }
 
-        const topBorder = colorizeBorder(marginLeft + chars.topLeft, "topLeft", getStringWidth(marginLeft + chars.topLeft));
+        const topBorder = marginLeft + colorizeBorder(chars.topLeft, "topLeft", getStringWidth(chars.topLeft));
 
         result += topBorder + headerText + colorizeBorder(chars.topRight, "topRight", getStringWidth(chars.topRight)) + NEWLINE;
     }
@@ -362,7 +373,7 @@ const boxContent = (content: string, contentWidth: number, columnsWidth: number,
     result += lines.map((line) => leftBorder + fillBackground(colorizeContent(line)) + rightBorder).join(NEWLINE);
 
     if (options.borderStyle !== NONE || options.footerText) {
-        const bottomBorder = NEWLINE + colorizeBorder(marginLeft + chars.bottomLeft, "bottomLeft", getStringWidth(marginLeft + chars.bottomLeft));
+        const bottomBorder = NEWLINE + marginLeft + colorizeBorder(chars.bottomLeft, "bottomLeft", getStringWidth(chars.bottomLeft));
         let footerText = colorizeBorder(chars.bottom.repeat(contentWidth), "bottom", contentWidth);
 
         if (options.footerText) {

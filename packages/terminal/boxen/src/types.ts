@@ -5,7 +5,7 @@ export type Alignment = "center" | "left" | "right";
 export type VerticalAlignment = "bottom" | "center" | "top";
 
 /** Position of a single border character, passed to `borderColor`. */
-export type BorderPosition = "bottom" | "bottomLeft" | "bottomRight" | "horizontal" | "left" | "right" | "top" | "topLeft" | "topRight";
+export type BorderPosition = "bottom" | "bottomLeft" | "bottomRight" | "left" | "right" | "top" | "topLeft" | "topRight";
 
 /** Name of a built-in border style shipped in the vendored catalog. */
 export type BorderStyleName = "arrow" | "bold" | "classic" | "double" | "doubleSingle" | "none" | "round" | "single" | "singleDouble";

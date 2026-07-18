@@ -64,6 +64,19 @@ describe("margin option", () => {
         expect(box).toMatchSnapshot("columns - 2");
     });
 
+    it("clamps a negative margin number to zero instead of throwing", () => {
+        expect.assertions(2);
+
+        expect(() => boxen("foo", { margin: -1 })).not.toThrow();
+        expect(boxen("foo", { margin: -1 })).toBe(boxen("foo", { margin: 0 }));
+    });
+
+    it("clamps negative margin sides to zero", () => {
+        expect.assertions(1);
+
+        expect(boxen("foo", { margin: { bottom: -2, left: -3, right: 1, top: 0 } })).toBe(boxen("foo", { margin: { bottom: 0, left: 0, right: 1, top: 0 } }));
+    });
+
     it("margin option with border style (none)", () => {
         expect.assertions(1);
 

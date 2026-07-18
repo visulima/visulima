@@ -28,6 +28,19 @@ describe("padding option", () => {
         expect(box).toMatchSnapshot();
     });
 
+    it("clamps a negative padding number to zero instead of throwing", () => {
+        expect.assertions(2);
+
+        expect(() => boxen("foo", { padding: -1 })).not.toThrow();
+        expect(boxen("foo", { padding: -1 })).toBe(boxen("foo", { padding: 0 }));
+    });
+
+    it("clamps negative padding sides to zero", () => {
+        expect.assertions(1);
+
+        expect(boxen("foo", { padding: { bottom: -2, left: -3, right: 1, top: 0 } })).toBe(boxen("foo", { padding: { bottom: 0, left: 0, right: 1, top: 0 } }));
+    });
+
     it("padding option with border style (none)", () => {
         expect.assertions(1);
 
