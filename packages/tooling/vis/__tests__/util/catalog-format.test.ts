@@ -588,6 +588,74 @@ describe(fetchChangelogInfo, () => {
         vi.restoreAllMocks();
     });
 
+    it("caps concurrent registry requests at 8", async () => {
+        expect.assertions(2);
+
+        let inFlight = 0;
+        let maxInFlight = 0;
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            inFlight += 1;
+            maxInFlight = Math.max(maxInFlight, inFlight);
+
+            await new Promise((resolve) => {
+                setTimeout(resolve, 5);
+            });
+
+            inFlight -= 1;
+
+            const url = typeof input === "string" ? input : input instanceof URL ? input.href : input.url;
+
+            return {
+                json: async () => {
+                    return { repository: { url: `git+https://github.com/owner/${url}.git` } };
+                },
+                ok: true,
+            } as Response;
+        });
+
+        const packages = Array.from({ length: 20 }, (_unused, index) => ({
+            catalogName: "default",
+            currentRange: "^1.0.0",
+            newRange: "^2.0.0",
+            packageName: `pkg-${index}`,
+            targetVersion: "2.0.0",
+            updateType: "minor" as const,
+        }));
+
+        const result = await fetchChangelogInfo(packages);
+
+        expect(result).toHaveLength(20);
+        expect(maxInFlight).toBeLessThanOrEqual(8);
+
+        vi.restoreAllMocks();
+    });
+
+    it("requests the latest version manifest instead of the full packument", async () => {
+        expect.assertions(1);
+
+        const requestedUrls: string[] = [];
+
+        vi.spyOn(globalThis, "fetch").mockImplementation(async (input: RequestInfo | URL) => {
+            requestedUrls.push(typeof input === "string" ? input : input instanceof URL ? input.href : input.url);
+
+            return {
+                json: async () => {
+                    return {};
+                },
+                ok: true,
+            } as Response;
+        });
+
+        await fetchChangelogInfo([
+            { catalogName: "default", currentRange: "^1.0.0", newRange: "^2.0.0", packageName: "react", targetVersion: "19.0.0", updateType: "major" },
+        ]);
+
+        expect(requestedUrls[0]).toBe("https://registry.npmjs.org/react/latest");
+
+        vi.restoreAllMocks();
+    });
+
     it("routes scoped packages to the configured private registry", async () => {
         expect.assertions(3);
 
@@ -620,7 +688,7 @@ describe(fetchChangelogInfo, () => {
             config,
         );
 
-        expect(requestedUrls[0]).toBe("https://npm.myorg.com/@myorg/lib");
+        expect(requestedUrls[0]).toBe("https://npm.myorg.com/@myorg/lib/latest");
         expect(requestedAuth[0]).toBe("Bearer secret-token");
         expect(requestedUrls).toHaveLength(1);
 
@@ -655,7 +723,7 @@ describe(fetchChangelogInfo, () => {
             config,
         );
 
-        expect(requestedUrls[0]).toBe("https://registry.npmjs.org/react");
+        expect(requestedUrls[0]).toBe("https://registry.npmjs.org/react/latest");
         expect(requestedUrls).toHaveLength(1);
 
         vi.restoreAllMocks();

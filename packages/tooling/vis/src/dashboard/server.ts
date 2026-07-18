@@ -40,6 +40,43 @@ interface ChangeEvent {
 
 type ChangeListener = (event: ChangeEvent) => void;
 
+const IPV4_HOST_REGEX = /^\d{1,3}(?:\.\d{1,3}){3}$/;
+
+/**
+ * DNS-rebinding guard: only answer requests whose Host header is a loopback
+ * name, a literal IP (unreachable via rebinding, which needs a hostname
+ * re-resolving to a loopback address), or the explicitly configured `--host`.
+ * A malicious page pointing an attacker domain at 127.0.0.1 would arrive with
+ * that domain in the Host header and be rejected.
+ */
+const isAllowedDashboardHost = (hostHeader: string | undefined, configuredHost: string): boolean => {
+    if (hostHeader === undefined || hostHeader === "") {
+        return false;
+    }
+
+    let host = hostHeader;
+
+    if (host.startsWith("[")) {
+        // Bracketed IPv6, e.g. `[::1]:1234`.
+        const end = host.indexOf("]");
+
+        host = end === -1 ? host.slice(1) : host.slice(1, end);
+    } else if (!host.includes("::")) {
+        // Strip `:port`, skipping unbracketed IPv6 literals (which contain `::`).
+        const colon = host.indexOf(":");
+
+        host = colon === -1 ? host : host.slice(0, colon);
+    }
+
+    host = host.toLowerCase();
+
+    if (host === "localhost" || host === configuredHost.toLowerCase()) {
+        return true;
+    }
+
+    return IPV4_HOST_REGEX.test(host) || host.includes(":");
+};
+
 const readRunById = (workspaceRoot: string, id: string): LoadedRunSummary | undefined => {
     const safe = id.replaceAll(/[^\w.\-:]/g, "");
 
@@ -171,6 +208,14 @@ const createRunsWatcher = async (workspaceRoot: string): Promise<{ close: () => 
  */
 export const createDashboardApp = (options: DashboardServerOptions, subscribe: (listener: ChangeListener) => () => void): Hono => {
     const app = new Hono();
+
+    app.use("*", async (c, next) => {
+        if (!isAllowedDashboardHost(c.req.header("host"), options.host)) {
+            return c.json({ error: "Forbidden" }, 403);
+        }
+
+        return next();
+    });
 
     app.get("/", (c) => c.html(renderDashboardHtml()));
 
