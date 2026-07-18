@@ -107,6 +107,54 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
     }
 
     /**
+     * Builds the final, published domain array by applying the same
+     * allowlist/whitelist/blacklist filtering the generated `domains.json` uses.
+     *
+     * This is the authoritative post-filter view of the list, so both the emitted
+     * file and the sync statistics are computed from it.
+     * @returns {Array<string>} Sorted array of the domains that will be published.
+     */
+    buildFinalDomainsList() {
+        // Load common email providers as whitelist
+        let whitelist = new Set();
+
+        try {
+            const commonProviders = require("email-providers/common.json");
+
+            if (Array.isArray(commonProviders)) {
+                whitelist = new Set(commonProviders.map((domain) => domain.toLowerCase().trim()));
+            }
+        } catch {
+            // If email-providers is not available, continue without whitelist
+        }
+
+        // Generate simple array of domain strings, excluding whitelisted domains
+        // BUT always include blacklist domains even if they're in the whitelist
+        return [...this.domains.entries()]
+            .filter(([domain, entry]) => {
+                const normalizedDomain = domain.toLowerCase().trim();
+
+                // The curated allowlist beats every source: it exists precisely to undo
+                // false positives that upstream lists (or a stale blacklist entry) introduce.
+                if (this.allowlist.has(normalizedDomain)) {
+                    return false;
+                }
+
+                const isBlacklistDomain = entry.sources.has("blacklist.json");
+
+                // Always include blacklist domains, even if they're whitelisted
+                if (isBlacklistDomain) {
+                    return true;
+                }
+
+                // For non-blacklist domains, exclude if whitelisted
+                return !whitelist.has(normalizedDomain);
+            })
+            .map(([domain]) => domain)
+            .toSorted();
+    }
+
+    /**
      * Calculates final statistics after processing.
      *
      * Domain counts are derived from the post-filter list (the same set written to
@@ -412,54 +460,6 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
      */
     generateDetailedReport(stats) {
         return this.buildDetailedReport(stats);
-    }
-
-    /**
-     * Builds the final, published domain array by applying the same
-     * allowlist/whitelist/blacklist filtering the generated `domains.json` uses.
-     *
-     * This is the authoritative post-filter view of the list, so both the emitted
-     * file and the sync statistics are computed from it.
-     * @returns {Array<string>} Sorted array of the domains that will be published.
-     */
-    buildFinalDomainsList() {
-        // Load common email providers as whitelist
-        let whitelist = new Set();
-
-        try {
-            const commonProviders = require("email-providers/common.json");
-
-            if (Array.isArray(commonProviders)) {
-                whitelist = new Set(commonProviders.map((domain) => domain.toLowerCase().trim()));
-            }
-        } catch {
-            // If email-providers is not available, continue without whitelist
-        }
-
-        // Generate simple array of domain strings, excluding whitelisted domains
-        // BUT always include blacklist domains even if they're in the whitelist
-        return [...this.domains.entries()]
-            .filter(([domain, entry]) => {
-                const normalizedDomain = domain.toLowerCase().trim();
-
-                // The curated allowlist beats every source: it exists precisely to undo
-                // false positives that upstream lists (or a stale blacklist entry) introduce.
-                if (this.allowlist.has(normalizedDomain)) {
-                    return false;
-                }
-
-                const isBlacklistDomain = entry.sources.has("blacklist.json");
-
-                // Always include blacklist domains, even if they're whitelisted
-                if (isBlacklistDomain) {
-                    return true;
-                }
-
-                // For non-blacklist domains, exclude if whitelisted
-                return !whitelist.has(normalizedDomain);
-            })
-            .map(([domain]) => domain)
-            .toSorted();
     }
 
     /**
