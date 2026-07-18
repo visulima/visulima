@@ -47,6 +47,14 @@ describe("fmt", () => {
         expect(format(f, a)).toBe(expected);
     });
 
+    it("should emit a color change for a second %c whose color shares a 3-char prefix with the first", () => {
+        expect.assertions(1);
+
+        expect(format("%cfoo %cbar", ["color:#ff0000", "color: #ff8800"])).toBe(
+            "\u001B[38;2;255;0;0mfoo \u001B[38;2;255;136;0mbar\u001B[0m",
+        );
+    });
+
     it.each([
         ["%d", [42], "42"],
         ["%d", [42], "42"],
@@ -269,6 +277,31 @@ describe("fmt", () => {
         expect(formatter("%s", ["hi"])).toBe("hi");
     });
 
+    it("should honour a build-time stringify option", () => {
+        expect.assertions(1);
+
+        const formatter = build({ stringify: () => "REPLACED" });
+
+        expect(formatter("%j", [{ foo: "foo" }])).toBe("REPLACED");
+    });
+
+    it("should honour a build-time appendExtraArguments option", () => {
+        expect.assertions(1);
+
+        const formatter = build({ appendExtraArguments: true });
+
+        expect(formatter("hi", [1, 2, 3])).toBe("hi 1 2 3");
+    });
+
+    it("should let per-call formatOptions override a build-time option", () => {
+        expect.assertions(2);
+
+        const formatter = build({ stringify: () => "BASE" });
+
+        expect(formatter("%j", [{ foo: "foo" }])).toBe("BASE");
+        expect(formatter("%j", [{ foo: "foo" }], { stringify: () => "OVERRIDE" })).toBe("OVERRIDE");
+    });
+
     it("should throw when a built formatter key is an empty string", () => {
         expect.assertions(1);
 
@@ -364,12 +397,26 @@ describe("fmt", () => {
             expect(format("%cfoo bar", ["color: red"], { colors: false })).toBe("foo bar");
         });
 
+        it("should keep literal text before a mid-string %c when colors is false", () => {
+            expect.assertions(1);
+
+            expect(format("hello %cworld", ["color: red"], { colors: false })).toBe("hello world");
+        });
+
+        it("should keep literal text before a mid-string %c in a browser-like environment", () => {
+            expect.assertions(1);
+
+            (globalThis as { window?: unknown }).window = {};
+
+            expect(format("hello %cworld", ["color: red"])).toBe("hello world");
+        });
+
         it("should force %c on when colors is true even in a browser-like environment", () => {
             expect.assertions(1);
 
             (globalThis as { window?: unknown }).window = {};
 
-            expect(format("%cfoo", ["color: red"], { colors: true })).toBe("[31mfoo[0m");
+            expect(format("%cfoo", ["color: red"], { colors: true })).toBe("\u001B[31mfoo\u001B[0m");
         });
     });
 });
