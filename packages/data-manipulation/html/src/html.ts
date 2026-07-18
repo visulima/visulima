@@ -5,14 +5,14 @@ import escapeHtml from "./escape-html";
  * interpolated into the `html` tagged template (or composed via arrays) verbatim,
  * without escaping. Use it only for HTML you already trust.
  */
+const RAW_BRAND: unique symbol = Symbol("visulima.rawHtml");
+
 interface RawHtml {
     /** Internal brand used to detect trusted fragments. */
-    readonly __isRawHtml: true;
+    readonly [RAW_BRAND]: true;
     /** The trusted HTML payload. */
     readonly value: string;
 }
-
-const RAW_BRAND = "__isRawHtml" as const;
 
 /**
  * Type guard that detects a {@link RawHtml} marker (including nested fragments
@@ -33,7 +33,7 @@ const isRawHtml = (value: unknown): value is RawHtml => typeof value === "object
  */
 const serializeValue = (value: unknown): string => {
     if (isRawHtml(value)) {
-        return value.value;
+        return String(value.value);
     }
 
     if (Array.isArray(value)) {

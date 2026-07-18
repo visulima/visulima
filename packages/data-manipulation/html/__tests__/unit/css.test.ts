@@ -230,6 +230,48 @@ describe(css, () => {
 
             expect(result).toBe(".a { color: red; } .b { content: \"keep   me\"; }");
         });
+
+        it("should not treat an apostrophe inside a comment as a string opener", () => {
+            expect.assertions(1);
+
+            const result = css`
+                /* don't do X */
+                .a {
+                    color: red;
+                }
+            `;
+
+            expect(result).toBe("/* don't do X */ .a { color: red; }");
+        });
+
+        it("should keep collapsing whitespace after a comment with an unbalanced quote", () => {
+            expect.assertions(1);
+
+            const result = css`
+                /* it's a test */
+                .b {
+                    color: blue;
+                }
+                .c {
+                    color: green;
+                }
+            `;
+
+            expect(result).toBe("/* it's a test */ .b { color: blue; } .c { color: green; }");
+        });
+
+        it("should preserve quoted string contents that follow a comment", () => {
+            expect.assertions(1);
+
+            const result = css`
+                /* label's text */
+                .d::before {
+                    content: "a   b";
+                }
+            `;
+
+            expect(result).toBe("/* label's text */ .d::before { content: \"a   b\"; }");
+        });
     });
 
     describe("function call with string input", () => {
@@ -247,8 +289,9 @@ describe(css, () => {
             const cssString = ":where(.test) { animation: 1ms test; }";
             const result = css(cssString, true);
 
-            // The escapeCss function will escape special characters
-            expect(result).toBeDefined();
+            // escapeCss escapes every CSS-special character (`:`, `(`, `.`, `)`, whitespace,
+            // `{`, `}`, `;`) with a backslash, so the whole stylesheet becomes escaped.
+            expect(result).toBe(String.raw`\:where\(\.test\)\ \{\ animation\:\ 1ms\ test\;\ \}`);
         });
 
         it("should return CSS as-is when escape is undefined (default)", () => {
@@ -282,8 +325,9 @@ describe(css, () => {
 
             const result = css({ padding: "1px" }, true);
 
-            // The result should be escaped CSS string
-            expect(result).toBeDefined();
+            // The object is stringified to `padding: 1px;` then escapeCss escapes the colon,
+            // spaces, and semicolon.
+            expect(result).toBe(String.raw`padding\:\ 1px\;`);
         });
 
         it("should convert camelCase properties to kebab-case", () => {
@@ -392,6 +436,16 @@ describe(css, () => {
             expect(result).toContain("--primary-color: blue;");
             expect(result).toContain("--secondary-color: green;");
             expect(result).toContain("margin-top: 10px;");
+        });
+
+        it("should identity-map dynamically named custom properties", () => {
+            expect.assertions(1000);
+
+            // Custom properties bypass the kebab cache entirely, so a stream of distinct
+            // dynamic names still maps verbatim without growing the module-level cache.
+            for (let index = 0; index < 1000; index += 1) {
+                expect(css({ [`--color-${index}`]: "red" }, false)).toBe(`--color-${index}: red;`);
+            }
         });
 
         it("should prefix vendor `ms` properties with a leading dash", () => {

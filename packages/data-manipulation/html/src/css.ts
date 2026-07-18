@@ -19,6 +19,7 @@ type FlexibleCSSProperties = {
 // so memoize the camelCase -> kebab-case conversion in a module-level cache to avoid
 // repeating the regex work and per-call closure allocation on hot paths.
 const kebabCache = new Map<string, string>();
+const KEBAB_CACHE_LIMIT = 1000;
 
 /**
  * Converts a camelCase CSS property name to kebab-case, preserving custom properties
@@ -27,23 +28,26 @@ const kebabCache = new Map<string, string>();
  * @returns The kebab-cased property name.
  */
 const toKebab = (key: string): string => {
+    // Custom properties are identity-mapped; skip the cache entirely so dynamic
+    // custom-property names (e.g. `--color-${id}`) cannot grow it unbounded.
+    if (key.startsWith("--")) {
+        return key;
+    }
+
     const cached = kebabCache.get(key);
 
     if (cached !== undefined) {
         return cached;
     }
 
-    let result: string;
+    const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
+    const result = kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
 
-    if (key.startsWith("--")) {
-        result = key;
-    } else {
-        const kebab = key.replaceAll(/([A-Z])/g, "-$1").toLowerCase();
-
-        result = kebab.startsWith("ms-") ? `-ms-${kebab.slice(3)}` : kebab;
+    // Bound the cache so an adversarial or dynamic stream of distinct property
+    // names cannot grow it without limit for the process lifetime.
+    if (kebabCache.size < KEBAB_CACHE_LIMIT) {
+        kebabCache.set(key, result);
     }
-
-    kebabCache.set(key, result);
 
     return result;
 };
@@ -78,6 +82,7 @@ const CSS_WHITESPACE = new Set([" ", "\t", "\n", "\r", "\f", "\v"]);
 const collapseWhitespaceOutsideStrings = (input: string): string => {
     let result = "";
     let quote: "\"" | "'" | undefined;
+    let inComment = false;
     let inWhitespaceRun = false;
 
     for (let index = 0; index < input.length; index += 1) {
@@ -94,6 +99,45 @@ const collapseWhitespaceOutsideStrings = (input: string): string => {
             } else if (char === quote) {
                 quote = undefined;
             }
+
+            continue;
+        }
+
+        // Inside a `/* ... */` comment: collapse whitespace like normal but never treat a
+        // quote as a string opener, so apostrophes in prose comments (e.g. `/* don't */`)
+        // do not flip string mode and corrupt the rest of the stylesheet.
+        if (inComment) {
+            if (char === "*" && input[index + 1] === "/") {
+                result += "*/";
+                index += 1;
+                inComment = false;
+                inWhitespaceRun = false;
+
+                continue;
+            }
+
+            if (CSS_WHITESPACE.has(char)) {
+                if (inWhitespaceRun) {
+                    continue;
+                }
+
+                inWhitespaceRun = true;
+                result += " ";
+
+                continue;
+            }
+
+            inWhitespaceRun = false;
+            result += char;
+
+            continue;
+        }
+
+        if (char === "/" && input[index + 1] === "*") {
+            inComment = true;
+            inWhitespaceRun = false;
+            result += "/*";
+            index += 1;
 
             continue;
         }
