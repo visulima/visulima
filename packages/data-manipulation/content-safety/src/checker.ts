@@ -615,7 +615,6 @@ const getDefaultChecker = (): Checker => {
     return defaultChecker;
 };
 
-
 /**
  * Checks text for banned words across the configured languages.
  * @param text The text to check for banned words.

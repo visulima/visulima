@@ -325,7 +325,7 @@ describe("bANNED_WORDS immutability", () => {
         expect(Object.isFrozen(BANNED_WORDS.en)).toBe(true);
         expect(() => {
             // @ts-expect-error -- intentionally testing runtime immutability of the nested array
-            BANNED_WORDS.en.push("x");
+            BANNED_WORDS.en.push("x"); // eslint-disable-line @typescript-eslint/no-unsafe-call -- .push is untyped once @ts-expect-error suppresses the readonly-array error
         }).toThrow(TypeError);
     });
 });
