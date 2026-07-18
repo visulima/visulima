@@ -25,7 +25,7 @@ const extractScripts = (html: string): string[] => {
 type Listener = (event: unknown) => void;
 
 interface FakeNode {
-    addEventListener: (type: string, fn: Listener) => void;
+    addEventListener: (type: string, function_: Listener) => void;
     classList: {
         add: (...classes: string[]) => void;
         contains: (className: string) => boolean;
@@ -42,7 +42,7 @@ interface FakeNode {
     offsetHeight: number;
     querySelector: () => null;
     querySelectorAll: () => FakeNode[];
-    removeEventListener: (type: string, fn: Listener) => void;
+    removeEventListener: (type: string, function_: Listener) => void;
     scrollHeight: number;
     setAttribute: (name: string, value: string) => void;
     style: Record<string, string>;
@@ -54,13 +54,14 @@ const makeNode = (initialClasses: string[] = []): FakeNode => {
     const attributes: Record<string, string> = {};
 
     const node: FakeNode = {
-        addEventListener: (type, fn) => {
-            (listeners[type] ??= []).push(fn);
+        addEventListener: (type, function_) => {
+            listeners[type] ??= [];
+            listeners[type].push(function_);
         },
         classList: {
-            add: (...c) => c.forEach((x) => classes.add(x)),
+            add: (...c) => { c.forEach((x) => classes.add(x)); },
             contains: (c) => classes.has(c),
-            remove: (...c) => c.forEach((x) => classes.delete(x)),
+            remove: (...c) => { c.forEach((x) => classes.delete(x)); },
             toggle: (c) => {
                 if (classes.has(c)) {
                     classes.delete(c);
@@ -73,20 +74,22 @@ const makeNode = (initialClasses: string[] = []): FakeNode => {
                 return true;
             },
         },
-        click: () => node.dispatch("click", { preventDefault: () => {}, target: node }),
+        click: () => { node.dispatch("click", { preventDefault: () => {}, target: node }); },
         closest: () => null,
         dataset: {},
         dispatch: (type, event) => {
-            [...(listeners[type] ?? [])].forEach((fn) => fn(event));
+            [...listeners[type] ?? []].forEach((function_) => {
+                function_(event);
+            });
         },
         focus: () => {},
         getAttribute: (name) => attributes[name],
-        getBoundingClientRect: () => ({ bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0 }),
+        getBoundingClientRect: () => { return { bottom: 0, height: 0, left: 0, right: 0, top: 0, width: 0 }; },
         offsetHeight: 0,
         querySelector: () => null,
         querySelectorAll: () => [],
-        removeEventListener: (type, fn) => {
-            listeners[type] = (listeners[type] ?? []).filter((f) => f !== fn);
+        removeEventListener: (type, function_) => {
+            listeners[type] = (listeners[type] ?? []).filter((f) => f !== function_);
         },
         scrollHeight: 0,
         setAttribute: (name, value) => {
@@ -109,15 +112,24 @@ const buildContext = (): { context: vm.Context; documentObject: FakeNode & { dis
     const documentListeners: Record<string, Listener[]> = {};
 
     const documentObject = {
-        addEventListener: (type: string, fn: Listener) => {
-            (documentListeners[type] ??= []).push(fn);
+        addEventListener: (type: string, function_: Listener) => {
+            documentListeners[type] ??= [];
+            documentListeners[type].push(function_);
         },
         body: makeNode(),
         dispatch: (type: string, event: unknown) => {
-            [...(documentListeners[type] ?? [])].forEach((fn) => fn(event));
+            [...documentListeners[type] ?? []].forEach((function_) => {
+                function_(event);
+            });
         },
         documentElement: makeNode(),
-        getElementById: (id: string) => (id === "ono-shortcuts-modal" ? modal : null),
+        getElementById: (id: string) => {
+            if (id === "ono-shortcuts-modal") {
+                return modal;
+            }
+
+            return null;
+        },
         querySelector: () => null,
         querySelectorAll: (selector: string) => {
             if (selector.includes("open-shortcuts-modal")) {
@@ -144,12 +156,15 @@ const buildContext = (): { context: vm.Context; documentObject: FakeNode & { dis
         innerHeight: 768,
         innerWidth: 1024,
         localStorage: { getItem: () => null, setItem: () => {} },
-        matchMedia: () => ({ addEventListener: () => {}, addListener: () => {}, matches: false, removeEventListener: () => {} }),
+        matchMedia: () => { return { addEventListener: () => {}, addListener: () => {}, matches: false, removeEventListener: () => {} }; },
         MutationObserver: class {
+            // eslint-disable-next-line class-methods-use-this -- instance method required to mirror the DOM MutationObserver API
             public disconnect(): void {}
 
+            // eslint-disable-next-line class-methods-use-this -- instance method required to mirror the DOM MutationObserver API
             public observe(): void {}
 
+            // eslint-disable-next-line class-methods-use-this -- instance method required to mirror the DOM MutationObserver API
             public takeRecords(): unknown[] {
                 return [];
             }
@@ -180,6 +195,7 @@ describe("generated client scripts", () => {
         // a duplicate top-level `const` (the historical page-wide SyntaxError) exactly as a browser would.
         expect(() => {
             scripts.forEach((source) => {
+                // eslint-disable-next-line sonarjs/code-eval -- executing the generated client scripts in a vm sandbox is the point of this test
                 vm.runInContext(source, context);
             });
         }).not.toThrow();
@@ -201,6 +217,7 @@ describe("generated client scripts", () => {
         const { context, documentObject, modal } = buildContext();
 
         scripts.forEach((source) => {
+            // eslint-disable-next-line sonarjs/code-eval -- executing the generated client scripts in a vm sandbox is the point of this test
             vm.runInContext(source, context);
         });
 
