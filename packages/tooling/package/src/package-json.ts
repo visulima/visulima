@@ -50,8 +50,16 @@ type CacheKeyOptions = {
  * @param options The parse options affecting the produced result.
  * @returns A composite cache key string.
  */
-const buildReadCacheKey = (filePath: string, options: CacheKeyOptions = {}): string =>
-    `${filePath}|s${String(options.strict ? 1 : 0)}|c${String(options.resolveCatalogs ? 1 : 0)}|j${String(options.json5 === false ? 0 : 1)}|y${String(options.yaml === false ? 0 : 1)}|w${String(options.ignoreWarnings ? 1 : 0)}`;
+const buildReadCacheKey = (filePath: string, options: CacheKeyOptions = {}): string => {
+    // ignoreWarnings only affects the outcome of a strict read, and different patterns can
+    // produce different results (throw vs. succeed), so serialize the patterns themselves —
+    // sorted so ordering does not fork the key — rather than a mere presence bit.
+    const ignoreWarnings = options.strict && options.ignoreWarnings
+        ? [...options.ignoreWarnings].map((pattern) => String(pattern)).sort().join(",")
+        : "";
+
+    return `${filePath}|s${String(options.strict ? 1 : 0)}|c${String(options.resolveCatalogs ? 1 : 0)}|j${String(options.json5 === false ? 0 : 1)}|y${String(options.yaml === false ? 0 : 1)}|w${ignoreWarnings}`;
+};
 
 /**
  * Determines whether a string should be treated as raw package.json content rather than a file path.
@@ -608,7 +616,7 @@ export const hasPackageJsonAnyDependency = (packageJson: NormalizedPackageJson, 
     const allDependencies = { ...dependencies, ...devDependencies, ...options?.peerDeps === false ? {} : peerDependencies };
 
     for (const argument of arguments_) {
-        if (hasProperty(allDependencies, argument)) {
+        if (Object.hasOwn(allDependencies, argument)) {
             return true;
         }
     }
@@ -662,9 +670,9 @@ export const ensurePackages = async (
 
     for (const packageName of packages) {
         if (
-            (config.deps && hasProperty(dependencies, packageName))
-            || (config.devDeps && hasProperty(devDependencies, packageName))
-            || (config.peerDeps && hasProperty(peerDependencies, packageName))
+            (config.deps && Object.hasOwn(dependencies ?? {}, packageName))
+            || (config.devDeps && Object.hasOwn(devDependencies ?? {}, packageName))
+            || (config.peerDeps && Object.hasOwn(peerDependencies ?? {}, packageName))
         ) {
             continue;
         }

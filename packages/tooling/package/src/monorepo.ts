@@ -2,9 +2,36 @@ import { existsSync, readFileSync } from "node:fs";
 
 import { findUp, findUpSync, readJson, readJsonSync } from "@visulima/fs";
 import { NotFoundError } from "@visulima/fs/error";
+import { parseJson } from "@visulima/fs/utils";
 import { dirname, join } from "@visulima/path";
 
 import { findPackageManager, findPackageManagerSync } from "./package-manager";
+
+/**
+ * Determines whether a raw package.json string declares a `workspaces` field.
+ * Parses the content and confirms the field is a non-null object (npm/yarn accept
+ * either an array or a `{ packages, nohoist }` object) rather than matching the bare
+ * substring `workspaces`, which any description/keyword/dependency name could contain.
+ * @param rawPackageJson The raw package.json file content.
+ * @returns `true` when a workspaces field is present and object-shaped.
+ */
+const hasWorkspacesField = (rawPackageJson: string): boolean => {
+    let parsed: unknown;
+
+    try {
+        parsed = parseJson(rawPackageJson);
+    } catch {
+        return false;
+    }
+
+    if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+        return false;
+    }
+
+    const workspaces = (parsed as { workspaces?: unknown }).workspaces;
+
+    return typeof workspaces === "object" && workspaces !== null;
+};
 
 export type Strategy = "lerna" | "npm" | "pnpm" | "turbo" | "yarn";
 
@@ -55,7 +82,7 @@ export const findMonorepoRoot = async (cwd?: URL | string): Promise<RootMonorepo
             if (existsSync(packageJsonFilePath)) {
                 const packageJson = readFileSync(join(path, "package.json"), "utf8");
 
-                if (packageJson.includes("workspaces")) {
+                if (hasWorkspacesField(packageJson)) {
                     return {
                         path,
                         strategy: isTurbo ? "turbo" : (packageManager as "npm" | "yarn"),
@@ -101,13 +128,17 @@ export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
     });
 
     if (workspaceFilePath?.endsWith("lerna.json")) {
-        const lerna = readJsonSync(workspaceFilePath) as { packages?: string[]; useWorkspaces?: boolean };
+        const lerna = readJsonSync(workspaceFilePath);
 
-        if (lerna.useWorkspaces || lerna.packages) {
-            return {
-                path: dirname(workspaceFilePath),
-                strategy: "lerna",
-            };
+        if (lerna && typeof lerna === "object" && !Array.isArray(lerna)) {
+            const l = lerna as { packages?: unknown; useWorkspaces?: unknown };
+
+            if (l.useWorkspaces || l.packages) {
+                return {
+                    path: dirname(workspaceFilePath),
+                    strategy: "lerna",
+                };
+            }
         }
     }
 
@@ -122,7 +153,7 @@ export const findMonorepoRootSync = (cwd?: URL | string): RootMonorepo => {
             if (existsSync(packageJsonFilePath)) {
                 const packageJson = readFileSync(join(path, "package.json"), "utf8");
 
-                if (packageJson.includes("workspaces")) {
+                if (hasWorkspacesField(packageJson)) {
                     return {
                         path,
                         strategy: isTurbo ? "turbo" : (packageManager as "npm" | "yarn"),
