@@ -987,9 +987,13 @@ export class Grid {
                     // Determine appropriate minimum width based on wrapping capability
                     contentWidth = this.computeWrappedContentWidth(contentWidth, lines, cellMaxWidth, canWordWrap);
 
-                    // For spanning cells, distribute the required width across the spanned columns
-                    const internalJoinWidth = (colSpan - 1) * singleInternalJoinWidth;
-                    const totalWidthNeeded = contentWidth + totalPadding + internalJoinWidth;
+                    // For spanning cells, distribute the required width across the spanned columns.
+                    // The internal structural width appears on both the required and the current
+                    // side of the comparison, so it cancels; the remaining deficit is distributed
+                    // additively (mirroring calculateColumnWidths) so a span whose columns already
+                    // have uneven minimums still receives the full extra width it needs.
+                    const structuralWidthWithinSpan = (colSpan - 1) * singleInternalJoinWidth;
+                    const requiredTotalWidthForSpan = contentWidth + totalPadding + structuralWidthWithinSpan;
 
                     // Calculate current total width of spanned columns
                     let currentWidthOfSpannedColumns = 0;
@@ -998,12 +1002,24 @@ export class Grid {
                         currentWidthOfSpannedColumns += columnWidths[si] ?? 0;
                     }
 
-                    if (totalWidthNeeded > currentWidthOfSpannedColumns) {
-                        const additionalWidthNeeded = totalWidthNeeded - currentWidthOfSpannedColumns;
-                        const additionalWidthPerColumn = Math.ceil(additionalWidthNeeded / colSpan);
+                    const currentTotalAvailableWidthForSpan = currentWidthOfSpannedColumns + structuralWidthWithinSpan;
 
-                        for (let i = 0; i < colSpan && colIndex + i < this.#options.columns; i += 1) {
-                            columnWidths[colIndex + i] = Math.max(columnWidths[colIndex + i] ?? 0, additionalWidthPerColumn);
+                    if (requiredTotalWidthForSpan > currentTotalAvailableWidthForSpan) {
+                        const additionalWidthNeeded = requiredTotalWidthForSpan - currentTotalAvailableWidthForSpan;
+                        const baseAdditionalWidth = Math.floor(additionalWidthNeeded / colSpan);
+
+                        let totalAdded = 0;
+
+                        for (let index = 0; index < colSpan && colIndex + index < this.#options.columns; index += 1) {
+                            const widthToAdd = Math.min(baseAdditionalWidth, additionalWidthNeeded - totalAdded);
+
+                            columnWidths[colIndex + index] = (columnWidths[colIndex + index] ?? 0) + widthToAdd;
+
+                            totalAdded += widthToAdd;
+
+                            if (totalAdded >= additionalWidthNeeded) {
+                                break;
+                            }
                         }
                     }
                 }
@@ -1196,6 +1212,18 @@ export class Grid {
             }
         }
 
+        // Honor any explicitly-provided fixed column widths as exact widths; columns
+        // left as holes keep their content-based width computed above. (The all-defined
+        // case returns early near the top of this method, so this only applies to the
+        // partial/hole case reached in non-balanced mode.)
+        if (this.#options.fixedColumnWidths && this.#options.fixedColumnWidths.length === this.#options.columns) {
+            for (const [index, element] of this.#options.fixedColumnWidths.entries()) {
+                if (typeof element === "number" && Number.isFinite(element)) {
+                    columnWidths[index] = element;
+                }
+            }
+        }
+
         if (this.#options.maxWidth) {
             const totalWidth = this.calculateTotalGridWidth(columnWidths);
 
@@ -1257,7 +1285,8 @@ export class Grid {
                 currentCellColSpan = colSpan; // Use the cell's actual span
 
                 const firstOccurrenceRow = findFirstOccurrenceRow(gridLayout, rowIndex, col, cell);
-                const currentCellTotalWidth = calculateCellTotalWidth(columnWidths, col, colSpan);
+                const internalJoinWidth = this.#options.showBorders ? this.#options.border?.bodyJoin.width ?? 0 : 0;
+                const currentCellTotalWidth = calculateCellTotalWidth(columnWidths, col, colSpan, internalJoinWidth);
                 const processedLines = this.alignCellContent(cell, currentCellTotalWidth);
                 const actualContentHeight = processedLines.length;
                 const verticalPosition = this.getCachedCellVerticalPosition(gridLayout, rowIndex, col, cell);
@@ -1274,12 +1303,17 @@ export class Grid {
                 let relativeVisualLineIndex = visualLineIndex;
                 let bordersCrossed = 0;
 
+                // A crossed row boundary only shifts the content line index when a
+                // horizontal border line is actually rendered there. In borderless
+                // styles (0-width joinBody) no such line exists, so nothing shifts.
+                const hasMiddleBorderLine = this.#options.showBorders && (this.#options.border?.joinBody.width ?? 0) > 0;
+
                 for (let index = firstOccurrenceRow; index < rowIndex; index += 1) {
                     if (index < rowHeights.length) {
                         relativeVisualLineIndex += rowHeights[index] ?? 1;
                     }
 
-                    if (index < verticalPosition.lastRow) {
+                    if (hasMiddleBorderLine && index < verticalPosition.lastRow) {
                         bordersCrossed += 1;
                     }
                 }
@@ -1599,7 +1633,8 @@ export class Grid {
                 const targetBorderRowIndex = firstRow + Math.ceil(rowSpanCount / 2) - 1;
 
                 // Get processed lines for the cell content
-                const fullSpanWidthForContent = calculateCellTotalWidth(columnWidths, col, colSpan); // Width without internal joins for content padding
+                const middleInternalJoinWidth = this.#options.showBorders ? this.#options.border?.bodyJoin.width ?? 0 : 0;
+                const fullSpanWidthForContent = calculateCellTotalWidth(columnWidths, col, colSpan, middleInternalJoinWidth); // Width without internal joins for content padding
                 const processedLines = this.alignCellContent(definingCell, fullSpanWidthForContent);
                 const actualContentHeight = processedLines.length;
 

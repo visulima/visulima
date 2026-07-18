@@ -262,6 +262,23 @@ export class Table {
             fixedGridRowHeights = Array.from<number>({ length: numberTotalRows }).fill(this.#options.rowHeights);
         }
 
+        // If no table-level columnWidths were provided but a cell requests an exact
+        // `width`, seed an all-undefined width array so that width can be folded into
+        // its logical column below. Columns without an explicit width stay auto-sized.
+        if (!fixedGridWidths) {
+            const hasCellWidth = allRows.some(
+                (row) =>
+                    Array.isArray(row)
+                    && row.some(
+                        (cell) => typeof cell === "object" && cell !== null && !Array.isArray(cell) && (cell as TableItem).width !== undefined,
+                    ),
+            );
+
+            if (hasCellWidth) {
+                fixedGridWidths = Array.from<number | undefined>({ length: numberColumns }).fill(undefined);
+            }
+        }
+
         // Adjust fixedColumnWidths based on cell maxWidth constraints before creating grid
         if (fixedGridWidths && Array.isArray(fixedGridWidths)) {
             const adjustedWidths = [...fixedGridWidths];
@@ -270,7 +287,13 @@ export class Table {
             for (const allRow of allRows) {
                 const row = allRow;
 
-                for (const [cellIndex, cellInput] of row.entries()) {
+                // Track the logical grid column of the current cell so cell-level
+                // `width`/`maxWidth` land on the column they actually occupy rather
+                // than on the cell's position in the row array (which drifts once an
+                // earlier cell in the row uses `colSpan > 1`).
+                let columnCursor = 0;
+
+                for (const cellInput of row) {
                     let cellOptions: Omit<GridItem, "content"> = {};
 
                     if (typeof cellInput === "object" && cellInput !== null && !Array.isArray(cellInput)) {
@@ -282,11 +305,13 @@ export class Table {
 
                     // width takes precedence - sets exact width, overriding table columnWidths
                     if (cellOptions.width !== undefined) {
-                        adjustedWidths[cellIndex] = cellOptions.width;
+                        adjustedWidths[columnCursor] = cellOptions.width;
                         // maxWidth constrains the width but doesn't override table columnWidths unless smaller than table columnWidths
-                    } else if (cellOptions.maxWidth !== undefined && adjustedWidths[cellIndex] !== undefined) {
-                        adjustedWidths[cellIndex] = Math.min(adjustedWidths[cellIndex], cellOptions.maxWidth);
+                    } else if (cellOptions.maxWidth !== undefined && adjustedWidths[columnCursor] !== undefined) {
+                        adjustedWidths[columnCursor] = Math.min(adjustedWidths[columnCursor] as number, cellOptions.maxWidth);
                     }
+
+                    columnCursor += cellOptions.colSpan ?? 1;
                 }
             }
 
