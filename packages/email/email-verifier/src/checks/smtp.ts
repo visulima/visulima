@@ -288,7 +288,17 @@ const connect = async (host: string, port: number, timeout: number): Promise<Smt
         });
     });
 
-const probeOnce = async (email: string, domain: string, mxRecord: MxRecord, options: SmtpVerificationOptions): Promise<SmtpVerificationResult> => {
+/**
+ * Internal probe result that additionally records whether a `deferred` outcome
+ * came from a pre-RCPT connection-level refusal (greeting/HELO/MAIL FROM). Such
+ * a refusal is about this host, not the mailbox, so `probeRecords` keeps trying
+ * lower-priority MX hosts instead of accepting it as the final answer.
+ */
+interface ProbeResult extends SmtpVerificationResult {
+    connectionLevel?: boolean;
+}
+
+const probeOnce = async (email: string, domain: string, mxRecord: MxRecord, options: SmtpVerificationOptions): Promise<ProbeResult> => {
     const { catchAllProbes = 1, port = 25, timeout = 5000 } = options;
     const heloHost = options.heloHost ?? domain;
     const fromEmail = options.fromEmail ?? `verify@${heloHost}`;
@@ -304,7 +314,7 @@ const probeOnce = async (email: string, domain: string, mxRecord: MxRecord, opti
             // A non-220 greeting (e.g. 554 IP-blocked, 421 tarpit) is a
             // connection-level refusal, never a verdict on the mailbox — surface
             // it as inconclusive rather than letting a 5xx read as undeliverable.
-            return { deferred: true, error: `Unexpected greeting: ${greeting.text}`, valid: false };
+            return { connectionLevel: true, deferred: true, error: `Unexpected greeting: ${greeting.text}`, valid: false };
         }
 
         let ehlo = await connection.command(`EHLO ${heloHost}`);
@@ -315,7 +325,7 @@ const probeOnce = async (email: string, domain: string, mxRecord: MxRecord, opti
             if (ehlo.code !== 250) {
                 // HELO/EHLO refusal is a connection-level policy decision, not a
                 // mailbox verdict — inconclusive.
-                return { deferred: true, error: `HELO rejected: ${ehlo.text}`, valid: false };
+                return { connectionLevel: true, deferred: true, error: `HELO rejected: ${ehlo.text}`, valid: false };
             }
         }
 
@@ -324,7 +334,7 @@ const probeOnce = async (email: string, domain: string, mxRecord: MxRecord, opti
         if (mailFrom.code !== 250) {
             // A rejected sender is a policy decision about us, not about the
             // recipient mailbox — inconclusive.
-            return { deferred: true, error: `MAIL FROM rejected: ${mailFrom.text}`, valid: false };
+            return { connectionLevel: true, deferred: true, error: `MAIL FROM rejected: ${mailFrom.text}`, valid: false };
         }
 
         const rcptReply = await connection.command(`RCPT TO:<${email}>`);
@@ -369,14 +379,34 @@ const probeOnce = async (email: string, domain: string, mxRecord: MxRecord, opti
  */
 const probeRecords = async (address: string, domain: string, records: MxRecord[], options: SmtpVerificationOptions): Promise<SmtpVerificationResult> => {
     let lastError = "SMTP verification did not complete";
+    let connectionRefusal: ProbeResult | undefined;
 
     for (const record of records) {
+        let result: ProbeResult;
+
         try {
             // eslint-disable-next-line no-await-in-loop
-            return await probeOnce(address, domain, record, options);
+            result = await probeOnce(address, domain, record, options);
         } catch (error) {
             lastError = error instanceof Error ? error.message : String(error);
+            continue;
         }
+
+        // A pre-RCPT connection-level refusal (blocked greeting/HELO/MAIL FROM)
+        // is a verdict about this host, not the mailbox — remember it as a
+        // fallback and try the next MX, which may answer.
+        if (result.connectionLevel) {
+            connectionRefusal = result;
+            continue;
+        }
+
+        return result;
+    }
+
+    if (connectionRefusal) {
+        const { connectionLevel, ...rest } = connectionRefusal;
+
+        return rest;
     }
 
     return { deferred: true, error: lastError, valid: false };
@@ -424,6 +454,13 @@ const findCommandInjection = (options: SmtpVerificationOptions): SmtpVerificatio
  * }
  * ```
  */
+// In-flight probes keyed by cache key. Concurrent verifications of the same
+// mailbox (e.g. a list with repeated addresses driven by Promise.all) share the
+// first caller's socket dialogue instead of each opening their own — which also
+// reduces the chance the remote MTA rate-limits or greylists the prober. Cleared
+// in `finally` before the definitive result is cached.
+const inflight = new Map<string, Promise<SmtpVerificationResult>>();
+
 const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}): Promise<SmtpVerificationResult> => {
     const parts = splitAddress(email);
 
@@ -465,42 +502,58 @@ const verifySmtp = async (email: string, options: SmtpVerificationOptions = {}):
         }
     }
 
-    let records = options.mxRecords;
+    const existing = inflight.get(cacheKey);
 
-    if (!records || records.length === 0) {
-        const mxCheck = await checkMxRecords(domain, { cache: options.cache, fallbackToAddress: false });
+    if (existing) {
+        return existing;
+    }
 
-        if (!mxCheck.valid || !mxCheck.records || mxCheck.records.length === 0) {
-            return { error: mxCheck.error ?? "No MX records found", mxRecords: mxCheck.records, valid: false };
+    const pending = (async (): Promise<SmtpVerificationResult> => {
+        let records = options.mxRecords;
+
+        if (!records || records.length === 0) {
+            const mxCheck = await checkMxRecords(domain, { cache: options.cache, fallbackToAddress: false });
+
+            if (!mxCheck.valid || !mxCheck.records || mxCheck.records.length === 0) {
+                return { error: mxCheck.error ?? "No MX records found", mxRecords: mxCheck.records, valid: false };
+            }
+
+            records = mxCheck.records;
         }
 
-        records = mxCheck.records;
-    }
+        let result: SmtpVerificationResult = { error: "SMTP verification did not complete", valid: false };
 
-    let result: SmtpVerificationResult = { error: "SMTP verification did not complete", valid: false };
+        for (let attempt = 0; attempt <= retries; attempt += 1) {
+            // eslint-disable-next-line no-await-in-loop
+            result = await probeRecords(parts.address, domain, records, options);
 
-    for (let attempt = 0; attempt <= retries; attempt += 1) {
-        // eslint-disable-next-line no-await-in-loop
-        result = await probeRecords(parts.address, domain, records, options);
+            if (!result.deferred || attempt === retries) {
+                break;
+            }
 
-        if (!result.deferred || attempt === retries) {
-            break;
+            // eslint-disable-next-line no-await-in-loop
+            await wait(retryDelay);
         }
 
-        // eslint-disable-next-line no-await-in-loop
-        await wait(retryDelay);
+        result = { ...result, mxRecords: records };
+
+        // Only cache definitive verdicts. A `deferred` result (greylisting, 4xx,
+        // timeout, connection-level refusal) is transient and inconclusive, so
+        // caching it for the full TTL would pin a wrong/stale answer.
+        if (options.smtpCache && !result.deferred) {
+            await options.smtpCache.set(cacheKey, result, ttl);
+        }
+
+        return result;
+    })();
+
+    inflight.set(cacheKey, pending);
+
+    try {
+        return await pending;
+    } finally {
+        inflight.delete(cacheKey);
     }
-
-    result = { ...result, mxRecords: records };
-
-    // Only cache definitive verdicts. A `deferred` result (greylisting, 4xx,
-    // timeout, connection-level refusal) is transient and inconclusive, so
-    // caching it for the full TTL would pin a wrong/stale answer.
-    if (options.smtpCache && !result.deferred) {
-        await options.smtpCache.set(cacheKey, result, ttl);
-    }
-
-    return result;
 };
 
 export type { SmtpVerificationOptions, SmtpVerificationResult };
