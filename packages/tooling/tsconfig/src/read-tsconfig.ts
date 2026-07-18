@@ -587,15 +587,6 @@ const tsCompatibleWrapper = (config: TsConfigJsonResolved, options: Options | un
             config.compilerOptions.alwaysStrict = config.compilerOptions.alwaysStrict ?? true;
         }
 
-        if (
-            config.compilerOptions.useDefineForClassFields === undefined
-            && config.compilerOptions.target
-            && targetImpliesUseDefineForClassFields(config.compilerOptions.target)
-        ) {
-            // eslint-disable-next-line no-param-reassign
-            config.compilerOptions.useDefineForClassFields = true;
-        }
-
         if (config.compilerOptions.strict && config.compilerOptions.useUnknownInCatchVariables === undefined) {
             // eslint-disable-next-line no-param-reassign
             config.compilerOptions.useUnknownInCatchVariables = true;
