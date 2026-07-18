@@ -9,6 +9,13 @@ import compressData from "./utils/compression";
 import LogSizeError from "./utils/log-size-error";
 import sendWithRetry from "./utils/retry";
 
+/** Reused across all reporter instances so measuring a payload never allocates a new encoder. */
+const sharedTextEncoder = typeof TextEncoder === "undefined" ? undefined : new TextEncoder();
+
+/** Measures the UTF-8 byte length of a payload without allocating a fresh encoder per call. */
+const byteLengthOf = (payload: string, edgeCompat: boolean): number =>
+    edgeCompat || sharedTextEncoder === undefined ? Buffer.byteLength(payload, "utf8") : sharedTextEncoder.encode(payload).length;
+
 /**
  * Configuration options for the HTTP reporter.
  */
@@ -224,6 +231,9 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
     // Batch management
     protected batchQueue: string[] = [];
 
+    /** Per-entry UTF-8 byte sizes, kept in lockstep with {@link batchQueue}, so the tracked queue size never re-encodes payloads. */
+    protected batchSizeQueue: number[] = [];
+
     protected batchTimeout?: ReturnType<typeof setTimeout>;
 
     protected isProcessingBatch = false;
@@ -363,8 +373,7 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
             }
 
             // Check log entry size
-            const logEntrySize
-                = this.edgeCompat || typeof TextEncoder === "undefined" ? Buffer.byteLength(payload, "utf8") : new TextEncoder().encode(payload).length;
+            const logEntrySize = byteLengthOf(payload, this.edgeCompat);
 
             if (logEntrySize > this.maxLogSize) {
                 const error = new LogSizeError(
@@ -413,12 +422,16 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
         }
 
         this.batchQueue.push(payload);
+        this.batchSizeQueue.push(logEntrySize);
         this.currentBatchSize += logEntrySize + this.batchSendDelimiter.length;
 
         // Enforce the queue cap (drop-oldest) so a sustained endpoint outage cannot grow
         // memory without bound while retries back off.
         if (this.batchQueue.length > this.maxQueueSize) {
-            const dropped = this.batchQueue.splice(0, this.batchQueue.length - this.maxQueueSize);
+            const dropCount = this.batchQueue.length - this.maxQueueSize;
+            const dropped = this.batchQueue.splice(0, dropCount);
+
+            this.batchSizeQueue.splice(0, dropCount);
 
             // Recompute the tracked size for the trimmed queue.
             this.currentBatchSize = this.#computeQueueSize();
@@ -448,12 +461,8 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
     #computeQueueSize(): number {
         let size = 0;
 
-        for (let i = 0; i < this.batchQueue.length; i += 1) {
-            const payload = this.batchQueue[i];
-            const payloadSize
-                = this.edgeCompat || typeof TextEncoder === "undefined" ? Buffer.byteLength(payload, "utf8") : new TextEncoder().encode(payload).length;
-
-            size += payloadSize + (i < this.batchQueue.length - 1 ? this.batchSendDelimiter.length : 0);
+        for (let i = 0; i < this.batchSizeQueue.length; i += 1) {
+            size += this.batchSizeQueue[i] + (i < this.batchSizeQueue.length - 1 ? this.batchSendDelimiter.length : 0);
         }
 
         return size;
@@ -477,6 +486,8 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
 
         // Get the current batch
         const batch = this.batchQueue.splice(0, this.batchSize);
+
+        this.batchSizeQueue.splice(0, this.batchSize);
 
         // Recalculate batch size for remaining items in queue
         this.currentBatchSize = this.#computeQueueSize();

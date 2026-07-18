@@ -56,7 +56,10 @@ const patternToRegex = (pattern: string): RegExp => {
                     break;
                 }
                 default: {
-                    regex += char;
+                    // Escape regex metacharacters so literal path segments containing
+                    // `+`, `(`, `|`, `$`, ... match literally instead of being interpreted
+                    // as regex syntax (or throwing `SyntaxError` from `new RegExp`).
+                    regex += (char as string).replace(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
                     index += 1;
                 }
             }
@@ -68,10 +71,24 @@ const patternToRegex = (pattern: string): RegExp => {
     return new RegExp(regex);
 };
 
+/** Memoizes compiled patterns so the same RegExp is not rebuilt on every request. */
+const patternCache = new Map<string, RegExp>();
+
+const getPatternRegex = (pattern: string): RegExp => {
+    let regex = patternCache.get(pattern);
+
+    if (regex === undefined) {
+        regex = patternToRegex(pattern);
+        patternCache.set(pattern, regex);
+    }
+
+    return regex;
+};
+
 /**
  * Check if a path matches a glob pattern.
  */
-export const matchesPattern = (path: string, pattern: string): boolean => patternToRegex(pattern).test(path);
+export const matchesPattern = (path: string, pattern: string): boolean => getPatternRegex(pattern).test(path);
 
 /**
  * Route configuration for a specific path pattern.
