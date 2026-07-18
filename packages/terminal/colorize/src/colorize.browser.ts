@@ -39,15 +39,17 @@ const createStyle = (
             cssObject[key] ??= propertiesCssObject[key] as string;
         }
 
-        // eslint-disable-next-line unicorn/prefer-string-replace-all
-        cssStack = `${JSON.stringify(cssObject).replace(/["{}]/g, "").replace(/,/g, ";")};`;
+        cssStack = Object.entries(cssObject)
+            .map(([key, value]) => `${key}:${value};`)
+            .join("");
     }
 
     const style = (
         input: ArrayLike<string> | ReadonlyArray<string> | number | string | { raw: ArrayLike<string> | ReadonlyArray<string> },
         ...values: string[]
     ): string[] => {
-        if (!input) {
+        // eslint-disable-next-line unicorn/no-null -- let 0 through while still bailing on null/undefined/empty string
+        if (input === undefined || input === null || input === "") {
             return [];
         }
 
