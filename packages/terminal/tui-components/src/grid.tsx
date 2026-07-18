@@ -45,9 +45,11 @@ export default function Grid({ children, columnGap = 1, columns = 2, columnWidth
     // eslint-disable-next-line react-x/no-children-to-array -- intentional flatten for 2D layout
     const cells = Children.toArray(children);
     const rows: ReactNode[][] = [];
+    // Guard against columns <= 0, which would never advance the loop.
+    const columnCount = Math.max(1, columns);
 
-    for (let index = 0; index < cells.length; index += columns) {
-        rows.push(cells.slice(index, index + columns));
+    for (let index = 0; index < cells.length; index += columnCount) {
+        rows.push(cells.slice(index, index + columnCount));
     }
 
     return (

@@ -103,6 +103,25 @@ const filesFor = async (id) => {
 };
 
 /**
+ * The single source of truth for what counts as an import in a source file:
+ * both static `from "x"` and dynamic `import("x")`. Every consumer below
+ * (rewrite, private-import guard, dependency derivation) reads from this so
+ * they cannot disagree about coverage.
+ * @param {string} content Source text.
+ * @returns {{dynamic: boolean, specifier: string}[]} Every imported specifier.
+ */
+const collectSpecifiers = (content) => {
+    const out = [];
+
+    // Two named groups so we know which form matched: `from "x"` vs `import("x")`.
+    for (const match of content.matchAll(/(?:from\s+|(?<dyn>import\s*\(\s*))["']([^"']+)["']/g)) {
+        out.push({ dynamic: match.groups?.dyn !== undefined, specifier: match[2] });
+    }
+
+    return out;
+};
+
+/**
  * Rewrite sibling imports to the `@/components/ui/*` alias and report which
  * components were referenced, so they can be declared as registry deps.
  * @param {string} content Source text.
@@ -112,10 +131,12 @@ const filesFor = async (id) => {
  */
 const rewriteForRegistry = (content, relative, ids) => {
     const deps = new Set();
-    const fromDirectory = path.dirname(relative);
+    // Imports are always POSIX-style, so resolve them with `path.posix` — plain
+    // `path` would emit `\` separators on Windows and corrupt the alias.
+    const fromDirectory = path.posix.dirname(relative.split(path.sep).join("/"));
 
     const rewritten = content.replaceAll(/(\bfrom\s+|\bimport\s*\(\s*)["'](\.[^"']+)["']/g, (whole, prefix, specifier) => {
-        const resolved = path.normalize(path.join(fromDirectory, specifier));
+        const resolved = path.posix.normalize(path.posix.join(fromDirectory, specifier));
         const target = resolved.split("/")[0];
 
         // Within the same component directory (e.g. scroll/scroll-bar importing
@@ -147,9 +168,7 @@ const rewriteForRegistry = (content, relative, ids) => {
 const findPrivateImports = (content, filePath) => {
     const problems = [];
 
-    for (const match of content.matchAll(/(?:from|import)\s*\(?\s*["']([^"']+)["']/g)) {
-        const specifier = match[1];
-
+    for (const { specifier } of collectSpecifiers(content)) {
         if (specifier.includes("@visulima/tui/dist/") || specifier.includes("@visulima/tui/src/")) {
             problems.push(`${filePath}: "${specifier}" reaches past the public export map`);
         }
@@ -209,8 +228,13 @@ const main = async () => {
         const npmDependencies = new Set(["@visulima/tui"]);
 
         for (const file of files) {
-            for (const match of file.content.matchAll(/from\s+["'](@?[a-z0-9@/.-]+)["']/g)) {
-                const specifier = match[1];
+            for (const { dynamic, specifier } of collectSpecifiers(file.content)) {
+                // Dynamic import() is how components reach optional peers (e.g.
+                // qr-code's `qrcode`); deliberately excluded from the hard
+                // `dependencies` so the shadcn CLI won't force-install them.
+                if (dynamic) {
+                    continue;
+                }
 
                 if (specifier.startsWith(".") || specifier.startsWith("@/") || specifier === "react" || specifier.startsWith("@visulima/tui/")) {
                     continue;
