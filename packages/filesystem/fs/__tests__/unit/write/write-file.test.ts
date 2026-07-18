@@ -1,5 +1,5 @@
-import { readFileSync } from "node:fs";
-import { readFile, rm } from "node:fs/promises";
+import { readFileSync, statSync } from "node:fs";
+import { readFile, rm, writeFile as nodeWriteFile } from "node:fs/promises";
 
 import { join } from "@visulima/path";
 import { temporaryDirectory } from "tempy";
@@ -277,6 +277,69 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
 
         // Just verify file was created and content is right
         expect(readFileSync(path, "utf8")).toBe("x");
+    });
+
+    // eslint-disable-next-line vitest/no-conditional-in-test
+    it.skipIf(process.platform === "win32")("should use the same default permissions as fs.writeFile (no world-writable chmod)", async () => {
+        expect.assertions(2);
+
+        const referencePath = join(distribution, "reference.txt");
+
+        await nodeWriteFile(referencePath, "x");
+
+        const referenceMode = statSync(referencePath).mode & 0o777;
+
+        const path = join(distribution, "default-mode.txt");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await writeFile(path, "x");
+        } else {
+            writeFileSync(path, "x");
+        }
+
+        const mode = statSync(path).mode & 0o777;
+
+        // Default writes must mirror Node's umask-filtered mode instead of an
+        // unconditional world-writable 0o666.
+        expect(mode).toBe(referenceMode);
+        expect(mode & 0o022).toBe(referenceMode & 0o022);
+    });
+
+    it("should append to the existing content when flag is 'a'", async () => {
+        expect.assertions(1);
+
+        const path = join(distribution, "append.txt");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await writeFile(path, "Hello");
+            await writeFile(path, " World", { flag: "a" });
+        } else {
+            writeFileSync(path, "Hello");
+            writeFileSync(path, " World", { flag: "a" });
+        }
+
+        expect(readFileSync(path, "utf8")).toBe("Hello World");
+    });
+
+    it("should throw when an exclusive flag is used and the file already exists", async () => {
+        expect.assertions(1);
+
+        const path = join(distribution, "exclusive.txt");
+
+        // eslint-disable-next-line vitest/no-conditional-in-test
+        if (name === "writeFile") {
+            await writeFile(path, "first");
+
+            // eslint-disable-next-line vitest/no-conditional-expect
+            await expect(writeFile(path, "second", { flag: "wx" })).rejects.toThrow("file already exists");
+        } else {
+            writeFileSync(path, "first");
+
+            // eslint-disable-next-line vitest/no-conditional-expect
+            expect(() => writeFileSync(path, "second", { flag: "wx" })).toThrow("file already exists");
+        }
     });
 
     it("should honour an explicit chown option (best-effort)", async () => {

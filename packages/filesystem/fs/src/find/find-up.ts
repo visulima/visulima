@@ -92,7 +92,7 @@ const findUp = async (
 
     const statFunction = options.allowSymlinks ? stat : lstat;
 
-    while (directory && directory !== stopAt && directory !== root) {
+    while (directory) {
         // eslint-disable-next-line no-await-in-loop
         const matchers = await getMatchers(directory);
 
@@ -127,6 +127,12 @@ const findUp = async (
             } catch {
                 /* empty */
             }
+        }
+
+        // The current directory is searched before the stop condition so a match
+        // located exactly in `stopAt` or at the filesystem root is still returned.
+        if (directory === stopAt || directory === root) {
+            break;
         }
 
         directory = dirname(directory);

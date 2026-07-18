@@ -88,7 +88,7 @@ const findUpSync = (
 
     const statFunction = options.allowSymlinks ? statSync : lstatSync;
 
-    while (directory && directory !== stopAt && directory !== root) {
+    while (directory) {
         for (let fileName of getMatchers(directory)) {
             if (fileName === FIND_UP_STOP) {
                 return undefined;
@@ -119,6 +119,12 @@ const findUpSync = (
             } catch {
                 /* empty */
             }
+        }
+
+        // The current directory is searched before the stop condition so a match
+        // located exactly in `stopAt` or at the filesystem root is still returned.
+        if (directory === stopAt || directory === root) {
+            break;
         }
 
         directory = dirname(directory);

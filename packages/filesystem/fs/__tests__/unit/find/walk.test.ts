@@ -392,6 +392,29 @@ describe(walk, () => {
         }
     });
 
+    it("should report the resolved target's type on a followed file symlink", async () => {
+        expect.assertions(3);
+
+        const temporaryDirectory = resolve(fixture, "_tmp_follow_symlink_type_test");
+
+        await mkdir(temporaryDirectory, { recursive: true });
+        await writeFile(resolve(temporaryDirectory, "real-file.txt"), "hello");
+        await symlink(resolve(temporaryDirectory, "real-file.txt"), resolve(temporaryDirectory, "link-to-file.txt"));
+
+        try {
+            const entries = await getEntries(temporaryDirectory, { followSymlinks: true });
+            const resolved = entries.filter((entry) => entry.path === resolve(temporaryDirectory, "real-file.txt"));
+
+            // Both the real file and the followed symlink resolve to the same path,
+            // and every yielded entry must report the target's type, not the link's.
+            expect(resolved).toHaveLength(2);
+            expect(resolved.every((entry) => entry.isFile())).toBe(true);
+            expect(resolved.some((entry) => entry.isSymbolicLink())).toBe(false);
+        } finally {
+            await rm(temporaryDirectory, { recursive: true });
+        }
+    });
+
     it("should not loop forever on a self-referencing directory symlink when followSymlinks is true", async () => {
         expect.assertions(1);
 
