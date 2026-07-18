@@ -3,7 +3,7 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { CheckboxGroup, DataGrid, Image, Json, PathInput, TimePicker } from "../../src/index";
+import { CheckboxGroup, ColorPicker, DataGrid, DirectoryTree, Grid, Image, Json, PathInput, Sparkline, TimePicker } from "../../src/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
 
@@ -120,5 +120,59 @@ describe("review fixes", () => {
         await delay(50);
 
         expect(onChange).toHaveBeenLastCalledWith(["x", "y"]);
+    });
+
+    // Thermo-nuclear review fixes — render-only (no keystrokes) so they can't
+    // flake under load.
+
+    it("grid does not hang when columns is 0", async () => {
+        expect.assertions(1);
+
+        // A columns<=0 loop that never advances would hang here and time out.
+        const s = await setup(
+            <Grid columns={0}>
+                <Json data={1} interactive={false} />
+                <Json data={2} interactive={false} />
+            </Grid>,
+        );
+
+        unmount = s.unmount;
+
+        expect(s.getOutput()).toContain("2");
+    });
+
+    it("checkbox-group and color-picker render safely with empty collections", async () => {
+        expect.assertions(1);
+
+        const s = await setup(
+            <>
+                <CheckboxGroup options={[]} />
+                <ColorPicker palette={[]} />
+            </>,
+        );
+
+        unmount = s.unmount;
+
+        expect(s.getOutput()).toBeTypeOf("string");
+    });
+
+    it("directory-tree shows the folder glyph for a childless directory", async () => {
+        expect.assertions(1);
+
+        const s = await setup(<DirectoryTree nodes={[{ name: "empty", type: "directory" }]} />);
+
+        unmount = s.unmount;
+
+        expect(s.getOutput()).toContain("📁");
+    });
+
+    it("sparkline dither renders a visible glyph for a flat series", async () => {
+        expect.assertions(1);
+
+        const s = await setup(<Sparkline data={[5, 5, 5]} dither />);
+
+        unmount = s.unmount;
+
+        expect(s.getOutput()).toContain("░");
     });
 });
