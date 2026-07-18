@@ -788,6 +788,42 @@ describe("parseLockFile / parseLockFileSync", () => {
         expect(result.entries[0]?.name).toBe("a");
     });
 
+    it("should find and parse an npm-shrinkwrap.json as the npm type", async () => {
+        expect.assertions(2);
+
+        writeFileSync(
+            join(temporaryDirectory, "npm-shrinkwrap.json"),
+            JSON.stringify({
+                lockfileVersion: 3,
+                packages: { "node_modules/a": { version: "1.0.0" } },
+            }),
+        );
+
+        const result = await parseLockFile(temporaryDirectory);
+
+        expect(result.type).toBe("npm");
+        expect(result.entries[0]?.name).toBe("a");
+    });
+
+    it("should prefer pnpm-lock.yaml over a stale yarn.lock in the same directory", async () => {
+        expect.assertions(2);
+
+        writeFileSync(join(temporaryDirectory, "yarn.lock"), `"lodash@^4.17.21":\n  version "4.17.21"\n`);
+        writeFileSync(
+            join(temporaryDirectory, "pnpm-lock.yaml"),
+            `packages:
+
+  lodash@4.17.21:
+    resolution: {integrity: sha512-aGVsbG8=}
+`,
+        );
+
+        const result = await parseLockFile(temporaryDirectory);
+
+        expect(result.type).toBe("pnpm");
+        expect(result.path.endsWith("pnpm-lock.yaml")).toBe(true);
+    });
+
     it("should find and parse bun.lock", async () => {
         expect.assertions(2);
 
