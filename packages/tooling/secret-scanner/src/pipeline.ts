@@ -182,6 +182,8 @@ const resolveOneValidation = async (finding: Finding, context: ValidationContext
  * before `applySuppressions` (so suppressed findings are still validated —
  * baseline is a user-facing filter, not something the validator consults).
  */
+let warnedRedactWithValidate = false;
+
 const applyValidation = async (findings: Finding[], options: ScanOptions | undefined, ruleMeta: Map<string, RuleMeta>): Promise<Finding[]> => {
     if (options?.config?.validate !== true || findings.length === 0) {
         return findings;
@@ -279,7 +281,6 @@ const applyValidation = async (findings: Finding[], options: ScanOptions | undef
 };
 
 let warnedOnlyVerifiedWithoutValidate = false;
-let warnedRedactWithValidate = false;
 
 const applyOnlyVerified = (findings: Finding[], options: ScanOptions | undefined): Finding[] => {
     if (options?.config?.onlyVerified !== true) {

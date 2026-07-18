@@ -21,10 +21,6 @@ const AWS_REJECTED_ERROR_PATTERN = /InvalidClientTokenId|SignatureDoesNotMatch|A
 export const resolveAwsHosts: TransportHostResolver = () => [AWS_STS_HOST];
 
 export const validateAws: TransportValidator = async ({ extras, secret, signal }): Promise<ValidationStatus> => {
-    if (signal?.aborted) {
-        return "error";
-    }
-
     const accessKeyId = extras["AKID"];
 
     if (typeof accessKeyId !== "string" || accessKeyId.length === 0) {

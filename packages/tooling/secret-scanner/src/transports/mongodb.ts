@@ -1,6 +1,6 @@
 import type { ValidationStatus } from "../types";
 import type { TransportHostResolver, TransportValidator } from "./context";
-import { extractUri, hostFromUri, tryImport } from "./runtime";
+import { createUriHostResolver, extractUri, tryImport } from "./runtime";
 
 interface MongoModule {
     MongoClient: new (
@@ -15,23 +15,9 @@ interface MongoModule {
 
 const MONGO_REJECTED_ERROR_PATTERN = /authentication failed|unauthorized|bad auth/i;
 
-export const resolveMongoHosts: TransportHostResolver = ({ secret }) => {
-    const uri = extractUri(secret, "mongodb");
+export const resolveMongoHosts: TransportHostResolver = createUriHostResolver("mongodb");
 
-    if (!uri) {
-        return undefined;
-    }
-
-    const host = hostFromUri(uri);
-
-    return host === undefined ? undefined : [host];
-};
-
-export const validateMongoDB: TransportValidator = async ({ secret, signal }): Promise<ValidationStatus> => {
-    if (signal?.aborted) {
-        return "error";
-    }
-
+export const validateMongoDB: TransportValidator = async ({ secret }): Promise<ValidationStatus> => {
     const uri = extractUri(secret, "mongodb");
 
     if (!uri) {

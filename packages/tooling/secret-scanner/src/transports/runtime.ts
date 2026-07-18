@@ -8,7 +8,7 @@
 
 import { createRequire } from "node:module";
 
-import type { ValidatorTransport } from "./context";
+import type { TransportHostResolver, ValidatorTransport } from "./context";
 
 const runtimeRequire = createRequire(import.meta.url);
 
@@ -121,6 +121,34 @@ export const hostFromUri = (uri: string): string | undefined => {
         return undefined;
     }
 };
+
+/**
+ * Build a host resolver for a connection-string transport: extract the first
+ * URI matching one of `schemes` from the captured secret and read its host for
+ * the allowlist gate. Returns `undefined` when no scheme matches or the URI
+ * can't be parsed to a host — fail-closed when an allowlist is active.
+ */
+export const createUriHostResolver
+    = (...schemes: [string, ...string[]]): TransportHostResolver =>
+        ({ secret }) => {
+            let uri: string | undefined;
+
+            for (const scheme of schemes) {
+                uri = extractUri(secret, scheme);
+
+                if (uri) {
+                    break;
+                }
+            }
+
+            if (!uri) {
+                return undefined;
+            }
+
+            const host = hostFromUri(uri);
+
+            return host === undefined ? undefined : [host];
+        };
 
 /** Test-only: reset the warning caches so test ordering doesn't matter. */
 export const resetWarningsForTests = (): void => {

@@ -48,6 +48,7 @@ export interface ValidatorTransport {
      * no upstream spec yet).
      */
     packageName?: string;
+
     /**
      * Resolve the host(s) this transport would dial for the allowlist gate.
      * Present only on transports that open network connections; offline
