@@ -6,6 +6,9 @@ import { interpolateHsv, interpolateRgb } from "./util/interpolate";
 
 type StopValue = ColorValueHex | CssColorName | RGB | StopInput | [number, number, number];
 
+// Matches a bare 3/6-digit hex string written without the leading "#".
+const BARE_HEX_REGEX = /^[a-f\d]{3}$|^[a-f\d]{6}$/i;
+
 /** Resolve a stop's color (tuple, hex/name string, or RGB object) to an `[r, g, b]` tuple. */
 const resolveStopColor = (color: StopInput["color"]): [number, number, number] | undefined => {
     if (Array.isArray(color)) {
@@ -17,14 +20,11 @@ const resolveStopColor = (color: StopInput["color"]): [number, number, number] |
             return convertHexToRgb(color);
         }
 
-        const named = colorNames[color as CssColorName];
-
-        if (named !== undefined) {
-            return named;
+        if (Object.hasOwn(colorNames, color)) {
+            return colorNames[color as CssColorName];
         }
 
-        // Accept bare 3/6-digit hex strings written without the leading "#".
-        return /^[a-f\d]{3}$|^[a-f\d]{6}$/i.test(color) ? convertHexToRgb(color) : undefined;
+        return BARE_HEX_REGEX.test(color) ? convertHexToRgb(color) : undefined;
     }
 
     if (color && "r" in color && "g" in color && "b" in color) {
@@ -54,6 +54,7 @@ const buildPositionedStop = (
         color = resolveStopColor(stopInput.color);
 
         if (color === undefined) {
+            // eslint-disable-next-line @typescript-eslint/no-base-to-string -- surfacing the offending value in the error message
             throw new Error(`Invalid color stop "${String(stopInput.color)}"`);
         }
     }
@@ -82,6 +83,7 @@ const buildAutoStop = (stop: StopValue, index: number, length: number): StopOutp
     const color = resolveStopColor(stop as StopInput["color"]);
 
     if (color === undefined) {
+        // eslint-disable-next-line @typescript-eslint/no-base-to-string -- surfacing the offending value in the error message
         throw new Error(`Invalid color stop "${String(stop)}"`);
     }
 
