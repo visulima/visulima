@@ -6,7 +6,9 @@ import { ensureDir, ensureDirSync, findUp, findUpSync, isAccessible, isAccessibl
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { NotFoundError } from "@visulima/fs/error";
 // eslint-disable-next-line import/no-extraneous-dependencies
-import { dirname, join, normalize, sep } from "@visulima/path";
+import { dirname, join, resolve, sep } from "@visulima/path";
+// eslint-disable-next-line import/no-extraneous-dependencies
+import { toPath } from "@visulima/path/utils";
 
 /**
  * A function returned when the `thunk` option is enabled. It joins the given
@@ -108,14 +110,6 @@ type FindCacheDirectorySync = {
     (name: string, options?: Options): string | undefined;
 };
 
-const toPath = (urlOrPath: URL | string): string => {
-    if (urlOrPath instanceof URL) {
-        return new URL(urlOrPath).pathname;
-    }
-
-    return urlOrPath;
-};
-
 /**
  * Resolve the OS-level user cache directory used by the `useGlobalCacheFallback`
  * option. Honours `$XDG_CACHE_HOME` on Linux and the conventional locations on
@@ -125,7 +119,8 @@ const globalCacheDirectory = (name: string): string => {
     const home = homedir();
 
     if (platform === "win32") {
-        const base = env.LOCALAPPDATA ?? (home ? join(home, "AppData", "Local") : tmpdir());
+        const localAppData = env.LOCALAPPDATA;
+        const base = localAppData && localAppData.length > 0 ? localAppData : home ? join(home, "AppData", "Local") : tmpdir();
 
         return join(base, name, "Cache");
     }
@@ -137,7 +132,9 @@ const globalCacheDirectory = (name: string): string => {
     }
 
     // Linux and other Unix-like platforms: follow the XDG Base Directory spec.
-    const base = env.XDG_CACHE_HOME ?? (home ? join(home, ".cache") : tmpdir());
+    // Per the spec an empty $XDG_CACHE_HOME must be treated as unset.
+    const xdgCacheHome = env.XDG_CACHE_HOME;
+    const base = xdgCacheHome && xdgCacheHome.length > 0 ? xdgCacheHome : home ? join(home, ".cache") : tmpdir();
 
     return join(base, name);
 };
@@ -151,7 +148,7 @@ const commonAncestor = (paths: ReadonlyArray<URL | string>): string | undefined 
         return undefined;
     }
 
-    const segmentLists = paths.map((value) => normalize(toPath(value)).split(sep));
+    const segmentLists = paths.map((value) => resolve(toPath(value)).split(sep));
 
     let shortestLength = Number.POSITIVE_INFINITY;
 
@@ -277,7 +274,8 @@ const findCacheDirectory = async (name: string, options?: Options): Promise<Cach
         return undefined;
     }
 
-    const nodeModulesDirectory = join(dirname(rootDirectory), "node_modules");
+    const packageDirectory = dirname(rootDirectory);
+    const nodeModulesDirectory = join(packageDirectory, "node_modules");
     const cacheDirectory = join(nodeModulesDirectory, ".cache");
     const cacheNameDirectory = join(cacheDirectory, name);
 
@@ -296,7 +294,15 @@ const findCacheDirectory = async (name: string, options?: Options): Promise<Cach
 
     // If any existing segment in the chain is not writable, the cache cannot be
     // created/used — return undefined (or the global fallback when requested).
-    const unwritable = await anyExistsButUnwritable([cacheNameDirectory, cacheDirectory, nodeModulesDirectory]);
+    // When `node_modules` does not exist yet it has to be created under the
+    // package root, so an unwritable package root is just as fatal.
+    const writabilityChain = [cacheNameDirectory, cacheDirectory, nodeModulesDirectory];
+
+    if (!(await isAccessible(nodeModulesDirectory))) {
+        writabilityChain.push(packageDirectory);
+    }
+
+    const unwritable = await anyExistsButUnwritable(writabilityChain);
 
     if (unwritable) {
         if (options?.useGlobalCacheFallback) {
@@ -356,7 +362,8 @@ const findCacheDirectorySync = (name: string, options?: Options): CacheDirectory
         return undefined;
     }
 
-    const nodeModulesDirectory = join(dirname(rootDirectory), "node_modules");
+    const packageDirectory = dirname(rootDirectory);
+    const nodeModulesDirectory = join(packageDirectory, "node_modules");
     const cacheDirectory = join(nodeModulesDirectory, ".cache");
     const cacheNameDirectory = join(cacheDirectory, name);
 
@@ -369,7 +376,14 @@ const findCacheDirectorySync = (name: string, options?: Options): CacheDirectory
         return finalize(cacheNameDirectory, options?.thunk);
     }
 
-    const unwritable = existsButUnwritableSync(cacheNameDirectory) || existsButUnwritableSync(cacheDirectory) || existsButUnwritableSync(nodeModulesDirectory);
+    // See the async implementation for rationale on the package-root check.
+    const writabilityChain = [cacheNameDirectory, cacheDirectory, nodeModulesDirectory];
+
+    if (!isAccessibleSync(nodeModulesDirectory)) {
+        writabilityChain.push(packageDirectory);
+    }
+
+    const unwritable = writabilityChain.some((directory) => existsButUnwritableSync(directory));
 
     if (unwritable) {
         if (options?.useGlobalCacheFallback) {
