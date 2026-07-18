@@ -329,6 +329,13 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
 
             const data = await response.json();
 
+            // Reject null / primitive bodies up front. `typeof null === "object"`
+            // would otherwise slip past the object branch below into Object.keys(null),
+            // throwing a confusing TypeError after burning every retry.
+            if (data === null || typeof data !== "object") {
+                throw new Error("Unsupported API response format");
+            }
+
             // Handle different API response formats. Every path runs through the
             // same normalize + validate pipeline (trim/lowercase/isValidDomain)
             // as the raw-text and email-providers sources, so API-fed domains are
@@ -455,7 +462,33 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
      * @returns {string[]} The sorted, exclude-filtered domain list.
      */
     getPublishedDomains() {
-        return [...this.domains.keys()].filter((domain) => !this.excludeDomains.has(domain.toLowerCase().trim())).toSorted();
+        return [...this.domains.keys()].filter((domain) => !this.isExcluded(domain)).toSorted();
+    }
+
+    /**
+     * Reports whether a domain is excluded, applying the same parent-domain
+     * semantics the runtime uses: an entry is excluded when it, or any of its
+     * parent domains, is on the exclude list. So blacklisting `corp.example`
+     * also drops the harvested subdomain `mail.corp.example`.
+     * @param {string} domain The domain to test.
+     * @returns {boolean} True if the domain or a parent domain is excluded.
+     */
+    isExcluded(domain) {
+        const normalizedDomain = domain.toLowerCase().trim();
+
+        if (this.excludeDomains.has(normalizedDomain)) {
+            return true;
+        }
+
+        const parts = normalizedDomain.split(".");
+
+        for (let index = 1; index < parts.length; index += 1) {
+            if (this.excludeDomains.has(parts.slice(index).join("."))) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -591,6 +624,28 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
     }
 
     /**
+     * Re-adds the previously-published domains into the collection so a build
+     * with failed downloads cannot silently shrink the published list below the
+     * last good sync. Only used when a source failed: a fully successful sync is
+     * authoritative and may legitimately drop domains. Excluded domains are still
+     * filtered out later by {@link getPublishedDomains}.
+     * @returns {number} Number of previous domains re-added to the collection.
+     */
+    mergePreviousDomains() {
+        let readded = 0;
+
+        this.previousDomains.forEach((domain) => {
+            if (!this.domains.has(domain)) {
+                readded += 1;
+            }
+
+            this.addDomain(domain, "previous-sync");
+        });
+
+        return readded;
+    }
+
+    /**
      * Loads previous domain list for comparison
      */
     async loadPreviousDomains() {
@@ -716,6 +771,13 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
 
             // Process results and update stats
             this.processDownloadResults(downloadResults, stats);
+
+            // A transient network failure must not ship a shrunk list: if any
+            // source failed, fold the last good sync back in so domains unique to
+            // the failed source survive instead of vanishing from domains.json.
+            if (stats.failedDownloads > 0) {
+                this.mergePreviousDomains();
+            }
 
             // Load the exclude list if provided
             if (excludePath) {
