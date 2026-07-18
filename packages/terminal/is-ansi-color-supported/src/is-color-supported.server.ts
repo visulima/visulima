@@ -86,8 +86,10 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
     try {
         // Deno requires the permission for the access to env, use the `--allow-env` flag: deno run --allow-env ./app.js
 
+        // On Deno 2 a Node-compat `process` global coexists with `Deno`, so `proc` may resolve to
+        // `process`; read env from `Deno.env.toObject()` explicitly instead of via `proc.env`.
         // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access
-        environment = isDeno ? proc.env.toObject() : proc.env ?? {};
+        environment = isDeno ? _this.Deno.env.toObject() : proc.env ?? {};
     } catch {
         // Deno: if interactive permission is not granted, do nothing, no colors
     }
@@ -109,17 +111,18 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
     } else if (forceColorValueIsString && forceColorValue.length > 0) {
         const parsed = Number.parseInt(forceColorValue, 10);
 
-        forceColor = Number.isNaN(parsed) ? undefined : (Math.min(parsed, 3) as ColorSupportLevel);
+        forceColor = Number.isNaN(parsed) ? undefined : (Math.max(0, Math.min(parsed, 3)) as ColorSupportLevel);
     } else if (forceColorValueIsNumber) {
         // Deno's `env.toObject()` (and other runtimes) can yield a raw numeric FORCE_COLOR value.
-        forceColor = Number.isNaN(forceColorValue) ? undefined : (Math.min(forceColorValue, 3) as ColorSupportLevel);
+        forceColor = Number.isNaN(forceColorValue) ? undefined : (Math.max(0, Math.min(forceColorValue, 3)) as ColorSupportLevel);
     }
 
     if (forceColorValue !== "true" && forceColorValue !== "false" && forceColor !== undefined && forceColor < 4) {
         return forceColor;
     }
 
-    // The `--no-color` CLI flag always wins (command-line arguments have the highest priority).
+    // An explicit numeric or empty `FORCE_COLOR` has already returned above and always wins;
+    // the `--no-color` CLI flag only takes precedence over a `true`/`false` (or absent) `FORCE_COLOR`.
     // For the `NO_COLOR` env variable, `FORCE_COLOR` overrides it whenever it requests color
     // (any value other than `0`/`false`). This keeps `FORCE_COLOR=true NO_COLOR=1` consistent with
     // `FORCE_COLOR=1 NO_COLOR=1` (both enable color), matching the documented
@@ -164,7 +167,7 @@ const isColorSupportedFactory = (stdName: "err" | "out", options: CreateIsColorS
     }
 
     // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-    if ((isDeno ? _this.Deno.build.os : proc.platform) === "win32") {
+    if (isDeno ? _this.Deno.build.os === "windows" : proc.platform === "win32") {
         // Modern Windows terminals advertise themselves via env variables even when `TERM`/`COLORTERM`
         // are unset; honor those before falling back to the OS build-number heuristic.
         // - `WT_SESSION` -> Windows Terminal (truecolor)
