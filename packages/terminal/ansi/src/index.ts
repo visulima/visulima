@@ -39,7 +39,7 @@ export { clearLineAndHomeCursor, clearScreenAndHomeCursor, clearScreenFromTopLef
 export type { ClipboardSelection } from "./clipboard";
 export { clearClipboard, requestClipboard, setClipboard } from "./clipboard";
 export { APC, BEL, CSI, DCS, ESC, OSC, PM, SEP, SOS, ST } from "./constants";
-export type { CursorStyle } from "./cursor"; // Enum
+export { CursorStyle } from "./cursor"; // Enum
 export {
     CURSOR_BACKWARD_1,
     CURSOR_DOWN_1,
@@ -72,7 +72,7 @@ export {
     setCursorStyle,
 } from "./cursor";
 export { notifyWorkingDirectory, setWorkingDirectory } from "./cwd";
-export type { EraseDisplayMode, EraseLineMode } from "./erase";
+export { EraseDisplayMode, EraseLineMode } from "./erase"; // Enums
 export {
     eraseDisplay,
     eraseDown,
@@ -94,7 +94,7 @@ export type { IITerm2Payload, ITerm2FileProperties } from "./iterm2";
 export { IT2_AUTO, it2Cells, it2Percent, it2Pixels, iTerm2, ITerm2File, ITerm2FileEnd, ITerm2FilePart, ITerm2MultipartFileStart } from "./iterm2";
 export { DECKPAM, DECKPNM, keypadApplicationMode, keypadNumericMode } from "./keypad";
 export { default as kittyGraphics } from "./kitty-graphics";
-export type { AnsiMode, DecMode, Mode, ModeSetting } from "./mode";
+export type { AnsiMode, DecMode, Mode } from "./mode";
 export {
     BDSM,
     BiDirectionalSupportMode,
@@ -119,6 +119,7 @@ export {
     LineFeedNewLineMode,
     LNM,
     LocalEchoMode,
+    ModeSetting, // Enum
     OriginMode,
     reportMode,
     RequestBiDirectionalSupportMode,
@@ -252,7 +253,7 @@ export {
     setWindowTitleWithST,
 } from "./title";
 export { default as urxvtExtension } from "./urxvt";
-export type { XTermWindowOp } from "./window-ops";
+export { XTermWindowOp } from "./window-ops"; // Enum
 export {
     deiconifyWindow,
     iconifyWindow,

@@ -1,8 +1,8 @@
 /* eslint-disable no-secrets/no-secrets */
 /* eslint-disable max-classes-per-file */
-import { Buffer } from "node:buffer";
-
 import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-properties";
+
+import { encodeBase64Bytes } from "../utils/base64";
 
 /**
  * Formats the core properties part of an iTerm2 file-related sequence string.
@@ -115,7 +115,7 @@ export class ITerm2File implements IITerm2Payload {
                 throw new Error("File size exceeds maximum limit of 10MB");
             }
 
-            this.fileProps.content = Buffer.from(fileData).toString("base64");
+            this.fileProps.content = encodeBase64Bytes(fileData);
 
             this.fileProps.size ??= fileData.byteLength;
 
