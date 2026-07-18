@@ -221,7 +221,9 @@ export class Notification {
         const existing = this.#initialized.get(provider.id);
 
         if (existing) {
-            return existing;
+            await existing;
+
+            return;
         }
 
         const promise = (async () => {

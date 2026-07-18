@@ -87,7 +87,7 @@ describe(createQueueWorker, () => {
             size: vi.fn(() => 0),
         };
 
-        const worker = createQueueWorker(queue as never, notify, { onError, pollInterval: 10 });
+        const worker = createQueueWorker(queue, notify, { onError, pollInterval: 10 });
 
         worker.start();
         await vi.advanceTimersByTimeAsync(50);
@@ -122,7 +122,7 @@ describe(createQueueWorker, () => {
         const notify = { send: vi.fn().mockRejectedValue(new Error("send failed")) };
         const onError = vi.fn();
 
-        const worker = createQueueWorker(queue as never, notify as never, { backoff: () => 0, onError });
+        const worker = createQueueWorker(queue, notify as never, { backoff: () => 0, onError });
 
         await worker.drain();
 

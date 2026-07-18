@@ -17,7 +17,7 @@ interface StoredJob extends QueueJob {
  * giving durable, multi-backend persistence (Redis, filesystem, KV, ...). `unstorage` is
  * an optional peer dependency — pass a configured `Storage` instance.
  *
- * Each job is a single self-contained document keyed by `<prefix>:job:` plus the job id;
+ * Each job is a single self-contained document keyed by the configured prefix followed by `:job:` and the job id;
  * there is no shared pending index, so concurrent `enqueue`s cannot lose-update each other.
  * `reserve` scans the job documents under the prefix for the next due, unreserved job and
  * marks it reserved. Individual reads/writes are still not transactional, so two workers
