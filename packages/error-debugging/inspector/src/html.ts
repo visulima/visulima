@@ -13,17 +13,17 @@ const inspectAttribute = ([key, value]: [unknown, unknown], _: unknown, options:
     return `${options.stylize(String(key), "yellow")}=${options.stylize(`"${value as string}"`, "string")}`;
 };
 
-export const inspectNode = (node: Node, inspect: InternalInspect, options: Options): string => {
+export const inspectNode = (node: Node, _from: unknown, options: Options, inspect: InternalInspect): string => {
     switch (node.nodeType) {
         case 1: {
             // eslint-disable-next-line @typescript-eslint/no-use-before-define
             return inspectHTMLElement(node as Element, node, options, inspect);
         }
         case 3: {
-            return inspect((node as Text).data, inspect, options);
+            return inspect((node as Text).data, null, options);
         }
         default: {
-            return inspect(node, inspect, options);
+            return inspect(node, null, options);
         }
     }
 };
