@@ -34,8 +34,10 @@ import splitPath from "./utils/split-path";
 const omit = <T extends { [key in string]: unknown }, const K extends Paths<T>>(object: T, keys: ReadonlyArray<K>): OmitDeep<T, K> => {
     const splitKeys = keys.map((key) => splitPath(key as string));
 
-    // Always returns a fresh deep copy (even for an empty key list) so the
-    // result never shares structure with `object`.
+    // Plain objects and arrays are always rebuilt into a fresh copy (even for an
+    // empty key list). Non-plain values (Date, Map, Set, class instances, …) are
+    // kept by reference and are not traversed, so omit paths that descend into
+    // them are a no-op.
     return recursiveOmit(object, splitKeys) as OmitDeep<T, K>;
 };
 
