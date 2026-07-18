@@ -47,6 +47,33 @@ const STRING_VECTORS: [string, string][] = [
     ["é", "90326970ab18793af7940a006cf10cb3"],
 ];
 
+/**
+ * Seeded known-answer vectors (seed = 42) confirmed against xxhash-rust 0.8.15
+ * (`xxh3_128_with_seed`), which the native Rust addon does not expose. These
+ * lock in the seed handling per length class — in particular the 4-8 byte seed
+ * mangling and the 9-16 byte bitflip signs, which are silently unexercised by
+ * the default (seed 0) vectors above.
+ */
+const SEEDED_BYTE_VECTORS: [string, number[], string][] = [
+    ["empty", [], "16c20acd33f7af2f3c1d09e9fe249164"],
+    ["single high byte 0x80", [0x80], "be05ff5783833c51b8ada083b13528e8"],
+    ["two bytes, high middle 0xbf", [0x01, 0xbf], "982c3e20a5488d659a2ab51e50129a53"],
+    ["three bytes, low middle", [0x01, 0x7f, 0x02], "b0cc3366ae8b895b4e2edebf0cfcc595"],
+    ["three high bytes", [0xff, 0xfe, 0xfd], "d8d3ab93221c006700c50ab6343e769a"],
+    ["abc", [97, 98, 99], "4bc24859f045e0b4d8438def21bbdcc3"],
+    ["4 bytes", [0x00, 0xff, 0x80, 0x7f], "e229e719672c1aebbef6018e7aea6654"],
+    ["8 bytes", [1, 2, 3, 4, 5, 6, 7, 8], "f0c05692ff0e4cd310597bd55eed270a"],
+    ["9 bytes", [1, 2, 3, 4, 5, 6, 7, 8, 9], "f9f512894b4b395f7faed9eb94f44c43"],
+    ["16 bytes", Array.from({ length: 16 }, (_, index) => index + 1), "99bc556aa25bb5026b86c87cd7e5bdf5"],
+    ["17 bytes", Array.from({ length: 17 }, (_, index) => index + 1), "3d0e87dee24546a9e40e9f1903350afd"],
+    ["64 bytes", Array.from({ length: 64 }, (_, index) => (index * 7) & 0xff), "4855906be817b2f97b07d9cc644b0fdf"],
+    ["128 bytes", Array.from({ length: 128 }, (_, index) => (index * 13) & 0xff), "441f1dc22148140fa80d2d6c61779aee"],
+    ["129 bytes", Array.from({ length: 129 }, (_, index) => (index * 17) & 0xff), "3c5f1328787e9629c93a51cb5af6345f"],
+    ["240 bytes", Array.from({ length: 240 }, (_, index) => (index * 3) & 0xff), "ab5b2a82c85b79156e5240b01035743c"],
+    ["241 bytes", Array.from({ length: 241 }, (_, index) => (index * 5) & 0xff), "0fa95fb19ef8e461df530238daf8f6d5"],
+    ["1024 bytes", Array.from({ length: 1024 }, (_, index) => (index * 11) & 0xff), "bbc41f0c927794b196350143768fed7b"],
+];
+
 describe("xxh3Hash known-answer vectors", () => {
     it.each(BYTE_VECTORS)("matches the native addon for %s", (_name, bytes, expected) => {
         expect(xxh3Hash(Buffer.from(bytes))).toBe(expected);
@@ -62,6 +89,32 @@ describe("xxh3Hash known-answer vectors", () => {
         expect(xxh3Hash(Buffer.from([0x80]))).toBe("39f23593542c7e2b6b148c0872500941");
         expect(xxh3Hash(Buffer.from([0x01, 0xbf]))).toBe("de670d087dbb66b3ea227e78d585e0bc");
         expect(xxh3Hash("é")).toBe("90326970ab18793af7940a006cf10cb3");
+    });
+});
+
+describe("xxh3Hash seeded known-answer vectors (seed 42, xxhash-rust)", () => {
+    it.each(SEEDED_BYTE_VECTORS)("matches xxhash-rust for %s", (_name, bytes, expected) => {
+        expect(xxh3Hash(Buffer.from(bytes), 42n)).toBe(expected);
+    });
+
+    it("matches xxhash-rust for the string 'hello world'", () => {
+        expect(xxh3Hash("hello world", 42n)).toBe("5a5ecb4a698378a282c1ce3b43a636ba");
+    });
+
+    it("regression: 4-8 byte seed mangling matches the reference", () => {
+        // The reference mangles the seed (`seed ^= swap32(seed) << 32`) before
+        // computing the bitflip; omitting it diverged for non-zero seeds.
+        expect(xxh3Hash(Buffer.from([0x00, 0xff, 0x80, 0x7f]), 42n)).toBe("e229e719672c1aebbef6018e7aea6654");
+        expect(xxh3Hash(Buffer.from([1, 2, 3, 4, 5, 6, 7, 8]), 42n)).toBe("f0c05692ff0e4cd310597bd55eed270a");
+    });
+
+    it("regression: 9-16 byte bitflip signs match the reference", () => {
+        // secret[32..40] lane uses `- seed`, secret[48..56] lane uses `+ seed`;
+        // the signs were swapped, diverging for non-zero seeds.
+        expect(xxh3Hash(Buffer.from([1, 2, 3, 4, 5, 6, 7, 8, 9]), 42n)).toBe("f9f512894b4b395f7faed9eb94f44c43");
+        expect(xxh3Hash(Buffer.from(Array.from({ length: 16 }, (_, index) => index + 1)), 42n)).toBe(
+            "99bc556aa25bb5026b86c87cd7e5bdf5",
+        );
     });
 });
 
@@ -117,6 +170,34 @@ describe("xxh3Hash", () => {
 
             expect(xxh3Hash(data, 42n)).toBe(xxh3Hash(data, 42n));
         });
+
+        it("normalizes out-of-range seeds to 64 bits, consistently across length classes", () => {
+            // A seed >= 2^64 or negative is reduced mod 2^64 (BigInt.asUintN(64))
+            // at the entry point, so every length class agrees on its meaning.
+            for (const length of [0, 2, 8, 16, 64, 200, 1024]) {
+                const data = Buffer.alloc(length, 0x42);
+
+                expect(xxh3Hash(data, (1n << 64n) + 1n)).toBe(xxh3Hash(data, 1n));
+                expect(xxh3Hash(data, -1n)).toBe(xxh3Hash(data, (1n << 64n) - 1n));
+            }
+
+            // seed 2^64 collapses to seed 0 (including the long-path fast path).
+            const long = Buffer.alloc(1024, 0x42);
+
+            expect(xxh3Hash(long, 1n << 64n)).toBe(xxh3Hash(long, 0n));
+        });
+
+        it("wide/negative seeds still match the canonical reference (xxhash-rust)", () => {
+            const eight = Buffer.from([1, 2, 3, 4, 5, 6, 7, 8]);
+            const long = Buffer.from(Array.from({ length: 1024 }, (_, index) => (index * 11) & 0xff));
+
+            // seed -1 ≡ 2^64 - 1 (u64::MAX in the reference generator).
+            expect(xxh3Hash(eight, -1n)).toBe("9f12bb63e2bf4a6a4220efd931e0d2dd");
+            expect(xxh3Hash(long, -1n)).toBe("9920b68abf3499e14ca89ac9089a5608");
+            // seed 2^64 + 1 ≡ 1.
+            expect(xxh3Hash(eight, (1n << 64n) + 1n)).toBe("09b25035a669378be7a1b91bd9e8134c");
+            expect(xxh3Hash(long, (1n << 64n) + 1n)).toBe("b8f0eedd8fc475ec709c5003872ffe13");
+        });
     });
 });
 
@@ -164,6 +245,15 @@ describe("createXxh3Hasher", () => {
 
         expect(first).toBe(xxh3Hash("hello"));
         expect(second).toBe(xxh3Hash("helloworld"));
+    });
+
+    it("copies Buffer inputs so mutating them after update() does not change the digest", () => {
+        const scratch = Buffer.from("hello");
+        const hasher = createXxh3Hasher().update(scratch);
+
+        scratch.fill(0);
+
+        expect(hasher.digest()).toBe(xxh3Hash("hello"));
     });
 
     it("reset() clears accumulated chunks", () => {
