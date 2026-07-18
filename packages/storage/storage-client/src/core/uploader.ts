@@ -293,74 +293,6 @@ export class Uploader {
     }
 
     /**
-     * Aborts a single item. `suppressBatchEmit` avoids per-item batch events when
-     * the abort is driven by `abortBatch`/`abort`, which emit once at the end.
-     */
-    private abortItemInternal(id: string, suppressBatchEmit: boolean): void {
-        // Drop the item from the pending queue so `pump()` never starts it.
-        const queueIndex = this.queue.indexOf(id);
-
-        if (queueIndex !== -1) {
-            this.queue.splice(queueIndex, 1);
-        }
-
-        const xhr = this.activeUploads.get(id);
-
-        if (xhr) {
-            this.activeUploads.delete(id);
-            xhr.abort();
-        }
-
-        const item = this.items.get(id);
-
-        // Only transition items that haven't reached a terminal state.
-        if (item && item.status !== "completed" && item.status !== "error" && item.status !== "aborted") {
-            item.status = "aborted";
-            this.items.set(id, item);
-
-            // Emit abort event
-            this.emit("ITEM_ABORT", item);
-
-            // Update batch if item belongs to one
-            if (item.batchId) {
-                this.updateBatchAfterAbort(item.batchId, suppressBatchEmit);
-            }
-        }
-    }
-
-    /**
-     * Recomputes a batch's status after one of its items was aborted. The batch is
-     * only reported cancelled/errored once no sibling item is still active, so
-     * aborting one file out of many does not flip the whole batch prematurely.
-     */
-    private updateBatchAfterAbort(batchId: string, suppressEmit: boolean): void {
-        const batch = this.batches.get(batchId);
-
-        if (!batch) {
-            return;
-        }
-
-        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean);
-
-        batch.completedCount = items.filter((item) => item.status === "completed").length;
-        batch.errorCount = items.filter((item) => item.status === "error").length;
-
-        // Leave the status untouched while any sibling item is still in flight.
-        if (items.some((item) => item.status === "pending" || item.status === "uploading")) {
-            this.batches.set(batchId, batch);
-
-            return;
-        }
-
-        batch.status = batch.completedCount > 0 ? "error" : "cancelled";
-        this.batches.set(batchId, batch);
-
-        if (!suppressEmit) {
-            this.emitBatch(batch.status === "error" ? "BATCH_ERROR" : "BATCH_CANCELLED", batch);
-        }
-    }
-
-    /**
      * Aborts all uploads in a batch.
      */
     public abortBatch(batchId: string): void {
@@ -513,6 +445,74 @@ export class Uploader {
         batch.progress = 0;
         this.batches.set(batchId, batch);
         this.emitBatch("BATCH_START", batch);
+    }
+
+    /**
+     * Aborts a single item. `suppressBatchEmit` avoids per-item batch events when
+     * the abort is driven by `abortBatch`/`abort`, which emit once at the end.
+     */
+    private abortItemInternal(id: string, suppressBatchEmit: boolean): void {
+        // Drop the item from the pending queue so `pump()` never starts it.
+        const queueIndex = this.queue.indexOf(id);
+
+        if (queueIndex !== -1) {
+            this.queue.splice(queueIndex, 1);
+        }
+
+        const xhr = this.activeUploads.get(id);
+
+        if (xhr) {
+            this.activeUploads.delete(id);
+            xhr.abort();
+        }
+
+        const item = this.items.get(id);
+
+        // Only transition items that haven't reached a terminal state.
+        if (item && item.status !== "completed" && item.status !== "error" && item.status !== "aborted") {
+            item.status = "aborted";
+            this.items.set(id, item);
+
+            // Emit abort event
+            this.emit("ITEM_ABORT", item);
+
+            // Update batch if item belongs to one
+            if (item.batchId) {
+                this.updateBatchAfterAbort(item.batchId, suppressBatchEmit);
+            }
+        }
+    }
+
+    /**
+     * Recomputes a batch's status after one of its items was aborted. The batch is
+     * only reported cancelled/errored once no sibling item is still active, so
+     * aborting one file out of many does not flip the whole batch prematurely.
+     */
+    private updateBatchAfterAbort(batchId: string, suppressEmit: boolean): void {
+        const batch = this.batches.get(batchId);
+
+        if (!batch) {
+            return;
+        }
+
+        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean);
+
+        batch.completedCount = items.filter((item) => item.status === "completed").length;
+        batch.errorCount = items.filter((item) => item.status === "error").length;
+
+        // Leave the status untouched while any sibling item is still in flight.
+        if (items.some((item) => item.status === "pending" || item.status === "uploading")) {
+            this.batches.set(batchId, batch);
+
+            return;
+        }
+
+        batch.status = batch.completedCount > 0 ? "error" : "cancelled";
+        this.batches.set(batchId, batch);
+
+        if (!suppressEmit) {
+            this.emitBatch(batch.status === "error" ? "BATCH_ERROR" : "BATCH_CANCELLED", batch);
+        }
     }
 
     /**

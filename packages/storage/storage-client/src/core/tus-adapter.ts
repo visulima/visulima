@@ -827,7 +827,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     await persistUploadEntry(fingerprint, uploadUrl, file);
 
                     if (initialOffset > 0) {
-                        progressCallback?.(Math.round((initialOffset / file.size) * 100), initialOffset);
+                        progressCallback(Math.round((initialOffset / file.size) * 100), initialOffset);
                     }
                 }
 

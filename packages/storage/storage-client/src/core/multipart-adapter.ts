@@ -175,6 +175,15 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                     }
                 };
 
+                const onTimeout = (): void => {
+                    if (!resolved) {
+                        resolved = true;
+                        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- cleanup is defined later but not invoked until callback runs
+                        cleanup();
+                        reject(new Error("Upload timeout"));
+                    }
+                };
+
                 const armTimeout = (): void => {
                     if (!options.uploadTimeoutMs || options.uploadTimeoutMs <= 0) {
                         return;
@@ -184,14 +193,7 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                         clearTimeout(timeoutId);
                     }
 
-                    timeoutId = setTimeout(() => {
-                        if (!resolved) {
-                            resolved = true;
-                            // eslint-disable-next-line @typescript-eslint/no-use-before-define -- cleanup is defined later but not invoked until callback runs
-                            cleanup();
-                            reject(new Error("Upload timeout"));
-                        }
-                    }, options.uploadTimeoutMs);
+                    timeoutId = setTimeout(onTimeout, options.uploadTimeoutMs);
                 };
 
                 // Reset the inactivity timeout on every progress tick.

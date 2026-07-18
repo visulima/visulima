@@ -445,7 +445,9 @@ describe("chunked-rest-adapter resume", () => {
             // GET — final result.
             return {
                 headers: new Headers(),
-                json: async () => ({ id: "file-resume", size: 100, status: "completed" }),
+                json: async () => {
+                    return { id: "file-resume", size: 100, status: "completed" };
+                },
                 ok: true,
             } as Response;
         });
