@@ -1,4 +1,4 @@
-import { lstat, mkdir, realpath, writeFile } from "node:fs/promises";
+import { mkdir, realpath, stat, writeFile } from "node:fs/promises";
 import { dirname, extname, normalize } from "node:path";
 import { stdout } from "node:process";
 import { pathToFileURL } from "node:url";
@@ -79,6 +79,14 @@ const buildSpec = async (
         swaggerDefinition = { ...loadDefinition(definitionPath), ...swaggerDefinition };
     }
 
+    // Without a base-definition file the config must supply `swaggerDefinition`;
+    // otherwise SpecBuilder receives undefined and throws a bare TypeError.
+    if (typeof swaggerDefinition !== "object" || swaggerDefinition === null) {
+        throw new TypeError(
+            `Invalid config "${options.config ?? configName}": missing "swaggerDefinition" object. Provide it in the config or pass a base definition file via -d/--definition.`,
+        );
+    }
+
     const writeToStdout = options.output === STDOUT_OUTPUT;
 
     // The progress bar writes to stdout — suppress it when piping the spec there.
@@ -94,68 +102,73 @@ const buildSpec = async (
         );
 
     const spec = new SpecBuilder(swaggerDefinition);
-    const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...openapiConfig.exclude]);
+    const skip = new Set<RegExp | string>([...DEFAULT_EXCLUDE, ...(openapiConfig.exclude ?? [])]);
 
-    // eslint-disable-next-line unicorn/prevent-abbreviations
-    for (const dir of paths) {
-        // Check if the path is a directory
-        // eslint-disable-next-line unicorn/no-await-expression-member,no-await-in-loop
-        const isDirectory = (await lstat(dir)).isDirectory();
+    // Always restore the terminal (the progress bar hides the cursor) even when a
+    // file fails to parse or the spec fails validation.
+    try {
+        // eslint-disable-next-line unicorn/prevent-abbreviations
+        for (const dir of paths) {
+            // `stat` (unlike `lstat`) follows symlinks, so a symlinked directory is
+            // correctly detected as a directory rather than read as a file.
+            // eslint-disable-next-line unicorn/no-await-expression-member,no-await-in-loop
+            const isDirectory = (await stat(dir)).isDirectory();
 
-        // eslint-disable-next-line no-await-in-loop
-        const realDirectory = await realpath(dir);
+            // eslint-disable-next-line no-await-in-loop
+            const realDirectory = await realpath(dir);
 
-        if (!isDirectory) {
-            spec.addData(parseFileMulti(realDirectory, translators, options.verbose).map((item) => item.spec));
+            if (!isDirectory) {
+                spec.addData(parseFileMulti(realDirectory, translators, options.verbose).map((item) => item.spec));
 
-            continue;
+                continue;
+            }
+
+            // eslint-disable-next-line no-await-in-loop
+            const files: string[] = await collect(realDirectory, {
+                extensions: openapiConfig.extensions ?? [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
+                followSymlinks: openapiConfig.followSymlinks ?? false,
+                match: openapiConfig.include,
+                skip: [...skip],
+            });
+
+            if (options.verbose ?? options.veryVerbose) {
+                // eslint-disable-next-line no-console
+                console.log(`\nFound ${String(files.length)} files in ${realDirectory}`);
+            }
+
+            if (options.veryVerbose) {
+                // eslint-disable-next-line no-console
+                console.log(files);
+            }
+
+            const bar = multibar?.create(files.length, 0);
+
+            files.forEach((file) => {
+                if (options.verbose) {
+                    // eslint-disable-next-line no-console
+                    console.log(`Parsing file ${file}`);
+                }
+
+                bar?.increment(1, { filename: realDirectory });
+
+                spec.addData(parseFileMulti(file, translators, options.verbose).map((item) => item.spec));
+            });
         }
 
-        // eslint-disable-next-line no-await-in-loop
-        const files: string[] = await collect(realDirectory, {
-            extensions: openapiConfig.extensions ?? [".js", ".cjs", ".mjs", ".ts", ".tsx", ".jsx", ".yaml", ".yml"],
-            followSymlinks: openapiConfig.followSymlinks ?? false,
-            match: openapiConfig.include,
-            skip: [...skip],
-        });
-
-        if (options.verbose ?? options.veryVerbose) {
+        if (options.verbose) {
             // eslint-disable-next-line no-console
-            console.log(`\nFound ${String(files.length)} files in ${realDirectory}`);
+            console.log("Validating swagger spec");
         }
 
         if (options.veryVerbose) {
             // eslint-disable-next-line no-console
-            console.log(files);
+            console.log(JSON.stringify(spec, undefined, 2));
         }
 
-        const bar = multibar?.create(files.length, 0);
-
-        files.forEach((file) => {
-            if (options.verbose) {
-                // eslint-disable-next-line no-console
-                console.log(`Parsing file ${file}`);
-            }
-
-            bar?.increment(1, { filename: realDirectory });
-
-            spec.addData(parseFileMulti(file, translators, options.verbose).map((item) => item.spec));
-        });
+        await validate(structuredClone(spec) as unknown as Record<string, unknown>);
+    } finally {
+        multibar?.stop();
     }
-
-    if (options.verbose) {
-        // eslint-disable-next-line no-console
-        console.log("Validating swagger spec");
-    }
-
-    if (options.veryVerbose) {
-        // eslint-disable-next-line no-console
-        console.log(JSON.stringify(spec, undefined, 2));
-    }
-
-    await validate(structuredClone(spec) as unknown as Record<string, unknown>);
-
-    multibar?.stop();
 
     return spec;
 };
