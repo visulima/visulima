@@ -60,6 +60,38 @@ const isSensitiveBodyKey = (name: string, denylist: string[] | undefined): boole
     return SENSITIVE_BODY_KEY_PATTERNS.some((re) => re.test(name));
 };
 
+// Parse an application/x-www-form-urlencoded body into a record so the same sensitive-key masking that
+// protects JSON bodies (maskBodyValue/isSensitiveBodyKey) also covers the standard login-form POST shape.
+const parseFormUrlEncoded = (text: string): Record<string, string | string[]> => {
+    const result: Record<string, string | string[]> = {};
+
+    new URLSearchParams(text).forEach((value, key) => {
+        const existing = result[key];
+
+        if (existing === undefined) {
+            result[key] = value;
+        } else if (Array.isArray(existing)) {
+            existing.push(value);
+        } else {
+            result[key] = [existing, value];
+        }
+    });
+
+    return result;
+};
+
+// Mask credential-shaped `key=value` and `"key": "value"` pairs inside opaque string bodies (plain text,
+// or JSON/form payloads that could not be parsed into a record) so they do not land verbatim in the page.
+const maskSensitiveString = (input: string, maskValue: string, denylist: string[] | undefined): string =>
+    input
+        .replaceAll(/([^\s&=?#]+)=([^&\s#]*)/g, (match, key: string, value: string) =>
+            (value && isSensitiveBodyKey(key, denylist) ? `${key}=${maskValue}` : match))
+        .replaceAll(/("(?:[^"\\]|\\.)*")(\s*:\s*)"(?:[^"\\]|\\.)*"/g, (match, keyToken: string, separator: string) => {
+            const key = keyToken.slice(1, -1);
+
+            return isSensitiveBodyKey(key, denylist) ? `${keyToken}${separator}${JSON.stringify(maskValue)}` : match;
+        });
+
 const normalizeHeadersToEntries = (headers: HeadersInput): [string, HeaderValue][] => {
     if (!headers) {
         return [];
@@ -192,8 +224,13 @@ const readRequestBody = async (request: RequestLike, capBytes: number): Promise<
         if (safeGetMethod(cloned, "text")) {
             try {
                 const textMethod = safeGetMethod(cloned, "text");
+                const text = textMethod ? await textMethod() : undefined;
 
-                return textMethod ? await textMethod() : undefined;
+                if (typeof text === "string" && contentType.includes("application/x-www-form-urlencoded")) {
+                    return parseFormUrlEncoded(text);
+                }
+
+                return text;
             } catch {
                 return undefined;
             }
@@ -342,7 +379,17 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
     // Mask sensitive-looking keys in the request body so login passwords / tokens posted as JSON
     // do not land verbatim in the rendered HTML or the cURL --data flag.
     const maskBodyValue = (value: unknown, seen: WeakSet<object>): unknown => {
-        if (!maskValue || value === null || typeof value !== "object") {
+        if (!maskValue) {
+            return value;
+        }
+
+        // String bodies (form-urlencoded, plain text) never reach the object branch below, so mask any
+        // credential-shaped pairs inline; otherwise passwords/tokens would land verbatim in the page and cURL.
+        if (typeof value === "string") {
+            return maskSensitiveString(value, maskValue, headerDenylist);
+        }
+
+        if (value === null || typeof value !== "object") {
             return value;
         }
 
@@ -375,6 +422,11 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
     };
 
     const maskedRequestBody: unknown = maskBodyValue(requestBody, new WeakSet());
+
+    // Sessions routinely hold access/refresh tokens and CSRF secrets; mask them like the body so the
+    // Session panel and its clipboard JSON honour the same sanitization guarantee as headers/cookies/body.
+    const sessionObject = (request as RequestLike & { session?: Record<string, unknown> }).session;
+    const maskedSession = maskBodyValue(sessionObject, new WeakSet()) as Record<string, unknown> | undefined;
 
     const buildCurl = (): string => {
         const method = (safeGetString(request, "method") ?? "GET").toUpperCase();
@@ -751,7 +803,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
     <div class="max-w-full overflow-auto mt-2">${renderBodyContent(maskedRequestBody)}</div>
   </section>
 
-  <input type="hidden" id="clipboard-session-${uniqueId}" value="${attributeEscape(JSON.stringify((request as RequestLike & { session?: Record<string, unknown> }).session ?? {}))}">
+  <input type="hidden" id="clipboard-session-${uniqueId}" value="${attributeEscape(JSON.stringify(maskedSession ?? {}))}">
   <section id="context-session" class="mb-4 rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-1)] overflow-hidden bg-[var(--ono-surface)] border border-[var(--ono-border)]">
     <div class="px-4 py-2 flex items-center gap-2 bg-[var(--ono-surface-muted)] border-b border-[var(--ono-border)]">
       <span class="dui size-4" style="-webkit-mask-image:url('${userIcon}'); mask-image:url('${userIcon}')"></span>
@@ -760,7 +812,7 @@ const createRequestContext = async (request: RequestLike, options: ContextConten
       <a href="#context-session" class="text-xs text-[var(--ono-text-muted)]" aria-label="Anchor">#</a>
       ${copyButton({ label: "Copy JSON", targetId: `clipboard-session-${uniqueId}` }).html}
     </div>
-            <div class="max-w-full overflow-auto mt-2">${renderObjectTable((request as RequestLike & { session?: Record<string, unknown> }).session)}</div>
+            <div class="max-w-full overflow-auto mt-2">${renderObjectTable(maskedSession)}</div>
   </section>
 
   <input type="hidden" id="clipboard-cookies-${uniqueId}" value="${attributeEscape(JSON.stringify(maskedCookiesRecord))}">

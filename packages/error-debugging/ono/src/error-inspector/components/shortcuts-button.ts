@@ -3,7 +3,8 @@ import helpCircleIcon from "lucide-static/icons/help-circle.svg?data-uri&encodin
 // eslint-disable-next-line import/no-extraneous-dependencies
 import keyboardIcon from "lucide-static/icons/keyboard.svg?data-uri&encoding=css";
 
-const shortcutsModalHtml = `
+// Rendered exactly once per page (by the template) so the document holds a single `id="ono-shortcuts-modal"`.
+export const shortcutsModalHtml = `
 <div id="ono-shortcuts-modal" class="fixed inset-0 z-50 hidden backdrop-blur-xl items-center justify-center p-2" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="ono-shortcuts-title">
   <div class="bg-[var(--ono-surface)] rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-2)] max-w-md w-full max-h-[90vh] overflow-auto">
     <div class="flex items-center justify-between px-4 py-2 border-b border-[var(--ono-border)]">
@@ -55,47 +56,59 @@ const shortcutsModalHtml = `
 </div>
 `;
 
+// Single, redeclaration-safe implementation. Defined on `window` (not a top-level `const`) so multiple
+// classic <script> tags — the header bar and the sticky header both emit this script — can share the same
+// global lexical environment without throwing "Identifier 'bindShortcutsModal' has already been declared".
+// `bindShortcutsModal()` is idempotent: the first successful call binds the single modal and its keyboard
+// shortcuts, and a per-modal flag stops later calls from attaching duplicate listeners.
 const bindShortcutsModalScript = `
-const bindShortcutsModal = () => {
+window.bindShortcutsModal = window.bindShortcutsModal || function () {
     const modal = document.getElementById('ono-shortcuts-modal');
-    if (!modal) {
+    if (!modal || modal.dataset.onoShortcutsBound === 'true') {
         return;
     }
+    modal.dataset.onoShortcutsBound = 'true';
 
-    const openButtons = document.querySelectorAll('[data-ono-action="open-shortcuts-modal"]');
-    const closeButtons = document.querySelectorAll('[data-ono-action="close-shortcuts-modal"]');
+    let originalBodyOverflow = '';
 
     const showModal = () => {
+        originalBodyOverflow = document.body ? (document.body.style.overflow || '') : '';
+        if (document.body) {
+            document.body.style.overflow = 'hidden';
+        }
         modal.classList.remove('hidden');
+        modal.classList.add('flex');
         modal.setAttribute('aria-hidden', 'false');
         modal.focus();
     };
 
     const hideModal = () => {
         modal.classList.add('hidden');
+        modal.classList.remove('flex');
+        if (document.body) {
+            document.body.style.overflow = originalBodyOverflow;
+        }
         modal.setAttribute('aria-hidden', 'true');
     };
 
-    // Bind open buttons
-    openButtons.forEach(button => {
+    document.querySelectorAll('[data-ono-action="open-shortcuts-modal"]').forEach(button => {
         button.addEventListener('click', showModal);
     });
 
-    // Bind close buttons
-    closeButtons.forEach(button => {
+    document.querySelectorAll('[data-ono-action="close-shortcuts-modal"]').forEach(button => {
         button.addEventListener('click', hideModal);
     });
 
-    // Handle Escape key
-    const handleEscape = (e) => {
-        if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
+    document.addEventListener('keydown', (e) => {
+        if (e.key === '?' || (e.key === '/' && e.shiftKey)) {
+            e.preventDefault();
+            showModal();
+        } else if (e.key === 'Escape' && !modal.classList.contains('hidden')) {
             hideModal();
         }
-    };
+    });
 
-    document.addEventListener('keydown', handleEscape);
-
-    // Click outside modal to close
+    // Click outside the dialog card to close
     modal.addEventListener('click', (e) => {
         if (e.target === modal) {
             hideModal();
@@ -112,10 +125,8 @@ const shortcutsButton = (): { html: string; script: string } => {
   </button>
 `;
 
-    const html = shortcutsModalHtml + buttonHtml;
-
     return {
-        html,
+        html: buttonHtml,
         script: bindShortcutsModalScript.trim(),
     };
 };

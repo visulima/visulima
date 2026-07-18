@@ -92,7 +92,8 @@ export const sanitizeUrlAttribute = (value: unknown): string => {
         // Check if URL starts with allowed prefixes
         const isAllowed = ALLOWED_URL_PREFIXES.some((prefix) => lowerUrl.startsWith(prefix));
 
-        return isAllowed ? sanitized : FALLBACK_URL;
+        // Escape quotes so a value like `/x" onfocus="…` cannot break out of the surrounding attribute
+        return isAllowed ? sanitized.replaceAll("\"", "&quot;").replaceAll("'", "&#39;") : FALLBACK_URL;
     } catch {
         // Return safe fallback if sanitization fails
         return FALLBACK_URL;
