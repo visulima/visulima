@@ -469,6 +469,31 @@ describe(createRuntime, () => {
         expect(goodResult?.status).toBe("completed");
     });
 
+    it("drops an orphaned wake-index entry so it stops resurfacing on every sweep", async () => {
+        expect.assertions(4);
+
+        const storage = createStorage();
+        const store = new UnstorageStore(storage);
+        const now = Date.now();
+
+        // A phantom wake-index entry: the index marks the run as due, but no run document exists
+        // (e.g. a crash between save()'s index write and its run write).
+        await storage.setItem("wf:due-index", { "ghost:1": now - 1000 });
+
+        const runtime = createRuntime({ store });
+
+        const firstSweep = await runtime.sweep(now);
+
+        expect(firstSweep).toHaveLength(1);
+        expect(firstSweep[0]?.runId).toBe("ghost:1");
+        expect(firstSweep[0]?.status).toBe("failed");
+
+        // The cleanup removed the phantom entry, so a second sweep no longer surfaces it.
+        const secondSweep = await runtime.sweep(now);
+
+        expect(secondSweep).toHaveLength(0);
+    });
+
     it("still resolves an activation when the store's release rejects", async () => {
         expect.assertions(2);
 
@@ -526,7 +551,7 @@ describe(createRuntime, () => {
 
         const when = new Date("2020-05-01T00:00:00.000Z");
         const makeWorkflow = (): ReturnType<typeof defineWorkflow<unknown, unknown>> =>
-            defineWorkflow<unknown, unknown>({
+            defineWorkflow({
                 id: "date-step",
                 run: (context) => context.step("when", () => when),
             });

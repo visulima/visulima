@@ -27,8 +27,13 @@ describe("UnstorageStore save ordering", () => {
         const wrapped: UnstorageLike = {
             getItem: (key) => storage.getItem(key),
             removeItem: (key) => storage.removeItem(key),
-            setItem: (key, value) =>
-                failIndexWrite && key === "wf:due-index" ? Promise.reject(new Error("crash")) : storage.setItem(key, value),
+            setItem: (key, value) => {
+                if (failIndexWrite && key === "wf:due-index") {
+                    return Promise.reject(new Error("crash"));
+                }
+
+                return storage.setItem(key, value);
+            },
         };
         const store = new UnstorageStore(wrapped);
 

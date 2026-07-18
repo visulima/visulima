@@ -38,6 +38,7 @@ const reuseError = (id: string, was: StepRecord["type"], now: StepRecord["type"]
 const toJsonSafe = (value: unknown): unknown => {
     const serialized = JSON.stringify(value);
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- JSON.stringify is typed to return string, but returns undefined for undefined/function/symbol inputs
     return serialized === undefined ? undefined : JSON.parse(serialized);
 };
 

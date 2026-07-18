@@ -37,7 +37,7 @@ describe("SqlStore constructor", () => {
     it("rejects a table name that is not a safe SQL identifier", () => {
         expect.assertions(3);
 
-        expect(() => new SqlStore(noopClient, { table: 'runs"; DROP TABLE users; --' })).toThrow("valid SQL identifier");
+        expect(() => new SqlStore(noopClient, { table: "runs\"; DROP TABLE users; --" })).toThrow("valid SQL identifier");
         expect(() => new SqlStore(noopClient, { table: "with space" })).toThrow("valid SQL identifier");
         expect(() => new SqlStore(noopClient, { table: "back`tick" })).toThrow("valid SQL identifier");
     });

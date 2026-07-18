@@ -20,7 +20,13 @@ describe("RedisStore save ordering", () => {
             del: (...keys) => redis.del(...keys),
             eval: (script, numberOfKeys, ...arguments_) => redis.eval(script, numberOfKeys, ...arguments_),
             get: (key) => redis.get(key),
-            set: (key, value, ...options) => (failSet ? Promise.reject(new Error("crash")) : redis.set(key, value, ...options)),
+            set: (key, value, ...options) => {
+                if (failSet) {
+                    return Promise.reject(new Error("crash"));
+                }
+
+                return redis.set(key, value, ...options);
+            },
             zadd: (key, score, member) => redis.zadd(key, score, member),
             zrangebyscore: (key, min, max, ...arguments_) => redis.zrangebyscore(key, min, max, ...arguments_),
             zrem: (key, ...members) => redis.zrem(key, ...members),
