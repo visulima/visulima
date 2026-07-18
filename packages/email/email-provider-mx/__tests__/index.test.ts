@@ -160,6 +160,8 @@ describe("MX_PROVIDERS", () => {
 
         const mutable = MX_PROVIDERS as { push: (value: unknown) => void };
 
-        expect(() => mutable.push({})).toThrow(TypeError);
+        expect(() => {
+            mutable.push({});
+        }).toThrow(TypeError);
     });
 });
