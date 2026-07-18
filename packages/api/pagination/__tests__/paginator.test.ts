@@ -364,4 +364,40 @@ describe("paginator", () => {
 
         expect(paginator.getUrl(2)).toBe("/?q=a+b%26c&page=2");
     });
+
+    it("should append array query string values as repeated keys", () => {
+        expect.assertions(1);
+
+        const paginator = paginate(1, 10, 100, []).queryString({ tag: ["a", "b"] });
+
+        expect(paginator.getUrl(2)).toBe("/?tag=a&tag=b&page=2");
+    });
+
+    it("should build a coherent window when currentPage exceeds lastPage", () => {
+        expect.assertions(1);
+
+        const paginator = paginate(50, 10, 100, []);
+
+        expect(paginator.getUrlsForWindow({ eachSide: 2 })).toStrictEqual([
+            { isActive: false, page: 1, url: "/?page=1" },
+            { isActive: false, page: null, url: null },
+            { isActive: false, page: 8, url: "/?page=8" },
+            { isActive: false, page: 9, url: "/?page=9" },
+            { isActive: false, page: 10, url: "/?page=10" },
+        ]);
+    });
+
+    it("should build a coherent window when currentPage equals lastPage", () => {
+        expect.assertions(1);
+
+        const paginator = paginate(10, 10, 100, []);
+
+        expect(paginator.getUrlsForWindow({ eachSide: 2 })).toStrictEqual([
+            { isActive: false, page: 1, url: "/?page=1" },
+            { isActive: false, page: null, url: null },
+            { isActive: false, page: 8, url: "/?page=8" },
+            { isActive: false, page: 9, url: "/?page=9" },
+            { isActive: true, page: 10, url: "/?page=10" },
+        ]);
+    });
 });
