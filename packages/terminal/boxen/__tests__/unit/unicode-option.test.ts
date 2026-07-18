@@ -53,6 +53,7 @@ describe("wide-character and ANSI content", () => {
         const box = boxen(`${red("error")} ${green("ok")}`, { padding: 1 });
 
         expectUniformWidth(box);
+
         // The original styling codes survive untouched.
         expect(box).toContain("[31m");
     });
