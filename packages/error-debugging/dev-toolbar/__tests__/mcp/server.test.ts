@@ -1,4 +1,5 @@
 // @vitest-environment node
+/* eslint-disable max-classes-per-file -- each mock module factory defines its own stub class */
 import fs from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
@@ -16,25 +17,30 @@ interface ToolResult {
 
 type ToolHandler = (args: Record<string, unknown>) => Promise<ToolResult>;
 
-const { registeredTools } = vi.hoisted(() => ({ registeredTools: new Map<string, ToolHandler>() }));
+const { registeredTools } = vi.hoisted(() => { return { registeredTools: new Map<string, ToolHandler>() }; });
 
-vi.mock("@modelcontextprotocol/sdk/server/mcp.js", () => ({
-    McpServer: class {
+vi.mock(import("@modelcontextprotocol/sdk/server/mcp.js"), () => {
+    return {
+        McpServer: class {
         // eslint-disable-next-line class-methods-use-this
-        public tool(_name: string, _description: string, _schema: unknown, handler: ToolHandler): void {
-            registeredTools.set(_name, handler);
-        }
+            public tool(_name: string, _description: string, _schema: unknown, handler: ToolHandler): void {
+                registeredTools.set(_name, handler);
+            }
 
-        // eslint-disable-next-line class-methods-use-this
-        public async connect(): Promise<void> {}
-    },
-}));
+            // eslint-disable-next-line class-methods-use-this
+            public async connect(): Promise<void> {}
+        },
+    };
+});
 
-vi.mock("@modelcontextprotocol/sdk/server/stdio.js", () => ({
-    StdioServerTransport: class {},
-}));
+vi.mock(import("@modelcontextprotocol/sdk/server/stdio.js"), () => {
+    return {
+        // eslint-disable-next-line @typescript-eslint/no-extraneous-class -- transport stub is instantiated via `new` by the MCP server
+        StdioServerTransport: class {},
+    };
+});
 
-vi.mock("zod", () => {
+vi.mock(import("zod"), () => {
     // Minimal fluent stub — the schema is never exercised by the captured handlers.
     const chain: Record<string, unknown> = {};
 
@@ -56,8 +62,8 @@ const getTool = (name: string): ToolHandler => {
 
 const parse = (result: ToolResult): Record<string, unknown> => JSON.parse(result.content[0]!.text!) as Record<string, unknown>;
 
-const makeAnnotation = (overrides: Partial<Annotation>): Annotation =>
-    ({
+const makeAnnotation = (overrides: Partial<Annotation>): Annotation => {
+    return {
         comment: "test",
         createdAt: "2024-01-01",
         elementTag: "div",
@@ -70,7 +76,8 @@ const makeAnnotation = (overrides: Partial<Annotation>): Annotation =>
         x: 0,
         y: 0,
         ...overrides,
-    }) as Annotation;
+    };
+};
 
 describe("mcp/server", () => {
     let tmpDir: string;
@@ -170,12 +177,14 @@ describe("mcp/server", () => {
             await writeAnnotations(tmpDir, [
                 makeAnnotation({
                     id: "p1",
-                    thread: Array.from({ length: MAX_THREAD_MESSAGES }, (_, index) => ({
-                        content: "m",
-                        id: String(index),
-                        role: "agent",
-                        timestamp: "2024-01-01",
-                    })),
+                    thread: Array.from({ length: MAX_THREAD_MESSAGES }, (_, index) => {
+                        return {
+                            content: "m",
+                            id: String(index),
+                            role: "agent",
+                            timestamp: "2024-01-01",
+                        };
+                    }),
                 }),
             ]);
 
