@@ -106,13 +106,13 @@ export const format = (fmt: Record<string, any> | string, arguments_: any[] = []
                     // Inspired by Deno's handling of '%c'.
                     // eslint-disable-next-line no-secrets/no-secrets
                     // https://github.com/denoland/deno/blob/ece2a3de5b19588160634452638aa656218853c5/ext/console/01_console.js#L3115
+                    if (lastPosition < index) {
+                        result += fmt.slice(lastPosition, index);
+                    }
+
                     if (colorsEnabled) {
                         // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
                         const css = parseCss(arguments_[a as keyof typeof arguments_]);
-
-                        if (lastPosition < index) {
-                            result += fmt.slice(lastPosition, index);
-                        }
 
                         const ansi = cssToAnsi(css, previousCss);
 
@@ -339,9 +339,11 @@ export const build = (
     }
 
     // `build` exists to be the pre-optimized hot path for loggers, so avoid allocating a new
-    // options object on every call: reuse one frozen `{ formatters }` when the caller passes no
-    // per-call `formatOptions`, and only spread when they actually do.
-    const baseOptions: Options = Object.freeze({ formatters });
+    // options object on every call: reuse one frozen base when the caller passes no per-call
+    // `formatOptions`, and only spread when they actually do. Build-time options other than
+    // `formatters` (e.g. `stringify`, `colors`, `appendExtraArguments`) are carried over.
+    const { formatters: _formatters, ...rest } = options;
+    const baseOptions: Options = Object.freeze({ ...rest, formatters });
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return (f: NonNullable<Record<string, any> | string>, arguments_: any[] = [], formatOptions?: Omit<Options, "formatters">) => {
@@ -349,7 +351,7 @@ export const build = (
             return format(f, arguments_, baseOptions);
         }
 
-        return format(f, arguments_, { ...formatOptions, formatters });
+        return format(f, arguments_, { ...rest, ...formatOptions, formatters });
     };
 };
 
