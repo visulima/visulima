@@ -31,6 +31,24 @@ const createPgliteStore = async (): Promise<{ close: () => Promise<void>; store:
 
 runStoreContract("SqlStore (pglite / postgres)", () => createPgliteStore());
 
+describe("SqlStore constructor", () => {
+    const noopClient: SqlClient = { query: () => Promise.resolve({ rowCount: 0, rows: [] }) };
+
+    it("rejects a table name that is not a safe SQL identifier", () => {
+        expect.assertions(3);
+
+        expect(() => new SqlStore(noopClient, { table: 'runs"; DROP TABLE users; --' })).toThrow("valid SQL identifier");
+        expect(() => new SqlStore(noopClient, { table: "with space" })).toThrow("valid SQL identifier");
+        expect(() => new SqlStore(noopClient, { table: "back`tick" })).toThrow("valid SQL identifier");
+    });
+
+    it("accepts a plain identifier table name", () => {
+        expect.assertions(1);
+
+        expect(() => new SqlStore(noopClient, { table: "workflow_runs_2" })).not.toThrow();
+    });
+});
+
 describe("SqlStore with a runtime (pglite / postgres)", () => {
     it("persists a run and resumes it from a fresh runtime against the same database", async () => {
         expect.assertions(3);
