@@ -270,7 +270,7 @@ export class Table {
                 (row) =>
                     Array.isArray(row)
                     && row.some(
-                        (cell) => typeof cell === "object" && cell !== null && !Array.isArray(cell) && (cell as TableItem).width !== undefined,
+                        (cell) => typeof cell === "object" && cell !== null && !Array.isArray(cell) && cell.width !== undefined,
                     ),
             );
 
