@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getProcessAncestry, normalizeProcessName, parseProcStat, parsePsRow, parseWmicRow, walkAncestry } from "../src/process-tree";
+import { getProcessAncestry, normalizeProcessName, parseProcStat, parsePowershellRow, parsePsRow, parseWmicRow, walkAncestry } from "../src/process-tree";
 
 describe(normalizeProcessName, () => {
     it("strips directory prefixes, executable suffixes, and lowercases", () => {
@@ -70,6 +70,21 @@ describe(parseWmicRow, () => {
 
         expect(parseWmicRow("Node,Name,ParentProcessId,ProcessId")).toBeUndefined();
         expect(parseWmicRow("HOST,node.exe")).toBeUndefined();
+    });
+});
+
+describe(parsePowershellRow, () => {
+    it("parses the quoted CSV columns ProcessId,ParentProcessId,Name", () => {
+        expect.assertions(1);
+
+        expect(parsePowershellRow("\"123\",\"50\",\"node.exe\"")).toStrictEqual({ comm: "node.exe", pid: 123, ppid: 50 });
+    });
+
+    it("rejects the header and short rows", () => {
+        expect.assertions(2);
+
+        expect(parsePowershellRow("\"ProcessId\",\"ParentProcessId\",\"Name\"")).toBeUndefined();
+        expect(parsePowershellRow("\"123\",\"50\"")).toBeUndefined();
     });
 });
 
