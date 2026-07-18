@@ -174,6 +174,10 @@
             "types": "./dist/divider.d.ts",
             "default": "./dist/divider.js"
         },
+        "./drawer": {
+            "types": "./dist/drawer.d.ts",
+            "default": "./dist/drawer.js"
+        },
         "./file-change": {
             "types": "./dist/file-change.d.ts",
             "default": "./dist/file-change.js"
@@ -193,6 +197,10 @@
         "./gradient": {
             "types": "./dist/gradient.d.ts",
             "default": "./dist/gradient.js"
+        },
+        "./grid": {
+            "types": "./dist/grid.d.ts",
+            "default": "./dist/grid.js"
         },
         "./heading": {
             "types": "./dist/heading.d.ts",
@@ -258,9 +266,21 @@
             "types": "./dist/model-badge.d.ts",
             "default": "./dist/model-badge.js"
         },
+        "./model-selector": {
+            "types": "./dist/model-selector.d.ts",
+            "default": "./dist/model-selector.js"
+        },
+        "./multi-progress": {
+            "types": "./dist/multi-progress.d.ts",
+            "default": "./dist/multi-progress.js"
+        },
         "./multi-select": {
             "types": "./dist/multi-select.d.ts",
             "default": "./dist/multi-select.js"
+        },
+        "./notification-badge": {
+            "types": "./dist/notification-badge.d.ts",
+            "default": "./dist/notification-badge.js"
         },
         "./number-input": {
             "types": "./dist/number-input.d.ts",
@@ -297,6 +317,10 @@
         "./placeholder": {
             "types": "./dist/placeholder.d.ts",
             "default": "./dist/placeholder.js"
+        },
+        "./popover": {
+            "types": "./dist/popover.d.ts",
+            "default": "./dist/popover.js"
         },
         "./progress-bar": {
             "types": "./dist/progress-bar.d.ts",
@@ -353,6 +377,10 @@
         "./shimmer-text": {
             "types": "./dist/shimmer-text.d.ts",
             "default": "./dist/shimmer-text.js"
+        },
+        "./sidebar": {
+            "types": "./dist/sidebar.d.ts",
+            "default": "./dist/sidebar.js"
         },
         "./slider": {
             "types": "./dist/slider.d.ts",
@@ -418,6 +446,10 @@
             "types": "./dist/textarea.d.ts",
             "default": "./dist/textarea.js"
         },
+        "./thinking-block": {
+            "types": "./dist/thinking-block.d.ts",
+            "default": "./dist/thinking-block.js"
+        },
         "./time-picker": {
             "types": "./dist/time-picker.d.ts",
             "default": "./dist/time-picker.js"
@@ -429,6 +461,14 @@
         "./toast": {
             "types": "./dist/toast.d.ts",
             "default": "./dist/toast.js"
+        },
+        "./token-usage": {
+            "types": "./dist/token-usage.d.ts",
+            "default": "./dist/token-usage.js"
+        },
+        "./tool-call": {
+            "types": "./dist/tool-call.d.ts",
+            "default": "./dist/tool-call.js"
         },
         "./tooltip": {
             "types": "./dist/tooltip.d.ts",

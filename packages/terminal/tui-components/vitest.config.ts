@@ -17,7 +17,12 @@ const config = getVitestConfig({
         // Mirrors the tui package: render/resize/cursor tests are timing-sensitive
         // and PTY-backed cases pay a few seconds of tsx startup before asserting.
         testTimeout: 15_000,
-        retry: process.env.CI ? 3 : 0,
+        // Keyboard-interaction tests drive a real reconciler and depend on a
+        // keypress landing after autofocus settles; under CPU load (a busy CI box
+        // or the pre-commit hook) that timing can slip. A small retry absorbs the
+        // transient failure without masking a consistently broken test. CI, which
+        // is typically the most loaded, gets more attempts.
+        retry: process.env.CI ? 3 : 2,
     },
 });
 

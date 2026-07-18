@@ -8,6 +8,10 @@ export type { CanvasColor, CanvasContext, Props as CanvasProps, CellStyle } from
 export { default as Canvas } from "./canvas";
 export type { Props as CursorProps } from "./cursor";
 export { default as Cursor } from "./cursor";
+export type { ErrorBoundaryProps } from "./error-boundary";
+export { default as ErrorBoundary } from "./error-boundary";
+export type { ErrorOverviewProps } from "./error-overview";
+export { default as ErrorOverview } from "./error-overview";
 export type { Props as NewlineProps } from "./newline";
 export { default as Newline } from "./newline";
 export { default as Spacer } from "./spacer";
