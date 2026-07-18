@@ -224,15 +224,18 @@ const buildClone = (cloner: Handlers): InternalClone =>
         // Boxed primitives (`new Number(5)`, `new String("x")`, `Object(1n)`, ...) keep
         // their value in an internal slot that the generic object handler would drop
         // (leaving `0`/`false`/`""`). Re-box the primitive so `valueOf()` survives.
+        const boxedTag = Object.prototype.toString.call(value);
+
         if (
-            value instanceof Number
-            || value instanceof String
-            || value instanceof Boolean
-            || value instanceof BigInt
-            || value instanceof Symbol
+            boxedTag === "[object Number]"
+            || boxedTag === "[object String]"
+            || boxedTag === "[object Boolean]"
+            || boxedTag === "[object BigInt]"
+            || boxedTag === "[object Symbol]"
         ) {
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-argument
-            const cloned = Object(value.valueOf());
+            // Box the primitive via `Object(...)`; `new Object(...)`/`{}` cannot wrap a primitive value.
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,unicorn/new-for-builtins
+            const cloned = Object((value as { valueOf: () => unknown }).valueOf());
 
             state.cache.set(value, cloned);
 

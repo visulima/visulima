@@ -1,3 +1,4 @@
+/* eslint-disable no-new-wrappers,sonarjs/no-primitive-wrappers,unicorn/new-for-builtins,@typescript-eslint/no-wrapper-object-types,@typescript-eslint/no-unsafe-assignment,@typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-member-access,no-underscore-dangle,@typescript-eslint/naming-convention */
 import { JSDOM } from "jsdom";
 import { describe, expect, it } from "vitest";
 
@@ -181,11 +182,8 @@ describe("boxed primitives", () => {
     it("preserves the value of Number/String/Boolean wrappers", () => {
         expect.assertions(6);
 
-        // eslint-disable-next-line no-new-wrappers, unicorn/new-for-builtins
         const number_ = deepClone(new Number(5)) as Number;
-        // eslint-disable-next-line no-new-wrappers, unicorn/new-for-builtins
         const string_ = deepClone(new String("abc")) as String;
-        // eslint-disable-next-line no-new-wrappers, unicorn/new-for-builtins
         const boolean_ = deepClone(new Boolean(true)) as Boolean;
 
         expect(number_).toBeInstanceOf(Number);
