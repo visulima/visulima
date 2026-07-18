@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import duration from "../../src/duration";
 import { durationLanguage as deDurationLanguage } from "../../src/language/de";
+import { durationLanguage as srLatnDurationLanguage } from "../../src/language/sr_Latn";
 import { durationLanguage as trDurationLanguage } from "../../src/language/tr";
 import parseDuration from "../../src/parse-duration";
 import type { DurationDigitReplacements, DurationLanguage, DurationUnitName } from "../../src/types";
@@ -187,6 +188,16 @@ describe(duration, () => {
         expect(duration(7123.456, { maxDecimalPoints: 0 })).toBe("7 seconds");
         expect(duration(7999, { maxDecimalPoints: 2 })).toBe("7.99 seconds");
         expect(duration(7999, { maxDecimalPoints: 3 })).toBe("7.999 seconds");
+    });
+
+    it("should truncate counts below the printable precision instead of corrupting them (regression)", () => {
+        expect.assertions(2);
+
+        // The count for these inputs is exponential (e.g. 1e-10) once broken down;
+        // the old regex truncation matched only the leading mantissa digit and
+        // rendered "1 seconds", wrong by ten orders of magnitude.
+        expect(duration(1e-7, { maxDecimalPoints: 2 })).toBe("0 seconds");
+        expect(duration(1e-7, { maxDecimalPoints: 2, units: ["ms"] })).toBe("0 milliseconds");
     });
 
     it("should ask for the largest units", () => {
@@ -529,6 +540,18 @@ describe(parseDuration, () => {
         expect(parseDuration("1.000,5 s", { language: deDurationLanguage })).toBe(1000.5 * 1000);
     });
 
+    it("should parse a bare localized number against the default unit (regression)", () => {
+        expect.assertions(4);
+
+        // The numeric fast path previously tested the raw input, so localized
+        // plain numbers (comma decimal, grouped) fell through and returned
+        // undefined even though the unit-suffixed forms parsed fine.
+        expect(parseDuration("1,5", { language: deDurationLanguage })).toBe(1.5);
+        expect(parseDuration("2,5", { defaultUnit: "s", language: deDurationLanguage })).toBe(2.5 * 1000);
+        expect(parseDuration("1,000", { defaultUnit: "s" })).toBe(1000 * 1000);
+        expect(parseDuration("1_000", { defaultUnit: "s" })).toBe(1000 * 1000);
+    });
+
     it("should convert every comma-decimal value with a localized separator (regression)", () => {
         expect.assertions(2);
 
@@ -536,6 +559,16 @@ describe(parseDuration, () => {
         // treated as inter-match noise (and silently dropped instead of summed).
         expect(parseDuration("1,5 stunden 2,5 minuten", { language: deDurationLanguage })).toBe(1.5 * 3_600_000 + 2.5 * 60_000);
         expect(parseDuration("0,5 tage 0,25 stunden", { language: deDurationLanguage })).toBe(0.5 * 86_400_000 + 0.25 * 3_600_000);
+    });
+
+    it("should round-trip Serbian-Latin unit names via its unitMap (regression)", () => {
+        expect.assertions(3);
+
+        // sr_Latn previously shipped no unitMap and silently fell back to the
+        // English unit names, so its own formatted output could not be parsed.
+        expect(parseDuration("2 sata", { language: srLatnDurationLanguage })).toBe(2 * 3_600_000);
+        expect(parseDuration("3 dana", { language: srLatnDurationLanguage })).toBe(3 * 86_400_000);
+        expect(parseDuration(duration(5 * 60_000, { language: srLatnDurationLanguage }), { language: srLatnDurationLanguage })).toBe(5 * 60_000);
     });
 
     it("should reject non-whitespace noise between two matched units", () => {
