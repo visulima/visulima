@@ -279,7 +279,6 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
         expect(readFileSync(path, "utf8")).toBe("x");
     });
 
-    // eslint-disable-next-line vitest/no-conditional-in-test
     it.skipIf(process.platform === "win32")("should use the same default permissions as fs.writeFile (no world-writable chmod)", async () => {
         expect.assertions(2);
 
@@ -287,6 +286,7 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
 
         await nodeWriteFile(referencePath, "x");
 
+        // eslint-disable-next-line no-bitwise
         const referenceMode = statSync(referencePath).mode & 0o777;
 
         const path = join(distribution, "default-mode.txt");
@@ -298,11 +298,13 @@ describe.each(["writeFile", "writeFileSync"])("%s", (name) => {
             writeFileSync(path, "x");
         }
 
+        // eslint-disable-next-line no-bitwise
         const mode = statSync(path).mode & 0o777;
 
         // Default writes must mirror Node's umask-filtered mode instead of an
         // unconditional world-writable 0o666.
         expect(mode).toBe(referenceMode);
+        // eslint-disable-next-line no-bitwise
         expect(mode & 0o022).toBe(referenceMode & 0o022);
     });
 
