@@ -52,6 +52,15 @@ interface CacheOptions {
     maxCacheAge?: number;
     /** Maximum cache size (e.g., "500MB", "1GB") */
     maxCacheSize?: string;
+    /**
+     * Diagnostic sink for best-effort cache writes that fail (ENOSPC,
+     * EACCES, EROFS, …). {@link Cache.put} stays non-throwing so a
+     * broken cache never fails a build, but a full disk or read-only
+     * cache mount otherwise makes every task silently re-execute forever
+     * with no signal. When provided, the failure is surfaced here instead
+     * of being swallowed. `hash` is the entry that failed to store.
+     */
+    onWriteError?: (hash: string, error: unknown) => void;
     /** The workspace root directory */
     workspaceRoot: string;
 }
@@ -178,11 +187,14 @@ class Cache {
 
     readonly #maxCacheSize: number | undefined;
 
+    readonly #onWriteError: ((hash: string, error: unknown) => void) | undefined;
+
     /** Serializes concurrent setTaskIndex writes to prevent lost updates */
     #indexWriteQueue: Promise<void> = Promise.resolve();
 
     public constructor(options: CacheOptions) {
         this.#workspaceRoot = options.workspaceRoot;
+        this.#onWriteError = options.onWriteError;
 
         const baseDirectory = options.cacheDirectory ?? join(options.workspaceRoot, DEFAULT_CACHE_DIRECTORY_NAME);
 
@@ -436,9 +448,16 @@ class Cache {
                 // reaped by `removeOldEntries`.
                 removeEntry(trashDirectory).catch(() => {});
             }
-        } catch {
+        } catch (error) {
             // Clean up temp dir on failure
             await removeEntry(temporaryDirectory);
+
+            // Best-effort caching stays non-throwing, but surface the
+            // failure so a full disk / read-only cache mount / permission
+            // problem is diagnosable instead of silently re-running every
+            // task forever. Same failure mode the setTaskIndex fix
+            // addressed; put() had it too.
+            this.#onWriteError?.(hash, error);
         }
     }
 
@@ -822,20 +841,47 @@ const STAGE_CONCURRENCY = 16;
 const runBounded = async <T, R>(limit: number, items: ReadonlyArray<T>, fn: (item: T, index: number) => Promise<R>): Promise<R[]> => {
     const results: R[] = Array.from({ length: items.length });
     let cursor = 0;
+    let aborted = false;
+    let firstError: unknown;
 
     const worker = async (): Promise<void> => {
         while (cursor < items.length) {
+            // On the first failure, stop every worker from claiming NEW
+            // items. Rejecting straight through `Promise.all` used to leave
+            // siblings still mutating the shared state array while the
+            // caller's catch rolled back, racing the restore rollback
+            // against live filesystem renames. Workers finish their
+            // in-flight item and quiesce; the error is propagated only
+            // after all have settled.
+            if (aborted) {
+                return;
+            }
+
             const index = cursor;
 
             cursor += 1;
-            // eslint-disable-next-line no-await-in-loop -- worker is the serialisation unit; parallelism comes from multiple workers.
-            results[index] = await fn(items[index] as T, index);
+
+            try {
+                // eslint-disable-next-line no-await-in-loop -- worker is the serialisation unit; parallelism comes from multiple workers.
+                results[index] = await fn(items[index] as T, index);
+            } catch (error) {
+                if (!aborted) {
+                    aborted = true;
+                    firstError = error;
+                }
+
+                return;
+            }
         }
     };
 
     const workers = Array.from({ length: Math.min(limit, items.length) }, () => worker());
 
     await Promise.all(workers);
+
+    if (aborted) {
+        throw firstError;
+    }
 
     return results;
 };

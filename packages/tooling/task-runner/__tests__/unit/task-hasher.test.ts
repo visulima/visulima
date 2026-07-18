@@ -446,6 +446,78 @@ describe(InProcessTaskHasher, () => {
         expect(paths).not.toContain("packages/lib-a/package.json");
     });
 
+    it("honours the glob suffix so only matching extensions enter the input set", async () => {
+        expect.assertions(3);
+
+        // Two non-.ts siblings under src/: the pattern's `*.ts` suffix must
+        // exclude them. Previously only the non-glob prefix (`src`) survived
+        // and every file under it was hashed regardless of extension.
+        await writeFile(join(workspaceRoot, "packages/lib-a/src/README.md"), "# docs");
+        await writeFile(join(workspaceRoot, "packages/lib-a/src/data.json"), "{}");
+
+        const hasher = new InProcessTaskHasher({
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: {
+                            inputs: ["{projectRoot}/src/**/*.ts"],
+                        },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const paths = Object.keys((await hasher.hashTask(task)).nodes);
+
+        expect(paths.some((p) => p.includes("src/index.ts"))).toBe(true);
+        expect(paths.some((p) => p.includes("src/README.md"))).toBe(false);
+        expect(paths.some((p) => p.includes("src/data.json"))).toBe(false);
+    });
+
+    it("excludes non-matching extensions with a project-wide recursive glob", async () => {
+        expect.assertions(2);
+
+        // `{projectRoot}/**/*.ts` must exclude a sibling `.js` file: without
+        // suffix filtering the recursive glob degraded to "everything under
+        // the project root", so unrelated files busted the cache.
+        await writeFile(join(workspaceRoot, "packages/lib-a/build.js"), "module.exports = {};");
+
+        const hasher = new InProcessTaskHasher({
+            projects: {
+                "lib-a": {
+                    root: "packages/lib-a",
+                    targets: {
+                        build: {
+                            inputs: ["{projectRoot}/**/*.ts"],
+                        },
+                    },
+                },
+            },
+            workspaceRoot,
+        });
+
+        const task: Task = {
+            id: "lib-a:build",
+            outputs: [],
+            overrides: {},
+            target: { project: "lib-a", target: "build" },
+        };
+
+        const paths = Object.keys((await hasher.hashTask(task)).nodes);
+
+        expect(paths.some((p) => p.includes("src/index.ts"))).toBe(true);
+        expect(paths.some((p) => p.includes("build.js"))).toBe(false);
+    });
+
     it("should resolve object-form filesets with base 'workspace'", async () => {
         expect.assertions(2);
 

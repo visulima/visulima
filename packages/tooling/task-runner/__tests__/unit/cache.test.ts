@@ -98,6 +98,30 @@ describe(Cache, () => {
 
             expect(result!.terminalOutput).toBe("second output");
         });
+
+        it("surfaces write failures through onWriteError without throwing", async () => {
+            expect.assertions(3);
+
+            // Point the cache directory at a regular file so every staging
+            // mkdir inside put() fails (ENOTDIR). put() must stay non-throwing
+            // (best-effort caching) but report the failure so a broken cache
+            // isn't silently invisible.
+            const notADirectory = join(workspaceRoot, "cache-is-a-file");
+
+            await writeFile(notADirectory, "x");
+
+            const failures: { error: unknown; hash: string }[] = [];
+            const failingCache = new Cache({
+                cacheDirectory: notADirectory,
+                onWriteError: (hash, error) => failures.push({ error, hash }),
+                workspaceRoot,
+            });
+
+            await expect(failingCache.put("boom", "output", [], 0)).resolves.toBeUndefined();
+
+            expect(failures).toHaveLength(1);
+            expect(failures[0]!.hash).toBe("boom");
+        });
     });
 
     describe("output archiving and restoration", () => {

@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from "node:crypto";
 import { createReadStream } from "node:fs";
-import { mkdir, rm, stat } from "node:fs/promises";
+import { mkdir, rename, rm, stat } from "node:fs/promises";
 
 import { join } from "@visulima/path";
 
@@ -89,6 +89,7 @@ export const retrieveByTaskHash = async (backend: RemoteCacheBackend, taskHash: 
 
     const entryDirectory = join(localCacheDirectory, taskHash);
     const archivePath = join(localCacheDirectory, `.download-${taskHash}-${randomUUID()}.tar.gz`);
+    const stagingDirectory = join(localCacheDirectory, `.extract-${taskHash}-${randomUUID()}`);
 
     try {
         await mkdir(localCacheDirectory, { recursive: true });
@@ -99,12 +100,46 @@ export const retrieveByTaskHash = async (backend: RemoteCacheBackend, taskHash: 
             return false;
         }
 
-        await mkdir(entryDirectory, { recursive: true });
-        await extractTarGz(archivePath, entryDirectory);
+        // Extract into a private staging directory first, then swap it into
+        // place atomically. Extracting straight into `{cacheDir}/{taskHash}/`
+        // let a concurrent `Cache.get` observe a half-populated entry: the
+        // tarball lists `.commit` before the outputs it vouches for (it sorts
+        // ahead alphabetically), so an in-place extract lands the completeness
+        // marker before `outputs.tar.br`, and a mid-extract crash left a
+        // committed-but-partial entry the cache would serve forever. The
+        // trash-then-rename swap mirrors {@link Cache.put}.
+        await mkdir(stagingDirectory, { recursive: true });
+        await extractTarGz(archivePath, stagingDirectory);
+
+        const trashDirectory = `${entryDirectory}.trash-${randomUUID()}`;
+        let hadExisting = false;
+
+        try {
+            await rename(entryDirectory, trashDirectory);
+            hadExisting = true;
+        } catch {
+            // Destination didn't exist — fine, just proceed.
+        }
+
+        try {
+            await rename(stagingDirectory, entryDirectory);
+        } catch (error) {
+            // The new entry rename failed; put the old one back so we don't
+            // leave the cache key absent.
+            if (hadExisting) {
+                await rename(trashDirectory, entryDirectory).catch(() => {});
+            }
+
+            throw error;
+        }
+
+        if (hadExisting) {
+            await rm(trashDirectory, { force: true, recursive: true }).catch(() => {});
+        }
 
         return true;
     } catch {
-        await rm(entryDirectory, { force: true, recursive: true }).catch(() => {});
+        await rm(stagingDirectory, { force: true, recursive: true }).catch(() => {});
 
         return false;
     } finally {

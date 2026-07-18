@@ -1,6 +1,6 @@
 import { execFile } from "node:child_process";
 import { createHash } from "node:crypto";
-import { mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, writeFile } from "node:fs/promises";
 import type { IncomingMessage, Server, ServerResponse } from "node:http";
 import { createServer } from "node:http";
 import { tmpdir } from "node:os";
@@ -560,6 +560,66 @@ describe(HttpRemoteCache, () => {
                 const outputFile = await readFile(join(entryDirectory, "terminalOutput"), "utf8");
 
                 expect(outputFile).toBe("Build succeeded");
+            } finally {
+                await closeServer(server);
+            }
+        });
+
+        it("swaps the entry in atomically and leaves no staging directories behind", async () => {
+            expect.assertions(4);
+
+            // Stage a real cache entry directory and tar.gz it.
+            const sourceDirectory = join(cacheDirectory, "atomic-source");
+
+            await mkdir(sourceDirectory, { recursive: true });
+            await writeFile(join(sourceDirectory, ".commit"), "atomic-hash");
+            await writeFile(join(sourceDirectory, "code"), "0");
+            await writeFile(join(sourceDirectory, "terminalOutput"), "fresh output");
+
+            const archivePath = join(cacheDirectory, "atomic-artifact.tar.gz");
+
+            await tarball(archivePath, sourceDirectory);
+
+            const archiveContent = await readFile(archivePath);
+
+            const { server, url } = await startMockServer((request, response) => {
+                if (request.method === "GET") {
+                    response.writeHead(200, {
+                        "Content-Length": String(archiveContent.length),
+                        "Content-Type": "application/octet-stream",
+                    });
+                    response.end(archiveContent);
+                } else {
+                    response.writeHead(404);
+                    response.end();
+                }
+            });
+
+            try {
+                const downloadDirectory = join(cacheDirectory, "atomic-download");
+
+                // A stale entry already occupies the destination — retrieve must
+                // replace it, not merge into it.
+                const entryDirectory = join(downloadDirectory, "atomic-hash");
+
+                await mkdir(entryDirectory, { recursive: true });
+                await writeFile(join(entryDirectory, "terminalOutput"), "stale output");
+                await writeFile(join(entryDirectory, "leftover"), "should be gone");
+
+                const cache = new HttpRemoteCache({ localCasRoot: downloadDirectory, url });
+                const result = await retrieveByTaskHash(cache, "atomic-hash", downloadDirectory);
+
+                expect(result).toBe(true);
+                expect(await readFile(join(entryDirectory, "terminalOutput"), "utf8")).toBe("fresh output");
+
+                // The stale entry was replaced wholesale, not merged into.
+                await expect(readFile(join(entryDirectory, "leftover"), "utf8")).rejects.toThrow();
+
+                // No `.extract-*` / `.download-*` scratch dirs nor `.trash-*`
+                // swap dirs may survive the swap.
+                const entries = await readdir(downloadDirectory);
+
+                expect(entries.every((name) => !name.startsWith(".extract-") && !name.startsWith(".download-") && !name.includes(".trash-"))).toBe(true);
             } finally {
                 await closeServer(server);
             }

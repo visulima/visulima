@@ -208,6 +208,9 @@ const defaultTaskRunner = async (_tasks: Task[], options: TaskRunnerOptions, con
         cacheNamespace,
         maxCacheAge: options.maxCacheAge,
         maxCacheSize: options.maxCacheSize,
+        onWriteError: options.onDiagnostic
+            ? (hash, error) => options.onDiagnostic?.(hash, `cache write failed: ${error instanceof Error ? error.message : String(error)}`)
+            : undefined,
         workspaceRoot,
     });
 

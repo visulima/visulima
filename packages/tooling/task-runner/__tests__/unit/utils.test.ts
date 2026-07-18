@@ -5,7 +5,7 @@ import { xxh3Hash } from "@shared/xxh3";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import { collectFiles, createFailureResult, hashFile, hashStrings, readPackageDeps, resolveTaskCwd, sortObjectKeys } from "../../src/utils";
+import { collectFiles, createFailureResult, hashFile, hashStrings, isInsideWorkspace, readPackageDeps, resolveTaskCwd, sortObjectKeys } from "../../src/utils";
 
 const createTemporaryDirectory = async (): Promise<string> => {
     // eslint-disable-next-line sonarjs/pseudo-random
@@ -237,6 +237,32 @@ describe(resolveTaskCwd, () => {
         };
 
         expect(resolveTaskCwd("/workspace", task)).toBe("/workspace/packages/test");
+    });
+});
+
+describe(isInsideWorkspace, () => {
+    it("accepts paths strictly inside the workspace", () => {
+        expect.assertions(2);
+
+        expect(isInsideWorkspace("/repo", "/repo/src/index.ts")).toBe(true);
+        expect(isInsideWorkspace("/repo", "/repo/packages/a/dist/out.js")).toBe(true);
+    });
+
+    it("rejects a sibling directory sharing the workspace name as a string prefix", () => {
+        expect.assertions(3);
+
+        // The bug this replaces: `"/repo-cache/...".startsWith("/repo")` was
+        // true, leaking sibling trees into the tracked access set.
+        expect(isInsideWorkspace("/repo", "/repo-cache/file.ts")).toBe(false);
+        expect(isInsideWorkspace("/repo", "/repo-backup/file.ts")).toBe(false);
+        expect(isInsideWorkspace("/proj", "/proj.worktrees/x/file.ts")).toBe(false);
+    });
+
+    it("rejects the workspace root itself and outside paths", () => {
+        expect.assertions(2);
+
+        expect(isInsideWorkspace("/repo", "/repo")).toBe(false);
+        expect(isInsideWorkspace("/repo", "/etc/hosts")).toBe(false);
     });
 });
 
