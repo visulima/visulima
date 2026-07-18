@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { CheckerType, HealthCheck, HealthReport } from "../types";
+import respond from "./respond";
 
 // Inlined HTTP status codes to avoid pulling the `http-status-codes` runtime
 // dependency into every consumer for three constants.
@@ -54,43 +55,43 @@ const healthCheckHandler = (healthCheck: HealthCheck, options: HealthCheckHandle
     const { appName, appVersion, sendHeader = true, type } = resolved;
 
     return async <Request extends IncomingMessage, Response extends ServerResponse>(_: Request, response: Response): Promise<void> => {
+        const resolvedAppName = appName ?? process.env.APP_NAME ?? "unknown";
+        const resolvedAppVersion = appVersion ?? process.env.APP_VERSION ?? "unknown";
+        const timestamp = new Date().toISOString();
+
+        let payload: HealthCheckApiPayload;
+        let statusCode: number;
+
         try {
             const { healthy, report } = await healthCheck.getReport(type);
 
-            const payload: HealthCheckApiPayload = {
-                appName: appName ?? process.env.APP_NAME ?? "unknown",
-                appVersion: appVersion ?? process.env.APP_VERSION ?? "unknown",
+            payload = {
+                appName: resolvedAppName,
+                appVersion: resolvedAppVersion,
                 message: healthy ? "Health check successful" : "Health check failed",
                 reports: report,
                 status: healthy ? "ok" : "error",
-                timestamp: new Date().toISOString(),
+                timestamp,
             };
 
-            response.statusCode = healthy ? HTTP_OK : HTTP_SERVICE_UNAVAILABLE;
-
-            if (sendHeader) {
-                response.setHeader("Content-Type", "application/json");
-            }
-
-            response.end(JSON.stringify(payload, null, 2));
+            statusCode = healthy ? HTTP_OK : HTTP_SERVICE_UNAVAILABLE;
         } catch (error) {
-            const payload: HealthCheckApiPayload = {
-                appName: appName ?? process.env.APP_NAME ?? "unknown",
-                appVersion: appVersion ?? process.env.APP_VERSION ?? "unknown",
-                message: (error as Error).message,
+            // eslint-disable-next-line no-console
+            console.error(error);
+
+            payload = {
+                appName: resolvedAppName,
+                appVersion: resolvedAppVersion,
+                message: "Health check failed",
                 reports: {},
                 status: "error",
-                timestamp: new Date().toISOString(),
+                timestamp,
             };
 
-            response.statusCode = HTTP_SERVICE_UNAVAILABLE;
-
-            if (sendHeader) {
-                response.setHeader("Content-Type", "application/json");
-            }
-
-            response.end(JSON.stringify(payload, null, 2));
+            statusCode = HTTP_SERVICE_UNAVAILABLE;
         }
+
+        respond(response, { body: JSON.stringify(payload, null, 2), sendHeader, statusCode });
     };
 };
 
