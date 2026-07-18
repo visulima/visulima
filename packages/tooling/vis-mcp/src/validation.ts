@@ -31,6 +31,18 @@ export const isValidTaskId = (value: string): boolean => value.length > 0 && !va
 export const isSafePositional = (value: string): boolean => value.length > 0 && !value.startsWith("-");
 
 /**
+ * Guard for free-form values forwarded as the argument of a CLI option (e.g.
+ * `--since <ref>`, `--query <expr>`, `--ecosystem <list>`, `--db <path>`). The
+ * option name is a fixed literal, but the value itself is LLM-supplied: the
+ * `@visulima/command-line-args` tokenizer classifies any `--x`/`-x` token as an
+ * option rather than the preceding option's value, so a flag-shaped value like
+ * `since: "--fix"` is re-read as a real flag — flipping a `readOnlyHint: true`
+ * tool into a write. Reject the leading `-` at the tool boundary before pushing
+ * the value onto argv.
+ */
+export const isSafeOptionValue = (value: string): boolean => !value.startsWith("-");
+
+/**
  * Validate and append user-supplied positional file paths to a `vis` argv. On
  * success the paths are pushed after a literal `--` separator (so they can never
  * be reinterpreted as flags) and `undefined` is returned. When any entry is

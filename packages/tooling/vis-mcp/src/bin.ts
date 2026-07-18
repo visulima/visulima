@@ -1,3 +1,4 @@
+import { realpathSync } from "node:fs";
 import { argv } from "node:process";
 import { fileURLToPath } from "node:url";
 
@@ -23,7 +24,24 @@ const main = async (): Promise<void> => {
 };
 
 /* v8 ignore start -- CLI dispatch guard; covered by the integration spawn test, not by in-process coverage */
-const isDirectInvocation = argv[1] !== undefined && fileURLToPath(import.meta.url) === argv[1];
+// Node's ESM loader realpaths the module URL while `process.argv[1]` keeps the
+// un-resolved launch path, so a strict compare is false whenever the binary is
+// reached through a symlink — the `node_modules/.bin` shim, `npx vis-mcp`, or an
+// MCP client `command: "vis-mcp"`. Resolve both sides through `realpathSync`
+// (es-main pattern) so the standard launch paths still boot the server.
+const isDirectInvocation = ((): boolean => {
+    const entry = argv[1];
+
+    if (entry === undefined) {
+        return false;
+    }
+
+    try {
+        return realpathSync(entry) === realpathSync(fileURLToPath(import.meta.url));
+    } catch {
+        return false;
+    }
+})();
 
 if (isDirectInvocation) {
     await main();

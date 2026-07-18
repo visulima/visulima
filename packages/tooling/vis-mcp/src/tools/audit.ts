@@ -4,6 +4,7 @@ import * as z from "zod";
 import { execVisJson } from "../exec";
 import type { ToolContext, ToolDeps } from "../response";
 import { errorResponse, okStructuredResponse } from "../response";
+import { isSafeOptionValue } from "../validation";
 
 const vulnerabilitySchema = z.object({
     fixedVersions: z.array(z.string()).optional(),
@@ -100,6 +101,10 @@ export const registerAudit = ({ server }: ToolDeps, context: ToolContext): void 
                 }
 
                 if (input.ecosystem) {
+                    if (!isSafeOptionValue(input.ecosystem)) {
+                        return errorResponse(new Error(`Invalid --ecosystem value "${input.ecosystem}". A leading "-" would be parsed as a CLI flag.`));
+                    }
+
                     args.push("--ecosystem", input.ecosystem);
                 }
 
