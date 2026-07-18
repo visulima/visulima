@@ -51,8 +51,10 @@ const httpCheck
                 fetchOptions.signal = AbortSignal.timeout(timeout);
             }
 
+            let response: Response | undefined;
+
             try {
-                const response = await fetch(host, fetchOptions);
+                response = await fetch(host, fetchOptions);
 
                 if (options?.expected?.status !== undefined && options.expected.status !== response.status) {
                     throw new Error(`${DISPLAY_NAME} ${hostLabel} returned status ${response.status} instead of ${options.expected.status}`);
@@ -94,6 +96,14 @@ const httpCheck
                         method: options?.fetchOptions?.method ?? "GET",
                     },
                 };
+            } finally {
+                // Discard any body we did not consume so undici can return the
+                // socket to the keep-alive pool instead of pinning it until the
+                // abort timeout fires or the body is garbage-collected. Cancelling
+                // is fire-and-forget: we only need to release the stream.
+                if (response?.body != null && !response.bodyUsed && !response.body.locked) {
+                    void response.body.cancel().catch(() => {});
+                }
             }
         };
 

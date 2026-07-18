@@ -112,6 +112,21 @@ describe(httpCheck, () => {
         });
     }, 5000);
 
+    it("should discard an unconsumed body on the status-mismatch path without throwing", async () => {
+        expect.assertions(2);
+
+        server.use(
+            http.get("https://body.example.com", () => HttpResponse.text("a".repeat(10_000))),
+        );
+
+        const result = await httpCheck("https://body.example.com", {
+            expected: { status: 500 },
+        })();
+
+        expect(result.health.healthy).toBe(false);
+        expect(result.health.message).toContain("returned status 200 instead of 500");
+    }, 5000);
+
     it("should return unhealthy when the body is not the expected one", async () => {
         expect.assertions(1);
 

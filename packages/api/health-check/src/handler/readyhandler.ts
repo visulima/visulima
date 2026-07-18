@@ -15,9 +15,14 @@ const HTTP_SERVICE_UNAVAILABLE = 503;
 const healthReadyHandler
     = <Request extends IncomingMessage, Response extends ServerResponse>(healthCheck: HealthCheck) =>
         async (_request: Request, response: Response): Promise<void> => {
-            const { healthy } = await healthCheck.getReport("readiness");
+            try {
+                const { healthy } = await healthCheck.getReport("readiness");
 
-            response.statusCode = healthy ? HTTP_NO_CONTENT : HTTP_SERVICE_UNAVAILABLE;
+                response.statusCode = healthy ? HTTP_NO_CONTENT : HTTP_SERVICE_UNAVAILABLE;
+            } catch {
+                response.statusCode = HTTP_SERVICE_UNAVAILABLE;
+            }
+
             response.end();
         };
 

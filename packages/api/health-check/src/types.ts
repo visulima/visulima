@@ -56,12 +56,22 @@ export interface AddCheckerOptions {
 export type HealthReport<TMeta = unknown> = Record<string, HealthReportEntry<TMeta>>;
 
 /**
+ * A graceful-shutdown hook. Invoked once when {@link HealthCheck.shutdown} is
+ * called (e.g. from a `SIGTERM`/`SIGINT` handler) so the service can drain
+ * connections, close pools, etc. before the process exits.
+ */
+export type ShutdownHook = () => Promise<void> | void;
+
+/**
  * Shape of health check contract.
  */
 export interface HealthCheck {
     addChecker: (service: string, checker: Checker, options?: AddCheckerOptions) => void;
     getReport: (type?: CheckerType) => Promise<{ healthy: boolean; report: HealthReport }>;
     isLive: () => Promise<boolean>;
+    isReady: () => Promise<boolean>;
+    onShutdown: (hook: ShutdownHook) => void;
     removeChecker: (service: string) => boolean;
     servicesList: string[];
+    shutdown: () => Promise<void>;
 }
