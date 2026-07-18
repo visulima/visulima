@@ -357,8 +357,8 @@ export const dirname: typeof path.dirname = (path: string) => {
  * Returns a path string from an object.
  */
 export const format: typeof path.format = function (pathObject: path.FormatInputPathObject) {
-    const directory = pathObject.dir || pathObject.root;
-    const base = pathObject.base || `${pathObject.name ?? ""}${pathObject.ext ?? ""}`;
+    const directory = pathObject.dir || pathObject.root; // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing -- empty string must fall back, matching node:path format
+    const base = pathObject.base || `${pathObject.name ?? ""}${pathObject.ext ?? ""}`; // eslint-disable-line @typescript-eslint/prefer-nullish-coalescing -- empty string must fall back, matching node:path format
 
     if (!directory) {
         return normalizeWindowsPath(base);
