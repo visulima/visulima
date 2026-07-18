@@ -63,27 +63,34 @@ const ensureLanguageLoaded = async (highlighter: Highlighter, langName: string):
 const getHighlighter = async (langNamesOrInputs: (string | LanguageInput)[] = []): Promise<Highlighter> => {
     // Create highlighter if it doesn't exist
     if (!highlighterPromise) {
-        highlighterPromise = createSingletonHighlighter();
+        highlighterPromise = createSingletonHighlighter().catch((error) => {
+            // Reset so a later call can retry instead of re-throwing a cached rejection forever
+            highlighterPromise = undefined;
+
+            throw error;
+        });
     }
 
     const highlighter = await highlighterPromise;
 
-    // Extract language names and load them dynamically
+    // Extract language names (loaded via the built-in import map) and custom
+    // grammar inputs (loaded directly) and load them dynamically
     const langNames: string[] = [];
+    const customInputs: LanguageInput[] = [];
 
     for (const item of langNamesOrInputs) {
         if (typeof item === "string") {
             langNames.push(item.toLowerCase());
         } else {
-            const langName = (item as any).name;
-            if (langName) {
-                langNames.push(langName.toLowerCase());
-            }
+            customInputs.push(item);
         }
     }
 
     // Load all requested languages
-    await Promise.all(langNames.map((langName) => ensureLanguageLoaded(highlighter, langName)));
+    await Promise.all([
+        ...langNames.map((langName) => ensureLanguageLoaded(highlighter, langName)),
+        ...customInputs.map((input) => highlighter.loadLanguage?.(input)),
+    ]);
 
     return highlighter;
 };

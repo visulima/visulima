@@ -21,7 +21,7 @@ const runSolutionFinders = async (
     debug: boolean = false,
     logger?: CliLogger,
 ): Promise<Solution | undefined> => {
-    const candidates = [...solutionFinders, ruleBasedFinder, errorHintFinder].sort((a, b) => a.priority - b.priority);
+    const candidates = [...solutionFinders, ruleBasedFinder, errorHintFinder].toSorted((a, b) => b.priority - a.priority);
 
     const firstTrace = (parseStacktrace(error, { frameLimit: 1 })[0] ?? {}) as { file?: string; line?: number };
 
@@ -85,8 +85,8 @@ export const buildOutput = async (
 
     const errorAnsi = renderError(error, {
         ...renderOptions,
-        ...color?.codeFrame,
-    } as Partial<RenderErrorOptions>);
+        color: color?.codeFrame,
+    });
 
     const hint = await runSolutionFinders(error, solutionFinders, debug, logger);
 
