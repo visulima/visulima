@@ -84,8 +84,14 @@ const parseFormUrlEncoded = (text: string): Record<string, string | string[]> =>
 // or JSON/form payloads that could not be parsed into a record) so they do not land verbatim in the page.
 const maskSensitiveString = (input: string, maskValue: string, denylist: string[] | undefined): string =>
     input
-        .replaceAll(/([^\s&=?#]+)=([^&\s#]*)/g, (match, key: string, value: string) =>
-            (value && isSensitiveBodyKey(key, denylist) ? `${key}=${maskValue}` : match))
+        // eslint-disable-next-line sonarjs/slow-regex -- the two character classes are disjoint (`=` is excluded from the first), so matching is linear with no backtracking
+        .replaceAll(/([^\s&=?#]+)=([^&\s#]*)/g, (match, key: string, value: string) => {
+            if (value && isSensitiveBodyKey(key, denylist)) {
+                return `${key}=${maskValue}`;
+            }
+
+            return match;
+        })
         .replaceAll(/("(?:[^"\\]|\\.)*")(\s*:\s*)"(?:[^"\\]|\\.)*"/g, (match, keyToken: string, separator: string) => {
             const key = keyToken.slice(1, -1);
 
