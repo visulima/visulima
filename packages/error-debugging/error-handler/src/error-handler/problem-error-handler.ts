@@ -1,25 +1,13 @@
 import type { HttpError } from "http-errors";
 import { isHttpError } from "http-errors";
-import { getReasonPhrase } from "http-status-codes";
 
 import type { ErrorHandler } from "./types";
 import addStatusCodeToResponse from "./utils/add-status-code-to-response";
+import safeReasonPhrase from "./utils/safe-reason-phrase";
 import sendJson from "./utils/send-json";
 import setErrorHeaders from "./utils/set-error-headers";
 
 const defaultType = "about:blank";
-
-const resolveStatusCode = (error: HttpError, fallback: number): number => {
-    if ("statusCode" in error && typeof (error as { statusCode?: unknown }).statusCode === "number") {
-        return (error as { statusCode: number }).statusCode;
-    }
-
-    if ("status" in error && typeof (error as { status?: unknown }).status === "number") {
-        return (error as { status: number }).status;
-    }
-
-    return fallback;
-};
 
 /**
  * Normalizes errors according to the API Problem spec (RFC 7807).
@@ -30,11 +18,16 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
 
     if (isHttpError(error)) {
         const expose = "expose" in error ? (error as { expose?: boolean }).expose : undefined;
-        const statusCode = resolveStatusCode(error, response.statusCode);
         const title = "title" in error && typeof (error as { title?: unknown }).title === "string" ? (error as { title?: string }).title : undefined;
         const type = "type" in error && typeof (error as { type?: unknown }).type === "string" ? (error as { type?: string }).type : undefined;
 
-        response.statusCode = statusCode;
+        // Validate and clamp the resolved status code to the 4xx/5xx window
+        // (falling back to 500) so a duck-typed http-error carrying an
+        // out-of-range status cannot produce a 200-OK problem response or make
+        // node throw ERR_HTTP_INVALID_STATUS_CODE.
+        addStatusCodeToResponse(response, error);
+
+        const { statusCode } = response;
 
         setErrorHeaders(response, error);
 
@@ -43,7 +36,7 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
             {
                 type: type ?? defaultType,
                 // eslint-disable-next-line perfectionist/sort-objects
-                title: title ?? getReasonPhrase(statusCode),
+                title: title ?? safeReasonPhrase(statusCode),
                 // eslint-disable-next-line perfectionist/sort-objects
                 status: statusCode,
                 // eslint-disable-next-line perfectionist/sort-objects
@@ -60,7 +53,7 @@ const problemErrorHandler: ErrorHandler = (error: Error | HttpError, _request, r
             {
                 type: defaultType,
                 // eslint-disable-next-line perfectionist/sort-objects
-                title: getReasonPhrase(response.statusCode),
+                title: safeReasonPhrase(response.statusCode),
                 // eslint-disable-next-line perfectionist/sort-objects
                 status: response.statusCode,
                 // eslint-disable-next-line perfectionist/sort-objects

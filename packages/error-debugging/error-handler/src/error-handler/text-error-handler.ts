@@ -1,9 +1,8 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { getReasonPhrase } from "http-status-codes";
-
 import type { ErrorHandler } from "./types";
 import addStatusCodeToResponse from "./utils/add-status-code-to-response";
+import safeReasonPhrase from "./utils/safe-reason-phrase";
 import setErrorHeaders from "./utils/set-error-headers";
 
 export type TextErrorFormatter = (parameters: {
@@ -26,7 +25,7 @@ export const textErrorHandler
             setErrorHeaders(response, error);
 
             const { statusCode } = response;
-            const reasonPhrase = getReasonPhrase(statusCode) || "Error";
+            const reasonPhrase = safeReasonPhrase(statusCode, "Error");
 
             response.setHeader("content-type", "text/plain; charset=utf-8");
 

@@ -1,10 +1,10 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
-import { getReasonPhrase } from "http-status-codes";
 import { toXML } from "jstoxml";
 
 import type { ErrorHandler } from "./types";
 import addStatusCodeToResponse from "./utils/add-status-code-to-response";
+import safeReasonPhrase from "./utils/safe-reason-phrase";
 import setErrorHeaders from "./utils/set-error-headers";
 
 export type XmlErrorBody = Record<string, unknown> | unknown[];
@@ -43,7 +43,7 @@ export const xmlErrorHandler
             setErrorHeaders(response, error);
 
             const { statusCode } = response;
-            const reasonPhrase = getReasonPhrase(statusCode) || "An error occurred";
+            const reasonPhrase = safeReasonPhrase(statusCode);
 
             let payload: XmlErrorBody;
 

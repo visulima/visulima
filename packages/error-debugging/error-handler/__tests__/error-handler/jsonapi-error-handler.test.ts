@@ -116,6 +116,44 @@ describe("jsonapi-error-handler", () => {
         expect(body.jsonapi).toStrictEqual({ version: "1.0" });
     });
 
+    it("responds with the application/vnd.api+json content type", async () => {
+        expect.assertions(1);
+
+        const { req, res } = createMocks({
+            method: "GET",
+        });
+
+        await jsonapiErrorHandler(new httpErrors.Forbidden(), req, res);
+
+        expect(String(res.getHeader("content-type"))).toBe("application/vnd.api+json; charset=utf-8");
+    });
+
+    it("clamps a duck-typed http-error carrying an out-of-range status to 500", async () => {
+        expect.assertions(2);
+
+        const { req, res } = createMocks({
+            method: "GET",
+        });
+
+        // A wrapper error that duck-types as an HttpError but carries status 200
+        // must not desync the body code from a valid HTTP status.
+        const error = new Error("weird") as Error & { expose: boolean; status: number; statusCode: number };
+
+        error.expose = true;
+        error.status = 200;
+        error.statusCode = 200;
+
+        await jsonapiErrorHandler(error, req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        expect(res._getStatusCode()).toBe(500);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const body = JSON.parse(res._getData()) as { errors: { code: number }[] };
+
+        expect(body.errors[0]?.code).toBe(500);
+    });
+
     it("uses the resolved status code (not a hardcoded 500) for a plain error with a 4xx statusCode", async () => {
         expect.assertions(3);
 

@@ -66,6 +66,32 @@ describe("problem-error-handler", () => {
         expect(body.trace).toContain("Error: nope");
     });
 
+    it("clamps a duck-typed http-error carrying an out-of-range status to 500", async () => {
+        expect.assertions(2);
+
+        const { req, res } = createMocks({
+            method: "GET",
+        });
+
+        // A wrapper error that duck-types as an HttpError but carries status 200
+        // must not produce a 200-OK problem response.
+        const error = new Error("weird") as Error & { expose: boolean; status: number; statusCode: number };
+
+        error.expose = false;
+        error.status = 200;
+        error.statusCode = 200;
+
+        await problemErrorHandler(error, req, res);
+
+        // eslint-disable-next-line no-underscore-dangle
+        expect(res._getStatusCode()).toBe(500);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const body = JSON.parse(res._getData()) as { status: number };
+
+        expect(body.status).toBe(500);
+    });
+
     it("should prefer the error's own title and type properties", async () => {
         expect.assertions(4);
 
