@@ -7,6 +7,17 @@ const NUMERIC_1_3_REGEX = /^\d{1,3}$/;
 const ALPHA_3_REGEX = /^[A-Z]{3}$/i;
 
 /**
+ * ISO 4217 numeric codes are not unique across time: when a currency is replaced,
+ * the successor reuses the predecessor's numeric code. 532 is shared by ANG
+ * (Netherlands Antillean guilder, demonetised in 2025) and its successor XCG
+ * (Caribbean guilder). Pin the numeric lookup to the active currency so the
+ * result does not silently depend on dataset ordering.
+ */
+const NUMERIC_CODE_PREFERENCE: Record<string, string> = {
+    "532": "XCG",
+};
+
+/**
  * Currency symbol map
  */
 const symbolMap: Record<string, string> = {};
@@ -45,7 +56,12 @@ const allCurrencies: Currency[] = currenciesView.map((currency) => {
     };
 
     currenciesByCode[currency.code] = currencyWithSymbol;
-    currenciesByNumber[currency.number] = currencyWithSymbol;
+
+    const preferredForNumber = NUMERIC_CODE_PREFERENCE[currency.number];
+
+    if (preferredForNumber === undefined || preferredForNumber === currency.code) {
+        currenciesByNumber[currency.number] = currencyWithSymbol;
+    }
 
     return currencyWithSymbol;
 });

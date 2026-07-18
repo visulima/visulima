@@ -226,52 +226,61 @@ describe("countries", () => {
         expect(results2.some((c) => c.alpha2 === "FR")).toBe(true);
     });
 
-    // The bundled country dataset carries no numeric (ISO 3166-1) codes, so every
-    // numeric-based lookup resolves to undefined. These cases still exercise the
-    // numeric code paths/branches that string-only inputs never reach.
     describe(getByNumeric, () => {
-        it("should return undefined for a numeric string lookup", () => {
-            expect.assertions(1);
-            expect(getByNumeric("840")).toBeUndefined();
+        it("should resolve a country by numeric string lookup", () => {
+            expect.assertions(2);
+            expect(getByNumeric("840")?.alpha2).toBe("US");
+            expect(getByNumeric("840")?.alpha3).toBe("USA");
         });
 
         it("should pad and look up a numeric value", () => {
             expect.assertions(1);
-            expect(getByNumeric(4)).toBeUndefined();
+            expect(getByNumeric(4)?.alpha2).toBe("AF");
+        });
+
+        it("should return undefined for an unassigned numeric code", () => {
+            expect.assertions(1);
+            expect(getByNumeric("999")).toBeUndefined();
         });
     });
 
     describe("numeric conversion helpers", () => {
-        it("should return undefined when converting alpha-2 to numeric", () => {
+        it("should convert alpha-2 to numeric", () => {
             expect.assertions(2);
-            expect(alpha2ToNumeric("US")).toBeUndefined();
+            expect(alpha2ToNumeric("US")).toBe("840");
             expect(alpha2ToNumeric("XX")).toBeUndefined();
         });
 
-        it("should return undefined when converting alpha-3 to numeric", () => {
+        it("should convert alpha-3 to numeric", () => {
             expect.assertions(2);
-            expect(alpha3ToNumeric("USA")).toBeUndefined();
+            expect(alpha3ToNumeric("USA")).toBe("840");
             expect(alpha3ToNumeric("XXX")).toBeUndefined();
         });
 
-        it("should return undefined when converting numeric to alpha-2", () => {
+        it("should convert numeric to alpha-2", () => {
             expect.assertions(2);
-            expect(numericToAlpha2("840")).toBeUndefined();
-            expect(numericToAlpha2(840)).toBeUndefined();
+            expect(numericToAlpha2("840")).toBe("US");
+            expect(numericToAlpha2(840)).toBe("US");
         });
 
-        it("should return undefined when converting numeric to alpha-3", () => {
+        it("should convert numeric to alpha-3", () => {
             expect.assertions(2);
-            expect(numericToAlpha3("840")).toBeUndefined();
-            expect(numericToAlpha3(840)).toBeUndefined();
+            expect(numericToAlpha3("840")).toBe("USA");
+            expect(numericToAlpha3(840)).toBe("USA");
         });
     });
 
     describe("numeric input branches", () => {
         it("should treat a numeric string as a numeric code in isValid", () => {
             expect.assertions(2);
-            expect(isValid("840")).toBe(false);
-            expect(isValid(840)).toBe(false);
+            expect(isValid("840")).toBe(true);
+            expect(isValid(840)).toBe(true);
+        });
+
+        it("should return false for an unassigned numeric code in isValid", () => {
+            expect.assertions(2);
+            expect(isValid("999")).toBe(false);
+            expect(isValid(999)).toBe(false);
         });
 
         it("should return false for codes that are neither alpha-2/3 nor numeric", () => {
@@ -279,33 +288,33 @@ describe("countries", () => {
             expect(isValid("XXXX")).toBe(false);
         });
 
-        it("should return undefined for getEmoji with a numeric value", () => {
+        it("should resolve getEmoji with a numeric value", () => {
             expect.assertions(1);
-            expect(getEmoji(840)).toBeUndefined();
+            expect(getEmoji(840)).toBe("🇺🇸");
         });
 
         it("should resolve getCallingCode via the numeric path", () => {
             expect.assertions(2);
-            expect(getCallingCode("840")).toBeUndefined();
-            expect(getCallingCode(840)).toBeUndefined();
+            expect(getCallingCode("840")).toBe("+1");
+            expect(getCallingCode(840)).toBe("+1");
         });
 
         it("should resolve getCallingCodes via the numeric path", () => {
             expect.assertions(2);
-            expect(getCallingCodes("840")).toStrictEqual([]);
-            expect(getCallingCodes(840)).toStrictEqual([]);
+            expect(getCallingCodes("840")).toStrictEqual(["+1"]);
+            expect(getCallingCodes(840)).toStrictEqual(["+1"]);
         });
 
         it("should resolve getLanguages via the numeric path", () => {
             expect.assertions(2);
-            expect(getLanguages("840")).toStrictEqual([]);
-            expect(getLanguages(840)).toStrictEqual([]);
+            expect(getLanguages("840")).toStrictEqual(["eng"]);
+            expect(getLanguages(840)).toStrictEqual(["eng"]);
         });
 
         it("should resolve getIOC via the numeric path", () => {
             expect.assertions(2);
-            expect(getIOC("840")).toBeUndefined();
-            expect(getIOC(840)).toBeUndefined();
+            expect(getIOC("840")).toBe("USA");
+            expect(getIOC(840)).toBe("USA");
         });
     });
 
@@ -349,11 +358,15 @@ describe("countries", () => {
             expect(getCountry("usa")?.alpha2).toBe("US");
         });
 
-        it("should return undefined for an unknown numeric code", () => {
+        it("should resolve by numeric code", () => {
             expect.assertions(2);
-            // The bundled dataset carries no numeric codes, so numeric lookups miss.
-            expect(getCountry(840)).toBeUndefined();
-            expect(getCountry("840")).toBeUndefined();
+            expect(getCountry(840)?.alpha2).toBe("US");
+            expect(getCountry("840")?.alpha2).toBe("US");
+        });
+
+        it("should return undefined for an unassigned numeric code", () => {
+            expect.assertions(1);
+            expect(getCountry("999")).toBeUndefined();
         });
 
         it("should return undefined for invalid lengths", () => {
