@@ -61,13 +61,11 @@ export function commandLineArgs(optionDefinitions: OptionDefinition | ReadonlyAr
     // Get argv to parse
     let { argv } = effectiveOptions;
 
-    if (!argv) {
-        // Node already excludes exec args (`--import`, `-e`, ...) from
-        // `process.argv`, so `slice(2)` yields the user arguments directly.
-        // Filtering by value would only ever strip legitimate user arguments
-        // that happen to equal an exec flag.
-        argv = process.argv.slice(2);
-    }
+    // Node already excludes exec args (`--import`, `-e`, ...) from
+    // `process.argv`, so `slice(2)` yields the user arguments directly.
+    // Filtering by value would only ever strip legitimate user arguments
+    // that happen to equal an exec flag.
+    argv ??= process.argv.slice(2);
 
     debugLog(debugEnabled, "Using argv:", "index", argv);
 
