@@ -206,6 +206,38 @@ describe("gradient", () => {
         }).toThrow("Invalid color stop");
     });
 
+    it("should throw a clear error for an unknown non-positioned color name", () => {
+        expect.assertions(1);
+
+        expect(() => {
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
+            new GradientBuilder(colorize, ["read", "green"]);
+        }).toThrow('Invalid color stop "read"');
+    });
+
+    it("should throw a clear error for an unknown positioned color name", () => {
+        expect.assertions(1);
+
+        expect(() => {
+            // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
+            new GradientBuilder(colorize, [
+                { color: "read", position: 0 },
+                { color: "green", position: 1 },
+            ]);
+        }).toThrow('Invalid color stop "read"');
+    });
+
+    it("should accept bare hex-string non-positioned stops without a leading '#'", () => {
+        expect.assertions(1);
+
+        const grad = new GradientBuilder(colorize, ["ff0000", "0000ff"]);
+
+        expect(grad.stops.map((stop) => stop.color)).toStrictEqual([
+            [255, 0, 0],
+            [0, 0, 255],
+        ]);
+    });
+
     it("should accept hex and rgb-object positioned stops", () => {
         expect.assertions(1);
 

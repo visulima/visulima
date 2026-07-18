@@ -389,6 +389,14 @@ describe("handling numbers", () => {
         expect(esc(received)).toStrictEqual(esc(expected));
     });
 
+    it(`should colorize the number 0 with function call red(0)`, () => {
+        expect.assertions(1);
+
+        const zeroReceived = red(0);
+
+        expect(esc(zeroReceived)).toStrictEqual(esc("[31m0[39m"));
+    });
+
     it(`should bold a number with function call bold(123)`, () => {
         expect.assertions(1);
 
