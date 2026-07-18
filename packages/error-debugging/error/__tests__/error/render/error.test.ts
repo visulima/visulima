@@ -328,4 +328,59 @@ describe(renderError, () => {
 
         expect(errorOutput).not.toContain("Errors:");
     });
+
+    it("should not crash and should skip the cause block for a null cause", () => {
+        expect.assertions(2);
+
+        const error = new Error("boom", { cause: null });
+
+        let errorOutput = "";
+
+        expect(() => {
+            errorOutput = renderError(error, { hideErrorCodeView: true });
+        }).not.toThrow();
+
+        expect(errorOutput).not.toContain("Caused by:");
+    });
+
+    it("should render a string cause as the caused-by title", () => {
+        expect.assertions(3);
+
+        const error = new Error("boom", { cause: "disk full" });
+        const errorOutput = renderError(error, { hideErrorCauseCodeView: true, hideErrorCodeView: true });
+
+        expect(errorOutput).toContain("Caused by:");
+        expect(errorOutput).toContain("disk full");
+        expect(errorOutput).not.toContain("undefined");
+    });
+
+    it("should render an object cause as JSON in the caused-by title", () => {
+        expect.assertions(2);
+
+        const error = new Error("boom", { cause: { code: "E_DISK", detail: "full" } });
+        const errorOutput = renderError(error, { hideErrorCauseCodeView: true, hideErrorCodeView: true });
+
+        expect(errorOutput).toContain("Caused by:");
+        expect(errorOutput).toContain("E_DISK");
+    });
+
+    it("should render a number cause without rendering the literal 'undefined'", () => {
+        expect.assertions(2);
+
+        const error = new Error("boom", { cause: 42 });
+        const errorOutput = renderError(error, { hideErrorCauseCodeView: true, hideErrorCodeView: true });
+
+        expect(errorOutput).toContain("42");
+        expect(errorOutput).not.toContain("undefined");
+    });
+
+    it("should render an error whose main frame has no file without crashing", () => {
+        expect.assertions(1);
+
+        const error = new Error("boom");
+
+        vi.spyOn(error, "stack", "get").mockReturnValue("Error: boom\n    in foo (at :5:10)");
+
+        expect(() => renderError(error, { hideErrorCodeView: true })).not.toThrow();
+    });
 });

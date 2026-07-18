@@ -1364,6 +1364,48 @@ describe("error serializer", () => {
             Object.defineProperty(MinifiedError, "name", { value: originalConstructorName });
         });
 
+        it("should serialize a minified instance using its assigned name so it round-trips", () => {
+            expect.assertions(4);
+
+            class RoundTripError extends Error {
+                public constructor(message?: string) {
+                    super(message);
+                    this.name = "RoundTripError";
+                }
+            }
+
+            const originalConstructorName = RoundTripError.name;
+
+            Object.defineProperty(RoundTripError, "name", { value: "q" }); // Minified constructor name
+
+            addKnownErrorConstructor(RoundTripError);
+
+            const serialized = serializeError(new RoundTripError("boom"));
+
+            // The assigned instance name must survive even though constructor.name is minified.
+            expect(serialized.name).toBe("RoundTripError");
+
+            const deserialized = deserializeError(serialized);
+
+            expect(deserialized).toBeInstanceOf(RoundTripError);
+            expect(deserialized.name).toBe("RoundTripError");
+            expect(deserialized.message).toBe("boom");
+
+            Object.defineProperty(RoundTripError, "name", { value: originalConstructorName });
+        });
+
+        it("should serialize a runtime-assigned instance name instead of the constructor name", () => {
+            expect.assertions(1);
+
+            const error = new Error("boom");
+
+            error.name = "AbortError";
+
+            const serialized = serializeError(error);
+
+            expect(serialized.name).toBe("AbortError");
+        });
+
         it("should throw error for incompatible constructor with detailed cause", () => {
             expect.assertions(1);
 

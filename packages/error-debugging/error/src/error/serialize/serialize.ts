@@ -22,6 +22,25 @@ interface JsonError extends Error {
 const toJsonWasCalled = new WeakSet();
 
 /**
+ * Resolve the name to serialize for an error.
+ *
+ * Prefer an explicitly assigned instance `name` (an own property) so that runtime-assigned names
+ * (`err.name = "AbortError"`) and subclasses that set `this.name` survive serialization — including
+ * under minification, where `constructor.name` is mangled. Fall back to `constructor.name` for
+ * subclasses that never set their own name (`class MyError extends Error {}`), matching the
+ * un-minified class identity.
+ */
+const getErrorName = (error: Error): string => {
+    if (Object.prototype.hasOwnProperty.call(error, "name") && typeof error.name === "string" && error.name !== "") {
+        return error.name;
+    }
+
+    const constructorName = error.constructor?.name;
+
+    return typeof constructorName === "string" && constructorName !== "" ? constructorName : error.name;
+};
+
+/**
  * Make all properties of an object enumerable recursively.
  * This is needed when toJSON() returns a serialized error that will be used in object spreads.
  */
@@ -213,7 +232,7 @@ const _serialize = (
     Object.defineProperty(protoError, "name", {
         configurable: true,
         enumerable: true,
-        value: Object.prototype.toString.call(error.constructor) === "[object Function]" ? error.constructor.name : error.name,
+        value: getErrorName(error),
         writable: true,
     });
     Object.defineProperty(protoError, "message", {
