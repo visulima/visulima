@@ -53,7 +53,7 @@ const getCharWidthCache = (config: StringTruncatedWidthConfig): Map<number, Map<
 // anchor the match to `lastIndex`, so they only match when the sequence begins
 // exactly at the current index.
 const RE_ANSI_STICKY = new RegExp(RE_ANSI.source, "y");
-const RE_EMOJI_STICKY = new RegExp(RE_EMOJI.source, "yu");
+const RE_EMOJI_STICKY = new RegExp(RE_EMOJI.source, "uy");
 
 /**
  * Regular expression for Latin characters with sticky flag for better performance.
