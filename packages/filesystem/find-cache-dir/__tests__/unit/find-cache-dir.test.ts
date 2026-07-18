@@ -1,5 +1,5 @@
 // eslint-disable-next-line unicorn/prevent-abbreviations
-import { chmodSync, constants, existsSync, mkdtempSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { cwd, platform } from "node:process";
@@ -20,11 +20,13 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
     let distribution: string;
 
     beforeEach(() => {
+        delete process.env.CACHE_DIR;
         distribution = mkdtempSync(join(tmpdir(), "find-cache-dir-"));
     });
 
     afterEach(async () => {
-        await rm(distribution, { recursive: true });
+        delete process.env.CACHE_DIR;
+        await rm(distribution, { force: true, recursive: true });
     });
 
     it.skipIf(isWindows)("should return the cache directory path if it exists and is writeable", async () => {
@@ -132,24 +134,26 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
 
         ensureDirSync(testCachePath);
         // Make cacheNameDirectory not writeable
-        chmodSync(testCachePath, constants.O_RDONLY);
+        chmodSync(testCachePath, 0o555);
         writeJsonSync(join(distribution, "package", "package.json"), {
             name: "test",
         });
 
-        let result = function_("test", {
-            cwd: join(distribution, "package"),
-        });
+        try {
+            let result = function_("test", {
+                cwd: join(distribution, "package"),
+            });
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "findCacheDirectory") {
-            result = await result;
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findCacheDirectory") {
+                result = await result;
+            }
+
+            expect(result).toBeUndefined();
+        } finally {
+            // Make cacheNameDirectory writeable again so cleanup can remove it
+            chmodSync(testCachePath, 0o755);
         }
-
-        expect(result).toBeUndefined();
-
-        // Make cacheNameDirectory writeable
-        chmodSync(testCachePath, constants.O_RDWR);
     });
 
     it.skipIf(isWindows)("should return undefined if the .cache directory exists but is not writeable", async () => {
@@ -159,25 +163,27 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
 
         ensureDirSync(testCachePath);
         // Make cacheNameDirectory not writeable
-        chmodSync(testCachePath, constants.O_RDONLY);
+        chmodSync(testCachePath, 0o555);
 
         writeJsonSync(join(distribution, "package", "package.json"), {
             name: "test",
         });
 
-        let result = function_("test", {
-            cwd: join(distribution, "package"),
-        });
+        try {
+            let result = function_("test", {
+                cwd: join(distribution, "package"),
+            });
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "findCacheDirectory") {
-            result = await result;
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findCacheDirectory") {
+                result = await result;
+            }
+
+            expect(result).toBeUndefined();
+        } finally {
+            // Make cacheNameDirectory writeable again so cleanup can remove it
+            chmodSync(testCachePath, 0o755);
         }
-
-        expect(result).toBeUndefined();
-
-        // Make cacheNameDirectory writeable
-        chmodSync(testCachePath, constants.O_RDWR);
     });
 
     it.skipIf(isWindows)("should return undefined if the path directory exists but is not writeable", async () => {
@@ -187,25 +193,27 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
 
         ensureDirSync(testCachePath);
         // Make cacheNameDirectory not writeable
-        chmodSync(testCachePath, constants.O_RDONLY);
+        chmodSync(testCachePath, 0o555);
 
         writeJsonSync(join(distribution, "package", "package.json"), {
             name: "test",
         });
 
-        let result = function_("test", {
-            cwd: join(distribution, "package"),
-        });
+        try {
+            let result = function_("test", {
+                cwd: join(distribution, "package"),
+            });
 
-        // eslint-disable-next-line vitest/no-conditional-in-test
-        if (name === "findCacheDirectory") {
-            result = await result;
+            // eslint-disable-next-line vitest/no-conditional-in-test
+            if (name === "findCacheDirectory") {
+                result = await result;
+            }
+
+            expect(result).toBeUndefined();
+        } finally {
+            // Make cacheNameDirectory writeable again so cleanup can remove it
+            chmodSync(testCachePath, 0o755);
         }
-
-        expect(result).toBeUndefined();
-
-        // Make cacheNameDirectory writeable
-        chmodSync(testCachePath, constants.O_RDWR);
     });
 
     it("should support CACHE_DIR environment variable", async () => {
@@ -249,8 +257,6 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
         }
 
         expect(result).toStrictEqual(testCachePath);
-
-        delete process.env.CACHE_DIR;
     });
 
     it("should throw an error if the root directory could not be found and throwError option is enabled", async () => {
@@ -309,8 +315,6 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
 
     it("should fall back to the process working directory when no cwd option is provided", async () => {
         expect.assertions(1);
-
-        delete process.env.CACHE_DIR;
 
         let result = function_("find-cache-dir-fallback");
 

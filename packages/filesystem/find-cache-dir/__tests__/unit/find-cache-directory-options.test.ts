@@ -1,7 +1,9 @@
-import { existsSync, mkdtempSync } from "node:fs";
+// eslint-disable-next-line unicorn/prevent-abbreviations
+import { chmodSync, existsSync, mkdtempSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";
-import { platform } from "node:process";
+import { chdir, cwd, platform } from "node:process";
+import { pathToFileURL } from "node:url";
 
 import { ensureDirSync, writeJsonSync } from "@visulima/fs";
 import { join } from "@visulima/path";
@@ -102,6 +104,49 @@ describe("options", () => {
 
             expect(result).toStrictEqual(join(packageDirectory, "node_modules", ".cache", "test"));
         });
+
+        it.skipIf(isWindows)("decodes file URL entries whose path contains a space", () => {
+            expect.assertions(1);
+
+            const packageDirectory = join(distribution, "a b", "pkg");
+
+            ensureDirSync(join(packageDirectory, "node_modules"));
+            ensureDirSync(join(packageDirectory, "src"));
+            writeJsonSync(join(packageDirectory, "package.json"), { name: "test" });
+
+            const result = findCacheDirectorySync("test", {
+                files: [pathToFileURL(join(packageDirectory, "src", "a.ts")), pathToFileURL(join(packageDirectory, "src", "b.ts"))],
+            });
+
+            expect(result).toStrictEqual(join(packageDirectory, "node_modules", ".cache", "test"));
+        });
+
+        it.skipIf(isWindows)("resolves a mix of relative and absolute file entries against cwd", () => {
+            expect.assertions(1);
+
+            const packageDirectory = join(distribution, "workspace3", "pkg");
+
+            ensureDirSync(join(packageDirectory, "node_modules"));
+            ensureDirSync(join(packageDirectory, "src"));
+            writeJsonSync(join(packageDirectory, "package.json"), { name: "test" });
+
+            const previousCwd = cwd();
+
+            chdir(packageDirectory);
+
+            try {
+                // Resolve through any symlinked tmpdir so the relative and absolute entries share a root.
+                const realPackageDirectory = cwd();
+
+                const result = findCacheDirectorySync("test", {
+                    files: [join("src", "a.ts"), join(realPackageDirectory, "src", "b.ts")],
+                });
+
+                expect(result).toStrictEqual(join(realPackageDirectory, "node_modules", ".cache", "test"));
+            } finally {
+                chdir(previousCwd);
+            }
+        });
     });
 
     describe("useGlobalCacheFallback option", () => {
@@ -160,6 +205,93 @@ describe("options", () => {
                 });
 
                 expect(result).toStrictEqual(join(homedir(), ".cache", "home-tool"));
+            } finally {
+                restoreXdg(previous);
+            }
+        });
+
+        it.skipIf(isWindows)("falls back to the global cache when node_modules exists but is not writable (async)", async () => {
+            expect.assertions(2);
+
+            const packageDirectory = join(distribution, "unwritable-nm-async");
+            const nodeModulesDirectory = join(packageDirectory, "node_modules");
+
+            ensureDirSync(nodeModulesDirectory);
+            writeJsonSync(join(packageDirectory, "package.json"), { name: "test" });
+            chmodSync(nodeModulesDirectory, 0o555);
+
+            try {
+                const result = await findCacheDirectory("nm-tool", {
+                    cwd: packageDirectory,
+                    useGlobalCacheFallback: true,
+                });
+
+                expect(result).toContain("nm-tool");
+                expect(result).not.toStrictEqual(join(nodeModulesDirectory, ".cache", "nm-tool"));
+            } finally {
+                chmodSync(nodeModulesDirectory, 0o755);
+            }
+        });
+
+        it.skipIf(isWindows)("falls back to the global cache when node_modules exists but is not writable (sync)", () => {
+            expect.assertions(2);
+
+            const packageDirectory = join(distribution, "unwritable-nm-sync");
+            const nodeModulesDirectory = join(packageDirectory, "node_modules");
+
+            ensureDirSync(nodeModulesDirectory);
+            writeJsonSync(join(packageDirectory, "package.json"), { name: "test" });
+            chmodSync(nodeModulesDirectory, 0o555);
+
+            try {
+                const result = findCacheDirectorySync("nm-tool", {
+                    cwd: packageDirectory,
+                    useGlobalCacheFallback: true,
+                });
+
+                expect(result).toContain("nm-tool");
+                expect(result).not.toStrictEqual(join(nodeModulesDirectory, ".cache", "nm-tool"));
+            } finally {
+                chmodSync(nodeModulesDirectory, 0o755);
+            }
+        });
+
+        it.skipIf(isWindows)("falls back to the global cache when the package root is read-only and node_modules is absent", async () => {
+            expect.assertions(2);
+
+            const packageDirectory = join(distribution, "readonly-root");
+
+            ensureDirSync(packageDirectory);
+            writeJsonSync(join(packageDirectory, "package.json"), { name: "test" });
+            chmodSync(packageDirectory, 0o555);
+
+            try {
+                const result = await findCacheDirectory("root-tool", {
+                    cwd: packageDirectory,
+                    useGlobalCacheFallback: true,
+                });
+
+                expect(result).toContain("root-tool");
+                expect(result).not.toStrictEqual(join(packageDirectory, "node_modules", ".cache", "root-tool"));
+            } finally {
+                chmodSync(packageDirectory, 0o755);
+            }
+        });
+
+        it.skipIf(isWindows || platform === "darwin" || homedir() === "")("treats an empty $XDG_CACHE_HOME as unset", async () => {
+            expect.assertions(1);
+
+            const previous = process.env.XDG_CACHE_HOME;
+
+            process.env.XDG_CACHE_HOME = "";
+
+            try {
+                const result = await findCacheDirectory("empty-xdg-tool", {
+                    cwd: "/this_dir_will_never_exist",
+                    useGlobalCacheFallback: true,
+                });
+
+                expect(result).toStrictEqual(join(homedir(), ".cache", "empty-xdg-tool"));
             } finally {
                 restoreXdg(previous);
             }
