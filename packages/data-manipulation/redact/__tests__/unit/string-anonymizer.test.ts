@@ -175,4 +175,29 @@ Please remember that all the information provided, including the credit card num
 
         expect(result).toMatch("<FIRSTNAME> Doe will be 30 on 2024-06-10.");
     });
+
+    it("should reuse the same mask for a repeated value and only advance the number for a distinct one", () => {
+        expect.assertions(1);
+
+        const input = "call 111-11-1111 then 111-11-1111 then 222-22-2222";
+        const result = stringAnonymize(input, [{ key: "ssn", pattern: String.raw`\d{3}-\d{2}-\d{4}` }]);
+
+        expect(result).toBe("call <SSN> then <SSN> then <SSN1>");
+    });
+
+    it("should honour a static replacement supplied directly to the exported stringAnonymize", () => {
+        expect.assertions(1);
+
+        const result = stringAnonymize("id 123", [{ key: "num", pattern: String.raw`\d+`, replacement: "XXX" }]);
+
+        expect(result).toBe("id XXX");
+    });
+
+    it("should honour a censor replacement supplied directly to the exported stringAnonymize", () => {
+        expect.assertions(1);
+
+        const result = stringAnonymize("id 123", [{ key: "num", pattern: String.raw`\d+`, replacement: (value) => `[${String(value)}]` }]);
+
+        expect(result).toBe("id [123]");
+    });
 });

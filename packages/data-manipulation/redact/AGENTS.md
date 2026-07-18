@@ -8,10 +8,10 @@ This file provides guidance to AI coding agents when working with code in this d
 
 ## Architecture
 
-- Single entry (`.`) — main export is the recursive filter (`src/index.ts`); supporting modules are `src/string-anonymizer.ts`, `src/rules.ts`, `src/types.ts`, and `src/utils/` (`is-json.ts`, `parse-url-parameters.ts`, `wildcard.ts`).
+- Single entry (`.`) — main export is the recursive filter (`src/index.ts`); supporting modules are `src/string-anonymizer.ts`, `src/rules.ts`, `src/types.ts`, and `src/utils/` (`parse-url-parameters.ts`, `wildcard.ts`).
 - `compromise` is a real runtime dependency — it powers NLP-based NER redaction of names, organizations, places, money, phone, email. Don't move it to devDependencies.
 - The `exports` map intentionally separates `import` and `browser` conditions — both currently point at the same file, but the structure is in place; keep it.
-- Circular references are handled by stamping `__redact_circular_reference__` onto inputs temporarily. The `// @ts-expect-error` comments around this are deliberate — don't "fix" them by widening types.
+- Circular references are tracked via a `WeakMap` of original object → its copy (`src/index.ts`). Inputs are never mutated (frozen/sealed objects are safe, nothing leaks if a rule throws), and the map is garbage-collected automatically, so no cleanup pass is required.
 - `dot-prop` is a devDependency used at runtime via inlining by `packem`. If you change the bundler config, verify `hasProperty` / `setProperty` still resolve.
 - Default rules in `src/rules.ts` reference https://github.com/nitaiaharoni1/anonymize-nlp (MIT). Preserve the attribution comment when editing the file.
 

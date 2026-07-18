@@ -21,13 +21,21 @@ const maskText = (maskMaps: Record<string, Map<string, string>>, text: string, t
     // eslint-disable-next-line no-param-reassign
     maskMaps[lowerCaseTag] ??= new Map<string, string>();
 
+    // Reuse the mask already assigned to this value so repeated occurrences of the same
+    // entity share one label and later distinct values do not collide with it.
+    const existing = maskMaps[lowerCaseTag].get(text);
+
+    if (existing !== undefined) {
+        return existing;
+    }
+
     const { size } = maskMaps[lowerCaseTag];
 
     const maskedValue = `<${tag.toUpperCase()}${size > 0 ? String(size) : ""}>`;
 
     maskMaps[lowerCaseTag].set(text, maskedValue);
 
-    return maskMaps[lowerCaseTag].get(text) as string;
+    return maskedValue;
 };
 
 const replaceWithMasks = (typesToAnonymize: string[], documentTerms: IDocumentTerm[], output: string): string => {
@@ -114,8 +122,10 @@ const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: st
 
             processedTerms.push({
                 // Only honour an explicit, user-supplied replacement; default (`<KEY>`-filled) rules
-                // keep the numbered-mask behaviour produced by maskText.
-                replacement: internal.userReplacement ? internal.replacement : undefined,
+                // keep the numbered-mask behaviour produced by maskText. When `userReplacement`
+                // was never stamped (rules passed straight to the exported `stringAnonymize`),
+                // fall back to the mere presence of an explicit `replacement`.
+                replacement: (internal.userReplacement ?? internal.replacement !== undefined) ? internal.replacement : undefined,
                 start: match.index,
                 tag: key,
                 text: match[0],
