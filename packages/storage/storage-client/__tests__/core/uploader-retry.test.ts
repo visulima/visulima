@@ -288,6 +288,66 @@ describe("uploader Retry Operations", () => {
         });
     });
 
+    it("should re-queue manual retries through the concurrency cap", async () => {
+        expect.assertions(2);
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = ErrorMockXMLHttpRequest;
+
+        const uploader = createUploader({
+            concurrency: 1,
+            endpoint: "/api/upload",
+        });
+
+        const file1 = new File(["test1"], "test1.jpg", { type: "image/jpeg" });
+        const file2 = new File(["test2"], "test2.jpg", { type: "image/jpeg" });
+
+        uploader.addBatch([file1, file2]);
+
+        const batchId = uploader.getBatches()[0]?.id;
+
+        // Let both items fail (the error mock rejects after 10ms; concurrency 1
+        // means the second runs only after the first settles).
+        await new Promise<void>((resolve) => {
+            setTimeout(() => {
+                resolve();
+            }, 40);
+        });
+
+        // Swap to a mock whose send never completes, so retried items stay
+        // "uploading" and we can observe how many run at once.
+        class NeverCompleteMockXMLHttpRequest {
+            public upload = { addEventListener: vi.fn(), removeEventListener: vi.fn() };
+
+            public open = vi.fn();
+
+            public send = vi.fn();
+
+            public setRequestHeader = vi.fn();
+
+            public getResponseHeader = vi.fn(() => undefined);
+
+            public addEventListener = vi.fn();
+
+            public removeEventListener = vi.fn();
+
+            public abort = vi.fn();
+        }
+
+        // @ts-expect-error - Mock XMLHttpRequest
+        globalThis.XMLHttpRequest = NeverCompleteMockXMLHttpRequest;
+
+        uploader.retryBatch(batchId!);
+
+        // The concurrency cap of 1 must hold: only one retried item is uploading,
+        // the other waits in the queue instead of firing a second parallel XHR.
+        const uploading = uploader.getItems().filter((item) => item.status === "uploading");
+        const pending = uploader.getItems().filter((item) => item.status === "pending");
+
+        expect(uploading).toHaveLength(1);
+        expect(pending).toHaveLength(1);
+    });
+
     it("should not retry non-error items", () => {
         expect.assertions(2);
 

@@ -136,6 +136,14 @@ export interface TusAdapterOptions {
     retry?: boolean;
 
     /**
+     * Inactivity timeout in milliseconds. When set, `upload()` fails via the
+     * error callback if no progress is observed for this long (the timer resets
+     * on every progress event and is suspended while paused). Off by default, so
+     * long-running or paused uploads are never force-aborted.
+     */
+    uploadTimeoutMs?: number;
+
+    /**
      * Persistent storage for resume URLs. Defaults to no persistence — pass a
      * `defaultUrlStorage()` (browser) or `MemoryUrlStorage` to opt in.
      */
@@ -184,6 +192,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
         onBeforeRequest,
         restrictions,
         retry = true,
+        uploadTimeoutMs,
         urlStorage,
     } = options;
 
@@ -663,6 +672,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
             let resolved = false;
             const originalFinishCallback = finishCallback;
             const originalErrorCallback = errorCallback;
+            const originalProgressCallback = progressCallback;
             let timeoutId: NodeJS.Timeout | undefined;
 
             const cleanupTimeout = (): void => {
@@ -673,6 +683,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
 
                 finishCallback = originalFinishCallback;
                 errorCallback = originalErrorCallback;
+                progressCallback = originalProgressCallback;
             };
 
             const internalFinishCallback = (result: UploadResult): void => {
@@ -695,8 +706,42 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                 }
             };
 
+            // Inactivity timeout: rearmed on every progress event, suspended while
+            // paused, and routed through the error callback so `setOnError` fires.
+            const onTimeout = (): void => {
+                if (resolved) {
+                    return;
+                }
+
+                if (uploadState?.isPaused) {
+                    // eslint-disable-next-line @typescript-eslint/no-use-before-define -- armTimeout is defined below; only invoked at runtime
+                    armTimeout();
+
+                    return;
+                }
+
+                uploadState?.abortController.abort();
+                internalErrorCallback(new Error("Upload timeout"));
+            };
+
+            const armTimeout = (): void => {
+                if (!uploadTimeoutMs || uploadTimeoutMs <= 0) {
+                    return;
+                }
+
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+
+                timeoutId = setTimeout(onTimeout, uploadTimeoutMs);
+            };
+
             finishCallback = internalFinishCallback;
             errorCallback = internalErrorCallback;
+            progressCallback = (progress: number, offset: number): void => {
+                armTimeout();
+                originalProgressCallback?.(progress, offset);
+            };
 
             // Validate restrictions before any network request so consumers get a
             // friendly error instead of a server-side 413.
@@ -809,20 +854,7 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                 return performUpload(file, uploadUrl, initialState.offset);
             })();
 
-            timeoutId = setTimeout(() => {
-                if (!resolved) {
-                    resolved = true;
-                    cleanupTimeout();
-
-                    if (uploadState) {
-                        uploadState.abortController.abort();
-                    }
-
-                    if (uploadState && !uploadState.uploadUrl) {
-                        uploadState = undefined;
-                    }
-                }
-            }, 300_000);
+            armTimeout();
 
             try {
                 const result = await uploadPromise;

@@ -289,17 +289,32 @@ export class Uploader {
      * Aborts a specific upload.
      */
     public abortItem(id: string): void {
+        this.abortItemInternal(id, false);
+    }
+
+    /**
+     * Aborts a single item. `suppressBatchEmit` avoids per-item batch events when
+     * the abort is driven by `abortBatch`/`abort`, which emit once at the end.
+     */
+    private abortItemInternal(id: string, suppressBatchEmit: boolean): void {
+        // Drop the item from the pending queue so `pump()` never starts it.
+        const queueIndex = this.queue.indexOf(id);
+
+        if (queueIndex !== -1) {
+            this.queue.splice(queueIndex, 1);
+        }
+
         const xhr = this.activeUploads.get(id);
 
         if (xhr) {
-            xhr.abort();
             this.activeUploads.delete(id);
+            xhr.abort();
         }
 
         const item = this.items.get(id);
 
         // Only transition items that haven't reached a terminal state.
-        if (item && item.status !== "completed" && item.status !== "error") {
+        if (item && item.status !== "completed" && item.status !== "error" && item.status !== "aborted") {
             item.status = "aborted";
             this.items.set(id, item);
 
@@ -308,14 +323,40 @@ export class Uploader {
 
             // Update batch if item belongs to one
             if (item.batchId) {
-                const batch = this.batches.get(item.batchId);
-
-                if (batch) {
-                    batch.status = "cancelled";
-                    this.batches.set(item.batchId, batch);
-                    this.emitBatch("BATCH_CANCELLED", batch);
-                }
+                this.updateBatchAfterAbort(item.batchId, suppressBatchEmit);
             }
+        }
+    }
+
+    /**
+     * Recomputes a batch's status after one of its items was aborted. The batch is
+     * only reported cancelled/errored once no sibling item is still active, so
+     * aborting one file out of many does not flip the whole batch prematurely.
+     */
+    private updateBatchAfterAbort(batchId: string, suppressEmit: boolean): void {
+        const batch = this.batches.get(batchId);
+
+        if (!batch) {
+            return;
+        }
+
+        const items = batch.itemIds.map((id) => this.items.get(id)).filter(Boolean);
+
+        batch.completedCount = items.filter((item) => item.status === "completed").length;
+        batch.errorCount = items.filter((item) => item.status === "error").length;
+
+        // Leave the status untouched while any sibling item is still in flight.
+        if (items.some((item) => item.status === "pending" || item.status === "uploading")) {
+            this.batches.set(batchId, batch);
+
+            return;
+        }
+
+        batch.status = batch.completedCount > 0 ? "error" : "cancelled";
+        this.batches.set(batchId, batch);
+
+        if (!suppressEmit) {
+            this.emitBatch(batch.status === "error" ? "BATCH_ERROR" : "BATCH_CANCELLED", batch);
         }
     }
 
@@ -329,9 +370,10 @@ export class Uploader {
             return;
         }
 
-        // Abort all items in the batch
+        // Abort all items in the batch, deferring the batch event to the single
+        // emit below so listeners fire once instead of once per item.
         for (const itemId of batch.itemIds) {
-            this.abortItem(itemId);
+            this.abortItemInternal(itemId, true);
         }
 
         // Derive the final batch status from item states rather than hard-coding
@@ -358,10 +400,20 @@ export class Uploader {
      * Aborts all uploads.
      */
     public abort(): void {
-        const ids = [...this.activeUploads.keys()];
+        // Drain queued-but-not-started items first so the concurrency pump can't
+        // restart them once the in-flight uploads settle.
+        const queuedIds = [...this.queue];
 
-        for (const id of ids) {
-            this.abortItem(id);
+        this.queue = [];
+
+        for (const id of queuedIds) {
+            this.abortItemInternal(id, false);
+        }
+
+        const activeIds = [...this.activeUploads.keys()];
+
+        for (const id of activeIds) {
+            this.abortItemInternal(id, false);
         }
 
         this.activeUploads.clear();
@@ -432,11 +484,10 @@ export class Uploader {
 
         this.items.set(id, item);
 
-        // Start upload again
-        this.uploadFile(item).catch((error) => {
-            // eslint-disable-next-line no-console -- Error logging for debugging
-            console.error(`[Uploader] Retry failed for item ${id}:`, error);
-        });
+        // Re-queue through the concurrency pump instead of firing immediately, so
+        // retrying a large failed batch respects the concurrency cap.
+        this.queue.push(id);
+        this.pump();
     }
 
     /**
@@ -794,27 +845,11 @@ export class Uploader {
                 reject(error);
             });
 
-            // Handle abort
+            // Handle abort. The item/batch state transition and events are owned by
+            // abortItemInternal (the only caller of xhr.abort()); this listener just
+            // settles the upload promise so the concurrency pump can advance.
             xhr.addEventListener("abort", () => {
                 this.activeUploads.delete(item.id);
-
-                // eslint-disable-next-line no-param-reassign -- Required to update item state
-                item.status = "aborted";
-                this.items.set(item.id, item);
-
-                // Emit abort event
-                this.emit("ITEM_ABORT", item);
-
-                // Update batch if item belongs to one
-                if (item.batchId) {
-                    const batch = this.batches.get(item.batchId);
-
-                    if (batch) {
-                        batch.status = "cancelled";
-                        this.batches.set(item.batchId, batch);
-                        this.emitBatch("BATCH_CANCELLED", batch);
-                    }
-                }
 
                 reject(new Error("Upload aborted"));
             });
