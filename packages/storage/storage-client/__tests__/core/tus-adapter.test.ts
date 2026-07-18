@@ -250,6 +250,45 @@ describe(createTusAdapter, () => {
         expect(adapter.isPaused()).toBe(false);
     });
 
+    it("routes an inactivity timeout through the error callback", async () => {
+        expect.assertions(2);
+
+        const onError = vi.fn();
+        const adapter = createTusAdapter({
+            chunkSize: 100,
+            endpoint: "http://localhost/api/upload/tus",
+            retry: false,
+            uploadTimeoutMs: 100,
+        });
+
+        adapter.setOnError(onError);
+
+        // POST — create the upload session.
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ Location: "http://localhost/api/upload/tus/timeout-id", "Tus-Resumable": "1.0.0" }),
+            ok: true,
+            status: 201,
+        });
+        // PATCH — never makes progress; only settles when the signal aborts.
+        mockFetch.mockImplementation(
+            async (_url: string, init?: RequestInit) =>
+                new Promise<Response>((_resolve, reject) => {
+                    init?.signal?.addEventListener("abort", () => {
+                        const error = new Error("Aborted");
+
+                        error.name = "AbortError";
+                        reject(error);
+                    });
+                }),
+        );
+
+        const file = new File(["x".repeat(100)], "test.jpg", { type: "image/jpeg" });
+
+        await expect(adapter.upload(file)).rejects.toThrow();
+
+        expect(onError).toHaveBeenCalledWith(expect.objectContaining({ message: "Upload timeout" }));
+    });
+
     it("should handle upload errors", async () => {
         expect.assertions(1);
 

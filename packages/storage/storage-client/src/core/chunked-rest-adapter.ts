@@ -78,6 +78,14 @@ export interface ChunkedRestAdapterOptions {
     restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure */
     retry?: boolean;
+
+    /**
+     * Inactivity timeout in milliseconds. When set, `upload()` fails via the
+     * error callback if no progress is observed for this long (the timer resets
+     * on every progress event and is suspended while paused). Off by default, so
+     * long-running or paused uploads are never force-aborted.
+     */
+    uploadTimeoutMs?: number;
     /** Persistent storage for resume identifiers. Opt-in. */
     urlStorage?: UrlStorage;
 }
@@ -125,6 +133,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         onBeforeRequest,
         restrictions,
         retry = true,
+        uploadTimeoutMs,
         urlStorage,
     } = options;
 
@@ -143,6 +152,9 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
         totalSize: 0,
         uploadedChunks: new Set(),
     };
+
+    /** True while an `upload()` call's worker pool is running (possibly parked on a pause). */
+    let uploadInFlight = false;
 
     /**
      * Merges adapter-level custom headers (and any `onBeforeRequest` hook result)
@@ -236,13 +248,21 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
     };
 
     /**
+     * Whether an HTTP status is worth retrying. Deterministic 4xx client errors
+     * (400/401/403/404/413/422 …) will fail again on replay, so they surface
+     * immediately instead of re-sending the chunk body three more times; only
+     * transient statuses (408 request timeout, 429 rate limit, 5xx) are retried.
+     */
+    const isRetryableStatus = (status: number): boolean => status === 408 || status === 429 || status >= 500;
+
+    /**
      * Retries a fetch request with exponential backoff.
      */
     const fetchWithRetry = async (url: string, init: RequestInit, retriesLeft = maxRetries): Promise<Response> => {
         try {
             const response = await fetch(url, init);
 
-            if (!response.ok && retriesLeft > 0 && retry) {
+            if (!response.ok && retriesLeft > 0 && retry && isRetryableStatus(response.status)) {
                 // Exponential backoff: 1s, 2s, 4s
                 const delay = 1000 * 2 ** (maxRetries - retriesLeft);
 
@@ -618,7 +638,15 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             // Wake any workers blocked on the pause promise (in-flight pause/resume).
             flushPauseWaiters();
 
-            // Continue upload
+            // If an `upload()` call is still running, its workers were merely parked
+            // on the pause promise — flushing them above is enough. Re-running
+            // performUpload here would spawn a second worker pool that PATCHes the
+            // same chunks again.
+            if (uploadInFlight) {
+                return;
+            }
+
+            // Post-error / settled resume: no workers are running, so drive a fresh pass.
             const abortController = new AbortController();
 
             uploadState.abortController = abortController;
@@ -670,6 +698,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
             let resolved = false;
             const originalFinishCallback = finishCallback;
             const originalErrorCallback = errorCallback;
+            const originalProgressCallback = progressCallback;
             let timeoutId: NodeJS.Timeout | undefined;
 
             const cleanupTimeout = (): void => {
@@ -680,6 +709,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
 
                 finishCallback = originalFinishCallback;
                 errorCallback = originalErrorCallback;
+                progressCallback = originalProgressCallback;
             };
 
             const internalFinishCallback = (result: UploadResult): void => {
@@ -698,12 +728,48 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 }
             };
 
+            // Inactivity timeout: rearmed on every progress event, suspended while
+            // paused, and routed through the error callback so `setOnError` fires.
+            const onTimeout = (): void => {
+                if (resolved) {
+                    return;
+                }
+
+                if (uploadState.paused) {
+                    // eslint-disable-next-line @typescript-eslint/no-use-before-define -- armTimeout is defined below; only invoked at runtime
+                    armTimeout();
+
+                    return;
+                }
+
+                uploadState.aborted = true;
+                uploadState.abortController?.abort();
+                flushPauseWaiters();
+                internalErrorCallback(new Error("Upload timeout"));
+            };
+
+            const armTimeout = (): void => {
+                if (!uploadTimeoutMs || uploadTimeoutMs <= 0) {
+                    return;
+                }
+
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+
+                timeoutId = setTimeout(onTimeout, uploadTimeoutMs);
+            };
+
             // Validate restrictions before any network request so consumers get a
             // friendly error instead of a server-side 413.
             validateFile(file, restrictions);
 
             finishCallback = internalFinishCallback;
             errorCallback = internalErrorCallback;
+            progressCallback = (progress: number, offset: number): void => {
+                armTimeout();
+                originalProgressCallback?.(progress, offset);
+            };
 
             uploadState = {
                 aborted: false,
@@ -791,15 +857,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 return performUpload(file, fileId, abortController.signal);
             })();
 
-            // Safety timeout (5 minutes)
-            timeoutId = setTimeout(() => {
-                if (!resolved) {
-                    uploadState.aborted = true;
-                    flushPauseWaiters();
-                    cleanupTimeout();
-                    internalErrorCallback(new Error("Upload timeout"));
-                }
-            }, 300_000);
+            uploadInFlight = true;
+            armTimeout();
 
             try {
                 const result = await uploadPromise;
@@ -815,6 +874,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                 control?._detach();
                 internalErrorCallback(uploadError);
                 throw uploadError;
+            } finally {
+                uploadInFlight = false;
             }
         },
     };

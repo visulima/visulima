@@ -410,6 +410,71 @@ describe("chunked-rest-adapter resume", () => {
         await expect(uploadPromise).rejects.toThrow(/abort/i);
     });
 
+    it("resume() during an in-flight pause does not spawn a second worker pool", async () => {
+        expect.assertions(1);
+
+        const adapter = createChunkedRestAdapter({ chunkSize: 100, endpoint: ENDPOINT, retry: false });
+
+        let resolvePatch: ((value: Response) => void) | undefined;
+        let headCount = 0;
+
+        mockFetch.mockImplementation(async (_url: string, init?: RequestInit) => {
+            const method = init?.method;
+
+            if (method === "POST") {
+                return { headers: new Headers({ "X-Upload-ID": "file-resume" }), ok: true } as Response;
+            }
+
+            if (method === "HEAD") {
+                headCount += 1;
+
+                // First HEAD (performUpload start) reports nothing uploaded; any later
+                // HEAD reports the file as fully received.
+                return {
+                    headers: new Headers({ "X-Upload-Offset": headCount === 1 ? "0" : "100" }),
+                    ok: true,
+                } as Response;
+            }
+
+            if (method === "PATCH") {
+                return new Promise<Response>((resolve) => {
+                    resolvePatch = resolve;
+                });
+            }
+
+            // GET — final result.
+            return {
+                headers: new Headers(),
+                json: async () => ({ id: "file-resume", size: 100, status: "completed" }),
+                ok: true,
+            } as Response;
+        });
+
+        const file = new File(["x".repeat(100)], "test.bin", { type: "application/octet-stream" });
+        const uploadPromise = adapter.upload(file);
+
+        // Wait for the single chunk's PATCH to be in flight.
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 20);
+        });
+
+        adapter.pause();
+        // Resuming while the original upload() is still running must only wake the
+        // parked workers, never re-run performUpload (which would re-PATCH the chunk).
+        await adapter.resume();
+
+        resolvePatch?.({
+            headers: new Headers({ "X-Upload-Offset": "100" }),
+            ok: true,
+        } as Response);
+
+        await uploadPromise;
+
+        const patchCalls = mockFetch.mock.calls.map((call) => captureFetchCall(call)).filter((call) => call.method === "PATCH");
+
+        expect(patchCalls).toHaveLength(1);
+    });
+
     it("control.pause() / control.resume() flip the adapter's paused flag", async () => {
         expect.assertions(2);
 
@@ -467,6 +532,72 @@ describe("chunked-rest-adapter resume", () => {
 
         await uploadPromise;
     });
+
+    it("does not retry a deterministic 4xx chunk failure", async () => {
+        expect.assertions(2);
+
+        // retry defaults to true — the 4xx must still surface after a single PATCH.
+        const adapter = createChunkedRestAdapter({ chunkSize: 100, endpoint: ENDPOINT });
+
+        // 1. POST — create session.
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ "X-Upload-ID": "file-4xx" }),
+            ok: true,
+        });
+        // 2. HEAD — initial status.
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ "X-Upload-Offset": "0" }),
+            ok: true,
+        });
+        // 3. PATCH — 413 Payload Too Large (deterministic, not retryable).
+        mockFetch.mockResolvedValue({
+            headers: new Headers(),
+            ok: false,
+            status: 413,
+            statusText: "Payload Too Large",
+        });
+
+        const file = new File(["x".repeat(100)], "test.bin", { type: "application/octet-stream" });
+
+        await expect(adapter.upload(file)).rejects.toThrow(/Failed to upload chunk/);
+
+        const patchCalls = mockFetch.mock.calls.map((call) => captureFetchCall(call)).filter((call) => call.method === "PATCH");
+
+        expect(patchCalls).toHaveLength(1);
+    });
+
+    it("retries a transient 5xx chunk failure with backoff", async () => {
+        expect.assertions(2);
+
+        const adapter = createChunkedRestAdapter({ chunkSize: 100, endpoint: ENDPOINT, maxRetries: 1 });
+
+        // 1. POST — create session.
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ "X-Upload-ID": "file-5xx" }),
+            ok: true,
+        });
+        // 2. HEAD — initial status.
+        mockFetch.mockResolvedValueOnce({
+            headers: new Headers({ "X-Upload-Offset": "0" }),
+            ok: true,
+        });
+        // 3. PATCH — 500 (retryable). All retries also fail here.
+        mockFetch.mockResolvedValue({
+            headers: new Headers(),
+            ok: false,
+            status: 500,
+            statusText: "Server Error",
+        });
+
+        const file = new File(["x".repeat(100)], "test.bin", { type: "application/octet-stream" });
+
+        await expect(adapter.upload(file)).rejects.toThrow(/Failed to upload chunk/);
+
+        const patchCalls = mockFetch.mock.calls.map((call) => captureFetchCall(call)).filter((call) => call.method === "PATCH");
+
+        // 1 initial attempt + 1 retry (maxRetries: 1).
+        expect(patchCalls).toHaveLength(2);
+    }, 20_000);
 
     it("treats a probe network failure as cache miss and creates a fresh session", async () => {
         expect.assertions(2);
