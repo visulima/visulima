@@ -1633,7 +1633,7 @@ export class Grid {
                 const targetBorderRowIndex = firstRow + Math.ceil(rowSpanCount / 2) - 1;
 
                 // Get processed lines for the cell content
-                const middleInternalJoinWidth = this.#options.showBorders ? this.#options.border?.bodyJoin.width ?? 0 : 0;
+                const middleInternalJoinWidth = borderStyle.bodyJoin.width;
                 const fullSpanWidthForContent = calculateCellTotalWidth(columnWidths, col, colSpan, middleInternalJoinWidth); // Width without internal joins for content padding
                 const processedLines = this.alignCellContent(definingCell, fullSpanWidthForContent);
                 const actualContentHeight = processedLines.length;
