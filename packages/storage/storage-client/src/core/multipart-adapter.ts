@@ -28,6 +28,13 @@ export interface MultipartAdapterOptions {
     restrictions?: UploadRestrictions;
     /** Enable automatic retry on failure with exponential backoff (off by default). */
     retry?: boolean;
+
+    /**
+     * Inactivity timeout in milliseconds. When set, `upload()` rejects if no
+     * progress is observed for this long (the timer resets on every progress
+     * event). Off by default, so long-running uploads are never force-aborted.
+     */
+    uploadTimeoutMs?: number;
 }
 
 export interface MultipartAdapter {
@@ -159,6 +166,41 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
                     }
                 };
 
+                const onAbort = (itemOrBatch: UploadItem | BatchState): void => {
+                    if ("file" in itemOrBatch && !resolved && itemOrBatch.id === itemId) {
+                        resolved = true;
+                        // eslint-disable-next-line @typescript-eslint/no-use-before-define -- cleanup is defined later but not invoked until callback runs
+                        cleanup();
+                        reject(new Error("Upload aborted"));
+                    }
+                };
+
+                const armTimeout = (): void => {
+                    if (!options.uploadTimeoutMs || options.uploadTimeoutMs <= 0) {
+                        return;
+                    }
+
+                    if (timeoutId) {
+                        clearTimeout(timeoutId);
+                    }
+
+                    timeoutId = setTimeout(() => {
+                        if (!resolved) {
+                            resolved = true;
+                            // eslint-disable-next-line @typescript-eslint/no-use-before-define -- cleanup is defined later but not invoked until callback runs
+                            cleanup();
+                            reject(new Error("Upload timeout"));
+                        }
+                    }, options.uploadTimeoutMs);
+                };
+
+                // Reset the inactivity timeout on every progress tick.
+                const onProgress = (itemOrBatch: UploadItem | BatchState): void => {
+                    if ("file" in itemOrBatch && !resolved && itemOrBatch.id === itemId) {
+                        armTimeout();
+                    }
+                };
+
                 const cleanup = (): void => {
                     if (timeoutId) {
                         clearTimeout(timeoutId);
@@ -167,20 +209,18 @@ export const createMultipartAdapter = (options: MultipartAdapterOptions): Multip
 
                     uploader.off("ITEM_FINISH", onItemFinish);
                     uploader.off("ITEM_ERROR", onError);
+                    uploader.off("ITEM_ABORT", onAbort);
+                    uploader.off("ITEM_PROGRESS", onProgress);
                 };
 
                 uploader.on("ITEM_FINISH", onItemFinish);
                 uploader.on("ITEM_ERROR", onError);
+                uploader.on("ITEM_ABORT", onAbort);
+                uploader.on("ITEM_PROGRESS", onProgress);
 
                 itemId = uploader.add(file);
 
-                timeoutId = setTimeout(() => {
-                    if (!resolved) {
-                        resolved = true;
-                        cleanup();
-                        reject(new Error("Upload timeout"));
-                    }
-                }, 300_000);
+                armTimeout();
             }),
 
         /**
