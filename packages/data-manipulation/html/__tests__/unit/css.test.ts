@@ -444,7 +444,7 @@ describe(css, () => {
             // Custom properties bypass the kebab cache entirely, so a stream of distinct
             // dynamic names still maps verbatim without growing the module-level cache.
             for (let index = 0; index < 1000; index += 1) {
-                expect(css({ [`--color-${index}`]: "red" }, false)).toBe(`--color-${index}: red;`);
+                expect(css({ [`--color-${String(index)}`]: "red" }, false)).toBe(`--color-${String(index)}: red;`);
             }
         });
 
