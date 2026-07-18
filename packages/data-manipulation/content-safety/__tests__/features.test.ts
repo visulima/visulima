@@ -103,6 +103,70 @@ describe("checkBannedWords options", () => {
     });
 });
 
+describe("unicode-safe match positions", () => {
+    it("reports correct indices after a non-recomposable combining dot above (U+0307)", () => {
+        expect.assertions(4);
+
+        // "q" + U+0307 has no precomposed NFC form, so folding shortens the string; positions must
+        // still index the original text, not the folded one.
+        const text = "q̇uick fuck here";
+        const result = checkBannedWords(text);
+        const match = result.matches.find((m) => m.word.toLowerCase() === "fuck");
+
+        expect(match).toBeDefined();
+        expect(match!.startIndex).toBe(7);
+        expect(match!.endIndex).toBe(11);
+        expect(text.slice(match!.startIndex, match!.endIndex)).toBe("fuck");
+    });
+
+    it("censors the correct span after a combining dot above", () => {
+        expect.assertions(1);
+
+        expect(censorText("q̇uick fuck here")).toBe("q̇uick **** here");
+    });
+
+    it("folds Turkish dotted capital İ and reports the original span", () => {
+        expect.assertions(3);
+
+        // "İST" folds to "ist"; the reported match must keep the original 3-code-unit span.
+        const result = checkBannedWords("İST here", { customWords: ["ist"] });
+        const match = result.matches.find((m) => m.word === "İST");
+
+        expect(match).toBeDefined();
+        expect(match!.startIndex).toBe(0);
+        expect(match!.endIndex).toBe(3);
+    });
+});
+
+describe("createChecker per-call options", () => {
+    it("honors per-call customWords", () => {
+        expect.assertions(2);
+
+        const checker = createChecker();
+
+        expect(checker.check("please do not frobnicate", { customWords: ["frobnicate"] }).hasBannedWords).toBe(true);
+        expect(checker.check("please do not frobnicate").hasBannedWords).toBe(false);
+    });
+
+    it("honors a per-call allowlist", () => {
+        expect.assertions(2);
+
+        const checker = createChecker();
+
+        expect(checker.check("this is fuck", { allowlist: ["fuck"] }).hasBannedWords).toBe(false);
+        expect(checker.check("this is fuck").hasBannedWords).toBe(true);
+    });
+
+    it("honors per-call options when censoring", () => {
+        expect.assertions(2);
+
+        const checker = createChecker();
+
+        expect(checker.censor("frobnicate now", { customWords: ["frobnicate"] })).toBe("********** now");
+        expect(checker.censor("this is fuck", { allowlist: ["fuck"] })).toBe("this is fuck");
+    });
+});
+
 describe(censorText, () => {
     it("masks single banned words with asterisks by default", () => {
         expect.assertions(2);
@@ -125,13 +189,32 @@ describe(censorText, () => {
         expect(censorText("perfectly clean text")).toBe("perfectly clean text");
     });
 
-    it("preserves length with overlapping matches (longest wins)", () => {
-        expect.assertions(1);
+    it("masks the union of overlapping matches (a contained match cannot leak its container's prefix)", () => {
+        expect.assertions(3);
 
         const text = "es un hijo de puta";
         const censored = censorText(text);
 
+        // The whole banned phrase "hijo de puta" [6,18) must be masked, not just the contained "puta".
+        expect(censored).toBe("es un ************");
         expect(censored).toHaveLength(text.length);
+        expect(censored).not.toContain("hijo");
+    });
+
+    it("masks the union of partially overlapping matches", () => {
+        expect.assertions(1);
+
+        const checker = createChecker({ words: { en: ["aa bb", "bb cc"] } });
+
+        expect(checker.censor("aa bb cc")).toBe("********");
+    });
+
+    it("masks the union of overlapping CJK matches", () => {
+        expect.assertions(1);
+
+        const checker = createChecker({ words: { zh: ["他妈", "妈的"] } });
+
+        expect(checker.censor("他妈的")).toBe("***");
     });
 
     it("censors CJK substrings", () => {
@@ -233,6 +316,16 @@ describe("bANNED_WORDS immutability", () => {
         expect(() => {
             // @ts-expect-error -- intentionally testing runtime immutability
             BANNED_WORDS.en = [];
+        }).toThrow(TypeError);
+    });
+
+    it("deeply freezes each language array", () => {
+        expect.assertions(2);
+
+        expect(Object.isFrozen(BANNED_WORDS.en)).toBe(true);
+        expect(() => {
+            // @ts-expect-error -- intentionally testing runtime immutability of the nested array
+            BANNED_WORDS.en.push("x");
         }).toThrow(TypeError);
     });
 });
