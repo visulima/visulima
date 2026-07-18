@@ -152,28 +152,33 @@ export class ProgressBar {
      *
      * Supported tokens: `{bar}`, `{percentage}`, `{value}`, `{total}`, `{eta}`,
      * `{eta_formatted}`, `{duration}`, `{rate}`, plus any `payload` key.
+     * @param optionOverrides Options to override for this render only; applied to a
+     * shallow copy so the bar's stored configuration is never mutated (used by composite
+     * compositing to disable glue and `formatBar`).
      * @returns The fully interpolated bar line.
      */
     // eslint-disable-next-line sonarjs/cognitive-complexity
-    public render(): string {
-        const total = this.options.total > 0 ? this.options.total : 1;
-        const width = Math.max(0, this.options.width ?? 40);
+    public render(optionOverrides?: Partial<ProgressBarOptions>): string {
+        const options = optionOverrides === undefined ? this.options : { ...this.options, ...optionOverrides };
+
+        const total = options.total > 0 ? options.total : 1;
+        const width = Math.max(0, options.width ?? 40);
         const percentage = Math.max(0, Math.min(100, Math.round((this.current / total) * 100)));
         const filled = Math.max(0, Math.min(width, Math.round((this.current / total) * width)));
         const empty = width - filled;
 
         let bar: string;
 
-        const useCaps = this.options.roundedCaps === true || (this.options.roundedCaps === undefined && this.options.style === "braille");
+        const useCaps = options.roundedCaps === true || (options.roundedCaps === undefined && options.style === "braille");
 
-        if (Array.isArray(this.options.barCompleteChar) || Array.isArray(this.options.barIncompleteChar)) {
-            const completeChars = Array.isArray(this.options.barCompleteChar) ? this.options.barCompleteChar : undefined;
-            const incompleteChars = Array.isArray(this.options.barIncompleteChar) ? this.options.barIncompleteChar : undefined;
+        if (Array.isArray(options.barCompleteChar) || Array.isArray(options.barIncompleteChar)) {
+            const completeChars = Array.isArray(options.barCompleteChar) ? options.barCompleteChar : undefined;
+            const incompleteChars = Array.isArray(options.barIncompleteChar) ? options.barIncompleteChar : undefined;
 
             // eslint-disable-next-line @stylistic/operator-linebreak
             const completeChar =
-                completeChars?.[completeChars.length - 1] ?? (typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█");
-            const incompleteChar = incompleteChars?.[0] ?? (typeof this.options.barIncompleteChar === "string" ? this.options.barIncompleteChar : "░");
+                completeChars?.[completeChars.length - 1] ?? (typeof options.barCompleteChar === "string" ? options.barCompleteChar : "█");
+            const incompleteChar = incompleteChars?.[0] ?? (typeof options.barIncompleteChar === "string" ? options.barIncompleteChar : "░");
             const completeLength = completeChars?.length ?? 1;
 
             const progressRatio = this.current / total;
@@ -182,7 +187,7 @@ export class ProgressBar {
             const fractional = currentStep % completeLength;
 
             const peakPos = this.calculatePeakPosition(width, total, filled);
-            const peakChar = this.options.peakChar ?? completeChar;
+            const peakChar = options.peakChar ?? completeChar;
 
             let barContent = "";
 
@@ -201,11 +206,11 @@ export class ProgressBar {
 
             bar = barContent;
         } else {
-            const completeChar = typeof this.options.barCompleteChar === "string" ? this.options.barCompleteChar : "█";
-            const incompleteChar = typeof this.options.barIncompleteChar === "string" ? this.options.barIncompleteChar : "░";
+            const completeChar = typeof options.barCompleteChar === "string" ? options.barCompleteChar : "█";
+            const incompleteChar = typeof options.barIncompleteChar === "string" ? options.barIncompleteChar : "░";
 
             const peakPos = this.calculatePeakPosition(width, total, filled);
-            const peakChar = this.options.peakChar ?? completeChar;
+            const peakChar = options.peakChar ?? completeChar;
 
             if (peakPos === undefined) {
                 bar = completeChar.repeat(filled) + incompleteChar.repeat(empty);
@@ -235,18 +240,18 @@ export class ProgressBar {
             bar = chars.join("");
         }
 
-        const barGlue = this.options.barGlue ?? "";
+        const barGlue = options.barGlue ?? "";
 
         if (barGlue !== "") {
             // eslint-disable-next-line @typescript-eslint/no-misused-spread
             bar = [...bar].join(barGlue);
         }
 
-        if (this.options.formatBar) {
-            bar = this.options.formatBar(bar, { percentage, total: this.options.total, value: this.current });
+        if (options.formatBar) {
+            bar = options.formatBar(bar, { percentage, total: options.total, value: this.current });
         }
 
-        let format = this.options.format ?? "progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}";
+        let format = options.format ?? "progress [{bar}] {percentage}% | ETA: {eta}s | {value}/{total}";
 
         if (this.payload) {
             const entries = Object.entries(this.payload);
@@ -266,7 +271,7 @@ export class ProgressBar {
             .replaceAll("{bar}", bar)
             .replaceAll("{percentage}", String(percentage))
             .replaceAll("{value}", String(this.current))
-            .replaceAll("{total}", String(this.options.total))
+            .replaceAll("{total}", String(options.total))
             .replaceAll("{eta_formatted}", formatDuration(eta))
             .replaceAll("{eta}", String(eta))
             .replaceAll("{duration}", formatDuration(duration))
