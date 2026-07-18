@@ -1,18 +1,30 @@
 import type { ValidationStatus } from "../types";
-import type { TransportValidator } from "./context";
+import type { TransportHostResolver, TransportValidator } from "./context";
 import { tryImport } from "./runtime";
 
 interface StsModule {
     GetCallerIdentityCommand: new (input: Record<string, unknown>) => unknown;
     STSClient: new (config: { credentials: { accessKeyId: string; secretAccessKey: string }; region: string; requestHandler?: unknown }) => {
         destroy: () => void;
-        send: (command: unknown) => Promise<{ Account?: string }>;
+        send: (command: unknown, options?: { abortSignal?: AbortSignal }) => Promise<{ Account?: string }>;
     };
 }
 
+const AWS_REGION = "us-east-1";
+const AWS_STS_HOST = `sts.${AWS_REGION}.amazonaws.com`;
+
 const AWS_REJECTED_ERROR_PATTERN = /InvalidClientTokenId|SignatureDoesNotMatch|AccessDenied|ExpiredToken/i;
 
-export const validateAws: TransportValidator = async ({ extras, secret }): Promise<ValidationStatus> => {
+// STS is a fixed provider endpoint — the host never comes from scanned content,
+// but the allowlist still gates it so a scan restricted to specific hosts
+// doesn't fire off-list outbound traffic.
+export const resolveAwsHosts: TransportHostResolver = () => [AWS_STS_HOST];
+
+export const validateAws: TransportValidator = async ({ extras, secret, signal }): Promise<ValidationStatus> => {
+    if (signal?.aborted) {
+        return "error";
+    }
+
     const accessKeyId = extras["AKID"];
 
     if (typeof accessKeyId !== "string" || accessKeyId.length === 0) {
@@ -31,11 +43,11 @@ export const validateAws: TransportValidator = async ({ extras, secret }): Promi
 
     const client = new mod.STSClient({
         credentials: { accessKeyId, secretAccessKey: secret },
-        region: "us-east-1",
+        region: AWS_REGION,
     });
 
     try {
-        const response = await client.send(new mod.GetCallerIdentityCommand({}));
+        const response = await client.send(new mod.GetCallerIdentityCommand({}), signal ? { abortSignal: signal } : undefined);
 
         return typeof response.Account === "string" && response.Account.length > 0 ? "verified" : "rejected";
     } catch (error) {
