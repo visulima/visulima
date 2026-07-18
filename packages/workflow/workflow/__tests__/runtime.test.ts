@@ -4,9 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import * as z from "zod";
 
 import defineWorkflow from "../src/define-workflow";
-import { DuplicateStepIdError, RunNotFoundError } from "../src/errors";
+import { DuplicateStepIdError, LeaseHeldError, RunNotFoundError } from "../src/errors";
 import createRuntime from "../src/runtime";
 import MemoryStore from "../src/store/memory-store";
+import type { WorkflowStore } from "../src/store/types";
 import UnstorageStore from "../src/store/unstorage-store";
 
 // "validation failed: " must be followed by a non-colon, non-space char (no leading colon for root errors).
@@ -429,6 +430,117 @@ describe(createRuntime, () => {
         const [resumed] = await runtime.sweep(Date.now() + 2000);
 
         expect(resumed?.status).toBe("failed");
+    });
+
+    it("isolates a poisoned run in sweep so later-due runs still complete", async () => {
+        expect.assertions(3);
+
+        const store = new MemoryStore();
+        const poison = defineWorkflow({
+            id: "poison",
+            run: async (context) => {
+                await context.sleep("nap", 1000);
+            },
+        });
+        const good = defineWorkflow<unknown, string>({
+            id: "good",
+            run: async (context) => {
+                await context.sleep("nap", 5000);
+
+                return "ok";
+            },
+        });
+
+        const seeder = createRuntime({ store, workflows: [poison, good] });
+
+        await seeder.trigger(poison, {});
+        await seeder.trigger(good, {});
+
+        // A fresh instance that never registered "poison": resuming it throws unknown-workflow. The
+        // poisoned run sorts first by wake-at, so without isolation it would abort the whole sweep.
+        const runtime = createRuntime({ store, workflows: [good] });
+        const results = await runtime.sweep(Date.now() + 10_000);
+
+        const poisonResult = results.find((result) => result.runId.startsWith("poison:"));
+        const goodResult = results.find((result) => result.runId.startsWith("good:"));
+
+        expect(results).toHaveLength(2);
+        expect(poisonResult?.status).toBe("failed");
+        expect(goodResult?.status).toBe("completed");
+    });
+
+    it("still resolves an activation when the store's release rejects", async () => {
+        expect.assertions(2);
+
+        const memory = new MemoryStore();
+        // A store whose lease release fails transiently must not turn a committed activation into a rejection.
+        const store: WorkflowStore = {
+            acquire: (runId, token, ttlMs) => memory.acquire(runId, token, ttlMs),
+            delete: (runId) => memory.delete(runId),
+            due: (now, limit) => memory.due(now, limit),
+            load: (runId) => memory.load(runId),
+            release: () => Promise.reject(new Error("release blip")),
+            save: (run) => memory.save(run),
+        };
+        const workflow = defineWorkflow<unknown, string>({
+            id: "flaky-release",
+            run: async (context) => {
+                const value = await context.waitForEvent<string>("ev", "go");
+
+                return value ?? "none";
+            },
+        });
+
+        const runtime = createRuntime({ store, workflows: [workflow] });
+        const triggered = await runtime.trigger(workflow, {});
+
+        // signal() has no sweep-level try/catch, so a rejecting release would surface directly.
+        const result = await runtime.signal(triggered.runId, "go", "delivered");
+
+        expect(result.status).toBe("completed");
+        expect(result.output).toBe("delivered");
+    });
+
+    it("throws LeaseHeldError when signalling a run whose lease is held by another instance", async () => {
+        expect.assertions(1);
+
+        const store = new MemoryStore();
+        const workflow = defineWorkflow({
+            id: "leased-signal",
+            run: async (context) => {
+                await context.waitForEvent("ev", "go");
+            },
+        });
+
+        const runtime = createRuntime({ store, workflows: [workflow] });
+        const triggered = await runtime.trigger(workflow, {});
+
+        // Another instance holds the lease: delivering the event must not be silently dropped.
+        await store.acquire(triggered.runId, "other-instance", 60_000);
+
+        await expect(runtime.signal(triggered.runId, "go", { ok: true })).rejects.toBeInstanceOf(LeaseHeldError);
+    });
+
+    it("records a step's Date output as its JSON form identically across stores", async () => {
+        expect.assertions(3);
+
+        const when = new Date("2020-05-01T00:00:00.000Z");
+        const makeWorkflow = (): ReturnType<typeof defineWorkflow<unknown, unknown>> =>
+            defineWorkflow<unknown, unknown>({
+                id: "date-step",
+                run: (context) => context.step("when", () => when),
+            });
+
+        const memory = createRuntime({ store: new MemoryStore() });
+        const unstorage = createRuntime({ store: new UnstorageStore(createStorage()) });
+
+        const viaMemory = await memory.trigger(makeWorkflow(), {});
+        const viaUnstorage = await unstorage.trigger(makeWorkflow(), {});
+
+        // The default MemoryStore must not preserve a Date the durable stores would flatten to a string.
+        expect(viaMemory.output).toBe(when.toISOString());
+        expect(viaUnstorage.output).toBe(when.toISOString());
+        expect(viaMemory.output).toStrictEqual(viaUnstorage.output);
     });
 });
 

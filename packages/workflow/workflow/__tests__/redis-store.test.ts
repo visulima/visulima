@@ -2,11 +2,38 @@ import { describe, expect, it, vi } from "vitest";
 
 import defineWorkflow from "../src/define-workflow";
 import createRuntime from "../src/runtime";
+import type { RedisLike } from "../src/store/redis-store";
 import RedisStore from "../src/store/redis-store";
 import FakeRedis from "./_helpers/fake-redis";
-import { runStoreContract } from "./_helpers/store-contract";
+import { makeRun, runStoreContract } from "./_helpers/store-contract";
 
 runStoreContract("RedisStore (in-memory fake)", () => Promise.resolve({ store: new RedisStore(new FakeRedis()) }));
+
+describe("RedisStore save ordering", () => {
+    it("writes the wake index before the run when adding a wake (no lost wake on a crash)", async () => {
+        expect.assertions(2);
+
+        const redis = new FakeRedis();
+        let failSet = false;
+        // Delegate to the faithful fake, but let a `set` crash after the wake index was written.
+        const wrapped: RedisLike = {
+            del: (...keys) => redis.del(...keys),
+            eval: (script, numberOfKeys, ...arguments_) => redis.eval(script, numberOfKeys, ...arguments_),
+            get: (key) => redis.get(key),
+            set: (key, value, ...options) => (failSet ? Promise.reject(new Error("crash")) : redis.set(key, value, ...options)),
+            zadd: (key, score, member) => redis.zadd(key, score, member),
+            zrangebyscore: (key, min, max, ...arguments_) => redis.zrangebyscore(key, min, max, ...arguments_),
+            zrem: (key, ...members) => redis.zrem(key, ...members),
+        };
+        const store = new RedisStore(wrapped);
+
+        failSet = true;
+
+        await expect(store.save(makeRun("a", { wakeAt: 1000 }))).rejects.toThrow("crash");
+        // The index write happened first, so the run is still discoverable by due(): the wake is not lost.
+        await expect(store.due(5000, 10)).resolves.toStrictEqual(["a"]);
+    });
+});
 
 describe("RedisStore with a runtime", () => {
     it("persists a run and resumes it from a fresh runtime against the same Redis", async () => {

@@ -1,7 +1,7 @@
 import type { Actor, Snapshot } from "xstate";
 import { createActor } from "xstate";
 
-import WorkflowError, { RunNotFoundError } from "./errors";
+import WorkflowError, { LeaseHeldError, RunNotFoundError, serializeError } from "./errors";
 import generateRunId from "./id";
 import runMachine from "./lifecycle-machine";
 import executeRun from "./run-context";
@@ -244,10 +244,16 @@ const createRuntime = (options: RuntimeOptions = {}): WorkflowRuntime => {
 
     /**
      * Run `body` under a cross-process lease (when the store supports one). If the
-     * lease is held by another instance, return the run's current state instead of
-     * driving it. The in-process {@link withRunLock} still wraps every call.
+     * lease is held by another instance, `onContended` decides the outcome — by
+     * default a passive read of the run's current state (intentional for `resume`,
+     * which the next sweep retries). The in-process {@link withRunLock} still wraps
+     * every call.
      */
-    const withLease = async (runId: string, body: () => Promise<RunResult>): Promise<RunResult> => {
+    const withLease = async (
+        runId: string,
+        body: () => Promise<RunResult>,
+        onContended: () => Promise<RunResult> = () => readResult(runId),
+    ): Promise<RunResult> => {
         if (!store.acquire) {
             return body();
         }
@@ -256,14 +262,20 @@ const createRuntime = (options: RuntimeOptions = {}): WorkflowRuntime => {
         const acquired = await store.acquire(runId, token, leaseTtlMs);
 
         if (!acquired) {
-            return readResult(runId);
+            return onContended();
         }
 
         try {
             return await body();
         } finally {
             if (store.release) {
-                await store.release(runId, token);
+                // Best-effort: the lease TTL guarantees eventual expiry, so a transient release
+                // failure must not supersede the (already committed) activation result.
+                try {
+                    await store.release(runId, token);
+                } catch {
+                    // Swallowed: the lease self-expires; failing here would mask the body's outcome.
+                }
             }
         }
     };
@@ -339,7 +351,13 @@ const createRuntime = (options: RuntimeOptions = {}): WorkflowRuntime => {
     const resume = (runId: string): Promise<RunResult> => resumeAt(runId, Date.now());
 
     const signal = (runId: string, event: string, payload?: unknown): Promise<RunResult> =>
-        withRunLock(runId, () => withLease(runId, () => signalRun(runId, event, payload)));
+        withRunLock(runId, () =>
+            withLease(runId, () => signalRun(runId, event, payload), () => {
+                // A dropped signal is not retried by the sweep, so surface the contention instead of
+                // returning a stale, misleading result the caller would mistake for successful delivery.
+                throw new LeaseHeldError(runId);
+            }),
+        );
 
     const sweep = async (now: number = Date.now(), limit = 100): Promise<RunResult[]> => {
         if (!Number.isInteger(limit) || limit <= 0) {
@@ -350,8 +368,14 @@ const createRuntime = (options: RuntimeOptions = {}): WorkflowRuntime => {
         const results: RunResult[] = [];
 
         for (const runId of due) {
-            // eslint-disable-next-line no-await-in-loop -- resume mutates shared store state; process due runs sequentially
-            results.push(await resumeAt(runId, now));
+            try {
+                // eslint-disable-next-line no-await-in-loop -- resume mutates shared store state; process due runs sequentially
+                results.push(await resumeAt(runId, now));
+            } catch (error) {
+                // Isolate per-run failures: one poisoned run (e.g. an unregistered definition or a
+                // row deleted mid-sweep) must not abort the loop and starve every later-due run.
+                results.push({ error: serializeError(error), runId, status: "failed" });
+            }
         }
 
         return results;
