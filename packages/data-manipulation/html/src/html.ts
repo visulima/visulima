@@ -33,7 +33,7 @@ const isRawHtml = (value: unknown): value is RawHtml => typeof value === "object
  */
 const serializeValue = (value: unknown): string => {
     if (isRawHtml(value)) {
-        return String(value.value);
+        return value.value;
     }
 
     if (Array.isArray(value)) {
