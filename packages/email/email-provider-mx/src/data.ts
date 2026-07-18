@@ -5,7 +5,7 @@
  * - `free` — a free consumer webmail provider whose MX hosts are operated for end-user mailboxes rather than customer domains, e.g. Yahoo, iCloud, GMX, Mail.ru, Mail.com.
  * - `seg` — a Secure Email Gateway / inbound filtering service that fronts the real mailbox host, e.g. Proofpoint, Mimecast, Barracuda, Cisco, Trend Micro.
  */
-export type MxProviderType = "free" | "mailbox" | "seg";
+type MxProviderType = "free" | "mailbox" | "seg";
 
 /**
  * A single curated provider entry: the canonical provider name, its role, a
@@ -15,7 +15,7 @@ export type MxProviderType = "free" | "mailbox" | "seg";
  * `patterns` are matched as suffixes on a dot boundary, so `pphosted.com`
  * matches `mx0a-00000000.pphosted.com` but not `notpphosted.com`.
  */
-export interface MxProviderEntry {
+interface MxProviderEntry {
     /** Human-friendly label for display, e.g. `"Google Workspace"`. */
     display: string;
 
@@ -48,7 +48,7 @@ export interface MxProviderEntry {
  * would have no effect anyway. Copy it if you need a customizable variant.
  * @see https://www.suped.com/learn/email-deliverability/how-can-i-identify-the-smtp-provider-from-an-mx-record
  */
-export const MX_PROVIDERS: MxProviderEntry[] = [
+const MX_PROVIDERS: MxProviderEntry[] = [
     // ── Mailbox hosts ──────────────────────────────────────────────────────
     {
         display: "Google Workspace",
@@ -225,3 +225,6 @@ for (const entry of MX_PROVIDERS) {
 }
 
 Object.freeze(MX_PROVIDERS);
+
+export { MX_PROVIDERS };
+export type { MxProviderEntry, MxProviderType };
