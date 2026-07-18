@@ -32,6 +32,7 @@ const QUOTES_TRIM_REGEX = /^['"]|['"]$/g;
 const REGISTRY_PROTOCOL_REGEX = /^https?:\/\//;
 const TRAILING_SLASH_REGEX = /\/$/;
 const JSON_INDENT_REGEX = /\n(\s+)/;
+const ENV_VAR_REGEX = /\$\{([^}]+)}/g;
 
 const DEFAULT_DEP_TYPES = ["dependencies", "devDependencies", "optionalDependencies"];
 const VALID_DEP_TYPES = new Set([...DEFAULT_DEP_TYPES, "overrides", "peerDependencies", "pnpm.overrides", "resolutions"]);
@@ -983,6 +984,35 @@ interface NpmrcConfig {
     registries: Map<string, string>;
 }
 
+// npm/pnpm/yarn expand `${VAR}` (and `${VAR:-default}`) env references in .npmrc
+// values, so `_authToken=${NPM_TOKEN}` is the standard CI pattern. `hasUnresolved`
+// flags a reference with no env value and no default so callers can drop broken
+// auth entries instead of sending the literal `${NPM_TOKEN}` over the wire.
+const expandEnvVars = (value: string): { hasUnresolved: boolean; value: string } => {
+    let hasUnresolved = false;
+
+    const expanded = value.replace(ENV_VAR_REGEX, (_match, expression: string) => {
+        const defaultIndex = expression.indexOf(":-");
+        const name = (defaultIndex === -1 ? expression : expression.slice(0, defaultIndex)).trim();
+        const fallback = defaultIndex === -1 ? undefined : expression.slice(defaultIndex + 2);
+        const resolved = process.env[name];
+
+        if (resolved !== undefined) {
+            return resolved;
+        }
+
+        if (fallback !== undefined) {
+            return fallback;
+        }
+
+        hasUnresolved = true;
+
+        return "";
+    });
+
+    return { hasUnresolved, value: expanded };
+};
+
 const parseNpmrc = (content: string): NpmrcConfig => {
     const registries = new Map<string, string>();
     const authTokens = new Map<string, string>();
@@ -1002,7 +1032,7 @@ const parseNpmrc = (content: string): NpmrcConfig => {
         }
 
         const key = trimmed.slice(0, eqIndex).trim();
-        const value = trimmed.slice(eqIndex + 1).trim();
+        const { hasUnresolved, value } = expandEnvVars(trimmed.slice(eqIndex + 1).trim());
 
         // @scope:registry=url
         const scopeMatch = SCOPE_REGISTRY_REGEX.exec(key);
@@ -1021,7 +1051,9 @@ const parseNpmrc = (content: string): NpmrcConfig => {
         // //registry.url/:_authToken=token
         const authMatch = AUTH_TOKEN_REGEX.exec(key);
 
-        if (authMatch?.[1]) {
+        // Drop auth entries whose `${VAR}` reference is unset so a literal
+        // `Bearer ${NPM_TOKEN}` is never sent to the registry.
+        if (authMatch?.[1] && !hasUnresolved) {
             authTokens.set(authMatch[1], value);
         }
     }
@@ -2402,52 +2434,70 @@ const fetchChangelogInfo = async (packages: OutdatedEntry[], timeoutMs: number =
         controller.abort();
     }, timeoutMs);
 
-    try {
-        const fetches = packages.map(async (entry): Promise<ChangelogInfo> => {
-            const npmUrl = `https://www.npmjs.com/package/${entry.packageName}`;
+    const fetchOne = async (entry: OutdatedEntry): Promise<ChangelogInfo> => {
+        const npmUrl = `https://www.npmjs.com/package/${entry.packageName}`;
 
-            try {
-                const registry = npmrcConfig ? getRegistryForPackage(entry.packageName, npmrcConfig) : { url: "https://registry.npmjs.org" };
-                const baseUrl = registry.url.replace(TRAILING_SLASH_REGEX, "");
-                const headers: Record<string, string> = { Accept: "application/json" };
+        try {
+            const registry = npmrcConfig ? getRegistryForPackage(entry.packageName, npmrcConfig) : { url: "https://registry.npmjs.org" };
+            const baseUrl = registry.url.replace(TRAILING_SLASH_REGEX, "");
+            const headers: Record<string, string> = { Accept: "application/json" };
 
-                if (registry.token) {
-                    headers["Authorization"] = `Bearer ${registry.token}`;
-                }
+            if (registry.token) {
+                headers["Authorization"] = `Bearer ${registry.token}`;
+            }
 
-                const response = await fetch(`${baseUrl}/${entry.packageName}`, {
-                    headers,
-                    signal: controller.signal,
-                });
+            // Fetch the `latest` version manifest (a few KB) instead of the full
+            // packument (multi-megabyte for high-version-count packages) — it
+            // still carries the `repository` field we need.
+            const response = await fetch(`${baseUrl}/${entry.packageName}/latest`, {
+                headers,
+                signal: controller.signal,
+            });
 
-                if (!response.ok) {
-                    return { npmUrl, packageName: entry.packageName };
-                }
-
-                const data = (await response.json()) as { repository?: { url?: string } };
-                const repoUrl = data.repository?.url;
-
-                if (!repoUrl) {
-                    return { npmUrl, packageName: entry.packageName };
-                }
-
-                const match = GITHUB_REPO_REGEX.exec(repoUrl);
-
-                if (!match) {
-                    return { npmUrl, packageName: entry.packageName, repoUrl };
-                }
-
-                const owner = match[1];
-                const repo = match[2];
-                const releaseUrl = `https://github.com/${owner}/${repo}/releases/tag/v${entry.targetVersion}`;
-
-                return { npmUrl, packageName: entry.packageName, releaseUrl, repoUrl: `https://github.com/${owner}/${repo}` };
-            } catch {
+            if (!response.ok) {
                 return { npmUrl, packageName: entry.packageName };
             }
-        });
 
-        results.push(...(await Promise.all(fetches)));
+            const data = (await response.json()) as { repository?: { url?: string } };
+            const repoUrl = data.repository?.url;
+
+            if (!repoUrl) {
+                return { npmUrl, packageName: entry.packageName };
+            }
+
+            const match = GITHUB_REPO_REGEX.exec(repoUrl);
+
+            if (!match) {
+                return { npmUrl, packageName: entry.packageName, repoUrl };
+            }
+
+            const owner = match[1];
+            const repo = match[2];
+            const releaseUrl = `https://github.com/${owner}/${repo}/releases/tag/v${entry.targetVersion}`;
+
+            return { npmUrl, packageName: entry.packageName, releaseUrl, repoUrl: `https://github.com/${owner}/${repo}` };
+        } catch {
+            return { npmUrl, packageName: entry.packageName };
+        }
+    };
+
+    // Cap in-flight requests with a sliding worker pool so a large catalog can't
+    // fire hundreds of parallel downloads under the shared abort controller.
+    const concurrency = Math.min(8, packages.length);
+    let nextIndex = 0;
+
+    const worker = async (): Promise<void> => {
+        while (nextIndex < packages.length) {
+            const index = nextIndex;
+
+            nextIndex += 1;
+
+            results[index] = await fetchOne(packages[index] as OutdatedEntry);
+        }
+    };
+
+    try {
+        await Promise.all(Array.from({ length: concurrency }, () => worker()));
     } finally {
         clearTimeout(timeout);
     }
