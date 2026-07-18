@@ -4,7 +4,7 @@ import type { RunStatus } from "../types";
 import type { StoredRun, WorkflowStore } from "./types";
 
 /** A safe SQL identifier: a leading letter/underscore followed by letters, digits or underscores. */
-const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const IDENTIFIER_PATTERN = /^[A-Z_]\w*$/i;
 
 /** SQL dialect the store renders for. */
 type SqlDialect = "mysql" | "postgres";

@@ -45,8 +45,9 @@ const resolveWakeAt = (duration: Duration, from: number = Date.now()): number =>
 
     const factor = UNIT_MS[duration.unit];
 
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- UNIT_MS is typed by DurationUnit, but an out-of-type unit reaches here from untrusted input and yields undefined
     if (factor === undefined) {
-        throw new WorkflowError("invalid-duration", `Duration unit must be one of ${Object.keys(UNIT_MS).join(", ")}. Received: ${String(duration.unit)}.`);
+        throw new WorkflowError("invalid-duration", `Duration unit must be one of ${Object.keys(UNIT_MS).join(", ")}. Received: ${duration.unit}.`);
     }
 
     return from + Math.max(0, duration.amount) * factor;

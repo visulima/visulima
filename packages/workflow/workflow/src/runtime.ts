@@ -356,8 +356,7 @@ const createRuntime = (options: RuntimeOptions = {}): WorkflowRuntime => {
                 // A dropped signal is not retried by the sweep, so surface the contention instead of
                 // returning a stale, misleading result the caller would mistake for successful delivery.
                 throw new LeaseHeldError(runId);
-            }),
-        );
+            }));
 
     const sweep = async (now: number = Date.now(), limit = 100): Promise<RunResult[]> => {
         if (!Number.isInteger(limit) || limit <= 0) {
@@ -372,6 +371,18 @@ const createRuntime = (options: RuntimeOptions = {}): WorkflowRuntime => {
                 // eslint-disable-next-line no-await-in-loop -- resume mutates shared store state; process due runs sequentially
                 results.push(await resumeAt(runId, now));
             } catch (error) {
+                // A due id with no run document is a phantom wake-index entry (e.g. a crash between
+                // save()'s index write and its run write): drop it from the wake index so it stops
+                // resurfacing — and failing — on every future sweep.
+                if (error instanceof RunNotFoundError) {
+                    try {
+                        // eslint-disable-next-line no-await-in-loop -- best-effort cleanup of the just-failed due id, kept in-order with the sweep
+                        await store.delete(runId);
+                    } catch {
+                        // Swallowed: the cleanup is best-effort; a later sweep retries it.
+                    }
+                }
+
                 // Isolate per-run failures: one poisoned run (e.g. an unregistered definition or a
                 // row deleted mid-sweep) must not abort the loop and starve every later-due run.
                 results.push({ error: serializeError(error), runId, status: "failed" });
