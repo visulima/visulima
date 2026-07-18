@@ -105,6 +105,45 @@ describe("standalone mode", () => {
         expect(written.join("")).toContain("Done");
     });
 
+    it("should erase every wrapped physical row of a long line on redraw", () => {
+        expect.assertions(2);
+
+        vi.stubEnv("CI", "");
+        vi.stubEnv("CONTINUOUS_INTEGRATION", "");
+        vi.stubEnv("BUILD_NUMBER", undefined);
+        vi.stubEnv("RUN_ID", undefined);
+
+        const written: string[] = [];
+        // Narrow terminal so the long text wraps onto multiple physical rows.
+        const stream = {
+            columns: 10,
+            isTTY: true,
+            write: (chunk: string) => {
+                written.push(chunk);
+
+                return true;
+            },
+        } as unknown as NodeJS.WriteStream;
+
+        const spinner = new Spinner({ frames: { frames: ["A", "B"], interval: 50 }, stream });
+
+        // "A " + 30 chars = 32 visible cols => ceil(32 / 10) = 4 physical rows.
+        spinner.start("x".repeat(30));
+
+        written.length = 0;
+        vi.advanceTimersByTime(50);
+
+        const redraw = written.join("");
+        // Three cursor-up + clear-line pairs for the wrapped rows above the first.
+        const upClears = redraw.match(/\u001B\[1A\u001B\[2K/g) ?? [];
+
+        expect(upClears).toHaveLength(3);
+        expect(redraw).toContain("\r\u001B[K");
+
+        spinner.succeed("Done");
+        vi.unstubAllEnvs();
+    });
+
     it("should unref the animation timer so it never holds the event loop open", () => {
         expect.assertions(1);
 

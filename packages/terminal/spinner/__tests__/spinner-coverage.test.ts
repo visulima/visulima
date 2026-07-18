@@ -9,6 +9,7 @@ import { MultiSpinner, Spinner } from "../src/spinner";
  * assert on the rendered rows.
  */
 const createMockManager = (): {
+    erase: ReturnType<typeof vi.fn>;
     hook: ReturnType<typeof vi.fn>;
     unhook: ReturnType<typeof vi.fn>;
     update: ReturnType<typeof vi.fn>;
@@ -17,6 +18,8 @@ const createMockManager = (): {
     const updates: string[][] = [];
 
     return {
+        // eslint-disable-next-line vitest/require-mock-type-parameters
+        erase: vi.fn(),
         // eslint-disable-next-line vitest/require-mock-type-parameters
         hook: vi.fn().mockReturnValue(true),
         // eslint-disable-next-line vitest/require-mock-type-parameters
@@ -437,17 +440,28 @@ describe("multiSpinner additional paths", () => {
         }).not.toThrow();
     });
 
-    it("should not update when renderAll runs with no spinners", () => {
-        expect.assertions(1);
+    it("should erase and unhook when the last spinner is removed", () => {
+        expect.assertions(4);
 
         const manager = createMockManager();
         const multi = new MultiSpinner({ name: "dots" }, manager as unknown as InteractiveManager);
         const spinner = multi.create("Task 1");
 
-        // removing the only spinner triggers renderAll with an empty stack
+        // render once so the manager is hooked and the line is on screen
+        spinner.start("Task 1");
+
         manager.updates.length = 0;
+        manager.erase.mockClear();
+        manager.unhook.mockClear();
+
+        // removing the only spinner must clear its rendered line, not leave it behind
         multi.remove(spinner);
 
         expect(manager.updates).toHaveLength(0);
+        expect(manager.erase).toHaveBeenCalledWith("stdout");
+        expect(manager.unhook).toHaveBeenCalledWith(false);
+        // a subsequent renderAll must not re-hook the emptied stack
+        multi.renderAll();
+        expect(manager.hook).toHaveBeenCalledTimes(1);
     });
 });

@@ -29,6 +29,17 @@ const isCi = (): boolean => {
     return Boolean(env.CI) || env.CONTINUOUS_INTEGRATION === "true" || "BUILD_NUMBER" in env || "RUN_ID" in env;
 };
 
+const ANSI_ESCAPE_RE = /\u001B\[[\d;]*[A-Za-z]/g;
+
+/**
+ * Approximate the printable width of a line, ignoring ANSI escape sequences.
+ *
+ * Used to estimate how many physical terminal rows a standalone line wraps onto so
+ * the previous frame can be fully erased. Counts code points rather than UTF-16 units
+ * so astral glyphs (e.g. emoji frames) don't over-count.
+ */
+const visibleWidth = (text: string): number => [...text.replace(ANSI_ESCAPE_RE, "")].length;
+
 /**
  * Resolve a SpinnerStyle object into Node.js `util.styleText` format strings.
  */
@@ -186,6 +197,10 @@ export class Spinner {
      * Current elapsed time in milliseconds.
      */
     public get elapsedTime(): number {
+        if (this.#startTime === 0) {
+            return 0;
+        }
+
         return (this.#endTime || Date.now()) - this.#startTime;
     }
 
@@ -506,7 +521,11 @@ export class Spinner {
 
         if (this.#stream.isTTY) {
             this.#stream.write(output);
-            this.#standaloneLines = 1;
+            // Track how many physical rows the line occupies so a wrapped line is
+            // fully erased on the next redraw instead of leaving scrolled garbage.
+            const columns = this.#stream.columns || 80;
+
+            this.#standaloneLines = Math.max(1, Math.ceil(visibleWidth(output) / columns));
         } else {
             // Non-TTY: print the line once so it lands in logs without cursor tricks.
             this.#stream.write(`${output}\n`);
@@ -517,8 +536,14 @@ export class Spinner {
     /** Erase the previously written standalone line(s) in-place on a TTY. */
     #eraseStandalone(): void {
         if (this.#standaloneLines > 0 && this.#stream.isTTY) {
+            // Clear each wrapped physical row, walking the cursor up, then
+            // carriage-return + clear-to-end-of-line for the first row.
+            for (let index = 1; index < this.#standaloneLines; index++) {
+                this.#stream.write("\u001B[1A\u001B[2K");
+            }
+
             // Carriage return + clear-to-end-of-line.
-            this.#stream.write("\r[K");
+            this.#stream.write("\r\u001B[K");
         }
 
         this.#standaloneLines = 0;
@@ -639,10 +664,20 @@ export class MultiSpinner {
         for (const [id, s] of this.#spinners.entries()) {
             if (s === spinner) {
                 this.#spinners.delete(id);
-                this.renderAll();
 
                 if (this.#spinners.size === 0) {
+                    // The stack is now empty: erase the removed line and unhook instead
+                    // of leaving its last frame on screen with the manager still hooked.
                     this.#clearSharedTimer();
+
+                    if (this.#interactiveManager && this.#isActive) {
+                        this.#interactiveManager.erase("stdout");
+                        this.#interactiveManager.unhook(false);
+                    }
+
+                    this.#isActive = false;
+                } else {
+                    this.renderAll();
                 }
 
                 return true;
@@ -688,7 +723,7 @@ export class MultiSpinner {
 
     /** @internal */
     public renderAll(): void {
-        if (!this.#interactiveManager) {
+        if (!this.#interactiveManager || this.#spinners.size === 0) {
             return;
         }
 
