@@ -165,7 +165,7 @@ describe("health check route", () => {
         const jsonResponse = responseMock._getJSONData() as Record<string, unknown>;
 
         expect(jsonResponse.status).toBe("error");
-        expect(jsonResponse.message).toBe("unexpected failure");
+        expect(jsonResponse.message).toBe("Health check failed");
     });
 
     it("endpoint does not set the content-type header when sendHeader is false", async () => {

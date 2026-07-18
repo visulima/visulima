@@ -209,7 +209,9 @@ class Healthcheck implements HealthcheckInterface {
             (service) => type === undefined || (this.healthCheckers[service] as RegisteredChecker).types.has(type),
         );
 
-        await Promise.all(services.map(async (service) => await this.invokeChecker(service, report)));
+        await Promise.all(services.map(async (service) => {
+            await this.invokeChecker(service, report);
+        }));
 
         /**
          * Finding unhealthy service to know if system is healthy or not
@@ -253,6 +255,6 @@ class Healthcheck implements HealthcheckInterface {
     }
 }
 
-export type { ShutdownHook };
+export type { ShutdownHook } from "./types";
 
 export default Healthcheck;

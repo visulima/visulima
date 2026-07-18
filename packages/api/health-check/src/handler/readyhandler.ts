@@ -1,6 +1,7 @@
 import type { IncomingMessage, ServerResponse } from "node:http";
 
 import type { HealthCheck } from "../types";
+import respond from "./respond";
 
 // Inlined HTTP status codes to avoid pulling the `http-status-codes` runtime
 // dependency into every consumer for two constants.
@@ -15,15 +16,20 @@ const HTTP_SERVICE_UNAVAILABLE = 503;
 const healthReadyHandler
     = <Request extends IncomingMessage, Response extends ServerResponse>(healthCheck: HealthCheck) =>
         async (_request: Request, response: Response): Promise<void> => {
+            let statusCode: number;
+
             try {
                 const { healthy } = await healthCheck.getReport("readiness");
 
-                response.statusCode = healthy ? HTTP_NO_CONTENT : HTTP_SERVICE_UNAVAILABLE;
-            } catch {
-                response.statusCode = HTTP_SERVICE_UNAVAILABLE;
+                statusCode = healthy ? HTTP_NO_CONTENT : HTTP_SERVICE_UNAVAILABLE;
+            } catch (error) {
+                // eslint-disable-next-line no-console
+                console.error(error);
+
+                statusCode = HTTP_SERVICE_UNAVAILABLE;
             }
 
-            response.end();
+            respond(response, { statusCode });
         };
 
 export default healthReadyHandler;

@@ -102,6 +102,7 @@ const httpCheck
                 // abort timeout fires or the body is garbage-collected. Cancelling
                 // is fire-and-forget: we only need to release the stream.
                 if (response?.body != null && !response.bodyUsed && !response.body.locked) {
+                    // eslint-disable-next-line no-void -- intentionally discard the fire-and-forget cancellation promise
                     void response.body.cancel().catch(() => {});
                 }
             }
