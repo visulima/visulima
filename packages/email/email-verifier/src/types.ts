@@ -20,6 +20,12 @@ export type VerificationState = "deliverable" | "risky" | "undeliverable" | "unk
  * The resolved domain portion of a verification report.
  */
 export interface DomainReport {
+    /**
+     * True when the domain lookup was inconclusive because of a transient DNS
+     * failure (timeout, SERVFAIL, refused). The domain is neither confirmed nor
+     * proven undeliverable — treat as `unknown`.
+     */
+    deferred?: boolean;
     /** The MX records found (empty when resolved via A/AAAA or not at all). */
     records: MxRecord[];
     /** How mail-acceptance was established (`unchecked` when DNS was skipped). */

@@ -1,4 +1,4 @@
-import type { AddressInfo, Server } from "node:net";
+import type { AddressInfo, Server, Socket } from "node:net";
 import { createServer } from "node:net";
 
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -37,6 +37,11 @@ const startMockSmtp = async (rcpt: RcptResponder): Promise<{ port: number; serve
         connectionCount += 1;
         const thisConnection = connectionCount;
 
+        socket.on("error", () => {
+            // The client destroys the socket after QUIT, which surfaces as an
+            // ECONNRESET on the server side — swallow it so it is not an uncaught
+            // exception on platforms that emit it (e.g. darwin).
+        });
         socket.write("220 mock ESMTP ready\r\n");
 
         socket.on("data", (data) => {
@@ -87,7 +92,7 @@ describe("verifySmtp (input sanitization)", () => {
     });
 });
 
-describe.skipIf(process.platform !== "linux")("verifySmtp (mock server)", () => {
+describe("verifySmtp (mock server)", () => {
     let active: Server | undefined;
 
     afterEach(async () => {
@@ -233,5 +238,138 @@ describe.skipIf(process.platform !== "linux")("verifySmtp (mock server)", () => 
         const result = await verifySmtp("grey@example.com", { catchAllProbes: 0, port, retries: 1, retryDelay: 50, timeout: 2000 });
 
         expect(result.valid).toBe(true);
+    });
+
+    it("parses a multi-line reply split across two TCP packets", async () => {
+        expect.assertions(1);
+
+        const server = createServer((socket) => {
+            socket.on("error", () => {
+                // ignore client-side resets on close
+            });
+            socket.write("220 mock ESMTP ready\r\n");
+
+            socket.on("data", (data) => {
+                for (const rawLine of data.toString().split(LINE_SPLIT_REGEX)) {
+                    const line = rawLine.trim();
+
+                    if (line.length === 0) {
+                        continue;
+                    }
+
+                    if (line.startsWith("EHLO")) {
+                        // The continuation line and the final line arrive in
+                        // separate packets, exercising drain()'s re-buffering.
+                        socket.write("250-mock greets you\r\n");
+                        setTimeout(() => socket.write("250 OK\r\n"), 20);
+                    } else if (line.startsWith("MAIL FROM")) {
+                        socket.write("250 OK\r\n");
+                    } else if (line.startsWith("RCPT TO")) {
+                        const recipient = line.slice(line.indexOf("<") + 1, line.lastIndexOf(">"));
+
+                        socket.write(recipient.length > 25 ? "550 No such user\r\n" : "250 OK\r\n");
+                    } else if (line.startsWith("QUIT")) {
+                        socket.write("221 Bye\r\n");
+                        socket.end();
+                    }
+                }
+            });
+        });
+
+        await new Promise<void>((resolve) => {
+            server.listen(0, "127.0.0.1", () => {
+                resolve();
+            });
+        });
+
+        active = server;
+
+        const result = await verifySmtp("real@example.com", { port: (server.address() as AddressInfo).port, retries: 0, timeout: 2000 });
+
+        expect(result.valid).toBe(true);
+    });
+
+    it("falls through to a lower-priority MX when the first host refuses at the greeting", async () => {
+        expect.assertions(2);
+
+        // The refusing host leaves its socket half-open, which `net.Server.close`
+        // would wait on forever — track and destroy sockets explicitly rather than
+        // relying on the shared afterEach.
+        const sockets = new Set<Socket>();
+        let connectionCount = 0;
+
+        const server = createServer((socket) => {
+            sockets.add(socket);
+            socket.on("close", () => sockets.delete(socket));
+            socket.on("error", () => {
+                // ignore client-side resets on close
+            });
+            connectionCount += 1;
+
+            if (connectionCount === 1) {
+                // A connection-level refusal on the highest-priority host — a
+                // verdict about the prober's IP, not the mailbox.
+                socket.write("554 5.7.1 Service unavailable; client host blocked\r\n");
+
+                return;
+            }
+
+            socket.write("220 mock ESMTP ready\r\n");
+
+            socket.on("data", (data) => {
+                for (const rawLine of data.toString().split(LINE_SPLIT_REGEX)) {
+                    const line = rawLine.trim();
+
+                    if (line.length === 0) {
+                        continue;
+                    }
+
+                    if (line.startsWith("EHLO")) {
+                        socket.write("250-mock greets you\r\n250 OK\r\n");
+                    } else if (line.startsWith("HELO") || line.startsWith("MAIL FROM")) {
+                        socket.write("250 OK\r\n");
+                    } else if (line.startsWith("RCPT TO")) {
+                        const recipient = line.slice(line.indexOf("<") + 1, line.lastIndexOf(">"));
+
+                        socket.write(recipient.length > 25 ? "550 No such user\r\n" : "250 OK\r\n");
+                    } else if (line.startsWith("QUIT")) {
+                        socket.write("221 Bye\r\n");
+                        socket.end();
+                    }
+                }
+            });
+        });
+
+        await new Promise<void>((resolve) => {
+            server.listen(0, "127.0.0.1", () => {
+                resolve();
+            });
+        });
+
+        try {
+            const result = await verifySmtp("real@example.com", {
+                catchAllProbes: 0,
+                mxRecords: [
+                    { exchange: "127.0.0.1", priority: 10 },
+                    { exchange: "127.0.0.1", priority: 20 },
+                ],
+                port: (server.address() as AddressInfo).port,
+                retries: 0,
+                timeout: 2000,
+            });
+
+            expect(result.valid).toBe(true);
+            expect(result.code).toBe(250);
+        } finally {
+            for (const socket of sockets) {
+                socket.destroy();
+            }
+
+            await new Promise<void>((resolve) => {
+                server.close(() => {
+                    resolve();
+                });
+            });
+        }
     });
 });
