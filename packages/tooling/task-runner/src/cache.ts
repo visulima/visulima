@@ -52,6 +52,7 @@ interface CacheOptions {
     maxCacheAge?: number;
     /** Maximum cache size (e.g., "500MB", "1GB") */
     maxCacheSize?: string;
+
     /**
      * Diagnostic sink for best-effort cache writes that fail (ENOSPC,
      * EACCES, EROFS, …). {@link Cache.put} stays non-throwing so a

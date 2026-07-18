@@ -610,10 +610,10 @@ describe(HttpRemoteCache, () => {
                 const result = await retrieveByTaskHash(cache, "atomic-hash", downloadDirectory);
 
                 expect(result).toBe(true);
-                expect(await readFile(join(entryDirectory, "terminalOutput"), "utf8")).toBe("fresh output");
+                await expect(readFile(join(entryDirectory, "terminalOutput"), "utf8")).resolves.toBe("fresh output");
 
                 // The stale entry was replaced wholesale, not merged into.
-                await expect(readFile(join(entryDirectory, "leftover"), "utf8")).rejects.toThrow();
+                await expect(readFile(join(entryDirectory, "leftover"), "utf8")).rejects.toThrow(/ENOENT/);
 
                 // No `.extract-*` / `.download-*` scratch dirs nor `.trash-*`
                 // swap dirs may survive the swap.

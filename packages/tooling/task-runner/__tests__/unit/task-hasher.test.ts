@@ -476,7 +476,8 @@ describe(InProcessTaskHasher, () => {
             target: { project: "lib-a", target: "build" },
         };
 
-        const paths = Object.keys((await hasher.hashTask(task)).nodes);
+        const details = await hasher.hashTask(task);
+        const paths = Object.keys(details.nodes);
 
         expect(paths.some((p) => p.includes("src/index.ts"))).toBe(true);
         expect(paths.some((p) => p.includes("src/README.md"))).toBe(false);
@@ -512,7 +513,8 @@ describe(InProcessTaskHasher, () => {
             target: { project: "lib-a", target: "build" },
         };
 
-        const paths = Object.keys((await hasher.hashTask(task)).nodes);
+        const details = await hasher.hashTask(task);
+        const paths = Object.keys(details.nodes);
 
         expect(paths.some((p) => p.includes("src/index.ts"))).toBe(true);
         expect(paths.some((p) => p.includes("build.js"))).toBe(false);
