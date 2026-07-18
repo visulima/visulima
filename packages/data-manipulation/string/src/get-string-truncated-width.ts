@@ -44,6 +44,17 @@ const getCharWidthCache = (config: StringTruncatedWidthConfig): Map<number, Map<
     return cache;
 };
 
+// Sticky clones of the shared global ANSI/emoji regexes.
+//
+// The exported RE_ANSI/RE_EMOJI carry the `g` flag, so `.test()` with a
+// manually set `lastIndex` only searches *from* that offset instead of
+// anchoring *at* it — a match found later in the string would be wrongly
+// consumed together with all the visible text in between. Sticky (`y`) clones
+// anchor the match to `lastIndex`, so they only match when the sequence begins
+// exactly at the current index.
+const RE_ANSI_STICKY = new RegExp(RE_ANSI.source, "y");
+const RE_EMOJI_STICKY = new RegExp(RE_EMOJI.source, "yu");
+
 /**
  * Regular expression for Latin characters with sticky flag for better performance.
  * Matches ASCII and extended Latin-1 characters, excluding variation selectors.
@@ -631,11 +642,11 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             }
             // If OSC8 logic didn't handle it (invalid sequence or didn't start with \u001B]8;;), fall through...
 
-            RE_ANSI.lastIndex = index; // Use the general RE_ANSI for other codes
+            RE_ANSI_STICKY.lastIndex = index; // Use the general RE_ANSI for other codes
 
             // Check if the input starts with any valid ANSI sequence recognized by RE_ANSI
-            if (RE_ANSI.test(input)) {
-                const ansiLength = RE_ANSI.lastIndex - index;
+            if (RE_ANSI_STICKY.test(input)) {
+                const ansiLength = RE_ANSI_STICKY.lastIndex - index;
                 const ansiWidth = config.truncation.countAnsiEscapeCodes ? ansiLength : config.width.ansi;
 
                 // Standard ANSI sequence
@@ -649,7 +660,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
                 }
 
                 width += ansiWidth;
-                index = RE_ANSI.lastIndex;
+                index = RE_ANSI_STICKY.lastIndex;
 
                 continue;
             }
@@ -692,8 +703,11 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
 
             // Check if this sequence causes truncation
             if (width + latinWidth > truncationLimit) {
-                // Calculate exact character that crosses the limit
-                const charsToLimit = Math.floor((truncationLimit - width) / config.width.regular);
+                // Calculate exact character that crosses the limit. Guard against a
+                // zero per-character width (regularWidth: 0), where the division
+                // would yield -Infinity — in that case the run adds no width, so
+                // truncate at the start of the run.
+                const charsToLimit = config.width.regular > 0 ? Math.floor((truncationLimit - width) / config.width.regular) : 0;
 
                 truncationIndex = Math.min(truncationIndex, index + charsToLimit);
 
@@ -718,7 +732,12 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
                 const controlWidth = controlLength * config.width.control;
 
                 if (width + controlWidth > truncationLimit) {
-                    truncationIndex = Math.min(truncationIndex, index + Math.floor((truncationLimit - width) / config.width.control));
+                    // Guard against a zero per-character width (the default
+                    // controlWidth: 0), where the division would yield -Infinity —
+                    // in that case the run adds no width, so truncate at its start.
+                    const controlCharsToLimit = config.width.control > 0 ? Math.floor((truncationLimit - width) / config.width.control) : 0;
+
+                    truncationIndex = Math.min(truncationIndex, index + controlCharsToLimit);
 
                     if (width + controlWidth > config.truncation.limit) {
                         truncationEnabled = true;
@@ -734,9 +753,9 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
         }
 
         // Handle emoji characters - defer to emoji regex since emoji detection is complex
-        RE_EMOJI.lastIndex = index;
+        RE_EMOJI_STICKY.lastIndex = index;
 
-        if (RE_EMOJI.test(input)) {
+        if (RE_EMOJI_STICKY.test(input)) {
             if (width + config.width.emoji > truncationLimit) {
                 truncationIndex = Math.min(truncationIndex, index);
 
@@ -747,7 +766,7 @@ export const getStringTruncatedWidth = (input: string, options: StringTruncatedW
             }
 
             width += config.width.emoji;
-            index = RE_EMOJI.lastIndex;
+            index = RE_EMOJI_STICKY.lastIndex;
 
             continue;
         }
