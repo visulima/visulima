@@ -124,22 +124,22 @@ runTest("extname", extname, {
     "..foo": ".foo",
     "./": "",
     "./myfile.html": ".html",
+    ".\\dir\\.env": "",
     ".\\myfile.html": ".html",
     ".foo": "",
+    // POSIX
+    "/temp/myfile.html": ".html",
     // A dotfile addressed through a directory has no extension (matches
     // node:path); the separator must not satisfy the required leading char.
     "/x/.gitignore": "",
+    "\\temp\\myfile.html": ".html",
     "a/.foo": "",
-    "src/.env": "",
-    ".\\dir\\.env": "",
-    // POSIX
-    "/temp/myfile.html": ".html",
     // '...': '.', // TODO: Edge case behavior of Node?
 
-    "\\temp\\myfile.html": ".html",
     // Windows
     "C:\\temp\\myfile.html": ".html",
     "foo.123": ".123",
+    "src/.env": "",
 });
 
 // @ts-expect-error - TODO: fix typing
