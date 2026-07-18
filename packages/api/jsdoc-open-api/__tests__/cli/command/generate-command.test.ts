@@ -1,4 +1,4 @@
-import { mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 // eslint-disable-next-line import/no-namespace
 import * as fs from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -10,10 +10,35 @@ import yaml from "yaml";
 
 import generateCommand from "../../../src/cli/command/generate-command";
 
+const { multiBarStopMock } = vi.hoisted(() => {
+    return {
+        multiBarStopMock: vi.fn(),
+    };
+});
+
 vi.mock(import("node:fs/promises"), async () => {
     return {
         ...await import("node:fs/promises"),
         writeFile: vi.fn(),
+    };
+});
+
+vi.mock(import("cli-progress"), () => {
+    class MultiBar {
+        // eslint-disable-next-line class-methods-use-this
+        public create(): { increment: () => void } {
+            return { increment: () => undefined };
+        }
+
+        // eslint-disable-next-line class-methods-use-this
+        public stop(): void {
+            multiBarStopMock();
+        }
+    }
+
+    return {
+        MultiBar,
+        Presets: { shades_grey: {} },
     };
 });
 
@@ -173,6 +198,90 @@ describe("generate command", () => {
             expect(writeFileSpy).not.toHaveBeenCalled();
         } finally {
             stdoutSpy.mockRestore();
+        }
+    });
+
+    it("defaults exclude when the config omits it", async () => {
+        expect.assertions(1);
+
+        const workDirectory = mkdtempSync(join(tmpdir(), "generate-no-exclude-"));
+        const configPath = join(workDirectory, "config.cjs");
+
+        // Config without `exclude` — previously threw "openapiConfig.exclude is not iterable".
+        writeFileSync(
+            configPath,
+            "module.exports = { swaggerDefinition: { openapi: \"3.0.0\", info: { title: \"API\", version: \"1.0.0\" } } };\n",
+        );
+
+        const consoleLogMock = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+        try {
+            await generateCommand(".openapirc.js", [join(fixturesDirectory, "routes")], { config: configPath });
+
+            expect(consoleLogMock).toHaveBeenCalledWith("\nSwagger specification is ready, check the \"swagger.json\" file.");
+        } finally {
+            consoleLogMock.mockRestore();
+            rmSync(workDirectory, { force: true, recursive: true });
+        }
+    });
+
+    it("throws a descriptive error naming the config when swaggerDefinition is missing", async () => {
+        expect.assertions(1);
+
+        const workDirectory = mkdtempSync(join(tmpdir(), "generate-no-definition-"));
+        const configPath = join(workDirectory, "config.cjs");
+
+        // Config with no swaggerDefinition and no -d definition file.
+        writeFileSync(configPath, "module.exports = { exclude: [] };\n");
+
+        try {
+            await expect(generateCommand(".openapirc.js", [join(fixturesDirectory, "routes")], { config: configPath })).rejects.toThrow(
+                `missing "swaggerDefinition" object`,
+            );
+        } finally {
+            rmSync(workDirectory, { force: true, recursive: true });
+        }
+    });
+
+    it("scans a symlinked directory instead of failing with EISDIR", async () => {
+        expect.assertions(1);
+
+        const workDirectory = mkdtempSync(join(tmpdir(), "generate-symlink-"));
+        const linkPath = join(workDirectory, "routes-link");
+
+        symlinkSync(join(fixturesDirectory, "routes"), linkPath, "dir");
+
+        const consoleLogMock = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+        try {
+            await generateCommand(".openapirc.js", [linkPath], { config: join(fixturesDirectory, ".openapirc.js") });
+
+            expect(consoleLogMock).toHaveBeenCalledWith("\nSwagger specification is ready, check the \"swagger.json\" file.");
+        } finally {
+            consoleLogMock.mockRestore();
+            rmSync(workDirectory, { force: true, recursive: true });
+        }
+    });
+
+    it("stops the progress bar even when a source file fails to parse", async () => {
+        expect.assertions(2);
+
+        const workDirectory = mkdtempSync(join(tmpdir(), "generate-parse-fail-"));
+        const sourceDirectory = join(workDirectory, "src");
+
+        mkdirSync(sourceDirectory);
+        // A comment with invalid YAML makes parseFileMulti throw mid-run.
+        writeFileSync(
+            join(sourceDirectory, "broken.ts"),
+            "/**\n * @openapi\n * /pets:\n *   get:\n *  bad: indentation: here\n */\nexport const x = 1;\n",
+        );
+
+        try {
+            await expect(generateCommand(".openapirc.js", [sourceDirectory], { config: join(fixturesDirectory, ".openapirc.js") })).rejects.toThrow();
+
+            expect(multiBarStopMock).toHaveBeenCalled();
+        } finally {
+            rmSync(workDirectory, { force: true, recursive: true });
         }
     });
 
