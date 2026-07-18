@@ -7,23 +7,17 @@ import { PailBrowserImpl } from "./pail.browser";
 import RawReporter from "./reporter/raw/raw-reporter.server";
 import type {
     ConstructorOptions,
-    DefaultLoggerTypes,
     DefaultLogTypes,
-    ExtendedRfc5424LogLevels,
     InteractiveStreamReporter,
     LoggerFunction,
     LoggerTypesAwareReporter,
     LoggerTypesConfig,
     ParentLoggerOptimization,
-    Processor,
     Reporter,
     ServerConstructorOptions,
     StreamAwareReporter,
     StringifyAwareReporter,
 } from "./types";
-import arrayify from "./utils/arrayify";
-import getLongestLabel from "./utils/get-longest-label";
-import mergeTypes from "./utils/merge-types";
 
 /**
  * Internal interface for server-specific parent logger optimization properties.
@@ -180,115 +174,13 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
     public override child<N extends string = T, LC extends string = L>(
         options?: Partial<ConstructorOptions<N, LC>> & Partial<Pick<ServerConstructorOptions<N, LC>, "interactive" | "stderr" | "stdout">>,
     ): PailServerType<N, LC> {
-        // Check if types have changed - if not, we can reuse bound methods
-        const typesChanged = options?.types !== undefined;
-        const mergedTypes = typesChanged
-            ? mergeTypes<LC, N>(this.types as DefaultLoggerTypes<LC>, options.types as LoggerTypesConfig<N, LC>)
-            : (this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>);
+        // Reuse the shared merge logic, then layer on the server-only fields.
+        const childOptions = this.buildChildOptions<N, LC>(options) as ServerConstructorOptions<N, LC> & ServerParentLoggerOptimization<N, LC>;
 
-        // Combine parent and child reporters - pass Sets directly to avoid array conversion
-        const childReporters = options?.reporters ?? [];
-        const allReporters
-            = childReporters.length > 0
-                ? ([...this.reporters, ...childReporters] as unknown as Reporter<LC>[])
-                : ([...this.reporters] as unknown as Reporter<LC>[]);
-
-        // Combine parent and child processors - pass Sets directly to avoid array conversion
-        const childProcessors = options?.processors ?? [];
-        const allProcessors
-            = childProcessors.length > 0
-                ? ([...this.processors, ...childProcessors] as unknown as Processor<LC>[])
-                : ([...this.processors] as unknown as Processor<LC>[]);
-
-        // Merge log levels (child overrides parent)
-        const mergedLogLevels = options?.logLevels
-            ? ({ ...this.logLevels, ...options.logLevels } as Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<LC, number>)
-            : (this.logLevels as Partial<Record<ExtendedRfc5424LogLevels, number>> & Record<LC, number>);
-
-        // Merge scope (child scope extends parent scope)
-        // Optimize: avoid array operations when no child scope
-        let mergedScope: string[];
-
-        if (options?.scope) {
-            const childScope = arrayify(options.scope).filter(Boolean);
-
-            mergedScope = this.scopeName.length > 0 ? [...this.scopeName, ...childScope] : childScope;
-        } else {
-            mergedScope = this.scopeName.length > 0 ? this.scopeName : [];
-        }
-
-        // Merge messages (child overrides parent)
-        const mergedMessages = options?.messages
-            ? {
-                timerEnd: this.endTimerMessage,
-                timerStart: this.startTimerMessage,
-                ...options.messages,
-            }
-            : {
-                timerEnd: this.endTimerMessage,
-                timerStart: this.startTimerMessage,
-            };
-
-        // Create child logger options
-        // Pass parent types, longestLabel, stringify, logLevels, and messages for optimization when unchanged
-        const childOptions: ServerConstructorOptions<N, LC> & ServerParentLoggerOptimization<N, LC> = {
-            disabled: options?.disabled ?? this.disabled,
-            interactive: options?.interactive ?? this.interactive,
-            logLevel: (options?.logLevel ?? this.generalLogLevel) as LiteralUnion<ExtendedRfc5424LogLevels, LC>,
-            logLevels: mergedLogLevels,
-            messages: mergedMessages,
-            processors: allProcessors,
-            rawReporter: (options?.rawReporter ?? this.rawReporter) as Reporter<LC>,
-            reporters: allReporters,
-            scope: mergedScope,
-            stderr: options?.stderr ?? this.stderr,
-            stdout: options?.stdout ?? this.stdout,
-            throttle: options?.throttle ?? this.throttle,
-            throttleMin: options?.throttleMin ?? this.throttleMin,
-        };
-
-        // Optimize: pass parent values when they haven't changed
-        this.#assignParentValues(childOptions, options, typesChanged, mergedTypes);
-
-        return new PailServerImpl<N, LC>(childOptions) as unknown as PailServerType<N, LC>;
-    }
-
-    /**
-     * Assigns parent values to child options for optimization.
-     *
-     * Reuses parent values when they haven't changed to avoid unnecessary recalculations.
-     */
-    /* eslint-disable no-param-reassign */
-    #assignParentValues<N extends string = T, LC extends string = L>(
-        childOptions: ServerConstructorOptions<N, LC> & ServerParentLoggerOptimization<N, LC>,
-        options: (Partial<ConstructorOptions<N, LC>> & Partial<Pick<ServerConstructorOptions<N, LC>, "interactive" | "stderr" | "stdout">>) | undefined,
-        typesChanged: boolean,
-        mergedTypes: LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>,
-    ): void {
-        if (typesChanged) {
-            // When types have changed, mergedTypes is already fully merged (includes defaults from parent)
-            // Pass as parentTypes so constructor uses them directly without merging again
-            childOptions.parentTypes = mergedTypes;
-            childOptions.parentLongestLabel = getLongestLabel<LC, N>(mergedTypes);
-        } else {
-            // Don't set types in childOptions when reusing parent types - let constructor handle it
-            childOptions.parentTypes = this.types as LoggerTypesConfig<LiteralUnion<DefaultLogTypes, N>, LC>;
-            childOptions.parentLongestLabel = this.longestLabel;
-        }
-
-        if (!options?.logLevels) {
-            childOptions.parentLogLevels = this.logLevels;
-        }
-
-        if (!options?.messages) {
-            childOptions.parentMessages = {
-                timerEnd: this.endTimerMessage,
-                timerStart: this.startTimerMessage,
-            };
-        }
-
-        // Always pass stringify (it's the same configuration)
-        childOptions.parentStringify = this.stringify;
+        /* eslint-disable no-param-reassign */
+        childOptions.interactive = options?.interactive ?? this.interactive;
+        childOptions.stderr = options?.stderr ?? this.stderr;
+        childOptions.stdout = options?.stdout ?? this.stdout;
 
         // Optimize: reuse streams from parent when not overridden
         if (!options?.stdout) {
@@ -298,8 +190,10 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         if (!options?.stderr) {
             childOptions.parentStderr = this.stderr;
         }
+        /* eslint-enable no-param-reassign */
+
+        return new PailServerImpl<N, LC>(childOptions) as unknown as PailServerType<N, LC>;
     }
-    /* eslint-enable no-param-reassign */
 
     /**
      * Gets the interactive manager instance if interactive mode is enabled.

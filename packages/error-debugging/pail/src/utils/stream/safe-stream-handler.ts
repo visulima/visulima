@@ -11,12 +11,24 @@ class SafeStreamHandler {
 
     readonly #name: string;
 
-    public constructor(stream: Writable, name: string) {
+    readonly #onError: (error: Error, name: string) => void;
+
+    public constructor(stream: Writable, name: string, onError?: (error: Error, name: string) => void) {
         this.#stream = stream;
         this.#name = name;
+        this.#onError
+            = onError
+            ?? ((error, streamName) => {
+                // eslint-disable-next-line no-console
+                console.error(`Stream error: ${streamName}. Writes will be dropped.`, error);
+            });
 
-        this.#stream.on("error", (error) => {
-            throw error;
+        this.#stream.on("error", (error: Error) => {
+            // Stream 'error' events fire asynchronously, so rethrowing here would
+            // escape to uncaughtException and crash the host. Report non-fatally and
+            // stop writing to the failed stream instead.
+            this.#ready = false;
+            this.#onError(error, this.#name);
         });
 
         this.#stream.on("drain", () => {

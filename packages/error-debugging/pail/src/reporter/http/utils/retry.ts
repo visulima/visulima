@@ -1,4 +1,11 @@
 /**
+ * Error thrown for HTTP responses that must not be retried (client errors that
+ * are not `429`). Carrying a distinct type lets `sendWithRetry` fail fast instead
+ * of running the generic retry loop.
+ */
+class NonRetryableHttpError extends Error {}
+
+/**
  * Minimal Response interface for fetch-like responses.
  */
 interface FetchResponse {
@@ -141,7 +148,7 @@ const processResponse = async (
 
     // Non-retryable client errors
     if (response.status < 500 && response.status !== 429) {
-        const error = new Error(`HTTP ${String(response.status)}: ${response.statusText}`);
+        const error = new NonRetryableHttpError(`HTTP ${String(response.status)}: ${response.statusText}`);
 
         if (onError) {
             onError(error);
@@ -316,6 +323,12 @@ const sendWithRetry = async (
 
             return;
         } catch (error) {
+            // Non-retryable client errors (4xx except 429) already reported via onError
+            // inside processResponse; fail fast instead of running the retry loop.
+            if (error instanceof NonRetryableHttpError) {
+                throw error;
+            }
+
             // eslint-disable-next-line no-await-in-loop
             const shouldRetry = await handleRetryError(error, attempt, maxRetries, retryDelay, onError);
 
