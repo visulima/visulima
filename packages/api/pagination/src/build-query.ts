@@ -1,6 +1,6 @@
 /**
  * Serialize a query-parameter object into a URL-encoded query string (without a
- * leading `?`). Array values are appended as repeated keys (`tag=a&tag=b`)
+ * leading `?`). Array values are appended as repeated keys (`tag=a`, `tag=b`)
  * instead of being collapsed into a single comma-joined value; `undefined` and
  * `null` entries are skipped.
  */
@@ -9,14 +9,12 @@ export const serializeQuery = (values: Record<string, unknown>): string => {
 
     for (const [key, value] of Object.entries(values)) {
         if (value === undefined || value === null) {
-            // eslint-disable-next-line no-continue
             continue;
         }
 
         if (Array.isArray(value)) {
             for (const item of value) {
                 if (item !== undefined && item !== null) {
-                    // eslint-disable-next-line @typescript-eslint/no-base-to-string
                     searchParameters.append(key, String(item));
                 }
             }
@@ -33,5 +31,10 @@ export const serializeQuery = (values: Record<string, unknown>): string => {
  * Append a single already-encoded `parameter` (e.g. `page=2`) to `url`, joining
  * it after the pre-serialized `baseQuery` when one is present.
  */
-export const buildUrl = (url: string, baseQuery: string, parameter: string): string =>
-    baseQuery === "" ? `${url}?${parameter}` : `${url}?${baseQuery}&${parameter}`;
+export const buildUrl = (url: string, baseQuery: string, parameter: string): string => {
+    if (baseQuery === "") {
+        return `${url}?${parameter}`;
+    }
+
+    return `${url}?${baseQuery}&${parameter}`;
+};
