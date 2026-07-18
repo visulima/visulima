@@ -121,7 +121,7 @@ describe(checkMxRecords, () => {
         resolve4.mockRejectedValue(new Error("ESERVFAIL"));
         resolve6.mockRejectedValue(new Error("ESERVFAIL"));
 
-        const store = new Map<string, unknown>();
+        const store = new Map<string>();
         const cache = {
             clear: vi.fn(() => Promise.resolve()),
             delete: vi.fn(() => Promise.resolve()),
