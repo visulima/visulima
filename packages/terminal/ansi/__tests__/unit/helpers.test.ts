@@ -85,4 +85,24 @@ describe("helper Constants", () => {
             expect(isWindows).toBe(false);
         });
     });
+
+    describe("runtime without a process global", () => {
+        it("should evaluate without throwing and default the constants to false", async () => {
+            expect.assertions(2);
+
+            const savedProcess = (globalThis as Record<string, unknown>).process;
+
+            // Simulate a web worker / edge runtime where `process` is absent.
+            delete (globalThis as Record<string, unknown>).process;
+
+            try {
+                const { isTerminalApp, isWindows } = await import("../../src/helpers");
+
+                expect(isTerminalApp).toBe(false);
+                expect(isWindows).toBe(false);
+            } finally {
+                (globalThis as Record<string, unknown>).process = savedProcess;
+            }
+        });
+    });
 });

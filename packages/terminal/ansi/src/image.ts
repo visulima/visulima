@@ -1,44 +1,7 @@
 import type { LiteralUnion } from "type-fest";
 
 import { BEL, OSC } from "./constants";
-
-/**
- * Encodes a `Uint8Array` to a Base64 string in a runtime-agnostic way.
- *
- * Prefers the standardized `Uint8Array.prototype.toBase64` (Node ≥ 24, modern
- * browsers). Falls back to `btoa` (browsers/Deno) and finally to Node's
- * `Buffer` so this module — and therefore the package barrel that re-exports
- * `image` — stays usable in xterm.js / browser bundles without pulling in
- * `node:buffer`.
- * @param data The bytes to encode.
- * @returns The Base64 representation of `data`.
- */
-const toBase64 = (data: Uint8Array): string => {
-    const maybeToBase64 = (data as unknown as { toBase64?: () => string }).toBase64;
-
-    if (typeof maybeToBase64 === "function") {
-        return maybeToBase64.call(data);
-    }
-
-    if (typeof btoa === "function") {
-        let binary = "";
-
-        for (const byte of data) {
-            binary += String.fromCodePoint(byte);
-        }
-
-        return btoa(binary);
-    }
-
-    // Node.js fallback for runtimes without `toBase64`/`btoa`.
-    const nodeBuffer = (globalThis as { Buffer?: { from: (input: Uint8Array) => { toString: (encoding: string) => string } } }).Buffer;
-
-    if (nodeBuffer === undefined) {
-        throw new Error("No Base64 encoder available: Uint8Array.prototype.toBase64, btoa and Buffer are all missing.");
-    }
-
-    return nodeBuffer.from(data).toString("base64");
-};
+import { encodeBase64Bytes } from "./utils/base64";
 
 /**
  * Options for controlling the display of an inline image in iTerm2.
@@ -130,7 +93,7 @@ export const image = (data: Uint8Array, options: ImageOptions = {}): string => {
         returnValue += ";preserveAspectRatio=0";
     }
 
-    const base64Data = toBase64(data);
+    const base64Data = encodeBase64Bytes(data);
 
     return `${returnValue}:${base64Data}${BEL}`;
 };
