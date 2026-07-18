@@ -14,22 +14,13 @@ const copyError = <Value extends EvalError | ExtendedError | RangeError | Refere
 
     state.cache.set(object, error);
 
-    // If a `stack` property is present, copy it over...
+    // Reading `object.stack` materialises V8's lazy stack accessor into a data
+    // property so `copyOwnProperties` below copies the actual trace instead of an
+    // accessor that would recompute against the freshly-constructed clone. The Node
+    // system-error fields (`code`/`errno`/`syscall`) are plain own data properties, so
+    // `copyOwnProperties` already reproduces them (falsy values included).
     if (object.stack) {
         error.stack = object.stack;
-    }
-
-    // Node.js specific (system errors)...
-    if ((object as ExtendedError).code) {
-        (error as ExtendedError).code = (object as ExtendedError).code;
-    }
-
-    if ((object as ExtendedError).errno) {
-        (error as ExtendedError).errno = (object as ExtendedError).errno;
-    }
-
-    if ((object as ExtendedError).syscall) {
-        (error as ExtendedError).syscall = (object as ExtendedError).syscall;
     }
 
     return copyOwnProperties(object, error, state) as Value;
