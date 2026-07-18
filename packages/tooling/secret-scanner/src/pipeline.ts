@@ -33,11 +33,19 @@ const VALIDATOR_CONCURRENCY = 8;
  * - `notAlphanumericString` — skip `*****` / `------` / `//////`
  */
 const applyHeuristicFilters = (findings: Finding[], options: ScanOptions | undefined): Finding[] => {
+    const redact = options?.redact === true;
     const heuristics = options?.config?.heuristics;
     const skipLockFile = heuristics?.lockFile !== false;
-    const skipSequential = heuristics?.sequentialString !== false;
-    const skipUuid = heuristics?.potentialUuid !== false;
-    const skipNonAlnum = heuristics?.notAlphanumericString !== false;
+    // The content-shape heuristics judge `finding.secret`. Under `redact: true`
+    // the native layer masks the secret before the pipeline sees it (`abc***xyz`,
+    // or `******` for ≤6-char secrets), so these can no longer read the real
+    // token — running them would silently drop legitimate findings (a short
+    // secret masks to `******`, which `notAlphanumericString` then discards).
+    // Disable them when redacting; the file-based `lockFile` heuristic reads
+    // `finding.file` and is unaffected.
+    const skipSequential = !redact && heuristics?.sequentialString !== false;
+    const skipUuid = !redact && heuristics?.potentialUuid !== false;
+    const skipNonAlnum = !redact && heuristics?.notAlphanumericString !== false;
 
     if (!skipLockFile && !skipSequential && !skipUuid && !skipNonAlnum) {
         return findings;
@@ -103,8 +111,11 @@ const applyRuleFilter = (findings: Finding[], includeIds: string[] | undefined, 
  * means we couldn't evaluate the template — those findings stay (conservative),
  * mirroring Kingfisher's `skip_if_missing: true` default.
  */
-const applyChecksumFilter = (findings: Finding[], ruleMeta: Map<string, RuleMeta>): Finding[] => {
-    if (ruleMeta.size === 0) {
+const applyChecksumFilter = (findings: Finding[], ruleMeta: Map<string, RuleMeta>, redact: boolean): Finding[] => {
+    // The checksum verdict is computed from `finding.match`; under `redact: true`
+    // the match is masked before the pipeline runs, so `checkChecksum` would
+    // evaluate garbage and drop valid findings. Skip the filter when redacting.
+    if (redact || ruleMeta.size === 0) {
         return findings;
     }
 
@@ -173,6 +184,25 @@ const resolveOneValidation = async (finding: Finding, context: ValidationContext
  */
 const applyValidation = async (findings: Finding[], options: ScanOptions | undefined, ruleMeta: Map<string, RuleMeta>): Promise<Finding[]> => {
     if (options?.config?.validate !== true || findings.length === 0) {
+        return findings;
+    }
+
+    // `redact: true` masks `finding.secret` in the native layer before the
+    // pipeline runs, so every validator would fire live provider requests with
+    // placeholder strings (`abc***xyz`) — wasted outbound traffic that some
+    // providers page their security team over, and which always comes back
+    // rejected/error. Skip validation entirely and warn once; the caller can
+    // re-run with `redact: false` to verify, then mask at output time.
+    if (options.redact === true) {
+        if (!warnedRedactWithValidate) {
+            warnedRedactWithValidate = true;
+
+            // eslint-disable-next-line no-console -- Diagnostic output; stderr is the intended channel for library warnings.
+            console.error(
+                "secret-scanner: `config.validate: true` with `redact: true` cannot validate — secrets are masked before the validator runs. Skipping validation; re-run with `redact: false` to verify findings.",
+            );
+        }
+
         return findings;
     }
 
@@ -249,6 +279,7 @@ const applyValidation = async (findings: Finding[], options: ScanOptions | undef
 };
 
 let warnedOnlyVerifiedWithoutValidate = false;
+let warnedRedactWithValidate = false;
 
 const applyOnlyVerified = (findings: Finding[], options: ScanOptions | undefined): Finding[] => {
     if (options?.config?.onlyVerified !== true) {
@@ -276,9 +307,10 @@ const applyOnlyVerified = (findings: Finding[], options: ScanOptions | undefined
     return findings.filter((finding) => finding.validation === "verified");
 };
 
-/** Test-only: reset the once-per-process warning gate. */
+/** Test-only: reset the once-per-process warning gates. */
 export const resetPipelineWarningsForTests = (): void => {
     warnedOnlyVerifiedWithoutValidate = false;
+    warnedRedactWithValidate = false;
 };
 
 const applySuppressions = async (findings: Finding[], options: ScanOptions | undefined): Promise<Finding[]> => {
@@ -302,7 +334,7 @@ const applySuppressions = async (findings: Finding[], options: ScanOptions | und
 export const postProcess = async (raw: Finding[], prepared: PreparedScan, options: ScanOptions | undefined): Promise<Finding[]> => {
     const filtered = applyRuleFilter(raw, prepared.includeIds, prepared.excludeIds);
     const heuristicsFiltered = applyHeuristicFilters(filtered, options);
-    const checksumed = applyChecksumFilter(heuristicsFiltered, prepared.ruleMeta);
+    const checksumed = applyChecksumFilter(heuristicsFiltered, prepared.ruleMeta, options?.redact === true);
     const validated = await applyValidation(checksumed, options, prepared.ruleMeta);
     const verifiedOnly = applyOnlyVerified(validated, options);
 
