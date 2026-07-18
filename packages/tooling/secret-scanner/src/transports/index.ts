@@ -130,21 +130,21 @@ export const runTransport = async (type: string, context: TransportContext): Pro
         return "skipped";
     }
 
-    // Allowlist / abort gate for network transports. Offline transports (JWT)
-    // declare no `resolveHosts` and are never gated — they open no connection.
-    if (transport.resolveHosts) {
-        if (context.signal?.aborted) {
-            return "error";
-        }
+    // Abort gate for every implemented transport — honoured before any work.
+    // Individual validators no longer re-check this; they trust runTransport.
+    if (context.signal?.aborted) {
+        return "error";
+    }
 
-        if (context.allowedHosts !== undefined) {
-            const hosts = transport.resolveHosts(context);
+    // Allowlist gate for network transports. Offline transports (JWT) declare
+    // no `resolveHosts` and are never gated — they open no connection.
+    if (transport.resolveHosts && context.allowedHosts !== undefined) {
+        const hosts = transport.resolveHosts(context);
 
-            // Fail closed: an unresolvable host (unparseable URI) or any host
-            // outside the allowlist skips before a single packet leaves.
-            if (hosts === undefined || !hosts.every((host) => context.allowedHosts?.has(host.toLowerCase()))) {
-                return "skipped";
-            }
+        // Fail closed: an unresolvable host (unparseable URI) or any host
+        // outside the allowlist skips before a single packet leaves.
+        if (!hosts?.every((host) => context.allowedHosts?.has(host.toLowerCase()))) {
+            return "skipped";
         }
     }
 

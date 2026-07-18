@@ -94,6 +94,37 @@ const mergeConfigs = (base: GitleaksConfig, overlay: GitleaksConfig): GitleaksCo
 // invalidation the sibling baseline cache does for the same use case.
 const resolveCache = new Map<string, { config: GitleaksConfig; mtimeMs: number; size: number }>();
 
+// Read a user config from disk, reusing the cached parse when the file's
+// mtime+size are unchanged since the last load. A failed stat (race /
+// permissions) falls through to an uncached read that surfaces the real error.
+const readUserConfig = (absolute: string): GitleaksConfig => {
+    let statKey: { mtimeMs: number; size: number } | undefined;
+
+    try {
+        const stats = statSync(absolute);
+
+        statKey = { mtimeMs: stats.mtimeMs, size: stats.size };
+    } catch {
+        statKey = undefined;
+    }
+
+    if (statKey) {
+        const cached = resolveCache.get(absolute);
+
+        if (cached?.mtimeMs === statKey.mtimeMs && cached.size === statKey.size) {
+            return cached.config;
+        }
+    }
+
+    const userConfig = readJsonSync(absolute) as GitleaksConfig;
+
+    if (statKey) {
+        resolveCache.set(absolute, { config: userConfig, mtimeMs: statKey.mtimeMs, size: statKey.size });
+    }
+
+    return userConfig;
+};
+
 const resolveConfig = (options: ConfigLoadOptions = {}): GitleaksConfig => {
     if (options.config) {
         return options.extendBundled === false ? options.config : mergeConfigs(getBundledConfig(), options.config);
@@ -103,37 +134,7 @@ const resolveConfig = (options: ConfigLoadOptions = {}): GitleaksConfig => {
         return getBundledConfig();
     }
 
-    const absolute = resolve(options.configPath);
-
-    let statKey: { mtimeMs: number; size: number } | undefined;
-
-    try {
-        const stats = statSync(absolute);
-
-        statKey = { mtimeMs: stats.mtimeMs, size: stats.size };
-    } catch {
-        // stat failed (race / permissions) — fall through to an uncached read
-        // that surfaces the real error to the caller.
-        statKey = undefined;
-    }
-
-    let userConfig: GitleaksConfig | undefined;
-
-    if (statKey) {
-        const cached = resolveCache.get(absolute);
-
-        if (cached && cached.mtimeMs === statKey.mtimeMs && cached.size === statKey.size) {
-            userConfig = cached.config;
-        }
-    }
-
-    if (userConfig === undefined) {
-        userConfig = readJsonSync(absolute) as GitleaksConfig;
-
-        if (statKey) {
-            resolveCache.set(absolute, { config: userConfig, mtimeMs: statKey.mtimeMs, size: statKey.size });
-        }
-    }
+    const userConfig = readUserConfig(resolve(options.configPath));
 
     if (options.extendBundled === false) {
         return userConfig;

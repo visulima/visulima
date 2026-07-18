@@ -1,6 +1,6 @@
 import type { ValidationStatus } from "../types";
 import type { TransportHostResolver, TransportValidator } from "./context";
-import { extractUri, hostFromUri, tryImport } from "./runtime";
+import { createUriHostResolver, extractUri, tryImport } from "./runtime";
 
 interface MysqlModule {
     createConnection: (options: string | { connectTimeout?: number; uri?: string }) => Promise<{
@@ -11,23 +11,9 @@ interface MysqlModule {
 
 const MYSQL_REJECTED_ERROR_PATTERN = /access denied|authentication failed/i;
 
-export const resolveMysqlHosts: TransportHostResolver = ({ secret }) => {
-    const uri = extractUri(secret, "mysql");
+export const resolveMysqlHosts: TransportHostResolver = createUriHostResolver("mysql");
 
-    if (!uri) {
-        return undefined;
-    }
-
-    const host = hostFromUri(uri);
-
-    return host === undefined ? undefined : [host];
-};
-
-export const validateMySQL: TransportValidator = async ({ secret, signal }): Promise<ValidationStatus> => {
-    if (signal?.aborted) {
-        return "error";
-    }
-
+export const validateMySQL: TransportValidator = async ({ secret }): Promise<ValidationStatus> => {
     const uri = extractUri(secret, "mysql");
 
     if (!uri) {
