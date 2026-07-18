@@ -3,8 +3,8 @@ import { getStringWidth } from "@visulima/string";
 import terminalSize from "terminal-size";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { boxen, boxes, clearTerminalSizeCache } from "../../src";
 import type { BorderStyleName } from "../../src";
+import { boxen, boxes, clearTerminalSizeCache } from "../../src";
 
 const TUPLE_ERROR = /must return a \[width, height\] tuple/;
 const NUMBER_ERROR = /both width and height must be numbers/;
@@ -255,7 +255,7 @@ describe("boxes catalog export", () => {
 
         const names: BorderStyleName[] = ["arrow", "bold", "classic", "double", "doubleSingle", "none", "round", "single", "singleDouble"];
 
-        expect(names.every((name) => boxes[name] !== undefined)).toBe(true);
+        expect(names.every((name) => name in boxes)).toBe(true);
     });
 
     it("exposes an empty-character none entry matching its type", () => {
@@ -282,7 +282,7 @@ describe("borderColor positions", () => {
             headerText: "hi",
         });
 
-        expect([...seen].sort()).toStrictEqual(["bottom", "bottomLeft", "bottomRight", "left", "right", "top", "topLeft", "topRight"]);
+        expect([...seen].toSorted((a, b) => a.localeCompare(b))).toStrictEqual(["bottom", "bottomLeft", "bottomRight", "left", "right", "top", "topLeft", "topRight"]);
     });
 });
 

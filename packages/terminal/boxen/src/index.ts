@@ -632,10 +632,7 @@ export const boxen = (text: string, options: Options = {}): string => {
  * boxen("foo", { borderStyle: { ...boxes.round, top: "=" } });
  * ```
  */
-export const boxes: Record<BorderStyleName, Required<Omit<BorderStyle, "horizontal" | "vertical">>> = cliBoxes as Record<
-    BorderStyleName,
-    Required<Omit<BorderStyle, "horizontal" | "vertical">>
->;
+export const boxes: Record<BorderStyleName, Required<Omit<BorderStyle, "horizontal" | "vertical">>> = cliBoxes;
 
 export { clearTerminalSizeCache };
 
