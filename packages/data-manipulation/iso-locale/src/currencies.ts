@@ -14,7 +14,7 @@ const ALPHA_3_REGEX = /^[A-Z]{3}$/i;
  * result does not silently depend on dataset ordering.
  */
 const NUMERIC_CODE_PREFERENCE: Record<string, string> = {
-    "532": "XCG",
+    532: "XCG",
 };
 
 /**
