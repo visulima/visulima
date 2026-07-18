@@ -273,6 +273,33 @@ describe(DiskStorage, () => {
             await expect(writePromise).rejects.toThrow();
         });
 
+        it("re-derives bytesWritten from disk (never NaN) when a keepPartial write is aborted", async () => {
+            expect.assertions(3);
+
+            // The naming function relocates the file, so resolve the real on-disk path.
+            const stored = await storage.getMeta(metafile.id);
+            const filePath = join(directory, stored.name);
+
+            // Simulate the bytes an aborted pipeline left on disk.
+            await fsp.writeFile(filePath, Buffer.alloc(20));
+
+            // A keepPartial (checksum-less) abort resolves lazyWrite with [NaN, undefined]:
+            // no error code, NaN bytes. The old Math.max(x, NaN) persisted NaN (→ null).
+            vi.spyOn(storage as unknown as { lazyWrite: (...arguments_: unknown[]) => Promise<[number, ERRORS?]> }, "lazyWrite").mockResolvedValueOnce([
+                Number.NaN,
+                undefined,
+            ]);
+
+            const file = await storage.write({ ...metafile, body: Readable.from("ignored"), contentLength: 64, start: 0 });
+
+            expect(Number.isNaN(file.bytesWritten)).toBe(false);
+            expect(file.bytesWritten).toBe(20);
+
+            const meta = await storage.getMeta(metafile.id);
+
+            expect(meta.bytesWritten).toBe(20);
+        });
+
         it("should reject write operation when range is invalid", async () => {
             expect.assertions(1);
 

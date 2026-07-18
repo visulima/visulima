@@ -112,7 +112,9 @@ class S3Storage extends S3BaseStorage {
                         }
                     }
 
-                    return errorWithMetadata.retryable ?? false;
+                    // Defer to the retry engine's built-in heuristics unless the SDK
+                    // explicitly flagged the error retryable.
+                    return errorWithMetadata.retryable === true ? true : undefined;
                 },
             },
         });

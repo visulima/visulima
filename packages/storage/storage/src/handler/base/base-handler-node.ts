@@ -597,9 +597,15 @@ abstract class BaseHandlerNode<
             };
         }
 
-        if (page !== undefined && limit !== undefined) {
+        const pageNumber = Number(page);
+        const limitNumber = Number(limit);
+
+        // URLSearchParams.get() returns string | null (never undefined); only
+        // paginate when both params are actually present and numeric, otherwise
+        // fall through to the plain-array shape below.
+        if (page !== null && limit !== null && Number.isFinite(pageNumber) && Number.isFinite(limitNumber)) {
             return {
-                data: paginate(Number(page), Number(limit), list.length, list),
+                data: paginate(pageNumber, limitNumber, list.length, list),
                 headers: {},
                 statusCode: 200,
             };

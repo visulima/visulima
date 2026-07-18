@@ -279,12 +279,23 @@ class DiskStorage<TFile extends File = File> extends BaseStorage<TFile> {
                         return throwErrorCode(errorCode);
                     }
 
-                    // Update bytesWritten to the expected position after writing
-                    const expectedBytesWritten = startPosition + (part.contentLength || 0);
+                    if (Number.isNaN(bytesWritten)) {
+                        // An aborted keepPartial (checksum-less) write resolves with NaN and
+                        // no error code. The pipeline did not complete, so the declared
+                        // contentLength must not be credited (that plus Math.max(x, NaN) would
+                        // persist NaN as the offset). Re-derive the real offset from disk.
+                        const { size } = await stat(path);
 
-                    file.bytesWritten = Math.max(file.bytesWritten || 0, expectedBytesWritten);
-                    // Also update with the actual bytes written from lazyWrite
-                    file.bytesWritten = Math.max(file.bytesWritten || 0, bytesWritten);
+                        file.bytesWritten = size;
+                    } else {
+                        // Update bytesWritten to the expected position after writing
+                        const expectedBytesWritten = startPosition + (part.contentLength || 0);
+
+                        file.bytesWritten = Math.max(file.bytesWritten || 0, expectedBytesWritten);
+                        // Also update with the actual bytes written from lazyWrite
+                        file.bytesWritten = Math.max(file.bytesWritten || 0, bytesWritten);
+                    }
+
                     const previousStatus = file.status as UploadEventType | undefined;
 
                     file.status = getFileStatus(file);

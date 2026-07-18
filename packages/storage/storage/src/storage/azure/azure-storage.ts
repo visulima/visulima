@@ -102,7 +102,9 @@ class AzureStorage extends BaseStorage {
                     }
                 }
 
-                return false;
+                // Defer to the retry engine's built-in heuristics for anything not
+                // explicitly matched above (returning `false` here would suppress them).
+                return undefined;
             },
             ...config.retryConfig,
         };

@@ -231,7 +231,9 @@ export abstract class S3BaseStorage<TFile extends S3CompatibleFile = S3Compatibl
                     return true;
                 }
 
-                return errorWithMetadata.retryable ?? false;
+                // Defer to the retry engine's built-in heuristics unless the SDK
+                // explicitly flagged the error retryable.
+                return errorWithMetadata.retryable === true ? true : undefined;
             },
             ...config.retryConfig,
         };

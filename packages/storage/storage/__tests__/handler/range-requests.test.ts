@@ -1,3 +1,4 @@
+import { EventEmitter } from "node:events";
 import { rm, writeFile } from "node:fs/promises";
 import { Readable } from "node:stream";
 
@@ -234,6 +235,81 @@ describe("range request functionality", () => {
             // Should fall back to regular 200 response for invalid range
             expect(response.statusCode).toBe(200);
             expect(response.getHeader("accept-ranges")).toBe("bytes"); // Still advertise range support
+        });
+    });
+
+    describe("range request body content", () => {
+        const makeSequentialBuffer = (length: number): Buffer => {
+            const buffer = Buffer.alloc(length);
+
+            for (let index = 0; index < length; index += 1) {
+                buffer[index] = index % 256;
+            }
+
+            return buffer;
+        };
+
+        it.each([
+            ["bytes=100-299", 100, 299],
+            ["bytes=0-0", 0, 0],
+            ["bytes=500-", 500, 999],
+            ["bytes=-100", 900, 999],
+        ])("streams exactly the requested byte slice for %s", async (rangeHeader, start, end) => {
+            expect.assertions(3);
+
+            const full = makeSequentialBuffer(1000);
+
+            const getMetaSpy = vi.spyOn(storage, "getMeta").mockResolvedValue({
+                bytesWritten: 1000,
+                contentType: "application/octet-stream",
+                createdAt: new Date(),
+                id: "range-body-test",
+                metadata: {},
+                name: "range-body-test.dat",
+                originalName: "range-body-test.dat",
+                size: 1000,
+                status: "completed" as const,
+            });
+
+            const getStreamSpy = vi.spyOn(storage, "getStream").mockResolvedValue({
+                headers: { "content-type": "application/octet-stream" },
+                size: 1000,
+                stream: Readable.from(full),
+            });
+
+            const request = createRequest({
+                headers: { range: rangeHeader },
+                method: "GET",
+                url: "/files/range-body-test",
+            });
+            // node-mocks-http's default event emitter is a no-op; supply a real one
+            // so stream "end"/"drain" wiring in pipeWithBackpressure actually fires.
+            const response = createResponse({ eventEmitter: EventEmitter });
+
+            // node-mocks-http's write() returns undefined; make it behave like a
+            // fast consumer that never applies backpressure so the pipe drains to
+            // completion (a real socket would emit "drain").
+            const originalWrite = response.write.bind(response);
+
+            response.write = ((...arguments_: unknown[]) => {
+                (originalWrite as (...writeArguments: unknown[]) => unknown)(...arguments_);
+
+                return true;
+            }) as typeof response.write;
+
+            const finished = new Promise<void>((resolve) => {
+                response.on("end", () => resolve());
+            });
+
+            await uploader.handle(request, response);
+            await finished;
+
+            expect(response.statusCode).toBe(206);
+            expect(response.getHeader("content-length")).toBe(end - start + 1);
+            expect(response._getBuffer()).toStrictEqual(full.subarray(start, end + 1));
+
+            getMetaSpy.mockRestore();
+            getStreamSpy.mockRestore();
         });
     });
 
