@@ -1,4 +1,4 @@
-/* eslint-disable e18e/prefer-static-regex, no-control-regex, regexp/no-unused-capturing-group, sonarjs/prefer-regexp-exec, unicorn/no-null, unicorn/no-process-exit, unicorn/prevent-abbreviations */
+/* eslint-disable e18e/prefer-static-regex, no-control-regex, regexp/no-unused-capturing-group, sonarjs/prefer-regexp-exec, unicorn/no-null, unicorn/prevent-abbreviations */
 
 /**
  * src/inline.ts — Inline rendering mode
@@ -48,6 +48,12 @@ export interface InlineOptions {
      * - 'destroy'            — content is cleared, terminal looks untouched
      */
     onExit?: "preserve" | "destroy";
+    /**
+     * Invoked once after the loop has stopped and the terminal has been
+     * restored. Lets a host tear down its own state (unmount a React tree,
+     * resolve a promise) without the loop terminating the process itself.
+     */
+    onStop?: () => void;
     /** Number of terminal rows to reserve. Default: 10 */
     rows?: number;
 }
@@ -67,6 +73,7 @@ export function createInlineLoop(paint: InlinePaintFn, options: InlineOptions = 
     const reservedRows = options.rows ?? 10;
     const fps = options.fps ?? 60;
     const onExit = options.onExit ?? "preserve";
+    const onStop = options.onStop;
 
     let interval: ReturnType<typeof setInterval> | null = null;
     let renderer: RendererInstance | null = null;
@@ -76,6 +83,9 @@ export function createInlineLoop(paint: InlinePaintFn, options: InlineOptions = 
     let frame = 0;
     // 1-based terminal row of the top of our render region — set once CPR resolves
     let regionTopRow = 1;
+    let stopped = false;
+    // CPR response listener — held so stop() can detach it if it fires before CPR resolves
+    let cprListener: ((chunk: string) => void) | null = null;
 
     /** Write to stdout through the Renderer's Rust handle (avoids interleaving). */
     function write(s: string) {
@@ -144,23 +154,42 @@ export function createInlineLoop(paint: InlinePaintFn, options: InlineOptions = 
         process.on("SIGINT", stop);
 
         let cprBuf = "";
-        const onData = (chunk: string) => {
+
+        cprListener = (chunk: string) => {
             cprBuf += chunk;
             const m = cprBuf.match(/\u001B\[(\d+);(\d+)R/);
 
             if (m) {
-                process.stdin.off("data", onData);
+                if (cprListener) {
+                    process.stdin.off("data", cprListener);
+                    cprListener = null;
+                }
+
                 startRendering(Number.parseInt(m[1]!, 10));
             }
         };
 
-        process.stdin.on("data", onData);
+        process.stdin.on("data", cprListener);
     }
 
     function stop() {
+        if (stopped) {
+            return;
+        }
+
+        stopped = true;
+
         if (interval) {
             clearInterval(interval);
             interval = null;
+        }
+
+        // Detach the SIGINT handler and any pending CPR listener this loop added.
+        process.off("SIGINT", stop);
+
+        if (cprListener) {
+            process.stdin.off("data", cprListener);
+            cprListener = null;
         }
 
         if (renderer) {
@@ -187,7 +216,11 @@ export function createInlineLoop(paint: InlinePaintFn, options: InlineOptions = 
         }
 
         process.stdin.pause();
-        process.exit(0);
+
+        // Do NOT terminate the process — inline mode is meant to be embedded in a
+        // larger CLI. Hand control back to the host via onStop so it can tear down
+        // its own state (unmount the React tree, resolve waitUntilExit, etc).
+        onStop?.();
     }
 
     return { start, stop };
