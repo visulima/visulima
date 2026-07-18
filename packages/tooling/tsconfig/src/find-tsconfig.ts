@@ -14,7 +14,7 @@ const TsConfigFileCache = new Map<string, TsConfigResult>();
 /**
  * Tracks the on-disk mtime each cached entry was computed for, per cache map.
  * Keyed by the cache map instance so a caller-owned cache keeps its own mtimes
- * without changing the public `Map<string, TsConfigResult>` value shape.
+ * without changing the public `Map&lt;string, TsConfigResult>` value shape.
  */
 const cacheMtimes = new WeakMap<Map<string, TsConfigResult>, Map<string, number>>();
 
