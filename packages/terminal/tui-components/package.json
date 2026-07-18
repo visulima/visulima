@@ -98,6 +98,10 @@
             "types": "./dist/checkbox.d.ts",
             "default": "./dist/checkbox.js"
         },
+        "./checkbox-group": {
+            "types": "./dist/checkbox-group.d.ts",
+            "default": "./dist/checkbox-group.js"
+        },
         "./code": {
             "types": "./dist/code.d.ts",
             "default": "./dist/code.js"
@@ -105,6 +109,10 @@
         "./collapsible": {
             "types": "./dist/collapsible.d.ts",
             "default": "./dist/collapsible.js"
+        },
+        "./color-picker": {
+            "types": "./dist/color-picker.d.ts",
+            "default": "./dist/color-picker.js"
         },
         "./command-block": {
             "types": "./dist/command-block.d.ts",
@@ -226,6 +234,10 @@
             "types": "./dist/multi-select.d.ts",
             "default": "./dist/multi-select.js"
         },
+        "./number-input": {
+            "types": "./dist/number-input.d.ts",
+            "default": "./dist/number-input.js"
+        },
         "./operation-tree": {
             "types": "./dist/operation-tree.d.ts",
             "default": "./dist/operation-tree.js"
@@ -238,7 +250,6 @@
             "types": "./dist/ordered-list.d.ts",
             "default": "./dist/ordered-list.js"
         },
-        "./package.json": "./package.json",
         "./paginator": {
             "types": "./dist/paginator.d.ts",
             "default": "./dist/paginator.js"
@@ -247,6 +258,14 @@
             "types": "./dist/paragraph.d.ts",
             "default": "./dist/paragraph.js"
         },
+        "./path-input": {
+            "types": "./dist/path-input.d.ts",
+            "default": "./dist/path-input.js"
+        },
+        "./pie-chart": {
+            "types": "./dist/pie-chart.d.ts",
+            "default": "./dist/pie-chart.js"
+        },
         "./placeholder": {
             "types": "./dist/placeholder.d.ts",
             "default": "./dist/placeholder.js"
@@ -254,6 +273,10 @@
         "./progress-bar": {
             "types": "./dist/progress-bar.d.ts",
             "default": "./dist/progress-bar.js"
+        },
+        "./progress-circle": {
+            "types": "./dist/progress-circle.d.ts",
+            "default": "./dist/progress-circle.js"
         },
         "./radio-group": {
             "types": "./dist/radio-group.d.ts",
@@ -351,6 +374,10 @@
             "types": "./dist/tag.d.ts",
             "default": "./dist/tag.js"
         },
+        "./tag-input": {
+            "types": "./dist/tag-input.d.ts",
+            "default": "./dist/tag-input.js"
+        },
         "./text-input": {
             "types": "./dist/text-input.d.ts",
             "default": "./dist/text-input.js"
@@ -358,6 +385,10 @@
         "./textarea": {
             "types": "./dist/textarea.d.ts",
             "default": "./dist/textarea.js"
+        },
+        "./time-picker": {
+            "types": "./dist/time-picker.d.ts",
+            "default": "./dist/time-picker.js"
         },
         "./timer": {
             "types": "./dist/timer.d.ts",
@@ -375,6 +406,10 @@
             "types": "./dist/transition.d.ts",
             "default": "./dist/transition.js"
         },
+        "./tree-select": {
+            "types": "./dist/tree-select.d.ts",
+            "default": "./dist/tree-select.js"
+        },
         "./tree-view": {
             "types": "./dist/tree-view-entry.d.ts",
             "default": "./dist/tree-view-entry.js"
@@ -386,7 +421,8 @@
         "./use-linked-scroll": {
             "types": "./dist/use-linked-scroll.d.ts",
             "default": "./dist/use-linked-scroll.js"
-        }
+        },
+        "./package.json": "./package.json"
     },
     "files": [
         "dist/**",
