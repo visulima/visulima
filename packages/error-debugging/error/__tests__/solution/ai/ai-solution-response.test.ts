@@ -40,4 +40,61 @@ describe("solution/ai/ai-solution-response", () => {
 
         expect(result).toContain("No solution found.");
     });
+
+    it("escapes HTML in the fix description so injected markup cannot execute", () => {
+        expect.assertions(2);
+
+        const raw = ["FIX", "Remove <script>alert(1)</script> from the file.", "ENDFIX"].join("\n");
+
+        const result = aiSolutionResponse(raw);
+
+        expect(result).not.toContain("<script>");
+        expect(result).toContain("&lt;script&gt;");
+    });
+
+    it("escapes HTML in the raw text on the fallback path", () => {
+        expect.assertions(2);
+
+        const result = aiSolutionResponse("<img src=x onerror=alert(1)>");
+
+        expect(result).not.toContain("<img src=x onerror=alert(1)>");
+        expect(result).toContain("&lt;img");
+    });
+
+    it("drops links with non-http(s) URLs", () => {
+        expect.assertions(2);
+
+        const raw = [
+            "FIX",
+            "Do the thing.",
+            "ENDFIX",
+            "LINKS",
+            "{\"title\": \"evil\", \"url\": \"javascript:alert(1)\"}",
+            "{\"title\": \"ok\", \"url\": \"https://example.com/safe\"}",
+            "ENDLINKS",
+        ].join("\n");
+
+        const result = aiSolutionResponse(raw);
+
+        expect(result).not.toContain("javascript:alert(1)");
+        expect(result).toContain("https://example.com/safe");
+    });
+
+    it("escapes HTML in link titles and URLs", () => {
+        expect.assertions(2);
+
+        const raw = [
+            "FIX",
+            "Do the thing.",
+            "ENDFIX",
+            "LINKS",
+            "{\"title\": \"<b>x</b>\", \"url\": \"https://example.com/?a=1&b=2\"}",
+            "ENDLINKS",
+        ].join("\n");
+
+        const result = aiSolutionResponse(raw);
+
+        expect(result).not.toContain("<b>x</b>");
+        expect(result).toContain("&lt;b&gt;x&lt;/b&gt;");
+    });
 });

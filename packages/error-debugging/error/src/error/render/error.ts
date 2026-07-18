@@ -89,7 +89,9 @@ const getHint = (error: RenderableError, { color, indentation, prefix }: Options
  * location plus, optionally, the original source content for the code frame. A thrown or undefined
  * result leaves the frame untouched, so a broken resolver never breaks rendering.
  */
-const resolveFrame = (trace: Trace, resolver: SourceMapResolver | undefined): { source?: string; trace: Trace } => {
+type ResolvedFrame = { source?: string; trace: Trace };
+
+const resolveFrame = (trace: Trace, resolver: SourceMapResolver | undefined): ResolvedFrame => {
     if (!resolver || trace.file === undefined || trace.line === undefined) {
         return { trace };
     }
@@ -115,11 +117,17 @@ const resolveFrame = (trace: Trace, resolver: SourceMapResolver | undefined): { 
     }
 };
 
-const getMainFrame = (trace: Trace, options: Options, deep = 0): string => {
+const getMainFrame = (resolved: ResolvedFrame, options: Options, deep = 0): string => {
     const { color, cwd: cwdPath, displayShortPath, indentation, prefix } = options;
-    const { trace: frame } = resolveFrame(trace, options.sourceMap);
+    const { trace: frame } = resolved;
 
-    const filePath = displayShortPath ? getRelativePath(frame.file as string, cwdPath) : normalizePathSeparators(frame.file as string);
+    let filePath: string;
+
+    if (frame.file === undefined) {
+        filePath = "<unknown>";
+    } else {
+        filePath = displayShortPath ? getRelativePath(frame.file, cwdPath) : normalizePathSeparators(frame.file);
+    }
 
     const { fileLine, method } = color;
 
@@ -148,9 +156,9 @@ const isReadableSourcePath = (filePath: string, options: Options): boolean => {
     return resolved === root || resolved.startsWith(root + sep);
 };
 
-const getCode = (trace: Trace, options: Options, deep: number): string | undefined => {
+const getCode = (resolved: ResolvedFrame, options: Options, deep: number): string | undefined => {
     const { color, indentation, linesAbove, linesBelow, prefix, showGutter, showLineNumbers, tabWidth } = options;
-    const { source: resolvedSource, trace: frame } = resolveFrame(trace, options.sourceMap);
+    const { source: resolvedSource, trace: frame } = resolved;
 
     if (frame.file === undefined) {
         return undefined;
@@ -214,7 +222,27 @@ const getCause = (error: RenderableError, options: Options, deep: number, seen: 
 
     let message = `${getPrefix(options.prefix, options.indentation, deep)}Caused by:\n\n`;
 
-    const cause = error.cause as Error;
+    const cause = (error as { cause?: unknown }).cause;
+
+    if (!(cause instanceof Error)) {
+        // Non-Error cause (string, number, plain object, ...). Render its value as the title and
+        // skip the stack/code-frame/hint handling that only applies to real errors.
+        let causeText: string;
+
+        if (typeof cause === "object") {
+            try {
+                causeText = JSON.stringify(cause);
+            } catch {
+                causeText = String(cause);
+            }
+        } else {
+            causeText = String(cause);
+        }
+
+        message += `${getPrefix(options.prefix, options.indentation, deep)}${options.color.title(causeText)}\n`;
+
+        return `\n${message}`;
+    }
 
     message += getMessage(cause, options, deep);
 
@@ -228,10 +256,12 @@ const getCause = (error: RenderableError, options: Options, deep: number, seen: 
     }
 
     if (mainFrame) {
-        message += getMainFrame(mainFrame, options, deep);
+        const resolvedMainFrame = resolveFrame(mainFrame, options.sourceMap);
+
+        message += getMainFrame(resolvedMainFrame, options, deep);
 
         if (!options.hideErrorCauseCodeView) {
-            const code = getCode(mainFrame, options, deep);
+            const code = getCode(resolvedMainFrame, options, deep);
 
             if (code !== undefined) {
                 message += `\n${code}`;
@@ -257,7 +287,7 @@ const getCause = (error: RenderableError, options: Options, deep: number, seen: 
 };
 
 const getStacktrace = (stack: Trace[], options: Options): string =>
-    (stack.length > 0 ? "\n" : "") + stack.map((frame) => getMainFrame(frame, options)).join("\n");
+    (stack.length > 0 ? "\n" : "") + stack.map((frame) => getMainFrame(resolveFrame(frame, options.sourceMap), options)).join("\n");
 
 const internalRenderError = (error: AggregateError | Error | VisulimaError, options: Partial<Options>, deep: number): string => {
     const config = {
@@ -297,14 +327,15 @@ const internalRenderError = (error: AggregateError | Error | VisulimaError, opti
     });
 
     const mainFrame = stack.shift();
+    const resolvedMainFrame = mainFrame ? resolveFrame(mainFrame, config.sourceMap) : undefined;
 
     return [
         options.hideMessage ? undefined : getMessage(error, config, deep),
         getHint(error, config, deep),
-        mainFrame ? getMainFrame(mainFrame, config, deep) : undefined,
-        mainFrame && !config.hideErrorCodeView ? getCode(mainFrame, config, deep) : undefined,
+        resolvedMainFrame ? getMainFrame(resolvedMainFrame, config, deep) : undefined,
+        resolvedMainFrame && !config.hideErrorCodeView ? getCode(resolvedMainFrame, config, deep) : undefined,
         error instanceof AggregateError ? getErrors(error, config, deep) : undefined,
-        error.cause === undefined ? undefined : getCause(error, config, deep),
+        error.cause === undefined || error.cause === null ? undefined : getCause(error, config, deep),
         stack.length > 0 ? getStacktrace(stack, config) : undefined,
     ]
         .filter(Boolean)
