@@ -404,6 +404,7 @@ const probeRecords = async (address: string, domain: string, records: MxRecord[]
     }
 
     if (connectionRefusal) {
+        // eslint-disable-next-line unused-imports/no-unused-vars -- destructured only to strip the connection-level marker from the returned result
         const { connectionLevel, ...rest } = connectionRefusal;
 
         return rest;
