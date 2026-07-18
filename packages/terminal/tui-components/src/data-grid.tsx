@@ -95,7 +95,9 @@ export default function DataGrid<Row extends Record<string, unknown>>({
                     return column.width;
                 }
 
-                let max = column.header.length;
+                // Reserve two trailing cells for the " ▲"/" ▼" sort indicator so
+                // it never truncates the header once the column becomes active.
+                let max = column.header.length + 2;
 
                 for (const row of data) {
                     max = Math.max(max, cellText(column, row).length);

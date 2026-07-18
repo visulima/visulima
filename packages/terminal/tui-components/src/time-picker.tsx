@@ -104,6 +104,10 @@ export default function TimePicker({
 
     onChangeRef.current = onChange;
 
+    // Tracks in-progress two-digit entry for the focused segment; reset whenever
+    // focus moves or a non-digit key is pressed.
+    const typedRef = useRef<{ segment: Segment; value: number } | null>(null);
+
     const update = useCallback(
         (next: TimeValue) => {
             if (!isControlled) {
@@ -142,27 +146,71 @@ export default function TimePicker({
         [current, update],
     );
 
+    const applyDigit = useCallback(
+        (segment: Segment, digit: number) => {
+            const previous = typedRef.current;
+            const combine = previous !== null && previous.segment === segment;
+
+            if (segment === "minutes" || segment === "seconds") {
+                let next = combine ? previous.value * 10 + digit : digit;
+
+                if (next > 59) {
+                    next = digit;
+                }
+
+                typedRef.current = { segment, value: next };
+                update(segment === "minutes" ? { ...current, minutes: next } : { ...current, seconds: next });
+
+                return;
+            }
+
+            // Hours. In 12-hour mode digits address the 1..12 range and the
+            // current AM/PM is preserved; in 24-hour mode they address 0..23.
+            const maxHour = hour12 ? 12 : 23;
+            let next = combine ? previous.value * 10 + digit : digit;
+
+            if (next > maxHour) {
+                next = digit;
+            }
+
+            typedRef.current = { segment, value: next };
+
+            if (hour12) {
+                const isPm = current.hours >= 12;
+
+                update({ ...current, hours: (next % 12) + (isPm ? 12 : 0) });
+            } else {
+                update({ ...current, hours: next });
+            }
+        },
+        [current, hour12, update],
+    );
+
     const inputHandler = useCallback(
         (input: string, key: { downArrow: boolean; leftArrow: boolean; return: boolean; rightArrow: boolean; upArrow: boolean }) => {
             if (key.leftArrow) {
+                typedRef.current = null;
                 setSegmentIndex((index) => wrap(index - 1, segments.length));
 
                 return;
             }
 
             if (key.rightArrow) {
+                typedRef.current = null;
                 setSegmentIndex((index) => wrap(index + 1, segments.length));
 
                 return;
             }
 
             if (key.upArrow) {
+                typedRef.current = null;
                 adjust(focusedSegment, 1);
 
                 return;
             }
 
             if (key.downArrow) {
+                typedRef.current = null;
                 adjust(focusedSegment, -1);
 
                 return;
@@ -175,32 +223,16 @@ export default function TimePicker({
             }
 
             if (DIGIT_PATTERN.test(input)) {
-                const digit = Number.parseInt(input, 10);
-
-                switch (focusedSegment) {
-                    case "hours": {
-                        update({ ...current, hours: wrap(digit, 24) });
-
-                        break;
-                    }
-                    case "minutes": {
-                        update({ ...current, minutes: wrap(digit, 60) });
-
-                        break;
-                    }
-                    case "seconds": {
-                        update({ ...current, seconds: wrap(digit, 60) });
-
-                        break;
-                    }
-                    default: {
-                        // The AM/PM segment ignores direct digit entry.
-                        break;
-                    }
+                if (focusedSegment !== "ampm") {
+                    applyDigit(focusedSegment, Number.parseInt(input, 10));
                 }
+
+                return;
             }
 
             if ((input === "a" || input === "p") && hour12) {
+                typedRef.current = null;
+
                 const isPm = current.hours >= 12;
                 const wantPm = input === "p";
 
@@ -209,7 +241,7 @@ export default function TimePicker({
                 }
             }
         },
-        [adjust, current, focusedSegment, hour12, onSubmit, segments.length, update],
+        [adjust, applyDigit, current, focusedSegment, hour12, onSubmit, segments.length, update],
     );
 
     useInput(inputHandler, { isActive: isFocused && !isDisabled });

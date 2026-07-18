@@ -121,7 +121,9 @@ export default function PathInput({
     const [internal, setInternal] = useState(defaultValue);
     const path = controlledValue ?? internal;
 
-    const [cycleIndex, setCycleIndex] = useState(0);
+    // The completion candidates frozen at the first Tab, cycled on repeat
+    // presses. Reset to null on any edit so the next Tab re-snapshots.
+    const cycleRef = useRef<{ index: number; matches: ReadonlyArray<string> } | null>(null);
 
     const onChangeRef = useRef(onChange);
 
@@ -143,11 +145,16 @@ export default function PathInput({
     const inputHandler = useCallback(
         (input: string, key: { backspace: boolean; delete: boolean; return: boolean; tab: boolean }) => {
             if (key.tab) {
-                if (completions.length > 0) {
-                    const pick = completions[cycleIndex % completions.length]!;
+                // Snapshot the candidate list on the first Tab, then cycle the
+                // frozen list — recomputing from `path` each press would collapse
+                // to the just-picked entry and never advance.
+                cycleRef.current ??= { index: 0, matches: completions };
 
-                    setCycleIndex((index) => index + 1);
-                    setPath(pick);
+                const { index, matches } = cycleRef.current;
+
+                if (matches.length > 0) {
+                    cycleRef.current = { index: index + 1, matches };
+                    setPath(matches[index % matches.length]!);
                 }
 
                 return;
@@ -160,18 +167,18 @@ export default function PathInput({
             }
 
             if (key.backspace || key.delete) {
-                setCycleIndex(0);
+                cycleRef.current = null;
                 setPath(path.slice(0, -1));
 
                 return;
             }
 
             if (input.length > 0 && input.codePointAt(0)! >= 0x20) {
-                setCycleIndex(0);
+                cycleRef.current = null;
                 setPath(`${path}${input}`);
             }
         },
-        [completions, cycleIndex, onSubmit, path, setPath],
+        [completions, onSubmit, path, setPath],
     );
 
     useInput(inputHandler, { isActive: isFocused && !isDisabled });
