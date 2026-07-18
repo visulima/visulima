@@ -8,7 +8,7 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.visible("foo");
-        const expected = ["%cfoo", "opacity: 0;"];
+        const expected = ["%cfoo", ""];
 
         expect(received).toStrictEqual(expected);
     });
@@ -17,7 +17,34 @@ describe("style tests", () => {
         expect.assertions(1);
 
         const received = colorize.visible`foo ${green`bar`}`;
-        const expected = ["%cfoo %cbar", "opacity: 0;", "color: green;"];
+        const expected = ["%cfoo %cbar", "", "color: green;"];
+
+        expect(received).toStrictEqual(expected);
+    });
+
+    it(`should colorize inverse('foo') with valid CSS`, () => {
+        expect.assertions(1);
+
+        const received = colorize.inverse("foo");
+        const expected = ["%cfoo", "filter: invert(1);"];
+
+        expect(received).toStrictEqual(expected);
+    });
+
+    it(`should colorize red(0)`, () => {
+        expect.assertions(1);
+
+        const received = colorize.red(0);
+        const expected = ["%c0", "color: red;"];
+
+        expect(received).toStrictEqual(expected);
+    });
+
+    it(`should colorize chained rgb(100, 80, 155).bold('foo') without corrupting commas`, () => {
+        expect.assertions(1);
+
+        const received = colorize.rgb(100, 80, 155).bold("foo");
+        const expected = ["%cfoo", "font-weight:bold;color:rgb(100,80,155);"];
 
         expect(received).toStrictEqual(expected);
     });
