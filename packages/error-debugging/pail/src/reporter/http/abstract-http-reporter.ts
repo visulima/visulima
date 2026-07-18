@@ -13,8 +13,13 @@ import sendWithRetry from "./utils/retry";
 const sharedTextEncoder = typeof TextEncoder === "undefined" ? undefined : new TextEncoder();
 
 /** Measures the UTF-8 byte length of a payload without allocating a fresh encoder per call. */
-const byteLengthOf = (payload: string, edgeCompat: boolean): number =>
-    edgeCompat || sharedTextEncoder === undefined ? Buffer.byteLength(payload, "utf8") : sharedTextEncoder.encode(payload).length;
+const byteLengthOf = (payload: string, edgeCompat: boolean): number => {
+    if (edgeCompat || sharedTextEncoder === undefined) {
+        return Buffer.byteLength(payload, "utf8");
+    }
+
+    return sharedTextEncoder.encode(payload).length;
+};
 
 /**
  * Configuration options for the HTTP reporter.
@@ -231,7 +236,7 @@ export abstract class AbstractHttpReporter<L extends string = string> extends Ab
     // Batch management
     protected batchQueue: string[] = [];
 
-    /** Per-entry UTF-8 byte sizes, kept in lockstep with {@link batchQueue}, so the tracked queue size never re-encodes payloads. */
+    /** Per-entry UTF-8 byte sizes, kept in lockstep with `batchQueue`, so the tracked queue size never re-encodes payloads. */
     protected batchSizeQueue: number[] = [];
 
     protected batchTimeout?: ReturnType<typeof setTimeout>;

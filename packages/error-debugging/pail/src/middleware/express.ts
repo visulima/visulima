@@ -99,7 +99,7 @@ export const pailMiddleware
         // eslint-disable-next-line n/no-unsupported-features/node-builtins
             const requestId = (request.headers["x-request-id"] as string | undefined) ?? crypto.randomUUID();
             const rawUrl: string = request.originalUrl ?? (request.url as string | undefined) ?? "/";
-            const path: string = rawUrl.split("?")[0] as string;
+            const path: string = rawUrl.split("?")[0];
             const safeHeaders = extractSafeNodeHeaders(request.headers);
 
             const { finish, logger, skipped } = createMiddlewareLogger(options, {
