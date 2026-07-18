@@ -61,11 +61,18 @@ class RedisStore implements WorkflowStore {
     }
 
     public async save(run: StoredRun): Promise<void> {
-        await this.#redis.set(this.#runPrefix + run.runId, JSON.stringify(run));
+        const serialized = JSON.stringify(run);
 
-        await (DUE_STATUSES.has(run.status) && run.wakeAt !== undefined
-            ? this.#redis.zadd(this.#dueKey, run.wakeAt, run.runId)
-            : this.#redis.zrem(this.#dueKey, run.runId));
+        // Order the two writes so a crash between them never loses a wake-up:
+        //   - adding a wake: index BEFORE the run, so at worst a spurious wake (resume re-validates and no-ops);
+        //   - removing a wake: run BEFORE the index, so a still-suspended run is never dropped from the index.
+        if (DUE_STATUSES.has(run.status) && run.wakeAt !== undefined) {
+            await this.#redis.zadd(this.#dueKey, run.wakeAt, run.runId);
+            await this.#redis.set(this.#runPrefix + run.runId, serialized);
+        } else {
+            await this.#redis.set(this.#runPrefix + run.runId, serialized);
+            await this.#redis.zrem(this.#dueKey, run.runId);
+        }
     }
 
     public async load(runId: string): Promise<StoredRun | undefined> {

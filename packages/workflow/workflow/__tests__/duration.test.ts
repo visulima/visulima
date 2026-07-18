@@ -58,4 +58,14 @@ describe(resolveWakeAt, () => {
 
         expect(() => resolveWakeAt({ amount: Number.NaN, unit: "minutes" }, base)).toThrow(WorkflowError);
     });
+
+    it("throws for an unrecognised structured unit instead of yielding NaN", () => {
+        expect.assertions(2);
+
+        // A singular typo (or a loosely-typed JS caller) must fail loudly, not suspend forever with wakeAt = NaN.
+        // @ts-expect-error -- intentionally testing an invalid unit reaching this published function from JS
+        expect(() => resolveWakeAt({ amount: 5, unit: "minute" }, base)).toThrow(WorkflowError);
+        // @ts-expect-error -- intentionally testing an invalid unit reaching this published function from JS
+        expect(() => resolveWakeAt({ amount: 5, unit: "minute" }, base)).toThrow("Duration unit");
+    });
 });

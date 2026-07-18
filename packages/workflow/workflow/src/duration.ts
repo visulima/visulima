@@ -45,6 +45,10 @@ const resolveWakeAt = (duration: Duration, from: number = Date.now()): number =>
 
     const factor = UNIT_MS[duration.unit];
 
+    if (factor === undefined) {
+        throw new WorkflowError("invalid-duration", `Duration unit must be one of ${Object.keys(UNIT_MS).join(", ")}. Received: ${String(duration.unit)}.`);
+    }
+
     return from + Math.max(0, duration.amount) * factor;
 };
 

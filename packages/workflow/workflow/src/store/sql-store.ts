@@ -1,6 +1,10 @@
 /* eslint-disable unicorn/no-null -- SQL drivers require `null` (not `undefined`) to bind a SQL NULL */
+import WorkflowError from "../errors";
 import type { RunStatus } from "../types";
 import type { StoredRun, WorkflowStore } from "./types";
+
+/** A safe SQL identifier: a leading letter/underscore followed by letters, digits or underscores. */
+const IDENTIFIER_PATTERN = /^[A-Za-z_][A-Za-z0-9_]*$/;
 
 /** SQL dialect the store renders for. */
 type SqlDialect = "mysql" | "postgres";
@@ -68,6 +72,13 @@ class SqlStore implements WorkflowStore {
         this.#client = client;
         this.#dialect = options.dialect ?? "postgres";
         this.#table = options.table ?? "workflow_runs";
+
+        if (!IDENTIFIER_PATTERN.test(this.#table)) {
+            throw new WorkflowError(
+                "invalid-option",
+                `table must be a valid SQL identifier (a letter or underscore followed by letters, digits or underscores). Received: ${JSON.stringify(this.#table)}.`,
+            );
+        }
     }
 
     /** Create the backing table if it does not exist. Idempotent; called lazily by every operation. */

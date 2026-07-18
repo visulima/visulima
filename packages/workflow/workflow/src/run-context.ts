@@ -30,6 +30,18 @@ const reuseError = (id: string, was: StepRecord["type"], now: StepRecord["type"]
     new WorkflowError("step-id-reused", `Step id "${id}" was previously used as a "${was}" but is now used as a "${now}".`);
 
 /**
+ * Normalise a step output to its JSON-serialisable form so every store (the
+ * structuredClone-based MemoryStore and the JSON-serialising durable stores)
+ * replays the identical value. Enforces the documented "step outputs must be
+ * JSON-serialisable" contract in dev instead of diverging only in production.
+ */
+const toJsonSafe = (value: unknown): unknown => {
+    const serialized = JSON.stringify(value);
+
+    return serialized === undefined ? undefined : JSON.parse(serialized);
+};
+
+/**
  * Execute (or replay) a workflow body once against its prior history.
  *
  * Steps already present in `priorHistory` short-circuit to their recorded value;
@@ -86,13 +98,13 @@ const executeRun = async <PayloadT, OutputT>(
                 return existing.output as T;
             }
 
-            const output = await function_();
+            const output = toJsonSafe(await function_());
             const record: StepRecord = { id, output, type: "step" };
 
             history.push(record);
             byId.set(id, record);
 
-            return output;
+            return output as T;
         },
         waitForEvent: <T>(id: string, name: string, options?: { timeout?: Duration }): Promise<T | undefined> => {
             claimId(id);
