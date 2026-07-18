@@ -153,7 +153,7 @@ describe("tsconfig", () => {
                 utimesSync(path, future, future);
 
                 // eslint-disable-next-line no-await-in-loop
-                await (name === "findTsConfig" ? function_(distribution, options) : function_(distribution, options));
+                await function_(distribution, options);
             }
 
             // Each edit overwrites the same key rather than minting a new one.
