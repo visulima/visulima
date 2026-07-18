@@ -404,7 +404,7 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
             // Escalate to SIGKILL if the child ignores SIGTERM. Unref'd so the pending
             // timer cannot keep the host process's event loop alive on its own.
             killTimer = setTimeout(forceKill, 5000);
-            killTimer.unref?.();
+            killTimer.unref();
             cleanup();
 
             const durationMs = Date.now() - startedAt;

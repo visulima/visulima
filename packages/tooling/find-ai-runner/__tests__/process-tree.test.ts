@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { getProcessAncestry, normalizeProcessName, parseProcStat, parsePowershellRow, parsePsRow, parseWmicRow, walkAncestry } from "../src/process-tree";
+import { getProcessAncestry, normalizeProcessName, parsePowershellRow, parseProcStat, parsePsRow, parseWmicRow, walkAncestry } from "../src/process-tree";
 
 describe(normalizeProcessName, () => {
     it("strips directory prefixes, executable suffixes, and lowercases", () => {

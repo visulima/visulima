@@ -24,6 +24,12 @@ const EXECUTABLE_SUFFIX_REGEX = /\.(?:bat|cmd|exe)$/i;
 /** Runs of whitespace separating the columns of a `ps` listing. */
 const WHITESPACE_REGEX = /\s+/;
 
+/** Leading double-quote wrapping a PowerShell CSV column value. */
+const LEADING_QUOTE_REGEX = /^"/;
+
+/** Trailing double-quote wrapping a PowerShell CSV column value. */
+const TRAILING_QUOTE_REGEX = /"$/;
+
 /**
  * Max bytes buffered from `ps`/`wmic`. Node's default is 1 MB, which a host
  * with tens of thousands of processes can exceed — that would reject the exec
@@ -105,7 +111,7 @@ const parseWmicRow = (line: string): ProcessRow | undefined => {
 
 /** Parse one PowerShell `Get-CimInstance … | ConvertTo-Csv` row (columns: `ProcessId,ParentProcessId,Name`, each quoted). */
 const parsePowershellRow = (line: string): ProcessRow | undefined => {
-    const columns = line.trim().split(",").map((column) => column.replace(/^"/, "").replace(/"$/, ""));
+    const columns = line.trim().split(",").map((column) => column.replace(LEADING_QUOTE_REGEX, "").replace(TRAILING_QUOTE_REGEX, ""));
 
     if (columns.length < 3) {
         return undefined;
@@ -227,4 +233,4 @@ const getProcessAncestry = async (startPid: number = process.pid): Promise<strin
     }
 };
 
-export { getProcessAncestry, normalizeProcessName, parseProcStat, parsePowershellRow, parsePsRow, parseWmicRow, walkAncestry };
+export { getProcessAncestry, normalizeProcessName, parsePowershellRow, parseProcStat, parsePsRow, parseWmicRow, walkAncestry };
