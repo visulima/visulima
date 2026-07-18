@@ -48,6 +48,7 @@ export interface InlineOptions {
      * - 'destroy'            — content is cleared, terminal looks untouched
      */
     onExit?: "preserve" | "destroy";
+
     /**
      * Invoked once after the loop has stopped and the terminal has been
      * restored. Lets a host tear down its own state (unmount a React tree,
@@ -73,7 +74,7 @@ export function createInlineLoop(paint: InlinePaintFn, options: InlineOptions = 
     const reservedRows = options.rows ?? 10;
     const fps = options.fps ?? 60;
     const onExit = options.onExit ?? "preserve";
-    const onStop = options.onStop;
+    const { onStop } = options;
 
     let interval: ReturnType<typeof setInterval> | null = null;
     let renderer: RendererInstance | null = null;
