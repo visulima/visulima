@@ -5,6 +5,7 @@ import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, expectTypeOf, it, vi } from "vitest";
 
 import createViteSolutionFinder from "../../../src/utils/create-vite-solution-finder";
+import renderSafeMarkdown from "../../../src/utils/render-safe-markdown";
 
 const temporaryRoot = mkdtempSync(join(tmpdir(), "vite-solution-finder-"));
 
@@ -161,14 +162,24 @@ describe(createViteSolutionFinder, () => {
         expect(solution?.body).toContain("import.meta.url");
     });
 
-    it("matches TypeScript configuration when file ends with .ts", async () => {
+    it("matches TypeScript configuration when the message signals a TypeScript issue", async () => {
         expect.assertions(1);
 
         const finder = createViteSolutionFinder(temporaryRoot);
-        const error = new Error("Random message");
+        const error = new Error("Could not load tsconfig.json");
         const solution = await finder.handle(error, context({ file: join(temporaryRoot, "src", "utils.ts") }));
 
         expect(solution?.header).toBe("TypeScript Configuration");
+    });
+
+    it("does not emit a tsconfig hint for a generic error merely located in a .ts file", async () => {
+        expect.assertions(1);
+
+        const finder = createViteSolutionFinder(temporaryRoot);
+        const error = new Error("foo is not defined");
+        const solution = await finder.handle(error, context({ file: join(temporaryRoot, "src", "utils.ts") }));
+
+        expect(solution?.header).not.toBe("TypeScript Configuration");
     });
 
     it("handles an error with no message by returning undefined", async () => {
@@ -246,8 +257,8 @@ describe(createViteSolutionFinder, () => {
         const solution = await finder.handle(error, context({ file: join(temporaryRoot, "src", "components", "App.tsx"), language: "typescript" }));
 
         const body = solution?.body ?? "";
-        // Extract `<li>` entries in listed order.
-        const listed = [...body.matchAll(/<li>`([^`]+)`<\/li>/g)].map((m) => m[1] ?? "");
+        // Extract markdown list entries in listed order.
+        const listed = [...body.matchAll(/- `([^`]+)`/g)].map((m) => m[1] ?? "");
 
         const exactPosition = listed.findIndex((entry) => entry.includes("Button.tsx"));
         const typoPosition = listed.findIndex((entry) => entry.includes("Buton.tsx"));
@@ -283,7 +294,22 @@ describe(createViteSolutionFinder, () => {
         expect(solution?.body).toContain("@sveltejs/vite-plugin-svelte");
     });
 
-    it("hTML-escapes the unresolved import path in the solution body when it has markup (XSS regression)", async () => {
+    it("emits markdown that renders into a formatted list rather than escaped tag soup", async () => {
+        expect.assertions(3);
+
+        const finder = createViteSolutionFinder(temporaryRoot);
+        const error = new Error("Failed to resolve import \"./components/Buton\" from \"src/App.tsx\"");
+        const solution = await finder.handle(error, context({ file: join(temporaryRoot, "src", "App.tsx"), language: "typescript" }));
+
+        const rendered = await renderSafeMarkdown(solution?.body ?? "");
+
+        // The finder emits markdown, so the sanitizer produces real list markup (not literal <ul>/<li> text).
+        expect(rendered).toContain("<li>");
+        expect(rendered).not.toContain("&lt;ul&gt;");
+        expect(rendered).not.toContain("&lt;li&gt;");
+    });
+
+    it("hTML-escapes the unresolved import path once it is rendered (XSS regression)", async () => {
         expect.assertions(2);
 
         const finder = createViteSolutionFinder(temporaryRoot);
@@ -293,10 +319,10 @@ describe(createViteSolutionFinder, () => {
         const error = new Error("Failed to resolve import \"./logo<>\" from \"src/App.tsx\"");
         const solution = await finder.handle(error, context({ file: join(temporaryRoot, "src", "App.tsx"), language: "typescript" }));
 
-        const body = solution?.body ?? "";
+        const rendered = await renderSafeMarkdown(solution?.body ?? "");
 
-        // The raw `<>` must be escaped, not echoed into the body verbatim.
-        expect(body).toContain("./logo&lt;&gt;");
-        expect(body).not.toContain("./logo<>");
+        // The raw `<>` must be escaped by the sanitizer, not echoed into the injected body verbatim.
+        expect(rendered).toContain("./logo&lt;&gt;");
+        expect(rendered).not.toContain("./logo<>");
     });
 });

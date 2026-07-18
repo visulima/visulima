@@ -33,26 +33,6 @@ const has = (message: string, ...needles: string[]): boolean => {
     return needles.some((n) => lower.includes(n.toLowerCase()));
 };
 
-const HTML_ESCAPE_RE = /[&<>"']/g;
-const HTML_ESCAPE_MAP: Record<string, string> = {
-    "\"": "&quot;",
-    "&": "&amp;",
-    "'": "&#39;",
-    "<": "&lt;",
-    ">": "&gt;",
-};
-
-/**
- * Escapes HTML-significant characters in error-derived text before it is interpolated
- * into solution bodies. Solution bodies are rendered through `marked` (which preserves
- * raw HTML) and ultimately injected via `innerHTML` on the dev origin, so values that
- * originate from attacker-influenceable error messages / import specifiers must be escaped
- * to avoid markup/script injection.
- * @param value The untrusted text to escape
- * @returns The HTML-escaped text
- */
-const escapeHtml = (value: string): string => value.replaceAll(HTML_ESCAPE_RE, (char) => HTML_ESCAPE_MAP[char] ?? char);
-
 /**
  * Gets the relative path from one directory to another, ensuring it starts with './' if needed.
  * @param fromDirectory The source directory
@@ -307,7 +287,7 @@ const findSimilarFiles = async (importPath: string, fromFile: string, rootDirect
         return "";
     }
 
-    let finalSuggestions = `<ul>${uniqueSuggestions.map((suggestion) => `<li>\`${escapeHtml(suggestion)}\`</li>`).join("\n")}</ul>`;
+    let finalSuggestions = uniqueSuggestions.map((suggestion) => `- \`${suggestion}\``).join("\n");
 
     if (hasPublicFileSuggestions) {
         const publicFileName = importName;
@@ -315,7 +295,7 @@ const findSimilarFiles = async (importPath: string, fromFile: string, rootDirect
         const isAssetFile = [...ASSET_EXTENSIONS].some((extension) => publicFileName.includes(extension));
 
         if (isAssetFile) {
-            finalSuggestions += `Files in the \`public\` folder should be accessed via absolute URLs like \`/${escapeHtml(publicFileName)}\`.`;
+            finalSuggestions += `\n\nFiles in the \`public\` folder should be accessed via absolute URLs like \`/${publicFileName}\`.`;
         }
     }
 
@@ -383,7 +363,7 @@ const ERROR_PATTERNS = [
             body: "Check your `tsconfig.json` and make sure it includes proper paths and compiler options. For Vite, you might need a `vite-env.d.ts` file.",
             header: "TypeScript Configuration",
         },
-        test: (message: string, file?: string) => has(message, "TypeScript") || file?.endsWith(".ts"),
+        test: (message: string) => has(message, "TypeScript", "tsconfig", "vite-env.d.ts"),
     },
     {
         solution: {
@@ -472,7 +452,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
 
                     if (suggestions) {
                         return {
-                            body: `The import path \`${escapeHtml(importPath)}\` could not be resolved.<br/><br/>Did you mean one of these files?<br/>${suggestions}`,
+                            body: `The import path \`${importPath}\` could not be resolved.\n\nDid you mean one of these files?\n\n${suggestions}`,
                         };
                     }
 
@@ -512,7 +492,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
 
                         if (suggestions) {
                             return {
-                                body: `Cannot resolve \`${escapeHtml(importPath)}\`. Did you mean one of these files?${suggestions}`,
+                                body: `Cannot resolve \`${importPath}\`. Did you mean one of these files?\n\n${suggestions}`,
                                 header: "File Not Found",
                             };
                         }
@@ -527,7 +507,7 @@ const createViteSolutionFinder = (rootPath: string): SolutionFinder => {
 
             // Check common error patterns
             for (const pattern of ERROR_PATTERNS) {
-                if (pattern.test(message, file)) {
+                if (pattern.test(message)) {
                     return pattern.solution;
                 }
             }

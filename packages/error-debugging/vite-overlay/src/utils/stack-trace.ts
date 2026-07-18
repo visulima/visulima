@@ -308,4 +308,4 @@ const absolutizeStackUrls = (stack: string, rootPath: string): string => {
     return String(stack).replaceAll(HTTP_URL_PATTERN, (url) => absolutizeUrl(url, rootPath));
 };
 
-export { absolutizeStackUrls, cleanErrorMessage, cleanErrorStack, extractErrors, isAggregateError, isValidStackFrame };
+export { absolutizeStackUrls, cleanErrorMessage, cleanErrorStack, extractErrors, isAggregateError, isValidStackFrame, SUPPORTED_EXTENSIONS };

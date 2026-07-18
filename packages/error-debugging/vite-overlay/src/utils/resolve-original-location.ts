@@ -311,3 +311,5 @@ const resolveOriginalLocation = async (
 };
 
 export default resolveOriginalLocation;
+
+export { estimateOriginalPosition };

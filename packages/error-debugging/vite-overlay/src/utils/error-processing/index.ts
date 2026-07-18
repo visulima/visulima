@@ -11,8 +11,8 @@ import { isESBuildErrorArray, processESBuildErrors } from "../esbuild-error";
 import findModuleForPath from "../find-module-for-path";
 import { normalizeIdCandidates } from "../normalize-id-candidates";
 import realignOriginalPosition from "../realign-original-position";
-import resolveOriginalLocation from "../resolve-original-location";
-import { cleanErrorMessage, cleanErrorStack, extractErrors } from "../stack-trace";
+import resolveOriginalLocation, { estimateOriginalPosition } from "../resolve-original-location";
+import { cleanErrorMessage, cleanErrorStack, extractErrors, SUPPORTED_EXTENSIONS } from "../stack-trace";
 import parseVueCompilationError from "./parse-vue-compilation-error";
 import processHydrationDiff from "./process-hydration-diff";
 import remapStackToOriginal from "./remap-stack-to-original";
@@ -149,26 +149,7 @@ const resolveOriginalLocationInfo = async (
             }
         }
 
-        let estimatedLine;
-        let estimatedColumn = fileColumn;
-
-        if (fileLine >= 20) {
-            estimatedLine = Math.max(1, Math.round(fileLine * 0.5));
-        } else if (fileLine > 15) {
-            estimatedLine = Math.max(1, Math.round(fileLine * 0.6));
-        } else if (fileLine > 10) {
-            estimatedLine = Math.max(1, fileLine - 8);
-        } else {
-            estimatedLine = Math.max(1, fileLine - 3);
-        }
-
-        if (fileColumn >= 10) {
-            estimatedColumn = Math.max(0, fileColumn - 1);
-        } else if (fileColumn > 7) {
-            estimatedColumn = Math.max(0, fileColumn - 1);
-        } else if (fileColumn > 5) {
-            estimatedColumn = Math.max(0, fileColumn);
-        }
+        const { estimatedColumn, estimatedLine } = estimateOriginalPosition(fileLine, fileColumn);
 
         return {
             originalFileColumn: estimatedColumn,
@@ -437,7 +418,7 @@ const buildExtendedErrorData = async (
                 && !trace.file.startsWith("http")
                 && !trace.file.includes("node_modules")
                 && !trace.file.includes(".vite")
-                && trace.file.includes(".tsx"),
+                && [...SUPPORTED_EXTENSIONS].some((extension) => (trace.file as string).includes(extension)),
         );
 
         if (sourceTrace?.file) {
