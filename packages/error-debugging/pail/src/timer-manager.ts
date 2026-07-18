@@ -102,6 +102,7 @@ export class TimerManager {
             const span = Date.now() - this.#timersMap.get(label)!;
 
             this.#timersMap.delete(label);
+            this.#seqTimers.delete(label);
 
             this.#emit("stop", false, false, {
                 message: `${this.#endMessage} ${span < 1000 ? `${String(span)} ms` : `${(span / 1000).toFixed(2)} s`}`,

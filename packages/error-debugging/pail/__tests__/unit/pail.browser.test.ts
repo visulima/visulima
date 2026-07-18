@@ -116,6 +116,31 @@ describe("pailBrowserImpl", () => {
         expect(console.log).toBe(originalConsoleLog);
     });
 
+    it("should remove pail-only console methods on restore", () => {
+        expect.assertions(3);
+
+        const logger = new PailBrowser({
+            logLevel: "debug",
+            processors: [],
+            rawReporter: new RawReporter(),
+            reporters: [new RawReporter()],
+            scope: ["example"],
+            throttle: 1000,
+            throttleMin: 5,
+        });
+
+        // `success` is a pail-only type not present on the native console.
+        expect("success" in console).toBe(false);
+
+        logger.wrapConsole();
+
+        expect(typeof (console as unknown as Record<string, unknown>).success).toBe("function");
+
+        logger.restoreConsole();
+
+        expect("success" in console).toBe(false);
+    });
+
     it("should no-op wrapException when process is undefined", () => {
         expect.assertions(1);
 

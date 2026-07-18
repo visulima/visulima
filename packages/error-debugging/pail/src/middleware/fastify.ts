@@ -105,7 +105,7 @@ export const pailPlugin = <T extends string = string>(fastify: PailFastifyInstan
         const { finish, logger, skipped } = createMiddlewareLogger(options, {
             headers: safeHeaders,
             method: request.method,
-            path: request.url,
+            path: request.url.split("?")[0] as string,
             requestId,
         });
 
