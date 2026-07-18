@@ -100,7 +100,6 @@ describe("multiple lazy", () => {
         const result = commandLineArgs(optionDefinitions, { argv });
 
         expect(result).toStrictEqual({
-            // eslint-disable-next-line unicorn/no-null
             one: ["a", null],
         });
     });
