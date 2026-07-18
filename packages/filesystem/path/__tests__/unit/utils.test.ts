@@ -123,6 +123,7 @@ describe("utils", () => {
                 // The more specific value ("/root/src/lib") must win over the more
                 // general one ("/root/src") no matter which key was declared first.
                 expect(reverseResolveAlias("/root/src/lib/y", { "@": "/root/src", "@lib": "/root/src/lib" })).toBe("@lib/y");
+                // eslint-disable-next-line perfectionist/sort-objects -- reversed key order is the point of this assertion
                 expect(reverseResolveAlias("/root/src/lib/y", { "@lib": "/root/src/lib", "@": "/root/src" })).toBe("@lib/y");
             });
 
