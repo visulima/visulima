@@ -5,50 +5,54 @@
  *
  * Copyright (c) 2018 Luca Ban - Mesqueeb
  */
+import copySymbols from "./copy-symbols";
 import isPlainObject from "./is-plain-object";
-import { segmentsAreEqual } from "./paths-are-equal";
 import safeAssign from "./safe-assign";
 
 /**
- * Copy the enumerable symbol-keyed own properties from `source` onto `target`.
+ * Narrow the remaining path tails to those still relevant one level below `key`.
  *
- * String paths can never target symbol keys, so they are always preserved
- * verbatim (matching lodash's `omit`).
- * @param source The object to read symbol properties from.
- * @param target The object to copy symbol properties onto.
+ * A tail stays alive when its first segment matches `key` (or is a `*`
+ * wildcard); the matched segment is then dropped so the child receives the
+ * remainder. An empty resulting tail marks the child as fully targeted.
+ * @param tails The remaining omit-path tails at the current node.
+ * @param key The concrete child key being descended into.
+ * @returns The tails that still apply below `key`.
  */
-const copySymbols = (source: object, target: Record<PropertyKey, unknown>): void => {
-    for (const symbol of Object.getOwnPropertySymbols(source)) {
-        const descriptor = Object.getOwnPropertyDescriptor(source, symbol);
+const narrow = (tails: ReadonlyArray<ReadonlyArray<string>>, key: string): ReadonlyArray<string>[] => {
+    const next: ReadonlyArray<string>[] = [];
 
-        if (descriptor?.enumerable) {
-            // eslint-disable-next-line no-param-reassign
-            target[symbol] = (source as Record<PropertyKey, unknown>)[symbol];
+    for (const tail of tails) {
+        const [head] = tail;
+
+        if (head === "*" || head === key) {
+            next.push(tail.slice(1));
         }
     }
+
+    return next;
 };
 
 /**
- * Recursively copy `value`, dropping any property whose path matches one of
- * the pre-split `omittedKeys`. Plain objects and arrays are both traversed.
+ * Recursively copy `value`, dropping any property whose remaining path tail is
+ * fully consumed. Plain objects and arrays are both traversed.
  * @param value The value currently being copied.
- * @param omittedKeys The omitted paths, pre-split into segment arrays.
- * @param currentPath The segment path leading to `value`.
+ * @param tails The omit-path tails still relevant at this node.
  * @returns A new value with the omitted paths removed.
  */
-const walk = (value: unknown, omittedKeys: ReadonlyArray<string[]>, currentPath: ReadonlyArray<string>): unknown => {
+const walk = (value: unknown, tails: ReadonlyArray<ReadonlyArray<string>>): unknown => {
     if (Array.isArray(value)) {
         const result: unknown[] = [];
 
         for (const [index, element] of value.entries()) {
-            const path = [...currentPath, String(index)];
+            const childTails = narrow(tails, String(index));
 
-            if (omittedKeys.some((guardPath) => segmentsAreEqual(path, guardPath))) {
+            if (childTails.some((tail) => tail.length === 0)) {
                 // Skip omitted elements while keeping the array shape.
                 continue;
             }
 
-            result.push(walk(element, omittedKeys, path));
+            result.push(walk(element, childTails));
         }
 
         return result;
@@ -61,13 +65,13 @@ const walk = (value: unknown, omittedKeys: ReadonlyArray<string[]>, currentPath:
     const carry: Record<string, unknown> = {};
 
     for (const [key, child] of Object.entries(value)) {
-        const path = [...currentPath, key];
+        const childTails = narrow(tails, key);
 
-        if (omittedKeys.some((guardPath) => segmentsAreEqual(path, guardPath))) {
+        if (childTails.some((tail) => tail.length === 0)) {
             continue;
         }
 
-        safeAssign(carry, key, walk(child, omittedKeys, path));
+        safeAssign(carry, key, walk(child, childTails));
     }
 
     copySymbols(value, carry);
@@ -81,6 +85,6 @@ const walk = (value: unknown, omittedKeys: ReadonlyArray<string[]>, currentPath:
  * @param omittedKeys The omitted paths, already split into segment arrays.
  * @returns A new object/array without the omitted props.
  */
-const recursiveOmit = <T extends { [key in string]: unknown }>(object: T, omittedKeys: ReadonlyArray<string[]>): T => walk(object, omittedKeys, []) as T;
+const recursiveOmit = <T extends { [key in string]: unknown }>(object: T, omittedKeys: ReadonlyArray<string[]>): T => walk(object, omittedKeys) as T;
 
 export default recursiveOmit;
