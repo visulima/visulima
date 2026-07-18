@@ -397,6 +397,64 @@ describe(commentsToOpenApi, () => {
         expect(specification).toStrictEqual([expected1, expected2]);
     });
 
+    it("keeps dotted vendor media types intact", () => {
+        expect.assertions(1);
+
+        // eslint-disable-next-line no-multi-str
+        const comment = "/**\n\
+ * POST /pets\n\
+ * @bodyContent {Pet} application/vnd.api+json\n\
+ * @bodyExample {PetExample} application/vnd.api+json.example1\n\
+ * @response 200 - ok.\n\
+ * @responseContent {Pet} 200.application/vnd.api+json\n\
+ * @responseExample {PetExample} 200.application/vnd.api+json.example1\n\
+ */".replaceAll("\r\n", "\n");
+
+        const expected = {
+            paths: {
+                "/pets": {
+                    post: {
+                        requestBody: {
+                            content: {
+                                "application/vnd.api+json": {
+                                    examples: {
+                                        example1: {
+                                            $ref: "#/components/examples/PetExample",
+                                        },
+                                    },
+                                    schema: {
+                                        $ref: "#/components/schemas/Pet",
+                                    },
+                                },
+                            },
+                        },
+                        responses: {
+                            200: {
+                                content: {
+                                    "application/vnd.api+json": {
+                                        examples: {
+                                            example1: {
+                                                $ref: "#/components/examples/PetExample",
+                                            },
+                                        },
+                                        schema: {
+                                            $ref: "#/components/schemas/Pet",
+                                        },
+                                    },
+                                },
+                                description: "ok.",
+                            },
+                        },
+                    },
+                },
+            },
+        };
+
+        const specification = commentsToOpenApi(comment).map((index) => index.spec);
+
+        expect(specification).toStrictEqual([expected]);
+    });
+
     it("complex example", () => {
         expect.assertions(1);
 
