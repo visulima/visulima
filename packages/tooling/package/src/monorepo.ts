@@ -28,7 +28,7 @@ const hasWorkspacesField = (rawPackageJson: string): boolean => {
         return false;
     }
 
-    const workspaces = (parsed as { workspaces?: unknown }).workspaces;
+    const { workspaces } = parsed as { workspaces?: unknown };
 
     return typeof workspaces === "object" && workspaces !== null;
 };
