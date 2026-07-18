@@ -107,8 +107,8 @@
         "name": "Freemail Service Providers Database",
         "url": "https://github.com/willwhite/freemail",
         "type": "git",
-        "blocklist_files": ["/refs/heads/master/data/free.txt"],
-        "description": "free email providers list including disposable services",
+        "blocklist_files": ["/refs/heads/master/data/disposable.txt"],
+        "description": "disposable email providers list (data/free.txt is the free-provider list and injects legitimate free-mail domains)",
         "priority": 7
     },
     {
