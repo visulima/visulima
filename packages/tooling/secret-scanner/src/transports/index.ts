@@ -16,13 +16,13 @@
 
 import type { ValidationStatus } from "../types";
 import { validateJwt } from "../validator/jwt";
-import { validateAws } from "./aws";
+import { resolveAwsHosts, validateAws } from "./aws";
 import type { TransportContext, ValidatorTransport } from "./context";
-import { validateGcp } from "./gcp";
-import { validateJdbc } from "./jdbc";
-import { validateMongoDB } from "./mongodb";
-import { validateMySQL } from "./mysql";
-import { validatePostgres } from "./postgres";
+import { resolveGcpHosts, validateGcp } from "./gcp";
+import { resolveJdbcHosts, validateJdbc } from "./jdbc";
+import { resolveMongoHosts, validateMongoDB } from "./mongodb";
+import { resolveMysqlHosts, validateMySQL } from "./mysql";
+import { resolvePostgresHosts, validatePostgres } from "./postgres";
 import { emitInstallWarning } from "./runtime";
 
 export const TRANSPORTS: Record<string, ValidatorTransport> = {
@@ -30,6 +30,7 @@ export const TRANSPORTS: Record<string, ValidatorTransport> = {
         displayName: "AWS STS",
         implemented: true,
         packageName: "@aws-sdk/client-sts",
+        resolveHosts: resolveAwsHosts,
         summary: "Signs a `sts:GetCallerIdentity` call with the captured access-key pair. Requires the AKID from the paired `depends_on_rule` dependency.",
         validate: validateAws,
     },
@@ -48,6 +49,7 @@ export const TRANSPORTS: Record<string, ValidatorTransport> = {
         displayName: "Google Cloud",
         implemented: true,
         packageName: "google-auth-library",
+        resolveHosts: resolveGcpHosts,
         summary: "Decodes the captured service-account JSON and exchanges it for an OAuth access token.",
         validate: validateGcp,
     },
@@ -61,6 +63,7 @@ export const TRANSPORTS: Record<string, ValidatorTransport> = {
     Jdbc: {
         displayName: "JDBC",
         implemented: true,
+        resolveHosts: resolveJdbcHosts,
         summary: "Parses a generic `jdbc:<scheme>:` URL and dispatches to the matching driver. Install `mongodb`, `mysql2`, or `pg` depending on the scheme.",
         validate: validateJdbc,
     },
@@ -74,6 +77,7 @@ export const TRANSPORTS: Record<string, ValidatorTransport> = {
         displayName: "MongoDB",
         implemented: true,
         packageName: "mongodb",
+        resolveHosts: resolveMongoHosts,
         summary: "Connects with the captured connection string and pings the server.",
         validate: validateMongoDB,
     },
@@ -81,6 +85,7 @@ export const TRANSPORTS: Record<string, ValidatorTransport> = {
         displayName: "MySQL",
         implemented: true,
         packageName: "mysql2",
+        resolveHosts: resolveMysqlHosts,
         summary: "Connects with the captured `mysql://…` URL and issues a `SELECT 1`.",
         validate: validateMySQL,
     },
@@ -88,6 +93,7 @@ export const TRANSPORTS: Record<string, ValidatorTransport> = {
         displayName: "PostgreSQL",
         implemented: true,
         packageName: "pg",
+        resolveHosts: resolvePostgresHosts,
         summary: "Connects with the captured `postgres://…` URL and issues a `SELECT 1`.",
         validate: validatePostgres,
     },
@@ -122,6 +128,24 @@ export const runTransport = async (type: string, context: TransportContext): Pro
         emitInstallWarning(type, transport);
 
         return "skipped";
+    }
+
+    // Allowlist / abort gate for network transports. Offline transports (JWT)
+    // declare no `resolveHosts` and are never gated — they open no connection.
+    if (transport.resolveHosts) {
+        if (context.signal?.aborted) {
+            return "error";
+        }
+
+        if (context.allowedHosts !== undefined) {
+            const hosts = transport.resolveHosts(context);
+
+            // Fail closed: an unresolvable host (unparseable URI) or any host
+            // outside the allowlist skips before a single packet leaves.
+            if (hosts === undefined || !hosts.every((host) => context.allowedHosts?.has(host.toLowerCase()))) {
+                return "skipped";
+            }
+        }
     }
 
     return transport.validate(context);

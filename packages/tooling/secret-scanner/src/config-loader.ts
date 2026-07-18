@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, statSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 // eslint-disable-next-line import/no-extraneous-dependencies
@@ -67,16 +67,32 @@ const mergeConfigs = (base: GitleaksConfig, overlay: GitleaksConfig): GitleaksCo
     const overlayRuleIds = new Set((overlay.rules ?? []).filter((r): r is GitleaksRule & { id: string } => typeof r?.id === "string").map((r) => r.id));
     const baseRules = (base.rules ?? []).filter((r) => typeof r?.id !== "string" || !overlayRuleIds.has(r.id));
 
+    // Allowlists *extend* rather than replace — gitleaks `extend` semantics. The
+    // bundled ruleset ships several top-level global allowlists; replacing them
+    // wholesale with the user's single entry would silently re-enable
+    // false-positive matches across every bundled rule. A user's top-level
+    // singular `allowlist` is folded into the same concatenated list so it
+    // survives alongside the bundled ones.
+    const mergedAllowlists = [
+        ...(Array.isArray(base.allowlists) ? base.allowlists : []),
+        ...(base.allowlist === undefined ? [] : [base.allowlist]),
+        ...(Array.isArray(overlay.allowlists) ? overlay.allowlists : []),
+        ...(overlay.allowlist === undefined ? [] : [overlay.allowlist]),
+    ];
+
     return {
-        allowlist: overlay.allowlist ?? base.allowlist,
-        allowlists: overlay.allowlists ?? base.allowlists,
+        allowlists: mergedAllowlists.length > 0 ? mergedAllowlists : undefined,
         description: overlay.description ?? base.description,
         extend: overlay.extend ?? base.extend,
         rules: [...baseRules, ...(overlay.rules ?? [])],
     };
 };
 
-const resolveCache = new Map<string, GitleaksConfig>();
+// Path → { mtimeMs, size, config } cache. Keyed on mtime+size (not the path
+// alone) so a long-lived host — an editor integration calling `scanString` per
+// keystroke — picks up edits to the config file without a restart. Mirrors the
+// invalidation the sibling baseline cache does for the same use case.
+const resolveCache = new Map<string, { config: GitleaksConfig; mtimeMs: number; size: number }>();
 
 const resolveConfig = (options: ConfigLoadOptions = {}): GitleaksConfig => {
     if (options.config) {
@@ -88,18 +104,50 @@ const resolveConfig = (options: ConfigLoadOptions = {}): GitleaksConfig => {
     }
 
     const absolute = resolve(options.configPath);
-    let userConfig = resolveCache.get(absolute);
+
+    let statKey: { mtimeMs: number; size: number } | undefined;
+
+    try {
+        const stats = statSync(absolute);
+
+        statKey = { mtimeMs: stats.mtimeMs, size: stats.size };
+    } catch {
+        // stat failed (race / permissions) — fall through to an uncached read
+        // that surfaces the real error to the caller.
+        statKey = undefined;
+    }
+
+    let userConfig: GitleaksConfig | undefined;
+
+    if (statKey) {
+        const cached = resolveCache.get(absolute);
+
+        if (cached && cached.mtimeMs === statKey.mtimeMs && cached.size === statKey.size) {
+            userConfig = cached.config;
+        }
+    }
 
     if (userConfig === undefined) {
         userConfig = readJsonSync(absolute) as GitleaksConfig;
-        resolveCache.set(absolute, userConfig);
+
+        if (statKey) {
+            resolveCache.set(absolute, { config: userConfig, mtimeMs: statKey.mtimeMs, size: statKey.size });
+        }
     }
 
     if (options.extendBundled === false) {
         return userConfig;
     }
 
-    if (!userConfig.rules || userConfig.rules.length === 0) {
+    // Only fall back to the bundled config when the user config contributes
+    // nothing to merge. A path config carrying *only* allowlists (the common
+    // gitleaks "extend default + suppress" pattern) must still layer onto the
+    // bundled ruleset — otherwise its suppressions are silently dropped, exactly
+    // like the inline-config branch above already merges unconditionally.
+    const hasRules = Array.isArray(userConfig.rules) && userConfig.rules.length > 0;
+    const hasAllowlist = userConfig.allowlist !== undefined || (Array.isArray(userConfig.allowlists) && userConfig.allowlists.length > 0);
+
+    if (!hasRules && !hasAllowlist) {
         return getBundledConfig();
     }
 

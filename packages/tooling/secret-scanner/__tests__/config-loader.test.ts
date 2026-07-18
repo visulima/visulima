@@ -145,7 +145,19 @@ describe(resolveConfig, () => {
         expect(resolved.rules ?? []).toHaveLength(bundledCount + 1);
     });
 
-    it("reads, caches, and merges a config from a path", async () => {
+    it("reads and merges a config from a path", async () => {
+        expect.assertions(1);
+
+        const path = resolve(tmp, "user-config.json");
+
+        await writeFile(path, JSON.stringify({ rules: [{ id: "from-disk" }] }));
+
+        const first = resolveConfig({ configPath: path });
+
+        expect(first.rules?.some((r) => r.id === "from-disk")).toBe(true);
+    });
+
+    it("invalidates the per-path cache when the config file changes on disk", async () => {
         expect.assertions(2);
 
         const path = resolve(tmp, "user-config.json");
@@ -156,13 +168,14 @@ describe(resolveConfig, () => {
 
         expect(first.rules?.some((r) => r.id === "from-disk")).toBe(true);
 
-        // Mutate the file; the second resolve should hit the per-path cache and
-        // still see the original rule (proving the cache short-circuits the read).
-        await writeFile(path, JSON.stringify({ rules: [{ id: "changed-on-disk" }] }));
+        // Editing the file (mtime + size change) must bust the cache — a
+        // long-lived editor host would otherwise keep serving the pre-edit
+        // ruleset until restart.
+        await writeFile(path, JSON.stringify({ rules: [{ id: "changed-on-disk" }, { id: "second-rule" }] }));
 
         const second = resolveConfig({ configPath: path });
 
-        expect(second.rules?.some((r) => r.id === "from-disk")).toBe(true);
+        expect(second.rules?.some((r) => r.id === "changed-on-disk")).toBe(true);
     });
 
     it("returns the user config verbatim from a path when extendBundled is false", async () => {
@@ -177,7 +190,7 @@ describe(resolveConfig, () => {
         expect(resolved.rules?.map((r) => r.id)).toStrictEqual(["standalone-rule"]);
     });
 
-    it("falls back to the bundled config when a path config has no rules", async () => {
+    it("falls back to the bundled config when a path config has neither rules nor allowlists", async () => {
         expect.assertions(1);
 
         const path = resolve(tmp, "empty.json");
@@ -188,5 +201,44 @@ describe(resolveConfig, () => {
         const bundledCount = (getBundledConfig().rules ?? []).length;
 
         expect(resolved.rules ?? []).toHaveLength(bundledCount);
+    });
+
+    it("extends (not replaces) the bundled global allowlists when merging an inline config", () => {
+        expect.assertions(1);
+
+        const bundled = getBundledConfig();
+        const baseCount = Array.isArray(bundled.allowlists) ? bundled.allowlists.length : 0;
+        const resolved = resolveConfig({ config: { allowlists: [{ description: "mine", regexes: ["placeholder"] }], rules: [{ id: "custom-rule" }] } });
+
+        // The user's single allowlist is appended to the bundled ones — not
+        // substituted for them, which would re-enable FPs across every rule.
+        expect(resolved.allowlists).toHaveLength(baseCount + 1);
+    });
+
+    it("folds a top-level singular `allowlist` into the merged allowlists array", () => {
+        expect.assertions(1);
+
+        const bundled = getBundledConfig();
+        const baseCount = Array.isArray(bundled.allowlists) ? bundled.allowlists.length : 0;
+        const resolved = resolveConfig({ config: { allowlist: { regexes: ["placeholder"] }, rules: [{ id: "custom-rule-2" }] } });
+
+        expect(resolved.allowlists).toHaveLength(baseCount + 1);
+    });
+
+    it("merges a path config that carries only allowlists onto the bundled ruleset", async () => {
+        expect.assertions(2);
+
+        const path = resolve(tmp, "allowlist-only.json");
+
+        await writeFile(path, JSON.stringify({ allowlists: [{ description: "suppress", regexes: ["placeholder"] }] }));
+
+        const resolved = resolveConfig({ configPath: path });
+        const bundled = getBundledConfig();
+        const baseAllowlistCount = Array.isArray(bundled.allowlists) ? bundled.allowlists.length : 0;
+
+        // The bundled rules survive (the whole point of "extend default + allowlist").
+        expect(resolved.rules ?? []).toHaveLength((bundled.rules ?? []).length);
+        // The user's allowlist layers on top of the bundled globals.
+        expect(resolved.allowlists).toHaveLength(baseAllowlistCount + 1);
     });
 });

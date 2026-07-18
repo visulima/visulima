@@ -1,9 +1,43 @@
-import type { TransportContext, TransportValidator } from "./context";
+import type { TransportContext, TransportHostResolver, TransportValidator } from "./context";
 import { validateMongoDB } from "./mongodb";
 import { validateMySQL } from "./mysql";
 import { validatePostgres } from "./postgres";
+import { hostFromUri } from "./runtime";
 
 const JDBC_URL_PATTERN = /^jdbc:([a-zA-Z][a-zA-Z0-9+.-]*):(\/\/.+)$/;
+
+// Map a JDBC subprotocol to the URI scheme the corresponding driver parses.
+const JDBC_SCHEME_BY_SUBPROTOCOL: Record<string, string> = {
+    mariadb: "mysql",
+    mongodb: "mongodb",
+    mysql: "mysql",
+    postgres: "postgres",
+    postgresql: "postgres",
+};
+
+/**
+ * Resolve the host a JDBC URL would connect to for the allowlist gate. Parses
+ * `jdbc:<scheme>://…`, rewrites to the driver scheme, and reads `URL.host`.
+ * Returns `undefined` for JDBC flavours we don't dispatch (oracle, h2, …) or an
+ * unparseable URL — fail-closed when an allowlist is active.
+ */
+export const resolveJdbcHosts: TransportHostResolver = ({ secret }) => {
+    const match = JDBC_URL_PATTERN.exec(secret.trim());
+
+    if (!match) {
+        return undefined;
+    }
+
+    const scheme = JDBC_SCHEME_BY_SUBPROTOCOL[(match[1] ?? "").toLowerCase()];
+
+    if (scheme === undefined) {
+        return undefined;
+    }
+
+    const host = hostFromUri(`${scheme}:${match[2] ?? ""}`);
+
+    return host === undefined ? undefined : [host];
+};
 
 /**
  * JDBC URL parser + dispatcher. `jdbc:mysql://…` normalises to `mysql://…`

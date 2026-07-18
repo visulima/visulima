@@ -114,16 +114,22 @@ export interface ScanOptions {
         validate?: boolean;
 
         /**
-         * Host allowlist for HTTP validators. When set (with `validate: true`),
-         * a finding whose rule renders a request to a host **not** in this list
-         * is reported as `"skipped"` and no request is fired.
+         * Host allowlist for **all** outbound validation traffic — HTTP
+         * validators *and* transport validators (MongoDB/MySQL/Postgres/JDBC
+         * connection strings plus the fixed AWS/GCP provider endpoints). When
+         * set (with `validate: true`), a finding whose validator would contact a
+         * host **not** in this list is reported as `"skipped"` and no request or
+         * connection is made.
          *
          * Closes the untrusted-config exfiltration channel: a shared or
          * third-party config loaded via `config.path` can otherwise add a rule
-         * whose `validation.url` points at an attacker host and leak every
-         * matching secret. Leave unset to allow any host (bundled rules only
-         * target legitimate provider APIs). Hosts are matched case-insensitively
-         * against `URL.host` (`host` or `host:port`).
+         * whose `validation.url` — or a captured `mongodb://…` URI — points at an
+         * attacker host and leak every matching secret. Leave unset to allow any
+         * host (bundled rules only target legitimate provider APIs). Hosts are
+         * matched case-insensitively against `URL.host` (`host` or `host:port`);
+         * a database allowlist entry therefore includes the port
+         * (e.g. `db.internal:27017`). Offline validators (JWT) open no connection
+         * and are never gated.
          */
         validateAllowedHosts?: string[];
     };

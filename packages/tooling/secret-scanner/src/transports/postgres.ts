@@ -1,6 +1,6 @@
 import type { ValidationStatus } from "../types";
-import type { TransportValidator } from "./context";
-import { extractUri, tryImport } from "./runtime";
+import type { TransportHostResolver, TransportValidator } from "./context";
+import { extractUri, hostFromUri, tryImport } from "./runtime";
 
 interface PostgresModule {
     default: {
@@ -14,7 +14,23 @@ interface PostgresModule {
 
 const POSTGRES_REJECTED_ERROR_PATTERN = /password authentication failed|role .* does not exist|no pg_hba\.conf entry/i;
 
-export const validatePostgres: TransportValidator = async ({ secret }): Promise<ValidationStatus> => {
+export const resolvePostgresHosts: TransportHostResolver = ({ secret }) => {
+    const uri = extractUri(secret, "postgres") ?? extractUri(secret, "postgresql");
+
+    if (!uri) {
+        return undefined;
+    }
+
+    const host = hostFromUri(uri);
+
+    return host === undefined ? undefined : [host];
+};
+
+export const validatePostgres: TransportValidator = async ({ secret, signal }): Promise<ValidationStatus> => {
+    if (signal?.aborted) {
+        return "error";
+    }
+
     const uri = extractUri(secret, "postgres") ?? extractUri(secret, "postgresql");
 
     if (!uri) {

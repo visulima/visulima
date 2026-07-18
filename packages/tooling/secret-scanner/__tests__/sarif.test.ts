@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 
+import { fingerprint, legacyFingerprint } from "../src/fingerprint";
 import { toSarif } from "../src/sarif";
 import type { Finding } from "../src/types";
 
@@ -61,6 +62,26 @@ describe(toSarif, () => {
         expect(log.runs[0]?.tool.driver.version).toBe("1.2.3");
         expect(log.runs[0]?.results[0]?.properties).toMatchObject({ confidence: "high", source: "gitleaks", validation: "verified" });
         expect(log.runs[0]?.results[0]?.level).toBe("error");
+    });
+
+    it("emits content-hash + legacy partialFingerprints so re-runs collapse onto the same alert", () => {
+        expect.assertions(3);
+
+        const finding = sampleFinding();
+        const log = toSarif([finding]);
+        const result = log.runs[0]?.results[0];
+
+        expect(result?.partialFingerprints).toStrictEqual({
+            legacyFingerprint: legacyFingerprint(finding),
+            secretFingerprint: fingerprint(finding),
+        });
+
+        // The content-hash fingerprint is stable when the same secret moves
+        // lines — the whole point of emitting it over snippet-based grouping.
+        const moved = toSarif([sampleFinding({ endLine: 42, startLine: 42 })]);
+
+        expect(moved.runs[0]?.results[0]?.partialFingerprints?.secretFingerprint).toBe(result?.partialFingerprints?.secretFingerprint);
+        expect(moved.runs[0]?.results[0]?.partialFingerprints?.legacyFingerprint).not.toBe(result?.partialFingerprints?.legacyFingerprint);
     });
 
     it("returns an empty results + rules array for no findings", () => {

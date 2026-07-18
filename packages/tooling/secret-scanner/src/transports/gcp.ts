@@ -1,5 +1,5 @@
 import type { ValidationStatus } from "../types";
-import type { TransportValidator } from "./context";
+import type { TransportHostResolver, TransportValidator } from "./context";
 import { tryImport } from "./runtime";
 
 interface JwtModule {
@@ -10,7 +10,11 @@ interface JwtModule {
 
 const GCP_REJECTED_ERROR_PATTERN = /invalid_grant|unauthorized_client|invalid_client/i;
 
-export const validateGcp: TransportValidator = async ({ secret }): Promise<ValidationStatus> => {
+// The service-account JWT is exchanged for an access token at Google's fixed
+// OAuth2 token endpoint — a constant host, gated by the allowlist like the rest.
+export const resolveGcpHosts: TransportHostResolver = () => ["oauth2.googleapis.com"];
+
+export const validateGcp: TransportValidator = async ({ secret, signal }): Promise<ValidationStatus> => {
     let serviceAccount: { client_email?: string; private_key?: string };
 
     try {
@@ -21,6 +25,10 @@ export const validateGcp: TransportValidator = async ({ secret }): Promise<Valid
 
     if (typeof serviceAccount.client_email !== "string" || typeof serviceAccount.private_key !== "string") {
         return "rejected";
+    }
+
+    if (signal?.aborted) {
+        return "error";
     }
 
     const mod = await tryImport<JwtModule>("google-auth-library", "GCP");

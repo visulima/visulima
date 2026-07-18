@@ -3,6 +3,8 @@
 // rule-meta map, and post-scan filters. Avoids re-doing the resolve/expand/gate
 // dance three times per scan.
 
+import { statSync } from "node:fs";
+
 import type { Native } from "./binding";
 import type { ChecksumSpec } from "./checksum";
 import type { GitleaksConfig } from "./config-loader";
@@ -129,8 +131,26 @@ const preparedCacheKey = (options: ScanOptions | undefined): string | undefined 
         return undefined;
     }
 
+    // Fold the config file's mtime+size into the key so editing the file at
+    // `config.path` busts this memo too — otherwise a long-lived host keeps
+    // serving a prepared scan built from the pre-edit ruleset even after
+    // `resolveConfig`'s own cache has been invalidated.
+    let configStat: { mtimeMs: number; size: number } | undefined;
+
+    if (options?.config?.path !== undefined) {
+        try {
+            const stats = statSync(options.config.path);
+
+            configStat = { mtimeMs: stats.mtimeMs, size: stats.size };
+        } catch {
+            configStat = undefined;
+        }
+    }
+
     return JSON.stringify({
         concurrency: options?.concurrency,
+        configMtimeMs: configStat?.mtimeMs,
+        configSize: configStat?.size,
         extendBundled: options?.config?.extendBundled,
         includeHidden: options?.walk?.includeHidden,
         maxFileSize: options?.walk?.maxFileSize,

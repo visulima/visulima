@@ -107,6 +107,21 @@ export const extractUri = (secret: string, scheme: string): string | undefined =
     return match ? match[0] : undefined;
 };
 
+/**
+ * Derive the outbound host (`host` or `host:port`) from a connection URI for
+ * the allowlist gate. Returns `undefined` when the URI can't be parsed (e.g. a
+ * comma-separated replica-set list) — the caller then fails closed when an
+ * allowlist is active. Matches the HTTP validator's `URL.host` comparison so a
+ * single allowlist entry covers both transports.
+ */
+export const hostFromUri = (uri: string): string | undefined => {
+    try {
+        return new URL(uri).host;
+    } catch {
+        return undefined;
+    }
+};
+
 /** Test-only: reset the warning caches so test ordering doesn't matter. */
 export const resetWarningsForTests = (): void => {
     warnedTypes.clear();
