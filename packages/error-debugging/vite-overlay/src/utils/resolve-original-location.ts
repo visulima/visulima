@@ -13,7 +13,7 @@ const LEADING_SLASH_RE = /^\//;
 /**
  * Estimates the original line and column when source maps are unavailable or fail.
  */
-const estimateOriginalPosition = (fileLine: number, fileColumn: number) => {
+const estimateOriginalPosition = (fileLine: number, fileColumn: number): { estimatedColumn: number; estimatedLine: number } => {
     // Handle edge cases: ensure line is at least 1
     const validLine = Math.max(1, fileLine);
     const validColumn = Math.max(0, fileColumn);
