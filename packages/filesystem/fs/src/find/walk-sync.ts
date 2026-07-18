@@ -3,7 +3,7 @@
 // https://golang.org/pkg/path/filepath/#Walk
 // Copyright 2009 The Go Authors. All rights reserved. BSD license.
 
-import type { Stats } from "node:fs";
+import type { Dirent, Stats } from "node:fs";
 import { readdirSync, realpathSync, statSync } from "node:fs";
 
 import { basename, join, normalize, resolve } from "@visulima/path";
@@ -115,6 +115,12 @@ export default function* walkSync(directory: URL | string, options: WalkOptions 
         for (const entry of entries) {
             let path = join(directory, entry.name);
 
+            // The type-test backing object and name yielded for this entry. For a
+            // followed symlink these are replaced by the resolved target's `Stats`
+            // and real basename so the yielded entry reports the target, not the link.
+            let source: Dirent | Stats = entry;
+            let name = entry.name;
+
             // Track whether the entry needs to be re-stat'd because it is a
             // symlink we are resolving. The original dirent reports the link
             // itself (isDirectory()/isFile() are both false), so after resolving
@@ -138,6 +144,8 @@ export default function* walkSync(directory: URL | string, options: WalkOptions 
 
                     isDirectory = info.isDirectory();
                     isFile = info.isFile();
+                    source = info;
+                    name = basename(realPath);
                 } else if (includeSymlinks && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
                     yield createWalkEntry(entry, entry.name, normalize(path));
 
@@ -164,7 +172,7 @@ export default function* walkSync(directory: URL | string, options: WalkOptions 
                     visited,
                 } as WalkOptions);
             } else if (isFile && includeFiles && walkInclude(path, extensions, mappedMatch, mappedSkip)) {
-                yield createWalkEntry(entry, entry.name, normalize(path));
+                yield createWalkEntry(source, name, normalize(path));
             }
         }
     } catch (error) {
