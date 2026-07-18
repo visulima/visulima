@@ -5,9 +5,24 @@ import generateMessageId from "../providers/utils/id";
 import type { NotificationQueue, QueueJob } from "./types";
 
 /**
+ * A stored job document. `reserved` marks a job that a worker has taken and not yet
+ * acked/retried, so a second `reserve` scan skips it.
+ */
+interface StoredJob extends QueueJob {
+    reserved?: boolean;
+}
+
+/**
  * A {@link NotificationQueue} backed by an [unstorage](https://unstorage.unjs.io) driver,
  * giving durable, multi-backend persistence (Redis, filesystem, KV, ...). `unstorage` is
  * an optional peer dependency — pass a configured `Storage` instance.
+ *
+ * Each job is a single self-contained document keyed by `<prefix>:job:` plus the job id;
+ * there is no shared pending index, so concurrent `enqueue`s cannot lose-update each other.
+ * `reserve` scans the job documents under the prefix for the next due, unreserved job and
+ * marks it reserved. Individual reads/writes are still not transactional, so two workers
+ * racing `reserve` on the *same* job can both take it (double delivery); for that level of
+ * contention prefer a store with atomic guarantees, or reserve from one instance.
  */
 export class UnstorageQueue implements NotificationQueue {
     readonly #storage: Storage;
@@ -20,30 +35,28 @@ export class UnstorageQueue implements NotificationQueue {
     }
 
     public async enqueue(message: NotificationMessage, options?: { scheduledAt?: number }): Promise<string> {
-        const job: QueueJob = { attempts: 0, id: generateMessageId("job"), message, scheduledAt: options?.scheduledAt };
+        const job: StoredJob = { attempts: 0, id: generateMessageId("job"), message, scheduledAt: options?.scheduledAt };
 
         await this.#storage.setItem(this.#jobKey(job.id), job as never);
-        await this.#pushPending(job.id);
 
         return job.id;
     }
 
     public async reserve(): Promise<QueueJob | undefined> {
         const now = Date.now();
-        const pending = await this.#pending();
+        const keys = await this.#storage.getKeys(this.#jobPrefix());
 
-        for (const id of pending) {
+        for (const key of keys) {
             // eslint-disable-next-line no-await-in-loop
-            const job = (await this.#storage.getItem(this.#jobKey(id))) as QueueJob | null;
+            const job = (await this.#storage.getItem(key)) as StoredJob | null;
 
-            if (job && (job.scheduledAt ?? 0) <= now) {
+            if (job && !job.reserved && (job.scheduledAt ?? 0) <= now) {
                 job.attempts += 1;
+                job.reserved = true;
                 // eslint-disable-next-line no-await-in-loop
-                await this.#storage.setItem(this.#jobKey(id), job as never);
-                // eslint-disable-next-line no-await-in-loop
-                await this.#setPending(pending.filter((pendingId) => pendingId !== id));
+                await this.#storage.setItem(key, job as never);
 
-                return job;
+                return { attempts: job.attempts, id: job.id, message: job.message, scheduledAt: job.scheduledAt };
             }
         }
 
@@ -55,42 +68,30 @@ export class UnstorageQueue implements NotificationQueue {
     }
 
     public async retry(id: string, delayMs = 0): Promise<void> {
-        const job = (await this.#storage.getItem(this.#jobKey(id))) as QueueJob | null;
+        const job = (await this.#storage.getItem(this.#jobKey(id))) as StoredJob | null;
 
         if (!job) {
             return;
         }
 
         job.scheduledAt = Date.now() + delayMs;
+        job.reserved = false;
         await this.#storage.setItem(this.#jobKey(id), job as never);
-        await this.#pushPending(id);
     }
 
     public async size(): Promise<number> {
-        const pending = await this.#pending();
+        const keys = await this.#storage.getKeys(this.#jobPrefix());
+        const jobs = await Promise.all(keys.map(async (key) => this.#storage.getItem(key) as Promise<StoredJob | null>));
 
-        return pending.length;
+        return jobs.filter((job) => job !== null && !job.reserved).length;
+    }
+
+    #jobPrefix(): string {
+        return `${this.#prefix}:job:`;
     }
 
     #jobKey(id: string): string {
-        return `${this.#prefix}:job:${id}`;
-    }
-
-    async #pending(): Promise<string[]> {
-        return ((await this.#storage.getItem(`${this.#prefix}:pending`)) as string[] | null) ?? [];
-    }
-
-    async #setPending(ids: string[]): Promise<void> {
-        await this.#storage.setItem(`${this.#prefix}:pending`, ids as never);
-    }
-
-    async #pushPending(id: string): Promise<void> {
-        const pending = await this.#pending();
-
-        if (!pending.includes(id)) {
-            pending.push(id);
-            await this.#setPending(pending);
-        }
+        return `${this.#jobPrefix()}${id}`;
     }
 }
 

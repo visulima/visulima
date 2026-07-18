@@ -84,7 +84,7 @@ export class Notification {
 
     readonly #middlewares: Middleware[] = [];
 
-    readonly #initialized = new Set<string>();
+    readonly #initialized = new Map<string, Promise<void>>();
 
     #logger: Console | undefined;
 
@@ -146,9 +146,13 @@ export class Notification {
 
         const send = composeMiddleware(this.#middlewares, terminal);
 
-        const result = await send({ channel, payload, provider: provider.id });
+        try {
+            const result = await send({ channel, payload, provider: provider.id });
 
-        return toReceipt(result, channel, provider.id);
+            return toReceipt(result, channel, provider.id);
+        } catch (error) {
+            return toReceipt({ error, success: false }, channel, provider.id);
+        }
     }
 
     /**
@@ -214,16 +218,29 @@ export class Notification {
     }
 
     async #ensureInitialized(provider: Provider): Promise<void> {
-        if (this.#initialized.has(provider.id)) {
-            return;
+        const existing = this.#initialized.get(provider.id);
+
+        if (existing) {
+            return existing;
         }
 
-        const init: MaybePromise<void> = provider.initialize();
+        const promise = (async () => {
+            const init: MaybePromise<void> = provider.initialize();
 
-        await init;
+            await init;
 
-        this.#logger?.debug(`[@visulima/notification] initialized provider "${provider.id}"`);
-        this.#initialized.add(provider.id);
+            this.#logger?.debug(`[@visulima/notification] initialized provider "${provider.id}"`);
+        })();
+
+        this.#initialized.set(provider.id, promise);
+
+        try {
+            await promise;
+        } catch (error) {
+            this.#initialized.delete(provider.id);
+
+            throw error;
+        }
     }
 }
 
