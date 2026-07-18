@@ -37,7 +37,9 @@ export type Props = {
 };
 
 const GLYPHS = "▁▂▃▄▅▆▇█";
-const DITHER_GLYPHS = " ░▒▓█";
+// No leading space: the lowest level stays visible so a flat series still
+// renders (a leading space would blank an all-equal dithered sparkline).
+const DITHER_GLYPHS = "░▒▓█";
 
 const resolveGlyph = (value: number, min: number, range: number, glyphs: string): string => {
     if (range === 0) {

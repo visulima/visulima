@@ -60,7 +60,9 @@ export type Props = {
     readonly value?: ReadonlyArray<string>;
 };
 
-const wrap = (value: number, size: number): number => ((value % size) + size) % size;
+function wrap(value: number, size: number): number {
+    return size === 0 ? 0 : ((value % size) + size) % size;
+}
 
 /**
  * A vertical list of checkboxes. ↑/↓ move focus, Space toggles the focused

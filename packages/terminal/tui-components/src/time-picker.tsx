@@ -70,7 +70,9 @@ type Segment = "ampm" | "hours" | "minutes" | "seconds";
 const DIGIT_PATTERN = /^\d$/;
 const DEFAULT_TIME: TimeValue = { hours: 0, minutes: 0 };
 
-const wrap = (value: number, size: number): number => ((value % size) + size) % size;
+function wrap(value: number, size: number): number {
+    return size === 0 ? 0 : ((value % size) + size) % size;
+}
 
 const pad = (value: number): string => String(value).padStart(2, "0");
 

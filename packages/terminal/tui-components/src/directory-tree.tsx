@@ -163,9 +163,12 @@ export default function DirectoryTree({
                 return;
             }
 
-            const isDirectory = row.node.type === "directory" && row.node.children !== undefined;
+            // A directory (matches the folder glyph) is never "selected" on Enter,
+            // even when it has no children; only nodes with children can expand.
+            const isDirectory = row.node.type === "directory";
+            const isExpandable = isDirectory && row.node.children !== undefined;
 
-            if (isDirectory && (input === " " || key.rightArrow || key.leftArrow)) {
+            if (isExpandable && (input === " " || key.rightArrow || key.leftArrow)) {
                 let force: boolean | undefined;
 
                 if (key.rightArrow) {

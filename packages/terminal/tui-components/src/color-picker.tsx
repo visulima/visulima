@@ -89,7 +89,9 @@ export type Props = {
     readonly value?: Color;
 };
 
-const wrap = (value: number, size: number): number => ((value % size) + size) % size;
+function wrap(value: number, size: number): number {
+    return size === 0 ? 0 : ((value % size) + size) % size;
+}
 
 /**
  * A grid of color swatches. Arrow keys move the highlight, Enter selects. The
@@ -110,6 +112,8 @@ export default function ColorPicker({
 }: Props): ReactElement {
     const { isFocused } = useFocus({ autoFocus, isActive: !isDisabled });
     const isControlled = controlledValue !== undefined;
+    // Guard against columns <= 0, which would never advance the row loop.
+    const columnCount = Math.max(1, columns);
 
     const startIndex = Math.max(0, palette.indexOf((controlledValue ?? defaultValue) as Color));
     const [cursor, setCursor] = useState(startIndex);
@@ -122,6 +126,10 @@ export default function ColorPicker({
 
     const move = useCallback(
         (delta: number) => {
+            if (palette.length === 0) {
+                return;
+            }
+
             const next = wrap(effectiveCursor + delta, palette.length);
 
             if (!isControlled) {
@@ -140,22 +148,22 @@ export default function ColorPicker({
             } else if (key.rightArrow) {
                 move(1);
             } else if (key.upArrow) {
-                move(-columns);
+                move(-columnCount);
             } else if (key.downArrow) {
-                move(columns);
+                move(columnCount);
             } else if (key.return) {
                 onSubmit?.(palette[effectiveCursor]!);
             }
         },
-        [columns, effectiveCursor, move, onSubmit, palette],
+        [columnCount, effectiveCursor, move, onSubmit, palette],
     );
 
     useInput(inputHandler, { isActive: isFocused && !isDisabled });
 
     const rows: Color[][] = [];
 
-    for (let index = 0; index < palette.length; index += columns) {
-        rows.push(palette.slice(index, index + columns));
+    for (let index = 0; index < palette.length; index += columnCount) {
+        rows.push(palette.slice(index, index + columnCount));
     }
 
     return (
@@ -164,7 +172,7 @@ export default function ColorPicker({
                 // eslint-disable-next-line react-x/no-array-index-key -- row index is stable for the render
                 <Box key={rowIndex}>
                     {row.map((color, columnIndex) => {
-                        const index = rowIndex * columns + columnIndex;
+                        const index = rowIndex * columnCount + columnIndex;
                         const isActive = isFocused && index === effectiveCursor;
 
                         return (
