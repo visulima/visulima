@@ -27,13 +27,14 @@ const UNC_REGEX = /^[/\\]{2}/;
 const IS_ABSOLUTE_RE = /^[/\\](?![/\\])|^[/\\]{2}(?!\.)|^[A-Z]:[/\\]/i;
 const DRIVE_LETTER_RE = /^[A-Z]:$/i;
 const ROOT_FOLDER_RE = /^\/([A-Z]:)?$/i;
-const EXTNAME_RE = /.(\.[^./]+)$/;
+const DRIVE_ROOT_RE = /^([A-Z]:)\/$/i;
+const EXTNAME_RE = /[^/](\.[^./]+)$/;
 const PATH_ROOT_RE = /^[/\\]|^[a-z]:[/\\]/i;
 const TRAILING_SLASH_RE = /\/$/;
 
 const cwd = () => {
     if (typeof process !== "undefined" && typeof process.cwd === "function") {
-        return process.cwd().replaceAll("\\", "/");
+        return normalizeWindowsPath(process.cwd());
     }
 
     return "/";
@@ -261,6 +262,12 @@ export const resolve: typeof path.resolve = function (...arguments_) {
     // Normalize the path
     resolvedPath = normalizeString(resolvedPath, !resolvedAbsolute);
 
+    // A path that collapses to a bare Windows drive is the drive root, e.g.
+    // resolve("C:/temp/..") === "C:/" (mirrors normalize()), not "/C:".
+    if (DRIVE_LETTER_RE.test(resolvedPath)) {
+        return `${resolvedPath}/`;
+    }
+
     if (resolvedAbsolute && !isAbsolute(resolvedPath)) {
         return `/${resolvedPath}`;
     }
@@ -295,8 +302,8 @@ export const extname: typeof path.extname = function (p) {
  * @returns the relative path from the source to the target.
  */
 export const relative: typeof path.relative = function (from: string, to: string): string {
-    const splitFrom = resolve(from).replace(ROOT_FOLDER_RE, "$1").split("/");
-    const splitTo = resolve(to).replace(ROOT_FOLDER_RE, "$1").split("/");
+    const splitFrom = resolve(from).replace(ROOT_FOLDER_RE, "$1").replace(DRIVE_ROOT_RE, "$1").split("/");
+    const splitTo = resolve(to).replace(ROOT_FOLDER_RE, "$1").replace(DRIVE_ROOT_RE, "$1").split("/");
 
     // Different windows drive letters
     if ((splitTo[0] as string)[1] === ":" && (splitFrom[0] as string)[1] === ":" && splitFrom[0] !== splitTo[0]) {
@@ -350,9 +357,14 @@ export const dirname: typeof path.dirname = (path: string) => {
  * Returns a path string from an object.
  */
 export const format: typeof path.format = function (pathObject: path.FormatInputPathObject) {
-    const segments = [pathObject.root, pathObject.dir, pathObject.base ?? (pathObject.name ?? "") + (pathObject.ext ?? "")].filter(Boolean);
+    const directory = pathObject.dir || pathObject.root;
+    const base = pathObject.base || `${pathObject.name ?? ""}${pathObject.ext ?? ""}`;
 
-    return normalizeWindowsPath(pathObject.root ? resolve(...(segments as string[])) : segments.join("/"));
+    if (!directory) {
+        return normalizeWindowsPath(base);
+    }
+
+    return normalizeWindowsPath(directory === pathObject.root ? directory + base : `${directory}/${base}`);
 };
 
 /**

@@ -117,6 +117,15 @@ describe("utils", () => {
                 expect(reverseResolveAlias("C:/src/foo/bar", aliases)).toBe("~win/foo/bar");
             });
 
+            it("should pick the most specific alias value regardless of key insertion order", () => {
+                expect.assertions(2);
+
+                // The more specific value ("/root/src/lib") must win over the more
+                // general one ("/root/src") no matter which key was declared first.
+                expect(reverseResolveAlias("/root/src/lib/y", { "@": "/root/src", "@lib": "/root/src/lib" })).toBe("@lib/y");
+                expect(reverseResolveAlias("/root/src/lib/y", { "@lib": "/root/src/lib", "@": "/root/src" })).toBe("@lib/y");
+            });
+
             it("should strip a trailing slash from the matched alias value", () => {
                 expect.assertions(1);
 
@@ -252,6 +261,13 @@ describe("utils", () => {
             expect(isBinaryPath("file")).toBe(false);
             expect(isBinaryPath("path/to/file")).toBe(false);
             expect(isBinaryPath("path/to/file/")).toBe(false);
+        });
+
+        it("should treat a dotfile as having no extension", () => {
+            expect.assertions(2);
+
+            expect(isBinaryPath("dir/.jpg")).toBe(false);
+            expect(isBinaryPath(".jpg")).toBe(false);
         });
 
         it("should work with file paths with multiple extensions", () => {
