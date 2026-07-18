@@ -217,27 +217,29 @@ const getErrors = (error: AggregateError, options: Options, deep: number): strin
     return `\n${message}`;
 };
 
+const stringifyNonErrorCause = (cause: unknown): string => {
+    if (typeof cause === "object" && cause !== null) {
+        try {
+            return JSON.stringify(cause);
+        } catch {
+            return Object.prototype.toString.call(cause);
+        }
+    }
+
+    return String(cause);
+};
+
 const getCause = (error: RenderableError, options: Options, deep: number, seen: Set<unknown> = new Set()): string => {
     seen.add(error);
 
     let message = `${getPrefix(options.prefix, options.indentation, deep)}Caused by:\n\n`;
 
-    const cause = (error as { cause?: unknown }).cause;
+    const { cause } = error as { cause?: unknown };
 
     if (!(cause instanceof Error)) {
         // Non-Error cause (string, number, plain object, ...). Render its value as the title and
         // skip the stack/code-frame/hint handling that only applies to real errors.
-        let causeText: string;
-
-        if (typeof cause === "object") {
-            try {
-                causeText = JSON.stringify(cause);
-            } catch {
-                causeText = String(cause);
-            }
-        } else {
-            causeText = String(cause);
-        }
+        const causeText = stringifyNonErrorCause(cause);
 
         message += `${getPrefix(options.prefix, options.indentation, deep)}${options.color.title(causeText)}\n`;
 
