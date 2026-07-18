@@ -212,6 +212,7 @@ const foldCase = (value: string): string => value.normalize("NFC").toLowerCase()
 
 interface Token {
     end: number;
+    folded: string;
     start: number;
     text: string;
 }
@@ -311,15 +312,21 @@ const buildLookupTables = (dictionary: BannedWordDictionary, allowlist: Readonly
     return { cjkByFirstChar, maxPhraseTokens, nonCjkPhrases, nonCjkSingleWords };
 };
 
-const tokenize = (lowerNormalized: string): Token[] => {
+// Tokenizes the NFC-normalized original text (not the folded string) so token boundaries
+// index the original: `foldCase` can change string length (e.g. stripping a stray combining
+// dot above), which would otherwise shift every subsequent match position. The fold is applied
+// per token for the lookup key, keeping `start`/`end` aligned with the returned `word`.
+const tokenize = (normalized: string): Token[] => {
     WORD_TOKEN_RE.lastIndex = 0;
 
     const tokens: Token[] = [];
     let tokenMatch: RegExpExecArray | null;
 
     // eslint-disable-next-line no-cond-assign
-    while ((tokenMatch = WORD_TOKEN_RE.exec(lowerNormalized)) !== null) {
-        tokens.push({ end: tokenMatch.index + tokenMatch[0].length, start: tokenMatch.index, text: tokenMatch[0] });
+    while ((tokenMatch = WORD_TOKEN_RE.exec(normalized)) !== null) {
+        const text = tokenMatch[0];
+
+        tokens.push({ end: tokenMatch.index + text.length, folded: foldCase(text), start: tokenMatch.index, text });
     }
 
     return tokens;
@@ -332,6 +339,13 @@ const tokenize = (lowerNormalized: string): Token[] => {
  * @internal
  */
 const CUSTOM_LANGUAGE = "custom";
+
+/**
+ * Empty allowlist passed when building the one-off table for per-call {@link CheckOptions.customWords}
+ * (a per-call allowlist is applied by filtering the resulting matches, not at table-build time).
+ * @internal
+ */
+const EMPTY_ALLOWLIST: ReadonlySet<string> = new Set<string>();
 
 const allowedLanguages = (options?: CheckOptions): ReadonlySet<string> | undefined => {
     if (!options?.languages || options.languages.length === 0) {
@@ -359,7 +373,7 @@ const findSingleWordMatches = (tables: LookupTables, tokens: Token[], normalized
     const matches: BannedWordMatch[] = [];
 
     for (const token of tokens) {
-        const meta = tables.nonCjkSingleWords.get(token.text);
+        const meta = tables.nonCjkSingleWords.get(token.folded);
 
         if (meta && (languages === undefined || languages.has(meta.language))) {
             matches.push(toMatch(meta, token.start, token.end, normalized.slice(token.start, token.end)));
@@ -383,7 +397,7 @@ const findPhraseMatches = (tables: LookupTables, tokens: Token[], normalized: st
 
         // Build the phrase key incrementally to avoid the slice().map().join() allocation
         // churn (two arrays + a string) on every (token, phraseLength) probe.
-        let phrase = startToken.text;
+        let phrase = startToken.folded;
 
         for (let phraseLength = 2; phraseLength <= maxLength; phraseLength += 1) {
             const endToken = tokens[index + phraseLength - 1];
@@ -392,7 +406,7 @@ const findPhraseMatches = (tables: LookupTables, tokens: Token[], normalized: st
                 break;
             }
 
-            phrase += ` ${endToken.text}`;
+            phrase += ` ${endToken.folded}`;
 
             const meta = tables.nonCjkPhrases.get(phrase);
 
@@ -405,18 +419,19 @@ const findPhraseMatches = (tables: LookupTables, tokens: Token[], normalized: st
     return matches;
 };
 
-const findCjkMatches = (tables: LookupTables, lowerNormalized: string, normalized: string, languages?: ReadonlySet<string>): BannedWordMatch[] => {
+const findCjkMatches = (tables: LookupTables, normalized: string, languages?: ReadonlySet<string>): BannedWordMatch[] => {
     const matches: BannedWordMatch[] = [];
 
     if (tables.cjkByFirstChar.size === 0) {
         return matches;
     }
 
-    // Walk the text once (by UTF-16 code unit, matching the original indexOf-based positions).
-    // At each position only the entries bucketed under the current first character are probed,
-    // instead of scanning the whole input for every CJK entry.
-    for (let index = 0; index < lowerNormalized.length; index += 1) {
-        const bucket = tables.cjkByFirstChar.get(lowerNormalized[index] as string);
+    // Walk the NFC-normalized original once (by UTF-16 code unit) so positions index the
+    // original text directly. CJK characters are case-fold invariant, so the folded bucket
+    // keys and folded entry words compare equal against the original CJK characters — no
+    // separate folded string is needed, which also keeps positions length-safe.
+    for (let index = 0; index < normalized.length; index += 1) {
+        const bucket = tables.cjkByFirstChar.get(normalized[index] as string);
 
         if (bucket === undefined) {
             continue;
@@ -427,7 +442,7 @@ const findCjkMatches = (tables: LookupTables, lowerNormalized: string, normalize
                 continue;
             }
 
-            if (lowerNormalized.startsWith(word, index)) {
+            if (normalized.startsWith(word, index)) {
                 matches.push(toMatch(meta, index, index + word.length, normalized.slice(index, index + word.length)));
             }
         }
@@ -469,22 +484,43 @@ const runCheck = (tables: LookupTables, text: string, options?: CheckOptions): B
 
     const languages = allowedLanguages(options);
     const normalized = text.normalize("NFC");
-    const lowerNormalized = foldCase(normalized);
-    const tokens = tokenize(lowerNormalized);
+    const tokens = tokenize(normalized);
 
     const matches: BannedWordMatch[] = [
         ...findSingleWordMatches(tables, tokens, normalized, languages),
         ...findPhraseMatches(tables, tokens, normalized, languages),
-        ...findCjkMatches(tables, lowerNormalized, normalized, languages),
+        ...findCjkMatches(tables, normalized, languages),
     ];
+
+    // Layer per-call custom words over the checker's own dictionary. They are scanned under the
+    // synthetic "custom" language (always allowed by `allowedLanguages`) so an explicit list is
+    // never narrowed away by an `options.languages` restriction.
+    if (options?.customWords && options.customWords.length > 0) {
+        const customTables = buildLookupTables({ [CUSTOM_LANGUAGE]: options.customWords }, EMPTY_ALLOWLIST);
+
+        matches.push(
+            ...findSingleWordMatches(customTables, tokens, normalized, languages),
+            ...findPhraseMatches(customTables, tokens, normalized, languages),
+            ...findCjkMatches(customTables, normalized, languages),
+        );
+    }
+
+    // Suppress per-call allowlisted terms (the Scunthorpe problem), matched case-insensitively.
+    let resolved = matches;
+
+    if (options?.allowlist && options.allowlist.length > 0) {
+        const allowed = new Set(options.allowlist.map((word) => foldCase(word)));
+
+        resolved = matches.filter((match) => !allowed.has(foldCase(match.word)));
+    }
 
     // Order by start position, then longest-first, so the documented
     // reverse-censor pattern produces correct, position-ordered output.
-    matches.sort((a, b) => a.startIndex - b.startIndex || b.endIndex - b.startIndex - (a.endIndex - a.startIndex));
+    resolved.sort((a, b) => a.startIndex - b.startIndex || b.endIndex - b.startIndex - (a.endIndex - a.startIndex));
 
     return {
-        hasBannedWords: matches.length > 0,
-        matches,
+        hasBannedWords: resolved.length > 0,
+        matches: resolved,
     };
 };
 
@@ -498,17 +534,22 @@ const applyCensor = (text: string, matches: ReadonlyArray<BannedWordMatch>, repl
 
     let censored = text;
 
-    // Process in reverse, non-overlapping, so indices stay valid as we mutate the string.
+    // Process right-to-left so indices stay valid as we mutate the string. `cursorEnd` tracks the
+    // leftmost already-masked position; each match masks the union of its span with what remains,
+    // i.e. [startIndex, min(endIndex, cursorEnd)). This masks overlapping matches fully instead of
+    // dropping an earlier match that overlaps a later one (which would leak its unmasked prefix).
     let cursorEnd = Number.POSITIVE_INFINITY;
 
     for (const match of matches.toSorted((a, b) => b.startIndex - a.startIndex)) {
-        if (match.endIndex > cursorEnd) {
+        const maskEnd = Math.min(match.endIndex, cursorEnd);
+
+        if (maskEnd <= match.startIndex) {
             continue;
         }
 
-        const mask = maskChar.repeat(match.endIndex - match.startIndex);
+        const mask = maskChar.repeat(maskEnd - match.startIndex);
 
-        censored = censored.slice(0, match.startIndex) + mask + censored.slice(match.endIndex);
+        censored = censored.slice(0, match.startIndex) + mask + censored.slice(maskEnd);
         cursorEnd = match.startIndex;
     }
 
@@ -574,25 +615,6 @@ const getDefaultChecker = (): Checker => {
     return defaultChecker;
 };
 
-/**
- * Resolves the {@link Checker} for a one-off {@link checkBannedWords}/{@link censorText} call.
- * When no per-call `allowlist`/`customWords` are supplied the cached default checker is reused
- * (keeping the default path byte-for-byte identical); otherwise a fresh checker is built that
- * layers the custom words and allowlist over the built-in dictionaries.
- * @internal
- */
-const resolveChecker = (options?: CheckOptions): Checker => {
-    const allowlist = options?.allowlist;
-    const customWords = options?.customWords;
-
-    if ((allowlist === undefined || allowlist.length === 0) && (customWords === undefined || customWords.length === 0)) {
-        return getDefaultChecker();
-    }
-
-    const words: BannedWordDictionary = customWords && customWords.length > 0 ? { ...BANNED_WORDS, [CUSTOM_LANGUAGE]: customWords } : BANNED_WORDS;
-
-    return createChecker({ allowlist, words });
-};
 
 /**
  * Checks text for banned words across the configured languages.
@@ -633,7 +655,7 @@ const resolveChecker = (options?: CheckOptions): Checker => {
  * ```
  * @public
  */
-export const checkBannedWords = (text: string, options?: CheckOptions): BannedWordsResult => resolveChecker(options).check(text, options);
+export const checkBannedWords = (text: string, options?: CheckOptions): BannedWordsResult => getDefaultChecker().check(text, options);
 
 /**
  * Censors banned words in the given text by masking each matched character.
@@ -652,4 +674,4 @@ export const checkBannedWords = (text: string, options?: CheckOptions): BannedWo
  * ```
  * @public
  */
-export const censorText = (text: string, options?: CensorOptions): string => resolveChecker(options).censor(text, options);
+export const censorText = (text: string, options?: CensorOptions): string => getDefaultChecker().censor(text, options);
