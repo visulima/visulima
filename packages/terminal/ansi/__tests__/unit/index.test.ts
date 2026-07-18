@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { BEL, OSC } from "../../src/constants";
 import { cursorMove as cursorMoveDirect } from "../../src/cursor";
 import { eraseLine as eraseLineDirect } from "../../src/erase";
-import { beep, CursorStyle, cursorMove, EraseDisplayMode, EraseLineMode, eraseLine, iTerm2, ModeSetting, strip, XTermWindowOp } from "../../src/index";
+import { beep, cursorMove, CursorStyle, EraseDisplayMode, eraseLine, EraseLineMode, iTerm2, ModeSetting, strip, XTermWindowOp } from "../../src/index";
 
 describe("index entry point", () => {
     it("beep should be the BEL control character", () => {

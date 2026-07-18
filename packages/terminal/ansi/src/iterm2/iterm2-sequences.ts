@@ -1,8 +1,7 @@
 /* eslint-disable no-secrets/no-secrets */
 /* eslint-disable max-classes-per-file */
-import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-properties";
-
 import { encodeBase64Bytes } from "../utils/base64";
+import type { IITerm2Payload, ITerm2FileProperties } from "./iterm2-properties";
 
 /**
  * Formats the core properties part of an iTerm2 file-related sequence string.
