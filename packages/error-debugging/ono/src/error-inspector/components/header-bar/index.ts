@@ -32,7 +32,7 @@ const headerBar = (
         script: `${toggle.script}${shortcuts.script}${
             options.openInEditorUrl
                 ? `
-bindShortcutsModal();
+ready(function () { bindShortcutsModal(); });
 
 // Initialize editor selector from localStorage if available
 (function(){
@@ -59,7 +59,7 @@ bindShortcutsModal();
 })();
 `
                 : `
-bindShortcutsModal();
+ready(function () { bindShortcutsModal(); });
 `
         }
 `,

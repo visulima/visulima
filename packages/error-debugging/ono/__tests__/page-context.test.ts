@@ -817,5 +817,66 @@ describe("context page", () => {
             expect(page?.code.html).toContain("hunter2");
             expect(page?.code.html).not.toContain("[masked]");
         });
+
+        it("should mask sensitive keys in a form-urlencoded (login form) body", async () => {
+            expect.assertions(3);
+
+            const mockRequest = {
+                headers: {
+                    "content-type": "application/x-www-form-urlencoded",
+                },
+                method: "POST",
+                text: () => Promise.resolve("username=alice&password=hunter2"),
+                url: "http://example.com/login",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            // Non-sensitive fields stay visible, sensitive ones are masked everywhere (body panel + cURL --data + clipboard input).
+            expect(page?.code.html).toContain("alice");
+            expect(page?.code.html).not.toContain("hunter2");
+            expect(page?.code.html).toContain("[masked]");
+        });
+
+        it("should mask credential-shaped pairs inside an opaque plain-text body", async () => {
+            expect.assertions(3);
+
+            const mockRequest = {
+                headers: {
+                    "content-type": "text/plain",
+                },
+                method: "POST",
+                text: () => Promise.resolve("username=alice password=hunter2 token=abc.def"),
+                url: "http://example.com/api",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            expect(page?.code.html).toContain("alice");
+            expect(page?.code.html).not.toContain("hunter2");
+            expect(page?.code.html).not.toContain("abc.def");
+        });
+
+        it("should mask sensitive-looking keys in the session object", async () => {
+            expect.assertions(3);
+
+            const mockRequest = {
+                headers: {},
+                method: "GET",
+                session: {
+                    accessToken: "at_live_123",
+                    password: "hunter2",
+                    userId: "user-42",
+                },
+                url: "http://example.com/dashboard",
+            } as unknown as RequestLike;
+
+            const page = await createRequestContextPage(mockRequest, {});
+
+            // Non-sensitive session values stay visible, credential-shaped ones are masked in the panel and clipboard JSON.
+            expect(page?.code.html).toContain("user-42");
+            expect(page?.code.html).not.toContain("at_live_123");
+            expect(page?.code.html).not.toContain("hunter2");
+        });
     });
 });

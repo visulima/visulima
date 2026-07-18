@@ -1,8 +1,5 @@
-import type { Trace } from "@visulima/error";
 import type { VisulimaError } from "@visulima/error/error";
 import type { Solution, SolutionError, SolutionFinder } from "@visulima/error/solution";
-import { errorHintFinder, ruleBasedFinder } from "@visulima/error/solution";
-import { parseStacktrace } from "@visulima/error/stacktrace";
 import { sanitize as dompurifySanitize } from "isomorphic-dompurify";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import infoIcon from "lucide-static/icons/info.svg?data-uri&encoding=css";
@@ -11,9 +8,7 @@ import closeIcon from "lucide-static/icons/x.svg?data-uri&encoding=css";
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { parse } from "marked";
 
-import findLanguageBasedOnExtension from "../../../../../../../shared/utils/find-language-based-on-extension";
-import getFileSource from "../../../../../../../shared/utils/get-file-source";
-import process from "../../../utils/process";
+import findSolution from "../../../utils/find-solution";
 
 const solutions = async (
     error: Error | SolutionError | VisulimaError,
@@ -22,43 +17,7 @@ const solutions = async (
     html: string;
     script: string;
 }> => {
-    let hint: Solution | undefined;
-
-    const allFinders: SolutionFinder[] = [...solutionFinders, ruleBasedFinder, errorHintFinder];
-
-    const traces: Trace[] = parseStacktrace(error, { frameLimit: 1 });
-    const firstTrace: Trace | undefined = traces[0];
-
-    for (const handler of allFinders.toSorted((a, b) => b.priority - a.priority)) {
-        if (hint) {
-            break;
-        }
-
-        const { handle: solutionHandler, name } = handler;
-
-        if (process.env?.DEBUG) {
-            // eslint-disable-next-line no-console
-            console.debug(`Running solution finder: ${name}`);
-        }
-
-        if (typeof solutionHandler !== "function") {
-            continue;
-        }
-
-        try {
-            // eslint-disable-next-line no-await-in-loop -- sequential: stop at first matching solution
-            hint = await solutionHandler(error, {
-                file: firstTrace?.file ?? "",
-                language: findLanguageBasedOnExtension(firstTrace?.file ?? ""),
-                line: firstTrace?.line ?? 0,
-                // eslint-disable-next-line no-await-in-loop -- sequential: stop at first matching solution
-                snippet: firstTrace?.file ? await getFileSource(firstTrace.file) : "",
-            });
-        } catch {
-            // Ignore solution finder errors and continue with other finders
-            continue;
-        }
-    }
+    const hint: Solution | undefined = await findSolution(error, solutionFinders);
 
     if (!hint) {
         return {
