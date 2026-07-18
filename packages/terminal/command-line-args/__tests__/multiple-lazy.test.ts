@@ -91,4 +91,17 @@ describe("multiple lazy", () => {
 
         expect(() => commandLineArgs(optionDefinitions, { argv })).toThrow(UnknownValueError);
     });
+
+    it("trailing valueless repeat keeps previously collected values", () => {
+        expect.assertions(1);
+
+        const optionDefinitions = [{ lazyMultiple: true, name: "one" }];
+        const argv = ["--one", "a", "--one"];
+        const result = commandLineArgs(optionDefinitions, { argv });
+
+        expect(result).toStrictEqual({
+            // eslint-disable-next-line unicorn/no-null
+            one: ["a", null],
+        });
+    });
 });
