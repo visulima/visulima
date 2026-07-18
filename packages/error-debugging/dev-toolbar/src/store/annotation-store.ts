@@ -128,6 +128,7 @@ const acquireFileLock = async (root: string): Promise<() => Promise<void>> => {
     const deadline = Date.now() + LOCK_MAX_WAIT_MS;
     let owned = false;
 
+    /* eslint-disable no-await-in-loop -- lock acquisition is inherently sequential: each retry must await the prior attempt before deciding the next. */
     for (;;) {
         try {
             await fs.mkdir(lockPath);
@@ -161,6 +162,7 @@ const acquireFileLock = async (root: string): Promise<() => Promise<void>> => {
             await sleep(LOCK_RETRY_MS);
         }
     }
+    /* eslint-enable no-await-in-loop */
 
     return async () => {
         if (owned) {
