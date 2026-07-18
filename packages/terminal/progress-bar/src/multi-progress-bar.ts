@@ -8,9 +8,9 @@ import { getBarChar } from "./utils";
 const BAR_REGEX = /\[([^[\]]*)\]/u;
 
 const CHAR_GRADIENTS: Record<string, string[]> = {
-    braille: ["⣿", "⡷", "⢾", "⠤"],
-    default: ["█", "▓", "▒", "░"],
-    rect: ["▬", "▮", "▯", "▭"],
+    braille: ["⣿", "⡷", "⢾"],
+    default: ["█", "▓", "▒"],
+    rect: ["▬", "▮", "▯"],
 };
 
 /**
@@ -18,6 +18,9 @@ const CHAR_GRADIENTS: Record<string, string[]> = {
  */
 export class MultiBarInstance extends ProgressBar {
     private multiBar: MultiProgressBar;
+
+    /** Timestamp (ms) of the last redraw this bar triggered, used for the per-bar `fps` throttle. */
+    private lastBarRenderTime: number = 0;
 
     public constructor(multiBar: MultiProgressBar, options: ProgressBarOptions, payload?: ProgressBarPayload) {
         super(options, undefined, payload);
@@ -29,11 +32,64 @@ export class MultiBarInstance extends ProgressBar {
 
         // State is updated synchronously above; the actual terminal write is throttled
         // to the multi-bar's configured fps to keep rapid updates from rebuilding and
-        // writing every bar's frame on every call (quadratic in bar count).
+        // writing every bar's frame on every call (quadratic in bar count). The per-bar
+        // `fps` (if lower) additionally caps how often this bar triggers a redraw.
         const state = this.getBarState();
         const complete = state.total > 0 && state.current >= state.total;
 
-        this.multiBar.renderAll(complete);
+        if (complete || this.shouldRenderBar()) {
+            this.lastBarRenderTime = Date.now();
+            this.multiBar.renderAll(complete);
+        }
+    }
+
+    public override start(total?: number, startValue?: number, payload?: ProgressBarPayload): void {
+        super.start(total, startValue, payload);
+
+        // A multi bar has no InteractiveManager of its own, so mutating total/value/payload
+        // in start() would otherwise leave stale output until some bar next calls update().
+        this.lastBarRenderTime = Date.now();
+        this.multiBar.renderAll(true);
+    }
+
+    public override stop(): void {
+        super.stop();
+        this.multiBar.renderAll(true);
+    }
+
+    /**
+     * Render the bar for composite compositing with per-bar glue and `formatBar`
+     * disabled, so the `[{bar}]` region is exactly `width` raw characters (glue and
+     * ANSI formatting would otherwise break width measurement and the bracket match).
+     */
+    public renderForComposite(): string {
+        const glue = this.options.barGlue;
+        const { formatBar } = this.options;
+
+        this.options.barGlue = "";
+        this.options.formatBar = undefined;
+
+        try {
+            return this.render();
+        } finally {
+            this.options.barGlue = glue;
+            this.options.formatBar = formatBar;
+        }
+    }
+
+    public getBarGlue(): string {
+        return this.options.barGlue ?? "";
+    }
+
+    /** Whether the per-bar `fps` throttle permits triggering a redraw. */
+    private shouldRenderBar(): boolean {
+        const fps = this.options.fps ?? 10;
+
+        if (fps <= 0) {
+            return true;
+        }
+
+        return Date.now() - this.lastBarRenderTime >= 1000 / fps;
     }
 
     public getBarState(): { char: string; current: number; total: number } {
@@ -213,7 +269,7 @@ export class MultiProgressBar {
         this.interactiveManager.update("stdout", lines);
     }
 
-    public setBarColor(bar: MultiBarInstance, color: ((text: string) => string) | undefined): void {
+    public setBarColor(bar: ProgressBar, color: ((text: string) => string) | undefined): void {
         for (const instance of this.bars.values()) {
             if (instance === bar) {
                 if (color) {
@@ -261,12 +317,15 @@ export class MultiProgressBar {
             return "";
         }
 
-        const output = firstBar.render();
+        // Measure and inject against a line whose bar region is exactly `width` raw
+        // characters — the first bar's glue and formatBar are stripped here so they can
+        // neither double the measured width nor smuggle "[" bytes into BAR_REGEX.
+        const output = firstBar.renderForComposite();
 
         const barMatch = BAR_REGEX.exec(output);
 
         if (!barMatch?.[1]) {
-            return output;
+            return firstBar.render();
         }
 
         const width = barMatch[1].length;
@@ -284,7 +343,7 @@ export class MultiProgressBar {
             };
         });
 
-        let composite = "";
+        const columns: string[] = [];
 
         for (let column = 0; column < width; column += 1) {
             const stack: number[] = [];
@@ -295,10 +354,16 @@ export class MultiProgressBar {
                 }
             }
 
-            composite += this.getCompositeChar(states, stack);
+            columns.push(this.getCompositeChar(states, stack));
         }
 
-        return output.replace(BAR_REGEX, `[${composite}]`);
+        // Join with glue between columns (not after building) so per-column colors,
+        // which may wrap a char in ANSI escapes, are never split by the glue.
+        const composite = columns.join(firstBar.getBarGlue());
+
+        // Use a replacer function so "$" sequences in colorized chars are not treated
+        // as replacement patterns.
+        return output.replace(BAR_REGEX, () => `[${composite}]`);
     }
 
     private getCompositeChar(states: { color?: (text: string) => string; filled: number; percent: number }[], stack: number[]): string {
@@ -317,7 +382,13 @@ export class MultiProgressBar {
         }
 
         const charGradient = CHAR_GRADIENTS[gradientKey];
-        const char = charGradient?.[Math.min(stack.length - 1, charGradient.length - 1)] ?? "█";
+        const gradientLength = charGradient?.length ?? 1;
+        // Shade by how many bars cover this column: fully-stacked columns pick the
+        // densest char (index 0) and thinly-covered columns the lightest, so a column
+        // every bar has filled never collapses onto the empty/incomplete character.
+        const coverage = states.length > 0 ? stack.length / states.length : 1;
+        const gradientIndex = Math.round((1 - coverage) * (gradientLength - 1));
+        const char = charGradient?.[gradientIndex] ?? "█";
 
         let selectedBar: number | undefined;
         let smallestPercent = 100;

@@ -181,10 +181,15 @@ export class ProgressBar {
             const currentStep = Math.round(progressRatio * totalSteps);
             const fractional = currentStep % completeLength;
 
+            const peakPos = this.calculatePeakPosition(width, total, filled);
+            const peakChar = this.options.peakChar ?? completeChar;
+
             let barContent = "";
 
             for (let i = 0; i < width; i += 1) {
-                if (i < filled) {
+                if (peakPos !== undefined && i === peakPos) {
+                    barContent += peakChar;
+                } else if (i < filled) {
                     const isGradientBoundary = i === filled - 1 && fractional > 0 && completeChars;
 
                     // eslint-disable-next-line @stylistic/no-extra-parens
@@ -289,14 +294,14 @@ export class ProgressBar {
         this.isActive = true;
         this.recordSample();
 
+        if (payload) {
+            this.payload = { ...this.payload, ...payload };
+        }
+
         if (this.interactiveManager) {
             this.interactiveManager.hook();
 
             // Force the initial frame regardless of payload presence / throttle.
-            if (payload) {
-                this.payload = { ...this.payload, ...payload };
-            }
-
             this.flush();
         }
     }
