@@ -54,24 +54,43 @@ const healthCheckHandler = (healthCheck: HealthCheck, options: HealthCheckHandle
     const { appName, appVersion, sendHeader = true, type } = resolved;
 
     return async <Request extends IncomingMessage, Response extends ServerResponse>(_: Request, response: Response): Promise<void> => {
-        const { healthy, report } = await healthCheck.getReport(type);
+        try {
+            const { healthy, report } = await healthCheck.getReport(type);
 
-        const payload: HealthCheckApiPayload = {
-            appName: appName ?? process.env.APP_NAME ?? "unknown",
-            appVersion: appVersion ?? process.env.APP_VERSION ?? "unknown",
-            message: healthy ? "Health check successful" : "Health check failed",
-            reports: report,
-            status: healthy ? "ok" : "error",
-            timestamp: new Date().toISOString(),
-        };
+            const payload: HealthCheckApiPayload = {
+                appName: appName ?? process.env.APP_NAME ?? "unknown",
+                appVersion: appVersion ?? process.env.APP_VERSION ?? "unknown",
+                message: healthy ? "Health check successful" : "Health check failed",
+                reports: report,
+                status: healthy ? "ok" : "error",
+                timestamp: new Date().toISOString(),
+            };
 
-        response.statusCode = healthy ? HTTP_OK : HTTP_SERVICE_UNAVAILABLE;
+            response.statusCode = healthy ? HTTP_OK : HTTP_SERVICE_UNAVAILABLE;
 
-        if (sendHeader) {
-            response.setHeader("Content-Type", "application/json");
+            if (sendHeader) {
+                response.setHeader("Content-Type", "application/json");
+            }
+
+            response.end(JSON.stringify(payload, null, 2));
+        } catch (error) {
+            const payload: HealthCheckApiPayload = {
+                appName: appName ?? process.env.APP_NAME ?? "unknown",
+                appVersion: appVersion ?? process.env.APP_VERSION ?? "unknown",
+                message: (error as Error).message,
+                reports: {},
+                status: "error",
+                timestamp: new Date().toISOString(),
+            };
+
+            response.statusCode = HTTP_SERVICE_UNAVAILABLE;
+
+            if (sendHeader) {
+                response.setHeader("Content-Type", "application/json");
+            }
+
+            response.end(JSON.stringify(payload, null, 2));
         }
-
-        response.end(JSON.stringify(payload, null, 2));
     };
 };
 

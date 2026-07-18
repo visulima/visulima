@@ -135,6 +135,39 @@ describe("health check route", () => {
         });
     });
 
+    it("endpoint ends the response with 503 when getReport unexpectedly rejects", async () => {
+        expect.assertions(3);
+
+        const brokenService = {
+            addChecker: () => {},
+            getReport: async () => {
+                throw new Error("unexpected failure");
+            },
+            isLive: async () => true,
+            isReady: async () => true,
+            onShutdown: () => {},
+            removeChecker: () => false,
+            servicesList: [],
+            shutdown: async () => {},
+        };
+
+        const callback = healthCheckHandler(brokenService);
+
+        const requestMock = createRequest();
+        const responseMock = createResponse();
+
+        await callback(requestMock, responseMock);
+
+        // eslint-disable-next-line no-underscore-dangle
+        expect(responseMock._getStatusCode()).toBe(503);
+
+        // eslint-disable-next-line no-underscore-dangle
+        const jsonResponse = responseMock._getJSONData() as Record<string, unknown>;
+
+        expect(jsonResponse.status).toBe("error");
+        expect(jsonResponse.message).toBe("unexpected failure");
+    });
+
     it("endpoint does not set the content-type header when sendHeader is false", async () => {
         expect.assertions(2);
 

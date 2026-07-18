@@ -1,11 +1,4 @@
-import type { AddCheckerOptions, Checker, CheckerType, HealthCheck as HealthcheckInterface, HealthReport, HealthReportEntry } from "./types";
-
-/**
- * A graceful-shutdown hook. Invoked once when {@link Healthcheck.shutdown} is
- * called (e.g. from a `SIGTERM`/`SIGINT` handler) so the service can drain
- * connections, close pools, etc. before the process exits.
- */
-type ShutdownHook = () => Promise<void> | void;
+import type { AddCheckerOptions, Checker, CheckerType, HealthCheck as HealthcheckInterface, HealthReport, HealthReportEntry, ShutdownHook } from "./types";
 
 interface RegisteredChecker {
     checker: Checker;
@@ -73,6 +66,8 @@ class Healthcheck implements HealthcheckInterface {
 
     private cache = new Map<CheckerType | "__all__", { expiresAt: number; value: { healthy: boolean; report: HealthReport } }>();
 
+    private inFlight = new Map<CheckerType | "__all__", Promise<{ healthy: boolean; report: HealthReport }>>();
+
     public constructor(options: HealthcheckOptions = {}) {
         this.cacheTtl = options.cacheTtl ?? 0;
         this.defaultTimeout = options.defaultTimeout;
@@ -122,9 +117,19 @@ class Healthcheck implements HealthcheckInterface {
      * to be wired to process termination signals.
      */
     public async shutdown(): Promise<void> {
+        const errors: unknown[] = [];
+
         for (const hook of this.shutdownHooks) {
-            // eslint-disable-next-line no-await-in-loop
-            await hook();
+            try {
+                // eslint-disable-next-line no-await-in-loop
+                await hook();
+            } catch (error) {
+                errors.push(error);
+            }
+        }
+
+        if (errors.length > 0) {
+            throw new AggregateError(errors, "One or more shutdown hooks failed");
         }
     }
 
@@ -145,26 +150,24 @@ class Healthcheck implements HealthcheckInterface {
             }
         }
 
-        const report: HealthReport = {};
+        // De-duplicate concurrent computations for the same key so simultaneous
+        // probes (e.g. liveness + readiness in Kubernetes) do not each trigger a
+        // full checker fan-out against the same upstream dependencies.
+        const running = this.inFlight.get(cacheKey);
 
-        const services = Object.keys(this.healthCheckers).filter(
-            (service) => type === undefined || (this.healthCheckers[service] as RegisteredChecker).types.has(type),
-        );
-
-        await Promise.all(services.map(async (service) => await this.invokeChecker(service, report)));
-
-        /**
-         * Finding unhealthy service to know if system is healthy or not
-         */
-        const unhealthyService = Object.keys(report).find((service) => !(report[service] as HealthReportEntry).health.healthy);
-
-        const value = { healthy: !unhealthyService, report };
-
-        if (this.cacheTtl > 0) {
-            this.cache.set(cacheKey, { expiresAt: Date.now() + this.cacheTtl, value });
+        if (running !== undefined) {
+            return running;
         }
 
-        return value;
+        const computation = this.computeReport(type, cacheKey);
+
+        this.inFlight.set(cacheKey, computation);
+
+        try {
+            return await computation;
+        } finally {
+            this.inFlight.delete(cacheKey);
+        }
     }
 
     /**
@@ -195,15 +198,47 @@ class Healthcheck implements HealthcheckInterface {
     }
 
     /**
+     * Runs the participating checkers and assembles the report. Extracted so
+     * {@link Healthcheck.getReport} can share a single in-flight computation
+     * across concurrent callers.
+     */
+    private async computeReport(type: CheckerType | undefined, cacheKey: CheckerType | "__all__"): Promise<{ healthy: boolean; report: HealthReport }> {
+        const report: HealthReport = {};
+
+        const services = Object.keys(this.healthCheckers).filter(
+            (service) => type === undefined || (this.healthCheckers[service] as RegisteredChecker).types.has(type),
+        );
+
+        await Promise.all(services.map(async (service) => await this.invokeChecker(service, report)));
+
+        /**
+         * Finding unhealthy service to know if system is healthy or not
+         */
+        const unhealthyService = Object.keys(report).find((service) => !(report[service] as HealthReportEntry).health?.healthy);
+
+        const value = { healthy: !unhealthyService, report };
+
+        if (this.cacheTtl > 0) {
+            this.cache.set(cacheKey, { expiresAt: Date.now() + this.cacheTtl, value });
+        }
+
+        return value;
+    }
+
+    /**
      * Invokes a given checker to collect the report metrics.
      */
-    private async invokeChecker(service: string, reportSheet: HealthReport): Promise<boolean> {
+    private async invokeChecker(service: string, reportSheet: HealthReport): Promise<void> {
         const registered = this.healthCheckers[service] as RegisteredChecker;
 
         let report: HealthReportEntry;
 
         try {
             report = await runWithTimeout(service, registered);
+
+            if (typeof report?.health?.healthy !== "boolean") {
+                throw new TypeError(`Health check "${service}" returned a malformed result`);
+            }
 
             report.displayName = report.displayName || service;
         } catch (error) {
@@ -215,8 +250,6 @@ class Healthcheck implements HealthcheckInterface {
         }
 
         reportSheet[service] = report;
-
-        return report.health.healthy;
     }
 }
 
