@@ -3,7 +3,7 @@
  *
  * - `mailbox` — a mailbox host that ultimately stores the recipient's mail (and typically hosts business/custom domains), e.g. Google Workspace, Microsoft 365, Zoho, Fastmail, Proton, Yandex 360.
  * - `free` — a free consumer webmail provider whose MX hosts are operated for end-user mailboxes rather than customer domains, e.g. Yahoo, iCloud, GMX, Mail.ru, Mail.com.
- * - `seg` — a Secure Email Gateway / inbound filtering service that fronts the real mailbox host, e.g. Proofpoint, Mimecast, Barracuda, Cisco, Mimecast.
+ * - `seg` — a Secure Email Gateway / inbound filtering service that fronts the real mailbox host, e.g. Proofpoint, Mimecast, Barracuda, Cisco, Trend Micro.
  */
 export type MxProviderType = "free" | "mailbox" | "seg";
 
@@ -42,6 +42,10 @@ export interface MxProviderEntry {
  * example, consumer Gmail (`gmail-smtp-in.l.google.com`) and Google Workspace
  * (`aspmx.l.google.com`) both resolve under `google.com`, so both classify as
  * Google `mailbox`.
+ *
+ * This dataset is deep-frozen and cannot be mutated at runtime; the matcher
+ * builds its lookup index once at module load, so pushing or editing entries
+ * would have no effect anyway. Copy it if you need a customizable variant.
  * @see https://www.suped.com/learn/email-deliverability/how-can-i-identify-the-smtp-provider-from-an-mx-record
  */
 export const MX_PROVIDERS: MxProviderEntry[] = [
@@ -55,8 +59,8 @@ export const MX_PROVIDERS: MxProviderEntry[] = [
     },
     {
         display: "Microsoft 365",
-        // <tenant>.mail.protection.outlook.com, <tenant>.olc.protection.outlook.com
-        patterns: ["mail.protection.outlook.com", "olc.protection.outlook.com", "outlook.com"],
+        // <tenant>.mail.protection.outlook.com
+        patterns: ["mail.protection.outlook.com", "outlook.com"],
         provider: "microsoft",
         type: "mailbox",
     },
@@ -90,6 +94,14 @@ export const MX_PROVIDERS: MxProviderEntry[] = [
     },
 
     // ── Free consumer webmail ──────────────────────────────────────────────
+    {
+        display: "Outlook.com",
+        // hotmail-com.olc.protection.outlook.com, outlook-com.olc.protection.outlook.com
+        // (consumer Outlook.com/Hotmail/Live tier, distinct from the business M365 mail.protection.* host)
+        patterns: ["olc.protection.outlook.com"],
+        provider: "outlook",
+        type: "free",
+    },
     {
         display: "Yahoo Mail",
         // mta5.am0.yahoodns.net (also fronts AOL after the Yahoo/AOL merger)
@@ -204,3 +216,12 @@ export const MX_PROVIDERS: MxProviderEntry[] = [
         type: "seg",
     },
 ];
+
+// Deep-freeze so the exported dataset is immutable: mutation throws in strict
+// mode instead of silently no-op'ing against the load-time matcher index.
+for (const entry of MX_PROVIDERS) {
+    Object.freeze(entry.patterns);
+    Object.freeze(entry);
+}
+
+Object.freeze(MX_PROVIDERS);
