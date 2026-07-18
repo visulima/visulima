@@ -245,6 +245,12 @@ export default function Json({
 
         const kind = kindOf(row.value);
 
+        // Empty containers are not collapsible, so they reach here — render them
+        // as `[]`/`{}` rather than falling through to the null branch.
+        if (kind === "array" || kind === "object") {
+            return <Text color={palette.bracket}>{kind === "array" ? "[]" : "{}"}</Text>;
+        }
+
         if (kind === "string") {
             return <Text color={palette.string}>{JSON.stringify(row.value)}</Text>;
         }
