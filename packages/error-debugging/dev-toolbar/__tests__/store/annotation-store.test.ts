@@ -330,7 +330,7 @@ describe("annotation-store", () => {
             const [, results] = await Promise.all([writes, reads]);
 
             // No read ever observed a torn/empty file.
-            expect(results.every((r) => r.length >= 1)).toBe(true);
+            expect(results.every((r) => r.length > 0)).toBe(true);
         });
     });
 
@@ -343,8 +343,8 @@ describe("annotation-store", () => {
             const entry = appendThreadMessage(annotation, { content: "x".repeat(MAX_TEXT_FIELD_LENGTH + 100), role: "agent" });
 
             expect(entry.content).toHaveLength(MAX_TEXT_FIELD_LENGTH);
-            expect(typeof entry.id).toBe("string");
-            expect(typeof entry.timestamp).toBe("string");
+            expect(entry.id).toBeTypeOf("string");
+            expect(entry.timestamp).toBeTypeOf("string");
             expect(annotation.thread).toHaveLength(1);
         });
 
@@ -354,16 +354,18 @@ describe("annotation-store", () => {
             const annotation = {
                 id: "1",
                 status: "pending",
-                thread: Array.from({ length: MAX_THREAD_MESSAGES }, (_, index) => ({
-                    content: "m",
-                    id: String(index),
-                    role: "agent",
-                    timestamp: "2024-01-01",
-                })),
+                thread: Array.from({ length: MAX_THREAD_MESSAGES }, (_, index) => {
+                    return {
+                        content: "m",
+                        id: String(index),
+                        role: "agent",
+                        timestamp: "2024-01-01",
+                    };
+                }),
             } as Annotation;
 
             expect(() => appendThreadMessage(annotation, { content: "overflow", role: "agent" })).toThrow(
-                `Thread message limit reached (${MAX_THREAD_MESSAGES})`,
+                `Thread message limit reached (${String(MAX_THREAD_MESSAGES)})`,
             );
             expect(annotation.thread).toHaveLength(MAX_THREAD_MESSAGES);
         });
