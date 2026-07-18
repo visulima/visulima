@@ -29,7 +29,10 @@ const modifierMatchesKey = (modifier: InternalAnonymize, lowerKey: string, curre
         return wildcard(lowerKey, modifier.key) || wildcard(currentIdentifier, modifier.key);
     }
 
-    return lowerKey === modifier.key;
+    // `currentIdentifier` is the lowercased dot-path, so comparing it here lets a dotted rule
+    // (e.g. "user.pass") match mixed-case inputs ({ User: { Pass } }) that the case-sensitive
+    // `hasProperty` fast path in `recursivelyFilterAttributes` skips.
+    return lowerKey === modifier.key || currentIdentifier === modifier.key;
 };
 
 const applyMatch = (copy: Record<string, unknown>, key: string, modifier: InternalAnonymize, currentIdentifier: string): void => {
@@ -125,7 +128,7 @@ const findUrlModifier = (rules: InternalAnonymize[], name: string): InternalAnon
     return rules.find((modifier) => modifier.key === lowerName || (Boolean(modifier.wildcard) && wildcard(lowerName, modifier.key)));
 };
 
-const filterUrl = (input: string, rules: InternalAnonymize[]): string => {
+const filterUrl = (input: string, rules: InternalAnonymize[], options?: RedactOptions): string => {
     const parsedUrlParameters = parseUrlParameters(input);
     const filtered: string[] = [];
 
@@ -135,7 +138,11 @@ const filterUrl = (input: string, rules: InternalAnonymize[]): string => {
         if (key === undefined) {
             const foundModifier = findUrlModifier(rules, value);
 
-            filtered.push(foundModifier ? String(resolveReplacement(foundModifier, value, undefined)) : value);
+            // Non-parameter segments are the prose/text surrounding the query string. Run them
+            // through the string anonymizer so pattern/NLP rules (credit cards, SSNs, tokens, ...)
+            // still redact secrets that merely happen to sit next to a URL, instead of the whole
+            // string being routed away from `stringAnonymize` by the presence of "http://".
+            filtered.push(foundModifier ? String(resolveReplacement(foundModifier, value, undefined)) : stringAnonymize(value, rules, { logger: options?.logger }));
         } else {
             const foundModifier = findUrlModifier(rules, key);
 
@@ -230,23 +237,25 @@ const recursiveFilter = (
                 const [key, value] = result.value as [unknown, unknown];
 
                 if (typeof key === "string" || (typeof key === "object" && key !== null && key.constructor === String)) {
-                    let matchedModifier: InternalAnonymize | undefined;
                     const lowerCaseKey = key.toLowerCase();
+                    const currentIdentifier = identifier ? `${identifier}.${lowerCaseKey}` : lowerCaseKey;
+
+                    // Last matching rule (in array order) wins, mirroring the object branch, so
+                    // appending a more specific rule overrides an earlier one for Map entries too.
+                    let matchedModifier: InternalAnonymize | undefined;
 
                     for (const modifier of rules) {
-                        if (modifier.key === lowerCaseKey || (modifier.wildcard && wildcard(lowerCaseKey, modifier.key))) {
+                        if (modifierMatchesKey(modifier, lowerCaseKey, currentIdentifier)) {
                             matchedModifier = modifier;
-
-                            break;
                         }
                     }
 
                     if (matchedModifier) {
                         if (!matchedModifier.remove) {
-                            copy.set(key, resolveReplacement(matchedModifier, value, lowerCaseKey));
+                            copy.set(key, resolveReplacement(matchedModifier, value, currentIdentifier));
                         }
                     } else {
-                        copy.set(key, recursiveFilter(value, examinedObjects, saveCopy, rules, options));
+                        copy.set(key, recursiveFilter(value, examinedObjects, saveCopy, rules, options, currentIdentifier));
                     }
                 } else {
                     copy.set(
@@ -307,7 +316,7 @@ const recursiveFilter = (
 
         // check if it's an url with parameters
         if (urlProtocolRegex.test(stringInput)) {
-            return filterUrl(stringInput, rules);
+            return filterUrl(stringInput, rules, options);
         }
 
         return stringAnonymize(stringInput, rules, { logger: options?.logger });
@@ -325,9 +334,6 @@ const recursiveFilter = (
 
             if (foundModifier) {
                 copy.push(resolveReplacement(foundModifier, item, currentIdentifier));
-
-                // eslint-disable-next-line no-param-reassign
-                identifier = undefined;
             } else {
                 copy.push(recursiveFilter(item, examinedObjects, saveCopy, rules, options, currentIdentifier));
             }
