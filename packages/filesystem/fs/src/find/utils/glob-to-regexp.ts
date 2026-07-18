@@ -2,14 +2,17 @@
 // are only turned into alternations when they sit inside a balanced brace group.
 // Commas outside braces are literal, and unmatched braces are escaped so they
 // match literally instead of producing an invalid (unbalanced) RegExp.
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const convertBraces = (input: string): string => {
     const openStack: number[] = [];
     const matched = new Set<number>();
 
-    for (let index = 0; index < input.length; index++) {
-        if (input[index] === "{") {
+    let index = 0;
+
+    for (const char of input) {
+        if (char === "{") {
             openStack.push(index);
-        } else if (input[index] === "}") {
+        } else if (char === "}") {
             const open = openStack.pop();
 
             if (open !== undefined) {
@@ -17,25 +20,26 @@ const convertBraces = (input: string): string => {
                 matched.add(index);
             }
         }
+
+        index += 1;
     }
 
     let depth = 0;
+    let position = 0;
     let result = "";
 
-    for (let index = 0; index < input.length; index++) {
-        const char = input[index];
-
+    for (const char of input) {
         if (char === "{") {
-            if (matched.has(index)) {
+            if (matched.has(position)) {
                 result += "(";
-                depth++;
+                depth += 1;
             } else {
                 result += String.raw`\{`;
             }
         } else if (char === "}") {
-            if (matched.has(index)) {
+            if (matched.has(position)) {
                 result += ")";
-                depth--;
+                depth -= 1;
             } else {
                 result += String.raw`\}`;
             }
@@ -44,6 +48,8 @@ const convertBraces = (input: string): string => {
         } else {
             result += char;
         }
+
+        position += 1;
     }
 
     return result;

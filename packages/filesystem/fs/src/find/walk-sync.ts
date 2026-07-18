@@ -119,7 +119,7 @@ export default function* walkSync(directory: URL | string, options: WalkOptions 
             // followed symlink these are replaced by the resolved target's `Stats`
             // and real basename so the yielded entry reports the target, not the link.
             let source: Dirent | Stats = entry;
-            let name = entry.name;
+            let { name } = entry;
 
             // Track whether the entry needs to be re-stat'd because it is a
             // symlink we are resolving. The original dirent reports the link

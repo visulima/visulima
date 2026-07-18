@@ -41,6 +41,7 @@ import toUint8Array from "./utils/to-uint-8-array";
  * ```
  */
 
+// eslint-disable-next-line sonarjs/cognitive-complexity
 const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferView | string, options?: WriteFileOptions): Promise<void> => {
     // eslint-disable-next-line no-param-reassign
     options = {
