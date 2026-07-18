@@ -488,7 +488,7 @@ export class Mail {
 
         emailOptions = this.applyGlobalConfig(emailOptions);
 
-        const featureError = this.assertFeatureSupport(emailOptions);
+        const featureError = this.assertFeatureSupport(emailOptions, this.resolveProvider(emailOptions));
 
         if (featureError) {
             return { error: featureError, success: false };
@@ -787,21 +787,22 @@ export class Mail {
     /**
      * Runs the fail-fast capability guard for the configured {@link FeatureCheckMode}.
      * @param emailOptions The fully-resolved email options about to be sent.
+     * @param provider The provider that will actually handle the message (mounted stream provider or default).
      * @returns An {@link EmailError} when the send should be rejected, otherwise undefined.
      * @private
      */
-    private assertFeatureSupport(emailOptions: EmailOptions): EmailError | undefined {
+    private assertFeatureSupport(emailOptions: EmailOptions, provider: Provider): EmailError | undefined {
         if (this.featureCheck === "off") {
             return undefined;
         }
 
-        const { supported, violations } = checkFeatureSupport(emailOptions, this.provider.features);
+        const { supported, violations } = checkFeatureSupport(emailOptions, provider.features);
 
         if (supported) {
             return undefined;
         }
 
-        const providerName = this.provider.name ?? "unknown";
+        const providerName = provider.name ?? "unknown";
         const fields = violations.map((violation) => violation.field);
         const reasons = violations.map((violation) => violation.message);
 

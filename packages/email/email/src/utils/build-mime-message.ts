@@ -26,7 +26,10 @@ interface BuildMimeMessageOptions {
     includeBcc?: boolean;
 }
 
-const NON_ASCII_REGEX = /[^ -]/;
+// Matches any character outside printable ASCII (space through tilde) plus the
+// permitted whitespace controls; such bodies must be quoted-printable encoded.
+// eslint-disable-next-line regexp/no-obscure-range
+const NON_ASCII_REGEX = /[^ -~\r\n\t]/;
 
 /**
  * Sanitizes (strips CR/LF) and, when needed, RFC 2047 encodes a header value so
@@ -94,35 +97,37 @@ const buildMimeMessage = async <T extends EmailOptions>(options: T, buildOptions
 
     message.push(`Content-Type: multipart/mixed; boundary="${boundary}"`, "");
 
-    if (options.text) {
-        // Non-ASCII bodies must not be labelled 7bit; encode them quoted-printable.
-        if (NON_ASCII_REGEX.test(options.text)) {
-            message.push(
-                `--${boundary}`,
-                "Content-Type: text/plain; charset=UTF-8",
-                "Content-Transfer-Encoding: quoted-printable",
-                "",
-                encodeQuotedPrintable(options.text),
-                "",
-            );
-        } else {
-            message.push(`--${boundary}`, "Content-Type: text/plain; charset=UTF-8", "Content-Transfer-Encoding: 7bit", "", options.text, "");
+    // Renders a single body leaf (text or html) as MIME part lines. Non-ASCII
+    // bodies must not be labelled 7bit; encode them quoted-printable.
+    const renderBodyLeaf = (contentType: string, body: string): string[] => {
+        if (NON_ASCII_REGEX.test(body)) {
+            return [`Content-Type: ${contentType}; charset=UTF-8`, "Content-Transfer-Encoding: quoted-printable", "", encodeQuotedPrintable(body), ""];
         }
-    }
 
-    if (options.html) {
-        if (NON_ASCII_REGEX.test(options.html)) {
-            message.push(
-                `--${boundary}`,
-                "Content-Type: text/html; charset=UTF-8",
-                "Content-Transfer-Encoding: quoted-printable",
-                "",
-                encodeQuotedPrintable(options.html),
-                "",
-            );
-        } else {
-            message.push(`--${boundary}`, "Content-Type: text/html; charset=UTF-8", "Content-Transfer-Encoding: 7bit", "", options.html, "");
-        }
+        return [`Content-Type: ${contentType}; charset=UTF-8`, "Content-Transfer-Encoding: 7bit", "", body, ""];
+    };
+
+    if (options.text && options.html) {
+        // RFC 2046: plain-text and HTML are alternative renditions of the same
+        // content and must be wrapped in multipart/alternative (least-faithful
+        // first) so clients render exactly one representation instead of both.
+        const alternativeBoundary = generateBoundary();
+
+        message.push(
+            `--${boundary}`,
+            `Content-Type: multipart/alternative; boundary="${alternativeBoundary}"`,
+            "",
+            `--${alternativeBoundary}`,
+            ...renderBodyLeaf("text/plain", options.text),
+            `--${alternativeBoundary}`,
+            ...renderBodyLeaf("text/html", options.html),
+            `--${alternativeBoundary}--`,
+            "",
+        );
+    } else if (options.text) {
+        message.push(`--${boundary}`, ...renderBodyLeaf("text/plain", options.text));
+    } else if (options.html) {
+        message.push(`--${boundary}`, ...renderBodyLeaf("text/html", options.html));
     }
 
     if (options.attachments && options.attachments.length > 0) {

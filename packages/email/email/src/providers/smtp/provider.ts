@@ -69,6 +69,9 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
         resolve: (socket: Socket) => void;
         timeout?: NodeJS.Timeout;
     }[] = [];
+    // Number of live connections (in-flight + idle in the pool). Bounds concurrency
+    // against maxConnections; the idle pool length alone does not.
+    let activeConnections = 0;
 
     /**
      * Sanitizes a header value to prevent injection attacks.
@@ -193,9 +196,17 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
             if (socket && !socket.destroyed) {
                 return socket;
             }
+
+            // Popped a dead socket; it no longer counts as a live connection.
+            if (socket && activeConnections > 0) {
+                activeConnections -= 1;
+            }
         }
 
-        if (options.pool && connectionPool.length + 1 >= options.maxConnections) {
+        // Bound concurrency by the number of live connections, not the idle pool
+        // length — otherwise the cap never limits in-flight sockets and, with
+        // maxConnections: 1 and an empty pool, the first request queues forever.
+        if (options.pool && activeConnections >= options.maxConnections) {
             return new Promise<Socket>((resolve, reject) => {
                 const queueItem: {
                     reject: (error: Error) => void;
@@ -269,6 +280,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                         const code = greeting.slice(0, 3);
 
                         if (code === "220") {
+                            activeConnections += 1;
                             resolve(socket);
                         } else {
                             socket.destroy();
@@ -366,6 +378,10 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                 // Ignore destroy errors
             }
 
+            if (activeConnections > 0) {
+                activeConnections -= 1;
+            }
+
             return;
         }
 
@@ -390,18 +406,31 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
      * @param release Whether to release the connection back to the pool instead of closing it.
      * @returns A promise that resolves when the connection is closed or released.
      */
-    const closeConnection = async (socket: Socket, release = false): Promise<void> =>
-        new Promise<void>((resolve) => {
+    const closeConnection = async (socket: Socket, release = false): Promise<void> => {
+        if (release) {
+            if (!socket.destroyed) {
+                try {
+                    // Await the RSET reply before returning the socket to the pool. Leaving
+                    // it unread desyncs the protocol — the next reuse would resolve its EHLO
+                    // against this stale 250, shifting every subsequent command/response.
+                    await sendSmtpCommand(socket, "RSET", "250");
+                } catch {
+                    // The connection is unusable if RSET fails; drop it from the pool.
+                    socket.destroy();
+                }
+            }
+
+            // releaseConnection re-pools a healthy socket or discards (and uncounts) a
+            // destroyed one.
+            releaseConnection(socket);
+
+            return;
+        }
+
+        await new Promise<void>((resolve) => {
             try {
-                if (release) {
-                    // Reset the connection state by sending RSET command
-                    socket.write("RSET\r\n");
-
-                    // Release the connection back to the pool
-                    releaseConnection(socket);
-                    resolve();
-
-                    return;
+                if (activeConnections > 0) {
+                    activeConnections -= 1;
                 }
 
                 // Send QUIT command
@@ -416,6 +445,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                 resolve();
             }
         });
+    };
 
     /**
      * Performs SMTP authentication using the configured credentials.
@@ -581,18 +611,56 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
         const { domainName, keySelector, privateKey } = options.dkim;
 
         try {
-            // Parse the message to separate headers and body
-            const [headersPart, bodyPart] = message.split("\r\n\r\n");
+            // Separate headers from the body at the FIRST blank line only. The body
+            // itself contains blank lines (multipart boundaries and part headers), so
+            // a naive split("\r\n\r\n") would truncate everything after the first part.
+            const splitIndex = message.indexOf("\r\n\r\n");
 
-            if (!headersPart || !bodyPart) {
+            if (splitIndex === -1) {
                 return message;
             }
 
+            const headersPart = message.slice(0, splitIndex);
+            const bodyPart = message.slice(splitIndex + 4);
+
             const headers = headersPart.split("\r\n");
 
-            // DKIM canonicalization (relaxed/relaxed, basic)
-            const canonicalize = (string_: string) => string_.replaceAll("\r\n", "\n").replaceAll(/\s+/g, " ").trim();
-            const canonicalizedBody = canonicalize(bodyPart);
+            // RFC 6376 §3.4.4 relaxed body canonicalization: normalize line endings,
+            // reduce whitespace runs within a line to a single SP, strip trailing
+            // whitespace per line, drop trailing empty lines, and terminate with CRLF.
+            const canonicalizeBody = (body: string): string => {
+                const lines = body
+                    .replaceAll("\r\n", "\n")
+                    .split("\n")
+                    // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/slow-regex
+                    .map((line) => line.replaceAll(/[ \t]+/g, " ").replace(/ +$/, ""));
+
+                let end = lines.length;
+
+                while (end > 0 && lines[end - 1] === "") {
+                    end -= 1;
+                }
+
+                return end > 0 ? `${lines.slice(0, end).join("\r\n")}\r\n` : "";
+            };
+
+            // RFC 6376 §3.4.2 relaxed header canonicalization: lowercase the field
+            // name, unfold, reduce internal whitespace to a single SP, and strip
+            // leading/trailing whitespace around the value.
+            const canonicalizeHeader = (header: string): string => {
+                const colon = header.indexOf(":");
+
+                if (colon === -1) {
+                    return `${header.toLowerCase().trim()}:`;
+                }
+
+                const name = header.slice(0, colon).toLowerCase().trim();
+                const value = header.slice(colon + 1).replaceAll(/\s+/g, " ").trim();
+
+                return `${name}:${value}`;
+            };
+
+            const canonicalizedBody = canonicalizeBody(bodyPart);
             const bodyHash = createHash("sha256").update(canonicalizedBody).digest("base64");
 
             // Find which headers to sign (from, to, subject, date)
@@ -623,15 +691,17 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                 .map(([k, v]) => `${k}=${v}`)
                 .join("; ")}; b=`;
 
-            // Canonicalize headers for signing
-            const headersForSign = [...headersToSign, dkimHeader].map((header) => canonicalize(header)).join("\r\n");
+            // Canonicalize the signed headers followed by the DKIM-Signature header
+            // (with an empty b= value and no trailing CRLF, per RFC 6376 §3.7).
+            const headersForSign = [...headersToSign, dkimHeader].map((header) => canonicalizeHeader(header)).join("\r\n");
             const signer = createSign("RSA-SHA256");
 
             signer.update(headersForSign);
             const signature = signer.sign(privateKey, "base64");
             const finalDkimHeader = `${dkimHeader}${signature}`;
 
-            // DKIM-Signature en başa eklenmeli
+            // Prepend the DKIM-Signature header, preserving all original headers and
+            // the complete body (including the closing multipart boundary).
             return `${finalDkimHeader}\r\n${headers.join("\r\n")}\r\n\r\n${bodyPart}`;
         } catch (error) {
             // eslint-disable-next-line no-console
@@ -1045,7 +1115,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                 }
 
                 // Create connection and try to authenticate
-                const socket = await createSmtpConnection();
+                let socket = await createSmtpConnection();
 
                 try {
                     // EHLO handshake
@@ -1064,8 +1134,8 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                                 // Upgrade connection to TLS
                                 const tlsSocket = await upgradeToTLS(socket);
 
-                                // Replace socket with secure version
-                                Object.assign(socket, tlsSocket);
+                                // Replace socket reference with secure version
+                                socket = tlsSocket;
 
                                 // Re-issue EHLO command over secured connection
                                 await sendSmtpCommand(socket, `EHLO ${options.host}`, "250");
