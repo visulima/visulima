@@ -120,7 +120,8 @@ const globalCacheDirectory = (name: string): string => {
 
     if (platform === "win32") {
         const localAppData = env.LOCALAPPDATA;
-        const base = localAppData && localAppData.length > 0 ? localAppData : home ? join(home, "AppData", "Local") : tmpdir();
+        const fallback = home ? join(home, "AppData", "Local") : tmpdir();
+        const base = localAppData && localAppData.length > 0 ? localAppData : fallback;
 
         return join(base, name, "Cache");
     }
@@ -134,7 +135,8 @@ const globalCacheDirectory = (name: string): string => {
     // Linux and other Unix-like platforms: follow the XDG Base Directory spec.
     // Per the spec an empty $XDG_CACHE_HOME must be treated as unset.
     const xdgCacheHome = env.XDG_CACHE_HOME;
-    const base = xdgCacheHome && xdgCacheHome.length > 0 ? xdgCacheHome : home ? join(home, ".cache") : tmpdir();
+    const fallback = home ? join(home, ".cache") : tmpdir();
+    const base = xdgCacheHome && xdgCacheHome.length > 0 ? xdgCacheHome : fallback;
 
     return join(base, name);
 };
@@ -298,7 +300,7 @@ const findCacheDirectory = async (name: string, options?: Options): Promise<Cach
     // package root, so an unwritable package root is just as fatal.
     const writabilityChain = [cacheNameDirectory, cacheDirectory, nodeModulesDirectory];
 
-    if (!(await isAccessible(nodeModulesDirectory))) {
+    if (!await isAccessible(nodeModulesDirectory)) {
         writabilityChain.push(packageDirectory);
     }
 
