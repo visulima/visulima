@@ -135,6 +135,7 @@ describe("standalone mode", () => {
 
         const redraw = written.join("");
         // Three cursor-up + clear-line pairs for the wrapped rows above the first.
+        // eslint-disable-next-line no-control-regex -- ANSI escape sequences intentionally include U+001B.
         const upClears = redraw.match(/\u001B\[1A\u001B\[2K/g) ?? [];
 
         expect(upClears).toHaveLength(3);

@@ -460,8 +460,10 @@ describe("multiSpinner additional paths", () => {
         expect(manager.updates).toHaveLength(0);
         expect(manager.erase).toHaveBeenCalledWith("stdout");
         expect(manager.unhook).toHaveBeenCalledWith(false);
+
         // a subsequent renderAll must not re-hook the emptied stack
         multi.renderAll();
+
         expect(manager.hook).toHaveBeenCalledTimes(1);
     });
 });

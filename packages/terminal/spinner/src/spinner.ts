@@ -29,7 +29,8 @@ const isCi = (): boolean => {
     return Boolean(env.CI) || env.CONTINUOUS_INTEGRATION === "true" || "BUILD_NUMBER" in env || "RUN_ID" in env;
 };
 
-const ANSI_ESCAPE_RE = /\u001B\[[\d;]*[A-Za-z]/g;
+// eslint-disable-next-line no-control-regex -- ANSI escape sequences intentionally include U+001B.
+const ANSI_ESCAPE_RE = /\u001B\[[\d;]*[a-z]/gi;
 
 /**
  * Approximate the printable width of a line, ignoring ANSI escape sequences.
@@ -38,7 +39,12 @@ const ANSI_ESCAPE_RE = /\u001B\[[\d;]*[A-Za-z]/g;
  * the previous frame can be fully erased. Counts code points rather than UTF-16 units
  * so astral glyphs (e.g. emoji frames) don't over-count.
  */
-const visibleWidth = (text: string): number => [...text.replace(ANSI_ESCAPE_RE, "")].length;
+const visibleWidth = (text: string): number => {
+    const stripped = text.replaceAll(ANSI_ESCAPE_RE, "");
+
+    // eslint-disable-next-line @typescript-eslint/no-misused-spread -- intentional: counts Unicode code points so astral glyphs aren't over-counted.
+    return [...stripped].length;
+};
 
 /**
  * Resolve a SpinnerStyle object into Node.js `util.styleText` format strings.
@@ -538,7 +544,7 @@ export class Spinner {
         if (this.#standaloneLines > 0 && this.#stream.isTTY) {
             // Clear each wrapped physical row, walking the cursor up, then
             // carriage-return + clear-to-end-of-line for the first row.
-            for (let index = 1; index < this.#standaloneLines; index++) {
+            for (let index = 1; index < this.#standaloneLines; index += 1) {
                 this.#stream.write("\u001B[1A\u001B[2K");
             }
 
