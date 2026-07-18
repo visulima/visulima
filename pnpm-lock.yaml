@@ -8981,18 +8981,6 @@ importers:
       '@visulima/string':
         specifier: 3.0.0
         version: link:../../data-manipulation/string
-      cli-boxes:
-        specifier: catalog:prod
-        version: 4.0.1
-      code-excerpt:
-        specifier: catalog:prod
-        version: 4.0.0
-      is-in-ci:
-        specifier: catalog:prod
-        version: 2.0.0
-      patch-console:
-        specifier: catalog:prod
-        version: 2.0.0
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -9005,15 +8993,6 @@ importers:
       scheduler:
         specifier: catalog:prod
         version: 0.27.0
-      signal-exit:
-        specifier: catalog:prod
-        version: 4.1.0
-      terminal-size:
-        specifier: catalog:prod
-        version: 4.0.1
-      tseep:
-        specifier: catalog:prod
-        version: 1.3.1
       yoga-layout:
         specifier: catalog:prod
         version: 3.2.1
@@ -9078,6 +9057,12 @@ importers:
       '@vitest/ui':
         specifier: catalog:test
         version: 4.1.9(vitest@4.1.9)
+      cli-boxes:
+        specifier: catalog:prod
+        version: 4.0.1
+      code-excerpt:
+        specifier: catalog:prod
+        version: 4.0.0
       conventional-changelog-conventionalcommits:
         specifier: catalog:dev
         version: 10.2.0
@@ -9114,12 +9099,18 @@ importers:
       fallow:
         specifier: catalog:lint
         version: 2.104.0
+      is-in-ci:
+        specifier: catalog:prod
+        version: 2.0.0
       marked:
         specifier: catalog:dev
         version: 18.0.5
       node-pty:
         specifier: catalog:dev
         version: 1.1.0
+      patch-console:
+        specifier: catalog:prod
+        version: 2.0.0
       prettier:
         specifier: catalog:lint
         version: 3.9.4
@@ -9138,6 +9129,15 @@ importers:
       shiki:
         specifier: catalog:syntax
         version: 4.3.1
+      signal-exit:
+        specifier: catalog:prod
+        version: 4.1.0
+      terminal-size:
+        specifier: catalog:prod
+        version: 4.0.1
+      tseep:
+        specifier: catalog:prod
+        version: 1.3.1
       tsx:
         specifier: catalog:dev
         version: 4.23.0
