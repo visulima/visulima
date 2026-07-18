@@ -140,7 +140,15 @@ export default function CheckboxGroup({
             if (input === "a") {
                 const enabled = options.filter((option) => !option.isDisabled);
                 const allChecked = enabled.every((option) => checked.has(option.value));
-                const next = allChecked ? new Set<string>() : new Set(enabled.map((option) => option.value));
+                // Disabled rows aren't user-mutable: carry their checked state
+                // through toggle-all in both directions.
+                const next = new Set(options.filter((option) => option.isDisabled && checked.has(option.value)).map((option) => option.value));
+
+                if (!allChecked) {
+                    for (const option of enabled) {
+                        next.add(option.value);
+                    }
+                }
 
                 emit(next);
 

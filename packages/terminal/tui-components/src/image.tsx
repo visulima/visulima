@@ -22,6 +22,7 @@ export type Props = {
 };
 
 const UPPER_HALF = "▀";
+const LOWER_HALF = "▄";
 
 /**
  * Render a small pixel grid using the upper-half-block technique: each text
@@ -47,16 +48,25 @@ export default function Image({ emptyChar = " ", pixels }: Props): ReactElement 
             const bottomColor = bottom[x];
 
             if (topColor === undefined && bottomColor === undefined) {
-                spans.push(
+                spans.push(<Text key={x}>{emptyChar}</Text>);
 
-                    <Text key={x}>{emptyChar}</Text>,
+                continue;
+            }
+
+            // A transparent top over an opaque bottom must not paint the upper
+            // half in the default foreground — draw the lower-half block instead
+            // so the top stays truly empty.
+            if (topColor === undefined) {
+                spans.push(
+                    <Text color={bottomColor} key={x}>
+                        {LOWER_HALF}
+                    </Text>,
                 );
 
                 continue;
             }
 
             spans.push(
-
                 <Text backgroundColor={bottomColor} color={topColor} key={x}>
                     {UPPER_HALF}
                 </Text>,
