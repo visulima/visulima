@@ -22,13 +22,14 @@ const STATUS_MAP: Record<string, NotificationEventType> = {
 
 /**
  * Builds the Twilio signature base string: the request URL with each form parameter
- * appended in lexicographic key order as `key + value` (no separators).
+ * appended in Unicode code-unit key order as `key + value` (no separators), matching
+ * Twilio's reference implementations (a plain `sort()`, not locale collation).
  * @param url The full request URL Twilio signed (scheme, host, path and query).
  * @param parameters The decoded form body parameters.
  * @returns The string Twilio computes the HMAC over.
  */
 const buildSignatureBase = (url: string, parameters: Record<string, string>): string => {
-    const keys = Object.keys(parameters).toSorted((a, b) => a.localeCompare(b));
+    const keys = Object.keys(parameters).toSorted();
     let base = url;
 
     for (const key of keys) {
