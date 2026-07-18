@@ -2,8 +2,8 @@ import { createMocks } from "node-mocks-http";
 import { describe, expect, it } from "vitest";
 
 import { htmlErrorHandler } from "../../src/error-handler/html-error-handler";
-import jsonapiErrorHandler from "../../src/error-handler/jsonapi-error-handler";
 import { jsonErrorHandler } from "../../src/error-handler/json-error-handler";
+import jsonapiErrorHandler from "../../src/error-handler/jsonapi-error-handler";
 import { jsonpErrorHandler } from "../../src/error-handler/jsonp-error-handler";
 import problemErrorHandler from "../../src/error-handler/problem-error-handler";
 import { textErrorHandler } from "../../src/error-handler/text-error-handler";
@@ -74,7 +74,7 @@ describe("formatters with an unassigned in-range status code", () => {
         // eslint-disable-next-line no-underscore-dangle
         expect(res._getStatusCode()).toBe(statusCode);
         // eslint-disable-next-line no-underscore-dangle
-        expect(res._getData()).toContain(`<statusCode>${statusCode}</statusCode>`);
+        expect(res._getData()).toContain(`<statusCode>${String(statusCode)}</statusCode>`);
     });
 
     it.each([460, 599])("html handler does not throw for status %i", async (statusCode) => {
