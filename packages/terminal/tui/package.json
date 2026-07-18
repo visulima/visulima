@@ -332,7 +332,6 @@
         "@types/react": "catalog:types",
         "@types/react-reconciler": "catalog:types",
         "@types/scheduler": "catalog:types",
-        "@types/ws": "catalog:types",
         "@visulima/boxen": "3.0.0",
         "@visulima/packem": "catalog:dev",
         "@vitest/coverage-v8": "catalog:test",
@@ -360,8 +359,7 @@
         "tsx": "catalog:dev",
         "type-fest": "catalog:prod",
         "typescript": "catalog:tsc",
-        "vitest": "catalog:test",
-        "ws": "catalog:prod"
+        "vitest": "catalog:test"
     },
     "peerDependencies": {
         "@shikijs/langs": "catalog:prod",
@@ -369,8 +367,7 @@
         "react": "^19.2.6",
         "react-devtools-core": "^7.0.1",
         "react-reconciler": "^0.33.0",
-        "shiki": "catalog:syntax",
-        "ws": "catalog:prod"
+        "shiki": "catalog:syntax"
     },
     "peerDependenciesMeta": {
         "@shikijs/langs": {
@@ -383,9 +380,6 @@
             "optional": true
         },
         "shiki": {
-            "optional": true
-        },
-        "ws": {
             "optional": true
         }
     },
