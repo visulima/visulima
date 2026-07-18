@@ -12,7 +12,7 @@ import { applyModuleAndTargetDefaults } from "./shared";
  * TypeScript 6.0 default-flips.
  *
  * Note on `module` / `moduleResolution` / `target`: these remain *derived* from
- * each other in v6. `applyModuleAndTargetDefaults` reproduces that derivation —
+ * each other in v6. The shared module/target defaults helper reproduces that derivation —
  * the default `target: es2025` + `module: es2022` + `moduleResolution: bundler`
  * applies only when no user-set Node-style `module`/`moduleResolution` pins the
  * fields to the values `tsc` derives (e.g. `module: nodenext` ⇒

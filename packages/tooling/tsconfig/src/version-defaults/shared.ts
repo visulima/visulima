@@ -13,6 +13,7 @@ const MODULES_THAT_DICTATE_TARGET: ReadonlySet<string> = new Set(["node16", "nod
  * the chosen `module` does not already imply a target (Node-style modules
  * pin target to the matching ESNext baseline).
  */
+// eslint-disable-next-line import/exports-last -- shared helper consumed by v4/v5 default appliers; keep it co-located with the constant it wraps
 export const moduleDictatesTarget = (module: TsConfigJson.CompilerOptions.Module | undefined): boolean =>
     module !== undefined && MODULES_THAT_DICTATE_TARGET.has(module);
 
@@ -39,8 +40,13 @@ const nodeModuleTarget = (module: string): TsConfigJson.CompilerOptions.Target =
  * The `moduleResolution` a Node-style `module` derives: nodenext → nodenext,
  * everything else (node16/node18/node20) → node16.
  */
-const nodeModuleResolution = (module: string): TsConfigJson.CompilerOptions.ModuleResolution =>
-    module === "nodenext" ? "nodenext" : "node16";
+const nodeModuleResolution = (module: string): TsConfigJson.CompilerOptions.ModuleResolution => {
+    if (module === "nodenext") {
+        return "nodenext";
+    }
+
+    return "node16";
+};
 
 /**
  * The Node-style `module` a Node-style `moduleResolution` implies, or
@@ -71,7 +77,6 @@ const resolutionImpliesModule = (resolution: string): TsConfigJson.CompilerOptio
  * `bundler`. `target` is only defaulted when `defaultTarget` is provided (v6
  * owns the `target` default; v7 inherits it through the cumulative v6 pass).
  */
-// eslint-disable-next-line import/prefer-default-export
 export const applyModuleAndTargetDefaults = (
     compilerOptions: TsConfigJson.CompilerOptions,
     userSet: ReadonlySet<string>,
