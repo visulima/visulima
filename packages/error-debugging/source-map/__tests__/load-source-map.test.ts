@@ -188,6 +188,22 @@ describe("load-source-map", () => {
         expect(loadSourceMapFromSource(source, FIXTURES_DIR)).toBeUndefined();
     });
 
+    it("should scan back to an earlier valid comment when a later line contains the bare marker", () => {
+        expect.assertions(1);
+
+        // The trailing occurrence of the marker sits inside a string literal in an
+        // appended chunk; the real `//# sourceMappingURL` comment is on an earlier
+        // line and must still be resolved.
+        const source = "\"use strict\";\n//# sourceMappingURL=lib/example.js.map\nconst x = 'sourceMappingURL=nope.js.map';\n";
+
+        const result = loadSourceMapFromSource(source, FIXTURES_DIR);
+
+        const generated = { column: 13, line: 30 };
+        const expected = { column: 9, line: 15, name: "setState", source: pathToFileURL(join(FIXTURES_DIR, "src", "example.js")).href };
+
+        expect(originalPositionFor(result as TraceMap, generated)).toStrictEqual(expected);
+    });
+
     it("should return undefined for a remote sourceMappingURL without a resolver", () => {
         expect.assertions(1);
 

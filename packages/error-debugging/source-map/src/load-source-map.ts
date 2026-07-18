@@ -57,28 +57,21 @@ export interface LoadSourceMapAsyncOptions {
     remoteResolver?: AsyncRemoteMapResolver;
 }
 
-interface ResolvedReference {
+type ResolvedReference =
     /** A decodable inline `data:` map payload. */
-    inline?: string;
+    | { inline: string }
     /** An absolute filesystem path to a sibling `.map` file. */
-    path?: string;
+    | { path: string }
     /** An absolute remote URL (`http(s):`) to be passed to a resolver. */
-    remote?: string;
-}
+    | { remote: string };
 
 /**
- * Locate the last `//# sourceMappingURL` (or `//@`) line/block comment in a
- * source file using a linear scan instead of splitting the whole file into
- * lines and regex-matching each one. This keeps memory flat and avoids regex
- * backtracking on large minified bundles that carry no comment at all.
+ * Validate the `sourceMappingURL=` occurrence at `markerIndex` and, when it sits
+ * inside a well-formed line/block comment with a usable value, return that value.
+ * Returns `undefined` when the occurrence is not a valid comment reference so the
+ * caller can keep scanning earlier occurrences.
  */
-const findSourceMappingURL = (sourceFile: string): string | undefined => {
-    const markerIndex = sourceFile.lastIndexOf(SOURCEMAP_MARKER);
-
-    if (markerIndex === -1) {
-        return undefined;
-    }
-
+const extractSourceMappingURLAt = (sourceFile: string, markerIndex: number): string | undefined => {
     // The comment opener (`//` or `/*`) must be the first non-whitespace token on
     // its line, optionally preceded by `# ` / `@ ` after the opener. Walk back from
     // the marker to verify we are inside a comment, mirroring the original regex.
@@ -148,6 +141,33 @@ const findSourceMappingURL = (sourceFile: string): string | undefined => {
 };
 
 /**
+ * Locate the trailing `//# sourceMappingURL` (or `//@`) line/block comment in a
+ * source file using a linear scan instead of splitting the whole file into
+ * lines and regex-matching each one. This keeps memory flat and avoids regex
+ * backtracking on large minified bundles that carry no comment at all.
+ *
+ * Occurrences are scanned from the end of the file backwards: if the last
+ * occurrence of the marker is not a valid comment reference (e.g. it appears
+ * inside a string literal in an appended chunk), earlier occurrences are still
+ * considered, mirroring the pre-rewrite line-loop implementation.
+ */
+const findSourceMappingURL = (sourceFile: string): string | undefined => {
+    let markerIndex = sourceFile.lastIndexOf(SOURCEMAP_MARKER);
+
+    while (markerIndex !== -1) {
+        const value = extractSourceMappingURLAt(sourceFile, markerIndex);
+
+        if (value !== undefined) {
+            return value;
+        }
+
+        markerIndex = sourceFile.lastIndexOf(SOURCEMAP_MARKER, markerIndex - 1);
+    }
+
+    return undefined;
+};
+
+/**
  * Classify a discovered sourceMappingURL into an inline payload, a local file
  * path, or a remote URL. Returns `undefined` when the reference is unusable
  * (e.g. a non-base64 `data:` URI).
@@ -197,6 +217,45 @@ const parseMap = (traceMapContent: string, mapBaseUrl: string, context: string):
     }
 };
 
+type SourceMapPlan =
+    /** Inline map already decoded and parsed synchronously. */
+    | { kind: "map"; map: TraceMap }
+    /** Sibling `.map` file that still has to be read from disk. */
+    | { kind: "path"; mapPath: string; parseContext: string; readContext: string }
+    /** Remote URL that still has to be fetched via a resolver. */
+    | { kind: "remote"; parseContext: string; url: string };
+
+/**
+ * Classify a {@link ResolvedReference} into the work still required to build a
+ * {@link TraceMap}, computing every read/parse error-context string once so the
+ * sync ({@link loadSourceMapFromSource}) and async ({@link loadSourceMapAsync})
+ * dispatchers share identical wording.
+ *
+ * `errorTarget` is the already-namespaced originating file (or `undefined` when
+ * a caller loads directly from source without a backing file), matching the
+ * historical per-path behaviour of both dispatchers.
+ */
+const planSourceMapLoad = (reference: ResolvedReference, errorTarget: string | undefined): SourceMapPlan => {
+    if ("inline" in reference) {
+        const inlineContext = errorTarget === undefined ? `Error parsing inline sourcemap` : `Error parsing sourcemap for file "${errorTarget}"`;
+
+        return { kind: "map", map: parseMap(decodeInlineMap(reference.inline), reference.inline, inlineContext) };
+    }
+
+    if ("remote" in reference) {
+        return { kind: "remote", parseContext: `Error parsing sourcemap for remote "${reference.remote}"`, url: reference.remote };
+    }
+
+    const fileContext = errorTarget ?? toNamespacedPath(reference.path);
+
+    return {
+        kind: "path",
+        mapPath: reference.path,
+        parseContext: `Error parsing sourcemap for file "${fileContext}"`,
+        readContext: `Error reading sourcemap for file "${fileContext}"`,
+    };
+};
+
 /**
  * Build a {@link TraceMap} from already-in-memory source code.
  *
@@ -230,35 +289,31 @@ export const loadSourceMapFromSource = (
     }
 
     const errorTarget = sourceContextPath === undefined ? undefined : toNamespacedPath(sourceContextPath);
+    const plan = planSourceMapLoad(reference, errorTarget);
 
-    if (reference.inline) {
-        const inlineContext = errorTarget === undefined ? `Error parsing inline sourcemap` : `Error parsing sourcemap for file "${errorTarget}"`;
-
-        return parseMap(decodeInlineMap(reference.inline), reference.inline, inlineContext);
+    if (plan.kind === "map") {
+        return plan.map;
     }
 
-    if (reference.remote) {
-        const resolved = options.remoteResolver?.(reference.remote);
+    if (plan.kind === "remote") {
+        const resolved = options.remoteResolver?.(plan.url);
 
         if (resolved === undefined) {
             return undefined;
         }
 
-        return parseMap(resolved, reference.remote, `Error parsing sourcemap for remote "${reference.remote}"`);
+        return parseMap(resolved, plan.url, plan.parseContext);
     }
-
-    const mapPath = reference.path as string;
-    const fileContext = errorTarget ?? toNamespacedPath(mapPath);
 
     let traceMapContent: string;
 
     try {
-        traceMapContent = readFileSync(mapPath, { encoding: "utf8" });
+        traceMapContent = readFileSync(plan.mapPath, { encoding: "utf8" });
     } catch (error: unknown) {
-        throw new SourceMapReadError(`Error reading sourcemap for file "${fileContext}"`, error);
+        throw new SourceMapReadError(plan.readContext, error);
     }
 
-    return parseMap(traceMapContent, pathToFileURL(mapPath).href, `Error parsing sourcemap for file "${fileContext}"`);
+    return parseMap(traceMapContent, pathToFileURL(plan.mapPath).href, plan.parseContext);
 };
 
 /**
@@ -310,33 +365,31 @@ export const loadSourceMapAsync = async (filename: string, options: LoadSourceMa
         return undefined;
     }
 
-    const fileContext = toNamespacedPath(filename);
+    const plan = planSourceMapLoad(reference, toNamespacedPath(filename));
 
-    if (reference.inline) {
-        return parseMap(decodeInlineMap(reference.inline), reference.inline, `Error parsing sourcemap for file "${fileContext}"`);
+    if (plan.kind === "map") {
+        return plan.map;
     }
 
-    if (reference.remote) {
-        const resolved = await options.remoteResolver?.(reference.remote);
+    if (plan.kind === "remote") {
+        const resolved = await options.remoteResolver?.(plan.url);
 
         if (resolved === undefined) {
             return undefined;
         }
 
-        return parseMap(resolved, reference.remote, `Error parsing sourcemap for remote "${reference.remote}"`);
+        return parseMap(resolved, plan.url, plan.parseContext);
     }
-
-    const mapPath = reference.path as string;
 
     let traceMapContent: string;
 
     try {
-        traceMapContent = await readFile(mapPath, { encoding: "utf8" });
+        traceMapContent = await readFile(plan.mapPath, { encoding: "utf8" });
     } catch (error: unknown) {
-        throw new SourceMapReadError(`Error reading sourcemap for file "${fileContext}"`, error);
+        throw new SourceMapReadError(plan.readContext, error);
     }
 
-    return parseMap(traceMapContent, pathToFileURL(mapPath).href, `Error parsing sourcemap for file "${fileContext}"`);
+    return parseMap(traceMapContent, pathToFileURL(plan.mapPath).href, plan.parseContext);
 };
 
 export default loadSourceMap;
