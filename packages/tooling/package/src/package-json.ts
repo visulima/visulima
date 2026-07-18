@@ -55,7 +55,7 @@ const buildReadCacheKey = (filePath: string, options: CacheKeyOptions = {}): str
     // produce different results (throw vs. succeed), so serialize the patterns themselves —
     // sorted so ordering does not fork the key — rather than a mere presence bit.
     const ignoreWarnings = options.strict && options.ignoreWarnings
-        ? [...options.ignoreWarnings].map((pattern) => String(pattern)).sort().join(",")
+        ? options.ignoreWarnings.map(String).toSorted((a, b) => a.localeCompare(b)).join(",")
         : "";
 
     return `${filePath}|s${String(options.strict ? 1 : 0)}|c${String(options.resolveCatalogs ? 1 : 0)}|j${String(options.json5 === false ? 0 : 1)}|y${String(options.yaml === false ? 0 : 1)}|w${ignoreWarnings}`;
