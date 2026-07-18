@@ -256,6 +256,61 @@ const handleRetryError = async (
 };
 
 /**
+ * Performs a single request attempt.
+ *
+ * Resolves with the delay (in milliseconds) to wait before the next attempt when a retry is
+ * warranted, or `undefined` when the request is complete and the retry loop should stop.
+ */
+const performRequestAttempt = async (
+    url: string,
+    method: string,
+    headers: Record<string, string>,
+    body: string | Uint8Array,
+    maxRetries: number,
+    retryDelay: number,
+    respectRateLimit: boolean,
+    attempt: number,
+    onDebugRequestResponse?: (requestResponse: {
+        req: { body: string | Uint8Array; headers: Record<string, string>; method: string; url: string };
+        res: { body: string; headers: Record<string, string>; status: number; statusText: string };
+    }) => void,
+    onError?: (error: Error) => void,
+): Promise<number | undefined> => {
+    const requestBody = prepareRequestBody(body);
+
+    const response = await fetch(url, {
+        body: requestBody,
+        headers,
+        method,
+    });
+
+    const shouldRetry = await processResponse(response, url, method, headers, body, onDebugRequestResponse, onError);
+
+    if (!shouldRetry) {
+        return undefined;
+    }
+
+    const retryDelayValue = calculateRetryDelay(response, respectRateLimit, retryDelay, attempt, maxRetries);
+
+    if (retryDelayValue !== undefined) {
+        return retryDelayValue;
+    }
+
+    // Max retries reached or non-retryable error
+    if (!response.ok) {
+        const error = new Error(`HTTP ${String(response.status)}: ${response.statusText}`);
+
+        if (onError) {
+            onError(error);
+        }
+
+        throw error;
+    }
+
+    return undefined;
+};
+
+/**
  * Sends an HTTP request with retry logic and rate limiting support.
  * @param url The URL to send the request to
  * @param method The HTTP method to use
@@ -285,43 +340,27 @@ const sendWithRetry = async (
 
     while (attempt <= maxRetries) {
         try {
-            const requestBody = prepareRequestBody(body);
-
             // eslint-disable-next-line no-await-in-loop
-            const response = await fetch(url, {
-                body: requestBody,
-                headers,
+            const retryDelayValue = await performRequestAttempt(
+                url,
                 method,
-            });
+                headers,
+                body,
+                maxRetries,
+                retryDelay,
+                respectRateLimit,
+                attempt,
+                onDebugRequestResponse,
+                onError,
+            );
 
-            // eslint-disable-next-line no-await-in-loop
-            const shouldRetry = await processResponse(response, url, method, headers, body, onDebugRequestResponse, onError);
-
-            if (!shouldRetry) {
+            if (retryDelayValue === undefined) {
                 return;
             }
 
-            const retryDelayValue = calculateRetryDelay(response, respectRateLimit, retryDelay, attempt, maxRetries);
-
-            if (retryDelayValue !== undefined) {
-                // eslint-disable-next-line no-await-in-loop
-                await sleep(retryDelayValue);
-                attempt += 1;
-                continue;
-            }
-
-            // Max retries reached or non-retryable error
-            if (!response.ok) {
-                const error = new Error(`HTTP ${String(response.status)}: ${response.statusText}`);
-
-                if (onError) {
-                    onError(error);
-                }
-
-                throw error;
-            }
-
-            return;
+            // eslint-disable-next-line no-await-in-loop
+            await sleep(retryDelayValue);
+            attempt += 1;
         } catch (error) {
             // Non-retryable client errors (4xx except 429) already reported via onError
             // inside processResponse; fail fast instead of running the retry loop.
@@ -332,12 +371,11 @@ const sendWithRetry = async (
             // eslint-disable-next-line no-await-in-loop
             const shouldRetry = await handleRetryError(error, attempt, maxRetries, retryDelay, onError);
 
-            if (shouldRetry) {
-                attempt += 1;
-                continue;
+            if (!shouldRetry) {
+                throw error;
             }
 
-            throw error;
+            attempt += 1;
         }
     }
 };

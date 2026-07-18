@@ -177,7 +177,6 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         // Reuse the shared merge logic, then layer on the server-only fields.
         const childOptions = this.buildChildOptions<N, LC>(options) as ServerConstructorOptions<N, LC> & ServerParentLoggerOptimization<N, LC>;
 
-        /* eslint-disable no-param-reassign */
         childOptions.interactive = options?.interactive ?? this.interactive;
         childOptions.stderr = options?.stderr ?? this.stderr;
         childOptions.stdout = options?.stdout ?? this.stdout;
@@ -190,7 +189,6 @@ class PailServerImpl<T extends string = string, L extends string = string> exten
         if (!options?.stderr) {
             childOptions.parentStderr = this.stderr;
         }
-        /* eslint-enable no-param-reassign */
 
         return new PailServerImpl<N, LC>(childOptions) as unknown as PailServerType<N, LC>;
     }

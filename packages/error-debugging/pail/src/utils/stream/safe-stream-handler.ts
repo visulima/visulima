@@ -18,10 +18,10 @@ class SafeStreamHandler {
         this.#name = name;
         this.#onError
             = onError
-            ?? ((error, streamName) => {
+                ?? ((error, streamName) => {
                 // eslint-disable-next-line no-console
-                console.error(`Stream error: ${streamName}. Writes will be dropped.`, error);
-            });
+                    console.error(`Stream error: ${streamName}. Writes will be dropped.`, error);
+                });
 
         this.#stream.on("error", (error: Error) => {
             // Stream 'error' events fire asynchronously, so rethrowing here would
