@@ -25,6 +25,7 @@ import type { EnsurePackagesOptions, NormalizedPackageJson } from "../../src/typ
 const NO_DESCRIPTION_REGEX = /No description/;
 const REPOSITORY_FIELD_REGEX = /repository field/;
 const UNRELATED_REGEX = /unrelated.*/;
+const MATCH_ALL_REGEX = /./;
 
 const fixturePath = join(dirname(fileURLToPath(import.meta.url)), "..", "..", "__fixtures__", "package-json");
 
@@ -1910,7 +1911,7 @@ version: 2.0.0`;
                 const cache = new Map<string, NormalizedPackageJson>();
 
                 // First strict read ignores every warning -> succeeds and is cached.
-                const result = await parsePackageJson(packagePath, { cache, ignoreWarnings: [/./], strict: true });
+                const result = await parsePackageJson(packagePath, { cache, ignoreWarnings: [MATCH_ALL_REGEX], strict: true });
 
                 expect(result.name).toBe("test-package");
 

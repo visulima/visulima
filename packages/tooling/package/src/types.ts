@@ -16,6 +16,7 @@ export type EnsurePackagesOptions = {
         default?: boolean;
         /** Message to display in the confirmation prompt, or a function that receives packages array */
         message: string | ((packages: string[]) => string);
+
         /**
          * Theme configuration for the prompt interface.
          * @deprecated Not implemented — the readline-based prompt ignores this option and uses
