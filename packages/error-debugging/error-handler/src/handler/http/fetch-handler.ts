@@ -23,6 +23,7 @@ const fetchHandler = (
     // them by accident — NODE_ENV is almost never set there.
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- see comment above; the `?.` is load-bearing for runtime reads and the build
     const environment = globalThis.process?.env;
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- `env` is genuinely absent on edge/worker runtimes even though the built types say `process` is always present; this check is load-bearing at runtime
     const showTrace = options.showTrace ?? (environment === undefined ? false : environment.NODE_ENV !== "production");
 
     const negotiated = createFetchNegotiatedErrorHandler(options.extraHandlers ?? [], showTrace, defaultHtml);
