@@ -7,6 +7,7 @@
  */
 import copySymbols from "./copy-symbols";
 import isPlainObject from "./is-plain-object";
+import narrow from "./narrow";
 import safeAssign from "./safe-assign";
 
 /**
@@ -14,30 +15,6 @@ import safeAssign from "./safe-assign";
  * the parent can drop the key entirely instead of keeping an empty shell.
  */
 const NOTHING = Symbol("nothing");
-
-/**
- * Narrow the remaining path tails to those still relevant one level below `key`.
- *
- * A tail stays alive when its first segment matches `key` (or is a `*`
- * wildcard); the matched segment is then dropped so the child receives the
- * remainder. An empty resulting tail marks the child as fully picked.
- * @param tails The remaining pick-path tails at the current node.
- * @param key The concrete child key being descended into.
- * @returns The tails that still apply below `key`.
- */
-const narrow = (tails: ReadonlyArray<ReadonlyArray<string>>, key: string): ReadonlyArray<string>[] => {
-    const next: ReadonlyArray<string>[] = [];
-
-    for (const tail of tails) {
-        const [head] = tail;
-
-        if (head === "*" || head === key) {
-            next.push(tail.slice(1));
-        }
-    }
-
-    return next;
-};
 
 /**
  * Deep-copy a fully picked branch. Plain objects and arrays are cloned;
@@ -66,43 +43,44 @@ const deepCopy = (value: unknown): unknown => {
     return carry;
 };
 
+type Walk = (value: unknown, tails: ReadonlyArray<ReadonlyArray<string>>) => unknown;
+
 /**
- * Recursively copy `value`, keeping only the branches that lead to one of the
- * remaining pick-path `tails`. Plain objects and arrays are both traversed.
- * A tail reaching length zero marks the whole branch as picked.
- * @param value The value currently being copied.
+ * Pick the still-relevant branches from an array, preserving order while
+ * dropping elements that match nothing.
+ * @param value The array currently being copied.
  * @param tails The pick-path tails still relevant at this node.
- * @returns A new value with only the picked branches, or `NOTHING`.
+ * @param walk The recursive copy step applied to each kept element.
+ * @returns A new array with only the picked elements, or `NOTHING`.
  */
-const walk = (value: unknown, tails: ReadonlyArray<ReadonlyArray<string>>): unknown => {
-    if (tails.some((tail) => tail.length === 0)) {
-        return deepCopy(value);
-    }
+const walkArray = (value: unknown[], tails: ReadonlyArray<ReadonlyArray<string>>, walk: Walk): unknown => {
+    const result: unknown[] = [];
 
-    if (Array.isArray(value)) {
-        const result: unknown[] = [];
+    for (const [index, element] of value.entries()) {
+        const childTails = narrow(tails, String(index));
 
-        for (const [index, element] of value.entries()) {
-            const childTails = narrow(tails, String(index));
-
-            if (childTails.length === 0) {
-                continue;
-            }
-
-            const child = walk(element, childTails);
-
-            if (child !== NOTHING) {
-                result.push(child);
-            }
+        if (childTails.length === 0) {
+            continue;
         }
 
-        return result.length > 0 ? result : NOTHING;
+        const child = walk(element, childTails);
+
+        if (child !== NOTHING) {
+            result.push(child);
+        }
     }
 
-    if (!isPlainObject(value)) {
-        return NOTHING;
-    }
+    return result.length > 0 ? result : NOTHING;
+};
 
+/**
+ * Pick the still-relevant branches from a plain object.
+ * @param value The object currently being copied.
+ * @param tails The pick-path tails still relevant at this node.
+ * @param walk The recursive copy step applied to each kept property.
+ * @returns A new object with only the picked properties, or `NOTHING`.
+ */
+const walkObject = (value: Record<string, unknown>, tails: ReadonlyArray<ReadonlyArray<string>>, walk: Walk): unknown => {
     const carry: Record<string, unknown> = {};
     let kept = false;
 
@@ -122,6 +100,30 @@ const walk = (value: unknown, tails: ReadonlyArray<ReadonlyArray<string>>): unkn
     }
 
     return kept ? carry : NOTHING;
+};
+
+/**
+ * Recursively copy `value`, keeping only the branches that lead to one of the
+ * remaining pick-path `tails`. Plain objects and arrays are both traversed.
+ * A tail reaching length zero marks the whole branch as picked.
+ * @param value The value currently being copied.
+ * @param tails The pick-path tails still relevant at this node.
+ * @returns A new value with only the picked branches, or `NOTHING`.
+ */
+const walk: Walk = (value, tails) => {
+    if (tails.some((tail) => tail.length === 0)) {
+        return deepCopy(value);
+    }
+
+    if (Array.isArray(value)) {
+        return walkArray(value, tails, walk);
+    }
+
+    if (!isPlainObject(value)) {
+        return NOTHING;
+    }
+
+    return walkObject(value, tails, walk);
 };
 
 /**
