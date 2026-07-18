@@ -526,6 +526,34 @@ describe("cli", () => {
         });
     });
 
+    describe("run error handling", () => {
+        it("logs the error and exits(1) instead of rethrowing when shouldExitProcess is true", async () => {
+            expect.assertions(2);
+
+            const commandError = new Error("command blew up");
+            const logger = {
+                debug: vi.fn(),
+                error: vi.fn(),
+                info: vi.fn(),
+                log: vi.fn(),
+                warn: vi.fn(),
+            };
+            const cli = new Cli("MyCLI", { argv: ["run"], logger });
+
+            cli.addCommand({ execute: vi.fn().mockRejectedValue(commandError), name: "run" });
+
+            const exitSpy = vi.spyOn(process, "exit").mockImplementation((() => undefined) as never);
+
+            try {
+                await expect(cli.run()).resolves.toBeUndefined();
+
+                expect(exitSpy).toHaveBeenCalledWith(1);
+            } finally {
+                exitSpy.mockRestore();
+            }
+        });
+    });
+
     describe("environment variables", () => {
         const originalEnv = process.env;
 
@@ -993,6 +1021,26 @@ describe("cli", () => {
 
             expect(execute).toHaveBeenCalledTimes(1);
             expect(process.env.CEREBRO_OUTPUT_LEVEL).toBe(expectedLevel);
+        });
+
+        it("does not stomp another instance's verbosity in the shared process env on construction", async () => {
+            expect.assertions(2);
+
+            const cliA = new Cli("A", { argv: ["run", "--debug"] });
+
+            cliA.addCommand({ execute: vi.fn(), name: "run" });
+
+            await cliA.run({ shouldExitProcess: false });
+
+            // cliA mirrored its argv-derived debug level into the shared env.
+            expect(process.env.CEREBRO_OUTPUT_LEVEL).toBe(String(VERBOSITY_DEBUG));
+
+            // Constructing a second instance (no env override) must NOT reset
+            // the shared env back to normal and silently disable cliA's debug.
+            // eslint-disable-next-line no-new
+            new Cli("B", { argv: ["run"] });
+
+            expect(process.env.CEREBRO_OUTPUT_LEVEL).toBe(String(VERBOSITY_DEBUG));
         });
     });
 

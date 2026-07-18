@@ -1,6 +1,7 @@
 // eslint-disable-next-line import/no-extraneous-dependencies
 import { isCI } from "ci-info";
 
+import { VERBOSITY_DEBUG } from "../../constants";
 import type { Plugin } from "../../types/plugin";
 import { getEnv } from "../../util/general/runtime-process";
 import type { UpdateNotifierOptions } from "./has-new-version";
@@ -31,7 +32,7 @@ const updateNotifierPlugin = (options: UpdateNotifierPluginOptions = {}): Plugin
 
             const updateNotifierOptions: UpdateNotifierOptions = {
                 alwaysRun: false,
-                debug: env.CEREBRO_OUTPUT_LEVEL === "256",
+                debug: env.CEREBRO_OUTPUT_LEVEL === String(VERBOSITY_DEBUG),
                 distTag: "latest",
                 // Consume the injectable filesystem adapter so the update cache
                 // works under MCP / sandboxed runtimes instead of reaching for
