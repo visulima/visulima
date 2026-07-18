@@ -1,34 +1,10 @@
 // eslint-disable-next-line import/no-namespace -- zod's `z` is a namespace export per zod/consistent-import
 import * as z from "zod";
 
-import { execVis } from "../exec";
 import type { ToolContext, ToolDeps } from "../response";
-import { errorResponse, okStructuredResponse } from "../response";
-import { appendPositionalFiles } from "../validation";
-
-const findingSchema = z
-    .object({
-        adapter: z.string(),
-        column: z.number().optional(),
-        endColumn: z.number().optional(),
-        endLine: z.number().optional(),
-        file: z.string(),
-        fixable: z.boolean().optional(),
-        line: z.number().optional(),
-        message: z.string(),
-        ruleId: z.string().optional(),
-        severity: z.enum(["error", "info", "warning"]),
-    })
-    .catchall(z.unknown());
-
-const runSchema = z
-    .object({
-        adapter: z.string(),
-        durationMs: z.number(),
-        exitCode: z.number(),
-        findingCount: z.number(),
-    })
-    .catchall(z.unknown());
+import { errorResponse } from "../response";
+import { appendPositionalFiles, isSafeOptionValue } from "../validation";
+import { findingSchema, runOrchestratorTool, runSchema } from "./orchestrator-shared";
 
 const lintJsonSchema = z
     .object({
@@ -69,64 +45,33 @@ export const registerLint = ({ server }: ToolDeps, context: ToolContext): void =
             outputSchema: lintOutputSchema,
         },
         async (input: { files?: string[]; maxWarnings?: number; quiet?: boolean; since?: string; staged?: boolean }) => {
-            try {
-                const args = ["lint", "--format", "json"];
+            const args = ["lint", "--format", "json"];
 
-                if (input.quiet) {
-                    args.push("--quiet");
-                }
-
-                if (typeof input.maxWarnings === "number") {
-                    args.push("--max-warnings", String(input.maxWarnings));
-                }
-
-                if (input.staged) {
-                    args.push("--staged");
-                } else if (input.since !== undefined && input.since.length > 0) {
-                    args.push("--since", input.since);
-                }
-
-                const fileError = appendPositionalFiles(args, input.files);
-
-                if (fileError !== undefined) {
-                    return errorResponse(new Error(fileError));
-                }
-
-                // `vis lint` exits non-zero whenever findings exist — that's the
-                // expected payload, not a tool failure. Use execVis directly so
-                // we can parse stdout regardless of exit code.
-                const result = await execVis(context.visBin, args, { cwd: context.workspaceRoot });
-
-                if (result.timedOut) {
-                    return errorResponse(new Error(`vis lint timed out`));
-                }
-
-                if (result.overflowed) {
-                    return errorResponse(new Error(`vis lint produced more output than the buffer ceiling allows and was killed`));
-                }
-
-                if (result.stdout.trim().length === 0) {
-                    const tail = result.stderr.trim().split("\n").slice(-5).join("\n");
-
-                    return errorResponse(new Error(`vis lint exited with code ${String(result.exitCode)} and no JSON output${tail ? `\n${tail}` : ""}`));
-                }
-
-                let raw: unknown;
-
-                try {
-                    raw = JSON.parse(result.stdout);
-                } catch (error) {
-                    return errorResponse(
-                        new Error(`vis ${args.join(" ")} did not emit valid JSON: ${error instanceof Error ? error.message : String(error)}`, { cause: error }),
-                    );
-                }
-
-                const payload = lintJsonSchema.parse(raw);
-
-                return okStructuredResponse({ ...payload, exitCode: result.exitCode });
-            } catch (error) {
-                return errorResponse(error);
+            if (input.quiet) {
+                args.push("--quiet");
             }
+
+            if (typeof input.maxWarnings === "number") {
+                args.push("--max-warnings", String(input.maxWarnings));
+            }
+
+            if (input.staged) {
+                args.push("--staged");
+            } else if (input.since !== undefined && input.since.length > 0) {
+                if (!isSafeOptionValue(input.since)) {
+                    return errorResponse(new Error(`Invalid --since value "${input.since}". A leading "-" would be parsed as a CLI flag.`));
+                }
+
+                args.push("--since", input.since);
+            }
+
+            const fileError = appendPositionalFiles(args, input.files);
+
+            if (fileError !== undefined) {
+                return errorResponse(new Error(fileError));
+            }
+
+            return runOrchestratorTool(context, "lint", args, lintJsonSchema, (payload, exitCode) => ({ ...payload, exitCode }));
         },
     );
 };
