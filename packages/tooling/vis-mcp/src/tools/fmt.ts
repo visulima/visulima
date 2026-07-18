@@ -68,7 +68,9 @@ export const registerFmt = ({ server }: ToolDeps, context: ToolContext): void =>
                 return errorResponse(new Error(fileError));
             }
 
-            return runOrchestratorTool(context, "fmt", args, fmtJsonSchema, (payload, exitCode) => ({ ...payload, exitCode, mode: payload.mode ?? "check" }));
+            return runOrchestratorTool(context, "fmt", args, fmtJsonSchema, (payload, exitCode) => {
+                return { ...payload, exitCode, mode: payload.mode ?? "check" };
+            });
         },
     );
 };
