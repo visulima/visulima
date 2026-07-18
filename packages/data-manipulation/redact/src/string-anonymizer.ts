@@ -125,7 +125,7 @@ const processWithRegex = (stringAnonymizeModifiers: StringAnonymize[], input: st
                 // keep the numbered-mask behaviour produced by maskText. When `userReplacement`
                 // was never stamped (rules passed straight to the exported `stringAnonymize`),
                 // fall back to the mere presence of an explicit `replacement`.
-                replacement: (internal.userReplacement ?? internal.replacement !== undefined) ? internal.replacement : undefined,
+                replacement: internal.userReplacement ?? internal.replacement !== undefined ? internal.replacement : undefined,
                 start: match.index,
                 tag: key,
                 text: match[0],
