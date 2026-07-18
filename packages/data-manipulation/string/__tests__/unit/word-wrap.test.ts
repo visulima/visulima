@@ -187,9 +187,11 @@ describe(wordWrap, () => {
 
     it("should support unicode surrogate pairs", () => {
         expect.assertions(2);
-        expect(wordWrap("a\uD83C\uDE00bc", { width: 2, wrapMode: WrapMode.STRICT_WIDTH })).toBe("a\uD83C\n\uDE00b\nc");
+        // Astral characters must never be split across a wrap boundary into lone
+        // surrogates (which would render as U+FFFD); the whole code point stays intact.
+        expect(wordWrap("a\uD83C\uDE00bc", { width: 2, wrapMode: WrapMode.STRICT_WIDTH })).toBe("a\n\uD83C\uDE00\nbc");
         expect(wordWrap("a\uD83C\uDE00bc\uD83C\uDE00d\uD83C\uDE00", { width: 2, wrapMode: WrapMode.STRICT_WIDTH })).toBe(
-            "a\uD83C\n\uDE00b\nc\uD83C\n\uDE00d\n\uD83C\uDE00",
+            "a\n\uD83C\uDE00\nbc\n\uD83C\uDE00\nd\n\uD83C\uDE00",
         );
     });
 

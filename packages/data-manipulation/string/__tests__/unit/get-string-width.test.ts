@@ -133,6 +133,28 @@ describe(getStringWidth, () => {
         });
     });
 
+    describe("non-latin text immediately before an emoji", () => {
+        it("should not swallow a preceding non-latin character into the emoji", () => {
+            expect.assertions(4);
+
+            // The emoji regex must be anchored to the current index (sticky), so a
+            // non-latin character right before an emoji is measured on its own and
+            // not consumed together with the emoji as a single width-2 match.
+            expect(getStringWidth("あ😀")).toBe(4);
+            expect(getStringWidth("你好😀")).toBe(6);
+            expect(getStringWidth("Ω😀")).toBe(4);
+            expect(getStringWidth("あ😀い")).toBe(6);
+        });
+
+        it("should not treat visible text before a later ANSI sequence as ANSI", () => {
+            expect.assertions(1);
+
+            // A lone ESC that does not start a valid sequence must not cause the
+            // later valid sequence to be matched and swallow the text in between.
+            expect(getStringWidth("Xhello[31m")).toBe(6);
+        });
+    });
+
     describe("zero-width characters", () => {
         it("should handle zero-width characters correctly", () => {
             expect.assertions(8);
