@@ -36,9 +36,11 @@ export function setOnAfterCommit(function_: (() => void) | null): void {
 // freezing its render loop. Keyed by the container LayoutNode so each mounted
 // instance is notified only for its own commits.
 const afterCommitCallbacks = new WeakMap<Container, () => void>();
+
 export function registerAfterCommit(container: Container, callback: () => void): void {
     afterCommitCallbacks.set(container, callback);
 }
+
 export function unregisterAfterCommit(container: Container): void {
     afterCommitCallbacks.delete(container);
 }

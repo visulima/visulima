@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-cond-assign, react-x/no-context-provider, sonarjs/no-nested-functions */
+/* eslint-disable @typescript-eslint/no-unnecessary-condition, no-cond-assign, react-x/no-context-provider */
 import { EventEmitter } from "node:events";
 import process from "node:process";
 
