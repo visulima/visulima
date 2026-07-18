@@ -466,6 +466,30 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
     }
 
     /**
+     * Initializes statistics object.
+     * @param {number} repositoryCount Number of repositories.
+     * @returns {object} Initialized statistics object.
+     */
+    // eslint-disable-next-line class-methods-use-this -- Factory method, doesn't need instance state
+    initializeStats(repositoryCount) {
+        return {
+            duplicates: 0,
+            excludeDomains: 0,
+            failedDownloads: 0,
+            lastSyncTimestamp: "",
+            newDomains: 0,
+            processingTime: 0,
+            providerDomains: 0,
+            removedDomains: 0,
+            repositoryStats: new Map(),
+            successfulDownloads: 0,
+            totalDomains: 0,
+            totalRepositories: repositoryCount,
+            uniqueDomains: 0,
+        };
+    }
+
+    /**
      * Reports whether a domain is excluded, applying the same parent-domain
      * semantics the runtime uses: an entry is excluded when it, or any of its
      * parent domains, is on the exclude list. So blacklisting `corp.example`
@@ -489,30 +513,6 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
         }
 
         return false;
-    }
-
-    /**
-     * Initializes statistics object.
-     * @param {number} repositoryCount Number of repositories.
-     * @returns {object} Initialized statistics object.
-     */
-    // eslint-disable-next-line class-methods-use-this -- Factory method, doesn't need instance state
-    initializeStats(repositoryCount) {
-        return {
-            duplicates: 0,
-            excludeDomains: 0,
-            failedDownloads: 0,
-            lastSyncTimestamp: "",
-            newDomains: 0,
-            processingTime: 0,
-            providerDomains: 0,
-            removedDomains: 0,
-            repositoryStats: new Map(),
-            successfulDownloads: 0,
-            totalDomains: 0,
-            totalRepositories: repositoryCount,
-            uniqueDomains: 0,
-        };
     }
 
     /**
@@ -624,6 +624,27 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
     }
 
     /**
+     * Loads previous domain list for comparison
+     */
+    async loadPreviousDomains() {
+        try {
+            const filePath = join(this.syncOptions.outputPath, "domains.json");
+            const content = await fs.readFile(filePath, "utf8");
+            const domainsData = JSON.parse(content);
+
+            if (Array.isArray(domainsData)) {
+                domainsData.forEach((domain) => {
+                    if (typeof domain === "string" && domain) {
+                        this.previousDomains.add(domain.trim().toLowerCase());
+                    }
+                });
+            }
+        } catch {
+            // File doesn't exist, which is fine for first run
+        }
+    }
+
+    /**
      * Re-adds the previously-published domains into the collection so a build
      * with failed downloads cannot silently shrink the published list below the
      * last good sync. Only used when a source failed: a fully successful sync is
@@ -643,27 +664,6 @@ ${repo.error ? `- **Error**: ${repo.error}` : ""}
         });
 
         return readded;
-    }
-
-    /**
-     * Loads previous domain list for comparison
-     */
-    async loadPreviousDomains() {
-        try {
-            const filePath = join(this.syncOptions.outputPath, "domains.json");
-            const content = await fs.readFile(filePath, "utf8");
-            const domainsData = JSON.parse(content);
-
-            if (Array.isArray(domainsData)) {
-                domainsData.forEach((domain) => {
-                    if (typeof domain === "string" && domain) {
-                        this.previousDomains.add(domain.trim().toLowerCase());
-                    }
-                });
-            }
-        } catch {
-            // File doesn't exist, which is fine for first run
-        }
     }
 
     /**
