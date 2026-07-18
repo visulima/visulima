@@ -178,6 +178,65 @@ describe("throwing getters", () => {
 
         expect(inspect(value)).toBe("{ a: 1, b: [Inspection threw], c: 3 }");
     });
+
+    it("does not throw for an Error own property whose getter throws", () => {
+        expect.assertions(2);
+
+        const error = new Error("outer");
+
+        Object.defineProperty(error, "ctx", {
+            configurable: true,
+            enumerable: true,
+            get() {
+                throw new Error("boom");
+            },
+        });
+
+        expect(() => inspect(error)).not.toThrow();
+        expect(inspect(error)).toBe("Error: outer { ctx: [Inspection threw] }");
+    });
+
+    it("does not throw for an array non-index property whose getter throws", () => {
+        expect.assertions(2);
+
+        const array: unknown[] = [1, 2];
+
+        Object.defineProperty(array, "extra", {
+            configurable: true,
+            enumerable: true,
+            get() {
+                throw new Error("boom");
+            },
+        });
+
+        expect(() => inspect(array)).not.toThrow();
+        expect(inspect(array)).toBe("[ 1, 2, extra: [Inspection threw] ]");
+    });
+});
+
+describe("depth limit with null", () => {
+    it("renders a nested null as `null`, not `[Object]`", () => {
+        expect.assertions(1);
+
+        expect(inspect({ a: null }, { depth: 1 })).toBe("{ a: null }");
+    });
+});
+
+describe("class instance with a broken constructor", () => {
+    it("does not throw when the own `constructor` property is null", () => {
+        expect.assertions(2);
+
+        class Foo {
+            public value = 1;
+        }
+
+        const instance = new Foo() as unknown as Record<string, unknown>;
+
+        instance.constructor = null;
+
+        expect(() => inspect(instance)).not.toThrow();
+        expect(inspect(instance)).toContain("<Anonymous Class>");
+    });
 });
 
 describe("hostile Symbol.toStringTag values (security)", () => {
@@ -230,6 +289,24 @@ describe("maxArrayLength option", () => {
         expect.assertions(1);
 
         expect(inspect(new Uint8Array([1, 2, 3, 4]), { maxArrayLength: 2 })).toBe("Uint8Array[ 1, 2, … 2 more ]");
+    });
+
+    it("limits the number of rendered Set elements", () => {
+        expect.assertions(1);
+
+        expect(inspect(new Set([1, 2, 3, 4, 5, 6]), { maxArrayLength: 2 })).toBe("Set (6) { 1, 2, … 4 more }");
+    });
+
+    it("limits the number of rendered Map entries", () => {
+        expect.assertions(1);
+
+        const map = new Map([
+            ["a", 1],
+            ["b", 2],
+            ["c", 3],
+        ]);
+
+        expect(inspect(map, { maxArrayLength: 2 })).toBe("Map (3) { 'a' => 1, 'b' => 2, … 1 more }");
     });
 });
 

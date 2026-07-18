@@ -10,7 +10,7 @@ const inspectClass: InspectType<new (...arguments_: any[]) => unknown> = (
 ): string => {
     let name = "";
 
-    name = name || value.constructor.name;
+    name = name || (typeof value.constructor === "function" ? value.constructor.name : "");
 
     // Babel transforms anonymous classes to the name `_class`
     if (!name || name === "_class") {

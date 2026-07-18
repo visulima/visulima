@@ -154,7 +154,7 @@ const internalInspect = (value: unknown, options: Options, context: InspectConte
         return "[Circular]";
     }
 
-    if (depth >= options.depth && options.depth > 0 && typeof value === "object") {
+    if (depth >= options.depth && options.depth > 0 && typeof value === "object" && value !== null) {
         return Array.isArray(value) ? "[Array]" : "[Object]";
     }
 

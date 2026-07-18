@@ -11,7 +11,7 @@ const inspectSet: InspectType<Set<unknown>> = (set: Set<unknown>, options: Optio
     // eslint-disable-next-line no-param-reassign
     options.truncate -= 7;
 
-    let returnValue = inspectList([...set], set, options, inspect, undefined, indent ? INDENT_SEPARATOR : ", ");
+    let returnValue = inspectList([...set], set, options, inspect, undefined, indent ? INDENT_SEPARATOR : ", ", options.maxArrayLength);
 
     if (indent) {
         returnValue = indentedJoin(returnValue, indent);
