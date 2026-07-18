@@ -100,7 +100,11 @@ const buildClone = (cloner: Handlers): InternalClone =>
         }
 
         if ((value as FakeJSDOM).nodeType !== undefined && (value as FakeJSDOM).cloneNode !== undefined) {
-            return (value as { cloneNode: (check: boolean) => unknown }).cloneNode(true);
+            const cloned = (value as { cloneNode: (check: boolean) => unknown }).cloneNode(true);
+
+            state.cache.set(value, cloned);
+
+            return cloned;
         }
 
         if (value instanceof Date) {
@@ -161,7 +165,27 @@ const buildClone = (cloner: Handlers): InternalClone =>
                 throw new TypeError("SharedArrayBuffer cannot be cloned");
             }
 
-            const clonedBuffer = cloner.ArrayBuffer(buffer, state);
+            // Share a single clone of the underlying buffer across every view (and any
+            // direct reference to the raw buffer) so writes through one cloned view are
+            // visible to the others, matching structured-clone identity semantics.
+            let clonedBuffer = state.cache.get(buffer) as ArrayBuffer | undefined;
+
+            if (clonedBuffer === undefined) {
+                clonedBuffer = cloner.ArrayBuffer(buffer, state);
+
+                state.cache.set(buffer, clonedBuffer);
+            }
+
+            // Node `Buffer`s extend `Uint8Array`; reconstruct them via `Buffer.from`
+            // instead of the deprecated `new Buffer()` constructor (DEP0005).
+            if (typeof Buffer !== "undefined" && Buffer.isBuffer(value)) {
+                const clonedNodeBuffer = Buffer.from(clonedBuffer, value.byteOffset, value.length);
+
+                state.cache.set(value, clonedNodeBuffer);
+
+                return clonedNodeBuffer;
+            }
+
             const TypedArrayConstructor = value.constructor as new (buffer: ArrayBuffer, byteOffset?: number, length?: number) => typeof value;
             // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
             const cloned = new TypedArrayConstructor(clonedBuffer, value.byteOffset, value.length);
@@ -197,6 +221,24 @@ const buildClone = (cloner: Handlers): InternalClone =>
             return cloned;
         }
 
+        // Boxed primitives (`new Number(5)`, `new String("x")`, `Object(1n)`, ...) keep
+        // their value in an internal slot that the generic object handler would drop
+        // (leaving `0`/`false`/`""`). Re-box the primitive so `valueOf()` survives.
+        if (
+            value instanceof Number
+            || value instanceof String
+            || value instanceof Boolean
+            || value instanceof BigInt
+            || value instanceof Symbol
+        ) {
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-argument
+            const cloned = Object(value.valueOf());
+
+            state.cache.set(value, cloned);
+
+            return cloned;
+        }
+
         if (value instanceof SharedArrayBuffer) {
             return cloner.SharedArrayBuffer(value, state);
         }
@@ -225,25 +267,31 @@ const buildClone = (cloner: Handlers): InternalClone =>
     };
 
 /**
- * Resolve the handler table for the given options. The default loose/strict tables
- * are reused as-is when no custom handlers are provided, avoiding a spread per call.
+ * Dispatchers for the two default handler tables, built once at module load so the
+ * common no-custom-handler call path never rebuilds the ~140-line closure per call.
  */
-const resolveCloner = (options?: Options): Handlers => {
-    const base = options?.strict ? strictHandlers : looseHandlers;
+const looseClone = buildClone(looseHandlers);
+const strictClone = buildClone(strictHandlers);
 
+/**
+ * Resolve the `clone` dispatcher for the given options. The prebuilt loose/strict
+ * dispatchers are reused as-is when no custom handlers are provided; a custom handler
+ * table builds its dispatcher once here (or once per `createDeepClone`).
+ */
+const resolveClone = (options?: Options): InternalClone => {
     if (!options?.handler) {
-        return base;
+        return options?.strict ? strictClone : looseClone;
     }
 
-    return { ...base, ...options.handler };
+    const base = options.strict ? strictHandlers : looseHandlers;
+
+    return buildClone({ ...base, ...options.handler });
 };
 
-const runClone = <T>(originalData: T, cloner: Handlers): DeepReadwrite<T> => {
+const runClone = <T>(originalData: T, clone: InternalClone): DeepReadwrite<T> => {
     if (!canValueHaveProperties(originalData)) {
         return originalData as DeepReadwrite<T>;
     }
-
-    const clone = buildClone(cloner);
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const cache = new WeakMap<any>();
@@ -261,7 +309,7 @@ const runClone = <T>(originalData: T, cloner: Handlers): DeepReadwrite<T> => {
  * @param options Optional. The cloning options. Type of this parameter is `Options`.
  * @returns The deep cloned data, typed as a deep-mutable mirror of `T`.
  */
-export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<T> => runClone(originalData, resolveCloner(options));
+export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<T> => runClone(originalData, resolveClone(options));
 
 /**
  * Create a pre-configured deep-clone function (à la fast-copy's `createCopier`).
@@ -273,9 +321,9 @@ export const deepClone = <T>(originalData: T, options?: Options): DeepReadwrite<
  * @returns A `deepClone`-compatible function bound to the resolved options.
  */
 export const createDeepClone = (options?: Options): <T>(originalData: T) => DeepReadwrite<T> => {
-    const cloner = resolveCloner(options);
+    const clone = resolveClone(options);
 
-    return <T>(originalData: T): DeepReadwrite<T> => runClone(originalData, cloner);
+    return <T>(originalData: T): DeepReadwrite<T> => runClone(originalData, clone);
 };
 
 export type { DeepReadwrite };
