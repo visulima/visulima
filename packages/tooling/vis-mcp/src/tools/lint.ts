@@ -71,7 +71,9 @@ export const registerLint = ({ server }: ToolDeps, context: ToolContext): void =
                 return errorResponse(new Error(fileError));
             }
 
-            return runOrchestratorTool(context, "lint", args, lintJsonSchema, (payload, exitCode) => ({ ...payload, exitCode }));
+            return runOrchestratorTool(context, "lint", args, lintJsonSchema, (payload, exitCode) => {
+                return { ...payload, exitCode };
+            });
         },
     );
 };
