@@ -80,4 +80,84 @@ describe(checkMxRecords, () => {
         expect(result.valid).toBe(false);
         expect(result.resolvedVia).toBe("none");
     });
+
+    it("marks a transient DNS failure (timeout) as deferred rather than undeliverable", async () => {
+        expect.assertions(3);
+
+        const error = Object.assign(new Error("queryMx ETIMEOUT"), { code: "ETIMEOUT" });
+
+        resolveMx.mockRejectedValue(error);
+        resolve4.mockRejectedValue(new Error("ETIMEOUT"));
+        resolve6.mockRejectedValue(new Error("ETIMEOUT"));
+
+        const result = await checkMxRecords("flaky.example");
+
+        expect(result.deferred).toBe(true);
+        expect(result.valid).toBe(false);
+        expect(result.resolvedVia).toBe("none");
+    });
+
+    it("treats a definitive ENOTFOUND as a non-deferred no-records answer", async () => {
+        expect.assertions(2);
+
+        const error = Object.assign(new Error("queryMx ENOTFOUND"), { code: "ENOTFOUND" });
+
+        resolveMx.mockRejectedValue(error);
+        resolve4.mockRejectedValue(new Error("ENOTFOUND"));
+        resolve6.mockRejectedValue(new Error("ENOTFOUND"));
+
+        const result = await checkMxRecords("gone.example");
+
+        expect(result.deferred).toBeFalsy();
+        expect(result.resolvedVia).toBe("none");
+    });
+
+    it("does not cache a transient (deferred) result", async () => {
+        expect.assertions(2);
+
+        const error = Object.assign(new Error("queryMx ESERVFAIL"), { code: "ESERVFAIL" });
+
+        resolveMx.mockRejectedValue(error);
+        resolve4.mockRejectedValue(new Error("ESERVFAIL"));
+        resolve6.mockRejectedValue(new Error("ESERVFAIL"));
+
+        const store = new Map<string, unknown>();
+        const cache = {
+            clear: vi.fn(() => Promise.resolve()),
+            delete: vi.fn(() => Promise.resolve()),
+            get: vi.fn((key: string) => Promise.resolve(store.get(key))),
+            set: vi.fn((key: string, value: unknown) => {
+                store.set(key, value);
+
+                return Promise.resolve();
+            }),
+        };
+
+        const result = await checkMxRecords("flaky.example", { cache });
+
+        expect(result.deferred).toBe(true);
+        expect(cache.set).not.toHaveBeenCalled();
+    });
+
+    it("coalesces concurrent lookups for the same domain into a single DNS query", async () => {
+        expect.assertions(2);
+
+        let release: (records: { exchange: string; priority: number }[]) => void = () => {};
+
+        resolveMx.mockReturnValue(
+            new Promise((resolve) => {
+                release = resolve;
+            }),
+        );
+
+        const first = checkMxRecords("concurrent.example");
+        const second = checkMxRecords("concurrent.example");
+
+        release([{ exchange: "mx.concurrent.example", priority: 10 }]);
+
+        const [firstResult, secondResult] = await Promise.all([first, second]);
+
+        expect(resolveMx).toHaveBeenCalledTimes(1);
+        expect(firstResult).toStrictEqual(secondResult);
+    });
 });
