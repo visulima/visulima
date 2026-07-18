@@ -1,4 +1,3 @@
-// eslint-disable-next-line unicorn/prevent-abbreviations
 import { chmodSync, existsSync, mkdtempSync } from "node:fs";
 import { rm } from "node:fs/promises";
 import { homedir, tmpdir } from "node:os";

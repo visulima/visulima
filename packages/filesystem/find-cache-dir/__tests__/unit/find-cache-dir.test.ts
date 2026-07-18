@@ -144,7 +144,6 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
                 cwd: join(distribution, "package"),
             });
 
-            // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "findCacheDirectory") {
                 result = await result;
             }
@@ -174,7 +173,6 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
                 cwd: join(distribution, "package"),
             });
 
-            // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "findCacheDirectory") {
                 result = await result;
             }
@@ -204,7 +202,6 @@ describe.each<[string, typeof findCacheDirectory | typeof findCacheDirectorySync
                 cwd: join(distribution, "package"),
             });
 
-            // eslint-disable-next-line vitest/no-conditional-in-test
             if (name === "findCacheDirectory") {
                 result = await result;
             }
