@@ -48,8 +48,8 @@ const createStyle = (
         input: ArrayLike<string> | ReadonlyArray<string> | number | string | { raw: ArrayLike<string> | ReadonlyArray<string> },
         ...values: string[]
     ): string[] => {
-        // eslint-disable-next-line unicorn/no-null -- let 0 through while still bailing on null/undefined/empty string
-        if (input === undefined || input === null || input === "") {
+        // Bail on empty/nullish input but let the number 0 through.
+        if (!input && input !== 0) {
             return [];
         }
 

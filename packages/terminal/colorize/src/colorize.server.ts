@@ -40,8 +40,8 @@ const wrapText = (
     values: string[],
     properties: ColorizeProperties,
 ) => {
-    // eslint-disable-next-line unicorn/no-null -- let 0 through while still bailing on null/undefined/empty string
-    if (strings === undefined || strings === null || strings === "") {
+    // Bail on empty/nullish input but let the number 0 through.
+    if (!strings && strings !== 0) {
         return "";
     }
 
