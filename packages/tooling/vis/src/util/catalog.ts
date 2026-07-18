@@ -32,7 +32,7 @@ const QUOTES_TRIM_REGEX = /^['"]|['"]$/g;
 const REGISTRY_PROTOCOL_REGEX = /^https?:\/\//;
 const TRAILING_SLASH_REGEX = /\/$/;
 const JSON_INDENT_REGEX = /\n(\s+)/;
-const ENV_VAR_REGEX = /\$\{([^}]+)}/g;
+const ENV_VAR_REGEX = /\$\{([^}]+)\}/g;
 
 const DEFAULT_DEP_TYPES = ["dependencies", "devDependencies", "optionalDependencies"];
 const VALID_DEP_TYPES = new Set([...DEFAULT_DEP_TYPES, "overrides", "peerDependencies", "pnpm.overrides", "resolutions"]);
@@ -991,7 +991,7 @@ interface NpmrcConfig {
 const expandEnvVars = (value: string): { hasUnresolved: boolean; value: string } => {
     let hasUnresolved = false;
 
-    const expanded = value.replace(ENV_VAR_REGEX, (_match, expression: string) => {
+    const expanded = value.replaceAll(ENV_VAR_REGEX, (_match, expression: string) => {
         const defaultIndex = expression.indexOf(":-");
         const name = (defaultIndex === -1 ? expression : expression.slice(0, defaultIndex)).trim();
         const fallback = defaultIndex === -1 ? undefined : expression.slice(defaultIndex + 2);

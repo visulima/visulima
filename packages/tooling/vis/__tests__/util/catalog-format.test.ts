@@ -614,14 +614,16 @@ describe(fetchChangelogInfo, () => {
             } as Response;
         });
 
-        const packages = Array.from({ length: 20 }, (_unused, index) => ({
-            catalogName: "default",
-            currentRange: "^1.0.0",
-            newRange: "^2.0.0",
-            packageName: `pkg-${index}`,
-            targetVersion: "2.0.0",
-            updateType: "minor" as const,
-        }));
+        const packages = Array.from({ length: 20 }, (_unused, index) => {
+            return {
+                catalogName: "default",
+                currentRange: "^1.0.0",
+                newRange: "^2.0.0",
+                packageName: `pkg-${index}`,
+                targetVersion: "2.0.0",
+                updateType: "minor" as const,
+            };
+        });
 
         const result = await fetchChangelogInfo(packages);
 
