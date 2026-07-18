@@ -192,14 +192,19 @@ export default function NumberInput({
                 return;
             }
 
-            if (isControlled) {
-                return;
-            }
+            // Text editing works in both modes. Uncontrolled mode keeps a string
+            // buffer so partial entries like `-` or `1.` survive; controlled mode
+            // edits from the displayed value and emits onChange (partial states
+            // can't round-trip a numeric `value`, but digit entry still works).
+            const base = isControlled ? displayBuffer : buffer;
 
             if (key.backspace || key.delete) {
-                const next = buffer.slice(0, -1);
+                const next = base.slice(0, -1);
 
-                setBuffer(next);
+                if (!isControlled) {
+                    setBuffer(next);
+                }
+
                 onChangeRef.current?.(clamp(roundTo(parseBuffer(next), precision), min, max));
 
                 return;
@@ -207,20 +212,24 @@ export default function NumberInput({
 
             // Accept a leading minus, a single decimal point (when precision > 0),
             // and digits. Reject anything that would make the buffer unparseable.
-            if (input === "-" && buffer.length === 0 && (min === undefined || min < 0)) {
-                setBuffer("-");
+            if (input === "-" && base.length === 0 && (min === undefined || min < 0)) {
+                if (!isControlled) {
+                    setBuffer("-");
+                }
 
                 return;
             }
 
-            if (input === "." && precision > 0 && !buffer.includes(".")) {
-                setBuffer(buffer.length === 0 ? "0." : `${buffer}.`);
+            if (input === "." && precision > 0 && !base.includes(".")) {
+                if (!isControlled) {
+                    setBuffer(base.length === 0 ? "0." : `${base}.`);
+                }
 
                 return;
             }
 
             if (DIGIT_PATTERN.test(input)) {
-                const next = `${buffer}${input}`;
+                const next = `${base}${input}`;
 
                 // Guard against more decimals than precision allows.
                 const dot = next.indexOf(".");
@@ -229,7 +238,10 @@ export default function NumberInput({
                     return;
                 }
 
-                setBuffer(next);
+                if (!isControlled) {
+                    setBuffer(next);
+                }
+
                 onChangeRef.current?.(clamp(roundTo(parseBuffer(next), precision), min, max));
             }
         },
