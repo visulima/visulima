@@ -1,5 +1,5 @@
 import type { Stats } from "node:fs";
-import { chmod, chown, mkdir, rename, stat as nodeStat, unlink, writeFile as nodeWriteFile } from "node:fs/promises";
+import { chmod, chown, mkdir, readFile, rename, stat as nodeStat, unlink, writeFile as nodeWriteFile } from "node:fs/promises";
 
 import { dirname } from "@visulima/path";
 import { toPath } from "@visulima/path/utils";
@@ -60,7 +60,11 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
 
     const pathExists = await isAccessible(path, F_OK);
 
-    if (pathExists && !options.overwrite) {
+    const flag = options.flag ?? "w";
+    const append = flag.includes("a");
+    const exclusive = flag.includes("x");
+
+    if (pathExists && (!options.overwrite || exclusive)) {
         throw new AlreadyExistsError(`file already exists, open '${path}'`);
     }
 
@@ -77,9 +81,17 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
 
         let stat: Stats | undefined;
 
+        let data: Buffer | Uint8Array = typeof content === "string" ? Buffer.from(content, options.encoding ?? "utf8") : toUint8Array(content);
+
+        // Honour append flags by prepending the existing bytes so the temp-file
+        // rename still yields the concatenated result atomically.
+        if (append && pathExists) {
+            data = Buffer.concat([await readFile(path), data]);
+        }
+
         // `wx` (O_CREAT | O_EXCL) refuses to follow or open an existing path,
         // so the temp file is always freshly created by this process.
-        await nodeWriteFile(temporary, typeof content === "string" ? Buffer.from(content, options.encoding ?? "utf8") : toUint8Array(content), { flag: "wx" });
+        await nodeWriteFile(temporary, data, { flag: "wx" });
 
         if (pathExists && options.backup) {
             stat = await nodeStat(path);
@@ -99,7 +111,15 @@ const writeFile = async (path: URL | string, content: ArrayBuffer | ArrayBufferV
             }
         }
 
-        await chmod(temporary, stat && !options.mode ? stat.mode : options.mode ?? 0o666);
+        // Only adjust permissions when an explicit mode was requested or a backup
+        // preserved the original file's mode. Otherwise the temp file keeps the
+        // umask-filtered default from its `wx` creation, matching `fs.writeFile`
+        // instead of chmod-ing to a world-writable `0o666`.
+        const mode = stat && options.mode === undefined ? stat.mode : options.mode;
+
+        if (mode !== undefined) {
+            await chmod(temporary, mode);
+        }
 
         await rename(temporary, path);
     } catch (error: unknown) {
