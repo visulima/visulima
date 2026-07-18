@@ -3,6 +3,7 @@ import { execFile, execFileSync, spawn } from "node:child_process";
 import { existsSync } from "node:fs";
 import { homedir } from "node:os";
 import { join } from "node:path";
+import { StringDecoder } from "node:string_decoder";
 import { promisify } from "node:util";
 
 import { DEFAULT_MAX_TOKENS, DEFAULT_RUN_TIMEOUT, DETECTION_TIMEOUT, IS_WINDOWS, PROVIDER_NAMES, VERSION_REGEX, VERSION_TIMEOUT } from "./constants";
@@ -91,10 +92,11 @@ const getKnownPaths = (command: string): string[] => {
 /** Run `&lt;command> --version` and extract the semver version string. */
 const detectVersion = (commandPath: string): string | undefined => {
     try {
-        const result = execFileSync(commandPath, ["--version"], {
+        const useShell = needsShell(commandPath);
+        const result = execFileSync(useShell ? quoteWindowsArgument(commandPath) : commandPath, ["--version"], {
             encoding: "utf8",
             // Windows `.cmd`/`.bat` shims require the shell since the CVE-2024-27980 fix.
-            shell: needsShell(commandPath),
+            shell: useShell,
             stdio: ["pipe", "pipe", "pipe"],
             timeout: VERSION_TIMEOUT,
         });
@@ -128,10 +130,11 @@ const whichCommandAsync = async (command: string): Promise<string | undefined> =
 /** Async variant of {@link detectVersion}: run `&lt;command> --version` without blocking the event loop. */
 const detectVersionAsync = async (commandPath: string): Promise<string | undefined> => {
     try {
-        const { stdout } = await execFileAsync(commandPath, ["--version"], {
+        const useShell = needsShell(commandPath);
+        const { stdout } = await execFileAsync(useShell ? quoteWindowsArgument(commandPath) : commandPath, ["--version"], {
             encoding: "utf8",
             // Windows `.cmd`/`.bat` shims require the shell since the CVE-2024-27980 fix.
-            shell: needsShell(commandPath),
+            shell: useShell,
             timeout: VERSION_TIMEOUT,
         });
 
@@ -369,13 +372,17 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
         let stderr = "";
         let settled = false;
 
+        // Decode across chunk boundaries so multi-byte UTF-8 sequences split between
+        // two `data` events are not corrupted into U+FFFD replacement characters.
+        const stdoutDecoder = new StringDecoder("utf8");
+        const stderrDecoder = new StringDecoder("utf8");
+
         let killTimer: NodeJS.Timeout | undefined;
         let timer: NodeJS.Timeout | undefined;
         let onAbort: (() => void) | undefined;
 
         const cleanup = (): void => {
             clearTimeout(timer);
-            clearTimeout(killTimer);
 
             if (onAbort) {
                 options.signal?.removeEventListener("abort", onAbort);
@@ -394,7 +401,10 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
 
             settled = true;
             child.kill("SIGTERM");
+            // Escalate to SIGKILL if the child ignores SIGTERM. Unref'd so the pending
+            // timer cannot keep the host process's event loop alive on its own.
             killTimer = setTimeout(forceKill, 5000);
+            killTimer.unref?.();
             cleanup();
 
             const durationMs = Date.now() - startedAt;
@@ -420,20 +430,43 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
         options.signal?.addEventListener("abort", onAbort, { once: true });
 
         child.stdout?.on("data", (data: Buffer) => {
-            const chunk = data.toString("utf8");
+            const chunk = stdoutDecoder.write(data);
 
-            stdout += chunk;
-            options.onStdout?.(chunk);
+            if (chunk) {
+                stdout += chunk;
+                options.onStdout?.(chunk);
+            }
         });
 
         child.stderr?.on("data", (data: Buffer) => {
-            const chunk = data.toString("utf8");
+            const chunk = stderrDecoder.write(data);
 
-            stderr += chunk;
-            options.onStderr?.(chunk);
+            if (chunk) {
+                stderr += chunk;
+                options.onStderr?.(chunk);
+            }
         });
 
         child.on("close", (code: number | null) => {
+            // The child has exited, so the SIGKILL escalation timer is no longer needed —
+            // clear it even when the run already settled via timeout/abort.
+            clearTimeout(killTimer);
+
+            // Flush any bytes the decoder held back waiting for the rest of a multi-byte sequence.
+            const remainingStdout = stdoutDecoder.end();
+
+            if (remainingStdout) {
+                stdout += remainingStdout;
+                options.onStdout?.(remainingStdout);
+            }
+
+            const remainingStderr = stderrDecoder.end();
+
+            if (remainingStderr) {
+                stderr += remainingStderr;
+                options.onStderr?.(remainingStderr);
+            }
+
             if (settled) {
                 return;
             }
@@ -459,6 +492,8 @@ const runProvider = async (provider: AiProviderInfo, prompt: string, options: Ai
         });
 
         child.on("error", (error: Error) => {
+            clearTimeout(killTimer);
+
             if (settled) {
                 return;
             }
