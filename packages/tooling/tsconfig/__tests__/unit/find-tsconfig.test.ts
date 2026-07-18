@@ -133,5 +133,37 @@ describe("tsconfig", () => {
             expect(second).not.toBe(first);
             expect(second.config.compilerOptions?.strict).toBe(false);
         });
+
+        it("replaces the stale entry in place instead of accumulating one per edit", async () => {
+            expect.assertions(2);
+
+            const path = join(distribution, "tsconfig.json");
+
+            writeJsonSync(path, { compilerOptions: { strict: true } });
+
+            const cache = new Map<string, TsConfigResult>();
+            const options = { cache };
+
+            // eslint-disable-next-line no-plusplus
+            for (let index = 0; index < 3; index++) {
+                writeJsonSync(path, { compilerOptions: { strict: index % 2 === 0 } });
+
+                const future = new Date(Date.now() + (index + 1) * 10_000);
+
+                utimesSync(path, future, future);
+
+                // eslint-disable-next-line no-await-in-loop
+                await (name === "findTsConfig" ? function_(distribution, options) : function_(distribution, options));
+            }
+
+            // Each edit overwrites the same key rather than minting a new one.
+            expect(cache.size).toBe(1);
+
+            const latest: TsConfigResult = (
+                name === "findTsConfig" ? await function_(distribution, options) : function_(distribution, options)
+            ) as TsConfigResult;
+
+            expect(latest.config.compilerOptions?.strict).toBe(true);
+        });
     });
 });
