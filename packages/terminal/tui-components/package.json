@@ -142,6 +142,10 @@
             "types": "./dist/controlled-scroll-view.d.ts",
             "default": "./dist/controlled-scroll-view.js"
         },
+        "./data-grid": {
+            "types": "./dist/data-grid.d.ts",
+            "default": "./dist/data-grid.js"
+        },
         "./date-picker": {
             "types": "./dist/date-picker.d.ts",
             "default": "./dist/date-picker.js"
@@ -158,9 +162,21 @@
             "types": "./dist/diff-view.d.ts",
             "default": "./dist/diff-view.js"
         },
+        "./digits": {
+            "types": "./dist/digits.d.ts",
+            "default": "./dist/digits.js"
+        },
+        "./directory-tree": {
+            "types": "./dist/directory-tree.d.ts",
+            "default": "./dist/directory-tree.js"
+        },
         "./divider": {
             "types": "./dist/divider.d.ts",
             "default": "./dist/divider.js"
+        },
+        "./file-change": {
+            "types": "./dist/file-change.d.ts",
+            "default": "./dist/file-change.js"
         },
         "./file-picker": {
             "types": "./dist/file-picker-entry.d.ts",
@@ -194,6 +210,14 @@
             "types": "./dist/histogram.d.ts",
             "default": "./dist/histogram.js"
         },
+        "./image": {
+            "types": "./dist/image.d.ts",
+            "default": "./dist/image.js"
+        },
+        "./json": {
+            "types": "./dist/json.d.ts",
+            "default": "./dist/json.js"
+        },
         "./kbd": {
             "types": "./dist/kbd.d.ts",
             "default": "./dist/kbd.js"
@@ -209,6 +233,10 @@
         "./loading-indicator": {
             "types": "./dist/loading-indicator.d.ts",
             "default": "./dist/loading-indicator.js"
+        },
+        "./log": {
+            "types": "./dist/log.d.ts",
+            "default": "./dist/log.js"
         },
         "./markdown": {
             "types": "./dist/markdown.d.ts",
@@ -277,6 +305,10 @@
         "./progress-circle": {
             "types": "./dist/progress-circle.d.ts",
             "default": "./dist/progress-circle.js"
+        },
+        "./qr-code": {
+            "types": "./dist/qr-code.d.ts",
+            "default": "./dist/qr-code.js"
         },
         "./radio-group": {
             "types": "./dist/radio-group.d.ts",
@@ -450,6 +482,7 @@
         "@shikijs/langs": "catalog:prod",
         "@shikijs/themes": "catalog:dev",
         "@shikijs/types": "^4.3.0",
+        "@types/qrcode": "^1.5.5",
         "@types/react": "catalog:types",
         "@visulima/packem": "catalog:dev",
         "@visulima/tui": "workspace:*",
@@ -457,6 +490,7 @@
         "delay": "catalog:dev",
         "esbuild": "catalog:build",
         "marked": "catalog:dev",
+        "qrcode": "^1.5.4",
         "react": "^19.2.6",
         "react-reconciler": "^0.33.0",
         "shiki": "catalog:syntax",
@@ -471,6 +505,7 @@
         "cfonts": "catalog:prod",
         "diff": "catalog:prod",
         "marked": "catalog:dev",
+        "qrcode": "^1.5.4",
         "react": "^19.2.6",
         "shiki": "catalog:syntax"
     },
@@ -491,6 +526,9 @@
             "optional": true
         },
         "marked": {
+            "optional": true
+        },
+        "qrcode": {
             "optional": true
         },
         "shiki": {
