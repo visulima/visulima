@@ -163,7 +163,7 @@ const tagsToObjects = (tags: Spec[], _verbose?: boolean) =>
                 return {
                     requestBody: {
                         content: {
-                            [contentType as string]: {
+                            [contentType]: {
                                 examples: {
                                     [example as string]: {
                                         $ref: `#/components/examples/${parsedResponse.rawType}`,
@@ -261,7 +261,7 @@ const tagsToObjects = (tags: Spec[], _verbose?: boolean) =>
                     responses: {
                         [status as string]: {
                             content: {
-                                [contentType as string]: {
+                                [contentType]: {
                                     schema: parsedResponse.schema,
                                 },
                             },
@@ -282,7 +282,7 @@ const tagsToObjects = (tags: Spec[], _verbose?: boolean) =>
                     responses: {
                         [status as string]: {
                             content: {
-                                [contentType as string]: {
+                                [contentType]: {
                                     examples: {
                                         [example as string]: {
                                             $ref: `#/components/examples/${parsedResponse.rawType}`,
