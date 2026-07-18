@@ -57,16 +57,16 @@ export interface LoadSourceMapAsyncOptions {
     remoteResolver?: AsyncRemoteMapResolver;
 }
 
-type ResolvedReference =
-    /** A decodable inline `data:` map payload. */
-    | { inline: string }
-    /** An absolute filesystem path to a sibling `.map` file. */
-    | { path: string }
-    /** An absolute remote URL (`http(s):`) to be passed to a resolver. */
-    | { remote: string };
+/**
+ * A discovered map reference classified into one of:
+ * - `inline` — a decodable inline `data:` map payload.
+ * - `path` — an absolute filesystem path to a sibling `.map` file.
+ * - `remote` — an absolute remote URL (`http(s):`) to be passed to a resolver.
+ */
+type ResolvedReference = { inline: string } | { path: string } | { remote: string };
 
 /**
- * Validate the `sourceMappingURL=` occurrence at `markerIndex` and, when it sits
+ * Validate the `sourceMappingURL` marker occurrence at `markerIndex` and, when it sits
  * inside a well-formed line/block comment with a usable value, return that value.
  * Returns `undefined` when the occurrence is not a valid comment reference so the
  * caller can keep scanning earlier occurrences.
@@ -217,13 +217,16 @@ const parseMap = (traceMapContent: string, mapBaseUrl: string, context: string):
     }
 };
 
-type SourceMapPlan =
-    /** Inline map already decoded and parsed synchronously. */
-    | { kind: "map"; map: TraceMap }
-    /** Sibling `.map` file that still has to be read from disk. */
-    | { kind: "path"; mapPath: string; parseContext: string; readContext: string }
-    /** Remote URL that still has to be fetched via a resolver. */
-    | { kind: "remote"; parseContext: string; url: string };
+/**
+ * The work still required to build a {@link TraceMap} from a reference:
+ * - `map` — inline map already decoded and parsed synchronously.
+ * - `path` — sibling `.map` file that still has to be read from disk.
+ * - `remote` — remote URL that still has to be fetched via a resolver.
+ */
+type SourceMapPlan
+    = | { kind: "map"; map: TraceMap }
+        | { kind: "path"; mapPath: string; parseContext: string; readContext: string }
+        | { kind: "remote"; parseContext: string; url: string };
 
 /**
  * Classify a {@link ResolvedReference} into the work still required to build a
