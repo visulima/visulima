@@ -125,7 +125,7 @@ describe(runtimeVersionCheckPlugin, () => {
         expect(exitSpy).not.toHaveBeenCalled();
     });
 
-    it("detects Bun with a missing version and exits when below the requirement", () => {
+    it("detects Bun with a missing version and exits when below the requirement", async () => {
         expect.assertions(2);
 
         // No `Bun.version` -> detected major is 0, which is below the required 1.
@@ -135,7 +135,7 @@ describe(runtimeVersionCheckPlugin, () => {
 
         const context = createContext();
 
-        runtimeVersionCheckPlugin({ runtimes: { bun: { minVersion: 1 } } }).init?.(context);
+        await runtimeVersionCheckPlugin({ runtimes: { bun: { minVersion: 1 } } }).init?.(context);
 
         expect(context.logger.error).toHaveBeenCalledWith(expect.stringContaining("cerebro requires bun"));
         expect(exitSpy).toHaveBeenCalledWith(1);
