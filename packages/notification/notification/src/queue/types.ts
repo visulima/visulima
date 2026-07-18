@@ -4,7 +4,7 @@ import type { NotificationMessage } from "../notification";
  * A queued notification job.
  */
 export interface QueueJob {
-    /** Number of delivery attempts so far. */
+    /** Number of delivery attempts including the current one (1 on first reserve). */
     attempts: number;
     /** Unique job id. */
     id: string;

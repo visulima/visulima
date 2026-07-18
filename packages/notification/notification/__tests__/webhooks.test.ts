@@ -73,6 +73,22 @@ describe("twilioWebhook", () => {
 
         expect(event).toMatchObject({ messageId: "SM1", provider: "twilio", type: "delivered" });
     });
+
+    it("sorts keys by Unicode code unit, not locale collation", async () => {
+        expect.assertions(1);
+
+        const secret = "twilio-auth-token";
+        const url = "https://example.com/webhooks/twilio";
+        const body = "Zebra=1&apple=2";
+        // Code-unit order places uppercase "Zebra" before lowercase "apple"; locale
+        // collation would reverse them and produce a different (rejected) signature.
+        const base = `${url}Zebra1apple2`;
+        const signature = toBase64(await sign(secret, base, "SHA-1"));
+
+        const headers = { "X-Twilio-Signature": signature, "x-twilio-signature-url": url };
+
+        await expect(twilioWebhook.verify(body, headers, secret)).resolves.toBe(true);
+    });
 });
 
 describe("standardWebhook", () => {

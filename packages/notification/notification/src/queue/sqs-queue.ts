@@ -128,7 +128,7 @@ export class SqsQueue implements NotificationQueue {
             return undefined;
         }
 
-        return { attempts: Math.max(0, receiveCount - 1), id: message.ReceiptHandle, message: parsed, scheduledAt: 0 };
+        return { attempts: Math.max(1, receiveCount), id: message.ReceiptHandle, message: parsed, scheduledAt: 0 };
     }
 
     public async ack(id: string): Promise<void> {

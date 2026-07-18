@@ -35,8 +35,9 @@ export interface PgBossQueueOptions {
  * A {@link NotificationQueue} backed by [pg-boss](https://github.com/timgit/pg-boss) (Postgres, v10 API).
  *
  * Pass a started pg-boss instance — `pg-boss` is an optional peer dependency and is never started here.
- * `reserve` uses `fetch` with `includeMetadata`, so the job's `attempts` reflects pg-boss's own
- * `retryCount`. `retry` calls `fail`, so the retry delay is governed by the queue's pg-boss retry policy
+ * `reserve` uses `fetch` with `includeMetadata`, so the job's `attempts` is pg-boss's own
+ * `retryCount` plus the current delivery (1 on first reserve, matching the other adapters).
+ * `retry` calls `fail`, so the retry delay is governed by the queue's pg-boss retry policy
  * rather than the `delayMs` argument.
  *
  * Runtime: NODE ONLY (requires a Postgres connection). Not Cloudflare Workers compatible.
@@ -67,7 +68,7 @@ export class PgBossQueue implements NotificationQueue {
             return undefined;
         }
 
-        return { attempts: job.retryCount ?? 0, id: job.id, message: job.data as NotificationMessage, scheduledAt: 0 };
+        return { attempts: (job.retryCount ?? 0) + 1, id: job.id, message: job.data as NotificationMessage, scheduledAt: 0 };
     }
 
     public async ack(id: string): Promise<void> {

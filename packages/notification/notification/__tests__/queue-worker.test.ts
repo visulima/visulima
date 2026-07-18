@@ -59,6 +59,78 @@ describe(createQueueWorker, () => {
         expect(onDrop).toHaveBeenCalledTimes(1);
     });
 
+    it("keeps polling after a throwing reserve and reports it via onError", async () => {
+        expect.assertions(2);
+
+        vi.useFakeTimers();
+
+        const provider = mockProvider({ channel: "sms" });
+        const notify = createNotification({ sms: provider });
+        const onError = vi.fn();
+
+        const job = { attempts: 1, id: "j1", message: { sms: { text: "x", to: "+1" } } };
+        let call = 0;
+
+        const queue = {
+            ack: vi.fn(),
+            enqueue: vi.fn(),
+            reserve: vi.fn(() => {
+                call += 1;
+
+                if (call === 1) {
+                    throw new Error("redis down");
+                }
+
+                return call === 2 ? job : undefined;
+            }),
+            retry: vi.fn(),
+            size: vi.fn(() => 0),
+        };
+
+        const worker = createQueueWorker(queue as never, notify, { onError, pollInterval: 10 });
+
+        worker.start();
+        await vi.advanceTimersByTimeAsync(50);
+        worker.stop();
+
+        expect(onError).toHaveBeenCalledTimes(1);
+        expect(provider.getInstance?.().sent).toHaveLength(1);
+    });
+
+    it("retries the job and reports onError when send rejects", async () => {
+        expect.assertions(3);
+
+        const job = { attempts: 1, id: "j1", message: { sms: { text: "x", to: "+1" } } };
+        let reserved = false;
+
+        const queue = {
+            ack: vi.fn(),
+            enqueue: vi.fn(),
+            reserve: vi.fn(() => {
+                if (reserved) {
+                    return undefined;
+                }
+
+                reserved = true;
+
+                return job;
+            }),
+            retry: vi.fn(),
+            size: vi.fn(() => 0),
+        };
+
+        const notify = { send: vi.fn().mockRejectedValue(new Error("send failed")) };
+        const onError = vi.fn();
+
+        const worker = createQueueWorker(queue as never, notify as never, { backoff: () => 0, onError });
+
+        await worker.drain();
+
+        expect(onError).toHaveBeenCalledTimes(1);
+        expect(queue.retry).toHaveBeenCalledWith("j1", 0);
+        expect(queue.ack).not.toHaveBeenCalled();
+    });
+
     it("start toggles the loop on and stop turns it off", async () => {
         expect.assertions(2);
 
