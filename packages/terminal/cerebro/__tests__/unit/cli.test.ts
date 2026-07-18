@@ -1037,7 +1037,7 @@ describe("cli", () => {
 
             // Constructing a second instance (no env override) must NOT reset
             // the shared env back to normal and silently disable cliA's debug.
-            // eslint-disable-next-line no-new
+            // eslint-disable-next-line no-new, sonarjs/constructor-for-side-effects
             new Cli("B", { argv: ["run"] });
 
             expect(process.env.CEREBRO_OUTPUT_LEVEL).toBe(String(VERBOSITY_DEBUG));
