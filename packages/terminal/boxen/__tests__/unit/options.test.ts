@@ -4,6 +4,7 @@ import terminalSize from "terminal-size";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { boxen, boxes, clearTerminalSizeCache } from "../../src";
+import type { BorderStyleName } from "../../src";
 
 const TUPLE_ERROR = /must return a \[width, height\] tuple/;
 const NUMBER_ERROR = /both width and height must be numbers/;
@@ -247,6 +248,41 @@ describe("boxes catalog export", () => {
         const box = boxen("foo", { borderStyle: { ...boxes.round, top: "=" } });
 
         expect(box.split("\n")[0]).toContain("=");
+    });
+
+    it("exposes a runtime entry for every declared BorderStyleName", () => {
+        expect.assertions(1);
+
+        const names: BorderStyleName[] = ["arrow", "bold", "classic", "double", "doubleSingle", "none", "round", "single", "singleDouble"];
+
+        expect(names.every((name) => boxes[name] !== undefined)).toBe(true);
+    });
+
+    it("exposes an empty-character none entry matching its type", () => {
+        expect.assertions(2);
+
+        expect(boxes.none).toBeDefined();
+        expect(boxes.none.topLeft).toBe("");
+    });
+});
+
+describe("borderColor positions", () => {
+    it("only emits the eight documented border positions", () => {
+        expect.assertions(1);
+
+        const seen = new Set<string>();
+
+        boxen("foo bar", {
+            borderColor: (border, position) => {
+                seen.add(position);
+
+                return border;
+            },
+            footerText: "bye",
+            headerText: "hi",
+        });
+
+        expect([...seen].sort()).toStrictEqual(["bottom", "bottomLeft", "bottomRight", "left", "right", "top", "topLeft", "topRight"]);
     });
 });
 
