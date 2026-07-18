@@ -55,10 +55,11 @@ const HEX_RE = /^[0-9a-f]*$/i;
 // forgiving-base64 algorithm and Node's lenient Buffer decoder).
 const BASE64_WHITESPACE_RE = /[\t\n\f\r ]/g;
 
-// Standard (RFC 4648) base64 alphabet with optional `=` padding. Accepts padded
-// and unpadded input but rejects non-alphabet characters and a lone trailing
-// character (a group of a single base64 digit encodes no bytes).
-const BASE64_RE = /^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}(?:==)?|[A-Za-z0-9+/]{3}=?)?$/;
+// Standard (RFC 4648) base64 alphabet followed by up to two `=` padding
+// characters. Rejects any non-alphabet character and stray `=` in the middle;
+// the "lone trailing character" case (a group of a single base64 digit, which
+// encodes no bytes) is caught by the `length % 4 === 1` check at decode time.
+const BASE64_RE = /^[a-z0-9+/]*={0,2}$/i;
 
 // Lookup table mapping a hex char code -> nibble value (or -1 if invalid).
 const buildHexDecodeTable = (): Int8Array => {
@@ -312,9 +313,12 @@ const uint8ArrayToBase64 = (data: Uint8Array): string => {
  * @throws {TypeError} If the string is not valid base64.
  */
 const base64ToUint8Array = (base64: string): Uint8Array => {
-    const normalized = base64.replace(BASE64_WHITESPACE_RE, "");
+    const normalized = base64.replaceAll(BASE64_WHITESPACE_RE, "");
 
-    if (!BASE64_RE.test(normalized)) {
+    // A `length % 4 === 1` remainder is the only invalid partial group: a single
+    // leftover base64 digit encodes no bytes, so reject it alongside any
+    // non-alphabet character or misplaced padding.
+    if (!BASE64_RE.test(normalized) || normalized.length % 4 === 1) {
         throw new TypeError("Invalid base64 string: contains a non-alphabet character or invalid padding");
     }
 
@@ -349,6 +353,29 @@ const maybeCopyView = (view: Uint8Array, copy: boolean): Uint8Array => {
     // an owned, non-aliased ArrayBuffer.
     // eslint-disable-next-line unicorn/prefer-spread
     return view.slice();
+};
+
+/**
+ * Converts an array of numbers to a `Uint8Array`, validating while filling.
+ *
+ * Single pass: validate each entry as it is written, instead of an O(n)
+ * `.every()` pre-pass followed by `new Uint8Array(data)` iterating again.
+ * @param data The array to convert.
+ * @returns The resulting Uint8Array.
+ * @throws {Uint8ArrayIncompatibleError} If any entry is not a number.
+ */
+const numberArrayToUint8Array = (data: unknown[]): Uint8Array => {
+    const result = new Uint8Array(data.length);
+
+    for (const [index, item] of data.entries()) {
+        if (typeof item !== "number") {
+            throw new Uint8ArrayIncompatibleError("Array containing non-number values");
+        }
+
+        result[index] = item;
+    }
+
+    return result;
 };
 
 /**
@@ -392,19 +419,7 @@ const toUint8Array = (data: unknown, options: ToUint8ArrayOptions = {}): Uint8Ar
     }
 
     if (Array.isArray(data)) {
-        // Single pass: validate while filling, instead of an O(n) `.every()`
-        // pre-pass followed by `new Uint8Array(data)` iterating again.
-        const result = new Uint8Array(data.length);
-
-        for (const [index, item] of data.entries()) {
-            if (typeof item !== "number") {
-                throw new Uint8ArrayIncompatibleError("Array containing non-number values");
-            }
-
-            result[index] = item;
-        }
-
-        return result;
+        return numberArrayToUint8Array(data);
     }
 
     if (typeof data === "string") {
