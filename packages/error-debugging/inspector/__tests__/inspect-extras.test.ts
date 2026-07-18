@@ -232,7 +232,7 @@ describe("class instance with a broken constructor", () => {
 
         const instance = new Foo() as unknown as Record<string, unknown>;
 
-        instance.constructor = null;
+        (instance as { constructor: unknown }).constructor = null;
 
         expect(() => inspect(instance)).not.toThrow();
         expect(inspect(instance)).toContain("<Anonymous Class>");

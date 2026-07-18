@@ -20,10 +20,10 @@ export const inspectNode = (node: Node, _from: unknown, options: Options, inspec
             return inspectHTMLElement(node as Element, node, options, inspect);
         }
         case 3: {
-            return inspect((node as Text).data, null, options);
+            return inspect((node as Text).data, undefined, options);
         }
         default: {
-            return inspect(node, null, options);
+            return inspect(node, undefined, options);
         }
     }
 };
