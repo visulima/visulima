@@ -212,7 +212,7 @@ describe("gradient", () => {
         expect(() => {
             // eslint-disable-next-line no-new,sonarjs/constructor-for-side-effects
             new GradientBuilder(colorize, ["read", "green"]);
-        }).toThrow('Invalid color stop "read"');
+        }).toThrow("Invalid color stop \"read\"");
     });
 
     it("should throw a clear error for an unknown positioned color name", () => {
@@ -224,7 +224,7 @@ describe("gradient", () => {
                 { color: "read", position: 0 },
                 { color: "green", position: 1 },
             ]);
-        }).toThrow('Invalid color stop "read"');
+        }).toThrow("Invalid color stop \"read\"");
     });
 
     it("should accept bare hex-string non-positioned stops without a leading '#'", () => {
