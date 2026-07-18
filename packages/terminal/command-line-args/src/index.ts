@@ -62,15 +62,11 @@ export function commandLineArgs(optionDefinitions: OptionDefinition | ReadonlyAr
     let { argv } = effectiveOptions;
 
     if (!argv) {
-        // Automatically detect and skip Node.js exec args
+        // Node already excludes exec args (`--import`, `-e`, ...) from
+        // `process.argv`, so `slice(2)` yields the user arguments directly.
+        // Filtering by value would only ever strip legitimate user arguments
+        // that happen to equal an exec flag.
         argv = process.argv.slice(2);
-
-        if (process.execArgv.length > 0) {
-            // Skip exec args that appear in argv
-            const execArgs = new Set(process.execArgv);
-
-            argv = argv.filter((argument) => !execArgs.has(argument));
-        }
     }
 
     debugLog(debugEnabled, "Using argv:", "index", argv);
@@ -89,9 +85,8 @@ export function commandLineArgs(optionDefinitions: OptionDefinition | ReadonlyAr
             }
 
             if (argument.startsWith("-") && !argument.startsWith("--") && argument.length > 1) {
-                const flagsAndRest = argument.slice(1).split("=", 2);
-                const flags = flagsAndRest[0];
-                const rest = flagsAndRest[1];
+                const equalsIndex = argument.indexOf("=");
+                const flags = equalsIndex === -1 ? argument.slice(1) : argument.slice(1, equalsIndex);
 
                 if (!flags) {
                     return argument;
@@ -99,7 +94,7 @@ export function commandLineArgs(optionDefinitions: OptionDefinition | ReadonlyAr
 
                 const lowered = flags.toLowerCase();
 
-                return rest === undefined ? `-${lowered}` : `-${lowered}=${rest}`;
+                return equalsIndex === -1 ? `-${lowered}` : `-${lowered}${argument.slice(equalsIndex)}`;
             }
 
             return argument;
