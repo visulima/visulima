@@ -47,30 +47,6 @@
             "types": "./dist/ink/canvas/index.d.ts",
             "default": "./dist/ink/canvas/index.js"
         },
-        "./cursor": {
-            "types": "./dist/ink/public/cursor.d.ts",
-            "default": "./dist/ink/public/cursor.js"
-        },
-        "./dom": {
-            "types": "./dist/ink/public/dom.d.ts",
-            "default": "./dist/ink/public/dom.js"
-        },
-        "./highlighter": {
-            "types": "./dist/ink/public/highlighter.d.ts",
-            "default": "./dist/ink/public/highlighter.js"
-        },
-        "./input": {
-            "types": "./dist/ink/public/input.d.ts",
-            "default": "./dist/ink/public/input.js"
-        },
-        "./styles": {
-            "types": "./dist/ink/public/styles.d.ts",
-            "default": "./dist/ink/public/styles.js"
-        },
-        "./utils": {
-            "types": "./dist/ink/public/utils.d.ts",
-            "default": "./dist/ink/public/utils.js"
-        },
         "./components/box": {
             "types": "./dist/components/box.d.ts",
             "default": "./dist/components/box.js"
@@ -82,6 +58,14 @@
         "./components/cursor": {
             "types": "./dist/components/cursor.d.ts",
             "default": "./dist/components/cursor.js"
+        },
+        "./components/error-boundary": {
+            "types": "./dist/components/error-boundary.d.ts",
+            "default": "./dist/components/error-boundary.js"
+        },
+        "./components/error-overview": {
+            "types": "./dist/components/error-overview.d.ts",
+            "default": "./dist/components/error-overview.js"
         },
         "./components/newline": {
             "types": "./dist/components/newline.d.ts",
@@ -107,6 +91,22 @@
             "types": "./dist/components/transform.d.ts",
             "default": "./dist/components/transform.js"
         },
+        "./core": {
+            "types": "./dist/core/index.d.ts",
+            "default": "./dist/core/index.js"
+        },
+        "./cursor": {
+            "types": "./dist/ink/public/cursor.d.ts",
+            "default": "./dist/ink/public/cursor.js"
+        },
+        "./dom": {
+            "types": "./dist/ink/public/dom.d.ts",
+            "default": "./dist/ink/public/dom.js"
+        },
+        "./highlighter": {
+            "types": "./dist/ink/public/highlighter.d.ts",
+            "default": "./dist/ink/public/highlighter.js"
+        },
         "./hooks/use-animation": {
             "types": "./dist/ink/hooks/use-animation.d.ts",
             "default": "./dist/ink/hooks/use-animation.js"
@@ -127,10 +127,6 @@
             "types": "./dist/ink/hooks/use-color-blindness.d.ts",
             "default": "./dist/ink/hooks/use-color-blindness.js"
         },
-        "./hooks/use-element-position": {
-            "types": "./dist/ink/mouse/use-element-position.d.ts",
-            "default": "./dist/ink/mouse/use-element-position.js"
-        },
         "./hooks/use-console-capture": {
             "types": "./dist/ink/hooks/use-console-capture.d.ts",
             "default": "./dist/ink/hooks/use-console-capture.js"
@@ -138,6 +134,10 @@
         "./hooks/use-cursor": {
             "types": "./dist/ink/hooks/use-cursor.d.ts",
             "default": "./dist/ink/hooks/use-cursor.js"
+        },
+        "./hooks/use-element-position": {
+            "types": "./dist/ink/mouse/use-element-position.d.ts",
+            "default": "./dist/ink/mouse/use-element-position.js"
         },
         "./hooks/use-focus": {
             "types": "./dist/ink/hooks/use-focus.d.ts",
@@ -255,17 +255,25 @@
             "types": "./dist/ink/hooks/use-window-size.d.ts",
             "default": "./dist/ink/hooks/use-window-size.js"
         },
-        "./core": {
-            "types": "./dist/core/index.d.ts",
-            "default": "./dist/core/index.js"
+        "./input": {
+            "types": "./dist/ink/public/input.d.ts",
+            "default": "./dist/ink/public/input.js"
         },
         "./react": {
             "types": "./dist/react/index.d.ts",
             "default": "./dist/react/index.js"
         },
+        "./styles": {
+            "types": "./dist/ink/public/styles.d.ts",
+            "default": "./dist/ink/public/styles.js"
+        },
         "./test": {
             "types": "./dist/testing/index.d.ts",
             "default": "./dist/testing/index.js"
+        },
+        "./utils": {
+            "types": "./dist/ink/public/utils.d.ts",
+            "default": "./dist/ink/public/utils.js"
         },
         "./package.json": "./package.json"
     },

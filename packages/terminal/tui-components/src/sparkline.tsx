@@ -17,6 +17,13 @@ export type Props = {
     readonly data: ReadonlyArray<number>;
 
     /**
+     * Render with shade glyphs (`░▒▓█`) instead of vertical bars, for a
+     * textured, monochrome-friendly look.
+     * @default false
+     */
+    readonly dither?: boolean;
+
+    /**
      * Optional fixed maximum for the vertical scale.
      * When omitted the maximum data value is used.
      */
@@ -30,16 +37,17 @@ export type Props = {
 };
 
 const GLYPHS = "▁▂▃▄▅▆▇█";
+const DITHER_GLYPHS = " ░▒▓█";
 
-const resolveGlyph = (value: number, min: number, range: number): string => {
+const resolveGlyph = (value: number, min: number, range: number, glyphs: string): string => {
     if (range === 0) {
-        return GLYPHS[0] as string;
+        return glyphs[0] as string;
     }
 
     const ratio = (value - min) / range;
-    const index = Math.max(0, Math.min(GLYPHS.length - 1, Math.floor(ratio * GLYPHS.length)));
+    const index = Math.max(0, Math.min(glyphs.length - 1, Math.floor(ratio * glyphs.length)));
 
-    return GLYPHS[index] as string;
+    return glyphs[index] as string;
 };
 
 type Extent = {
@@ -75,7 +83,7 @@ const computeExtent = (data: ReadonlyArray<number>, minOverride: number | undefi
  * @returns A `ReactElement` containing the glyph string, or `null` when
  * `data` is empty.
  */
-export default function Sparkline({ color, data, max, min }: Props): ReactElement | null {
+export default function Sparkline({ color, data, dither = false, max, min }: Props): ReactElement | null {
     const chart = useMemo(() => {
         if (data.length === 0) {
             return "";
@@ -83,9 +91,10 @@ export default function Sparkline({ color, data, max, min }: Props): ReactElemen
 
         const { max: hi, min: lo } = computeExtent(data, min, max);
         const range = hi - lo;
+        const glyphs = dither ? DITHER_GLYPHS : GLYPHS;
 
-        return data.map((value) => resolveGlyph(value, lo, range)).join("");
-    }, [data, min, max]);
+        return data.map((value) => resolveGlyph(value, lo, range, glyphs)).join("");
+    }, [data, dither, min, max]);
 
     if (chart.length === 0) {
         return null;
