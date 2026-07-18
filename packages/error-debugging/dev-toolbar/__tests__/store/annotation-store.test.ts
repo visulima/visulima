@@ -6,15 +6,21 @@ import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import {
+    appendThreadMessage,
     deleteScreenshotFile,
     ensureStoreDir,
     isPathInsideBase,
+    LOCK_DIR,
+    MAX_TEXT_FIELD_LENGTH,
+    MAX_THREAD_MESSAGES,
     readAnnotations,
     resolvePaths,
     sanitizeId,
+    STORE_DIR,
     withLock,
     writeAnnotations,
 } from "../../src/store/annotation-store";
+import type { Annotation } from "../../src/types/annotations";
 
 describe("annotation-store", () => {
     let tmpDir: string;
@@ -291,6 +297,112 @@ describe("annotation-store", () => {
         it("ignores missing files", async () => {
             await deleteScreenshotFile(tmpDir, "screenshots/nonexistent.png");
             // Should not throw
+        });
+    });
+
+    describe("writeAnnotations atomicity", () => {
+        it("leaves no temp file behind after writing", async () => {
+            expect.assertions(1);
+
+            await writeAnnotations(tmpDir, [{ id: "a", status: "pending" }] as never[]);
+
+            const { base } = resolvePaths(tmpDir);
+            const entries = await fs.readdir(base);
+            const temporaries = entries.filter((name) => name.endsWith(".tmp"));
+
+            expect(temporaries).toEqual([]);
+        });
+
+        it("does not truncate the previous file when a concurrent reader observes mid-write", async () => {
+            expect.assertions(1);
+
+            // Seed a valid file, then interleave a second write with reads: the
+            // atomic rename means every read sees a complete (non-empty) array.
+            await writeAnnotations(tmpDir, [{ id: "seed", status: "pending" }] as never[]);
+
+            const writes = writeAnnotations(tmpDir, [
+                { id: "1", status: "pending" },
+                { id: "2", status: "pending" },
+            ] as never[]);
+
+            const reads = Promise.all(Array.from({ length: 20 }, async () => readAnnotations(tmpDir)));
+
+            const [, results] = await Promise.all([writes, reads]);
+
+            // No read ever observed a torn/empty file.
+            expect(results.every((r) => r.length >= 1)).toBe(true);
+        });
+    });
+
+    describe(appendThreadMessage, () => {
+        it("generates id/timestamp and clamps message text", () => {
+            expect.assertions(4);
+
+            const annotation = { id: "1", status: "pending" } as Annotation;
+
+            const entry = appendThreadMessage(annotation, { content: "x".repeat(MAX_TEXT_FIELD_LENGTH + 100), role: "agent" });
+
+            expect(entry.content).toHaveLength(MAX_TEXT_FIELD_LENGTH);
+            expect(typeof entry.id).toBe("string");
+            expect(typeof entry.timestamp).toBe("string");
+            expect(annotation.thread).toHaveLength(1);
+        });
+
+        it("throws once the thread reaches MAX_THREAD_MESSAGES", () => {
+            expect.assertions(2);
+
+            const annotation = {
+                id: "1",
+                status: "pending",
+                thread: Array.from({ length: MAX_THREAD_MESSAGES }, (_, index) => ({
+                    content: "m",
+                    id: String(index),
+                    role: "agent",
+                    timestamp: "2024-01-01",
+                })),
+            } as Annotation;
+
+            expect(() => appendThreadMessage(annotation, { content: "overflow", role: "agent" })).toThrow(
+                `Thread message limit reached (${MAX_THREAD_MESSAGES})`,
+            );
+            expect(annotation.thread).toHaveLength(MAX_THREAD_MESSAGES);
+        });
+    });
+
+    describe("withLock cross-process file lock", () => {
+        it("holds the lock directory while the function runs and removes it after", async () => {
+            expect.assertions(2);
+
+            const lockPath = path.join(tmpDir, STORE_DIR, LOCK_DIR);
+
+            let heldDuringRun = false;
+
+            await withLock(async () => {
+                heldDuringRun = await fs
+                    .stat(lockPath)
+                    .then((s) => s.isDirectory())
+                    .catch(() => false);
+            }, tmpDir);
+
+            expect(heldDuringRun).toBe(true);
+            await expect(fs.access(lockPath)).rejects.toThrow();
+        });
+
+        it("reclaims a stale lock left by a crashed process", async () => {
+            expect.assertions(1);
+
+            const lockPath = path.join(tmpDir, STORE_DIR, LOCK_DIR);
+
+            await fs.mkdir(lockPath, { recursive: true });
+
+            // Backdate the lock well beyond the stale threshold.
+            const stale = new Date(Date.now() - 60_000);
+
+            await fs.utimes(lockPath, stale, stale);
+
+            const result = await withLock(async () => "ran", tmpDir);
+
+            expect(result).toBe("ran");
         });
     });
 });
