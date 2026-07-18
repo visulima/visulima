@@ -31,6 +31,18 @@ export function setOnAfterCommit(function_: (() => void) | null): void {
     onAfterCommit = function_;
 }
 
+// Per-container after-commit callbacks. A single global slot would let a second
+// render()/renderInline() steal commit notifications from the first instance,
+// freezing its render loop. Keyed by the container LayoutNode so each mounted
+// instance is notified only for its own commits.
+const afterCommitCallbacks = new WeakMap<Container, () => void>();
+export function registerAfterCommit(container: Container, callback: () => void): void {
+    afterCommitCallbacks.set(container, callback);
+}
+export function unregisterAfterCommit(container: Container): void {
+    afterCommitCallbacks.delete(container);
+}
+
 let currentUpdatePriority = NoEventPriority;
 
 /**
@@ -299,6 +311,14 @@ const hostConfig: ReactReconciler.HostConfig<
     requestPostPaintCallback: () => {},
 
     resetAfterCommit(containerInfo: any) {
+        const callback = afterCommitCallbacks.get(containerInfo);
+
+        if (typeof callback === "function") {
+            callback();
+
+            return;
+        }
+
         if (typeof onAfterCommit === "function") {
             onAfterCommit();
         }

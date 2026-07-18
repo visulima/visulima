@@ -10,6 +10,9 @@ export interface MouseEvent {
     y: number;
 }
 
+const PASTE_START = "\u001B[200~";
+const PASTE_END = "\u001B[201~";
+
 export class InputParser extends EventEmitter {
     private _boundHandleData: ((data: string) => void) | null = null;
 
@@ -58,29 +61,52 @@ export class InputParser extends EventEmitter {
 
         // 2. Bracketed paste: \x1b[200~ ... \x1b[201~
         // Terminals send a start marker, the pasted text (possibly in multiple chunks),
-        // and an end marker. We buffer everything between the markers.
-        if (data.includes("\u001B[200~") || this._pasteBuffer !== null) {
-            // Could arrive as one chunk or across multiple data events
+        // and an end marker. A single stdin chunk can also carry keystrokes before the
+        // start marker and/or after the end marker, so split on the markers and process
+        // the surrounding bytes as normal input instead of folding them into the paste.
+        if (this._pasteBuffer !== null || data.includes(PASTE_START)) {
+            let chunk = data;
+
+            // Start of paste — process any bytes preceding the marker as normal input,
+            // then begin buffering from just after the marker.
             if (this._pasteBuffer === null) {
-                // Start of paste — strip the opening marker, begin buffering
-                this._pasteBuffer = data.replace("\u001B[200~", "");
-            } else {
-                this._pasteBuffer += data;
+                const startIndex = chunk.indexOf(PASTE_START);
+                const prefix = chunk.slice(0, startIndex);
+
+                if (prefix.length > 0) {
+                    this.handleData(prefix);
+                }
+
+                this._pasteBuffer = "";
+                chunk = chunk.slice(startIndex + PASTE_START.length);
             }
 
-            if (this._pasteBuffer.includes("\u001B[201~")) {
-                // End marker arrived — emit the complete paste text.
-                // Ink-compatible behavior:
-                // - if a paste listener exists (usePaste/useTextInput), keep paste on that channel
-                // - otherwise, fall back to normal input channel so useInput still receives pasted text
-                const text = this._pasteBuffer.replace("\u001B[201~", "");
+            const endIndex = chunk.indexOf(PASTE_END);
 
-                this._pasteBuffer = null;
-                this.emit("paste", text);
+            if (endIndex === -1) {
+                // No end marker yet — keep buffering.
+                this._pasteBuffer += chunk;
 
-                if (this.listenerCount("paste") === 0) {
-                    this.emit("data", text);
-                }
+                return;
+            }
+
+            // End marker arrived — emit only the bytes before it.
+            // Ink-compatible behavior:
+            // - if a paste listener exists (usePaste/useTextInput), keep paste on that channel
+            // - otherwise, fall back to normal input channel so useInput still receives pasted text
+            const text = this._pasteBuffer + chunk.slice(0, endIndex);
+            const remainder = chunk.slice(endIndex + PASTE_END.length);
+
+            this._pasteBuffer = null;
+            this.emit("paste", text);
+
+            if (this.listenerCount("paste") === 0) {
+                this.emit("data", text);
+            }
+
+            // Bytes after the end marker are ordinary input (or another paste).
+            if (remainder.length > 0) {
+                this.handleData(remainder);
             }
 
             return;
