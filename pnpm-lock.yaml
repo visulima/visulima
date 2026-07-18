@@ -1360,9 +1360,6 @@ catalogs:
     wrap-ansi:
       specifier: 10.0.0
       version: 10.0.0
-    ws:
-      specifier: ^8.21.0
-      version: 8.21.0
     yaml:
       specifier: 2.9.0
       version: 2.9.0
@@ -1545,9 +1542,6 @@ catalogs:
     '@types/webpack':
       specifier: ^5.28.5
       version: 5.28.5
-    '@types/ws':
-      specifier: ^8.18.1
-      version: 8.18.1
     '@types/yargs':
       specifier: ^17.0.35
       version: 17.0.35
@@ -9072,9 +9066,6 @@ importers:
       '@types/scheduler':
         specifier: catalog:types
         version: 0.26.0
-      '@types/ws':
-        specifier: catalog:types
-        version: 8.18.1
       '@visulima/boxen':
         specifier: 3.0.0
         version: link:../boxen
@@ -9159,9 +9150,6 @@ importers:
       vitest:
         specifier: catalog:test
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@26.1.0)(@vitest/coverage-v8@4.1.9)(@vitest/ui@4.1.9)(happy-dom@20.10.6)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.1.0)(typescript@6.0.3))(vite@8.1.3(@types/node@26.1.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))
-      ws:
-        specifier: catalog:prod
-        version: 8.21.0
     optionalDependencies:
       '@visulima/tui-binding-darwin-arm64':
         specifier: workspace:*
