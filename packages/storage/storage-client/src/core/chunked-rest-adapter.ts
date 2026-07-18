@@ -822,7 +822,7 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                         fileId = undefined;
                     } else if (probed > 0) {
                         control?._updateOffset(probed);
-                        progressCallback?.(Math.round((probed / file.size) * 100), probed);
+                        progressCallback(Math.round((probed / file.size) * 100), probed);
                     }
                 }
 
