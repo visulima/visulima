@@ -4,7 +4,7 @@ import helpCircleIcon from "lucide-static/icons/help-circle.svg?data-uri&encodin
 import keyboardIcon from "lucide-static/icons/keyboard.svg?data-uri&encoding=css";
 
 // Rendered exactly once per page (by the template) so the document holds a single `id="ono-shortcuts-modal"`.
-export const shortcutsModalHtml = `
+const shortcutsModalHtml = `
 <div id="ono-shortcuts-modal" class="fixed inset-0 z-50 hidden backdrop-blur-xl items-center justify-center p-2" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="ono-shortcuts-title">
   <div class="bg-[var(--ono-surface)] rounded-[var(--ono-radius-lg)] shadow-[var(--ono-elevation-2)] max-w-md w-full max-h-[90vh] overflow-auto">
     <div class="flex items-center justify-between px-4 py-2 border-b border-[var(--ono-border)]">
@@ -130,5 +130,7 @@ const shortcutsButton = (): { html: string; script: string } => {
         script: bindShortcutsModalScript.trim(),
     };
 };
+
+export { shortcutsModalHtml };
 
 export default shortcutsButton;
