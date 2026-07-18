@@ -126,6 +126,12 @@ runTest("extname", extname, {
     "./myfile.html": ".html",
     ".\\myfile.html": ".html",
     ".foo": "",
+    // A dotfile addressed through a directory has no extension (matches
+    // node:path); the separator must not satisfy the required leading char.
+    "/x/.gitignore": "",
+    "a/.foo": "",
+    "src/.env": "",
+    ".\\dir\\.env": "",
     // POSIX
     "/temp/myfile.html": ".html",
     // '...': '.', // TODO: Edge case behavior of Node?
@@ -150,6 +156,11 @@ runTest("format", format, [
     [{ dir: "/a", ext: ".txt" }, "/a/.txt"],
     [{ name: "foo" }, "foo"],
     [{ ext: ".txt" }, ".txt"],
+
+    // format is pure concatenation like node:path: ".." segments are kept and a
+    // relative dir is not absolutized by a sibling root.
+    [{ base: "f", dir: "/a/..", root: "/" }, "/a/../f"],
+    [{ base: "f", dir: "sub", root: "/" }, "sub/f"],
 
     // Windows
     [{ base: "file.txt", name: "file" }, "file.txt"],
@@ -315,6 +326,9 @@ runTest("relative", relative, [
     [String.raw`C:\orandea\test\aaa`, String.raw`C:\orandea\impl\bbb`, "../../impl/bbb"],
     [String.raw`C:\orandea\test\aaa`, String.raw`c:\orandea\impl\bbb`, "../../impl/bbb"],
     ["C:\\", String.raw`C:\foo\bar`, "foo/bar"],
+    // A from-path that collapses to the drive root still yields a clean relative
+    // path (no spurious ".." from the "C:/" -> ["C:", ""] split).
+    ["C:/temp/..", "C:/foo", "foo"],
     [String.raw`C:\foo`, "C:\\", ".."],
     [String.raw`C:\foo`, String.raw`d:\bar`, "D:/bar"],
     [() => process.cwd().replaceAll("\\", "/"), "./dist/client/b-scroll.d.ts", "dist/client/b-scroll.d.ts"],
@@ -341,6 +355,11 @@ runTest("resolve", resolve, [
     ["wwwroot", "static_files\\png\\", String.raw`..\gif\image.gif`, () => `${process.cwd().replaceAll("\\", "/")}/wwwroot/static_files/gif/image.gif`],
     [String.raw`C:\Windows\path\only`, "../../reports", "C:/Windows/reports"],
     [String.raw`C:\Windows\long\path\mixed/with/unix`, "../..", String.raw`..\../reports`, "C:/Windows/long/reports"],
+    // Collapsing to a bare drive yields the drive root "C:/", never "/C:".
+    ["C:/", "C:/"],
+    [String.raw`C:\temp\..`, "C:/"],
+    ["C:/temp/..", "C:/"],
+    [String.raw`C:\temp`, "..", "C:/"],
 ]);
 
 describe("resolve with catastrophic process.cwd() failure", () => {
@@ -439,6 +458,31 @@ describe("cwd fallback in resolve", () => {
         const { resolve: freshResolve } = await import("../../src/path");
 
         expect(freshResolve("foo", "bar")).toBe("/foo/bar");
+    });
+});
+
+describe("lowercase drive from process.cwd()", () => {
+    const originalCwd = process.cwd; // eslint-disable-line @typescript-eslint/unbound-method, vitest/unbound-method
+
+    afterEach(() => {
+        process.cwd = originalCwd;
+    });
+
+    it("should uppercase the drive letter when resolving relative inputs", () => {
+        expect.assertions(1);
+
+        process.cwd = () => String.raw`c:\Users\test`;
+
+        expect(resolve("foo")).toBe("C:/Users/test/foo");
+    });
+
+    it("should keep relative() relative despite a lowercase cwd drive", () => {
+        expect.assertions(2);
+
+        process.cwd = () => String.raw`c:\Users\test`;
+
+        expect(relative(".", "C:/Users/test/x")).toBe("x");
+        expect(relative("C:/Users/test", "./x")).toBe("x");
     });
 });
 
