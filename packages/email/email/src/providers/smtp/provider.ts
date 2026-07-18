@@ -1,5 +1,5 @@
 import { Buffer } from "node:buffer";
-import { createHash, createHmac, createSign } from "node:crypto";
+import { createHmac } from "node:crypto";
 import type { Socket } from "node:net";
 import { createConnection } from "node:net";
 import { connect } from "node:tls";
@@ -13,6 +13,7 @@ import isPortAvailable from "../../utils/is-port-available";
 import validateEmailOptions from "../../utils/validation/validate-email-options";
 import type { ProviderFactory } from "../provider";
 import { defineProvider } from "../provider";
+import { signMessageWithDkim } from "./dkim";
 import type { SmtpConfig, SmtpEmailOptions } from "./types";
 
 const PROVIDER_NAME = "smtp";
@@ -72,6 +73,20 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
     // Number of live connections (in-flight + idle in the pool). Bounds concurrency
     // against maxConnections; the idle pool length alone does not.
     let activeConnections = 0;
+
+    // Refcount the live-connection counter in exactly two places: one increment
+    // when a connection is accepted (220 greeting), one decrement per socket
+    // teardown. The clamp keeps the count from underflowing if a teardown path
+    // is ever reached twice.
+    const acquireConnectionSlot = (): void => {
+        activeConnections += 1;
+    };
+
+    const releaseConnectionSlot = (): void => {
+        if (activeConnections > 0) {
+            activeConnections -= 1;
+        }
+    };
 
     /**
      * Sanitizes a header value to prevent injection attacks.
@@ -198,8 +213,8 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
             }
 
             // Popped a dead socket; it no longer counts as a live connection.
-            if (socket && activeConnections > 0) {
-                activeConnections -= 1;
+            if (socket) {
+                releaseConnectionSlot();
             }
         }
 
@@ -280,7 +295,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                         const code = greeting.slice(0, 3);
 
                         if (code === "220") {
-                            activeConnections += 1;
+                            acquireConnectionSlot();
                             resolve(socket);
                         } else {
                             socket.destroy();
@@ -378,9 +393,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                 // Ignore destroy errors
             }
 
-            if (activeConnections > 0) {
-                activeConnections -= 1;
-            }
+            releaseConnectionSlot();
 
             return;
         }
@@ -429,9 +442,7 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
 
         await new Promise<void>((resolve) => {
             try {
-                if (activeConnections > 0) {
-                    activeConnections -= 1;
-                }
+                releaseConnectionSlot();
 
                 // Send QUIT command
                 socket.write("QUIT\r\n");
@@ -608,101 +619,8 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
             return message;
         }
 
-        const { domainName, keySelector, privateKey } = options.dkim;
-
         try {
-            // Separate headers from the body at the FIRST blank line only. The body
-            // itself contains blank lines (multipart boundaries and part headers), so
-            // a naive split("\r\n\r\n") would truncate everything after the first part.
-            const splitIndex = message.indexOf("\r\n\r\n");
-
-            if (splitIndex === -1) {
-                return message;
-            }
-
-            const headersPart = message.slice(0, splitIndex);
-            const bodyPart = message.slice(splitIndex + 4);
-
-            const headers = headersPart.split("\r\n");
-
-            // RFC 6376 §3.4.4 relaxed body canonicalization: normalize line endings,
-            // reduce whitespace runs within a line to a single SP, strip trailing
-            // whitespace per line, drop trailing empty lines, and terminate with CRLF.
-            const canonicalizeBody = (body: string): string => {
-                const lines = body
-                    .replaceAll("\r\n", "\n")
-                    .split("\n")
-                    // eslint-disable-next-line e18e/prefer-static-regex, sonarjs/slow-regex
-                    .map((line) => line.replaceAll(/[ \t]+/g, " ").replace(/ +$/, ""));
-
-                let end = lines.length;
-
-                while (end > 0 && lines[end - 1] === "") {
-                    end -= 1;
-                }
-
-                return end > 0 ? `${lines.slice(0, end).join("\r\n")}\r\n` : "";
-            };
-
-            // RFC 6376 §3.4.2 relaxed header canonicalization: lowercase the field
-            // name, unfold, reduce internal whitespace to a single SP, and strip
-            // leading/trailing whitespace around the value.
-            const canonicalizeHeader = (header: string): string => {
-                const colon = header.indexOf(":");
-
-                if (colon === -1) {
-                    return `${header.toLowerCase().trim()}:`;
-                }
-
-                const name = header.slice(0, colon).toLowerCase().trim();
-                const value = header.slice(colon + 1).replaceAll(/\s+/g, " ").trim();
-
-                return `${name}:${value}`;
-            };
-
-            const canonicalizedBody = canonicalizeBody(bodyPart);
-            const bodyHash = createHash("sha256").update(canonicalizedBody).digest("base64");
-
-            // Find which headers to sign (from, to, subject, date)
-            const headerNames = ["from", "to", "subject", "date"];
-            const headersToSign = headers.filter((h) => headerNames.some((n) => h.toLowerCase().startsWith(`${n}:`)));
-            const dkimHeaderList = headersToSign
-                .map((h) => {
-                    const parts = h.split(":");
-
-                    return parts[0]?.toLowerCase() ?? "";
-                })
-                .filter(Boolean)
-                .join(":");
-
-            // Build DKIM header (without signature)
-            const now = Math.floor(Date.now() / 1000);
-            const dkimFields = {
-                a: "rsa-sha256",
-                bh: bodyHash,
-                c: "relaxed/relaxed",
-                d: domainName,
-                h: dkimHeaderList,
-                s: keySelector,
-                t: now.toString(),
-                v: "1",
-            };
-            const dkimHeader = `DKIM-Signature: ${Object.entries(dkimFields)
-                .map(([k, v]) => `${k}=${v}`)
-                .join("; ")}; b=`;
-
-            // Canonicalize the signed headers followed by the DKIM-Signature header
-            // (with an empty b= value and no trailing CRLF, per RFC 6376 §3.7).
-            const headersForSign = [...headersToSign, dkimHeader].map((header) => canonicalizeHeader(header)).join("\r\n");
-            const signer = createSign("RSA-SHA256");
-
-            signer.update(headersForSign);
-            const signature = signer.sign(privateKey, "base64");
-            const finalDkimHeader = `${dkimHeader}${signature}`;
-
-            // Prepend the DKIM-Signature header, preserving all original headers and
-            // the complete body (including the closing multipart boundary).
-            return `${finalDkimHeader}\r\n${headers.join("\r\n")}\r\n\r\n${bodyPart}`;
+            return signMessageWithDkim(message, options.dkim);
         } catch (error) {
             // eslint-disable-next-line no-console
             console.error(`[${PROVIDER_NAME}] DKIM signing error:`, error);
@@ -1143,6 +1061,8 @@ const smtpProvider: ProviderFactory<SmtpConfig> = defineProvider((config: SmtpCo
                         } catch {
                             // STARTTLS not supported or failed, continue with plain connection
                             if (options.rejectUnauthorized) {
+                                await closeConnection(socket);
+
                                 return false;
                             }
                         }
