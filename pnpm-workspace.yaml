@@ -838,6 +838,12 @@ overrides:
   # picomatch. Bumping either one is now a deliberate edit here plus a re-cut patch.
   picomatch: 4.0.5
   tinyglobby: 0.2.17
+  # adm-zip <0.6.0 (GHSA-xcpc-8h2w-3j85, high): a crafted ZIP triggers a ~4GB memory
+  # allocation. Only reached via mysql-memory-server (a dev-only MySQL test helper in
+  # @visulima/workflow) which pins ^0.5.16; force the patched 0.6.0. adm-zip 0.6.0 needs
+  # node >=14, well within mysql-memory-server's >=16.6 engine, and its extract API is
+  # unchanged.
+  adm-zip@<0.6.0: '>=0.6.0'
   '@tanstack/start-server-core@<1.167.30': '>=1.167.30'
   fastify@<5.7.2: '>=5.7.2'
   fastify@<=5.7.2: '>=5.7.3'
