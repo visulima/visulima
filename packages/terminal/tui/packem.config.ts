@@ -42,8 +42,11 @@ export default defineConfig({
                 // them. Excluded here so packem doesn't flag them as "used but not
                 // a direct dependency". convert-to-spaces rides in via code-excerpt.
                 exclude: [
+                    "@visulima/ansi",
+                    "@visulima/error",
                     "@visulima/interactive-manager",
                     "@visulima/is-ansi-color-supported",
+                    "@visulima/string",
                     "cli-boxes",
                     "code-excerpt",
                     "convert-to-spaces",

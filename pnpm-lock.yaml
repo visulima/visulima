@@ -8969,18 +8969,9 @@ importers:
 
   packages/terminal/tui:
     dependencies:
-      '@visulima/ansi':
-        specifier: 4.0.0
-        version: link:../ansi
       '@visulima/colorize':
         specifier: 2.0.0
         version: link:../colorize
-      '@visulima/error':
-        specifier: 6.0.0
-        version: link:../../error-debugging/error
-      '@visulima/string':
-        specifier: 3.0.0
-        version: link:../../data-manipulation/string
       react:
         specifier: 19.2.6
         version: 19.2.6
@@ -9045,12 +9036,21 @@ importers:
       '@types/scheduler':
         specifier: catalog:types
         version: 0.26.0
+      '@visulima/ansi':
+        specifier: 4.0.0
+        version: link:../ansi
       '@visulima/boxen':
         specifier: 3.0.0
         version: link:../boxen
+      '@visulima/error':
+        specifier: 6.0.0
+        version: link:../../error-debugging/error
       '@visulima/packem':
         specifier: catalog:dev
         version: 2.0.0-alpha.89(f0f9ec05ecaac1843c3521a15a94f76b)
+      '@visulima/string':
+        specifier: 3.0.0
+        version: link:../../data-manipulation/string
       '@vitest/coverage-v8':
         specifier: catalog:test
         version: 4.1.9(@vitest/browser@4.1.9)(vitest@4.1.9)
