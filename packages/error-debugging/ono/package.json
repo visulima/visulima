@@ -1,6 +1,6 @@
 {
     "name": "@visulima/ono",
-    "version": "2.0.4",
+    "version": "2.0.5",
     "description": "Ono is an error-parsing library that pretty prints JavaScript errors on a web page or the terminal.",
     "keywords": [
         "anolilab",
