@@ -136,10 +136,15 @@ export const normalizeCompilerOptionsForWrite = (
         }
     }
 
-    const result: Record<string, unknown> = {};
+    // Spread (not a fresh `{}` + `Object.entries`) so own symbol keys — notably the
+    // `implicitBaseUrlSymbol` sentinel — survive normalisation; only the string-keyed enum options
+    // and removed options are rewritten below.
+    const result: Record<string, unknown> = { ...compilerOptions };
 
     for (const [key, value] of Object.entries(compilerOptions)) {
         if (removed?.has(key)) {
+            delete result[key];
+
             continue;
         }
 
@@ -150,14 +155,12 @@ export const normalizeCompilerOptionsForWrite = (
 
             // An unknown ordinal (e.g. a newer enum member this table predates) is better dropped than
             // emitted as an invalid number the tsconfig parser would reject outright.
-            if (name !== undefined) {
+            if (name === undefined) {
+                delete result[key];
+            } else {
                 result[key] = name;
             }
-
-            continue;
         }
-
-        result[key] = value;
     }
 
     return result as TsConfigJson.CompilerOptions;
