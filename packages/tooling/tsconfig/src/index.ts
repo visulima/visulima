@@ -3,5 +3,8 @@ export { findTsConfig, findTsConfigSync } from "./find-tsconfig";
 export type { Options as ReadTsConfigOptions } from "./read-tsconfig";
 export { configDirectoryPlaceholder, implicitBaseUrlSymbol, readTsConfig } from "./read-tsconfig";
 export type { TsConfigJsonResolved } from "./types";
+export type { NormalizeCompilerOptionsForWriteOptions } from "./utils/normalize-compiler-options-for-write";
+export { normalizeCompilerOptionsForWrite, REMOVED_COMPILER_OPTIONS_BY_MAJOR } from "./utils/normalize-compiler-options-for-write";
+export type { WriteTsConfigOptions } from "./write-tsconfig";
 export { writeTsConfig, writeTsConfigSync } from "./write-tsconfig";
 export type { TsConfigJson } from "type-fest";
