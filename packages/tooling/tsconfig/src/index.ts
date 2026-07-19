@@ -3,5 +3,6 @@ export { findTsConfig, findTsConfigSync } from "./find-tsconfig";
 export type { Options as ReadTsConfigOptions } from "./read-tsconfig";
 export { configDirectoryPlaceholder, implicitBaseUrlSymbol, readTsConfig } from "./read-tsconfig";
 export type { TsConfigJsonResolved } from "./types";
+export type { WriteTsConfigOptions } from "./write-tsconfig";
 export { writeTsConfig, writeTsConfigSync } from "./write-tsconfig";
 export type { TsConfigJson } from "type-fest";

@@ -4,7 +4,9 @@ This file provides guidance to AI coding agents when working with code in this d
 
 ## Overview
 
-`@visulima/tsconfig` finds, reads, and writes `tsconfig.json` files. It is **not** a shared-TS-config preset package — despite the name, it is a parsing/IO library (think `get-tsconfig` + `find-up`). Public surface (see `src/index.ts`): `findTsConfig[Sync]`, `readTsConfig`, `writeTsConfig[Sync]`, plus the `TsConfigJson` / `TsConfigJsonResolved` / `TsConfigResult` types and the `implicitBaseUrlSymbol` sentinel.
+`@visulima/tsconfig` finds, reads, and writes `tsconfig.json` files. It is **not** a shared-TS-config preset package — despite the name, it is a parsing/IO library (think `get-tsconfig` + `find-up`). Public surface (see `src/index.ts`): `findTsConfig[Sync]`, `readTsConfig`, `writeTsConfig[Sync]`, plus the `TsConfigJson` / `TsConfigJsonResolved` / `TsConfigResult` / `WriteTsConfigOptions` types and the `implicitBaseUrlSymbol` sentinel.
+
+- `writeTsConfig[Sync]` normalises the config it serialises so a resolved `CompilerOptions` object round-trips to a valid file: numeric enum values (`target: 99`) are rewritten to their string names (`"esnext"`), and — via the `typescriptMajor` option — options removed in that TS major (e.g. `baseUrl` in 7.0) are dropped. A `fileName` option writes a derived project (e.g. `tsconfig.build.json`). The normalisation itself (`normalizeCompilerOptionsForWrite`) is **internal** — kept out of the public surface.
 
 ## Architecture
 
