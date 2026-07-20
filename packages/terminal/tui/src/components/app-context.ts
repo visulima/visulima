@@ -2,6 +2,16 @@
 import type { Context } from "react";
 import { createContext } from "react";
 
+/**
+ * A handle returned by `suspendTerminal()` when called without a callback.
+ * Call `resume()` (or use `await using`, which disposes it) to restore Ink's
+ * rendering and input handling.
+ */
+export type TerminalSuspension = {
+    readonly [Symbol.asyncDispose]: () => Promise<void>;
+    readonly resume: () => Promise<void>;
+};
+
 export type Props = {
     /**
      * Exit (unmount) the whole Ink app.
@@ -11,6 +21,20 @@ export type Props = {
      * - `exit(value)` — resolves `waitUntilExit()` with `value`.
      */
     readonly exit: (errorOrResult?: Error | unknown) => void;
+
+    /**
+     * Temporarily hand terminal control to a child process (e.g. an editor,
+     * pager, or interactive subprocess), then restore Ink's rendering.
+     *
+     * - `suspendTerminal(async () => { … })` — runs the callback with the
+     *   terminal released and auto-resumes when it settles.
+     * - `suspendTerminal()` — returns a {@link TerminalSuspension} handle; call
+     *   `resume()` (or `await using`) to restore.
+     */
+    readonly suspendTerminal: {
+        (callback: () => Promise<void> | void): Promise<undefined>;
+        (): Promise<TerminalSuspension>;
+    };
 
     /**
      * Returns a promise that settles after pending render output is flushed to stdout.
@@ -42,6 +66,7 @@ export type Props = {
 
 const AppContext: Context<Props> = createContext<Props>({
     exit() {},
+    suspendTerminal: (() => Promise.resolve(undefined)) as unknown as Props["suspendTerminal"],
     async waitUntilRenderFlush() {},
 });
 
