@@ -15,6 +15,7 @@ import Yoga from "yoga-layout";
 
 import { accessibilityContext as AccessibilityContext } from "../components/accessibility-context";
 import App from "../components/app";
+import type { TerminalSuspension } from "../components/app-context";
 import { composeBackbufferSlice } from "./backbuffer";
 import * as dom from "./dom";
 import instances from "./instances";
@@ -388,6 +389,19 @@ export default class Ink {
     private hasPendingThrottledRender = false;
 
     private kittyProtocolEnabled = false;
+
+    // Flags the kitty protocol was enabled with, remembered so suspendTerminal()
+    // can reinstate the exact same protocol on resume.
+    private kittyFlags?: KittyFlagName[];
+
+    // Set while suspendTerminal() has handed the terminal to a child process.
+    private isSuspended = false;
+
+    // Input pause/resume hooks registered by the App component, which owns raw
+    // mode and bracketed paste state.
+    private pauseInput?: () => void;
+
+    private resumeInput?: () => void;
 
     private cancelKittyDetection?: () => void;
 
@@ -1054,6 +1068,8 @@ export default class Ink {
                     exitOnCtrlC={this.options.exitOnCtrlC}
                     interactive={this.interactive}
                     onExit={this.handleAppExit}
+                    onRegisterInputControl={this.registerInputControl}
+                    onSuspendTerminal={this.suspendTerminal}
                     onWaitUntilRenderFlush={this.waitUntilRenderFlush}
                     renderThrottleMs={this.renderThrottleMs}
                     setCursorPosition={this.setCursorPosition}
@@ -1661,7 +1677,124 @@ export default class Ink {
         stdout.write("\u001B[?u");
     }
 
+    // Called by the App component to register how input is paused/resumed. Kept
+    // as an arrow field so it can be passed as a prop without binding.
+    registerInputControl = (pauseInput: () => void, resumeInput: () => void): void => {
+        this.pauseInput = pauseInput;
+        this.resumeInput = resumeInput;
+    };
+
+    /**
+     * Hand terminal control to a child process, then restore Ink's rendering.
+     * With a callback, the terminal is released for its duration and resumed in a
+     * `finally`. Without one, returns a handle whose `resume()` (or `await using`)
+     * restores.
+     */
+    suspendTerminal = (async (callback?: () => Promise<void> | void): Promise<TerminalSuspension | undefined> => {
+        this.beginSuspend();
+
+        if (callback) {
+            try {
+                await callback();
+            } finally {
+                await this.endSuspend();
+            }
+
+            return undefined;
+        }
+
+        const resume = async (): Promise<void> => {
+            await this.endSuspend();
+        };
+
+        return { resume, [Symbol.asyncDispose]: resume };
+    }) as {
+        (callback: () => Promise<void> | void): Promise<undefined>;
+        (): Promise<TerminalSuspension>;
+    };
+
+    private beginSuspend(): void {
+        if (this.isSuspended) {
+            throw new Error("The terminal is already suspended. Resume the current suspension before suspending again.");
+        }
+
+        this.isSuspended = true;
+
+        if (!this.interactive || this.isUnmounted || this.isUnmounting) {
+            return;
+        }
+
+        try {
+            // Erase Ink's current frame so the child starts from a settled screen.
+            this.log.clear();
+            this.log.done();
+
+            if (this.kittyProtocolEnabled) {
+                this.writeBestEffort(this.options.stdout, "[<u");
+            }
+
+            if (this.alternateScreen) {
+                this.writeBestEffort(this.options.stdout, ALT_SCREEN_OFF);
+                this.writeBestEffort(this.options.stdout, cursorShow);
+            }
+
+            // Hand input back to the terminal (raw mode off, bracketed paste off).
+            this.pauseInput?.();
+        } catch (error) {
+            // If handing over the terminal fails partway, don't strand the app
+            // suspended with no way back: reclaim input, clear the flag, rethrow.
+            this.isSuspended = false;
+
+            try {
+                this.resumeInput?.();
+            } catch {
+                // best effort
+            }
+
+            throw error;
+        }
+    }
+
+    private async endSuspend(): Promise<void> {
+        if (!this.isSuspended) {
+            return;
+        }
+
+        this.isSuspended = false;
+
+        // Reclaim input even mid-unmount; pauseInput already ran, so this is symmetric.
+        this.resumeInput?.();
+
+        if (!this.interactive || this.isUnmounted || this.isUnmounting) {
+            return;
+        }
+
+        if (this.alternateScreen) {
+            this.writeBestEffort(this.options.stdout, ALT_SCREEN_ON);
+        }
+
+        if (this.kittyProtocolEnabled && this.kittyFlags) {
+            this.writeBestEffort(this.options.stdout, `\u001B[>${resolveFlags(this.kittyFlags)}u`);
+        }
+
+        // Force a full redraw instead of diffing against the stale pre-suspension
+        // frame, which the child process may have overwritten.
+        this.lastOutput = "";
+        this.lastOutputToRender = "";
+        this.lastOutputHeight = 0;
+        this.log.reset();
+
+        try {
+            this.calculateLayout();
+            this.onRender();
+            await this.waitUntilRenderFlush();
+        } catch {
+            // best effort — must not mask a callback error in the caller's finally
+        }
+    }
+
     private enableKittyProtocol(flags: KittyFlagName[]): void {
+        this.kittyFlags = flags;
         this.options.stdout.write(`\u001B[>${resolveFlags(flags)}u`);
         this.kittyProtocolEnabled = true;
     }
