@@ -40,6 +40,15 @@ describe("style tests", () => {
         expect(received).toStrictEqual(expected);
     });
 
+    it(`should colorize red(NaN) as "NaN" rather than empty output`, () => {
+        expect.assertions(1);
+
+        const received = colorize.red(Number.NaN);
+        const expected = ["%cNaN", "color: red;"];
+
+        expect(received).toStrictEqual(expected);
+    });
+
     it(`should colorize chained rgb(100, 80, 155).bold('foo') without corrupting commas`, () => {
         expect.assertions(1);
 

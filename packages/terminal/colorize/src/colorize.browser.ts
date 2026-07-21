@@ -48,8 +48,11 @@ const createStyle = (
         input: ArrayLike<string> | ReadonlyArray<string> | number | string | { raw: ArrayLike<string> | ReadonlyArray<string> },
         ...values: string[]
     ): string[] => {
-        // Bail on empty/nullish input but let the number 0 through.
-        if (!input && input !== 0) {
+        // The declared type excludes null/undefined, but untyped JS callers still
+        // reach here; the explicit three-way check lets falsy-but-meaningful values
+        // (0, NaN, false) render while bailing only on null/undefined/empty string.
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison -- guard defends against untyped callers the type system can't see
+        if (input === undefined || input === null || input === "") {
             return [];
         }
 
