@@ -827,7 +827,8 @@ export const createTusAdapter = (options: TusAdapterOptions): TusAdapter => {
                     await persistUploadEntry(fingerprint, uploadUrl, file);
 
                     if (initialOffset > 0) {
-                        progressCallback(Math.round((initialOffset / file.size) * 100), initialOffset);
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- progressCallback may be reassigned to undefined concurrently (setOnProgress/timeout cleanup) while createUpload is in flight
+                        progressCallback?.(Math.round((initialOffset / file.size) * 100), initialOffset);
                     }
                 }
 

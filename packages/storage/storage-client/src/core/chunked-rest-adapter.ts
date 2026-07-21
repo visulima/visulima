@@ -822,7 +822,8 @@ export const createChunkedRestAdapter = (options: ChunkedRestAdapterOptions): Ch
                         fileId = undefined;
                     } else if (probed > 0) {
                         control?._updateOffset(probed);
-                        progressCallback(Math.round((probed / file.size) * 100), probed);
+                        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- progressCallback may be reassigned to undefined concurrently (setOnProgress/timeout cleanup) while the upload is in flight
+                        progressCallback?.(Math.round((probed / file.size) * 100), probed);
                     }
                 }
 
