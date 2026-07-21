@@ -58,7 +58,8 @@ const BASE64_WHITESPACE_RE = /[\t\n\f\r ]/g;
 // Standard (RFC 4648) base64 alphabet followed by up to two `=` padding
 // characters. Rejects any non-alphabet character and stray `=` in the middle;
 // the "lone trailing character" case (a group of a single base64 digit, which
-// encodes no bytes) is caught by the `length % 4 === 1` check at decode time.
+// encodes no bytes) and mispadded input (a `=` in a string whose length is not a
+// multiple of 4) are caught by the length checks at decode time.
 const BASE64_RE = /^[a-z0-9+/]*={0,2}$/i;
 
 // Lookup table mapping a hex char code -> nibble value (or -1 if invalid).
@@ -315,10 +316,12 @@ const uint8ArrayToBase64 = (data: Uint8Array): string => {
 const base64ToUint8Array = (base64: string): Uint8Array => {
     const normalized = base64.replaceAll(BASE64_WHITESPACE_RE, "");
 
-    // A `length % 4 === 1` remainder is the only invalid partial group: a single
-    // leftover base64 digit encodes no bytes, so reject it alongside any
-    // non-alphabet character or misplaced padding.
-    if (!BASE64_RE.test(normalized) || normalized.length % 4 === 1) {
+    // A `length % 4 === 1` remainder is the only invalid partial group for
+    // unpadded input: a single leftover base64 digit encodes no bytes. Padded
+    // input (`=`) must always be a whole number of 4-char groups, so any padded
+    // string whose length is not a multiple of 4 is malformed (e.g. `aG=`, `a==`,
+    // `==`, `aGkvA=`). Reject both alongside any non-alphabet character.
+    if (!BASE64_RE.test(normalized) || normalized.length % 4 === 1 || (normalized.includes("=") && normalized.length % 4 !== 0)) {
         throw new TypeError("Invalid base64 string: contains a non-alphabet character or invalid padding");
     }
 
