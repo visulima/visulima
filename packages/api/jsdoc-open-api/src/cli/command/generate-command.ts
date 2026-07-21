@@ -80,8 +80,12 @@ const buildSpec = async (
     }
 
     // Without a base-definition file the config must supply `swaggerDefinition`;
-    // otherwise SpecBuilder receives undefined and throws a bare TypeError.
-    if (typeof swaggerDefinition !== "object") {
+    // otherwise SpecBuilder receives undefined and throws a bare TypeError. `null`
+    // must be rejected too — it comes from a user-authored config (e.g. JSON with
+    // `"swaggerDefinition": null`) and `typeof null === "object"` would otherwise
+    // slip past into `new SpecBuilder(null)`.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, sonarjs/different-types-comparison -- runtime config is untyped; `null` is reachable despite the BaseDefinition type
+    if (swaggerDefinition === null || typeof swaggerDefinition !== "object") {
         throw new TypeError(
             `Invalid config "${options.config ?? configName}": missing "swaggerDefinition" object. Provide it in the config or pass a base definition file via -d/--definition.`,
         );
