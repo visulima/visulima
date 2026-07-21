@@ -151,7 +151,7 @@
         "@visulima/tabular": "4.0.0",
         "@visulima/task-runner": "1.0.0",
         "@visulima/tui": "1.0.2",
-        "@visulima/tui-components": "workspace:*",
+        "@visulima/tui-kit": "workspace:*",
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^2.0.1",
         "react": "catalog:frontend",

@@ -3,7 +3,7 @@ import { detectAvailableProviders, detectProvider, PROVIDER_NAMES } from "@visul
 import { renderToString } from "@visulima/tui";
 import { Box } from "@visulima/tui/components/box";
 import { Text } from "@visulima/tui/components/text";
-import { Table } from "@visulima/tui-components/table";
+import { Table } from "@visulima/tui-kit/table";
 import React from "react";
 
 import type { OutdatedEntry } from "../util/catalog";
