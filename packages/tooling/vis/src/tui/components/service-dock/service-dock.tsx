@@ -1,6 +1,6 @@
 import { Box } from "@visulima/tui/components/box";
 import { Text } from "@visulima/tui/components/text";
-import { Spinner } from "@visulima/tui-components/spinner";
+import { Spinner } from "@visulima/tui-kit/spinner";
 import React, { useSyncExternalStore } from "react";
 
 import type { ServiceDockStore, ServiceState, ServiceStatus } from "./service-dock-store";

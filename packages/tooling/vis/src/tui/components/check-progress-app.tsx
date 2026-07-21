@@ -1,7 +1,7 @@
 import { Box } from "@visulima/tui/components/box";
 import { Text } from "@visulima/tui/components/text";
 import { useWindowSize } from "@visulima/tui/hooks/use-window-size";
-import { Spinner } from "@visulima/tui-components/spinner";
+import { Spinner } from "@visulima/tui-kit/spinner";
 import React from "react";
 
 export interface CheckProgressProps {

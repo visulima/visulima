@@ -3,7 +3,7 @@ import { Text } from "@visulima/tui/components/text";
 import { useApp } from "@visulima/tui/hooks/use-app";
 import { useInput } from "@visulima/tui/hooks/use-input";
 import { useWindowSize } from "@visulima/tui/hooks/use-window-size";
-import type { ScrollViewRef } from "@visulima/tui-components/scroll-view";
+import type { ScrollViewRef } from "@visulima/tui-kit/scroll-view";
 import React, { useCallback, useRef, useSyncExternalStore } from "react";
 
 import SortDetailPanel from "./sort-detail-panel";
