@@ -202,6 +202,20 @@ describe("boxed primitives", () => {
         expect(cloned).toBeInstanceOf(BigInt);
         expect(cloned.valueOf()).toBe(10n);
     });
+
+    it("deep-clones plain objects that spoof Symbol.toStringTag instead of returning the original reference", () => {
+        expect.assertions(3);
+
+        const original = { [Symbol.toStringTag]: "Number", x: 1 };
+        const cloned = deepClone(original);
+
+        expect(cloned).not.toBe(original);
+        expect(cloned.x).toBe(1);
+
+        cloned.x = 2;
+
+        expect(original.x).toBe(1);
+    });
 });
 
 describe("shared underlying buffers", () => {

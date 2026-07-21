@@ -233,13 +233,22 @@ const buildClone = (cloner: Handlers): InternalClone =>
             || boxedTag === "[object BigInt]"
             || boxedTag === "[object Symbol]"
         ) {
-            // Box the primitive via `Object(...)`; `new Object(...)`/`{}` cannot wrap a primitive value.
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,unicorn/new-for-builtins
-            const cloned = Object((value as { valueOf: () => unknown }).valueOf());
+            const unboxed = (value as { valueOf: () => unknown }).valueOf();
 
-            state.cache.set(value, cloned);
+            // A genuine boxed primitive unboxes to a primitive. A plain object that merely
+            // spoofs `Symbol.toStringTag` inherits `Object.prototype.valueOf`, which returns
+            // the object itself; `Object(value)` would then hand back the original reference
+            // (a shared-mutation footgun). Only take the re-box path for real boxed primitives
+            // and let spoofed objects fall through to the generic object handler.
+            if (typeof unboxed !== "object" && typeof unboxed !== "function") {
+                // Box the primitive via `Object(...)`; `new Object(...)`/`{}` cannot wrap a primitive value.
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment,unicorn/new-for-builtins
+                const cloned = Object(unboxed);
 
-            return cloned;
+                state.cache.set(value, cloned);
+
+                return cloned;
+            }
         }
 
         if (value instanceof SharedArrayBuffer) {
