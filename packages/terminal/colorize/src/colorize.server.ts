@@ -40,8 +40,11 @@ const wrapText = (
     values: string[],
     properties: ColorizeProperties,
 ) => {
-    // Bail on empty/nullish input but let the number 0 through.
-    if (!strings && strings !== 0) {
+    // The declared type excludes null/undefined, but untyped JS callers still
+    // reach here; the explicit three-way check lets falsy-but-meaningful values
+    // (0, NaN, false) render while bailing only on null/undefined/empty string.
+    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition,sonarjs/different-types-comparison -- guard defends against untyped callers the type system can't see
+    if (strings === undefined || strings === null || strings === "") {
         return "";
     }
 
