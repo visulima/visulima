@@ -243,6 +243,25 @@ describe("generate command", () => {
         }
     });
 
+    it("throws a descriptive error when swaggerDefinition is null in the config", async () => {
+        expect.assertions(1);
+
+        const workDirectory = mkdtempSync(join(tmpdir(), "generate-null-definition-"));
+        const configPath = join(workDirectory, "config.cjs");
+
+        // `typeof null === "object"` would otherwise slip a null swaggerDefinition
+        // through into `new SpecBuilder(null)`; the null guard must reject it first.
+        writeFileSync(configPath, "module.exports = { exclude: [], swaggerDefinition: null };\n");
+
+        try {
+            await expect(generateCommand(".openapirc.js", [join(fixturesDirectory, "routes")], { config: configPath })).rejects.toThrow(
+                `missing "swaggerDefinition" object`,
+            );
+        } finally {
+            rmSync(workDirectory, { force: true, recursive: true });
+        }
+    });
+
     it("scans a symlinked directory instead of failing with EISDIR", async () => {
         expect.assertions(1);
 
