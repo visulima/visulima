@@ -397,6 +397,26 @@ describe("handling numbers", () => {
         expect(esc(zeroReceived)).toStrictEqual(esc("[31m0[39m"));
     });
 
+    it(`should colorize the number NaN as "NaN" rather than empty output`, () => {
+        expect.assertions(1);
+
+        const received = red(Number.NaN);
+        const expected = "[31mNaN[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
+    it(`should colorize the boolean false as "false" rather than empty output`, () => {
+        expect.assertions(1);
+
+        // Untyped JS callers can pass a boolean; the guard only bails on
+        // null/undefined/empty string, so false must render as its string form.
+        const received = red(false as never);
+        const expected = "[31mfalse[39m";
+
+        expect(esc(received)).toStrictEqual(esc(expected));
+    });
+
     it(`should bold a number with function call bold(123)`, () => {
         expect.assertions(1);
 
