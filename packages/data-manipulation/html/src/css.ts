@@ -72,135 +72,88 @@ const cssObjectToString = (cssObject: FlexibleCSSProperties | Properties): strin
 const CSS_WHITESPACE = new Set([" ", "\t", "\n", "\r", "\f", "\v"]);
 
 /**
- * Immutable minifier state threaded through the one-line CSS minifier's per-character
- * handlers. Handlers read this and return a fresh state rather than mutating it.
- */
-interface MinifyState {
-    readonly inComment: boolean;
-    readonly inWhitespaceRun: boolean;
-    readonly quote: "\"" | "'" | undefined;
-}
-
-/**
- * The outcome of processing a single character: the text to append, the index of the last
- * character consumed, and the resulting state.
- */
-interface MinifyStep {
-    readonly nextIndex: number;
-    readonly nextState: MinifyState;
-    readonly output: string;
-}
-
-/**
- * Builds the step for a run of whitespace, emitting a single collapsed space only when the
- * previous character was not already whitespace.
- * @param state The current minifier state.
- * @param index The current character index.
- * @returns A step that emits at most one space and marks a whitespace run as open.
- */
-const collapseWhitespaceStep = (state: MinifyState, index: number): MinifyStep => {
-    return {
-        nextIndex: index,
-        nextState: { ...state, inWhitespaceRun: true },
-        output: state.inWhitespaceRun ? "" : " ",
-    };
-};
-
-/**
- * Processes one character while inside a quoted CSS string: emit verbatim, honoring
- * backslash escapes, until the matching closing quote is reached.
- * @param input The full CSS string being minified.
- * @param index The current character index.
- * @param state The current minifier state.
- * @returns The resulting step.
- */
-const stepInQuote = (input: string, index: number, state: MinifyState): MinifyStep => {
-    const char = input[index] as string;
-
-    if (char === "\\" && index + 1 < input.length) {
-        return { nextIndex: index + 1, nextState: state, output: char + (input[index + 1] as string) };
-    }
-
-    const nextState = char === state.quote ? { ...state, quote: undefined } : state;
-
-    return { nextIndex: index, nextState, output: char };
-};
-
-/**
- * Processes one character while inside a comment: collapse whitespace like normal but never
- * treat a quote as a string opener, so apostrophes in prose comments do not flip string
- * mode and corrupt the rest of the stylesheet.
- * @param input The full CSS string being minified.
- * @param index The current character index.
- * @param state The current minifier state.
- * @returns The resulting step.
- */
-const stepInComment = (input: string, index: number, state: MinifyState): MinifyStep => {
-    const char = input[index] as string;
-
-    if (char === "*" && input[index + 1] === "/") {
-        return { nextIndex: index + 1, nextState: { ...state, inComment: false, inWhitespaceRun: false }, output: "*/" };
-    }
-
-    if (CSS_WHITESPACE.has(char)) {
-        return collapseWhitespaceStep(state, index);
-    }
-
-    return { nextIndex: index, nextState: { ...state, inWhitespaceRun: false }, output: char };
-};
-
-/**
- * Processes one character in the default (outside string/comment) mode.
- * @param input The full CSS string being minified.
- * @param index The current character index.
- * @param state The current minifier state.
- * @returns The resulting step.
- */
-const stepDefault = (input: string, index: number, state: MinifyState): MinifyStep => {
-    const char = input[index] as string;
-
-    if (char === "/" && input[index + 1] === "*") {
-        return { nextIndex: index + 1, nextState: { ...state, inComment: true, inWhitespaceRun: false }, output: "/*" };
-    }
-
-    if (char === "\"" || char === "'") {
-        return { nextIndex: index, nextState: { ...state, inWhitespaceRun: false, quote: char }, output: char };
-    }
-
-    if (CSS_WHITESPACE.has(char)) {
-        return collapseWhitespaceStep(state, index);
-    }
-
-    return { nextIndex: index, nextState: { ...state, inWhitespaceRun: false }, output: char };
-};
-
-/**
  * Collapses runs of whitespace into a single space while preserving the contents of
  * single- and double-quoted CSS strings (e.g. `content: "a   b"`), so the one-line
  * minifier does not mangle quoted values. Escaped quotes (`\"`, `\'`) inside strings
- * are respected.
+ * are respected, and quotes inside comments do not open string mode.
+ *
+ * Implemented as a straightforward mode-dispatch loop over the input: `quote` (inside a
+ * quoted string), `inComment` (inside a `/* ... *\/` block), or the default mode. A single
+ * cognitive-complexity suppression covers the whole loop because splitting the three tightly
+ * coupled modes into separate functions obscures the shared index/whitespace bookkeeping
+ * without making the logic clearer.
  * @param input The CSS string to minify.
  * @returns The minified one-line CSS string.
  */
+// eslint-disable-next-line sonarjs/cognitive-complexity -- the three minifier modes share index and whitespace-run bookkeeping; keeping them in one loop is clearer than fragmenting the state.
 const collapseWhitespaceOutsideStrings = (input: string): string => {
-    let state: MinifyState = { inComment: false, inWhitespaceRun: false, quote: undefined };
+    let quote: "\"" | "'" | undefined;
+    let inComment = false;
+    let inWhitespaceRun = false;
     let result = "";
-    let index = 0;
 
-    while (index < input.length) {
-        let step: MinifyStep;
+    for (let index = 0; index < input.length; index += 1) {
+        const char = input[index] as string;
 
-        if (state.quote !== undefined) {
-            step = stepInQuote(input, index, state);
-        } else if (state.inComment) {
-            step = stepInComment(input, index, state);
-        } else {
-            step = stepDefault(input, index, state);
+        if (quote !== undefined) {
+            // Inside a quoted string: emit verbatim, honoring backslash escapes, until the
+            // matching closing quote is reached.
+            if (char === "\\" && index + 1 < input.length) {
+                result += char + (input[index + 1] as string);
+                index += 1;
+            } else {
+                if (char === quote) {
+                    quote = undefined;
+                }
+
+                result += char;
+            }
+
+            continue;
         }
 
-        result += step.output;
-        state = step.nextState;
-        index = step.nextIndex + 1;
+        if (inComment) {
+            // Inside a comment: collapse whitespace as normal but never treat a quote as a
+            // string opener, so apostrophes in prose comments do not flip string mode.
+            if (char === "*" && input[index + 1] === "/") {
+                result += "*/";
+                index += 1;
+                inComment = false;
+                inWhitespaceRun = false;
+            } else if (CSS_WHITESPACE.has(char)) {
+                if (!inWhitespaceRun) {
+                    result += " ";
+                }
+
+                inWhitespaceRun = true;
+            } else {
+                result += char;
+                inWhitespaceRun = false;
+            }
+
+            continue;
+        }
+
+        // Default mode (outside string/comment).
+        if (char === "/" && input[index + 1] === "*") {
+            result += "/*";
+            index += 1;
+            inComment = true;
+            inWhitespaceRun = false;
+        } else if (char === "\"" || char === "'") {
+            quote = char;
+            result += char;
+            inWhitespaceRun = false;
+        } else if (CSS_WHITESPACE.has(char)) {
+            if (!inWhitespaceRun) {
+                result += " ";
+            }
+
+            inWhitespaceRun = true;
+        } else {
+            result += char;
+            inWhitespaceRun = false;
+        }
     }
 
     return result.trim();
