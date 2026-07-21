@@ -17,7 +17,7 @@ const JDBC_SCHEME_BY_SUBPROTOCOL: Record<string, string> = {
 
 /**
  * Resolve the host a JDBC URL would connect to for the allowlist gate. Parses
- * `jdbc:&lt;scheme>://…`, rewrites to the driver scheme, and reads `URL.host`.
+ * `jdbc:{scheme}://…`, rewrites to the driver scheme, and reads `URL.host`.
  * Returns `undefined` for JDBC flavours we don't dispatch (oracle, h2, …) or an
  * unparseable URL — fail-closed when an allowlist is active.
  */

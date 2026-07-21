@@ -204,11 +204,15 @@ describe(resolveConfig, () => {
     });
 
     it("extends (not replaces) the bundled global allowlists when merging an inline config", () => {
-        expect.assertions(1);
+        expect.assertions(2);
 
         const bundled = getBundledConfig();
         const baseCount = Array.isArray(bundled.allowlists) ? bundled.allowlists.length : 0;
         const resolved = resolveConfig({ config: { allowlists: [{ description: "mine", regexes: ["placeholder"] }], rules: [{ id: "custom-rule" }] } });
+
+        // Guard against a vacuous pass: the bundled ruleset must actually ship
+        // global allowlists, otherwise "extends" degenerates into "replaces 0".
+        expect(baseCount).toBeGreaterThan(0);
 
         // The user's single allowlist is appended to the bundled ones — not
         // substituted for them, which would re-enable FPs across every rule.
