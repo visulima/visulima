@@ -31,8 +31,11 @@ const outputDirectory = path.join(packageRoot, "dist", "r");
 const REGISTRY_SCHEMA = "https://ui.shadcn.com/schema/registry.json";
 const ITEM_SCHEMA = "https://ui.shadcn.com/schema/registry-item.json";
 const HOMEPAGE = "https://visulima.com/packages/tui";
-const REGISTRY_NAME = "visulima/tui";
-const BASE_URL = "https://visulima.com/r";
+const REGISTRY_NAME = "visulima/tui-kit";
+// Where the emitted items are hosted; every registryDependency is an absolute
+// URL under this base (shadcn requires absolute dep URLs). Override with
+// REGISTRY_BASE_URL to point a local test server at the same tree.
+const BASE_URL = process.env.REGISTRY_BASE_URL ?? "https://visulima.com/r";
 
 /**
  * Not registry items: the barrel, and the flat entry shims that exist purely
