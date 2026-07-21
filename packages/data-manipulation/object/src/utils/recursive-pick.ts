@@ -43,17 +43,14 @@ const deepCopy = (value: unknown): unknown => {
     return carry;
 };
 
-type Walk = (value: unknown, tails: ReadonlyArray<ReadonlyArray<string>>) => unknown;
-
 /**
  * Pick the still-relevant branches from an array, preserving order while
  * dropping elements that match nothing.
  * @param value The array currently being copied.
  * @param tails The pick-path tails still relevant at this node.
- * @param walk The recursive copy step applied to each kept element.
  * @returns A new array with only the picked elements, or `NOTHING`.
  */
-const walkArray = (value: unknown[], tails: ReadonlyArray<ReadonlyArray<string>>, walk: Walk): unknown => {
+const walkArray = (value: unknown[], tails: ReadonlyArray<ReadonlyArray<string>>): unknown => {
     const result: unknown[] = [];
 
     for (const [index, element] of value.entries()) {
@@ -63,6 +60,9 @@ const walkArray = (value: unknown[], tails: ReadonlyArray<ReadonlyArray<string>>
             continue;
         }
 
+        // `walk` is a module-level sibling; the mutual reference resolves at
+        // call time, so there is no temporal-dead-zone hazard here.
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         const child = walk(element, childTails);
 
         if (child !== NOTHING) {
@@ -77,10 +77,9 @@ const walkArray = (value: unknown[], tails: ReadonlyArray<ReadonlyArray<string>>
  * Pick the still-relevant branches from a plain object.
  * @param value The object currently being copied.
  * @param tails The pick-path tails still relevant at this node.
- * @param walk The recursive copy step applied to each kept property.
  * @returns A new object with only the picked properties, or `NOTHING`.
  */
-const walkObject = (value: Record<string, unknown>, tails: ReadonlyArray<ReadonlyArray<string>>, walk: Walk): unknown => {
+const walkObject = (value: Record<string, unknown>, tails: ReadonlyArray<ReadonlyArray<string>>): unknown => {
     const carry: Record<string, unknown> = {};
     let kept = false;
 
@@ -91,6 +90,9 @@ const walkObject = (value: Record<string, unknown>, tails: ReadonlyArray<Readonl
             continue;
         }
 
+        // `walk` is a module-level sibling; the mutual reference resolves at
+        // call time, so there is no temporal-dead-zone hazard here.
+        // eslint-disable-next-line @typescript-eslint/no-use-before-define
         const result = walk(child, childTails);
 
         if (result !== NOTHING) {
@@ -110,20 +112,20 @@ const walkObject = (value: Record<string, unknown>, tails: ReadonlyArray<Readonl
  * @param tails The pick-path tails still relevant at this node.
  * @returns A new value with only the picked branches, or `NOTHING`.
  */
-const walk: Walk = (value, tails) => {
+const walk = (value: unknown, tails: ReadonlyArray<ReadonlyArray<string>>): unknown => {
     if (tails.some((tail) => tail.length === 0)) {
         return deepCopy(value);
     }
 
     if (Array.isArray(value)) {
-        return walkArray(value, tails, walk);
+        return walkArray(value, tails);
     }
 
     if (!isPlainObject(value)) {
         return NOTHING;
     }
 
-    return walkObject(value, tails, walk);
+    return walkObject(value, tails);
 };
 
 /**
