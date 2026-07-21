@@ -6,7 +6,7 @@ import { basename, dirname, join } from "@visulima/path";
 import { renderToString } from "@visulima/tui";
 import { Box } from "@visulima/tui/components/box";
 import { Text } from "@visulima/tui/components/text";
-import { Table } from "@visulima/tui-components/table";
+import { Table } from "@visulima/tui-kit/table";
 import React from "react";
 import { coerce, compare, parse, rcompare } from "semver";
 

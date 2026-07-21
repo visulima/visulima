@@ -3,8 +3,8 @@ import { Text } from "@visulima/tui/components/text";
 import { useApp } from "@visulima/tui/hooks/use-app";
 import { useInput } from "@visulima/tui/hooks/use-input";
 import { useWindowSize } from "@visulima/tui/hooks/use-window-size";
-import { Dialog } from "@visulima/tui-components/dialog";
-import type { ScrollViewRef } from "@visulima/tui-components/scroll-view";
+import { Dialog } from "@visulima/tui-kit/dialog";
+import type { ScrollViewRef } from "@visulima/tui-kit/scroll-view";
 import React, { useCallback, useEffect, useMemo, useRef, useState, useSyncExternalStore } from "react";
 
 import type { OutdatedEntry } from "../../../util/catalog";
