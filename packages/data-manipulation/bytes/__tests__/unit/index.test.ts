@@ -562,6 +562,26 @@ describe("@visulima/bytes", () => {
             expect(() => base64ToUint8Array("aGk=A")).toThrow("Invalid base64 string");
         });
 
+        it("should throw on padded input whose length is not a multiple of 4", () => {
+            expect.assertions(4);
+
+            // Padded base64 must be a whole number of 4-char groups; these are all
+            // mispadded and must be rejected consistently across runtimes (Node's
+            // `Buffer` decoder is lenient, the browser `atob` path throws).
+            expect(() => base64ToUint8Array("aG=")).toThrow("Invalid base64 string");
+            expect(() => base64ToUint8Array("a==")).toThrow("Invalid base64 string");
+            expect(() => base64ToUint8Array("==")).toThrow("Invalid base64 string");
+            expect(() => base64ToUint8Array("aGkvA=")).toThrow("Invalid base64 string");
+        });
+
+        it("should accept valid base64 forms with and without padding", () => {
+            expect.assertions(3);
+
+            expect(base64ToUint8Array("")).toStrictEqual(new Uint8Array([]));
+            expect(base64ToUint8Array("aGk=")).toStrictEqual(new Uint8Array([104, 105]));
+            expect(base64ToUint8Array("aGvB")).toStrictEqual(new Uint8Array([104, 107, 193]));
+        });
+
         it("should ignore ASCII whitespace", () => {
             expect.assertions(1);
 
