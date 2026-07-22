@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { DataGrid, Digits, DirectoryTree, FileChange, Image, Json, Log, QrCode } from "../../src/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
+import waitFor from "../helpers/wait-for";
 
 const setup = async (jsx: React.JSX.Element) => {
     const stdout = createStdout();
@@ -61,7 +62,10 @@ describe(DataGrid, () => {
         { header: "Name", key: "name" as const },
         { align: "right" as const, header: "Age", key: "age" as const },
     ];
-    const rows = [{ age: 30, name: "Bob" }, { age: 20, name: "Amy" }];
+    const rows = [
+        { age: 30, name: "Bob" },
+        { age: 20, name: "Amy" },
+    ];
 
     afterEach(async () => {
         unmount?.();
@@ -88,7 +92,7 @@ describe(DataGrid, () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "\r");
-        await delay(50);
+        await waitFor(() => onSelect.mock.calls.some((call) => call[0] === rows[0]));
 
         expect(onSelect).toHaveBeenCalledWith(rows[0]);
     });
@@ -106,12 +110,7 @@ describe(Log, () => {
     it("tails to maxLines", async () => {
         expect.assertions(2);
 
-        const s = await setup(
-            <Log
-                entries={[{ message: "first" }, { message: "second" }, { level: "error", message: "third" }]}
-                maxLines={2}
-            />,
-        );
+        const s = await setup(<Log entries={[{ message: "first" }, { message: "second" }, { level: "error", message: "third" }]} maxLines={2} />);
 
         unmount = s.unmount;
 
@@ -165,9 +164,7 @@ describe(FileChange, () => {
 describe(DirectoryTree, () => {
     let unmount: (() => void) | undefined;
 
-    const nodes = [
-        { children: [{ name: "index.ts", type: "file" as const }], name: "src", type: "directory" as const },
-    ];
+    const nodes = [{ children: [{ name: "index.ts", type: "file" as const }], name: "src", type: "directory" as const }];
 
     afterEach(async () => {
         unmount?.();
@@ -193,7 +190,7 @@ describe(DirectoryTree, () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "[C");
-        await delay(50);
+        await waitFor(() => s.getOutput().includes("index.ts"));
 
         expect(s.getOutput()).toContain("index.ts");
     });
@@ -211,7 +208,14 @@ describe(Image, () => {
     it("renders half-block cells for pixels", async () => {
         expect.assertions(1);
 
-        const s = await setup(<Image pixels={[["red", "green"], ["blue", "yellow"]]} />);
+        const s = await setup(
+            <Image
+                pixels={[
+                    ["red", "green"],
+                    ["blue", "yellow"],
+                ]}
+            />,
+        );
 
         unmount = s.unmount;
 
@@ -231,7 +235,10 @@ describe(QrCode, () => {
     it("renders a provided module matrix", async () => {
         expect.assertions(1);
 
-        const matrix = [[true, false], [false, true]];
+        const matrix = [
+            [true, false],
+            [false, true],
+        ];
         const s = await setup(<QrCode matrix={matrix} quietZone={0} />);
 
         unmount = s.unmount;

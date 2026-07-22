@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { CheckboxGroup, NumberInput, PieChart, ProgressCircle, TimePicker } from "../../src/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
+import waitFor from "../helpers/wait-for";
 
 const setup = async (jsx: React.JSX.Element) => {
     const stdout = createStdout();
@@ -50,7 +51,7 @@ describe(NumberInput, () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "[A"); // up arrow
-        await delay(50);
+        await waitFor(() => onChange.mock.calls.some((call) => call[0] === 7));
 
         expect(onChange).toHaveBeenCalledWith(7);
     });
@@ -63,7 +64,7 @@ describe(NumberInput, () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "[A");
-        await delay(50);
+        await waitFor(() => onChange.mock.calls.some((call) => call[0] === 100));
 
         expect(onChange).toHaveBeenCalledWith(100);
     });
@@ -97,7 +98,7 @@ describe(TimePicker, () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "[A");
-        await delay(50);
+        await waitFor(() => onChange.mock.calls.some((call) => call[0]?.hours === 10));
 
         expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ hours: 10 }));
     });
@@ -116,7 +117,13 @@ describe(CheckboxGroup, () => {
         expect.assertions(2);
 
         const s = await setup(
-            <CheckboxGroup defaultValue={["a"]} options={[{ label: "Alpha", value: "a" }, { label: "Beta", value: "b" }]} />,
+            <CheckboxGroup
+                defaultValue={["a"]}
+                options={[
+                    { label: "Alpha", value: "a" },
+                    { label: "Beta", value: "b" },
+                ]}
+            />,
         );
 
         unmount = s.unmount;
@@ -130,12 +137,19 @@ describe(CheckboxGroup, () => {
 
         const onChange = vi.fn();
         const s = await setup(
-            <CheckboxGroup autoFocus onChange={onChange} options={[{ label: "Alpha", value: "a" }, { label: "Beta", value: "b" }]} />,
+            <CheckboxGroup
+                autoFocus
+                onChange={onChange}
+                options={[
+                    { label: "Alpha", value: "a" },
+                    { label: "Beta", value: "b" },
+                ]}
+            />,
         );
 
         unmount = s.unmount;
         emitReadable(s.stdin, " ");
-        await delay(50);
+        await waitFor(() => onChange.mock.calls.some((call) => call[0]?.[0] === "a" && call[0]?.length === 1));
 
         expect(onChange).toHaveBeenCalledWith(["a"]);
     });
@@ -153,7 +167,15 @@ describe(PieChart, () => {
     it("renders a legend with percentages", async () => {
         expect.assertions(1);
 
-        const s = await setup(<PieChart data={[{ label: "x", value: 3 }, { label: "y", value: 1 }]} size={6} />);
+        const s = await setup(
+            <PieChart
+                data={[
+                    { label: "x", value: 3 },
+                    { label: "y", value: 1 },
+                ]}
+                size={6}
+            />,
+        );
 
         unmount = s.unmount;
 
