@@ -89,7 +89,7 @@ managePackageManagerVersions: true
 
 catalogs:
   backend:
-    '@hono/node-server': ^2.0.8
+    '@hono/node-server': ^2.0.10
     '@hono/swagger-ui': ^0.6.1
     '@hono/zod-openapi': 1.4.0
     '@koa/router': 15.6.0
@@ -673,14 +673,14 @@ catalogs:
     '@testing-library/react': 16.3.2
     '@testing-library/svelte': 5.4.2
     '@testing-library/vue': 8.1.0
-    '@vitest/browser': 4.1.9
-    '@vitest/coverage-v8': 4.1.9
-    '@vitest/ui': 4.1.9
+    '@vitest/browser': 4.1.10
+    '@vitest/coverage-v8': 4.1.10
+    '@vitest/ui': 4.1.10
     eslint-plugin-playwright: 2.10.4
     next-test-api-route-handler: 5.0.5
     playwright: ^1.61.1
     test-runner: 0.11.1
-    vitest: 4.1.9
+    vitest: 4.1.10
   tsc:
     typescript: 6.0.3
   types:
@@ -881,16 +881,17 @@ overrides:
   '@sveltejs/kit@>=2.49.0 <=2.52.1': '>=2.52.2'
   '@tootallnate/once@<3.0.1': ^3.0.1
   # @yarnpkg/parsers@3.x calls js-yaml.safeLoad (a v3 API removed in v4); pin
-  # its nested js-yaml back to v3 so it actually loads at runtime. 3.14.2 is the
-  # patched v3 release (fixes GHSA-h67p-54hq-rp68 while keeping the v3 API).
-  '@yarnpkg/parsers>js-yaml': ^3.14.2
+  # its nested js-yaml back to v3 so it actually loads at runtime. 3.15.0 is the
+  # latest patched v3 release (fixes GHSA-h67p-54hq-rp68 and GHSA-52cp-r559-cp3m
+  # while keeping the v3 API).
+  '@yarnpkg/parsers>js-yaml': '>=3.15.0 <4'
   ajv@>=6.0.0 <6.14.0: '>=6.14.0 <7.0.0'
   ajv@>=7.0.0-alpha.0 <8.18.0: '>=8.18.0'
   axios@>=1.0.0 <1.15.2: ^1.15.2
   basic-ftp@<=5.3.0: ^5.3.1
   body-parser@>=2.2.0 <2.2.1: '>=2.2.1'
   brace-expansion@<5.0.5: '>=5.0.5'
-  brace-expansion@>=5.0.0 <5.0.6: ^5.0.6
+  brace-expansion@>=5.0.0 <5.0.7: '>=5.0.7 <6'
   chrono-node@<2.2.4: '>=2.9.0'
   cookie@<0.7.0: '>=1.0.2'
   defu@<=6.1.4: '>=6.1.5'
@@ -1070,6 +1071,30 @@ overrides:
   vite@>=8.0.0 <=8.0.15: ^8.0.16
   ws@>=7.0.0 <7.5.11: ^7.5.11
   ws@>=8.0.0 <8.21.0: ^8.21.0
+  # Audit-gate floors (pnpm audit --audit-level=moderate). Major-line keys so a
+  # patched floor is forced across every resolved copy in that major (bounded
+  # ranges don't re-catch a spec an earlier override already rewrote), capped to
+  # the same major so consumers aren't pushed onto a new major line. The tar fix
+  # clears a critical (node-tar parse DoS); the @vitest/browser critical is
+  # handled by the catalog bump to 4.1.10 above.
+  '@hono/node-server@2': '>=2.0.10 <3'
+  axios@1: '>=1.18.0 <2'
+  brace-expansion@5: '>=5.0.7 <6'
+  fast-uri@3: '>=3.1.4 <4'
+  fast-xml-parser@5: '>=5.10.1 <6'
+  js-yaml@3: '>=3.15.0 <4'
+  js-yaml@4: '>=4.3.0 <5'
+  linkify-it@5: '>=5.0.2 <6'
+  protobufjs@7: '>=7.6.5 <8'
+  protobufjs@8: '>=8.6.6 <9'
+  sharp@0.34: '>=0.35.0 <0.36'
+  shell-quote@1: '>=1.8.5 <2'
+  svgo@4: '>=4.0.2 <5'
+  tar@7: '>=7.5.19 <8'
+  # Nested-path pins for edges the major-line keys above can't re-catch (an
+  # ancestor already rewrote the spec, so pnpm keeps the stale resolved copy).
+  '@modelcontextprotocol/sdk>@hono/node-server': '>=2.0.10 <3'
+  minimatch>brace-expansion: '>=5.0.7 <6'
 patchedDependencies:
   # Keep these keys in lockstep with the picomatch/tinyglobby pins in `overrides` above.
   # pnpm applies patches strictly (no fuzz), so the key must name the exact version the
