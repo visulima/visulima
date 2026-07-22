@@ -40,6 +40,9 @@
 
 Based on [ratatat](https://github.com/geoffmiller/ratatat) by Geoff Miller.
 
+> [!IMPORTANT]
+> **Breaking change.** The component library (~110 components) moved to the companion package [`@visulima/tui-kit`](https://visulima.com/docs/packages/tui-kit) — installable or copy-pasteable via its shadcn registry. `@visulima/tui` now ships only the renderer, hooks, and layout/text primitives, and its runtime dependencies dropped from 13 to 3. See the [migration guide](https://visulima.com/docs/packages/tui/migration).
+
 ## Features
 
 - **Faster than Ink** on mount (1.3-2.3x), competitive on rerender
