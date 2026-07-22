@@ -55,6 +55,7 @@ const CATEGORY_CONFIG = {
             "progress-bar",
             "spinner",
             "tui",
+            "tui-kit",
         ],
     },
     "data-manipulation": { title: "Data & Utilities", packages: ["string", "object", "deep-clone", "bytes", "humanizer", "redact", "content-safety"] },

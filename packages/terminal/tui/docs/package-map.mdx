@@ -17,12 +17,13 @@ Use this page to decide which entry to import and where each API lives.
 | Use any hook (`useInput`, `useFocus`, …)           | `@visulima/tui/hooks/<kebab-name>`      | Each hook is published at its own subpath                        |
 | Build a React TUI with the native renderer         | `@visulima/tui/react`                   | Native renderer with Rust-backed diff engine                     |
 | Paint terminal cells directly from a `Uint32Array` | `@visulima/tui/core`                    | Lowest-level runtime, direct control over render loop and buffer |
-| Use any component (`Box`, `Text`, `Spinner`, …)    | `@visulima/tui/components/<kebab-name>` | Each component is published at its own subpath                   |
-| Render ASCII-art headlines (cfonts)                | `@visulima/tui/components/big-text`     | Heavy `cfonts` dep is loaded only when imported                  |
-| Render syntax-highlighted code (shiki)             | `@visulima/tui/components/code`         | Heavy `shiki` deps are loaded only when imported                 |
-| Render diffs (diff + shiki)                        | `@visulima/tui/components/diff-view`    | Heavy `diff` + `shiki` deps are loaded only when imported        |
-| Render Markdown (marked + shiki)                   | `@visulima/tui/components/markdown`     | Heavy `marked` + `shiki` deps are loaded only when imported      |
-| Render data tables (`@visulima/tabular`)           | `@visulima/tui/components/table`        | Heavy `@visulima/tabular` dep is loaded only when imported       |
+| Use a layout/text primitive (`Box`, `Text`, …)     | `@visulima/tui/components/<kebab-name>` | The renderer's own primitives; each at its own subpath           |
+| Use a library component (`Spinner`, charts, …)     | `@visulima/tui-kit/<kebab-name>`        | 100+ components in the companion package `@visulima/tui-kit`     |
+| Render ASCII-art headlines (cfonts)                | `@visulima/tui-kit/big-text`            | Heavy `cfonts` dep is loaded only when imported                  |
+| Render syntax-highlighted code (shiki)             | `@visulima/tui-kit/code`                | Heavy `shiki` deps are loaded only when imported                 |
+| Render diffs (diff + shiki)                        | `@visulima/tui-kit/diff-view`           | Heavy `diff` + `shiki` deps are loaded only when imported        |
+| Render Markdown (marked + shiki)                   | `@visulima/tui-kit/markdown`            | Heavy `marked` + `shiki` deps are loaded only when imported      |
+| Render data tables (`@visulima/tabular`)           | `@visulima/tui-kit/table`               | Heavy `@visulima/tabular` dep is loaded only when imported       |
 | Test TUI components in isolation                   | `@visulima/tui/test`                    | Framework-agnostic render + mock streams for testing             |
 
 ## `@visulima/tui`
@@ -59,66 +60,32 @@ Each subpath exports the hook as both a named export and a default export, plus 
 
 ## `@visulima/tui/components/<name>`
 
-Every component lives at its own subpath under `@visulima/tui/components/<kebab-name>`. This keeps the import graph small — you only pull in what you use, and heavy peer dependencies are loaded only when their component is imported.
+`@visulima/tui` ships the rendering **primitives** — `Box`, `Text`, `Cursor`, `Newline`, `Spacer`, `Static`, `StaticRender`, `Transform`, and `Canvas` — each at its own subpath:
 
 ```typescript
 import { Box } from "@visulima/tui/components/box";
 import { Text } from "@visulima/tui/components/text";
-import { Spinner } from "@visulima/tui/components/spinner";
-import { TextInput } from "@visulima/tui/components/text-input";
-import { ProgressBar } from "@visulima/tui/components/progress-bar";
 ```
 
-Each subpath exports the component as both a named export and a default export, plus its `*Props` type. PascalCase component names map to kebab-case subpaths (`BigText` → `big-text`, `SelectInput` → `select-input`, `TreeView` → `tree-view`).
+Each subpath exports the component as both a named and a default export, plus its `*Props` type. PascalCase names map to kebab-case subpaths (`StaticRender` → `static-render`).
 
-> **Breaking from earlier alphas.** Components are no longer re-exported from the bare `@visulima/tui` entry — you must import each one from its own subpath.
+The rest of the library — inputs, charts, tables, overlays, lists, and 100+ more, including the heavy `BigText`/`Code`/`DiffView`/`Markdown`/`Table` components and their peer requirements — lives in [`@visulima/tui-kit`](/docs/packages/tui-kit). Install it or copy components in through its shadcn registry; the [tui-kit components reference](/docs/packages/tui-kit/components) is the full catalog.
 
-### Heavy component subpaths
-
-A few components have large optional peer dependencies. Importing them via their subpath keeps your bundle small and makes the peer requirements explicit per component.
-
-| Subpath                              | Component  | Required peer dependencies                             |
-| ------------------------------------ | ---------- | ------------------------------------------------------ |
-| `@visulima/tui/components/big-text`  | `BigText`  | `cfonts`                                               |
-| `@visulima/tui/components/code`      | `Code`     | `shiki`, `@shikijs/langs`, `@shikijs/themes`           |
-| `@visulima/tui/components/diff-view` | `DiffView` | `diff`, `shiki`, `@shikijs/langs`, `@shikijs/themes`   |
-| `@visulima/tui/components/markdown`  | `Markdown` | `marked`, `shiki`, `@shikijs/langs`, `@shikijs/themes` |
-| `@visulima/tui/components/table`     | `Table`    | `@visulima/tabular`                                    |
-
-Install only what you need:
-
-```bash npm2yarn
-# BigText
-npm install @visulima/tui react cfonts
-
-# Code (and DiffView with syntax highlighting)
-npm install @visulima/tui react shiki @shikijs/langs @shikijs/themes
-
-# DiffView (without syntax highlighting)
-npm install @visulima/tui react diff
-
-# Markdown (with code block highlighting)
-npm install @visulima/tui react marked shiki @shikijs/langs @shikijs/themes
-
-# Table
-npm install @visulima/tui react @visulima/tabular
-```
-
-> Importing a heavy subpath without its peer dependencies installed will throw a module-not-found error at runtime.
+> **Breaking change.** Components are no longer re-exported from the bare `@visulima/tui` entry, and the higher-level component library moved to `@visulima/tui-kit`. Import each primitive from its own subpath and everything else from `@visulima/tui-kit`. See the [migration guide](/docs/packages/tui/migration).
 
 ### React DevTools
 
-Mounting the React DevTools overlay is opt-in and gated by the `DEV=true` environment variable. To enable it, install the optional peers:
+Mounting the React DevTools overlay is opt-in and gated by the `DEV=true` environment variable. To enable it, install the optional peer:
 
 ```bash npm2yarn
-npm install --save-dev react-devtools-core ws
+npm install --save-dev react-devtools-core
 ```
 
 ```bash
 DEV=true node ./my-app.js
 ```
 
-When `DEV` is unset, neither `react-devtools-core` nor `ws` is loaded.
+The bridge uses the platform-native `WebSocket` (no `ws` dependency). When `DEV` is unset, `react-devtools-core` is not loaded.
 
 ## `@visulima/tui/core`
 
@@ -156,7 +123,7 @@ Primary exports:
 - components: `Static`, `DevTools`
 - hooks: `useInput`, `useApp`, `useFocus`, `useFocusManager`, `useMouse`, `useScrollable`, `useTextInput`, `useWindowSize`, and more
 
-> Components (`Box`, `Text`, `Spinner`, etc.) are imported from their dedicated subpaths under `@visulima/tui/components/<name>` — the native renderer uses the same components.
+> Primitives (`Box`, `Text`, `Static`, etc.) are imported from their subpaths under `@visulima/tui/components/<name>`; the rest of the component library comes from [`@visulima/tui-kit`](/docs/packages/tui-kit). The native renderer uses the same components either way.
 
 ```bash npm2yarn
 npm install @visulima/tui react

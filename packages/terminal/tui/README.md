@@ -46,7 +46,7 @@ Based on [ratatat](https://github.com/geoffmiller/ratatat) by Geoff Miller.
 - **Drop-in Ink-compatible** React API
 - **Native Rust diff engine** via NAPI for high-throughput rendering
 - **React hooks** for input, focus, clipboard, mouse, scroll, animation, and window size
-- **Rich component library** - Box, Text, Spinner, Select, TextInput, Tabs, ScrollView, and more
+- **Layout & text primitives** - Box, Text, Static, Transform, and more; the full component library (inputs, charts, tables, 100+) ships in [`@visulima/tui-kit`](https://visulima.com/docs/packages/tui-kit)
 - **Cross-platform** native bindings (macOS, Linux glibc/musl, Windows x64/arm64)
 - **Server-side rendering** via `renderToString`
 - **Testing utilities** with mock streams and frame capture
@@ -67,12 +67,12 @@ pnpm add @visulima/tui react react-reconciler
 
 ### Component imports
 
-Every component lives at its own subpath under `@visulima/tui/components/<kebab-name>`. Hooks, `render`, and primitives stay on the bare `@visulima/tui` entry. This keeps the import graph small — you only pull in what you use, and heavy peer dependencies are loaded only when their component is imported.
+`@visulima/tui` provides `render`, the hooks, and the layout/text primitives (`Box`, `Text`, …) at `@visulima/tui/components/<kebab-name>`. The higher-level component library lives in [`@visulima/tui-kit`](https://visulima.com/docs/packages/tui-kit), imported from `@visulima/tui-kit/<kebab-name>`.
 
 ```tsx
 import { Box } from "@visulima/tui/components/box";
 import { Text } from "@visulima/tui/components/text";
-import { Spinner } from "@visulima/tui/components/spinner";
+import { Spinner } from "@visulima/tui-kit/spinner";
 import { useApp } from "@visulima/tui/hooks/use-app";
 import { useInput } from "@visulima/tui/hooks/use-input";
 import { render } from "@visulima/tui";
@@ -80,17 +80,17 @@ import { render } from "@visulima/tui";
 
 ### Optional peer dependencies
 
-A few components have heavy peer dependencies. Install only the peers for the components you use:
+A few `@visulima/tui-kit` components have heavy peer dependencies. Install only the peers for the components you use:
 
-| Component  | Subpath                              | Required peers                                                                                            |
-| ---------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `BigText`  | `@visulima/tui/components/big-text`  | `cfonts`                                                                                                  |
-| `Code`     | `@visulima/tui/components/code`      | `shiki`, `@shikijs/langs`, `@shikijs/themes`                                                              |
-| `DiffView` | `@visulima/tui/components/diff-view` | `diff` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for syntax highlighting)                           |
-| `Markdown` | `@visulima/tui/components/markdown`  | `marked` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for code blocks; `@visulima/tabular` for tables) |
-| `Table`    | `@visulima/tui/components/table`     | `@visulima/tabular`                                                                                       |
+| Component  | Subpath                       | Required peers                                                                                            |
+| ---------- | ----------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `BigText`  | `@visulima/tui-kit/big-text`  | `cfonts`                                                                                                  |
+| `Code`     | `@visulima/tui-kit/code`      | `shiki`, `@shikijs/langs`, `@shikijs/themes`                                                              |
+| `DiffView` | `@visulima/tui-kit/diff-view` | `diff` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for syntax highlighting)                           |
+| `Markdown` | `@visulima/tui-kit/markdown`  | `marked` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for code blocks; `@visulima/tabular` for tables) |
+| `Table`    | `@visulima/tui-kit/table`     | `@visulima/tabular`                                                                                       |
 
-To enable the in-app React DevTools overlay (`DEV=true`), install `react-devtools-core` and `ws`.
+To enable the in-app React DevTools overlay (`DEV=true`), install `react-devtools-core` (the bridge uses the native `WebSocket`, so no `ws` is needed).
 
 ## Quick Start
 
