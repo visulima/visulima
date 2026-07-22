@@ -7,12 +7,11 @@ import { findVisConfigFile } from "../../config/config";
 import { backupFile } from "./backup";
 import { LINT_STAGED_ALL_CONFIG_FILES, LINT_STAGED_JSON_CONFIG_FILES, LINT_STAGED_OTHER_CONFIG_FILES, STALE_LINT_STAGED_PATTERNS } from "./constants";
 import { detectJsonIndent, isJsonFile, readJsonFile } from "./json";
+import { insertBlockIntoVisConfig } from "./shared";
 import type { MigrationReport } from "./types";
 import { addManualStep, addMigrationWarning } from "./types";
 
 const STAGED_KEY_RE = /\bstaged\s*:/;
-const DEFINE_CONFIG_RE = /(defineConfig\(\{)/;
-const EXPORT_DEFAULT_RE = /(export\s+default\s+\{)/;
 
 interface MigrateLogger {
     info: (message: string) => void;
@@ -119,13 +118,7 @@ const insertStagedIntoVisConfig = (root: string, config: Record<string, string |
         // Try to insert after `defineConfig({` or `export default {`
         const snippet = generateStagedConfigSnippet(config);
 
-        let updated: string | undefined;
-
-        if (DEFINE_CONFIG_RE.test(content)) {
-            updated = content.replace(DEFINE_CONFIG_RE, `$1\n${snippet},`);
-        } else if (EXPORT_DEFAULT_RE.test(content)) {
-            updated = content.replace(EXPORT_DEFAULT_RE, `$1\n${snippet},`);
-        }
+        const updated = insertBlockIntoVisConfig(content, snippet);
 
         if (updated) {
             backupFile(configPath);

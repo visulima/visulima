@@ -1,5 +1,4 @@
-import type { AiProviderInfo, AiProviderName } from "@visulima/find-ai-runner";
-import { detectAvailableProviders, detectProvider, PROVIDER_NAMES } from "@visulima/find-ai-runner";
+import type { AiProviderInfo } from "@visulima/find-ai-runner";
 import { renderToString } from "@visulima/tui";
 import { Box } from "@visulima/tui/components/box";
 import { Text } from "@visulima/tui/components/text";
@@ -9,6 +8,7 @@ import React from "react";
 import type { OutdatedEntry } from "../util/catalog";
 import { buildCacheKey, getCachedAnalysis, getTtlForAnalysisType, setCachedAnalysis } from "./ai-cache";
 import { runWithRetry } from "./ai-runner";
+import { resolveProvider } from "./provider-resolver";
 import type { AiAnalysisResult, AiRecommendation, AnalysisType } from "./types";
 
 interface AiHealConfig {
@@ -30,43 +30,6 @@ interface AiConfig {
     /** Use a specific provider, skip auto-detection. */
     provider?: string;
 }
-
-const DEFAULT_PRIORITY: Record<string, number> = {
-    amp: 30,
-    claude: 80,
-    codex: 60,
-    copilot: 50,
-    crush: 35,
-    cursor: 40,
-    droid: 20,
-    gemini: 100,
-    kimi: 25,
-    opencode: 35,
-    qwen: 30,
-};
-
-/** Resolve which AI provider to use based on config and availability. */
-const resolveProvider = (config?: AiConfig): AiProviderInfo | undefined => {
-    if (config?.provider) {
-        if (!PROVIDER_NAMES.includes(config.provider as AiProviderName)) {
-            return undefined;
-        }
-
-        const provider = detectProvider(config.provider as AiProviderName);
-
-        return provider.available ? provider : undefined;
-    }
-
-    const available = detectAvailableProviders();
-
-    if (available.length === 0) {
-        return undefined;
-    }
-
-    const priority = { ...DEFAULT_PRIORITY, ...config?.priority };
-
-    return available.toSorted((a, b) => (priority[b.name] ?? 0) - (priority[a.name] ?? 0))[0];
-};
 
 const VALID_ACTIONS = new Set(["defer", "review", "skip", "update"]);
 const VALID_RISK_LEVELS = new Set(["critical", "high", "low", "medium"]);
@@ -475,16 +438,17 @@ export type { AiConfig, AiHealConfig };
 
 export {
     buildAnalysisPrompt,
-    DEFAULT_PRIORITY,
     extractJson,
     formatAiAnalysis,
     formatAiAnalysisJson,
     normalizeRecommendation,
     parseAiResponse,
-    resolveProvider,
     ruleBasedAnalysis,
     runAiAnalysis,
     validateAnalysisType,
 };
 
+// Re-exported from provider-resolver for backward compatibility with existing
+// importers (ai-fix, audit-explain, commands/ai/handler).
+export { DEFAULT_PRIORITY, resolveProvider } from "./provider-resolver";
 export { type AiAnalysisResult, type AiRecommendation, type AnalysisType } from "./types";

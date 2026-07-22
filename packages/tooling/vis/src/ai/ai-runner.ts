@@ -11,6 +11,9 @@ export const AI_TIMEOUT_MS = 120_000;
 export const MAX_RETRIES = 2;
 export const RETRY_BASE_DELAY_MS = 1000;
 
+/** Longer ceiling for handoffs where the CLI edits files across a repo. */
+export const HANDOFF_TIMEOUT_MS = 600_000;
+
 const sleep = (ms: number): Promise<void> =>
     new Promise((resolve) => {
         setTimeout(resolve, ms);
@@ -45,4 +48,34 @@ export const runWithRetry = async (provider: AiProviderInfo, prompt: string, ret
     }
 
     throw lastError ?? new Error("AI request failed after retries");
+};
+
+/**
+ * Run a trusted prompt against a detected provider in permission-bypass mode
+ * so it can edit files unattended, streaming its output as it arrives. Used by
+ * the `vis migrate` AI handoff to finish steps that can't be migrated
+ * statically. No retry: the CLI is mutating the working tree, so re-running a
+ * partial edit is unsafe.
+ * @param provider A detected, available provider.
+ * @param prompt The (trusted) instruction prompt.
+ * @param options Working directory and output-stream callbacks.
+ * @param options.cwd Working directory for the spawned CLI (where edits land).
+ * @param options.onStderr Called with each chunk of stderr as it arrives.
+ * @param options.onStdout Called with each chunk of stdout as it arrives.
+ * @returns The provider's stdout.
+ */
+export const runInteractiveHandoff = async (
+    provider: AiProviderInfo,
+    prompt: string,
+    options: { cwd?: string; onStderr?: (chunk: string) => void; onStdout?: (chunk: string) => void } = {},
+): Promise<string> => {
+    const result = await runProvider(provider, prompt, {
+        cwd: options.cwd,
+        dangerous: true,
+        onStderr: options.onStderr,
+        onStdout: options.onStdout,
+        timeoutMs: HANDOFF_TIMEOUT_MS,
+    });
+
+    return result.stdout;
 };

@@ -1,6 +1,7 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
 import { detectPackageManager } from "../hook/migrate";
+import { maybeOfferAiHandoff } from "./ai-handoff";
 import { migrateDeps } from "./deps";
 import type { OutputFormat, SourceTool } from "./equivalence";
 import { buildSourceModel, buildVisModel, detectSourceTool, diffModels, equivalenceExitCode, formatEquivalenceReport, VALID_FORMATS } from "./equivalence";
@@ -97,6 +98,16 @@ const announceDryRun = (ctx: MigrationContext): void => {
     }
 };
 
+/**
+ * Print the migration summary, then — in an interactive TTY with leftover
+ * manual steps — offer to hand them to a detected AI CLI to finish.
+ */
+const finishMigration = async (ctx: MigrationContext, options: { ai?: boolean }): Promise<void> => {
+    printSummary(ctx.report, ctx.logger);
+
+    await maybeOfferAiHandoff(ctx.root, ctx.report, { ai: options.ai !== false, dryRun: ctx.dryRun }, ctx.logger);
+};
+
 const migrateDepsExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateDepsOptions>): Promise<void> => {
     if (!(await maybeConfirm("deps", options, logger))) {
         return;
@@ -110,7 +121,7 @@ const migrateDepsExecuteImpl = async ({ logger, options, visConfig, workspaceRoo
     migrateDeps(ctx.root, ctx.packageManager, ctx.config, { dryRun: ctx.dryRun }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateLintStagedExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateLintStagedOptions>): Promise<void> => {
@@ -126,7 +137,7 @@ const migrateLintStagedExecuteImpl = async ({ logger, options, visConfig, worksp
     migrateLintStaged(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateNanoStagedExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateNanoStagedOptions>): Promise<void> => {
@@ -142,7 +153,7 @@ const migrateNanoStagedExecuteImpl = async ({ logger, options, visConfig, worksp
     migrateNanoStaged(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateTurborepoExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateTurborepoOptions>): Promise<void> => {
@@ -158,7 +169,7 @@ const migrateTurborepoExecuteImpl = async ({ logger, options, visConfig, workspa
     migrateTurborepo(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateNxExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateNxOptions>): Promise<void> => {
@@ -189,7 +200,7 @@ const migrateNxExecuteImpl = async ({ logger, options, visConfig, workspaceRoot 
     );
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateMoonExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateMoonOptions>): Promise<void> => {
@@ -205,7 +216,7 @@ const migrateMoonExecuteImpl = async ({ logger, options, visConfig, workspaceRoo
     migrateMoon(ctx.root, { copyTemplates: Boolean(options.copyTemplates), dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateGitleaksExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateGitleaksOptions>): Promise<void> => {
@@ -221,7 +232,7 @@ const migrateGitleaksExecuteImpl = async ({ logger, options, visConfig, workspac
     migrateGitleaks(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateKingfisherExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateKingfisherOptions>): Promise<void> => {
@@ -237,7 +248,7 @@ const migrateKingfisherExecuteImpl = async ({ logger, options, visConfig, worksp
     migrateKingfisher(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateSecretlintExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateSecretlintOptions>): Promise<void> => {
@@ -253,7 +264,7 @@ const migrateSecretlintExecuteImpl = async ({ logger, options, visConfig, worksp
     migrateSecretlint(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateSyncpackExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateSyncpackOptions>): Promise<void> => {
@@ -269,7 +280,7 @@ const migrateSyncpackExecuteImpl = async ({ logger, options, visConfig, workspac
     migrateSyncpack(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateSherifExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateSherifOptions>): Promise<void> => {
@@ -285,7 +296,7 @@ const migrateSherifExecuteImpl = async ({ logger, options, visConfig, workspaceR
     migrateSherif(ctx.root, { dryRun: ctx.dryRun, useEditorconfig: ctx.useEditorconfig }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateSelfExecuteImpl = async ({ logger, options, visConfig, workspaceRoot }: Toolbox<Console, MigrateSelfOptions>): Promise<void> => {
@@ -301,7 +312,7 @@ const migrateSelfExecuteImpl = async ({ logger, options, visConfig, workspaceRoo
     migrateSelf(ctx.root, { dryRun: ctx.dryRun }, logger, ctx.report);
     logger.info("");
 
-    printSummary(ctx.report, logger);
+    await finishMigration(ctx, options);
 };
 
 const migrateVerifyExecuteImpl = ({ logger, workspaceRoot }: Toolbox): void => {
@@ -439,6 +450,8 @@ const migrateAllExecuteImpl = async ({ logger, options, visConfig, workspaceRoot
         logger.warn(`${String(failures.length)} migration(s) failed — see messages above.`);
         process.exitCode = 1;
     }
+
+    await maybeOfferAiHandoff(root, report, { ai: options.ai !== false, dryRun }, logger);
 };
 
 export const migrateDepsExecute = migrateDepsExecuteImpl as CommandExecute<Toolbox>;

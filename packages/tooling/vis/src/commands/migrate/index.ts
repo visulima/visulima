@@ -3,6 +3,12 @@ import type { Command, CreateOptions } from "@visulima/cerebro";
 const sharedMigrateOptions = [
     { defaultValue: false, description: "Preview changes without applying", name: "dry-run", type: Boolean },
     { alias: "y", defaultValue: false, description: "Skip the confirmation prompt", name: "yes", type: Boolean },
+    {
+        defaultValue: false,
+        description: "Don't offer to hand remaining manual steps to a detected AI CLI (claude, gemini, …). The handoff is interactive and TTY-only by default.",
+        name: "no-ai",
+        type: Boolean,
+    },
 ] as const;
 
 const migrateDepsCmd: Command = {
@@ -74,7 +80,7 @@ const migrateNxCmd: Command = {
         {
             defaultValue: false,
             description:
-                "Auto-apply the safe cleanup items the migrator would otherwise leave on the checklist: delete nx.json + ignore-files-for-nx-affected.yml, strip nx/@nx/*/@nrwl/* devDependencies, rewrite mechanical `nx run-many|run|affected` scripts. Implies --force.",
+                "Auto-apply the destructive cleanup items the migrator would otherwise leave on the checklist: delete nx.json + ignore-files-for-nx-affected.yml, strip nx/@nx/*/@nrwl/* devDependencies. Implies --force. (Mechanical `nx run-many|run|affected` script rewrites now run on every migration.)",
             name: "aggressive",
             type: Boolean,
         },
@@ -253,6 +259,8 @@ const migrateCommands: Command[] = [
 export default migrateCommands;
 
 type SharedMigrateOptions = {
+    // `--no-ai` is negatable: cerebro derives the canonical `ai` flag (default true).
+    ai: boolean | undefined;
     "dry-run": boolean | undefined;
     yes: boolean | undefined;
 };

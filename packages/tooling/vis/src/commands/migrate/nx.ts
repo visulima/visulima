@@ -6,7 +6,7 @@ import { dirname, join, relative, sep } from "@visulima/path";
 
 import { backupFile } from "./backup";
 import { editJsonFile } from "./json";
-import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared";
+import { mergeOrWriteVisConfig, readJsonConfig, serializeConfigObject } from "./shared";
 import type { MigrateLogger, MigrationReport } from "./types";
 
 interface NxJson {
@@ -201,7 +201,12 @@ const translateNamespacedTargetDefaults = (
     return cleaned;
 };
 
-const renderVisConfig = (nx: NxJson, workspaceRoot: string, useEditorconfig?: boolean): string => {
+/**
+ * Build the migrated config object (`defaultBase` / `namedInputs` / `tasks`)
+ * from an nx.json. Shared by the full-file renderer and the merge path so both
+ * translate the same set of keys.
+ */
+const buildNxConfigObject = (nx: NxJson): Record<string, unknown> => {
     const configObject: Record<string, unknown> = {};
 
     const nxDefaultBase = nx.affected?.defaultBase ?? nx.defaultBase;
@@ -218,6 +223,10 @@ const renderVisConfig = (nx: NxJson, workspaceRoot: string, useEditorconfig?: bo
         configObject.tasks = nx.targetDefaults;
     }
 
+    return configObject;
+};
+
+const renderVisConfig = (configObject: Record<string, unknown>, workspaceRoot: string, useEditorconfig?: boolean): string => {
     const serialised = serializeConfigObject(configObject, join(workspaceRoot, "vis.config.ts"), useEditorconfig);
 
     return [
@@ -1067,9 +1076,12 @@ const rewriteSyncGeneratorToPreScript = (
 
 interface AggressiveCleanupResult {
     deletedFiles: string[];
+    strippedDevDeps: string[];
+}
+
+interface ScriptRewriteResult {
     rewrittenScripts: { from: string; name: string; to: string }[];
     skippedScripts: string[];
-    strippedDevDeps: string[];
 }
 
 const NX_SUBCOMMAND_RE = /^nx\s+(?:run-many|run|affected|reset|repair)\b|^nx\s+exec\b/u;
@@ -1123,27 +1135,104 @@ const rewriteNxScript = (value: string, knownProjects: Set<string>): string | un
 };
 
 /**
- * Apply the safe cleanup items that `--aggressive` opts into:
+ * Rewrite mechanical `nx run-many|run|affected` package.json scripts into
+ * their `vis run` equivalent. Runs on every nx migration (not just
+ * `--aggressive`) because rewriting a script is non-destructive and takes a
+ * `.bak`. Only unambiguous single-invocation scripts are rewritten; chained
+ * or otherwise complex scripts are left untouched and surfaced as a manual
+ * step. Rewritten scripts stop matching the nx patterns, so they drop off the
+ * post-migrate checklist automatically (no double-reporting).
+ */
+const rewriteNxPackageScripts = (
+    workspaceRoot: string,
+    knownProjects: Set<string>,
+    options: { dryRun?: boolean; useEditorconfig?: boolean },
+    logger: MigrateLogger,
+    report: MigrationReport,
+): ScriptRewriteResult => {
+    const result: ScriptRewriteResult = { rewrittenScripts: [], skippedScripts: [] };
+    const pkgPath = join(workspaceRoot, "package.json");
+
+    if (!isAccessibleSync(pkgPath)) {
+        return result;
+    }
+
+    editJsonFile<{ scripts?: Record<string, string> }>(
+        pkgPath,
+        (current) => {
+            if (!current.scripts) {
+                return undefined;
+            }
+
+            let modified = false;
+
+            for (const [name, value] of Object.entries(current.scripts)) {
+                if (typeof value !== "string") {
+                    continue;
+                }
+
+                const looksLikeNxInvocation = NX_SUBCOMMAND_RE.test(value) || value.startsWith("nx ");
+
+                if (!looksLikeNxInvocation) {
+                    continue;
+                }
+
+                const rewritten = rewriteNxScript(value, knownProjects);
+
+                if (rewritten === undefined) {
+                    result.skippedScripts.push(name);
+
+                    continue;
+                }
+
+                if (!options.dryRun) {
+                    current.scripts[name] = rewritten;
+                }
+
+                result.rewrittenScripts.push({ from: value, name, to: rewritten });
+                modified = true;
+            }
+
+            // In dry-run, return undefined so editJsonFile never touches the file.
+            return modified && !options.dryRun ? current : undefined;
+        },
+        options.dryRun ? undefined : report,
+        { useEditorconfig: options.useEditorconfig },
+    );
+
+    for (const rewrite of result.rewrittenScripts) {
+        const verb = options.dryRun ? "Would rewrite" : "Rewrote";
+
+        logger.info(`${verb} \`scripts.${rewrite.name}\`: \`${rewrite.from}\` -> \`${rewrite.to}\``);
+    }
+
+    if (result.skippedScripts.length > 0) {
+        report.manualSteps.push(
+            `These package.json scripts still invoke nx but were too complex to rewrite automatically (shell chaining or unknown flags): ${result.skippedScripts.join(", ")}. Rewrite them manually to use \`vis run\`.`,
+        );
+    }
+
+    return result;
+};
+
+/**
+ * Apply the destructive cleanup items that `--aggressive` opts into:
  *   1. Remove `.github/ignore-files-for-nx-affected.yml`.
  *   2. Strip `nx`, `@nx/*`, `@nrwl/*` from root package.json devDependencies.
- *   3. Rewrite mechanical `nx run-many|run|affected` package.json scripts
- *      to their `vis run` equivalent. Complex/chained scripts stay on the
- *      checklist for manual review.
  *
- * `nx.json` removal lives in `migrateNx` itself (gated on `force`, which
- * `--aggressive` also turns on) so the backup happens alongside the rest.
+ * Mechanical `nx run-many|run|affected` script rewrites are non-destructive
+ * and now run on every migration via {@link rewriteNxPackageScripts}, so they
+ * are no longer part of this aggressive-only step. `nx.json` removal lives in
+ * `migrateNx` itself (gated on `force`, which `--aggressive` also turns on).
  */
 const applyAggressiveCleanup = (
     workspaceRoot: string,
-    knownProjects: Set<string>,
     options: { dryRun?: boolean; useEditorconfig?: boolean },
     logger: MigrateLogger,
     report: MigrationReport,
 ): AggressiveCleanupResult => {
     const result: AggressiveCleanupResult = {
         deletedFiles: [],
-        rewrittenScripts: [],
-        skippedScripts: [],
         strippedDevDeps: [],
     };
 
@@ -1174,54 +1263,28 @@ const applyAggressiveCleanup = (
         return result;
     }
 
-    editJsonFile<{ devDependencies?: Record<string, string>; scripts?: Record<string, string> }>(
+    editJsonFile<{ devDependencies?: Record<string, string> }>(
         pkgPath,
         (current) => {
-            let modified = false;
-
-            if (current.devDependencies) {
-                for (const dep of Object.keys(current.devDependencies)) {
-                    if (dep === "nx" || dep.startsWith("@nx/") || dep.startsWith("@nrwl/")) {
-                        if (!options.dryRun) {
-                            Reflect.deleteProperty(current.devDependencies, dep);
-                        }
-
-                        result.strippedDevDeps.push(dep);
-                        modified = true;
-                    }
-                }
+            if (!current.devDependencies) {
+                return undefined;
             }
 
-            if (current.scripts) {
-                for (const [name, value] of Object.entries(current.scripts)) {
-                    if (typeof value !== "string") {
-                        continue;
-                    }
+            let modified = false;
 
-                    const looksLikeNxInvocation = NX_SUBCOMMAND_RE.test(value) || value.startsWith("nx ");
-
-                    if (!looksLikeNxInvocation) {
-                        continue;
-                    }
-
-                    const rewritten = rewriteNxScript(value, knownProjects);
-
-                    if (rewritten === undefined) {
-                        result.skippedScripts.push(name);
-
-                        continue;
-                    }
-
+            for (const dep of Object.keys(current.devDependencies)) {
+                if (dep === "nx" || dep.startsWith("@nx/") || dep.startsWith("@nrwl/")) {
                     if (!options.dryRun) {
-                        current.scripts[name] = rewritten;
+                        Reflect.deleteProperty(current.devDependencies, dep);
                     }
 
-                    result.rewrittenScripts.push({ from: value, name, to: rewritten });
+                    result.strippedDevDeps.push(dep);
                     modified = true;
                 }
             }
 
-            return modified ? current : undefined;
+            // In dry-run, return undefined so editJsonFile never touches the file.
+            return modified && !options.dryRun ? current : undefined;
         },
         options.dryRun ? undefined : report,
         { useEditorconfig: options.useEditorconfig },
@@ -1231,18 +1294,6 @@ const applyAggressiveCleanup = (
         const verb = options.dryRun ? "Would strip" : "Stripped";
 
         logger.info(`${verb} ${String(result.strippedDevDeps.length)} nx-related devDependenc(y/ies) from package.json: ${result.strippedDevDeps.join(", ")}.`);
-    }
-
-    for (const rewrite of result.rewrittenScripts) {
-        const verb = options.dryRun ? "Would rewrite" : "Rewrote";
-
-        logger.info(`${verb} \`scripts.${rewrite.name}\`: \`${rewrite.from}\` -> \`${rewrite.to}\``);
-    }
-
-    if (result.skippedScripts.length > 0) {
-        report.manualSteps.push(
-            `--aggressive could not rewrite these package.json scripts (they have shell complexity or unknown flags): ${result.skippedScripts.join(", ")}. Rewrite them manually to use \`vis run\`.`,
-        );
     }
 
     return result;
@@ -1424,7 +1475,7 @@ const printChecklist = (lines: string[], logger: MigrateLogger): void => {
  * checklist of work that still needs human review.
  * @param workspaceRoot Absolute workspace root path.
  * @param options Migration options.
- * @param options.aggressive When true, auto-apply the safe cleanup items the migrator would otherwise leave on the checklist (delete nx.json + ignore file, strip nx/`@nx/*`/`@nrwl/*` devDeps, rewrite mechanical `nx run-many|run|affected` scripts). Implies `force` and `rewriteSyncGenerators`.
+ * @param options.aggressive When true, auto-apply the destructive cleanup items the migrator would otherwise leave on the checklist (delete nx.json + ignore file, strip nx/`@nx/*`/`@nrwl/*` devDeps). Mechanical `nx run-many|run|affected` script rewrites run on every migration regardless. Implies `force` and `rewriteSyncGenerators`.
  * @param options.dryRun When true, render/preview but skip writes.
  * @param options.force Overwrite existing vis.config.ts (a `.bak` is taken first).
  * @param options.rewriteSyncGenerators When true, also add a `pre&lt;target>` script (with TODO) to sibling package.json for each project.json `syncGenerators`.
@@ -1471,11 +1522,18 @@ export const migrateNx = (
         );
     }
 
-    const rendered = renderVisConfig(nx, workspaceRoot, options.useEditorconfig);
+    const configObject = buildNxConfigObject(nx);
+    const rendered = renderVisConfig(configObject, workspaceRoot, options.useEditorconfig);
 
-    if (!writeVisConfig(workspaceRoot, rendered, options, logger, report)) {
-        return;
-    }
+    // Write, overwrite (--force), or merge into an existing vis.config.ts. A
+    // skipped/partial config write no longer aborts the rest of the migration
+    // (project.json cleanup, script rewrites, checklist) — those always run.
+    mergeOrWriteVisConfig(workspaceRoot, configObject, rendered, options, logger, report);
+
+    // Rewrite mechanical `nx run-many|run|affected` package.json scripts on
+    // every run (not just --aggressive), so `vis migrate nx` actually updates
+    // the scripts users care about rather than only listing them.
+    rewriteNxPackageScripts(workspaceRoot, nameMap.knownProjects, options, logger, report);
 
     rewriteProjectJsonSchemas(projectJsonPaths, options, logger, report);
 
@@ -1516,7 +1574,7 @@ export const migrateNx = (
     cleanPnpmWorkspaceYaml(workspaceRoot, options, logger, report);
 
     if (options.aggressive) {
-        applyAggressiveCleanup(workspaceRoot, nameMap.knownProjects, options, logger, report);
+        applyAggressiveCleanup(workspaceRoot, options, logger, report);
     }
 
     report.manualSteps.push(
@@ -1567,6 +1625,7 @@ export {
     NX_PROJECT_SCHEMA_RE,
     parsePnpmFilterCommand as parsePnpmFilterCommandForTesting,
     PERSISTENT_TARGET_NAMES,
+    rewriteNxPackageScripts as rewriteNxPackageScriptsForTesting,
     rewriteNxScript as rewriteNxScriptForTesting,
     rewriteProjectJsonSchemas as rewriteProjectJsonSchemasForTesting,
     rewriteSyncGeneratorToPreScript as rewriteSyncGeneratorToPreScriptForTesting,
