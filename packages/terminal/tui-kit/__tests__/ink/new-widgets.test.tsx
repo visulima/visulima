@@ -3,20 +3,10 @@ import delay from "delay";
 import React from "react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import {
-    Drawer,
-    Grid,
-    ModelSelector,
-    MultiProgress,
-    NotificationBadge,
-    Popover,
-    Sidebar,
-    ThinkingBlock,
-    TokenUsage,
-    ToolCall,
-} from "../../src/index";
+import { Drawer, Grid, ModelSelector, MultiProgress, NotificationBadge, Popover, Sidebar, ThinkingBlock, TokenUsage, ToolCall } from "../../src/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
+import waitFor from "../helpers/wait-for";
 
 const setup = async (jsx: React.JSX.Element) => {
     const stdout = createStdout();
@@ -86,7 +76,14 @@ describe("batch 4 widgets", () => {
     it("multi-progress renders labels and percentages", async () => {
         expect.assertions(2);
 
-        const s = await setup(<MultiProgress items={[{ label: "build", value: 0.5 }, { label: "test", value: 1 }]} />);
+        const s = await setup(
+            <MultiProgress
+                items={[
+                    { label: "build", value: 0.5 },
+                    { label: "test", value: 1 },
+                ]}
+            />,
+        );
 
         unmount = s.unmount;
 
@@ -117,7 +114,7 @@ describe("batch 4 widgets", () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, " ");
-        await delay(50);
+        await waitFor(() => onToggle.mock.calls.some((call) => call[0] === false));
 
         expect(onToggle).toHaveBeenCalledWith(false);
     });
@@ -126,14 +123,19 @@ describe("batch 4 widgets", () => {
         expect.assertions(1);
 
         const onSelect = vi.fn();
-        const models = [{ id: "a", name: "Model A" }, { id: "b", name: "Model B" }];
+        const models = [
+            { id: "a", name: "Model A" },
+            { id: "b", name: "Model B" },
+        ];
         const s = await setup(<ModelSelector autoFocus models={models} onSelect={onSelect} />);
 
         unmount = s.unmount;
         emitReadable(s.stdin, "[B"); // down arrow
-        await delay(40);
+        const beforeDown = s.getOutput();
+
+        await waitFor(() => s.getOutput() !== beforeDown);
         emitReadable(s.stdin, "\r");
-        await delay(40);
+        await waitFor(() => onSelect.mock.calls.some((call) => call[0] === models[1]));
 
         expect(onSelect).toHaveBeenCalledWith(models[1]);
     });
@@ -157,7 +159,11 @@ describe("batch 4 widgets", () => {
     it("sidebar renders both panes", async () => {
         expect.assertions(2);
 
-        const s = await setup(<Sidebar sidebar={<ToolCall name="nav" />}><ToolCall name="content" /></Sidebar>);
+        const s = await setup(
+            <Sidebar sidebar={<ToolCall name="nav" />}>
+                <ToolCall name="content" />
+            </Sidebar>,
+        );
 
         unmount = s.unmount;
 
@@ -168,14 +174,22 @@ describe("batch 4 widgets", () => {
     it("drawer renders nothing while closed and its title while open", async () => {
         expect.assertions(2);
 
-        const closed = await setup(<Drawer isOpen={false} title="Settings"><ToolCall name="x" /></Drawer>);
+        const closed = await setup(
+            <Drawer isOpen={false} title="Settings">
+                <ToolCall name="x" />
+            </Drawer>,
+        );
 
         expect(closed.getOutput().trim()).toBe("");
 
         closed.unmount();
         await delay(30);
 
-        const open = await setup(<Drawer isOpen title="Settings"><ToolCall name="x" /></Drawer>);
+        const open = await setup(
+            <Drawer isOpen title="Settings">
+                <ToolCall name="x" />
+            </Drawer>,
+        );
 
         unmount = open.unmount;
 
@@ -186,7 +200,11 @@ describe("batch 4 widgets", () => {
         expect.assertions(1);
 
         const onClose = vi.fn();
-        const s = await setup(<Drawer isOpen onClose={onClose} title="Settings"><ToolCall name="x" /></Drawer>);
+        const s = await setup(
+            <Drawer isOpen onClose={onClose} title="Settings">
+                <ToolCall name="x" />
+            </Drawer>,
+        );
 
         unmount = s.unmount;
         emitReadable(s.stdin, "");
@@ -198,7 +216,11 @@ describe("batch 4 widgets", () => {
     it("popover shows the anchor always and content when open", async () => {
         expect.assertions(2);
 
-        const s = await setup(<Popover anchor={<ToolCall name="trigger" />} isOpen><ToolCall name="floating" /></Popover>);
+        const s = await setup(
+            <Popover anchor={<ToolCall name="trigger" />} isOpen>
+                <ToolCall name="floating" />
+            </Popover>,
+        );
 
         unmount = s.unmount;
 
