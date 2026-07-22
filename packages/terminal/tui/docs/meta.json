@@ -9,7 +9,6 @@
         "components",
         "hooks",
         "mouse",
-        "scroll",
         "rendering-modes",
         "raw-buffer",
         "ts-buffer-guide",

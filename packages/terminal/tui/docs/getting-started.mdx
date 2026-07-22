@@ -32,36 +32,36 @@ npm install @visulima/tui
 
 ### Component imports
 
-Every component is published at its own subpath under `@visulima/tui/components/<kebab-name>`. Hooks, `render`, and primitives stay on the bare `@visulima/tui` entry.
+`@visulima/tui` provides `render`, the hooks, and the layout/text **primitives** (`Box`, `Text`, …), each at `@visulima/tui/components/<kebab-name>`. The higher-level component library lives in its companion package [`@visulima/tui-kit`](/docs/packages/tui-kit), imported from `@visulima/tui-kit/<kebab-name>`.
 
 ```tsx
 import { Box } from "@visulima/tui/components/box";
 import { Text } from "@visulima/tui/components/text";
-import { Spinner } from "@visulima/tui/components/spinner";
+import { Spinner } from "@visulima/tui-kit/spinner";
 import { useApp } from "@visulima/tui/hooks/use-app";
 import { useInput } from "@visulima/tui/hooks/use-input";
 import { render } from "@visulima/tui";
 ```
 
-This means you only pull in the components you actually use, and heavy peer dependencies stay tree-shakeable.
+Each is its own subpath, so you only pull in what you use and heavy peer dependencies stay tree-shakeable.
 
-> **Breaking from earlier alphas.** Components are no longer re-exported from the bare `@visulima/tui` entry — you must import each one from its own subpath.
+> **Breaking change.** Components are no longer re-exported from the bare `@visulima/tui` entry, and the component library moved to `@visulima/tui-kit`. See the [migration guide](/docs/packages/tui/migration).
 
 ### Optional peer dependencies
 
-A few components have heavy peer dependencies. Install only the peers for the components you actually use:
+A few `@visulima/tui-kit` components have heavy peer dependencies. Install only the peers for the components you actually use:
 
-| Component  | Subpath                              | Required peers                                                                                            |
-| ---------- | ------------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| `BigText`  | `@visulima/tui/components/big-text`  | `cfonts`                                                                                                  |
-| `Code`     | `@visulima/tui/components/code`      | `shiki`, `@shikijs/langs`, `@shikijs/themes`                                                              |
-| `DiffView` | `@visulima/tui/components/diff-view` | `diff` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for syntax highlighting)                           |
-| `Markdown` | `@visulima/tui/components/markdown`  | `marked` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for code blocks; `@visulima/tabular` for tables) |
-| `Table`    | `@visulima/tui/components/table`     | `@visulima/tabular`                                                                                       |
+| Component  | Subpath                       | Required peers                                                                                            |
+| ---------- | ----------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `BigText`  | `@visulima/tui-kit/big-text`  | `cfonts`                                                                                                  |
+| `Code`     | `@visulima/tui-kit/code`      | `shiki`, `@shikijs/langs`, `@shikijs/themes`                                                              |
+| `DiffView` | `@visulima/tui-kit/diff-view` | `diff` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for syntax highlighting)                           |
+| `Markdown` | `@visulima/tui-kit/markdown`  | `marked` (+ `shiki`, `@shikijs/langs`, `@shikijs/themes` for code blocks; `@visulima/tabular` for tables) |
+| `Table`    | `@visulima/tui-kit/table`     | `@visulima/tabular`                                                                                       |
 
-To enable the React DevTools overlay (`DEV=true`), install the optional peers `react-devtools-core` and `ws`.
+To enable the React DevTools overlay (`DEV=true`), install the optional peer `react-devtools-core` (the bridge uses the native `WebSocket`, so no `ws` is needed).
 
-See [Package Map › Heavy component subpaths](./package-map.mdx#heavy-component-subpaths) for full installation snippets.
+See the [tui-kit components reference](/docs/packages/tui-kit/components) for the full catalog and per-component peer requirements.
 
 ## Requirements
 
