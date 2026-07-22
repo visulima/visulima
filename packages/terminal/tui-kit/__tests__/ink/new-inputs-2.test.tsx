@@ -51,9 +51,9 @@ describe(TagInput, () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "hi");
-        await delay(30);
+        await waitFor(() => s.getOutput().includes("hi"));
         emitReadable(s.stdin, "\r");
-        await delay(50);
+        await waitFor(() => onChange.mock.calls.some((call) => call[0]?.[0] === "hi"));
 
         expect(onChange).toHaveBeenCalledWith(["hi"]);
     });
@@ -119,7 +119,7 @@ describe(PathInput, () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "\t");
-        await delay(50);
+        await waitFor(() => onChange.mock.calls.some((call) => call[0] === "src/"));
 
         expect(onChange).toHaveBeenCalledWith("src/");
     });
@@ -163,7 +163,7 @@ describe(TreeSelect, () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "\u001B[C"); // right arrow expands
-        await delay(50);
+        await waitFor(() => s.getOutput().includes("Child A"));
 
         expect(s.getOutput()).toContain("Child A");
     });

@@ -68,7 +68,7 @@ describe("review fixes", () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "4");
-        await delay(40);
+        await waitFor(() => onChange.mock.calls.some((call) => call[0]?.hours === 16));
 
         expect(onChange).toHaveBeenCalledWith(expect.objectContaining({ hours: 16 }));
     });
@@ -86,7 +86,7 @@ describe("review fixes", () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "s");
-        await delay(50);
+        await waitFor(() => s.getOutput().includes("▲"));
 
         expect(s.getOutput()).toContain("▲");
     });
@@ -119,7 +119,7 @@ describe("review fixes", () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "a");
-        await delay(50);
+        await waitFor(() => onChange.mock.calls.at(-1)?.[0]?.join(",") === "x,y");
 
         expect(onChange).toHaveBeenLastCalledWith(["x", "y"]);
     });
