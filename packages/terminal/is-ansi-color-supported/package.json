@@ -82,10 +82,6 @@
     },
     "exports": {
         ".": {
-            "default": {
-                "types": "./dist/is-color-supported.server.d.ts",
-                "default": "./dist/is-color-supported.server.js"
-            },
             "edge-light": {
                 "types": "./dist/is-color-supported.edge-light.d.ts",
                 "default": "./dist/is-color-supported.edge-light.js"
@@ -93,6 +89,10 @@
             "browser": {
                 "types": "./dist/is-color-supported.browser.d.ts",
                 "default": "./dist/is-color-supported.browser.js"
+            },
+            "default": {
+                "types": "./dist/is-color-supported.server.d.ts",
+                "default": "./dist/is-color-supported.server.js"
             }
         },
         "./browser": {
