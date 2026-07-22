@@ -2,6 +2,7 @@
     "pages": [
         "index",
         "getting-started",
+        "migration",
         "package-map",
         "quickstart-react",
         "quickstart-raw-buffer",
