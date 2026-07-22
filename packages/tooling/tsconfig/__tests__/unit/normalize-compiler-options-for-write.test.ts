@@ -63,7 +63,7 @@ describe("normalizeCompilerOptionsForWrite", () => {
             normalizeCompilerOptionsForWrite(
                 {
                     baseUrl: ".",
-                    importsNotUsedAsValues: "remove" as never,
+                    importsNotUsedAsValues: "remove",
                     strict: true,
                     target: 99 as never,
                 },
