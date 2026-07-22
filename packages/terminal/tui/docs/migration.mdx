@@ -1,0 +1,124 @@
+---
+title: Migration Guide
+description: "Upgrade to the release that extracts the component library into @visulima/tui-kit and slims @visulima/tui to its runtime"
+---
+
+# Migration Guide
+
+This release splits `@visulima/tui` into two packages:
+
+- **`@visulima/tui`** — the runtime only: the Ink-compatible renderer, hooks, and the handful of layout/text primitives every component is built on.
+- **`@visulima/tui-kit`** — the component library (110+ components) that used to live under `@visulima/tui/components/*`, now shipped both as an installable package **and** as a shadcn-style copy-paste registry.
+
+Nothing about the runtime API changed. If you only use `render`, `Box`, `Text`, and the hooks, the sole change you may need is a dependency bump. The work is almost entirely a mechanical import rewrite for the higher-level components.
+
+## What changed at a glance
+
+| Area                         | Before                                    | After                                                |
+| ---------------------------- | ----------------------------------------- | ---------------------------------------------------- |
+| Higher-level components      | `@visulima/tui/components/<name>`         | `@visulima/tui-kit/<name>`                           |
+| Layout / text primitives     | `@visulima/tui/components/box` (etc.)     | **unchanged**                                        |
+| Renderer, hooks, `core`      | `@visulima/tui` / `@visulima/tui/hooks/*` | **unchanged**                                        |
+| `@visulima/tui` runtime deps | 13 direct dependencies                    | 3 (`@visulima/colorize`, `scheduler`, `yoga-layout`) |
+| `ws`                         | optional peer (DevTools bridge)           | removed — native `WebSocket` is used instead         |
+
+## 1. Components moved to `@visulima/tui-kit`
+
+Every component that was **not** a core primitive moved. The rewrite rule is mechanical — drop `/components` and point at the new package:
+
+```diff
+- import { Accordion } from "@visulima/tui/components/accordion";
++ import { Accordion } from "@visulima/tui-kit/accordion";
+
+- import { DataGrid } from "@visulima/tui/components/data-grid";
++ import { DataGrid } from "@visulima/tui-kit/data-grid";
+```
+
+### Primitives that did **not** move
+
+These stay in `@visulima/tui` — the component library depends on them, so leave their imports alone:
+
+`box` · `canvas` · `cursor` · `error-boundary` · `error-overview` · `newline` · `spacer` · `static` · `static-render` · `text` · `transform`
+
+```ts
+// Still correct after upgrading — no change:
+import { Box } from "@visulima/tui/components/box";
+import { Text } from "@visulima/tui/components/text";
+```
+
+### Choose how you consume `@visulima/tui-kit`
+
+The new package has two distribution modes — pick per project:
+
+**a) Install it (the drop-in path).** Closest to the old behaviour:
+
+```sh
+pnpm add @visulima/tui-kit
+```
+
+```ts
+import { Spinner } from "@visulima/tui-kit/spinner";
+```
+
+**b) Copy the source in (shadcn registry).** Vendors the component into your own tree so you can edit it, no runtime dependency on the library:
+
+```sh
+npx shadcn@latest add https://visulima.com/r/spinner.json
+```
+
+The CLI writes the component to `@/components/ui/*` (shared helpers land in `@/lib/*`) and pulls any components it depends on automatically. Browse everything at [`https://visulima.com/r/registry.json`](https://visulima.com/r/registry.json).
+
+### Automate the rewrite
+
+Because the rule is purely "move `@visulima/tui/components/<x>` to `@visulima/tui-kit/<x>` unless `<x>` is a primitive", a find-and-replace handles the whole codebase. This `perl` one-liner (its negative lookahead skips the 11 primitives) rewrites every moved import in place:
+
+```sh
+# From your project root. Requires ripgrep + perl (preinstalled on macOS and most Linux).
+PRIM='box|canvas|cursor|error-boundary|error-overview|newline|spacer|static|static-render|text|transform'
+rg -l "@visulima/tui/components/" --glob '*.{ts,tsx}' \
+  | xargs perl -i -pe "s{\@visulima/tui/components/(?!($PRIM)[\"'/])}{\@visulima/tui-kit/}g"
+```
+
+No `perl`? Do it in two passes with your editor's regex find-and-replace, which works the same everywhere:
+
+1. Replace `@visulima/tui/components/` with `@visulima/tui-kit/` across the project.
+2. Undo the 11 that stayed by replacing `@visulima/tui-kit/(box|canvas|cursor|error-boundary|error-overview|newline|spacer|static|static-render|text|transform)(["'/])` with `@visulima/tui/components/$1$2`. The trailing quote/slash in that pattern is what keeps `static` from also matching `static-render` and `text` from matching `textarea`.
+
+Run your type-checker afterwards either way — an unresolved import is an immediate compile error, so nothing rewrites silently wrong.
+
+## 2. Dependency slimming and `ws` removal
+
+`@visulima/tui`'s direct dependencies dropped from 13 to 3. The other libraries were either inlined into the bundle or turned into optional peers you only pay for when you use the feature that needs them. **No action is required** — this just shrinks what a fresh install pulls down.
+
+The one thing worth checking: `ws` was removed. It only ever backed the React DevTools bridge, which now uses the platform-native `WebSocket` (available on the supported Node versions, `^22.14.0 || >=24.10.0`). If you added an explicit `ws` install to make DevTools work, you can delete it — the bridge works without it. If you never used DevTools, this affects nothing.
+
+## 3. New: `suspendTerminal()`
+
+This release also adds `suspendTerminal()` on the app context (matching Ink 7.1.0), for handing the terminal to a child process — an editor, a pager, a shell — and cleanly restoring the render afterwards:
+
+```tsx
+import { useApp } from "@visulima/tui/hooks/use-app";
+
+const { suspendTerminal } = useApp();
+
+// Callback form — runs your code with the terminal released, then restores:
+await suspendTerminal(async () => {
+    await runEditor();
+});
+
+// Disposable form — `await using` restores on scope exit:
+{
+    await using _ = await suspendTerminal();
+    await runEditor();
+}
+```
+
+It releases the alternate screen and Kitty keyboard mode on suspend and restores both (with a full redraw) on resume. It is additive — existing code is unaffected.
+
+## Upgrade checklist
+
+1. Bump `@visulima/tui` to the new major.
+2. Add `@visulima/tui-kit` (or adopt the shadcn registry) if you use any non-primitive components.
+3. Run the import rewrite from [section 1](#automate-the-rewrite), then your type-checker.
+4. Drop any explicit `ws` dependency you added for DevTools.
+5. Nothing else — the renderer, hooks, and primitive APIs are unchanged.
