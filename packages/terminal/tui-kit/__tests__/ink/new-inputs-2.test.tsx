@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { ColorPicker, PathInput, TagInput, TreeSelect } from "../../src/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
+import waitFor from "../helpers/wait-for";
 
 const setup = async (jsx: React.JSX.Element) => {
     const stdout = createStdout();
@@ -85,7 +86,7 @@ describe(ColorPicker, () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "\u001B[C"); // right arrow
-        await delay(50);
+        await waitFor(() => onChange.mock.calls.some((call) => call[0] === "red"));
 
         expect(onChange).toHaveBeenCalledWith("red");
     });
@@ -128,7 +129,14 @@ describe(TreeSelect, () => {
     let unmount: (() => void) | undefined;
 
     const tree = [
-        { children: [{ label: "Child A", value: "a" }, { label: "Child B", value: "b" }], label: "Root", value: "root" },
+        {
+            children: [
+                { label: "Child A", value: "a" },
+                { label: "Child B", value: "b" },
+            ],
+            label: "Root",
+            value: "root",
+        },
     ];
 
     afterEach(async () => {

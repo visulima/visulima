@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import { CheckboxGroup, ColorPicker, DataGrid, DirectoryTree, Grid, Image, Json, PathInput, Sparkline, TimePicker } from "../../src/index";
 import { createStdin, emitReadable } from "../helpers/ink-create-stdin";
 import createStdout from "../helpers/ink-create-stdout";
+import waitFor from "../helpers/wait-for";
 
 const setup = async (jsx: React.JSX.Element) => {
     const stdout = createStdout();
@@ -51,9 +52,9 @@ describe("review fixes", () => {
 
         unmount = s.unmount;
         emitReadable(s.stdin, "\t");
-        await delay(40);
+        await waitFor(() => onChange.mock.calls.at(-1)?.[0] === "a.txt");
         emitReadable(s.stdin, "\t");
-        await delay(40);
+        await waitFor(() => onChange.mock.calls.at(-1)?.[0] === "b.txt");
 
         expect(onChange).toHaveBeenLastCalledWith("b.txt");
     });
@@ -81,9 +82,7 @@ describe("review fixes", () => {
     it("data-grid shows the sort indicator after sorting", async () => {
         expect.assertions(1);
 
-        const s = await setup(
-            <DataGrid autoFocus columns={[{ header: "ID", key: "id" }]} data={[{ id: 1 }, { id: 2 }]} />,
-        );
+        const s = await setup(<DataGrid autoFocus columns={[{ header: "ID", key: "id" }]} data={[{ id: 1 }, { id: 2 }]} />);
 
         unmount = s.unmount;
         emitReadable(s.stdin, "s");
@@ -111,7 +110,10 @@ describe("review fixes", () => {
                 autoFocus
                 defaultValue={["x"]}
                 onChange={onChange}
-                options={[{ isDisabled: true, label: "X", value: "x" }, { label: "Y", value: "y" }]}
+                options={[
+                    { isDisabled: true, label: "X", value: "x" },
+                    { label: "Y", value: "y" },
+                ]}
             />,
         );
 
