@@ -15,6 +15,7 @@ import { diffHashDetails, findTaskInSummary, readPreviousRunSummary, readRunSumm
 import { clearDepsDevCache, getDepsDevCacheStats } from "../../security/deps-dev-security";
 import { clearSnykCache, getSnykCacheStats } from "../../security/snyk-security";
 import { clearSocketCache, getSocketCacheStats } from "../../security/socket-security";
+import { clearStepSecurityCache, getStepSecurityCacheStats } from "../../security/stepsecurity-security";
 import { getVisRunsDir, getVisWorkspaceDataDir } from "../../util/vis-paths";
 import type { CacheCleanOptions, CacheHashOptions, CacheListOptions, CachePruneOptions, CacheSizeOptions, CacheVerifyOptions, CacheWhyOptions } from "./index";
 
@@ -256,6 +257,18 @@ export const clearSnykCacheSafe = (): void => {
         }
     } catch (error: unknown) {
         pail.warn(`Failed to clear Snyk cache: ${error instanceof Error ? error.message : String(error)}`);
+    }
+};
+
+export const clearStepSecurityCacheSafe = (): void => {
+    try {
+        const stepSecurityDeleted = clearStepSecurityCache();
+
+        if (stepSecurityDeleted > 0) {
+            pail.info(`Cleared ${String(stepSecurityDeleted)} cached StepSecurity record${stepSecurityDeleted === 1 ? "" : "s"}.`);
+        }
+    } catch (error: unknown) {
+        pail.warn(`Failed to clear StepSecurity cache: ${error instanceof Error ? error.message : String(error)}`);
     }
 };
 
@@ -993,11 +1006,12 @@ export const runVerify = async (taskId: string, options: RunVerifyOptions, logge
 // response cache under ~/.vis/cache/ai, "socket" is the Socket.dev report
 // cache under ~/.vis/cache/socket-security, "deps-dev" is the Google
 // deps.dev cache under ~/.vis/cache/deps-dev, "snyk" is the Snyk issue
-// cache under ~/.vis/cache/snyk. "all" means every store.
-type CacheTarget = "all" | "ai" | "deps-dev" | "snyk" | "socket" | "task";
+// cache under ~/.vis/cache/snyk, "step-security" is the StepSecurity Threat
+// Center cache under ~/.vis/cache/stepsecurity. "all" means every store.
+type CacheTarget = "all" | "ai" | "deps-dev" | "snyk" | "socket" | "step-security" | "task";
 
 const parseCacheTarget = (raw: string | undefined): CacheTarget => {
-    if (raw === "task" || raw === "ai" || raw === "socket" || raw === "deps-dev" || raw === "snyk" || raw === "all") {
+    if (raw === "task" || raw === "ai" || raw === "socket" || raw === "deps-dev" || raw === "snyk" || raw === "step-security" || raw === "all") {
         return raw;
     }
 
@@ -1170,6 +1184,16 @@ export const cacheCleanExecute = async ({ options, visConfig, workspaceRoot: wsR
             clearSnykCacheSafe();
         }
     }
+
+    if (includesTarget(target, "step-security")) {
+        if (dryRun) {
+            const stats = getStepSecurityCacheStats();
+
+            pail.info(`Would clear ${String(stats.entries)} cached StepSecurity record${stats.entries === 1 ? "" : "s"}.`);
+        } else {
+            clearStepSecurityCacheSafe();
+        }
+    }
 };
 
 // fallow-ignore-next-line unused-export -- lazy-loaded command entry (cerebro loader/lazyNamed dynamic import)
@@ -1305,6 +1329,17 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
             };
         }
 
+        if (includesTarget(target, "step-security")) {
+            const stats = getStepSecurityCacheStats();
+
+            payload["step-security"] = {
+                entries: stats.entries,
+                newestEntry: isoOrNull(stats.newestEntry),
+                oldestEntry: isoOrNull(stats.oldestEntry),
+                totalBytes: stats.totalSizeBytes,
+            };
+        }
+
         process.stdout.write(`${JSON.stringify(payload, undefined, 2)}\n`);
 
         return;
@@ -1336,6 +1371,10 @@ export const cacheSizeExecute = async ({ options, visConfig, workspaceRoot: wsRo
 
     if (includesTarget(target, "snyk")) {
         printAuxStatsBlock("Snyk issue cache", getSnykCacheStats());
+    }
+
+    if (includesTarget(target, "step-security")) {
+        printAuxStatsBlock("StepSecurity Threat Center cache", getStepSecurityCacheStats());
     }
 };
 

@@ -15,6 +15,7 @@ import type { PackageRef, PackageReportData, SecurityProvider } from "./provider
 import { mergeReports } from "./provider";
 import { createSnykProvider } from "./snyk-security";
 import { createSocketProvider } from "./socket-security";
+import { createStepSecurityProvider } from "./stepsecurity-security";
 
 /** Options for `buildEnabledProviders`. */
 export interface BuildEnabledProvidersOptions {
@@ -59,6 +60,14 @@ export const buildEnabledProviders = (security: VisConfig["security"] | undefine
 
         if (snyk) {
             providers.push(snyk);
+        }
+    }
+
+    if (!disabled?.has("step-security")) {
+        const stepSecurity = createStepSecurityProvider(security?.stepSecurity);
+
+        if (stepSecurity) {
+            providers.push(stepSecurity);
         }
     }
 

@@ -1793,9 +1793,9 @@ export interface VisConfig {
          * both Socket.dev and deps.dev return data for the same package). The
          * primary provider's `score` is kept; alerts from secondaries are
          * appended and deduped by `key`. Defaults to whichever provider is
-         * enabled first in this order: socket → deps-dev → snyk.
+         * enabled first in this order: socket → deps-dev → snyk → step-security.
          */
-        primaryProvider?: "deps-dev" | "snyk" | "socket";
+        primaryProvider?: "deps-dev" | "snyk" | "socket" | "step-security";
 
         /**
          * Snyk data-source configuration. Snyk only contributes vulnerability
@@ -1870,6 +1870,67 @@ export interface VisConfig {
 
             /**
              * Request timeout in milliseconds for the Socket.dev API. 15 seconds.
+             * @default 15000
+             */
+            timeoutMs?: number;
+        };
+
+        /**
+         * StepSecurity Threat Center data-source configuration. Contributes
+         * *compromised-component* intelligence — the same supply-chain incident
+         * data (tj-actions, nx, the axios npm compromise, …) that powers the
+         * StepSecurity dashboard. A package whose `name@version` appears in any
+         * Threat Center incident is flagged with a `critical` malware alert;
+         * StepSecurity carries no score signal for clean packages.
+         *
+         * Requires both a GitHub owner and an API token — if either is missing
+         * the provider is skipped. The Threat Center API is a StepSecurity
+         * Enterprise feature.
+         * @see https://docs.stepsecurity.io/oss-package-security/threat-center
+         */
+        stepSecurity?: {
+            /**
+             * Override the StepSecurity API base URL. Only change this if you
+             * proxy the API internally.
+             * @default "https://api.stepsecurity.io"
+             */
+            apiBaseUrl?: string;
+
+            /**
+             * StepSecurity API token. Set via VIS_STEPSECURITY_TOKEN environment
+             * variable or here.
+             */
+            apiToken?: string;
+
+            /**
+             * Cache TTL in milliseconds for the aggregated compromised-component
+             * set. 1 hour — the set changes as new incidents land.
+             * @default 3600000
+             */
+            cacheTtlMs?: number;
+
+            /**
+             * Enable StepSecurity Threat Center scanning on
+             * install/update/check/audit commands.
+             * @default false
+             */
+            enabled?: boolean;
+
+            /**
+             * Pin the lookup to a specific set of Threat Center incident ids
+             * instead of fetching the full incident feed. Useful for confirming
+             * exposure to a single known incident.
+             */
+            incidentIds?: string[];
+
+            /**
+             * GitHub owner / organisation that owns the Threat Center. Set via
+             * VIS_STEPSECURITY_OWNER environment variable or here.
+             */
+            owner?: string;
+
+            /**
+             * Request timeout in milliseconds for the StepSecurity API. 15 seconds.
              * @default 15000
              */
             timeoutMs?: number;

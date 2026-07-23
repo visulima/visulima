@@ -399,7 +399,13 @@ export default defineConfig({
         // Optional second supply-chain provider (no auth, OpenSSF Scorecard + GHSA).
         // Off by default. Enable to cross-check Socket findings or replace them.
         depsDev: { enabled: true },
-        // When both providers are enabled, the "primary" wins score conflicts;
+        // Optional StepSecurity Threat Center provider — flags any package whose
+        // name@version appears in a supply-chain incident (tj-actions, nx, the
+        // axios npm compromise, …) with a critical malware alert. Enterprise
+        // feature: needs a GitHub owner + API token (VIS_STEPSECURITY_OWNER /
+        // VIS_STEPSECURITY_TOKEN). Off by default.
+        stepSecurity: { enabled: true, owner: "my-org" },
+        // When multiple providers are enabled, the "primary" wins score conflicts;
         // alerts always dedupe by id. Defaults to "socket".
         primaryProvider: "socket",
         allowBuilds: { esbuild: true, "@prisma/client": true },

@@ -23,6 +23,7 @@ describe(envVarFor, () => {
         ["downloads", "MARSHALL_DISABLE_DOWNLOADS"],
         ["metadata", "MARSHALL_DISABLE_METADATA"],
         ["archivedRepo", "MARSHALL_DISABLE_ARCHIVED_REPO"],
+        ["stepSecurity", "MARSHALL_DISABLE_STEP_SECURITY"],
     ])("maps %s → %s", (name, expected) => {
         expect.assertions(1);
 
@@ -149,7 +150,7 @@ describe("aLL_MARSHALLS contents", () => {
             "packageAge",
             "archivedRepo",
         ];
-        const integrations: MarshallName[] = ["minReleaseAge", "socket", "depsDev"];
+        const integrations: MarshallName[] = ["minReleaseAge", "socket", "depsDev", "stepSecurity"];
 
         expect(new Set([...policy, ...preInstall, ...integrations])).toStrictEqual(new Set(ALL_MARSHALLS));
     });

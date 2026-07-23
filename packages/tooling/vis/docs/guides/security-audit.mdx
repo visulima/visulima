@@ -241,6 +241,7 @@ This writes the accepted risks into the appropriate PM config (`pnpm-workspace.y
 | -------------------------------- | --------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | **Socket.dev** (`socket`)        | Public token / `VIS_SOCKET_TOKEN` | Five-axis package score (quality, maintenance, supply chain, license, vulnerability), curated alerts (malware, install scripts, telemetry, typosquats), version-scoped data. |
 | **Google deps.dev** (`deps-dev`) | None                              | OpenSSF Scorecard signals (16 automated checks) + GHSA advisories, no API token, generous rate limits, completely free.                                                      |
+| **StepSecurity** (`step-security`) | Owner + token (`VIS_STEPSECURITY_OWNER` / `VIS_STEPSECURITY_TOKEN`) | [Threat Center](https://docs.stepsecurity.io/oss-package-security/threat-center) compromised-component intelligence — flags any `name@version` tied to a supply-chain incident (tj-actions, nx, the axios npm compromise, …) with a `critical` malware alert. No score signal for clean packages. Enterprise feature. |
 
 ```ts
 // vis.config.ts
@@ -250,6 +251,10 @@ export default defineConfig({
     security: {
         socket: { enabled: true }, // requires VIS_SOCKET_TOKEN
         depsDev: { enabled: true }, // no auth — safe to enable in CI
+
+        // Threat Center compromised components. Requires VIS_STEPSECURITY_TOKEN
+        // and the GitHub owner that owns the Threat Center.
+        stepSecurity: { enabled: true, owner: "my-org" },
 
         // Which provider's `score` wins on conflict. Alerts from the other
         // provider are still appended and deduped by `key`.
@@ -271,10 +276,11 @@ When both providers return data for the same package:
 
 | Env var                       | Effect                                                 |
 | ----------------------------- | ------------------------------------------------------ |
-| `MARSHALL_DISABLE_SOCKET=1`   | Skip the Socket.dev provider for the current process.  |
-| `MARSHALL_DISABLE_DEPS_DEV=1` | Skip the deps.dev provider for the current process.    |
-| `MARSHALL_DISABLE_ALL=1`      | Skip every marshall-gated check (including providers). |
-| `--offline` on `vis audit`    | Disables both providers for this command only.         |
+| `MARSHALL_DISABLE_SOCKET=1`        | Skip the Socket.dev provider for the current process.   |
+| `MARSHALL_DISABLE_DEPS_DEV=1`      | Skip the deps.dev provider for the current process.     |
+| `MARSHALL_DISABLE_STEP_SECURITY=1` | Skip the StepSecurity provider for the current process. |
+| `MARSHALL_DISABLE_ALL=1`           | Skip every marshall-gated check (including providers).  |
+| `--offline` on `vis audit`         | Disables every network provider for this command only.  |
 
 ### Cache locations
 
@@ -282,8 +288,9 @@ Each provider writes a JSON-on-disk cache under `~/.vis/cache/`:
 
 - `socket-security/` — Socket.dev reports (default TTL: 1 hour)
 - `deps-dev/` — deps.dev version + project + advisory entries (default TTL: 24h for project data, 7d for version and advisory data — those are immutable once published)
+- `stepsecurity/` — StepSecurity Threat Center aggregated compromised-component set, one file per owner (default TTL: 1 hour)
 
-Clear with `vis cache clean --type=socket` or `vis cache clean --type=deps-dev`. `vis cache clean` (no flag) clears every store.
+Clear with `vis cache clean --type=socket`, `vis cache clean --type=deps-dev`, or `vis cache clean --type=step-security`. `vis cache clean` (no flag) clears every store.
 
 ## Reference
 

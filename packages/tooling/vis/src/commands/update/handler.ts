@@ -696,6 +696,10 @@ const executeCatalogUpdate = async (
         disabledProviders.add("deps-dev");
     }
 
+    if (isMarshallDisabled("stepSecurity")) {
+        disabledProviders.add("step-security");
+    }
+
     const minimumScore = visConfig.security?.policies?.score?.minimum;
     const securityProviders = buildEnabledProviders(visConfig.security, {
         disabled: disabledProviders,

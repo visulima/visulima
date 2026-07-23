@@ -47,6 +47,7 @@ export type MarshallName
         | "score"
         | "signatures"
         | "socket"
+        | "stepSecurity"
         | "typosquats"
         | "unexpectedDeps"
         | "vulnerability";
@@ -80,6 +81,7 @@ export const ALL_MARSHALLS: ReadonlyArray<MarshallName> = [
     "archivedRepo",
     "socket",
     "depsDev",
+    "stepSecurity",
 ] as const;
 
 /**

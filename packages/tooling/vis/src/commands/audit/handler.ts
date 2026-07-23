@@ -474,7 +474,7 @@ const executeAudit = async (
     const disabledProviders = new Set<string>();
 
     if (isOffline) {
-        disabledProviders.add("socket").add("deps-dev");
+        disabledProviders.add("socket").add("deps-dev").add("step-security");
     } else {
         if (isMarshallDisabled("socket")) {
             disabledProviders.add("socket");
@@ -482,6 +482,10 @@ const executeAudit = async (
 
         if (isMarshallDisabled("depsDev")) {
             disabledProviders.add("deps-dev");
+        }
+
+        if (isMarshallDisabled("stepSecurity")) {
+            disabledProviders.add("step-security");
         }
     }
 

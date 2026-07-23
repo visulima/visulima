@@ -108,7 +108,7 @@ vis cache size --format=json    # { totalBytes, entryCount }
 
 Removes every entry. Prompts for confirmation when the cache directory is outside the workspace; pass `--force` to skip the prompt (useful in CI). `--dry-run` previews without deleting.
 
-`--type` scopes the wipe: `task` (the workspace task cache), `ai` (AI-response cache used by `vis ai`), `socket` (Socket.dev report cache used by `vis audit`), `deps-dev` (deps.dev report cache used by `vis audit`), or `all` (default).
+`--type` scopes the wipe: `task` (the workspace task cache), `ai` (AI-response cache used by `vis ai`), `socket` (Socket.dev report cache used by `vis audit`), `deps-dev` (deps.dev report cache used by `vis audit`), `snyk` (Snyk issue cache), `step-security` (StepSecurity Threat Center cache used by `vis audit`), or `all` (default).
 
 ## `vis cache verify <task>`
 
