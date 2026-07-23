@@ -690,7 +690,7 @@ const { remaining, isRunning, isFinished, start, stop, toggle, reset } = useTime
 | `toggle`     | `() => void` | Toggle between running and stopped       |
 | `reset`      | `() => void` | Reset to original duration and stop      |
 
-For a visual component, see [`<Timer>`](./components#timer).
+For a visual component, see [`<Timer>`](/docs/packages/tui-kit/components#timer).
 
 ## `useStopwatch`
 
@@ -724,14 +724,14 @@ const { elapsed, isRunning, start, stop, toggle, reset, lap, laps } = useStopwat
 | `lap`       | `() => number` | Capture current elapsed time; returns it |
 | `laps`      | `number[]`     | Accumulated lap times                    |
 
-For a visual component, see [`<Stopwatch>`](./components#stopwatch).
+For a visual component, see [`<Stopwatch>`](/docs/packages/tui-kit/components#stopwatch).
 
 ## `useKeyBindings`
 
-Declarative keybinding hook. Registers multiple key bindings with handlers and returns the enabled bindings for display in a [`<Help>`](./components#help) component.
+Declarative keybinding hook. Registers multiple key bindings with handlers and returns the enabled bindings for display in a [`<Help>`](/docs/packages/tui-kit/components#help) component.
 
 ```tsx
-import { Help } from "@visulima/tui/components/help";
+import { Help } from "@visulima/tui-kit/help";
 import { useKeyBindings } from "@visulima/tui/hooks/use-key-bindings";
 const { bindings } = useKeyBindings([
     { binding: { key: "q", description: "Quit" }, handler: () => exit() },
@@ -797,7 +797,7 @@ Defaults to `false`. This matches upstream Ink behavior — there is no automati
 State management hook for the `<TreeView>` component. Use this for headless tree view implementations where you want full control over rendering.
 
 ```tsx
-import { useTreeViewState } from "@visulima/tui/components/tree-view";
+import { useTreeViewState } from "@visulima/tui-kit/tree-view";
 const state = useTreeViewState({
     data: treeNodes,
     selectionMode: "single",
@@ -819,7 +819,7 @@ Returns a `TreeViewState<T>` object with:
 Keyboard input hook for the tree view. Binds arrow keys, Enter, Space, Home, and End to the tree view state actions. Use alongside `useTreeViewState` for headless implementations.
 
 ```tsx
-import { useTreeView, useTreeViewState } from "@visulima/tui/components/tree-view";
+import { useTreeView, useTreeViewState } from "@visulima/tui-kit/tree-view";
 const state = useTreeViewState({ data, selectionMode: "none" });
 
 useTreeView({

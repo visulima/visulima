@@ -1,7 +1,7 @@
 import { Box } from "@visulima/tui/components/box";
-import type { ScrollViewRef } from "@visulima/tui/components/scroll-view";
-import { ScrollView } from "@visulima/tui/components/scroll-view";
 import { Text } from "@visulima/tui/components/text";
+import type { ScrollViewRef } from "@visulima/tui-kit/scroll-view";
+import { ScrollView } from "@visulima/tui-kit/scroll-view";
 import React from "react";
 
 interface PreviewPanelProps {

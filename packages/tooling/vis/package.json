@@ -14,11 +14,6 @@
     ],
     "homepage": "https://visulima.com/packages/vis",
     "bugs": "https://github.com/visulima/visulima/issues",
-    "license": "MIT",
-    "author": {
-        "name": "Daniel Bannert",
-        "email": "d.bannert@anolilab.de"
-    },
     "repository": {
         "type": "git",
         "url": "git+https://github.com/visulima/visulima.git",
@@ -34,27 +29,13 @@
             "url": "https://anolilab.com/support"
         }
     ],
-    "bin": {
-        "v": "./bin/vis.mjs",
-        "vis": "./bin/vis.mjs",
-        "visx": "./dist/binx.js",
-        "vx": "./dist/binx.js"
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
     },
-    "files": [
-        "dist/**",
-        "bin/**",
-        "dashboard/dist/**",
-        "schemas/**",
-        "skills/**",
-        "templates/**",
-        "index.js",
-        "index.d.ts",
-        "README.md",
-        "CHANGELOG.md",
-        "LICENSE.md"
-    ],
-    "type": "module",
     "sideEffects": false,
+    "type": "module",
     "imports": {
         "#native": {
             "types": "./index.d.ts",
@@ -114,10 +95,25 @@
         "./schemas/vis-release-config.schema.json": "./schemas/vis-release-config.schema.json",
         "./package.json": "./package.json"
     },
-    "publishConfig": {
-        "access": "public",
-        "provenance": true
+    "bin": {
+        "v": "./bin/vis.mjs",
+        "vis": "./bin/vis.mjs",
+        "visx": "./dist/binx.js",
+        "vx": "./dist/binx.js"
     },
+    "files": [
+        "dist/**",
+        "bin/**",
+        "dashboard/dist/**",
+        "schemas/**",
+        "skills/**",
+        "templates/**",
+        "index.js",
+        "index.d.ts",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
     "scripts": {
         "bench": "vitest bench __bench__",
         "bench:native": "cargo bench --manifest-path native/Cargo.toml",
@@ -155,6 +151,7 @@
         "@visulima/tabular": "4.0.0",
         "@visulima/task-runner": "1.0.1",
         "@visulima/tui": "1.0.5",
+        "@visulima/tui-kit": "workspace:*",
         "module-replacements": "^2.11.0",
         "module-replacements-codemods": "^2.0.1",
         "react": "catalog:frontend",
@@ -290,6 +287,13 @@
         "@visulima/vis-binding-win32-arm64-msvc": "workspace:*",
         "@visulima/vis-binding-win32-x64-msvc": "workspace:*"
     },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    },
     "napi": {
         "binaryName": "vis-native",
         "packageName": "@visulima/vis-binding",
@@ -303,8 +307,5 @@
             "x86_64-pc-windows-msvc",
             "aarch64-pc-windows-msvc"
         ]
-    },
-    "engines": {
-        "node": "^22.14.0 || >=24.10.0"
     }
 }

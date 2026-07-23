@@ -1,0 +1,585 @@
+{
+    "name": "@visulima/tui-kit",
+    "version": "0.0.0",
+    "description": "Component library for @visulima/tui — installable as a package, or copy-pasteable via the shadcn CLI registry",
+    "keywords": [
+        "cli",
+        "components",
+        "ink",
+        "react",
+        "registry",
+        "shadcn",
+        "terminal",
+        "tui",
+        "visulima"
+    ],
+    "homepage": "https://visulima.com/packages/tui",
+    "bugs": "https://github.com/visulima/visulima/issues",
+    "repository": {
+        "type": "git",
+        "url": "git+https://github.com/visulima/visulima.git",
+        "directory": "packages/terminal/tui-kit"
+    },
+    "funding": [
+        {
+            "type": "github",
+            "url": "https://github.com/sponsors/prisis"
+        },
+        {
+            "type": "consulting",
+            "url": "https://anolilab.com/support"
+        }
+    ],
+    "license": "MIT",
+    "author": {
+        "name": "Daniel Bannert",
+        "email": "d.bannert@anolilab.de"
+    },
+    "sideEffects": false,
+    "type": "module",
+    "exports": {
+        ".": {
+            "types": "./dist/index.d.ts",
+            "default": "./dist/index.js"
+        },
+        "./accordion": {
+            "types": "./dist/accordion.d.ts",
+            "default": "./dist/accordion.js"
+        },
+        "./alert": {
+            "types": "./dist/alert.d.ts",
+            "default": "./dist/alert.js"
+        },
+        "./animate-presence": {
+            "types": "./dist/animate-presence.d.ts",
+            "default": "./dist/animate-presence.js"
+        },
+        "./approval-prompt": {
+            "types": "./dist/approval-prompt.d.ts",
+            "default": "./dist/approval-prompt.js"
+        },
+        "./area-chart": {
+            "types": "./dist/area-chart.d.ts",
+            "default": "./dist/area-chart.js"
+        },
+        "./badge": {
+            "types": "./dist/badge.d.ts",
+            "default": "./dist/badge.js"
+        },
+        "./bar-chart": {
+            "types": "./dist/bar-chart.d.ts",
+            "default": "./dist/bar-chart.js"
+        },
+        "./big-text": {
+            "types": "./dist/big-text.d.ts",
+            "default": "./dist/big-text.js"
+        },
+        "./blink-dot": {
+            "types": "./dist/blink-dot.d.ts",
+            "default": "./dist/blink-dot.js"
+        },
+        "./breadcrumb": {
+            "types": "./dist/breadcrumb.d.ts",
+            "default": "./dist/breadcrumb.js"
+        },
+        "./button": {
+            "types": "./dist/button.d.ts",
+            "default": "./dist/button.js"
+        },
+        "./calendar": {
+            "types": "./dist/calendar.d.ts",
+            "default": "./dist/calendar.js"
+        },
+        "./card": {
+            "types": "./dist/card.d.ts",
+            "default": "./dist/card.js"
+        },
+        "./checkbox": {
+            "types": "./dist/checkbox.d.ts",
+            "default": "./dist/checkbox.js"
+        },
+        "./checkbox-group": {
+            "types": "./dist/checkbox-group.d.ts",
+            "default": "./dist/checkbox-group.js"
+        },
+        "./code": {
+            "types": "./dist/code.d.ts",
+            "default": "./dist/code.js"
+        },
+        "./collapsible": {
+            "types": "./dist/collapsible.d.ts",
+            "default": "./dist/collapsible.js"
+        },
+        "./color-picker": {
+            "types": "./dist/color-picker.d.ts",
+            "default": "./dist/color-picker.js"
+        },
+        "./command-block": {
+            "types": "./dist/command-block.d.ts",
+            "default": "./dist/command-block.js"
+        },
+        "./command-palette": {
+            "types": "./dist/command-palette.d.ts",
+            "default": "./dist/command-palette.js"
+        },
+        "./confirm-dialog": {
+            "types": "./dist/confirm-dialog.d.ts",
+            "default": "./dist/confirm-dialog.js"
+        },
+        "./confirm-input": {
+            "types": "./dist/confirm-input.d.ts",
+            "default": "./dist/confirm-input.js"
+        },
+        "./console-overlay": {
+            "types": "./dist/console-overlay.d.ts",
+            "default": "./dist/console-overlay.js"
+        },
+        "./content-switcher": {
+            "types": "./dist/content-switcher.d.ts",
+            "default": "./dist/content-switcher.js"
+        },
+        "./controlled-scroll-view": {
+            "types": "./dist/controlled-scroll-view.d.ts",
+            "default": "./dist/controlled-scroll-view.js"
+        },
+        "./data-grid": {
+            "types": "./dist/data-grid.d.ts",
+            "default": "./dist/data-grid.js"
+        },
+        "./date-picker": {
+            "types": "./dist/date-picker.d.ts",
+            "default": "./dist/date-picker.js"
+        },
+        "./definition-list": {
+            "types": "./dist/definition-list.d.ts",
+            "default": "./dist/definition-list.js"
+        },
+        "./dialog": {
+            "types": "./dist/dialog.d.ts",
+            "default": "./dist/dialog.js"
+        },
+        "./diff-view": {
+            "types": "./dist/diff-view.d.ts",
+            "default": "./dist/diff-view.js"
+        },
+        "./digits": {
+            "types": "./dist/digits.d.ts",
+            "default": "./dist/digits.js"
+        },
+        "./directory-tree": {
+            "types": "./dist/directory-tree.d.ts",
+            "default": "./dist/directory-tree.js"
+        },
+        "./divider": {
+            "types": "./dist/divider.d.ts",
+            "default": "./dist/divider.js"
+        },
+        "./drawer": {
+            "types": "./dist/drawer.d.ts",
+            "default": "./dist/drawer.js"
+        },
+        "./file-change": {
+            "types": "./dist/file-change.d.ts",
+            "default": "./dist/file-change.js"
+        },
+        "./file-picker": {
+            "types": "./dist/file-picker-entry.d.ts",
+            "default": "./dist/file-picker-entry.js"
+        },
+        "./form": {
+            "types": "./dist/form.d.ts",
+            "default": "./dist/form.js"
+        },
+        "./gauge": {
+            "types": "./dist/gauge.d.ts",
+            "default": "./dist/gauge.js"
+        },
+        "./gradient": {
+            "types": "./dist/gradient.d.ts",
+            "default": "./dist/gradient.js"
+        },
+        "./grid": {
+            "types": "./dist/grid.d.ts",
+            "default": "./dist/grid.js"
+        },
+        "./heading": {
+            "types": "./dist/heading.d.ts",
+            "default": "./dist/heading.js"
+        },
+        "./heatmap": {
+            "types": "./dist/heatmap.d.ts",
+            "default": "./dist/heatmap.js"
+        },
+        "./help": {
+            "types": "./dist/help.d.ts",
+            "default": "./dist/help.js"
+        },
+        "./histogram": {
+            "types": "./dist/histogram.d.ts",
+            "default": "./dist/histogram.js"
+        },
+        "./image": {
+            "types": "./dist/image.d.ts",
+            "default": "./dist/image.js"
+        },
+        "./json": {
+            "types": "./dist/json.d.ts",
+            "default": "./dist/json.js"
+        },
+        "./kbd": {
+            "types": "./dist/kbd.d.ts",
+            "default": "./dist/kbd.js"
+        },
+        "./line-chart": {
+            "types": "./dist/line-chart.d.ts",
+            "default": "./dist/line-chart.js"
+        },
+        "./link": {
+            "types": "./dist/link.d.ts",
+            "default": "./dist/link.js"
+        },
+        "./loading-indicator": {
+            "types": "./dist/loading-indicator.d.ts",
+            "default": "./dist/loading-indicator.js"
+        },
+        "./log": {
+            "types": "./dist/log.d.ts",
+            "default": "./dist/log.js"
+        },
+        "./markdown": {
+            "types": "./dist/markdown.d.ts",
+            "default": "./dist/markdown.js"
+        },
+        "./masked-input": {
+            "types": "./dist/masked-input.d.ts",
+            "default": "./dist/masked-input.js"
+        },
+        "./menu": {
+            "types": "./dist/menu.d.ts",
+            "default": "./dist/menu.js"
+        },
+        "./message-bubble": {
+            "types": "./dist/message-bubble.d.ts",
+            "default": "./dist/message-bubble.js"
+        },
+        "./model-badge": {
+            "types": "./dist/model-badge.d.ts",
+            "default": "./dist/model-badge.js"
+        },
+        "./model-selector": {
+            "types": "./dist/model-selector.d.ts",
+            "default": "./dist/model-selector.js"
+        },
+        "./multi-progress": {
+            "types": "./dist/multi-progress.d.ts",
+            "default": "./dist/multi-progress.js"
+        },
+        "./multi-select": {
+            "types": "./dist/multi-select.d.ts",
+            "default": "./dist/multi-select.js"
+        },
+        "./notification-badge": {
+            "types": "./dist/notification-badge.d.ts",
+            "default": "./dist/notification-badge.js"
+        },
+        "./number-input": {
+            "types": "./dist/number-input.d.ts",
+            "default": "./dist/number-input.js"
+        },
+        "./operation-tree": {
+            "types": "./dist/operation-tree.d.ts",
+            "default": "./dist/operation-tree.js"
+        },
+        "./option-list": {
+            "types": "./dist/option-list.d.ts",
+            "default": "./dist/option-list.js"
+        },
+        "./ordered-list": {
+            "types": "./dist/ordered-list.d.ts",
+            "default": "./dist/ordered-list.js"
+        },
+        "./paginator": {
+            "types": "./dist/paginator.d.ts",
+            "default": "./dist/paginator.js"
+        },
+        "./paragraph": {
+            "types": "./dist/paragraph.d.ts",
+            "default": "./dist/paragraph.js"
+        },
+        "./path-input": {
+            "types": "./dist/path-input.d.ts",
+            "default": "./dist/path-input.js"
+        },
+        "./pie-chart": {
+            "types": "./dist/pie-chart.d.ts",
+            "default": "./dist/pie-chart.js"
+        },
+        "./placeholder": {
+            "types": "./dist/placeholder.d.ts",
+            "default": "./dist/placeholder.js"
+        },
+        "./popover": {
+            "types": "./dist/popover.d.ts",
+            "default": "./dist/popover.js"
+        },
+        "./progress-bar": {
+            "types": "./dist/progress-bar.d.ts",
+            "default": "./dist/progress-bar.js"
+        },
+        "./progress-circle": {
+            "types": "./dist/progress-circle.d.ts",
+            "default": "./dist/progress-circle.js"
+        },
+        "./qr-code": {
+            "types": "./dist/qr-code.d.ts",
+            "default": "./dist/qr-code.js"
+        },
+        "./radio-group": {
+            "types": "./dist/radio-group.d.ts",
+            "default": "./dist/radio-group.js"
+        },
+        "./scatter-plot": {
+            "types": "./dist/scatter-plot.d.ts",
+            "default": "./dist/scatter-plot.js"
+        },
+        "./scroll-bar": {
+            "types": "./dist/scroll-bar.d.ts",
+            "default": "./dist/scroll-bar.js"
+        },
+        "./scroll-bar-box": {
+            "types": "./dist/scroll-bar-box.d.ts",
+            "default": "./dist/scroll-bar-box.js"
+        },
+        "./scroll-list": {
+            "types": "./dist/scroll-list.d.ts",
+            "default": "./dist/scroll-list.js"
+        },
+        "./scroll-view": {
+            "types": "./dist/scroll-view.d.ts",
+            "default": "./dist/scroll-view.js"
+        },
+        "./search-input": {
+            "types": "./dist/search-input.d.ts",
+            "default": "./dist/search-input.js"
+        },
+        "./select-input": {
+            "types": "./dist/select-input.d.ts",
+            "default": "./dist/select-input.js"
+        },
+        "./select-input-indicator": {
+            "types": "./dist/select-input-indicator.d.ts",
+            "default": "./dist/select-input-indicator.js"
+        },
+        "./select-input-item": {
+            "types": "./dist/select-input-item.d.ts",
+            "default": "./dist/select-input-item.js"
+        },
+        "./shimmer-text": {
+            "types": "./dist/shimmer-text.d.ts",
+            "default": "./dist/shimmer-text.js"
+        },
+        "./sidebar": {
+            "types": "./dist/sidebar.d.ts",
+            "default": "./dist/sidebar.js"
+        },
+        "./slider": {
+            "types": "./dist/slider.d.ts",
+            "default": "./dist/slider.js"
+        },
+        "./sparkline": {
+            "types": "./dist/sparkline.d.ts",
+            "default": "./dist/sparkline.js"
+        },
+        "./spinner": {
+            "types": "./dist/spinner.d.ts",
+            "default": "./dist/spinner.js"
+        },
+        "./status-line": {
+            "types": "./dist/status-line.d.ts",
+            "default": "./dist/status-line.js"
+        },
+        "./status-message": {
+            "types": "./dist/status-message.d.ts",
+            "default": "./dist/status-message.js"
+        },
+        "./stepper": {
+            "types": "./dist/stepper.d.ts",
+            "default": "./dist/stepper.js"
+        },
+        "./stopwatch": {
+            "types": "./dist/stopwatch.d.ts",
+            "default": "./dist/stopwatch.js"
+        },
+        "./streaming-text": {
+            "types": "./dist/streaming-text.d.ts",
+            "default": "./dist/streaming-text.js"
+        },
+        "./switch": {
+            "types": "./dist/switch.d.ts",
+            "default": "./dist/switch.js"
+        },
+        "./tab": {
+            "types": "./dist/tab.d.ts",
+            "default": "./dist/tab.js"
+        },
+        "./table": {
+            "types": "./dist/table.d.ts",
+            "default": "./dist/table.js"
+        },
+        "./tabs": {
+            "types": "./dist/tabs.d.ts",
+            "default": "./dist/tabs.js"
+        },
+        "./tag": {
+            "types": "./dist/tag.d.ts",
+            "default": "./dist/tag.js"
+        },
+        "./tag-input": {
+            "types": "./dist/tag-input.d.ts",
+            "default": "./dist/tag-input.js"
+        },
+        "./text-input": {
+            "types": "./dist/text-input.d.ts",
+            "default": "./dist/text-input.js"
+        },
+        "./textarea": {
+            "types": "./dist/textarea.d.ts",
+            "default": "./dist/textarea.js"
+        },
+        "./thinking-block": {
+            "types": "./dist/thinking-block.d.ts",
+            "default": "./dist/thinking-block.js"
+        },
+        "./time-picker": {
+            "types": "./dist/time-picker.d.ts",
+            "default": "./dist/time-picker.js"
+        },
+        "./timer": {
+            "types": "./dist/timer.d.ts",
+            "default": "./dist/timer.js"
+        },
+        "./toast": {
+            "types": "./dist/toast.d.ts",
+            "default": "./dist/toast.js"
+        },
+        "./token-usage": {
+            "types": "./dist/token-usage.d.ts",
+            "default": "./dist/token-usage.js"
+        },
+        "./tool-call": {
+            "types": "./dist/tool-call.d.ts",
+            "default": "./dist/tool-call.js"
+        },
+        "./tooltip": {
+            "types": "./dist/tooltip.d.ts",
+            "default": "./dist/tooltip.js"
+        },
+        "./transition": {
+            "types": "./dist/transition.d.ts",
+            "default": "./dist/transition.js"
+        },
+        "./tree-select": {
+            "types": "./dist/tree-select.d.ts",
+            "default": "./dist/tree-select.js"
+        },
+        "./tree-view": {
+            "types": "./dist/tree-view-entry.d.ts",
+            "default": "./dist/tree-view-entry.js"
+        },
+        "./unordered-list": {
+            "types": "./dist/unordered-list.d.ts",
+            "default": "./dist/unordered-list.js"
+        },
+        "./use-linked-scroll": {
+            "types": "./dist/use-linked-scroll.d.ts",
+            "default": "./dist/use-linked-scroll.js"
+        },
+        "./package.json": "./package.json"
+    },
+    "files": [
+        "dist/**",
+        "README.md",
+        "CHANGELOG.md",
+        "LICENSE.md"
+    ],
+    "scripts": {
+        "build": "packem build --development && node scripts/build-registry.mjs",
+        "build:prod": "packem build --production && node scripts/build-registry.mjs",
+        "build:registry": "node scripts/build-registry.mjs",
+        "lint:types": "tsc --noEmit",
+        "test": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:watch": "vitest"
+    },
+    "dependencies": {
+        "@visulima/ansi": "4.0.0",
+        "@visulima/colorize": "2.0.0",
+        "@visulima/spinner": "1.0.0",
+        "type-fest": "catalog:prod"
+    },
+    "devDependencies": {
+        "@shikijs/core": "^4.3.0",
+        "@shikijs/langs": "catalog:prod",
+        "@shikijs/themes": "catalog:dev",
+        "@shikijs/types": "^4.3.0",
+        "@types/qrcode": "^1.5.5",
+        "@types/react": "catalog:types",
+        "@visulima/packem": "catalog:dev",
+        "@visulima/tui": "workspace:*",
+        "@vitest/coverage-v8": "catalog:test",
+        "delay": "catalog:dev",
+        "esbuild": "catalog:build",
+        "marked": "catalog:dev",
+        "qrcode": "^1.5.4",
+        "react": "^19.2.6",
+        "react-reconciler": "^0.33.0",
+        "shiki": "catalog:syntax",
+        "typescript": "catalog:tsc",
+        "vitest": "catalog:test"
+    },
+    "peerDependencies": {
+        "@shikijs/langs": "catalog:prod",
+        "@shikijs/themes": "catalog:dev",
+        "@visulima/tabular": "4.0.0",
+        "@visulima/tui": "workspace:*",
+        "cfonts": "catalog:prod",
+        "diff": "catalog:prod",
+        "marked": "catalog:dev",
+        "qrcode": "^1.5.4",
+        "react": "^19.2.6",
+        "shiki": "catalog:syntax"
+    },
+    "peerDependenciesMeta": {
+        "@shikijs/langs": {
+            "optional": true
+        },
+        "@shikijs/themes": {
+            "optional": true
+        },
+        "@visulima/tabular": {
+            "optional": true
+        },
+        "cfonts": {
+            "optional": true
+        },
+        "diff": {
+            "optional": true
+        },
+        "marked": {
+            "optional": true
+        },
+        "qrcode": {
+            "optional": true
+        },
+        "shiki": {
+            "optional": true
+        }
+    },
+    "engines": {
+        "node": "^22.14.0 || >=24.10.0"
+    },
+    "publishConfig": {
+        "access": "public",
+        "provenance": true
+    }
+}

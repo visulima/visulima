@@ -113,15 +113,15 @@
     },
     "exports": {
         ".": {
-            "default": {
-                "types": "./dist/index.server.d.ts",
-                "default": "./dist/index.server.js"
-            },
             "browser": {
                 "types": "./dist/index.browser.d.ts",
                 "default": "./dist/index.browser.js"
             },
             "edge-light": {
+                "types": "./dist/index.server.d.ts",
+                "default": "./dist/index.server.js"
+            },
+            "default": {
                 "types": "./dist/index.server.d.ts",
                 "default": "./dist/index.server.js"
             }

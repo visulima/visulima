@@ -84,7 +84,7 @@ const ENUM_OPTION_NAMES: Record<string, Record<number, string>> = {
  * `TS5102: Option 'baseUrl' has been removed`. Keyed by the removing TypeScript major so
  * {@link normalizeCompilerOptionsForWrite} can drop only what the requested target version removed.
  */
-export const REMOVED_COMPILER_OPTIONS_BY_MAJOR: Readonly<Record<number, ReadonlySet<string>>> = {
+const REMOVED_COMPILER_OPTIONS_BY_MAJOR: Readonly<Record<number, ReadonlySet<string>>> = {
     7: new Set<string>([
         "baseUrl",
         "charset",
@@ -100,6 +100,26 @@ export const REMOVED_COMPILER_OPTIONS_BY_MAJOR: Readonly<Record<number, Readonly
     ]),
 };
 
+/**
+ * Union of every compiler-option name removed at or below the requested TypeScript major, or
+ * `undefined` when no major was requested (nothing is dropped).
+ */
+const resolveRemovedOptions = (removedForMajor: number | undefined): ReadonlySet<string> | undefined => {
+    if (removedForMajor === undefined) {
+        return undefined;
+    }
+
+    let removed: ReadonlySet<string> | undefined;
+
+    for (const [major, set] of Object.entries(REMOVED_COMPILER_OPTIONS_BY_MAJOR)) {
+        if (removedForMajor >= Number(major)) {
+            removed = removed ? new Set([...removed, ...set]) : set;
+        }
+    }
+
+    return removed;
+};
+
 export interface NormalizeCompilerOptionsForWriteOptions {
     /**
      * When set, drop compiler options removed at or below this TypeScript major version. For example
@@ -112,10 +132,8 @@ export interface NormalizeCompilerOptionsForWriteOptions {
 /**
  * Normalize a resolved `compilerOptions` object into a shape a `tsconfig.json` parser accepts:
  *
- * - numeric enum values (`target: 99`, `moduleResolution: 100`) become their canonical string names
- *   (`"esnext"`, `"bundler"`);
- * - options removed in the requested TypeScript major (see {@link NormalizeCompilerOptionsForWriteOptions.removedForMajor})
- *   are dropped.
+ * - numeric enum values (`target: 99`, `moduleResolution: 100`) become their canonical string names (`"esnext"`, `"bundler"`);
+ * - options removed in the requested TypeScript major (see {@link NormalizeCompilerOptionsForWriteOptions.removedForMajor}) are dropped.
  *
  * Values that are already valid — the common case for a hand-written config — pass through untouched.
  * A new object is returned; the input is not mutated.
@@ -124,17 +142,7 @@ export const normalizeCompilerOptionsForWrite = (
     compilerOptions: TsConfigJson.CompilerOptions,
     options: NormalizeCompilerOptionsForWriteOptions = {},
 ): TsConfigJson.CompilerOptions => {
-    const { removedForMajor } = options;
-
-    let removed: ReadonlySet<string> | undefined;
-
-    if (removedForMajor !== undefined) {
-        for (const [major, set] of Object.entries(REMOVED_COMPILER_OPTIONS_BY_MAJOR)) {
-            if (removedForMajor >= Number(major)) {
-                removed = removed ? new Set([...removed, ...set]) : set;
-            }
-        }
-    }
+    const removed = resolveRemovedOptions(options.removedForMajor);
 
     // Spread (not a fresh `{}` + `Object.entries`) so own symbol keys — notably the
     // `implicitBaseUrlSymbol` sentinel — survive normalisation; only the string-keyed enum options
@@ -163,5 +171,5 @@ export const normalizeCompilerOptionsForWrite = (
         }
     }
 
-    return result as TsConfigJson.CompilerOptions;
+    return result;
 };
