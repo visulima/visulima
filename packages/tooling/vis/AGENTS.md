@@ -4,7 +4,7 @@ This file provides guidance to AI coding agents when working with code in this d
 
 ## Overview
 
-`@visulima/vis` is the workflow CLI on top of `@visulima/task-runner`: monorepo task running with caching, security scanning (`scan` via `@visulima/secret-scanner`), audit/SBOM/advisory tooling, ecosystem updates, AI-agent integrations, and a React-based dashboard. Built on `@visulima/cerebro` — every subcommand under `src/commands/` is a cerebro command module composed in `src/bin.ts` (full `vis` CLI) and `src/binx.ts` (lean `visx` / `vx` dlx-only entry).
+`@visulima/vis` is the workflow CLI on top of `@visulima/task-runner`: monorepo task running with caching, security scanning (`scan` via `@visulima/secret-scanner`), audit/SBOM/advisory tooling, ecosystem updates, AI-agent integrations, and a React-based dashboard. Built on `@visulima/cerebro` — every subcommand under `src/commands/` is a cerebro command module registered in `src/register-commands.ts` (used by the full `vis` CLI in `src/cli-main.ts`); `src/binx.ts` is the lean `visx` / `vx` dlx-only entry.
 
 ## Architecture
 
@@ -26,7 +26,7 @@ toolbox.process.exit(1);
 
 ### Layout under `src/`
 
-- `commands/` — one folder per top-level command (40+). Add new commands here and register in `bin.ts`.
+- `commands/` — one folder per top-level command (40+). Add new commands here and register in `register-commands.ts`.
 - `config/` — `vis.config.ts` loading, plugin system (`define-plugin.ts`), workspace resolution, deprecation surfacing, audit-config types.
 - `report/` — audit reporters. Supports SARIF, CSAF, CycloneDX VEX, **GitLab dependency-scan**, and **JUnit** (added in `18e8bc204`). New formats go alongside these.
 - `ai/`, `cache/`, `dashboard/`, `generate/`, `inference/`, `lint/`, `pm/`, `scan/`, `secrets/`, `security/`, `sbom/`, `services/`, `task/`, `runtime/`, `tui/`, `watch/`, `preflight/`, `staged/`, `plugins/`, `errors/`, `io/`, `util/` — domain-grouped modules consumed by commands.
