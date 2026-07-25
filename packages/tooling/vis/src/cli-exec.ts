@@ -12,15 +12,15 @@
 import { createCerebro } from "@visulima/cerebro";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 
-import pkg from "../package.json";
 import { runAndExit } from "./cli-run";
 import dlxCommand from "./commands/dlx";
 import execCommand from "./commands/exec";
+import getPackageVersion from "./util/package-version";
 
 export const runExecCli = async (): Promise<void> => {
     const cli = createCerebro("vis", {
         packageName: "vis",
-        packageVersion: pkg.version,
+        packageVersion: getPackageVersion(),
     });
 
     const isDebug = process.argv.includes("--debug") || Boolean(process.env["DEBUG"]);

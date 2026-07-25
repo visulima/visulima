@@ -11,7 +11,6 @@ import { readJsonSync } from "@visulima/fs";
 import { findMonorepoRootSync } from "@visulima/package";
 import { join } from "@visulima/path";
 
-import pkg from "../package.json";
 import { runAndExit } from "./cli-run";
 import actionGraphCommand from "./commands/action-graph";
 import addCommand from "./commands/add";
@@ -81,6 +80,7 @@ import configLoaderPlugin from "./plugins/config-loader";
 import postCommandPlugin from "./plugins/post-command";
 import securityEnforcementPlugin from "./plugins/security-enforcement";
 import { parseEarlyCaCert } from "./util/ca-cert";
+import getPackageVersion from "./util/package-version";
 import { startUpgradeCheck } from "./util/upgrade-check";
 
 /**
@@ -118,11 +118,11 @@ export const runCli = async (): Promise<void> => {
     }
 
     // Start background upgrade check immediately (non-blocking)
-    const upgradeCheckCallback = startUpgradeCheck(pkg.version, process.argv[2] ?? "");
+    const upgradeCheckCallback = startUpgradeCheck(getPackageVersion(), process.argv[2] ?? "");
 
     const cli = createCerebro("vis", {
         packageName: "vis",
-        packageVersion: pkg.version,
+        packageVersion: getPackageVersion(),
     });
 
     // Enhanced error handling
