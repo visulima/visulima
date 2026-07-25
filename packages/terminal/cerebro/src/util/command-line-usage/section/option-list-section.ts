@@ -1,3 +1,4 @@
+import { bold, underline } from "@visulima/colorize";
 import { createTable } from "@visulima/tabular";
 import { NO_BORDER } from "@visulima/tabular/style";
 
@@ -64,37 +65,31 @@ class OptionListSection extends BaseSection {
         this.lines.push("");
     }
 
-    // eslint-disable-next-line class-methods-use-this,sonarjs/cognitive-complexity,@typescript-eslint/no-explicit-any
+    // eslint-disable-next-line class-methods-use-this,@typescript-eslint/no-explicit-any
     private getOptionNames(definition: ArgumentDefinition | IOptionDefinition<any>, reverseNameOrder: boolean, isArgument: boolean): string {
         if (!definition.name) {
             throw new TypeError("Invalid option definition, name is required.");
         }
 
-        let type = definition.type ? definition.type.name.toLowerCase() : "string";
+        const typeName = definition.type ? definition.type.name.toLowerCase() : "string";
 
         const multiple = definition.multiple || definition.lazyMultiple ? "[]" : "";
 
-        type = templateFormat(definition.typeLabel ?? `{underline ${type}${multiple}}`);
+        // `typeLabel` is documented as accepting template syntax, so it keeps going
+        // through the parser. Names and aliases are plain data — styling them
+        // programmatically keeps a literal brace in an option name from being read
+        // as markup (and from throwing).
+        const type = definition.typeLabel === undefined ? underline(`${typeName}${multiple}`) : templateFormat(definition.typeLabel);
 
-        let result: string;
+        const name = isArgument ? bold(definition.name) : bold.yellow(`--${definition.name}`);
 
         if (definition.alias) {
-            if (definition.name) {
-                const name = isArgument ? definition.name : `{yellow --${definition.name}}`;
+            const alias = bold(`-${definition.alias}`);
 
-                result = reverseNameOrder
-                    ? templateFormat(`{bold ${name}}, {bold -${definition.alias}} ${type}`)
-                    : templateFormat(`{bold -${definition.alias}}, {bold ${name}} ${type}`);
-            } else if (reverseNameOrder) {
-                result = templateFormat(`{bold -${definition.alias}} ${type}`);
-            } else {
-                result = templateFormat(`{bold -${definition.alias}} ${type}`);
-            }
-        } else {
-            result = templateFormat(`{bold ${isArgument ? definition.name : `{yellow --${definition.name}}`}} ${type}`);
+            return reverseNameOrder ? `${name}, ${alias} ${type}` : `${alias}, ${name} ${type}`;
         }
 
-        return result;
+        return `${name} ${type}`;
     }
 
     // eslint-disable-next-line class-methods-use-this

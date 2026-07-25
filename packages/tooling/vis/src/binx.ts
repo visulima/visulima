@@ -2,9 +2,9 @@ import { createCerebro } from "@visulima/cerebro";
 import enableCompileCache from "@visulima/cerebro/compile-cache";
 import { errorHandlerPlugin } from "@visulima/cerebro/plugins/error-handler";
 
-import pkg from "../package.json";
 import { runAndExit } from "./cli-run";
 import dlxCommand from "./commands/dlx";
+import getPackageVersion from "./util/package-version";
 
 // `visx` / `vx` is the npx-style entry point for vis: `visx <pkg> [args]`
 // runs a remote package without permanent installation, equivalent to
@@ -26,7 +26,7 @@ if (process.argv.includes("--no-color")) {
 // otherwise the splice below would force them into `dlx --version` and
 // the user's intent (print the visx version) would never reach cerebro.
 if (process.argv.slice(2).some((argument) => argument === "--version" || argument === "-v" || argument === "-V")) {
-    process.stdout.write(`${pkg.version}\n`);
+    process.stdout.write(`${getPackageVersion()}\n`);
     // eslint-disable-next-line unicorn/no-process-exit -- binx is the CLI entry; exit short-circuits the cerebro re-dispatch below.
     process.exit(0);
 }
@@ -41,7 +41,7 @@ enableCompileCache();
 
 const cli = createCerebro("visx", {
     packageName: "visx",
-    packageVersion: pkg.version,
+    packageVersion: getPackageVersion(),
 });
 
 const isDebug = process.argv.includes("--debug") || Boolean(process.env["DEBUG"]);

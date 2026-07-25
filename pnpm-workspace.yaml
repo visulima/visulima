@@ -89,7 +89,7 @@ managePackageManagerVersions: true
 
 catalogs:
   backend:
-    '@hono/node-server': ^2.0.8
+    '@hono/node-server': ^2.0.10
     '@hono/swagger-ui': ^0.6.1
     '@hono/zod-openapi': 1.4.0
     '@koa/router': 15.6.0
@@ -247,7 +247,7 @@ catalogs:
     mobx: ^6.16.1
     ms: ^2.1.3
     msw: 2.14.6
-    next: 16.2.10
+    next: 16.2.11
     node-fetch: ^3.3.2
     node-mocks-http: ^1.17.2
     node-pty: 1.1.0
@@ -345,7 +345,7 @@ catalogs:
     react-dom: 19.2.7
     react-hook-inview: 4.5.1
     react-remove-scroll: 2.7.2
-    react-router: 8.1.0
+    react-router: 8.3.0
     solid-js: 1.9.14
     svelte: 5.56.4
     svelte-check: ^4.7.1
@@ -375,7 +375,7 @@ catalogs:
     '@typescript-eslint/eslint-plugin': 8.62.1
     '@typescript-eslint/parser': 8.62.1
     eslint: 10.6.0
-    eslint-config-next: 16.2.10
+    eslint-config-next: 16.2.11
     eslint-plugin-jsx-a11y: ^6.10.2
     eslint-plugin-react: ^7.37.5
     eslint-plugin-react-compiler: 19.1.0-rc.2
@@ -439,7 +439,7 @@ catalogs:
     json5: ^2.2.3
     jsonc-parser: ^3.3.1
     mjml: '>=5.4.0'
-    next: '>=16.2.10'
+    next: '>=16.2.11'
     pkijs: '>=3.4.0'
     rate-limiter-flexible: '>=11.2.0'
     redoc: '>=2.5.3'
@@ -592,7 +592,7 @@ catalogs:
     nano-copy: ^0.1.1
     nanoclone: ^1.0.2
     nanoid: 5.1.16
-    next: 16.2.10
+    next: 16.2.11
     next-themes: ^0.4.6
     nitro: 3.0.260311-beta
     nodemailer: 9.0.3
@@ -673,14 +673,14 @@ catalogs:
     '@testing-library/react': 16.3.2
     '@testing-library/svelte': 5.4.2
     '@testing-library/vue': 8.1.0
-    '@vitest/browser': 4.1.9
-    '@vitest/coverage-v8': 4.1.9
-    '@vitest/ui': 4.1.9
+    '@vitest/browser': 4.1.10
+    '@vitest/coverage-v8': 4.1.10
+    '@vitest/ui': 4.1.10
     eslint-plugin-playwright: 2.10.4
     next-test-api-route-handler: 5.0.5
     playwright: ^1.61.1
     test-runner: 0.11.1
-    vitest: 4.1.9
+    vitest: 4.1.10
   tsc:
     typescript: 6.0.3
   types:
@@ -809,6 +809,35 @@ minimumReleaseAgeExclude:
   - undici@7.28.0
   - nodemailer@9.0.1
   - dompurify@3.4.11
+  - axios@1.18.0
+  - brace-expansion@5.0.7
+  - js-yaml@4.3.0
+  - js-yaml@3.15.0
+  - tar@7.5.18
+  - tar@7.5.19
+  - tar@7.5.17
+  - shell-quote@1.8.5
+  - protobufjs@8.6.6
+  - protobufjs@7.6.5
+  - body-parser@2.3.0
+  - linkify-it@5.0.2
+  - svgo@4.0.2
+  - dompurify@3.4.12
+  - '@vitest/browser@4.1.10'
+  - fast-uri@3.1.4
+  - sharp@0.35.0
+  - fast-xml-parser@5.10.1
+  - '@hono/node-server@2.0.10'
+  - next@16.2.11
+  - fast-uri@3.1.3
+  - react-router@7.18.0
+  - find-my-way@9.6.1
+  - js-yaml@5.2.2
+  - react-router@8.3.0
+  - tar@7.5.21
+  - postcss@8.5.18
+  - valibot@1.4.2
+  - brace-expansion@5.0.8
 
 # @visulima/packem imports `@visulima/cerebro/logger/pail` — cerebro's opt-in subpath —
 # but declares no dependency on @visulima/pail. cerebro is right to treat pail as an
@@ -1070,6 +1099,47 @@ overrides:
   vite@>=8.0.0 <=8.0.15: ^8.0.16
   ws@>=7.0.0 <7.5.11: ^7.5.11
   ws@>=8.0.0 <8.21.0: ^8.21.0
+  '@hono/node-server@>=2.0.0 <=2.0.9': ^2.0.10
+  # The advisory-range selector above never matches: @modelcontextprotocol/sdk
+  # asks for `^2.0.0`, which isn't a subset of `>=2.0.0 <=2.0.9`, so the only
+  # vulnerable path in the tree kept resolving to 2.0.8. Pin it by parent.
+  '@modelcontextprotocol/sdk>@hono/node-server': ^2.0.10
+  '@vitest/browser@>=4.0.0 <4.1.10': ^4.1.10
+  axios@>=1.0.0 <1.18.0: ^1.18.0
+  axios@>=1.13.0 <1.18.0: ^1.18.0
+  axios@>=1.15.0 <1.18.0: ^1.18.0
+  axios@>=1.15.1 <1.18.0: ^1.18.0
+  axios@>=1.15.2 <1.18.0: ^1.18.0
+  axios@>=1.7.0 <1.18.0: ^1.18.0
+  body-parser@>=2.0.0 <2.3.0: ^2.3.0
+  brace-expansion@<=5.0.7: ^5.0.8
+  brace-expansion@>=3.0.0 <5.0.7: ^5.0.7
+  dompurify@<=3.4.11: ^3.4.12
+  fast-uri@>=3.0.0 <3.1.3: ^3.1.3
+  fast-uri@>=3.0.0 <=3.1.3: ^3.1.4
+  fast-xml-parser@>=5.9.3 <5.10.1: ^5.10.1
+  find-my-way@<=9.6.0: ^9.6.1
+  js-yaml@>=3.0.0 <3.15.0: ^3.15.0
+  js-yaml@>=4.0.0 <4.3.0: ^4.3.0
+  js-yaml@>=5.0.0 <=5.2.1: ^5.2.2
+  linkify-it@<=5.0.1: ^5.0.2
+  next@>=16.0.0 <16.2.11: ^16.2.11
+  postcss@<=8.5.17: ^8.5.18
+  protobufjs@>=7.5.0 <=7.6.4: ^7.6.5
+  protobufjs@>=8.0.0 <=8.6.5: ^8.6.6
+  react-router@>=6.0.0 <7.18.0: ^7.18.0
+  react-router@>=6.4.0 <7.18.0: ^7.18.0
+  react-router@>=7.0.0 <7.18.0: ^7.18.0
+  react-router@>=7.11.0 <7.18.0: ^7.18.0
+  react-router@>=7.12.0 <8.3.0: ^8.3.0
+  sharp@<0.35.0: ^0.35.0
+  shell-quote@<=1.8.4: ^1.8.5
+  svgo@>=4.0.0 <4.0.2: ^4.0.2
+  tar@<=7.5.16: ^7.5.17
+  tar@<=7.5.17: ^7.5.18
+  tar@<=7.5.18: ^7.5.19
+  tar@<=7.5.20: ^7.5.21
+  valibot@<=1.4.1: ^1.4.2
 patchedDependencies:
   # Keep these keys in lockstep with the picomatch/tinyglobby pins in `overrides` above.
   # pnpm applies patches strictly (no fuzz), so the key must name the exact version the

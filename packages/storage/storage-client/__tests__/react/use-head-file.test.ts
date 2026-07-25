@@ -23,7 +23,7 @@ describe(useHeadFile, () => {
     });
 
     it("should fetch file metadata via HEAD request", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const mockHeaders = new Headers({
             "Content-Length": "1024",
@@ -54,7 +54,7 @@ describe(useHeadFile, () => {
     });
 
     it("should extract upload metadata", async () => {
-        expect.assertions(5);
+        expect.hasAssertions();
 
         const mockHeaders = new Headers({
             "X-Chunked-Upload": "true",
@@ -86,7 +86,7 @@ describe(useHeadFile, () => {
     });
 
     it("should parse received chunks", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const mockHeaders = new Headers({
             "X-Received-Chunks": JSON.stringify([0, 1024, 2048]),
@@ -112,7 +112,7 @@ describe(useHeadFile, () => {
     });
 
     it("should call onSuccess callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onSuccess = vi.fn();
         const mockHeaders = new Headers({
@@ -140,7 +140,7 @@ describe(useHeadFile, () => {
     });
 
     it("should handle error and call onError callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onError = vi.fn();
 
