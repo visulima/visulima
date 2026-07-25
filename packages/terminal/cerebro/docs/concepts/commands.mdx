@@ -25,6 +25,20 @@ or a `loader` that defers handler import until invocation:
 }
 ```
 
+### Styling help text
+
+`description`, `examples`, `typeLabel` and section content are rendered through
+[colorize's tagged-template syntax](https://github.com/visulima/visulima/tree/main/packages/colorize#tagged-template-literals),
+so `{bold …}` / `{red …}` markup is applied when the help page is printed:
+
+```typescript
+description: "Run the {bold dangerous} step";
+```
+
+Text that isn't a valid template is printed verbatim, so literal braces need no
+escaping — `Lint engines.{node,pnpm}` and `dependencies: {}` render exactly as
+written (they just carry no styling).
+
 ## Basic Commands
 
 Simple command with no arguments:

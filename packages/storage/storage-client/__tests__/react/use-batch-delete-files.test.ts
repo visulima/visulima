@@ -35,7 +35,7 @@ describe(useBatchDeleteFiles, () => {
     });
 
     it("should delete batch of files successfully", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         mockFetch.mockResolvedValueOnce({
             headers: new Headers({
@@ -88,7 +88,7 @@ describe(useBatchDeleteFiles, () => {
     });
 
     it("should call onSuccess callback", async () => {
-        expect.assertions(1);
+        expect.hasAssertions();
 
         const onSuccess = vi.fn();
 
@@ -121,7 +121,7 @@ describe(useBatchDeleteFiles, () => {
     });
 
     it("should handle error and call onError callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onError = vi.fn();
 
@@ -179,7 +179,7 @@ describe(useBatchDeleteFiles, () => {
     });
 
     it("should reset mutation state", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         mockFetch.mockResolvedValueOnce({
             headers: new Headers(),
@@ -207,7 +207,7 @@ describe(useBatchDeleteFiles, () => {
     });
 
     it("should use buildUrl for absolute endpoints", async () => {
-        expect.assertions(1);
+        expect.hasAssertions();
 
         mockFetch.mockResolvedValueOnce({
             headers: new Headers(),

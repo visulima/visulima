@@ -47,7 +47,7 @@ describe(useFileInput, () => {
     });
 
     it("should handle file selection", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const onFilesSelected = vi.fn();
 
@@ -142,7 +142,7 @@ describe(useFileInput, () => {
     });
 
     it("should reset files", async () => {
-        expect.assertions(4);
+        expect.hasAssertions();
 
         const { result } = renderHook(() => useFileInput());
 

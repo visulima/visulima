@@ -8,9 +8,9 @@ import { join, resolve } from "@visulima/path";
 import isInCi from "is-in-ci";
 import { satisfies, validRange } from "semver";
 
-import pkg from "../../package.json";
 import { findVisConfigFile, loadVisConfig } from "../config/config";
 import type { VisConfig } from "../config/workspace";
+import getPackageVersion from "../util/package-version";
 
 const configLoaderPlugin: Plugin = {
     beforeCommand: async (toolbox) => {
@@ -56,10 +56,10 @@ const configLoaderPlugin: Plugin = {
                     return;
                 }
 
-                if (constraint && !satisfies(pkg.version, constraint)) {
+                if (constraint && !satisfies(getPackageVersion(), constraint)) {
                     toolbox.logger.error("");
                     toolbox.logger.error(red(bold("\u2716 vis version too old")));
-                    toolbox.logger.error(`  vis.config.ts requires vis ${bold(constraint)}, but the current version is ${bold(pkg.version)}.`);
+                    toolbox.logger.error(`  vis.config.ts requires vis ${bold(constraint)}, but the current version is ${bold(getPackageVersion())}.`);
                     toolbox.logger.error(`  ${yellow("\u2192")} Upgrade: ${cyan("pnpm add -D @visulima/vis@latest")}`);
                     toolbox.logger.error("");
                     process.exitCode = 1;

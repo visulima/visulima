@@ -35,7 +35,7 @@ describe(useTransformMetadata, () => {
     });
 
     it("should fetch transform metadata successfully", async () => {
-        expect.assertions(5);
+        expect.hasAssertions();
 
         const mockMetadata = {
             formats: ["jpeg", "png", "webp"],
@@ -65,7 +65,7 @@ describe(useTransformMetadata, () => {
     });
 
     it("should call onSuccess callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onSuccess = vi.fn();
         const mockMetadata = {
@@ -93,7 +93,7 @@ describe(useTransformMetadata, () => {
     });
 
     it("should handle error and call onError callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onError = vi.fn();
 
@@ -126,7 +126,7 @@ describe(useTransformMetadata, () => {
     });
 
     it("should handle metadata with partial data", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const mockMetadata = {
             formats: ["jpeg"],

@@ -7,6 +7,16 @@ const MAX_CACHE_SIZE = 500;
 
 /**
  * Formats templates with intelligent caching.
+ *
+ * Command metadata (descriptions, examples, option names) is user-supplied and
+ * routinely contains literal braces — `engines.{node,pnpm}`, `dependencies: {}`,
+ * `vis-release{,-check,-snapshot}.yml`. The colorize template parser reads `{`/`}`
+ * as style markup and throws on anything it can't parse ("Found extraneous } in
+ * template literal", "template literal is missing N closing brackets"), which
+ * previously aborted `--help` before a single line was printed.
+ *
+ * A string that doesn't parse as a template is treated as plain text and returned
+ * verbatim, so the braces render exactly as the author wrote them.
  */
 const templateFormat = (string_?: string): string => {
     if (!string_) {
@@ -25,7 +35,13 @@ const templateFormat = (string_?: string): string => {
         return cached;
     }
 
-    const result = colorizeTemplate(Object.assign([], { raw: [string_] }));
+    let result: string;
+
+    try {
+        result = colorizeTemplate(Object.assign([], { raw: [string_] }));
+    } catch {
+        result = string_;
+    }
 
     // Intelligent cache management
     if (formatCache.size >= MAX_CACHE_SIZE) {

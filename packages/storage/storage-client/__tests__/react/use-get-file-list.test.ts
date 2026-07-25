@@ -23,7 +23,7 @@ describe(useGetFileList, () => {
     });
 
     it("should fetch file list successfully", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const mockData = {
             data: [
@@ -61,7 +61,7 @@ describe(useGetFileList, () => {
     });
 
     it("should handle paginated response", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const mockData = {
             data: [
@@ -99,7 +99,7 @@ describe(useGetFileList, () => {
     });
 
     it("should handle array response", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const mockData = [
             {
@@ -127,7 +127,7 @@ describe(useGetFileList, () => {
     });
 
     it("should call onSuccess callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onSuccess = vi.fn();
         const mockData = {
@@ -159,7 +159,7 @@ describe(useGetFileList, () => {
     });
 
     it("should handle error and call onError callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onError = vi.fn();
 

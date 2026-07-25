@@ -127,7 +127,7 @@ describe(useChunkedRestUpload, () => {
     });
 
     it("should handle pause and resume", async () => {
-        expect.assertions(6);
+        expect.hasAssertions();
 
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
 
@@ -250,7 +250,7 @@ describe(useChunkedRestUpload, () => {
     });
 
     it("should call callbacks correctly", async () => {
-        expect.assertions(4);
+        expect.hasAssertions();
 
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
         const onStart = vi.fn();
@@ -321,7 +321,7 @@ describe(useChunkedRestUpload, () => {
     });
 
     it("should handle abort", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
 

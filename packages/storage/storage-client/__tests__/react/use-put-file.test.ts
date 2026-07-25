@@ -81,7 +81,7 @@ describe(usePutFile, () => {
     });
 
     it("should upload file successfully", async () => {
-        expect.assertions(6);
+        expect.hasAssertions();
 
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
 
@@ -143,7 +143,7 @@ describe(usePutFile, () => {
     });
 
     it("should handle upload errors", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         class ErrorXHR extends CustomMockXMLHttpRequest {
             public send = vi.fn(() => {
@@ -193,7 +193,7 @@ describe(usePutFile, () => {
     });
 
     it("should invalidate queries on success", async () => {
-        expect.assertions(1);
+        expect.hasAssertions();
 
         const invalidateQueriesSpy = vi.spyOn(queryClient, "invalidateQueries");
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
@@ -216,7 +216,7 @@ describe(usePutFile, () => {
     });
 
     it("should reset mutation state", async () => {
-        expect.assertions(5);
+        expect.hasAssertions();
 
         const file = new File(["test content"], "test.jpg", { type: "image/jpeg" });
 

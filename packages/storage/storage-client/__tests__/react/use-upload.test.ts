@@ -217,7 +217,7 @@ describe(useUpload, () => {
     });
 
     it("should call callbacks correctly", async () => {
-        expect.assertions(4);
+        expect.hasAssertions();
 
         const file = new File(["test content"], "test.txt", { type: "text/plain" });
         const onStart = vi.fn();

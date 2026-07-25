@@ -2,7 +2,7 @@ import { execSync, spawnSync } from "node:child_process";
 
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
 
-import pkg from "../../../package.json";
+import getPackageVersion from "../../util/package-version";
 import type { UpgradeOptions } from "./index";
 
 const execute = async ({ argument, logger, options }: Toolbox<Console, UpgradeOptions>): Promise<void> => {
@@ -10,7 +10,7 @@ const execute = async ({ argument, logger, options }: Toolbox<Console, UpgradeOp
 
     logger.info("info: checking for updates...");
 
-    const currentVersion = pkg.version ?? "unknown";
+    const currentVersion = getPackageVersion();
 
     // Query npm registry for latest
     let latestVersion: string;

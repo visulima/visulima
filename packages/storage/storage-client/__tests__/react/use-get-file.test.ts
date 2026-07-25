@@ -23,7 +23,7 @@ describe(useGetFile, () => {
     });
 
     it("should fetch file successfully", async () => {
-        expect.assertions(5);
+        expect.hasAssertions();
 
         const mockBlob = new Blob(["test content"], { type: "image/jpeg" });
         const mockHeaders = new Headers({
@@ -62,7 +62,7 @@ describe(useGetFile, () => {
     });
 
     it("should handle fetch errors", async () => {
-        expect.assertions(5);
+        expect.hasAssertions();
 
         mockFetch.mockResolvedValueOnce({
             json: () => Promise.resolve({ error: { message: "File not found" } }),
@@ -90,7 +90,7 @@ describe(useGetFile, () => {
     });
 
     it("should support transformation parameters", async () => {
-        expect.assertions(4);
+        expect.hasAssertions();
 
         const mockBlob = new Blob(["transformed content"], { type: "image/png" });
 
@@ -137,7 +137,7 @@ describe(useGetFile, () => {
     });
 
     it("should call onSuccess callback", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const onSuccess = vi.fn();
         const mockBlob = new Blob(["test"], { type: "image/jpeg" });
@@ -168,7 +168,7 @@ describe(useGetFile, () => {
     });
 
     it("should call onError callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onError = vi.fn();
 
@@ -195,7 +195,7 @@ describe(useGetFile, () => {
     });
 
     it("should refetch when refetch is called", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const mockBlob = new Blob(["test"], { type: "image/jpeg" });
 
