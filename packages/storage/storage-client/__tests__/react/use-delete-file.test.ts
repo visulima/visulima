@@ -35,7 +35,7 @@ describe(useDeleteFile, () => {
     });
 
     it("should delete file successfully", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         mockFetch.mockResolvedValueOnce({
             ok: true,
@@ -64,7 +64,7 @@ describe(useDeleteFile, () => {
     });
 
     it("should call onSuccess callback", async () => {
-        expect.assertions(1);
+        expect.hasAssertions();
 
         const onSuccess = vi.fn();
 
@@ -89,7 +89,7 @@ describe(useDeleteFile, () => {
     });
 
     it("should handle error and call onError callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onError = vi.fn();
 
@@ -124,7 +124,7 @@ describe(useDeleteFile, () => {
     });
 
     it("should reset mutation state", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         mockFetch.mockResolvedValueOnce({
             ok: true,

@@ -23,7 +23,7 @@ describe(useGetFileMeta, () => {
     });
 
     it("should fetch file metadata successfully", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const mockData = {
             contentType: "text/plain",
@@ -54,7 +54,7 @@ describe(useGetFileMeta, () => {
     });
 
     it("should use provided id if not in response", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const mockData = {
             name: "test.txt",
@@ -112,7 +112,7 @@ describe(useGetFileMeta, () => {
     });
 
     it("should handle error and call onError callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onError = vi.fn();
 

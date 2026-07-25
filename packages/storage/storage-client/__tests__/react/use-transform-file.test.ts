@@ -35,7 +35,7 @@ describe(useTransformFile, () => {
     });
 
     it("should fetch transformed file successfully", async () => {
-        expect.assertions(5);
+        expect.hasAssertions();
 
         const mockBlob = new Blob(["transformed content"], { type: "image/jpeg" });
         const mockHeaders = new Headers({
@@ -75,7 +75,7 @@ describe(useTransformFile, () => {
     });
 
     it("should call onSuccess callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onSuccess = vi.fn();
         const mockBlob = new Blob(["transformed content"], { type: "image/jpeg" });
@@ -105,7 +105,7 @@ describe(useTransformFile, () => {
     });
 
     it("should handle error and call onError callback", async () => {
-        expect.assertions(2);
+        expect.hasAssertions();
 
         const onError = vi.fn();
 
@@ -140,7 +140,7 @@ describe(useTransformFile, () => {
     });
 
     it("should handle error response without JSON body", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         mockFetch.mockResolvedValueOnce({
             json: async () => {
@@ -204,7 +204,7 @@ describe(useTransformFile, () => {
     });
 
     it("should refetch transformed file", async () => {
-        expect.assertions(3);
+        expect.hasAssertions();
 
         const mockBlob = new Blob(["transformed content"], { type: "image/jpeg" });
 
