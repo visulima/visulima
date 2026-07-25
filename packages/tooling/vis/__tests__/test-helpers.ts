@@ -20,8 +20,12 @@ import { dirname, join } from "@visulima/path";
  * A generous ceiling removes the timeout (and therefore the EBUSY/stdout-leak
  * cascade it triggers) without masking a genuine hang — a real deadlock still
  * trips it, just later.
+ *
+ * 120s still wasn't enough for the `release next-version` warm-up hook on a
+ * loaded windows-latest runner (it timed out with every one of the suite's 6573
+ * tests otherwise green), so the ceiling is 240s.
  */
-export const RELEASE_SUITE_TIMEOUT = 120_000;
+export const RELEASE_SUITE_TIMEOUT = 240_000;
 
 /**
  * `pristine` snapshot of `process.stdout.write`, captured at module load before
