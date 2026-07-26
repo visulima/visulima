@@ -1,5 +1,5 @@
 /* eslint-disable consistent-return, e18e/prefer-static-regex */
-import { useEffect, useEffectEvent, useRef } from "react";
+import { useEffect, useEffectEvent, useLayoutEffect, useRef } from "react";
 
 import { IMECompositionBuffer, isIMEInput } from "../ime-utils";
 import parseKeypress, { nonAlphanumericKeys } from "../parse-keypress";
@@ -250,7 +250,14 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
         };
     }, [options.isActive, setRawMode]);
 
-    useEffect(() => {
+    // Subscribe in a layout effect, not a passive one. `isFocused` flips during
+    // render, but a passive effect is flushed on React's schedule — which can
+    // land *after* the next I/O callback. A keypress arriving in that window
+    // reaches the App, finds no handler subscribed, and is dropped: no queue, no
+    // retry. A layout effect is flushed synchronously with the commit, before
+    // control returns to the event loop, so the handler is always in place by the
+    // time the terminal can deliver the next key.
+    useLayoutEffect(() => {
         if (options.isActive === false) {
             if (process.env["VIS_INPUT_DEBUG"]) {
                 // eslint-disable-next-line no-console
