@@ -286,6 +286,11 @@ const App = ({
     const emitInput = useCallback(
         (input: string): void => {
             handleInput(input);
+            if (process.env["VIS_INPUT_DEBUG"]) {
+                // eslint-disable-next-line no-console
+                console.log(`[VIS-APP-DEBUG] pid=${String(process.pid)} EMIT input=${JSON.stringify(input)} inputListeners=${String(internal_eventEmitter.listenerCount("input"))}`);
+            }
+
             internal_eventEmitter.emit("input", input);
         },
         [handleInput, internal_eventEmitter],

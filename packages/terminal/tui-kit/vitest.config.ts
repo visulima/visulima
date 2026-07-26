@@ -9,6 +9,10 @@ const config = getVitestConfig({
         // plain text and assertions like "these two gradients differ" collapse.
         env: {
             FORCE_COLOR: "3",
+            // DEBUG (temporary): turns on the [VIS-*-DEBUG] tracing in
+            // @visulima/tui so a CI run shows whether the keypress reaches a
+            // subscribed useInput handler.
+            VIS_INPUT_DEBUG: "1",
         },
         // type-fest is types-only; its package.json has no JS export under node/import conditions
         deps: {

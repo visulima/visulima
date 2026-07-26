@@ -71,9 +71,17 @@ const useFocus = ({ autoFocus = false, id: customId, isActive = true }: Input = 
         };
     }, [isActive]);
 
+    const isFocused = Boolean(id) && activeId === id;
+
+    // DEBUG (temporary, VIS_INPUT_DEBUG=1): does autoFocus actually resolve?
+    if (process.env["VIS_INPUT_DEBUG"]) {
+        // eslint-disable-next-line no-console
+        console.log(`[VIS-FOCUS-DEBUG] pid=${String(process.pid)} id=${id} autoFocus=${String(autoFocus)} isActive=${String(isActive)} activeId=${String(activeId)} isFocused=${String(isFocused)}`);
+    }
+
     return {
         focus,
-        isFocused: Boolean(id) && activeId === id,
+        isFocused,
     };
 };
 

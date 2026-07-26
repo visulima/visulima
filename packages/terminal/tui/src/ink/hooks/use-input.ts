@@ -252,10 +252,20 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
 
     useEffect(() => {
         if (options.isActive === false) {
+            if (process.env["VIS_INPUT_DEBUG"]) {
+                // eslint-disable-next-line no-console
+                console.log(`[VIS-USEINPUT-DEBUG] pid=${String(process.pid)} INERT (isActive=false) — no subscription`);
+            }
+
             return;
         }
 
         const handleData = (data: string) => {
+            if (process.env["VIS_INPUT_DEBUG"]) {
+                // eslint-disable-next-line no-console
+                console.log(`[VIS-USEINPUT-DEBUG] pid=${String(process.pid)} HANDLE data=${JSON.stringify(data)}`);
+            }
+
             // Check if this is IME input
             if (imeEnabled && isIMEInput(data)) {
                 imeBufferRef.current?.add(data);
@@ -353,9 +363,21 @@ const useInput = (inputHandler: Handler, options: Options = {}): void => {
             });
         };
 
+        // DEBUG (temporary, VIS_INPUT_DEBUG=1): did this component actually
+        // subscribe, and does the dispatch reach it?
+        if (process.env["VIS_INPUT_DEBUG"]) {
+            // eslint-disable-next-line no-console
+            console.log(`[VIS-USEINPUT-DEBUG] pid=${String(process.pid)} SUBSCRIBE isActive=${String(options.isActive)} listeners=${String(internal_eventEmitter.listenerCount("input") + 1)}`);
+        }
+
         internal_eventEmitter.on("input", handleData);
 
         return () => {
+            if (process.env["VIS_INPUT_DEBUG"]) {
+                // eslint-disable-next-line no-console
+                console.log(`[VIS-USEINPUT-DEBUG] pid=${String(process.pid)} UNSUBSCRIBE isActive=${String(options.isActive)}`);
+            }
+
             internal_eventEmitter.removeListener("input", handleData);
         };
     }, [options.isActive, stdin, internal_exitOnCtrlC, imeEnabled]);
