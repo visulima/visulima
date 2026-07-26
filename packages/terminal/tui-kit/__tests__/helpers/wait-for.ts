@@ -25,9 +25,23 @@ const waitFor = async (condition: () => boolean, timeoutMs = 10_000, intervalMs 
             try {
                 if (condition()) {
                     clearInterval(interval);
+
+                    const waited = Date.now() - start;
+
+                    // DEBUG (temporary): what does a *healthy* wait cost on this
+                    // runner? Anything near the old 2s ceiling is the signal.
+                    if (waited > 250) {
+                        // eslint-disable-next-line no-console
+                        console.log(`[VIS-INPUT-DEBUG] pid=${String(process.pid)} waitFor SETTLED after ${String(waited)}ms`);
+                    }
+
                     resolve();
                 } else if (Date.now() - start >= timeoutMs) {
                     clearInterval(interval);
+
+                    // eslint-disable-next-line no-console
+                    console.log(`[VIS-INPUT-DEBUG] pid=${String(process.pid)} waitFor TIMED OUT after ${String(timeoutMs)}ms`);
+
                     reject(new Error(`waitFor timed out after ${String(timeoutMs)}ms`));
                 }
             } catch (error) {

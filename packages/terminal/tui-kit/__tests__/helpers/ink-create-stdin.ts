@@ -1,6 +1,6 @@
 import EventEmitter from "node:events";
 
-import { vi } from "vitest";
+import { expect, vi } from "vitest";
 
 /**
  * Delivery state hung off the fake stdin, so {@link emitReadable} can tell
@@ -8,10 +8,36 @@ import { vi } from "vitest";
  */
 interface DeliveryState {
     pending: (() => void)[];
+    /** DEBUG: every `setRawMode` argument, in order. */
+    rawModeCalls: boolean[];
+    /** DEBUG: how many times the App drained us via `read()`. */
+    readCalls: number;
     ready: boolean;
 }
 
 const DELIVERY_STATE = Symbol("ink-test-stdin-delivery");
+
+/**
+ * DEBUG (temporary): emit one line per keystroke so a CI run can be read back.
+ *
+ * The question this answers: when a key is dropped, did the App's `readable`
+ * handler run at all? `read()` being called means a listener consumed the chunk
+ * and the drop is downstream (`useInput` inert because focus had not
+ * propagated). `read()` not being called means no listener was attached — the
+ * refcounted attach/detach in `handleSetRawMode` lost it.
+ */
+const debugLog = (message: string): void => {
+    let testName = "?";
+
+    try {
+        testName = expect.getState().currentTestName ?? "?";
+    } catch {
+        // Outside a test scope — keep the marker anyway.
+    }
+
+    // eslint-disable-next-line no-console
+    console.log(`[VIS-INPUT-DEBUG] pid=${String(process.pid)} test=${JSON.stringify(testName)} ${message}`);
+};
 
 export const createStdin = (): NodeJS.WriteStream => {
     // EventEmitter is required here for Node.js stream compatibility
@@ -19,7 +45,7 @@ export const createStdin = (): NodeJS.WriteStream => {
 
     stdin.isTTY = true;
 
-    const state: DeliveryState = { pending: [], ready: false };
+    const state: DeliveryState = { pending: [], rawModeCalls: [], readCalls: 0, ready: false };
 
     (stdin as unknown as Record<symbol, DeliveryState>)[DELIVERY_STATE] = state;
 
@@ -27,6 +53,8 @@ export const createStdin = (): NodeJS.WriteStream => {
     (stdin as Record<string, unknown>).setRawMode = () => stdin;
     (stdin as Record<string, unknown>).read = () => undefined;
     vi.spyOn(stdin, "setRawMode").mockImplementation(((isEnabled: boolean) => {
+        state.rawModeCalls.push(isEnabled);
+
         // `useFocus` enables raw mode from the effect that also registers the
         // component with the focus manager, so this is the first observable
         // moment at which a keypress can reach a handler.
@@ -66,24 +94,47 @@ export const createStdin = (): NodeJS.WriteStream => {
  * @param chunk The raw input to deliver.
  */
 export const emitReadable = (stdin: NodeJS.WriteStream, chunk: string): void => {
-    const deliver = (): void => {
+    const state = (stdin as unknown as Record<symbol, DeliveryState | undefined>)[DELIVERY_STATE];
+
+    const deliver = (buffered: boolean): void => {
         const read = stdin.read as ReturnType<typeof vi.fn>;
+        const before = read.mock.calls.length;
 
         read.mockReturnValueOnce(chunk);
         read.mockReturnValueOnce(null);
         stdin.emit("readable");
-        read.mockReset();
-    };
 
-    const state = (stdin as unknown as Record<symbol, DeliveryState | undefined>)[DELIVERY_STATE];
+        const drained = read.mock.calls.length - before;
+
+        read.mockReset();
+
+        if (state) {
+            state.readCalls += drained;
+        }
+
+        debugLog(
+            `deliver chunk=${JSON.stringify(chunk)} buffered=${String(buffered)} listeners=${String(stdin.listenerCount("readable"))}`
+                + ` drained=${String(drained)} rawMode=[${(state?.rawModeCalls ?? []).join(",")}]`,
+        );
+
+        // A late listener would show up here — e.g. focus settling after the
+        // key was already thrown away.
+        setTimeout(() => {
+            debugLog(
+                `+500ms chunk=${JSON.stringify(chunk)} listeners=${String(stdin.listenerCount("readable"))}`
+                    + ` rawMode=[${(state?.rawModeCalls ?? []).join(",")}]`,
+            );
+        }, 500);
+    };
 
     // No state means a hand-rolled stdin, and `ready` means the component is
     // already listening — deliver straight away so ordering is preserved.
     if (!state || state.ready) {
-        deliver();
+        deliver(false);
 
         return;
     }
 
-    state.pending.push(deliver);
+    debugLog(`buffering chunk=${JSON.stringify(chunk)} (raw mode not enabled yet) listeners=${String(stdin.listenerCount("readable"))}`);
+    state.pending.push(() => deliver(true));
 };
