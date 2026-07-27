@@ -3,7 +3,8 @@ import type { TargetConfiguration, Task, TaskTarget } from "@visulima/task-runne
 import { createTaskGraph } from "@visulima/task-runner";
 
 import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
-import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
+import { filterProjectsByNames } from "../../task/project-name-filter";
+import { filterProjectsByQuery, filterProjectsByTags, resolveSelector } from "../../task/selectors";
 import type { ActionGraphOptions } from "./index";
 
 /**
@@ -84,9 +85,17 @@ const execute = async ({ argument, logger, options, process: proc, visConfig, wo
     const { target } = selectorResult;
     let projectNames = selectorResult.projects;
 
+    // Mirrors `vis run --projects`: the plan is only useful if it describes
+    // the same task set the run would execute.
+    if (options.projects) {
+        projectNames = filterProjectsByNames(projectNames, String(options.projects), Object.keys(workspace.projects));
+    }
+
     if (options.query) {
         projectNames = filterProjectsByQuery(projectNames, workspace, options.query);
     }
+
+    projectNames = filterProjectsByTags(projectNames, workspace, options.tag);
 
     const candidates = projectNames.filter((name) => {
         const project = workspace.projects[name];

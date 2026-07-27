@@ -12,6 +12,7 @@ import { join } from "@visulima/path";
 import { runAndExit } from "./cli-run";
 import { isBareMigrateInvocation } from "./commands/migrate/detect-bare";
 import { runMigrateInteractive } from "./commands/migrate/interactive";
+import { isUserError } from "./errors/vis-user-error";
 import { setTerminalTitle } from "./io/terminal";
 import configLoaderPlugin from "./plugins/config-loader";
 import postCommandPlugin from "./plugins/post-command";
@@ -68,6 +69,7 @@ export const runCli = async (): Promise<void> => {
 
     cli.addPlugin(
         errorHandlerPlugin({
+            concise: isUserError,
             detailed: isDebug,
             exitOnError: false,
         }),

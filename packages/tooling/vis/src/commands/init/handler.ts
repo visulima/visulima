@@ -6,6 +6,7 @@ import { isAccessibleSync, writeFileSync } from "@visulima/fs";
 import { join, relative } from "@visulima/path";
 
 import { DEFAULT_MIN_RELEASE_AGE_MINUTES, findVisConfigFile } from "../../config/config";
+import { ensureVisGitignore, VIS_IGNORE_ENTRY } from "../../io/gitignore";
 import { pail } from "../../io/logger";
 import { detectPm } from "../../pm/pm-runner";
 import type { PackageManagerName } from "../../security/security";
@@ -359,6 +360,14 @@ const execute = async ({ options, workspaceRoot: wsRoot }: Toolbox<Console, Init
         await runInteractiveInit(cwd, pm, configPath);
     } else {
         runStaticInit(cwd, pm, options, configPath);
+    }
+
+    // `.vis/cache` reaches megabytes within a few runs, so the first thing
+    // after creating a config is making sure it never gets committed.
+    const gitignore = ensureVisGitignore(cwd);
+
+    if (gitignore.changed) {
+        pail.success(`Added ${VIS_IGNORE_ENTRY} to .gitignore`);
     }
 };
 

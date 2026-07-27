@@ -4,6 +4,7 @@ import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { readYamlSync, writeYamlSync } from "@visulima/fs/yaml";
 import { dirname, join, relative, sep } from "@visulima/path";
 
+import { ensureVisGitignore } from "../../io/gitignore";
 import { backupFile } from "./backup";
 import { editJsonFile } from "./json";
 import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared";
@@ -1527,6 +1528,23 @@ export const migrateNx = (
 
     if (typeof nxDefaultBase === "string" && nxDefaultBase.length > 0 && nxDefaultBase !== "main") {
         logger.info(`Translated nx's default base branch (${nxDefaultBase}) into vis.config.ts#defaultBase.`);
+    }
+
+    // vis writes `.vis/cache` (megabytes, growing every run) alongside its
+    // run state. Nx's own `.nx` entry is dead the moment the migration
+    // lands, so swap one for the other in the same pass.
+    if (options.dryRun) {
+        logger.info("Would add `.vis/` to .gitignore (and drop the now-dead `.nx` entry).");
+    } else {
+        const gitignore = ensureVisGitignore(workspaceRoot, { create: false, dropEntries: [".nx", ".nx/", ".nx/cache", ".nx/workspace-data"] });
+
+        if (gitignore.added.length > 0) {
+            logger.info("Added `.vis/` to .gitignore.");
+        }
+
+        if (gitignore.removed.length > 0) {
+            logger.info(`Removed dead entr(y/ies) from .gitignore: ${gitignore.removed.join(", ")}.`);
+        }
     }
 
     const checklist = collectCleanupChecklist(workspaceRoot);

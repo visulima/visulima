@@ -1,10 +1,8 @@
 import type { CommandExecute, Toolbox } from "@visulima/cerebro";
-import type { AffectedOptions, AffectedScope } from "@visulima/task-runner";
-import { getAffectedProjects } from "@visulima/task-runner";
 
 import { buildProjectGraph, discoverWorkspace } from "../../config/workspace";
-import { resolveAffectedShas } from "../../runtime/affected-shas";
-import { filterProjectsByQuery } from "../../task/selectors";
+import { selectAffectedProjects } from "../../task/affected-selection";
+import { filterProjectsByQuery, filterProjectsByTags } from "../../task/selectors";
 import type { AffectedCommandOptions } from "./index";
 
 const execute = async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, AffectedCommandOptions>): Promise<void> => {
@@ -22,44 +20,21 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     const { packageJsons, workspace } = discoverWorkspace(workspaceRoot, visConfig);
     const projectGraph = buildProjectGraph(workspaceRoot, workspace, packageJsons);
 
-    const validScopes = new Set(["deep", "direct", "none"]);
-    const downstreamValue = options.downstream ?? "deep";
-    const upstreamValue = options.upstream ?? "none";
+    const result = await selectAffectedProjects(
+        {
+            base: options.base,
+            downstream: options.downstream,
+            head: options.head,
+            uncommitted: options.uncommitted,
+            upstream: options.upstream,
+        },
+        { projectGraph, projects: workspace.projects, workspaceRoot },
+        { defaultBase: visConfig?.defaultBase },
+    );
 
-    if (!validScopes.has(downstreamValue)) {
-        throw new Error(`Invalid --downstream value: "${downstreamValue}". Must be "none", "direct", or "deep".`);
+    for (const note of result.notes) {
+        logger.info(`▸ ${note}`);
     }
-
-    if (!validScopes.has(upstreamValue)) {
-        throw new Error(`Invalid --upstream value: "${upstreamValue}". Must be "none", "direct", or "deep".`);
-    }
-
-    let { base } = options;
-    let { head } = options;
-
-    if (!base || !head) {
-        const resolved = resolveAffectedShas({
-            defaultBase: visConfig?.defaultBase,
-            workspaceRoot,
-        });
-
-        base = base ?? resolved.base;
-        head = head ?? resolved.head;
-
-        logger.info(`▸ Resolved affected refs from ${resolved.provider} (${resolved.notes.join("; ")})`);
-    }
-
-    const affectedOptions: AffectedOptions = {
-        base,
-        downstream: downstreamValue as AffectedScope,
-        head,
-        projectGraph,
-        projects: workspace.projects,
-        upstream: upstreamValue as AffectedScope,
-        workspaceRoot,
-    };
-
-    const result = await getAffectedProjects(affectedOptions);
 
     if (result.changedFiles.length === 0) {
         logger.info("No files changed. Nothing to run.");
@@ -80,6 +55,16 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
 
         if (affectedProjects.length === 0) {
             logger.info(`Query "${String(options.query)}" matched no affected projects.`);
+
+            return;
+        }
+    }
+
+    if (options.tag && options.tag.length > 0) {
+        affectedProjects = filterProjectsByTags(affectedProjects, workspace, options.tag);
+
+        if (affectedProjects.length === 0) {
+            logger.info(`Tag filter ${options.tag.map((t: string) => `"${t}"`).join(", ")} matched no affected projects.`);
 
             return;
         }

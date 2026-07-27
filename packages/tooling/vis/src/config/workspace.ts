@@ -13,6 +13,7 @@ import type {
 import { looksLikeInputUri, parseInputUri } from "@visulima/task-runner";
 import { parse as parseYaml } from "yaml";
 
+import { VisUserError } from "../errors/vis-user-error";
 import { BUILT_IN_DETECTORS, inferProjectTargets } from "../inference";
 import { mergeTargetWithInherit } from "../task/target-merge";
 import type { VisTargetConfiguration } from "../task/target-options";
@@ -224,13 +225,13 @@ export const expandTaskGroups = (
             const groupName = entry.group;
 
             if (seen.has(groupName)) {
-                throw new Error(`Cycle detected in vis.config taskGroups: ${[...seen, groupName].join(" → ")}`);
+                throw new VisUserError(`Cycle detected in vis.config taskGroups: ${[...seen, groupName].join(" → ")}`);
             }
 
             const members = groups?.[groupName];
 
             if (!members) {
-                throw new Error(`Unknown taskGroup "${groupName}" referenced in dependsOn. Declare it under \`taskGroups\` in vis.config.ts.`);
+                throw new VisUserError(`Unknown taskGroup "${groupName}" referenced in dependsOn. Declare it under \`taskGroups\` in vis.config.ts.`);
             }
 
             expanded.push(...expandTaskGroups(members, groups, new Set([...seen, groupName])));
@@ -244,6 +245,68 @@ export const expandTaskGroups = (
 };
 
 /**
+ * Reject `dependsOn` entries that can never resolve to a task.
+ *
+ * A string entry is either `"target"` (same project) or `"^target"`
+ * (the target on each dependency project) — task-runner's
+ * `resolveStringDependency` understands nothing else. File globs and
+ * `{projectRoot}` tokens are the common mistake: they look plausible
+ * next to `inputs`, are accepted without complaint, and then silently
+ * resolve to no task at all. When the intent was input tracking, the
+ * glob never reaches the cache key either, so editing the file serves a
+ * stale cached result — a config typo turned into a correctness bug.
+ *
+ * Targets that simply don't exist yet are *not* flagged here; those are
+ * legal names, and the runner already warns when one has no command.
+ * @param entries Post-group-expansion `dependsOn` entries.
+ * @param projectName Owning project, for the diagnostic.
+ * @param targetName Owning target, for the diagnostic.
+ */
+const validateDependsOnEntries = (entries: ReadonlyArray<unknown>, projectName: string, targetName: string): void => {
+    const where = `${projectName}:${targetName}`;
+
+    for (const entry of entries) {
+        if (typeof entry !== "string") {
+            // Object form is validated structurally by the schema.
+            if (entry && typeof entry === "object" && !("target" in entry)) {
+                throw new VisUserError(
+                    `Invalid dependsOn entry on ${where}: object entries must declare a \`target\` (got ${JSON.stringify(entry)}).\n`
+                    + "Valid forms: \"target\", \"^target\", { target, projects }, { target, dependencies: true }, { group }.",
+                );
+            }
+
+            continue;
+        }
+
+        const name = entry.startsWith("^") ? entry.slice(1) : entry;
+
+        if (name === "") {
+            throw new VisUserError(`Invalid dependsOn entry on ${where}: ${JSON.stringify(entry)} names no target.`);
+        }
+
+        // `{token}` / path / glob syntax — almost always an input pattern
+        // pasted into the wrong field.
+        if (/[*{}]/.test(name) || name.includes("/") || name.includes("\\")) {
+            throw new VisUserError(
+                `Invalid dependsOn entry on ${where}: ${JSON.stringify(entry)} is a file pattern, not a target name.\n`
+                + "`dependsOn` takes target names (\"build\", \"^build\"); file patterns belong in `inputs`, where they are tracked for caching.",
+            );
+        }
+
+        // `project:target` is moon/nx muscle memory. It parses as a target
+        // name containing a colon, matches nothing, and vanishes.
+        if (name.includes(":")) {
+            const [project, ...rest] = name.split(":");
+
+            throw new VisUserError(
+                `Invalid dependsOn entry on ${where}: ${JSON.stringify(entry)} looks like a task id, but string entries name a target on this project.\n`
+                + `Use the object form instead: { target: "${rest.join(":")}", projects: "${String(project)}" }.`,
+            );
+        }
+    }
+};
+
+/**
  * Validates the root `package.json` `workspaces` field and returns the
  * resolved pattern array. Throws a clear diagnostic when the field is
  * malformed (empty array, wrong type, object without `packages`)
@@ -253,7 +316,7 @@ export const expandTaskGroups = (
 const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
     if (Array.isArray(raw)) {
         if (raw.length === 0) {
-            throw new Error("Invalid package.json `workspaces`: empty array. Add at least one pattern like \"packages/*\" or remove the field.");
+            throw new VisUserError("Invalid package.json `workspaces`: empty array. Add at least one pattern like \"packages/*\" or remove the field.");
         }
 
         for (const entry of raw) {
@@ -269,7 +332,7 @@ const validateWorkspacesField = (raw: PackageJson["workspaces"]): string[] => {
         const { packages } = raw;
 
         if (packages === undefined) {
-            throw new Error("Invalid package.json `workspaces`: object form requires a `packages` array (e.g. `{ \"packages\": [\"packages/*\"] }`).");
+            throw new VisUserError("Invalid package.json `workspaces`: object form requires a `packages` array (e.g. `{ \"packages\": [\"packages/*\"] }`).");
         }
 
         if (!Array.isArray(packages)) {
@@ -744,7 +807,7 @@ const discoverWorkspace = (
     }
 
     if (!workspacePatterns) {
-        throw new Error("No workspace configuration found. Expected pnpm-workspace.yaml or package.json workspaces field.");
+        throw new VisUserError("No workspace configuration found. Expected pnpm-workspace.yaml or package.json workspaces field.");
     }
 
     const projectDirectories = resolveWorkspacePatterns(workspaceRoot, workspacePatterns);
@@ -874,6 +937,10 @@ const discoverWorkspace = (
             delete rest["type"];
 
             const expandedDependsOn = target.dependsOn ? expandTaskGroups(target.dependsOn, config.taskGroups) : undefined;
+
+            if (expandedDependsOn) {
+                validateDependsOnEntries(expandedDependsOn, projectName, targetName);
+            }
 
             sanitizedTargets[targetName] = {
                 ...rest,
@@ -1046,6 +1113,7 @@ export {
     readWorkspacePatterns,
     resolveWorkspacePatterns,
     scopeMatches,
+    validateDependsOnEntries,
     validateWorkspacesField,
 };
 

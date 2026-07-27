@@ -3,7 +3,7 @@ import { relative } from "@visulima/path";
 
 import type { VisProjectConfiguration } from "../../config/workspace";
 import { discoverWorkspace } from "../../config/workspace";
-import { filterProjectsByQuery } from "../../task/selectors";
+import { filterProjectsByQuery, filterProjectsByTags } from "../../task/selectors";
 import { filterDepInstances } from "../../util/json-deps-filter";
 import type { DepInstance, DepType } from "../../util/workspace-deps";
 import { iterateWorkspaceDeps } from "../../util/workspace-deps";
@@ -102,13 +102,14 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
             internalOnly: options.internalOnly,
         });
 
-        if (options.query) {
+        if (options.query || (options.tag && options.tag.length > 0)) {
             const { workspace } = discoverWorkspace(wsRoot, visConfig);
-            const matching = new Set(filterProjectsByQuery(Object.keys(workspace.projects), workspace, options.query));
+            const queried = filterProjectsByQuery(Object.keys(workspace.projects), workspace, options.query);
+            const matching = new Set(filterProjectsByTags(queried, workspace, options.tag));
 
             // Workspace-scope rows (pnpm-workspace.yaml#overrides) have no
             // declaring package, so they can't match any project query —
-            // drop them when --query is active.
+            // drop them when --query/--tag is active.
             filtered = filtered.filter((inst) => inst.packageName !== undefined && matching.has(inst.packageName));
         }
 
@@ -177,6 +178,8 @@ const execute = async ({ logger, options, visConfig, workspaceRoot: wsRoot }: To
     if (options.query) {
         projectNames = filterProjectsByQuery(projectNames, workspace, options.query);
     }
+
+    projectNames = filterProjectsByTags(projectNames, workspace, options.tag);
 
     if (projectNames.length === 0) {
         logger.info("No projects found.");
