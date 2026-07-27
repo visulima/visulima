@@ -1,6 +1,6 @@
 {
     "name": "@visulima/jsdoc-open-api",
-    "version": "3.0.9",
+    "version": "3.0.10",
     "description": "Generates swagger doc based on JSDoc.",
     "keywords": [
         "api",
@@ -110,7 +110,7 @@
     },
     "dependencies": {
         "@apidevtools/swagger-parser": "catalog:prod",
-        "@visulima/fs": "5.0.10",
+        "@visulima/fs": "5.0.11",
         "comment-parser": "catalog:prod",
         "es-toolkit": "catalog:prod",
         "yaml": "catalog:prod"
