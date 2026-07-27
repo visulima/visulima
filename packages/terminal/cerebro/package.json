@@ -1,6 +1,6 @@
 {
     "name": "@visulima/cerebro",
-    "version": "3.0.2",
+    "version": "3.0.3",
     "description": "A delightful toolkit for building cross-runtime CLIs for Node.js, Deno, and Bun.",
     "keywords": [
         "ansi",
@@ -157,7 +157,7 @@
         "@visulima/error": "6.0.0",
         "@visulima/find-cache-dir": "3.0.0",
         "@visulima/packem": "catalog:dev",
-        "@visulima/pail": "4.0.1",
+        "@visulima/pail": "4.0.2",
         "@visulima/path": "3.0.0",
         "@visulima/string": "3.0.0",
         "@vitest/coverage-v8": "catalog:test",
@@ -180,7 +180,7 @@
         "@bomb.sh/tab": "catalog:peer",
         "@visulima/boxen": "3.0.0",
         "@visulima/find-cache-dir": "3.0.0",
-        "@visulima/pail": "4.0.1",
+        "@visulima/pail": "4.0.2",
         "github-slugger": "catalog:peer"
     },
     "peerDependenciesMeta": {
