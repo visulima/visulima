@@ -2,6 +2,28 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { createUploader } from "../../src/core/uploader";
 
+/**
+ * Polls until `condition` holds. The uploader's state transitions are driven by
+ * the mock XHR's own timers, so a fixed sleep races the runner: when it is
+ * slow, `retryItem` lands before the item has reached the error state and is a
+ * no-op, and the assertion then reads a retryCount that never moved.
+ * @param condition Checked until it returns true.
+ * @param timeoutMs Ceiling before giving up.
+ */
+const waitUntil = async (condition: () => boolean, timeoutMs = 5000): Promise<void> => {
+    const deadline = Date.now() + timeoutMs;
+
+    while (!condition()) {
+        if (Date.now() > deadline) {
+            return;
+        }
+
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 5);
+        });
+    }
+};
+
 // Mock XMLHttpRequest that simulates error
 class ErrorMockXMLHttpRequest {
     public readyState = 0;
@@ -219,23 +241,14 @@ describe("uploader Retry Operations", () => {
         const file = new File(["test"], "test.jpg", { type: "image/jpeg" });
         const itemId = uploader.add(file);
 
-        // Wait for error
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 15);
-        });
+        // The retry only counts once the item has actually failed.
+        await waitUntil(() => uploader.getItem(itemId)?.status === "error");
 
         uploader.retryItem(itemId);
 
-        // Wait long enough for the mock XHR's 10ms error timer to fire
-        // inside the test, otherwise the post-teardown error callback
-        // triggers console.error after the worker has started closing.
-        await new Promise<void>((resolve) => {
-            setTimeout(() => {
-                resolve();
-            }, 25);
-        });
+        // Then wait for the retry itself to be recorded, rather than guessing
+        // how long the mock XHR's 10ms error timer needs on this runner.
+        await waitUntil(() => (uploader.getItem(itemId)?.retryCount ?? 0) > 0);
 
         const item = uploader.getItem(itemId);
 
