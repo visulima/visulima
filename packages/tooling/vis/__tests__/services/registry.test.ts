@@ -285,15 +285,27 @@ describe("services/registry", () => {
             // even when both critical sections were genuinely overlapping.
             // Track maxActive instead — it's 2 iff both locks were held
             // at the same instant, regardless of how slow the runner is.
+            //
+            // Each side then waits for its sibling to arrive rather than
+            // sleeping a fixed 100ms: on a slow runner, acquiring the second
+            // lock can take longer than that sleep, so the first critical
+            // section has already exited by the time the second enters and
+            // maxActive never reaches 2 even though the locks are independent.
             let active = 0;
             let maxActive = 0;
 
             const work = async (): Promise<void> => {
                 active += 1;
                 maxActive = Math.max(maxActive, active);
-                await new Promise((resolve) => {
-                    setTimeout(resolve, 100);
-                });
+
+                const deadline = Date.now() + 5000;
+
+                while (active < 2 && Date.now() < deadline) {
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, 10);
+                    });
+                }
+
                 active -= 1;
             };
 
