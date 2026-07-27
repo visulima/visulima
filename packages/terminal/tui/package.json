@@ -282,7 +282,8 @@
         "index.js",
         "README.md",
         "CHANGELOG.md",
-        "LICENSE.md"
+        "LICENSE.md",
+        "MIGRATION-GUIDE.md"
     ],
     "scripts": {
         "build": "packem build --development",

@@ -81,6 +81,57 @@ Run your type-checker afterwards either way. An unresolved import is a compile e
 
 The rest of the dependency slimming needs no action — those libraries were either inlined or turned into optional peers you only pay for when using the feature that needs them.
 
+### Why This Change?
+
+The component library and the runtime have different audiences. Most consumers embed a renderer and a handful of primitives; they were paying for 110+ components and 13 dependencies to get them.
+
+Splitting the two means:
+
+- **A smaller install.** `@visulima/tui` now pulls 3 direct dependencies instead of 13.
+- **Two ways to consume components.** `@visulima/tui-kit` is installable like any package, or copy-pasteable through its shadcn registry so you can own and edit the source.
+- **Independent release cadence.** Component work no longer forces a version of the renderer, and vice versa.
+
+### Migration Steps
+
+1. Bump `@visulima/tui` to `2.0.0`.
+2. Add `@visulima/tui-kit` (or adopt the shadcn registry) if you use any non-primitive component.
+3. Run the import rewrite from [the section above](#automating-the-rewrite).
+4. Install the optional peers for any heavy component you use — see the table in the README (`BigText`, `Code`, `DiffView`, `Markdown`, `Table`).
+5. Drop any explicit `ws` dependency you added for DevTools.
+6. Run your type-checker.
+
+### Migration Issues & Solutions
+
+#### 1. A primitive import stopped resolving
+
+**Problem**: `Cannot find module '@visulima/tui-kit/text'` after a bulk find-and-replace.
+
+**Solution**: The 11 primitives stayed in `@visulima/tui`. A blind replace catches them too — use the scripted rewrite above, whose lookahead skips them, or fix them up in a second pass.
+
+#### 2. `static-render` or `textarea` rewritten to the wrong package
+
+**Problem**: The second-pass regex turned `@visulima/tui-kit/static-render` into `@visulima/tui/components/static-render`, or did the same to `textarea`.
+
+**Solution**: Anchor the pattern with the trailing quote-or-slash — `(box|…|text)(["'/])`. Without it, `static` also matches `static-render` and `text` also matches `textarea`, both of which genuinely moved to `@visulima/tui-kit`.
+
+#### 3. A component throws about a missing dependency at runtime
+
+**Problem**: `BigText`, `Code`, `DiffView`, `Markdown` or `Table` fails on a missing `cfonts`, `shiki`, `diff`, `marked` or `@visulima/tabular`.
+
+**Solution**: Those are optional peers, installed only by the consumers that use them. Add the peers listed for that component in the README.
+
+#### 4. DevTools stopped connecting
+
+**Problem**: The React DevTools bridge does not attach after upgrading.
+
+**Solution**: The bridge uses the native `WebSocket`, which needs Node `^22.14.0 || >=24.10.0`. Check your Node version; reinstalling `ws` will not help.
+
+### Verification Steps
+
+1. `pnpm type-check` (or `tsc --noEmit`) — an unresolved import is a compile error, so a mis-rewritten path cannot pass silently.
+2. `rg "@visulima/tui/components/" --glob '*.{ts,tsx}'` — every remaining hit should be one of the 11 primitives.
+3. Run your test suite, then the app itself: mount a screen and press a key to confirm input still routes.
+
 ## Also in this release (not breaking)
 
 ### `suspendTerminal()`
@@ -111,11 +162,3 @@ It releases the alternate screen and Kitty keyboard mode on suspend, and restore
 `useInput` subscribed from a passive effect, which React flushes on its own schedule — after the commit, and potentially after the next I/O callback. A key arriving in that window reached the app, found no handler subscribed, and was discarded with no queue and no retry. In practice a keystroke typed immediately after a component mounted or took focus could be silently lost.
 
 The subscription now happens in a layout effect, flushed synchronously with the commit, so a handler is always in place before the terminal can deliver the next key. No API change.
-
-## Upgrade checklist
-
-1. Bump `@visulima/tui` to `2.0.0`.
-2. Add `@visulima/tui-kit` (or adopt the shadcn registry) if you use any non-primitive component.
-3. Run the import rewrite above, then your type-checker.
-4. Drop any explicit `ws` dependency you added for DevTools.
-5. Nothing else — the renderer, hooks, and primitive APIs are unchanged.
