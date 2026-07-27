@@ -7,6 +7,18 @@ import type { Toolbox } from "../types/toolbox";
 import { exitProcess } from "../util/general/runtime-process";
 
 export type ErrorHandlerOptions = {
+    /**
+     * Predicate marking an error as an *expected* user-facing failure — a
+     * bad flag, a missing file, a non-zero task exit. Matching errors are
+     * logged as their message alone, with no stack trace, because the
+     * frames point into CLI internals the user cannot act on.
+     *
+     * Ignored when `detailed` is true, so a debug flag still surfaces the
+     * full stack for every error. `formatter`, when set, wins over this.
+     * @default undefined (every error renders with its stack)
+     */
+    concise?: (error: Error) => boolean;
+
     /** Show detailed error information including stack traces and code frames (default: false) */
     detailed?: boolean;
     /** Exit process after handling error (default: true) */
@@ -28,13 +40,17 @@ export type ErrorHandlerOptions = {
 export const errorHandlerPlugin = (options: ErrorHandlerOptions = {}): Plugin => {
     const handleError = (error: Error, toolbox: Toolbox) => {
         const { logger, runtime } = toolbox;
-        const { detailed = false, exitOnError = true, formatter, logErrors = true, renderOptions = {} } = options;
+        const { concise, detailed = false, exitOnError = true, formatter, logErrors = true, renderOptions = {} } = options;
 
         // Log error if logging is enabled
         if (logErrors) {
             if (formatter) {
                 // Use custom formatter
                 logger.error(formatter(error));
+            } else if (!detailed && concise?.(error)) {
+                // Expected failure: the message is the whole diagnostic, and
+                // a stack would only bury it under CLI-internal frames.
+                logger.error(error.message);
             } else if (detailed) {
                 const cwd = runtime.getCwd();
                 const renderedError = renderError(error, {

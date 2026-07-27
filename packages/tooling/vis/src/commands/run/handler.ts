@@ -36,6 +36,7 @@ import isInCi from "is-in-ci";
 
 import { applyBranchScope, resolveSharedCacheDirectory } from "../../cache/cache-directory";
 import { buildProjectGraph, discoverWorkspace, loadVisTaskConfigsForWorkspace } from "../../config/workspace";
+import { VisUserError } from "../../errors/vis-user-error";
 import { runLockfilePreflight } from "../../preflight/lockfile";
 import { maybePromptViteClientOverride } from "../../preflight/vite-client-override";
 import { FailureLogLifeCycle } from "../../report/failure-log";
@@ -46,8 +47,10 @@ import { runToolchainPreflight } from "../../runtime/toolchain";
 import { runReadiness } from "../../services/readiness";
 import { deleteEntry, readAllEntries } from "../../services/registry";
 import type { ServiceEntry } from "../../services/types";
+import { selectAffectedProjects } from "../../task/affected-selection";
+import { filterProjectsByNames } from "../../task/project-name-filter";
 import { decidePty } from "../../task/pty-decision";
-import { filterProjectsByQuery, resolveSelector } from "../../task/selectors";
+import { filterProjectsByQuery, filterProjectsByTags, resolveSelector } from "../../task/selectors";
 import { resolveSkipCachePatterns } from "../../task/skip-cache";
 import { checkStrictEnv, formatStrictEnvError } from "../../task/strict-env";
 import {
@@ -79,7 +82,7 @@ import { applyFilterStrings } from "./filter";
 import type { RunOptions } from "./index";
 import type { ServiceBridgeEntry } from "./service-event-bridge";
 import { ServiceEventBridge } from "./service-event-bridge";
-import { buildBootstrapPaths, extractPreflightTasks, injectServiceTasks, resolveServicesPolicy } from "./service-preflight";
+import { buildBootstrapPaths, describeServicesPolicySource, extractPreflightTasks, injectServiceTasks, resolveServicesPolicy } from "./service-preflight";
 import { resolveTaskArguments } from "./task-arguments";
 
 const AFFECTED_FILES_ENV = "VIS_AFFECTED_FILES";
@@ -1235,7 +1238,7 @@ const parseHashMode = (value: string | undefined): "declared" | "trace" | undefi
     return value;
 };
 
-const execute = async ({ argument, logger, options, runtime, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RunOptions>): Promise<void> => {
+const execute = async ({ argument, logger, options, visConfig, workspaceRoot: wsRoot }: Toolbox<Console, RunOptions>): Promise<void> => {
     if (!wsRoot) {
         throw new Error("Could not determine workspace root. Run this command inside a monorepo.");
     }
@@ -1320,33 +1323,32 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         }
     }
 
-    // --affected shorthand: delegate to the affected command
-    if (options.affected) {
-        const argv: string[] = [rawSelector];
+    // The `--affected` modifiers are meaningless on their own. Reject them
+    // rather than accepting a flag that changes nothing — silently ignoring
+    // `--base` here is how a CI job ends up "passing" without running.
+    if (!options.affected) {
+        // `--no-uncommitted` arrives here as `uncommitted: false`, so report
+        // the flag the user actually typed rather than its positive twin.
+        const uncommittedFlag = options.uncommitted === false ? "--no-uncommitted" : "--uncommitted";
+        const affectedOnlyFlags = (
+            [
+                ["--base", options.base],
+                ["--head", options.head],
+                ["--downstream", options.downstream],
+                ["--upstream", options.upstream],
+                [uncommittedFlag, options.uncommitted],
+            ] as [string, string | boolean | undefined][]
+        )
+            .filter(([, value]) => value !== undefined)
+            .map(([flag]) => flag);
 
-        if (options.parallel !== undefined) {
-            argv.push(`--parallel=${String(options.parallel)}`);
+        if (affectedOnlyFlags.length > 0) {
+            throw new VisUserError(
+                `${affectedOnlyFlags.join(", ")} ${affectedOnlyFlags.length === 1 ? "requires" : "require"} --affected.\n`
+                + `Did you mean: vis run ${rawSelector} --affected ${affectedOnlyFlags.map((flag) => (flag.includes("uncommitted") ? flag : `${flag}=…`)).join(" ")}`
+                + `\nOr use the dedicated command: vis affected ${rawSelector} …`,
+            );
         }
-
-        if (!options.cache) {
-            argv.push("--no-cache");
-        }
-
-        if (options.query) {
-            argv.push(`--query=${String(options.query)}`);
-        }
-
-        if (options.reverse) {
-            argv.push("--reverse");
-        }
-
-        if (typeof options.runnerTags === "string" && options.runnerTags !== "") {
-            argv.push(`--runner-tags=${options.runnerTags}`);
-        }
-
-        await runtime.runCommand("affected", { argv });
-
-        return;
     }
 
     const selectorResult = await resolveSelector(rawSelector, workspace, process.cwd(), workspaceRoot);
@@ -1366,14 +1368,10 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
     // resolver strips overrides so deps start with a clean slate.
     const forwardedArgs: string[] = argument.slice(1).map(String);
 
-    if (options.projects) {
-        const requested = new Set(options.projects.split(",").map((p: string) => p.trim()));
-
-        projectNames = projectNames.filter((name) => requested.has(name));
-
-        if (projectNames.length === 0) {
-            throw new Error(`No matching projects found for: ${String(options.projects)}`);
-        }
+    // `!== undefined`, not truthiness: `--projects=` must reach the filter
+    // and error rather than silently running the whole workspace.
+    if (options.projects !== undefined) {
+        projectNames = filterProjectsByNames(projectNames, String(options.projects), Object.keys(workspace.projects));
     }
 
     // Apply pnpm-style `--filter`/`-F` selectors. They compose with the
@@ -1416,10 +1414,70 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
         }
     }
 
+    // `--tag` shorthand, applied as its own pass so it composes with
+    // `--query` regardless of which operator that query uses.
+    if (options.tag && options.tag.length > 0) {
+        projectNames = filterProjectsByTags(projectNames, workspace, options.tag);
+
+        if (projectNames.length === 0) {
+            logger.info(`Tag filter ${options.tag.map((t: string) => `"${t}"`).join(", ")} matched no projects.`);
+
+            return;
+        }
+    }
+
+    // `--affected` narrows the selection in-process rather than re-invoking
+    // `vis affected`. The old delegation round-trip could only forward the
+    // handful of flags it enumerated, so --dry-run, --fail-fast, --partition
+    // and friends were silently dropped on the way out. Computing here keeps
+    // every option on this run intact.
+    let affectedChangedFiles: string[] | undefined;
+
+    if (options.affected) {
+        const affected = await selectAffectedProjects(
+            {
+                base: options.base,
+                downstream: options.downstream,
+                head: options.head,
+                uncommitted: options.uncommitted,
+                upstream: options.upstream,
+            },
+            { projectGraph, projects: workspace.projects, workspaceRoot },
+            { defaultBase: visConfig?.defaultBase },
+        );
+
+        for (const note of affected.notes) {
+            logger.info(`▸ ${note}`);
+        }
+
+        if (affected.changedFiles.length === 0) {
+            logger.info("No files changed. Nothing to run.");
+
+            return;
+        }
+
+        const affectedSet = new Set(affected.affectedProjects);
+
+        projectNames = projectNames.filter((name) => affectedSet.has(name));
+
+        if (projectNames.length === 0) {
+            logger.info("No projects affected by the changes.");
+
+            return;
+        }
+
+        affectedChangedFiles = affected.changedFiles;
+
+        logger.info(`Affected projects: ${projectNames.join(", ")}`);
+    }
+
     const currentOs = detectCurrentOs();
 
+    // `vis affected` delegates to `vis run --projects=…` and passes the
+    // changed-file set through the environment; an in-process `--affected`
+    // run already has it in hand.
     const affectedFilesRaw = process.env[AFFECTED_FILES_ENV];
-    const affectedFiles = affectedFilesRaw ? affectedFilesRaw.split("\n").filter(Boolean) : undefined;
+    const affectedFiles = affectedChangedFiles ?? (affectedFilesRaw ? affectedFilesRaw.split("\n").filter(Boolean) : undefined);
 
     // Runner-tag filter: CLI flag wins over env so a script can override
     // a CI-injected default. Empty string after splitting is dropped so
@@ -1929,7 +1987,33 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                 logger.error(diagnostic.message);
             }
 
-            throw new Error(`${serviceResult.diagnostics.length} service dependency error(s) — start the missing services or invoke them directly.`);
+            // Auto-start exists and would have satisfied every one of these
+            // deps — it just wasn't reached, because `--dry-run` skips it or
+            // the TTY-aware default resolved to `off` (CI, a piped stdout, a
+            // non-interactive shell). Naming the override turns a dead end
+            // into a one-flag fix; without it a declarative `dependsOn` on a
+            // service reads as simply unsupported.
+            const source = describeServicesPolicySource({ cli: options.services, config: config.run?.services });
+            const hints: string[] = [];
+
+            if (options.dryRun) {
+                hints.push("`--dry-run` never starts services; drop it to let vis boot them.");
+            } else if (source === "default") {
+                hints.push(
+                    "vis only auto-starts service deps in an interactive terminal by default (this run is CI or non-TTY).",
+                    "Pass `--services=ephemeral` to boot them for this run, or set `run.services` in vis.config.ts.",
+                );
+            } else if (source === "cli") {
+                hints.push("`--services=off` was passed; use `--services=ephemeral` to boot them for this run.");
+            } else {
+                hints.push("`run.services: \"off\"` is set in vis.config.ts; override it with `--services=ephemeral`.");
+            }
+
+            throw new VisUserError(
+                [`${serviceResult.diagnostics.length} service dependency error(s) — start the missing services or invoke them directly.`, ...hints].join(
+                    "\n",
+                ),
+            );
         }
 
         const missingIds = serviceResult.diagnostics.map((d) => d.targetId);
@@ -1962,7 +2046,7 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                 logger.error(`Cannot auto-start ${id}: ${reason}`);
             }
 
-            throw new Error(`${injection.skipped.length} service(s) cannot be auto-started — invoke them directly or add a service config.`);
+            throw new VisUserError(`${injection.skipped.length} service(s) cannot be auto-started — invoke them directly or add a service config.`);
         }
 
         ephemeralPidFiles.push(...injection.ephemeralPidFiles);
@@ -3094,7 +3178,10 @@ const execute = async ({ argument, logger, options, runtime, visConfig, workspac
                     );
                 }
 
-                throw new Error(failureDetails.length > 0 ? `${headline}\n${failureDetails.join("\n")}` : headline);
+                // A failed task is the run reporting a result, not vis
+                // malfunctioning — a stack here would bury the summary block
+                // that actually names the failures.
+                throw new VisUserError(failureDetails.length > 0 ? `${headline}\n${failureDetails.join("\n")}` : headline);
             }
 
             if (persistentTasks.length > 0 && !options.failFast) {

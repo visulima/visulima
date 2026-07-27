@@ -6,6 +6,7 @@ import { afterEach, describe, expect, it } from "vitest";
 
 import {
     buildBootstrapPaths,
+    describeServicesPolicySource,
     extractPreflightTasks,
     injectServiceTasks,
     linearize,
@@ -559,5 +560,24 @@ describe(injectServiceTasks, () => {
         rmSync(result.runDir!, { force: true, recursive: true });
 
         expect(existsSync(result.runDir!)).toBe(false);
+    });
+});
+
+describe(describeServicesPolicySource, () => {
+    it("should report `cli` when --services was passed", () => {
+        expect.assertions(1);
+        expect(describeServicesPolicySource({ cli: "off", config: "persistent" })).toBe("cli");
+    });
+
+    it("should report `config` when only vis.config.ts sets it", () => {
+        expect.assertions(1);
+        expect(describeServicesPolicySource({ cli: undefined, config: "off" })).toBe("config");
+    });
+
+    it("should report `default` when neither is set", () => {
+        expect.assertions(1);
+        // The case that matters: `off` came from the TTY-aware fallback, so
+        // the error has to name `--services=ephemeral` or it is a dead end.
+        expect(describeServicesPolicySource({ cli: undefined, config: undefined })).toBe("default");
     });
 });

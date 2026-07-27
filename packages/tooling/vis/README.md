@@ -108,7 +108,7 @@ pnpm add @visulima/vis
 
 `@visulima/vis` installs four executables:
 
-- `vis` — the full CLI (recommended; use this in scripts and CI).
+- `vis` — the full CLI (recommended; use this in scripts and CI). Note that macOS and the BSDs ship an unrelated `/usr/bin/vis` (a text-encoding utility). That one only wins if the local `node_modules/.bin/vis` is missing — most often momentarily, mid-install — and the giveaway is output like `vis: run: No such file or directory`, one line per argument. If you see that, finish the install (or re-run via `pnpm exec vis`) rather than debugging the command you typed.
 - `v` — a short alias for `vis`. Note that `v` collides with the [V language](https://vlang.io/) compiler and is a common personal shell alias, so it may be shadowed. Prefer `vis` for anything you commit; see [`docs/guides/shell-alias.mdx`](./docs/guides/shell-alias.mdx) if you want your own short alias.
 - `vx` / `visx` — the lean `dlx`-only entry point for one-off package execution.
 

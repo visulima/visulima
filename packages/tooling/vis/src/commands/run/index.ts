@@ -1,5 +1,7 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
+import { negatable } from "../../util/negatable-option";
+
 const run: Command = {
     argument: {
         description: "The target to run (e.g., build, test, lint)",
@@ -49,7 +51,7 @@ const run: Command = {
             name: "skip-toolchain",
             type: Boolean,
         },
-        {
+        ...negatable({
             // No `defaultValue` — handler treats `undefined` as "fall
             // back to config (default: enabled)" so `vis.config.ts`
             // `preflight.lockfile` can opt out workspace-wide and
@@ -57,19 +59,19 @@ const run: Command = {
             description: "Detect lockfile/node_modules drift before running (warns in TTY, fails in CI). Use --no-preflight to disable.",
             name: "preflight",
             type: Boolean,
-        },
+        }),
         {
             defaultValue: 3,
             description: "Maximum number of parallel tasks (falls back to VIS_RUN_CONCURRENCY_LIMIT env var, then 3)",
             name: "parallel",
             type: Number,
         },
-        {
+        ...negatable({
             defaultValue: true,
             description: "Enable caching (use --no-cache to disable)",
             name: "cache",
             type: Boolean,
-        },
+        }),
         {
             description:
                 "Comma-separated selectors of tasks to bypass cache for (e.g. 'app:test', ':e2e', '#flaky:lint'). Other tasks in the run still cache normally. --no-cache wins when both are set.",
@@ -126,11 +128,51 @@ const run: Command = {
             type: String,
         },
         {
+            description:
+                "Only run projects carrying one of these tags (repeatable, or comma-separated). Shorthand for --query=\"tag=…\"; combines with --query as AND.",
+            multiple: true,
+            name: "tag",
+            type: String,
+        },
+        {
             defaultValue: false,
-            description: "Only run on projects affected by git changes (shorthand for vis affected)",
+            description: "Only run on projects affected by git changes. Honors --base/--head/--downstream/--upstream, same as `vis affected`.",
             name: "affected",
             type: Boolean,
         },
+        {
+            description:
+                "Git base ref for --affected. When omitted, vis auto-resolves it from the active CI provider (GitHub/GitLab/Buildkite/CircleCI) or falls back to `git merge-base HEAD origin/<defaultBase>` locally. Default base branch comes from `vis.config.ts#defaultBase` (or `main`). Requires --affected.",
+            name: "base",
+            type: String,
+        },
+        {
+            description:
+                "Git head ref for --affected. When omitted, auto-resolves from CI env (e.g. `$GITHUB_SHA`) or defaults to `HEAD`. Requires --affected.",
+            name: "head",
+            type: String,
+        },
+        {
+            description:
+                "Downstream scope for --affected: \"none\", \"direct\", or \"deep\" — controls how far to include dependents of changed projects (default \"deep\"). Requires --affected.",
+            name: "downstream",
+            type: String,
+        },
+        {
+            description:
+                "Upstream scope for --affected: \"none\", \"direct\", or \"deep\" — controls how far to include dependencies of changed projects (default \"none\"). Requires --affected.",
+            name: "upstream",
+            type: String,
+        },
+        ...negatable({
+            // Mirrors `vis affected --uncommitted`. `undefined` means
+            // "auto": include working-tree changes for local interactive
+            // runs, ignore them in CI where the checkout is the truth.
+            description:
+                "Include uncommitted working-tree changes when computing --affected. Defaults to on for local runs and off in CI; use --no-uncommitted to force off.",
+            name: "uncommitted",
+            type: Boolean,
+        }),
         {
             defaultValue: false,
             description: "Rerun affected tasks on file change. Ctrl+C to exit.",
@@ -183,12 +225,12 @@ const run: Command = {
             name: "last-details",
             type: Boolean,
         },
-        {
+        ...negatable({
             defaultValue: true,
             description: "Show flaky task report on failure (use --no-flaky to suppress)",
             name: "flaky",
             type: Boolean,
-        },
+        }),
         {
             defaultValue: false,
             description:
@@ -196,13 +238,13 @@ const run: Command = {
             name: "fail-on-retry",
             type: Boolean,
         },
-        {
+        ...negatable({
             // No `defaultValue` — `undefined` means "fall back to vis.config.ts strictEnv (default off)".
             description:
                 "Fail a task if its command references an env var that is unset (no silent empty-string substitution). Use --no-strict-env to disable when set in config.",
             name: "strict-env",
             type: Boolean,
-        },
+        }),
         {
             description:
                 "Comma-separated tags this runner advertises (e.g. 'gpu,slow'). Tasks declaring `options.runnerTags` only run when at least one tag overlaps. Untagged tasks always run. Falls back to VIS_RUNNER_TAGS env var.",
@@ -241,16 +283,19 @@ export default run;
 
 export type RunOptions = CreateOptions<{
     affected: boolean | undefined;
+    base: string | undefined;
     cache: boolean | undefined;
     "cache-backend": string | undefined;
     "cache-dir": string | undefined;
     "cache-mode": string | undefined;
+    downstream: string | undefined;
     "dry-run": boolean | undefined;
     "fail-fast": boolean | undefined;
     "fail-on-retry": boolean | undefined;
     filter: string[] | undefined;
     flaky: boolean | undefined;
     "hash-mode": string | undefined;
+    head: string | undefined;
     "last-details": boolean | undefined;
     log: string | undefined;
     "output-style": string | undefined;
@@ -271,5 +316,8 @@ export type RunOptions = CreateOptions<{
     "stop-services": boolean | undefined;
     "strict-env": boolean | undefined;
     summarize: boolean | undefined;
+    tag: string[] | undefined;
+    uncommitted: boolean | undefined;
+    upstream: string | undefined;
     watch: boolean | undefined;
 }>;

@@ -1808,7 +1808,7 @@
         },
         "sharedWorktreeCache": {
             "type": "boolean",
-            "description": "Share the cache between sibling git worktrees. When the workspace is a linked worktree (created with `git worktree add`), the cache root is relocated from `&lt;linkedRoot>/.vis/cache` to the *main* worktree's `.vis/cache`. Multiple parallel agents working in sibling worktrees then share a single cache instead of rebuilding the same hash N times.\n\nSingle-checkout repos (where `.git` is a directory) are unaffected.\n\nSet to `false` to opt out — useful when worktrees deliberately need independent caches, e.g. for hermetic experiments.",
+            "description": "Share the cache between sibling git worktrees. When the workspace is a linked worktree (created with `git worktree add`), the cache root is relocated from `&lt;linkedRoot>/node_modules/.cache/vis` to the *main* worktree's `node_modules/.cache/vis`. Multiple parallel agents working in sibling worktrees then share a single cache instead of rebuilding the same hash N times.\n\nSingle-checkout repos (where `.git` is a directory) are unaffected.\n\nSet to `false` to opt out — useful when worktrees deliberately need independent caches, e.g. for hermetic experiments.",
             "default": true
         },
         "sortPackageJson": {
@@ -5951,7 +5951,10 @@
                                 "scaffolding",
                                 "tool"
                             ],
-                            "description": "Project layer, used for constraint inheritance and query filtering."
+                            "description": "Architectural layer this project sits in. Purely declarative — set it here in `project.json` and nothing infers it, which is why the `Layer` column in `vis list` reads `—` until you do.\n\nOnce set it becomes queryable (`--query \"layer=library\"`) and feeds `constraints`, where it is the natural way to express rules like \"nothing in `library` may depend on an `application`\".",
+                            "examples": [
+                                "library"
+                            ]
                         },
                         {
                             "type": "array",
@@ -5985,7 +5988,10 @@
                                         "not": {}
                                     }
                                 ],
-                                "description": "Project layer, used for constraint inheritance and query filtering."
+                                "description": "Architectural layer this project sits in. Purely declarative — set it here in `project.json` and nothing infers it, which is why the `Layer` column in `vis list` reads `—` until you do.\n\nOnce set it becomes queryable (`--query \"layer=library\"`) and feeds `constraints`, where it is the natural way to express rules like \"nothing in `library` may depend on an `application`\".",
+                                "examples": [
+                                    "library"
+                                ]
                             }
                         }
                     ],

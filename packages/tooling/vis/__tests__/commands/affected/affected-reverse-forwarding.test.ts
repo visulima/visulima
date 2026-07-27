@@ -4,7 +4,7 @@ import { mkdirSync, writeFileSync } from "node:fs";
 import { join } from "@visulima/path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
-import affectedExecute from "../../../src/commands/affected/handler";
+import affectedExecute, { forwardedArgv } from "../../../src/commands/affected/handler";
 import { cleanupTemporaryDirectory, createTemporaryDirectory } from "../../test-helpers";
 
 interface RunCommandCall {
@@ -56,76 +56,102 @@ const seedGitWorkspace = (workspaceRoot: string): void => {
     git(workspaceRoot, ["commit", "-q", "-m", "feat"]);
 };
 
-describe("vis affected --reverse → run forwarding", () => {
+describe(forwardedArgv, () => {
+    it("returns every token after the command name", () => {
+        expect.assertions(1);
+
+        // Forwarding the raw tokens is the whole point: the previous
+        // enumerate-each-flag approach forwarded six of `vis run`'s ~40
+        // options, so `vis affected build --fail-fast` silently did nothing.
+        expect(forwardedArgv(["node", "vis", "affected", "destroy", "--reverse", "--fail-fast"])).toStrictEqual([
+            "destroy",
+            "--reverse",
+            "--fail-fast",
+        ]);
+    });
+
+    it("survives global options placed before the command", () => {
+        expect.assertions(1);
+
+        expect(forwardedArgv(["node", "vis", "--cwd=/repo", "affected", "build"])).toStrictEqual(["build"]);
+    });
+
+    it("returns nothing when the command token is absent", () => {
+        expect.assertions(1);
+
+        expect(forwardedArgv(["node", "vis"])).toStrictEqual([]);
+    });
+});
+
+describe("vis affected → run delegation", () => {
     let workspaceRoot: string;
+    let originalArgv: string[];
 
     beforeEach(() => {
         workspaceRoot = createTemporaryDirectory("vis-affected-reverse-");
         seedGitWorkspace(workspaceRoot);
+        originalArgv = process.argv;
     });
 
     afterEach(() => {
+        process.argv = originalArgv;
         cleanupTemporaryDirectory(workspaceRoot);
     });
 
-    it("forwards --reverse to the underlying `vis run` invocation", async () => {
-        expect.assertions(2);
-
+    const runAffected = async (argv: string[], options: Record<string, unknown>): Promise<RunCommandCall[]> => {
         const calls: RunCommandCall[] = [];
 
+        process.argv = ["node", "vis", "affected", ...argv];
+
         await affectedExecute({
-            argument: ["destroy"],
+            argument: [argv[0]],
             logger: makeLogger(),
-            options: { base: "HEAD~1", head: "HEAD", reverse: true },
+            options,
             runtime: makeRuntime(calls) as never,
             visConfig: undefined,
             workspaceRoot,
         } as never);
 
+        return calls;
+    };
+
+    it("forwards the user's flags verbatim and adds --affected", async () => {
+        expect.assertions(3);
+
+        const calls = await runAffected(["destroy", "--reverse", "--runner-tags=gpu,slow"], {});
         const runCall = calls.find((c) => c.name === "run");
 
         expect(runCall, "expected affected handler to delegate to `run`").toBeDefined();
-        expect(runCall!.argv).toContain("--reverse");
+        expect(runCall!.argv).toStrictEqual(["destroy", "--reverse", "--runner-tags=gpu,slow", "--affected"]);
+        expect(runCall!.argv).toContain("--affected");
     });
 
-    it("omits --reverse when the flag is not set", async () => {
+    it("forwards a flag the old enumerate-and-forward ladder dropped", async () => {
+        expect.assertions(1);
+
+        // `--fail-fast` was never in the forwarded set, so it parsed and
+        // vanished. This is the regression guard for that whole class.
+        const calls = await runAffected(["destroy", "--fail-fast"], {});
+
+        expect(calls.find((c) => c.name === "run")!.argv).toContain("--fail-fast");
+    });
+
+    it("does not double-append --affected when the user already passed it", async () => {
+        expect.assertions(1);
+
+        const calls = await runAffected(["destroy", "--affected"], {});
+
+        expect(calls.find((c) => c.name === "run")!.argv.filter((a) => a === "--affected")).toHaveLength(1);
+    });
+
+    it("omits flags the user did not type", async () => {
         expect.assertions(2);
 
-        const calls: RunCommandCall[] = [];
-
-        await affectedExecute({
-            argument: ["destroy"],
-            logger: makeLogger(),
-            options: { base: "HEAD~1", head: "HEAD" },
-            runtime: makeRuntime(calls) as never,
-            visConfig: undefined,
-            workspaceRoot,
-        } as never);
-
+        const calls = await runAffected(["destroy"], {});
         const runCall = calls.find((c) => c.name === "run");
 
-        expect(runCall, "expected affected handler to delegate to `run`").toBeDefined();
         expect(runCall!.argv).not.toContain("--reverse");
-    });
-
-    it("forwards --runner-tags verbatim so capability filtering survives the affected → run hop", async () => {
-        expect.assertions(2);
-
-        const calls: RunCommandCall[] = [];
-
-        await affectedExecute({
-            argument: ["destroy"],
-            logger: makeLogger(),
-            options: { base: "HEAD~1", head: "HEAD", runnerTags: "gpu,slow" },
-            runtime: makeRuntime(calls) as never,
-            visConfig: undefined,
-            workspaceRoot,
-        } as never);
-
-        const runCall = calls.find((c) => c.name === "run");
-
-        expect(runCall, "expected affected handler to delegate to `run`").toBeDefined();
-        expect(runCall!.argv).toContain("--runner-tags=gpu,slow");
+        expect(runCall!.argv.some((a) => a.startsWith("--runner-tags"))).toBe(false);
     });
 
     it("--sparse-checkout prints affected project roots to stdout and skips `run`", async () => {
@@ -162,29 +188,5 @@ describe("vis affected --reverse → run forwarding", () => {
         // Trailing newline so the stream pipes cleanly into
         // `git sparse-checkout set --stdin`.
         expect(written.join("").endsWith("\n")).toBe(true);
-    });
-
-    it("omits --runner-tags when neither flag nor empty string is passed (don't bind a phantom filter)", async () => {
-        expect.assertions(2);
-
-        const calls: RunCommandCall[] = [];
-
-        await affectedExecute({
-            argument: ["destroy"],
-            logger: makeLogger(),
-            // empty-string is what `--runner-tags=` yields; must not be
-            // forwarded or it'd flip the downstream into "filter active
-            // with zero tags" — which the run handler also guards against
-            // but it's cleaner to drop it at the source.
-            options: { base: "HEAD~1", head: "HEAD", runnerTags: "" },
-            runtime: makeRuntime(calls) as never,
-            visConfig: undefined,
-            workspaceRoot,
-        } as never);
-
-        const runCall = calls.find((c) => c.name === "run");
-
-        expect(runCall, "expected affected handler to delegate to `run`").toBeDefined();
-        expect(runCall!.argv.some((a) => a.startsWith("--runner-tags"))).toBe(false);
     });
 });

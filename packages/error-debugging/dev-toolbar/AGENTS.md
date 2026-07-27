@@ -25,6 +25,18 @@ This file provides guidance to AI coding agents when working with code in this d
 
 Built on **Preact** (not React), styled via Tailwind v4 (`@tailwindcss/node` + `@tailwindcss/oxide`), uses `clsx` for class composition, `@floating-ui/dom` for positioning, `launch-editor` for jump-to-source, `axe-core` (optional peer) for the a11y app, and Babel (`@babel/parser`/`@babel/traverse`/`@babel/generator` + `babel-plugin-transform-hook-names`) for source rewrites.
 
+### One `declare global` block, in `src/types/global-api.ts`
+
+All `Window` augmentation for this package lives in the single `declare global` block in `src/types/global-api.ts`. Do **not** add a second one next to the interface it relates to.
+
+packem's `.d.ts` bundler treats `global` as an ordinary identifier when de-duplicating declarations, so a second `declare global` in another bundled module is emitted as `declare global$1` — invalid TypeScript (TS1435). It is **not** suppressed by `skipLibCheck`, because it is a grammar error rather than a type error, so it breaks every consumer's build. This shipped in 1.0.5 and 1.0.6.
+
+The real fix belongs in packem's dts bundler (separate repo); keeping to one block is the workaround that holds until then. When touching this, verify the built output actually parses:
+
+```sh
+pnpm build && tsc --noEmit --ignoreConfig --target es2022 --moduleResolution bundler --module esnext dist/packem_shared/global-api.d-*.d.ts
+```
+
 ### Peer deps
 
 `vite` `^8.0.11` (required). Optional peers: `@modelcontextprotocol/sdk` `^1.29.0` (only when consuming the `./mcp` entry), `axe-core` (a11y app), `zod` `^3.25.0 || ^4.0.0`.

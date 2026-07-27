@@ -99,3 +99,75 @@ describe(errorHandlerPlugin, () => {
         expect(exitSpy).not.toHaveBeenCalled();
     });
 });
+
+describe("errorHandlerPlugin concise mode", () => {
+    let exitSpy: ReturnType<typeof vi.spyOn>;
+
+    beforeEach(() => {
+        exitSpy = vi.spyOn(process, "exit").mockImplementation(((code?: number) => code as unknown as never) as never);
+    });
+
+    afterEach(() => {
+        vi.restoreAllMocks();
+    });
+
+    it("logs only the message for an error the predicate accepts", async () => {
+        expect.assertions(2);
+
+        const plugin = errorHandlerPlugin({ concise: () => true, exitOnError: false });
+        const toolbox = createToolbox();
+
+        await plugin.onError?.(new Error("No matching projects found for: nope"), toolbox);
+
+        // The string, not the Error — that is what drops the stack.
+        expect(toolbox.logger.error).toHaveBeenCalledWith("No matching projects found for: nope");
+        expect(exitSpy).not.toHaveBeenCalled();
+    });
+
+    it("logs the full error when the predicate rejects it", async () => {
+        expect.assertions(1);
+
+        const plugin = errorHandlerPlugin({ concise: () => false, exitOnError: false });
+        const toolbox = createToolbox();
+        const error = new Error("genuine invariant");
+
+        await plugin.onError?.(error, toolbox);
+
+        expect(toolbox.logger.error).toHaveBeenCalledWith(error);
+    });
+
+    it("keeps the stack in detailed mode even for a concise error", async () => {
+        expect.assertions(1);
+
+        // `--debug` has to stay diagnosable; concise must not suppress it.
+        const plugin = errorHandlerPlugin({ concise: () => true, detailed: true, exitOnError: false });
+        const toolbox = createToolbox();
+
+        await plugin.onError?.(new Error("boom"), toolbox);
+
+        expect(toolbox.logger.error).not.toHaveBeenCalledWith("boom");
+    });
+
+    it("lets an explicit formatter win over the predicate", async () => {
+        expect.assertions(1);
+
+        const plugin = errorHandlerPlugin({ concise: () => true, exitOnError: false, formatter: () => "formatted" });
+        const toolbox = createToolbox();
+
+        await plugin.onError?.(new Error("boom"), toolbox);
+
+        expect(toolbox.logger.error).toHaveBeenCalledWith("formatted");
+    });
+
+    it("behaves as before when no predicate is given", async () => {
+        expect.assertions(1);
+
+        const plugin = errorHandlerPlugin({ exitOnError: false });
+        const toolbox = createToolbox();
+        const error = new Error("boom");
+
+        await plugin.onError?.(error, toolbox);
+
+        expect(toolbox.logger.error).toHaveBeenCalledWith(error);
+    });
+});

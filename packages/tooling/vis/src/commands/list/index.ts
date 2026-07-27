@@ -12,6 +12,7 @@ const list: Command = {
         ["vis list --deps --format=json --pretty", "Single pretty-printed JSON array of dep-instances"],
         ["vis list --format=json", "Machine-readable project listing"],
         ["vis list --query \"tag=frontend\"", "Filter by query"],
+        ["vis list --tag=type:package", "Filter by tag (shorthand for the query above)"],
     ],
     group: "Workspace",
     loader: () => import("./handler"),
@@ -37,6 +38,12 @@ const list: Command = {
         {
             description: "Filter projects by query",
             name: "query",
+            type: String,
+        },
+        {
+            description: "Only list projects carrying one of these tags (repeatable, or comma-separated). Shorthand for --query=\"tag=…\".",
+            multiple: true,
+            name: "tag",
             type: String,
         },
         {
@@ -97,5 +104,6 @@ export type ListOptions = CreateOptions<{
     "internal-only": boolean | undefined;
     pretty: boolean | undefined;
     query: string | undefined;
+    tag: string[] | undefined;
     targets: boolean | undefined;
 }>;

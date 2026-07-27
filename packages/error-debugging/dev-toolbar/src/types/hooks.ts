@@ -86,16 +86,9 @@ interface DevToolbarHook {
     registerApp: (app: DevToolbarApp) => void;
 }
 
-/**
- * Global hook declaration
- */
-declare global {
-    interface Window {
-        /**
-         * Dev toolbar hook for library integrations.
-         */
-        __DEV_TOOLBAR_HOOK__?: DevToolbarHook;
-    }
-}
+// `window.__DEV_TOOLBAR_HOOK__` is declared in `./global-api.ts`, which
+// holds this package's single `declare global` block — a second one here
+// makes packem's .d.ts bundler emit `declare global$1`. See the comment
+// there before moving it back.
 
 export type { DevToolbarHook, HookEvents };

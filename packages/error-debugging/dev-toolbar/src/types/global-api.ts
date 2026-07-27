@@ -96,10 +96,24 @@ interface VisulimaDevTools {
 }
 
 /**
- * Global API declaration
+ * Global `Window` augmentation for the whole package.
+ *
+ * Every `declare global` this package ships must live in this one block.
+ * packem's .d.ts bundler treats `global` as an ordinary identifier when
+ * de-duplicating declarations, so a second `declare global` in another
+ * bundled module is emitted as `declare global$1` — invalid TypeScript
+ * (TS1435), and *not* suppressed by `skipLibCheck` because it is a
+ * grammar error rather than a type error. That breaks every consumer's
+ * build. Keep additions here rather than adding a block next to the
+ * interface they relate to.
  */
 declare global {
     interface Window {
+        /**
+         * Dev toolbar hook for library integrations.
+         */
+        __DEV_TOOLBAR_HOOK__?: DevToolbarHook;
+
         /**
          * Visulima DevTools global API.
          */

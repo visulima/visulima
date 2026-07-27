@@ -1,5 +1,7 @@
 import type { Command, CreateOptions } from "@visulima/cerebro";
 
+import { negatable } from "../../util/negatable-option";
+
 /**
  * `vis ci` bundles the CI lifecycle in a single entry:
  *
@@ -33,12 +35,12 @@ const ci: Command = {
     loader: () => import("./handler"),
     name: "ci",
     options: [
-        {
+        ...negatable({
             defaultValue: true,
             description: "Install dependencies before running targets (use --no-install to skip)",
             name: "install",
             type: Boolean,
-        },
+        }),
         {
             defaultValue: false,
             description:

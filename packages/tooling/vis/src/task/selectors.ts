@@ -291,6 +291,36 @@ const matchClause = (clause: QueryClause, name: string, project: VisProjectConfi
 };
 
 /**
+ * Filters project names down to those carrying at least one of `tags`.
+ *
+ * The shorthand for the overwhelmingly common `--query="tag=x"` case.
+ * Deliberately a separate pass rather than sugar that rewrites the query
+ * string: the query grammar rejects mixed `&amp;&amp;` / `||`, so folding a tag
+ * clause into a user's `a || b` query would make the shorthand fail
+ * exactly where it's most useful. Two passes give `--tag` AND `--query`
+ * without touching the grammar.
+ * @param projectNames Candidate project names to filter.
+ * @param workspace The workspace configuration (projects must carry vis metadata).
+ * @param tags Tag values; a project matches if it carries any of them. Empty skips filtering.
+ * @returns Projects carrying at least one of `tags`.
+ */
+export const filterProjectsByTags = (projectNames: string[], workspace: WorkspaceConfiguration, tags: ReadonlyArray<string> | undefined): string[] => {
+    const wanted = (tags ?? []).flatMap((value) => value.split(",")).map((value) => value.trim()).filter(Boolean);
+
+    if (wanted.length === 0) {
+        return projectNames;
+    }
+
+    const wantedSet = new Set(wanted);
+
+    return projectNames.filter((name) => {
+        const projectTags = workspace.projects[name]?.tags;
+
+        return Array.isArray(projectTags) && projectTags.some((tag) => wantedSet.has(tag));
+    });
+};
+
+/**
  * Filters project names by a query string.
  * @param projectNames Candidate project names to filter.
  * @param workspace The workspace configuration (projects must carry vis metadata).

@@ -4,6 +4,7 @@ import { isAccessibleSync, readFileSync } from "@visulima/fs";
 import { readYamlSync, writeYamlSync } from "@visulima/fs/yaml";
 import { dirname, join, relative, sep } from "@visulima/path";
 
+import { applyGitignoreMigration } from "../../io/gitignore";
 import { backupFile } from "./backup";
 import { editJsonFile } from "./json";
 import { readJsonConfig, serializeConfigObject, writeVisConfig } from "./shared";
@@ -1528,6 +1529,11 @@ export const migrateNx = (
     if (typeof nxDefaultBase === "string" && nxDefaultBase.length > 0 && nxDefaultBase !== "main") {
         logger.info(`Translated nx's default base branch (${nxDefaultBase}) into vis.config.ts#defaultBase.`);
     }
+
+    // Ignore vis's run state. `.nx` is deliberately left in place: nx
+    // keeps running (and writing to it) until the user removes nx.json,
+    // which the cleanup checklist below asks them to do.
+    applyGitignoreMigration(workspaceRoot, { dryRun: options.dryRun }, logger);
 
     const checklist = collectCleanupChecklist(workspaceRoot);
     const lines = formatChecklist(checklist, workspaceRoot, {});
